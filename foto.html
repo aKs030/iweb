@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Project Title</title>
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/Photo.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/widgets.js"></script>
+  
+  <style>
+    .menu-index {
+      color: rgb(255, 255, 255) !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+  </style>
+</head>
+
+<body>
+        <div class="menu-container"></div>
+      <div class="content">
+    <div class="content-table flex-column"> <!--TEXT-Center-->
+  <div class="flex-row">
+<div class="flex-item flex-column">
+  <br>
+    <h2 style="color: #005cbf;">Fotogalerie</h2>
+      <hr> 
+        <div class="cssSlider">
+          <div class="popup">
+
+        <!-- die inputs um den Slider zu Steuern -->
+        <input type="radio" name="slider" id="slide01" checked="checked">
+        <input type="radio" name="slider" id="slide02">
+        <input type="radio" name="slider" id="slide03">
+        <input type="radio" name="slider" id="slide04">
+    
+        <!-- die einzelnen Slides, hier als Liste angelegt -->
+          <ul class="sliderElements">
+             <li>
+                 <figure>
+                    <img src="img/photo/6.jpg" alt="" height="400" width="1200">
+                    <figcaption>Hier könnte deine Beschreibung stehen.</figcaption>
+                  </figure>
+              </li>
+            
+            <li>
+                <figure>
+                    <img src="img/photo/2.jpg" alt="" height="400" width="1200">
+                    <figcaption>Eine tolle Beschreibung</figcaption>
+                </figure>
+            </li>
+         
+            <li>
+                <figure>
+                    <img src="img/photo/3.jpg" alt="" height="400" width="1200">
+                    <figcaption>Die Beschreibung zum dritten Bild</figcaption>
+                </figure>
+            </li>
+         
+            <li>
+                <figure>
+                    <img src="img/photo/1.jpg" alt="" height="400" width="1200">
+                    <figcaption>Und noch ein toller Untertitel</figcaption>
+                </figure>   
+            </li>
+          </ul>
+    
+
+        <!-- Eine Steuerung -->
+        <ul class="sliderControls">
+            <li><label for="slide01">1</label></li>
+            <li><label for="slide02">2</label></li>
+            <li><label for="slide03">3</label></li>
+            <li><label for="slide04">4</label></li>
+        </ul>
+  </div>
+</div>            
+  </div><!--End image popup-->
+    </div> 
+      </div>
+        </div>
+  <div class="footer-container"></div>
+  <!------POPUP----->
+  <div class="show">
+    <div class="overlay"></div>
+    <div class="img-show">
+      <span>X</span>
+      <img src="">
+    </div>
+  </div>
+<!------POPUP-----> 
+</body>
+</html>
