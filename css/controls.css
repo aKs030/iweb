@@ -2,8 +2,9 @@
 html {
   scroll-behavior: smooth; /* Scroll speed embedding page */
 }
-
-
+.menu-button img {
+    pointer-events: auto;
+}
 /* Standard-Styling für Menülinks */
 .menu-items a {
   font-weight: normal;
