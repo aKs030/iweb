@@ -79,123 +79,65 @@ function gameLoop() {
   });
 }
 
-// Tastatursteuerung
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft' && snake.dx === 0) {
-    snake.dx = -grid;
-    snake.dy = 0;
-  } else if (e.key === 'ArrowUp' && snake.dy === 0) {
-    snake.dy = -grid;
-    snake.dx = 0;
-  } else if (e.key === 'ArrowRight' && snake.dx === 0) {
-    snake.dx = grid;
-    snake.dy = 0;
-  } else if (e.key === 'ArrowDown' && snake.dy === 0) {
-    snake.dy = grid;
-    snake.dx = 0;
-  }
-});
+// Steuerung per Tippen
+const controls = document.createElement('div');
+controls.id = 'controls';
+controls.style.position = 'absolute';
+controls.style.top = '0';
+controls.style.left = '0';
+controls.style.width = '100%';
+controls.style.height = '100%';
+controls.style.display = 'grid';
+controls.style.gridTemplateColumns = '1fr 1fr';
+controls.style.gridTemplateRows = '1fr 1fr';
+controls.style.zIndex = '1000';
+controls.style.touchAction = 'none';
+document.body.appendChild(controls);
 
-// Touchscreen-Steuerung
-let touchStartX = 0;
-let touchStartY = 0;
+// Bereiche für Steuerung erstellen
+['up', 'right', 'down', 'left'].forEach((direction) => {
+  const button = document.createElement('div');
+  button.dataset.direction = direction;
+  button.style.background = 'rgba(255, 255, 255, 0.1)';
+  button.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+  button.style.display = 'flex';
+  button.style.justifyContent = 'center';
+  button.style.alignItems = 'center';
+  button.style.fontSize = '20px';
+  button.style.color = 'white';
+  button.style.touchAction = 'none';
 
-canvas.addEventListener('touchstart', (e) => {
-  const touch = e.touches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
-});
+  // Beschriftung hinzufügen (optional)
+  if (direction === 'up') button.innerText = '⬆';
+  if (direction === 'right') button.innerText = '➡';
+  if (direction === 'down') button.innerText = '⬇';
+  if (direction === 'left') button.innerText = '⬅';
 
-canvas.addEventListener('touchend', (e) => {
-  const touchEndX = e.changedTouches[0].clientX;
-  const touchEndY = e.changedTouches[0].clientY;
-
-  const diffX = touchEndX - touchStartX;
-  const diffY = touchEndY - touchStartY;
-
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    if (diffX > 0 && snake.dx === 0) {
+  button.addEventListener('click', () => {
+    if (direction === 'up' && snake.dy === 0) {
+      snake.dx = 0;
+      snake.dy = -grid;
+    } else if (direction === 'right' && snake.dx === 0) {
       snake.dx = grid;
       snake.dy = 0;
-    } else if (diffX < 0 && snake.dx === 0) {
+    } else if (direction === 'down' && snake.dy === 0) {
+      snake.dx = 0;
+      snake.dy = grid;
+    } else if (direction === 'left' && snake.dx === 0) {
       snake.dx = -grid;
       snake.dy = 0;
     }
-  } else {
-    if (diffY > 0 && snake.dy === 0) {
-      snake.dy = grid;
-      snake.dx = 0;
-    } else if (diffY < 0 && snake.dy === 0) {
-      snake.dy = -grid;
-      snake.dx = 0;
-    }
-  }
+  });
+
+  controls.appendChild(button);
 });
 
-// Joystick-Steuerung
-const joystickContainer = document.createElement('div');
-joystickContainer.id = 'joystick-container';
-joystickContainer.style.position = 'absolute';
-joystickContainer.style.bottom = '20px';
-joystickContainer.style.left = '20px';
-joystickContainer.style.width = '150px';
-joystickContainer.style.height = '150px';
-joystickContainer.style.background = 'rgba(255, 255, 255, 0.1)';
-joystickContainer.style.borderRadius = '50%';
-joystickContainer.style.display = 'flex';
-joystickContainer.style.justifyContent = 'center';
-joystickContainer.style.alignItems = 'center';
-document.body.appendChild(joystickContainer);
-
-const joystick = document.createElement('div');
-joystick.id = 'joystick';
-joystick.style.width = '50px';
-joystick.style.height = '50px';
-joystick.style.background = '#fff';
-joystick.style.borderRadius = '50%';
-joystick.style.touchAction = 'none';
-joystick.style.position = 'relative';
-joystickContainer.appendChild(joystick);
-
-let dragging = false;
-let startX, startY;
-
-joystick.addEventListener('touchstart', (e) => {
-  dragging = true;
-  const touch = e.touches[0];
-  startX = touch.clientX;
-  startY = touch.clientY;
-});
-
-joystick.addEventListener('touchmove', (e) => {
-  if (!dragging) return;
-
-  const touch = e.touches[0];
-  const deltaX = touch.clientX - startX;
-  const deltaY = touch.clientY - startY;
-
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    if (deltaX > 0 && snake.dx === 0) {
-      snake.dx = grid;
-      snake.dy = 0;
-    } else if (deltaX < 0 && snake.dx === 0) {
-      snake.dx = -grid;
-      snake.dy = 0;
-    }
-  } else {
-    if (deltaY > 0 && snake.dy === 0) {
-      snake.dy = grid;
-      snake.dx = 0;
-    } else if (deltaY < 0 && snake.dy === 0) {
-      snake.dy = -grid;
-      snake.dx = 0;
-    }
-  }
-});
-
-joystick.addEventListener('touchend', () => {
-  dragging = false;
-});
+// Bereiche für Steuerung anpassen
+const controlAreas = controls.querySelectorAll('div');
+controlAreas[0].style.gridArea = '1 / 1 / 2 / 3'; // Up
+controlAreas[1].style.gridArea = '1 / 3 / 3 / 4'; // Right
+controlAreas[2].style.gridArea = '3 / 1 / 4 / 3'; // Down
+controlAreas[3].style.gridArea = '2 / 1 / 3 / 2'; // Left
 
 // Start der Spielschleife
 requestAnimationFrame(gameLoop);
