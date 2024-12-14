@@ -132,5 +132,68 @@ canvas.addEventListener('touchend', (e) => {
   }
 });
 
+// Joystick-Steuerung
+const joystickContainer = document.createElement('div');
+joystickContainer.style.position = 'absolute';
+joystickContainer.style.bottom = '20px';
+joystickContainer.style.left = '20px';
+joystickContainer.style.width = '120px';
+joystickContainer.style.height = '120px';
+joystickContainer.style.background = 'rgba(255, 255, 255, 0.1)';
+joystickContainer.style.borderRadius = '50%';
+joystickContainer.style.display = 'flex';
+joystickContainer.style.justifyContent = 'center';
+joystickContainer.style.alignItems = 'center';
+document.body.appendChild(joystickContainer);
+
+const joystick = document.createElement('div');
+joystick.style.width = '40px';
+joystick.style.height = '40px';
+joystick.style.background = 'white';
+joystick.style.borderRadius = '50%';
+joystick.style.position = 'relative';
+joystick.style.touchAction = 'none';
+joystickContainer.appendChild(joystick);
+
+let dragging = false;
+let startX, startY;
+
+joystick.addEventListener('touchstart', (e) => {
+  dragging = true;
+  const touch = e.touches[0];
+  startX = touch.clientX;
+  startY = touch.clientY;
+});
+
+joystick.addEventListener('touchmove', (e) => {
+  if (!dragging) return;
+
+  const touch = e.touches[0];
+  const deltaX = touch.clientX - startX;
+  const deltaY = touch.clientY - startY;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > 0 && snake.dx === 0) {
+      snake.dx = grid;
+      snake.dy = 0;
+    } else if (deltaX < 0 && snake.dx === 0) {
+      snake.dx = -grid;
+      snake.dy = 0;
+    }
+  } else {
+    if (deltaY > 0 && snake.dy === 0) {
+      snake.dy = grid;
+      snake.dx = 0;
+    } else if (deltaY < 0 && snake.dy === 0) {
+      snake.dy = -grid;
+      snake.dx = 0;
+    }
+  }
+});
+
+joystick.addEventListener('touchend', () => {
+  dragging = false;
+});
+
 // Start der Spielschleife
 requestAnimationFrame(gameLoop);
