@@ -14,9 +14,11 @@
       align-items: center;
       justify-content: center;
     }
+
     canvas {
       border: 1px solid white;
     }
+
     #menu {
       position: absolute;
       top: 50%;
@@ -27,15 +29,17 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
+
     #joystick-container {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
     }
+
     #joystick-container button {
       background: #333;
       color: white;
@@ -46,8 +50,14 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
     #joystick-container button:active {
       background: #555;
+    }
+
+    #joystick-container .row {
+      display: flex;
+      justify-content: center;
     }
   </style>
 </head>
@@ -59,9 +69,9 @@
     <button id="touch-control">Touchscreen</button>
     <button id="joystick-control">Joystick</button>
   </div>
-  <div id="joystick-container" style="display: none;">
+  <div id="joystick-container">
     <button data-dir="up">⬆</button>
-    <div>
+    <div class="row">
       <button data-dir="left">⬅</button>
       <button data-dir="right">➡</button>
     </div>
@@ -71,7 +81,6 @@
   <script>
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
-
     const grid = 16;
     let count = 0;
 
@@ -150,54 +159,117 @@
       });
     }
 
+    // Tastatursteuerung
+    function setupKeyboardControls() {
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' && snake.dx === 0) {
+          snake.dx = -grid;
+          snake.dy = 0;
+        } else if (e.key === 'ArrowUp' && snake.dy === 0) {
+          snake.dy = -grid;
+          snake.dx = 0;
+        } else if (e.key === 'ArrowRight' && snake.dx === 0) {
+          snake.dx = grid;
+          snake.dy = 0;
+        } else if (e.key === 'ArrowDown' && snake.dy === 0) {
+          snake.dy = grid;
+          snake.dx = 0;
+        }
+      });
+    }
+
     // Touchscreen-Steuerung
     function setupTouchControls() {
       let touchStartX = 0;
       let touchStartY = 0;
 
-      canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // Blockiert Scrollen und Zoomen
-        const touch = e.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-      });
+      canvas.addEventListener(
+        'touchstart',
+        (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+        },
+        { passive: false }
+      );
 
-      canvas.addEventListener('touchend', (e) => {
-        e.preventDefault(); // Blockiert Scrollen und Zoomen
-        const touchEndX = e.changedTouches[0].clientX;
-        const touchEndY = e.changedTouches[0].clientY;
+      canvas.addEventListener(
+        'touchend',
+        (e) => {
+          e.preventDefault();
+          const touchEndX = e.changedTouches[0].clientX;
+          const touchEndY = e.changedTouches[0].clientY;
 
-        const diffX = touchEndX - touchStartX;
-        const diffY = touchEndY - touchStartY;
+          const diffX = touchEndX - touchStartX;
+          const diffY = touchEndY - touchStartY;
 
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-          if (diffX > 0 && snake.dx === 0) {
-            snake.dx = grid;
-            snake.dy = 0;
-          } else if (diffX < 0 && snake.dx === 0) {
+          if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0 && snake.dx === 0) {
+              snake.dx = grid;
+              snake.dy = 0;
+            } else if (diffX < 0 && snake.dx === 0) {
+              snake.dx = -grid;
+              snake.dy = 0;
+            }
+          } else {
+            if (diffY > 0 && snake.dy === 0) {
+              snake.dy = grid;
+              snake.dx = 0;
+            } else if (diffY < 0 && snake.dy === 0) {
+              snake.dy = -grid;
+              snake.dx = 0;
+            }
+          }
+        },
+        { passive: false }
+      );
+    }
+
+    // Joystick-Steuerung
+    function setupJoystickControls() {
+      const joystick = document.getElementById('joystick-container');
+      joystick.style.display = 'flex';
+
+      joystick.querySelectorAll('button').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const direction = e.target.getAttribute('data-dir');
+
+          if (direction === 'up' && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = -grid;
+          } else if (direction === 'down' && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = grid;
+          } else if (direction === 'left' && snake.dx === 0) {
             snake.dx = -grid;
             snake.dy = 0;
+          } else if (direction === 'right' && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
           }
-        } else {
-          if (diffY > 0 && snake.dy === 0) {
-            snake.dy = grid;
-            snake.dx = 0;
-          } else if (diffY < 0 && snake.dy === 0) {
-            snake.dy = -grid;
-            snake.dx = 0;
-          }
-        }
+        });
       });
     }
 
-    // Menü-Setup
+    // Menülogik
+    document.getElementById('keyboard-control').addEventListener('click', () => {
+      document.getElementById('menu').style.display = 'none';
+      setupKeyboardControls();
+      requestAnimationFrame(gameLoop);
+    });
+
     document.getElementById('touch-control').addEventListener('click', () => {
       document.getElementById('menu').style.display = 'none';
       setupTouchControls();
       requestAnimationFrame(gameLoop);
     });
 
-    requestAnimationFrame(gameLoop);
+    document.getElementById('joystick-control').addEventListener('click', () => {
+      document.getElementById('menu').style.display = 'none';
+      setupJoystickControls();
+      requestAnimationFrame(gameLoop);
+    });
   </script>
 </body>
 </html>
