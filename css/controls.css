@@ -3,6 +3,8 @@
   background-color: #333;
   color: white;
   padding: 10px 20px;
+  position: relative;
+  z-index: 100;
 }
 
 .menu .logo a {
@@ -12,10 +14,14 @@
   text-decoration: none;
 }
 
+.menu .menu-items {
+  display: flex;
+  gap: 15px;
+}
+
 .menu .menu-items a {
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  margin: 0 10px;
   transition: color 0.3s;
 }
 
@@ -25,22 +31,15 @@
   font-weight: bold;
 }
 
-/* Mobile-Specific Styles */
+/* Mobile Menu */
 .menu .menu-button {
   display: none;
   cursor: pointer;
 }
 
-.menu .menu-button img {
+.menu .menu-icon {
   width: 30px;
   height: 30px;
-}
-
-.menu .menu-items {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: flex-end;
 }
 
 @media (max-width: 768px) {
@@ -52,17 +51,13 @@
     top: 60px;
     left: 0;
     right: 0;
-    z-index: 1000;
-    padding: 10px 0;
+    padding: 10px;
+    gap: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .menu .menu-items.show {
     display: flex;
-  }
-
-  .menu .menu-items a {
-    margin: 10px 0;
-    text-align: center;
   }
 
   .menu .menu-button {

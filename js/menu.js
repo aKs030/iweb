@@ -1,11 +1,11 @@
 $(document).ready(function () {
   /*************************************************************************
-   * Dynamically load the menu from an external file.
+   * Dynamically Load Menu and Highlight Active Link
    *************************************************************************/
   $(".menu-container").load("menu.html", function () {
     console.info("Menu loaded successfully.");
 
-    // Highlight the active menu item
+    // Highlight active menu item
     const currentPage = window.location.pathname.split("/").pop() || "index.html";
     $(".menu-items a").each(function () {
       const linkPage = $(this).attr("href").split("/").pop();
@@ -14,7 +14,7 @@ $(document).ready(function () {
       }
     });
 
-    // Add mobile menu toggle functionality
+    // Mobile menu toggle functionality
     $(".menu-button").on("click", function () {
       $(".menu-items").toggleClass("show");
     });
@@ -38,7 +38,6 @@ $(document).ready(function () {
 
   const $backToTop = $(".back-to-top").hide();
 
-  // Show/Hide Back-to-Top button
   $(window).on("scroll", function () {
     if ($(this).scrollTop() > 100) {
       $backToTop.fadeIn();
@@ -47,7 +46,6 @@ $(document).ready(function () {
     }
   });
 
-  // Smooth scroll to the top
   $backToTop.on("click", function (e) {
     e.preventDefault();
     $("html, body").animate({ scrollTop: 0 }, 800);
