@@ -56,11 +56,43 @@
       color: white;
       font-size: 20px;
     }
+    #score-list {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 16px;
+      max-width: 200px;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+    #score-list h3 {
+      margin: 0;
+      padding: 0;
+      font-size: 18px;
+    }
+    #score-list ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #score-list li {
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
   <canvas id="game" width="400" height="400"></canvas>
   <div id="score">Score: 0</div>
+  <div id="score-list">
+    <h3>Top Scores</h3>
+    <ul id="score-names">
+      <!-- Scores will be dynamically populated here -->
+    </ul>
+  </div>
   <div id="menu">
     <h2>Wähle eine Steuerung</h2>
     <button id="keyboard-control">Tastatur</button>
@@ -75,10 +107,10 @@
     </div>
     <button data-dir="down">⬇</button>
   </div>
-  
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
@@ -182,6 +214,23 @@
       }
     }
 
+    function loadScores() {
+      const scoresRef = collection(db, "scores");
+      const q = query(scoresRef, orderBy("score", "desc"), limit(10));
+
+      onSnapshot(q, (snapshot) => {
+        const scoreList = document.getElementById("score-names");
+        scoreList.innerHTML = ""; // Clear the current list
+
+        snapshot.forEach((doc) => {
+          const { name, score } = doc.data();
+          const li = document.createElement("li");
+          li.textContent = `${name}: ${score}`;
+          scoreList.appendChild(li);
+        });
+      });
+    }
+
     function setupKeyboardControls() {
       document.addEventListener('keydown', (e) => {
         if (e.which === 37 && snake.dx === 0) {
@@ -263,6 +312,7 @@
       });
     }
 
+    // Menü-Setup
     document.getElementById('keyboard-control').addEventListener('click', () => {
       document.getElementById('menu').style.display = 'none';
       setupKeyboardControls();
@@ -280,6 +330,9 @@
       setupJoystickControls();
       requestAnimationFrame(gameLoop);
     });
+
+    // Lade die besten Scores beim Start
+    loadScores();
   </script>
 </body>
 </html>
