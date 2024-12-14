@@ -26,14 +26,13 @@
       padding: 20px;
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      width: 300px;
     }
     #joystick-container {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
     }
@@ -51,21 +50,22 @@
       background: #555;
     }
     #scoreboard {
-      margin-top: 20px;
-      text-align: center;
-    }
-    #scoreboard table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    #scoreboard th, #scoreboard td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-    #scoreboard th {
-      background-color: #333;
+      position: absolute;
+      top: 10px;
+      left: 10px;
       color: white;
+      font-size: 18px;
+    }
+    #highscores {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-size: 14px;
+      max-width: 200px;
     }
   </style>
 </head>
@@ -76,25 +76,8 @@
     <button id="keyboard-control">Tastatur</button>
     <button id="touch-control">Touchscreen</button>
     <button id="joystick-control">Joystick</button>
-    <div id="scoreboard">
-      <h3>High Scores</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Platz</th>
-            <th>Name</th>
-            <th>Score</th>
-          </tr>
-        </thead>
-        <tbody id="score-table-body">
-          <tr><td>1</td><td>-</td><td>-</td></tr>
-          <tr><td>2</td><td>-</td><td>-</td></tr>
-          <tr><td>3</td><td>-</td><td>-</td></tr>
-        </tbody>
-      </table>
-    </div>
   </div>
-  <div id="joystick-container" style="display: none;">
+  <div id="joystick-container">
     <button data-dir="up">⬆</button>
     <div>
       <button data-dir="left">⬅</button>
@@ -102,20 +85,37 @@
     </div>
     <button data-dir="down">⬇</button>
   </div>
+  <div id="scoreboard">Score: 0</div>
+  <div id="highscores">
+    <h3>Top Scores</h3>
+    <ul id="score-list"></ul>
+  </div>
 
-  <script>
-    const canvas = document.getElementById('game');
-    const context = canvas.getContext('2d');
-    const scoreTableBody = document.getElementById('score-table-body');
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+    // Firebase-Konfiguration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
+      authDomain: "snake-ed264.firebaseapp.com",
+      databaseURL: "https://snake-ed264-default-rtdb.firebaseio.com/",
+      projectId: "snake-ed264",
+      storageBucket: "snake-ed264.appspot.com",
+      messagingSenderId: "95766919512",
+      appId: "1:95766919512:web:78498968a8383721cecd2d"
+    };
+
+    // Firebase initialisieren
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const canvas = document.getElementById("game");
+    const context = canvas.getContext("2d");
 
     const grid = 16;
     let count = 0;
     let score = 0;
-    let highScores = [
-      { name: '-', score: 0 },
-      { name: '-', score: 0 },
-      { name: '-', score: 0 },
-    ];
 
     const snake = {
       x: 160,
@@ -131,13 +131,14 @@
       y: 320,
     };
 
+    // Zufällige Position für Apfel
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
     }
 
+    // Spielschleife
     function gameLoop() {
       requestAnimationFrame(gameLoop);
-
       if (++count < 4) return;
 
       count = 0;
@@ -153,38 +154,32 @@
       else if (snake.y >= canvas.height) snake.y = 0;
 
       snake.cells.unshift({ x: snake.x, y: snake.y });
-
       if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
-      // Zeichne Apfel
+      // Apfel zeichnen
       context.fillStyle = "red";
       context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
 
-      // Zeichne Schlange
+      // Schlange zeichnen
       context.fillStyle = "green";
       snake.cells.forEach((cell, index) => {
         context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
 
-        // Wenn Apfel gegessen
         if (cell.x === apple.x && cell.y === apple.y) {
           snake.maxCells++;
           score++;
+          document.getElementById("scoreboard").textContent = `Score: ${score}`;
           apple.x = getRandomInt(0, 25) * grid;
           apple.y = getRandomInt(0, 25) * grid;
         }
 
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-            endGame();
+            saveScore(score);
+            resetGame();
           }
         }
       });
-    }
-
-    function endGame() {
-      const playerName = prompt('Game Over! Dein Name:') || 'Unbekannt';
-      updateHighScores(playerName, score);
-      resetGame();
     }
 
     function resetGame() {
@@ -195,43 +190,12 @@
       snake.dx = grid;
       snake.dy = 0;
       score = 0;
+      document.getElementById("scoreboard").textContent = "Score: 0";
     }
 
-    function updateHighScores(name, score) {
-      highScores.push({ name, score });
-      highScores.sort((a, b) => b.score - a.score);
-      highScores = highScores.slice(0, 3);
-      renderHighScores();
-    }
-
-    function renderHighScores() {
-      scoreTableBody.innerHTML = '';
-      highScores.forEach((entry, index) => {
-        const row = `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
-        scoreTableBody.innerHTML += row;
-      });
-    }
-
-    document.getElementById('keyboard-control').addEventListener('click', () => {
-      document.getElementById('menu').style.display = 'none';
-      setupKeyboardControls();
-      requestAnimationFrame(gameLoop);
-    });
-
-    document.getElementById('touch-control').addEventListener('click', () => {
-      document.getElementById('menu').style.display = 'none';
-      setupTouchControls();
-      requestAnimationFrame(gameLoop);
-    });
-
-    document.getElementById('joystick-control').addEventListener('click', () => {
-      document.getElementById('menu').style.display = 'none';
-      setupJoystickControls();
-      requestAnimationFrame(gameLoop);
-    });
-
+    // Steuerung einrichten
     function setupKeyboardControls() {
-      document.addEventListener('keydown', (e) => {
+      document.addEventListener("keydown", (e) => {
         if (e.which === 37 && snake.dx === 0) {
           snake.dx = -grid;
           snake.dy = 0;
@@ -252,16 +216,15 @@
       let touchStartX = 0;
       let touchStartY = 0;
 
-      canvas.addEventListener('touchstart', (e) => {
+      canvas.addEventListener("touchstart", (e) => {
         const touch = e.touches[0];
         touchStartX = touch.clientX;
         touchStartY = touch.clientY;
       });
 
-      canvas.addEventListener('touchend', (e) => {
+      canvas.addEventListener("touchend", (e) => {
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
-
         const diffX = touchEndX - touchStartX;
         const diffY = touchEndY - touchStartY;
 
@@ -284,6 +247,86 @@
         }
       });
     }
+
+    function setupJoystickControls() {
+      const joystick = document.getElementById("joystick-container");
+      joystick.style.display = "flex";
+
+      joystick.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const direction = e.target.getAttribute("data-dir");
+
+          if (direction === "up" && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = -grid;
+          } else if (direction === "down" && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = grid;
+          } else if (direction === "left" && snake.dx === 0) {
+            snake.dx = -grid;
+            snake.dy = 0;
+          } else if (direction === "right" && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
+          }
+        });
+      });
+    }
+
+    // Score speichern
+    function saveScore(score) {
+      const name = prompt("Gib deinen Namen ein:", "Spieler");
+      if (name) {
+        const scoreRef = ref(database, "scores");
+        push(scoreRef, { name, score });
+      }
+    }
+
+    // Highscores abrufen und anzeigen
+    function loadHighScores() {
+      const scoreRef = ref(database, "scores");
+      onValue(scoreRef, (snapshot) => {
+        const scores = [];
+        snapshot.forEach((childSnapshot) => {
+          scores.push(childSnapshot.val());
+        });
+
+        // Sortiere die Scores und nehme die Top 3
+        scores.sort((a, b) => b.score - a.score);
+        const topScores = scores.slice(0, 3);
+
+        // Highscores anzeigen
+        const scoreList = document.getElementById("score-list");
+        scoreList.innerHTML = "";
+        topScores.forEach((entry) => {
+          const li = document.createElement("li");
+          li.textContent = `${entry.name}: ${entry.score}`;
+          scoreList.appendChild(li);
+        });
+      });
+    }
+
+    // Steuerungs-Menü anzeigen
+    document.getElementById("keyboard-control").addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      setupKeyboardControls();
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById("touch-control").addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      setupTouchControls();
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById("joystick-control").addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      setupJoystickControls();
+      requestAnimationFrame(gameLoop);
+    });
+
+    // Lade die Highscores beim Start
+    loadHighScores();
   </script>
 </body>
 </html>
