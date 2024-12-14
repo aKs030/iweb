@@ -23,23 +23,43 @@ $(document).ready(function () {
   /*************************************************************************
    * Back-to-Top Button Functionality
    *************************************************************************/
-  cdocument.addEventListener("DOMContentLoaded", function () {
-    const menuButton = document.getElementById("menu_button");
-    const menu = document.getElementById("menu");
-  
-    // Toggle visibility of the menu
-    menuButton.addEventListener("click", function () {
-      if (menu.style.display === "flex") {
-        menu.style.display = "none";
-      } else {
-        menu.style.display = "flex";
-      }
-    });
-  
-    // Close the menu when clicking outside
-    document.addEventListener("click", function (event) {
-      if (!menu.contains(event.target) && !menuButton.contains(event.target)) {
-        menu.style.display = "none";
-      }
-    });
+  const backToTopHTML = `
+    <a href="#top" class="back-to-top" aria-label="Back to Top">
+      <img src="img/top.png" alt="Back to Top Icon" style="max-width: 50px;">
+    </a>`;
+  $("body").append(backToTopHTML);
+
+  const $backToTop = $(".back-to-top").hide(); // Initially hide the button
+
+  // Show/Hide Back-to-Top button on scroll
+  $(window).on("scroll", function () {
+    if ($(this).scrollTop() > 100) {
+      $backToTop.fadeIn();
+    } else {
+      $backToTop.fadeOut();
+    }
   });
+
+  // Smooth scroll to top on button click
+  $backToTop.on("click", function (e) {
+    e.preventDefault();
+    $("html, body").animate({ scrollTop: 0 }, 800);
+  });
+
+  /*************************************************************************
+   * Mobile Menu Button Toggle
+   *************************************************************************/
+  const $menuButton = $(".menu-button");
+  const $menu = $(".menu-items");
+
+  $menuButton.on("click", function (e) {
+    e.preventDefault();
+    $menu.toggle();
+  });
+
+  $(document).on("click", function (e) {
+    if (!$(e.target).closest(".menu").length) {
+      $menu.hide();
+    }
+  });
+});
