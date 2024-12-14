@@ -16,6 +16,7 @@ export const db = getFirestore(app);
 export async function saveScore(name, score) {
   try {
     await addDoc(collection(db, "scores"), { name, score, timestamp: new Date() });
+    console.log("Score gespeichert!");
   } catch (error) {
     console.error("Fehler beim Speichern:", error);
   }

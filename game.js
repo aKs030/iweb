@@ -81,6 +81,7 @@ function resetGame() {
   score = 0;
 }
 
+// Steuerungsauswahl
 document.getElementById('keyboard-control').addEventListener('click', () => {
   document.getElementById('menu').style.display = 'none';
   setupKeyboardControls();
@@ -99,6 +100,7 @@ document.getElementById('joystick-control').addEventListener('click', () => {
   requestAnimationFrame(gameLoop);
 });
 
+// Lade Highscores
 fetchTopScores().then(scores => {
   const scoreList = document.getElementById('score-list');
   scores.forEach((score, index) => {
