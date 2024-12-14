@@ -69,27 +69,34 @@
     #joystick-container button:active {
       background: #555;
     }
+    #current-score {
+      color: white;
+      font-size: 18px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
   </style>
+</head>
+<body>
+  <div id="menu">
+    <h2>Wähle eine Steuerung</h2>
+    <button id="keyboard-control">Tastatur</button>
+    <button id="touch-control">Touchscreen</button>
+    <button id="joystick-control">Joystick</button>
+  </div>
+  <div id="current-score">Score: 0</div>
+  <div id="joystick-container">
+    <button data-dir="up">⬆</button>
+    <div>
+      <button data-dir="left">⬅</button>
+      <button data-dir="right">➡</button>
+    </div>
+    <button data-dir="down">⬇</button>
+  </div>
+  <canvas id="game" width="400" height="400"></canvas>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
-      authDomain: "snake-ed264.firebaseapp.com",
-      projectId: "snake-ed264",
-      storageBucket: "snake-ed264.firebasestorage.app",
-      messagingSenderId: "95766919512",
-      appId: "1:95766919512:web:78498968a8383721cecd2d",
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const scoresRef = ref(database, "scores");
-
-    // Game variables
     const canvas = document.getElementById("game");
     const context = canvas.getContext("2d");
     const grid = 16;
@@ -110,11 +117,13 @@
     };
 
     let currentScore = 0;
-    let controlType = null;
 
-    // Utility functions
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    function updateScoreDisplay() {
+      document.getElementById("current-score").innerText = `Score: ${currentScore}`;
     }
 
     function resetGame() {
@@ -130,30 +139,6 @@
       apple.y = getRandomInt(0, 25) * grid;
     }
 
-    function updateScoreDisplay() {
-      document.getElementById("current-score").innerText = `Score: ${currentScore}`;
-    }
-
-    function saveScore(name, score) {
-      push(scoresRef, { name, score });
-    }
-
-    function displayScores() {
-      const scoreList = document.getElementById("score-list");
-      onValue(scoresRef, (snapshot) => {
-        const scores = [];
-        snapshot.forEach((childSnapshot) => {
-          scores.push(childSnapshot.val());
-        });
-        scores.sort((a, b) => b.score - a.score); // Sort by score descending
-        scoreList.innerHTML = scores
-          .slice(0, 10)
-          .map((s) => `<li>${s.name}: ${s.score}</li>`)
-          .join("");
-      });
-    }
-
-    // Game loop
     function gameLoop() {
       requestAnimationFrame(gameLoop);
 
@@ -192,27 +177,24 @@
 
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-            const name = prompt("Game Over! Enter your name:");
-            saveScore(name || "Anonymous", currentScore);
             resetGame();
           }
         }
       });
     }
 
-    // Control setups
     function setupKeyboardControls() {
       document.addEventListener("keydown", (e) => {
-        if (e.which === 37 && snake.dx === 0) {
+        if (e.key === "ArrowLeft" && snake.dx === 0) {
           snake.dx = -grid;
           snake.dy = 0;
-        } else if (e.which === 38 && snake.dy === 0) {
+        } else if (e.key === "ArrowUp" && snake.dy === 0) {
           snake.dy = -grid;
           snake.dx = 0;
-        } else if (e.which === 39 && snake.dx === 0) {
+        } else if (e.key === "ArrowRight" && snake.dx === 0) {
           snake.dx = grid;
           snake.dy = 0;
-        } else if (e.which === 40 && snake.dy === 0) {
+        } else if (e.key === "ArrowDown" && snake.dy === 0) {
           snake.dy = grid;
           snake.dx = 0;
         }
@@ -224,12 +206,14 @@
       let touchStartY = 0;
 
       canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
         const touch = e.touches[0];
         touchStartX = touch.clientX;
         touchStartY = touch.clientY;
       });
 
       canvas.addEventListener("touchend", (e) => {
+        e.preventDefault();
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
 
@@ -281,33 +265,27 @@
       });
     }
 
-    // Menü
     document.getElementById("keyboard-control").addEventListener("click", () => {
       document.getElementById("menu").style.display = "none";
-      controlType = "keyboard";
       setupKeyboardControls();
       requestAnimationFrame(gameLoop);
     });
 
     document.getElementById("touch-control").addEventListener("click", () => {
       document.getElementById("menu").style.display = "none";
-      controlType = "touch";
       setupTouchControls();
       requestAnimationFrame(gameLoop);
     });
 
     document.getElementById("joystick-control").addEventListener("click", () => {
       document.getElementById("menu").style.display = "none";
-      controlType = "joystick";
+      setupdocument.getElementById("joystick-container").style.display = "block";
       setupJoystickControls();
       requestAnimationFrame(gameLoop);
     });
 
-    // Initialize
+    // Start the game loop
     resetGame();
-    updateScoreDisplay();
-    displayScores();
   </script>
-</head>
-<body>
- 
+</body>
+</html>
