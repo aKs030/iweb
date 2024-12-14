@@ -1,21 +1,137 @@
-<script type="module">
-  import { gameLoop, resetGame } from "./game.js";
-  import { saveScore, fetchScores } from "./firebase.js";
-  import { setupKeyboardControls } from "./controls.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas {
+      border: 1px solid white;
+    }
+    #score-board {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      font-size: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="400" height="400"></canvas>
+  <div id="score-board">Punkte: 0</div>
 
-  const canvas = document.getElementById("game");
-  const context = canvas.getContext("2d");
+  <script type="module">
+    // Spielmechanik
+    const canvas = document.getElementById('game');
+    const context = canvas.getContext('2d');
+    const grid = 16;
+    let count = 0;
+    let score = 0;
 
-  function updateScore(score) {
-    document.getElementById("score-board").textContent = `Punkte: ${score}`;
-  }
+    const snake = {
+      x: 160,
+      y: 160,
+      dx: grid,
+      dy: 0,
+      cells: [],
+      maxCells: 4,
+    };
 
-  function gameOver(score) {
-    const name = prompt("Gib deinen Namen ein:");
-    if (name) saveScore(name, score);
-  }
+    const apple = {
+      x: 320,
+      y: 320,
+    };
 
-  setupKeyboardControls();
-  fetchScores();
-  requestAnimationFrame(() => gameLoop(context, updateScore, gameOver));
-</script>
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    function resetGame() {
+      snake.x = 160;
+      snake.y = 160;
+      snake.dx = grid;
+      snake.dy = 0;
+      snake.cells = [];
+      snake.maxCells = 4;
+      score = 0;
+      document.getElementById("score-board").textContent = `Punkte: ${score}`;
+    }
+
+    function gameLoop() {
+      requestAnimationFrame(gameLoop);
+
+      if (++count < 4) return;
+
+      count = 0;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      snake.x += snake.dx;
+      snake.y += snake.dy;
+
+      if (snake.x < 0) snake.x = canvas.width - grid;
+      else if (snake.x >= canvas.width) snake.x = 0;
+
+      if (snake.y < 0) snake.y = canvas.height - grid;
+      else if (snake.y >= canvas.height) snake.y = 0;
+
+      snake.cells.unshift({ x: snake.x, y: snake.y });
+
+      if (snake.cells.length > snake.maxCells) snake.cells.pop();
+
+      context.fillStyle = 'red';
+      context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+      context.fillStyle = 'green';
+      snake.cells.forEach((cell, index) => {
+        context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+        if (cell.x === apple.x && cell.y === apple.y) {
+          snake.maxCells++;
+          score++;
+          document.getElementById("score-board").textContent = `Punkte: ${score}`;
+          apple.x = getRandomInt(0, 25) * grid;
+          apple.y = getRandomInt(0, 25) * grid;
+        }
+
+        for (let i = index + 1; i < snake.cells.length; i++) {
+          if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+            resetGame();
+          }
+        }
+      });
+    }
+
+    // Tastatursteuerung
+    document.addEventListener('keydown', (e) => {
+      if (e.which === 37 && snake.dx === 0) {
+        snake.dx = -grid;
+        snake.dy = 0;
+      } else if (e.which === 38 && snake.dy === 0) {
+        snake.dy = -grid;
+        snake.dx = 0;
+      } else if (e.which === 39 && snake.dx === 0) {
+        snake.dx = grid;
+        snake.dy = 0;
+      } else if (e.which === 40 && snake.dy === 0) {
+        snake.dy = grid;
+        snake.dx = 0;
+      }
+    });
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
