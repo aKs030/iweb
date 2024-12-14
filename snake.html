@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Game with Firebase</title>
+  <title>Snake Game with Controls</title>
   <style>
     html, body {
       margin: 0;
@@ -28,11 +28,12 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       border-radius: 5px;
     }
-    #menu h2, #scoreboard h3 {
-      margin: 0;
-      font-size: 16px;
+    #menu {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
-    button {
+    #menu button {
       background: #333;
       color: white;
       border: none;
@@ -42,24 +43,31 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    button:active {
+    #menu button:active {
       background: #555;
     }
-    #scoreboard ul {
-      list-style: none;
-      padding: 0;
-      margin: 10px 0;
-      font-size: 14px;
-    }
-    #scoreboard ul li {
-      margin: 5px 0;
-    }
-    #current-score {
+    #joystick-container {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      display: none;
+    }
+    #joystick-container button {
+      background: #333;
       color: white;
+      border: none;
+      padding: 10px;
+      margin: 5px;
       font-size: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #joystick-container button:active {
+      background: #555;
     }
   </style>
   <script type="module">
@@ -79,14 +87,11 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
-
-    // Firebase references
     const scoresRef = ref(database, "scores");
 
     // Game variables
     const canvas = document.getElementById("game");
     const context = canvas.getContext("2d");
-
     const grid = 16;
     let count = 0;
 
@@ -105,6 +110,7 @@
     };
 
     let currentScore = 0;
+    let controlType = null;
 
     // Utility functions
     function getRandomInt(min, max) {
@@ -194,35 +200,114 @@
       });
     }
 
-    // Keyboard controls
-    document.addEventListener("keydown", (e) => {
-      if (e.which === 37 && snake.dx === 0) {
-        snake.dx = -grid;
-        snake.dy = 0;
-      } else if (e.which === 38 && snake.dy === 0) {
-        snake.dy = -grid;
-        snake.dx = 0;
-      } else if (e.which === 39 && snake.dx === 0) {
-        snake.dx = grid;
-        snake.dy = 0;
-      } else if (e.which === 40 && snake.dy === 0) {
-        snake.dy = grid;
-        snake.dx = 0;
-      }
+    // Control setups
+    function setupKeyboardControls() {
+      document.addEventListener("keydown", (e) => {
+        if (e.which === 37 && snake.dx === 0) {
+          snake.dx = -grid;
+          snake.dy = 0;
+        } else if (e.which === 38 && snake.dy === 0) {
+          snake.dy = -grid;
+          snake.dx = 0;
+        } else if (e.which === 39 && snake.dx === 0) {
+          snake.dx = grid;
+          snake.dy = 0;
+        } else if (e.which === 40 && snake.dy === 0) {
+          snake.dy = grid;
+          snake.dx = 0;
+        }
+      });
+    }
+
+    function setupTouchControls() {
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      canvas.addEventListener("touchstart", (e) => {
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      });
+
+      canvas.addEventListener("touchend", (e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0 && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
+          } else if (diffX < 0 && snake.dx === 0) {
+            snake.dx = -grid;
+            snake.dy = 0;
+          }
+        } else {
+          if (diffY > 0 && snake.dy === 0) {
+            snake.dy = grid;
+            snake.dx = 0;
+          } else if (diffY < 0 && snake.dy === 0) {
+            snake.dy = -grid;
+            snake.dx = 0;
+          }
+        }
+      });
+    }
+
+    function setupJoystickControls() {
+      const joystick = document.getElementById("joystick-container");
+      joystick.style.display = "block";
+
+      joystick.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const direction = e.target.getAttribute("data-dir");
+
+          if (direction === "up" && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = -grid;
+          } else if (direction === "down" && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = grid;
+          } else if (direction === "left" && snake.dx === 0) {
+            snake.dx = -grid;
+            snake.dy = 0;
+          } else if (direction === "right" && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
+          }
+        });
+      });
+    }
+
+    // Menü
+    document.getElementById("keyboard-control").addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      controlType = "keyboard";
+      setupKeyboardControls();
+      requestAnimationFrame(gameLoop);
     });
 
+    document.getElementById("touch-control").addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      controlType = "touch";
+      setupTouchControls();
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById("joystick-control").addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      controlType = "joystick";
+      setupJoystickControls();
+      requestAnimationFrame(gameLoop);
+    });
+
+    // Initialize
     resetGame();
     updateScoreDisplay();
     displayScores();
-    requestAnimationFrame(gameLoop);
   </script>
 </head>
 <body>
-  <div id="current-score">Score: 0</div>
-  <div id="scoreboard">
-    <h3>Top Scores</h3>
-    <ul id="score-list"></ul>
-  </div>
-  <canvas id="game" width="400" height="400"></canvas>
-</body>
-</html>
+ 
