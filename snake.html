@@ -96,14 +96,16 @@
     import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      databaseURL: "YOUR_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
+      authDomain: "snake-ed264.firebaseapp.com",
+      databaseURL: "https://snake-ed264-default-rtdb.firebaseio.com/",
+      projectId: "snake-ed264",
+      storageBucket: "snake-ed264.appspot.com",
+      messagingSenderId: "95766919512",
+      appId: "1:95766919512:web:78498968a8383721cecd2d"
     };
+
+    // Firebase initialisieren
 
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
