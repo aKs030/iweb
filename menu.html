@@ -1,50 +1,24 @@
 <div class="menu">
   <div class="menu-table flex-row-space-between">
+    <!-- Logo Section -->
     <div class="logo flex-row-center">
-      <a href="index.html"> 
-
-ABDULKERIM
-
-
-      </a>
+      <a href="index.html">ABDULKERIM</a>
     </div>
 
-      <a class="menu-button" tabindex="0" href="javascript:void(0)">
-        <button class="custom-button-flat small" disabled><img src="img/collection.png">
-        </button>
-     </a>
+    <!-- Menu Button for Small Screens -->
+    <a class="menu-button" tabindex="0" href="javascript:void(0)">
+      <button class="custom-button-flat small">
+        <img src="img/collection.png" alt="Menu Icon">
+      </button>
+    </a>
 
+    <!-- Menu Items -->
     <div class="menu-items flex-row-center flex-item">
-      <a src="img/logoA.png" class="menu-index" href="index.html"><img class="image center" src="" style="max-width: 50px;">Home</a>
-      <a class="menu-widget" href="widgets.html"><img class="image center" src="" style="max-width: 50px;">Fotogalerie</a>
-      <a class="menu-embedding" href="embedding.html">About me</a>
+      <a href="index.html" class="">Home</a>
+      <a href="widgets.html" class="menu-widget">Fotogalerie</a>
+      <a href="embedding.html" class="menu-embedding">About Me</a>
     </div>
   </div>
 </div>
 
-  <script>
-    $(document).ready(function(){
-      var back_to_top_button = ['<a href="#top" class="back-to-top"> <img class="image" src="img/top.png" style="max-width: 50px;"></a>'].join("");
-      $("body").append(back_to_top_button)
-      $(".back-to-top").hide();
-    
-      $(function () {
-        $(window).scroll(function () {
-          if ($(this).scrollTop() > 100) {
-            $('.back-to-top').fadeIn();
-          } else {
-            $('.back-to-top').fadeOut();
-          }
-        });
-    
-        $('.back-to-top').click(function () {
-          $('body,html').animate({
-            scrollTop: 0
-          }, 800);
-          return false;
-        });
-      });
-    
-    });
-    </script>
-
+<script src="menu.js"></script>
