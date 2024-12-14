@@ -2,98 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Game - Touch & Joystick</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Snake Game</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
       background: black;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      height: 100%;
     }
-
     canvas {
       border: 1px solid white;
-    }
-
-    .controls-container {
-      margin: 10px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .controls-container button {
-      padding: 10px 20px;
-      margin: 0 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      background-color: #fff;
-    }
-
-    .touch-controls {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 20px;
-    }
-
-    .touch-controls button {
-      width: 80px;
-      height: 80px;
-      margin: 5px;
-      font-size: 18px;
-      border-radius: 50%;
-      background-color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    .joystick-container {
-      display: none;
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      width: 120px;
-      height: 120px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      justify-content: center;
-      align-items: center;
-      touch-action: none;
-    }
-
-    .joystick {
-      width: 40px;
-      height: 40px;
-      background: white;
-      border-radius: 50%;
-      position: relative;
+      touch-action: none; /* Verhindert Scrollen/Zoomen auf Touchscreens */
     }
   </style>
 </head>
 <body>
-  <div class="controls-container">
-    <button id="touchscreen-btn">Touchscreen</button>
-    <button id="joystick-btn">Joystick</button>
-  </div>
+  <!-- Spielbereich -->
   <canvas id="game" width="400" height="400"></canvas>
-  <div class="touch-controls" id="touch-controls">
-    <button id="up-btn">↑</button>
-    <div>
-      <button id="left-btn">←</button>
-      <button id="right-btn">→</button>
-    </div>
-    <button id="down-btn">↓</button>
-  </div>
-  <div class="joystick-container" id="joystick-container">
-    <div class="joystick" id="joystick"></div>
-  </div>
-  <script src="snake-game.js"></script>
+
+  <!-- Spiel-Logik -->
+  <script src="game.js"></script>
 </body>
 </html>
