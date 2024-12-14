@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Snake Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game with Joystick</title>
   <style>
     html, body {
       margin: 0;
@@ -13,18 +13,38 @@
       justify-content: center;
       align-items: center;
       height: 100%;
+      overflow: hidden;
     }
     canvas {
       border: 1px solid white;
-      touch-action: none; /* Verhindert Scrollen/Zoomen auf Touchscreens */
+      display: block;
+    }
+    .joystick-container {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 100px;
+      height: 100px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      touch-action: none;
+    }
+    .joystick {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 50%;
     }
   </style>
 </head>
 <body>
-  <!-- Spielbereich -->
   <canvas id="game" width="400" height="400"></canvas>
-
-  <!-- Spiel-Logik -->
-  <script src="game.js"></script>
+  <div class="joystick-container">
+    <div class="joystick" id="joystick"></div>
+  </div>
+  <script src="game-with-joystick.js"></script>
 </body>
 </html>
