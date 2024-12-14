@@ -1,23 +1,30 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Abdulkerim - Snake Spiel</title>
-  <link rel="stylesheet" href="snake.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Snake Game</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    canvas {
+      border: 1px solid white;
+      touch-action: none; /* Verhindert Scrollen/Zoomen auf Touchscreens */
+    }
+  </style>
 </head>
 <body>
-  <div class="menu-container"></div>
+  <!-- Spielbereich -->
+  <canvas id="game" width="400" height="400"></canvas>
 
-  <h1>Willkommen auf meiner Webseite!</h1>
-
-  <!-- Snake Game Section -->
-  <div class="container">
-    <h2>Snake Spiel</h2>
-    <canvas width="400" height="400" id="game"></canvas>
-  </div>
-
-  <script src="menu-s.js"></script>
+  <!-- Spiel-Logik -->
   <script src="game-s.js"></script>
 </body>
 </html>
