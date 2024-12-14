@@ -1,17 +1,17 @@
 /* Standard Menü-Styling */
 .menu-items {
   display: flex;
-  flex-wrap: nowrap;
   justify-content: flex-end;
   align-items: center;
 }
 
-/* Standard-Link-Styling */
+/* Styling für Links */
 .menu-items a {
   font-weight: normal;
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  transition: color 0.3s ease;
+  margin: 0 10px;
+  transition: color 0.3s ease, font-weight 0.3s ease;
 }
 
 /* Hover-Effekt */
@@ -22,17 +22,18 @@
 
 /* Styling für aktive Seite */
 .menu-items a.active {
-  font-weight: bold;
+  font-weight: bold; /* Fett */
   color: rgb(255, 255, 255); /* Weiß */
+  opacity: 1;
   text-decoration: underline; /* Optional */
 }
 
 /* Mobile Menü-Styling */
 @media (max-width: 768px) {
   .menu-items {
-    display: none; /* Standardmäßig verstecken */
+    display: none; /* Standardmäßig versteckt */
     flex-direction: column; /* Vertikale Ausrichtung */
-    background-color: #333; /* Hintergrundfarbe des Menüs */
+    background-color: #333; /* Menü-Hintergrundfarbe */
     position: absolute;
     top: 60px;
     left: 0;
@@ -42,7 +43,7 @@
   }
 
   .menu-items.show {
-    display: flex; /* Menü anzeigen, wenn 'show'-Klasse aktiv ist */
+    display: flex; /* Menü anzeigen */
   }
 
   .menu-items a {
@@ -50,7 +51,7 @@
     text-align: center;
   }
 
-  /* Aktive Seite auf mobilen Geräten */
+  /* Styling für aktive Seite auf mobilen Geräten */
   .menu-items a.active {
     font-weight: bold; /* Fett */
     color: yellow; /* Gelb für bessere Sichtbarkeit */
