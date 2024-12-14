@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Game</title>
+  <title>Snake Game with Firebase</title>
   <style>
     html, body {
       margin: 0;
@@ -27,43 +27,19 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    #joystick-container {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    #joystick-container button {
-      background: #333;
-      color: white;
-      border: none;
-      padding: 10px;
-      margin: 5px;
-      font-size: 20px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #joystick-container button:active {
-      background: #555;
-    }
     #live-score {
       position: absolute;
       top: 10px;
       right: 10px;
       color: white;
       font-size: 20px;
-      font-family: Arial, sans-serif;
     }
-    #highscores {
+    #scoreboard {
       position: absolute;
       top: 10px;
       left: 10px;
       color: white;
-      font-size: 16px;
-      font-family: Arial, sans-serif;
+      font-size: 20px;
     }
   </style>
 </head>
@@ -73,39 +49,24 @@
     <h2>Wähle eine Steuerung</h2>
     <button id="keyboard-control">Tastatur</button>
     <button id="touch-control">Touchscreen</button>
-    <button id="joystick-control">Joystick</button>
-    <h3>Highscores</h3>
-    <ul id="score-list"></ul>
-  </div>
-  <div id="joystick-container" style="display: none;">
-    <button data-dir="up">⬆</button>
-    <div>
-      <button data-dir="left">⬅</button>
-      <button data-dir="right">➡</button>
-    </div>
-    <button data-dir="down">⬇</button>
   </div>
   <div id="live-score">Score: 0</div>
-  <div id="highscores">
-    <h4>Highscores</h4>
-    <ul id="highscore-list"></ul>
-  </div>
+  <div id="scoreboard">Top Scores:</div>
 
   <script type="module">
+    // Firebase-Konfiguration
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
       authDomain: "snake-ed264.firebaseapp.com",
-      databaseURL: "https://snake-ed264-default-rtdb.firebaseio.com/",
       projectId: "snake-ed264",
-      storageBucket: "snake-ed264.appspot.com",
+      databaseURL: "https://snake-ed264-default-rtdb.firebaseio.com",
+      storageBucket: "snake-ed264.firebasestorage.app",
       messagingSenderId: "95766919512",
-      appId: "1:95766919512:web:78498968a8383721cecd2d"
+      appId: "1:95766919512:web:78498968a8383721cecd2d",
     };
-
-    // Firebase initialisieren
 
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
@@ -147,24 +108,20 @@
       }
     }
 
-    function loadHighScores() {
+    function loadScores() {
       const scoreRef = ref(database, "scores");
       onValue(scoreRef, (snapshot) => {
         const scores = [];
         snapshot.forEach((childSnapshot) => {
-          scores.push(childSnapshot.val());
+          const data = childSnapshot.val();
+          scores.push(data);
         });
 
         scores.sort((a, b) => b.score - a.score);
         const topScores = scores.slice(0, 3);
 
-        const scoreList = document.getElementById("highscore-list");
-        scoreList.innerHTML = "";
-        topScores.forEach((entry) => {
-          const li = document.createElement("li");
-          li.textContent = `${entry.name}: ${entry.score}`;
-          scoreList.appendChild(li);
-        });
+        const scoreboard = document.getElementById("scoreboard");
+        scoreboard.innerHTML = "Top Scores:<br>" + topScores.map(s => `${s.name}: ${s.score}`).join("<br>");
       });
     }
 
@@ -224,42 +181,66 @@
       });
     }
 
-    function setupControls(type) {
-      if (type === "keyboard") {
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "ArrowLeft" && snake.dx === 0) {
-            snake.dx = -grid;
-            snake.dy = 0;
-          } else if (e.key === "ArrowUp" && snake.dy === 0) {
-            snake.dy = -grid;
-            snake.dx = 0;
-          } else if (e.key === "ArrowRight" && snake.dx === 0) {
-            snake.dx = grid;
-            snake.dy = 0;
-          } else if (e.key === "ArrowDown" && snake.dy === 0) {
-            snake.dy = grid;
-            snake.dx = 0;
-          }
-        });
-      } else if (type === "touchscreen") {
-        canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
-        canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
-      }
-    }
-
-    loadHighScores();
-
     document.getElementById("keyboard-control").addEventListener("click", () => {
       document.getElementById("menu").style.display = "none";
-      setupControls("keyboard");
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" && snake.dx === 0) {
+          snake.dx = -grid;
+          snake.dy = 0;
+        } else if (e.key === "ArrowUp" && snake.dy === 0) {
+          snake.dy = -grid;
+          snake.dx = 0;
+        } else if (e.key === "ArrowRight" && snake.dx === 0) {
+          snake.dx = grid;
+          snake.dy = 0;
+        } else if (e.key === "ArrowDown" && snake.dy === 0) {
+          snake.dy = grid;
+          snake.dx = 0;
+        }
+      });
       requestAnimationFrame(gameLoop);
     });
 
     document.getElementById("touch-control").addEventListener("click", () => {
       document.getElementById("menu").style.display = "none";
-      setupControls("touchscreen");
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      canvas.addEventListener("touchstart", (e) => {
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      });
+
+      canvas.addEventListener("touchend", (e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0 && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
+          } else if (diffX < 0 && snake.dx === 0) {
+            snake.dx = -grid;
+            snake.dy = 0;
+          }
+        } else {
+          if (diffY > 0 && snake.dy === 0) {
+            snake.dy = grid;
+            snake.dx = 0;
+          } else if (diffY < 0 && snake.dy === 0) {
+            snake.dy = -grid;
+            snake.dx = 0;
+          }
+        }
+      });
       requestAnimationFrame(gameLoop);
     });
+
+    loadScores();
   </script>
 </body>
 </html>
