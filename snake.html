@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Game with Highscores</title>
+  <title>Snake Game</title>
   <style>
     html, body {
       margin: 0;
@@ -27,39 +27,27 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    #highscore-container {
-      display: none;
-      background: white;
-      padding: 20px;
+    #joystick-container {
       position: absolute;
-      top: 50%;
+      bottom: 20px;
       left: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      display: none;
     }
-    #highscore-table {
-      width: 100%;
-      margin: 20px 0;
-      border-collapse: collapse;
-    }
-    #highscore-table th, #highscore-table td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-    #highscore-table th {
-      background: #f4f4f4;
-    }
-    button {
-      margin: 5px;
-      padding: 10px;
+    #joystick-container button {
       background: #333;
       color: white;
       border: none;
+      padding: 10px;
+      margin: 5px;
+      font-size: 20px;
       border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
+    #joystick-container button:active {
       background: #555;
     }
     #score-display {
@@ -79,24 +67,19 @@
   <canvas id="game" width="400" height="400"></canvas>
   <div id="menu">
     <h2>Snake Game</h2>
-    <button id="start-game">Spiel starten</button>
+    <p>Wähle eine Steuerung</p>
+    <button id="keyboard-control">Tastatur</button>
+    <button id="touch-control">Touchscreen</button>
+    <button id="joystick-control">Joystick</button>
     <button id="view-highscores">Highscores ansehen</button>
   </div>
-  <div id="highscore-container">
-    <h2>Highscores</h2>
-    <table id="highscore-table">
-      <thead>
-        <tr>
-          <th>Rang</th>
-          <th>Name</th>
-          <th>Punkte</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Highscores werden hier eingefügt -->
-      </tbody>
-    </table>
-    <button id="back-to-menu">Zurück zum Menü</button>
+  <div id="joystick-container">
+    <button data-dir="up">⬆</button>
+    <div>
+      <button data-dir="left">⬅</button>
+      <button data-dir="right">➡</button>
+    </div>
+    <button data-dir="down">⬇</button>
   </div>
   <div id="score-display">Punkte: 0</div>
 
@@ -104,6 +87,7 @@
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
     const scoreDisplay = document.getElementById('score-display');
+    const joystickContainer = document.getElementById('joystick-container');
 
     const grid = 16;
     let count = 0;
@@ -123,36 +107,11 @@
       y: 320,
     };
 
+    let controlMode = null; // Steuerungsmodus
+
     // Zufällige Position für Apfel generieren
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
-    }
-
-    // Highscores laden
-    function loadHighscores() {
-      const highscores = JSON.parse(localStorage.getItem('highscores')) || [];
-      return highscores.slice(0, 3); // Maximal 3 Einträge
-    }
-
-    // Highscores speichern
-    function saveHighscore(name, score) {
-      const highscores = loadHighscores();
-      highscores.push({ name, score });
-      highscores.sort((a, b) => b.score - a.score); // Nach Punkten sortieren
-      localStorage.setItem('highscores', JSON.stringify(highscores.slice(0, 3))); // Maximal 3 speichern
-    }
-
-    // Highscore-Tabelle aktualisieren
-    function updateHighscoreTable() {
-      const tableBody = document.querySelector('#highscore-table tbody');
-      tableBody.innerHTML = ''; // Tabelle leeren
-
-      const highscores = loadHighscores();
-      highscores.forEach((entry, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td>`;
-        tableBody.appendChild(row);
-      });
     }
 
     // Spiel zurücksetzen
@@ -182,7 +141,6 @@
       snake.x += snake.dx;
       snake.y += snake.dy;
 
-      // Begrenzung der Spielwelt
       if (snake.x < 0) snake.x = canvas.width - grid;
       else if (snake.x >= canvas.width) snake.x = 0;
 
@@ -193,16 +151,13 @@
 
       if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
-      // Apfel zeichnen
       context.fillStyle = 'red';
       context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
 
-      // Schlange zeichnen
       context.fillStyle = 'green';
       snake.cells.forEach((cell, index) => {
         context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
 
-        // Apfel gegessen
         if (cell.x === apple.x && cell.y === apple.y) {
           snake.maxCells++;
           score++;
@@ -211,13 +166,10 @@
           apple.y = getRandomInt(0, 25) * grid;
         }
 
-        // Kollision mit sich selbst
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-            const name = prompt(`Spiel vorbei! Dein Punktestand: ${score}\nGib deinen Namen ein:`, 'Spieler');
-            if (name) saveHighscore(name, score);
+            alert(`Spiel vorbei! Punktestand: ${score}`);
             resetGame();
-            updateHighscoreTable();
             document.getElementById('menu').style.display = 'block';
             return;
           }
@@ -225,43 +177,110 @@
       });
     }
 
-    // Event Listener
-    document.getElementById('start-game').addEventListener('click', () => {
-      resetGame();
+    // Tastatursteuerung
+    function setupKeyboardControls() {
+      document.addEventListener('keydown', (e) => {
+        if (e.which === 37 && snake.dx === 0) {
+          snake.dx = -grid;
+          snake.dy = 0;
+        } else if (e.which === 38 && snake.dy === 0) {
+          snake.dy = -grid;
+          snake.dx = 0;
+        } else if (e.which === 39 && snake.dx === 0) {
+          snake.dx = grid;
+          snake.dy = 0;
+        } else if (e.which === 40 && snake.dy === 0) {
+          snake.dy = grid;
+          snake.dx = 0;
+        }
+      });
+    }
+
+    // Touchscreen-Steuerung
+    function setupTouchControls() {
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      });
+
+      canvas.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0 && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
+          } else if (diffX < 0 && snake.dx === 0) {
+            snake.dx = -grid;
+            snake.dy = 0;
+          }
+        } else {
+          if (diffY > 0 && snake.dy === 0) {
+            snake.dy = grid;
+            snake.dx = 0;
+          } else if (diffY < 0 && snake.dy === 0) {
+            snake.dy = -grid;
+            snake.dx = 0;
+          }
+        }
+      });
+    }
+
+    // Joystick-Steuerung
+    function setupJoystickControls() {
+      joystickContainer.style.display = 'block';
+
+      joystickContainer.querySelectorAll('button').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const direction = e.target.getAttribute('data-dir');
+
+          if (direction === 'up' && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = -grid;
+          } else if (direction === 'down' && snake.dy === 0) {
+            snake.dx = 0;
+            snake.dy = grid;
+          } else if (direction === 'left' && snake.dx === 0) {
+            snake.dx = -grid;
+            snake.dy = 0;
+          } else if (direction === 'right' && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
+          }
+        });
+      });
+    }
+
+    // Steuerungsauswahl
+    document.getElementById('keyboard-control').addEventListener('click', () => {
+      controlMode = 'keyboard';
       document.getElementById('menu').style.display = 'none';
+      setupKeyboardControls();
       requestAnimationFrame(gameLoop);
     });
 
-    document.getElementById('view-highscores').addEventListener('click', () => {
-      updateHighscoreTable();
+    document.getElementById('touch-control').addEventListener('click', () => {
+      controlMode = 'touch';
       document.getElementById('menu').style.display = 'none';
-      document.getElementById('highscore-container').style.display = 'block';
+      setupTouchControls();
+      requestAnimationFrame(gameLoop);
     });
 
-    document.getElementById('back-to-menu').addEventListener('click', () => {
-      document.getElementById('highscore-container').style.display = 'none';
-      document.getElementById('menu').style.display = 'block';
+    document.getElementById('joystick-control').addEventListener('click', () => {
+      controlMode = 'joystick';
+      document.getElementById('menu').style.display = 'none';
+      setupJoystickControls();
+      requestAnimationFrame(gameLoop);
     });
-
-    // Tastatursteuerung
-    document.addEventListener('keydown', (e) => {
-      if (e.which === 37 && snake.dx === 0) {
-        snake.dx = -grid;
-        snake.dy = 0;
-      } else if (e.which === 38 && snake.dy === 0) {
-        snake.dy = -grid;
-        snake.dx = 0;
-      } else if (e.which === 39 && snake.dx === 0) {
-        snake.dx = grid;
-        snake.dy = 0;
-      } else if (e.which === 40 && snake.dy === 0) {
-        snake.dy = grid;
-        snake.dx = 0;
-      }
-    });
-
-    // Initialisieren
-    updateHighscoreTable();
   </script>
 </body>
 </html>
