@@ -25,7 +25,7 @@ const apple = {
   y: 320,
 };
 
-// Random Grid Position
+// Zufällige Position generieren
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -43,14 +43,14 @@ function gameLoop() {
   snake.x += snake.dx;
   snake.y += snake.dy;
 
-  // Wrap-around (an den Rändern)
+  // Wrap-around (Ränder des Spielfelds)
   if (snake.x < 0) snake.x = canvas.width - grid;
   else if (snake.x >= canvas.width) snake.x = 0;
 
   if (snake.y < 0) snake.y = canvas.height - grid;
   else if (snake.y >= canvas.height) snake.y = 0;
 
-  // Snake-Position
+  // Snake-Position aktualisieren
   snake.cells.unshift({ x: snake.x, y: snake.y });
   if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
@@ -87,29 +87,29 @@ function gameLoop() {
   });
 }
 
-// Game starten
+// Startet das Spiel
 requestAnimationFrame(gameLoop);
 
-// Touchscreen Steuerung
+// Touchscreen-Steuerung aktivieren
 function setupTouchscreenControls() {
   document.addEventListener('keydown', function (e) {
-    if (e.which === 37 && snake.dx === 0) {
+    if (e.key === 'ArrowLeft' && snake.dx === 0) {
       snake.dx = -grid;
       snake.dy = 0;
-    } else if (e.which === 38 && snake.dy === 0) {
+    } else if (e.key === 'ArrowUp' && snake.dy === 0) {
       snake.dy = -grid;
       snake.dx = 0;
-    } else if (e.which === 39 && snake.dx === 0) {
+    } else if (e.key === 'ArrowRight' && snake.dx === 0) {
       snake.dx = grid;
       snake.dy = 0;
-    } else if (e.which === 40 && snake.dy === 0) {
+    } else if (e.key === 'ArrowDown' && snake.dy === 0) {
       snake.dy = grid;
       snake.dx = 0;
     }
   });
 }
 
-// Joystick Steuerung
+// Joystick-Steuerung aktivieren
 function setupJoystickControls() {
   let dragging = false;
   let startX, startY;
@@ -128,7 +128,6 @@ function setupJoystickControls() {
     const deltaX = touch.clientX - startX;
     const deltaY = touch.clientY - startY;
 
-    // Limit Bewegung des Joysticks
     const distance = Math.min(Math.sqrt(deltaX ** 2 + deltaY ** 2), 40);
     const angle = Math.atan2(deltaY, deltaX);
 
@@ -137,7 +136,7 @@ function setupJoystickControls() {
 
     joystick.style.transform = `translate(${joystickX}px, ${joystickY}px)`;
 
-    // Richtung setzen
+    // Richtung ändern
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       if (deltaX > 0 && snake.dx === 0) {
         snake.dx = grid;
