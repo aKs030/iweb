@@ -106,10 +106,6 @@ canvas.addEventListener('touchstart', (e) => {
   touchStartY = touch.clientY;
 });
 
-canvas.addEventListener('touchmove', (e) => {
-  e.preventDefault(); // Verhindert Scrollen/Zoomen auf iPhone
-}, { passive: false });
-
 canvas.addEventListener('touchend', (e) => {
   const touchEndX = e.changedTouches[0].clientX;
   const touchEndY = e.changedTouches[0].clientY;
@@ -136,4 +132,5 @@ canvas.addEventListener('touchend', (e) => {
   }
 });
 
+// Start der Spielschleife
 requestAnimationFrame(gameLoop);
