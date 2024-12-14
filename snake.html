@@ -27,6 +27,28 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
+    #joystick-container {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #joystick-container button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin: 5px;
+      font-size: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #joystick-container button:active {
+      background: #555;
+    }
   </style>
 </head>
 <body>
@@ -35,6 +57,15 @@
     <h2>Wähle eine Steuerung</h2>
     <button id="keyboard-control">Tastatur</button>
     <button id="touch-control">Touchscreen</button>
+    <button id="joystick-control">Joystick</button>
+  </div>
+  <div id="joystick-container" style="display: none;">
+    <button data-dir="up">⬆</button>
+    <div>
+      <button data-dir="left">⬅</button>
+      <button data-dir="right">➡</button>
+    </div>
+    <button data-dir="down">⬇</button>
   </div>
 
   <script>
@@ -75,6 +106,7 @@
       snake.x += snake.dx;
       snake.y += snake.dy;
 
+      // Begrenzung der Spielwelt
       if (snake.x < 0) snake.x = canvas.width - grid;
       else if (snake.x >= canvas.width) snake.x = 0;
 
@@ -85,19 +117,23 @@
 
       if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
+      // Apfel zeichnen
       context.fillStyle = 'red';
       context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
 
+      // Schlange zeichnen
       context.fillStyle = 'green';
       snake.cells.forEach((cell, index) => {
         context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
 
+        // Apfel gegessen
         if (cell.x === apple.x && cell.y === apple.y) {
           snake.maxCells++;
           apple.x = getRandomInt(0, 25) * grid;
           apple.y = getRandomInt(0, 25) * grid;
         }
 
+        // Kollision mit sich selbst
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
             snake.x = 160;
@@ -114,43 +150,20 @@
       });
     }
 
-    // Tastatursteuerung
-    function setupKeyboardControls() {
-      document.addEventListener('keydown', (e) => {
-        if (e.which === 37 && snake.dx === 0) {
-          snake.dx = -grid;
-          snake.dy = 0;
-        } else if (e.which === 38 && snake.dy === 0) {
-          snake.dy = -grid;
-          snake.dx = 0;
-        } else if (e.which === 39 && snake.dx === 0) {
-          snake.dx = grid;
-          snake.dy = 0;
-        } else if (e.which === 40 && snake.dy === 0) {
-          snake.dy = grid;
-          snake.dx = 0;
-        }
-      });
-    }
-
     // Touchscreen-Steuerung
     function setupTouchControls() {
       let touchStartX = 0;
       let touchStartY = 0;
 
       canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Blockiert Scrollen und Zoomen
         const touch = e.touches[0];
         touchStartX = touch.clientX;
         touchStartY = touch.clientY;
       });
 
-      canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-      });
-
       canvas.addEventListener('touchend', (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Blockiert Scrollen und Zoomen
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
 
@@ -177,18 +190,14 @@
       });
     }
 
-    // Menü-Optionen
-    document.getElementById('keyboard-control').addEventListener('click', () => {
-      document.getElementById('menu').style.display = 'none';
-      setupKeyboardControls();
-      requestAnimationFrame(gameLoop);
-    });
-
+    // Menü-Setup
     document.getElementById('touch-control').addEventListener('click', () => {
       document.getElementById('menu').style.display = 'none';
       setupTouchControls();
       requestAnimationFrame(gameLoop);
     });
+
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
