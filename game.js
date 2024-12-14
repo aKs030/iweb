@@ -81,16 +81,16 @@ function gameLoop() {
 
 // Tastatursteuerung
 document.addEventListener('keydown', (e) => {
-  if (e.which === 37 && snake.dx === 0) {
+  if (e.key === 'ArrowLeft' && snake.dx === 0) {
     snake.dx = -grid;
     snake.dy = 0;
-  } else if (e.which === 38 && snake.dy === 0) {
+  } else if (e.key === 'ArrowUp' && snake.dy === 0) {
     snake.dy = -grid;
     snake.dx = 0;
-  } else if (e.which === 39 && snake.dx === 0) {
+  } else if (e.key === 'ArrowRight' && snake.dx === 0) {
     snake.dx = grid;
     snake.dy = 0;
-  } else if (e.which === 40 && snake.dy === 0) {
+  } else if (e.key === 'ArrowDown' && snake.dy === 0) {
     snake.dy = grid;
     snake.dx = 0;
   }
@@ -134,11 +134,12 @@ canvas.addEventListener('touchend', (e) => {
 
 // Joystick-Steuerung
 const joystickContainer = document.createElement('div');
+joystickContainer.id = 'joystick-container';
 joystickContainer.style.position = 'absolute';
 joystickContainer.style.bottom = '20px';
 joystickContainer.style.left = '20px';
-joystickContainer.style.width = '120px';
-joystickContainer.style.height = '120px';
+joystickContainer.style.width = '150px';
+joystickContainer.style.height = '150px';
 joystickContainer.style.background = 'rgba(255, 255, 255, 0.1)';
 joystickContainer.style.borderRadius = '50%';
 joystickContainer.style.display = 'flex';
@@ -147,12 +148,13 @@ joystickContainer.style.alignItems = 'center';
 document.body.appendChild(joystickContainer);
 
 const joystick = document.createElement('div');
-joystick.style.width = '40px';
-joystick.style.height = '40px';
-joystick.style.background = 'white';
+joystick.id = 'joystick';
+joystick.style.width = '50px';
+joystick.style.height = '50px';
+joystick.style.background = '#fff';
 joystick.style.borderRadius = '50%';
-joystick.style.position = 'relative';
 joystick.style.touchAction = 'none';
+joystick.style.position = 'relative';
 joystickContainer.appendChild(joystick);
 
 let dragging = false;
