@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Game with Controls</title>
+  <title>Snake Game - Touch & Joystick</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
+      height: 100%;
       background: black;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100%;
     }
 
     canvas {
@@ -21,19 +21,19 @@
     }
 
     .controls-container {
+      margin: 10px;
       display: flex;
       justify-content: center;
-      margin-bottom: 20px;
     }
 
     .controls-container button {
       padding: 10px 20px;
       margin: 0 10px;
-      background-color: white;
-      border: none;
-      cursor: pointer;
       font-size: 16px;
+      border: none;
       border-radius: 5px;
+      cursor: pointer;
+      background-color: #fff;
     }
 
     .joystick-container {
@@ -55,13 +55,14 @@
       height: 40px;
       background: white;
       border-radius: 50%;
+      position: relative;
     }
   </style>
 </head>
 <body>
   <div class="controls-container">
-    <button id="touchscreen-btn">Touchscreen Steuerung</button>
-    <button id="joystick-btn">Joystick Steuerung</button>
+    <button id="touchscreen-btn">Touchscreen</button>
+    <button id="joystick-btn">Joystick</button>
   </div>
   <canvas id="game" width="400" height="400"></canvas>
   <div class="joystick-container" id="joystick-container">

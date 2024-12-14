@@ -3,11 +3,11 @@ const context = canvas.getContext('2d');
 const joystickContainer = document.getElementById('joystick-container');
 const joystick = document.getElementById('joystick');
 
-// Steuerungsauswahl
+// Steuerungsmodi
 const touchscreenBtn = document.getElementById('touchscreen-btn');
 const joystickBtn = document.getElementById('joystick-btn');
 
-// Spielfeld und Snake-Attribute
+// Snake Eigenschaften
 const grid = 16;
 let count = 0;
 
@@ -39,11 +39,11 @@ function gameLoop() {
   count = 0;
   context.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Bewegung der Snake
+  // Snake Bewegung
   snake.x += snake.dx;
   snake.y += snake.dy;
 
-  // Wrap-around (Ränder des Spielfelds)
+  // Bildschirmrand-Handling
   if (snake.x < 0) snake.x = canvas.width - grid;
   else if (snake.x >= canvas.width) snake.x = 0;
 
@@ -87,12 +87,9 @@ function gameLoop() {
   });
 }
 
-// Startet das Spiel
-requestAnimationFrame(gameLoop);
-
-// Touchscreen-Steuerung aktivieren
+// Eventlistener für Touchscreen-Steuerung
 function setupTouchscreenControls() {
-  document.addEventListener('keydown', function (e) {
+  document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft' && snake.dx === 0) {
       snake.dx = -grid;
       snake.dy = 0;
@@ -109,7 +106,7 @@ function setupTouchscreenControls() {
   });
 }
 
-// Joystick-Steuerung aktivieren
+// Eventlistener für Joystick-Steuerung
 function setupJoystickControls() {
   let dragging = false;
   let startX, startY;
@@ -128,15 +125,6 @@ function setupJoystickControls() {
     const deltaX = touch.clientX - startX;
     const deltaY = touch.clientY - startY;
 
-    const distance = Math.min(Math.sqrt(deltaX ** 2 + deltaY ** 2), 40);
-    const angle = Math.atan2(deltaY, deltaX);
-
-    const joystickX = Math.cos(angle) * distance;
-    const joystickY = Math.sin(angle) * distance;
-
-    joystick.style.transform = `translate(${joystickX}px, ${joystickY}px)`;
-
-    // Richtung ändern
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       if (deltaX > 0 && snake.dx === 0) {
         snake.dx = grid;
@@ -158,7 +146,6 @@ function setupJoystickControls() {
 
   joystick.addEventListener('touchend', () => {
     dragging = false;
-    joystick.style.transform = `translate(0, 0)`;
   });
 }
 
@@ -172,3 +159,6 @@ joystickBtn.addEventListener('click', () => {
   joystickContainer.style.display = 'flex';
   setupJoystickControls();
 });
+
+// Spiel starten
+requestAnimationFrame(gameLoop);
