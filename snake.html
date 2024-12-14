@@ -11,6 +11,7 @@
       height: 100%;
       background: black;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
@@ -27,7 +28,8 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    #joystick-container {
+    #touch-controls, #joystick-container {
+      display: none;
       position: absolute;
       bottom: 20px;
       left: 50%;
@@ -36,7 +38,7 @@
       flex-direction: column;
       align-items: center;
     }
-    #joystick-container button {
+    button {
       background: #333;
       color: white;
       border: none;
@@ -46,37 +48,45 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    #joystick-container button:active {
+    button:active {
       background: #555;
     }
-    #score-board {
+    #score {
       position: absolute;
       top: 10px;
       right: 10px;
       color: white;
       font-size: 20px;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 5px 10px;
-      border-radius: 5px;
     }
-    ul {
-      list-style: none;
-      padding: 0;
+    #leaderboard {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 16px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <canvas id="game" width="400" height="400"></canvas>
   <div id="menu">
     <h2>Wähle eine Steuerung</h2>
-    <ul id="score-list">
-      <li>Lade Scores...</li>
-    </ul>
     <button id="keyboard-control">Tastatur</button>
     <button id="touch-control">Touchscreen</button>
     <button id="joystick-control">Joystick</button>
   </div>
-  <div id="joystick-container" style="display: none;">
+  <canvas id="game" width="400" height="400"></canvas>
+  <div id="touch-controls">
+    <button id="touch-up">⬆</button>
+    <div>
+      <button id="touch-left">⬅</button>
+      <button id="touch-right">➡</button>
+    </div>
+    <button id="touch-down">⬇</button>
+  </div>
+  <div id="joystick-container">
     <button data-dir="up">⬆</button>
     <div>
       <button data-dir="left">⬅</button>
@@ -84,11 +94,14 @@
     </div>
     <button data-dir="down">⬇</button>
   </div>
-  <div id="score-board">Punkte: 0</div>
-
+  <div id="score">Score: 0</div>
+  <div id="leaderboard">
+    <h3>Top Scores</h3>
+    <ul id="scores-list"></ul>
+  </div>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
@@ -100,13 +113,12 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getDatabase(app);
 
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
     const grid = 16;
-    let count = 0;
-    let score = 0;
+    let count = 0, score = 0;
 
     const snake = {
       x: 160,
@@ -114,28 +126,59 @@
       dx: grid,
       dy: 0,
       cells: [],
-      maxCells: 4,
+      maxCells: 4
     };
 
-    const apple = {
-      x: 320,
-      y: 320,
-    };
+    const apple = { x: 320, y: 320 };
 
-    const scoreBoard = document.getElementById('score-board');
-    const menu = document.getElementById('menu');
-    const joystickContainer = document.getElementById('joystick-container');
+    const scoreElement = document.getElementById('score');
+    const leaderboardElement = document.getElementById('scores-list');
 
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
     }
 
+    function resetGame() {
+      snake.x = 160;
+      snake.y = 160;
+      snake.cells = [];
+      snake.maxCells = 4;
+      snake.dx = grid;
+      snake.dy = 0;
+      score = 0;
+      updateScore();
+      apple.x = getRandomInt(0, 25) * grid;
+      apple.y = getRandomInt(0, 25) * grid;
+    }
+
+    function updateScore() {
+      scoreElement.textContent = `Score: ${score}`;
+    }
+
+    function saveScore(playerName) {
+      const scoresRef = ref(db, 'scores/');
+      push(scoresRef, { playerName, score });
+    }
+
+    function displayLeaderboard() {
+      const scoresRef = ref(db, 'scores/');
+      onValue(scoresRef, snapshot => {
+        const scores = snapshot.val();
+        leaderboardElement.innerHTML = '';
+        Object.values(scores || {})
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3)
+          .forEach((entry, index) => {
+            leaderboardElement.innerHTML += `<li>${index + 1}. ${entry.playerName}: ${entry.score}</li>`;
+          });
+      });
+    }
+
     function gameLoop() {
       requestAnimationFrame(gameLoop);
-
       if (++count < 4) return;
-
       count = 0;
+
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       snake.x += snake.dx;
@@ -143,12 +186,10 @@
 
       if (snake.x < 0) snake.x = canvas.width - grid;
       else if (snake.x >= canvas.width) snake.x = 0;
-
       if (snake.y < 0) snake.y = canvas.height - grid;
       else if (snake.y >= canvas.height) snake.y = 0;
 
       snake.cells.unshift({ x: snake.x, y: snake.y });
-
       if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
       context.fillStyle = 'red';
@@ -161,122 +202,65 @@
         if (cell.x === apple.x && cell.y === apple.y) {
           snake.maxCells++;
           score++;
-          scoreBoard.textContent = `Punkte: ${score}`;
+          updateScore();
           apple.x = getRandomInt(0, 25) * grid;
           apple.y = getRandomInt(0, 25) * grid;
         }
 
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-            saveScore(score);
+            saveScore(prompt("Name eingeben:"));
             resetGame();
           }
         }
       });
     }
 
-    function resetGame() {
-      snake.x = 160;
-      snake.y = 160;
-      snake.cells = [];
-      snake.maxCells = 4;
-      snake.dx = grid;
-      snake.dy = 0;
-      score = 0;
-      scoreBoard.textContent = `Punkte: ${score}`;
-    }
-
-    async function saveScore(score) {
-      const name = prompt("Gib deinen Namen ein:");
-      if (name) {
-        await addDoc(collection(db, "scores"), { name, score });
-        fetchScores();
-      }
-    }
-
-    async function fetchScores() {
-      const scoresList = document.getElementById("score-list");
-      scoresList.innerHTML = "<li>Lade Scores...</li>";
-
-      const scores = [];
-      const querySnapshot = await getDocs(collection(db, "scores"));
-      querySnapshot.forEach(doc => scores.push({ name: doc.data().name, score: doc.data().score }));
-      scores.sort((a, b) => b.score - a.score);
-
-      scoresList.innerHTML = scores.slice(0, 3).map(s => `<li>${s.name}: ${s.score}</li>`).join("");
-    }
-
-    function setupKeyboardControls() {
-      document.addEventListener('keydown', (e) => {
-        if (e.which === 37 && snake.dx === 0) {
-          snake.dx = -grid;
-          snake.dy = 0;
-        } else if (e.which === 38 && snake.dy === 0) {
-          snake.dy = -grid;
-          snake.dx = 0;
-        } else if (e.which === 39 && snake.dx === 0) {
-          snake.dx = grid;
-          snake.dy = 0;
-        } else if (e.which === 40 && snake.dy === 0) {
-          snake.dy = grid;
-          snake.dx = 0;
-        }
-      });
-    }
-
-    function setupTouchControls() {
-      let touchStartX, touchStartY;
-
-      canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      });
-
-      canvas.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        const diffX = e.changedTouches[0].clientX - touchStartX;
-        const diffY = e.changedTouches[0].clientY - touchStartY;
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-          if (diffX > 0 && snake.dx === 0) {
-            snake.dx = grid;
-            snake.dy = 0;
-          } else if (diffX < 0 && snake.dx === 0) {
-            snake.dx = -grid;
-            snake.dy = 0;
-          }
-        } else {
-          if (diffY > 0 && snake.dy === 0) {
-            snake.dy = grid;
-            snake.dx = 0;
-          } else if (diffY < 0 && snake.dy === 0) {
-            snake.dy = -grid;
-            snake.dx = 0;
-          }
-        }
-      });
-    }
-
     document.getElementById('keyboard-control').addEventListener('click', () => {
-      menu.style.display = 'none';
-      setupKeyboardControls();
+      document.getElementById('menu').style.display = 'none';
+      document.addEventListener('keydown', e => {
+        if (e.which === 37 && snake.dx === 0) snake.dx = -grid, snake.dy = 0;
+        if (e.which === 38 && snake.dy === 0) snake.dy = -grid, snake.dx = 0;
+        if (e.which === 39 && snake.dx === 0) snake.dx = grid, snake.dy = 0;
+        if (e.which === 40 && snake.dy === 0) snake.dy = grid, snake.dx = 0;
+      });
       requestAnimationFrame(gameLoop);
     });
 
     document.getElementById('touch-control').addEventListener('click', () => {
-      menu.style.display = 'none';
-      setupTouchControls();
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('touch-controls').style.display = 'flex';
+      ['up', 'down', 'left', 'right'].forEach(dir => {
+        document.getElementById(`touch-${dir}`).addEventListener('click', () => {
+          if (dir === 'up' && snake.dy === 0) snake.dy = -grid, snake.dx = 0;
+          if (dir === 'down' && snake.dy === 0) snake.dy = grid, snake.dx = 0;
+          if (dir === 'left' && snake.dx === 0) snake.dx = -grid, snake.dy = 0;
+          if (dir === 'right' && snake.dx === 0) snake.dx = grid, snake.dy = 0;
+        });
+      });
       requestAnimationFrame(gameLoop);
     });
 
     document.getElementById('joystick-control').addEventListener('click', () => {
-      menu.style.display = 'none';
-      joystickContainer.style.display = 'block';
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('joystick-container').style.display = 'flex';
+      document.querySelectorAll('[data-dir]').forEach(button => {
+        button.addEventListener('click', () => {
+          const dir = button.getAttribute('data-dir');
+          if (dir === 'up' && snake.dy === 0) snake.dy = -grid, snake.dx = 0;
+          if (dir === 'down' && snake.dy === 0) snake.dy = grid, snake.dx = 0;
+          if (dir === 'left' && snake.dx === 0) snake.dx = -grid, snake.dy = 0;
+          if (dir === 'right' && snake.dx === 0) snake.dx = grid, snake.dy = 0;
+        });
+      });
       requestAnimationFrame(gameLoop);
     });
 
-    fetchScores();
+    // Display the leaderboard
+    displayLeaderboard();
+
+    // Reset game at the start
+    resetGame();
   </script>
 </body>
 </html>
