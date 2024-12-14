@@ -27,7 +27,6 @@
       padding: 20px;
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      z-index: 10;
     }
     #joystick-container {
       position: absolute;
@@ -101,7 +100,6 @@
       messagingSenderId: "95766919512",
       appId: "1:95766919512:web:78498968a8383721cecd2d"
     };
-
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -210,14 +208,64 @@
       });
     }
 
-    document.getElementById('keyboard-control').addEventListener('click', () => {
-      menu.style.display = 'none';
+    function setupKeyboardControls() {
       document.addEventListener('keydown', (e) => {
         if (e.which === 37 && snake.dx === 0) snake.dx = -grid, snake.dy = 0;
         else if (e.which === 38 && snake.dy === 0) snake.dy = -grid, snake.dx = 0;
         else if (e.which === 39 && snake.dx === 0) snake.dx = grid, snake.dy = 0;
         else if (e.which === 40 && snake.dy === 0) snake.dy = grid, snake.dx = 0;
       });
+    }
+
+    function setupTouchControls() {
+      let touchStartX, touchStartY;
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      });
+
+      canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        const diffX = e.changedTouches[0].clientX - touchStartX;
+        const diffY = e.changedTouches[0].clientY - touchStartY;
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0 && snake.dx === 0) {
+            snake.dx = grid;
+            snake.dy = 0;
+          } else if (diffX < 0 && snake.dx === 0) {
+            snake.dx = -grid;
+            snake.dy = 0;
+          }
+        } else {
+          if (diffY > 0 && snake.dy === 0) {
+            snake.dy = grid;
+            snake.dx = 0;
+          } else if (diffY < 0 && snake.dy === 0) {
+            snake.dy = -grid;
+            snake.dx = 0;
+          }
+        }
+      });
+    }
+
+    document.getElementById('keyboard-control').addEventListener('click', () => {
+      menu.style.display = 'none';
+      setupKeyboardControls();
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById('touch-control').addEventListener('click', () => {
+      menu.style.display = 'none';
+      setupTouchControls();
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById('joystick-control').addEventListener('click', () => {
+      menu.style.display = 'none';
+      joystickContainer.style.display = 'block';
       requestAnimationFrame(gameLoop);
     });
 
