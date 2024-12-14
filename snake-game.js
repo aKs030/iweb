@@ -2,10 +2,15 @@ const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
 const joystickContainer = document.getElementById('joystick-container');
 const joystick = document.getElementById('joystick');
+const touchControls = document.getElementById('touch-controls');
 
 // Steuerungsmodi
 const touchscreenBtn = document.getElementById('touchscreen-btn');
 const joystickBtn = document.getElementById('joystick-btn');
+const upBtn = document.getElementById('up-btn');
+const downBtn = document.getElementById('down-btn');
+const leftBtn = document.getElementById('left-btn');
+const rightBtn = document.getElementById('right-btn');
 
 // Snake Eigenschaften
 const grid = 16;
@@ -89,25 +94,43 @@ function gameLoop() {
 
 // Eventlistener für Touchscreen-Steuerung
 function setupTouchscreenControls() {
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' && snake.dx === 0) {
+  touchControls.style.display = 'flex';
+  joystickContainer.style.display = 'none';
+
+  upBtn.addEventListener('click', () => {
+    if (snake.dy === 0) {
+      snake.dx = 0;
+      snake.dy = -grid;
+    }
+  });
+
+  downBtn.addEventListener('click', () => {
+    if (snake.dy === 0) {
+      snake.dx = 0;
+      snake.dy = grid;
+    }
+  });
+
+  leftBtn.addEventListener('click', () => {
+    if (snake.dx === 0) {
       snake.dx = -grid;
       snake.dy = 0;
-    } else if (e.key === 'ArrowUp' && snake.dy === 0) {
-      snake.dy = -grid;
-      snake.dx = 0;
-    } else if (e.key === 'ArrowRight' && snake.dx === 0) {
+    }
+  });
+
+  rightBtn.addEventListener('click', () => {
+    if (snake.dx === 0) {
       snake.dx = grid;
       snake.dy = 0;
-    } else if (e.key === 'ArrowDown' && snake.dy === 0) {
-      snake.dy = grid;
-      snake.dx = 0;
     }
   });
 }
 
 // Eventlistener für Joystick-Steuerung
 function setupJoystickControls() {
+  touchControls.style.display = 'none';
+  joystickContainer.style.display = 'flex';
+
   let dragging = false;
   let startX, startY;
 
@@ -150,15 +173,8 @@ function setupJoystickControls() {
 }
 
 // Steuerungsauswahl
-touchscreenBtn.addEventListener('click', () => {
-  joystickContainer.style.display = 'none';
-  setupTouchscreenControls();
-});
-
-joystickBtn.addEventListener('click', () => {
-  joystickContainer.style.display = 'flex';
-  setupJoystickControls();
-});
+touchscreenBtn.addEventListener('click', setupTouchscreenControls);
+joystickBtn.addEventListener('click', setupJoystickControls);
 
 // Spiel starten
 requestAnimationFrame(gameLoop);
