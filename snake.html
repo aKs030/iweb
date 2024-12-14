@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Game</title>
+  <title>Snake Game with Highscores</title>
   <style>
     html, body {
       margin: 0;
@@ -27,21 +27,32 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    #score {
+    #highscore-container {
+      display: none;
+      background: white;
+      padding: 20px;
       position: absolute;
-      top: 10px;
-      right: 20px;
-      color: white;
-      font-size: 20px;
-      font-family: Arial, sans-serif;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 10px 20px;
-      border-radius: 5px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    #highscore-table {
+      width: 100%;
+      margin: 20px 0;
+      border-collapse: collapse;
+    }
+    #highscore-table th, #highscore-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    #highscore-table th {
+      background: #f4f4f4;
     }
     button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 18px;
+      margin: 5px;
+      padding: 10px;
       background: #333;
       color: white;
       border: none;
@@ -51,20 +62,48 @@
     button:hover {
       background: #555;
     }
+    #score-display {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      color: white;
+      font-size: 18px;
+      font-family: Arial, sans-serif;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
   <canvas id="game" width="400" height="400"></canvas>
-  <div id="score">Punkte: 0</div>
   <div id="menu">
     <h2>Snake Game</h2>
     <button id="start-game">Spiel starten</button>
+    <button id="view-highscores">Highscores ansehen</button>
   </div>
+  <div id="highscore-container">
+    <h2>Highscores</h2>
+    <table id="highscore-table">
+      <thead>
+        <tr>
+          <th>Rang</th>
+          <th>Name</th>
+          <th>Punkte</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Highscores werden hier eingefügt -->
+      </tbody>
+    </table>
+    <button id="back-to-menu">Zurück zum Menü</button>
+  </div>
+  <div id="score-display">Punkte: 0</div>
 
   <script>
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
-    const scoreElement = document.getElementById('score');
+    const scoreDisplay = document.getElementById('score-display');
 
     const grid = 16;
     let count = 0;
@@ -89,6 +128,33 @@
       return Math.floor(Math.random() * (max - min)) + min;
     }
 
+    // Highscores laden
+    function loadHighscores() {
+      const highscores = JSON.parse(localStorage.getItem('highscores')) || [];
+      return highscores.slice(0, 3); // Maximal 3 Einträge
+    }
+
+    // Highscores speichern
+    function saveHighscore(name, score) {
+      const highscores = loadHighscores();
+      highscores.push({ name, score });
+      highscores.sort((a, b) => b.score - a.score); // Nach Punkten sortieren
+      localStorage.setItem('highscores', JSON.stringify(highscores.slice(0, 3))); // Maximal 3 speichern
+    }
+
+    // Highscore-Tabelle aktualisieren
+    function updateHighscoreTable() {
+      const tableBody = document.querySelector('#highscore-table tbody');
+      tableBody.innerHTML = ''; // Tabelle leeren
+
+      const highscores = loadHighscores();
+      highscores.forEach((entry, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td>`;
+        tableBody.appendChild(row);
+      });
+    }
+
     // Spiel zurücksetzen
     function resetGame() {
       snake.x = 160;
@@ -98,7 +164,8 @@
       snake.cells = [];
       snake.maxCells = 4;
       score = 0;
-      scoreElement.textContent = `Punkte: ${score}`;
+      scoreDisplay.textContent = `Punkte: ${score}`;
+
       apple.x = getRandomInt(0, 25) * grid;
       apple.y = getRandomInt(0, 25) * grid;
     }
@@ -138,8 +205,8 @@
         // Apfel gegessen
         if (cell.x === apple.x && cell.y === apple.y) {
           snake.maxCells++;
-          score++; // Punkte erhöhen
-          scoreElement.textContent = `Punkte: ${score}`;
+          score++;
+          scoreDisplay.textContent = `Punkte: ${score}`;
           apple.x = getRandomInt(0, 25) * grid;
           apple.y = getRandomInt(0, 25) * grid;
         }
@@ -147,11 +214,34 @@
         // Kollision mit sich selbst
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+            const name = prompt(`Spiel vorbei! Dein Punktestand: ${score}\nGib deinen Namen ein:`, 'Spieler');
+            if (name) saveHighscore(name, score);
             resetGame();
+            updateHighscoreTable();
+            document.getElementById('menu').style.display = 'block';
+            return;
           }
         }
       });
     }
+
+    // Event Listener
+    document.getElementById('start-game').addEventListener('click', () => {
+      resetGame();
+      document.getElementById('menu').style.display = 'none';
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById('view-highscores').addEventListener('click', () => {
+      updateHighscoreTable();
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('highscore-container').style.display = 'block';
+    });
+
+    document.getElementById('back-to-menu').addEventListener('click', () => {
+      document.getElementById('highscore-container').style.display = 'none';
+      document.getElementById('menu').style.display = 'block';
+    });
 
     // Tastatursteuerung
     document.addEventListener('keydown', (e) => {
@@ -170,12 +260,8 @@
       }
     });
 
-    // Spiel starten
-    document.getElementById('start-game').addEventListener('click', () => {
-      document.getElementById('menu').style.display = 'none';
-      resetGame();
-      requestAnimationFrame(gameLoop);
-    });
+    // Initialisieren
+    updateHighscoreTable();
   </script>
 </body>
 </html>
