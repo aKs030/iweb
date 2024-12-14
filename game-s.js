@@ -72,6 +72,7 @@ function gameLoop() {
   });
 }
 
+// Tastatursteuerung
 document.addEventListener('keydown', (e) => {
   if (e.which === 37 && snake.dx === 0) {
     snake.dx = -grid;
@@ -88,4 +89,47 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Touchsteuerung für mobile Geräte
+let touchStartX = 0;
+let touchStartY = 0;
+
+canvas.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+});
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault(); // Verhindert das Scrollen der Seite
+});
+
+canvas.addEventListener('touchend', (e) => {
+  const touchEndX = e.changedTouches[0].clientX;
+  const touchEndY = e.changedTouches[0].clientY;
+
+  const diffX = touchEndX - touchStartX;
+  const diffY = touchEndY - touchStartY;
+
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    // Horizontaler Swipe
+    if (diffX > 0 && snake.dx === 0) {
+      snake.dx = grid;
+      snake.dy = 0;
+    } else if (diffX < 0 && snake.dx === 0) {
+      snake.dx = -grid;
+      snake.dy = 0;
+    }
+  } else {
+    // Vertikaler Swipe
+    if (diffY > 0 && snake.dy === 0) {
+      snake.dy = grid;
+      snake.dx = 0;
+    } else if (diffY < 0 && snake.dy === 0) {
+      snake.dy = -grid;
+      snake.dx = 0;
+    }
+  }
+});
+
+// Spiel starten
 requestAnimationFrame(gameLoop);
