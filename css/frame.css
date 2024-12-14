@@ -1,65 +1,74 @@
-/* Standard Menü-Styling */
-.menu-items {
+/* Allgemeine Stile für das Menü */
+.menu {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  position: relative;
+}
+
+.menu .menu-items {
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
 
-/* Styling für Links */
-.menu-items a {
-  font-weight: normal;
+.menu .menu-items a {
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   margin: 0 10px;
-  transition: color 0.3s ease, font-weight 0.3s ease;
+  transition: color 0.3s;
+}
+
+/* Aktive Seite hervorheben */
+.menu .menu-items a.active {
+  font-weight: bold;
+  color: #ffffff;
 }
 
 /* Hover-Effekt */
-.menu-items a:hover {
-  color: rgb(255, 255, 255);
-  opacity: 1;
+.menu .menu-items a:hover {
+  color: #ffffff;
 }
 
-/* Styling für aktive Seite */
-.menu-items a.active {
-  font-weight: bold; /* Fett */
-  color: rgb(255, 255, 255); /* Weiß */
-  opacity: 1;
-  text-decoration: underline; /* Optional */
+/* Mobile Stile */
+.menu .menu-button {
+  display: none;
+  cursor: pointer;
 }
 
-/* Mobile Menü-Styling */
+.menu .menu-button img {
+  width: 30px;
+  height: 30px;
+}
+
+.menu .menu-items {
+  flex-direction: row;
+}
+
 @media (max-width: 768px) {
-  .menu-items {
-    display: none; /* Standardmäßig versteckt */
-    flex-direction: column; /* Vertikale Ausrichtung */
-    background-color: #333; /* Menü-Hintergrundfarbe */
+  .menu .menu-items {
+    display: none;
+    flex-direction: column;
+    background-color: #333;
     position: absolute;
     top: 60px;
     left: 0;
     right: 0;
-    z-index: 1000;
     padding: 10px 0;
+    z-index: 1000;
   }
 
-  .menu-items.show {
-    display: flex; /* Menü anzeigen */
+  .menu .menu-items.show {
+    display: flex;
   }
 
-  .menu-items a {
+  .menu .menu-items a {
     margin: 10px 0;
     text-align: center;
   }
 
-  /* Styling für aktive Seite auf mobilen Geräten */
-  .menu-items a.active {
-    font-weight: bold; /* Fett */
-    color: yellow; /* Gelb für bessere Sichtbarkeit */
-  }
-
-  .menu-button {
-    display: block; /* Menü-Button anzeigen */
-    cursor: pointer;
+  .menu .menu-button {
+    display: block;
   }
 }
 /*************************************************************************
