@@ -1,24 +1,88 @@
+/* General Menu Styles */
+.menu {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+}
+
+.menu .logo a {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+.menu .menu-items a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.3s;
+}
+
+.menu .menu-items a:hover,
+.menu .menu-items a.active {
+  color: white;
+  font-weight: bold;
+}
+
+/* Mobile-Specific Styles */
+.menu .menu-button {
+  display: none;
+  cursor: pointer;
+}
+
+.menu .menu-button img {
+  width: 30px;
+  height: 30px;
+}
+
+.menu .menu-items {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .menu .menu-items {
+    display: none;
+    flex-direction: column;
+    background-color: #333;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 10px 0;
+  }
+
+  .menu .menu-items.show {
+    display: flex;
+  }
+
+  .menu .menu-items a {
+    margin: 10px 0;
+    text-align: center;
+  }
+
+  .menu .menu-button {
+    display: block;
+  }
+}
+
+
+
+
+
+
+
+
+
+
 /* Allgemeine Stile */
 html {
   scroll-behavior: smooth; /* Scroll speed embedding page */
 }
-
-
-/* Standard-Styling für Menülinks */
-.menu-items a {
-  font-weight: normal;
-  color: rgba(255, 255, 255, 0.8);
-  opacity: 0.8;
-  text-decoration: none;
-}
-
-/* Hervorhebung des aktiven Menüpunkts */
-.menu-items a.active-menu {
-  font-weight: bold;
-  color: rgb(255, 255, 255);
-  opacity: 1;
-}
-
 
 body {
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;

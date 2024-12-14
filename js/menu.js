@@ -1,21 +1,28 @@
 $(document).ready(function () {
   /*************************************************************************
-   * Dynamically load the menu and highlight the active menu item.
+   * Dynamically load the menu from an external file.
    *************************************************************************/
   $(".menu-container").load("menu.html", function () {
-    console.log("Menu loaded successfully.");
-
-    // Get the current page from the URL
-    const currentPage = window.location.pathname.split("/").pop();
+    console.info("Menu loaded successfully.");
 
     // Highlight the active menu item
+    const currentPage = window.location.pathname.split("/").pop() || "index.html";
     $(".menu-items a").each(function () {
-      const linkPage = $(this).attr("href");
+      const linkPage = $(this).attr("href").split("/").pop();
+      if (linkPage === currentPage) {
+        $(this).addClass("active");
+      }
+    });
 
-      if (linkPage === currentPage || (currentPage === "" && linkPage === "index.html")) {
-        $(this).addClass("active-menu");
-      } else {
-        $(this).removeClass("active-menu");
+    // Add mobile menu toggle functionality
+    $(".menu-button").on("click", function () {
+      $(".menu-items").toggleClass("show");
+    });
+
+    // Hide menu when clicking outside
+    $(document).on("click", function (e) {
+      if (!$(e.target).closest(".menu").length) {
+        $(".menu-items").removeClass("show");
       }
     });
   });
@@ -29,9 +36,9 @@ $(document).ready(function () {
     </a>`;
   $("body").append(backToTopHTML);
 
-  const $backToTop = $(".back-to-top").hide(); // Initially hide the button
+  const $backToTop = $(".back-to-top").hide();
 
-  // Show/Hide Back-to-Top button on scroll
+  // Show/Hide Back-to-Top button
   $(window).on("scroll", function () {
     if ($(this).scrollTop() > 100) {
       $backToTop.fadeIn();
@@ -40,26 +47,9 @@ $(document).ready(function () {
     }
   });
 
-  // Smooth scroll to top on button click
+  // Smooth scroll to the top
   $backToTop.on("click", function (e) {
     e.preventDefault();
     $("html, body").animate({ scrollTop: 0 }, 800);
-  });
-
-  /*************************************************************************
-   * Mobile Menu Button Toggle
-   *************************************************************************/
-  const $menuButton = $(".menu-button");
-  const $menu = $(".menu-items");
-
-  $menuButton.on("click", function (e) {
-    e.preventDefault();
-    $menu.toggle();
-  });
-
-  $(document).on("click", function (e) {
-    if (!$(e.target).closest(".menu").length) {
-      $menu.hide();
-    }
   });
 });
