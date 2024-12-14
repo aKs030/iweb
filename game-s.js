@@ -18,10 +18,12 @@ const apple = {
   y: 320,
 };
 
+// Zufällige Position für Apfel generieren
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
+// Spielschleife
 function gameLoop() {
   requestAnimationFrame(gameLoop);
 
@@ -33,6 +35,7 @@ function gameLoop() {
   snake.x += snake.dx;
   snake.y += snake.dy;
 
+  // Begrenzung der Spielwelt
   if (snake.x < 0) snake.x = canvas.width - grid;
   else if (snake.x >= canvas.width) snake.x = 0;
 
@@ -43,19 +46,23 @@ function gameLoop() {
 
   if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
+  // Apfel zeichnen
   context.fillStyle = 'red';
   context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
 
+  // Schlange zeichnen
   context.fillStyle = 'green';
   snake.cells.forEach((cell, index) => {
     context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
 
+    // Apfel gegessen
     if (cell.x === apple.x && cell.y === apple.y) {
       snake.maxCells++;
       apple.x = getRandomInt(0, 25) * grid;
       apple.y = getRandomInt(0, 25) * grid;
     }
 
+    // Kollision mit sich selbst
     for (let i = index + 1; i < snake.cells.length; i++) {
       if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
         snake.x = 160;
@@ -89,7 +96,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Touchsteuerung für mobile Geräte
+// Touchscreen-Steuerung
 let touchStartX = 0;
 let touchStartY = 0;
 
@@ -100,8 +107,8 @@ canvas.addEventListener('touchstart', (e) => {
 });
 
 canvas.addEventListener('touchmove', (e) => {
-  e.preventDefault(); // Verhindert das Scrollen der Seite
-});
+  e.preventDefault(); // Verhindert Scrollen/Zoomen auf iPhone
+}, { passive: false });
 
 canvas.addEventListener('touchend', (e) => {
   const touchEndX = e.changedTouches[0].clientX;
@@ -111,7 +118,6 @@ canvas.addEventListener('touchend', (e) => {
   const diffY = touchEndY - touchStartY;
 
   if (Math.abs(diffX) > Math.abs(diffY)) {
-    // Horizontaler Swipe
     if (diffX > 0 && snake.dx === 0) {
       snake.dx = grid;
       snake.dy = 0;
@@ -120,7 +126,6 @@ canvas.addEventListener('touchend', (e) => {
       snake.dy = 0;
     }
   } else {
-    // Vertikaler Swipe
     if (diffY > 0 && snake.dy === 0) {
       snake.dy = grid;
       snake.dx = 0;
@@ -131,5 +136,4 @@ canvas.addEventListener('touchend', (e) => {
   }
 });
 
-// Spiel starten
 requestAnimationFrame(gameLoop);
