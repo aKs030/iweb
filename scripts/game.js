@@ -1,4 +1,5 @@
-import { saveScore, fetchTopScores } from './firebase.js';
+import { saveScore, getTopScores } from './firebase.js';
+import { setupKeyboardControls, setupTouchControls, setupJoystickControls } from './controls.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
@@ -20,6 +21,9 @@ const apple = {
   x: 320,
   y: 320,
 };
+
+const scoreDisplay = document.getElementById('score-display');
+const menu = document.getElementById('menu');
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
@@ -56,16 +60,14 @@ function gameLoop() {
     if (cell.x === apple.x && cell.y === apple.y) {
       snake.maxCells++;
       score++;
+      scoreDisplay.textContent = `Punkte: ${score}`;
       apple.x = getRandomInt(0, 25) * grid;
       apple.y = getRandomInt(0, 25) * grid;
     }
 
     for (let i = index + 1; i < snake.cells.length; i++) {
       if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-        alert(`Game Over! Score: ${score}`);
-        const playerName = prompt("Gib deinen Namen ein:");
-        saveScore(playerName, score);
-        resetGame();
+        endGame();
       }
     }
   });
@@ -79,33 +81,43 @@ function resetGame() {
   snake.dx = grid;
   snake.dy = 0;
   score = 0;
+  scoreDisplay.textContent = `Punkte: ${score}`;
 }
 
-// Steuerungsauswahl
+async function endGame() {
+  const playerName = prompt("Name eingeben:");
+  if (playerName) await saveScore(playerName, score);
+  resetGame();
+  displayHighscores();
+}
+
+async function displayHighscores() {
+  const scores = await getTopScores();
+  const scoreList = document.getElementById('score-list');
+  scoreList.innerHTML = '';
+  scores.forEach((s, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${i + 1}. ${s.name}: ${s.score}`;
+    scoreList.appendChild(li);
+  });
+}
+
 document.getElementById('keyboard-control').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  setupKeyboardControls();
+  menu.style.display = 'none';
+  setupKeyboardControls(snake);
   requestAnimationFrame(gameLoop);
 });
 
 document.getElementById('touch-control').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  setupTouchControls();
+  menu.style.display = 'none';
+  setupTouchControls(snake);
   requestAnimationFrame(gameLoop);
 });
 
 document.getElementById('joystick-control').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  setupJoystickControls();
+  menu.style.display = 'none';
+  setupJoystickControls(snake);
   requestAnimationFrame(gameLoop);
 });
 
-// Lade Highscores
-fetchTopScores().then(scores => {
-  const scoreList = document.getElementById('score-list');
-  scores.forEach((score, index) => {
-    const li = document.createElement('li');
-    li.textContent = `${index + 1}. ${score.name}: ${score.score}`;
-    scoreList.appendChild(li);
-  });
-});
+displayHighscores();
