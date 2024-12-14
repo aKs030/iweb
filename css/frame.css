@@ -1,4 +1,20 @@
 
+/* Für mobile Geräte */
+@media (max-width: 768px) {
+  .menu-items {
+    display: none; /* Menü standardmäßig ausblenden */
+    flex-direction: column; /* Vertikale Ausrichtung */
+    background-color: #333; /* Hintergrundfarbe des Menüs */
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 10px 0;
+  }
+
+
+}
 /*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
  * Version: v3.41
