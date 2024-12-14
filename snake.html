@@ -13,6 +13,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden; /* Verhindert Scrollen */
     }
     canvas {
       border: 1px solid white;
@@ -26,6 +27,7 @@
       padding: 20px;
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 10;
     }
     #joystick-container {
       position: absolute;
@@ -35,6 +37,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      z-index: 10;
     }
     #joystick-container button {
       background: #333;
@@ -55,7 +58,7 @@
       right: 10px;
       color: white;
       font-size: 20px;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.7);
       padding: 5px 10px;
       border-radius: 5px;
     }
@@ -90,15 +93,15 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-   // Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
-  authDomain: "snake-ed264.firebaseapp.com",
-  projectId: "snake-ed264",
-  storageBucket: "snake-ed264.firebasestorage.app",
-  messagingSenderId: "95766919512",
-  appId: "1:95766919512:web:78498968a8383721cecd2d",
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
+      authDomain: "snake-ed264.firebaseapp.com",
+      projectId: "snake-ed264",
+      storageBucket: "snake-ed264.firebasestorage.app",
+      messagingSenderId: "95766919512",
+      appId: "1:95766919512:web:78498968a8383721cecd2d"
+    };
+
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -129,6 +132,37 @@ const firebaseConfig = {
 
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    async function saveScore(score) {
+      const name = prompt("Gib deinen Namen ein:");
+      if (name) {
+        await addDoc(collection(db, "scores"), { name, score });
+        fetchScores();
+      }
+    }
+
+    async function fetchScores() {
+      const scoresList = document.getElementById("score-list");
+      scoresList.innerHTML = "<li>Lade Bestenliste...</li>";
+
+      const scores = [];
+      const querySnapshot = await getDocs(collection(db, "scores"));
+      querySnapshot.forEach(doc => scores.push({ name: doc.data().name, score: doc.data().score }));
+      scores.sort((a, b) => b.score - a.score);
+
+      scoresList.innerHTML = scores.slice(0, 3).map(s => `<li>${s.name}: ${s.score}</li>`).join("");
+    }
+
+    function resetGame() {
+      snake.x = 160;
+      snake.y = 160;
+      snake.cells = [];
+      snake.maxCells = 4;
+      snake.dx = grid;
+      snake.dy = 0;
+      score = 0;
+      scoreBoard.textContent = `Punkte: ${score}`;
     }
 
     function gameLoop() {
@@ -176,52 +210,14 @@ const firebaseConfig = {
       });
     }
 
-    function resetGame() {
-      snake.x = 160;
-      snake.y = 160;
-      snake.cells = [];
-      snake.maxCells = 4;
-      snake.dx = grid;
-      snake.dy = 0;
-      score = 0;
-      scoreBoard.textContent = `Punkte: ${score}`;
-    }
-
-    async function saveScore(score) {
-      const name = prompt("Gib deinen Namen ein:");
-      if (name) {
-        await addDoc(collection(db, "scores"), { name, score });
-        fetchScores();
-      }
-    }
-
-    async function fetchScores() {
-      const scoresList = document.getElementById("score-list");
-      scoresList.innerHTML = "<li>Lade Bestenliste...</li>";
-
-      const scores = [];
-      const querySnapshot = await getDocs(collection(db, "scores"));
-      querySnapshot.forEach(doc => scores.push({ name: doc.data().name, score: doc.data().score }));
-      scores.sort((a, b) => b.score - a.score);
-
-      scoresList.innerHTML = scores.slice(0, 3).map(s => `<li>${s.name}: ${s.score}</li>`).join("");
-    }
-
     document.getElementById('keyboard-control').addEventListener('click', () => {
       menu.style.display = 'none';
-      setupKeyboardControls();
-      requestAnimationFrame(gameLoop);
-    });
-
-    document.getElementById('touch-control').addEventListener('click', () => {
-      menu.style.display = 'none';
-      setupTouchControls();
-      requestAnimationFrame(gameLoop);
-    });
-
-    document.getElementById('joystick-control').addEventListener('click', () => {
-      menu.style.display = 'none';
-      joystickContainer.style.display = 'block';
+      document.addEventListener('keydown', (e) => {
+        if (e.which === 37 && snake.dx === 0) snake.dx = -grid, snake.dy = 0;
+        else if (e.which === 38 && snake.dy === 0) snake.dy = -grid, snake.dx = 0;
+        else if (e.which === 39 && snake.dx === 0) snake.dx = grid, snake.dy = 0;
+        else if (e.which === 40 && snake.dy === 0) snake.dy = grid, snake.dx = 0;
+      });
       requestAnimationFrame(gameLoop);
     });
 
