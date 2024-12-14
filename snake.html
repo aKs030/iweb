@@ -32,7 +32,7 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
     }
@@ -49,19 +49,13 @@
     #joystick-container button:active {
       background: #555;
     }
-    #highscores {
-      margin-top: 20px;
-      text-align: left;
-    }
-    #highscores h3 {
-      margin-bottom: 10px;
-    }
-    #highscores ul {
-      list-style: none;
-      padding: 0;
-    }
-    #highscores li {
-      margin: 5px 0;
+    #score {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      font-size: 20px;
+      font-family: Arial, sans-serif;
     }
   </style>
 </head>
@@ -72,12 +66,8 @@
     <button id="keyboard-control">Tastatur</button>
     <button id="touch-control">Touchscreen</button>
     <button id="joystick-control">Joystick</button>
-    <div id="highscores">
-      <h3>Highscores</h3>
-      <ul id="score-list"></ul>
-    </div>
   </div>
-  <div id="joystick-container" style="display: none;">
+  <div id="joystick-container">
     <button data-dir="up">⬆</button>
     <div>
       <button data-dir="left">⬅</button>
@@ -85,12 +75,13 @@
     </div>
     <button data-dir="down">⬇</button>
   </div>
+  <div id="score">Score: 0</div>
 
   <script type="module">
-    // Firebase Setup
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
+    // Firebase-Konfiguration
     const firebaseConfig = {
       apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
       authDomain: "snake-ed264.firebaseapp.com",
@@ -105,6 +96,7 @@
 
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score');
 
     const grid = 16;
     let count = 0;
@@ -113,7 +105,7 @@
     const snake = {
       x: 160,
       y: 160,
-      dx: grid,
+      dx: 0, // Initial keine Bewegung
       dy: 0,
       cells: [],
       maxCells: 4,
@@ -124,39 +116,32 @@
       y: 320,
     };
 
-    async function saveScore(playerName, score) {
+    // Zufällige Position für Apfel generieren
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    // Score speichern
+       async function saveScore(name, score) {
       try {
-        await addDoc(collection(db, "scores"), {
-          name: playerName,
-          score: score,
-          timestamp: new Date(),
-        });
-        console.log("Score gespeichert");
+        await setDoc(doc(db, "scores", name), { score });
+        console.log("Score gespeichert:", { name, score });
       } catch (error) {
-        console.error("Fehler beim Speichern:", error);
+        console.error("Fehler beim Speichern des Scores:", error);
       }
     }
 
-    async function getTopScores() {
-      const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(3));
-      const querySnapshot = await getDocs(q);
+    async function fetchScores() {
+      const scoresCollection = collection(db, "scores");
+      const scoresSnapshot = await getDocs(scoresCollection);
       const scores = [];
-      querySnapshot.forEach((doc) => {
-        scores.push(doc.data());
+      scoresSnapshot.forEach(doc => {
+        scores.push({ name: doc.id, score: doc.data().score });
       });
-      return scores;
+      return scores.sort((a, b) => b.score - a.score).slice(0, 3); // Top 3 Scores
     }
 
-    function displayScores(scores) {
-      const scoreList = document.getElementById("score-list");
-      scoreList.innerHTML = "";
-      scores.forEach((score, index) => {
-        const li = document.createElement("li");
-        li.textContent = `${index + 1}. ${score.name}: ${score.score}`;
-        scoreList.appendChild(li);
-      });
-    }
-
+    // Spielschleife
     function gameLoop() {
       requestAnimationFrame(gameLoop);
 
@@ -168,6 +153,7 @@
       snake.x += snake.dx;
       snake.y += snake.dy;
 
+      // Begrenzung der Spielwelt
       if (snake.x < 0) snake.x = canvas.width - grid;
       else if (snake.x >= canvas.width) snake.x = 0;
 
@@ -178,26 +164,27 @@
 
       if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
+      // Apfel zeichnen
       context.fillStyle = 'red';
       context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
 
+      // Schlange zeichnen
       context.fillStyle = 'green';
       snake.cells.forEach((cell, index) => {
         context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
 
+        // Apfel gegessen
         if (cell.x === apple.x && cell.y === apple.y) {
           snake.maxCells++;
           score++;
+          scoreDisplay.textContent = `Score: ${score}`;
           apple.x = getRandomInt(0, 25) * grid;
           apple.y = getRandomInt(0, 25) * grid;
         }
 
+        // Kollision mit sich selbst
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-            alert(`Game Over! Score: ${score}`);
-            saveScore(prompt("Name eingeben:"), score).then(() => {
-              getTopScores().then(displayScores);
-            });
             resetGame();
           }
         }
@@ -207,47 +194,53 @@
     function resetGame() {
       snake.x = 160;
       snake.y = 160;
+      snake.dx = 0;
+      snake.dy = 0;
       snake.cells = [];
       snake.maxCells = 4;
-      snake.dx = grid;
-      snake.dy = 0;
+      apple.x = getRandomInt(0, 25) * grid;
+      apple.y = getRandomInt(0, 25) * grid;
+
+      const playerName = prompt("Game Over! Name eingeben für Highscore:");
+      if (playerName) saveScore(playerName, score);
+
       score = 0;
+      scoreDisplay.textContent = `Score: ${score}`;
     }
 
-    function setupControls(type) {
-      if (type === "keyboard") setupKeyboardControls();
-      else if (type === "touch") setupTouchControls();
-      else if (type === "joystick") setupJoystickControls();
-    }
-
+    // Tastatursteuerung
     function setupKeyboardControls() {
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft" && snake.dx === 0) {
+      document.addEventListener('keydown', (e) => {
+        if (e.which === 37 && snake.dx === 0) {
           snake.dx = -grid;
           snake.dy = 0;
-        } else if (e.key === "ArrowUp" && snake.dy === 0) {
+        } else if (e.which === 38 && snake.dy === 0) {
           snake.dy = -grid;
           snake.dx = 0;
-        } else if (e.key === "ArrowRight" && snake.dx === 0) {
+        } else if (e.which === 39 && snake.dx === 0) {
           snake.dx = grid;
           snake.dy = 0;
-        } else if (e.key === "ArrowDown" && snake.dy === 0) {
+        } else if (e.which === 40 && snake.dy === 0) {
           snake.dy = grid;
           snake.dx = 0;
         }
       });
     }
 
+    // Touchscreen-Steuerung
     function setupTouchControls() {
-      let touchStartX = 0, touchStartY = 0;
+      let touchStartX = 0;
+      let touchStartY = 0;
 
-      canvas.addEventListener("touchstart", (e) => {
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Verhindert Fensterbewegung
         const touch = e.touches[0];
         touchStartX = touch.clientX;
         touchStartY = touch.clientY;
       });
 
-      canvas.addEventListener("touchend", (e) => {
+      canvas.addEventListener('touchend', (e) => {
+        e.preventDefault(); // Verhindert Fensterbewegung
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
 
@@ -274,6 +267,7 @@
       });
     }
 
+    // Joystick-Steuerung
     function setupJoystickControls() {
       const joystick = document.getElementById('joystick-container');
       joystick.style.display = 'block';
@@ -281,6 +275,7 @@
       joystick.querySelectorAll('button').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const direction = e.target.getAttribute('data-dir');
+
           if (direction === 'up' && snake.dy === 0) {
             snake.dx = 0;
             snake.dy = -grid;
@@ -298,27 +293,24 @@
       });
     }
 
-    // Steuerungsauswahl
-    document.getElementById("keyboard-control").addEventListener("click", () => {
-      document.getElementById("menu").style.display = "none";
-      setupControls("keyboard");
+    // Menü anzeigen
+    document.getElementById('keyboard-control').addEventListener('click', () => {
+      document.getElementById('menu').style.display = 'none';
+      setupKeyboardControls();
       requestAnimationFrame(gameLoop);
     });
 
-    document.getElementById("touch-control").addEventListener("click", () => {
-      document.getElementById("menu").style.display = "none";
-      setupControls("touch");
+    document.getElementById('touch-control').addEventListener('click', () => {
+      document.getElementById('menu').style.display = 'none';
+      setupTouchControls();
       requestAnimationFrame(gameLoop);
     });
 
-    document.getElementById("joystick-control").addEventListener("click", () => {
-      document.getElementById("menu").style.display = "none";
-      setupControls("joystick");
+    document.getElementById('joystick-control').addEventListener('click', () => {
+      document.getElementById('menu').style.display = 'none';
+      setupJoystickControls();
       requestAnimationFrame(gameLoop);
     });
-
-    // Lade die Highscores beim Start
-    getTopScores().then(displayScores);
   </script>
 </body>
 </html>
