@@ -63,3 +63,22 @@ $(document).ready(function () {
     }
   });
 });
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  const menuButton = document.getElementById("menu_button");
+  const menu = document.getElementById("menu");
+
+  // Toggle visibility of the menu
+  menuButton.addEventListener("click", function (event) {
+    event.preventDefault();
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+  });
+
+  // Schließen des Menüs, wenn außerhalb geklickt wird
+  document.addEventListener("click", function (event) {
+    if (!menu.contains(event.target) && !menuButton.contains(event.target)) {
+      menu.style.display = "none";
+    }
+  });
+});
