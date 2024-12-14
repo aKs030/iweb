@@ -13,7 +13,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
     canvas {
       border: 1px solid white;
@@ -27,7 +26,6 @@
       padding: 20px;
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      z-index: 10;
     }
     #joystick-container {
       position: absolute;
@@ -54,10 +52,9 @@
     #score {
       position: absolute;
       top: 10px;
-      left: 10px;
+      right: 10px;
       color: white;
-      font-size: 18px;
-      font-family: Arial, sans-serif;
+      font-size: 20px;
     }
   </style>
 </head>
@@ -78,8 +75,7 @@
     </div>
     <button data-dir="down">⬇</button>
   </div>
-
-  <!-- Firebase Integration -->
+  
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -96,26 +92,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function saveScore(name, score) {
-      try {
-        await addDoc(collection(db, "scores"), {
-          name,
-          score,
-          timestamp: new Date()
-        });
-        alert("Score gespeichert!");
-      } catch (error) {
-        console.error("Fehler beim Speichern des Scores: ", error);
-      }
-    }
-
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
-    const scoreDisplay = document.getElementById('score');
-
-    let score = 0;
     const grid = 16;
     let count = 0;
+    let score = 0;
 
     const snake = {
       x: 160,
@@ -135,25 +116,14 @@
       return Math.floor(Math.random() * (max - min)) + min;
     }
 
-    function resetGame() {
-      snake.x = 160;
-      snake.y = 160;
-      snake.cells = [];
-      snake.maxCells = 4;
-      snake.dx = grid;
-      snake.dy = 0;
-      score = 0;
-      apple.x = getRandomInt(0, 25) * grid;
-      apple.y = getRandomInt(0, 25) * grid;
-    }
-
     function gameLoop() {
       requestAnimationFrame(gameLoop);
 
       if (++count < 4) return;
-      count = 0;
 
+      count = 0;
       context.clearRect(0, 0, canvas.width, canvas.height);
+
       snake.x += snake.dx;
       snake.y += snake.dy;
 
@@ -176,19 +146,40 @@
 
         if (cell.x === apple.x && cell.y === apple.y) {
           snake.maxCells++;
-          score++;
-          scoreDisplay.textContent = `Score: ${score}`;
+          score += 10;
+          document.getElementById('score').innerText = `Score: ${score}`;
           apple.x = getRandomInt(0, 25) * grid;
           apple.y = getRandomInt(0, 25) * grid;
         }
 
         for (let i = index + 1; i < snake.cells.length; i++) {
           if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-            saveScore(prompt("Name für den Score eingeben:"), score);
+            saveScore(prompt("Name eingeben:", "Unbekannt"), score);
             resetGame();
           }
         }
       });
+    }
+
+    function resetGame() {
+      snake.x = 160;
+      snake.y = 160;
+      snake.cells = [];
+      snake.maxCells = 4;
+      snake.dx = grid;
+      snake.dy = 0;
+      score = 0;
+      document.getElementById('score').innerText = `Score: 0`;
+    }
+
+    async function saveScore(name, score) {
+      try {
+        await addDoc(collection(db, "scores"), { name, score, timestamp: new Date() });
+        alert("Score gespeichert!");
+      } catch (error) {
+        console.error("Fehler beim Speichern des Scores:", error);
+        alert("Fehler: Score konnte nicht gespeichert werden.");
+      }
     }
 
     function setupKeyboardControls() {
@@ -254,6 +245,7 @@
       joystick.querySelectorAll('button').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const direction = e.target.getAttribute('data-dir');
+
           if (direction === 'up' && snake.dy === 0) {
             snake.dx = 0;
             snake.dy = -grid;
