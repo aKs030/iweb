@@ -1,4 +1,65 @@
+/* Allgemeine Menü-Styling */
+.menu-items {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+}
 
+/* Styling für aktive Seite */
+.menu-items a.active {
+  font-weight: bold; /* Fett für aktive Seite */
+  color: rgb(255, 255, 255); /* Weiß */
+  text-decoration: underline; /* Optional für Hervorhebung */
+}
+
+/* Standard-Link-Styling */
+.menu-items a {
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Link bei Hover */
+.menu-items a:hover {
+  color: rgb(255, 255, 255);
+  opacity: 1;
+}
+
+/* Für mobile Geräte */
+@media (max-width: 768px) {
+  .menu-items {
+    display: none; /* Menü standardmäßig ausblenden */
+    flex-direction: column; /* Vertikale Ausrichtung */
+    background-color: #333; /* Hintergrundfarbe des Menüs */
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 10px 0;
+  }
+
+  .menu-items.show {
+    display: flex; /* Menü bei 'show'-Klasse einblenden */
+  }
+
+  .menu-items a {
+    margin: 10px 0; /* Abstand zwischen Menü-Elementen */
+    text-align: center;
+  }
+
+  .menu-items a.active {
+    font-weight: bold; /* Fett für aktive Seite */
+    color: yellow; /* Gelb für bessere Sichtbarkeit auf mobilem Hintergrund */
+  }
+
+  .menu-button {
+    display: block; /* Menü-Button nur auf mobilen Geräten anzeigen */
+    cursor: pointer;
+  }
+}
 /* Für mobile Geräte */
 @media (max-width: 768px) {
   .menu-items {
