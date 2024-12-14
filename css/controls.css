@@ -7,52 +7,74 @@ html {
 /* Menu-Leiste-Fetter-Text */
 
 
+/* Grundlayout für das Menü */
+.menu {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+}
 
-/* Standard-Styling für Menülinks */
-.menu-items a {
-  font-weight: normal;
-  color: rgba(255, 255, 255, 0.8);
-  opacity: 0.8;
+.menu-table {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo a {
   text-decoration: none;
-}
-/* Hervorhebung des aktiven Menüpunkts */
-.menu-items a.active-menu {
+  color: white;
+  font-size: 20px;
   font-weight: bold;
-  color: rgb(255, 255, 255);
-  opacity: 1;
 }
 
-
-
-
-/* Standard Desktop-Menü */
 .menu-items {
   display: flex;
-  gap: 15px;
+  gap: 20px;
 }
-/* Versteckt das Menü standardmäßig auf kleinen Bildschirmen */
+
+.menu-items a {
+  text-decoration: none;
+  color: white;
+  transition: color 0.3s ease;
+}
+
+.menu-items a:hover {
+  color: #f0c040;
+}
+
+/* Mobile Menü - ausgeblendet standardmäßig */
 @media screen and (max-width: 768px) {
   .menu-items {
     display: none;
     flex-direction: column;
-    position: absolute;
-    top: 50px;
-    right: 10px;
     background-color: #333;
+    position: absolute;
+    top: 60px;
+    right: 20px;
     padding: 10px;
     border-radius: 5px;
-    z-index: 1000;
+    width: 200px;
   }
-  /* Menüeinträge in der mobilen Ansicht */
+
   .menu-items a {
-    color: white;
-    text-decoration: none;
     margin: 10px 0;
     text-align: center;
   }
-  /* Hamburger-Button sichtbar machen */
+
   .menu-button {
     display: block;
+    cursor: pointer;
+  }
+}
+
+/* Desktop Menü - immer sichtbar */
+@media screen and (min-width: 769px) {
+  .menu-button {
+    display: none;
+  }
+
+  .menu-items {
+    display: flex;
   }
 }
 
