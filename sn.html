@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <title>Snake Spiel</title>
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="f.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="f.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: black;
+    }
+
+    .content-container {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    canvas {
+      border: 1px solid white;
+    }
+
+    #menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #joystick-container {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      display: none;
+    }
+
+    #joystick-container button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin: 5px;
+      font-size: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #joystick-container button:active {
+      background: #555;
+    }
+
+    #score-board {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      font-size: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    #highscores {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    #highscores ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    #highscores li {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Menü und Footer von extern laden -->
+  <div class="menu-container"></div>
+
+  <!-- Content -->
+  <div class="content-container">
+    <canvas id="game" width="400" height="400"></canvas>
+    <div id="menu">
+      <h2>Wähle eine Steuerung</h2>
+      <button id="keyboard-control">Tastatur</button>
+      <button id="touch-control">Touchscreen</button>
+      <button id="joystick-control">Joystick</button>
+      <div id="highscores">
+        <h3>Highscores</h3>
+        <ul id="score-list">Lade Scores...</ul>
+      </div>
+    </div>
+    <div id="joystick-container">
+      <button data-dir="up">⬆</button>
+      <div>
+        <button data-dir="left">⬅</button>
+        <button data-dir="right">➡</button>
+      </div>
+      <button data-dir="down">⬇</button>
+    </div>
+    <div id="score-board">Punkte: 0</div>
+  </div>
+
+  <div class="footer-container"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "API_KEY",
+      authDomain: "snake-ed264.firebaseapp.com",
+      projectId: "snake-ed264",
+      storageBucket: "snake-ed264.firebasestorage.app",
+      messagingSenderId: "95766919512",
+      appId: "1:95766919512:web:78498968a8383721cecd2d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const canvas = document.getElementById('game');
+    const context = canvas.getContext('2d');
+    const grid = 16;
+    let count = 0;
+    let score = 0;
+
+    const snake = {
+      x: 160,
+      y: 160,
+      dx: grid,
+      dy: 0,
+      cells: [],
+      maxCells: 4,
+    };
+
+    const apple = {
+      x: 320,
+      y: 320,
+    };
+
+    async function saveScore(playerName, score) {
+      await addDoc(collection(db, "scores"), { name: playerName, score, timestamp: new Date() });
+      fetchScores();
+    }
+
+    async function fetchScores() {
+      const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(3));
+      const querySnapshot = await getDocs(q);
+      const scoresList = document.getElementById("score-list");
+      scoresList.innerHTML = "";
+      querySnapshot.forEach((doc) => {
+        const li = document.createElement("li");
+        li.textContent = `${doc.data().name}: ${doc.data().score}`;
+        scoresList.appendChild(li);
+      });
+    }
+
+    function gameLoop() {
+      requestAnimationFrame(gameLoop);
+      if (++count < 4) return;
+      count = 0;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      snake.x += snake.dx;
+      snake.y += snake.dy;
+
+      if (snake.x < 0) snake.x = canvas.width - grid;
+      else if (snake.x >= canvas.width) snake.x = 0;
+
+      if (snake.y < 0) snake.y = canvas.height - grid;
+      else if (snake.y >= canvas.height) snake.y = 0;
+
+      snake.cells.unshift({ x: snake.x, y: snake.y });
+      if (snake.cells.length > snake.maxCells) snake.cells.pop();
+
+      context.fillStyle = "red";
+      context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+      context.fillStyle = "green";
+      snake.cells.forEach((cell, index) => {
+        context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+        if (cell.x === apple.x && cell.y === apple.y) {
+          snake.maxCells++;
+          score++;
+          apple.x = Math.floor(Math.random() * 25) * grid;
+          apple.y = Math.floor(Math.random() * 25) * grid;
+        }
+        for (let i = index + 1; i < snake.cells.length; i++) {
+          if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+            alert(`Game Over! Score: ${score}`);
+            saveScore(prompt("Name eingeben:"), score);
+            resetGame();
+          }
+        }
+      });
+    }
+
+    function resetGame() {
+      snake.x = 160;
+      snake.y = 160;
+      snake.cells = [];
+      snake.maxCells = 4;
+      snake.dx = grid;
+      snake.dy = 0;
+      score = 0;
+    }
+
+    document.getElementById("keyboard-control").addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      gameLoop();
+    });
+
+    fetchScores();
+  </script>
+</body>
+
+</html>
