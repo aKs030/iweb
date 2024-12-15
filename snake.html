@@ -4,22 +4,142 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snake Spiel</title>
-  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
-  <link href="css/snake-game.css" rel="stylesheet" type="text/css" /> <!-- Snake-Spiel-Styles -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="js/menu.js"></script>
-  <script src="js/footer.js"></script>
-  <script src="js/snake-game.js" type="module"></script> <!-- Snake-Spiel-Script -->
-</head>
-<body>
-  <div class="menu-container"></div>
 
+  <!-- Externe CSS-Dateien -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+  <link rel="stylesheet" href="css/frame.css">
+  <link rel="stylesheet" href="css/controls.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="stylesheet" href="css/snake-game.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&display=swap" rel="stylesheet">
+
+  <!-- JavaScript-Bibliotheken -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" defer></script>
+  <script src="js/menu.js" defer></script>
+  <script src="js/footer.js" defer></script>
+  <script src="js/snake-game.js" type="module" defer></script>
+
+  <style>
+    /* Grundlegendes Layout */
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #333;
+      color: #fff;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .banner {
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #1e90ff, #104e8b);
+      color: #fff;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .banner h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+
+    .banner p {
+      margin: 5px 0 0;
+      font-size: 1.2rem;
+    }
+
+    .main-content {
+      text-align: center;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 500px;
+    }
+
+    canvas {
+      border: 2px solid #fff;
+      margin-bottom: 20px;
+    }
+
+    #menu {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #1e90ff;
+      color: #fff;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #104e8b;
+    }
+
+    #highscores {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    #score-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    #score-board {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+
+
+ <!-- Menü -->
+ <div class="menu-container"></div>
+
+ 
+</head>
+
+
+
+
+
+<body>
+ 
+
+  <!-- Hauptinhalt -->
   <div class="main-content">
     <canvas id="game" width="400" height="400"></canvas>
     <div id="menu">
@@ -43,6 +163,182 @@
     <div id="score-board">Punkte: 0</div>
   </div>
 
-  <div class="footer-container"></div>
+
+
+  <!-- Firebase-Initialisierung -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    // Firebase-Konfiguration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
+      authDomain: "snake-ed264.firebaseapp.com",
+      projectId: "snake-ed264",
+      storageBucket: "snake-ed264.appspot.com",
+      messagingSenderId: "95766919512",
+      appId: "1:95766919512:web:78498968a8383721cecd2d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Snake-Spiel-Logik
+    const canvas = document.getElementById('game');
+    const context = canvas.getContext('2d');
+    const grid = 16;
+    let count = 0, score = 0;
+
+    const snake = { x: 160, y: 160, dx: grid, dy: 0, cells: [], maxCells: 4 };
+    const apple = { x: 320, y: 320 };
+    const menu = document.getElementById('menu');
+    const joystickContainer = document.getElementById('joystick-container');
+    const scoreBoard = document.getElementById('score-board');
+
+    // Funktionen für Highscores
+    async function saveScore(playerName, score) {
+      try {
+        await addDoc(collection(db, "scores"), { name: playerName, score, timestamp: new Date() });
+        fetchScores();
+      } catch (error) {
+        console.error("Fehler beim Speichern:", error);
+      }
+    }
+
+    async function fetchScores() {
+      const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(3));
+      const querySnapshot = await getDocs(q);
+      const scoresList = document.getElementById("score-list");
+      scoresList.innerHTML = "";
+
+      querySnapshot.forEach(doc => {
+        const li = document.createElement("li");
+        li.textContent = `${doc.data().name}: ${doc.data().score}`;
+        scoresList.appendChild(li);
+      });
+    }
+
+    // Spiel zurücksetzen
+    function resetGame() {
+      snake.x = 160;
+      snake.y = 160;
+      snake.cells = [];
+      snake.maxCells = 4;
+      snake.dx = grid;
+      snake.dy = 0;
+      score = 0;
+      scoreBoard.textContent = `Punkte: ${score}`;
+    }
+
+    // Hauptspiel-Schleife
+    function gameLoop() {
+      requestAnimationFrame(gameLoop);
+      if (++count < 4) return;
+      count = 0;
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      snake.x += snake.dx;
+      snake.y += snake.dy;
+
+      // Wand teleportieren
+      if (snake.x < 0) snake.x = canvas.width - grid;
+      else if (snake.x >= canvas.width) snake.x = 0;
+      if (snake.y < 0) snake.y = canvas.height - grid;
+      else if (snake.y >= canvas.height) snake.y = 0;
+
+      // Snake aktualisieren
+      snake.cells.unshift({ x: snake.x, y: snake.y });
+      if (snake.cells.length > snake.maxCells) snake.cells.pop();
+
+      // Apfel
+      context.fillStyle = 'red';
+      context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+      // Snake zeichnen und Kollision prüfen
+      context.fillStyle = 'green';
+      snake.cells.forEach((cell, index) => {
+        context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+        // Apfel essen
+        if (cell.x === apple.x && cell.y === apple.y) {
+          snake.maxCells++;
+          score++;
+          scoreBoard.textContent = `Punkte: ${score}`;
+          apple.x = Math.floor(Math.random() * 25) * grid;
+          apple.y = Math.floor(Math.random() * 25) * grid;
+        }
+
+        // Selbstkollision prüfen
+        for (let i = index + 1; i < snake.cells.length; i++) {
+          if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+            const playerName = prompt("Game Over! Dein Name:");
+            if (playerName) saveScore(playerName, score);
+            resetGame();
+          }
+        }
+      });
+    }
+
+    // Steuerung einrichten
+    document.getElementById("keyboard-control").addEventListener("click", () => {
+      menu.style.display = "none";
+      document.addEventListener('keydown', (e) => {
+        if (e.key === "ArrowLeft" && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+        if (e.key === "ArrowUp" && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+        if (e.key === "ArrowRight" && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+        if (e.key === "ArrowDown" && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+      });
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById("touch-control").addEventListener("click", () => {
+      menu.style.display = "none";
+      let touchStartX, touchStartY;
+      canvas.addEventListener('touchstart', (e) => { 
+        e.preventDefault(); 
+        touchStartX = e.touches[0].clientX; 
+        touchStartY = e.touches[0].clientY; 
+      });
+      canvas.addEventListener('touchend', (e) => {
+        const diffX = e.changedTouches[0].clientX - touchStartX;
+        const diffY = e.changedTouches[0].clientY - touchStartY;
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+          if (diffX < 0 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+        } else {
+          if (diffY > 0 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+          if (diffY < 0 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+        }
+      });
+      requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById("joystick-control").addEventListener("click", () => {
+      menu.style.display = "none";
+      joystickContainer.style.display = "block";
+      joystickContainer.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const dir = e.target.dataset.dir;
+          if (dir === 'up' && snake.dy === 0) { snake.dx = 0; snake.dy = -grid; }
+          if (dir === 'down' && snake.dy === 0) { snake.dx = 0; snake.dy = grid; }
+          if (dir === 'left' && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+          if (dir === 'right' && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+        });
+      });
+      requestAnimationFrame(gameLoop);
+    });
+
+    // Lade Highscores
+    fetchScores();
+  </script>
+
+  
 </body>
+
+
+
+  <!-- Footer -->
+  <div class="footer-container"></div>
+
 </html>

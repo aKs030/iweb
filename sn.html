@@ -2,262 +2,223 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snake Spiel</title>
-  <link rel="stylesheet" href="css/custom.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" rel="stylesheet">
+
   <style>
-    html, body {
+    /* Grundlegendes Layout */
+    body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      background: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #333;
+      color: #fff;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .banner {
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #1e90ff, #104e8b);
+      color: #fff;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .banner h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+
+    .banner p {
+      margin: 5px 0 0;
+      font-size: 1.2rem;
+    }
+
+    .main-content {
+      text-align: center;
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-    }
-    .menu-container, .footer-container {
-      width: 100%;
-    }
-    .game-container {
-      position: relative;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    canvas {
-      border: 1px solid white;
-    }
-    #menu {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
+      background-color: rgba(0, 0, 0, 0.7);
       padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      z-index: 10;
+      border-radius: 15px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 500px;
     }
-    .joystick-container {
-      position: absolute;
-      bottom: 10%;
-      left: 50%;
-      transform: translateX(-50%);
+
+    canvas {
+      border: 2px solid #fff;
+      margin-bottom: 20px;
+    }
+
+    #menu {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
     }
-    .joystick-container button {
-      background: #333;
-      color: white;
-      border: none;
+
+    button {
       padding: 10px 20px;
-      font-size: 18px;
+      font-size: 16px;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
+      background-color: #1e90ff;
+      color: #fff;
+      transition: background-color 0.3s ease;
     }
-    .joystick-container button:active {
-      background: #555;
+
+    button:hover {
+      background-color: #104e8b;
+    }
+
+    #highscores {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    #score-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    #score-board {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="menu-container"></div>
 
-  <div class="game-container">
+  <!-- Banner -->
+  <div class="banner">
+    <h1>Willkommen beim Snake Spiel</h1>
+    <p>Teste deine Reflexe und schlage den Highscore!</p>
+  </div>
+
+  <!-- Hauptinhalt -->
+  <div class="main-content">
     <canvas id="game" width="400" height="400"></canvas>
     <div id="menu">
       <h2>Wähle eine Steuerung</h2>
       <button id="keyboard-control">Tastatur</button>
       <button id="touch-control">Touchscreen</button>
       <button id="joystick-control">Joystick</button>
+    </div>
+    <div id="highscores">
       <h3>Highscores</h3>
       <ul id="score-list">Lade Scores...</ul>
     </div>
+    <div id="score-board">Punkte: 0</div>
   </div>
 
-  <div class="footer-container"></div>
+  <script>
+    const canvas = document.getElementById("game");
+    const context = canvas.getContext("2d");
+    const grid = 16;
+    let count = 0, score = 0;
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    const snake = { x: 160, y: 160, dx: grid, dy: 0, cells: [], maxCells: 4 };
+    const apple = { x: 320, y: 320 };
 
-    const firebaseConfig = {
-      apiKey: "AIzaSy...",
-      authDomain: "snake-ed264.firebaseapp.com",
-      projectId: "snake-ed264",
-      storageBucket: "snake-ed264.firebasestorage.app",
-      messagingSenderId: "95766919512",
-      appId: "1:95766919512:web:78498968a8383721cecd2d"
-    };
+    const menu = document.getElementById("menu");
+    const scoreBoard = document.getElementById("score-board");
+    const highScoresList = document.getElementById("score-list");
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const canvas = document.getElementById('game');
-const context = canvas.getContext('2d');
-const grid = 16;
-let count = 0;
-let score = 0;
-
-const snake = {
-  x: 160,
-  y: 160,
-  dx: grid,
-  dy: 0,
-  cells: [],
-  maxCells: 4,
-};
-
-const apple = {
-  x: 320,
-  y: 320,
-};
-
-async function saveScore(name, score) {
-  try {
-    await addDoc(collection(db, 'scores'), { name, score, timestamp: new Date() });
-    fetchScores();
-  } catch (error) {
-    console.error("Fehler beim Speichern:", error);
-  }
-}
-
-async function fetchScores() {
-  const q = query(collection(db, 'scores'), orderBy('score', 'desc'), limit(3));
-  const snapshot = await getDocs(q);
-  const scores = [];
-  snapshot.forEach(doc => scores.push(doc.data()));
-  
-  const scoreList = document.getElementById('score-list');
-  scoreList.innerHTML = '';
-  scores.forEach(s => {
-    const li = document.createElement('li');
-    li.textContent = `${s.name}: ${s.score}`;
-    scoreList.appendChild(li);
-  });
-}
-
-function resetGame() {
-  snake.x = 160;
-  snake.y = 160;
-  snake.cells = [];
-  snake.maxCells = 4;
-  snake.dx = grid;
-  snake.dy = 0;
-  score = 0;
-}
-
-function gameLoop() {
-  requestAnimationFrame(gameLoop);
-
-  if (++count < 4) return;
-  count = 0;
-
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  snake.x += snake.dx;
-  snake.y += snake.dy;
-
-  if (snake.x < 0) snake.x = canvas.width - grid;
-  if (snake.x >= canvas.width) snake.x = 0;
-  if (snake.y < 0) snake.y = canvas.height - grid;
-  if (snake.y >= canvas.height) snake.y = 0;
-
-  snake.cells.unshift({ x: snake.x, y: snake.y });
-  if (snake.cells.length > snake.maxCells) snake.cells.pop();
-
-  context.fillStyle = 'red';
-  context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
-
-  context.fillStyle = 'green';
-  snake.cells.forEach((cell, index) => {
-    context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
-
-    if (cell.x === apple.x && cell.y === apple.y) {
-      snake.maxCells++;
-      score++;
-      apple.x = Math.floor(Math.random() * 25) * grid;
-      apple.y = Math.floor(Math.random() * 25) * grid;
+    function resetGame() {
+      snake.x = 160;
+      snake.y = 160;
+      snake.cells = [];
+      snake.maxCells = 4;
+      snake.dx = grid;
+      snake.dy = 0;
+      score = 0;
+      scoreBoard.textContent = `Punkte: ${score}`;
     }
 
-    for (let i = index + 1; i < snake.cells.length; i++) {
-      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-        const playerName = prompt("Game Over! Dein Name:");
-        if (playerName) saveScore(playerName, score);
-        resetGame();
-      }
+    function gameLoop() {
+      requestAnimationFrame(gameLoop);
+
+      if (++count < 4) return;
+      count = 0;
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      snake.x += snake.dx;
+      snake.y += snake.dy;
+
+      if (snake.x < 0) snake.x = canvas.width - grid;
+      else if (snake.x >= canvas.width) snake.x = 0;
+
+      if (snake.y < 0) snake.y = canvas.height - grid;
+      else if (snake.y >= canvas.height) snake.y = 0;
+
+      snake.cells.unshift({ x: snake.x, y: snake.y });
+
+      if (snake.cells.length > snake.maxCells) snake.cells.pop();
+
+      context.fillStyle = "red";
+      context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+      context.fillStyle = "green";
+      snake.cells.forEach((cell, index) => {
+        context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+        if (cell.x === apple.x && cell.y === apple.y) {
+          snake.maxCells++;
+          score++;
+          scoreBoard.textContent = `Punkte: ${score}`;
+          apple.x = Math.floor(Math.random() * 25) * grid;
+          apple.y = Math.floor(Math.random() * 25) * grid;
+        }
+
+        for (let i = index + 1; i < snake.cells.length; i++) {
+          if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+            alert("Game Over!");
+            resetGame();
+          }
+        }
+      });
     }
-  });
-}
 
-function setupKeyboardControls() {
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
-    if (e.key === 'ArrowUp' && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
-    if (e.key === 'ArrowRight' && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
-    if (e.key === 'ArrowDown' && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
-  });
-}
-
-function setupTouchControls() {
-  let startX = 0, startY = 0;
-  canvas.addEventListener('touchstart', (e) => {
-    const touch = e.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
-  });
-
-  canvas.addEventListener('touchend', (e) => {
-    const touch = e.changedTouches[0];
-    const diffX = touch.clientX - startX;
-    const diffY = touch.clientY - startY;
-
-    if (Math.abs(diffX) > Math.abs(diffY)) {
-      if (diffX > 0 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
-      if (diffX < 0 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
-    } else {
-      if (diffY > 0 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
-      if (diffY < 0 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
-    }
-  });
-}
-
-function setupJoystickControls() {
-  const joystick = document.querySelector('.joystick-container');
-  joystick.style.display = 'flex';
-  joystick.querySelectorAll('button').forEach(button => {
-    button.addEventListener('click', () => {
-      const dir = button.getAttribute('data-dir');
-      if (dir === 'up' && snake.dy === 0) { snake.dx = 0; snake.dy = -grid; }
-      if (dir === 'down' && snake.dy === 0) { snake.dx = 0; snake.dy = grid; }
-      if (dir === 'left' && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
-      if (dir === 'right' && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+    document.getElementById("keyboard-control").addEventListener("click", () => {
+      menu.style.display = "none";
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+        if (e.key === "ArrowUp" && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+        if (e.key === "ArrowRight" && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+        if (e.key === "ArrowDown" && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+      });
+      requestAnimationFrame(gameLoop);
     });
-  });
-}
 
-// Steuerungsauswahl
-document.getElementById('keyboard-control').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  setupKeyboardControls();
-  gameLoop();
-});
+    function fetchHighScores() {
+      highScoresList.innerHTML = "<li>Max: 10</li><li>Anna: 8</li><li>Tom: 6</li>";
+    }
 
-document.getElementById('touch-control').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  setupTouchControls();
-  gameLoop();
-});
-
-document.getElementById('joystick-control').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  setupJoystickControls();
-  gameLoop();
-});
-
-// Highscores laden
-fetchScores();
+    fetchHighScores();
   </script>
 </body>
 </html>

@@ -1,74 +1,97 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+ body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #333;
+      color: #fff;
+      font-family: 'Open Sans', sans-serif;
+    }
 
-canvas {
-  border: 1px solid white;
-}
+    .main-content {
+      text-align: center;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 500px;
+    }
 
-#menu {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+    canvas {
+      border: 2px solid #fff;
+      margin-bottom: 20px;
+    }
 
-#joystick-container {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+    #menu {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+    }
 
-#joystick-container button {
-  background: #333;
-  color: white;
-  border: none;
-  padding: 10px;
-  margin: 5px;
-  font-size: 20px;
-  border-radius: 5px;
-  cursor: pointer;
-}
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #1e90ff;
+      color: #fff;
+      transition: background-color 0.3s ease;
+    }
 
-#joystick-container button:active {
-  background: #555;
-}
+    button:hover {
+      background-color: #104e8b;
+    }
 
-#score-display {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  color: white;
-  font-size: 20px;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 5px 10px;
-  border-radius: 5px;
-}
+    #highscores {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      width: 100%;
+    }
 
-#highscores {
-  margin-top: 20px;
-  text-align: left;
-}
+    #score-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 16px;
+      color: #fff;
+    }
 
-#highscores ul {
-  list-style: none;
-  padding: 0;
-}
+    #joystick-container {
+      display: none;
+      margin-top: 20px;
+    }
 
-#highscores li {
-  margin: 5px 0;
-}
+    #joystick-container button {
+      font-size: 20px;
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      border: 2px solid #fff;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #joystick-container button:hover {
+      background-color: #1e90ff;
+    }
+
+    #score-board {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
