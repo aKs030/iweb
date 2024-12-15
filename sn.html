@@ -1,23 +1,49 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Snake Spiel</title>
+  
+  <!-- Fonts and Icons -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet" type="text/css">
+  
+  <!-- Custom Styles -->
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
+      font-family: 'Open Sans', sans-serif;
       background: black;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
     }
+
+    .menu-container {
+      height: 60px;
+      background: #333;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .menu-container .title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
     canvas {
       border: 1px solid white;
+      margin: auto;
+      display: block;
     }
+
     #menu {
       position: absolute;
       top: 50%;
@@ -28,6 +54,7 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
+
     #joystick-container {
       position: absolute;
       bottom: 20px;
@@ -37,6 +64,7 @@
       flex-direction: column;
       align-items: center;
     }
+
     #joystick-container button {
       background: #333;
       color: white;
@@ -47,9 +75,11 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
     #joystick-container button:active {
       background: #555;
     }
+
     #score-board {
       position: absolute;
       top: 10px;
@@ -60,21 +90,41 @@
       padding: 5px 10px;
       border-radius: 5px;
     }
+
     #highscores {
       margin-top: 20px;
       text-align: left;
     }
+
     #highscores ul {
       list-style: none;
       padding: 0;
     }
+
     #highscores li {
       margin: 5px 0;
     }
+
+    .footer-container {
+      background: #333;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
   </style>
 </head>
+
 <body>
+  <div class="menu-container">
+    <span class="title">Snake Spiel</span>
+    <span>Live Score</span>
+  </div>
+  
   <canvas id="game" width="400" height="400"></canvas>
+  
   <div id="menu">
     <h2>Wähle eine Steuerung</h2>
     <button id="keyboard-control">Tastatur</button>
@@ -85,6 +135,7 @@
       <ul id="score-list">Lade Scores...</ul>
     </div>
   </div>
+  
   <div id="joystick-container">
     <button data-dir="up">⬆</button>
     <div>
@@ -93,8 +144,14 @@
     </div>
     <button data-dir="down">⬇</button>
   </div>
+  
   <div id="score-board">Punkte: 0</div>
 
+  <div class="footer-container">
+    © 2024 Snake Spiel - Erstellt mit Liebe
+  </div>
+  
+  <!-- Spielskript -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -166,7 +223,6 @@
 
     function gameLoop() {
       requestAnimationFrame(gameLoop);
-
       if (++count < 4) return;
 
       count = 0;
@@ -219,57 +275,9 @@
       });
     }
 
-    function setupTouchControls() {
-      let touchStartX, touchStartY;
-      canvas.addEventListener("touchstart", (e) => {
-        const touch = e.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-      });
-      canvas.addEventListener("touchend", (e) => {
-        const diffX = e.changedTouches[0].clientX - touchStartX;
-        const diffY = e.changedTouches[0].clientY - touchStartY;
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-          if (diffX > 0 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
-          if (diffX < 0 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
-        } else {
-          if (diffY > 0 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
-          if (diffY < 0 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
-        }
-      });
-    }
-
-    function setupJoystickControls() {
-      const joystickContainer = document.getElementById("joystick-container");
-      joystickContainer.style.display = "flex";
-
-      joystickContainer.querySelectorAll("button").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          const direction = e.target.getAttribute("data-dir");
-          if (direction === "up" && snake.dy === 0) { snake.dx = 0; snake.dy = -grid; }
-          if (direction === "down" && snake.dy === 0) { snake.dx = 0; snake.dy = grid; }
-          if (direction === "left" && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
-          if (direction === "right" && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
-        });
-      });
-    }
-
     document.getElementById("keyboard-control").addEventListener("click", () => {
       document.getElementById("menu").style.display = "none";
       setupKeyboardControls();
-      requestAnimationFrame(gameLoop);
-    });
-
-    document.getElementById("touch-control").addEventListener("click", () => {
-      document.getElementById("menu").style.display = "none";
-      setupTouchControls();
-      requestAnimationFrame(gameLoop);
-    });
-
-    document.getElementById("joystick-control").addEventListener("click", () => {
-      document.getElementById("menu").style.display = "none";
-      setupJoystickControls();
       requestAnimationFrame(gameLoop);
     });
 
