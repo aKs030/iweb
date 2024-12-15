@@ -114,21 +114,6 @@
   max-width: 90%; /* Begrenzte Breite für kleinere Bildschirme */
   width: 400px; /* Standardbreite für mittlere Geräte */
 }
-
-/*
-    #menu h2 {
-      font-size: 22px;
-      margin-bottom: 15px;
-      font-family: 'Source Sans Pro', sans-serif;
-    }
-
-
-
-    #menu button:hover {
-      background-color: #e67e22;
-      transform: scale(1.05);
-    }
-*/
  
     #score-board {
   position: fixed; /* Fixiert die Punkteanzeige im Viewport */
@@ -197,71 +182,66 @@
   <!-- Webseite Menü -->
   <div class="menu-container"></div>
 
-  <div class="main-content">
-    <!-- Spielfeld -->
-    <canvas id="game" width="400" height="400"></canvas>
-    <!-- Menü -->
-    <div id="menu">
-        
-        <h2>Wähle eine Steuerung</h2>
-        <hr>
-        <ul class="nested">
-          <!-- Tastatur-Steuerung 
+<div class="main-content">
+  <!-- Spielfeld -->
+  <canvas id="game" width="400" height="400"></canvas>
 
-          <button class="menu-button custom-button-flat small pulse-primary" id="keyboard-control">
-            <img src="img/book.png" alt="Icon">
-            <span>Button-Text</span>
+  <!-- Menü -->
+  <div id="menu">
+    <h2>Wähle eine Steuerung</h2>
+    <hr>
+    <ul class="nested">
+      <!-- Tastatur-Steuerung -->
+        <a class="menu-button" id="keyboard-control">
+          <button class="custom-button-flat small pulse-primary">
+            <img src="img/book.png" alt="Tastatur-Icon">
+            <span>Tastatur</span>
+        </button>
+        </a>
+
+      <hr>
+
+      <!-- Touchscreen-Steuerung -->
+        <a class="menu-button" id="touch-control">
+          <button class="custom-button-flat small pulse-primary">
+            <img src="img/book.png" alt="Touchscreen-Icon">
+            <span>Touchscreen</span>
           </button>
+        </a>
 
-          -->
+      <hr>
 
-            <a class="menu-button" id="keyboard-control">
-              <button class="custom-button-flat small pulse-primary">
-                <img src="img/book.png" alt="Tastatur-Icon">
-                <span>Tastatur</span>
-              </button>
-            </a>
+      <!-- Joystick-Steuerung -->
+        <a class="menu-button" id="joystick-control">
+          <button class="custom-button-flat small pulse-primary">
+            <img src="img/book.png" alt="Joystick-Icon">
+            <span>Joystick</span>
+          </button>
+        </a>
+    </ul>
+    <hr>
 
-            <hr>
-          <!-- Touchscreen-Steuerung -->
-
-            <a class="menu-button" id="touch-control">
-              <button class="custom-button-flat small pulse-primary">
-                <img src="img/book.png" alt="Touchscreen-Icon">
-                <span>Touchscreen</span>
-              </button>
-            </a>
-            <hr>
-        
-          <!-- Joystick-Steuerung -->
-            <a class="menu-button" id="joystick-control">
-              <button class="custom-button-flat small pulse-primary">
-                <img src="img/book.png" alt="Joystick-Icon">
-                <span>Joystick</span>
-              </button>
-            </a>
-        </ul>
-        <hr>
-
-      <div id="highscores">
-        <h2>Highscores</h2>
-     <ul id="score-list">Lade Scores...</ul>
-      </div>
+    <!-- Highscores -->
+    <div id="highscores">
+      <h2>Highscores</h2>
+      <ul id="score-list">Lade Scores...</ul>
     </div>
-
-    <!-- Joystick -->
-    <div id="joystick-container" style="display: none;">
-      <button data-dir="up">⬆</button>
-      <div>
-        <button data-dir="left">⬅</button>
-        <button data-dir="right">➡</button>
-      </div>
-      <button data-dir="down">⬇</button>
-    </div>
-
-    <!-- Punkteanzeige -->
-    <div id="score-board">Punkte: 0</div>
   </div>
+
+  <!-- Joystick -->
+  <div id="joystick-container" style="display: none;">
+    <button data-dir="up">⬆</button>
+    <div>
+      <button data-dir="left">⬅</button>
+      <button data-dir="right">➡</button>
+    </div>
+    <button data-dir="down">⬇</button>
+  </div>
+
+  <!-- Punkteanzeige -->
+  <div id="score-board">Punkte: 0</div>
+</div>
+
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
