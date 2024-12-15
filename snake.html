@@ -1,5 +1,3 @@
-Master
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -22,6 +20,7 @@ Master
 
   <style>
     /* Grundlegendes Layout */
+    
     body {
       margin: 0;
       padding: 0;
@@ -29,13 +28,22 @@ Master
       color: #fff;
       background-color: #333;
     }
+    
+    html, body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
 
     .menu-container {
       width: 100%;
+      max-width: 100vw;
       background-color: #444;
       color: white;
-      padding: 10px 20px;
+      padding: 0 10px; /* Reduziert seitlichen Abstand */
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box; /* Polsterung in der Breite enthalten */
+
     }
 
     .menu-container ul {
@@ -117,16 +125,19 @@ Master
       transform: scale(1.05);
     }
 
+ 
     #score-board {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-family: 'Source Sans Pro', sans-serif;
-    }
+  position: fixed; /* Fixiert die Punkteanzeige im Viewport */
+  top: 55px;    /* Abstand vom unteren Rand */
+  right: 90px;     /* Abstand vom rechten Rand */
+  font-size: 15px;
+  background: rgba(0, 0, 0, 0.7); /* Halbtransparenter Hintergrund */
+  padding: 10px 15px; /* Innenabstand */
+  border-radius: 8px; /* Abgerundete Ecken */
+  font-family: 'Source Sans Pro', sans-serif;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5); /* Schatteneffekt */
+}
+
 
     #joystick-container {
       position: fixed;
@@ -134,9 +145,11 @@ Master
       left: 50%;
       transform: translateX(-50%);
       display: grid;
-      grid-template-columns: 50px 50px 50px;
+      grid-template-columns: auto;
       grid-gap: 10px;
       align-items: center;
+      max-width: 100%; /* Verhindert, dass Joystick-Buttons Überbreite erzeugen */
+
     }
 
     #joystick-container button {
@@ -171,11 +184,10 @@ Master
       color: #fff;
     }
 
-    #score-board {
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
-    }
+
+
+
+
   </style>
 </head>
 <body>
@@ -277,10 +289,31 @@ Master
     }
 
     function resizeCanvas() {
-      const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
-      canvas.width = size;
-      canvas.height = size;
-    }
+  const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+  canvas.width = size;
+  canvas.height = size;
+
+  // Verhindert, dass Canvas den Viewport überschreitet
+  canvas.style.maxWidth = "100%";
+  canvas.style.maxHeight = "100%";
+}
+
+
+// Aktualisiere die Position des Apfels basierend auf der neuen Canvas-Größe
+function adjustApplePosition() {
+  apple.x = Math.floor(Math.random() * (canvas.width / grid)) * grid;
+  apple.y = Math.floor(Math.random() * (canvas.height / grid)) * grid;
+}
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  resetGame(); // Optional: Spiel zurücksetzen
+});
+
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  resetGame(); // Optional: Spiel zurücksetzen
+});
+
 
    // Hauptspiel-Schleife
    function gameLoop() {
@@ -342,6 +375,33 @@ Master
       });
       requestAnimationFrame(gameLoop);
     });
+
+    document.addEventListener('keydown', (e) => {
+  // Standardverhalten für Pfeiltasten verhindern
+  if (["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(e.key)) {
+    e.preventDefault();
+  }
+
+  // Bewegungslogik
+  if (e.key === "ArrowLeft" && snake.dx === 0) { 
+    snake.dx = -grid; 
+    snake.dy = 0; 
+  }
+  if (e.key === "ArrowUp" && snake.dy === 0) { 
+    snake.dy = -grid; 
+    snake.dx = 0; 
+  }
+  if (e.key === "ArrowRight" && snake.dx === 0) { 
+    snake.dx = grid; 
+    snake.dy = 0; 
+  }
+  if (e.key === "ArrowDown" && snake.dy === 0) { 
+    snake.dy = grid; 
+    snake.dx = 0; 
+  }
+});
+
+
 
     document.getElementById("touch-control").addEventListener("click", () => {
       menu.style.display = "none";
