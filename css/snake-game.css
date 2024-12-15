@@ -1,72 +1,48 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: black;
-  color: white;
-}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Spiel</title>
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <link href="css/snake-game.css" rel="stylesheet" type="text/css" /> <!-- Snake-Spiel-Styles -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/snake-game.js" type="module"></script> <!-- Snake-Spiel-Script -->
+</head>
+<body>
+  <div class="menu-container"></div>
 
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+  <div class="main-content">
+    <canvas id="game" width="400" height="400"></canvas>
+    <div id="menu">
+      <h2>Wähle eine Steuerung</h2>
+      <button id="keyboard-control">Tastatur</button>
+      <button id="touch-control">Touchscreen</button>
+      <button id="joystick-control">Joystick</button>
+      <div id="highscores">
+        <h3>Highscores</h3>
+        <ul id="score-list">Lade Scores...</ul>
+      </div>
+    </div>
+    <div id="joystick-container" style="display: none;">
+      <button data-dir="up">⬆</button>
+      <div>
+        <button data-dir="left">⬅</button>
+        <button data-dir="right">➡</button>
+      </div>
+      <button data-dir="down">⬇</button>
+    </div>
+    <div id="score-board">Punkte: 0</div>
+  </div>
 
-canvas {
-  border: 1px solid white;
-  margin-bottom: 20px;
-}
-
-#menu {
-  position: relative;
-  background: white;
-  color: black;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-#highscores ul {
-  list-style: none;
-  padding: 0;
-}
-
-#joystick-container {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  display: none;
-}
-
-#joystick-container button {
-  background: #333;
-  color: white;
-  border: none;
-  padding: 10px;
-  margin: 5px;
-  font-size: 20px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-#joystick-container button:active {
-  background: #555;
-}
-
-#score-board {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 5px 10px;
-  border-radius: 5px;
-}
+  <div class="footer-container"></div>
+</body>
+</html>
