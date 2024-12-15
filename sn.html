@@ -1,20 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snake Spiel</title>
+  
+  <!-- Externe CSS-Dateien -->
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
+  <link href="css/frame.css" rel="stylesheet">
+  <link href="css/controls.css" rel="stylesheet">
+  <link href="css/custom.css" rel="stylesheet">
+  
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: black;
-    }
+    /* Anpassungen für das Snake-Spiel */
     canvas {
+      border: 1px solid white;
       display: block;
       margin: 0 auto;
-      border: 1px solid white;
     }
     #menu {
       position: absolute;
@@ -26,148 +29,94 @@
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
+    #joystick-container {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      display: none;
+    }
+    #joystick-container button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin: 5px;
+      font-size: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #joystick-container button:active {
+      background: #555;
+    }
+    #score-board {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      font-size: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
   </style>
 </head>
+
 <body>
+  <div class="menu-container"></div> <!-- Dynamisches Menü -->
+  
   <canvas id="game" width="400" height="400"></canvas>
+  
   <div id="menu">
     <h2>Wähle eine Steuerung</h2>
     <button id="keyboard-control">Tastatur</button>
     <button id="touch-control">Touchscreen</button>
+    <button id="joystick-control">Joystick</button>
   </div>
+  
+  <div id="joystick-container">
+    <button data-dir="up">⬆</button>
+    <div>
+      <button data-dir="left">⬅</button>
+      <button data-dir="right">➡</button>
+    </div>
+    <button data-dir="down">⬇</button>
+  </div>
+  
+  <div id="score-board">Punkte: 0</div>
+  
+  <div class="footer-container"></div> <!-- Dynamischer Footer -->
 
-  <script>
-    const canvas = document.getElementById('game');
-    const context = canvas.getContext('2d');
+  <!-- JavaScript -->
+  <script src="js/menu.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/snake-game.js"></script> <!-- Das Hauptspiel -->
 
-    if (!context) {
-      console.error('Canvas-Rendering-Context konnte nicht initialisiert werden!');
-    }
+  <!-- Firebase Setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    const grid = 16;
-    let count = 0;
-    let score = 0;
-
-    const snake = {
-      x: 160,
-      y: 160,
-      dx: grid,
-      dy: 0,
-      cells: [],
-      maxCells: 4,
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
+      authDomain: "snake-ed264.firebaseapp.com",
+      projectId: "snake-ed264",
+      storageBucket: "snake-ed264.firebasestorage.app",
+      messagingSenderId: "95766919512",
+      appId: "1:95766919512:web:78498968a8383721cecd2d"
     };
 
-    const apple = {
-      x: Math.floor(Math.random() * 25) * grid,
-      y: Math.floor(Math.random() * 25) * grid,
-    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    function gameLoop() {
-      requestAnimationFrame(gameLoop);
-
-      if (++count < 4) return;
-
-      count = 0;
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      snake.x += snake.dx;
-      snake.y += snake.dy;
-
-      if (snake.x < 0) snake.x = canvas.width - grid;
-      else if (snake.x >= canvas.width) snake.x = 0;
-
-      if (snake.y < 0) snake.y = canvas.height - grid;
-      else if (snake.y >= canvas.height) snake.y = 0;
-
-      snake.cells.unshift({ x: snake.x, y: snake.y });
-      if (snake.cells.length > snake.maxCells) snake.cells.pop();
-
-      context.fillStyle = 'red';
-      context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
-
-      context.fillStyle = 'green';
-      snake.cells.forEach((cell, index) => {
-        context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
-
-        if (cell.x === apple.x && cell.y === apple.y) {
-          snake.maxCells++;
-          score++;
-          apple.x = Math.floor(Math.random() * 25) * grid;
-          apple.y = Math.floor(Math.random() * 25) * grid;
-        }
-
-        for (let i = index + 1; i < snake.cells.length; i++) {
-          if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-            alert(`Game Over! Dein Score: ${score}`);
-            resetGame();
-          }
-        }
-      });
-    }
-
-    function resetGame() {
-      snake.x = 160;
-      snake.y = 160;
-      snake.dx = grid;
-      snake.dy = 0;
-      snake.cells = [];
-      snake.maxCells = 4;
-      score = 0;
-    }
-
-    document.getElementById('keyboard-control').addEventListener('click', () => {
-      document.getElementById('menu').style.display = 'none';
-      document.addEventListener('keydown', (e) => {
-        if (e.key === "ArrowLeft" && snake.dx === 0) {
-          snake.dx = -grid;
-          snake.dy = 0;
-        } else if (e.key === "ArrowUp" && snake.dy === 0) {
-          snake.dy = -grid;
-          snake.dx = 0;
-        } else if (e.key === "ArrowRight" && snake.dx === 0) {
-          snake.dx = grid;
-          snake.dy = 0;
-        } else if (e.key === "ArrowDown" && snake.dy === 0) {
-          snake.dy = grid;
-          snake.dx = 0;
-        }
-      });
-      requestAnimationFrame(gameLoop);
-    });
-
-    document.getElementById('touch-control').addEventListener('click', () => {
-      document.getElementById('menu').style.display = 'none';
-      let touchStartX = 0, touchStartY = 0;
-
-      canvas.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      });
-
-      canvas.addEventListener('touchend', (e) => {
-        const diffX = e.changedTouches[0].clientX - touchStartX;
-        const diffY = e.changedTouches[0].clientY - touchStartY;
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-          if (diffX > 0 && snake.dx === 0) {
-            snake.dx = grid;
-            snake.dy = 0;
-          } else if (diffX < 0 && snake.dx === 0) {
-            snake.dx = -grid;
-            snake.dy = 0;
-          }
-        } else {
-          if (diffY > 0 && snake.dy === 0) {
-            snake.dy = grid;
-            snake.dx = 0;
-          } else if (diffY < 0 && snake.dy === 0) {
-            snake.dy = -grid;
-            snake.dx = 0;
-          }
-        }
-      });
-      requestAnimationFrame(gameLoop);
+    // Spielcode ausführen
+    window.addEventListener('DOMContentLoaded', () => {
+      initializeSnakeGame(db);
     });
   </script>
 </body>
+
 </html>
