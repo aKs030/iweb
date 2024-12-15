@@ -15,17 +15,27 @@ const db = getFirestore(app);
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
-
 const grid = 16;
 let count = 0;
 let score = 0;
 
-const snake = { x: 160, y: 160, dx: grid, dy: 0, cells: [], maxCells: 4 };
-const apple = { x: 320, y: 320 };
+const snake = {
+  x: 160,
+  y: 160,
+  dx: grid,
+  dy: 0,
+  cells: [],
+  maxCells: 4,
+};
 
-async function saveScore(playerName, score) {
+const apple = {
+  x: 320,
+  y: 320,
+};
+
+async function saveScore(name, score) {
   try {
-    await addDoc(collection(db, "scores"), { name: playerName, score, timestamp: new Date() });
+    await addDoc(collection(db, 'scores'), { name, score, timestamp: new Date() });
     fetchScores();
   } catch (error) {
     console.error("Fehler beim Speichern:", error);
@@ -33,15 +43,17 @@ async function saveScore(playerName, score) {
 }
 
 async function fetchScores() {
-  const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(3));
-  const querySnapshot = await getDocs(q);
-  const scoresList = document.getElementById("score-list");
-  scoresList.innerHTML = "";
+  const q = query(collection(db, 'scores'), orderBy('score', 'desc'), limit(3));
+  const snapshot = await getDocs(q);
+  const scores = [];
+  snapshot.forEach(doc => scores.push(doc.data()));
 
-  querySnapshot.forEach(doc => {
-    const li = document.createElement("li");
-    li.textContent = `${doc.data().name}: ${doc.data().score}`;
-    scoresList.appendChild(li);
+  const scoreList = document.getElementById('score-list');
+  scoreList.innerHTML = '';
+  scores.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = `${s.name}: ${s.score}`;
+    scoreList.appendChild(li);
   });
 }
 
@@ -53,23 +65,22 @@ function resetGame() {
   snake.dx = grid;
   snake.dy = 0;
   score = 0;
-  document.getElementById("score-board").textContent = `Punkte: ${score}`;
 }
 
 function gameLoop() {
   requestAnimationFrame(gameLoop);
+
   if (++count < 4) return;
   count = 0;
-  context.clearRect(0, 0, canvas.width, canvas.height);
 
+  context.clearRect(0, 0, canvas.width, canvas.height);
   snake.x += snake.dx;
   snake.y += snake.dy;
 
   if (snake.x < 0) snake.x = canvas.width - grid;
-  else if (snake.x >= canvas.width) snake.x = 0;
-
+  if (snake.x >= canvas.width) snake.x = 0;
   if (snake.y < 0) snake.y = canvas.height - grid;
-  else if (snake.y >= canvas.height) snake.y = 0;
+  if (snake.y >= canvas.height) snake.y = 0;
 
   snake.cells.unshift({ x: snake.x, y: snake.y });
   if (snake.cells.length > snake.maxCells) snake.cells.pop();
@@ -80,10 +91,10 @@ function gameLoop() {
   context.fillStyle = 'green';
   snake.cells.forEach((cell, index) => {
     context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
     if (cell.x === apple.x && cell.y === apple.y) {
       snake.maxCells++;
       score++;
-      document.getElementById("score-board").textContent = `Punkte: ${score}`;
       apple.x = Math.floor(Math.random() * 25) * grid;
       apple.y = Math.floor(Math.random() * 25) * grid;
     }
@@ -100,17 +111,18 @@ function gameLoop() {
 
 function setupKeyboardControls() {
   document.addEventListener('keydown', (e) => {
-    if (e.key === "ArrowLeft" && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
-    if (e.key === "ArrowUp" && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
-    if (e.key === "ArrowRight" && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
-    if (e.key === "ArrowDown" && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+    if (e.key === 'ArrowLeft' && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+    if (e.key === 'ArrowUp' && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+    if (e.key === 'ArrowRight' && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+    if (e.key === 'ArrowDown' && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
   });
 }
 
-document.getElementById("keyboard-control").addEventListener("click", () => {
-  document.getElementById("menu").style.display = "none";
+// Steuerungsauswahl
+document.getElementById('keyboard-control').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
   setupKeyboardControls();
-  requestAnimationFrame(gameLoop);
+  gameLoop();
 });
 
 fetchScores();
