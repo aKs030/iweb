@@ -1,12 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snake Spiel</title>
-  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-  <link href="css/custom.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet">
   <style>
     html, body {
       margin: 0;
@@ -14,12 +12,11 @@
       height: 100%;
       background: black;
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      align-items: center;
+      justify-content: center;
     }
     canvas {
       border: 1px solid white;
-      margin: auto;
     }
     #menu {
       position: absolute;
@@ -32,12 +29,11 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     #joystick-container {
-      display: none;
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
     }
@@ -54,19 +50,8 @@
     #joystick-container button:active {
       background: #555;
     }
-    #highscores {
-      margin-top: 20px;
-      text-align: center;
-    }
-    #highscores ul {
-      list-style: none;
-      padding: 0;
-    }
-    #highscores li {
-      margin: 5px 0;
-    }
     #score-board {
-      position: fixed;
+      position: absolute;
       top: 10px;
       right: 10px;
       color: white;
@@ -75,9 +60,19 @@
       padding: 5px 10px;
       border-radius: 5px;
     }
+    #highscores {
+      margin-top: 20px;
+      text-align: left;
+    }
+    #highscores ul {
+      list-style: none;
+      padding: 0;
+    }
+    #highscores li {
+      margin: 5px 0;
+    }
   </style>
 </head>
-
 <body>
   <canvas id="game" width="400" height="400"></canvas>
   <div id="menu">
@@ -118,7 +113,6 @@
 
     const canvas = document.getElementById("game");
     const context = canvas.getContext("2d");
-
     const grid = 16;
     let count = 0;
     let score = 0;
@@ -139,11 +133,7 @@
 
     async function saveScore(playerName, score) {
       try {
-        await addDoc(collection(db, "scores"), {
-          name: playerName,
-          score: score,
-          timestamp: new Date(),
-        });
+        await addDoc(collection(db, "scores"), { name: playerName, score, timestamp: new Date() });
         fetchScores();
       } catch (error) {
         console.error("Fehler beim Speichern:", error);
@@ -153,13 +143,13 @@
     async function fetchScores() {
       const q = query(collection(db, "scores"), orderBy("score", "desc"), limit(3));
       const querySnapshot = await getDocs(q);
-      const scoreList = document.getElementById("score-list");
-      scoreList.innerHTML = "";
+      const scoresList = document.getElementById("score-list");
+      scoresList.innerHTML = "";
 
       querySnapshot.forEach((doc) => {
         const li = document.createElement("li");
         li.textContent = `${doc.data().name}: ${doc.data().score}`;
-        scoreList.appendChild(li);
+        scoresList.appendChild(li);
       });
     }
 
@@ -176,9 +166,10 @@
 
     function gameLoop() {
       requestAnimationFrame(gameLoop);
-      if (++count < 4) return;
-      count = 0;
 
+      if (++count < 4) return;
+
+      count = 0;
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       snake.x += snake.dx;
@@ -191,6 +182,7 @@
       else if (snake.y >= canvas.height) snake.y = 0;
 
       snake.cells.unshift({ x: snake.x, y: snake.y });
+
       if (snake.cells.length > snake.maxCells) snake.cells.pop();
 
       context.fillStyle = "red";
@@ -218,83 +210,70 @@
       });
     }
 
-    function setupControls(type) {
-      if (type === "keyboard") {
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "ArrowLeft" && snake.dx === 0) {
-            snake.dx = -grid;
-            snake.dy = 0;
-          }
-          if (e.key === "ArrowUp" && snake.dy === 0) {
-            snake.dy = -grid;
-            snake.dx = 0;
-          }
-          if (e.key === "ArrowRight" && snake.dx === 0) {
-            snake.dx = grid;
-            snake.dy = 0;
-          }
-          if (e.key === "ArrowDown" && snake.dy === 0) {
-            snake.dy = grid;
-            snake.dx = 0;
-          }
-        });
-      } else if (type === "touch") {
-        let touchStartX, touchStartY;
+    function setupKeyboardControls() {
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+        if (e.key === "ArrowUp" && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+        if (e.key === "ArrowRight" && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+        if (e.key === "ArrowDown" && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+      });
+    }
 
-        canvas.addEventListener("touchstart", (e) => {
-          const touch = e.touches[0];
-          touchStartX = touch.clientX;
-          touchStartY = touch.clientY;
-        });
+    function setupTouchControls() {
+      let touchStartX, touchStartY;
+      canvas.addEventListener("touchstart", (e) => {
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      });
+      canvas.addEventListener("touchend", (e) => {
+        const diffX = e.changedTouches[0].clientX - touchStartX;
+        const diffY = e.changedTouches[0].clientY - touchStartY;
 
-        canvas.addEventListener("touchend", (e) => {
-          const diffX = e.changedTouches[0].clientX - touchStartX;
-          const diffY = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+          if (diffX < 0 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+        } else {
+          if (diffY > 0 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+          if (diffY < 0 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+        }
+      });
+    }
 
-          if (Math.abs(diffX) > Math.abs(diffY)) {
-            if (diffX > 0 && snake.dx === 0) snake.dx = grid;
-            else if (diffX < 0 && snake.dx === 0) snake.dx = -grid;
-          } else {
-            if (diffY > 0 && snake.dy === 0) snake.dy = grid;
-            else if (diffY < 0 && snake.dy === 0) snake.dy = -grid;
-          }
-        });
-      } else if (type === "joystick") {
-        const joystick = document.getElementById("joystick-container");
-        joystick.style.display = "flex";
+    function setupJoystickControls() {
+      const joystickContainer = document.getElementById("joystick-container");
+      joystickContainer.style.display = "flex";
 
-        joystick.querySelectorAll("button").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            const direction = e.target.getAttribute("data-dir");
-            if (direction === "up" && snake.dy === 0) snake.dy = -grid;
-            else if (direction === "down" && snake.dy === 0) snake.dy = grid;
-            else if (direction === "left" && snake.dx === 0) snake.dx = -grid;
-            else if (direction === "right" && snake.dx === 0) snake.dx = grid;
-          });
+      joystickContainer.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const direction = e.target.getAttribute("data-dir");
+          if (direction === "up" && snake.dy === 0) { snake.dx = 0; snake.dy = -grid; }
+          if (direction === "down" && snake.dy === 0) { snake.dx = 0; snake.dy = grid; }
+          if (direction === "left" && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+          if (direction === "right" && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
         });
-      }
+      });
     }
 
     document.getElementById("keyboard-control").addEventListener("click", () => {
-      menu.style.display = "none";
-      setupControls("keyboard");
+      document.getElementById("menu").style.display = "none";
+      setupKeyboardControls();
       requestAnimationFrame(gameLoop);
     });
 
     document.getElementById("touch-control").addEventListener("click", () => {
-      menu.style.display = "none";
-      setupControls("touch");
+      document.getElementById("menu").style.display = "none";
+      setupTouchControls();
       requestAnimationFrame(gameLoop);
     });
 
     document.getElementById("joystick-control").addEventListener("click", () => {
-      menu.style.display = "none";
-      setupControls("joystick");
+      document.getElementById("menu").style.display = "none";
+      setupJoystickControls();
       requestAnimationFrame(gameLoop);
     });
 
     fetchScores();
   </script>
 </body>
-
 </html>
