@@ -95,7 +95,169 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Spiel-Logik hier...
+    const canvas = document.getElementById('game');
+const context = canvas.getContext('2d');
+const grid = 16;
+let count = 0;
+let score = 0;
+
+const snake = {
+  x: 160,
+  y: 160,
+  dx: grid,
+  dy: 0,
+  cells: [],
+  maxCells: 4,
+};
+
+const apple = {
+  x: 320,
+  y: 320,
+};
+
+async function saveScore(name, score) {
+  try {
+    await addDoc(collection(db, 'scores'), { name, score, timestamp: new Date() });
+    fetchScores();
+  } catch (error) {
+    console.error("Fehler beim Speichern:", error);
+  }
+}
+
+async function fetchScores() {
+  const q = query(collection(db, 'scores'), orderBy('score', 'desc'), limit(3));
+  const snapshot = await getDocs(q);
+  const scores = [];
+  snapshot.forEach(doc => scores.push(doc.data()));
+  
+  const scoreList = document.getElementById('score-list');
+  scoreList.innerHTML = '';
+  scores.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = `${s.name}: ${s.score}`;
+    scoreList.appendChild(li);
+  });
+}
+
+function resetGame() {
+  snake.x = 160;
+  snake.y = 160;
+  snake.cells = [];
+  snake.maxCells = 4;
+  snake.dx = grid;
+  snake.dy = 0;
+  score = 0;
+}
+
+function gameLoop() {
+  requestAnimationFrame(gameLoop);
+
+  if (++count < 4) return;
+  count = 0;
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  snake.x += snake.dx;
+  snake.y += snake.dy;
+
+  if (snake.x < 0) snake.x = canvas.width - grid;
+  if (snake.x >= canvas.width) snake.x = 0;
+  if (snake.y < 0) snake.y = canvas.height - grid;
+  if (snake.y >= canvas.height) snake.y = 0;
+
+  snake.cells.unshift({ x: snake.x, y: snake.y });
+  if (snake.cells.length > snake.maxCells) snake.cells.pop();
+
+  context.fillStyle = 'red';
+  context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+  context.fillStyle = 'green';
+  snake.cells.forEach((cell, index) => {
+    context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+    if (cell.x === apple.x && cell.y === apple.y) {
+      snake.maxCells++;
+      score++;
+      apple.x = Math.floor(Math.random() * 25) * grid;
+      apple.y = Math.floor(Math.random() * 25) * grid;
+    }
+
+    for (let i = index + 1; i < snake.cells.length; i++) {
+      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+        const playerName = prompt("Game Over! Dein Name:");
+        if (playerName) saveScore(playerName, score);
+        resetGame();
+      }
+    }
+  });
+}
+
+function setupKeyboardControls() {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+    if (e.key === 'ArrowUp' && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+    if (e.key === 'ArrowRight' && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+    if (e.key === 'ArrowDown' && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+  });
+}
+
+function setupTouchControls() {
+  let startX = 0, startY = 0;
+  canvas.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+  });
+
+  canvas.addEventListener('touchend', (e) => {
+    const touch = e.changedTouches[0];
+    const diffX = touch.clientX - startX;
+    const diffY = touch.clientY - startY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+      if (diffX < 0 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+    } else {
+      if (diffY > 0 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+      if (diffY < 0 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+    }
+  });
+}
+
+function setupJoystickControls() {
+  const joystick = document.querySelector('.joystick-container');
+  joystick.style.display = 'flex';
+  joystick.querySelectorAll('button').forEach(button => {
+    button.addEventListener('click', () => {
+      const dir = button.getAttribute('data-dir');
+      if (dir === 'up' && snake.dy === 0) { snake.dx = 0; snake.dy = -grid; }
+      if (dir === 'down' && snake.dy === 0) { snake.dx = 0; snake.dy = grid; }
+      if (dir === 'left' && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+      if (dir === 'right' && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+    });
+  });
+}
+
+// Steuerungsauswahl
+document.getElementById('keyboard-control').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
+  setupKeyboardControls();
+  gameLoop();
+});
+
+document.getElementById('touch-control').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
+  setupTouchControls();
+  gameLoop();
+});
+
+document.getElementById('joystick-control').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
+  setupJoystickControls();
+  gameLoop();
+});
+
+// Highscores laden
+fetchScores();
   </script>
 </body>
 </html>
