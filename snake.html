@@ -32,151 +32,175 @@
 
   <style>
     /* Grundlegendes Layout */
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Open Sans', sans-serif;
-      color: #fff;
-      background-color: #333;
-    }
-
-  html, body {
-  overflow-x: hidden;
+body {
   margin: 0;
   padding: 0;
+  font-family: 'Open Sans', sans-serif;
+  color: #fff;
+  background-color: #333;
 }
 
-    .menu-container {
-      width: 100%;
-      max-width: 100vw;
-      background-color: #444;
-      color: white;
-      padding: 0 10px; /* Reduziert seitlichen Abstand */
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      box-sizing: border-box; /* Polsterung in der Breite enthalten */
+html, body {
+  overflow-x: hidden;
+}
 
-    }
+.menu-container {
+  width: 100%;
+  max-width: 100vw;
+  background-color: #444;
+  color: white;
+  padding: 0 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
 
-    .menu-container ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-    }
+.menu-container ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
 
-    .menu-container ul li {
-      margin-right: 20px;
-    }
+.menu-container ul li {
+  margin-right: 20px;
+}
 
-    .menu-container ul li a {
-      color: white;
-      text-decoration: none;
-      font-size: 18px;
-      transition: color 0.3s ease;
-    }
-/*
-    .menu-container ul li a:hover {
-      color: #0015ff;
-    }
-*/
-    .main-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: calc(100vh - 50px); /* Platz für das Menü oben */
-      position: relative;
-    }
+.menu-container ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
 
-    canvas {
-      display: block;
-      margin: 20px auto;
-      border: 5px solid #005cbf;
-      background-color: #222;
-      box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.7);
- 
+.menu-container ul li a:hover {
+  color: #ffcc00;
+}
 
-    }
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 50px);
+  position: relative;
+}
 
-    #menu {
+canvas {
+  display: block;
+  margin: 20px auto;
+  border: 5px solid #005cbf;
+  background-color: #222;
+  box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.7);
+}
+
+#menu {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.95); /* Etwas höhere Transparenz für bessere Sichtbarkeit */
-  color: #333; /* Gut lesbare Textfarbe */
-  padding: 20px 30px; /* Gleichmäßiges Padding */
-  border-radius: 12px; /* Dezente Rundung */
-  text-align: center; /* Zentriert den Text */
-  z-index: 1000; /* Höherer Wert für sicheres Überlappen */
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Weicherer Schatten */
-  max-width: 90%; /* Begrenzte Breite für kleinere Bildschirme */
-  width: 400px; /* Standardbreite für mittlere Geräte */
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  padding: 20px 30px;
+  border-radius: 12px;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  width: 400px;
 }
- 
+
 #score-board {
-  position: absolute; /* Relativ zum Spielfeld (Canvas) */
-  top: 103px; /* Direkt oben am Spielfeld */
-  right: 150px; /* Direkt rechts am Spielfeld */
-  font-size: 18px; /* Lesbare Schriftgröße */
-  background: rgba(0, 0, 0, 0.8); /* Halbtransparenter Hintergrund */
-  color: white; /* Kontrastreiche Schriftfarbe */
-  padding: 8px 15px; /* Innenabstand für besseren Komfort */
-  border-radius: 8px; /* Abgerundete Kanten */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Leichter Schatten */
-  font-family: 'Source Sans Pro', sans-serif; /* Einheitliche Schriftart */
-  z-index: 10; /* Sicherstellen, dass es sichtbar bleibt */
-  white-space: nowrap; /* Kein Zeilenumbruch */
+  position: absolute;
+  top: 103px;
+  right: 150px;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  font-family: 'Source Sans Pro', sans-serif;
+  z-index: 10;
+  white-space: nowrap;
 }
 
+#joystick-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: auto;
+  grid-gap: 10px;
+  align-items: center;
+  max-width: 100%;
+}
 
-    #joystick-container {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: grid;
-      grid-template-columns: auto;
-      grid-gap: 10px;
-      align-items: center;
-      max-width: 100%; /* Verhindert, dass Joystick-Buttons Überbreite erzeugen */
+#joystick-container button {
+  width: 50px;
+  height: 50px;
+  font-size: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #ff9800;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-    }
+#joystick-container button:hover {
+  background-color: #e67e22;
+}
 
-    #joystick-container button {
-      width: 50px;
-      height: 50px;
-      font-size: 16px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      background: #ff9800;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+#highscores {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  width: 100%;
+}
 
-    #joystick-container button:hover {
-      background-color: #e67e22;
-    }
+#score-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  color: #000;
+}
 
-    #highscores {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
-      width: 100%;
-    }
+/* Media Queries für Responsivität */
+@media (max-width: 768px) {
+  .menu-container ul li {
+    margin-right: 10px;
+  }
+  #joystick-container button {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+  #menu {
+    width: 90%;
+    padding: 15px 20px;
+  }
+  #score-board {
+    top: 80px;
+    right: 20px;
+    font-size: 16px;
+  }
+}
 
-    #score-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      font-size: 16px;
-      color: #000000;
-    }
+/* Verbesserte Fokus-Stile für Barrierefreiheit */
+a:focus, button:focus {
+  outline: 2px dashed #ff9800;
+  outline-offset: 4px;
+}
+
+/* Übergangseffekte */
+#menu, .menu-container ul li a, #joystick-container button {
+  transition: all 0.3s ease;
+}
 
   </style>
 </head>
@@ -480,9 +504,10 @@ window.addEventListener('resize', () => {
     fetchScores();
   </script>
 
+<!--
 <div class="footer-container"></div>
 <div class="banner" style="background: url('img/dummy-background.gif') no-repeat center; background-size: cover; height: 30px;"></div>
-
+-->
 </body>
 </html>
 
