@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-    <title>Tetris</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tetris Optimiert</title>
     <link rel="stylesheet" href="t.css"/>
 </head>
 <body>
     <h1>Tetris</h1>
+    <div class="top-info">
+        <div class="scoreboard">
+            <p>Punkte: <span id="score">0</span></p>
+            <p>Level: <span id="level">1</span></p>
+            <p>Linien: <span id="lines">0</span></p>
+        </div>
+        <div class="next-container">
+            <p>Nächstes Teil:</p>
+            <canvas id="next"></canvas>
+        </div>
+    </div>
+    
     <div class="game-container">
         <canvas id="tetris"></canvas>
         <div class="info">

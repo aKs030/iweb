@@ -13,6 +13,38 @@ h1 {
   margin-bottom: 20px;
 }
 
+.top-info {
+  display: flex;
+  justify-content: space-between;
+  width: 90vw;
+  max-width: 360px;
+  margin-bottom: 20px;
+}
+
+.scoreboard, .next-container {
+  display: flex;
+  flex-direction: column;
+  background: #444;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.scoreboard p, .next-container p {
+  margin: 5px 0;
+}
+
+.next-container {
+  align-items: center;
+}
+
+#next {
+  background: #000;
+  border: 2px solid #444;
+  margin-top: 10px;
+  width: 80px;
+  height: 80px;
+}
+
 .game-container {
   display: flex;
   flex-direction: column;
@@ -20,7 +52,7 @@ h1 {
   gap: 20px;
 }
 
-/* Das Canvas passt sich an die Fensterbreite an */
+/* Responsives Canvas */
 #tetris {
   background: #000;
   border: 2px solid #444;
