@@ -2,41 +2,44 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <title>Tetris Optimiert</title>
-    <link rel="stylesheet" href="t.css"/>
+    <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
     <h1>Tetris</h1>
-    <div class="top-info">
-        <div class="scoreboard">
-            <p>Punkte: <span id="score">0</span></p>
-            <p>Level: <span id="level">1</span></p>
-            <p>Linien: <span id="lines">0</span></p>
+    <div class="main-container">
+        <div class="side-info">
+            <div class="scoreboard">
+                <p>Punkte: <span id="score">0</span></p>
+                <p>Level: <span id="level">1</span></p>
+                <p>Linien: <span id="lines">0</span></p>
+            </div>
+            <div class="next-container">
+                <p>Nächstes Teil:</p>
+                <canvas id="next"></canvas>
+            </div>
+            <div class="start-container">
+                <button id="startBtn">Starten</button>
+            </div>
         </div>
-        <div class="next-container">
-            <p>Nächstes Teil:</p>
-            <canvas id="next"></canvas>
+        
+        <div class="game-container">
+            <canvas id="tetris"></canvas>
+            <div class="controls">
+                <div class="row">
+                    <button id="leftBtn">←</button>
+                    <button id="rotateBtn">⤴</button>
+                    <button id="rightBtn">→</button>
+                </div>
+                <div class="row">
+                    <button id="dropBtn">↓</button>
+                    <button id="fallBtn">⬇</button>
+                </div>
+            </div>
         </div>
     </div>
     
-    <div class="game-container">
-        <canvas id="tetris"></canvas>
-        <div class="info">
-            <button id="startBtn">Starten</button>
-        </div>
-    </div>
-    <div class="controls">
-        <div class="row">
-            <button id="leftBtn">←</button>
-            <button id="rotateBtn">⤴</button>
-            <button id="rightBtn">→</button>
-        </div>
-        <div class="row">
-            <button id="dropBtn">↓</button>
-            <button id="fallBtn">⬇</button>
-        </div>
-    </div>
-    <script src="t.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

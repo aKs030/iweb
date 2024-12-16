@@ -1,20 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM geladen, starte Setup...");
     const canvas = document.getElementById('tetris');
     const context = canvas.getContext('2d');
 
     const nextCanvas = document.getElementById('next');
     const nextCtx = nextCanvas.getContext('2d');
 
-    let columns = 10;
-    let rows = 20;
+    const columns = 10;
+    const rows = 20;
     let cellSizeX;
     let cellSizeY;
 
-    let nextCellSize = 20; // feste Zellengröße für die Vorschau
+    let nextCellSize = 20; 
     const NEXT_COLUMNS = 4;
     const NEXT_ROWS = 4;
 
-    // Spielstatus
     let arena;
     let player;
     let dropCounter;
@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastTime;
     let gameActive;
 
-    // Score, Level, Lines
     let score = 0;
     let level = 1;
     let linesCleared = 0;
@@ -35,38 +34,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const SHAPES = {
         'T': [
-            [0, 1, 0],
-            [1, 1, 1],
+            [0,0,0,0],
+            [0,1,0,0],
+            [1,1,1,0],
+            [0,0,0,0]
         ],
         'O': [
-            [1, 1],
-            [1, 1]
+            [0,0,0,0],
+            [0,1,1,0],
+            [0,1,1,0],
+            [0,0,0,0]
         ],
         'L': [
-            [1, 0, 0],
-            [1, 0, 0],
-            [1, 1, 0]
+            [0,0,0,0],
+            [1,0,0,0],
+            [1,0,0,0],
+            [1,1,0,0]
         ],
         'J': [
-            [0, 0, 1],
-            [0, 0, 1],
-            [0, 1, 1]
+            [0,0,0,0],
+            [0,0,1,0],
+            [0,0,1,0],
+            [0,1,1,0]
         ],
         'I': [
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0]
         ],
         'S': [
-            [0, 1, 1],
-            [1, 1, 0]
+            [0,0,0,0],
+            [0,1,1,0],
+            [1,1,0,0],
+            [0,0,0,0]
         ],
         'Z': [
-            [1, 1, 0],
-            [0, 1, 1]
+            [0,0,0,0],
+            [1,1,0,0],
+            [0,1,1,0],
+            [0,0,0,0]
         ]
     };
+    
+    
 
     const COLORS = [
         null,
@@ -80,12 +91,38 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function handleResize() {
-        const width = canvas.clientWidth;
-        const height = canvas.clientHeight;
-        canvas.width = width;
-        canvas.height = height;
-        cellSizeX = canvas.width / columns;
-        cellSizeY = canvas.height / rows;
+        const aspect = rows / columns;
+        const dpr = window.devicePixelRatio || 1;
+
+        const availableWidth = window.innerWidth * 0.5;
+        const availableHeight = window.innerHeight * 0.5;
+        
+        let canvasWidth = availableWidth;
+        let canvasHeight = canvasWidth * aspect;
+
+        if (canvasHeight > availableHeight) {
+            canvasHeight = availableHeight;
+            canvasWidth = canvasHeight / aspect;
+        }
+
+        // Runde auf ganze Pixel
+        canvasWidth = Math.floor(canvasWidth);
+        canvasHeight = Math.floor(canvasHeight);
+
+        // CSS-Größe setzen
+        canvas.style.width = canvasWidth + 'px';
+        canvas.style.height = canvasHeight + 'px';
+
+        // Interne Auflösung mit devicePixelRatio
+        canvas.width = Math.floor(canvasWidth * dpr);
+        canvas.height = Math.floor(canvasHeight * dpr);
+
+        // Kontext skalieren
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        cellSizeX = (canvas.width / dpr) / columns;
+        cellSizeY = (canvas.height / dpr) / rows;
+        
         draw();
     }
 
@@ -164,11 +201,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawNextPiece() {
         nextCtx.fillStyle = '#000';
         nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-        // Zentriere das nächste Tetromino im Vorschau-Feld
-        const matrix = player.nextMatrix;
-        const offsetX = (NEXT_COLUMNS / 2 | 0) - (matrix[0].length / 2 | 0);
-        const offsetY = (NEXT_ROWS / 2 | 0) - (matrix.length / 2 | 0);
-        drawMatrix(nextCtx, matrix, offsetX, offsetY, nextCellSize, nextCellSize);
+        if (!player.nextMatrix) return;
+        const offsetX = (NEXT_COLUMNS / 2 | 0) - (player.nextMatrix[0].length / 2 | 0);
+        const offsetY = (NEXT_ROWS / 2 | 0) - (player.nextMatrix.length / 2 | 0);
+        drawMatrix(nextCtx, player.nextMatrix, offsetX, offsetY, nextCellSize, nextCellSize);
     }
 
     function createPiece(type) {
@@ -216,14 +252,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addScore(lines) {
         if (lines > 0) {
-            // Punkteberechnung: einfache Formel -> 40 * lines * level
-            const points = [40, 100, 300, 1200]; // Standard Tetris-Scoring
+            const points = [40, 100, 300, 1200];
             score += points[lines - 1] * level;
             linesCleared += lines;
-            // alle 10 Linien Level aufsteigen
             if (linesCleared >= level * 10) {
                 level++;
-                dropInterval = Math.max(100, dropInterval - 100); // Spiel wird schneller
+                dropInterval = Math.max(100, dropInterval - 100);
             }
             updateScoreboard();
         }
@@ -259,33 +293,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function rotate(matrix, dir) {
         for (let y = 0; y < matrix.length; y++) {
-            for (let x = 0; x < y; x++) {
-                [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-            }
+          for (let x = 0; x < y; x++) {
+            [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+          }
         }
         if (dir > 0) {
-            matrix.forEach(row => row.reverse());
+          matrix.forEach(row => row.reverse());
         } else {
-            matrix.reverse();
+          matrix.reverse();
         }
-    }
+      }
+      function playerRotate(dir) {
+        const pos = player.pos.x;
+        let offset = 1;
+        rotate(player.matrix, dir);
+        while (collide(arena, player)) {
+          player.pos.x += offset;
+          offset = -(offset + (offset > 0 ? 1 : -1));
+          if (offset > player.matrix[0].length) {
+            rotate(player.matrix, -dir);
+            player.pos.x = pos;
+            return;
+          }
+        }
+      }
+      
 
     function playerReset() {
-        // Falls bereits ein nächstes Teil gesetzt ist, wird dieses nun "aktiv"
         if (player.nextMatrix) {
             player.matrix = player.nextMatrix;
         } else {
-            // Erstes Mal: Zufälliges Teil erzeugen
             player.matrix = randomPiece();
         }
-        // Jetzt schon das nächste Teil festlegen
         player.nextMatrix = randomPiece();
 
         player.pos.y = 0;
-        player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
+        player.pos.x = (arena[0].length / 2 | 0) -
+                       (player.matrix[0].length / 2 | 0);
 
         if (collide(arena, player)) {
-            // Game Over
+            console.log("Game Over");
             gameActive = false;
         }
     }
@@ -310,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initGame() {
+        console.log("initGame aufgerufen");
         arena = createMatrix(columns, rows);
         score = 0;
         level = 1;
@@ -329,8 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
         update();
     }
 
-    // Buttons
     document.getElementById('startBtn').addEventListener('click', () => {
+        console.log("Start-Button geklickt");
         initGame();
     });
 
@@ -364,9 +412,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Tastatur
+    // Tastatursteuerung mit preventDefault
     document.addEventListener('keydown', event => {
         if (!gameActive) return;
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+            event.preventDefault();
+        }
         if (event.key === 'ArrowLeft') {
             playerMove(-1);
         } else if (event.key === 'ArrowRight') {
@@ -376,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (event.key === 'ArrowUp') {
             playerRotate(1);
         } else if (event.key === ' ') {
-            // Hard Drop
+            // Hard drop
             while(!collide(arena, player)){
                 player.pos.y++;
             }
@@ -389,8 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         draw();
     });
 
-    // Initialisierung
-    // Spiel startet erst nach Klick auf "Starten"
+    // Initiales Rendering (Leeres Feld, bevor gestartet wird)
     handleResize();
     draw();
 });

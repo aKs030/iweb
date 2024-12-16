@@ -1,24 +1,45 @@
-body {
-  font-family: Arial, sans-serif;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   background: #333;
   color: #fff;
-  margin: 0;
-  padding: 20px;
+  font-family: Arial, sans-serif;
+  overflow:hidden;
+}
+
+#startBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 999;
+}
+
+
+body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  touch-action: none; /* Verhindert Scrollen/Zoom per Touch auf mobilen Geräten */
 }
 
 h1 {
-  margin-bottom: 20px;
+  margin: 20px 0;
 }
 
-.top-info {
-  display: flex;
-  justify-content: space-between;
+.main-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
   width: 90vw;
-  max-width: 360px;
-  margin-bottom: 20px;
+  max-width: 720px;
+}
+
+.side-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
 }
 
 .scoreboard, .next-container {
@@ -50,16 +71,15 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  touch-action: none;
 }
 
-/* Responsives Canvas */
+/* Das Canvas wird per JS in script.js dynamisch in Größe gesetzt,
+ um das Seitenverhältnis und die DPI-Anpassung zu berücksichtigen. */
 #tetris {
   background: #000;
   border: 2px solid #444;
-  width: 90vw; 
-  max-width: 360px;
-  height: calc(2 * (90vw));
-  max-height: 720px;
+  display: block;
 }
 
 .info {
@@ -73,7 +93,6 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 20px;
 }
 
 .controls .row {
@@ -91,7 +110,12 @@ button {
   font-size: 1.2em;
   border-radius: 5px;
 }
-
 button:hover {
   background: #555;
+}
+.start-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
