@@ -117,16 +117,19 @@
   width: 400px; /* Standardbreite für mittlere Geräte */
 }
  
-    #score-board {
-  position: fixed; /* Fixiert die Punkteanzeige im Viewport */
-  top: 55px;    /* Abstand vom unteren Rand */
-  right: 90px;     /* Abstand vom rechten Rand */
-  font-size: 15px;
-  background: rgba(0, 0, 0, 0.7); /* Halbtransparenter Hintergrund */
-  padding: 10px 15px; /* Innenabstand */
-  border-radius: 8px; /* Abgerundete Ecken */
-  font-family: 'Source Sans Pro', sans-serif;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5); /* Schatteneffekt */
+#score-board {
+  position: absolute; /* Relativ zum Spielfeld (Canvas) */
+  top: 103px; /* Direkt oben am Spielfeld */
+  right: 150px; /* Direkt rechts am Spielfeld */
+  font-size: 18px; /* Lesbare Schriftgröße */
+  background: rgba(0, 0, 0, 0.8); /* Halbtransparenter Hintergrund */
+  color: white; /* Kontrastreiche Schriftfarbe */
+  padding: 8px 15px; /* Innenabstand für besseren Komfort */
+  border-radius: 8px; /* Abgerundete Kanten */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Leichter Schatten */
+  font-family: 'Source Sans Pro', sans-serif; /* Einheitliche Schriftart */
+  z-index: 10; /* Sicherstellen, dass es sichtbar bleibt */
+  white-space: nowrap; /* Kein Zeilenumbruch */
 }
 
 
