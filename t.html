@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-    <title>Tetris Optimiert</title>
+    <title>Tetris Final</title>
     <link rel="stylesheet" href="t.css"/>
 </head>
 <body>
@@ -22,6 +22,13 @@
             <div class="start-container">
                 <button id="startBtn">Starten</button>
             </div>
+
+            <!-- Neuer Bereich für Top 3 Scores -->
+            <div class="top-scores-container">
+                <h2>Top 3 Spieler:</h2>
+                <ol id="topScoresList"></ol>
+            </div>
+
         </div>
         
         <div class="game-container">
@@ -40,6 +47,33 @@
         </div>
     </div>
     
-    <script src="t.js"></script>
+    <!-- Firebase & Firestore -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getFirestore, collection, addDoc, orderBy, limit, query, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+        
+        const firebaseConfig = {
+          apiKey: "AIzaSyAdkQKbKU854FSaXIttjg30xh4DVGdj-Es",
+          authDomain: "snake-ed264.firebaseapp.com",
+          projectId: "snake-ed264",
+          storageBucket: "snake-ed264.appspot.com",
+          messagingSenderId: "95766919512",
+          appId: "1:95766919512:web:78498968a8383721cecd2d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Machen wir db und Firestore-Funktionen global verfügbar
+        window._db = db;
+        window._addDoc = addDoc;
+        window._collection = collection;
+        window._orderBy = orderBy;
+        window._limit = limit;
+        window._query = query;
+        window._getDocs = getDocs;
+    </script>
+
+    <script src="t.js" type="module"></script>
 </body>
 </html>

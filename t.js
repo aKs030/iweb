@@ -1,17 +1,24 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM geladen, starte Setup...");
+import { collection, addDoc, orderBy, limit, query, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('tetris');
     const context = canvas.getContext('2d');
-
     const nextCanvas = document.getElementById('next');
     const nextCtx = nextCanvas.getContext('2d');
+
+    const db = window._db;
+    const addDocFn = window._addDoc;
+    const collectionFn = window._collection;
+    const orderByFn = window._orderBy;
+    const limitFn = window._limit;
+    const queryFn = window._query;
+    const getDocsFn = window._getDocs;
 
     const columns = 10;
     const rows = 20;
     let cellSizeX;
     let cellSizeY;
-
-    let nextCellSize = 20; 
+    let nextCellSize = 20;
     const NEXT_COLUMNS = 4;
     const NEXT_ROWS = 4;
 
@@ -29,8 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreEl = document.getElementById('score');
     const levelEl = document.getElementById('level');
     const linesEl = document.getElementById('lines');
-
-    const pieces = 'ILJOTSZ';
+    const topScoresListEl = document.getElementById('topScoresList');
 
     const SHAPES = {
         'T': [
@@ -76,8 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
             [0,0,0,0]
         ]
     };
-    
-    
 
     const COLORS = [
         null,
@@ -94,9 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const aspect = rows / columns;
         const dpr = window.devicePixelRatio || 1;
 
-        const availableWidth = window.innerWidth * 0.5;
-        const availableHeight = window.innerHeight * 0.5;
-        
+        const availableWidth = window.innerWidth * 0.9;
+        const availableHeight = window.innerHeight * 0.9;
+
         let canvasWidth = availableWidth;
         let canvasHeight = canvasWidth * aspect;
 
@@ -105,24 +109,20 @@ document.addEventListener('DOMContentLoaded', () => {
             canvasWidth = canvasHeight / aspect;
         }
 
-        // Runde auf ganze Pixel
         canvasWidth = Math.floor(canvasWidth);
         canvasHeight = Math.floor(canvasHeight);
 
-        // CSS-Größe setzen
         canvas.style.width = canvasWidth + 'px';
         canvas.style.height = canvasHeight + 'px';
 
-        // Interne Auflösung mit devicePixelRatio
         canvas.width = Math.floor(canvasWidth * dpr);
         canvas.height = Math.floor(canvasHeight * dpr);
 
-        // Kontext skalieren
         context.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         cellSizeX = (canvas.width / dpr) / columns;
         cellSizeY = (canvas.height / dpr) / rows;
-        
+
         draw();
     }
 
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             drawMatrix(context, player.matrix, player.pos.x, player.pos.y, cellSizeX, cellSizeY);
         }
 
-        // Nächstes Teil zeichnen
+        // Nächstes Teil
         drawNextPiece();
     }
 
@@ -293,33 +293,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function rotate(matrix, dir) {
         for (let y = 0; y < matrix.length; y++) {
-          for (let x = 0; x < y; x++) {
-            [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-          }
+            for (let x = 0; x < y; x++) {
+                [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+            }
         }
         if (dir > 0) {
-          matrix.forEach(row => row.reverse());
+            matrix.forEach(row => row.reverse());
         } else {
-          matrix.reverse();
+            matrix.reverse();
         }
-      }
-      function playerRotate(dir) {
-        const pos = player.pos.x;
-        let offset = 1;
-        rotate(player.matrix, dir);
-        while (collide(arena, player)) {
-          player.pos.x += offset;
-          offset = -(offset + (offset > 0 ? 1 : -1));
-          if (offset > player.matrix[0].length) {
-            rotate(player.matrix, -dir);
-            player.pos.x = pos;
-            return;
-          }
-        }
-      }
-      
+    }
 
-    function playerReset() {
+    async function playerReset() {
         if (player.nextMatrix) {
             player.matrix = player.nextMatrix;
         } else {
@@ -334,10 +319,50 @@ document.addEventListener('DOMContentLoaded', () => {
         if (collide(arena, player)) {
             console.log("Game Over");
             gameActive = false;
+            const playerName = prompt("Dein Name?");
+            await saveScoreOnline(playerName || "Unbekannt", score);
+            const topScores = await getTopScores();
+            displayTopScores(topScores);
         }
     }
 
+    async function saveScoreOnline(username, scoreVal) {
+        if (!db) return;
+        try {
+            await addDocFn(collectionFn(db, "scores"), {
+                username: username,
+                score: scoreVal,
+                timestamp: Date.now()
+            });
+            console.log("Score online gespeichert");
+        } catch (e) {
+            console.error("Fehler beim Speichern des Scores:", e);
+        }
+    }
+
+    async function getTopScores() {
+        const scoresRef = collectionFn(db, "scores");
+        const q = queryFn(scoresRef, orderByFn("score", "desc"), limitFn(3));
+        const querySnapshot = await getDocsFn(q);
+        const topScores = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            topScores.push(data);
+        });
+        return topScores;
+    }
+
+    function displayTopScores(scores) {
+        topScoresListEl.innerHTML = '';
+        scores.forEach((s) => {
+            const li = document.createElement('li');
+            li.textContent = `${s.username}: ${s.score}`;
+            topScoresListEl.appendChild(li);
+        });
+    }
+
     function randomPiece() {
+        const pieces = 'ILJOTSZ';
         const piece = pieces[pieces.length * Math.random() | 0];
         return createPiece(piece);
     }
@@ -356,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(update);
     }
 
-    function initGame() {
+    async function initGame() {
         console.log("initGame aufgerufen");
         arena = createMatrix(columns, rows);
         score = 0;
@@ -375,11 +400,19 @@ document.addEventListener('DOMContentLoaded', () => {
         playerReset();
         handleResize();
         update();
+
+        // Nach dem Start erneut Top 3 laden
+        const topScores = await getTopScores();
+        displayTopScores(topScores);
     }
 
-    document.getElementById('startBtn').addEventListener('click', () => {
+    // Beim Laden direkt Top 3 anzeigen
+    const topScoresAtStart = await getTopScores();
+    displayTopScores(topScoresAtStart);
+
+    document.getElementById('startBtn').addEventListener('click', async () => {
         console.log("Start-Button geklickt");
-        initGame();
+        await initGame();
     });
 
     document.getElementById('leftBtn').addEventListener('click', () => {
@@ -412,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Tastatursteuerung mit preventDefault
     document.addEventListener('keydown', event => {
         if (!gameActive) return;
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
@@ -427,7 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (event.key === 'ArrowUp') {
             playerRotate(1);
         } else if (event.key === ' ') {
-            // Hard drop
             while(!collide(arena, player)){
                 player.pos.y++;
             }
@@ -440,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
         draw();
     });
 
-    // Initiales Rendering (Leeres Feld, bevor gestartet wird)
     handleResize();
     draw();
 });
