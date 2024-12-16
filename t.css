@@ -20,13 +20,14 @@ h1 {
   gap: 20px;
 }
 
+/* Das Canvas passt sich an die Fensterbreite an */
 #tetris {
   background: #000;
   border: 2px solid #444;
   width: 90vw; 
   max-width: 360px;
   height: calc(2 * (90vw));
-  max-height: 720px; 
+  max-height: 720px;
 }
 
 .info {

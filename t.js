@@ -4,13 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let columns = 10;
     let rows = 20;
-
-    // Variable für Zellgrößen, werden in handleResize() berechnet
     let cellSizeX;
     let cellSizeY;
 
     function handleResize() {
-        // Canvasgröße basierend auf dem aktuellen CSS neu berechnen
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;
         canvas.width = width;
@@ -19,14 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
         cellSizeX = canvas.width / columns;
         cellSizeY = canvas.height / rows;
 
-        // Nach der Größenänderung neu zeichnen
         draw();
     }
 
-    // Am Anfang einmal aufrufen
+    // Beim Laden und bei Fensteränderung aktualisieren
     handleResize();
-
-    // Auf Fensteränderungen reagieren
     window.addEventListener('resize', handleResize);
 
     function drawCell(x, y, color) {
@@ -140,7 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!canvas.width || !canvas.height) return;
         context.fillStyle = '#000';
         context.fillRect(0, 0, canvas.width, canvas.height);
-        // Arena zeichnen
+
+        // Arena
         for (let y = 0; y < arena.length; y++) {
             for (let x = 0; x < arena[y].length; x++) {
                 if (arena[y][x] !== 0) {
@@ -164,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             (player.matrix[0].length / 2 | 0);
 
         if (collide(arena, player)) {
+            // Spiel beenden, da kein Platz mehr
             arena.forEach(row => row.fill(0));
             gameActive = false;
         }
@@ -225,157 +221,3 @@ document.addEventListener('DOMContentLoaded', () => {
                 rotate(player.matrix, -dir);
                 player.pos.x = pos;
                 return;
-            }
-        }
-    }
-
-    function rotate(matrix, dir) {
-        for (let y = 0; y < matrix.length; y++) {
-            for (let x = 0; x < y; x++) {
-                [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-            }
-        }
-        if (dir > 0) {
-            matrix.forEach(row => row.reverse());
-        } else {
-            matrix.reverse();
-        }
-    }
-
-    function update(time = 0) {
-        if (!gameActive) return; 
-        const deltaTime = time - lastTime;
-        lastTime = time;
-
-        dropCounter += deltaTime;
-        if (dropCounter > dropInterval) {
-            playerDrop();
-        }
-
-        draw();
-        requestAnimationFrame(update);
-    }
-
-    // Steuerung wie gehabt
-    document.getElementById('startBtn').addEventListener('click', () => {
-        arena.forEach(row => row.fill(0));
-        playerReset();
-        dropInterval = 1000;
-        lastTime = 0;
-        gameActive = true;
-        update();
-    });
-
-    document.getElementById('leftBtn').addEventListener('click', () => {
-        if (gameActive) playerMove(-1);
-    });
-    document.getElementById('rightBtn').addEventListener('click', () => {
-        if (gameActive) playerMove(1);
-    });
-    document.getElementById('rotateBtn').addEventListener('click', () => {
-        if (gameActive) playerRotate(1);
-    });
-    document.getElementById('dropBtn').addEventListener('click', () => {
-        if (gameActive) playerDrop();
-    });
-    document.getElementById('fallBtn').addEventListener('click', () => {
-        if (gameActive) {
-            while(!collide(arena, player)){
-                player.pos.y++;
-            }
-            player.pos.y--;
-            merge(arena, player);
-            arenaSweep();
-            playerReset();
-        }
-    });
-
-    // Keyboard Input
-    document.addEventListener('keydown', event => {
-        if (!gameActive) return;
-        if (event.key === 'ArrowLeft') {
-            playerMove(-1);
-        } else if (event.key === 'ArrowRight') {
-            playerMove(1);
-        } else if (event.key === 'ArrowDown') {
-            playerDrop();
-        } else if (event.key === 'ArrowUp') {
-            playerRotate(1);
-        } else if (event.key === ' ') {
-            while(!collide(arena, player)){
-                player.pos.y++;
-            }
-            player.pos.y--;
-            merge(arena, player);
-            arenaSweep();
-            playerReset();
-        }
-    });
-
-    // Optional: Gestensteuerung könnte wie zuvor implementiert bleiben
-    // Hier ändern wir nichts weiter, da Fokus auf Canvas-Resize liegt.
-
-
-
-    // Optional: Gestensteuerung könnte wie zuvor implementiert bleiben
-    // Hier ändern wir nichts weiter, da Fokus auf Canvas-Resize liegt.
-
-});
-
-
-    // *** Gestensteuerung ***
-    let touchStartX = null;
-    let touchStartY = null;
-    let touchEndX = null;
-    let touchEndY = null;
-    const threshold = 30; // Minimale Wegstrecke für Geste
-
-    canvas.addEventListener('touchstart', (e) => {
-        if (!gameActive) return;
-        const touch = e.changedTouches[0];
-        touchStartX = touch.pageX;
-        touchStartY = touch.pageY;
-    }, {passive: true});
-
-    canvas.addEventListener('touchmove', (e) => {
-        // Optional: Wenn gewünscht, kann man hier Live-Aktionen machen.
-    }, {passive: true});
-
-    canvas.addEventListener('touchend', (e) => {
-        if (!gameActive) return;
-        const touch = e.changedTouches[0];
-        touchEndX = touch.pageX;
-        touchEndY = touch.pageY;
-
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = touchEndY - touchStartY;
-
-        // Prüfe, ob horizontal oder vertikal stärkerer Ausschlag
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            // Horizontaler Wisch
-            if (Math.abs(deltaX) > threshold) {
-                if (deltaX > 0) {
-                    // Wisch nach rechts
-                    playerMove(1);
-                } else {
-                    // Wisch nach links
-                    playerMove(-1);
-                }
-            }
-        } else {
-            // Vertikaler Wisch
-            if (Math.abs(deltaY) > threshold) {
-                if (deltaY > 0) {
-                    // Wisch nach unten
-                    // Kurzer Wisch nach unten = playerDrop()
-                    // (Optional: Längerer Wisch könnte hartes Fallen sein, hier aber nur Drop)
-                    playerDrop();
-                } else {
-                    // Wisch nach oben = Drehen
-                    playerRotate(1);
-                }
-            }
-        }
-    }, {passive: true});
-
-});
