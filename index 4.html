@@ -90,12 +90,14 @@
             const scrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / window.innerHeight));
 
             spans.forEach((span, index) => {
-                const delay = index * 0.1; // Verzögerung für jedes Wort
-                if (scrollProgress > delay) {
-                    span.style.opacity = 1;
-                    span.style.transform = 'translateY(0)';
+                const delay = index * 0.08; // Verzögerung für jedes Wort
+                const progress = scrollProgress - delay;
+
+                if (progress > 0) {
+                    span.style.opacity = Math.min(1, progress * 2); // Sichtbarkeit erhöhen
+                    span.style.transform = `translateY(${50 * (1 - progress)}px)`; // Bewegt das Wort nach oben
                 } else {
-                    span.style.opacity = 0;
+                    span.style.opacity = 0; // Zurücksetzen
                     span.style.transform = 'translateY(50px)';
                 }
             });
