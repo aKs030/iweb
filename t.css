@@ -28,7 +28,7 @@ h1 {
   grid-template-columns: auto 1fr;
   gap: 20px;
   width: 90vw;
-  max-width: 720px;
+  max-width: 420px;
 }
 .side-info {
   display: flex;
