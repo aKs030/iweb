@@ -8,41 +8,30 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
-    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-
-    <!-- Menü CSS -->
-    <link rel="stylesheet" href="css/controls.css">
-    <link rel="stylesheet" href="css/frame.css">
-
+    <!-- CSS -->
+    <link href="css/frame.css" rel="stylesheet">
+    <link href="css/controls.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
     <style>
-        /* Allgemeine Grundstile */
+     
+         /* Allgemeine Stile */
         html, body {
             margin: 0;
-            padding: 0;
+            scroll-snap-type: y mandatory;
             font-family: 'Open Sans', Arial, sans-serif;
-            scroll-behavior: smooth;
-            overflow-x: hidden;
         }
 
-        /* Menü Einbindung */
-        .menu-container {
-            width: 100%;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-            background-color: rgba(0, 0, 0, 0.9);
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Scroll Snap Abschnitte */
+        /* Scroll-Snap Abschnitte */
         .snap-section {
             height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             text-align: center;
-            color: white;
             scroll-snap-align: start;
+            color: white;
+            padding: 20px;
         }
 
         #section-1 {
@@ -50,46 +39,35 @@
             position: relative;
         }
 
-        /* Buchstaben-Animation */
+        /* Introtext Animation */
         .scroll-animation h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
+            text-transform: uppercase;
             color: white;
-            margin: 0;
-            letter-spacing: 3px;
+            overflow: hidden;
         }
 
         .scroll-animation span {
             display: inline-block;
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            transform: translateY(50px);
+            animation: none; /* Animation wird standardmäßig deaktiviert */
+        }
+
+        /* Keyframes für die Animation */
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(50px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 
 <body>
-    <!-- Menü Einbindung -->
-    <div class="menu-container">
-        <div class="menu">
-            <div class="menu-table flex-row-space-between">
-                <div class="logo">
-                    <a href="index.html">ABDULKERIM</a>
-                </div>
-                <div class="menu-items">
-                    <a href="#section-1">Über mich</a>
-                    <a href="#section-2">Fotogalerie</a>
-                    <a href="#section-3">Kontakt</a>
-                    <a href="#section-4">Vielen Dank</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scrollbare Abschnitte -->
+    <!-- Scroll-Snap Abschnitte -->
     <div id="section-1" class="snap-section">
         <div class="content">
-            <!-- Animierter Text -->
-            <div class="scroll-animation" id="scroll-text">
+            <!-- Animierter Introtext -->
+            <div class="scroll-animation" id="intro-text">
                 <h1>
                     <span>Ich</span>
                     <span>freue</span>
@@ -101,6 +79,18 @@
                     <span>hierher</span>
                     <span>gefunden</span>
                     <span>hast.</span>
+                    <br>
+                    <span>Diese</span>
+                    <span>Seite</span>
+                    <span>dient</span>
+                    <span>als</span>
+                    <span>mein</span>
+                    <span>digitales</span>
+                    <span>Zuhause</span>
+                    <span>im</span>
+                    <span>World</span>
+                    <span>Wide</span>
+                    <span>Web.</span>
                 </h1>
             </div>
         </div>
@@ -108,37 +98,40 @@
 
     <div id="section-2" class="snap-section" style="background-color: #2196F3;">
         <h1>Fotogalerie</h1>
-        <p>Hier findest du Bilder aus meinen Erlebnissen.</p>
+        <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
     </div>
 
     <div id="section-3" class="snap-section" style="background-color: #FF9800;">
         <h1>Kontakt</h1>
-        <p>Du kannst mich per E-Mail erreichen: <a href="mailto:mail@abdulkerimsesli.com" style="color: white;">mail@abdulkerimsesli.com</a></p>
+        <p>Schicke mir eine E-Mail an: <a href="mailto:mail@abdulkerimsesli.com" style="color: white;">mail@abdulkerimsesli.com</a></p>
     </div>
 
-    <!-- JavaScript für Buchstaben-Einblendung -->
+    <div id="section-4" class="snap-section" style="background-color: #9C27B0;">
+        <h1>Vielen Dank!</h1>
+        <p>Danke für deinen Besuch auf meiner Homepage.</p>
+    </div>
+
+    <!-- JavaScript -->
     <script>
-        const textContainer = document.querySelector('.scroll-animation');
-        const spans = textContainer.querySelectorAll('span');
-
-        window.addEventListener('scroll', () => {
-            const rect = textContainer.getBoundingClientRect();
-            const triggerPoint = window.innerHeight - 100;
-
-            if (rect.top < triggerPoint) {
-                spans.forEach((span, index) => {
-                    setTimeout(() => {
-                        span.style.opacity = 1;
-                        span.style.transform = 'translateY(0)';
-                    }, index * 50); // Buchstaben schneller anzeigen
-                });
-            } else {
-                spans.forEach((span) => {
-                    span.style.opacity = 0;
-                    span.style.transform = 'translateY(20px)';
-                });
-            }
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const spans = entry.target.querySelectorAll('span');
+                if (entry.isIntersecting) {
+                    spans.forEach((span, index) => {
+                        span.style.animation = `fadeInUp 1s ease forwards`;
+                        span.style.animationDelay = `${index * 0.1}s`;
+                    });
+                } else {
+                    // Entfernt die Animation und setzt zurück
+                    spans.forEach(span => {
+                        span.style.animation = 'none';
+                    });
+                }
+            });
         });
+
+        // Zielbereich beobachten
+        observer.observe(document.getElementById('intro-text'));
     </script>
 </body>
 </html>
