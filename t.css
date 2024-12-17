@@ -24,7 +24,7 @@ h1 {
   margin: 20px 0;
 }
 .main-container {
-  display: grid;
+  display: felc;
   gap: 20px;
   width: 90vw;
   max-width: 420px;
