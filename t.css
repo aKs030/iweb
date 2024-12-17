@@ -25,7 +25,6 @@ h1 {
 }
 .main-container {
   display: grid;
-  grid-template-columns: auto 1fr;
   gap: 20px;
   width: 90vw;
   max-width: 420px;
