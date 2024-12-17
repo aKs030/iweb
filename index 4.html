@@ -13,10 +13,10 @@
     <link href="css/controls.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
     <style>
-        /* Allgemeine Stile */
+     
+         /* Allgemeine Stile */
         html, body {
-            
-                    margin: 0;
+            margin: 0;
             scroll-snap-type: y mandatory;
             font-family: 'Open Sans', Arial, sans-serif;
         }
@@ -51,24 +51,14 @@
             display: inline-block;
             opacity: 0;
             transform: translateY(50px);
-            animation: fadeInUp 1s forwards;
+            animation: none; /* Animation wird standardmäßig deaktiviert */
         }
 
-        .scroll-animation.animate span {
-            animation: fadeInUp 1s forwards;
-        }
-
+        /* Keyframes für die Animation */
         @keyframes fadeInUp {
             0% { opacity: 0; transform: translateY(50px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-
-        /* Animation Verzögerungen */
-        .scroll-animation span:nth-child(1) { animation-delay: 0.1s; }
-        .scroll-animation span:nth-child(2) { animation-delay: 0.2s; }
-        .scroll-animation span:nth-child(3) { animation-delay: 0.3s; }
-        .scroll-animation span:nth-child(4) { animation-delay: 0.4s; }
-        .scroll-animation span:nth-child(5) { animation-delay: 0.5s; }
     </style>
 </head>
 
@@ -121,15 +111,21 @@
         <p>Danke für deinen Besuch auf meiner Homepage.</p>
     </div>
 
-    <!-- JavaScript zur erneuten Animation -->
+    <!-- JavaScript -->
     <script>
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const target = entry.target;
+                const spans = entry.target.querySelectorAll('span');
                 if (entry.isIntersecting) {
-                    target.classList.add('animate');
+                    spans.forEach((span, index) => {
+                        span.style.animation = `fadeInUp 1s ease forwards`;
+                        span.style.animationDelay = `${index * 0.1}s`;
+                    });
                 } else {
-                    target.classList.remove('animate');
+                    // Entfernt die Animation und setzt zurück
+                    spans.forEach(span => {
+                        span.style.animation = 'none';
+                    });
                 }
             });
         });
