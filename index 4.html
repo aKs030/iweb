@@ -1,66 +1,157 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <title>Abdulkerim</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdulkerim - Persönliche Homepage</title>
+    <link rel="icon" type="image/png" href="icon.png">
 
-  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="icon.png">
-  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="f.css" media="screen" rel="stylesheet" type="text/css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
 
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
- 
-  <script src="f.js"></script>
+    <!-- CSS-Stile -->
+    <style>
+        /* Grundlegende Stile */
+        html, body {
+            margin: 0;
+            padding: 0;
+            scroll-snap-type: y mandatory; /* Scroll-Snap aktivieren */
+            font-family: 'Open Sans', Arial, sans-serif;
+        }
 
-  <script src="js/menu.js"></script>
-  <script src="js/footer.js"></script>
-  <style>
-    .menu-index {
-      color: rgb(255, 255, 255) !important;
-      opacity: 1 !important;
-      font-weight: 700 !important;
-    }
-  </style>
+        /* Menü-Stile */
+        .header-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .header-menu ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-menu li {
+            margin: 0 20px;
+        }
+
+        .header-menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .header-menu a:hover {
+            color: #4CAF50; /* Grün beim Hover */
+        }
+
+        /* Scroll Snap Abschnitte */
+        .snap-section {
+            height: 100vh; /* Vollbildabschnitte */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            scroll-snap-align: start;
+        }
+
+        /* Farben der Abschnitte */
+        #section-1 { background-color: #4CAF50; } /* Grün */
+        #section-2 { background-color: #2196F3; } /* Blau */
+        #section-3 { background-color: #FF9800; } /* Orange */
+        #section-4 { background-color: #9C27B0; } /* Lila */
+
+        /* Scroll-Navigation */
+        .side-navigation {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-link {
+            width: 15px;
+            height: 15px;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            transition: opacity 0.3s, background-color 0.3s;
+        }
+
+        .nav-link.active, .nav-link:hover {
+            opacity: 1;
+            background-color: black;
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Menü und <!-- Menü Navigation -->
-<div class="menu-container">
-    <nav class="top-menu">
-        <ul>
-            <li><a href="#snap-1">Über mich</a></li>
-            <li><a href="#snap-2">Fotogalerie</a></li>
-            <li><a href="#snap-3">Kontakt</a></li>
-        </ul>
-    </nav>
-</div>
+    <!-- Menü -->
+    <header class="header-menu">
+        <nav>
+            <ul>
+                <li><a href="#section-1">Über mich</a></li>
+                <li><a href="#section-2">Fotogalerie</a></li>
+                <li><a href="#section-3">Kontakt</a></li>
+                <li><a href="#section-4">Vielen Dank</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <!-- Inhalte -->
-    <div id="snap-1" class="scroll-snap-section snap-1">
-        <h2>Über mich:</h2>
+    <!-- Scroll-Navigation -->
+    <div class="side-navigation">
+        <a href="#section-1" class="nav-link active"></a>
+        <a href="#section-2" class="nav-link"></a>
+        <a href="#section-3" class="nav-link"></a>
+        <a href="#section-4" class="nav-link"></a>
+    </div>
+
+    <!-- Scroll Snap Abschnitte -->
+    <div id="section-1" class="snap-section">
+        <h1>Über mich</h1>
         <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
     </div>
 
-    <div id="snap-2" class="scroll-snap-section snap-2">
-        <h2>Fotogalerie:</h2>
+    <div id="section-2" class="snap-section">
+        <h1>Fotogalerie</h1>
         <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
     </div>
 
-    <div id="snap-3" class="scroll-snap-section snap-3">
-        <h2>Kontakt:</h2>
-        <p>Kontaktiere mich per E-Mail: <a href="mailto:mail@abdulkerimsesli.com">mail@abdulkerimsesli.com</a></p>
+    <div id="section-3" class="snap-section">
+        <h1>Kontakt</h1>
+        <p>
+            Du kannst mich jederzeit per E-Mail erreichen: 
+            <a href="mailto:mail@abdulkerimsesli.com" style="color:white; text-decoration:underline;">
+                mail@abdulkerimsesli.com
+            </a>
+        </p>
     </div>
 
-    <!-- JavaScript -->
+    <div id="section-4" class="snap-section">
+        <h1>Vielen Dank!</h1>
+        <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
+    </div>
+
+    <!-- JavaScript für die Scroll-Navigation -->
     <script>
-        const sections = document.querySelectorAll('.scroll-snap-section');
-        const navLinks = document.querySelectorAll('.snap-nav-link');
+        const sections = document.querySelectorAll('.snap-section');
+        const navLinks = document.querySelectorAll('.nav-link');
 
         window.addEventListener('scroll', () => {
             let current = "";
