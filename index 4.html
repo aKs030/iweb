@@ -15,7 +15,7 @@
     <link href="css/controls.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
 
-    <!-- Inline CSS -->
+    <!-- Inline Styles -->
     <style>
         html, body {
             margin: 0;
@@ -33,22 +33,16 @@
             width: 100%;
         }
 
-        /* Scrollbare Abschnitte */
-        .section-container {
-            height: calc(100vh - 300px); /* Reduziert um 2x Banner-Höhe */
+        /* Abschnitt Styling */
+        .snap-section {
+            height: 100vh; /* Vollbildhöhe */
             display: flex;
             flex-direction: column;
+            justify-content: space-between; /* Banner oben und unten */
             align-items: center;
-            justify-content: center;
             text-align: center;
             scroll-snap-align: start;
-            color: white;
-            padding: 20px;
         }
-
-        /* Banner Styling */
-
-        
 
         /* Abschnitt Farben */
         #section-1 { background-color: #4CAF50; color: white; }
@@ -56,7 +50,7 @@
         #section-3 { background-color: #FF9800; color: white; }
         #section-4 { background-color: #9C27B0; color: white; }
 
-        /* Text Stil */
+        /* Text Styling */
         h1, h2 {
             margin: 0;
             font-size: 2.5rem;
@@ -75,46 +69,52 @@
     <div class="menu-container"></div>
 
     <!-- Abschnitt 1 -->
-    <div class="banner"></div>
-    <div id="section-1" class="section-container">
-        <h2>Über mich</h2>
-        <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
+    <div id="section-1" class="snap-section">
+        <div class="banner"></div>
+        <div>
+            <h2>Über mich</h2>
+            <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
+        </div>
+        <div class="banner"></div>
     </div>
-
 
     <!-- Abschnitt 2 -->
-
-    <div id="section-2" class="section-container">
-           <div class="banner"></div>
-         <h1>Fotogalerie</h1>
-        <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
-      <div class="banner"></div>  
+    <div id="section-2" class="snap-section">
+        <div class="banner"></div>
+        <div>
+            <h1>Fotogalerie</h1>
+            <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
+        </div>
+        <div class="banner"></div>
     </div>
-
 
     <!-- Abschnitt 3 -->
-    <div class="banner"></div>
-    <div id="section-3" class="section-container">
-        <h1>Kontakt</h1>
-        <p>
-            Du kannst mich jederzeit per E-Mail erreichen: 
-            <a href="mailto:mail@abdulkerimsesli.com" style="color:white; text-decoration:underline;">
-                mail@abdulkerimsesli.com
-            </a>
-        </p>
+    <div id="section-3" class="snap-section">
+        <div class="banner"></div>
+        <div>
+            <h1>Kontakt</h1>
+            <p>
+                Du kannst mich jederzeit per E-Mail erreichen: 
+                <a href="mailto:mail@abdulkerimsesli.com" style="color:white; text-decoration:underline;">
+                    mail@abdulkerimsesli.com
+                </a>
+            </p>
+        </div>
+        <div class="banner"></div>
     </div>
-    <div class="banner"></div>
 
     <!-- Abschnitt 4 -->
-    <div class="banner"></div>
-    <div id="section-4" class="section-container">
-        <h1>Vielen Dank!</h1>
-        <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
+    <div id="section-4" class="snap-section">
+        <div class="banner"></div>
+        <div>
+            <h1>Vielen Dank!</h1>
+            <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
+        </div>
+        <div class="banner"></div>
     </div>
-    <div class="banner"></div>
 
     <!-- JavaScript -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="js/menu.js"></script> <!-- Menü dynamisch laden -->
+    <script src="js/menu.js"></script>
 </body>
 </html>
