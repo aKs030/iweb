@@ -25,8 +25,14 @@
             background-color: #f0f0f0;
         }
 
+        /* Abschnitt Styling */
+
+
+        /* Abschnitt Styling */
+
+
         /* Banner Styling */
-        .banner {
+        .banner-gif {
             background: url('img/dummy-background.gif') no-repeat center;
             background-size: cover;
             height: 100px;
@@ -44,18 +50,20 @@
             scroll-snap-align: start;
         }
 
-        /* Abschnitt Farben */
-        #section-intro { }
-        #section-1 { background-color: #4CAF50; color: white; }
+        /* Abschnitt Farben */ 
+        #section-intro { background-color: #2196F3; color: white; }
+        #section-1 { background-color: #2196F3; color: white; }
         #section-2 { background-color: #2196F3; color: white; }
-        #section-3 { background-color: #FF9800; color: white; }
-        #section-4 { background-color: #9C27B0; color: white; }
+        #section-3 { background-color: #2196F3; color: white; }
+        #section-4 { background-color: #2196F3; color: white; }
 
-        /* Text Styling */
+        /* Text Styling 
         h1, h2 {
             margin: 0;
             font-size: 2.5rem;
         }
+
+*/
 
         p {
             font-size: 1.2rem;
@@ -90,69 +98,74 @@
     
         <!-- Dynamisches Menü -->
     <div class="menu-container"></div>
-    
+    <div class="content-container">
+        
      <!-- Scroll-Snap Abschnitte -->
-    <div id="section-intro" class="snap-section">
-                <div class="banner"></div>
+          <div id="section-intro" class="snap-section">
+             <div class="content-container">
+
         <div class="content">
+                <div class="banner-gif"></div>
+
+                <div class="banner">
+                    <div class="banner-table flex-column">
+                        <div class="flex-row">
+                            Herzlich willkommen auf meiner Homepage!
+                        </div>
+                    </div>
+                </div>
+                    <!-- Banner nur über dem ersten Abschnitt -->
+       </div>
+     </div>
+               
+
+     <!--    
+      
+    Abschnitt 1
+       
+ -->
+ <div class="content-container">
+
+ <div class="content">
+            
             <!-- Animierter Introtext -->
             <div class="scroll-animation" id="intro-text">
-                <h1>
-                    <span>Ich</span>
-                    <span>freue</span>
-                    <span>mich,</span>
-                    <span>dass</span>
-                    <span>du</span>
-                    <span>den</span>
-                    <span>Weg</span>
-                    <span>hierher</span>
-                    <span>gefunden</span>
-                    <span>hast.</span>
-                    <br>  <br>
-                    <span>Diese</span>
-                    <span>Seite</span>
-                    <span>dient</span>
-                    <span>als</span>
-                    <span>mein</span>
-                    <span>digitales</span>
-                    <span>Zuhause</span>
-                    <span>im.</span>
-                    <span>World</span>
-                    <span>Wide</span>
+                <br>
+                    <span>Ich</span> <span>freue</span>
+                    <span>mich,</span> <span>dass</span>
+                    <span>du </span> <span>den</span>
+                    <span>Weg</span> <span>hierher</span>
+                    <span>gefunden</span> <span>hast.</span>
+                    <br><br>
+                    <span>Diese</span> <span>Seite</span>
+                    <span>dient</span> <span>als</span>
+                    <span>mein</span> <span>digitales</span>
+                    <span>Zuhause</span> <span>im.</span>
+                    <span>World</span> <span>Wide</span>
                     <span>Web</span>
                     <br>
-                    <span>auf</span>
-                    <span>der</span>
-                    <span>ich</span>
-                    <span>meine</span>
-                    <span>Interessen,</span>
-                    <span>Erfahrungen</span>
-                    <span>und</span>
-                    <span>Gedanken</span>
-                    <span>teilen</span>
-                    <span>möchte.</span>
+                    <span>auf</span> <span>der</span>
+                    <span>ich</span> <span>meine</span>
+                    <span>Interessen,</span> <span>Erfahrungen</span>
+                    <span>und</span> <span>Gedanken</span>
+                    <span>teilen</span> <span>möchte.</span>
                     <br><br>
-                    <span>Lass</span>
-                    <span>mich</span>
-                    <span>dir</span>
-                    <span>einen</span>
-                    <span>kleinen</span>
-                    <span>Einblick</span>
+                    <span>Lass</span> <span>mich</span>
+                    <span>dir</span> <span>einen</span>
+                    <span>kleinen</span> <span>Einblick</span>
                     <span>geben,</span>
                     <br>
-                    <span>was</span>
-                    <span> dich</span>
-                    <span>hier</span>
-                    <span>erwartet.</span>
-                 
-                </h1>
+                    <span>was</span> <span> dich</span>
+                    <span>hier</span> <span>erwartet.</span>
             </div>
         </div>
-                <div class="banner"></div>
+        
+    </div>
+                <div class="banner-gif"></div>
     </div> 
     
     
-    
+
     
     
     
@@ -164,27 +177,27 @@
 
     <!-- Abschnitt 1 -->
     <div id="section-1" class="snap-section">
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
         <div>
             <h2>Über mich</h2>
             <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
         </div>
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
     </div>
 
     <!-- Abschnitt 2 -->
     <div id="section-2" class="snap-section">
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
         <div>
             <h2>Fotogalerie</h2>
             <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
         </div>
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
     </div>
 
     <!-- Abschnitt 3 -->
     <div id="section-3" class="snap-section">
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
         <div>
             <h2>Kontakt</h2>
             <p>
@@ -194,18 +207,23 @@
                 </a>
             </p>
         </div>
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
     </div>
 
     <!-- Abschnitt 4 -->
     <div id="section-4" class="snap-section">
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
         <div>
             <h1>Vielen Dank!</h1>
             <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
         </div>
-        <div class="banner"></div>
+        <div class="banner-gif"></div>
     </div>
+
+
+</div>
+
+
 
     <!-- JavaScript -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -234,7 +252,7 @@
         observer.observe(document.getElementById('intro-text'));
     </script>
     
-    
+  
     
 </body>
 </html>
