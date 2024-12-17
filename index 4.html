@@ -14,7 +14,22 @@
     <link href="css/custom.css" rel="stylesheet">
     <style>
         /* Allgemeine Stile */
-        html, body {
+        
+        
+          /* Scroll Snap Abschnitte */
+        .snap-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            scroll-snap-align: start;
+            color: white;
+            padding: 20px;
+        }
+
+      html, body {
             margin: 0;
             scroll-snap-type: y mandatory;
             font-family: 'Open Sans', Arial, sans-serif;
