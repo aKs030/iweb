@@ -35,14 +35,20 @@
 
         /* Scrollbare Abschnitte */
         .section-container {
-            height: 100vh;
+            height: calc(100vh - 300px); /* Reduziert um 2x Banner-Höhe */
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             text-align: center;
             scroll-snap-align: start;
+            color: white;
+            padding: 20px;
         }
+
+        /* Banner Styling */
+
+        
 
         /* Abschnitt Farben */
         #section-1 { background-color: #4CAF50; color: white; }
