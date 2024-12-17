@@ -186,5 +186,31 @@
     <!-- JavaScript -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="js/menu.js"></script>
+    
+    
+        <script>
+    const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const spans = entry.target.querySelectorAll('span');
+                if (entry.isIntersecting) {
+                    spans.forEach((span, index) => {
+                        span.style.animation = `fadeInUp 1s ease forwards`;
+                        span.style.animationDelay = `${index * 0.1}s`;
+                    });
+                } else {
+                    // Entfernt die Animation und setzt zurück
+                    spans.forEach(span => {
+                        span.style.animation = 'none';
+                    });
+                }
+            });
+        });
+
+        // Zielbereich beobachten
+        observer.observe(document.getElementById('intro-text'));
+    </script>
+    
+    
+    
 </body>
 </html>
