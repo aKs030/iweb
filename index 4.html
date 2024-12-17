@@ -14,76 +14,111 @@
     <link href="css/custom.css" rel="stylesheet">
     <style>
         /* Allgemeine Stile */
-html, body {
+        html, body {
             margin: 0;
-            height: 100%;
+            scroll-snap-type: y mandatory;
+            font-family: 'Open Sans', Arial, sans-serif;
+        }
+
+        /* Scroll-Snap Abschnitte */
+        .snap-section {
+            height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: #333;
-            font-family: 'Arial', sans-serif;
-            color: white;
-        }
-
-        .animated-text {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
             text-align: center;
-            max-width: 80%;
+            scroll-snap-align: start;
+            color: white;
+            padding: 20px;
         }
 
-        .animated-text span {
+        #section-1 {
+            background-color: #4CAF50;
+            position: relative;
+        }
+
+        /* Introtext Animation */
+        .scroll-animation h1 {
+            font-size: 2rem;
+            text-transform: uppercase;
+            color: white;
+            overflow: hidden;
+        }
+
+        .scroll-animation span {
             display: inline-block;
             opacity: 0;
             transform: translateY(50px);
             animation: fadeInUp 1s forwards;
         }
 
+        .scroll-animation span:nth-child(1) { animation-delay: 0.1s; }
+        .scroll-animation span:nth-child(2) { animation-delay: 0.2s; }
+        .scroll-animation span:nth-child(3) { animation-delay: 0.3s; }
+        .scroll-animation span:nth-child(4) { animation-delay: 0.4s; }
+        .scroll-animation span:nth-child(5) { animation-delay: 0.5s; }
+        .scroll-animation span:nth-child(6) { animation-delay: 0.6s; }
+        .scroll-animation span:nth-child(7) { animation-delay: 0.7s; }
+        .scroll-animation span:nth-child(8) { animation-delay: 0.8s; }
+        .scroll-animation span:nth-child(9) { animation-delay: 0.9s; }
+        .scroll-animation span:nth-child(10) { animation-delay: 1s; }
+        
         @keyframes fadeInUp {
             0% { opacity: 0; transform: translateY(50px); }
             100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
+
 <body>
-    <!-- Animierter Text -->
-    <div class="animated-text" id="randomText">
-        <span>Ich</span>
-        <span>freue</span>
-        <span>mich,</span>
-        <span>dass</span>
-        <span>du</span>
-        <span>den</span>
-        <span>Weg</span>
-        <span>hierher</span>
-        <span>gefunden</span>
-        <span>hast.</span>
-        <span>Diese</span>
-        <span>Seite</span>
-        <span>dient</span>
-        <span>als</span>
-        <span>mein</span>
-        <span>digitales</span>
-        <span>Zuhause</span>
-        <span>im</span>
-        <span>World</span>
-        <span>Wide</span>
-        <span>Web,</span>
-        <span>auf</span>
-        <span>dem</span>
-        <span>ich</span>
-        <span>meine</span>
-        <span>Interessen,</span>
-        <span>Erfahrungen</span>
-        <span>und</span>
-        <span>Gedanken</span>
-        <span>teilen</span>
-        <span>möchte.</span>
+    <!-- Menü-Bereich -->
+    <div class="menu-container"></div>
+
+    <!-- Scroll-Snap Abschnitte -->
+    <div id="section-1" class="snap-section">
+        <div class="content">
+            <!-- Animierter Introtext -->
+            <div class="scroll-animation">
+                <h1>
+                    <span>Ich</span>
+                    <span>freue</span>
+                    <span>mich,</span>
+                    <span>dass</span>
+                    <span>du</span>
+                    <span>den</span>
+                    <span>Weg</span>
+                    <span>hierher</span>
+                    <span>gefunden</span>
+                    <span>hast.</span>
+                    <br>
+                    <span>Diese</span>
+                    <span>Seite</span>
+                    <span>dient</span>
+                    <span>als</span>
+                    <span>mein</span>
+                    <span>digitales</span>
+                    <span>Zuhause</span>
+                    <span>im</span>
+                    <span>World</span>
+                    <span>Wide</span>
+                    <span>Web,</span>
+                    <br>
+                    <span>auf</span>
+                    <span>dem</span>
+                    <span>ich</span>
+                    <span>meine</span>
+                    <span>Interessen,</span>
+                    <span>Erfahrungen</span>
+                    <span>und</span>
+                    <span>Gedanken</span>
+                    <span>teilen</span>
+                    <span>möchte.</span>
+                </h1>
+            </div>
+        </div>
     </div>
 
-
-    
     <div id="section-2" class="snap-section" style="background-color: #2196F3;">
         <h1>Fotogalerie</h1>
         <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
@@ -102,17 +137,5 @@ html, body {
     <!-- JavaScript für Menü -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="js/menu.js"></script>
-    
-        <!-- JavaScript -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const words = document.querySelectorAll('#randomText span');
-            const shuffledWords = Array.from(words).sort(() => Math.random() - 0.5);
-
-            shuffledWords.forEach((word, index) => {
-                word.style.animationDelay = `${index * 0.2}s`;
-            });
-        });
-    </script>
 </body>
 </html>
