@@ -50,7 +50,7 @@
             display: inline-block;
             opacity: 0;
             transform: translateY(30px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out; /* Schnellere Animation */
         }
     </style>
 </head>
@@ -91,17 +91,17 @@
             const scrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / window.innerHeight));
 
             spans.forEach((span, index) => {
-                const delay = index * 0.1; // Verzögerung pro Wort
+                const delay = index * 0.03; // Schnellere Verzögerung pro Wort
                 const progress = scrollProgress - delay;
 
                 if (progress > 0 && progress < 1) {
                     span.style.opacity = Math.min(1, progress * 2);
                     span.style.transform = `translateY(${30 * (1 - progress)}px)`;
                 } else if (progress <= 0) {
-                    span.style.opacity = 0; // Zurücksetzen, wenn man nach oben scrollt
+                    span.style.opacity = 0; // Zurücksetzen beim Hochscrollen
                     span.style.transform = 'translateY(30px)';
                 } else {
-                    span.style.opacity = 1; // Voll sichtbar am Ende
+                    span.style.opacity = 1; // Vollständig sichtbar
                     span.style.transform = 'translateY(0)';
                 }
             });
