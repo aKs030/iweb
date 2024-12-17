@@ -8,38 +8,65 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
-    <!-- FontAwesome Icons -->
+    <!-- Icons -->
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-    <!-- CSS Files -->
+
+    <!-- CSS-Stile -->
     <link href="css/frame.css" rel="stylesheet">
     <link href="css/controls.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
 
-    <!-- Inline Style for Scroll-Snap -->
     <style>
+        /* Grundlegende Stile */
         html, body {
             margin: 0;
             scroll-snap-type: y mandatory;
             font-family: 'Open Sans', Arial, sans-serif;
         }
+
+        /* Scroll Snap Abschnitte */
         .snap-section {
             height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             scroll-snap-align: start;
             color: white;
+            padding: 20px;
         }
+
+        /* Farben */
         #section-1 { background-color: #4CAF50; }
         #section-2 { background-color: #2196F3; }
         #section-3 { background-color: #FF9800; }
         #section-4 { background-color: #9C27B0; }
+
+        /* Popup-Stil */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Dynamisches Menü -->
+    <!-- Menü-Bereich -->
     <div class="menu-container"></div>
 
     <!-- Scroll Snap Abschnitte -->
@@ -51,16 +78,16 @@
     <div id="section-2" class="snap-section">
         <h1>Fotogalerie</h1>
         <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
+        <div class="gallery">
+            <img src="img/photo1.jpg" alt="Reise 1">
+            <img src="img/photo2.jpg" alt="Reise 2">
+        </div>
     </div>
 
     <div id="section-3" class="snap-section">
         <h1>Kontakt</h1>
-        <p>
-            Du kannst mich jederzeit per E-Mail erreichen: 
-            <a href="mailto:mail@abdulkerimsesli.com" style="color:white; text-decoration:underline;">
-                mail@abdulkerimsesli.com
-            </a>
-        </p>
+        <p>Du kannst mich jederzeit kontaktieren:</p>
+        <button onclick="openPopup()">Kontaktformular</button>
     </div>
 
     <div id="section-4" class="snap-section">
@@ -68,26 +95,40 @@
         <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
     </div>
 
+    <!-- Popup-Fenster -->
+    <div id="popup" class="popup">
+        <h2>Kontakt</h2>
+        <p>Schicke mir eine E-Mail an: <a href="mailto:mail@abdulkerimsesli.com">mail@abdulkerimsesli.com</a></p>
+        <button onclick="closePopup()">Schließen</button>
+    </div>
+
+    <!-- Back to Top Button -->
+    <a href="#section-1" class="back-to-top"><img src="img/top.png" alt="Top" style="width: 50px;"></a>
+
     <!-- JavaScript -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="js/menu.js"></script> <!-- Lädt Menü dynamisch -->
+
     <script>
-        const sections = document.querySelectorAll('.snap-section');
-        window.addEventListener('scroll', () => {
-            let current = "";
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (pageYOffset >= sectionTop - section.clientHeight / 3) {
-                    current = section.getAttribute('id');
-                }
-            });
-            document.querySelectorAll('.menu-items a').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href').includes(current)) {
-                    link.classList.add('active');
+        // Scroll-to-Top
+        $(document).ready(function(){
+            $(".back-to-top").hide();
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 100) {
+                    $('.back-to-top').fadeIn();
+                } else {
+                    $('.back-to-top').fadeOut();
                 }
             });
         });
+
+        // Popup-Fenster öffnen/schließen
+        function openPopup() {
+            document.getElementById("popup").style.display = "block";
+        }
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
     </script>
 </body>
 </html>
