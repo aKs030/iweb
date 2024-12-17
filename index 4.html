@@ -15,7 +15,6 @@
     <link href="css/controls.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
 
-    <!-- Inline Styles -->
     <style>
         html, body {
             margin: 0;
@@ -25,13 +24,16 @@
             background-color: #f0f0f0;
         }
 
-        /* Abschnitt Styling */
+        /* Allgemeines Styling */
+        .snap-section {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            scroll-snap-align: start;
+            text-align: center;
+        }
 
-
-        /* Abschnitt Styling */
-
-
-        /* Banner Styling */
         .banner-gif {
             background: url('img/dummy-background.gif') no-repeat center;
             background-size: cover;
@@ -39,169 +41,70 @@
             width: 100%;
         }
 
-        /* Abschnitt Styling */
-        .snap-section {
-            height: 100vh; /* Vollbildhöhe */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Banner oben und unten */
-            align-items: center;
-            text-align: center;
-            scroll-snap-align: start;
+        /* Abschnitt Farben */
+        #section-intro, #section-1, #section-2, #section-3, #section-4 {
+            background-color: #333333;
+            color: white;
         }
 
-        /* Abschnitt Farben */ 
-        #section-intro { background-color: #333333; color: white; }
-        #section-1 { background-color: #333333; color: white; }
-        #section-2 { background-color: #333333; color: white; }
-        #section-3 { background-color: #333333; color: white; }
-        #section-4 { background-color: #333333; color: white; }
+        /* Animierter Text */
+        .scroll-animation span {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: calc(var(--index) * 0.1s);
+        }
 
-        /* Text Styling 
-        h1, h2 {
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(50px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3 {
             margin: 0;
             font-size: 2.5rem;
         }
-
-*/
 
         p {
             font-size: 1.2rem;
             max-width: 800px;
             margin: 10px auto;
         }
-        
-                /* Introtext Animation */
-        .scroll-animation h1 {
-            font-size: 2rem;
-            text-transform: uppercase;
-            overflow: hidden;
-        }
-
-        .scroll-animation span {
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(50px);
-            animation: none; /* Animation wird standardmäßig deaktiviert */
-        }
-
-        /* Keyframes für die Animation */
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(50px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        
     </style>
 </head>
-
 <body>
-    
-        <!-- Dynamisches Menü -->
-    <div class="menu-container"></div>
-    <div class="content-container">
-        
-     <!-- Scroll-Snap Abschnitte -->
-          <div id="section-intro" class="snap-section">
-             <div class="content-container">
 
-        <div class="content">
-                <div class="banner-gif"></div>
-
-                <div class="banner">
-                    <div class="banner-table flex-column">
-                        <div class="flex-row">
-                            Herzlich willkommen auf meiner Homepage!
-                        </div>
-                    </div>
-                </div>
-                    <!-- Banner nur über dem ersten Abschnitt -->
-       </div>
-     </div>
-               
-
-     <!--    
-      
-    Abschnitt 1
-       
- -->
- <div class="content-container">
-
- <div class="content">
-            
-            <!-- Animierter Introtext -->
+    <!-- Intro-Abschnitt -->
+    <div id="section-intro" class="snap-section">
+        <div>
+            <div class="banner-gif"></div>
+            <h1>Herzlich willkommen auf meiner Homepage!</h1>
             <div class="scroll-animation" id="intro-text">
-                    <span>Ich</span> <span>freue</span>
-                    <span>mich,</span> <span>dass</span>
-                    <span>du </span> <span>den</span>
-                    <span>Weg</span> <span>hierher</span>
-                    <span>gefunden</span> <span>hast.</span>
-                    <br><br>
-                    <span>Diese</span> <span>Seite</span>
-                    <span>dient</span> <span>als</span>
-                    <span>mein</span> <span>digitales</span>
-                    <span>Zuhause</span> <span>im.</span>
-                    <span>World</span> <span>Wide</span>
-                    <span>Web</span>
-                    <br>
-                    <span>auf</span> <span>der</span>
-                    <span>ich</span> <span>meine</span>
-                    <span>Interessen,</span> <span>Erfahrungen</span>
-                    <span>und</span> <span>Gedanken</span>
-                    <span>teilen</span> <span>möchte.</span>
-                    <br><br>
-                    <span>Lass</span> <span>mich</span>
-                    <span>dir</span> <span>einen</span>
-                    <span>kleinen</span> <span>Einblick</span>
-                    <span>geben,</span>
-                    <br>
-                    <span>was</span> <span> dich</span>
-                    <span>hier</span> <span>erwartet.</span>
+                <span>Ich</span> <span>freue</span> <span>mich,</span> <span>dass</span> <span>du</span> <span>den</span> 
+                <span>Weg</span> <span>hierher</span> <span>gefunden</span> <span>hast.</span>
             </div>
         </div>
-        
     </div>
-                <div class="banner-gif"></div>
-    </div> 
-    
-    
 
-    
-    
-    
-    
-    
-    
-    
-
-
-    <!-- Abschnitt 1 -->
+    <!-- Über mich -->
     <div id="section-1" class="snap-section">
-        <div class="banner-gif"></div>
         <div>
             <h1>Über mich</h1>
-             <div class="content">
-                        <div class="scroll-animation" id="intro-text">
-                             <span>Erlebnisse.</span>
-            <span>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</span>
+            <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
         </div>
-           </div>
-         </div>
-        <div class="banner-gif"></div>
     </div>
 
-    <!-- Abschnitt 2 -->
+    <!-- Fotogalerie -->
     <div id="section-2" class="snap-section">
-        <div class="banner-gif"></div>
         <div>
             <h2>Fotogalerie</h2>
             <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
         </div>
-        <div class="banner-gif"></div>
     </div>
 
-    <!-- Abschnitt 3 -->
+    <!-- Kontakt -->
     <div id="section-3" class="snap-section">
-        <div class="banner-gif"></div>
         <div>
             <h3>Kontakt</h3>
             <p>
@@ -211,52 +114,37 @@
                 </a>
             </p>
         </div>
-        <div class="banner-gif"></div>
     </div>
 
-    <!-- Abschnitt 4 -->
+    <!-- Abschlussabschnitt -->
     <div id="section-4" class="snap-section">
-        <div class="banner-gif"></div>
         <div>
             <h1>Vielen Dank!</h1>
             <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
         </div>
-        <div class="banner-gif"></div>
     </div>
 
-
-</div>
-
-
-
-    <!-- JavaScript -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="js/menu.js"></script>
-    
-    
-        <script>
-    const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const spans = entry.target.querySelectorAll('span');
-                if (entry.isIntersecting) {
-                    spans.forEach((span, index) => {
-                        span.style.animation = `fadeInUp 1s ease forwards`;
-                        span.style.animationDelay = `${index * 0.1}s`;
-                    });
-                } else {
-                    // Entfernt die Animation und setzt zurück
-                    spans.forEach(span => {
-                        span.style.animation = 'none';
-                    });
-                }
+    <!-- JavaScript für Animationen -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const spans = entry.target.querySelectorAll('span');
+                        spans.forEach((span, index) => {
+                            span.style.setProperty('--index', index);
+                        });
+                    }
+                });
             });
-        });
 
-        // Zielbereich beobachten
-        observer.observe(document.getElementById('intro-text'));
+            const introText = document.getElementById('intro-text');
+            if (introText) {
+                observer.observe(introText);
+            } else {
+                console.error('Element mit der ID "intro-text" nicht gefunden.');
+            }
+        });
     </script>
-    
-  
-    
 </body>
 </html>
