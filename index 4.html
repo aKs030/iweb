@@ -8,10 +8,9 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
-    <!-- Icons -->
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
 
-    <!-- CSS für das Menü -->
+    <!-- Menü CSS -->
     <link rel="stylesheet" href="css/controls.css">
     <link rel="stylesheet" href="css/frame.css">
 
@@ -25,39 +24,14 @@
             overflow-x: hidden;
         }
 
-        /* Menü-Stile */
-        .header-menu {
+        /* Menü Einbindung */
+        .menu-container {
+            width: 100%;
             position: fixed;
             top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 0;
             z-index: 1000;
-        }
-
-        .header-menu ul {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .header-menu li {
-            margin: 0 15px;
-        }
-
-        .header-menu a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-
-        .header-menu a:hover {
-            color: #4CAF50;
+            background-color: rgba(0, 0, 0, 0.9);
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         /* Scroll Snap Abschnitte */
@@ -76,37 +50,40 @@
             position: relative;
         }
 
-        /* Scroll-Animation */
+        /* Buchstaben-Animation */
         .scroll-animation h1 {
             font-size: 2.5rem;
             color: white;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
             margin: 0;
+            letter-spacing: 3px;
         }
 
         .scroll-animation span {
+            display: inline-block;
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         }
-
     </style>
 </head>
 
 <body>
-    <!-- Menü -->
-    <header class="header-menu">
-        <nav>
-            <ul>
-                <li><a href="#section-1">Über mich</a></li>
-                <li><a href="#section-2">Fotogalerie</a></li>
-                <li><a href="#section-3">Kontakt</a></li>
-            </ul>
-        </nav>
-    </header>
+    <!-- Menü Einbindung -->
+    <div class="menu-container">
+        <div class="menu">
+            <div class="menu-table flex-row-space-between">
+                <div class="logo">
+                    <a href="index.html">ABDULKERIM</a>
+                </div>
+                <div class="menu-items">
+                    <a href="#section-1">Über mich</a>
+                    <a href="#section-2">Fotogalerie</a>
+                    <a href="#section-3">Kontakt</a>
+                    <a href="#section-4">Vielen Dank</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scrollbare Abschnitte -->
     <div id="section-1" class="snap-section">
@@ -139,30 +116,28 @@
         <p>Du kannst mich per E-Mail erreichen: <a href="mailto:mail@abdulkerimsesli.com" style="color: white;">mail@abdulkerimsesli.com</a></p>
     </div>
 
-    <!-- JavaScript für Scroll-abhängige Animation -->
+    <!-- JavaScript für Buchstaben-Einblendung -->
     <script>
         const textContainer = document.querySelector('.scroll-animation');
         const spans = textContainer.querySelectorAll('span');
 
         window.addEventListener('scroll', () => {
             const rect = textContainer.getBoundingClientRect();
-            const scrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / window.innerHeight));
+            const triggerPoint = window.innerHeight - 100;
 
-            spans.forEach((span, index) => {
-                const delay = index * 0.05; // Kleine Verzögerung pro Wort
-                const progress = scrollProgress - delay;
-
-                if (progress > 0 && progress < 1) {
-                    span.style.opacity = Math.min(1, progress * 2);
-                    span.style.transform = `translateY(${30 * (1 - progress)}px)`;
-                } else if (progress <= 0) {
+            if (rect.top < triggerPoint) {
+                spans.forEach((span, index) => {
+                    setTimeout(() => {
+                        span.style.opacity = 1;
+                        span.style.transform = 'translateY(0)';
+                    }, index * 50); // Buchstaben schneller anzeigen
+                });
+            } else {
+                spans.forEach((span) => {
                     span.style.opacity = 0;
-                    span.style.transform = 'translateY(30px)';
-                } else {
-                    span.style.opacity = 1;
-                    span.style.transform = 'translateY(0)';
-                }
-            });
+                    span.style.transform = 'translateY(20px)';
+                });
+            }
         });
     </script>
 </body>
