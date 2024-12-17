@@ -43,13 +43,14 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            gap: 0.5rem;
         }
 
         .scroll-animation span {
             display: inline-block;
             opacity: 0;
-            transform: translateY(50px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            transform: translateY(30px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
     </style>
 </head>
@@ -90,15 +91,18 @@
             const scrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / window.innerHeight));
 
             spans.forEach((span, index) => {
-                const delay = index * 0.08; // Verzögerung für jedes Wort
+                const delay = index * 0.1; // Verzögerung pro Wort
                 const progress = scrollProgress - delay;
 
-                if (progress > 0) {
-                    span.style.opacity = Math.min(1, progress * 2); // Sichtbarkeit erhöhen
-                    span.style.transform = `translateY(${50 * (1 - progress)}px)`; // Bewegt das Wort nach oben
+                if (progress > 0 && progress < 1) {
+                    span.style.opacity = Math.min(1, progress * 2);
+                    span.style.transform = `translateY(${30 * (1 - progress)}px)`;
+                } else if (progress <= 0) {
+                    span.style.opacity = 0; // Zurücksetzen, wenn man nach oben scrollt
+                    span.style.transform = 'translateY(30px)';
                 } else {
-                    span.style.opacity = 0; // Zurücksetzen
-                    span.style.transform = 'translateY(50px)';
+                    span.style.opacity = 1; // Voll sichtbar am Ende
+                    span.style.transform = 'translateY(0)';
                 }
             });
         });
