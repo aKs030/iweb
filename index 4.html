@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="de">
 <head>
@@ -8,130 +10,86 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
-    <!-- CSS -->
+    <!-- FontAwesome Icons -->
+    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
+    <!-- CSS Files -->
     <link href="css/frame.css" rel="stylesheet">
     <link href="css/controls.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
+
+    <!-- Inline Style for Scroll-Snap -->
     <style>
-     
-         /* Allgemeine Stile */
         html, body {
             margin: 0;
             scroll-snap-type: y mandatory;
             font-family: 'Open Sans', Arial, sans-serif;
         }
-
-        /* Scroll-Snap Abschnitte */
         .snap-section {
             height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             scroll-snap-align: start;
             color: white;
-            padding: 20px;
         }
-
-        #section-1 {
-            background-color: #4CAF50;
-            position: relative;
-        }
-
-        /* Introtext Animation */
-        .scroll-animation h1 {
-            font-size: 2rem;
-            text-transform: uppercase;
-            color: white;
-            overflow: hidden;
-        }
-
-        .scroll-animation span {
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(50px);
-            animation: none; /* Animation wird standardmäßig deaktiviert */
-        }
-
-        /* Keyframes für die Animation */
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(50px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
+        #section-1 { background-color: #4CAF50; }
+        #section-2 { background-color: #2196F3; }
+        #section-3 { background-color: #FF9800; }
+        #section-4 { background-color: #9C27B0; }
     </style>
 </head>
 
 <body>
-    <!-- Scroll-Snap Abschnitte -->
+    <!-- Dynamisches Menü -->
+    <div class="menu-container"></div>
+
+    <!-- Scroll Snap Abschnitte -->
     <div id="section-1" class="snap-section">
-        <div class="content">
-            <!-- Animierter Introtext -->
-            <div class="scroll-animation" id="intro-text">
-                <h1>
-                    <span>Ich</span>
-                    <span>freue</span>
-                    <span>mich,</span>
-                    <span>dass</span>
-                    <span>du</span>
-                    <span>den</span>
-                    <span>Weg</span>
-                    <span>hierher</span>
-                    <span>gefunden</span>
-                    <span>hast.</span>
-                    <br>
-                    <span>Diese</span>
-                    <span>Seite</span>
-                    <span>dient</span>
-                    <span>als</span>
-                    <span>mein</span>
-                    <span>digitales</span>
-                    <span>Zuhause</span>
-                    <span>im</span>
-                    <span>World</span>
-                    <span>Wide</span>
-                    <span>Web.</span>
-                </h1>
-            </div>
-        </div>
+        <h1>Über mich</h1>
+        <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
     </div>
 
-    <div id="section-2" class="snap-section" style="background-color: #2196F3;">
+    <div id="section-2" class="snap-section">
         <h1>Fotogalerie</h1>
         <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
     </div>
 
-    <div id="section-3" class="snap-section" style="background-color: #FF9800;">
+    <div id="section-3" class="snap-section">
         <h1>Kontakt</h1>
-        <p>Schicke mir eine E-Mail an: <a href="mailto:mail@abdulkerimsesli.com" style="color: white;">mail@abdulkerimsesli.com</a></p>
+        <p>
+            Du kannst mich jederzeit per E-Mail erreichen: 
+            <a href="mailto:mail@abdulkerimsesli.com" style="color:white; text-decoration:underline;">
+                mail@abdulkerimsesli.com
+            </a>
+        </p>
     </div>
 
-    <div id="section-4" class="snap-section" style="background-color: #9C27B0;">
+    <div id="section-4" class="snap-section">
         <h1>Vielen Dank!</h1>
-        <p>Danke für deinen Besuch auf meiner Homepage.</p>
+        <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
     </div>
 
     <!-- JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="js/menu.js"></script> <!-- Lädt Menü dynamisch -->
     <script>
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const spans = entry.target.querySelectorAll('span');
-                if (entry.isIntersecting) {
-                    spans.forEach((span, index) => {
-                        span.style.animation = `fadeInUp 1s ease forwards`;
-                        span.style.animationDelay = `${index * 0.1}s`;
-                    });
-                } else {
-                    // Entfernt die Animation und setzt zurück
-                    spans.forEach(span => {
-                        span.style.animation = 'none';
-                    });
+        const sections = document.querySelectorAll('.snap-section');
+        window.addEventListener('scroll', () => {
+            let current = "";
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - section.clientHeight / 3) {
+                    current = section.getAttribute('id');
+                }
+            });
+            document.querySelectorAll('.menu-items a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
                 }
             });
         });
-
-        // Zielbereich beobachten
-        observer.observe(document.getElementById('intro-text'));
     </script>
 </body>
 </html>
