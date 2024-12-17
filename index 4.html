@@ -8,119 +8,39 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
-    <!-- Icons -->
+    <!-- FontAwesome Icons -->
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
+    <!-- CSS Files -->
+    <link href="css/frame.css" rel="stylesheet">
+    <link href="css/controls.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
 
-    <!-- CSS-Stile -->
+    <!-- Inline Style for Scroll-Snap -->
     <style>
-        /* Grundlegende Stile */
         html, body {
             margin: 0;
-            padding: 0;
-            scroll-snap-type: y mandatory; /* Scroll-Snap aktivieren */
+            scroll-snap-type: y mandatory;
             font-family: 'Open Sans', Arial, sans-serif;
         }
-
-        /* Menü-Stile */
-        .header-menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-
-        .header-menu ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        .header-menu li {
-            margin: 0 20px;
-        }
-
-        .header-menu a {
-            color: white;
-            text-decoration: none;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-
-        .header-menu a:hover {
-            color: #4CAF50; /* Grün beim Hover */
-        }
-
-        /* Scroll Snap Abschnitte */
         .snap-section {
-            height: 100vh; /* Vollbildabschnitte */
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: white;
             scroll-snap-align: start;
+            color: white;
         }
-
-        /* Farben der Abschnitte */
-        #section-1 { background-color: #4CAF50; } /* Grün */
-        #section-2 { background-color: #2196F3; } /* Blau */
-        #section-3 { background-color: #FF9800; } /* Orange */
-        #section-4 { background-color: #9C27B0; } /* Lila */
-
-        /* Scroll-Navigation */
-        .side-navigation {
-            position: fixed;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .nav-link {
-            width: 15px;
-            height: 15px;
-            background-color: white;
-            border-radius: 50%;
-            opacity: 0.5;
-            transition: opacity 0.3s, background-color 0.3s;
-        }
-
-        .nav-link.active, .nav-link:hover {
-            opacity: 1;
-            background-color: black;
-        }
+        #section-1 { background-color: #4CAF50; }
+        #section-2 { background-color: #2196F3; }
+        #section-3 { background-color: #FF9800; }
+        #section-4 { background-color: #9C27B0; }
     </style>
 </head>
 
 <body>
-    <!-- Menü -->
-    <header class="header-menu">
-        <nav>
-            <ul>
-                <li><a href="#section-1">Über mich</a></li>
-                <li><a href="#section-2">Fotogalerie</a></li>
-                <li><a href="#section-3">Kontakt</a></li>
-                <li><a href="#section-4">Vielen Dank</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <!-- Scroll-Navigation -->
-    <div class="side-navigation">
-        <a href="#section-1" class="nav-link active"></a>
-        <a href="#section-2" class="nav-link"></a>
-        <a href="#section-3" class="nav-link"></a>
-        <a href="#section-4" class="nav-link"></a>
-    </div>
+    <!-- Dynamisches Menü -->
+    <div class="menu-container"></div>
 
     <!-- Scroll Snap Abschnitte -->
     <div id="section-1" class="snap-section">
@@ -148,11 +68,11 @@
         <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
     </div>
 
-    <!-- JavaScript für die Scroll-Navigation -->
+    <!-- JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="js/menu.js"></script> <!-- Lädt Menü dynamisch -->
     <script>
         const sections = document.querySelectorAll('.snap-section');
-        const navLinks = document.querySelectorAll('.nav-link');
-
         window.addEventListener('scroll', () => {
             let current = "";
             sections.forEach(section => {
@@ -161,7 +81,7 @@
                     current = section.getAttribute('id');
                 }
             });
-            navLinks.forEach(link => {
+            document.querySelectorAll('.menu-items a').forEach(link => {
                 link.classList.remove('active');
                 if (link.getAttribute('href').includes(current)) {
                     link.classList.add('active');
