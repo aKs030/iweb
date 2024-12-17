@@ -8,31 +8,21 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
-    <!-- FontAwesome Icons -->
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
+
     <!-- CSS Files -->
     <link href="css/frame.css" rel="stylesheet">
     <link href="css/controls.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
 
-    <!-- Inline Style für Scroll-Snap und Banner -->
+    <!-- Inline CSS -->
     <style>
         html, body {
             margin: 0;
+            padding: 0;
             scroll-snap-type: y mandatory;
             font-family: 'Open Sans', Arial, sans-serif;
-        }
-
-        .snap-section {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            scroll-snap-align: start;
-            color: white;
-            padding: 20px 0 0 0; /* Platz für Banner oben */
+            background-color: #f0f0f0;
         }
 
         /* Banner Styling */
@@ -41,15 +31,36 @@
             background-size: cover;
             height: 150px;
             width: 100%;
-            position: absolute;
-            top: 0;
+        }
+
+        /* Scrollbare Abschnitte */
+        .section-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            scroll-snap-align: start;
         }
 
         /* Abschnitt Farben */
-        #section-1 { background-color: #4CAF50; }
-        #section-2 { background-color: #2196F3; }
-        #section-3 { background-color: #FF9800; }
-        #section-4 { background-color: #9C27B0; }
+        #section-1 { background-color: #4CAF50; color: white; }
+        #section-2 { background-color: #2196F3; color: white; }
+        #section-3 { background-color: #FF9800; color: white; }
+        #section-4 { background-color: #9C27B0; color: white; }
+
+        /* Text Stil */
+        h1, h2 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 10px auto;
+        }
     </style>
 </head>
 
@@ -58,66 +69,44 @@
     <div class="menu-container"></div>
 
     <!-- Abschnitt 1 -->
-    <div class="snap-section" id="section-1">
-        <div class="banner"></div>
-        <div class="content">
-            <h2>Über mich</h2>
-            <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
-        </div>
+    <div class="banner"></div>
+    <div id="section-1" class="section-container">
+        <h2>Über mich</h2>
+        <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
     </div>
+    <div class="banner"></div>
 
     <!-- Abschnitt 2 -->
-    <div class="snap-section" id="section-2">
-        <div class="banner"></div>
-        <div class="content">
-            <h1>Fotogalerie</h1>
-            <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
-        </div>
+    <div class="banner"></div>
+    <div id="section-2" class="section-container">
+        <h1>Fotogalerie</h1>
+        <p>Hier findest du Fotos von meinen Reisen und besonderen Ereignissen.</p>
     </div>
+    <div class="banner"></div>
 
     <!-- Abschnitt 3 -->
-    <div class="snap-section" id="section-3">
-        <div class="banner"></div>
-        <div class="content">
-            <h1>Kontakt</h1>
-            <p>
-                Du kannst mich jederzeit per E-Mail erreichen: 
-                <a href="mailto:mail@abdulkerimsesli.com" style="color:white; text-decoration:underline;">
-                    mail@abdulkerimsesli.com
-                </a>
-            </p>
-        </div>
+    <div class="banner"></div>
+    <div id="section-3" class="section-container">
+        <h1>Kontakt</h1>
+        <p>
+            Du kannst mich jederzeit per E-Mail erreichen: 
+            <a href="mailto:mail@abdulkerimsesli.com" style="color:white; text-decoration:underline;">
+                mail@abdulkerimsesli.com
+            </a>
+        </p>
     </div>
+    <div class="banner"></div>
 
     <!-- Abschnitt 4 -->
-    <div class="snap-section" id="section-4">
-        <div class="banner"></div>
-        <div class="content">
-            <h1>Vielen Dank!</h1>
-            <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
-        </div>
+    <div class="banner"></div>
+    <div id="section-4" class="section-container">
+        <h1>Vielen Dank!</h1>
+        <p>Vielen Dank, dass du meine Seite besuchst. Schau gerne regelmäßig vorbei!</p>
     </div>
+    <div class="banner"></div>
 
     <!-- JavaScript -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="js/menu.js"></script> <!-- Lädt Menü dynamisch -->
-    <script>
-        const sections = document.querySelectorAll('.snap-section');
-        window.addEventListener('scroll', () => {
-            let current = "";
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (pageYOffset >= sectionTop - section.clientHeight / 3) {
-                    current = section.getAttribute('id');
-                }
-            });
-            document.querySelectorAll('.menu-items a').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href').includes(current)) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
+    <script src="js/menu.js"></script> <!-- Menü dynamisch laden -->
 </body>
 </html>
