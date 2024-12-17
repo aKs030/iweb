@@ -3,14 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scroll-animierter Text</title>
+    <title>Abdulkerim - Persönliche Homepage</title>
     <link rel="icon" type="image/png" href="icon.png">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Sans+Pro:400,700" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
+
+    <!-- CSS für das Menü -->
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/frame.css">
 
     <style>
-        /* Grundlegende Stile */
+        /* Allgemeine Grundstile */
         html, body {
             margin: 0;
             padding: 0;
@@ -19,14 +25,50 @@
             overflow-x: hidden;
         }
 
+        /* Menü-Stile */
+        .header-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .header-menu ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-menu li {
+            margin: 0 15px;
+        }
+
+        .header-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .header-menu a:hover {
+            color: #4CAF50;
+        }
+
+        /* Scroll Snap Abschnitte */
         .snap-section {
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            scroll-snap-align: start;
             color: white;
+            scroll-snap-align: start;
         }
 
         #section-1 {
@@ -36,85 +78,65 @@
 
         /* Scroll-Animation */
         .scroll-animation h1 {
-            font-size: 2rem;
-            text-transform: uppercase;
+            font-size: 2.5rem;
             color: white;
-            margin: 0;
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
             gap: 0.5rem;
+            justify-content: center;
+            margin: 0;
         }
 
         .scroll-animation span {
-            display: inline-block;
             opacity: 0;
             transform: translateY(30px);
-            transition: opacity 0.2s ease-out, transform 0.2s ease-out; /* Schnellere Animation */
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
         }
+
     </style>
 </head>
 
 <body>
+    <!-- Menü -->
+    <header class="header-menu">
+        <nav>
+            <ul>
+                <li><a href="#section-1">Über mich</a></li>
+                <li><a href="#section-2">Fotogalerie</a></li>
+                <li><a href="#section-3">Kontakt</a></li>
+            </ul>
+        </nav>
+    </header>
+
     <!-- Scrollbare Abschnitte -->
     <div id="section-1" class="snap-section">
         <div class="content">
-            <!-- Text mit Scroll-Animation -->
+            <!-- Animierter Text -->
             <div class="scroll-animation" id="scroll-text">
                 <h1>
-                                <span>Ich</span>
-            <span>freue</span>
-            <span>mich,</span>
-            <span>dass</span>
-            <span>du</span>
-            <span>den</span>
-            <span>Weg</span>
-            <span>hierher</span>
-            <span>gefunden</span>
-            <span>hast.</span>
-            <br>
-            <span>Diese</span>
-            <span>Seite</span>
-            <span>dient</span>
-            <span>als</span>
-            <span>mein</span>
-            <span>digitales</span>
-            <span>Zuhause</span>
-            <span>im.</span>
-            <br>
-            <span>World</span>
-            <span>Wide</span>
-            <span>Web</span>
-            <span>auf</span>
-            <span>der</span>
-            <span>ich</span>
-            <span>meine</span>
-            <span>Interessen,</span>
-            <span>Erfahrungen</span>
-            <span>und</span>
-            <span>Gedanken</span>
-            <span>teilen</span>
-            <span>möchte.</span>
-            <br><br>
-            <span>Lass</span>
-            <span>mich</span>
-            <span>dir</span>
-            <span>einen</span>
-            <span>kleinen</span>
-            <span>Einblick</span>
-            <span>geben,</span>
-            <br>
-            <span>was</span>
-            <span> dich</span>
-            <span>hier</span>
-            <span>erwartet.</span>
+                    <span>Ich</span>
+                    <span>freue</span>
+                    <span>mich,</span>
+                    <span>dass</span>
+                    <span>du</span>
+                    <span>den</span>
+                    <span>Weg</span>
+                    <span>hierher</span>
+                    <span>gefunden</span>
+                    <span>hast.</span>
                 </h1>
             </div>
         </div>
     </div>
 
     <div id="section-2" class="snap-section" style="background-color: #2196F3;">
-        <h1 style="color: white;">Willkommen in der Fotogalerie!</h1>
+        <h1>Fotogalerie</h1>
+        <p>Hier findest du Bilder aus meinen Erlebnissen.</p>
+    </div>
+
+    <div id="section-3" class="snap-section" style="background-color: #FF9800;">
+        <h1>Kontakt</h1>
+        <p>Du kannst mich per E-Mail erreichen: <a href="mailto:mail@abdulkerimsesli.com" style="color: white;">mail@abdulkerimsesli.com</a></p>
     </div>
 
     <!-- JavaScript für Scroll-abhängige Animation -->
@@ -127,17 +149,17 @@
             const scrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / window.innerHeight));
 
             spans.forEach((span, index) => {
-                const delay = index * 0.03; // Schnellere Verzögerung pro Wort
+                const delay = index * 0.05; // Kleine Verzögerung pro Wort
                 const progress = scrollProgress - delay;
 
                 if (progress > 0 && progress < 1) {
                     span.style.opacity = Math.min(1, progress * 2);
                     span.style.transform = `translateY(${30 * (1 - progress)}px)`;
                 } else if (progress <= 0) {
-                    span.style.opacity = 0; // Zurücksetzen beim Hochscrollen
+                    span.style.opacity = 0;
                     span.style.transform = 'translateY(30px)';
                 } else {
-                    span.style.opacity = 1; // Vollständig sichtbar
+                    span.style.opacity = 1;
                     span.style.transform = 'translateY(0)';
                 }
             });
