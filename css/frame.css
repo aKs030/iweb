@@ -25,6 +25,14 @@ body {
   right: 20px;
   padding: 1em;
   z-index: 100;
+  z-index: 1000;
+  cursor: pointer;
+}
+/* Highlight the active menu item */
+.menu-items a.active {
+  font-weight: bold;
+  text-decoration: underline;
+  color: #007bff;
 }
 
 /* This is a hack for FireFox that the <b> tag does not work */
