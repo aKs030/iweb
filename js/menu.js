@@ -5,59 +5,53 @@
 
 (function () {
   "use strict";
-  
+
+  // Load menu content dynamically
   $(function () {
     $(".menu-container").load("menu.html");
   });
-})();
 
-/* menu button click */
-var menu = $('#menu'), but = $('#menu_button');
-$(document).on('click', '*', function(evt) {
-    evt.stopPropagation();
-    if ($(this).is(but))
-        menu.toggle();
-    else if (!$(this).closest(menu).length)
-        menu.hide();
-});
+  // Menu button click handling
+  var $menu = $('#menu'),
+      $menuButton = $('#menu_button');
+  
+  $(document).on('click', function (evt) {
+    if ($(evt.target).is($menuButton)) {
+      $menu.toggle();
+    } else if (!$(evt.target).closest($menu).length) {
+      $menu.hide();
+    }
+  });
 
+  // Back to top button functionality
+  $(document).ready(function () {
+    var backToTopButton = $('<a href="#top" class="back-to-top"><img class="image" src="img/top.png" style="max-width: 50px;"></a>');
+    $("body").append(backToTopButton);
+    backToTopButton.hide();
 
-$(document).ready(function(){
-  var back_to_top_button = ['<a href="#top" class="back-to-top"> <img class="image" src="img/top.png" style="max-width: 50px;"></a>'].join("");
-  $("body").append(back_to_top_button)
-  $(".back-to-top").hide();
-
-  $(function () {
-    $(window).scroll(function () {
+    $(window).on('scroll', function () {
       if ($(this).scrollTop() > 100) {
-        $('.back-to-top').fadeIn();
+        backToTopButton.fadeIn();
       } else {
-        $('.back-to-top').fadeOut();
+        backToTopButton.fadeOut();
       }
     });
 
-    $('.back-to-top').click(function () {
-      $('body,html').animate({
-        scrollTop: 0
-      }, 800);
+    backToTopButton.on('click', function () {
+      $('html, body').animate({ scrollTop: 0 }, 800);
       return false;
     });
   });
 
-});
+  // Scroll effect for moving background
+  $(window).on('load resize scroll', function () {
+    $('.bg-static').each(function () {
+      var $this = $(this);
+      var windowTop = $(window).scrollTop();
+      var elementTop = $this.offset().top;
+      var leftPosition = windowTop - elementTop;
 
-  //Scroll top menü page 
-$(window).on('load resize scroll', function() {
-$('.bg-static').each(function() {
-  var windowTop = $(window).scrollTop();
-  var elementTop = $(this).offset().top;
-  var leftPosition = windowTop - elementTop;
-    $(this)
-      .find('.bg-move')
-      .css({ left: leftPosition });
-});
-});
-
-
-
-
+      $this.find('.bg-move').css({ left: leftPosition });
+    });
+  });
+})();
