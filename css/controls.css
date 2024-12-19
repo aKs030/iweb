@@ -144,7 +144,7 @@ html { scroll-behavior: smooth;
   align-items: center;
   align-content: center;
   box-sizing: border-box;
-  -webkit-touch-callout: none;
+  -webkit-touch-callout: default;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -172,8 +172,14 @@ html { scroll-behavior: smooth;
 }
 
 .custom-button-flat img {
-  width: 20px;
-  height: 20px;
+  width: 24px; /* Erhöht die Klickfläche */
+  height: 24px;
+}
+
+@media screen and (max-width: 500px) {
+  .custom-button-flat {
+    padding: 15px; /* Größere Klickfläche für mobile Geräte */
+  }
 }
 
 .custom-button-flat.small img {
