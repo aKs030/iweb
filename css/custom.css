@@ -1,3 +1,20 @@
+/* Highlight the active menu item */
+.menu-items a.active {
+  font-weight: bold;
+  text-decoration: underline;
+  color: #007bff;
+}
+
+/* Back-to-Top Button Styling */
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+
 /*************************************************************************
  * Your custom CSS file
  *************************************************************************/
