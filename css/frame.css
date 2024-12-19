@@ -28,6 +28,7 @@ body {
   z-index: 1000;
   cursor: pointer;
 }
+
 /* Highlight the active menu item */
 .menu-items a.active {
   font-weight: bold;
