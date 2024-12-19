@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Project Title</title>
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/footer.js"></script>
+  <meta name="description" content="">
+  <link rel="stylesheet"  href="../src/css/lightslider.css"/>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="../src/js/lightslider.js"></script> 
+  <script>
+       $(document).ready(function() {
+          $("#content-slider").lightSlider({
+              loop:true,
+              keyPress:true
+          });
+          $('#image-gallery').lightSlider({
+              gallery:true,
+              item:1,
+              thumbItem:9,
+              slideMargin: 0,
+              speed:1900,
+              auto:true,
+              loop:true,
+              onSliderLoad: function() {
+                  $('#image-gallery').removeClass('cS-hidden');
+              }  
+          });
+      });
+  </script>
+  
+  <style>
+    .menu-index {
+      color: rgb(255, 255, 255) !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+
+    ul{
+			list-style: none outside none;
+		    padding-left: 0;
+            margin: 0;
+		}
+        .demo .item{
+            margin-bottom: 60px;
+        }
+		.content-slider li{
+		    background-color: #ed3020;
+		    text-align: center;
+		    color: #FFF;
+		}
+		.content-slider h3 {
+		    margin: 0;
+		    padding: 70px 0;
+		}
+		.demo{
+			width: 370px;
+      
+		}
+
+ 
+  </style>
+</head>
+
+<body>
+  <div class="menu-container"></div>
+  <div class="banner" style="background: url('img/dummy-background.gif') no-repeat center; background-size: cover; height: 100px;"></div>
+<div class="banner"><div class="banner-table flex-column"><div class="flex-row"><div class="flex-item flex-column"></div></div></div></div>
+  <div class="content">
+    <div class="content-table flex-column"> <!--TEXT-Center-->
+      
+      <!-------------------------------------------------------------------------------------------->
+     <div class="flex-row">
+      <div class="flex-item flex-item-stretch flex-column">
+        <br>
+        <h2 style="color: #005cbf;">Fotogalerie</h2>
+        <hr>
+        <div class="demo">
+          <div class="item" >            
+              <div class="clearfix" style="max-width:370px;">
+                <ul id="image-gallery" class="gallery list-unstyled cS-hidden">
+                      <li data-thumb="img/thumb/cS-1.jpg"> 
+                          <img src="img/cS-1.jpg" />
+                           </li>
+                      <li data-thumb="img/thumb/cS-2.jpg"> 
+                          <img src="img/cS-2.jpg" />
+                           </li>
+                      <li data-thumb="img/thumb/cS-3.jpg"> 
+                          <img src="img/cS-3.jpg" />
+                           </li>
+                      <li data-thumb="img/thumb/cS-4.jpg"> 
+                          <img src="img/cS-4.jpg" />
+                           </li>
+                      <li data-thumb="img/thumb/cS-5.jpg"> 
+                          <img src="img/cS-5.jpg" />
+                           </li>
+                      <li data-thumb="img/thumb/cS-6.jpg"> 
+                        <img src="img/cS-6.jpg" />
+                           </li>
+                      </ul>    
+                 </div>  
+             </div>
+        </div> <!--END GALLERY-->
+      </div>
+
+
+      <div class="flex-item flex-item-stretch-2 flex-column">
+        <p class="text">
+          Reisen ist eine meiner großen Leidenschaften.<br>
+          Ich liebe es, neue Orte zu entdecken, verschiedene Kulturen kennenzulernen und unvergessliche Erinnerungen zu sammeln.<br> 
+          <p>Auf meiner Homepage findest du Reiseberichte, Tipps und Fotos von meinen Abenteuern rund um die Welt.
+          Lass dich inspirieren und vielleicht entdeckst du sogar deinen nächsten Reiseziel auf meiner Seite.</p>
+        </p>
+      </div>
+
+      </div>
+
+      
+    </div>
+  </div>
+  
+  <!----------------------------------------------------------------->
+<!--------------------ENDE-Kontakt--------------------------------------------->
+<div class="footer-container"></div>
+<div class="banner" style="background: url('img/dummy-background.gif') no-repeat center; background-size: cover; height: 100px;"></div>
+</body>
+</html>

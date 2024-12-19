@@ -1,0 +1,240 @@
+/* Allgemeine Stile */
+html {
+  scroll-behavior: smooth; /* Scroll speed embedding page */
+}
+
+
+/* Standard-Styling für Menülinks */
+.menu-items a {
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 0.8;
+  text-decoration: none;
+}
+
+/* Hervorhebung des aktiven Menüpunkts */
+.menu-items a.active-menu {
+  font-weight: bold;
+  color: rgb(255, 255, 255);
+  opacity: 1;
+}
+
+
+body {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Popup-Dialog */
+.popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 20px;
+  width: 300px;
+}
+
+/* Buttons */
+.custom-button,
+.custom-button-flat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid #7d7d7d;
+  transition: 0.1s;
+  box-sizing: border-box;
+}
+
+.custom-button {
+  color: white;
+  background-color: #7d7d7d;
+  padding: 10px 20px;
+  border-radius: 2px;
+}
+
+.custom-button:not(:disabled):hover,
+.custom-button:not(:disabled):active {
+  background-color: #4d4d4d;
+  border-color: #4d4d4d;
+}
+
+.custom-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.custom-button-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.custom-button-primary:not(:disabled):hover,
+.custom-button-primary:not(:disabled):active {
+  background-color: #005cbf;
+  border-color: #005cbf;
+}
+
+.custom-button-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.custom-button-danger:not(:disabled):hover,
+.custom-button-danger:not(:disabled):active {
+  background-color: #a71120;
+  border-color: #a71120;
+}
+
+.custom-button-info {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.custom-button-info:not(:disabled):hover,
+.custom-button-info:not(:disabled):active {
+  background-color: #007082;
+  border-color: #007082;
+}
+
+/* Flat Buttons */
+.custom-button-flat {
+  font-size: 16px;
+  line-height: 16px;
+  border-radius: 48px;
+  padding: 13px;
+  color: black;
+  background-color: white;
+  border: 1px solid #777;
+}
+
+.custom-button-flat.large {
+  font-size: 18px;
+  padding: 17px;
+  border-radius: 56px;
+}
+
+.custom-button-flat.small {
+  font-size: 14px;
+  padding: 12px;
+  border-radius: 42px;
+}
+
+.custom-button-flat img {
+  width: 20px;
+  height: 20px;
+}
+
+.custom-button-flat.small img {
+  width: 16px;
+  height: 16px;
+}
+
+.custom-button-flat.large img {
+  width: 24px;
+  height: 24px;
+}
+
+.custom-button-flat span {
+  margin-left: 6px;
+}
+
+.custom-button-flat:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Inputs und Textareas */
+input.custom-textbox,
+textarea.custom-textbox {
+  font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  padding: 5px 10px;
+  background: #fff;
+  border: 1px solid #7d7d7d;
+  font-size: 16px;
+  border-radius: 2px;
+  resize: vertical;
+}
+
+input.custom-textbox {
+  height: 37px;
+}
+
+textarea.custom-textbox {
+  min-height: 60px;
+  max-height: 200px;
+}
+
+input[readonly].custom-textbox,
+textarea[readonly].custom-textbox {
+  background: #e6e6e6;
+  cursor: default;
+}
+
+/* Kontrollgruppen */
+.control-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.control-group > *:not(:last-child) {
+  margin-right: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Animationen */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(0, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+.pulse-white {
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 rgba(255, 255, 255, 0.5);
+}
+
+.pulse-black {
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.5);
+}
+
+.pulse-primary {
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 rgba(0, 123, 255, 0.5);
+}
+
+.pulse-danger {
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 rgba(220, 53, 69, 0.5);
+}
+
+.pulse-info {
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 rgba(23, 162, 184, 0.5);
+}
+
+/* Responsive Anpassungen */
+@media screen and (max-width: 500px) {
+  .stretch-on-mobile {
+    margin: 0 !important;
+    flex: 1 0 100%;
+    max-width: 100%;
+  }
+}
