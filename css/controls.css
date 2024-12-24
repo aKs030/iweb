@@ -13,6 +13,50 @@ html { scroll-behavior: smooth;
 } /* Popup index kontakt */
 
 /*************************************************************************
+*  Button Runter *
+ *************************************************************************/
+.button-runter {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  text-align: center;
+  font-size: 16px;
+  line-height: 16px;
+  outline: none;
+  border-radius: 48px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color 0.1s, box-shadow 0.1s, border 0.1s;
+  text-decoration: none;
+  color: black;
+  border: 1px solid #777777;
+  background-color: white;
+  padding: 13px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  box-sizing: border-box;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  position: absolute; /* Relativ zur Container-Position */
+  margin-bottom: -100%;
+}
+.button-runter.klein {
+  font-size: 14px;
+  line-height: 14px;
+  padding: 12px;
+  border-radius: 42px;
+}
+.button-runter.klein img {
+  width: 16px;
+  height: 16px;
+}
+/*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
  * Version: v3.40
  * This CSS file has control elements that do not require JavaScript
