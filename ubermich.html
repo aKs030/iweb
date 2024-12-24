@@ -48,12 +48,71 @@
   height: 100vh; /* Volle Höhe des Viewports */
 }
 
+
+
+
+
+
+/* Navigationsleiste */
+.section-nav {
+  position: relative; /* Innerhalb des Abschnitts */
+  top: -110px; /* Keine zusätzliche Verschiebung */
+  margin-top: -90x; /* Abstand unterhalb der Menüleiste */
+  background-color: rgba(255, 255, 255, 0.9); /* Leicht transparenter Hintergrund */
+  padding: 10px 20px; /* Innenabstand */
+  border-radius: 8px; /* Abgerundete Kanten */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Schatten */
+  text-align: center; /* Zentrierte Links */
+}
+
+/* Navigationselemente */
+.section-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* Abstand zwischen den Links */
+}
+
+.section-nav li {
+  margin: 0;
+}
+
+.section-nav a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #333; /* Standardfarbe */
+  transition: color 0.3s ease; /* Sanfter Übergang */
+}
+
+.section-nav a:hover {
+  color: #007BFF; /* Hover-Farbe */
+}
+
+/* Aktiver Link blinkt blau */
+.section-nav a.blink {
+  animation: blue-blink-animation 1.2s infinite;
+  color: #007BFF; /* Blaue Farbe für den aktiven Link */
+}
+
+@keyframes blue-blink-animation {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
    
   </style>
 </head>
 
 <body>
-  <header><div class="menu-container"></div></header>
+  <header><div class="menu-container"></div>
+  </header>
+
 <main class="content-container">
 
     <!-- Banner -->
@@ -63,6 +122,16 @@
 
     <!-- Über mich Abschnitt -->
     <section id="ubermichbox-1" class="snap-ubermichbox">
+      <nav class="section-nav">
+        <ul>
+          <li><a href="#ubermichbox-1">Über mich</a></li>
+          <li><a href="#ubermichbox-2">Hobbys</a></li>
+          <li><a href="#ubermichbox-3">Beruf</a></li>
+          <li><a href="#ubermichbox-4">Freizeit</a></li>
+          <li><a href="#ubermichbox-5">Kontakt</a></li>
+        </ul>
+      </nav>
+      
       <h2>Über mich</h2>
       <hr>
       <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst!</p>
@@ -71,6 +140,7 @@
         <img src="img/down.png" alt="Weiter">
       </button>
     </section>
+    
 
     <!-- Banner -->
     <div class="banner-gif-100"></div>
@@ -79,6 +149,16 @@
 
     <!-- Hobbys und Aktivitäten Abschnitt -->
     <section id="ubermichbox-2" class="snap-ubermichbox">
+      <nav class="section-nav">
+        <ul>
+          <li><a href="#ubermichbox-1">Über mich</a></li>
+          <li><a href="#ubermichbox-2">Hobbys</a></li>
+          <li><a href="#ubermichbox-3">Beruf</a></li>
+          <li><a href="#ubermichbox-4">Freizeit</a></li>
+          <li><a href="#ubermichbox-5">Kontakt</a></li>
+        </ul>
+      </nav>
+      
       <h2>Hobbys und Aktivitäten</h2>
       <hr>
       <ul>
@@ -88,7 +168,64 @@
         <li>Regelmäßig Fitness und Joggen.</li>
         <li>Bücher aus verschiedenen Genres lesen.</li>
       </ul>
+      
       <button class="custom-button-flat small pulse-primary" onclick="document.getElementById('ubermichbox-3').scrollIntoView({behavior: 'smooth'});">
+        <img src="img/down.png" alt="Weiter">
+      </button>
+    </section>
+    
+    
+    <!-- Banner -->
+    <div class="banner-gif-100"></div>
+    <div class="banner"><div class="banner-table flex-column"><div class="flex-row"><div class="flex-item flex-column"></div></div></div></div>
+    <!-- Banner -->
+
+    <!-- Beruf und Ausbildung Abschnitt -->
+    <section id="ubermichbox-3" class="snap-ubermichbox">
+      <nav class="section-nav">
+        <ul>
+          <li><a href="#ubermichbox-1">Über mich</a></li>
+          <li><a href="#ubermichbox-2">Hobbys</a></li>
+          <li><a href="#ubermichbox-3">Beruf</a></li>
+          <li><a href="#ubermichbox-4">Freizeit</a></li>
+          <li><a href="#ubermichbox-5">Kontakt</a></li>
+        </ul>
+      </nav>
+    
+      <h2>Beruf und Ausbildung</h2>
+      <hr>
+      <p>Ich bin Mechatroniker und stelle die Sicherheit und Funktionalität von Schienenfahrzeugen sicher. Meine Aufgaben umfassen Inspektionen, Wartungen und Reparaturen.</p>
+      <p>Die Arbeit erfordert Präzision, Sorgfalt und Verantwortungsbewusstsein, da die Sicherheit der Passagiere oberste Priorität hat.</p>
+      
+      <button class="custom-button-flat small pulse-primary" onclick="document.getElementById('ubermichbox-4').scrollIntoView({behavior: 'smooth'});">
+        <img src="img/down.png" alt="Weiter">
+      </button>
+    </section>
+    
+
+    <!-- Banner -->
+    <div class="banner-gif-100"></div>
+    <div class="banner"><div class="banner-table flex-column"><div class="flex-row"><div class="flex-item flex-column"></div></div></div></div>
+        <!-- Banner -->
+
+    <!-- Freizeitinteressen Abschnitt -->
+    <section id="ubermichbox-4" class="snap-ubermichbox">
+      <nav class="section-nav">
+        <ul>
+          <li><a href="#ubermichbox-1">Über mich</a></li>
+          <li><a href="#ubermichbox-2">Hobbys</a></li>
+          <li><a href="#ubermichbox-3">Beruf</a></li>
+          <li><a href="#ubermichbox-4">Freizeit</a></li>
+          <li><a href="#ubermichbox-5">Kontakt</a></li>
+        </ul>
+      </nav>
+    
+      <h2>Freizeitinteressen</h2>
+      <hr>
+      <p>Ich genieße es, in der Natur zu sein, Musik zu machen und Bücher zu lesen. Fotografie und Musik sind meine kreativen Ausdrucksformen, die ich hier teilen möchte.</p>
+      <p>Besonders gerne erkunde ich neue Wanderwege und halte meine Eindrücke fotografisch fest. Musik ist für mich eine Möglichkeit, kreativ zu sein und gleichzeitig zu entspannen.</p>
+    
+      <button class="custom-button-flat small pulse-primary" onclick="document.getElementById('ubermichbox-5').scrollIntoView({behavior: 'smooth'});">
         <img src="img/down.png" alt="Weiter">
       </button>
     </section>
@@ -98,62 +235,48 @@
     <div class="banner"><div class="banner-table flex-column"><div class="flex-row"><div class="flex-item flex-column"></div></div></div></div>
     <!-- Banner -->
 
-    <!-- Beruf und Ausbildung Abschnitt -->
-    <section id="ubermichbox-3" class="snap-ubermichbox">
-      <h2>Beruf und Ausbildung</h2>
-      <hr>
-      <p>Ich bin Mechatroniker und stelle die Sicherheit und Funktionalität von Schienenfahrzeugen sicher. Meine Aufgaben umfassen Inspektionen, Wartungen und Reparaturen.</p>
-      <p>Die Arbeit erfordert Präzision, Sorgfalt und Verantwortungsbewusstsein, da die Sicherheit der Passagiere oberste Priorität hat.</p>
-      <button class="custom-button-flat small pulse-primary" onclick="document.getElementById('ubermichbox-4').scrollIntoView({behavior: 'smooth'});">
-        <img src="img/down.png" alt="Weiter">
-      </button>
-    </section>
-
-    <!-- Banner -->
-    <div class="banner-gif-100"></div>
-    <div class="banner"><div class="banner-table flex-column"><div class="flex-row"><div class="flex-item flex-column"></div></div></div></div>
-        <!-- Banner -->
-
-    <!-- Freizeitinteressen Abschnitt -->
-    <section id="ubermichbox-4" class="snap-ubermichbox">
-      <h2>Freizeitinteressen</h2>
-      <hr>
-      <p>Ich genieße es, in der Natur zu sein, Musik zu machen und Bücher zu lesen. Fotografie und Musik sind meine kreativen Ausdrucksformen, die ich hier teilen möchte.</p>
-      <p>Besonders gerne erkunde ich neue Wanderwege und halte meine Eindrücke fotografisch fest. Musik ist für mich eine Möglichkeit, kreativ zu sein und gleichzeitig zu entspannen.</p>
-      <button class="custom-button-flat small pulse-primary" onclick="document.getElementById('ubermichbox-5').scrollIntoView({behavior: 'smooth'});">
-        <img src="img/down.png" alt="Weiter">
-      </button>
-    </section>
-
-    <!-- Banner -->
-    <div class="banner-gif-100"></div>
-    <div class="banner"><div class="banner-table flex-column"><div class="flex-row"><div class="flex-item flex-column"></div></div></div></div>
-    <!-- Banner -->
-
     <!-- Kontakt Abschnitt -->
     <section id="ubermichbox-5" class="snap-ubermichbox">
+      <nav class="section-nav">
+        <ul>
+          <li><a href="#ubermichbox-1">Über mich</a></li>
+          <li><a href="#ubermichbox-2">Hobbys</a></li>
+          <li><a href="#ubermichbox-3">Beruf</a></li>
+          <li><a href="#ubermichbox-4">Freizeit</a></li>
+          <li><a href="#ubermichbox-5">Kontakt</a></li>
+        </ul>
+      </nav>
+    
       <h2>Kontakt</h2>
       <hr>
       <p>Hast du Fragen oder möchtest in Kontakt treten? Sende mir gerne eine E-Mail!</p>
-      <div>
-        <a href="index.html" aria-label="Startseite">
-          <button class="custom-button-flat small pulse-primary"><img src="img/home.png" alt="Startseite"></button>
-        </a>
-        <a href="mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" aria-label="E-Mail senden">
-          <button class="custom-button-flat small pulse-primary"><img src="img/link.png" alt="E-Mail"> Kontakt</button>
+              <a href="index.html" aria-label="Startseite">
+          <button style="display: flex; align-items: center; justify-content: center;" class="custom-button-flat small pulse-primary">
+            <img src="img/home.png" alt="Startseite">
+          </button>
         </a>
 
-        <a href="#top" class="back-to-top">
-            <img src="img/top.png" alt="Back to top" style="max-width: 50px;">
-          </a>
 
-      </div>
+      <footer>
+       <div class="banner-table flex-column">
+    <div class="flex-row">
+          <div class="flex-item flex-item-stretch flex-column">
+            <p class="highlight-text">      
+© 2023 [Abdulkerim]. <span class="text text-small text-italic add-top-margin-large">Alle Rechte vorbehalten.</span>
+            <br/>
+ <button onclick="alert('Angaben gemäß § 5 TMG:\nAbdulkerim Sesli \nEmail:mail@abdulkerimsesli.com \nHaftungshinweis: \nDie Inhalte dieser Webseite wurden sorgfältig geprüft und nach bestem Wissen erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Jegliche Haftung für Schäden, die direkt oder indirekt aus der Nutzung dieser Webseite entstehen, wird ausgeschlossen.\nUrheberrecht:\nDie durch den Betreiber dieser Webseite erstellten Inhalte und Werke auf dieser Webseite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Webseite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.\nDatenschutz:\nDie Nutzung dieser Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf dieser Webseite personenbezogene Daten beispielsweise Name oder E-Mail-Adresse erhoben werden, erfolgt dies auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.')"style="color:#000000; text-decoration:none;">Impressum</button>
+ <button onclick="alert('1. Wenn Sie unsere Homepage besuchen, erheben wir automatisch Informationen über den von Ihnen genutzten Browser, das Betriebssystem Ihres Geräts, die IP-Adresse Ihres Geräts, den Namen Ihres Internet Service Providers und ähnliche technische Informationen. Diese Informationen werden ausschließlich zu statistischen Zwecken und zur Verbesserung unseres Angebots genutzt. \n2. Wenn Sie unser Kontaktformular nutzen, erheben wir die von Ihnen eingegebenen personenbezogenen Daten wie Name, E-Mail-Adresse, Telefonnummer und Ihre Nachricht. Diese Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage genutzt und nicht an Dritte weitergegeben.\n3. Eine Übermittlung Ihrer personenbezogenen Daten an Dritte erfolgt nur, wenn dies zur Abwicklung Ihrer Anfrage erforderlich ist oder wenn wir gesetzlich dazu verpflichtet sind.\n4. Wir setzen auf unserer Homepage Cookies ein, um unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen. Cookies sind kleine Textdateien, die auf Ihrem Rechner abgelegt werden und die Ihr Browser speichert. Die meisten der von uns verwendeten Cookies sind sogenannte Session-Cookies, die nach Ende Ihres Besuchs automatisch gelöscht werden.\n5. Sie haben das Recht, jederzeit Auskunft über die von uns gespeicherten personenbezogenen Daten zu verlangen. Zudem haben Sie das Recht auf Berichtigung unrichtiger Daten, Einschränkung der Verarbeitung sowie auf Löschung Ihrer Daten. Sie können jederzeit der Verarbeitung Ihrer Daten widersprechen und haben das Recht auf Datenübertragbarkeit.\n6. Wir behalten uns vor, diese Datenschutzerklärung jederzeit anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen in der Datenschutzerklärung umzusetzen. Für Ihren erneuten Besuch gilt dann die neue Datenschutzerklärung.\n7. Wenn Sie Fragen zum Datenschutz haben oder Ihre Rechte als betroffene Person wahrnehmen möchten, können Sie uns jederzeit per E-Mail kontaktieren.\nStand: Mai.2023')"style="color:#000000; text-decoration:none;">Datenschutzerklärung</button>
+ <button> 
+<a href= "mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">kontakt</a>
+</button>
+</p>
+</div>
+    </div>
+  </div>
+      </footer>
+      
     </section>
+    
   </main>
-  
-  <footer>
-    <div class="footer-container"></div>
-  </footer>
-  
 </body>
 </html>

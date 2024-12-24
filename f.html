@@ -1,81 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrolling Text Animation</title>
+    <title>Cookie-Banner</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             margin: 0;
-            height: 300vh; /* Extend height for scrolling */
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            background: linear-gradient(to bottom, #1e3c72, #2a5298);
-            color: white;
-            overflow-x: hidden;
+            padding: 0;
         }
 
-        .annimationW {
+        #cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f4f4f4;
+            border-top: 2px solid #ccc;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        #cookie-banner p {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .cookie-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .cookie-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .cookie-buttons button.accept {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .cookie-buttons button.reject {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .cookie-buttons button.settings {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        #cookie-settings {
+            display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            text-align: center;
-            max-width: 90%;
-            gap: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            z-index: 1001;
         }
 
-        .letter {
-            font-size: 2.2vw;
-            margin: 0 5px;
-            transform: translateY(0) scale(1);
-            opacity: 1;
-            transition: transform 0.6s ease, opacity 0.6s ease;
+        #cookie-settings h3 {
+            margin-top: 0;
         }
 
-        .hidden {
-            transform: translateY(-50px) scale(0.8);
-            opacity: 0;
+        #cookie-settings button.close {
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="animationW" id="text-container">
-        <span class="letter">Ich freue mich, dass du den Weg hierher gefunden hast.</span>
-        <span class="letter">Diese Seite dient als mein digitales Zuhause im.</span>
-        <span class="letter">World Wide Web auf der ich meine Interessen, Erfahrungen</span>
-        <span class="letter">und Gedanken teilen möchte.</span>
-        <span class="letter"></span>
-        <span class="letter">Lass mich dir einen kleinen Einblick geben,</span>
-        <span class="letter">was dich hier erwartet.</span>
+
+<div id="cookie-banner">
+    <p>Diese Website verwendet Cookies, um Ihr Erlebnis zu verbessern. Akzeptieren Sie unsere Cookies oder passen Sie Ihre Einstellungen an.</p>
+    <div class="cookie-buttons">
+        <button class="accept">Akzeptieren</button>
+        <button class="reject">Ablehnen</button>
+        <button class="settings">Einstellungen</button>
     </div>
+</div>
 
-    <script>
-        const letters = document.querySelectorAll('.letter');
+<div id="cookie-settings">
+    <h3>Cookie-Einstellungen</h3>
+    <p>
+        Hier können Sie Ihre Cookie-Einstellungen anpassen:
+    </p>
+    <label>
+        <input type="checkbox" id="essential" checked disabled>
+        Essentielle Cookies (erforderlich)
+    </label><br>
+    <label>
+        <input type="checkbox" id="analytics">
+        Analyse-Cookies
+    </label><br>
+    <label>
+        <input type="checkbox" id="marketing">
+        Marketing-Cookies
+    </label><br>
+    <button class="close">Speichern und Schließen</button>
+</div>
 
-        // Show letters initially
-        letters.forEach(letter => {
-            letter.classList.remove('hidden');
-        });
+<script>
+    const cookieBanner = document.getElementById('cookie-banner');
+    const cookieSettings = document.getElementById('cookie-settings');
 
-        window.addEventListener('scroll', () => {
-            const scrollPosition = window.scrollY;
-            const triggerPoint = window.innerHeight * 0.5;
+    document.querySelector('.accept').addEventListener('click', () => {
+        localStorage.setItem('cookiesAccepted', 'true');
+        cookieBanner.style.display = 'none';
+    });
 
-            letters.forEach((letter, index) => {
-                const offset = index * 50; // Staggered hiding animation
-                if (scrollPosition > triggerPoint + offset) {
-                    letter.classList.add('hidden');
-                } else {
-                    letter.classList.remove('hidden');
-                }
-            });
-        });
-    </script>
+    document.querySelector('.reject').addEventListener('click', () => {
+        localStorage.setItem('cookiesAccepted', 'false');
+        cookieBanner.style.display = 'none';
+    });
+
+    document.querySelector('.settings').addEventListener('click', () => {
+        cookieSettings.style.display = 'block';
+    });
+
+    document.querySelector('.close').addEventListener('click', () => {
+        const analytics = document.getElementById('analytics').checked;
+        const marketing = document.getElementById('marketing').checked;
+
+        localStorage.setItem('analyticsCookies', analytics);
+        localStorage.setItem('marketingCookies', marketing);
+
+        cookieSettings.style.display = 'none';
+        cookieBanner.style.display = 'none';
+    });
+
+    // Check if cookies were already accepted/rejected
+    if (localStorage.getItem('cookiesAccepted') !== null) {
+        cookieBanner.style.display = 'none';
+    }
+</script>
+
 </body>
 </html>
