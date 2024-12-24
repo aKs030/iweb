@@ -1,6 +1,10 @@
-html { scroll-behavior: smooth; 
-} /* Scroll speed embedding page */
-
+/*************************************************************************
+ * Scroll speed embedding page  * 
+ *************************************************************************/
+html { scroll-behavior: smooth; } 
+/*************************************************************************
+*  Popup button kontakt * 
+ *************************************************************************/
 .popup {  
   display: none;
   position: fixed;
@@ -9,11 +13,43 @@ html { scroll-behavior: smooth;
   transform: translate(-50%, -50%);
   background-color: #fff;
   padding: 20px;
-  width: 300px;
-} /* Popup index kontakt */
-
+  width: 300px;} 
 /*************************************************************************
-*  Button Runter *
+* ÜBER MICH Navigationsleiste *
+ *************************************************************************/
+.section-nav {
+  position: relative; /* Innerhalb des Abschnitts */
+  top: -110px; /* Keine zusätzliche Verschiebung */
+  margin-top: -90x; /* Abstand unterhalb der Menüleiste */
+  background-color: rgba(255, 255, 255, 0.9); /* Leicht transparenter Hintergrund */
+  padding: 10px 20px; /* Innenabstand */
+  border-radius: 8px; /* Abgerundete Kanten */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Schatten */
+  text-align: center;} /* Zentrierte Links */
+.section-nav ul {/* Navigationselemente */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 15px;} /* Abstand zwischen den Links */
+.section-nav li {
+  margin: 0;}
+.section-nav a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #333; /* Standardfarbe */
+  transition: color 0.3s ease;} /* Sanfter Übergang */
+.section-nav a:hover {
+  color: #007BFF;}/* Hover-Farbe */
+.section-nav a.blink {/* Aktiver Link blinkt blau */
+  animation: blue-blink-animation 1.2s infinite;
+  color: #007BFF;} /* Blaue Farbe für den aktiven Link */
+@keyframes blue-blink-animation 
+{0%, 100% {opacity: 1;}
+  50% {opacity: 0.6;}}
+/*************************************************************************
+* ÜBER MICH Button Runter *
  *************************************************************************/
 .button-runter {
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
