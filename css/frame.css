@@ -18,7 +18,7 @@ body {
   width: auto;
 }
 
-/* Button to top */
+/* Button to top 
 .back-to-top {
   position: fixed;
   bottom: 20px;
@@ -26,7 +26,7 @@ body {
   padding: 1em;
   z-index: 100;
 }
-
+*/
 /* This is a hack for FireFox that the <b> tag does not work */
 strong,
 b {
