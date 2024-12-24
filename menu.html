@@ -20,3 +20,94 @@
     </div>
   </div>
 </div>
+
+<!-- Cookie-Banner mit Menüfunktionen -->
+<div id="cookie-banner" style="position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); max-width: 90%; background: #333; color: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); font-family: Arial, sans-serif;">
+  <p style="margin: 0; font-size: 14px; text-align: center;">Diese Website verwendet Cookies, um Ihre Erfahrung zu verbessern. <a href="#" id="learn-more" style="color: #4CAF50; text-decoration: underline;">Mehr erfahren</a></p>
+  <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem;">
+    <button id="accept-cookies" style="background: #4CAF50; color: #fff; border: none; padding: 0.5rem 1rem; font-size: 14px; border-radius: 5px; cursor: pointer;">Alle akzeptieren</button>
+    <button id="decline-cookies" style="background: #f44336; color: #fff; border: none; padding: 0.5rem 1rem; font-size: 14px; border-radius: 5px; cursor: pointer;">Ablehnen</button>
+    <button id="cookie-settings" style="background: #ffa500; color: #fff; border: none; padding: 0.5rem 1rem; font-size: 14px; border-radius: 5px; cursor: pointer;">Einstellungen</button>
+  </div>
+</div>
+<div id="cookie-settings-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: #fff; color: #000; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); z-index: 2000; font-family: Arial, sans-serif;">
+  <h2 style="font-size: 18px; margin-bottom: 1rem; text-align: center;">Cookie-Einstellungen</h2>
+  <p style="font-size: 14px; margin-bottom: 1rem;">Wählen Sie, welche Cookies Sie zulassen möchten:</p>
+  <label style="display: block; margin-bottom: 0.5rem;">
+    <input type="checkbox" id="essential-cookies" checked disabled /> Essenzielle Cookies (immer aktiv)
+  </label>
+  <label style="display: block; margin-bottom: 0.5rem;">
+    <input type="checkbox" id="analytics-cookies" /> Analyse-Cookies
+  </label>
+  <label style="display: block; margin-bottom: 0.5rem;">
+    <input type="checkbox" id="marketing-cookies" /> Marketing-Cookies
+  </label>
+  <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem;">
+    <button id="save-settings" style="background: #4CAF50; color: #fff; border: none; padding: 0.5rem 1rem; font-size: 14px; border-radius: 5px; cursor: pointer;">Speichern</button>
+    <button id="close-settings" style="background: #f44336; color: #fff; border: none; padding: 0.5rem 1rem; font-size: 14px; border-radius: 5px; cursor: pointer;">Schließen</button>
+  </div>
+</div>
+<div id="learn-more-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: #fff; color: #000; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); z-index: 2000; font-family: Arial, sans-serif;">
+  <h2 style="font-size: 18px; margin-bottom: 1rem; text-align: center;">Mehr über Cookies</h2>
+  <p style="font-size: 14px; margin-bottom: 1rem;">Cookies sind kleine Textdateien, die von Websites verwendet werden, um die Benutzererfahrung effizienter zu gestalten. Sie ermöglichen Funktionen wie Benutzeranmeldung, Warenkörbe und personalisierte Inhalte.</p>
+  <p style="font-size: 14px; margin-bottom: 1rem;">Wir nutzen essenzielle Cookies, um die Basisfunktionen der Website sicherzustellen, sowie optionale Cookies für Analyse- und Marketingzwecke.</p>
+  <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem;">
+    <button id="close-learn-more" style="background: #f44336; color: #fff; border: none; padding: 0.5rem 1rem; font-size: 14px; border-radius: 5px; cursor: pointer;">Schließen</button>
+  </div>
+</div>
+<script>
+  function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
+  function getCookie(name) {
+    const cookies = document.cookie.split('; ');
+    for (const cookie of cookies) {
+      const [key, value] = cookie.split('=');
+      if (key === name) return value;
+    }
+    return null;
+  }
+  function hideBanner() {
+    document.getElementById('cookie-banner').style.display = 'none';
+  }
+  function showSettingsModal() {
+    document.getElementById('cookie-settings-modal').style.display = 'block';
+  }
+  function hideSettingsModal() {
+    document.getElementById('cookie-settings-modal').style.display = 'none';
+  }
+  function showLearnMoreModal() {
+    document.getElementById('learn-more-modal').style.display = 'block';
+  }
+  function hideLearnMoreModal() {
+    document.getElementById('learn-more-modal').style.display = 'none';
+  }
+  document.getElementById('accept-cookies').addEventListener('click', () => {
+    setCookie('cookiesAccepted', 'all', 365);
+    hideBanner();
+  });
+  document.getElementById('decline-cookies').addEventListener('click', () => {
+    setCookie('cookiesAccepted', 'necessary', 365);
+    hideBanner();
+  });
+  document.getElementById('cookie-settings').addEventListener('click', showSettingsModal);
+  document.getElementById('save-settings').addEventListener('click', () => {
+    const analytics = document.getElementById('analytics-cookies').checked ? 'enabled' : 'disabled';
+    const marketing = document.getElementById('marketing-cookies').checked ? 'enabled' : 'disabled';
+    setCookie('analyticsCookies', analytics, 365);
+    setCookie('marketingCookies', marketing, 365);
+    hideSettingsModal();
+    hideBanner();
+  });
+  document.getElementById('close-settings').addEventListener('click', hideSettingsModal);
+  document.getElementById('learn-more').addEventListener('click', showLearnMoreModal);
+  document.getElementById('close-learn-more').addEventListener('click', hideLearnMoreModal);
+  window.onload = () => {
+    if (getCookie('cookiesAccepted')) {
+      hideBanner();
+    }
+  };
+</script>
+<!-- Cookie-Banner mit Menüfunktionen -->
