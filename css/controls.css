@@ -21,15 +21,18 @@ html { scroll-behavior: smooth;
 * ÜBER MICH Navigationsleiste *
  *************************************************************************/
 .section-nav {
-  position: relative; /* Innerhalb des Abschnitts */
-  top: -110px; /* Keine zusätzliche Verschiebung */
-  margin-top: -90x; /* Abstand unterhalb der Menüleiste */
+  position: fixed; /* Fixiert die Navigation oben auf der Seite */
+  top: 10px; /* Abstand vom oberen Rand */
+  left: 50%; /* Startpunkt horizontal zentriert */
+  transform: translateX(-50%); /* Exakte Zentrierung */
   background-color: rgba(255, 255, 255, 0.9); /* Leicht transparenter Hintergrund */
-  padding: 10px 20px; /* Innenabstand */
-  border-radius: 8px; /* Abgerundete Kanten */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Schatten */
-  text-align: center; /* Zentrierte Links */
+  padding: 15px 30px; /* Großzügigerer Innenabstand */
+  border-radius: 10px; /* Abgerundete Kanten */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Etwas stärkerer Schatten */
+  z-index: 1000; /* Über andere Inhalte stellen */
+  text-align: center; /* Zentrierter Text */
 }
+
 /* Navigationselemente */
 .section-nav ul {
   list-style: none;
@@ -37,25 +40,32 @@ html { scroll-behavior: smooth;
   padding: 0;
   display: flex;
   justify-content: center;
-  gap: 15px; /* Abstand zwischen den Links */
+  gap: 20px; /* Mehr Abstand zwischen den Links */
 }
+
 .section-nav li {
   margin: 0;
 }
+
 .section-nav a {
   text-decoration: none;
   font-weight: bold;
+  font-size: 16px; /* Etwas größere Schrift */
   color: #333; /* Standardfarbe */
-  transition: color 0.3s ease; /* Sanfter Übergang */
+  transition: color 0.3s ease, transform 0.2s ease; /* Sanfter Übergang */
 }
+
 .section-nav a:hover {
   color: #007BFF; /* Hover-Farbe */
+  transform: scale(1.1); /* Leichtes Vergrößern beim Hover */
 }
+
 /* Aktiver Link blinkt blau */
 .section-nav a.blink {
   animation: blue-blink-animation 1.2s infinite;
   color: #007BFF; /* Blaue Farbe für den aktiven Link */
 }
+
 @keyframes blue-blink-animation {
   0%, 100% {
     opacity: 1;
