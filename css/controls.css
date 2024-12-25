@@ -1,7 +1,9 @@
 /*************************************************************************
  * Scroll speed embedding page  * 
  *************************************************************************/
-html { scroll-behavior: smooth; } 
+html { scroll-behavior: smooth; 
+} 
+
 /*************************************************************************
 *  Popup button kontakt * 
  *************************************************************************/
@@ -13,7 +15,8 @@ html { scroll-behavior: smooth; }
   transform: translate(-50%, -50%);
   background-color: #fff;
   padding: 20px;
-  width: 300px;} 
+  width: 300px;
+} 
 /*************************************************************************
 * ÜBER MICH Navigationsleiste *
  *************************************************************************/
@@ -25,29 +28,89 @@ html { scroll-behavior: smooth; }
   padding: 10px 20px; /* Innenabstand */
   border-radius: 8px; /* Abgerundete Kanten */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Schatten */
-  text-align: center;} /* Zentrierte Links */
-.section-nav ul {/* Navigationselemente */
+  text-align: center; /* Zentrierte Links */
+}
+/* Navigationselemente */
+.section-nav ul {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
-  gap: 15px;} /* Abstand zwischen den Links */
+  gap: 15px; /* Abstand zwischen den Links */
+}
 .section-nav li {
-  margin: 0;}
+  margin: 0;
+}
 .section-nav a {
   text-decoration: none;
   font-weight: bold;
   color: #333; /* Standardfarbe */
-  transition: color 0.3s ease;} /* Sanfter Übergang */
+  transition: color 0.3s ease; /* Sanfter Übergang */
+}
 .section-nav a:hover {
-  color: #007BFF;}/* Hover-Farbe */
-.section-nav a.blink {/* Aktiver Link blinkt blau */
+  color: #007BFF; /* Hover-Farbe */
+}
+/* Aktiver Link blinkt blau */
+.section-nav a.blink {
   animation: blue-blink-animation 1.2s infinite;
-  color: #007BFF;} /* Blaue Farbe für den aktiven Link */
-@keyframes blue-blink-animation 
-{0%, 100% {opacity: 1;}
-  50% {opacity: 0.6;}}
+  color: #007BFF; /* Blaue Farbe für den aktiven Link */
+}
+@keyframes blue-blink-animation {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+@media (max-width: 768px) {
+  .section-nav {
+    position: relative; /* Innerhalb des Abschnitts */
+    top: -110px; /* Keine zusätzliche Verschiebung */
+    margin-top: -90px; /* Abstand unterhalb der Menüleiste */
+    background-color: rgba(255, 255, 255, 0.9); /* Leicht transparenter Hintergrund */
+    padding: 10px 20px; /* Innenabstand */
+    border-radius: 8px; /* Abgerundete Kanten */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Schatten */
+    text-align: center; /* Zentrierte Links */
+  }
+  /* Navigationselemente */
+  .section-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Abstand zwischen den Links */
+  }
+  .section-nav li {
+    margin: 0;
+  }
+  .section-nav a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #333; /* Standardfarbe */
+    transition: color 0.3s ease; /* Sanfter Übergang */
+  }
+  .section-nav a:hover {
+    color: #007BFF; /* Hover-Farbe */
+  }
+  /* Aktiver Link blinkt blau */
+  .section-nav a.blink {
+    animation: blue-blink-animation 1.2s infinite;
+    color: #007BFF; /* Blaue Farbe für den aktiven Link */
+  }
+  @keyframes blue-blink-animation {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+}
+
 /*************************************************************************
 * ÜBER MICH Button Runter *
  *************************************************************************/
