@@ -48,9 +48,8 @@ html { scroll-behavior: smooth;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  position: fixed;
-  transform: translate(-50%, -50%);
-  margin-bottom: 15%; /* Standard für Desktop */
+  position: absolute; /* Relativ zur Container-Position */
+  margin-bottom: -100%;
 }
 
 .button-runter.klein {
@@ -59,7 +58,6 @@ html { scroll-behavior: smooth;
   padding: 12px;
   border-radius: 42px;
 }
-
 .button-runter.klein img {
   width: 16px;
   height: 16px;
@@ -74,7 +72,7 @@ html { scroll-behavior: smooth;
     border-radius: 40px; /* Kleinere Rundung */
     margin-bottom: 10%; /* Weniger Abstand nach unten */
     top: auto; /* Entferne top-Position */
-    bottom: 15%; /* Platziere den Button etwas höher */
+    bottom: 5%; /* Platziere den Button etwas höher */
     transform: translateX(-50%); /* Zentriert horizontal */
   }
 
