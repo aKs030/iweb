@@ -48,20 +48,48 @@ html { scroll-behavior: smooth;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  position: fixed; /* Unabhängig vom Eltern-Element */
+  position: fixed;
   transform: translate(-50%, -50%);
-  margin-bottom: 15%;
+  margin-bottom: 15%; /* Standard für Desktop */
 }
+
 .button-runter.klein {
   font-size: 14px;
   line-height: 14px;
   padding: 12px;
   border-radius: 42px;
 }
+
 .button-runter.klein img {
   width: 16px;
   height: 16px;
 }
+
+/* Mobile Optimierung */
+@media (max-width: 768px) {
+  .button-runter {
+    font-size: 14px; /* Kleinere Schrift für mobile Geräte */
+    line-height: 14px;
+    padding: 10px; /* Weniger Padding */
+    border-radius: 40px; /* Kleinere Rundung */
+    margin-bottom: 10%; /* Weniger Abstand nach unten */
+    top: auto; /* Entferne top-Position */
+    bottom: 15%; /* Platziere den Button etwas höher */
+    transform: translateX(-50%); /* Zentriert horizontal */
+  }
+
+  .button-runter.klein {
+    font-size: 12px; /* Noch kleiner für kleine Buttons */
+    padding: 8px;
+    border-radius: 36px;
+  }
+
+  .button-runter.klein img {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 /*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
  * Version: v3.40
