@@ -11,6 +11,7 @@
 
   <!-- JS -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const sections = document.querySelectorAll('.snap-ubermichbox');
@@ -74,6 +75,7 @@
       const progress = (window.scrollY / totalHeight) * 100;
       progressBar.style.width = `${progress}%`;
     });
+
   </script>
 
   <style>
@@ -197,39 +199,6 @@ body {
       }
     }
 
-    .sticky-nav {
-      position: sticky;
-      top: 0;
-      background-color: #fff;
-      z-index: 1000;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-    }
-
-    .sticky-nav button {
-      font-size: 14px;
-      color: #4a4a4a;
-      border: none;
-      background: none;
-      cursor: pointer;
-    }
-
-    .sticky-nav button.active {
-      color: #007BFF;
-      font-weight: bold;
-    }
-
-    .progress-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 5px;
-      background: #007BFF;
-      width: 0;
-      z-index: 9999;
-    }
   </style>
 </head>
 
@@ -242,13 +211,7 @@ body {
         <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
         <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
       </nav>
-      <div class="sticky-nav">
-        <button onclick="scrollToSection('section1');">Überblick</button>
-        <button onclick="scrollToSection('section2');">Persönlich</button>
-        <button onclick="scrollToSection('section3');">Hobbys</button>
-        <button onclick="scrollToSection('section4');">Karriere</button>
-        <button onclick="scrollToSection('section5');">Kontakt</button>
-      </div>
+
       
       <div class="progress-bar"></div>
 
