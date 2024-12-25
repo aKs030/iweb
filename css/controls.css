@@ -20,60 +20,94 @@ html { scroll-behavior: smooth;
 /*************************************************************************
 * ÜBER MICH Navigationsleiste *
  *************************************************************************/
-.section-nav {
-  position: fixed; /* Fixiert die Navigation oben auf der Seite */
-  top: 10px; /* Abstand vom oberen Rand */
-  left: 50%; /* Startpunkt horizontal zentriert */
-  transform: translateX(-50%); /* Exakte Zentrierung */
-  background-color: rgba(255, 255, 255, 0.9); /* Leicht transparenter Hintergrund */
-  padding: 15px 30px; /* Großzügigerer Innenabstand */
-  border-radius: 10px; /* Abgerundete Kanten */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Etwas stärkerer Schatten */
-  z-index: 1000; /* Über andere Inhalte stellen */
-  text-align: center; /* Zentrierter Text */
-}
-
-/* Navigationselemente */
-.section-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  gap: 20px; /* Mehr Abstand zwischen den Links */
-}
-
-.section-nav li {
-  margin: 0;
-}
-
-.section-nav a {
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 16px; /* Etwas größere Schrift */
-  color: #333; /* Standardfarbe */
-  transition: color 0.3s ease, transform 0.2s ease; /* Sanfter Übergang */
-}
-
-.section-nav a:hover {
-  color: #007BFF; /* Hover-Farbe */
-  transform: scale(1.1); /* Leichtes Vergrößern beim Hover */
-}
-
-/* Aktiver Link blinkt blau */
-.section-nav a.blink {
-  animation: blue-blink-animation 1.2s infinite;
-  color: #007BFF; /* Blaue Farbe für den aktiven Link */
-}
-
-@keyframes blue-blink-animation {
-  0%, 100% {
-    opacity: 1;
+  /* Allgemeine Stile */
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
   }
-  50% {
-    opacity: 0.6;
+
+  .content-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
   }
-}
+
+  .snap-ubermichbox {
+    min-height: 100vh; /* Dynamische Höhe basierend auf dem Viewport */
+    display: flex; /* Flexbox für vertikale und horizontale Zentrierung */
+    flex-direction: column; /* Inhalt vertikal anordnen */
+    align-items: center; /* Inhalt horizontal zentrieren */
+    justify-content: center; /* Inhalt vertikal zentrieren */
+    text-align: center; /* Text zentrieren */
+    scroll-snap-align: start; /* Scroll-Snap-Punkt an den Anfang setzen */
+    scroll-snap-stop: always; /* Scrollen stoppt immer an diesem Punkt */
+    padding: 20px; /* Innenabstand */
+    color: #020202; /* Textfarbe */
+    position: relative; /* Positionierung für die Navigation */
+    background-color: #f5f5f5; /* Hintergrundfarbe */
+  }
+
+  .snap-ubermichbox > div {
+    flex: 1; /* Nimmt den verfügbaren Platz ein, um Inhalte zu skalieren */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .section-nav {
+    position: absolute; /* Position innerhalb der Snap-Box */
+    top: 50%; /* Zentriert die Navigation vertikal */
+    left: 10px; /* Abstand vom linken Rand */
+    transform: translateY(-50%); /* Exakte vertikale Zentrierung */
+    background-color: rgba(255, 255, 255, 0.9); /* Leicht transparenter Hintergrund */
+    padding: 20px 10px; /* Innenabstand für den vertikalen Stil */
+    border-radius: 10px; /* Abgerundete Kanten */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Etwas stärkerer Schatten */
+    z-index: 1000; /* Über andere Inhalte stellen */
+  }
+
+  .section-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* Vertikale Ausrichtung */
+    gap: 15px; /* Abstand zwischen den Links */
+  }
+
+  .section-nav li {
+    margin: 0;
+  }
+
+  .section-nav a {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px; /* Etwas größere Schrift */
+    color: #333; /* Standardfarbe */
+    transition: color 0.3s ease, transform 0.2s ease; /* Sanfter Übergang */
+  }
+
+  .section-nav a:hover {
+    color: #007BFF; /* Hover-Farbe */
+    transform: scale(1.1); /* Leichtes Vergrößern beim Hover */
+  }
+
+  .section-nav a.blink {
+    animation: blue-blink-animation 1.2s infinite;
+    color: #007BFF; /* Blaue Farbe für den aktiven Link */
+  }
+
+  @keyframes blue-blink-animation {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
 /*************************************************************************
 * ÜBER MICH Button Runter *
  *************************************************************************/
