@@ -20,17 +20,19 @@ html { scroll-behavior: smooth;
 /*************************************************************************
 * ÜBER MICH Navigationsleiste *
  *************************************************************************/
-.section-nav {
+ .section-nav {
   position: relative; /* Innerhalb des Abschnitts */
   top: -110px; /* Keine zusätzliche Verschiebung */
-  margin-top: -90x; /* Abstand unterhalb der Menüleiste */
+  margin-top: -90px; /* Abstand unterhalb der Menüleiste */
   background-color: rgba(255, 255, 255, 0.9); /* Leicht transparenter Hintergrund */
   padding: 10px 20px; /* Innenabstand */
   border-radius: 8px; /* Abgerundete Kanten */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Schatten */
   text-align: center; /* Zentrierte Links */
-  display: none;
+  display: none; /* Standardmäßig verborgen */
+  z-index: 1000; /* Sicherstellen, dass es nicht überdeckt wird */
 }
+
 /* Navigationselemente */
 .section-nav ul {
   list-style: none;
@@ -40,26 +42,32 @@ html { scroll-behavior: smooth;
   justify-content: center;
   gap: 15px; /* Abstand zwischen den Links */
 }
+
 .section-nav.active {
-  display: block;
+  display: block; /* Sichtbar, wenn aktiv */
 }
+
 .section-nav li {
   margin: 0;
 }
+
 .section-nav a {
   text-decoration: none;
   font-weight: bold;
   color: #333; /* Standardfarbe */
-  transition: color 0.3s ease; /* Sanfter Übergang */
+  transition: color 0.3s ease; /* Sanfter Übergang bei Hover */
 }
+
 .section-nav a:hover {
   color: #007BFF; /* Hover-Farbe */
 }
+
 /* Aktiver Link blinkt blau */
 .section-nav a.blink {
-  animation: blue-blink-animation 1.2s infinite;
+  animation: blue-blink-animation 1.2s infinite; /* Blinken */
   color: #007BFF; /* Blaue Farbe für den aktiven Link */
 }
+
 @keyframes blue-blink-animation {
   0%, 100% {
     opacity: 1;
@@ -68,31 +76,12 @@ html { scroll-behavior: smooth;
     opacity: 0.6;
   }
 }
-@media (max-width: 768px) {
+
+/* Zusätzliche Optimierungen für iOS */
+@supports (-webkit-touch-callout: none) {
   .section-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-  }
-  .section-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 15px;
-  }
-  .section-nav li {
-    margin: 0;
-  }
-  .section-nav a {
-    text-decoration: none;
-    color: #333;
-    font-weight: bold;
+    -webkit-backface-visibility: hidden; /* iOS-Rendering verbessern */
+    -webkit-transform: translateZ(0); /* iOS-Lag bei Transparenz vermeiden */
   }
 }
 
