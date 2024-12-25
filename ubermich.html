@@ -10,6 +10,8 @@
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css"/>
   <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css"/>
   <link rel="stylesheet" href="css/custom.css">
+  <link rel="stylesheet" href="css/style.css">
+
     <link rel="stylesheet" href="f.css">
   <!-- JS -->
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -19,183 +21,228 @@
   <script src="js/menu.js"></script>
   <script src="js/footer.js"></script>
   <script src="f.js"></script>
-  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sections = document.querySelectorAll('.snap-ubermichbox');
+      const navButtons = document.querySelectorAll('.section-nav button');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            navButtons.forEach((button) => button.classList.remove('active'));
+            const activeButton = document.querySelector(`.section-nav button[data-target="#${entry.target.id}"]`);
+            if (activeButton) activeButton.classList.add('active');
+            updateAriaCurrent(entry.target.id);
+            entry.target.classList.add('is-visible');
+          } else {
+            entry.target.classList.remove('is-visible');
+          }
+        });
+      }, { threshold: 0.5 });
+
+      sections.forEach((section) => observer.observe(section));
+
+      const lazyImages = document.querySelectorAll('.lazyload');
+      const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.classList.remove('lazyload');
+            imageObserver.unobserve(img);
+          }
+        });
+      });
+
+      lazyImages.forEach((img) => imageObserver.observe(img));
+
+      const toggleMode = () => {
+        document.body.classList.toggle('dark-mode');
+      };
+
+      const toggleButton = document.createElement('button');
+      toggleButton.textContent = 'Dark Mode';
+      toggleButton.className = 'mode-toggle';
+      toggleButton.addEventListener('click', toggleMode);
+
+      document.querySelector('.sticky-nav').appendChild(toggleButton);
+    });
+
+    const updateAriaCurrent = (id) => {
+      document.querySelectorAll('.section-nav button').forEach((btn) => {
+        btn.setAttribute('aria-current', btn.getAttribute('data-target') === `#${id}` ? 'true' : 'false');
+      });
+    };
+
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.addEventListener('scroll', () => {
+      const progressBar = document.querySelector('.progress-bar');
+      const totalHeight = document.body.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalHeight) * 100;
+      progressBar.style.width = `${progress}%`;
+    });
+
+  </script>
+
   <style>
+   :root {
+  --background-color: #f5f5f5;
+  --text-color: #000;
+}
+
+body.dark-mode {
+  --background-color: #1a1a1a;
+  --text-color: #fff;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .content-container {
+      display: flex;
+      flex-direction: column;
+      scroll-snap-type: y mandatory;
+      overflow-y: auto;
+      height: 100vh;
+      padding-left: 200px;
+      box-sizing: border-box;
+    }
+
+    .snap-ubermichbox {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      scroll-snap-align: start;
+      background-color: #f5f5f5;
+      padding: 5%;
+      box-sizing: border-box;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .snap-ubermichbox.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section-nav {
+      position: fixed;
+      top: 50%;
+      left: 3%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 1000; /* Höhere Priorität */
+
+    }
+
+    .section-nav button {
+      font-size: 14px;
+      color: #4a4a4a;
+      background: #fff;
+      border: 2px solid #007BFF;
+      border-radius: 20px;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .section-nav button.active {
+      color: #fff;
+      background-color: #007BFF;
+      transform: scale(1.1);
+    }
+
+    .section-nav button:hover {
+      color: #fff;
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 768px) {
+      .section-nav {
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        flex-direction: row;
+        gap: 10px;
+        z-index: 99999; /* Sehr hohe Priorität */
+      }
+
+      .content-container {
+        padding-left: 0;
+        margin-top: 60px;
+      }
+
+      .section-nav button {
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+    }
+
   </style>
 </head>
 
 <body>
-  <header><div class="menu-container"></div>
-  </header>
-
-<main class="content-container">
-
-    <!-- Banner -->
-    <div class="banner-gif-100"></div>
-    <!-- Banner -->
-
-
-
-    <!-- 1 Über mich Abschnitt -->
-            <section id="ubermichbox-1" class="snap-ubermichbox">
-      <nav class="section-nav">
-        <ul>
-          <li><a href="#ubermichbox-1">Über mich</a></li>
-          <li><a href="#ubermichbox-2">Hobbys</a></li>
-          <li><a href="#ubermichbox-3">Beruf</a></li>
-          <li><a href="#ubermichbox-4">Freizeit</a></li>
-          <li><a href="#ubermichbox-5">Kontakt</a></li>
-        </ul>
+  <div class="menu-container"></div>
+  <div class="content-container">
+<!-- Banner -->
+<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
+<!-- Banner -->
+    <nav class="section-nav" aria-label="Hauptnavigation">
+        <button data-target="#section1" onclick="scrollToSection('section1');" aria-current="true">Überblick</button>
+        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
       </nav>
+<section class="snap-ubermichbox" id="section1">
+  <h1>Überblick</h1>
+  <p>Willkommen auf meiner Seite!</p>
+  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section2').scrollIntoView({behavior: 'smooth'});">
+     <img data-src="img/down.png" alt="Weiter" class="lazyload">
+  </button>
+</section>
 
-      <div class="flex-row">
-        <div class="flex-item flex-item-stretch-2 flex-column">
-          <h2>Über mich<hr></h2>
-                          Hallo, mein Name ist Abdulkerim und ich freue mich, 
-                              dass du meine Homepage besuchst!      
-                              Ich bin 32 Jahre alt und 
-                                möchte dir einen Einblick in mein Leben, 
-                                  meine Interessen und meine berufliche Laufbahn geben.
-                                  <br>
-        </div>  
-      </div>
-<button class="button-runter klein pulse-primary" onclick="document.getElementById('ubermichbox-2').scrollIntoView({behavior: 'smooth'});">
-  <img src="img/down.png" alt="Weiter">
-</button>
-       </section>
+<!-- Banner -->
+<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
+<!-- Banner -->
 
-
-    <!-- Banner -->
-    <div class="banner-gif-100"></div>
-    <!-- Banner -->
-
-    <!-- Hobbys und Aktivitäten Abschnitt -->
-    <section id="ubermichbox-2" class="snap-ubermichbox">
-      <nav class="section-nav">
-        <ul>
-          <li><a href="#ubermichbox-1">Über mich</a></li>
-          <li><a href="#ubermichbox-2">Hobbys</a></li>
-          <li><a href="#ubermichbox-3">Beruf</a></li>
-          <li><a href="#ubermichbox-4">Freizeit</a></li>
-          <li><a href="#ubermichbox-5">Kontakt</a></li>
-        </ul>
-      </nav>
-      
-      <h2>Hobbys und Aktivitäten</h2>
-      <hr>
-      <ul>
-        <li>Leidenschaftlicher Hobbykoch, neue Rezepte ausprobieren.</li>
-        <li>Wandern und die Natur erkunden.</li>
-        <li>Fotografie, besondere Momente festhalten.</li>
-        <li>Regelmäßig Fitness und Joggen.</li>
-        <li>Bücher aus verschiedenen Genres lesen.</li>
-      </ul>
-      
-      <button class="button-runter klein pulse-primary" onclick="document.getElementById('ubermichbox-3').scrollIntoView({behavior: 'smooth'});">
-        <img src="img/down.png" alt="Weiter">
-      </button>
-    </section>
-    
-    
-    <!-- Banner -->
-    <div class="banner-gif-100"></div>
-    <!-- Banner -->
-
-    <!-- Beruf und Ausbildung Abschnitt -->
-    <section id="ubermichbox-3" class="snap-ubermichbox">
-      <nav class="section-nav">
-        <ul>
-          <li><a href="#ubermichbox-1">Über mich</a></li>
-          <li><a href="#ubermichbox-2">Hobbys</a></li>
-          <li><a href="#ubermichbox-3">Beruf</a></li>
-          <li><a href="#ubermichbox-4">Freizeit</a></li>
-          <li><a href="#ubermichbox-5">Kontakt</a></li>
-        </ul>
-      </nav>
-    
-      <h2>Beruf und Ausbildung</h2>
-      <hr>
-      <p>Ich bin Mechatroniker und stelle die Sicherheit und Funktionalität von Schienenfahrzeugen sicher. Meine Aufgaben umfassen Inspektionen, Wartungen und Reparaturen.</p>
-      <p>Die Arbeit erfordert Präzision, Sorgfalt und Verantwortungsbewusstsein, da die Sicherheit der Passagiere oberste Priorität hat.</p>
-      
-      <button class="button-runter klein pulse-primary" onclick="document.getElementById('ubermichbox-4').scrollIntoView({behavior: 'smooth'});">
-        <img src="img/down.png" alt="Weiter">
-      </button>
-    </section>
-    
-
-    <!-- Banner -->
-    <div class="banner-gif-100"></div>
-        <!-- Banner -->
-
-    <!-- Freizeitinteressen Abschnitt -->
-    <section id="ubermichbox-4" class="snap-ubermichbox">
-      <nav class="section-nav">
-        <ul>
-          <li><a href="#ubermichbox-1">Über mich</a></li>
-          <li><a href="#ubermichbox-2">Hobbys</a></li>
-          <li><a href="#ubermichbox-3">Beruf</a></li>
-          <li><a href="#ubermichbox-4">Freizeit</a></li>
-          <li><a href="#ubermichbox-5">Kontakt</a></li>
-        </ul>
-      </nav>
-    
-      <h2>Freizeitinteressen</h2>
-      <hr>
-      <p>Ich genieße es, in der Natur zu sein, Musik zu machen und Bücher zu lesen. Fotografie und Musik sind meine kreativen Ausdrucksformen, die ich hier teilen möchte.</p>
-      <p>Besonders gerne erkunde ich neue Wanderwege und halte meine Eindrücke fotografisch fest. Musik ist für mich eine Möglichkeit, kreativ zu sein und gleichzeitig zu entspannen.</p>
-    
-      <button class="button-runter klein pulse-primary" onclick="document.getElementById('ubermichbox-5').scrollIntoView({behavior: 'smooth'});">
-        <img src="img/down.png" alt="Weiter">
-      </button>
-    </section>
-    
-    <!-- Banner -->
-    <div class="banner-gif-100"></div>
-    <!-- Banner -->
-
-    <!-- Kontakt Abschnitt -->
-    <section id="ubermichbox-5" class="snap-ubermichbox">
-      <nav class="section-nav">
-        <ul>
-          <li><a href="#ubermichbox-1">Über mich</a></li>
-          <li><a href="#ubermichbox-2">Hobbys</a></li>
-          <li><a href="#ubermichbox-3">Beruf</a></li>
-          <li><a href="#ubermichbox-4">Freizeit</a></li>
-          <li><a href="#ubermichbox-5">Kontakt</a></li>
-        </ul>
-      </nav>
-    
-      <h2>Kontakt</h2>
-      <hr>
-      <p>Hast du Fragen oder möchtest in Kontakt treten? Sende mir gerne eine E-Mail!</p>
-              <a href="index.html" aria-label="Startseite">
-          <button style="display: flex; align-items: center; justify-content: center;" class="custom-button-flat small pulse-primary">
-            <img src="img/home.png" alt="Startseite">
-          </button>
-        </a>
+<section class="snap-ubermichbox" id="section2">
+  <h1>Persönlich</h1>
+  <p>Hallo, ich bin Abdulkerim und freue mich, dass du meine Seite besuchst!</p>
+  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section3').scrollIntoView({behavior: 'smooth'});">
+    <img data-src="img/down.png" alt="Weiter" class="lazyload">
+  </button>
+</section>
+<!-- Banner -->
+<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
+<!-- Banner -->
+<section class="snap-ubermichbox" id="section3">
+  <h1>Hobbys</h1>
+  <p>Ich genieße Reisen, Musik und spannende Technologien.</p>
+  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section4').scrollIntoView({behavior: 'smooth'});">
+    <img data-src="img/down.png" alt="Weiter" class="lazyload">
+  </button>
+</section>
+<!-- Banner -->
+<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
+<!-- Banner -->
 
 
-      <footer>
-       <div class="banner-table flex-column">
-    <div class="flex-row">
-          <div class="flex-item flex-item-stretch flex-column">
-            <p class="highlight-text">      
-© 2023 [Abdulkerim]. <span class="text text-small text-italic add-top-margin-large">Alle Rechte vorbehalten.</span>
-            <br/>
- <button onclick="alert('Angaben gemäß § 5 TMG:\nAbdulkerim Sesli \nEmail:mail@abdulkerimsesli.com \nHaftungshinweis: \nDie Inhalte dieser Webseite wurden sorgfältig geprüft und nach bestem Wissen erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Jegliche Haftung für Schäden, die direkt oder indirekt aus der Nutzung dieser Webseite entstehen, wird ausgeschlossen.\nUrheberrecht:\nDie durch den Betreiber dieser Webseite erstellten Inhalte und Werke auf dieser Webseite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Webseite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.\nDatenschutz:\nDie Nutzung dieser Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf dieser Webseite personenbezogene Daten beispielsweise Name oder E-Mail-Adresse erhoben werden, erfolgt dies auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.')"style="color:#000000; text-decoration:none;">Impressum</button>
- <button onclick="alert('1. Wenn Sie unsere Homepage besuchen, erheben wir automatisch Informationen über den von Ihnen genutzten Browser, das Betriebssystem Ihres Geräts, die IP-Adresse Ihres Geräts, den Namen Ihres Internet Service Providers und ähnliche technische Informationen. Diese Informationen werden ausschließlich zu statistischen Zwecken und zur Verbesserung unseres Angebots genutzt. \n2. Wenn Sie unser Kontaktformular nutzen, erheben wir die von Ihnen eingegebenen personenbezogenen Daten wie Name, E-Mail-Adresse, Telefonnummer und Ihre Nachricht. Diese Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage genutzt und nicht an Dritte weitergegeben.\n3. Eine Übermittlung Ihrer personenbezogenen Daten an Dritte erfolgt nur, wenn dies zur Abwicklung Ihrer Anfrage erforderlich ist oder wenn wir gesetzlich dazu verpflichtet sind.\n4. Wir setzen auf unserer Homepage Cookies ein, um unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen. Cookies sind kleine Textdateien, die auf Ihrem Rechner abgelegt werden und die Ihr Browser speichert. Die meisten der von uns verwendeten Cookies sind sogenannte Session-Cookies, die nach Ende Ihres Besuchs automatisch gelöscht werden.\n5. Sie haben das Recht, jederzeit Auskunft über die von uns gespeicherten personenbezogenen Daten zu verlangen. Zudem haben Sie das Recht auf Berichtigung unrichtiger Daten, Einschränkung der Verarbeitung sowie auf Löschung Ihrer Daten. Sie können jederzeit der Verarbeitung Ihrer Daten widersprechen und haben das Recht auf Datenübertragbarkeit.\n6. Wir behalten uns vor, diese Datenschutzerklärung jederzeit anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen in der Datenschutzerklärung umzusetzen. Für Ihren erneuten Besuch gilt dann die neue Datenschutzerklärung.\n7. Wenn Sie Fragen zum Datenschutz haben oder Ihre Rechte als betroffene Person wahrnehmen möchten, können Sie uns jederzeit per E-Mail kontaktieren.\nStand: Mai.2023')"style="color:#000000; text-decoration:none;">Datenschutzerklärung</button>
- <button> 
-<a href= "mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">kontakt</a>
-</button>
-</p>
-</div>
-    </div>
   </div>
-      </footer>
-      
-    </section>
-    
-  </main>
 </body>
 </html>
