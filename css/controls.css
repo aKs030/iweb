@@ -71,7 +71,6 @@ html { scroll-behavior: smooth;
     padding: 10px; /* Weniger Padding */
     border-radius: 40px; /* Kleinere Rundung */
     margin-bottom: 10%; /* Weniger Abstand nach unten */
-    top: auto; /* Entferne top-Position */
     bottom: 5%; /* Platziere den Button etwas höher */
     transform: translateX(-50%); /* Zentriert horizontal */
   }
