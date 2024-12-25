@@ -4,14 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Über mich</title>
-
+  
   <!-- CSS -->
-  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet" />
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css"/>
   <link rel="stylesheet" href="css/custom.css">
-
+    <link rel="stylesheet" href="f.css">
   <!-- JS -->
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-
+  <script src="js/menu.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="f.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const sections = document.querySelectorAll('.snap-ubermichbox');
@@ -132,11 +139,13 @@ body {
     .section-nav {
       position: fixed;
       top: 50%;
-      left: 0;
+      left: 3%;
       transform: translateY(-50%);
       display: flex;
       flex-direction: column;
       gap: 15px;
+      z-index: 1000; /* Höhere Priorität */
+
     }
 
     .section-nav button {
@@ -181,11 +190,12 @@ body {
 
     @media (max-width: 768px) {
       .section-nav {
-        top: 10px;
+        top: 70px;
         left: 50%;
         transform: translateX(-50%);
         flex-direction: row;
         gap: 10px;
+        z-index: 99999; /* Sehr hohe Priorität */
       }
 
       .content-container {
@@ -203,6 +213,7 @@ body {
 </head>
 
 <body>
+  <div class="menu-container"></div>
   <div class="content-container">
     <nav class="section-nav" aria-label="Hauptnavigation">
         <button data-target="#section1" onclick="scrollToSection('section1');" aria-current="true">Überblick</button>
