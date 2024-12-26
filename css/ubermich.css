@@ -31,7 +31,7 @@
     user-select: none;
     margin-bottom: 0;
     position: fixed; /* Fest positioniert, relativ zum Viewport */
-    bottom: 5%; /* Abstand vom unteren Bildschirmrand */
+    bottom: 10%; /* Abstand vom unteren Bildschirmrand */
     left: 50%; /* Horizontal zentriert */
     transform: translateX(-50%); /* Exakte Zentrierung */
     z-index: 1000; /* Sicherstellen, dass der Button über anderen Elementen liegt */
