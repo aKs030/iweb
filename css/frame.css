@@ -316,6 +316,8 @@ hr {
   display: block;
 }
 
+
+/* This is a hack for FireFox that the <b> 
 .content-container {
   z-index: 1;
   position: relative;
@@ -352,6 +354,7 @@ hr {
   width: 100%;
   margin: 0;
 }
+tag does not work */
 
 .banner {
   position: relative;

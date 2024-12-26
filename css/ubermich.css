@@ -1,20 +1,21 @@
 
-/* Allgemeine Stile */
 body {
   transition: background-color 0.3s, color 0.3s;
   font-family: 'Open Sans', sans-serif;
   margin: 0;
   padding: 0;
+  -webkit-text-size-adjust: 100%; /* Verhindert automatische Schriftgrößenanpassung */
 }
 
 .content-container {
-  display: flex; /* Flexbox-Layout aktivieren */
-  flex-direction: column; /* Kinder-Elemente vertikal anordnen */
-  scroll-snap-type: y mandatory; /* Scroll-Einrasten entlang der vertikalen Achse */
-  overflow-y: auto; /* Vertikales Scrollen ermöglichen */
-  height: 100vh; /* Höhe des Containers auf die Bildschirmhöhe setzen */
-  padding-left: 50px; /* Innenabstand auf der linken Seite */
-  box-sizing: border-box; /* Padding und Border in die Größe einbeziehen */
+  display: flex;
+  flex-direction: column;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll; /* iOS erfordert scroll statt auto */
+  height: 100vh; /* Vollbildhöhe */
+  padding-left: 50px;
+  box-sizing: border-box;
+
 }
 
 .snap-ubermichbox {
@@ -25,8 +26,8 @@ body {
   align-items: center;
   text-align: center;
   scroll-snap-align: start;
-  background-color: var(--background-color); /* Dynamische Farbe für Dark Mode */
-  color: var(--text-color); /* Dynamischer Text für Dark Mode */
+  background-color: var(--background-color);
+  color: var(--text-color);
   padding: 5%;
   box-sizing: border-box;
   opacity: 0;
@@ -41,13 +42,15 @@ body {
 
 .section-nav {
   position: fixed;
-  top: 50%;
-  left: 3%;
-  transform: translateY(-50%);
+  bottom: 0;
+  left: 0;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  z-index: 1000; /* Höhere Priorität */
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 900;
 }
 
 .section-nav button {
@@ -56,7 +59,7 @@ body {
   background: #fff;
   border: 2px solid #007BFF;
   border-radius: 20px;
-  padding: 10px 15px;
+  padding: 8px 15px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -64,7 +67,6 @@ body {
 .section-nav button.active {
   color: #fff;
   background-color: #007BFF;
-  transform: scale(1.1);
 }
 
 .section-nav button:hover {
@@ -72,9 +74,6 @@ body {
   background-color: #0056b3;
 }
 
-/*************************************************************************
-*                   ÜBER MICH BUTTON RUNTER  *
- *************************************************************************/
 .button-runter {
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
   text-align: center;
@@ -91,26 +90,19 @@ body {
   background-color: white;
   padding: 13px;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  align-content: center;
   box-sizing: border-box;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-  margin-bottom: 0;
-  position: fixed; /* Fest positioniert, relativ zum Viewport */
-  bottom: 15%; /* Abstand vom unteren Bildschirmrand */
-  left: 50%; /* Horizontal zentriert */
-  transform: translateX(-50%); /* Exakte Zentrierung */
-  z-index: 1000; /* Sicherstellen, dass der Button über anderen Elementen liegt */
+  position: fixed; /* Fixierung für iOS */
+  bottom: 15%; /* Direkt über der Navigationsleiste */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
 
 .button-runter.visible {
-  opacity: 1; /* Sichtbar machen */
-  pointer-events: auto; /* Klickbar machen */
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .button-runter.klein {
@@ -120,76 +112,39 @@ body {
   border-radius: 42px;
 }
 
-.button-runter.klein img {
-  width: 16px;
-  height: 16px;
-}
-
-/*************************************************************************
-*                   Mobile Ansicht: iPhone und Samsung
- *************************************************************************/
 @media only screen and (max-width: 768px) {
-  body {
-    font-size: 16px; /* Angemessene Schriftgröße für kleinere Bildschirme */
-    line-height: 1.5; /* Verbesserte Lesbarkeit */
-    padding: 0;
-  }
-
   .content-container {
-    padding-left: 20px; /* Weniger Padding für schmalere Bildschirme */
-  }
-
-  .snap-ubermichbox {
-    padding: 20px; /* Weniger Innenabstand für kleinere Displays */
-    font-size: 14px; /* Kleinere Schrift für mehr Platz */
+    padding-left: 20px;
   }
 
   .section-nav {
-    top: auto;
-    bottom: 10px; /* Navigation nach unten verschieben */
-    left: 50%; /* Zentrieren */
-    transform: translateX(-50%);
-    flex-direction: row; /* Buttons horizontal anordnen */
-    gap: 10px; /* Kleinere Abstände zwischen Buttons */
+    bottom: 0;
+    padding: 10px 0;
   }
 
   .section-nav button {
-    font-size: 12px; /* Kleinere Schriftgröße für Buttons */
-    padding: 8px 10px; /* Weniger Padding */
-    border-radius: 15px; /* Runde Buttons kompakter gestalten */
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 15px;
   }
 
   .button-runter {
-    font-size: 14px; /* Kleinere Schriftgröße für mobile Geräte */
-    line-height: 14px; /* Angepasste Zeilenhöhe */
-    padding: 10px; /* Weniger Padding für kompakte Darstellung */
-    border-radius: 36px; /* Kleinere Rundung */
-    bottom: 15%; /* Geringerer Abstand vom unteren Bildschirmrand */
-    width: auto; /* Dynamische Breite je nach Inhalt */
-    max-width: 90%; /* Begrenzung der maximalen Breite */
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 36px;
+    bottom: 15%;
+    max-width: 90%;
   }
 
   .button-runter.klein {
-    font-size: 12px; /* Noch kleinere Schriftgröße für "klein" */
-    line-height: 12px; /* Angepasste Zeilenhöhe */
-    padding: 8px; /* Kompaktere Darstellung */
-    border-radius: 30px; /* Kleinere Rundung */
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 30px;
   }
 
   .button-runter img {
-    width: 14px; /* Kleinere Icon-Größe */
+    width: 14px;
     height: 14px;
-  }
-
-  .button-runter.klein img {
-    width: 12px; /* Noch kleinere Icons */
-    height: 12px;
-  }
-
-  .button-runter.visible {
-    opacity: 1; /* Sichtbarkeit unverändert */
-    pointer-events: auto;
-    transition: opacity 0.3s ease, transform 0.3s ease; /* Sanfter Übergang */
   }
 }
 
@@ -198,4 +153,3 @@ button:focus {
   outline: none;
   box-shadow: 0 0 5px 2px #007BFF;
 }
-
