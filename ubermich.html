@@ -310,6 +310,11 @@ body {
     transform: translateX(-50%); /* Adjusts the centering */
     flex-direction: row; /* Arranges the buttons in a row */
     gap: 10px; /* Adds space between the buttons */
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    bottom: calc(20px + constant(safe-area-inset-bottom));
+    position: fixed;
+
+ 
   }
   
     .section-nav button {
