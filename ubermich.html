@@ -125,19 +125,9 @@
 
   </script>
 
-  <style>:root {
-    --background-color: #f5f5f5;
-    --text-color: #000;
-  }
-  
-  body.dark-mode {
-    --background-color: #1a1a1a;
-    --text-color: #fff;
-  }
-  
+  <style>
+
   body {
-    background-color: var(--background-color);
-    color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
     font-family: 'Open Sans', sans-serif;
     margin: 0;
@@ -145,14 +135,14 @@
   }
   
   .content-container {
-    display: flex;
-    flex-direction: column;
-    scroll-snap-type: y mandatory;
-    overflow-y: auto;
-    height: 100vh;
-    padding-left: 200px;
-    box-sizing: border-box;
-  }
+  display: flex; /* Flexbox-Layout aktivieren */
+  flex-direction: column; /* Kinder-Elemente vertikal anordnen */
+  scroll-snap-type: y mandatory; /* Scroll-Einrasten entlang der vertikalen Achse */
+  overflow-y: auto; /* Vertikales Scrollen ermöglichen */
+  height: 100vh; /* Höhe des Containers auf die Bildschirmhöhe setzen */
+  padding-left: 50px; /* Innenabstand auf der linken Seite */
+  box-sizing: border-box; /* Padding und Border in die Größe einbeziehen */
+}
   
   .snap-ubermichbox {
     min-height: 100vh;
@@ -209,31 +199,56 @@
     background-color: #0056b3;
   }
   
-  /* Verbesserte Darstellung für mobile Geräte */
-  @media (max-width: 768px) {
-    .section-nav {
-      top: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      flex-direction: row;
-      gap: 10px;
-      z-index: 99999; /* Sehr hohe Priorität */
-    }
   
-    .content-container {
-      padding-left: 0;
-      margin-top: 30px;
-    }
-  
-    .section-nav button {
-      font-size: 14px;
-      padding: 10px 15px;
-    }
-  
-    .snap-ubermichbox {
-      padding: 10%;
-    }
+
+  /* CSS für Mobile Version: iPhone und Samsung */
+@media only screen and (max-width: 768px) {
+  body {
+    font-size: 16px; /* Angemessene Schriftgröße für kleinere Bildschirme */
+    line-height: 1.5; /* Verbesserte Lesbarkeit */
+    padding: 0;
   }
+
+  .content-container {
+    padding-left: 20px; /* Weniger Padding für schmalere Bildschirme */
+  }
+
+  .snap-ubermichbox {
+    padding: 20px; /* Weniger Innenabstand für kleinere Displays */
+    font-size: 14px; /* Kleinere Schrift für mehr Platz */
+  }
+
+  .section-nav {
+    top: auto;
+    bottom: 10px; /* Navigation nach unten verschieben */
+    left: 50%; /* Zentrieren */
+    transform: translateX(-50%);
+    flex-direction: row; /* Buttons horizontal anordnen */
+    gap: 10px; /* Kleinere Abstände zwischen Buttons */
+  }
+
+  .section-nav button {
+    font-size: 12px; /* Kleinere Schriftgröße für Buttons */
+    padding: 8px 10px; /* Weniger Padding */
+    border-radius: 15px; /* Runde Buttons kompakter gestalten */
+  }
+
+  .section-nav button.active {
+    transform: none; /* Keine Skalierung auf mobilen Geräten */
+  }
+
+  /* Weitere allgemeine Verbesserungen */
+  .snap-ubermichbox.is-visible {
+    opacity: 1; /* Verbesserte Lesbarkeit auf mobilen Geräten */
+    transform: translateY(0); /* Gleiche Animation wie Desktop */
+  }
+
+  /* Entfernen von Übergroßen Effekten für Mobilgeräte */
+  .snap-ubermichbox {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+}
+
   
   /* Verbesserte Barrierefreiheit */
   button:focus {
