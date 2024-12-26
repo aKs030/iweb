@@ -1,155 +1,92 @@
-
-body {
-  transition: background-color 0.3s, color 0.3s;
-  font-family: 'Open Sans', sans-serif;
-  margin: 0;
-  padding: 0;
-  -webkit-text-size-adjust: 100%; /* Verhindert automatische Schriftgrößenanpassung */
-}
-
-.content-container {
-  display: flex;
-  flex-direction: column;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll; /* iOS erfordert scroll statt auto */
-  height: 100vh; /* Vollbildhöhe */
-  padding-left: 50px;
-  box-sizing: border-box;
-
-}
-
-.snap-ubermichbox {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  scroll-snap-align: start;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  padding: 5%;
-  box-sizing: border-box;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.snap-ubermichbox.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.section-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
-  background-color: rgba(255, 255, 255, 0.9);
-  z-index: 900;
-}
-
-.section-nav button {
-  font-size: 14px;
-  color: #4a4a4a;
-  background: #fff;
-  border: 2px solid #007BFF;
-  border-radius: 20px;
-  padding: 8px 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.section-nav button.active {
-  color: #fff;
-  background-color: #007BFF;
-}
-
-.section-nav button:hover {
-  color: #fff;
-  background-color: #0056b3;
-}
-
-.button-runter {
-  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
-  text-align: center;
-  font-size: 16px;
-  line-height: 16px;
-  outline: none;
-  border-radius: 48px;
-  cursor: pointer;
-  box-shadow: none;
-  transition: background-color 0.1s, box-shadow 0.1s, border 0.1s;
-  text-decoration: none;
-  color: black;
-  border: 1px solid #777777;
-  background-color: white;
-  padding: 13px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  position: fixed; /* Fixierung für iOS */
-  bottom: 15%; /* Direkt über der Navigationsleiste */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-}
-
-.button-runter.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.button-runter.klein {
-  font-size: 14px;
-  line-height: 14px;
-  padding: 12px;
-  border-radius: 42px;
-}
-
-@media only screen and (max-width: 768px) {
-  .content-container {
-    padding-left: 20px;
+/*************************************************************************
+*                   ÜBER MICH BUTTON RUNTER  *
+ *************************************************************************/
+ .button-runter {
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    text-align: center;
+    font-size: 16px;
+    line-height: 16px;
+    outline: none;
+    border-radius: 48px;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.1s, box-shadow 0.1s, border 0.1s;
+    text-decoration: none;
+    color: black;
+    border: 1px solid #777777;
+    background-color: white;
+    padding: 13px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    box-sizing: border-box;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    margin-bottom: 0;
+    position: fixed; /* Fest positioniert, relativ zum Viewport */
+    bottom: 15%; /* Abstand vom unteren Bildschirmrand */
+    left: 50%; /* Horizontal zentriert */
+    transform: translateX(-50%); /* Exakte Zentrierung */
+    z-index: 1000; /* Sicherstellen, dass der Button über anderen Elementen liegt */
   }
-
-  .section-nav {
-    bottom: 0;
-    padding: 10px 0;
+  
+  .button-runter.visible {
+    opacity: 1; /* Sichtbar machen */
+    pointer-events: auto; /* Klickbar machen */
   }
-
-  .section-nav button {
-    font-size: 12px;
-    padding: 8px 10px;
-    border-radius: 15px;
-  }
-
-  .button-runter {
-    font-size: 14px;
-    padding: 10px;
-    border-radius: 36px;
-    bottom: 15%;
-    max-width: 90%;
-  }
-
+  
   .button-runter.klein {
-    font-size: 12px;
-    padding: 8px;
-    border-radius: 30px;
+    font-size: 14px;
+    line-height: 14px;
+    padding: 12px;
+    border-radius: 42px;
   }
-
-  .button-runter img {
-    width: 14px;
-    height: 14px;
+  
+  .button-runter.klein img {
+    width: 16px;
+    height: 16px;
   }
-}
-
-/* Verbesserte Barrierefreiheit */
-button:focus {
-  outline: none;
-  box-shadow: 0 0 5px 2px #007BFF;
-}
+  @media only screen and (max-width: 768px) {
+    .button-runter {
+      font-size: 14px; /* Kleinere Schriftgröße für mobile Geräte */
+      line-height: 14px; /* Angepasste Zeilenhöhe */
+      padding: 10px; /* Weniger Padding für kompakte Darstellung */
+      border-radius: 36px; /* Kleinere Rundung */
+      bottom: 15%; /* Geringerer Abstand vom unteren Bildschirmrand */
+      width: auto; /* Dynamische Breite je nach Inhalt */
+      max-width: 90%; /* Begrenzung der maximalen Breite */
+    }
+  
+    .button-runter.klein {
+      font-size: 12px; /* Noch kleinere Schriftgröße für "klein" */
+      line-height: 12px; /* Angepasste Zeilenhöhe */
+      padding: 8px; /* Kompaktere Darstellung */
+      border-radius: 30px; /* Kleinere Rundung */
+    }
+  
+    .button-runter img {
+      width: 14px; /* Kleinere Icon-Größe */
+      height: 14px;
+    }
+  
+    .button-runter.klein img {
+      width: 12px; /* Noch kleinere Icons */
+      height: 12px;
+    }
+  
+    .button-runter.visible {
+      opacity: 1; /* Sichtbarkeit unverändert */
+      pointer-events: auto;
+      transition: opacity 0.3s ease, transform 0.3s ease; /* Sanfter Übergang */
+    }
+  }
+/*************************************************************************
+*                   ÜBER MICH BUTTON RUNTER  *
+ *************************************************************************/
