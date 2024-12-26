@@ -73,39 +73,3 @@ $(document).ready(function () {
     $(".back-to-top").show();
   }
 });
-/*************************************************************************
- * ÜBER MICH MENÜ BAR *
- *************************************************************************/
-document.addEventListener("DOMContentLoaded", function () {
-  const sections = document.querySelectorAll(".snap-ubermichbox");
-  const navLinks = document.querySelectorAll(".section-nav a");
-
-  // Funktion: Markiere den aktiven Link
-  function setActiveLink(sectionId) {
-    navLinks.forEach((link) => {
-      // Entferne die Blink-Klasse von allen Links
-      link.classList.remove("blink");
-
-      // Füge die Blink-Klasse nur dem Link hinzu, der mit dem sichtbaren Abschnitt übereinstimmt
-      if (link.getAttribute("href") === `#${sectionId}`) {
-        link.classList.add("blink");
-      }
-    });
-  }
-
-  // IntersectionObserver zur Beobachtung der sichtbaren Abschnitte
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.getAttribute("id");
-          setActiveLink(sectionId); // Setze den aktiven Link
-        }
-      });
-    },
-    { threshold: 0.6 } // 60% des Abschnitts müssen sichtbar sein
-  );
-
-  // Beobachte jeden Abschnitt
-  sections.forEach((section) => observer.observe(section));
-});
