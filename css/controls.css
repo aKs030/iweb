@@ -48,8 +48,17 @@ html { scroll-behavior: smooth;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  position: absolute; /* Relativ zur Container-Position */
-  margin-bottom: -100%;
+  margin-bottom: 0;
+  position: fixed; /* Fest positioniert, relativ zum Viewport */
+  bottom: 10%; /* Abstand vom unteren Bildschirmrand */
+  left: 50%; /* Horizontal zentriert */
+  transform: translateX(-50%); /* Exakte Zentrierung */
+  z-index: 1000; /* Sicherstellen, dass der Button über anderen Elementen liegt */
+}
+
+.button-runter.visible {
+  opacity: 1; /* Sichtbar machen */
+  pointer-events: auto; /* Klickbar machen */
 }
 
 .button-runter.klein {
@@ -58,6 +67,7 @@ html { scroll-behavior: smooth;
   padding: 12px;
   border-radius: 42px;
 }
+
 .button-runter.klein img {
   width: 16px;
   height: 16px;
@@ -66,17 +76,15 @@ html { scroll-behavior: smooth;
 /* Mobile Optimierung */
 @media (max-width: 768px) {
   .button-runter {
-    font-size: 14px; /* Kleinere Schrift für mobile Geräte */
+    font-size: 14px;
     line-height: 14px;
-    padding: 10px; /* Weniger Padding */
-    border-radius: 40px; /* Kleinere Rundung */
-    margin-bottom: 10%; /* Weniger Abstand nach unten */
-    bottom: 5%; /* Platziere den Button etwas höher */
-    transform: translateX(-50%); /* Zentriert horizontal */
+    padding: 10px;
+    border-radius: 40px;
+    bottom: 5%; /* Höher positioniert auf kleinen Bildschirmen */
   }
 
   .button-runter.klein {
-    font-size: 12px; /* Noch kleiner für kleine Buttons */
+    font-size: 12px;
     padding: 8px;
     border-radius: 36px;
   }

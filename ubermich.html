@@ -9,8 +9,8 @@
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css"/>
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css"/>
   <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css"/>
-  <link rel="stylesheet" href="css/custom.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link href="css/style.css" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css"/>
 
     <link rel="stylesheet" href="f.css">
   <!-- JS -->
@@ -78,121 +78,168 @@
       document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
     }
 
-    document.addEventListener('scroll', () => {
-      const progressBar = document.querySelector('.progress-bar');
-      const totalHeight = document.body.scrollHeight - window.innerHeight;
-      const progress = (window.scrollY / totalHeight) * 100;
-      progressBar.style.width = `${progress}%`;
-    });
+
+    
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+  // Elemente auswählen
+  const contentContainer = document.querySelector(".content-container");
+  const button = document.querySelector(".button-runter");
+
+  // Funktion zur Überprüfung der Scroll-Position
+  const checkScrollPosition = () => {
+    const scrollTop = contentContainer.scrollTop;
+    const clientHeight = contentContainer.clientHeight;
+    const scrollHeight = contentContainer.scrollHeight;
+
+    console.log(`ScrollTop: ${scrollTop}, ClientHeight: ${clientHeight}, ScrollHeight: ${scrollHeight}`);
+
+    // Prüfen, ob das Ende des Scrollens erreicht wurde
+    const isScrolledToEnd = scrollTop + clientHeight >= scrollHeight - 10;
+
+    if (isScrolledToEnd) {
+      button.classList.add("visible"); // Sichtbar machen
+      console.log("Button sichtbar gemacht.");
+    } else {
+      button.classList.remove("visible"); // Ausblenden
+      console.log("Button ausgeblendet.");
+    }
+  };
+
+  // Scroll-Event-Listener hinzufügen
+  if (contentContainer && button) {
+    contentContainer.addEventListener("scroll", checkScrollPosition);
+    checkScrollPosition(); // Initial prüfen
+  } else {
+    console.error("contentContainer oder Button nicht gefunden. Überprüfe die HTML-Struktur.");
+  }
+});
+
+
+
+    
+
+
+
 
   </script>
 
-  <style>
-   :root {
-  --background-color: #f5f5f5;
-  --text-color: #000;
-}
-
-body.dark-mode {
-  --background-color: #1a1a1a;
-  --text-color: #fff;
-}
-
-body {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s;
-      font-family: 'Open Sans', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    .content-container {
-      display: flex;
-      flex-direction: column;
-      scroll-snap-type: y mandatory;
-      overflow-y: auto;
-      height: 100vh;
-      padding-left: 200px;
-      box-sizing: border-box;
-    }
-
-    .snap-ubermichbox {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      scroll-snap-align: start;
-      background-color: #f5f5f5;
-      padding: 5%;
-      box-sizing: border-box;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-
-    .snap-ubermichbox.is-visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
+  <style>:root {
+    --background-color: #f5f5f5;
+    --text-color: #000;
+  }
+  
+  body.dark-mode {
+    --background-color: #1a1a1a;
+    --text-color: #fff;
+  }
+  
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    scroll-snap-type: y mandatory;
+    overflow-y: auto;
+    height: 100vh;
+    padding-left: 200px;
+    box-sizing: border-box;
+  }
+  
+  .snap-ubermichbox {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    scroll-snap-align: start;
+    background-color: var(--background-color); /* Dynamische Farbe für Dark Mode */
+    color: var(--text-color); /* Dynamischer Text für Dark Mode */
+    padding: 5%;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  
+  .snap-ubermichbox.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .section-nav {
+    position: fixed;
+    top: 50%;
+    left: 3%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000; /* Höhere Priorität */
+  }
+  
+  .section-nav button {
+    font-size: 14px;
+    color: #4a4a4a;
+    background: #fff;
+    border: 2px solid #007BFF;
+    border-radius: 20px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .section-nav button.active {
+    color: #fff;
+    background-color: #007BFF;
+    transform: scale(1.1);
+  }
+  
+  .section-nav button:hover {
+    color: #fff;
+    background-color: #0056b3;
+  }
+  
+  /* Verbesserte Darstellung für mobile Geräte */
+  @media (max-width: 768px) {
     .section-nav {
-      position: fixed;
-      top: 50%;
-      left: 3%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      z-index: 1000; /* Höhere Priorität */
-
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      flex-direction: row;
+      gap: 10px;
+      z-index: 99999; /* Sehr hohe Priorität */
     }
-
+  
+    .content-container {
+      padding-left: 0;
+      margin-top: 30px;
+    }
+  
     .section-nav button {
       font-size: 14px;
-      color: #4a4a4a;
-      background: #fff;
-      border: 2px solid #007BFF;
-      border-radius: 20px;
       padding: 10px 15px;
-      cursor: pointer;
-      transition: all 0.3s ease;
     }
-
-    .section-nav button.active {
-      color: #fff;
-      background-color: #007BFF;
-      transform: scale(1.1);
+  
+    .snap-ubermichbox {
+      padding: 10%;
     }
-
-    .section-nav button:hover {
-      color: #fff;
-      background-color: #0056b3;
-    }
-
-    @media (max-width: 768px) {
-      .section-nav {
-        top: 70px;
-        left: 50%;
-        transform: translateX(-50%);
-        flex-direction: row;
-        gap: 10px;
-        z-index: 99999; /* Sehr hohe Priorität */
-      }
-
-      .content-container {
-        padding-left: 0;
-        margin-top: 60px;
-      }
-
-      .section-nav button {
-        font-size: 12px;
-        padding: 8px 12px;
-      }
-    }
-
+  }
+  
+  /* Verbesserte Barrierefreiheit */
+  button:focus {
+    outline: none;
+    box-shadow: 0 0 5px 2px #007BFF;
+  }
   </style>
 </head>
 
@@ -210,7 +257,7 @@ body {
         <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
       </nav>
 <section class="snap-ubermichbox" id="section1">
-  <h1>Überblick</h1>
+  <h2>Überblick</h2>
   <p>Willkommen auf meiner Seite!</p>
   <button class="button-runter klein pulse-primary" onclick="document.getElementById('section2').scrollIntoView({behavior: 'smooth'});">
      <img data-src="img/down.png" alt="Weiter" class="lazyload">
@@ -222,8 +269,10 @@ body {
 <!-- Banner -->
 
 <section class="snap-ubermichbox" id="section2">
-  <h1>Persönlich</h1>
-  <p>Hallo, ich bin Abdulkerim und freue mich, dass du meine Seite besuchst!</p>
+  <h2>Persönlich</h2>
+  <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst! 
+    Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben, 
+    meine Interessen und meine berufliche Laufbahn geben.</p>
   <button class="button-runter klein pulse-primary" onclick="document.getElementById('section3').scrollIntoView({behavior: 'smooth'});">
     <img data-src="img/down.png" alt="Weiter" class="lazyload">
   </button>
@@ -231,17 +280,52 @@ body {
 <!-- Banner -->
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
 <!-- Banner -->
+
 <section class="snap-ubermichbox" id="section3">
-  <h1>Hobbys</h1>
-  <p>Ich genieße Reisen, Musik und spannende Technologien.</p>
-  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section4').scrollIntoView({behavior: 'smooth'});">
+  <div class="content-container">
+    <div class="content">
+      <h2>Meine Hobbys</h2>
+      <p>In meiner Freizeit widme ich mich leidenschaftlich meinen Hobbys, die mir nicht nur Freude bereiten, sondern auch Ausgleich und Inspiration im Alltag bieten.</p>
+      <h1>Reisen</h1>
+      <p>Es gibt nichts Spannenderes, als neue Orte zu entdecken, verschiedene Kulturen kennenzulernen und unvergessliche Erinnerungen zu sammeln. Reisen eröffnet mir die Möglichkeit, meinen Horizont zu erweitern und die Vielfalt unserer Welt zu erleben.</p>
+      <h1>Musik und Technologie</h1>
+      <p>Musik begleitet mich durch jede Lebenslage – sie inspiriert, motiviert und entspannt. Genauso faszinieren mich spannende Technologien, die unser Leben prägen und neue Wege für Kreativität und Innovation eröffnen.</p>
+      <h1>Wandern und Natur erkunden</h1>
+      <p>Die Natur ist für mich ein Ort der Ruhe und Entschleunigung. Beim Wandern kann ich abschalten, die Schönheit unserer Umwelt genießen und neue Energie tanken.</p>
+      <h1>Fotografie</h1>
+      <p>Mit meiner Kamera halte ich gerne besondere Momente fest. Ob eindrucksvolle Landschaften, besondere Augenblicke auf Reisen oder alltägliche Details – Fotografie ist meine Art, die Welt aus meiner Perspektive zu zeigen.</p>
+      <h1>Fitness und Joggen</h1>
+      <p>Regelmäßige Bewegung gehört für mich einfach dazu. Beim Joggen und Fitness finde ich nicht nur körperliche Ausgeglichenheit, sondern auch mentalen Fokus.</p>
+      <h1>Bücher</h1>
+      <p>Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration. Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.</p>
+      <p>Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder neue Perspektiven zu gewinnen.</p>
+
+      <!-- Button, der initial ausgeblendet ist -->
+      <div class="button-container" id="scrollButton">
+        <button class="button-runter klein pulse-primary" onclick="document.getElementById('section4').scrollIntoView({behavior: 'smooth'});">
+          <img data-src="img/down.png" alt="Weiter" class="lazyload">
+        </button>
+      </div>
+
+
+    </div>
+  </div>
+</section>
+
+
+<!-- Banner -->
+<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
+<!-- Banner -->
+<section class="snap-ubermichbox" id="section4">
+  <h2>Karriere</h2>
+  <p>XXXXXXXX</p>
+  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section5').scrollIntoView({behavior: 'smooth'});">
     <img data-src="img/down.png" alt="Weiter" class="lazyload">
   </button>
 </section>
 <!-- Banner -->
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
 <!-- Banner -->
-
 
   </div>
 </body>
