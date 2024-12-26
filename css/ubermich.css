@@ -31,7 +31,7 @@
     user-select: none;
     margin-bottom: 0;
     position: fixed; /* Fest positioniert, relativ zum Viewport */
-    bottom: 10%; /* Abstand vom unteren Bildschirmrand */
+    bottom: 15%; /* Abstand vom unteren Bildschirmrand */
     left: 50%; /* Horizontal zentriert */
     transform: translateX(-50%); /* Exakte Zentrierung */
     z-index: 1000; /* Sicherstellen, dass der Button über anderen Elementen liegt */
@@ -59,7 +59,7 @@
       line-height: 14px; /* Angepasste Zeilenhöhe */
       padding: 10px; /* Weniger Padding für kompakte Darstellung */
       border-radius: 36px; /* Kleinere Rundung */
-      bottom: 20%; /* Geringerer Abstand vom unteren Bildschirmrand */
+      bottom: 15%; /* Geringerer Abstand vom unteren Bildschirmrand */
       width: auto; /* Dynamische Breite je nach Inhalt */
       max-width: 90%; /* Begrenzung der maximalen Breite */
     }
