@@ -59,7 +59,7 @@
       line-height: 14px; /* Angepasste Zeilenhöhe */
       padding: 10px; /* Weniger Padding für kompakte Darstellung */
       border-radius: 36px; /* Kleinere Rundung */
-      bottom: 10%; /* Geringerer Abstand vom unteren Bildschirmrand */
+      bottom: 20%; /* Geringerer Abstand vom unteren Bildschirmrand */
       width: auto; /* Dynamische Breite je nach Inhalt */
       max-width: 90%; /* Begrenzung der maximalen Breite */
     }
