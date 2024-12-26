@@ -34,9 +34,14 @@
 }
 
 
+.banner-gif-100 {
+  background: url('../img/dummy-background.gif') no-repeat center;
+  background-size: cover;
+  height: 100px;
+}
 
 .banner-gif-150 { 
   background: url('../img/dummy-background.gif') no-repeat center;
   background-size: cover;
-  height: 70px;
+  height: 150px;
 } 
