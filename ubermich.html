@@ -275,7 +275,6 @@ body {
 
   /* Erst unsichtbar, bis wir .visible hinzufügen */
   opacity: 1;
-  pointer-events: auto;
   transition: background-color 0.1s, box-shadow 0.1s, border 0.1s, opacity 0.3s;
 }
 
@@ -361,9 +360,8 @@ button:focus-visible {
 
   /* Navigation unten zentriert */
   .section-nav {
-    top: auto; 
-    bottom: calc(20px + env(safe-area-inset-bottom));
-    bottom: calc(20px + constant(safe-area-inset-bottom)); /* Fallback iOS */
+    top: 90px; 
+  
     left: 50%;
     transform: translateX(-50%);
     flex-direction: row;
@@ -486,6 +484,7 @@ button:focus-visible {
       
   <div class="content-container">
     <div class="content">
+      <br><br>  <br><br>
       <h2>Meine Hobbys</h2>
       <p>In meiner Freizeit widme ich mich leidenschaftlich meinen Hobbys, die mir nicht nur Freude bereiten, sondern auch Ausgleich und Inspiration im Alltag bieten.</p>
       <h1>Reisen</h1>
@@ -501,7 +500,7 @@ button:focus-visible {
       <h1>Bücher</h1>
       <p>Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration. Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.</p>
       <p>Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder neue Perspektiven zu gewinnen.</p>
-      <br><br>
+      <br><br>  <br><br>
       <!-- Button, der initial ausgeblendet ist -->
       <div class="button-container" id="scrollButton">
         <button class="button-runter klein pulse-primary" onclick="document.getElementById('section4').scrollIntoView({behavior: 'smooth'});">
