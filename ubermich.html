@@ -21,6 +21,8 @@
   <script src="js/menu.js"></script>
   <script src="js/footer.js"></script>
   <script src="f.js"></script>
+
+  
   <script>
 
 // Scrollt zur angegebenen Sektion
@@ -158,10 +160,226 @@ document.addEventListener('DOMContentLoaded', () => {
   sections.forEach((section) => observer.observe(section));
 });
 
+    </script>
 
-  </script>
+  <style>
 
-  <style></style>
+
+body {
+    transition: background-color 0.3s, color 0.3s;
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    scroll-snap-type: y mandatory;
+    overflow-y: auto;
+    height: 100vh;
+    padding-top: 20px; /* Nur Innenabstand oben */
+    padding-left: 0; /* Kein linker Abstand */
+    box-sizing: border-box;
+  }
+  
+  .snap-ubermichbox {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    scroll-snap-align: start;
+    background-color: var(--background-color, #f8f9fa);
+    color: var(--text-color, #000);
+    padding: 5%;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  
+  .snap-ubermichbox.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Navigation */
+  .section-nav {
+    position: fixed;
+    top: 50%;
+    left: 3%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+  }
+  
+  .section-nav button {
+    font-size: 14px;
+    color: #4a4a4a;
+    background: #fff;
+    border: 2px solid #007BFF;
+    border-radius: 20px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .section-nav button.active {
+    color: #fff;
+    background-color: #007BFF;
+    transform: scale(1.1);
+  }
+  
+  .section-nav button:hover {
+    color: #fff;
+    background-color: #0056b3;
+  }
+  
+  /* Button "runter" */
+  .button-runter {
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    text-align: center;
+    font-size: 16px;
+    line-height: 16px;
+    outline: none;
+    border-radius: 48px;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.1s, box-shadow 0.1s, border 0.1s;
+    text-decoration: none;
+    color: black;
+    border: 1px solid #777777;
+    background-color: white;
+    padding: 13px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+  }
+  
+  .button-runter.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .button-runter.klein {
+    font-size: 14px;
+    padding: 12px;
+    border-radius: 42px;
+  }
+  
+  .button-runter img {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .button-runter.klein img {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Mobile Stile */
+  @media only screen and (max-width: 768px) {
+    body {
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 0;
+    }
+  
+    .content-container {
+      padding-left: 0;
+    }
+  
+    .snap-ubermichbox {
+      padding: 20px;
+      font-size: 14px;
+    }
+  
+    .section-nav {
+    top: auto; /* Overrides any previous top value */
+    bottom: 20px; /* Positions the navigation 10px from the bottom */
+    left: 50%; /* Centers the navigation horizontally */
+    transform: translateX(-50%); /* Adjusts the centering */
+    flex-direction: row; /* Arranges the buttons in a row */
+    gap: 10px; /* Adds space between the buttons */
+  }
+  
+    .section-nav button {
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 15px;
+    }
+  
+    .button-runter {
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 36px;
+      max-width: 90%;
+    }
+  
+    .button-runter.klein {
+      font-size: 12px;
+      padding: 8px;
+      border-radius: 30px;
+    }
+  
+    .button-runter img {
+      width: 14px;
+      height: 14px;
+    }
+  
+    .button-runter.klein img {
+      width: 12px;
+      height: 12px;
+    }
+  }
+  
+  /* Barrierefreiheit */
+  button:focus {
+    outline: none;
+    box-shadow: 0 0 5px 2px #007BFF;
+  }
+  
+  /* Banner */
+  .banner-gif-150 {
+    background: url('../img/dummy-background.gif')no-repeat center;
+    background-size: cover;
+    height: 100px;
+  }
+  
+  .banner-gif-150 img {
+    width: auto;
+    height: 0;
+    object-fit: cover;
+  }
+  
+  /* Animationsklassen */
+  .pulse-primary {
+    animation: pulse 1.5s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+  }
+  
+    
+  </style>
 </head>
 
 <body>
@@ -300,7 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     </section>
-  </div>
   </div>
 </body>
 </html>
