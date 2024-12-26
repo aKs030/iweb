@@ -11,7 +11,8 @@ body {
     scroll-snap-type: y mandatory;
     overflow-y: auto;
     height: 100vh;
-    padding-left: 13%;/* Navigation box links */   
+    padding-top: 20px; /* Nur Innenabstand oben */
+    padding-left: 0; /* Kein linker Abstand */
     box-sizing: border-box;
   }
   

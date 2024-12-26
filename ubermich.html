@@ -72,18 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   lazyImages.forEach((img) => imageObserver.observe(img));
 
-  // Dark Mode Umschalter
-  const toggleMode = () => {
-    document.body.classList.toggle('dark-mode');
-  };
-
-  const toggleButton = document.createElement('button');
-  toggleButton.textContent = 'Dark Mode';
-  toggleButton.className = 'mode-toggle';
-  toggleButton.addEventListener('click', toggleMode);
-
-  const stickyNav = document.querySelector('.sticky-nav');
-  if (stickyNav) stickyNav.appendChild(toggleButton);
 });
 
 // Navigation: Aktiver Link
@@ -141,6 +129,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+
+
+
+
+
+// Scroll zu einer bestimmten Sektion
+function scrollToSection(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+}
+
+// Highlight aktiver Button basierend auf sichtbarer Sektion
+document.addEventListener('DOMContentLoaded', () => {
+  const sections = document.querySelectorAll('.snap-ubermichbox');
+  const navButtons = document.querySelectorAll('.section-nav button');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const targetId = entry.target.id;
+        navButtons.forEach((button) => {
+          button.classList.toggle('active', button.getAttribute('data-target') === `#${targetId}`);
+        });
+      }
+    });
+  }, { threshold: 0.5 });
+
+  sections.forEach((section) => observer.observe(section));
+});
+
+
   </script>
 
   <style></style>
@@ -152,14 +170,17 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- Banner -->
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
 <!-- Banner -->
-    <nav class="section-nav" aria-label="Hauptnavigation">
-        <button data-target="#section1" onclick="scrollToSection('section1');" aria-current="true">Überblick</button>
-        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
-        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
-        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
-        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
-      </nav>
-<section class="snap-ubermichbox" id="section1">
+
+
+ <!-- Snap 1 -->
+ <section class="snap-ubermichbox" id="section1">
+  <nav class="section-nav">
+    <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+    <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+    <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+    <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+    <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+  </nav>
   <h2>Überblick</h2>
   <p>Willkommen auf meiner Seite!</p>
   <button class="button-runter klein pulse-primary" onclick="document.getElementById('section2').scrollIntoView({behavior: 'smooth'});">
@@ -171,7 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
 <!-- Banner -->
 
-<section class="snap-ubermichbox" id="section2">
+    <!-- Snap 2 -->
+    <section class="snap-ubermichbox" id="section2">
+      <nav class="section-nav">
+        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+      </nav>
   <h2>Persönlich</h2>
   <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst! 
     Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben, 
@@ -184,7 +213,17 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
 <!-- Banner -->
 
-<section class="snap-ubermichbox" id="section3">
+    <!-- Snap 3 -->
+    <section class="snap-ubermichbox" id="section3">
+      <nav class="section-nav">
+        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+      </nav>
+
+      
   <div class="content-container">
     <div class="content">
       <h2>Meine Hobbys</h2>
@@ -202,28 +241,31 @@ document.addEventListener('DOMContentLoaded', () => {
       <h1>Bücher</h1>
       <p>Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration. Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.</p>
       <p>Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder neue Perspektiven zu gewinnen.</p>
-
+      <br><br>
       <!-- Button, der initial ausgeblendet ist -->
       <div class="button-container" id="scrollButton">
         <button class="button-runter klein pulse-primary" onclick="document.getElementById('section4').scrollIntoView({behavior: 'smooth'});">
           <img data-src="img/down.png" alt="Weiter" class="lazyload">
         </button>
       </div>
-
-
     </div>
-
-    
   </div>
 </section>
-
-
 <!-- Banner -->
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
 <!-- Banner -->
-<section class="snap-ubermichbox" id="section4">
-  <h2>Karriere</h2>
-  <p>XXXXXXXX</p>
+
+    <!-- Snap 4 -->
+    <section class="snap-ubermichbox" id="section4">
+      <nav class="section-nav">
+        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+      </nav>
+      <h2>Karriere</h2>
+      <p>Hier ist ein Überblick über meine beruflichen Stationen.</p>
   <button class="button-runter klein pulse-primary" onclick="document.getElementById('section5').scrollIntoView({behavior: 'smooth'});">
     <img data-src="img/down.png" alt="Weiter" class="lazyload">
   </button>
@@ -231,7 +273,34 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- Banner -->
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
 <!-- Banner -->
-
+    <!-- Snap 5 -->
+    <section class="snap-ubermichbox" id="section5">
+      <nav class="section-nav">
+        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+      </nav>
+      <h2>Kontakt</h2>
+      <p>Vielen Dank für Ihren Besuch! Kontaktieren Sie mich gerne für weitere Informationen.</p>
+      <div class="banner-table flex-column">
+        <div class="flex-row">
+              <div class="flex-item flex-item-stretch flex-column">
+                <p class="highlight-text">      
+    © 2023 [Abdulkerim]. <span class="text text-small text-italic add-top-margin-large">Alle Rechte vorbehalten.</span>
+                <br/>
+     <button onclick="alert('Angaben gemäß § 5 TMG:\nAbdulkerim Sesli \nEmail:mail@abdulkerimsesli.com \nHaftungshinweis: \nDie Inhalte dieser Webseite wurden sorgfältig geprüft und nach bestem Wissen erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Jegliche Haftung für Schäden, die direkt oder indirekt aus der Nutzung dieser Webseite entstehen, wird ausgeschlossen.\nUrheberrecht:\nDie durch den Betreiber dieser Webseite erstellten Inhalte und Werke auf dieser Webseite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Webseite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.\nDatenschutz:\nDie Nutzung dieser Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf dieser Webseite personenbezogene Daten beispielsweise Name oder E-Mail-Adresse erhoben werden, erfolgt dies auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.')"style="color:#000000; text-decoration:none;">Impressum</button>
+     <button onclick="alert('1. Wenn Sie unsere Homepage besuchen, erheben wir automatisch Informationen über den von Ihnen genutzten Browser, das Betriebssystem Ihres Geräts, die IP-Adresse Ihres Geräts, den Namen Ihres Internet Service Providers und ähnliche technische Informationen. Diese Informationen werden ausschließlich zu statistischen Zwecken und zur Verbesserung unseres Angebots genutzt. \n2. Wenn Sie unser Kontaktformular nutzen, erheben wir die von Ihnen eingegebenen personenbezogenen Daten wie Name, E-Mail-Adresse, Telefonnummer und Ihre Nachricht. Diese Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage genutzt und nicht an Dritte weitergegeben.\n3. Eine Übermittlung Ihrer personenbezogenen Daten an Dritte erfolgt nur, wenn dies zur Abwicklung Ihrer Anfrage erforderlich ist oder wenn wir gesetzlich dazu verpflichtet sind.\n4. Wir setzen auf unserer Homepage Cookies ein, um unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen. Cookies sind kleine Textdateien, die auf Ihrem Rechner abgelegt werden und die Ihr Browser speichert. Die meisten der von uns verwendeten Cookies sind sogenannte Session-Cookies, die nach Ende Ihres Besuchs automatisch gelöscht werden.\n5. Sie haben das Recht, jederzeit Auskunft über die von uns gespeicherten personenbezogenen Daten zu verlangen. Zudem haben Sie das Recht auf Berichtigung unrichtiger Daten, Einschränkung der Verarbeitung sowie auf Löschung Ihrer Daten. Sie können jederzeit der Verarbeitung Ihrer Daten widersprechen und haben das Recht auf Datenübertragbarkeit.\n6. Wir behalten uns vor, diese Datenschutzerklärung jederzeit anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen in der Datenschutzerklärung umzusetzen. Für Ihren erneuten Besuch gilt dann die neue Datenschutzerklärung.\n7. Wenn Sie Fragen zum Datenschutz haben oder Ihre Rechte als betroffene Person wahrnehmen möchten, können Sie uns jederzeit per E-Mail kontaktieren.\nStand: Mai.2023')"style="color:#000000; text-decoration:none;">Datenschutzerklärung</button>
+     <button> 
+    <a href= "mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">kontakt</a>
+    </button>
+    </p>
+    </div>
+        </div>
+      </div>
+    </section>
+  </div>
   </div>
 </body>
 </html>
