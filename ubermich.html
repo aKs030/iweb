@@ -163,227 +163,264 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 
   <style>
-
+    
+    /* ===========================
+   Basis- und Reset-Stile
+   =========================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
-    transition: background-color 0.3s, color 0.3s;
-    font-family: 'Open Sans', sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .content-container {
-    display: flex;
-    flex-direction: column;
-    scroll-snap-type: y mandatory;
-    overflow-y: auto;
-    height: 100vh;
-    padding-top: 20px; /* Nur Innenabstand oben */
-    padding-left: 0; /* Kein linker Abstand */
-    box-sizing: border-box;
-  }
-  
-  .snap-ubermichbox {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    scroll-snap-align: start;
-    background-color: var(--background-color, #f8f9fa);
-    color: var(--text-color, #000);
-    padding: 5%;
-    box-sizing: border-box;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
-  
-  .snap-ubermichbox.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  
-  /* Navigation */
+  transition: background-color 0.3s, color 0.3s;
+  font-family: 'Open Sans', sans-serif;
+  background-color: #f8f9fa;
+  color: #000;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===========================
+   Container / Sektionen
+   =========================== */
+.content-container {
+  display: flex;
+  flex-direction: column;
+  scroll-snap-type: y mandatory; 
+  overflow-y: auto;     
+  height: 100vh;
+  /* Oben etwas Platz (optional) */
+  padding-top: 20px; 
+}
+
+/* Jede Section (Snap-Punkt) */
+.snap-ubermichbox {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  scroll-snap-align: start;
+  padding: 5%;
+  opacity: 0; 
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Sichtbar, sobald per IntersectionObserver im Viewport */
+.snap-ubermichbox.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===========================
+   Navigation (Desktop & Mobile)
+   =========================== */
+.section-nav {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Navigation-Buttons */
+.section-nav button {
+  font-size: 14px;
+  color: #4a4a4a;
+  background: #fff;
+  border: 2px solid #007BFF;
+  border-radius: 20px;
+  padding: 10px 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.section-nav button:hover {
+  color: #fff;
+  background-color: #0056b3;
+}
+
+.section-nav button.active {
+  color: #fff;
+  background-color: #007BFF;
+  transform: scale(1.1);
+}
+
+/* ===========================
+   Button "runter"
+   =========================== */
+.button-runter {
+  position: fixed;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  line-height: 16px;
+  border-radius: 48px;
+  border: 1px solid #777777;
+  background-color: #fff;
+  color: #000;
+  padding: 13px;
+
+  /* Erst unsichtbar, bis wir .visible hinzufügen */
+  opacity: 1;
+  pointer-events: auto;
+  transition: background-color 0.1s, box-shadow 0.1s, border 0.1s, opacity 0.3s;
+}
+
+.button-runter.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.button-runter.klein {
+  font-size: 14px;
+  padding: 12px;
+  border-radius: 42px;
+}
+
+.button-runter img {
+  width: 16px;
+  height: 16px;
+}
+
+.button-runter.klein img {
+  width: 14px;
+  height: 14px;
+}
+
+/* ===========================
+   Barrierefreiheit
+   =========================== */
+button:focus,
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 5px 2px #007BFF;
+}
+
+/* ===========================
+   Banner (Beispiel)
+   =========================== */
+.banner-gif-150 {
+  background: url('../img/dummy-background.gif') no-repeat center;
+  background-size: cover;
+  height: 100px;
+}
+
+.banner-gif-150 img {
+  width: auto;
+  height: 0;
+  object-fit: cover;
+}
+
+/* ===========================
+   Desktop Layout
+   =========================== */
+/* Ab ~769px wird die Navigation links fixiert 
+   und der Inhalt kriegt links Platz, damit sich nichts überlappt */
+@media (min-width: 769px) {
+  /* Navigation links anbringen, feste Breite von z.B. 120px */
   .section-nav {
-    position: fixed;
     top: 50%;
-    left: 3%;
+    left: 0; 
+    width: 120px; 
     transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    z-index: 1000;
   }
-  
-  .section-nav button {
-    font-size: 14px;
-    color: #4a4a4a;
-    background: #fff;
-    border: 2px solid #007BFF;
-    border-radius: 20px;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+
+  /* Inhalt bekommt links etwas Platz (z.B. 130px) */
+  .content-container {
+    margin-left: 130px;
   }
-  
-  .section-nav button.active {
-    color: #fff;
-    background-color: #007BFF;
-    transform: scale(1.1);
-  }
-  
-  .section-nav button:hover {
-    color: #fff;
-    background-color: #0056b3;
-  }
-  
-  /* Button "runter" */
-  .button-runter {
-    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
-    text-align: center;
+}
+
+/* ===========================
+   Mobile Layout
+   =========================== */
+/* Bis max. 768px: Navigation unten, horizontal */
+@media (max-width: 768px) {
+  /* Auf Smartphones: Schrift größer, leichter lesbar */
+  body {
     font-size: 16px;
-    line-height: 16px;
-    outline: none;
-    border-radius: 48px;
-    cursor: pointer;
-    box-shadow: none;
-    transition: background-color 0.1s, box-shadow 0.1s, border 0.1s;
-    text-decoration: none;
-    color: black;
-    border: 1px solid #777777;
-    background-color: white;
-    padding: 13px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    bottom: 15%;
+  }
+
+  .snap-ubermichbox {
+    font-size: 14px;
+    padding: 20px;
+  }
+
+  /* Navigation unten zentriert */
+  .section-nav {
+    top: auto; 
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    bottom: calc(20px + constant(safe-area-inset-bottom)); /* Fallback iOS */
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1000;
+    flex-direction: row;
+    width: auto;
+    gap: 10px;
   }
-  
-  .button-runter.visible {
-    opacity: 1;
-    pointer-events: auto;
+
+  .section-nav button {
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 15px;
   }
-  
-  .button-runter.klein {
+
+  /* Button "runter" kleiner */
+  .button-runter {
     font-size: 14px;
-    padding: 12px;
-    border-radius: 42px;
+    padding: 10px;
+    border-radius: 36px;
+    max-width: 90%;
   }
-  
+
+  .button-runter.klein {
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 30px;
+  }
+
   .button-runter img {
-    width: 16px;
-    height: 16px;
-  }
-  
-  .button-runter.klein img {
     width: 14px;
     height: 14px;
   }
-  
-  /* Mobile Stile */
-  @media only screen and (max-width: 768px) {
-    body {
-      font-size: 16px;
-      line-height: 1.5;
-      padding: 0;
-    }
-  
-    .content-container {
-      padding-left: 0;
-    }
-  
-    .snap-ubermichbox {
-      padding: 20px;
-      font-size: 14px;
-    }
-  
-    .section-nav {
-    top: auto; /* Overrides any previous top value */
-    bottom: 20px; /* Positions the navigation 10px from the bottom */
-    left: 50%; /* Centers the navigation horizontally */
-    transform: translateX(-50%); /* Adjusts the centering */
-    flex-direction: row; /* Arranges the buttons in a row */
-    gap: 10px; /* Adds space between the buttons */
-    bottom: calc(20px + env(safe-area-inset-bottom));
-    bottom: calc(20px + constant(safe-area-inset-bottom));
-    position: fixed;
 
- 
+  .button-runter.klein img {
+    width: 12px;
+    height: 12px;
   }
-  
-    .section-nav button {
-      font-size: 12px;
-      padding: 8px 10px;
-      border-radius: 15px;
-    }
-  
-    .button-runter {
-      font-size: 14px;
-      padding: 10px;
-      border-radius: 36px;
-      max-width: 90%;
-    }
-  
-    .button-runter.klein {
-      font-size: 12px;
-      padding: 8px;
-      border-radius: 30px;
-    }
-  
-    .button-runter img {
-      width: 14px;
-      height: 14px;
-    }
-  
-    .button-runter.klein img {
-      width: 12px;
-      height: 12px;
-    }
+}
+
+/* ===========================
+   Animationen (Beispiel)
+   =========================== */
+.pulse-primary {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
   }
-  
-  /* Barrierefreiheit */
-  button:focus {
-    outline: none;
-    box-shadow: 0 0 5px 2px #007BFF;
+  70% {
+    box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
   }
-  
-  /* Banner */
-  .banner-gif-150 {
-    background: url('../img/dummy-background.gif')no-repeat center;
-    background-size: cover;
-    height: 100px;
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
   }
-  
-  .banner-gif-150 img {
-    width: auto;
-    height: 0;
-    object-fit: cover;
-  }
-  
-  /* Animationsklassen */
-  .pulse-primary {
-    animation: pulse 1.5s infinite;
-  }
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
-    }
-    70% {
-      box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-    }
-  }
-  
-    
+}
+
   </style>
 </head>
 
