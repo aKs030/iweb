@@ -332,16 +332,26 @@ button:focus-visible {
   /* Navigation links anbringen, feste Breite von z.B. 120px */
   .section-nav {
     top: 50%;
-    left: 0; 
+    left: 10px; 
     width: 120px; 
     transform: translateY(-50%);
   }
 
   /* Inhalt bekommt links etwas Platz (z.B. 130px) */
   .content-container {
-    margin-left: 130px;
+    margin-left: 10px;
   }
 }
+.section-text {
+  font-size: clamp(0.8rem, 0.8vw, 0.8rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
+  line-height: 1.4; /* Etwas kompakterer Zeilenabstand */
+  text-align: justify; /* Einheitliche Textausrichtung */
+  margin-left: clamp(0.8rem, 8vw, 6rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
+  color: #555; /* Dezente Farbe für besseren Kontrast */
+}
+
+
+
 
 /* ===========================
    Mobile Layout
@@ -352,7 +362,13 @@ button:focus-visible {
   body {
     font-size: 16px;
   }
-
+  .section-text {
+    font-size: clamp(0.8rem, 0.8vw, 0.8rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
+    line-height: 1.4; /* Etwas kompakterer Zeilenabstand */
+  text-align: justify; /* Einheitliche Textausrichtung */
+  margin-left: clamp(0.8rem, 8vw, 6rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
+  color: #555; /* Dezente Farbe für besseren Kontrast */
+}
   .snap-ubermichbox {
     font-size: 14px;
     padding: 20px;
@@ -482,27 +498,55 @@ button:focus-visible {
       </nav>
       <br><br>  <br><br>
       <h2>Meine Hobbys</h2>
-      <p>In meiner Freizeit widme ich mich leidenschaftlich meinen Hobbys, die mir nicht nur Freude bereiten, sondern auch Ausgleich und Inspiration im Alltag bieten.</p>
-      <h1>Reisen</h1>
-      <p>Es gibt nichts Spannenderes, als neue Orte zu entdecken, verschiedene Kulturen kennenzulernen und unvergessliche Erinnerungen zu sammeln. Reisen eröffnet mir die Möglichkeit, meinen Horizont zu erweitern und die Vielfalt unserer Welt zu erleben.</p>
-      <h1>Musik und Technologie</h1>
-      <p>Musik begleitet mich durch jede Lebenslage – sie inspiriert, motiviert und entspannt. Genauso faszinieren mich spannende Technologien, die unser Leben prägen und neue Wege für Kreativität und Innovation eröffnen.</p>
-      <h1>Wandern und Natur erkunden</h1>
-      <p>Die Natur ist für mich ein Ort der Ruhe und Entschleunigung. Beim Wandern kann ich abschalten, die Schönheit unserer Umwelt genießen und neue Energie tanken.</p>
-      <h1>Fotografie</h1>
-      <p>Mit meiner Kamera halte ich gerne besondere Momente fest. Ob eindrucksvolle Landschaften, besondere Augenblicke auf Reisen oder alltägliche Details – Fotografie ist meine Art, die Welt aus meiner Perspektive zu zeigen.</p>
-      <h1>Fitness und Joggen</h1>
-      <p>Regelmäßige Bewegung gehört für mich einfach dazu. Beim Joggen und Fitness finde ich nicht nur körperliche Ausgeglichenheit, sondern auch mentalen Fokus.</p>
-      <h1>Bücher</h1>
-      <p>Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration. Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.</p>
-      <p>Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder neue Perspektiven zu gewinnen.</p>
+
+      <div class="section-text">
+        Überblick
+        Persönlich
+        Hobbys
+        Karriere
+        Kontakt
+        ÜBERBLICK
+        Willkommen auf meiner Seite!
+        
+        Überblick
+        Persönlich
+        Hobbys
+        Karriere
+        Kontakt
+        PERSÖNLICH
+        Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst! Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben.
+        
+        Überblick
+        Persönlich
+        Hobbys
+        Karriere
+        Kontakt
+        
+        
+        
+        
+        MEINE HOBBYS
+        In meiner Freizeit widme ich mich leidenschaftlich meinen Hobbys, die mir nicht nur Freude bereiten, sondern auch Ausgleich und Inspiration im Alltag bieten.
+        Reisen
+        Es gibt nichts Spannenderes, als neue Orte zu entdecken, verschiedene Kulturen kennenzulernen und unvergessliche Erinnerungen zu sammeln. Reisen eröffnet mir die Möglichkeit, meinen Horizont zu erweitern und die Vielfalt unserer Welt zu erleben.
+        Musik und Technologie
+        Musik begleitet mich durch jede Lebenslage – sie inspiriert, motiviert und entspannt. Genauso faszinieren mich spannende Technologien, die unser Leben prägen und neue Wege für Kreativität und Innovation eröffnen.
+        Wandern und Natur erkunden
+        Die Natur ist für mich ein Ort der Ruhe und Entschleunigung. Beim Wandern kann ich abschalten, die Schönheit unserer Umwelt genießen und neue Energie tanken.
+        Fotografie
+        Mit meiner Kamera halte ich gerne besondere Momente fest. Ob eindrucksvolle Landschaften, besondere Augenblicke auf Reisen oder alltägliche Details – Fotografie ist meine Art, die Welt aus meiner Perspektive zu zeigen.
+        Fitness und Joggen
+        Regelmäßige Bewegung gehört für mich einfach dazu. Beim Joggen und Fitness finde ich nicht nur körperliche Ausgeglichenheit, sondern auch mentalen Fokus.
+        Bücher
+        Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration. Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.
+        Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder neue Perspektiven zu gewinnen.
+
+      </div>
       <br><br>  <br><br>
       <!-- Button, der initial ausgeblendet ist -->
-      <div class="button-container" id="scrollButton">
         <button class="button-runter klein pulse-primary" onclick="document.getElementById('section4').scrollIntoView({behavior: 'smooth'});">
           <img data-src="img/down.png" alt="Weiter" class="lazyload">
         </button>
-  </div>
 </section>
 <!-- Banner -->
 <div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
