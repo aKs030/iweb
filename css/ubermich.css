@@ -90,7 +90,7 @@ body {
 =========================== */
 .button-runter {
     position: fixed;
-    bottom: calc(5vh + 20px); /* Dynamisch mit 5% der Viewport-Höhe + etwas Abstand */
+    bottom: 13%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
