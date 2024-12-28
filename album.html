@@ -1,137 +1,181 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="de">
 <head>
-  <title>Project Title</title>
-  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="js/menu.js"></script>
-  <script src="js/footer.js"></script>
-  <meta name="description" content="">
-  <link rel="stylesheet"  href="../src/css/lightslider.css"/>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script src="../src/js/lightslider.js"></script> 
-  <script>
-       $(document).ready(function() {
-          $("#content-slider").lightSlider({
-              loop:true,
-              keyPress:true
-          });
-          $('#image-gallery').lightSlider({
-              gallery:true,
-              item:1,
-              thumbItem:9,
-              slideMargin: 0,
-              speed:1900,
-              auto:true,
-              loop:true,
-              onSliderLoad: function() {
-                  $('#image-gallery').removeClass('cS-hidden');
-              }  
-          });
-      });
-  </script>
-  
-  <style>
-    .menu-index {
-      color: rgb(255, 255, 255) !important;
-      opacity: 1 !important;
-      font-weight: 700 !important;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Galerie</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
 
-    ul{
-			list-style: none outside none;
-		    padding-left: 0;
-            margin: 0;
-		}
-        .demo .item{
-            margin-bottom: 60px;
-        }
-		.content-slider li{
-		    background-color: #ed3020;
-		    text-align: center;
-		    color: #FFF;
-		}
-		.content-slider h3 {
-		    margin: 0;
-		    padding: 70px 0;
-		}
-		.demo{
-			width: 370px;
-      
-		}
+      /* Global Styles */
+body {
+    font-family: "Arial", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    text-align: center;
+}
 
- 
-  </style>
+header {
+    padding: 20px;
+    background: linear-gradient(135deg, #5451e0, #0d17cb);
+    color: white;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+/* Hauptbild-Galerie */
+.main-gallery-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    margin: 20px auto;
+    padding: 10px;
+    max-width: 90%;
+    border-radius: 10px;
+    scroll-behavior: smooth;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-gallery {
+    display: flex;
+    gap: 20px;
+}
+
+.main-gallery img {
+    width: 90%;
+    max-width: 600px;
+    height: auto;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.main-gallery img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Vorschau-Bilder */
+.thumbnail-gallery {
+    margin: 20px auto;
+    max-width: 90%;
+}
+
+.thumbnails {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.thumbnails img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.thumbnails img:hover {
+    transform: scale(1.2);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* Lightbox */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.lightbox img {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.lightbox .close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+    </style>
 </head>
-
 <body>
-  <div class="menu-container"></div>
-  <div class="banner" style="background: url('img/dummy-background.gif') no-repeat center; background-size: cover; height: 100px;"></div>
-<div class="banner"><div class="banner-table flex-column"><div class="flex-row"><div class="flex-item flex-column"></div></div></div></div>
-  <div class="content">
-    <div class="content-table flex-column"> <!--TEXT-Center-->
-      
-      <!-------------------------------------------------------------------------------------------->
-     <div class="flex-row">
-      <div class="flex-item flex-item-stretch flex-column">
-        <br>
-        <h2 style="color: #005cbf;">Fotogalerie</h2>
-        <hr>
-        <div class="demo">
-          <div class="item" >            
-              <div class="clearfix" style="max-width:370px;">
-                <ul id="image-gallery" class="gallery list-unstyled cS-hidden">
-                      <li data-thumb="img/thumb/cS-1.jpg"> 
-                          <img src="img/cS-1.jpg" />
-                           </li>
-                      <li data-thumb="img/thumb/cS-2.jpg"> 
-                          <img src="img/cS-2.jpg" />
-                           </li>
-                      <li data-thumb="img/thumb/cS-3.jpg"> 
-                          <img src="img/cS-3.jpg" />
-                           </li>
-                      <li data-thumb="img/thumb/cS-4.jpg"> 
-                          <img src="img/cS-4.jpg" />
-                           </li>
-                      <li data-thumb="img/thumb/cS-5.jpg"> 
-                          <img src="img/cS-5.jpg" />
-                           </li>
-                      <li data-thumb="img/thumb/cS-6.jpg"> 
-                        <img src="img/cS-6.jpg" />
-                           </li>
-                      </ul>    
-                 </div>  
-             </div>
-        </div> <!--END GALLERY-->
-      </div>
+    <header>
+        <h1>Meine Reise-Galerie</h1>
+        <p>Entdecke meine schönsten Momente rund um die Welt. Lass dich inspirieren!</p>
+    </header>
 
-
-      <div class="flex-item flex-item-stretch-2 flex-column">
-        <p class="text">
-          Reisen ist eine meiner großen Leidenschaften.<br>
-          Ich liebe es, neue Orte zu entdecken, verschiedene Kulturen kennenzulernen und unvergessliche Erinnerungen zu sammeln.<br> 
-          <p>Auf meiner Homepage findest du Reiseberichte, Tipps und Fotos von meinen Abenteuern rund um die Welt.
-          Lass dich inspirieren und vielleicht entdeckst du sogar deinen nächsten Reiseziel auf meiner Seite.</p>
-        </p>
-      </div>
-
-      </div>
-
-      
+    <!-- Hauptbild Galerie -->
+    <div class="main-gallery-container">
+        <div class="main-gallery">
+            <img src="img/cS-1.jpg" alt="Bild 1" onclick="openLightbox(0)">
+            <img src="img/cS-2.jpg" alt="Bild 2" onclick="openLightbox(1)">
+            <img src="img/cS-3.jpg" alt="Bild 3" onclick="openLightbox(2)">
+            <img src="img/cS-4.jpg" alt="Bild 4" onclick="openLightbox(3)">
+            <img src="img/cS-5.jpg" alt="Bild 5" onclick="openLightbox(4)">
+        </div>
     </div>
-  </div>
-  
-  <!----------------------------------------------------------------->
-<!--------------------ENDE-Kontakt--------------------------------------------->
-<div class="footer-container"></div>
-<div class="banner" style="background: url('img/dummy-background.gif') no-repeat center; background-size: cover; height: 100px;"></div>
+
+    <!-- Vorschau-Bilder -->
+    <div class="thumbnail-gallery">
+        <div class="thumbnails">
+            <img src="img/cS-1.jpg" alt="Vorschau 1" onclick="scrollToImage(0)">
+            <img src="img/cS-2.jpg" alt="Vorschau 2" onclick="scrollToImage(1)">
+            <img src="img/cS-3.jpg" alt="Vorschau 3" onclick="scrollToImage(2)">
+            <img src="img/cS-4.jpg" alt="Vorschau 4" onclick="scrollToImage(3)">
+            <img src="img/cS-5.jpg" alt="Vorschau 5" onclick="scrollToImage(4)">
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="close">&times;</span>
+        <img id="lightbox-image" src="">
+    </div>
+
+    <script>
+const images = document.querySelectorAll('.main-gallery img');
+const lightbox = document.getElementById('lightbox');
+const lightboxImage = document.getElementById('lightbox-image');
+
+// Öffnet die Lightbox
+function openLightbox(index) {
+    lightboxImage.src = images[index].src;
+    lightbox.style.display = 'flex';
+}
+
+// Schließt die Lightbox
+function closeLightbox() {
+    lightbox.style.display = 'none';
+}
+
+// Scrollt zu einem Bild
+function scrollToImage(index) {
+    const gallery = document.querySelector('.main-gallery');
+    const targetImage = images[index];
+    targetImage.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+}
+
+    </script>
 </body>
 </html>
