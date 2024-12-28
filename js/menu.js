@@ -1,23 +1,34 @@
 /*************************************************************************
  * MENU *
  *************************************************************************/
-(function () {
-  "use strict";
-  
-  $(function () {
-    $(".menu-container").load("menu.html");
-  });
-})();
+document.addEventListener("DOMContentLoaded", () => {
+  // Laden der Menüstruktur aus menu.html
+  fetch("menu.html")
+    .then(response => response.text())
+    .then(data => {
+      document.querySelector(".menu-container").innerHTML = data;
+    })
+    .catch(err => console.error("Menu loading failed:", err));
 
-/* menu button click */
-var menu = $('#menu'), but = $('#menu_button');
-$(document).on('click', '*', function(evt) {
-    evt.stopPropagation();
-    if ($(this).is(but))
-        menu.toggle();
-    else if (!$(this).closest(menu).length)
-        menu.hide();
+  // Menübutton für Mobilgeräte
+  const menuButton = document.querySelector(".menu-button");
+  const menuItems = document.querySelector(".menu-items");
+
+  // Klick-Event für den Menübutton
+  menuButton?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    menuItems?.classList.toggle("show");
+  });
+
+  // Schließen des Menüs beim Klick außerhalb
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".menu")) {
+      menuItems?.classList.remove("show");
+    }
+  });
 });
+
+
 /*************************************************************************
  * BACK TO TOP BUTTON *
  *************************************************************************/
