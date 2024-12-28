@@ -1,591 +1,539 @@
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Über mich</title>
-  
-  <!-- CSS -->
-  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css"/>
-  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css"/>
-  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css"/>
-  <link href="css/style.css" media="screen" rel="stylesheet" type="text/css"/>
-  <link href="css/ubermich.css" media="screen" rel="stylesheet" type="text/css"/>
-
-    <link rel="stylesheet" href="f.css">
-  <!-- JS -->
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="js/menu.js"></script>
-  <script src="js/footer.js"></script>
-  <script src="f.js"></script>
-
-  
-  <script>
-
-// Scrollt zur angegebenen Sektion
-function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-}
-
-// Aktualisiert den aria-current Status für Navigationsbuttons
-function updateAriaCurrent(id) {
-  document.querySelectorAll('.section-nav button').forEach((btn) => {
-    btn.setAttribute('aria-current', btn.getAttribute('data-target') === `#${id}` ? 'true' : 'false');
-  });
-}
-
-// DOMContentLoaded: Hauptlogik
-document.addEventListener('DOMContentLoaded', () => {
-  const sections = document.querySelectorAll('.snap-ubermichbox');
-  const navButtons = document.querySelectorAll('.section-nav button');
-
-  // IntersectionObserver für sichtbare Sektionen
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        navButtons.forEach((button) => button.classList.remove('active'));
-        const activeButton = document.querySelector(`.section-nav button[data-target="#${entry.target.id}"]`);
-        if (activeButton) activeButton.classList.add('active');
-        updateAriaCurrent(entry.target.id);
-        entry.target.classList.add('is-visible');
-      } else {
-        entry.target.classList.remove('is-visible');
-      }
-    });
-  }, { threshold: 0.5 });
-
-  sections.forEach((section) => observer.observe(section));
-
-  // LazyLoad für Bilder
-  const lazyImages = document.querySelectorAll('.lazyload');
-  const imageObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        img.src = img.dataset.src;
-        img.classList.remove('lazyload');
-        imageObserver.unobserve(img);
-      }
-    });
-  });
-
-  lazyImages.forEach((img) => imageObserver.observe(img));
-
-});
-
-// Navigation: Aktiver Link
-document.addEventListener('DOMContentLoaded', function () {
-  const sections = document.querySelectorAll('.snap-ubermichbox');
-  const navLinks = document.querySelectorAll('.section-nav button');
-
-  function setActiveLink(sectionId) {
-    navLinks.forEach((link) => {
-      link.classList.remove('blink');
-      if (link.getAttribute('data-target') === `#${sectionId}`) {
-        link.classList.add('blink');
-      }
-    });
-  }
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.getAttribute('id');
-          setActiveLink(sectionId);
-        }
-      });
-    },
-    { threshold: 0.6 }
-  );
-
-  sections.forEach((section) => observer.observe(section));
-});
-
-// Überprüfung der Scroll-Position
-document.addEventListener('DOMContentLoaded', () => {
-  const contentContainer = document.querySelector('.content-container');
-  const button = document.querySelector('.button-runter');
-
-  const checkScrollPosition = () => {
-    const scrollTop = contentContainer.scrollTop;
-    const clientHeight = contentContainer.clientHeight;
-    const scrollHeight = contentContainer.scrollHeight;
-
-    const isScrolledToEnd = scrollTop + clientHeight >= scrollHeight - 10;
-    if (isScrolledToEnd) {
-      button.classList.add('visible');
-    } else {
-      button.classList.remove('visible');
-    }
-  };
-
-  if (contentContainer && button) {
-    contentContainer.addEventListener('scroll', checkScrollPosition);
-    checkScrollPosition();
-  } else {
-    console.error('contentContainer oder Button nicht gefunden.');
-  }
-});
-
-
-
-
-
-
-// Scroll zu einer bestimmten Sektion
-function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-}
-
-// Highlight aktiver Button basierend auf sichtbarer Sektion
-document.addEventListener('DOMContentLoaded', () => {
-  const sections = document.querySelectorAll('.snap-ubermichbox');
-  const navButtons = document.querySelectorAll('.section-nav button');
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const targetId = entry.target.id;
-        navButtons.forEach((button) => {
-          button.classList.toggle('active', button.getAttribute('data-target') === `#${targetId}`);
-        });
-      }
-    });
-  }, { threshold: 0.5 });
-
-  sections.forEach((section) => observer.observe(section));
-});
-
-    </script>
-
-  <style>
+  <!doctype html>
+  <html lang="de">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Über mich</title>
     
-    /* ===========================
+    <!-- CSS -->
+    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css"/>
+    <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css"/>
+    <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css"/>
+    <link href="css/style.css" media="screen" rel="stylesheet" type="text/css"/>
+    <link href="css/ubermich.css" media="screen" rel="stylesheet" type="text/css"/>
+
+      <link rel="stylesheet" href="f.css">
+    <!-- JS -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/footer.js"></script>
+    <script src="f.js"></script>
+
+    
+    <script>
+    // Aktualisiert den aria-current Status für Navigationsbuttons
+      function updateAriaCurrent(id) {
+          document.querySelectorAll('.section-nav button').forEach((btn) => {
+              btn.setAttribute('aria-current', btn.getAttribute('data-target') === `#${id}` ? 'true' : 'false');
+          });
+      }
+      
+      // DOMContentLoaded: Hauptlogik
+      document.addEventListener('DOMContentLoaded', () => {
+          const sections = document.querySelectorAll('.snap-ubermichbox');
+          const navButtons = document.querySelectorAll('.section-nav button');
+      
+          // IntersectionObserver für sichtbare Sektionen
+          const observer = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                      navButtons.forEach((button) => button.classList.remove('active'));
+                      const activeButton = document.querySelector(`.section-nav button[data-target="#${entry.target.id}"]`);
+                      if (activeButton) activeButton.classList.add('active');
+                      updateAriaCurrent(entry.target.id);
+                      entry.target.classList.add('is-visible');
+                  } else {
+                      entry.target.classList.remove('is-visible');
+                  }
+              });
+          }, { threshold: 0.5 });
+      
+          sections.forEach((section) => observer.observe(section));
+      
+          // LazyLoad für Bilder
+          const lazyImages = document.querySelectorAll('.lazyload');
+          const imageObserver = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                      const img = entry.target;
+                      img.src = img.dataset.src;
+                      img.classList.remove('lazyload');
+                      imageObserver.unobserve(img);
+                  }
+              });
+          });
+      
+          lazyImages.forEach((img) => imageObserver.observe(img));
+      });
+      
+      // Navigation: Aktiver Link
+      document.addEventListener('DOMContentLoaded', () => {
+          const sections = document.querySelectorAll('.snap-ubermichbox');
+          const navLinks = document.querySelectorAll('.section-nav button');
+      
+          function setActiveLink(sectionId) {
+              navLinks.forEach((link) => {
+                  link.classList.remove('blink');
+                  if (link.getAttribute('data-target') === `#${sectionId}`) {
+                      link.classList.add('blink');
+                  }
+              });
+          }
+      
+          const observer = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                      const sectionId = entry.target.getAttribute('id');
+                      setActiveLink(sectionId);
+                  }
+              });
+          }, { threshold: 0.6 });
+      
+          sections.forEach((section) => observer.observe(section));
+      });
+      
+      // Überprüfung der Scroll-Position
+      document.addEventListener('DOMContentLoaded', () => {
+          const contentContainer = document.querySelector('.content-container');
+          const button = document.querySelector('.button-runter');
+      
+          const checkScrollPosition = () => {
+              const scrollTop = contentContainer.scrollTop;
+              const clientHeight = contentContainer.clientHeight;
+              const scrollHeight = contentContainer.scrollHeight;
+      
+              const isScrolledToEnd = scrollTop + clientHeight >= scrollHeight - 10;
+              if (isScrolledToEnd) {
+                  button.classList.add('visible');
+              } else {
+                  button.classList.remove('visible');
+              }
+          };
+      
+          if (contentContainer && button) {
+              contentContainer.addEventListener('scroll', checkScrollPosition);
+              checkScrollPosition();
+          } else {
+              console.error('contentContainer oder Button nicht gefunden.');
+          }
+      });
+      
+      // Scroll zu einer bestimmten Sektion
+      function scrollToSection(id) {
+          document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+      }
+      
+      // Highlight aktiver Button basierend auf sichtbarer Sektion
+      document.addEventListener('DOMContentLoaded', () => {
+          const sections = document.querySelectorAll('.snap-ubermichbox');
+          const navButtons = document.querySelectorAll('.section-nav button');
+      
+          const observer = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                      const targetId = entry.target.id;
+                      navButtons.forEach((button) => {
+                          button.classList.toggle('active', button.getAttribute('data-target') === `#${targetId}`);
+                      });
+                  }
+              });
+          }, { threshold: 0.5 });
+      
+          sections.forEach((section) => observer.observe(section));
+      });
+      
+      // Funktion, um einen bestimmten TEXT aus der Datei zu laden
+      function loadSection(filePath, sectionName) {
+          return fetch(filePath)
+              .then(response => {
+                  if (!response.ok) throw new Error(`Fehler: ${response.statusText}`);
+                  return response.text();
+              })
+              .then(data => {
+                  const regex = new RegExp(`<!-- SECTION:${sectionName} -->([\\s\\S]*?)(?=<!-- SECTION:|$)`, 'g');
+                  const match = regex.exec(data);
+                  return match ? match[1].trim() : 'Abschnitt nicht gefunden.';
+              })
+              .catch(error => {
+                  console.error(`Fehler beim Laden des Abschnitts ${sectionName}:`, error);
+                  return 'Fehler beim Laden des Abschnitts.';
+              });
+      }
+      
+      // Liste von Containern und den zu ladenden Abschnitten
+      const sectionsToLoad = [
+          { containerId: 'section-ubersicht', section: 'UBERSICHT' },
+          { containerId: 'section-person', section: 'PERSON' },
+          { containerId: 'section-hobbys', section: 'HOBBYS' },
+          { containerId: 'section-karriere', section: 'KARRIERE' },
+          { containerId: 'section-kontakt', section: 'KONTAKT' },
+      ];
+      
+      // Inhalte in die jeweiligen Container laden
+      sectionsToLoad.forEach(({ containerId, section }) => {
+          loadSection('content.txt', section).then(content => {
+              const container = document.getElementById(containerId);
+              if (container) {
+                  container.innerHTML = content;
+              }
+          });
+      });</script>
+
+    <style>
+      /* ===========================
    Basis- und Reset-Stile
-   =========================== */
+=========================== */
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html {
-  scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
-  overscroll-behavior-y: contain; /* Verhindert zusätzliches Scrollen */
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    overscroll-behavior-y: contain; /* Verhindert zusätzliches Scrollen */
 }
 
 body {
-  height: 100vh;
-  overflow: hidden;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* ===========================
    Container / Sektionen
-   =========================== */
+=========================== */
 .content-container {
-  display: flex;
-  flex-direction: column;
-  scroll-snap-type: y mandatory; 
-  overflow-y: auto;     
-  height: 100vh;
-  /* Oben etwas Platz (optional) */
-  padding-top: 20px; 
+    display: flex;
+    flex-direction: column;
+    scroll-snap-type: y mandatory;
+    overflow-y: auto;
+    height: 100vh;
+    padding-top: 20px; /* Optional: Abstand oben */
 }
 
-/* Jede Section (Snap-Punkt) */
 .snap-ubermichbox {
-min-height: 100vh; /* Stellt sicher, dass jede Sektion die volle Höhe einnimmt */
-  height: 100vh; /* Optional, um die volle Höhe zu garantieren */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  scroll-snap-align: center; /*start; */
-  padding: 0;
-  opacity: 0; 
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+    min-height: 100vh; /* Sicherstellung der vollen Höhe */
+    height: 100vh; /* Optional */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    scroll-snap-align: center;
+    padding: 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-/* Sichtbar, sobald per IntersectionObserver im Viewport */
 .snap-ubermichbox.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* ===========================
    Navigation (Desktop & Mobile)
-   =========================== */
+=========================== */
 .section-nav {
-  position: fixed;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-/* Navigation-Buttons */
 .section-nav button {
-  font-size: 14px;
-  color: #4a4a4a;
-  background: #fff;
-  border: 2px solid #007BFF;
-  border-radius: 20px;
-  padding: 10px 15px;
-  transition: all 0.3s ease;
-  cursor: pointer;
+    font-size: 14px;
+    color: #4a4a4a;
+    background: #fff;
+    border: 2px solid #007BFF;
+    border-radius: 20px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .section-nav button:hover {
-  color: #fff;
-  background-color: #0056b3;
+    color: #fff;
+    background-color: #0056b3;
 }
 
 .section-nav button.active {
-  color: #fff;
-  background-color: #007BFF;
-  transform: scale(1.1);
+    color: #fff;
+    background-color: #007BFF;
+    transform: scale(1.1);
 }
 
 /* ===========================
    Button "runter"
-   =========================== */
+=========================== */
 .button-runter {
-  position: fixed;
-  bottom: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 16px;
-  line-height: 16px;
-  border-radius: 48px;
-  border: 1px solid #777777;
-  background-color: #fff;
-  color: #000;
-  padding: 13px;
-
-  /* Erst unsichtbar, bis wir .visible hinzufügen */
-  opacity: 1;
-  transition: background-color 0.1s, box-shadow 0.1s, border 0.1s, opacity 0.3s;
+    position: fixed;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    border-radius: 48px;
+    border: 1px solid #777;
+    background-color: #fff;
+    color: #000;
+    padding: 13px;
+    opacity: 1;
+    transition: background-color 0.1s, box-shadow 0.1s, border 0.1s, opacity 0.3s;
 }
 
 .button-runter.visible {
-  opacity: 1;
-  pointer-events: auto;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .button-runter.klein {
-  font-size: 14px;
-  padding: 12px;
-  border-radius: 42px;
+    font-size: 14px;
+    padding: 12px;
+    border-radius: 42px;
 }
 
 .button-runter img {
-  width: 16px;
-  height: 16px;
+    width: 16px;
+    height: 16px;
 }
 
 .button-runter.klein img {
-  width: 14px;
-  height: 14px;
+    width: 14px;
+    height: 14px;
 }
 
 /* ===========================
    Barrierefreiheit
-   =========================== */
+=========================== */
 button:focus,
 button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 5px 2px #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px 2px #007BFF;
 }
 
 /* ===========================
-   Banner (Beispiel)
-   =========================== */
+   Banner
+=========================== */
 .banner-gif-150 {
-  background: url('../img/dummy-background.gif') no-repeat center;
-  background-size: cover;
-  height: 100px;
+    background: url('../img/dummy-background.gif') no-repeat center;
+    background-size: cover;
+    height: 100px;
 }
 
 .banner-gif-150 img {
-  width: auto;
-  height: 0;
-  object-fit: cover;
+    width: auto;
+    height: 0;
+    object-fit: cover;
 }
 
 /* ===========================
    Desktop Layout
-   =========================== */
-/* Ab ~769px wird die Navigation links fixiert 
-   und der Inhalt kriegt links Platz, damit sich nichts überlappt */
+=========================== */
 @media (min-width: 769px) {
-  /* Navigation links anbringen, feste Breite von z.B. 120px */
-  .section-nav {
-    top: 50%;
-    left: 10px;
-    width: 120px; 
-    transform: translateY(-50%);
-  }
+    .section-nav {
+        top: 50%;
+        left: 10px;
+        width: 120px;
+        transform: translateY(-50%);
+    }
 
-  /* Inhalt bekommt links etwas Platz (z.B. 130px) */
-  .content-container {
-    margin-left: 10px;
-  }
+    .content-container {
+        margin-left: 10px;
+    }
+
+    .section-text {
+        font-size: clamp(0.8rem, 0.8vw, 0.8rem);
+        line-height: 1.4;
+        text-align: justify;
+        color: #555;
+        margin-left: 20%;
+        margin-right: 20%;
+    }
 }
-.section-text {
-  font-size: clamp(0.8rem, 0.8vw, 0.8rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
-  line-height: 1.4; /* Etwas kompakterer Zeilenabstand */
-  text-align: justify; /* Einheitliche Textausrichtung */
- /* margin-left: 20%;    /*clamp(0.8rem, 8vw, 6rem); Kleinere Schriftgröße mit responsiver Anpassung */
-  color: #555; /* Dezente Farbe für besseren Kontrast */
-  
-margin-left: 20%;
-margin-right: 20%;
-
-
-}
-
-
-
 
 /* ===========================
    Mobile Layout
-   =========================== */
-/* Bis max. 768px: Navigation unten, horizontal */
+=========================== */
 @media (max-width: 768px) {
-  /* Auf Smartphones: Schrift größer, leichter lesbar */
-  body {
-    font-size: 16px;
-  }
-  .section-text {
-    font-size: clamp(0.8rem, 0.8vw, 0.8rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
-    line-height: 1.4; /* Etwas kompakterer Zeilenabstand */
-  text-align: justify; /* Einheitliche Textausrichtung */
-  /*margin-left: 0; /*clamp(0.8rem, 8vw, 6rem); Kleinere Schriftgröße mit responsiver Anpassung */
-  color: #555; /* Dezente Farbe für besseren Kontrast */
+    body {
+        font-size: 16px;
+    }
 
-margin-left: auto;
-margin-right: auto;
-width: 95%; /* Notwendig, damit das Element zentriert wird */
-  
-  }
-  .snap-ubermichbox {
-    font-size: 14px;
-    padding: 20px;
-  }
+    .section-text {
+        font-size: clamp(0.7rem, 0.7vw, 0.7rem);
+        line-height: 1.1;
+        text-align: justify;
+        color: #555;
+        margin-left: auto;
+        margin-right: auto;
+        width: 95%;
+    }
 
-  /* Navigation unten zentriert */
-  .section-nav {
-    top: 90px; 
-  
-    left: 50%;
-    transform: translateX(-50%);
-    flex-direction: row;
-    width: auto;
-    gap: 10px;
-  }
+    .snap-ubermichbox {
+        font-size: 14px;
+        padding: 20px;
+    }
 
-  .section-nav button {
-    font-size: 12px;
-    padding: 8px 10px;
-    border-radius: 15px;
-  }
+    .section-nav {
+        top: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        flex-direction: row;
+        gap: 10px;
+    }
 
-  /* Button "runter" kleiner */
-  .button-runter {
-    font-size: 14px;
-    padding: 10px;
-    border-radius: 36px;
-    max-width: 90%;
-  }
+    .section-nav button {
+        font-size: 12px;
+        padding: 8px 10px;
+        border-radius: 15px;
+    }
 
-  .button-runter.klein {
-    font-size: 12px;
-    padding: 8px;
-    border-radius: 30px;
-  }
+    .button-runter {
+        font-size: 14px;
+        padding: 10px;
+        border-radius: 36px;
+    }
 
-  .button-runter img {
-    width: 14px;
-    height: 14px;
-  }
+    .button-runter img {
+        width: 14px;
+        height: 14px;
+    }
 
-  .button-runter.klein img {
-    width: 12px;
-    height: 12px;
-  }
+    .button-runter.klein img {
+        width: 12px;
+        height: 12px;
+    }
 }
 
 /* ===========================
-   Animationen (Beispiel)
-   =========================== */
+   Animationen
+=========================== */
 .pulse-primary {
-  animation: pulse 1.5s infinite;
+    animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-  }
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
 }
+    </style>
+  </head>
 
-  </style>
-</head>
+  <body>
 
-<body>
-  <div class="menu-container"></div>
-  <div class="content-container">
-<!-- Banner -->
-<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
-<!-- Banner -->
+    <div class="menu-container"></div>
+<div class="content-container">
 
-
- <!-- Snap 1 -->
- <section class="snap-ubermichbox" id="section1">
-  <nav class="section-nav">
-    <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
-    <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
-    <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
-    <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
-    <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
-  </nav>
-  <h2>Überblick</h2>
-  <p>Willkommen auf meiner Seite!</p>
-  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section2').scrollIntoView({behavior: 'smooth'});">
-     <img data-src="img/down.png" alt="Weiter" class="lazyload">
-  </button>
-</section>
-
-<!-- Banner -->
-<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
-<!-- Banner -->
-
-    <!-- Snap 2 -->
-    <section class="snap-ubermichbox" id="section2">
-      <nav class="section-nav">
-        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
-        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
-        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
-        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
-        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
-      </nav>
-  <h2>Persönlich</h2>
-  <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst! 
-    Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben, 
-    meine Interessen und meine berufliche Laufbahn geben.</p>
-  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section3').scrollIntoView({behavior: 'smooth'});">
-    <img data-src="img/down.png" alt="Weiter" class="lazyload">
-  </button>
-</section>
-<!-- Banner -->
-<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
-<!-- Banner -->
-
-    <!-- Snap 3 -->
-    <section class="snap-ubermichbox" id="section3">
-      <nav class="section-nav">
-        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
-        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
-        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
-        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
-        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
-      </nav>
-      <br><br>  <br><br>
-      <h2>Meine Hobbys</h2>
-
-
-      <div class="flex-item flex-item-stretch-2 flex-column">
-        <div class="section-text">
-         <p>In meiner Freizeit widme ich mich leidenschaftlich meinen Hobbys, die mir nicht nur Freude bereiten, sondern auch Ausgleich und Inspiration im Alltag bieten.</p>
-<h1 style="text-align: left;">Reisen</h1>
-        <p>Es gibt nichts Spannenderes, als neue Orte zu entdecken, verschiedene Kulturen kennenzulernen und unvergessliche Erinnerungen zu sammeln. Reisen eröffnet mir die Möglichkeit, meinen Horizont zu erweitern und die Vielfalt unserer Welt zu erleben.</p>
-              <h1 style="text-align: left;">Musik und Technologie</h1>
-        <p>Musik begleitet mich durch jede Lebenslage – sie inspiriert, motiviert und entspannt. Genauso faszinieren mich spannende Technologien, die unser Leben prägen und neue Wege für Kreativität und Innovation eröffnen.</p>
-        <p>Wandern und Natur erkunden
-        Die Natur ist für mich ein Ort der Ruhe und Entschleunigung. Beim Wandern kann ich abschalten, die Schönheit unserer Umwelt genießen und neue Energie tanken.
-        <h1 style="text-align: left;">Fotografie</h1>
-        <p>Mit meiner Kamera halte ich gerne besondere Momente fest. Ob eindrucksvolle Landschaften, besondere Augenblicke auf Reisen oder alltägliche Details – Fotografie ist meine Art, die Welt aus meiner Perspektive zu zeigen.</p>
-                <h1 style="text-align: left;">Fitness und Joggen</h1>
-        <p>Regelmäßige Bewegung gehört für mich einfach dazu. Beim Joggen und Fitness finde ich nicht nur körperliche Ausgeglichenheit, sondern auch mentalen Fokus.
-                <h3 style="text-align: left;">Bücher</h3>
-        Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration. Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.
-        Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder neue Perspektiven zu gewinnen.</p>
-        </div>
-      </div>
-      <br><br>  <br><br>
-      <!-- Button, der initial ausgeblendet ist -->
-        <button class="button-runter klein pulse-primary" onclick="document.getElementById('section4').scrollIntoView({behavior: 'smooth'});">
-          <img data-src="img/down.png" alt="Weiter" class="lazyload">
-        </button>
-</section>
-<!-- Banner -->
-<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
-<!-- Banner -->
-
-    <!-- Snap 4 -->
-    <section class="snap-ubermichbox" id="section4">
-      <nav class="section-nav">
-        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
-        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
-        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
-        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
-        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
-      </nav>
-      <h2>Karriere</h2>
-      <p>Hier ist ein Überblick über meine beruflichen Stationen.</p>
-  <button class="button-runter klein pulse-primary" onclick="document.getElementById('section5').scrollIntoView({behavior: 'smooth'});">
-    <img data-src="img/down.png" alt="Weiter" class="lazyload">
-  </button>
-</section>
-<!-- Banner -->
-<div class="banner-gif-150"><img data-src="../img/dummy-bdackground.gif"></div>
-<!-- Banner -->
-    <!-- Snap 5 -->
-    <section class="snap-ubermichbox" id="section5">
-      <nav class="section-nav">
-        <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
-        <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
-        <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
-        <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
-        <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
-      </nav>
-      <h2>Kontakt</h2>
-      <p>Vielen Dank für Ihren Besuch! Kontaktieren Sie mich gerne für weitere Informationen.</p>
-      <div class="banner-table flex-column">
-        <div class="flex-row">
-              <div class="flex-item flex-item-stretch flex-column">
-                <p class="highlight-text">      
-    © 2023 [Abdulkerim]. <span class="text text-small text-italic add-top-margin-large">Alle Rechte vorbehalten.</span>
-                <br/>
-     <button onclick="alert('Angaben gemäß § 5 TMG:\nAbdulkerim Sesli \nEmail:mail@abdulkerimsesli.com \nHaftungshinweis: \nDie Inhalte dieser Webseite wurden sorgfältig geprüft und nach bestem Wissen erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Jegliche Haftung für Schäden, die direkt oder indirekt aus der Nutzung dieser Webseite entstehen, wird ausgeschlossen.\nUrheberrecht:\nDie durch den Betreiber dieser Webseite erstellten Inhalte und Werke auf dieser Webseite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Webseite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.\nDatenschutz:\nDie Nutzung dieser Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf dieser Webseite personenbezogene Daten beispielsweise Name oder E-Mail-Adresse erhoben werden, erfolgt dies auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.')"style="color:#000000; text-decoration:none;">Impressum</button>
-     <button onclick="alert('1. Wenn Sie unsere Homepage besuchen, erheben wir automatisch Informationen über den von Ihnen genutzten Browser, das Betriebssystem Ihres Geräts, die IP-Adresse Ihres Geräts, den Namen Ihres Internet Service Providers und ähnliche technische Informationen. Diese Informationen werden ausschließlich zu statistischen Zwecken und zur Verbesserung unseres Angebots genutzt. \n2. Wenn Sie unser Kontaktformular nutzen, erheben wir die von Ihnen eingegebenen personenbezogenen Daten wie Name, E-Mail-Adresse, Telefonnummer und Ihre Nachricht. Diese Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage genutzt und nicht an Dritte weitergegeben.\n3. Eine Übermittlung Ihrer personenbezogenen Daten an Dritte erfolgt nur, wenn dies zur Abwicklung Ihrer Anfrage erforderlich ist oder wenn wir gesetzlich dazu verpflichtet sind.\n4. Wir setzen auf unserer Homepage Cookies ein, um unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen. Cookies sind kleine Textdateien, die auf Ihrem Rechner abgelegt werden und die Ihr Browser speichert. Die meisten der von uns verwendeten Cookies sind sogenannte Session-Cookies, die nach Ende Ihres Besuchs automatisch gelöscht werden.\n5. Sie haben das Recht, jederzeit Auskunft über die von uns gespeicherten personenbezogenen Daten zu verlangen. Zudem haben Sie das Recht auf Berichtigung unrichtiger Daten, Einschränkung der Verarbeitung sowie auf Löschung Ihrer Daten. Sie können jederzeit der Verarbeitung Ihrer Daten widersprechen und haben das Recht auf Datenübertragbarkeit.\n6. Wir behalten uns vor, diese Datenschutzerklärung jederzeit anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen in der Datenschutzerklärung umzusetzen. Für Ihren erneuten Besuch gilt dann die neue Datenschutzerklärung.\n7. Wenn Sie Fragen zum Datenschutz haben oder Ihre Rechte als betroffene Person wahrnehmen möchten, können Sie uns jederzeit per E-Mail kontaktieren.\nStand: Mai.2023')"style="color:#000000; text-decoration:none;">Datenschutzerklärung</button>
-     <button> 
-    <a href= "mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">kontakt</a>
-    </button>
-    </p>
-    </div>
-        </div>
-      </div>
-    </section>
+  <!-- Banner -->
+  <div class="banner-gif-150">
+    <img data-src="../img/dummy-background.gif" alt="Banner">
   </div>
-</body>
-</html>
+  <!-- Banner -->
+
+  <!-- Snap 1 -->
+  <section class="snap-ubermichbox" id="section1">
+    <nav class="section-nav">
+      <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+      <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+      <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+      <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+      <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+    </nav>
+    <div id="section-ubersicht" class="section">Lade Inhalte...</div>
+    <button class="button-runter klein pulse-primary" onclick="scrollToSection('section2');">
+      <img data-src="img/down.png" alt="Weiter" class="lazyload">
+    </button>
+  </section>
+
+  <!-- Snap 2 -->
+  <section class="snap-ubermichbox" id="section2">
+    <nav class="section-nav">
+      <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+      <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+      <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+      <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+      <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+    </nav>
+    <div id="section-person" class="section">Lade Inhalte...</div>
+    <button class="button-runter klein pulse-primary" onclick="scrollToSection('section3');">
+      <img data-src="img/down.png" alt="Weiter" class="lazyload">
+    </button>
+  </section>
+
+  <!-- Snap 3 -->
+  <section class="snap-ubermichbox" id="section3">
+    <nav class="section-nav">
+      <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+      <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+      <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+      <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+      <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+    </nav>
+    <div id="section-hobbys" class="section">Lade Inhalte...</div>
+    <button class="button-runter klein pulse-primary" onclick="scrollToSection('section4');">
+      <img data-src="img/down.png" alt="Weiter" class="lazyload">
+    </button>
+  </section>
+
+  <!-- Snap 4 -->
+  <section class="snap-ubermichbox" id="section4">
+    <nav class="section-nav">
+      <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+      <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+      <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+      <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+      <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+    </nav>
+    <div id="section-karriere" class="section">Lade Inhalte...</div>
+    <button class="button-runter klein pulse-primary" onclick="scrollToSection('section5');">
+      <img data-src="img/down.png" alt="Weiter" class="lazyload">
+    </button>
+  </section>
+
+  <!-- Snap 5 -->
+  <section class="snap-ubermichbox" id="section5">
+    <nav class="section-nav">
+      <button data-target="#section1" onclick="scrollToSection('section1');">Überblick</button>
+      <button data-target="#section2" onclick="scrollToSection('section2');">Persönlich</button>
+      <button data-target="#section3" onclick="scrollToSection('section3');">Hobbys</button>
+      <button data-target="#section4" onclick="scrollToSection('section4');">Karriere</button>
+      <button data-target="#section5" onclick="scrollToSection('section5');">Kontakt</button>
+    </nav>
+    <div id="section-kontakt" class="section">Lade Inhalte...</div>
+    <div class="banner-table flex-column">
+      <div class="flex-row">
+        <div class="flex-item flex-item-stretch flex-column">
+          <p class="highlight-text">
+            © 2023 [Abdulkerim]. 
+            <span class="text text-small text-italic add-top-margin-large">Alle Rechte vorbehalten.</span><br/>
+            <button onclick="alert('Angaben gemäß § 5 TMG: ...')">Impressum</button>
+            <button onclick="alert('Datenschutzerklärung: ...')">Datenschutzerklärung</button>
+            <a href="mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">Kontakt</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+  </body>
+  </html>
