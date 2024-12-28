@@ -175,13 +175,15 @@ document.addEventListener('DOMContentLoaded', () => {
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior-y: contain; /* Verhindert zusätzliches Scrollen */
+}
+
 body {
-  transition: background-color 0.3s, color 0.3s;
-  font-family: 'Open Sans', sans-serif;
-  background-color: #f8f9fa;
-  color: #000;
-  margin: 0;
-  padding: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ===========================
@@ -199,13 +201,14 @@ body {
 
 /* Jede Section (Snap-Punkt) */
 .snap-ubermichbox {
-  min-height: 100vh;
+min-height: 100vh; /* Stellt sicher, dass jede Sektion die volle Höhe einnimmt */
+  height: 100vh; /* Optional, um die volle Höhe zu garantieren */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  scroll-snap-align: start;
+  scroll-snap-align: center; /*start; */
   padding: 5%;
   opacity: 0; 
   transform: translateY(20px);
