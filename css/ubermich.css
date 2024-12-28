@@ -90,7 +90,7 @@ body {
 =========================== */
 .button-runter {
     position: fixed;
-    bottom: 13%;
+    bottom: 12%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
