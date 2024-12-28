@@ -349,8 +349,13 @@ button:focus-visible {
   font-size: clamp(0.8rem, 0.8vw, 0.8rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
   line-height: 1.4; /* Etwas kompakterer Zeilenabstand */
   text-align: justify; /* Einheitliche Textausrichtung */
-  margin-left: 20%;    /*clamp(0.8rem, 8vw, 6rem); Kleinere Schriftgröße mit responsiver Anpassung */
+ /* margin-left: 20%;    /*clamp(0.8rem, 8vw, 6rem); Kleinere Schriftgröße mit responsiver Anpassung */
   color: #555; /* Dezente Farbe für besseren Kontrast */
+  
+  margin-left: auto;
+margin-right: auto;
+width: 20%; /* Notwendig, damit das Element zentriert wird */
+
 }
 
 
@@ -369,9 +374,14 @@ button:focus-visible {
     font-size: clamp(0.8rem, 0.8vw, 0.8rem); /* Kleinere Schriftgröße mit responsiver Anpassung */
     line-height: 1.4; /* Etwas kompakterer Zeilenabstand */
   text-align: justify; /* Einheitliche Textausrichtung */
-  margin-left: 0; /*clamp(0.8rem, 8vw, 6rem); Kleinere Schriftgröße mit responsiver Anpassung */
+  /*margin-left: 0; /*clamp(0.8rem, 8vw, 6rem); Kleinere Schriftgröße mit responsiver Anpassung */
   color: #555; /* Dezente Farbe für besseren Kontrast */
-}
+
+margin-left: auto;
+margin-right: auto;
+width: 50%; /* Notwendig, damit das Element zentriert wird */
+  
+  }
   .snap-ubermichbox {
     font-size: 14px;
     padding: 20px;
