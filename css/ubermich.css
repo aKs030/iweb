@@ -1,4 +1,5 @@
-/* ===========================
+
+      /* ===========================
    Basis- und Reset-Stile
 =========================== */
 *,
@@ -90,7 +91,7 @@ body {
 =========================== */
 .button-runter {
     position: fixed;
-    bottom: 13%;
+    bottom: 15%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
