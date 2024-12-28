@@ -1,3 +1,9 @@
+.blue-banner {
+    height: 0;
+    border: 8px solid #007BFF; /* Sichtbarer Rahmen */
+}
+
+
 /* ===========================
    Basis- und Reset-Stile
 =========================== */
@@ -143,7 +149,7 @@ button:focus-visible {
 .banner-gif-150 {
     background: url('../img/dummy-background.gif') no-repeat center;
     background-size: cover;
-    height: 100px;
+    height: 150px;
 }
 
 .banner-gif-150 img {

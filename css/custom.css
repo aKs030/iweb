@@ -45,3 +45,15 @@
   background-size: cover;
   height: 150px;
 } 
+
+.banner-gif-50 { 
+  background: url('../img/dummy-background.gif') no-repeat center;
+  background-size: cover;
+  height: 50px;
+} 
+
+.banner-gif-200 { 
+  background: url('../img/dummy-background.gif') no-repeat center;
+  background-size: cover;
+  height: 250px;
+} 

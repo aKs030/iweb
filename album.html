@@ -1,33 +1,35 @@
-<!DOCTYPE html>
-<html lang="de">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Galerie</title>
-    <link rel="stylesheet" href="styles.css">
+  <title>Abdulkerim</title>
+
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="img/icon.png">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="f.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
+
+
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+ 
+  <script src="f.js"></script>
+
+  <script src="js/menu.js"></script>
+  <script src="js/footer.js"></script>
+
+
+
     <style>
 
       /* Global Styles */
-body {
-    font-family: "Arial", sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    text-align: center;
-}
 
-header {
-    padding: 20px;
-    background: linear-gradient(135deg, #5451e0, #0d17cb);
-    color: white;
-    font-size: 1.2rem;
-    text-align: center;
-}
 
-header h1 {
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
 
 /* Hauptbild-Galerie */
 .main-gallery-container {
@@ -120,10 +122,22 @@ header h1 {
     </style>
 </head>
 <body>
-    <header>
-        <h1>Meine Reise-Galerie</h1>
-        <p>Entdecke meine schönsten Momente rund um die Welt. Lass dich inspirieren!</p>
-    </header>
+    <div class="menu-container"></div>
+    <div class="banner-gif-100"></div>
+    
+    <div class="banner"><div class="flex-item flex-item-stretch flex-column"></div></div>
+        
+        <div class="flex-item flex-item-stretch-2 flex-column">
+
+          <p class="text">
+            <h2>Fotogalerie</h2>
+            <hr>
+            Reisen ist eine meiner großen Leidenschaften.<br>
+            Ich liebe es, neue Orte zu entdecken, verschiedene Kulturen kennenzulernen und unvergessliche Erinnerungen zu sammeln.<br> 
+            <p>Auf meiner Homepage findest du Reiseberichte, Tipps und Fotos von meinen Abenteuern rund um die Welt.
+            Lass dich inspirieren und vielleicht entdeckst du sogar deinen nächsten Reiseziel auf meiner Seite.</p>
+          </p>
+        </div>
 
     <!-- Hauptbild Galerie -->
     <div class="main-gallery-container">
@@ -177,5 +191,9 @@ function scrollToImage(index) {
 }
 
     </script>
+
+<div class="footer-container"></div>
+<div class="banner-gif-50"></div>
+
 </body>
 </html>
