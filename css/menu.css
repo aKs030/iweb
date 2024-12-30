@@ -289,3 +289,46 @@
     padding: 12px;
     border-radius: 42px;
 }
+
+
+.custom-button-flat.large {
+    font-size: 18px;
+    line-height: 18px;
+    padding: 17px;
+    border-radius: 56px;
+  }
+  
+  
+  
+  .custom-button-flat:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  
+  .custom-button-flat img {
+    width: 20px;
+    height: 20px;
+    
+  }
+  
+  .custom-button-flat.small img {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .custom-button-flat.large img {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .custom-button-flat span {
+    margin-left: 6px;
+  }
+
+  .control-group .custom-button-flat {
+    margin: 10px 0 10px 0;
+  }
+  
+  .control-group .custom-button-flat:not(:last-child) {
+    margin-right: 15px;
+  }
