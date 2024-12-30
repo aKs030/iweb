@@ -160,9 +160,133 @@
         </section>
 
 
-    <footer class="footer py-4 text-center">
-        <p>&copy; 2024 Elegantes Design. Alle Rechte vorbehalten.</p>
-    </footer>
+        <footer class="footer py-4 text-center">
+            <p class="highlight-text">
+                <!-- Impressum Button -->
+                <button id="impressumButton" class="btn-link">Impressum</button>
+        
+                <!-- Datenschutzerklärung Button -->
+                <button id="privacyButton" class="btn-link">Datenschutzerklärung</button>
+        
+                <!-- Kontakt Button -->
+                <a href="mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" class="btn-link">Kontakt</a>
+            </p>
+            <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
+        </footer>
+        
+        <!-- Impressum Modal -->
+        <div id="impressumModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeImpressum">&times;</span>
+                <h2>Impressum</h2>
+                <p>Angaben gemäß § 5 TMG:</p>
+                <p>Abdulkerim Sesli<br>Email: mail@abdulkerimsesli.com</p>
+                <p>
+                    <strong>Haftungshinweis:</strong><br>
+                    Die Inhalte dieser Webseite wurden sorgfältig geprüft und nach bestem Wissen erstellt. Für die Richtigkeit,
+                    Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.
+                </p>
+                <p><strong>Urheberrecht:</strong><br>
+                    Die durch den Betreiber dieser Webseite erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Datenschutzerklärung Modal -->
+        <div id="privacyModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closePrivacy">&times;</span>
+                <h2>Datenschutzerklärung</h2>
+                <p>1. Wenn Sie unsere Homepage besuchen, erheben wir automatisch Informationen...</p>
+                <p>2. Wenn Sie unser Kontaktformular nutzen, erheben wir die von Ihnen eingegebenen personenbezogenen Daten...</p>
+                <p>Weitere Details in unserer vollständigen Datenschutzerklärung.</p>
+            </div>
+        </div>
+        
+        <!-- Styling -->
+        <style>
+            .footer {
+                background-color: rgba(51, 51, 51, 0.9); /* Transparent background */
+                padding: 20px 0;
+                text-align: center;
+            }
+        
+            .btn-link {
+                color: #000;
+                background: none;
+                border: none;
+                text-decoration: none;
+                cursor: pointer;
+                font-size: 16px;
+            }
+        
+            .btn-link:hover {
+                text-decoration: underline;
+            }
+        
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+        
+            .modal-content {
+                background-color: #fff;
+                margin: 15% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                text-align: left;
+            }
+        
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+        
+            .close:hover,
+            .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+            }
+        </style>
+        
+        <!-- Script -->
+        <script>
+            // Get elements
+            const impressumModal = document.getElementById("impressumModal");
+            const privacyModal = document.getElementById("privacyModal");
+            const impressumButton = document.getElementById("impressumButton");
+            const privacyButton = document.getElementById("privacyButton");
+            const closeImpressum = document.getElementById("closeImpressum");
+            const closePrivacy = document.getElementById("closePrivacy");
+        
+            // Open modals
+            impressumButton.onclick = () => impressumModal.style.display = "block";
+            privacyButton.onclick = () => privacyModal.style.display = "block";
+        
+            // Close modals
+            closeImpressum.onclick = () => impressumModal.style.display = "none";
+            closePrivacy.onclick = () => privacyModal.style.display = "none";
+        
+            // Close modals when clicking outside of them
+            window.onclick = (event) => {
+                if (event.target === impressumModal) impressumModal.style.display = "none";
+                if (event.target === privacyModal) privacyModal.style.display = "none";
+            };
+        </script>
+
+
+
     </main>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
