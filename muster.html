@@ -319,6 +319,22 @@
     color: var(--main-bg-color); /* Dunkler Text */
     box-shadow: 0 4px 10px rgba(224, 183, 49, 0.5); /* Schatteneffekt */
 }
+
+/* Zentriere die Features */
+#features .row {
+    justify-content: center; /* Zentriere die Spalten */
+}
+
+#features .col-md-4 {
+    max-width: 400px; /* Begrenzt die maximale Breite */
+}
+
+/* Entferne Hover-Effekt bei kleineren Bildschirmen */
+@media (max-width: 576px) {
+    .animated-link:hover {
+        transform: none;
+    }
+}
     </style>
 </head>
 <body>
@@ -340,34 +356,37 @@
         <section id="features" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <h2 class="mb-5 fw-bold scroll-animate" data-animation="animate__fadeInUp">
                 Lass mich dir einen kleinen Einblick geben,<br>
-                was dich hier erwartet.</h2>
-            <div class="row g-4 text-center">
-
-                <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-                    <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="400">
-                        <i class="bi bi-images display-4 animated-icon" style="color: var(--accent-color);"></i>
-                        <h5 class="mt-3 fw-bold animated-text">Fotogalerie</h5>
-                        <p class="animated-text">
-                            Ich teile hier meine Leidenschaften,<br> 
-                            Interessen und Erlebnisse.
-                        </p>
-                        <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
-                    </div>
-                </a>
-
-                <a href="album.html" class="text-decoration-none text-reset animated-link">
-                    <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="200">
-                        <i class="bi bi-images display-4 animated-icon" style="color: var(--accent-color);"></i>
-                        <h5 class="mt-3 fw-bold animated-text">Fotogalerie</h5>
-                        <p class="animated-text">
-                            Hier findest du einige Fotos von meinen Reisen,<br>
-                            von meinem Alltag und von besonderen Ereignissen,<br>
-                            an denen ich teilgenommen habe.
-                        </p>
-                        <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
-                    </div>
-                </a>
-
+                was dich hier erwartet.
+            </h2>
+            <div class="container">
+                <div class="row g-4 justify-content-center">
+                    <!-- Link zu Über Mich -->
+                    <a href="ubermich.html" class="text-decoration-none text-reset animated-link col-md-4">
+                        <div class="scroll-animate p-4" data-animation="animate__zoomIn" data-delay="400">
+                            <i class="bi bi-person-circle display-4 animated-icon" style="color: var(--accent-color);"></i>
+                            <h5 class="mt-3 fw-bold animated-text">Über Mich</h5>
+                            <p class="animated-text">
+                                Ich teile hier meine Leidenschaften,<br>
+                                Interessen und Erlebnisse.
+                            </p>
+                            <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
+                        </div>
+                    </a>
+        
+                    <!-- Link zu Fotogalerie -->
+                    <a href="album.html" class="text-decoration-none text-reset animated-link col-md-4">
+                        <div class="scroll-animate p-4" data-animation="animate__zoomIn" data-delay="200">
+                            <i class="bi bi-images display-4 animated-icon" style="color: var(--accent-color);"></i>
+                            <h5 class="mt-3 fw-bold animated-text">Fotogalerie</h5>
+                            <p class="animated-text">
+                                Hier findest du einige Fotos von meinen Reisen,<br>
+                                von meinem Alltag und von besonderen Ereignissen,<br>
+                                an denen ich teilgenommen habe.
+                            </p>
+                            <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
+                        </div>
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -378,7 +397,7 @@
                 Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
                 Vergiss nicht, regelmäßig , vorbeizuschauen,
                 um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-         </p>
+         </p><br>
         <h2 class="scroll-animate" data-animation="animate__fadeIn">Alles Gute und viel Spaß beim Stöbern!</h2>
         </section>
 
