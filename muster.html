@@ -234,6 +234,91 @@
                 scroll-snap-type: none; /* Deaktivieren Sie das Snap-Scrolling auf sehr kleinen Bildschirmen */
             }
         }
+
+        /*          BUTTON: UBERMICHT, FOTOS */
+        /* Eleganter Button-Stil */
+/* Allgemeine Animation für das Element */
+/* Eleganter Button-Stil */
+.elegant-btn {
+    border: 2px solid var(--accent-color); /* Goldene Umrandung */
+    background-color: transparent; /* Transparenter Hintergrund */
+    color: var(--accent-color); /* Goldener Text */
+    font-weight: 600; /* Kräftige Schrift */
+    border-radius: 25px; /* Runde Kanten */
+    padding: 10px 20px; /* Innenabstand */
+    text-transform: uppercase; /* Großbuchstaben */
+    transition: all 0.3s ease-in-out; /* Weicher Übergang */
+}
+
+.elegant-btn:hover {
+    background-color: var(--accent-color); /* Goldener Hintergrund */
+    color: var(--main-bg-color); /* Dunkler Text */
+    box-shadow: 0 4px 10px rgba(224, 183, 49, 0.5); /* Leichter Schatten */
+    transform: translateY(-3px); /* Bewegung nach oben */
+}
+
+.elegant-btn:active {
+    transform: translateY(0); /* Zurücksetzen */
+    box-shadow: none;
+}
+
+/* Anpassung für kleine Bildschirme */
+@media (max-width: 768px) {
+    .elegant-btn {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+}
+/* Link-Styling für das gesamte klickbare Element */
+.animated-link {
+    display: block;
+    transition: transform 0.3s ease-in-out;
+}
+
+.animated-link:hover {
+    transform: translateY(-5px); /* Hebt das Element leicht an */
+}
+
+/* Icon-Animation */
+.animated-icon {
+    animation: pulse 1.5s infinite ease-in-out; /* Pulsierender Effekt */
+    color: var(--accent-color);
+    transition: color 0.3s ease-in-out;
+}
+
+.animated-link:hover .animated-icon {
+    color: #d4a529; /* Veränderte Farbe bei Hover */
+}
+
+/* Text-Hover-Effekt */
+.animated-text {
+    transition: color 0.3s ease-in-out;
+}
+
+.animated-link:hover .animated-text {
+    color: var(--accent-color); /* Textfarbe ändert sich */
+}
+
+/* Keyframes für pulsierende Animation */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Button-Anpassung für interaktive Effekte */
+.elegant-btn {
+    transition: all 0.3s ease-in-out;
+}
+
+.elegant-btn:hover {
+    background-color: var(--accent-color); /* Goldener Hintergrund */
+    color: var(--main-bg-color); /* Dunkler Text */
+    box-shadow: 0 4px 10px rgba(224, 183, 49, 0.5); /* Schatteneffekt */
+}
     </style>
 </head>
 <body>
@@ -258,26 +343,30 @@
                 was dich hier erwartet.</h2>
             <div class="row g-4 text-center">
 
-                <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="400">
-                    <i class="bi bi-person-circle display-4" style="color: var(--accent-color);"></i>
-                    <h5 class="mt-3 fw-bold">About Me</h5>
-                    <p>
-                        Ich teile hier meine Leidenschaften,<br> 
-                        Interessen und Erlebnisse.
-                    </p>
-                    <a href="ubermich.html" class="btn btn-outline-light mt-2" aria-label="Mehr über About Me erfahren">Mehr erfahren</a>
-                </div>
+                <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+                    <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="400">
+                        <i class="bi bi-images display-4 animated-icon" style="color: var(--accent-color);"></i>
+                        <h5 class="mt-3 fw-bold animated-text">Fotogalerie</h5>
+                        <p class="animated-text">
+                            Ich teile hier meine Leidenschaften,<br> 
+                            Interessen und Erlebnisse.
+                        </p>
+                        <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
+                    </div>
+                </a>
 
-                <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="200">
-                    <i class="bi bi-images display-4" style="color: var(--accent-color);"></i>
-                    <h5 class="mt-3 fw-bold">Fotogalerie</h5>
-                    <p>
-                        Hier findest du einige Fotos von meinen Reisen,<br>
-                        von meinem Alltag und von besonderen Ereignissen,<br>
-                        an denen ich teilgenommen habe.
-                    </p>
-                    <a href="album.html" class="btn btn-outline-light mt-2" aria-label="Mehr über Fotogalerie erfahren">Mehr erfahren</a>
-                </div>
+                <a href="album.html" class="text-decoration-none text-reset animated-link">
+                    <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="200">
+                        <i class="bi bi-images display-4 animated-icon" style="color: var(--accent-color);"></i>
+                        <h5 class="mt-3 fw-bold animated-text">Fotogalerie</h5>
+                        <p class="animated-text">
+                            Hier findest du einige Fotos von meinen Reisen,<br>
+                            von meinem Alltag und von besonderen Ereignissen,<br>
+                            an denen ich teilgenommen habe.
+                        </p>
+                        <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
+                    </div>
+                </a>
 
             </div>
         </section>
