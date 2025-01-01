@@ -430,13 +430,13 @@
         // Initialisiere Intersection Observer
         const initIntersectionObserver = () => {
             const observerOptions = {
-                threshold: 0.5, // 50% Sichtbarkeit
+                threshold: 0.9, // 50% Sichtbarkeit
             };
     
             const observerCallback = (entries) => {
                 entries.forEach((entry) => {
                     const animationClass = entry.target.dataset.animation || "animate__fadeInUp";
-                    const delay = parseFloat(entry.target.dataset.delay || "0") / 1000; // Konvertierung in Sekunden
+                    const delay = parseFloat(entry.target.dataset.delay || "0") / 5000; // Konvertierung in Sekunden
     
                     if (entry.isIntersecting) {
                         entry.target.style.transitionDelay = `${delay}s`;
