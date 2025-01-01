@@ -239,64 +239,82 @@
         /* Eleganter Button-Stil */
 /* Allgemeine Animation für das Element */
 /* Eleganter Button-Stil */
-.elegant-btn {
-    border: 2px solid var(--accent-color); /* Goldene Umrandung */
-    background-color: transparent; /* Transparenter Hintergrund */
-    color: var(--accent-color); /* Goldener Text */
-    font-weight: 600; /* Kräftige Schrift */
-    border-radius: 25px; /* Runde Kanten */
-    padding: 10px 20px; /* Innenabstand */
-    text-transform: uppercase; /* Großbuchstaben */
-    transition: all 0.3s ease-in-out; /* Weicher Übergang */
+/* Zentriere die Features *//* Karten-Stil *//* Kartenstil */
+.card {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.elegant-btn:hover {
-    background-color: var(--accent-color); /* Goldener Hintergrund */
-    color: var(--main-bg-color); /* Dunkler Text */
-    box-shadow: 0 4px 10px rgba(224, 183, 49, 0.5); /* Leichter Schatten */
-    transform: translateY(-3px); /* Bewegung nach oben */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-.elegant-btn:active {
-    transform: translateY(0); /* Zurücksetzen */
-    box-shadow: none;
+/* Allgemeiner Button-Stil */
+.elegant-btn, .btn-learn-more {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 25px;
+    border: 2px solid #666;
+    background-color: transparent;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
 }
 
-/* Anpassung für kleine Bildschirme */
-@media (max-width: 768px) {
-    .elegant-btn {
-        padding: 8px 15px;
-        font-size: 14px;
-    }
-}
-/* Link-Styling für das gesamte klickbare Element */
-.animated-link {
-    display: block;
-    transition: transform 0.3s ease-in-out;
+.elegant-btn:hover, .btn-learn-more:hover {
+    background-color: #666;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
 }
 
-.animated-link:hover {
-    transform: translateY(-5px); /* Hebt das Element leicht an */
+.elegant-btn:active, .btn-learn-more:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Icon-Animation */
+/* Zusätzlicher Glanz-Effekt für Buttons */
+.btn-learn-more::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: skewX(-30deg);
+    transition: left 0.5s ease;
+    border-radius: 25px;
+}
+
+.btn-learn-more:hover::after {
+    left: 100%;
+}
+
+/* Animation für Icons */
 .animated-icon {
-    animation: pulse 1.5s infinite ease-in-out; /* Pulsierender Effekt */
-    color: var(--accent-color);
+    animation: pulse 1.5s infinite ease-in-out;
+    color: #555;
     transition: color 0.3s ease-in-out;
 }
 
 .animated-link:hover .animated-icon {
-    color: #d4a529; /* Veränderte Farbe bei Hover */
+    color: #333;
 }
 
-/* Text-Hover-Effekt */
+/* Animation für Text */
 .animated-text {
     transition: color 0.3s ease-in-out;
 }
 
 .animated-link:hover .animated-text {
-    color: var(--accent-color); /* Textfarbe ändert sich */
+    color: #333;
 }
 
 /* Keyframes für pulsierende Animation */
@@ -309,32 +327,14 @@
     }
 }
 
-/* Button-Anpassung für interaktive Effekte */
-.elegant-btn {
-    transition: all 0.3s ease-in-out;
-}
-
-.elegant-btn:hover {
-    background-color: var(--accent-color); /* Goldener Hintergrund */
-    color: var(--main-bg-color); /* Dunkler Text */
-    box-shadow: 0 4px 10px rgba(224, 183, 49, 0.5); /* Schatteneffekt */
-}
-
-/* Zentriere die Features */
-#features .row {
-    justify-content: center; /* Zentriere die Spalten */
-}
-
-#features .col-md-4 {
-    max-width: 400px; /* Begrenzt die maximale Breite */
-}
-
-/* Entferne Hover-Effekt bei kleineren Bildschirmen */
+/* Responsives Design */
 @media (max-width: 576px) {
-    .animated-link:hover {
-        transform: none;
+    .elegant-btn, .btn-learn-more {
+        font-size: 14px;
+        padding: 8px 16px;
     }
 }
+
     </style>
 </head>
 <body>
@@ -359,31 +359,31 @@
                 was dich hier erwartet.
             </h2>
             <div class="container">
-                <div class="row g-4 justify-content-center">
+                <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
                     <!-- Link zu Über Mich -->
-                    <a href="ubermich.html" class="text-decoration-none text-reset animated-link col-md-4">
-                        <div class="scroll-animate p-4" data-animation="animate__zoomIn" data-delay="400">
-                            <i class="bi bi-person-circle display-4 animated-icon" style="color: var(--accent-color);"></i>
-                            <h5 class="mt-3 fw-bold animated-text">Über Mich</h5>
-                            <p class="animated-text">
+                    <a href="ubermich.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="400">
+                            <i class="bi bi-person-circle display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Über Mich</h5>
+                            <p class="animated-text" style="color: #666;">
                                 Ich teile hier meine Leidenschaften,<br>
                                 Interessen und Erlebnisse.
                             </p>
-                            <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
+                            <span class="btn elegant-btn mt-2">Mehr erfahren</span>
                         </div>
                     </a>
         
                     <!-- Link zu Fotogalerie -->
-                    <a href="album.html" class="text-decoration-none text-reset animated-link col-md-4">
-                        <div class="scroll-animate p-4" data-animation="animate__zoomIn" data-delay="200">
-                            <i class="bi bi-images display-4 animated-icon" style="color: var(--accent-color);"></i>
-                            <h5 class="mt-3 fw-bold animated-text">Fotogalerie</h5>
-                            <p class="animated-text">
+                    <a href="album.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="200">
+                            <i class="bi bi-images display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Fotogalerie</h5>
+                            <p class="animated-text" style="color: #666;">
                                 Hier findest du einige Fotos von meinen Reisen,<br>
                                 von meinem Alltag und von besonderen Ereignissen,<br>
                                 an denen ich teilgenommen habe.
                             </p>
-                            <span class="btn btn-primary btn-lg mt-2 elegant-btn" aria-hidden="true">Mehr erfahren</span>
+                            <span class="btn elegant-btn mt-2">Mehr erfahren</span>
                         </div>
                     </a>
                 </div>
