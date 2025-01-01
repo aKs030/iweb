@@ -334,6 +334,17 @@
         padding: 8px 16px;
     }
 }
+/* Zusätzlicher Abstand zwischen den Karten */
+.row > .col {
+    margin-bottom: 80px; /* Fügt zusätzlichen Abstand unten hinzu */
+}
+
+/* Responsive Abstand bei kleineren Bildschirmen */
+@media (max-width: 576px) {
+    .row > .col {
+        margin-bottom: 80px; /* Reduzierter Abstand für Mobilgeräte */
+    }
+}
 
     </style>
 </head>
@@ -368,6 +379,7 @@
                             <p class="animated-text" style="color: #666;">
                                 Ich teile hier meine Leidenschaften,<br>
                                 Interessen und Erlebnisse.
+                                <br><br>
                             </p>
                             <span class="btn elegant-btn mt-2">Mehr erfahren</span>
                         </div>
