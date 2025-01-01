@@ -4,31 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elegantes Design</title>
+
     <!-- Bootstrap CSS -->
-
-    <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
-    <script src="js/menu.js"></script>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" defer>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Custom CSS -->
+    <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="js/menu.js" defer></script>
     <!-- Meta Tags -->
     <meta name="description" content="Elegantes Design - Eine moderne und elegante Webseite">
     <meta name="keywords" content="modern, design, elegant, bootstrap, responsive">
-    <!-- Custom CSS -->
+
+    <!-- Internal CSS -->
     <style>
         :root {
-            --main-bg-color: #1c1c1c;
-            --main-text-color: #f5f5f5;
-            --accent-color: #d4af37; /* Gold */
-            --secondary-bg-color: #2e2e2e;
-            --secondary-text-color: #b0b0b0;
-            --menu-bg-color: #333; /* Neue Menü-Hintergrundfarbe */
-            --menu-text-color: #fff; /* Neue Menü-Textfarbe */
+            --main-bg-color: #1a1a1a; /* Dunkleres Grau */
+            --main-text-color: #ffffff; /* Weiß */
+            --accent-color: #e0b731; /* Satteres Gold */
+            --secondary-bg-color: #2c2c2c; /* Mittelgrau */
+            --secondary-text-color: #d3d3d3; /* Helles Grau */
+            --menu-bg-color: #444; /* Dunkleres Menü */
+            --menu-text-color: #fff; /* Weiß */
         }
 
         body {
@@ -64,9 +65,8 @@
             height: 100%;
             background: url('https://source.unsplash.com/1920x1080/?abstract,modern') no-repeat center center;
             background-size: cover;
-            filter: blur(6px) brightness(0.5);
+            filter: blur(4px) brightness(0.4);
             z-index: -1;
-            opacity: 0.3;
         }
 
         .scroll-animate {
@@ -80,11 +80,6 @@
             transform: translateY(0);
         }
 
-
-        .nav-link.active {
-            color: var(--accent-color);
-        }
-
         h1, h2, h5 {
             color: var(--main-text-color);
         }
@@ -95,6 +90,53 @@
 
         .display-4 {
             color: var(--accent-color);
+        }
+
+        footer {
+            background-color: var(--menu-bg-color);
+            color: var(--menu-text-color);
+            padding: 20px 0;
+        }
+
+        footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            background: var(--main-bg-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            color: var(--main-text-color);
+        }
+
+        .modal-content {
+            position: relative;
+        }
+
+        .close {
+            color: var(--accent-color);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--main-text-color);
         }
 
         @media (max-width: 768px) {
@@ -112,39 +154,34 @@
                 scroll-snap-type: none; /* Deaktivieren Sie das Snap-Scrolling auf sehr kleinen Bildschirmen */
             }
         }
-
     </style>
 </head>
 <body>
-
-        <div class="menu-container"></div>
-
+    <div class="menu-container"></div>
 
     <main id="main-content">
-
+        <!-- Hero Section -->
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <h1 class="display-3 fw-bold scroll-animate" data-animation="animate__fadeInDown">Willkommen</h1>
             <p class="lead scroll-animate" data-animation="animate__fadeInUp">Eleganz trifft auf Innovation</p>
         </section>
 
-        <section id="features" class="vh-100 d-flex flex-column justify-content-center align-items-center text-dark snap transparent-section">
+        <!-- Features Section -->
+        <section id="features" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <h2 class="mb-5 fw-bold scroll-animate" data-animation="animate__fadeInUp">Unsere Features</h2>
             <div class="row g-4 text-center">
-                <!-- Home -->
-                <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn">
+                <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="0">
                     <i class="bi bi-house-door display-4" style="color: var(--accent-color);"></i>
                     <h5 class="mt-3 fw-bold">Home</h5>
                     <p>Willkommen auf unserer Website!</p>
                     <a href="index.html" class="btn btn-outline-light mt-2" aria-label="Mehr über Home erfahren">Mehr erfahren</a>
                 </div>
-                <!-- Fotogalerie -->
                 <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="200">
                     <i class="bi bi-images display-4" style="color: var(--accent-color);"></i>
                     <h5 class="mt-3 fw-bold">Fotogalerie</h5>
                     <p>Entdecken Sie unsere besten Momente.</p>
                     <a href="album.html" class="btn btn-outline-light mt-2" aria-label="Mehr über Fotogalerie erfahren">Mehr erfahren</a>
                 </div>
-                <!-- About Me -->
                 <div class="col-md-4 scroll-animate" data-animation="animate__zoomIn" data-delay="400">
                     <i class="bi bi-person-circle display-4" style="color: var(--accent-color);"></i>
                     <h5 class="mt-3 fw-bold">About Me</h5>
@@ -154,170 +191,39 @@
             </div>
         </section>
 
+        <!-- About Section -->
         <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <h2 class="scroll-animate" data-animation="animate__fadeIn">Über uns</h2>
             <p class="lead scroll-animate" data-animation="animate__fadeInUp">Wir sind ein innovatives Unternehmen, das sich auf modernes Design und Kundenzufriedenheit spezialisiert hat.</p>
         </section>
 
-
+        <!-- Footer -->
         <footer class="footer py-4 text-center">
             <p class="highlight-text">
-                <!-- Impressum Button -->
                 <button id="impressumButton" class="btn-link">Impressum</button>
-        
-                <!-- Datenschutzerklärung Button -->
                 <button id="privacyButton" class="btn-link">Datenschutzerklärung</button>
-        
-                <!-- Kontakt Button -->
                 <a href="mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" class="btn-link">Kontakt</a>
             </p>
             <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
         </footer>
-        
-        <!-- Impressum Modal -->
-        <div id="impressumModal" class="modal">
-            <div class="modal-content">
-                <span class="close" id="closeImpressum">&times;</span>
-                <h2>Impressum</h2>
-                <p>Angaben gemäß § 5 TMG:</p>
-                <p>Abdulkerim Sesli<br>Email: mail@abdulkerimsesli.com</p>
-                <p>
-                    <strong>Haftungshinweis:</strong><br>
-                    Die Inhalte dieser Webseite wurden sorgfältig geprüft und nach bestem Wissen erstellt. Für die Richtigkeit,
-                    Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.
-                </p>
-                <p><strong>Urheberrecht:</strong><br>
-                    Die durch den Betreiber dieser Webseite erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht.
-                </p>
-            </div>
-        </div>
-        
-        <!-- Datenschutzerklärung Modal -->
-        <div id="privacyModal" class="modal">
-            <div class="modal-content">
-                <span class="close" id="closePrivacy">&times;</span>
-                <h2>Datenschutzerklärung</h2>
-                <p>1. Wenn Sie unsere Homepage besuchen, erheben wir automatisch Informationen...</p>
-                <p>2. Wenn Sie unser Kontaktformular nutzen, erheben wir die von Ihnen eingegebenen personenbezogenen Daten...</p>
-                <p>Weitere Details in unserer vollständigen Datenschutzerklärung.</p>
-            </div>
-        </div>
-        
-        <!-- Styling -->
-        <style>
-            .footer {
-                background-color: rgba(51, 51, 51, 0.9); /* Transparent background */
-                padding: 20px 0;
-                text-align: center;
-            }
-        
-            .btn-link {
-                color: #000;
-                background: none;
-                border: none;
-                text-decoration: none;
-                cursor: pointer;
-                font-size: 16px;
-            }
-        
-            .btn-link:hover {
-                text-decoration: underline;
-            }
-        
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0, 0, 0, 0.5);
-            }
-        
-            .modal-content {
-                background-color: #fff;
-                margin: 15% auto;
-                padding: 20px;
-                border: 1px solid #888;
-                width: 80%;
-                text-align: left;
-            }
-        
-            .close {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-            }
-        
-            .close:hover,
-            .close:focus {
-                color: #000;
-                text-decoration: none;
-                cursor: pointer;
-            }
-        </style>
-        
-        <!-- Script -->
-        <script>
-            // Get elements
-            const impressumModal = document.getElementById("impressumModal");
-            const privacyModal = document.getElementById("privacyModal");
-            const impressumButton = document.getElementById("impressumButton");
-            const privacyButton = document.getElementById("privacyButton");
-            const closeImpressum = document.getElementById("closeImpressum");
-            const closePrivacy = document.getElementById("closePrivacy");
-        
-            // Open modals
-            impressumButton.onclick = () => impressumModal.style.display = "block";
-            privacyButton.onclick = () => privacyModal.style.display = "block";
-        
-            // Close modals
-            closeImpressum.onclick = () => impressumModal.style.display = "none";
-            closePrivacy.onclick = () => privacyModal.style.display = "none";
-        
-            // Close modals when clicking outside of them
-            window.onclick = (event) => {
-                if (event.target === impressumModal) impressumModal.style.display = "none";
-                if (event.target === privacyModal) privacyModal.style.display = "none";
-            };
-        </script>
-
-
-
     </main>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
-        // Dynamische Navigation beim Scrollen
-        window.addEventListener("scroll", () => {
-            const navbar = document.querySelector(".navbar");
-            if (window.scrollY > 50) {
-                navbar.classList.add("scrolled");
-            } else {
-                navbar.classList.remove("scrolled");
-            }
-        });
-
-        // Animationen mit Intersection Observer
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    const animationClass = entry.target.getAttribute("data-animation") || "animate__fadeInUp";
-                    const delay = entry.target.getAttribute("data-delay") || "0";
-
-                    if (entry.isIntersecting) {
-                        entry.target.style.transitionDelay = `${delay}ms`;
-                        entry.target.classList.add("visible", "animate__animated", animationClass);
-                    } else {
-                        entry.target.classList.remove("visible", "animate__animated", animationClass);
-                    }
-                });
-            },
-            { threshold: 0.5 }
-        );
+        // Intersection Observer für Animationen
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                const animationClass = entry.target.getAttribute("data-animation") || "animate__fadeInUp";
+                const delay = parseInt(entry.target.getAttribute("data-delay") || "0", 10) / 1000; // Konvertierung in Sekunden
+                if (entry.isIntersecting) {
+                    entry.target.style.transitionDelay = `${delay}s`;
+                    entry.target.classList.add("visible", "animate__animated", animationClass);
+                } else {
+                    entry.target.classList.remove("visible", "animate__animated", animationClass);
+                }
+            });
+        }, { threshold: 0.5 });
 
         document.querySelectorAll(".scroll-animate").forEach((el) => observer.observe(el));
     </script>
