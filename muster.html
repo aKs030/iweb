@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Custom CSS -->
@@ -21,225 +22,125 @@
     <meta name="keywords" content="modern, design, elegant, bootstrap, responsive">
 
     <!-- Internal CSS -->
-    <style>
-        :root {
-            --main-bg-color: #1a1a1a; /* Dunkleres Grau */
-            --main-text-color: #ffffff; /* Weiß */
-            --accent-color: #e0b731; /* Satteres Gold */
-            --secondary-bg-color: #2c2c2c; /* Mittelgrau */
-            --secondary-text-color: #d3d3d3; /* Helles Grau */
-            --menu-bg-color: #444; /* Dunkleres Menü */
-            --menu-text-color: #fff; /* Weiß */
-        }
 
-        body {
-            background-color: var(--main-bg-color);
-            color: var(--main-text-color);
-            font-family: 'Poppins', sans-serif;
-        }
+<style>:root {
+    --main-bg-color: #1a1a1a; /* Dunkleres Grau */
+    --main-text-color: #ffffff; /* Weiß */
+    --accent-color: #e0b731; /* Satteres Gold */
+    --secondary-bg-color: #2c2c2c; /* Mittelgrau */
+    --secondary-text-color: #d3d3d3; /* Helles Grau */
+    --menu-bg-color: #444; /* Dunkleres Menü */
+    --menu-text-color: #fff; /* Weiß */
+}
 
-        #main-content {
-            scroll-snap-type: y mandatory;
-            overflow-y: scroll;
-            height: 100vh;
-        }
+body {
+    font-family: 'Lato', sans-serif; /* Minimalistische Schrift */
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    line-height: 1.8; /* Großzügige Zeilenhöhe */
+    margin: 0;
+    padding: 0;
+}
 
-        .snap {
-            scroll-snap-align: start;
-        height: 100vh; /* Erforderlich für korrektes Snapping */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        }
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif; /* Elegante Serifenschrift */
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    color: var(--main-text-color);
+}
 
-        .transparent-section {
-            background-color: #2c2c2c;
-            padding: 50px 20px;
-            position: relative;
-            color: var(--main-text-color);
-            overflow: hidden;
-        }
+p, li, span, a {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    font-size: 1rem;
+    color: var(--secondary-text-color);
+}
 
-        .transparent-section:before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://source.unsplash.com/1920x1080/?abstract,modern') no-repeat center center;
-            background-size: cover;
-            filter: blur(4px) brightness(0.4);
-            z-index: -1;
-        }
+p.lead {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--main-text-color);
+}
 
-        .scroll-animate {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
+#main-content {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh;
+}
 
-        .scroll-animate.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+.snap {
+    scroll-snap-align: start;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 
-        h1, h2, h5 {
-            color: var(--main-text-color);
-        }
+.transparent-section {
+    background-color: var(--secondary-bg-color);
+    padding: 50px 20px;
+    position: relative;
+    color: var(--main-text-color);
+    overflow: hidden;
+}
 
-        p.lead, p {
-            color: var(--secondary-text-color);
-        }
+.transparent-section:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://source.unsplash.com/1920x1080/?abstract,modern') no-repeat center center;
+    background-size: cover;
+    filter: blur(4px) brightness(0.4);
+    z-index: -1;
+}
 
-        .display-4 {
-            color: var(--accent-color);
-        }
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
 
-        footer {
-            background-color: var(--menu-bg-color);
-            color: var(--menu-text-color);
-            padding: 20px 0;
-        }
+.scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
 
-        footer a {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1050;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 500px;
-            padding: 20px;
-            background: var(--main-bg-color);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            color: var(--main-text-color);
-        }
-
-        .modal-content {
-            position: relative;
-        }
-
-        .close {
-            color: var(--accent-color);
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: var(--main-text-color);
-        }
-
-        @media (max-width: 768px) {
-            h1.display-3 {
-                font-size: 2rem;
-            }
-
-            p.lead {
-                font-size: 1rem;
-            }
-            #features {
-            padding: 30px 15px;
-        }
-
-        #features h2 {
-            font-size: 1.5rem;
-        }
-
-        #features .display-4 {
-            font-size: 2rem;
-        }
-
-        #features .display-6 {
-            font-size: 1.5rem;
-        }
-
-        #features h5 {
-            font-size: 1.2rem;
-            margin-top: 1rem;
-        }
-
-        #features p {
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        #features .btn {
-            font-size: 0.8rem;
-            padding: 5px 10px;
-        }
-        }
-
-         /* Desktop Defaults */
-    #features {
-        padding: 50px 20px;
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
     }
-
-    #features h2 {
-        font-size: 2rem;
+    100% {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 
-    #features .display-4 {
-        font-size: 3rem;
-    }
+button, .btn {
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 2px solid var(--secondary-text-color);
+    background-color: transparent;
+    color: var(--secondary-text-color);
+    transition: all 0.3s ease-in-out;
+}
 
-    #features p {
-        font-size: 1rem;
-    }
+button:hover, .btn:hover {
+    background-color: var(--secondary-text-color);
+    color: var(--main-bg-color);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+}
 
-        @media (max-width: 576px) {
-        #features {
-            padding: 20px 10px;
-        }
-
-        #features h2 {
-            font-size: 1.25rem;
-        }
-
-        #features .display-4,
-        #features .display-6 {
-            font-size: 1.25rem;
-        }
-
-        #features h5 {
-            font-size: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        #features p {
-            font-size: 0.75rem;
-        }
-
-        #features .btn {
-            font-size: 0.7rem;
-            padding: 4px 8px;
-        }
-    }
-        @media (max-width: 480px) {
-            #main-content {
-                scroll-snap-type: none; /* Deaktivieren Sie das Snap-Scrolling auf sehr kleinen Bildschirmen */
-            }
-        }
-
-        /*          BUTTON: UBERMICHT, FOTOS */
-        /* Eleganter Button-Stil */
-/* Allgemeine Animation für das Element */
-/* Eleganter Button-Stil */
-/* Zentriere die Features *//* Karten-Stil *//* Kartenstil */
 .card {
     background-color: #fff;
     border-radius: 15px;
@@ -252,101 +153,77 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Allgemeiner Button-Stil */
-.elegant-btn, .btn-learn-more {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: 600;
-    text-transform: uppercase;
-    border-radius: 25px;
-    border: 2px solid #666;
-    background-color: transparent;
-    color: #666;
-    text-decoration: none;
-    transition: all 0.3s ease-in-out;
-}
-
-.elegant-btn:hover, .btn-learn-more:hover {
-    background-color: #666;
-    color: #fff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    transform: translateY(-3px);
-}
-
-.elegant-btn:active, .btn-learn-more:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Zusätzlicher Glanz-Effekt für Buttons */
-.btn-learn-more::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: skewX(-30deg);
-    transition: left 0.5s ease;
-    border-radius: 25px;
-}
-
-.btn-learn-more:hover::after {
-    left: 100%;
-}
-
-/* Animation für Icons */
-.animated-icon {
-    animation: pulse 1.5s infinite ease-in-out;
-    color: #555;
-    transition: color 0.3s ease-in-out;
-}
-
-.animated-link:hover .animated-icon {
-    color: #333;
-}
-
-/* Animation für Text */
-.animated-text {
-    transition: color 0.3s ease-in-out;
-}
-
-.animated-link:hover .animated-text {
-    color: #333;
-}
-
-/* Keyframes für pulsierende Animation */
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
+@media (max-width: 768px) {
+    h1.display-3 {
+        font-size: 2rem;
     }
-    50% {
-        transform: scale(1.1);
+
+    p.lead {
+        font-size: 1rem;
+    }
+
+    #features {
+        padding: 30px 15px;
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: 5px 10px;
     }
 }
 
-/* Responsives Design */
 @media (max-width: 576px) {
-    .elegant-btn, .btn-learn-more {
-        font-size: 14px;
-        padding: 8px 16px;
+    .btn {
+        font-size: 0.7rem;
+        padding: 4px 8px;
     }
 }
+
 /* Zusätzlicher Abstand zwischen den Karten */
 .row > .col {
     margin-bottom: 80px; /* Fügt zusätzlichen Abstand unten hinzu */
 }
 
-/* Responsive Abstand bei kleineren Bildschirmen */
 @media (max-width: 576px) {
     .row > .col {
         margin-bottom: 80px; /* Reduzierter Abstand für Mobilgeräte */
     }
 }
 
-    </style>
+
+
+
+
+
+/* Glänzende Schrift mit kontinuierlicher Schimmer-Animation */
+.shimmer-text {
+    font-family: 'Cormorant Garamond', serif; /* Elegante Serifenschrift */
+    font-weight: 600; /* Mittlere Schriftstärke */
+    font-size: 3rem; /* Schriftgröße */
+    text-transform: uppercase; /* Großbuchstaben */
+    color: #ff0000; /* Goldene Farbe */
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(90deg, #000000, #ffffff, #000000);
+    background-size: 200% 200%; /* Gradient doppelt so groß */
+    -webkit-background-clip: text; /* Nur der Text hat den Gradient */
+    -webkit-text-fill-color: transparent; /* Hintergrund sichtbar, Text selbst transparent */
+    animation: shimmer 3s infinite linear; /* Kontinuierliche Animation */
+}
+
+/* Schimmer-Animation */
+@keyframes shimmer {
+    0% {
+        background-position: 0% 50%; /* Startet am linken Rand */
+    }
+    100% {
+        background-position: 100% 50%; /* Bewegt sich nach rechts */
+    }
+}
+
+
+
+</style>
 </head>
 <body>
     <div class="menu-container"></div>
@@ -354,7 +231,8 @@
     <main id="main-content">
         <!-- Hero Section -->
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <h1 class="display-3 fw-bold scroll-animate" data-animation="animate__fadeInDown">Willkommen</h1>
+            <h1 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen</h1>
+
             <p class="lead scroll-animate" data-animation="animate__fadeInUp">
                 <br>Ich freue mich, dass du den Weg hierher gefunden hast.<br>
                 Diese Seite dient als mein digitales Zuhause im.<br>
