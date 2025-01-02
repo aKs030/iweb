@@ -22,208 +22,163 @@
     <meta name="keywords" content="modern, design, elegant, bootstrap, responsive">
 
     <!-- Internal CSS -->
+    <style>
+        :root {
+            --main-bg-color: #1a1a1a;
+            --main-text-color: #ffffff;
+            --accent-color: #e0b731;
+            --secondary-bg-color: #2c2c2c;
+            --secondary-text-color: #d3d3d3;
+            --menu-bg-color: #444;
+            --menu-text-color: #fff;
+        }
 
-<style>:root {
-    --main-bg-color: #1a1a1a; /* Dunkleres Grau */
-    --main-text-color: #ffffff; /* Weiß */
-    --accent-color: #e0b731; /* Satteres Gold */
-    --secondary-bg-color: #2c2c2c; /* Mittelgrau */
-    --secondary-text-color: #d3d3d3; /* Helles Grau */
-    --menu-bg-color: #444; /* Dunkleres Menü */
-    --menu-text-color: #fff; /* Weiß */
-}
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--main-bg-color);
+            color: var(--main-text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+        }
 
-body {
-    font-family: 'Lato', sans-serif; /* Minimalistische Schrift */
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
-    line-height: 1.8; /* Großzügige Zeilenhöhe */
-    margin: 0;
-    padding: 0;
-}
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', serif; /* Elegante Serifenschrift */
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    line-height: 1.4;
-    color: var(--main-text-color);
-}
+        p, li, a {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            font-size: 1rem;
+            color: var(--secondary-text-color);
+        }
 
-p, li, span, a {
-    font-family: 'Lato', sans-serif;
-    font-weight: 300;
-    font-size: 1rem;
-    color: var(--secondary-text-color);
-}
+        p.lead {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--main-text-color);
+        }
 
-p.lead {
-    font-size: 1.2rem;
-    font-weight: 400;
-    color: var(--main-text-color);
-}
+        #main-content {
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            height: 100vh;
+        }
 
-#main-content {
-    scroll-snap-type: y mandatory;
-    overflow-y: scroll;
-    height: 100vh;
-}
+        .snap {
+            scroll-snap-align: start;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-.snap {
-    scroll-snap-align: start;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
+        .transparent-section {
+            background-color: var(--secondary-bg-color);
+            padding: 50px 20px;
+            position: relative;
+            overflow: hidden;
+        }
 
-.transparent-section {
-    background-color: var(--secondary-bg-color);
-    padding: 50px 20px;
-    position: relative;
-    color: var(--main-text-color);
-    overflow: hidden;
-}
+        .transparent-section:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://source.unsplash.com/1920x1080/?abstract,modern') no-repeat center center;
+            background-size: cover;
+            filter: blur(4px) brightness(0.4);
+            z-index: -1;
+        }
 
-.transparent-section:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('https://source.unsplash.com/1920x1080/?abstract,modern') no-repeat center center;
-    background-size: cover;
-    filter: blur(4px) brightness(0.4);
-    z-index: -1;
-}
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
 
-.scroll-animate {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
+        .scroll-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-.scroll-animate.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
+        /* Schimmer-Animation */
+        .shimmer-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            font-size: 3rem;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #444, #ffffff, #444);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s infinite linear;
+        }
 
-@keyframes fadeInUp {
-    0% {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        @keyframes shimmer {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
 
-button, .btn {
-    font-family: 'Lato', sans-serif;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 10px 20px;
-    border-radius: 25px;
-    border: 2px solid var(--secondary-text-color);
-    background-color: transparent;
-    color: var(--secondary-text-color);
-    transition: all 0.3s ease-in-out;
-}
+        .card {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-button:hover, .btn:hover {
-    background-color: var(--secondary-text-color);
-    color: var(--main-bg-color);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    transform: translateY(-3px);
-}
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
 
-.card {
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+        footer {
+            background-color: var(--menu-bg-color);
+            color: var(--menu-text-color);
+            padding: 20px 0;
+            text-align: center;
+        }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
+        footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
 
-@media (max-width: 768px) {
-    h1.display-3 {
-        font-size: 2rem;
-    }
+        footer a:hover {
+            text-decoration: underline;
+        }
 
-    p.lead {
-        font-size: 1rem;
-    }
+        @media (max-width: 768px) {
+            h1.display-3 {
+                font-size: 2rem;
+            }
 
-    #features {
-        padding: 30px 15px;
-    }
+            p.lead {
+                font-size: 1rem;
+            }
 
-    .btn {
-        font-size: 0.8rem;
-        padding: 5px 10px;
-    }
-}
+            .btn {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+        }
 
-@media (max-width: 576px) {
-    .btn {
-        font-size: 0.7rem;
-        padding: 4px 8px;
-    }
-}
-
-/* Zusätzlicher Abstand zwischen den Karten */
-.row > .col {
-    margin-bottom: 80px; /* Fügt zusätzlichen Abstand unten hinzu */
-}
-
-@media (max-width: 576px) {
-    .row > .col {
-        margin-bottom: 80px; /* Reduzierter Abstand für Mobilgeräte */
-    }
-}
-
-
-
-
-
-
-/* Glänzende Schrift mit kontinuierlicher Schimmer-Animation */
-.shimmer-text {
-    font-family: 'Cormorant Garamond', serif; /* Elegante Serifenschrift */
-    font-weight: 600; /* Mittlere Schriftstärke */
-    font-size: 3rem; /* Schriftgröße */
-    text-transform: uppercase; /* Großbuchstaben */
-    color: #ff0000; /* Goldene Farbe */
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(90deg, #444, #ffffff, #444);
-    background-size: 200% 200%; /* Gradient doppelt so groß */
-    -webkit-background-clip: text; /* Nur der Text hat den Gradient */
-    -webkit-text-fill-color: transparent; /* Hintergrund sichtbar, Text selbst transparent */
-    animation: shimmer 3s infinite linear; /* Kontinuierliche Animation */
-}
-
-/* Schimmer-Animation */
-@keyframes shimmer {
-    0% {
-        background-position: 0% 50%; /* Startet am linken Rand */
-    }
-    100% {
-        background-position: 100% 50%; /* Bewegt sich nach rechts */
-    }
-}
-
-
-
-</style>
+        @media (max-width: 576px) {
+            .btn {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="menu-container"></div>
@@ -308,7 +263,7 @@ button:hover, .btn:hover {
         // Initialisiere Intersection Observer
         const initIntersectionObserver = () => {
             const observerOptions = {
-                threshold: 0.10, // 50% Sichtbarkeit
+                threshold: 0.9, // 50% Sichtbarkeit
             };
     
             const observerCallback = (entries) => {
