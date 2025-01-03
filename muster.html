@@ -211,6 +211,82 @@
                 padding: 4px 8px;
             }
         }
+
+        /* Navigation (unten und transparent) */
+/* Navigation (unten und transparent, mit Animation) */
+/* Navigation (unten, klein, transparent, animiert) */
+/* Navigation */
+/* Navigation */
+.navbar-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.5); /* Halbtransparenter Hintergrund */
+    backdrop-filter: blur(5px); /* Glas-Effekt */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    margin: 0 15px;
+    position: relative;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    position: relative;
+    overflow: hidden; /* Für animierte Unterstrich-Linie */
+    transition: color 0.3s ease;
+}
+
+/* Unterstrich-Effekt */
+.nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%; /* Start in der Mitte */
+    width: 0;
+    height: 3px;
+    background-color: var(--accent-color);
+    transition: width 0.4s ease, left 0.4s ease;
+    transform: translateX(-50%);
+}
+
+/* Aktivierter Link */
+.nav-item.active .nav-link {
+    color: var(--accent-color);
+}
+
+.nav-item.active .nav-link::after {
+    width: 100%; /* Füllt den gesamten Link */
+    left: 0; /* Bewegt sich von der Mitte nach links */
+}
+
+/* Hover-Effekt */
+.nav-link:hover::after {
+    width: 100%; /* Unterstrich erscheint */
+    left: 0; /* Unterstrich gleitet unter den Link */
+}
+
+.nav-link:hover {
+    color: var(--accent-color);
+    transition: color 0.3s ease;
+}
     </style>
 </head>
 <body>
@@ -281,8 +357,20 @@
             </p>
             <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
         </footer>
-    </main>
 
+
+
+            <!-- Navigation -->
+    <nav class="navbar navbar-bottom">
+        <ul class="nav-list">
+            <li class="nav-item" data-section="hero"><a href="#hero" class="nav-link">Willkommen</a></li>
+            <li class="nav-item" data-section="features"><a href="#features" class="nav-link">Features</a></li>
+            <li class="nav-item" data-section="about"><a href="#about" class="nav-link">Über Mich</a></li>
+        </ul>
+    </nav>
+
+    </main>
+    </body>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
@@ -315,6 +403,36 @@ rootMargin: '0px 0px -50px 0px' // Offset
     
         // Warten, bis der DOM geladen ist
         document.addEventListener("DOMContentLoaded", initIntersectionObserver);
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+    const sections = document.querySelectorAll("section");
+    const navItems = document.querySelectorAll(".nav-item");
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    // Entferne die aktive Klasse von allen Links
+                    navItems.forEach((item) => item.classList.remove("active"));
+
+                    // Füge die aktive Klasse zum entsprechenden Link hinzu
+                    const activeItem = document.querySelector(
+                        `.nav-item[data-section="${entry.target.id}"]`
+                    );
+                    if (activeItem) {
+                        activeItem.classList.add("active");
+                    }
+                }
+            });
+        },
+        {
+            threshold: 0.6, // Aktiviert, wenn 60% des Abschnitts sichtbar sind
+        }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+});
     </script>
-    </body>
+
 </html>
