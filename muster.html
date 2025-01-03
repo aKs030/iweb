@@ -96,16 +96,17 @@
             z-index: -1;
         }
 
-        .scroll-animate {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    will-change: opacity, transform;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
 
-        .scroll-animate.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+.scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
 
         /* Schimmer-Animation */
         .shimmer-text {
@@ -261,6 +262,7 @@
         const initIntersectionObserver = () => {
             const observerOptions = {
                 threshold: 0.9, // 50% Sichtbarkeit
+rootMargin: '0px 0px -50px 0px' // Offset
             };
     
             const observerCallback = (entries) => {
