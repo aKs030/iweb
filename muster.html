@@ -107,7 +107,7 @@
 
 .scroll-animate.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(-30px);
 }
 
         /* Schimmer-Animation */
@@ -171,15 +171,41 @@
 
             p.lead {
                 font-size: 1rem;
+                padding: 0 10px;
+
             }
 
             .btn {
                 font-size: 0.8rem;
                 padding: 5px 10px;
             }
+            /* Karten in einer Spalte anzeigen */
+        .row-cols-md-2 {
+            flex-direction: column;
+            row-gap: 20px;
+        }
+
+        /* Hero-Bereich besser zentrieren */
+        #hero {
+            padding: 20px;
+            text-align: center;
+        }
         }
 
         @media (max-width: 576px) {
+             /* Schimmer-Text skalieren */
+        .shimmer-text {
+            font-size: 2rem;
+        }
+
+        /* Navigation und Footer vereinfachen */
+        footer {
+            font-size: 0.8rem;
+        }
+
+        footer a {
+            font-size: 0.9rem;
+        }
             .btn {
                 font-size: 0.7rem;
                 padding: 4px 8px;
@@ -195,12 +221,12 @@
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <h1 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen</h1>
 
-            <p class="lead scroll-animate" data-animation="animate__fadeInUp">
-                <br>Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-                Diese Seite dient als mein digitales Zuhause im.<br>
-                World Wide Web auf der ich meine Interessen,<br>
-                Erfahrungen und Gedanken teilen möchte.
-            </p>
+<p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+    Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+    Diese Seite dient als mein digitales Zuhause im<br>
+    World Wide Web, auf der ich meine Interessen,<br>
+    Erfahrungen und Gedanken teilen möchte.
+</p>
         </section>
 
         <!-- Features Section -->
@@ -247,11 +273,11 @@
         </section>
 
         <!-- Footer -->
-        <footer class="footer py-4 text-center">
-            <p class="highlight-text">
-                <button id="impressumButton" class="btn-link">Impressum</button>
-                <button id="privacyButton" class="btn-link">Datenschutzerklärung</button>
-                <a href="mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" class="btn-link">Kontakt</a>
+        <footer class="footer py-3 text-center">
+            <p class="mb-1">
+                <button id="impressumButton" class="btn-link">Impressum</button> |
+                <button id="privacyButton" class="btn-link">Datenschutzerklärung</button> |
+                <a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
             </p>
             <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
         </footer>
