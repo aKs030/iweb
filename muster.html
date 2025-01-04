@@ -26,201 +26,70 @@
 
     <!-- Internal CSS -->
     <style>
-        :root {
-            --main-bg-color: #2c2c2c;
-            --main-text-color: #ffffff;
-            --accent-color: #e0b731;
-            --secondary-bg-color: #2c2c2c;
-            --secondary-text-color: #d3d3d3;
-            --menu-bg-color: #444;
-            --menu-text-color: #fff;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--main-bg-color);
-            color: var(--main-text-color);
-            margin: 0;
-            padding: 0;
-            line-height: 1.8;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Cormorant Garamond', serif;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            line-height: 1.4;
-        }
-
-        p, li, a {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 300;
-            font-size: 1rem;
-            color: var(--secondary-text-color);
-        }
-
-        p.lead {
-            font-size: 1.2rem;
-            font-weight: 400;
-            color: var(--main-text-color);
-        }
-
-        #main-content {
-            scroll-snap-type: y mandatory;
-            overflow-y: scroll;
-            height: 100vh;
-        }
-
-        .snap {
-            scroll-snap-align: start;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .transparent-section {
-            background-color: var(--secondary-bg-color);
-            padding: 50px 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .transparent-section:before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://source.unsplash.com/1920x1080/?abstract,modern') no-repeat center center;
-            background-size: cover;
-            filter: blur(4px) brightness(0.4);
-            z-index: -1;
-        }
-
-.scroll-animate {
-    opacity: 0;
-    transform: translateY(30px);
-    will-change: opacity, transform;
-    transition: opacity 0.5s ease, transform 0.5s ease;
+        /* Farbvariablen */
+:root {
+    --main-bg-color: rgba(68, 68, 68, 0.9);
+    --main-text-color: rgba(245, 245, 245, 0.9);
+    --accent-color: rgba(255, 204, 41, 0.8);
+    --secondary-bg-color: rgba(85, 85, 85, 0.8);
+    --secondary-text-color: rgba(181, 181, 181, 0.8);
+    --menu-bg-color: rgba(51, 51, 51, 0.8);
+    --menu-text-color: rgba(255, 255, 255, 0.9);
 }
 
-.scroll-animate.visible {
-    opacity: 1;
-    transform: translateY(-30px);
+/* Allgemeine Stile */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.8;
 }
 
-        /* Schimmer-Animation */
-        .shimmer-text {
-            font-family: 'Cormorant Garamond', serif;
-            font-weight: 600;
-            font-size: 3rem;
-            text-transform: uppercase;
-            background: linear-gradient(90deg, #444, #ffffff, #444);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer 3s infinite linear;
-        }
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--main-text-color);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+}
 
-        @keyframes shimmer {
-            0% {
-                background-position: 0% 50%;
-            }
-            100% {
-                background-position: 100% 50%;
-            }
-        }
+p, li, a {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--secondary-text-color);
+}
 
-        .card {
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%; /* Erzwingt gleiche Höhe */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Verteilt Inhalte gleichmäßig */
-        }
+p.lead {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--main-text-color);
+}
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
+/* Schimmer-Text */
+.shimmer-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 3rem;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, var(--secondary-bg-color), var(--accent-color), var(--secondary-bg-color));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 2s ease-in-out infinite;
+}
 
-        footer {
-            background-color: var(--menu-bg-color);
-            color: var(--menu-text-color);
-            padding: 20px 0;
-            text-align: center;
-        }
+@keyframes shimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
 
-        footer a {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            h1.display-3 {
-                font-size: 2rem;
-            }
-
-            p.lead {
-                font-size: 1rem;
-                padding: 0 10px;
-
-            }
-
-            .btn {
-                font-size: 0.8rem;
-                padding: 5px 10px;
-            }
-            /* Karten in einer Spalte anzeigen */
-        .row-cols-md-2 {
-            flex-direction: column;
-            row-gap: 20px;
-        }
-
-        /* Hero-Bereich besser zentrieren */
-        #hero {
-            padding: 20px;
-            text-align: center;
-        }
-        }
-
-        @media (max-width: 576px) {
-             /* Schimmer-Text skalieren */
-        .shimmer-text {
-            font-size: 2rem;
-        }
-
-        /* Navigation und Footer vereinfachen */
-        footer {
-            font-size: 0.8rem;
-        }
-
-        footer a {
-            font-size: 0.9rem;
-        }
-            .btn {
-                font-size: 0.7rem;
-                padding: 4px 8px;
-            }
-        }
-
-        /* Navigation (unten und transparent) */
-/* Navigation (unten und transparent, mit Animation) */
-/* Navigation (unten, klein, transparent, animiert) */
-/* Navigation */
-/* Navigation */
-/* Navigation */
-/* Navigation */
-/* Navigation */
 /* Navigation */
 .navbar-bottom {
     position: fixed;
@@ -230,16 +99,17 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(30, 30, 30, 0.8); /* Halbtransparenter Hintergrund */
-    padding: 5px 15px;
-    border-radius: 40px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    background: var(--menu-bg-color);
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     z-index: 1000;
+    backdrop-filter: blur(8px);
 }
 
 .nav-list {
     display: flex;
-    gap: 20px; /* Abstand zwischen Icons */
+    gap: 15px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -253,49 +123,111 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%; /* Runde Form */
-    background: rgba(255, 255, 255, 0.1); /* Subtiler Hintergrund */
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .nav-icon {
-    font-size: 1.2rem; /* Kleinere Icons */
-    color: rgba(255, 255, 255, 0.8); /* Standardfarbe */
+    font-size: 1.3rem;
+    color: var(--menu-text-color);
     transition: transform 0.3s ease, color 0.3s ease;
 }
 
-/* Hover- und Aktivzustände */
 .nav-link:hover,
 .nav-item.active .nav-link {
-    background: var(--accent-color); /* Akzentfarbe */
-    box-shadow: 0 4px 10px var(--accent-color); /* Leuchtender Effekt */
+    background: var(--accent-color);
+    box-shadow: 0 6px 15px rgba(255, 204, 41, 0.8);
+    transform: scale(1.1);
 }
 
 .nav-link:hover .nav-icon,
 .nav-item.active .nav-icon {
-    color: #fff; /* Weißes Icon */
-    transform: scale(1.2); /* Leichter Zoom */
+    color: var(--main-bg-color);
+    transform: scale(1.15);
 }
 
-/* Animation für aktive Links */
-.nav-item.active .nav-link {
-    animation: pulse 1s infinite;
+/* Scroll-Animation */
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
 }
 
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.4);
+.scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Karten */
+.card {
+    background-color: var(--secondary-bg-color);
+    color: var(--main-text-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(255, 204, 41, 0.3);
+}
+
+/* Mobile Optimierungen */
+@media (max-width: 768px) {
+    .navbar-bottom {
+        bottom: 5px;
+        padding: 8px 15px;
     }
-    50% {
-        transform: scale(1.1);
-        box-shadow: 0 6px 15px rgba(255, 255, 255, 0.8);
+
+    .nav-link {
+        width: 40px;
+        height: 40px;
+    }
+
+    .nav-icon {
+        font-size: 1.2rem;
+    }
+
+    .shimmer-text {
+        font-size: 2.5rem;
+        animation: shimmer 3s ease-in-out infinite; /* Langsamere Animation auf Mobilgeräten */
+    }
+
+    .scroll-animate {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+    }
+
+    .scroll-animate.visible {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
+@media (max-width: 480px) {
+    .nav-link {
+        width: 35px;
+        height: 35px;
+    }
+
+    .nav-icon {
+        font-size: 1rem;
+    }
+
+    .shimmer-text {
+        font-size: 2rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -396,76 +328,72 @@
     </body>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
-    <script>
-        
-        document.addEventListener("DOMContentLoaded", () => {
-    const observerOptions = {
-        threshold: 0.6, // Aktiviert, wenn 60% sichtbar sind
-        rootMargin: "0px 0px -50px 0px" // Offset
-    };
-
-    const observerCallback = (entries) => {
-        entries.forEach((entry) => {
-            const target = entry.target;
-            const animationClass = target.dataset.animation || "animate__fadeInUp";
-            const delay = parseFloat(target.dataset.delay || "0") / 1000; // ms zu s
-
-            if (entry.isIntersecting) {
-                // Sichtbare Elemente: Animation anwenden
-                if (target.classList.contains("scroll-animate")) {
-                    target.style.transitionDelay = `${delay}s`;
-                    target.classList.add("visible", "animate__animated", animationClass);
-                }
-
-                // Navigation aktualisieren
-                if (target.id) {
-                    document
-                        .querySelectorAll(".nav-item")
-                        .forEach((item) => item.classList.remove("active"));
-
-                    const activeNavItem = document.querySelector(
-                        `.nav-item[data-section="${target.id}"]`
-                    );
-                    if (activeNavItem) {
-                        activeNavItem.classList.add("active");
+    <script>document.addEventListener("DOMContentLoaded", () => {
+        const observerOptions = {
+            threshold: 0.6, // Aktiviert, wenn 60% sichtbar sind
+            rootMargin: "0px 0px -50px 0px" // Offset
+        };
+    
+        const observerCallback = (entries) => {
+            entries.forEach((entry) => {
+                const target = entry.target;
+                const animationClass = target.dataset.animation || "animate__fadeInUp";
+                const delay = parseFloat(target.dataset.delay || "0") / 1000; // Verzögerung in Sekunden
+    
+                if (entry.isIntersecting) {
+                    // Sichtbare Elemente: Animation anwenden
+                    if (target.classList.contains("scroll-animate")) {
+                        target.style.transitionDelay = `${delay}s`;
+                        target.classList.add("visible", "animate__animated", animationClass);
+                    }
+    
+                    // Navigation aktualisieren
+                    if (target.id) {
+                        document
+                            .querySelectorAll(".nav-item")
+                            .forEach((item) => item.classList.remove("active")); // Entferne vorherige Klasse
+    
+                        const activeNavItem = document.querySelector(
+                            `.nav-item[data-section="${target.id}"]`
+                        );
+                        if (activeNavItem) {
+                            activeNavItem.classList.add("active"); // Setze neue aktive Klasse
+                        }
+                    }
+                } else {
+                    // Animation entfernen, wenn nicht sichtbar
+                    if (target.classList.contains("scroll-animate")) {
+                        target.classList.remove("visible", "animate__animated", animationClass);
                     }
                 }
-            } else {
-                // Animation entfernen, wenn nicht sichtbar
-                if (target.classList.contains("scroll-animate")) {
-                    target.classList.remove("visible", "animate__animated", animationClass);
+            });
+        };
+    
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+    
+        // Beobachte Abschnitte und animierbare Elemente
+        const sections = document.querySelectorAll("section");
+        const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+    
+        sections.forEach((section) => observer.observe(section));
+        scrollAnimateElements.forEach((element) => observer.observe(element));
+    
+        // Sanftes Scrollen bei Klick auf die Navigation
+        const navLinks = document.querySelectorAll(".nav-link");
+        navLinks.forEach((link) => {
+            link.addEventListener("click", (e) => {
+                e.preventDefault(); // Standard-Linkverhalten verhindern
+                const targetId = link.getAttribute("href").substring(1); // Abschnitt-ID aus dem href
+                const targetSection = document.getElementById(targetId);
+    
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: "smooth", // Sanftes Scrollen
+                        block: "start" // Scrollt zum Anfang des Abschnitts
+                    });
                 }
-            }
+            });
         });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-    // Beobachte Abschnitte und animierbare Elemente
-    const sections = document.querySelectorAll("section");
-    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-
-    sections.forEach((section) => observer.observe(section));
-    scrollAnimateElements.forEach((element) => observer.observe(element));
-
-    // Sanftes Scrollen bei Klick auf die Navigation
-    const navLinks = document.querySelectorAll(".nav-link");
-    navLinks.forEach((link) => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault(); // Standard-Linkverhalten verhindern
-            const targetId = link.getAttribute("href").substring(1); // Abschnitt-ID aus dem href
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                targetSection.scrollIntoView({
-                    behavior: "smooth", // Sanftes Scrollen
-                    block: "start" // Scrollt zum Anfang des Abschnitts
-                });
-            }
-        });
-    });
-});
-
-        </script>
+    }); </script>
 
 </html>
