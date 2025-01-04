@@ -152,10 +152,22 @@ p.lead {
 }
 
 /* Scroll-Animation */
+/* Scroll-Animation */
 .scroll-animate {
     opacity: 0;
     transform: translateY(30px);
-    transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
+    transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1),fadeAndSlide 0.8s ease-out forwards;;
+
+}
+@keyframes fadeAndSlide {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .scroll-animate.visible {
@@ -178,16 +190,28 @@ p.lead {
 
 .card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 10px 25px rgba(255, 204, 41, 0.3);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+@media (hover: none) {
+    .nav-link:hover {
+        transform: none;
+    }
 
+    .card:hover {
+        transform: none;
+    }
+}
 /* Mobile Optimierungen */
 @media (max-width: 768px) {
     .navbar-bottom {
         bottom: 5px;
         padding: 8px 15px;
     }
-
+    .scroll-animate {
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+}
     .nav-link {
         width: 40px;
         height: 40px;
@@ -212,7 +236,7 @@ p.lead {
         opacity: 1;
         transform: translateY(0);
     }
-}
+
 
 @media (max-width: 480px) {
     .nav-link {
@@ -226,6 +250,10 @@ p.lead {
 
     .shimmer-text {
         font-size: 2rem;
+    }
+    .scroll-animate {
+        transform: translateY(15px);
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     }
 }
 
@@ -306,7 +334,7 @@ p.lead {
         </section>
         </div>
         <!-- Features Section -->
-        <section id="features" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <div class="container">
                 <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
                     <!-- Link zu Über Mich -->
