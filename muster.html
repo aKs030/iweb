@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elegantes Design</title>
+    <title>Abdulkerim</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" defer>
@@ -22,15 +22,17 @@
     <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
     <script src="js/menu.js" defer></script>
     <!-- Meta Tags -->
-    <meta name="description" content="Elegantes Design - Eine moderne und elegante Webseite">
-    <meta name="keywords" content="modern, design, elegant, bootstrap, responsive">
-
+    <meta name="description" content="Abdulkerim - Meine Webseite">
+    <meta name="keywords" content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de">
     <!-- Internal CSS -->
     <style>
-        /* ==========================
+/* ==========================
    Farbvariablen
    ========================== */
 :root {
+	--main-fonts-color: #fff;
+	--main-decor-color:#ffffff;
+
     --main-bg-color: #444;
     --main-text-color: rgba(245, 245, 245, 0.9);
     --accent-color: rgba(255, 204, 41, 0.8);
@@ -52,28 +54,7 @@ body {
     line-height: 1.8;
 }
 
-hr {
-    background: var(--main-decor-color);
-	margin: 2px;
-	height: 3px;
-	width: 150px;
-    border-radius:5px;
-	border: hidden;
-	margin-inline-start: auto;
-    margin-inline-end: auto;
-}
-
-h3{
-	padding-bottom: 15px;
-    letter-spacing: normal;
-    font-family: var(--main-font-family);
-	font-style: normal;
-	font-size: 60px;
-	color: var(--main-fonts-color);
-	text-shadow: 0px 0px 40px var(--main-decor-color);
-}
-
-h1, h2, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6 {
     font-family: 'Cormorant Garamond', serif;
     color: var(--main-text-color);
     font-weight: 500;
@@ -95,18 +76,16 @@ p.lead {
 }
 
 /* ==========================
-   Schimmer-Text
+        Text-Willkommen
    ========================== */
 .shimmer-text {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 600;
-    font-size: 3rem;
-    text-transform: uppercase;
-    background: linear-gradient(90deg, var(--secondary-bg-color), var(--accent-color), var(--secondary-bg-color));
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 2s ease-in-out infinite;
+	padding-bottom: 15px;
+    letter-spacing: normal;
+    font-family: var(--main-font-family);
+	font-style: normal;
+	font-size: 60px;
+	color: var(--main-fonts-color);
+	text-shadow: 0px 0px 40px var(--main-decor-color);
 }
 
 @keyframes shimmer {
@@ -116,6 +95,17 @@ p.lead {
     100% {
         background-position: 100% 50%;
     }
+}
+
+hr {
+    background: var(--main-decor-color);
+	margin: 2px;
+	height: 3px;
+	width: 150px;
+    border-radius:5px;
+	border: hidden;
+	margin-inline-start: auto;
+    margin-inline-end: auto;
 }
 
 /* ==========================
@@ -332,8 +322,7 @@ p.lead {
         <!-- Hero Section -->
         <div class="center-container">
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen</h3>
-	 <h3>My Projects.<hr></h3>
+            <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
             <div class="spacer"></div> <!-- Platzhalter für Abstand -->
 
 <p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
