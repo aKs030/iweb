@@ -1,40 +1,90 @@
-@keyframes fadeInSlide {
+/* Keyframes für dynamische Effekte */
+@keyframes slideIn {
   0% {
+    transform: translateY(50px) scale(0.8);
     opacity: 0;
-    transform: translateY(20px);
   }
   100% {
+    transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.6), 0 0 10px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
     transform: translateY(0);
   }
 }
 
-@keyframes subtleGlow {
-  0%, 100% {
-    text-shadow: 0 0 5px rgba(255, 223, 186, 0.8), 0 0 10px rgba(255, 223, 186, 0.6);
-  }
-  50% {
-    text-shadow: 0 0 15px rgba(255, 223, 186, 1), 0 0 30px rgba(255, 223, 186, 0.7);
-  }
-}
-
-.logo {
-  font-size: 3.5rem;
-  font-weight: 400;
-  color: #ffd700; /* Goldton */
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-  animation: fadeInSlide 1.5s ease-out forwards, subtleGlow 3s infinite alternate;
-  display: inline-block;
+/* Grundstil des Logos */
+.futuristic-logo {
+  display: flex;
+  justify-content: center;
+  gap: 3px; /* Abstand zwischen Buchstaben */
+  font-size: 2.5rem;
   text-align: center;
-  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+  color: #4444; /* Hauptfarbe */
 }
 
-.elegant-logo:hover {
-  transform: scale(1.1);
-  text-shadow: 0 0 10px rgba(255, 223, 186, 1), 0 0 20px rgba(255, 223, 186, 0.8);
+/* Einzelne Buchstaben mit Animation */
+.futuristic-logo span {
+  display: inline-block;
+  animation: slideIn 1.5s ease forwards;
+  animation-delay: calc(var(--index) * 0.1s); /* Individuelle Verzögerung */
+  position: relative;
+  color: #4444; /* Dunkles Grau */
+  text-shadow: 0 0 10px #ffffff; /* Weißer Schimmer */
+  transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
 }
 
+/* Hover: Interaktive Effekte */
+.futuristic-logo span:hover {
+  animation: wave 0.6s infinite ease-in-out;
+  transform: scale(1.2) rotate(10deg);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6);
+  color: #ffffff; /* Weißer Farbwechsel */
+}
 
+/* Responsive Design */
+@media (max-width: 768px) {
+  .futuristic-logo {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .futuristic-logo {
+    font-size: 2rem;
+  }
+}
+
+/* Zuweisung von Animation-Index */
+.futuristic-logo span:nth-child(1) { --index: 0; }
+.futuristic-logo span:nth-child(2) { --index: 1; }
+.futuristic-logo span:nth-child(3) { --index: 2; }
+.futuristic-logo span:nth-child(4) { --index: 3; }
+.futuristic-logo span:nth-child(5) { --index: 4; }
+.futuristic-logo span:nth-child(6) { --index: 5; }
+.futuristic-logo span:nth-child(7) { --index: 6; }
+.futuristic-logo span:nth-child(8) { --index: 7; }
+.futuristic-logo span:nth-child(9) { --index: 8; }
+.futuristic-logo span:nth-child(10) { --index: 9; }
 
 
 
