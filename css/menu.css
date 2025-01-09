@@ -1,3 +1,44 @@
+@keyframes fadeInSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes subtleGlow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(255, 223, 186, 0.8), 0 0 10px rgba(255, 223, 186, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(255, 223, 186, 1), 0 0 30px rgba(255, 223, 186, 0.7);
+  }
+}
+
+.logo {
+  font-size: 3.5rem;
+  font-weight: 400;
+  color: #ffd700; /* Goldton */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  animation: fadeInSlide 1.5s ease-out forwards, subtleGlow 3s infinite alternate;
+  display: inline-block;
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.elegant-logo:hover {
+  transform: scale(1.1);
+  text-shadow: 0 0 10px rgba(255, 223, 186, 1), 0 0 20px rgba(255, 223, 186, 0.8);
+}
+
+
+
+
+
+
 /* =======================
    GRUNDEINSTELLUNGEN
    ======================= */
@@ -22,17 +63,15 @@
     top: 0;
     left: 0;
     width: 100%;
-    /* Transparenter, verschwommener Hintergrund */
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(255,255,255,0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
     z-index: 9999;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.8rem 1.2rem;
-    /* Sanftes Einblenden beim Laden */
     animation: fadeInDown 0.8s ease forwards;
     opacity: 0;
     transform: translateY(-20px);
@@ -52,22 +91,21 @@
   }
   
   /* =======================
-     NAVIGATION (DESKTOP)
+     MENÜ (DESKTOP)
      ======================= */
-  .nav {
+  .menu {
     display: flex;
     align-items: center;
     transition: transform 0.3s ease;
   }
   
-  .nav-list {
+  .menu-list {
     list-style: none;
     display: flex;
     gap: 1.5rem;
   }
   
-  /* Hover-Linien-Effekt bei Links */
-  .nav-list li a {
+  .menu-list li a {
     text-decoration: none;
     color: #444;
     font-weight: 500;
@@ -75,7 +113,7 @@
     transition: color 0.3s ease;
   }
   
-  .nav-list li a::after {
+  .menu-list li a::after {
     content: "";
     position: absolute;
     left: 50%;
@@ -86,11 +124,11 @@
     transition: width 0.3s ease, left 0.3s ease;
   }
   
-  .nav-list li a:hover {
+  .menu-list li a:hover {
     color: #0077ff;
   }
   
-  .nav-list li a:hover::after {
+  .menu-list li a:hover::after {
     width: 100%;
     left: 0;
   }
@@ -98,8 +136,8 @@
   /* =======================
      HAMBURGER-BUTTON
      ======================= */
-  .nav-toggle {
-    display: none; /* Nur in Mobile-Ansicht gezeigt */
+  .menu-toggle {
+    display: none;
     background: none;
     border: none;
     cursor: pointer;
@@ -108,7 +146,6 @@
     position: relative;
   }
   
-  /* Hamburger-Linien */
   .hamburger,
   .hamburger::before,
   .hamburger::after {
@@ -126,16 +163,13 @@
      MEDIA QUERIES (MOBILE)
      ======================= */
   @media (max-width: 768px) {
-    /* Hamburger sichtbar */
-    .nav-toggle {
+    .menu-toggle {
       display: block;
     }
   
-    /* Navigation fürs Mobile-Overlay:
-       erst aus dem sichtbaren Bereich verschieben */
-    .nav {
+    .menu {
       position: fixed;
-      top: 60px; /* offset unter dem Header */
+      top: 60px;
       right: 0;
       width: 200px;
       padding: 1rem;
@@ -143,41 +177,35 @@
       backdrop-filter: blur(10px);
       border-bottom-left-radius: 10px;
       border-top-left-radius: 10px;
-      border-left: 1px solid rgba(255,255,255,0.25);
-      box-shadow: -4px 4px 10px rgba(0,0,0,0.1);
+      border-left: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.1);
       transform: translateX(120%);
       transition: transform 0.4s ease-in-out;
       flex-direction: column;
       gap: 1rem;
-      z-index: 9998; /* Damit es vor dem Content liegt */
+      z-index: 9998;
     }
   
-    /* Klasse .open => Navigation reinschieben */
-    .nav.open {
+    .menu.open {
       transform: translateX(0);
     }
   
-    /* 
-       Verstecke Desktop-Links nebeneinander,
-       jetzt kommen sie untereinander 
-    */
-    .nav-list {
+    .menu-list {
       flex-direction: column;
       gap: 1rem;
     }
   }
   
-  /* =======================
-     HAMBURGER => "X"-EFFEKT
-     ======================= */
-  .nav-toggle.active .hamburger {
+  .menu-toggle.active .hamburger {
     background: transparent;
   }
-  .nav-toggle.active .hamburger::before {
+  
+  .menu-toggle.active .hamburger::before {
     transform: translateY(8px) rotate(45deg);
     background: #0077ff;
   }
-  .nav-toggle.active .hamburger::after {
+  
+  .menu-toggle.active .hamburger::after {
     transform: translateY(-8px) rotate(-45deg);
     background: #0077ff;
   }
@@ -186,13 +214,6 @@
      SEITENINHALT
      ======================= */
   main {
-    margin-top: 80px; /* Platz für den fixierten Header */
+    margin-top: 80px;
     padding: 1rem;
-  }
-  
-  @keyframes fadeInDown {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }

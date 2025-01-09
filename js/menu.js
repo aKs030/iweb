@@ -1,9 +1,6 @@
 /*************************************************************************
  * MENU *
  *************************************************************************/
-// script.js
-
-// Menü per Fetch laden
 fetch('menu.html')
   .then(response => {
     if (!response.ok) {
@@ -12,17 +9,15 @@ fetch('menu.html')
     return response.text();
   })
   .then(menuMarkup => {
-    // 1) In #menuContainer einfügen
     document.getElementById('menuContainer').innerHTML = menuMarkup;
 
-    // 2) Hamburger-Logik erneut setzen, nachdem das Menü im DOM ist
-    const navToggle = document.querySelector('.nav-toggle');
-    const nav = document.querySelector('.nav');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const menu = document.querySelector('.menu');
 
-    if (navToggle && nav) {
-      navToggle.addEventListener('click', () => {
-        nav.classList.toggle('open');
-        navToggle.classList.toggle('active');
+    if (menuToggle && menu) {
+      menuToggle.addEventListener('click', () => {
+        menu.classList.toggle('open');
+        menuToggle.classList.toggle('active');
       });
     }
   })

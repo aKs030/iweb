@@ -22,7 +22,7 @@
     <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
     <script src="js/menu.js" defer></script>
     <!-- Meta Tags -->
-    <meta name="description" content="Abdulkerim - Meine Webseite">
+    <meta name="description" content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.">
     <meta name="keywords" content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de">
     <!-- Internal CSS -->
     <style>
@@ -34,12 +34,12 @@
 	--main-decor-color:#ffffff;
 
     --main-bg-color: #444;
+    --secondary-bg-color: var(--main-bg-color);
     --main-text-color: rgba(245, 245, 245, 0.9);
     --accent-color: rgba(255, 204, 41, 0.8);
-    --secondary-bg-color: #444;
-    --secondary-text-color: rgba(181, 181, 181, 0.8);
     --menu-bg-color: #333333cc;
-    --menu-text-color: rgba(255, 255, 255, 0.9);
+    --main-text-color: rgba(245, 245, 245, 0.9);
+    --secondary-text-color: rgba(245, 245, 245, 0.5); /* oder 50% Opazität */
 }
 
 /* ==========================
@@ -81,11 +81,13 @@ p.lead {
 .shimmer-text {
 	padding-bottom: 15px;
     letter-spacing: normal;
-    font-family: var(--main-font-family);
 	font-style: normal;
 	font-size: 60px;
 	color: var(--main-fonts-color);
 	text-shadow: 0px 0px 40px var(--main-decor-color);
+    font-family: inherit; /* übernimmt die Schriftart vom Body */
+    margin-bottom: 8rem; /* Abstand direkt im Stil */
+
 }
 
 @keyframes shimmer {
@@ -174,22 +176,20 @@ hr {
 /* ==========================
    Karten
    ========================== */
-.card {
+   .card {
     background-color: var(--secondary-bg-color);
     color: var(--main-text-color);
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
-
 .card:hover {
     transform: translateY(-10px);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* ==========================
@@ -241,12 +241,7 @@ hr {
     font-weight: 400;
 }
 
-/* ==========================
-   Spacer
-   ========================== */
-.spacer {
-    min-height: 8vh;
-}
+
 
 /* ==========================
    Media Queries
@@ -280,7 +275,6 @@ hr {
 
     .lead {
         font-size: 1rem;
-        line-height: 1.6;
     }
 
     .center-container {
@@ -310,7 +304,6 @@ hr {
 
     .lead {
         font-size: 0.9rem;
-        line-height: 1.4;
     }
 }
         </style>
@@ -321,8 +314,9 @@ hr {
         <!-- Hero Section -->
         <div class="center-container">
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+
             <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
-            <div class="spacer"></div> <!-- Platzhalter für Abstand -->
+
 
 <p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
     Ich freue mich, dass du den Weg hierher gefunden hast.<br>
@@ -378,9 +372,11 @@ hr {
         <!-- Footer -->
         <footer class="footer py-3 text-center">
             <p class="mb-1">
-                <button id="impressumButton" class="btn-link">Impressum</button> |
-                <button id="privacyButton" class="btn-link">Datenschutzerklärung</button> |
-                <a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
+
+                <a href="#impressum" id="impressumButton" class="btn-link">Impressum</a> |
+<a href="#datenschutz" id="privacyButton" class="btn-link">Datenschutzerklärung</a> |
+<a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
+                
             </p>
             <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
         </footer>
@@ -391,8 +387,8 @@ hr {
 <nav class="navbar navbar-bottom">
     <ul class="nav-list">
       <li class="nav-item" data-section="hero">
-        <a href="#hero" class="nav-link">
-          <i class="fas fa-home nav-icon"></i>
+        <a href="#hero" class="nav-link" aria-label="Zur Startseite">
+            <i class="fas fa-home nav-icon" aria-hidden="true"></i>
         </a>
       </li>
       <li class="nav-item" data-section="features">
@@ -479,6 +475,15 @@ hr {
                 });
             });
         });
+
+
+
+        const slogans = ['Hello!', 'Welcome!', 'CreativeSpace', 'Explore!'];
+let index = 0;
+setInterval(() => {
+  document.getElementById('dynamicLogo').textContent = slogans[index];
+  index = (index + 1) % slogans.length;
+}, 3000);
     </script>
 
 </html>
