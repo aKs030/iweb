@@ -315,18 +315,59 @@ hr {
 
 
 /* Container für die Begrüßung */
+/* Begrüßungstext */
+/* Container für die Begrüßung */
+
+
+/* Begrüßungstext */
 #welcomeText {
-  font-weight: bold; /* Klarer, fetter Text */
-  font-size: 3rem; /* Vergrößerte Schrift für bessere Sichtbarkeit */
-  opacity: 0; /* Unsichtbarer Startzustand */
-  transform: scale(0.8) rotate(-10deg); /* Startposition: Verkleinert und leicht gedreht */
-  transition: transform 1s ease-in-out, opacity 1s ease-in-out; /* Sanfte Animation */
+  font-weight: bold;
+  font-size: 2.5rem;
+  color: white; /* Textfarbe */
+  text-align: center;
+  background-size: 70%; /* Dynamische Anpassung der Flagge */
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 20px;
+  border-radius: 8px; /* Abgerundete Ecken */
+  transition: background-image 1s ease-in-out, opacity 1s ease-in-out; /* Sanfter Übergang */
+  opacity: 1; /* Startsichtbarkeit */
 }
 
-#welcomeText.visible {
-  opacity: 1; /* Sichtbar */
-  transform: scale(1) rotate(0deg); /* Zur Normalgröße und Rotation */
+/* Für größere Bildschirme (Desktop) */
+@media (min-width: 768px) {
+  #welcomeText {
+    font-weight: bold;
+  font-size: 2.5rem;
+  color: white; /* Textfarbe */
+  text-align: center;
+  background-size: 70%; /* Dynamische Anpassung der Flagge */
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 20px;
+  border-radius: 8px; /* Abgerundete Ecken */
+  transition: background-image 1s ease-in-out, opacity 1s ease-in-out; /* Sanfter Übergang */
+  opacity: 1; /* Startsichtbarkeit */
+  }
 }
+
+/* Für kleinere Bildschirme (Mobil) */
+@media (max-width: 768px) {
+  #welcomeText {
+    font-weight: bold;
+  font-size: 2.5rem;
+  color: white; /* Textfarbe */
+  text-align: center;
+  background-size: 70%; /* Dynamische Anpassung der Flagge */
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 20px;
+  border-radius: 8px; /* Abgerundete Ecken */
+  transition: background-image 1s ease-in-out, opacity 1s ease-in-out; /* Sanfter Übergang */
+  opacity: 1; /* Startsichtbarkeit */
+  }
+}
+
         </style>
 </head>
 <body>
@@ -337,7 +378,9 @@ hr {
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
 
             <div id="welcomeContainer">
-                <h3 id="welcomeText" class="display-3 fw-bold shimmer-text">Willkommen</h3>
+                <h3 id="welcomeText" class="display-3 fw-bold shimmer-text">
+                  Willkommen
+                </h3>
               </div>
 
 <p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
@@ -433,45 +476,42 @@ hr {
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
-     document.addEventListener("DOMContentLoaded", () => {
-
-
-
-
- // HTML-Elemente abrufen
-// HTML-Elemente abrufen
 const welcomeText = document.getElementById('welcomeText');
 
-// Liste der Begrüßungen in verschiedenen Sprachen
-const greetings = [
-  'Willkommen', 'Welcome', 'Bienvenue', 'Bienvenido', 'Benvenuto',
-  'Добро пожаловать', '欢迎', 'ようこそ', '환영합니다', 'مرحبا',
-  'Bem-vindo', 'Witamy', 'Tervetuloa', 'Välkommen', 'Καλωσόρισες',
-  'Selamat datang', 'स्वागत है', 'Chào mừng', 'Bine ai venit',
-  'Velkommen', 'Добре дошли', 'Hoş geldiniz', 'Üdvözöljük', 'Karibu',
-  'ברוך הבא', 'Sveiki atvykę', 'Tere tulemast', 'Добродошли', 'Welkom',
-  'Aloha', 'வணக்கம்', 'స్వాగతం', 'ຍິນດີຕ້ອນຮັບ', 'ສະບາຍດີ'
+// Liste der Begrüßungen mit Flaggen-URLs
+const greetingsWithFlags = [
+  { greeting: 'Willkommen', flag: 'https://flagcdn.com/w320/de.png' },
+  { greeting: 'Welcome', flag: 'https://flagcdn.com/w320/gb.png' },
+  { greeting: 'Bienvenue', flag: 'https://flagcdn.com/w320/fr.png' },
+  { greeting: 'Bienvenido', flag: 'https://flagcdn.com/w320/es.png' },
+  { greeting: 'Benvenuto', flag: 'https://flagcdn.com/w320/it.png' },
+  { greeting: 'Добро пожаловать', flag: 'https://flagcdn.com/w320/ru.png' },
+  { greeting: '欢迎', flag: 'https://flagcdn.com/w320/cn.png' },
+  { greeting: 'ようこそ', flag: 'https://flagcdn.com/w320/jp.png' },
+  { greeting: '환영합니다', flag: 'https://flagcdn.com/w320/kr.png' },
+  { greeting: 'مرحبا', flag: 'https://flagcdn.com/w320/ae.png' }
 ];
 
 let index = 0;
 
-// Funktion, um die Begrüßung zu ändern
+// Funktion zum Ändern der Begrüßung und Flagge
 function changeGreeting() {
-  // Text ausblenden
-  welcomeText.classList.remove('visible');
+  // Text und Hintergrund ausblenden
+  welcomeText.style.opacity = 0;
 
-  // Nach 1 Sekunde den Text ändern und wieder einblenden
+  // Nach kurzer Verzögerung Text und Hintergrund aktualisieren
   setTimeout(() => {
-    welcomeText.textContent = greetings[index];
-    welcomeText.classList.add('visible'); // Text einblenden
-    index = (index + 1) % greetings.length; // Nächste Begrüßung
-  }, 1000); // Timeout entspricht der CSS-Übergangszeit
+    welcomeText.textContent = greetingsWithFlags[index].greeting; // Text aktualisieren
+    welcomeText.style.backgroundImage = `url(${greetingsWithFlags[index].flag})`; // Flagge als Hintergrund setzen
+    welcomeText.style.opacity = 1; // Wieder einblenden
+    index = (index + 1) % greetingsWithFlags.length; // Zum nächsten wechseln
+  }, 1000); // Wartezeit für sanften Übergang
 }
 
 // Begrüßung alle 3 Sekunden ändern
 setInterval(changeGreeting, 3000);
 
-// Startanimation
+// Initialisierung
 changeGreeting();
 
 
@@ -479,6 +519,13 @@ changeGreeting();
 
 
 
+     document.addEventListener("DOMContentLoaded", () => {
+
+
+
+
+
+        
 
 
 
