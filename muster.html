@@ -318,6 +318,7 @@ hr {
 
 
 
+
 .greeting {
   position: fixed;
   top: 20px;
@@ -329,6 +330,7 @@ hr {
   border-radius: 5px;
   z-index: 1000;
   font-size: 1.5rem;
+  transition: transform 0.2s, opacity 0.2s;
 }
 
 .section {
@@ -465,27 +467,35 @@ hr {
     <script>
 
 
-const greetings = ["Willkommen!", "Hallo!", "Schön, dich hier zu sehen!", "Viel Spaß!"];
+
+  const greetings = ["Willkommen!", "Hallo!", "Schön, dich hier zu sehen!", "Viel Spaß!"];
 let lastScrollTop = 0;
-let index = 0;
+let scrollAmount = 0;
 
 const welcomeText = document.getElementById("greeting");
 
+// Event Listener für Scroll
 window.addEventListener("scroll", () => {
   const scrollTop = window.scrollY;
 
+  // Berechne die Scroll-Richtung
   if (scrollTop > lastScrollTop) {
-    // Beim Scrollen nach unten
-    index = (index + 1) % greetings.length;
+    // Scrollen nach unten
+    scrollAmount += scrollTop - lastScrollTop;
   } else {
-    // Beim Scrollen nach oben
-    index = (index - 1 + greetings.length) % greetings.length;
+    // Scrollen nach oben
+    scrollAmount -= lastScrollTop - scrollTop;
   }
 
+  // Begrüßung wechseln basierend auf Scrollmenge
+  const index = Math.floor(Math.abs(scrollAmount / 200)) % greetings.length;
+
   welcomeText.textContent = greetings[index];
+  welcomeText.style.transform = `translateY(${scrollTop * 0.1}px)`;
+  welcomeText.style.opacity = 1 - Math.min(scrollTop / 1000, 1);
+
   lastScrollTop = scrollTop;
 });
-
 
 
 
