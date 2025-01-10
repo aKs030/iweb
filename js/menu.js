@@ -1,55 +1,80 @@
-document.addEventListener('DOMContentLoaded', () => {
-  fetch('menu.html')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP-Error! Status: ${response.status}`);
-      }
-      return response.text();
-    })
-    .then(menuMarkup => {
-      const menuContainer = document.getElementById('menuContainer');
-      if (!menuContainer) {
-        console.error('menuContainer nicht gefunden!');
-        return;
-      }
-      menuContainer.innerHTML = menuMarkup;
+document.addEventListener("DOMContentLoaded", () => {
+  const observerOptions = {
+      threshold: 0.6, // Aktiviert, wenn 60% sichtbar sind
+      rootMargin: "0px 0px -50px 0px", // Offset für besseres Scrollen
+  };
 
-      const menuToggle = menuContainer.querySelector('.menu-toggle');
-      const menu = menuContainer.querySelector('.menu');
-      if (menuToggle && menu) {
-        menuToggle.addEventListener('click', () => {
-          menu.classList.toggle('open');
-          menuToggle.classList.toggle('active');
-        });
-      }
+  // Selektoren zwischenspeichern
+  const navItems = document.querySelectorAll(".nav-item");
+  const sections = document.querySelectorAll("section");
+  const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+  const navLinks = document.querySelectorAll(".nav-link");
 
-      const logoContainer = menuContainer.querySelector('.logo-container');
-      if (logoContainer) {
-        logoContainer.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          window.location.href = 'index.html';
-        });
-      }
-    })
-    .catch(err => {
-      console.error('Fehler beim Laden des Menüs:', err);
-      const fallback = document.createElement('div');
-      fallback.textContent = 'Menü konnte nicht geladen werden.';
-      fallback.style.color = 'red';
-      fallback.style.textAlign = 'center';
-      document.body.prepend(fallback);
-    });
+  // Callback-Funktion für den IntersectionObserver
+  const observerCallback = (entries) => {
+      entries.forEach(({ target, isIntersecting }) => {
+          const animationClass = target.dataset.animation || "animate__fadeInUp";
+          const delayInS = parseFloat(target.dataset.delay || "0") / 1000; // Verzögerung in Sekunden
 
-  document.addEventListener('click', (event) => {
-    const menu = document.querySelector('.menu');
-    const menuToggle = document.querySelector('.menu-toggle');
+          if (isIntersecting) {
+              // Sichtbare Elemente: Animation anwenden
+              if (target.classList.contains("scroll-animate")) {
+                  target.style.transitionDelay = `${delayInS}s`;
+                  target.classList.add("visible", "animate__animated", animationClass);
+              }
 
-    if (menu && menuToggle && menu.classList.contains('open')) {
-      if (!menu.contains(event.target) && !menuToggle.contains(event.target)) {
-        menu.classList.remove('open');
-        menuToggle.classList.remove('active');
-      }
-    }
+              // Navigation aktualisieren, wenn die Section eine ID hat
+              if (target.id) {
+                  navItems.forEach((item) => item.classList.remove("active"));
+                  const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                  if (activeNavItem) {
+                      activeNavItem.classList.add("active");
+                  }
+              }
+          } else {
+              // Animation entfernen, wenn Element nicht mehr sichtbar ist
+              if (target.classList.contains("scroll-animate")) {
+                  target.classList.remove("visible", "animate__animated", animationClass);
+              }
+          }
+      });
+  };
+
+  // Initialisierung des IntersectionObserver
+  const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+  // Beobachte alle <section>-Elemente und alle scroll-animate-Elemente
+  sections.forEach((section) => observer.observe(section));
+  scrollAnimateElements.forEach((element) => observer.observe(element));
+
+  // Sanftes Scrollen bei Klick auf Navigation
+  navLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+          e.preventDefault(); // Standard-Link-Verhalten verhindern
+
+          const targetId = link.getAttribute("href").substring(1);
+          const targetSection = document.getElementById(targetId);
+          if (targetSection) {
+              targetSection.scrollIntoView({
+                  behavior: "smooth", // Sanftes Scrollen
+                  block: "start", // Scrollt zum Anfang des Abschnitts
+              });
+          }
+
+          // Entferne die 'active'-Klasse von allen Navigationspunkten
+          navItems.forEach((item) => item.classList.remove("active"));
+
+          // Füge die 'active'-Klasse nur vorübergehend hinzu
+          const clickedNavItem = link.closest(".nav-item");
+          if (clickedNavItem) {
+              clickedNavItem.classList.add("active");
+
+              // Entferne die 'active'-Klasse nach einer kurzen Verzögerung
+              setTimeout(() => {
+                  clickedNavItem.classList.remove("active");
+              }, 500); // Zeit in Millisekunden
+          }
+      });
   });
 });
 /*************************************************************************
