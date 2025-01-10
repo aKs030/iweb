@@ -311,6 +311,22 @@ hr {
         font-size: 0.9rem;
     }
 }
+
+
+
+/* Container für die Begrüßung */
+#welcomeText {
+  font-weight: bold; /* Klarer, fetter Text */
+  font-size: 3rem; /* Vergrößerte Schrift für bessere Sichtbarkeit */
+  opacity: 0; /* Unsichtbarer Startzustand */
+  transform: scale(0.8) rotate(-10deg); /* Startposition: Verkleinert und leicht gedreht */
+  transition: transform 1s ease-in-out, opacity 1s ease-in-out; /* Sanfte Animation */
+}
+
+#welcomeText.visible {
+  opacity: 1; /* Sichtbar */
+  transform: scale(1) rotate(0deg); /* Zur Normalgröße und Rotation */
+}
         </style>
 </head>
 <body>
@@ -320,8 +336,9 @@ hr {
         <div class="center-container">
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
 
-            <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
-
+            <div id="welcomeContainer">
+                <h3 id="welcomeText" class="display-3 fw-bold shimmer-text">Willkommen</h3>
+              </div>
 
 <p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
     Ich freue mich, dass du den Weg hierher gefunden hast.<br>
@@ -417,6 +434,64 @@ hr {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
      document.addEventListener("DOMContentLoaded", () => {
+
+
+
+
+ // HTML-Elemente abrufen
+// HTML-Elemente abrufen
+const welcomeText = document.getElementById('welcomeText');
+
+// Liste der Begrüßungen in verschiedenen Sprachen
+const greetings = [
+  'Willkommen', 'Welcome', 'Bienvenue', 'Bienvenido', 'Benvenuto',
+  'Добро пожаловать', '欢迎', 'ようこそ', '환영합니다', 'مرحبا',
+  'Bem-vindo', 'Witamy', 'Tervetuloa', 'Välkommen', 'Καλωσόρισες',
+  'Selamat datang', 'स्वागत है', 'Chào mừng', 'Bine ai venit',
+  'Velkommen', 'Добре дошли', 'Hoş geldiniz', 'Üdvözöljük', 'Karibu',
+  'ברוך הבא', 'Sveiki atvykę', 'Tere tulemast', 'Добродошли', 'Welkom',
+  'Aloha', 'வணக்கம்', 'స్వాగతం', 'ຍິນດີຕ້ອນຮັບ', 'ສະບາຍດີ'
+];
+
+let index = 0;
+
+// Funktion, um die Begrüßung zu ändern
+function changeGreeting() {
+  // Text ausblenden
+  welcomeText.classList.remove('visible');
+
+  // Nach 1 Sekunde den Text ändern und wieder einblenden
+  setTimeout(() => {
+    welcomeText.textContent = greetings[index];
+    welcomeText.classList.add('visible'); // Text einblenden
+    index = (index + 1) % greetings.length; // Nächste Begrüßung
+  }, 1000); // Timeout entspricht der CSS-Übergangszeit
+}
+
+// Begrüßung alle 3 Sekunden ändern
+setInterval(changeGreeting, 3000);
+
+// Startanimation
+changeGreeting();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     const observerOptions = {
         threshold: 0.6,
         rootMargin: "0px 0px -50px 0px"
