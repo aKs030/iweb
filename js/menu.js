@@ -1,3 +1,6 @@
+/*************************************************************************
+ * MENU *
+ *************************************************************************/
 document.addEventListener('DOMContentLoaded', () => {
   fetch('menu.html')
     .then(response => {
@@ -22,57 +25,20 @@ document.addEventListener('DOMContentLoaded', () => {
           menu.classList.toggle('open');
           menuToggle.classList.toggle('active');
         });
+      } else {
+        console.error('Menu-Toggle-Elemente fehlen.');
       }
 
       // Logo-Rechtsklick Logik
       const logoContainer = menuContainer.querySelector('.logo-container');
       if (logoContainer) {
         logoContainer.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          window.location.href = 'index.html';
+          e.preventDefault(); // Verhindert das Kontextmenü
+          window.location.href = 'index.html'; // Weiterleitung zur Startseite
         });
+      } else {
+        console.error('Logo-Container konnte nicht gefunden werden.');
       }
-
-      // Navigation mit Scroll-Animation und Fokus-Handling
-      const navItems = document.querySelectorAll('.nav-item');
-      const navLinks = document.querySelectorAll('.nav-link');
-
-      navLinks.forEach(link => {
-        link.addEventListener('click', e => {
-          e.preventDefault();
-
-          // Entferne aktive Klassen von allen Navigationspunkten
-          navItems.forEach(item => item.classList.remove('active'));
-
-          // Entferne :focus und :active explizit
-          navLinks.forEach(navLink => {
-            navLink.blur();
-          });
-
-          // Füge dem geklickten Navigationspunkt die aktive Klasse hinzu
-          const clickedNavItem = link.closest('.nav-item');
-          if (clickedNavItem) {
-            clickedNavItem.classList.add('active');
-          }
-
-          // Scrollen zur Ziel-Sektion
-          const targetId = link.getAttribute('href').substring(1);
-          const targetSection = document.getElementById(targetId);
-          if (targetSection) {
-            targetSection.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-
-          // Entferne die aktive Klasse nach Timeout (nur auf mobilen Geräten)
-          if (window.innerWidth <= 768) {
-            setTimeout(() => {
-              clickedNavItem.classList.remove('active');
-            }, 500); // Nach 0,5 Sekunden
-          }
-        });
-      });
     })
     .catch(err => console.error('Fehler beim Laden des Menüs:', err));
 });

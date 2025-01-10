@@ -29,6 +29,17 @@
 /* ==========================
    Farbvariablen
    ========================== */
+   @media (hover: none) {
+  .nav-link:focus,
+  .nav-link:active {
+    background: none; /* Entfernt Hintergrundfarbe beim Fokus */
+    box-shadow: none; /* Entfernt Schatten */
+    transform: none;  /* Entfernt Skalierungseffekte */
+    animation: none;  /* Verhindert Animation */
+  }
+}
+
+
 :root {
 	--main-fonts-color: #fff;
 	--main-decor-color:#ffffff;
