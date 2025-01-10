@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(err => console.error('Fehler beim Laden des Menüs:', err));
 });
+
 /*************************************************************************
  * BACK TO TOP BUTTON *
  *************************************************************************/
