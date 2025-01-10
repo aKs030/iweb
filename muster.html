@@ -317,6 +317,7 @@ hr {
 
 
 
+
 .greeting {
   position: fixed;
   top: 20px;
@@ -339,16 +340,11 @@ hr {
   background-color: #f0f0f0;
   border-bottom: 2px solid #ddd;
 }
-#section1 {
-  background-color: #ff9999;
+:nth-child(2n) {
+  background-color: #ccc;
 }
-#section2 {
-  background-color: #99ccff;
-}
-#section3 {
-  background-color: #99ff99;
-}
-        </style>
+
+ </style>
 </head>
 <body>
     <div id="menuContainer"></div>
@@ -365,10 +361,12 @@ hr {
             
             
             
-            <div class="greeting" id="greeting">Willkommen!</div>
-<section id="section1" class="section">Abschnitt 1</section>
-<section id="section2" class="section">Abschnitt 2</section>
-<section id="section3" class="section">Abschnitt 3</section>
+<div class="greeting" id="greeting">Willkommen!</div>
+<section class="section">Abschnitt 1</section>
+<section class="section">Abschnitt 2</section>
+<section class="section">Abschnitt 3</section>
+<section class="section">Abschnitt 4</section>
+
 
 
 
@@ -466,38 +464,27 @@ hr {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
 
-document.addEventListener("DOMContentLoaded", () => {
-  const greeting = document.getElementById("greeting");
-  const sections = document.querySelectorAll(".section");
 
-  const options = {
-    root: null,
-    threshold: 0.5,
-  };
+const greetings = ["Willkommen!", "Hallo!", "Schön, dich hier zu sehen!", "Viel Spaß!"];
+let lastScrollTop = 0;
+let index = 0;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        switch (entry.target.id) {
-          case "section1":
-            greeting.textContent = "Willkommen im Abschnitt 1!";
-            break;
-          case "section2":
-            greeting.textContent = "Hier ist Abschnitt 2!";
-            break;
-          case "section3":
-            greeting.textContent = "Abschnitt 3 – Viel Spaß!";
-            break;
-          default:
-            greeting.textContent = "Willkommen!";
-        }
-      }
-    });
-  }, options);
+const welcomeText = document.getElementById("greeting");
 
-  sections.forEach((section) => observer.observe(section));
+window.addEventListener("scroll", () => {
+  const scrollTop = window.scrollY;
+
+  if (scrollTop > lastScrollTop) {
+    // Beim Scrollen nach unten
+    index = (index + 1) % greetings.length;
+  } else {
+    // Beim Scrollen nach oben
+    index = (index - 1 + greetings.length) % greetings.length;
+  }
+
+  welcomeText.textContent = greetings[index];
+  lastScrollTop = scrollTop;
 });
-
 
 
 
