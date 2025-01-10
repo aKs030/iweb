@@ -1,4 +1,3 @@
-
 /*************************************************************************
  * DYNAMISCHES LADEN DES MENÜS UND INTERAKTIONEN *
  *************************************************************************/
@@ -40,17 +39,16 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         console.error('Logo-Container konnte nicht gefunden werden.');
       }
-    })
-    .catch(err => console.error('Fehler beim Laden des Menüs:', err));
-});
 
-document.addEventListener("DOMContentLoaded", () => {
-  const navItems = document.querySelectorAll(".nav-item");
-  const navLinks = document.querySelectorAll(".nav-link");
+      /*************************************************************************
+       * NAVIGATION MIT SANFTEM SCROLLEN UND 'ACTIVE'-KLASSEN *
+       *************************************************************************/
+      const navItems = document.querySelectorAll(".nav-item");
+      const navLinks = document.querySelectorAll(".nav-link");
 
-  // Navigationselement anklicken
-  navLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
+      // Navigationselement anklicken
+      navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
           e.preventDefault();
 
           // Entferne vorher aktive Klassen
@@ -59,27 +57,29 @@ document.addEventListener("DOMContentLoaded", () => {
           // Aktiviere den geklickten Navigationsbutton
           const clickedNavItem = link.closest(".nav-item");
           if (clickedNavItem) {
-              clickedNavItem.classList.add("active");
+            clickedNavItem.classList.add("active");
           }
 
           // Ziel-Sektion sanft scrollen
           const targetId = link.getAttribute("href").substring(1);
           const targetSection = document.getElementById(targetId);
           if (targetSection) {
-              targetSection.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-              });
+            targetSection.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
           }
 
           // Entferne die aktive Klasse nach kurzem Timeout (nur für mobile Ansicht)
           if (window.innerWidth <= 768) {
-              setTimeout(() => {
-                  clickedNavItem.classList.remove("active");
-              }, 1000); // Nach 1 Sekunde
+            setTimeout(() => {
+              clickedNavItem.classList.remove("active");
+            }, 1000); // Nach 1 Sekunde
           }
+        });
       });
-  });
+    })
+    .catch(err => console.error('Fehler beim Laden des Menüs:', err));
 });
 /*************************************************************************
  * BACK TO TOP BUTTON *
