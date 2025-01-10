@@ -1,78 +1,82 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const observerOptions = {
-      threshold: 0.6, // Aktiviert, wenn 60% sichtbar sind
-      rootMargin: "0px 0px -50px 0px", // Offset für besseres Scrollen
-  };
 
-  // Selektoren zwischenspeichern
+/*************************************************************************
+ * DYNAMISCHES LADEN DES MENÜS UND INTERAKTIONEN *
+ *************************************************************************/
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('menu.html')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP-Error! Status: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(menuMarkup => {
+      // Fügt das Menü in den Container ein
+      const menuContainer = document.getElementById('menuContainer');
+      if (!menuContainer) {
+        throw new Error('menuContainer nicht gefunden!');
+      }
+      menuContainer.innerHTML = menuMarkup;
+
+      // Menü-Toggle Logik
+      const menuToggle = menuContainer.querySelector('.menu-toggle');
+      const menu = menuContainer.querySelector('.menu');
+      if (menuToggle && menu) {
+        menuToggle.addEventListener('click', () => {
+          menu.classList.toggle('open');
+          menuToggle.classList.toggle('active');
+        });
+      } else {
+        console.error('Menu-Toggle-Elemente fehlen.');
+      }
+
+      // Logo-Rechtsklick Logik
+      const logoContainer = menuContainer.querySelector('.logo-container');
+      if (logoContainer) {
+        logoContainer.addEventListener('contextmenu', (e) => {
+          e.preventDefault(); // Verhindert das Kontextmenü
+          window.location.href = 'index.html'; // Weiterleitung zur Startseite
+        });
+      } else {
+        console.error('Logo-Container konnte nicht gefunden werden.');
+      }
+    })
+    .catch(err => console.error('Fehler beim Laden des Menüs:', err));
+});
+
+document.addEventListener("DOMContentLoaded", () => {
   const navItems = document.querySelectorAll(".nav-item");
-  const sections = document.querySelectorAll("section");
-  const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
   const navLinks = document.querySelectorAll(".nav-link");
 
-  // Callback-Funktion für den IntersectionObserver
-  const observerCallback = (entries) => {
-      entries.forEach(({ target, isIntersecting }) => {
-          const animationClass = target.dataset.animation || "animate__fadeInUp";
-          const delayInS = parseFloat(target.dataset.delay || "0") / 1000; // Verzögerung in Sekunden
-
-          if (isIntersecting) {
-              // Sichtbare Elemente: Animation anwenden
-              if (target.classList.contains("scroll-animate")) {
-                  target.style.transitionDelay = `${delayInS}s`;
-                  target.classList.add("visible", "animate__animated", animationClass);
-              }
-
-              // Navigation aktualisieren, wenn die Section eine ID hat
-              if (target.id) {
-                  navItems.forEach((item) => item.classList.remove("active"));
-                  const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                  if (activeNavItem) {
-                      activeNavItem.classList.add("active");
-                  }
-              }
-          } else {
-              // Animation entfernen, wenn Element nicht mehr sichtbar ist
-              if (target.classList.contains("scroll-animate")) {
-                  target.classList.remove("visible", "animate__animated", animationClass);
-              }
-          }
-      });
-  };
-
-  // Initialisierung des IntersectionObserver
-  const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-  // Beobachte alle <section>-Elemente und alle scroll-animate-Elemente
-  sections.forEach((section) => observer.observe(section));
-  scrollAnimateElements.forEach((element) => observer.observe(element));
-
-  // Sanftes Scrollen bei Klick auf Navigation
+  // Navigationselement anklicken
   navLinks.forEach((link) => {
       link.addEventListener("click", (e) => {
-          e.preventDefault(); // Standard-Link-Verhalten verhindern
+          e.preventDefault();
 
+          // Entferne vorher aktive Klassen
+          navItems.forEach((item) => item.classList.remove("active"));
+
+          // Aktiviere den geklickten Navigationsbutton
+          const clickedNavItem = link.closest(".nav-item");
+          if (clickedNavItem) {
+              clickedNavItem.classList.add("active");
+          }
+
+          // Ziel-Sektion sanft scrollen
           const targetId = link.getAttribute("href").substring(1);
           const targetSection = document.getElementById(targetId);
           if (targetSection) {
               targetSection.scrollIntoView({
-                  behavior: "smooth", // Sanftes Scrollen
-                  block: "start", // Scrollt zum Anfang des Abschnitts
+                  behavior: "smooth",
+                  block: "start",
               });
           }
 
-          // Entferne die 'active'-Klasse von allen Navigationspunkten
-          navItems.forEach((item) => item.classList.remove("active"));
-
-          // Füge die 'active'-Klasse nur vorübergehend hinzu
-          const clickedNavItem = link.closest(".nav-item");
-          if (clickedNavItem) {
-              clickedNavItem.classList.add("active");
-
-              // Entferne die 'active'-Klasse nach einer kurzen Verzögerung
+          // Entferne die aktive Klasse nach kurzem Timeout (nur für mobile Ansicht)
+          if (window.innerWidth <= 768) {
               setTimeout(() => {
                   clickedNavItem.classList.remove("active");
-              }, 500); // Zeit in Millisekunden
+              }, 1000); // Nach 1 Sekunde
           }
       });
   });
