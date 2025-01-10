@@ -1,28 +1,48 @@
 
 /*************************************************************************
- * MENU *
+ * DYNAMISCHES LADEN DES MENÜS UND INTERAKTIONEN *
  *************************************************************************/
-fetch('menu.html')
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP-Error! Status: ${response.status}`);
-    }
-    return response.text();
-  })
-  .then(menuMarkup => {
-    document.getElementById('menuContainer').innerHTML = menuMarkup;
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('menu.html')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP-Error! Status: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(menuMarkup => {
+      // Fügt das Menü in den Container ein
+      const menuContainer = document.getElementById('menuContainer');
+      if (!menuContainer) {
+        throw new Error('menuContainer nicht gefunden!');
+      }
+      menuContainer.innerHTML = menuMarkup;
 
-    const menuToggle = document.querySelector('.menu-toggle');
-    const menu = document.querySelector('.menu');
+      // Menü-Toggle Logik
+      const menuToggle = menuContainer.querySelector('.menu-toggle');
+      const menu = menuContainer.querySelector('.menu');
+      if (menuToggle && menu) {
+        menuToggle.addEventListener('click', () => {
+          menu.classList.toggle('open');
+          menuToggle.classList.toggle('active');
+        });
+      } else {
+        console.error('Menu-Toggle-Elemente fehlen.');
+      }
 
-    if (menuToggle && menu) {
-      menuToggle.addEventListener('click', () => {
-        menu.classList.toggle('open');
-        menuToggle.classList.toggle('active');
-      });
-    }
-  })
-  .catch(err => console.error('Fehler beim Laden des Menüs:', err));
+      // Logo-Rechtsklick Logik
+      const logoContainer = menuContainer.querySelector('.logo-container');
+      if (logoContainer) {
+        logoContainer.addEventListener('contextmenu', (e) => {
+          e.preventDefault(); // Verhindert das Kontextmenü
+          window.location.href = 'index.html'; // Weiterleitung zur Startseite
+        });
+      } else {
+        console.error('Logo-Container konnte nicht gefunden werden.');
+      }
+    })
+    .catch(err => console.error('Fehler beim Laden des Menüs:', err));
+});
 /*************************************************************************
  * BACK TO TOP BUTTON *
  *************************************************************************/
