@@ -1,6 +1,3 @@
-/*************************************************************************
- * DYNAMISCHES LADEN DES MENÜS UND INTERAKTIONEN *
- *************************************************************************/
 document.addEventListener('DOMContentLoaded', () => {
   fetch('menu.html')
     .then(response => {
@@ -25,63 +22,60 @@ document.addEventListener('DOMContentLoaded', () => {
           menu.classList.toggle('open');
           menuToggle.classList.toggle('active');
         });
-      } else {
-        console.error('Menu-Toggle-Elemente fehlen.');
       }
 
       // Logo-Rechtsklick Logik
       const logoContainer = menuContainer.querySelector('.logo-container');
       if (logoContainer) {
         logoContainer.addEventListener('contextmenu', (e) => {
-          e.preventDefault(); // Verhindert das Kontextmenü
-          window.location.href = 'index.html'; // Weiterleitung zur Startseite
+          e.preventDefault();
+          window.location.href = 'index.html';
         });
-      } else {
-        console.error('Logo-Container konnte nicht gefunden werden.');
       }
 
-      /*************************************************************************
-       * NAVIGATION MIT SANFTEM SCROLLEN UND 'ACTIVE'-KLASSEN *
-       *************************************************************************/
-      const navItems = document.querySelectorAll(".nav-item");
-      const navLinks = document.querySelectorAll(".nav-link");
+      // Navigation mit Scroll-Animation und Fokus-Handling
+      const navItems = document.querySelectorAll('.nav-item');
+      const navLinks = document.querySelectorAll('.nav-link');
 
-      // Navigationselement anklicken
-      navLinks.forEach((link) => {
-        link.addEventListener("click", (e) => {
+      navLinks.forEach(link => {
+        link.addEventListener('click', e => {
           e.preventDefault();
 
-          // Entferne vorher aktive Klassen
-          navItems.forEach((item) => item.classList.remove("active"));
+          // Entferne aktive Klassen von allen Navigationspunkten
+          navItems.forEach(item => item.classList.remove('active'));
 
-          // Aktiviere den geklickten Navigationsbutton
-          const clickedNavItem = link.closest(".nav-item");
+          // Entferne :focus und :active explizit
+          navLinks.forEach(navLink => {
+            navLink.blur();
+          });
+
+          // Füge dem geklickten Navigationspunkt die aktive Klasse hinzu
+          const clickedNavItem = link.closest('.nav-item');
           if (clickedNavItem) {
-            clickedNavItem.classList.add("active");
+            clickedNavItem.classList.add('active');
           }
 
-          // Ziel-Sektion sanft scrollen
-          const targetId = link.getAttribute("href").substring(1);
+          // Scrollen zur Ziel-Sektion
+          const targetId = link.getAttribute('href').substring(1);
           const targetSection = document.getElementById(targetId);
           if (targetSection) {
             targetSection.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
+              behavior: 'smooth',
+              block: 'start'
             });
           }
 
-          // Entferne die aktive Klasse nach kurzem Timeout (nur für mobile Ansicht)
+          // Entferne die aktive Klasse nach Timeout (nur auf mobilen Geräten)
           if (window.innerWidth <= 768) {
             setTimeout(() => {
-              clickedNavItem.classList.remove("active");
-            }, 1000); // Nach 1 Sekunde
+              clickedNavItem.classList.remove('active');
+            }, 500); // Nach 0,5 Sekunden
           }
         });
       });
     })
     .catch(err => console.error('Fehler beim Laden des Menüs:', err));
 });
-
 /*************************************************************************
  * BACK TO TOP BUTTON *
  *************************************************************************/
