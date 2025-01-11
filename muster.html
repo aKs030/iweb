@@ -29,17 +29,6 @@
 /* ==========================
    Farbvariablen
    ========================== */
-/* Snap Container */
-main {
-    scroll-snap-type: y mandatory; /* Aktiviert Scroll-Einrastung */
-    overflow-y: scroll;
-    height: auto; /* Füllt das gesamte Fenster */
-}
-html {
-    scroll-behavior: smooth;
-}
-
-
 :root {
 	--main-fonts-color: #fff;
 	--main-decor-color:#ffffff;
@@ -57,9 +46,6 @@ html {
    Allgemeine Stile
    ========================== */
 body {
-    overflow-y: scroll; /* Ermöglicht vertikales Scrollen */
-    height: auto; /* Höhe dynamisch anpassen */
-/* Höhe dynamisch anpassen */
     font-family: 'Poppins', sans-serif;
     background-color: var(--main-bg-color);
     color: var(--main-text-color);
@@ -244,16 +230,9 @@ hr {
     display: flex;
     justify-content: center; /* Horizontal zentrieren */
     align-items: center;     /* Vertikal zentrieren */
-    height: auto;          /* Volle Fensterhöhe */
     width: 100%;            /* Volle Fensterbreite */
     text-align: center;
     box-sizing: border-box;
-
-
-/* Snap-Effekt aktivieren */
-scroll-snap-type: y mandatory; /* Einrasten beim Scrollen */
-    overflow-y: scroll;
-
 }
 
 /* ==========================
@@ -342,68 +321,74 @@ scroll-snap-type: y mandatory; /* Einrasten beim Scrollen */
 
 
 
-/* Snap-Abschnitte */
-#hero,
-#features {
-    scroll-snap-align: start; /* Einrasten beim Scrollen */
-    height: 100vh; /* Abschnitte füllen das gesamte Fenster */
-}
+
 
 
 #hero {
+    color: #fff;
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Abschnitt füllt den gesamten Bildschirm */
-    padding: 20px; /* Standardabstand */
-    box-sizing: border-box; /* Padding wird berücksichtigt */
+    overflow: hidden;
+    padding: 1.5rem 1rem;
+    min-height: 100vh; /* Hero-Bereich nimmt den gesamten Viewport ein */
 }
 
-#texteins {
-    margin-top: auto; /* Dynamische Zentrierung */
-    margin-bottom: 50px; /* Zusätzlicher Platz über dem Ende */
-    font-size: clamp(1rem, 2vw, 1.5rem); /* Dynamische Schriftgröße */
+.text-mask {
+    font-size: 2.5rem;
+    font-weight: bold;
     text-align: center;
+    line-height: 1.6;
+    margin: 0;
+    overflow: hidden;
+}
+
+.text-mask span {
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    will-change: opacity, transform;
+}
+
+.text-mask span.active {
+    opacity: 1;
+    transform: translateY(0);
     color: #ffffff;
 }
 
-.hero:nth-child(odd) {
-    background: #e8f8f5;
-}
-
-.hero:nth-child(even) {
-    background: #f9e8f8;
-}
-
-/* Highlight für aktive Sektion */
-.hero.active {
-    transform: scale(1.05); /* Zoom-Effekt */
-    background: #d1f2eb; /* Highlight-Farbe */
-}
-
-/* Fortschrittsleiste */
-#progress-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 5px;
-    background-color: #3498db;
-    width: 0%;
-    z-index: 1000;
-    transition: width 0.2s ease;
-}
-
-/* Begrüßungstext */
-section {
+#features {
     opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
+    transform: translateY(50px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-section.visible {
-    opacity: 1;
-    transform: translateY(0);
+@media (max-width: 768px) {
+    #hero {
+        padding: 1rem;
+    }
+
+    .text-mask {
+        font-size: 2rem;
+        line-height: 1.4;
+    }
+}
+
+@media (max-width: 480px) {
+    #hero {
+        padding: 0.8rem;
+    }
+
+    .text-mask {
+        font-size: 1.8rem;
+        line-height: 1.3;
+    }
+
+    .text-mask span.active {
+        color: #007bff;
+    }
 }
         </style>
 </head>
@@ -417,10 +402,12 @@ section.visible {
 
             <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
-
-            <div id="texteins"></div>
-
-
+            <div id="texteins" class="text-mask">
+                <span>Willkommen auf meiner Website!</span>
+                <span>Scroll weiter, um mehr zu entdecken.</span>
+                <span>Hier ist ein interaktiver Effekt.</span>
+                <span>Endlich, du bist am Ziel!</span>
+            </div>
 
 
         </section>
@@ -510,164 +497,40 @@ section.visible {
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-    const texteins = document.getElementById("texteins");
-    const nextSection = document.getElementById("features");
-    const progressBar = document.getElementById("progress-bar");
-    const sections = document.querySelectorAll("section");
-    const navLinks = document.querySelectorAll(".nav-link");
 
-    const greetings = [
-        "Ich freue mich, dass du den Weg hierher gefunden hast.",
-        "Diese Seite dient als mein digitales Zuhause im",
-        "World Wide Web, auf der ich meine Interessen,",
-        "Erfahrungen und Gedanken teilen möchte."
-    ];
 
-    let lastScrollTop = 0;
-    let accumulatedScroll = 0;
-    const scrollThreshold = 100;
-    let currentIndex = 0;
+document.addEventListener('scroll', () => {
+    const heroSection = document.getElementById('hero');
+    const featuresSection = document.getElementById('features');
+    const textDiv = document.getElementById('texteins');
+    const spans = textDiv.querySelectorAll('span');
+    const scrollPosition = window.scrollY;
+    const heroTop = heroSection.offsetTop;
+    const heroHeight = heroSection.offsetHeight;
+    const viewportHeight = window.innerHeight;
 
-    // Fortschrittsbalken aktualisieren
-    const updateProgressBar = () => {
-        const scrollTop = window.scrollY;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = (scrollTop / docHeight) * 100;
-        progressBar.style.width = `${progress}%`;
-    };
+    // Dynamische Berechnung des sichtbaren Abschnitts
+    const sectionHeightPerText = heroHeight / spans.length;
 
-    // Begrüßungstext aktualisieren
-    const updateWelcomeText = () => {
-        const scrollTop = window.scrollY;
-
-        if (scrollTop > lastScrollTop) {
-            // Runter-Scrollen
-            accumulatedScroll += scrollTop - lastScrollTop;
-
-            if (accumulatedScroll >= scrollThreshold) {
-                if (currentIndex < greetings.length - 1) {
-                    // Nächsten Text anzeigen
-                    currentIndex++;
-                    texteins.style.opacity = "0";
-                    setTimeout(() => {
-                        texteins.textContent = greetings[currentIndex];
-                        texteins.style.opacity = "1";
-                    }, 300);
-                } else if (currentIndex === greetings.length - 1) {
-                    // Letzten Text ausblenden
-                    currentIndex++;
-                    texteins.style.opacity = "0";
-                    setTimeout(() => {
-                        texteins.textContent = "";
-                    }, 300);
-                }
-                accumulatedScroll = 0;
-            }
-        } else if (scrollTop < lastScrollTop) {
-            // Hoch-Scrollen
-            accumulatedScroll += lastScrollTop - scrollTop;
-
-            if (accumulatedScroll >= scrollThreshold) {
-                if (currentIndex > 0) {
-                    // Vorherigen Text anzeigen
-                    currentIndex--;
-                    texteins.style.opacity = "0";
-                    setTimeout(() => {
-                        texteins.textContent = greetings[currentIndex];
-                        texteins.style.opacity = "1";
-                    }, 300);
-                }
-                accumulatedScroll = 0;
-            }
-        }
-
-        lastScrollTop = scrollTop; // Letzte Scrollposition aktualisieren
-    };
-
-    // Sichtbare Sektion hervorheben
-    const highlightVisibleSection = () => {
-        let currentSectionIndex = 0;
-
-        sections.forEach((section, index) => {
-            const rect = section.getBoundingClientRect();
-            if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
-                currentSectionIndex = index;
-            }
-        });
-
-        sections.forEach((section, index) => {
-            section.classList.toggle("active", index === currentSectionIndex);
-        });
-    };
-
-    // Scroll-Pause für nächste Sektion
-    const scrollPause = () => {
-        const textBottom = texteins.getBoundingClientRect().bottom;
-        if (textBottom > window.innerHeight / 2) {
-            nextSection.style.pointerEvents = "none"; // Verhindert Scrollen
-        } else {
-            nextSection.style.pointerEvents = "auto"; // Aktiviert Scrollen
-        }
-    };
-
-    // Navigation Smooth Scrolling
-    navLinks.forEach((link) => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute("href").substring(1);
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                targetSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-            }
-        });
-    });
-
-    // Intersection Observer für Sichtbarkeit und Animation
-    const observer = new IntersectionObserver(
-        (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add("visible");
-                }
-            });
-        },
-        {
-            threshold: 0.1,
-        }
+    // Berechnung des aktiven Index basierend auf Scroll-Position
+    const activeIndex = Math.min(
+        Math.max(
+            Math.floor((scrollPosition - heroTop + viewportHeight * 0.3) / sectionHeightPerText), // 40% Offset
+            0
+        ),
+        spans.length - 1
     );
-    sections.forEach((section) => observer.observe(section));
 
-    // Begrüßungstext Padding dynamisch anpassen
-    const adjustPadding = () => {
-        const windowHeight = window.innerHeight;
-        const textHeight = texteins.offsetHeight;
-        const additionalPadding = (windowHeight - textHeight) / 4; // Platz über dem Text (1/4 der Resthöhe)
-        texteins.style.marginTop = `${additionalPadding}px`;
-    };
-    adjustPadding();
-    window.addEventListener("resize", adjustPadding);
-
-    // Haupt-Scroll-Event
-    window.addEventListener("scroll", () => {
-        updateProgressBar();
-        highlightVisibleSection();
-        updateWelcomeText();
-        scrollPause();
+    // Textwechsel mit reduzierter DOM-Manipulation
+    spans.forEach((span, index) => {
+        span.classList.toggle('active', index === activeIndex);
     });
+
+    // Sichtbarkeit und Animation des Features-Bereichs
+    const isLastLineActive = activeIndex === spans.length - 1;
+    featuresSection.style.opacity = isLastLineActive ? "1" : "0";
+    featuresSection.style.transform = isLastLineActive ? "translateY(0)" : "translateY(50px)";
 });
-
-
-
-
-
-
-
-
 
 
 
