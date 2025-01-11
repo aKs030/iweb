@@ -173,11 +173,6 @@ hr {
     transform: scale(1.15);
 }
 
-/* Deaktiviere :focus-Effekte auf mobilen Geräten */
-.nav-link:focus {
-    outline: none;
-    box-shadow: none;
-}
 /* ==========================
    Karten
    ========================== */
@@ -311,19 +306,7 @@ hr {
         font-size: 0.9rem;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
- </style>
+        </style>
 </head>
 <body>
     <div id="menuContainer"></div>
@@ -332,23 +315,11 @@ hr {
         <div class="center-container">
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
 
-         
-                <h3 id="welcomeText" class="display-3 fw-bold shimmer-text">
-                  Willkommen
-                </h3>
-              
-            
-            
-    
+            <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
 
+<p id="texteins" class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
 
-
-<p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
-    Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-    Diese Seite dient als mein digitales Zuhause im<br>
-    World Wide Web, auf der ich meine Interessen,<br>
-    Erfahrungen und Gedanken teilen möchte.
 </p>
         </section>
         </div>
@@ -439,13 +410,16 @@ hr {
     <script>
 
 
+
+
 document.addEventListener("DOMContentLoaded", () => {
-    const welcomeText = document.getElementById("welcomeText");
+    const welcomeText = document.getElementById("texteins");
     const greetings = [
-        "Willkommen!",
-        "Schön, dass du hier bist!",
-        "Entdecke mehr über mich!",
-        "Viel Spaß beim Stöbern!"
+    "Ich freue mich, dass du den Weg hierher gefunden hast.",
+    "Diese Seite dient als mein digitales Zuhause im",
+    "World Wide Web, auf der ich meine Interessen,",
+    "Erfahrungen und Gedanken teilen möchte."
+
     ];
     let lastScrollTop = 0;
     let scrollAmount = 0;
@@ -463,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Begrüßung wechseln basierend auf der Scrollmenge
-        const index = Math.floor(Math.abs(scrollAmount / 30)) % greetings.length;
+        const index = Math.floor(Math.abs(scrollAmount / 80)) % greetings.length;
         welcomeText.textContent = greetings[index];
 
         lastScrollTop = scrollTop;
@@ -475,27 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
      document.addEventListener("DOMContentLoaded", () => {
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-        
     const observerOptions = {
         threshold: 0.6,
         rootMargin: "0px 0px -50px 0px"
