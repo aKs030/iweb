@@ -416,10 +416,35 @@ body {
     }
 
     .text-mask span.active {
-        color: #007bff;
+        color: #ffffff;
     }
 }
+.text-mask span {
+    display: inline-block;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    will-change: opacity, transform;
+}
 
+.text-mask span.active {
+    opacity: 1;
+    transform: scale(1);
+    animation: zoom-bounce 0.5s ease-out;
+}
+
+/* Keyframes für Zoom-Bounce */
+@keyframes zoom-bounce {
+    0% {
+        transform: scale(0.8);
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
         </style>
 </head>
 <body>
