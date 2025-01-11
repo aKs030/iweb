@@ -591,119 +591,118 @@ body {
     </body>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+
     <script>
-
-
-document.addEventListener('scroll', () => {
-    const heroSection = document.getElementById('hero');
-    const featuresSection = document.getElementById('features');
-    const textDiv = document.getElementById('texteins');
-    const spans = textDiv.querySelectorAll('span');
-    const scrollPosition = window.scrollY;
-    const heroTop = heroSection.offsetTop;
-    const heroHeight = heroSection.offsetHeight;
-    const viewportHeight = window.innerHeight;
-
-    // Dynamische Berechnung des sichtbaren Abschnitts
-    const sectionHeightPerText = heroHeight / spans.length;
-
-    // Berechnung des aktiven Index
-    const activeIndex = Math.min(
-        Math.max(
-            Math.floor((scrollPosition - heroTop + viewportHeight * 0.3) / sectionHeightPerText), 
-            0
-        ),
-        spans.length - 1
-    );
-
-    // Textwechsel
-    spans.forEach((span, index) => {
-        if (index === activeIndex) {
-            span.classList.add('active');
-            span.classList.add('animate-text'); // Neue Klasse für Spezialeffekt
-        } else {
-            span.classList.remove('active');
-            span.classList.remove('animate-text');
-        }
-    });
-
-    // Sichtbarkeit des Features-Bereichs
-    const isLastLineActive = activeIndex === spans.length - 1;
-    featuresSection.style.opacity = isLastLineActive ? "1" : "0";
-    featuresSection.style.transform = isLastLineActive ? "translateY(0)" : "translateY(50px)";
-});
-
-
-
-
-
-
-
-     document.addEventListener("DOMContentLoaded", () => {
-    const observerOptions = {
-        threshold: 0.6,
-        rootMargin: "0px 0px -50px 0px"
-    };
-
-    const navItems = document.querySelectorAll(".nav-item");
-    const sections = document.querySelectorAll("section");
-    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    const observerCallback = (entries) => {
-        entries.forEach(({ target, isIntersecting }) => {
-            const animationClass = target.dataset.animation || "animate__fadeInUp";
-            const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
-
-            if (isIntersecting) {
+        document.addEventListener("DOMContentLoaded", () => {
+          /* ========================================
+           * Intersection Observer (Abschnitte & Animation)
+           * ======================================== */
+          const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px 50px 0px"
+          };
+    
+          const navItems = document.querySelectorAll(".nav-item");
+          const sections = document.querySelectorAll("section");
+          const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+          const navLinks = document.querySelectorAll(".nav-link");
+    
+          const observerCallback = (entries) => {
+            entries.forEach(({ target, isIntersecting }) => {
+              // Animationseinstellungen holen
+              const animationClass = target.dataset.animation || "animate__fadeInUp";
+              const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+    
+              if (isIntersecting) {
+                // Sichtbare Elemente animieren
                 if (target.classList.contains("scroll-animate")) {
-                    target.style.transitionDelay = `${delayInS}s`;
-                    target.classList.add("visible", "animate__animated", animationClass);
+                  target.style.transitionDelay = `${delayInS}s`;
+                  target.classList.add("visible", "animate__animated", animationClass);
                 }
-
+    
+                // Navigation hervorheben
                 if (target.id) {
-                    navItems.forEach((item) => item.classList.remove("active"));
-                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                    if (activeNavItem) {
-                        activeNavItem.classList.add("active");
-                    }
+                  navItems.forEach((item) => item.classList.remove("active"));
+                  const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                  if (activeNavItem) {
+                    activeNavItem.classList.add("active");
+                  }
                 }
-            } else {
+              } else {
+                // Aus dem Viewport verschwunden -> Animation zurücksetzen
                 if (target.classList.contains("scroll-animate")) {
-                    target.classList.remove("visible", "animate__animated", animationClass);
+                  target.classList.remove("visible", "animate__animated", animationClass);
                 }
-            }
-        });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    sections.forEach((section) => observer.observe(section));
-    scrollAnimateElements.forEach((element) => observer.observe(element));
-
-    navLinks.forEach((link) => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute("href").substring(1);
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
+              }
+            });
+          };
+    
+          const observer = new IntersectionObserver(observerCallback, observerOptions);
+    
+          sections.forEach((section) => observer.observe(section));
+          scrollAnimateElements.forEach((element) => observer.observe(element));
+    
+          // Smooth Scroll & Aktiv-Zustand bei Klick
+          navLinks.forEach((link) => {
+            link.addEventListener("click", (e) => {
+              e.preventDefault();
+              const targetId = link.getAttribute("href").substring(1);
+              const targetSection = document.getElementById(targetId);
+    
+              if (targetSection) {
                 targetSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
+                  behavior: "smooth",
+                  block: "start"
                 });
-
-                // Entferne die 'active'-Klasse von allen Navigationspunkten
                 navItems.forEach((item) => item.classList.remove("active"));
-
-                // Füge die 'active'-Klasse zum geklickten Navigationspunkt hinzu
                 const clickedNavItem = link.closest(".nav-item");
                 if (clickedNavItem) {
-                    clickedNavItem.classList.add("active");
+                  clickedNavItem.classList.add("active");
                 }
-            }
+              }
+            });
+          });
+    
+          /* ========================================
+           * Scrollbasierter Textwechsel im Hero
+           * ======================================== */
+          document.addEventListener("scroll", () => {
+            const heroSection = document.getElementById("hero");
+            const featuresSection = document.getElementById("features");
+            const textDiv = document.getElementById("texteins");
+            const spans = textDiv.querySelectorAll("span");
+    
+            const scrollPosition = window.scrollY;
+            const heroTop = heroSection.offsetTop;
+            const heroHeight = heroSection.offsetHeight;
+            const viewportHeight = window.innerHeight;
+    
+            // Höhe pro Textspan ermitteln
+            const sectionHeightPerText = heroHeight / spans.length;
+    
+            // Aktiven Index berechnen
+            const activeIndex = Math.min(
+              Math.max(
+                Math.floor((scrollPosition - heroTop + viewportHeight * 0.3) / sectionHeightPerText),
+                0
+              ),
+              spans.length - 1
+            );
+    
+            // Textzeilen aktualisieren
+            spans.forEach((span, index) => {
+              if (index === activeIndex) {
+                span.classList.add("active", "animate-text");
+              } else {
+                span.classList.remove("active", "animate-text");
+              }
+            });
+    
+            // Features-Bereich ein- oder ausblenden
+            const isLastLineActive = activeIndex === spans.length - 1;
+            featuresSection.style.opacity = isLastLineActive ? "1" : "0";
+            featuresSection.style.transform = isLastLineActive ? "translateY(0)" : "translateY(50px)";
+          });
         });
-    });
-});
-    </script>
-
+      </script>
 </html>
