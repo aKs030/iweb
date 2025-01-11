@@ -318,13 +318,25 @@ hr {
 
 
 
+.parallax-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform: translateZ(-1px) scale(2); /* Hintergrund weiter entfernt */
+    background-size: cover;
+    background-attachment: fixed; /* Parallax-Effekt */
+}
+
+.parallax-layer.foreground {
+    transform: translateZ(0);
+}
 
 
 
-
-
-
+/* Hero-Bereich */
 #hero {
+    perspective: 1000px; /* 3D-Tiefe */
+
     color: #fff;
     position: relative;
     display: flex;
@@ -333,9 +345,11 @@ hr {
     align-items: center;
     overflow: hidden;
     padding: 1.5rem 1rem;
-    min-height: 100vh; /* Hero-Bereich nimmt den gesamten Viewport ein */
+    min-height: 100vh;
+    animation: background-fade 10s infinite alternate; /* Leichtes Pulsieren */
 }
 
+/* Textmaskierung */
 .text-mask {
     font-size: 2.5rem;
     font-weight: bold;
@@ -359,17 +373,36 @@ hr {
     color: #ffffff;
 }
 
+.text-mask span.animate-text {
+    animation: text-glow 1s ease-in-out; /* Spezialeffekt */
+}
+
+/* Features-Bereich */
 #features {
     opacity: 0;
     transform: translateY(50px);
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-@media (max-width: 768px) {
-    #hero {
-        padding: 1rem;
-    }
 
+/* Globale Effekte */
+body {
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    overflow-x: hidden;
+    animation: fade-in 1s ease-in-out; /* Sanfter Fade-in-Effekt */
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
     .text-mask {
         font-size: 2rem;
         line-height: 1.4;
@@ -377,19 +410,16 @@ hr {
 }
 
 @media (max-width: 480px) {
-    #hero {
-        padding: 0.8rem;
-    }
-
     .text-mask {
         font-size: 1.8rem;
         line-height: 1.3;
     }
 
     .text-mask span.active {
-        color: #ffffff;
+        color: #007bff;
     }
 }
+
         </style>
 </head>
 <body>
@@ -403,10 +433,10 @@ hr {
             <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
             <div id="texteins" class="text-mask">
-                <span>Willkommen auf meiner Website!</span>
-                <span>Scroll weiter, um mehr zu entdecken.</span>
-                <span>Hier ist ein interaktiver Effekt.</span>
-                <span>Endlich, du bist am Ziel!</span>
+                <span>Ich freue mich, dass du den Weg hierher gefunden hast.</span>
+                <span>Diese Seite dient als mein digitales Zuhause im.</span>
+                <span>World Wide Web auf der ich meine Interessen, Erfahrungen und Gedanken teilen möchte.</span>
+                <span>Lass mich dir einen kleinen Einblick geben,was dich hier erwartet..</span>
             </div>
 
 
@@ -512,27 +542,31 @@ document.addEventListener('scroll', () => {
     // Dynamische Berechnung des sichtbaren Abschnitts
     const sectionHeightPerText = heroHeight / spans.length;
 
-    // Berechnung des aktiven Index basierend auf Scroll-Position
+    // Berechnung des aktiven Index
     const activeIndex = Math.min(
         Math.max(
-            Math.floor((scrollPosition - heroTop + viewportHeight * 0.3) / sectionHeightPerText), // 40% Offset
+            Math.floor((scrollPosition - heroTop + viewportHeight * 0.3) / sectionHeightPerText), 
             0
         ),
         spans.length - 1
     );
 
-    // Textwechsel mit reduzierter DOM-Manipulation
+    // Textwechsel
     spans.forEach((span, index) => {
-        span.classList.toggle('active', index === activeIndex);
+        if (index === activeIndex) {
+            span.classList.add('active');
+            span.classList.add('animate-text'); // Neue Klasse für Spezialeffekt
+        } else {
+            span.classList.remove('active');
+            span.classList.remove('animate-text');
+        }
     });
 
-    // Sichtbarkeit und Animation des Features-Bereichs
+    // Sichtbarkeit des Features-Bereichs
     const isLastLineActive = activeIndex === spans.length - 1;
     featuresSection.style.opacity = isLastLineActive ? "1" : "0";
     featuresSection.style.transform = isLastLineActive ? "translateY(0)" : "translateY(50px)";
 });
-
-
 
 
 
