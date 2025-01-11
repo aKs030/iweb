@@ -463,7 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Begrüßung wechseln basierend auf der Scrollmenge
-        const index = Math.floor(Math.abs(scrollAmount / 300)) % greetings.length;
+        const index = Math.floor(Math.abs(scrollAmount / 10)) % greetings.length;
         welcomeText.textContent = greetings[index];
 
         lastScrollTop = scrollTop;
