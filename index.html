@@ -1,258 +1,709 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="de">
 <head>
-  <title>Abdulkerim</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdulkerim</title>
 
-  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="img/icon.png">
-  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="f.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
+    <!-- Bootstrap CSS -->
+    <link 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet" 
+        defer
+    >
+    <!-- Animate.css für zusätzliche Animationen -->
+    <link 
+        rel="stylesheet" 
+        href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"
+    />
+    <!-- Bootstrap Icons -->
+    <link 
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+    >
+    <!-- Font Awesome (alternativ zu Bootstrap Icons) -->
+    <link 
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
+        rel="stylesheet"
+    >
+    <!-- Google Fonts -->
+    <link 
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" 
+        rel="stylesheet"
+    >
+    <!-- Meta Tags -->
+    <meta 
+        name="description" 
+        content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken."
+    >
+    <meta 
+        name="keywords"
+        content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de"
+    >
+    <meta 
+        property="og:title" 
+        content="Abdulkerim Sesli - Persönliche Webseite"
+    >
+    <meta 
+        property="og:description" 
+        content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken."
+    >
+    <meta 
+        property="og:image" 
+        content="URL_ZU_DEINEM_IMAGE"
+    >
+    <meta 
+        property="og:url" 
+        content="https://www.abdulkerimsesli.de"
+    >
+    <meta 
+        name="robots" 
+        content="index, follow"
+    >
 
+    <!-- Eigene CSS & JS -->
+    <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="js/menu.js" defer></script>
+    <!-- Internal CSS -->
+    <style>
+/* ==========================
+   Farbvariablen
+   ========================== */
+:root {
+	--main-fonts-color: #fff;
+	--main-decor-color:#ffffff;
 
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
- 
-  <script src="f.js"></script>
+    --main-bg-color: #444;
+    --secondary-bg-color: var(--main-bg-color);
+    --main-text-color: rgba(245, 245, 245, 0.9);
+    --accent-color: rgba(255, 204, 41, 0.8);
+    --menu-bg-color: #333333cc;
+    --main-text-color: rgba(245, 245, 245, 0.9);
+    --secondary-text-color: rgba(245, 245, 245, 0.5); /* oder 50% Opazität */
+}
 
-  <script src="js/menu.js"></script>
-  <script src="js/footer.js"></script>
-  <style>
-    .menu-index {
-      color: rgb(255, 255, 255) !important;
-      opacity: 1 !important;
-      font-weight: 700 !important;
+/* ==========================
+   Allgemeine Stile
+   ========================== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.8;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--main-text-color);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+}
+
+p, li, a {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--secondary-text-color);
+}
+
+p.lead {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--main-text-color);
+}
+
+/* ==========================
+        Text-Willkommen
+   ========================== */
+.shimmer-text {
+	padding-bottom: 15px;
+    letter-spacing: normal;
+	font-style: normal;
+	font-size: 60px;
+	color: var(--main-fonts-color);
+	text-shadow: 0px 0px 40px var(--main-decor-color);
+    font-family: inherit; /* übernimmt die Schriftart vom Body */
+    margin-bottom: 8rem; /* Abstand direkt im Stil */
+
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 0% 50%;
     }
-  </style>
-</head>
+    100% {
+        background-position: 100% 50%;
+    }
+}
 
+hr {
+    background: var(--main-decor-color);
+	margin: 2px;
+	height: 3px;
+	width: 150px;
+    border-radius:5px;
+	border: hidden;
+	margin-inline-start: auto;
+    margin-inline-end: auto;
+}
+
+/* ==========================
+   Navigation (Navbar Bottom)
+   ========================== */
+.navbar-bottom {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--menu-bg-color);
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+
+.nav-list {
+    display: flex;
+    gap: 15px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+    color: var(--menu-text-color);
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+
+.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.nav-link:hover,
+.nav-item.active .nav-link {
+    background: var(--accent-color);
+    box-shadow: 0 6px 15px rgba(255, 204, 41, 0.8);
+    transform: scale(1.1);
+}
+
+.nav-link:hover .nav-icon,
+.nav-item.active .nav-icon {
+    color: var(--main-bg-color);
+    transform: scale(1.15);
+}
+
+/* ==========================
+   Karten
+   ========================== */
+   .card {
+    background-color: var(--secondary-bg-color);
+    color: var(--main-text-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================
+   Scroll-Animation
+   ========================== */
+   @keyframes fadeRotate {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) rotateY(90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateY(0);
+  }
+}
+
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+}
+
+.scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ==========================
+   Container-Zentrierung
+   ========================== */
+.center-container {
+    display: flex;
+    justify-content: center; /* Horizontal zentrieren */
+    align-items: center;     /* Vertikal zentrieren */
+    width: 100%;            /* Volle Fensterbreite */
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* ==========================
+   Lead-Text
+   ========================== */
+.lead {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: rgba(245, 245, 245, 0.9);
+    font-weight: 400;
+}
+
+
+
+/* ==========================
+   Media Queries
+   ========================== */
+
+/* -- max-width: 768px -- */
+@media (max-width: 768px) {
+    .navbar-bottom {
+        bottom: 5px;
+        padding: 8px 15px;
+    }
+    
+    .nav-link {
+        width: 40px;
+        height: 40px;
+    }
+
+    .nav-icon {
+        font-size: 1.2rem;
+    }
+
+    .shimmer-text {
+        font-size: 2.5rem;
+        animation: shimmer 3s ease-in-out infinite; /* Langsamere Animation auf Mobilgeräten */
+    }
+
+    .scroll-animate {
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+
+    .lead {
+        font-size: 1rem;
+    }
+
+    .center-container {
+        padding: 0 15px;
+    }
+}
+
+/* -- max-width: 480px -- */
+@media (max-width: 480px) {
+    .nav-link {
+        width: 35px;
+        height: 35px;
+    }
+
+    .nav-icon {
+        font-size: 1rem;
+    }
+
+    .shimmer-text {
+        font-size: 2rem;
+    }
+
+    .scroll-animate {
+        transform: translateY(15px);
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    }
+
+    .lead {
+        font-size: 0.9rem;
+    }
+}
+
+
+
+
+
+
+
+
+.parallax-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform: translateZ(-1px) scale(2); /* Hintergrund weiter entfernt */
+    background-size: cover;
+    background-attachment: fixed; /* Parallax-Effekt */
+}
+
+.parallax-layer.foreground {
+    transform: translateZ(0);
+}
+
+
+
+/* Hero-Bereich */
+#hero {
+    perspective: 1000px; /* 3D-Tiefe */
+
+    color: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    padding: 1.5rem 1rem;
+    min-height: 100vh;
+    animation: background-fade 10s infinite alternate; /* Leichtes Pulsieren */
+}
+
+/* Textmaskierung */
+.text-mask {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.6;
+    margin: 0;
+    overflow: hidden;
+}
+
+.text-mask span {
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    will-change: opacity, transform;
+}
+
+.text-mask span.active {
+    opacity: 1;
+    transform: translateY(0);
+    color: #ffffff;
+}
+
+.text-mask span.animate-text {
+    animation: text-glow 1s ease-in-out; /* Spezialeffekt */
+}
+
+/* Features-Bereich */
+#features {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+
+/* Globale Effekte */
+body {
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    overflow-x: hidden;
+    animation: fade-in 1s ease-in-out; /* Sanfter Fade-in-Effekt */
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .text-mask {
+        font-size: 2rem;
+        line-height: 1.4;
+    }
+}
+
+@media (max-width: 480px) {
+    .text-mask {
+        font-size: 1.8rem;
+        line-height: 1.3;
+    }
+
+    .text-mask span.active {
+        color: #ffffff;
+    }
+}
+.text-mask span {
+    display: inline-block;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    will-change: opacity, transform;
+}
+
+.text-mask span.active {
+    opacity: 1;
+    transform: scale(1);
+    animation: zoom-bounce 0.5s ease-out;
+}
+
+/* Keyframes für Zoom-Bounce */
+@keyframes zoom-bounce {
+    0% {
+        transform: scale(0.8);
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+        </style>
+</head>
 <body>
     <div id="menuContainer"></div>
-  <div class="content-container">
-    <!-------------------------------------------------------------------------------------------->
-    <div class="banner-gif-150"></div>
-    <div class="banner">
-      <div class="banner-table flex-column">
-        <div class="flex-row">
- Herzlich willkommen auf meiner Homepage!
-</div>
-</div>
-</div>
+    <main id="main-content">
+<div id="progress-bar"></div>
+        <!-- Hero Section -->
+        <div class="center-container">
+        <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
 
-<!-------------------------------------------------------------------------------------------->
-<!---INTRO    -->
-    <div class="flex-row">
-      <div class="flex-item flex-item-stretch-2 flex-column">
-        <div class="content">
-          <br><br><br>
+            <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
-                <div class="scroll-animation">
-  
-          <h1>
-            <span>Ich</span>
-            <span>freue</span>
-            <span>mich,</span>
-            <span>dass</span>
-            <span>du</span>
-            <span>den</span>
-            <span>Weg</span>
-            <span>hierher</span>
-            <span>gefunden</span>
-            <span>hast.</span>
-            <br>
-            <span>Diese</span>
-            <span>Seite</span>
-            <span>dient</span>
-            <span>als</span>
-            <span>mein</span>
-            <span>digitales</span>
-            <span>Zuhause</span>
-            <span>im.</span>
-            <br>
-            <span>World</span>
-            <span>Wide</span>
-            <span>Web</span>
-            <span>auf</span>
-            <span>der</span>
-            <span>ich</span>
-            <span>meine</span>
-            <span>Interessen,</span>
-            <span>Erfahrungen</span>
-            <span>und</span>
-            <span>Gedanken</span>
-            <span>teilen</span>
-            <span>möchte.</span>
-            <br><br>
-            <span>Lass</span>
-            <span>mich</span>
-            <span>dir</span>
-            <span>einen</span>
-            <span>kleinen</span>
-            <span>Einblick</span>
-            <span>geben,</span>
-            <br>
-            <span>was</span>
-            <span> dich</span>
-            <span>hier</span>
-            <span>erwartet.</span>
-          </div>
-        </h1>
-        
-        
-        <div class="content-table flex-column">
-    <!-- ENDE-INTRO    -->
-<!-------------------------------------------------------------------------------------------->
-<!-------------------------------------------------------------------------------------------->
-<section>
-  <h2>Über mich</h2>
-  <hr>
-  <ol class="nested-button" onclick="window.location.href='ubermich.html'">
-    <div class="custom-button-flat small pulse-primary" style="float:right">
-        <img src="img/play.png" alt="Play Button">
-  </div>
-      <p>
-        Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.
-      </p>
-  </ol>
-</section>
-<!--End Text Über Mich-->
-<!-------------------------------------------------------------------------------------------->
-<!-------------------------------------------------------------------------------------------->
-<!-- Start Images -->
-  <section>
-      <h2>Fotogalerie</h2>
-      <hr>
-      <ol class="nested-button" onclick="window.location.href='album.html'">
-        <div class="custom-button-flat small pulse-primary" style="float:right">
-            <img src="img/play.png" alt="Play Button">
-      </div>
-          <p>
-              Hier findest du einige Fotos von meinen Reisen,<br>
-              von meinem Alltag und von besonderen Ereignissen, an denen ich teilgenommen habe.
-          </p>
-      </ol>
-  </section>
-<!-- ENDE Images -->
-<!-------------------------------------------------------------------------------------------->
-<!-- Start KONTAKT -->
-  <section>
-      <h2>Kontakt</h2>
-      <hr>
-      <ol class="nested-button" onclick="window.location.href='mailto:mail@abdulkerimsesli.comgets.html'">
-        <div class="custom-button-flat small pulse-primary" style="float:right">
-            <img src="img/user.png" alt="Benutzer">
-      </div>
-    <p>
-      Wenn du Fragen hast oder mit mir in Kontakt treten möchtest,
-           freue ich mich auf deine Nachricht!
-          </p>
-      </ol>
-  </section>
-<!-- ENDE KONTAKT -->
-<!-------------------------------------------------------------------------------------------->
-<!-----------------P-O-P-U-P------------------------------------------------------------------>
-<!-------------------------------------------------------------------------------------------->
-<div class="popup" id="popup">
-  <h2 style="color: #005cbf;">Kontakt
-     <a class="menu-button" onclick="closePopup()" style="float:right" >
-       <button class="custom-button-flat small pulse-primary"><img src="img/close.png"></button></a></h2>
-<hr><p>Wenn du Fragen hast, dich für meine Hobbys, meinen Beruf oder meine Interessen interessierst<br>
-       oder einfach nur mit mir in Kontakt treten möchtest, zögere nicht, mir eine E-Mail an<br>
-  <a href="mailto:mail­@abdulkerimsesli.com">­mail­@abdulkerimsesli.com</a>zu schicken.<br>
-      Ich freue mich darauf, von dir zu hören und unsere gemeinsamen Interessen zu teilen!</p>
-<button> <a href= "mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">Kontakt</a></button>
-  <button onclick="closePopup()">Zurück</button></div>
-<!-------------------------------------------------------------------------------------------->
-<!-------------------------------------------------------------------------------------------->
-    
-<!-------------------------------------------------------------------------------------------->
-<br><br><br><br><br><br>
-<div class="scroll-animation">
-  <h1>
-  <span>Vielen</span>
-  <span>Dank,</span>
-  <span>dass</span>
-  <span>du</span>
-  <span>meine</span>
-  <span>Homepage</span>
-  <span> besuchst.</span>
-  <Br>
-  <span>Ich</span>
-  <span>hoffe,</span>
-  <span>dass</span>
-  <span>du</span>
-  <span>hier</span>
-  <span>interessante</span>
-  <span>Inhalte</span>
-  <span>findest</span>
-  <span>und</span>
-  <span>dich</span>
-  <span>gerne</span>
-  <span>auf</span>
-  <span>meiner</span>
-  <span>Seite</span>
-  <span>umsiehst.</span>
-  <BR>
-  <span>Vergiss</span>
-  <span>nicht,</span>
-  <span>regelmäßig</span>
-  <span>,</span>
-  <span>vorbeizuschauen,</span>
-  <BR>
-  <span>um</span>
-  <span>über</span>
-  <span>meine</span>
-  <span>neuesten</span>
-  <span>Aktivitäten</span>
-  <span>und</span>
-  <span>Gedanken</span>
-  <span>auf</span>
-  <span>dem</span>
-  <span>Laufenden</span>
-  <span>zu</span>
-  <span>bleiben.</span>
-  <br><br>
-  <span>Alles Gute</span>
-  <span>und viel Spaß beim Stöbern!</span></h1>
-</div><BR><br>
-<!-------------------------------------------------------------------------------------------->
-<!-- Teilen -->        
-        <div class="flex-row-space-between">
-          <div class="flex-item flex-column">
-            <div class="control-group">
-              <a href="https://www.apple.com/app-store/" target="_blank" class="custom-image-button">
-                <img src="img/app-store-badge.png" width="150">
-              </a>
-              <a href="https://play.google.com/store" target="_blank" class="custom-image-button">
-                <img src="img/google-play-badge.png" width="150">
-              </a>
+            <div id="texteins" class="text-mask">
+                <span>Ich freue mich, dass du den Weg hierher gefunden hast.</span>
+                <span>Diese Seite dient als mein digitales Zuhause im.</span>
+                <span>World Wide Web auf der ich meine Interessen, Erfahrungen und Gedanken teilen möchte.</span>
+                <span>Lass mich dir einen kleinen Einblick geben,was dich hier erwartet..</span>
             </div>
-          </div>
+
+
+        </section>
         </div>
-<!--End Text Teilen-->
-<!-------------------------------------------------------------------------------------------->
-<!--Start Text with Iframe-->
-      </div>
-    </div>
-      </div>
-    </div>
-        <!--END Text with Iframe-->
-<div class="flex-item flex-item-stretch flex-column"><img class="image" src="img/logo.png"></div>
-        <!-------------------------------------------------------------------------------------------->
-        <!--Start Credits-->
-        <div class="flex-row">
-          <div class="flex-item flex-item-stretch flex-column">
-            <p class="text text-small text-italic add-top-margin-large">
-              Credits: <span class="highlight-text">Organization One</span>: Author One and Author Two</p></div></div>
-        <!--End Credits-->
-<!-------------------------------------------------------------------------------------------->
-      <div class="footer-container"></div>
-      <div class="banner-gif-150"></div>
-    </div>
-</body>
-  </html>
+        <!-- Features Section -->
+        <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+            <div class="container">
+                <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+                    <!-- Link zu Über Mich -->
+                    <a href="ubermich.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="400">
+                            <i class="bi bi-person-circle display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Über Mich</h5>
+                            <p class="animated-text" style="color: #666;">
+                                Ich teile hier meine Leidenschaften,
+                                Interessen und Erlebnisse.
+                            </p>
+                        </div>
+                    </a>
+
+                    <!-- Link zu Fotogalerie -->
+                    <a href="album.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="600">
+                            <i class="bi bi-images display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Fotogalerie</h5>
+                            <p class="animated-text" style="color: #666;">
+                                Hier findest du einige Fotos von meinen Reisen,
+                                von meinem Alltag und von besonderen Ereignissen,
+                                an denen ich teilgenommen habe.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+            <p class="lead scroll-animate" data-animation="animate__fadeInUp">
+                Vielen Dank, dass du meine Homepage besuchst.
+                Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
+                Vergiss nicht, regelmäßig , vorbeizuschauen,
+                um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+         </p>
+        <h2 class="scroll-animate" data-animation="animate__fadeIn">Alles Gute und viel Spaß beim Stöbern!</h2>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer py-3 text-center">
+            <p class="mb-1">
+
+                <a href="#impressum" id="impressumButton" class="btn-link">Impressum</a> |
+<a href="#datenschutz" id="privacyButton" class="btn-link">Datenschutzerklärung</a> |
+<a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
+                
+            </p>
+            <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
+        </footer>
+
+
+
+<!-- Navigation -->
+<nav class="navbar navbar-bottom">
+    <ul class="nav-list">
+      <li class="nav-item" data-section="hero">
+        <a href="#hero" class="nav-link" aria-label="Zur Startseite">
+            <i class="fas fa-home nav-icon" aria-hidden="true"></i>
+        </a>
+      </li>
+      <li class="nav-item" data-section="features">
+        <a href="#features" class="nav-link">
+          <i class="fas fa-star nav-icon"></i>
+        </a>
+      </li>
+      <li class="nav-item" data-section="about">
+        <a href="#about" class="nav-link">
+          <i class="fas fa-user nav-icon"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+
+
+    </main>
+    </body>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script>
+
+
+document.addEventListener('scroll', () => {
+    const heroSection = document.getElementById('hero');
+    const featuresSection = document.getElementById('features');
+    const textDiv = document.getElementById('texteins');
+    const spans = textDiv.querySelectorAll('span');
+    const scrollPosition = window.scrollY;
+    const heroTop = heroSection.offsetTop;
+    const heroHeight = heroSection.offsetHeight;
+    const viewportHeight = window.innerHeight;
+
+    // Dynamische Berechnung des sichtbaren Abschnitts
+    const sectionHeightPerText = heroHeight / spans.length;
+
+    // Berechnung des aktiven Index
+    const activeIndex = Math.min(
+        Math.max(
+            Math.floor((scrollPosition - heroTop + viewportHeight * 0.3) / sectionHeightPerText), 
+            0
+        ),
+        spans.length - 1
+    );
+
+    // Textwechsel
+    spans.forEach((span, index) => {
+        if (index === activeIndex) {
+            span.classList.add('active');
+            span.classList.add('animate-text'); // Neue Klasse für Spezialeffekt
+        } else {
+            span.classList.remove('active');
+            span.classList.remove('animate-text');
+        }
+    });
+
+    // Sichtbarkeit des Features-Bereichs
+    const isLastLineActive = activeIndex === spans.length - 1;
+    featuresSection.style.opacity = isLastLineActive ? "1" : "0";
+    featuresSection.style.transform = isLastLineActive ? "translateY(0)" : "translateY(50px)";
+});
+
+
+
+
+
+
+
+     document.addEventListener("DOMContentLoaded", () => {
+    const observerOptions = {
+        threshold: 0.6,
+        rootMargin: "0px 0px -50px 0px"
+    };
+
+    const navItems = document.querySelectorAll(".nav-item");
+    const sections = document.querySelectorAll("section");
+    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+    const navLinks = document.querySelectorAll(".nav-link");
+
+    const observerCallback = (entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+            const animationClass = target.dataset.animation || "animate__fadeInUp";
+            const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+
+            if (isIntersecting) {
+                if (target.classList.contains("scroll-animate")) {
+                    target.style.transitionDelay = `${delayInS}s`;
+                    target.classList.add("visible", "animate__animated", animationClass);
+                }
+
+                if (target.id) {
+                    navItems.forEach((item) => item.classList.remove("active"));
+                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                    if (activeNavItem) {
+                        activeNavItem.classList.add("active");
+                    }
+                }
+            } else {
+                if (target.classList.contains("scroll-animate")) {
+                    target.classList.remove("visible", "animate__animated", animationClass);
+                }
+            }
+        });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    sections.forEach((section) => observer.observe(section));
+    scrollAnimateElements.forEach((element) => observer.observe(element));
+
+    navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href").substring(1);
+            const targetSection = document.getElementById(targetId);
+
+            if (targetSection) {
+                targetSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+                // Entferne die 'active'-Klasse von allen Navigationspunkten
+                navItems.forEach((item) => item.classList.remove("active"));
+
+                // Füge die 'active'-Klasse zum geklickten Navigationspunkt hinzu
+                const clickedNavItem = link.closest(".nav-item");
+                if (clickedNavItem) {
+                    clickedNavItem.classList.add("active");
+                }
+            }
+        });
+    });
+});
+    </script>
+
+</html>
