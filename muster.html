@@ -319,32 +319,9 @@ hr {
 
 
 
-.greeting {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 5px;
-  z-index: 1000;
-  font-size: 1.5rem;
-  transition: transform 0.2s, opacity 0.2s;
-}
 
-.section {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  background-color: #f0f0f0;
-  border-bottom: 2px solid #ddd;
-}
-:nth-child(2n) {
-  background-color: #ccc;
-}
+
+
 
  </style>
 </head>
@@ -362,12 +339,7 @@ hr {
               
             
             
-            
-<div class="greeting" id="greeting">Willkommen!</div>
-<section class="section">Abschnitt 1</section>
-<section class="section">Abschnitt 2</section>
-<section class="section">Abschnitt 3</section>
-<section class="section">Abschnitt 4</section>
+    
 
 
 
@@ -467,36 +439,36 @@ hr {
     <script>
 
 
+document.addEventListener("DOMContentLoaded", () => {
+    const welcomeText = document.getElementById("welcomeText");
+    const greetings = [
+        "Willkommen!",
+        "Schön, dass du hier bist!",
+        "Entdecke mehr über mich!",
+        "Viel Spaß beim Stöbern!"
+    ];
+    let lastScrollTop = 0;
+    let scrollAmount = 0;
 
-  const greetings = ["Willkommen!", "Hallo!", "Schön, dich hier zu sehen!", "Viel Spaß!"];
-let lastScrollTop = 0;
-let scrollAmount = 0;
+    window.addEventListener("scroll", () => {
+        const scrollTop = window.scrollY;
 
-const welcomeText = document.getElementById("greeting");
+        // Berechne die Scroll-Richtung und aktualisiere die Scroll-Menge
+        if (scrollTop > lastScrollTop) {
+            // Scrollen nach unten
+            scrollAmount += scrollTop - lastScrollTop;
+        } else {
+            // Scrollen nach oben
+            scrollAmount -= lastScrollTop - scrollTop;
+        }
 
-// Event Listener für Scroll
-window.addEventListener("scroll", () => {
-  const scrollTop = window.scrollY;
+        // Begrüßung wechseln basierend auf der Scrollmenge
+        const index = Math.floor(Math.abs(scrollAmount / 300)) % greetings.length;
+        welcomeText.textContent = greetings[index];
 
-  // Berechne die Scroll-Richtung
-  if (scrollTop > lastScrollTop) {
-    // Scrollen nach unten
-    scrollAmount += scrollTop - lastScrollTop;
-  } else {
-    // Scrollen nach oben
-    scrollAmount -= lastScrollTop - scrollTop;
-  }
-
-  // Begrüßung wechseln basierend auf Scrollmenge
-  const index = Math.floor(Math.abs(scrollAmount / 200)) % greetings.length;
-
-  welcomeText.textContent = greetings[index];
-  welcomeText.style.transform = `translateY(${scrollTop * 0.1}px)`;
-  welcomeText.style.opacity = 1 - Math.min(scrollTop / 1000, 1);
-
-  lastScrollTop = scrollTop;
+        lastScrollTop = scrollTop;
+    });
 });
-
 
 
 
