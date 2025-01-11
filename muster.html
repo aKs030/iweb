@@ -29,6 +29,17 @@
 /* ==========================
    Farbvariablen
    ========================== */
+/* Snap Container */
+main {
+    scroll-snap-type: y mandatory; /* Aktiviert Scroll-Einrastung */
+    overflow-y: scroll;
+    height: auto; /* Füllt das gesamte Fenster */
+}
+html {
+    scroll-behavior: smooth;
+}
+
+
 :root {
 	--main-fonts-color: #fff;
 	--main-decor-color:#ffffff;
@@ -46,6 +57,9 @@
    Allgemeine Stile
    ========================== */
 body {
+    overflow-y: scroll; /* Ermöglicht vertikales Scrollen */
+    height: auto; /* Höhe dynamisch anpassen */
+/* Höhe dynamisch anpassen */
     font-family: 'Poppins', sans-serif;
     background-color: var(--main-bg-color);
     color: var(--main-text-color);
@@ -160,6 +174,12 @@ hr {
     transition: transform 0.3s ease, color 0.3s ease;
 }
 
+
+.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 .nav-link:hover,
 .nav-item.active .nav-link {
     background: var(--accent-color);
@@ -224,11 +244,16 @@ hr {
     display: flex;
     justify-content: center; /* Horizontal zentrieren */
     align-items: center;     /* Vertikal zentrieren */
-    height: 100vh;          /* Volle Fensterhöhe */
+    height: auto;          /* Volle Fensterhöhe */
     width: 100%;            /* Volle Fensterbreite */
     text-align: center;
-    padding: 0 20px;
     box-sizing: border-box;
+
+
+/* Snap-Effekt aktivieren */
+scroll-snap-type: y mandatory; /* Einrasten beim Scrollen */
+    overflow-y: scroll;
+
 }
 
 /* ==========================
@@ -306,11 +331,86 @@ hr {
         font-size: 0.9rem;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+/* Snap-Abschnitte */
+#hero,
+#features {
+    scroll-snap-align: start; /* Einrasten beim Scrollen */
+    height: 100vh; /* Abschnitte füllen das gesamte Fenster */
+}
+
+
+#hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Abschnitt füllt den gesamten Bildschirm */
+    padding: 20px; /* Standardabstand */
+    box-sizing: border-box; /* Padding wird berücksichtigt */
+}
+
+#texteins {
+    margin-top: auto; /* Dynamische Zentrierung */
+    margin-bottom: 50px; /* Zusätzlicher Platz über dem Ende */
+    font-size: clamp(1rem, 2vw, 1.5rem); /* Dynamische Schriftgröße */
+    text-align: center;
+    color: #ffffff;
+}
+
+.hero:nth-child(odd) {
+    background: #e8f8f5;
+}
+
+.hero:nth-child(even) {
+    background: #f9e8f8;
+}
+
+/* Highlight für aktive Sektion */
+.hero.active {
+    transform: scale(1.05); /* Zoom-Effekt */
+    background: #d1f2eb; /* Highlight-Farbe */
+}
+
+/* Fortschrittsleiste */
+#progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 5px;
+    background-color: #3498db;
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.2s ease;
+}
+
+/* Begrüßungstext */
+section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
         </style>
 </head>
 <body>
     <div id="menuContainer"></div>
     <main id="main-content">
+<div id="progress-bar"></div>
         <!-- Hero Section -->
         <div class="center-container">
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
@@ -318,9 +418,11 @@ hr {
             <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
 
-<p id="texteins" class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+            <div id="texteins"></div>
 
-</p>
+
+
+
         </section>
         </div>
         <!-- Features Section -->
@@ -408,41 +510,167 @@ hr {
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+    const texteins = document.getElementById("texteins");
+    const nextSection = document.getElementById("features");
+    const progressBar = document.getElementById("progress-bar");
+    const sections = document.querySelectorAll("section");
+    const navLinks = document.querySelectorAll(".nav-link");
 
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const welcomeText = document.getElementById("texteins");
     const greetings = [
-    "Ich freue mich, dass du den Weg hierher gefunden hast.",
-    "Diese Seite dient als mein digitales Zuhause im",
-    "World Wide Web, auf der ich meine Interessen,",
-    "Erfahrungen und Gedanken teilen möchte."
-
+        "Ich freue mich, dass du den Weg hierher gefunden hast.",
+        "Diese Seite dient als mein digitales Zuhause im",
+        "World Wide Web, auf der ich meine Interessen,",
+        "Erfahrungen und Gedanken teilen möchte."
     ];
-    let lastScrollTop = 0;
-    let scrollAmount = 0;
 
-    window.addEventListener("scroll", () => {
+    let lastScrollTop = 0;
+    let accumulatedScroll = 0;
+    const scrollThreshold = 100;
+    let currentIndex = 0;
+
+    // Fortschrittsbalken aktualisieren
+    const updateProgressBar = () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        progressBar.style.width = `${progress}%`;
+    };
+
+    // Begrüßungstext aktualisieren
+    const updateWelcomeText = () => {
         const scrollTop = window.scrollY;
 
-        // Berechne die Scroll-Richtung und aktualisiere die Scroll-Menge
         if (scrollTop > lastScrollTop) {
-            // Scrollen nach unten
-            scrollAmount += scrollTop - lastScrollTop;
-        } else {
-            // Scrollen nach oben
-            scrollAmount -= lastScrollTop - scrollTop;
+            // Runter-Scrollen
+            accumulatedScroll += scrollTop - lastScrollTop;
+
+            if (accumulatedScroll >= scrollThreshold) {
+                if (currentIndex < greetings.length - 1) {
+                    // Nächsten Text anzeigen
+                    currentIndex++;
+                    texteins.style.opacity = "0";
+                    setTimeout(() => {
+                        texteins.textContent = greetings[currentIndex];
+                        texteins.style.opacity = "1";
+                    }, 300);
+                } else if (currentIndex === greetings.length - 1) {
+                    // Letzten Text ausblenden
+                    currentIndex++;
+                    texteins.style.opacity = "0";
+                    setTimeout(() => {
+                        texteins.textContent = "";
+                    }, 300);
+                }
+                accumulatedScroll = 0;
+            }
+        } else if (scrollTop < lastScrollTop) {
+            // Hoch-Scrollen
+            accumulatedScroll += lastScrollTop - scrollTop;
+
+            if (accumulatedScroll >= scrollThreshold) {
+                if (currentIndex > 0) {
+                    // Vorherigen Text anzeigen
+                    currentIndex--;
+                    texteins.style.opacity = "0";
+                    setTimeout(() => {
+                        texteins.textContent = greetings[currentIndex];
+                        texteins.style.opacity = "1";
+                    }, 300);
+                }
+                accumulatedScroll = 0;
+            }
         }
 
-        // Begrüßung wechseln basierend auf der Scrollmenge
-        const index = Math.floor(Math.abs(scrollAmount / 80)) % greetings.length;
-        welcomeText.textContent = greetings[index];
+        lastScrollTop = scrollTop; // Letzte Scrollposition aktualisieren
+    };
 
-        lastScrollTop = scrollTop;
+    // Sichtbare Sektion hervorheben
+    const highlightVisibleSection = () => {
+        let currentSectionIndex = 0;
+
+        sections.forEach((section, index) => {
+            const rect = section.getBoundingClientRect();
+            if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
+                currentSectionIndex = index;
+            }
+        });
+
+        sections.forEach((section, index) => {
+            section.classList.toggle("active", index === currentSectionIndex);
+        });
+    };
+
+    // Scroll-Pause für nächste Sektion
+    const scrollPause = () => {
+        const textBottom = texteins.getBoundingClientRect().bottom;
+        if (textBottom > window.innerHeight / 2) {
+            nextSection.style.pointerEvents = "none"; // Verhindert Scrollen
+        } else {
+            nextSection.style.pointerEvents = "auto"; // Aktiviert Scrollen
+        }
+    };
+
+    // Navigation Smooth Scrolling
+    navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href").substring(1);
+            const targetSection = document.getElementById(targetId);
+
+            if (targetSection) {
+                targetSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }
+        });
+    });
+
+    // Intersection Observer für Sichtbarkeit und Animation
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        },
+        {
+            threshold: 0.1,
+        }
+    );
+    sections.forEach((section) => observer.observe(section));
+
+    // Begrüßungstext Padding dynamisch anpassen
+    const adjustPadding = () => {
+        const windowHeight = window.innerHeight;
+        const textHeight = texteins.offsetHeight;
+        const additionalPadding = (windowHeight - textHeight) / 4; // Platz über dem Text (1/4 der Resthöhe)
+        texteins.style.marginTop = `${additionalPadding}px`;
+    };
+    adjustPadding();
+    window.addEventListener("resize", adjustPadding);
+
+    // Haupt-Scroll-Event
+    window.addEventListener("scroll", () => {
+        updateProgressBar();
+        highlightVisibleSection();
+        updateWelcomeText();
+        scrollPause();
     });
 });
+
+
+
+
+
+
+
+
+
+
+
 
 
 
