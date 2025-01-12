@@ -1,20 +1,19 @@
-<div id="header-container"></div>
-
+<!-- Fügt den Header auf der Seite ein -->
+<script>
+    window.onload = function() {
+      fetch('/seiten/Komponente/header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-placeholder').innerHTML = data;
+        })
+        .catch(error => console.error('Fehler beim Laden des Headers:', error));
+    };
+  </script>
+      <div id="header-placeholder"></div> <!-- Hier wird der Header eingefügt -->
 
 <head>
-<script>
-function loadHeader() {
-  fetch('seiten/Komponente/header.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('header-container').innerHTML = data;
-    })
-    .catch(error => console.error('Error loading the header:', error));
-}
+    <script src="js/menu.js"></script>
 
-window.onload = loadHeader;
-
-</script>
     <style>
 /* ==========================
    Farbvariablen
@@ -558,7 +557,6 @@ body {
         }
         </script>
 
-        <script src="js/menu.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
