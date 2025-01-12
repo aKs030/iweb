@@ -1,8 +1,5 @@
-/*************************************************************************
- * MENU *
- *************************************************************************/
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('/seiten/Komponente/menu.html')
+  fetch('../seiten/Komponente/menu.html')
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP-Error! Status: ${response.status}`);
