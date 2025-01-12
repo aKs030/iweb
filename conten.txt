@@ -1,0 +1,73 @@
+<!-- SECTION:UBERSICHT -->
+<h2>Überblick</h2>
+<p>Willkommen auf meiner Seite!</p>
+
+<!-- SECTION:PERSON -->
+<h2>Persönlich</h2>
+<p>
+    Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst!
+    Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben,
+    meine Interessen und meine berufliche Laufbahn geben.
+</p>
+
+<!-- SECTION:HOBBYS -->
+<div class="section-text">
+    <h2>Meine Hobbys</h2>
+    <hr>
+    <p>
+        In meiner Freizeit widme ich mich leidenschaftlich meinen Hobbys, die mir nicht nur Freude bereiten,
+        sondern auch Ausgleich und Inspiration im Alltag bieten.
+    </p>
+
+    <h3 style="text-align: left;">Reisen</h3>
+    <p>
+        Es gibt nichts Spannenderes, als neue Orte zu entdecken, verschiedene Kulturen kennenzulernen
+        und unvergessliche Erinnerungen zu sammeln. Reisen eröffnet mir die Möglichkeit,
+        meinen Horizont zu erweitern und die Vielfalt unserer Welt zu erleben.
+    </p>
+
+    <h3 style="text-align: left;">Musik und Technologie</h3>
+    <p>
+        Musik begleitet mich durch jede Lebenslage – sie inspiriert, motiviert und entspannt.
+        Genauso faszinieren mich spannende Technologien, die unser Leben prägen
+        und neue Wege für Kreativität und Innovation eröffnen.
+    </p>
+    <p>
+        Wandern und Natur erkunden
+    </p>
+    <p>
+        Die Natur ist für mich ein Ort der Ruhe und Entschleunigung. Beim Wandern kann ich abschalten,
+        die Schönheit unserer Umwelt genießen und neue Energie tanken.
+    </p>
+
+    <h3 style="text-align: left;">Fotografie</h3>
+    <p>
+        Mit meiner Kamera halte ich gerne besondere Momente fest. Ob eindrucksvolle Landschaften,
+        besondere Augenblicke auf Reisen oder alltägliche Details – Fotografie ist meine Art,
+        die Welt aus meiner Perspektive zu zeigen.
+    </p>
+
+    <h3 style="text-align: left;">Fitness und Joggen</h3>
+    <p>
+        Regelmäßige Bewegung gehört für mich einfach dazu. Beim Joggen und Fitness finde ich
+        nicht nur körperliche Ausgeglichenheit, sondern auch mentalen Fokus.
+    </p>
+
+    <h3 style="text-align: left;">Bücher</h3>
+    <p>
+        Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration.
+        Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.
+    </p>
+    <p>
+        Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder
+        neue Perspektiven zu gewinnen.
+    </p>
+</div>
+
+<!-- SECTION:KARRIERE -->
+<h2>Karriere</h2>
+<p>Hier ist ein Überblick über meine beruflichen Stationen.</p>
+
+<!-- SECTION:KONTAKT -->
+<h2>Kontakt</h2>
+<p>Vielen Dank für Ihren Besuch! Kontaktieren Sie mich gerne für weitere Informationen.</p>
