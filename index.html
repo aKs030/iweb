@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -6,64 +8,22 @@
     <title>Abdulkerim</title>
 
     <!-- Bootstrap CSS -->
-    <link 
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet" 
-        defer
-    >
-    <!-- Animate.css für zusätzliche Animationen -->
-    <link 
-        rel="stylesheet" 
-        href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" defer>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"/>
     <!-- Bootstrap Icons -->
-    <link 
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
-    >
-    <!-- Font Awesome (alternativ zu Bootstrap Icons) -->
-    <link 
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
-        rel="stylesheet"
-    >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link 
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" 
-        rel="stylesheet"
-    >
-    <!-- Meta Tags -->
-    <meta 
-        name="description" 
-        content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken."
-    >
-    <meta 
-        name="keywords"
-        content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de"
-    >
-    <meta 
-        property="og:title" 
-        content="Abdulkerim Sesli - Persönliche Webseite"
-    >
-    <meta 
-        property="og:description" 
-        content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken."
-    >
-    <meta 
-        property="og:image" 
-        content="img/stern.png"
-    >
-    <meta 
-        property="og:url" 
-        content="https://www.abdulkerimsesli.de"
-    >
-    <meta 
-        name="robots" 
-        content="index, follow"
-    >
-
-    <!-- Eigene CSS & JS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Custom CSS -->
     <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
     <script src="js/menu.js" defer></script>
+    <!-- Meta Tags -->
+    <meta name="description" content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.">
+    <meta name="keywords" content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de">
     <!-- Internal CSS -->
     <style>
 /* ==========================
@@ -200,12 +160,6 @@ hr {
     transition: transform 0.3s ease, color 0.3s ease;
 }
 
-
-.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
 .nav-link:hover,
 .nav-item.active .nav-link {
     background: var(--accent-color);
@@ -270,8 +224,10 @@ hr {
     display: flex;
     justify-content: center; /* Horizontal zentrieren */
     align-items: center;     /* Vertikal zentrieren */
+    height: 100vh;          /* Volle Fensterhöhe */
     width: 100%;            /* Volle Fensterbreite */
     text-align: center;
+    padding: 0 20px;
     box-sizing: border-box;
 }
 
@@ -350,161 +306,21 @@ hr {
         font-size: 0.9rem;
     }
 }
-
-
-
-
-
-
-
-
-.parallax-layer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transform: translateZ(-1px) scale(2); /* Hintergrund weiter entfernt */
-    background-size: cover;
-    background-attachment: fixed; /* Parallax-Effekt */
-}
-
-.parallax-layer.foreground {
-    transform: translateZ(0);
-}
-
-
-
-/* Hero-Bereich */
-#hero {
-    perspective: 1000px; /* 3D-Tiefe */
-
-    color: #fff;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    padding: 1.5rem 1rem;
-    min-height: 100vh;
-    animation: background-fade 10s infinite alternate; /* Leichtes Pulsieren */
-}
-
-/* Textmaskierung */
-.text-mask {
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-align: center;
-    line-height: 1.6;
-    margin: 0;
-    overflow: hidden;
-}
-
-.text-mask span {
-    display: block;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-    will-change: opacity, transform;
-}
-
-.text-mask span.active {
-    opacity: 1;
-    transform: translateY(0);
-    color: #ffffff;
-}
-
-.text-mask span.animate-text {
-    animation: text-glow 1s ease-in-out; /* Spezialeffekt */
-}
-
-/* Features-Bereich */
-#features {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-
-/* Globale Effekte */
-body {
-    color: #fff;
-    font-family: 'Roboto', sans-serif;
-    overflow-x: hidden;
-    animation: fade-in 1s ease-in-out; /* Sanfter Fade-in-Effekt */
-}
-
-@keyframes fade-in {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@media (max-width: 768px) {
-    .text-mask {
-        font-size: 2rem;
-        line-height: 1.4;
-    }
-}
-
-@media (max-width: 480px) {
-    .text-mask {
-        font-size: 1.8rem;
-        line-height: 1.3;
-    }
-
-    .text-mask span.active {
-        color: #ffffff;
-    }
-}
-.text-mask span {
-    display: inline-block;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-    will-change: opacity, transform;
-}
-
-.text-mask span.active {
-    opacity: 1;
-    transform: scale(1);
-    animation: zoom-bounce 0.5s ease-out;
-}
-
-/* Keyframes für Zoom-Bounce */
-@keyframes zoom-bounce {
-    0% {
-        transform: scale(0.8);
-    }
-    70% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
         </style>
 </head>
 <body>
     <div id="menuContainer"></div>
     <main id="main-content">
-<div id="progress-bar"></div>
         <!-- Hero Section -->
         <div class="center-container">
         <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
 
             <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
-            <div id="texteins" class="text-mask">
-                <span>Ich freue mich, dass du den Weg hierher gefunden hast.</span>
-                <span>Diese Seite dient als mein digitales Zuhause im.</span>
-                <span>World Wide Web auf der ich meine Interessen, Erfahrungen und Gedanken teilen möchte.</span>
-                <span>Lass mich dir einen kleinen Einblick geben,was dich hier erwartet..</span>
-            </div>
 
+<p id="texteins" class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
 
+</p>
         </section>
         </div>
         <!-- Features Section -->
@@ -591,118 +407,113 @@ body {
     </body>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
-
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-          /* ========================================
-           * Intersection Observer (Abschnitte & Animation)
-           * ======================================== */
-          const observerOptions = {
-            threshold: 0.1,
-            rootMargin: "0px 0px 50px 0px"
-          };
-    
-          const navItems = document.querySelectorAll(".nav-item");
-          const sections = document.querySelectorAll("section");
-          const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-          const navLinks = document.querySelectorAll(".nav-link");
-    
-          const observerCallback = (entries) => {
-            entries.forEach(({ target, isIntersecting }) => {
-              // Animationseinstellungen holen
-              const animationClass = target.dataset.animation || "animate__fadeInUp";
-              const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
-    
-              if (isIntersecting) {
-                // Sichtbare Elemente animieren
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const welcomeText = document.getElementById("texteins");
+    const greetings = [
+    "Ich freue mich, dass du den Weg hierher gefunden hast.",
+    "Diese Seite dient als mein digitales Zuhause im",
+    "World Wide Web, auf der ich meine Interessen,",
+    "Erfahrungen und Gedanken teilen möchte."
+
+    ];
+    let lastScrollTop = 0;
+    let scrollAmount = 0;
+
+    window.addEventListener("scroll", () => {
+        const scrollTop = window.scrollY;
+
+        // Berechne die Scroll-Richtung und aktualisiere die Scroll-Menge
+        if (scrollTop > lastScrollTop) {
+            // Scrollen nach unten
+            scrollAmount += scrollTop - lastScrollTop;
+        } else {
+            // Scrollen nach oben
+            scrollAmount -= lastScrollTop - scrollTop;
+        }
+
+        // Begrüßung wechseln basierend auf der Scrollmenge
+        const index = Math.floor(Math.abs(scrollAmount / 80)) % greetings.length;
+        welcomeText.textContent = greetings[index];
+
+        lastScrollTop = scrollTop;
+    });
+});
+
+
+
+
+
+
+     document.addEventListener("DOMContentLoaded", () => {
+    const observerOptions = {
+        threshold: 0.6,
+        rootMargin: "0px 0px -50px 0px"
+    };
+
+    const navItems = document.querySelectorAll(".nav-item");
+    const sections = document.querySelectorAll("section");
+    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+    const navLinks = document.querySelectorAll(".nav-link");
+
+    const observerCallback = (entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+            const animationClass = target.dataset.animation || "animate__fadeInUp";
+            const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+
+            if (isIntersecting) {
                 if (target.classList.contains("scroll-animate")) {
-                  target.style.transitionDelay = `${delayInS}s`;
-                  target.classList.add("visible", "animate__animated", animationClass);
+                    target.style.transitionDelay = `${delayInS}s`;
+                    target.classList.add("visible", "animate__animated", animationClass);
                 }
-    
-                // Navigation hervorheben
+
                 if (target.id) {
-                  navItems.forEach((item) => item.classList.remove("active"));
-                  const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                  if (activeNavItem) {
-                    activeNavItem.classList.add("active");
-                  }
+                    navItems.forEach((item) => item.classList.remove("active"));
+                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                    if (activeNavItem) {
+                        activeNavItem.classList.add("active");
+                    }
                 }
-              } else {
-                // Aus dem Viewport verschwunden -> Animation zurücksetzen
+            } else {
                 if (target.classList.contains("scroll-animate")) {
-                  target.classList.remove("visible", "animate__animated", animationClass);
+                    target.classList.remove("visible", "animate__animated", animationClass);
                 }
-              }
-            });
-          };
-    
-          const observer = new IntersectionObserver(observerCallback, observerOptions);
-    
-          sections.forEach((section) => observer.observe(section));
-          scrollAnimateElements.forEach((element) => observer.observe(element));
-    
-          // Smooth Scroll & Aktiv-Zustand bei Klick
-          navLinks.forEach((link) => {
-            link.addEventListener("click", (e) => {
-              e.preventDefault();
-              const targetId = link.getAttribute("href").substring(1);
-              const targetSection = document.getElementById(targetId);
-    
-              if (targetSection) {
+            }
+        });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    sections.forEach((section) => observer.observe(section));
+    scrollAnimateElements.forEach((element) => observer.observe(element));
+
+    navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href").substring(1);
+            const targetSection = document.getElementById(targetId);
+
+            if (targetSection) {
                 targetSection.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start"
+                    behavior: "smooth",
+                    block: "start"
                 });
+
+                // Entferne die 'active'-Klasse von allen Navigationspunkten
                 navItems.forEach((item) => item.classList.remove("active"));
+
+                // Füge die 'active'-Klasse zum geklickten Navigationspunkt hinzu
                 const clickedNavItem = link.closest(".nav-item");
                 if (clickedNavItem) {
-                  clickedNavItem.classList.add("active");
+                    clickedNavItem.classList.add("active");
                 }
-              }
-            });
-          });
-    
-          /* ========================================
-           * Scrollbasierter Textwechsel im Hero
-           * ======================================== */
-          document.addEventListener("scroll", () => {
-            const heroSection = document.getElementById("hero");
-            const featuresSection = document.getElementById("features");
-            const textDiv = document.getElementById("texteins");
-            const spans = textDiv.querySelectorAll("span");
-    
-            const scrollPosition = window.scrollY;
-            const heroTop = heroSection.offsetTop;
-            const heroHeight = heroSection.offsetHeight;
-            const viewportHeight = window.innerHeight;
-    
-            // Höhe pro Textspan ermitteln
-            const sectionHeightPerText = heroHeight / spans.length;
-    
-            // Aktiven Index berechnen
-            const activeIndex = Math.min(
-              Math.max(
-                Math.floor((scrollPosition - heroTop + viewportHeight * 0.3) / sectionHeightPerText),
-                0
-              ),
-              spans.length - 1
-            );
-    
-            // Textzeilen aktualisieren
-            spans.forEach((span, index) => {
-              if (index === activeIndex) {
-                span.classList.add("active", "animate-text");
-              } else {
-                span.classList.remove("active", "animate-text");
-              }
-            });
-    
-            // Features-Bereich ein- oder ausblenden
-            const isLastLineActive = activeIndex === spans.length - 1;
-            featuresSection.style.opacity = isLastLineActive ? "1" : "0";
-            featuresSection.style.transform = isLastLineActive ? "translateY(0)" : "translateY(50px)";
-          });
+            }
         });
-      </script>
+    });
+});
+    </script>
+
 </html>
