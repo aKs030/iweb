@@ -1,7 +1,20 @@
-<div id="header"></div>
+<div id="header-container"></div>
+
 
 <head>
+<script>
+function loadHeader() {
+  fetch('seiten/Komponente/header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('header-container').innerHTML = data;
+    })
+    .catch(error => console.error('Error loading the header:', error));
+}
 
+window.onload = loadHeader;
+
+</script>
     <style>
 /* ==========================
    Farbvariablen
@@ -545,7 +558,7 @@ body {
         }
         </script>
 
-        <script src="../js/menu.js"></script>
+        <script src="js/menu.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -660,15 +673,6 @@ body {
           });
         });
 
-
-
-
-
-    fetch('seiten/Komponente/header.html')
-    .then(response => response.text())
-        .then(data => {
-            document.getElementById('header').innerHTML = data;
-        });
 
       </script>
 
