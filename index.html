@@ -49,12 +49,11 @@
     rel="stylesheet"
   />
 
-  <!-- Custom CSS 
+  <!-- Custom CSS -->
   <link
     rel="stylesheet"
     href="css/menu.css"
   />
--->
 
   <!-- Interne Styles -->
   <style>
@@ -266,33 +265,27 @@
 
   <main id="main-content">
     <!-- Hero Section -->
-<!-- Hero Section -->
-<div class="center-container">
-    <section
-      id="hero"
-      class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section"
-    >
-
-          <!-- Überschrift darunter -->
-          <h3
+    <div class="center-container">
+      <section
+        id="hero"
+        class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section"
+      >
+        <h3
           class="display-3 fw-bold scroll-animate shimmer-text"
           data-animation="animate__fadeInDown"
         >
           Willkommen
           <hr />
         </h3>
-      <!-- Text weiter oben platzieren -->
-      <p
-        id="texteins"
-        class="lead scroll-animate"
-        style="margin-bottom: 2rem;" 
-        data-animation="animate__fadeInUp"
-      ></p>
-  
+        <p
+          id="texteins"
+          class="lead scroll-animate"
+          style="text-align: left;"
+          data-animation="animate__fadeInUp"
+        ></p>
+      </section>
+    </div>
 
-    </section>
-  </div>
-  
     <!-- Features Section -->
     <section
       id="features"
@@ -330,9 +323,9 @@
             class="col text-decoration-none text-reset animated-link"
           >
             <div
-              class="card border-0 bg-white text-center scroll-animate p-4 "
+              class="card border-0 bg-white text-center scroll-animate p-4"
               data-animation="animate__zoomIn"
-              data-delay="8000"
+              data-delay="600"
             >
               <i
                 class="bi bi-images display-4 animated-icon mb-3"
@@ -408,8 +401,8 @@
     <!-- Navigation unten fixiert -->
     <nav class="navbar navbar-bottom">
       <ul class="nav-list">
-        <li class="nav-item" data-section="texteins">
-          <a href="#texteins" class="nav-link" aria-label="Zur Startseite">
+        <li class="nav-item" data-section="hero">
+          <a href="#hero" class="nav-link" aria-label="Zur Startseite">
             <i class="fas fa-home nav-icon" aria-hidden="true"></i>
           </a>
         </li>
@@ -433,8 +426,8 @@
     defer
   ></script>
 
-  <!-- Optional: eigenes JS-Menü 
-  <script src="js/menu.js" defer></script>-->
+  <!-- Optional: eigenes JS-Menü -->
+  <script src="js/menu.js" defer></script>
 
   <!-- Scroll-Text-Wechsel beim Hero-Text -->
   <script defer>
@@ -446,46 +439,37 @@
         "World Wide Web, auf der ich meine Interessen,",
         "Erfahrungen und Gedanken teilen möchte."
       ];
-  
+
       let lastScrollTop = 0;
       let scrollAmount = 0;
-  
-      // Direkt etwas initiales anzeigen (1. Text), wenn gewünscht:
-      welcomeText.textContent = greetings[0];
-  
+
       window.addEventListener("scroll", () => {
         const scrollTop = window.scrollY;
-  
-        // Bestimme Scroll-Richtung
+
+        // Prüfe Scroll-Richtung und aktualisiere die Scroll-Menge
         if (scrollTop > lastScrollTop) {
-          // nach unten
-          scrollAmount += (scrollTop - lastScrollTop);
+          // Scrollt nach unten
+          scrollAmount += scrollTop - lastScrollTop;
         } else {
-          // nach oben
-          scrollAmount -= (lastScrollTop - scrollTop);
+          // Scrollt nach oben
+          scrollAmount -= lastScrollTop - scrollTop;
         }
-  
-        // Index berechnen (z.B. alle 80px ein neuer Text)
-        let index = Math.floor(Math.abs(scrollAmount / 80));
-  
-        // Obergrenze: Wenn wir am Ende des Arrays sind, NICHT mehr zurückgehen
-        if (index >= greetings.length) {
-          index = greetings.length - 1; 
-        }
-  
+
+        // Index im Array -> alle 80px wechselt die Begrüßung
+        const index = Math.floor(Math.abs(scrollAmount / 80)) % greetings.length;
         welcomeText.textContent = greetings[index];
+
         lastScrollTop = scrollTop;
       });
     });
   </script>
-  
 
   <!-- IntersectionObserver für Scroll-Animationen & aktives Menü -->
   <script defer>
     document.addEventListener("DOMContentLoaded", () => {
       const observerOptions = {
-        threshold: 0.3,
-        rootMargin: "0px 0px 50px 0px"
+        threshold: 0.6,
+        rootMargin: "0px 0px -50px 0px"
       };
 
       const navItems = document.querySelectorAll(".nav-item");
