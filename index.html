@@ -62,7 +62,7 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1.8;
-  padding-top: 10px; /* Höhe des fixierten Headers */
+  padding-top: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -325,7 +325,15 @@ hr {
 /* ===========================
    Navigation (site-menu)
 =========================== */
-
+#main-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  margin: 0;
+  padding: 0;
+}
 /* HEADER / MENÜ */
 .site-header {
   position: fixed;
