@@ -1,536 +1,484 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Abdulkerim</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdulkerim</title>
 
-  <!-- Preconnect für Google Fonts (Performance) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" defer>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"/>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Custom CSS -->
+    <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="js/menu.js" defer></script>
+    <!-- Meta Tags -->
+    <meta name="description" content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.">
+    <meta name="keywords" content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de">
+    <!-- Internal CSS -->
+    <style>
+/* ==========================
+   Farbvariablen
+   ========================== */
+:root {
+	--main-fonts-color: #fff;
+	--main-decor-color:#ffffff;
 
-  <!-- Beschreibung / Keywords -->
-  <meta
-    name="description"
-    content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken."
-  />
-  <meta
-    name="keywords"
-    content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de"
-  />
+    --main-bg-color: #444;
+    --secondary-bg-color: var(--main-bg-color);
+    --main-text-color: rgba(245, 245, 245, 0.9);
+    --accent-color: rgba(255, 204, 41, 0.8);
+    --menu-bg-color: #333333cc;
+    --main-text-color: rgba(245, 245, 245, 0.9);
+    --secondary-text-color: rgba(245, 245, 245, 0.5); /* oder 50% Opazität */
+}
 
-  <!-- Google Fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@400;600;700&display=swap"
-    rel="stylesheet"
-  />
+/* ==========================
+   Allgemeine Stile
+   ========================== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.8;
+}
 
-  <!-- Bootstrap CSS (ohne defer, damit Styles sofort verfügbar sind) -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--main-text-color);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+}
 
-  <!-- Animate.css (optional) -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"
-  />
+p, li, a {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--secondary-text-color);
+}
 
-  <!-- Bootstrap Icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
-  />
+p.lead {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--main-text-color);
+}
 
-  <!-- Font Awesome -->
-  <link
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-    rel="stylesheet"
-  />
+/* ==========================
+        Text-Willkommen
+   ========================== */
+.shimmer-text {
+	padding-bottom: 15px;
+    letter-spacing: normal;
+	font-style: normal;
+	font-size: 60px;
+	color: var(--main-fonts-color);
+	text-shadow: 0px 0px 40px var(--main-decor-color);
+    font-family: inherit; /* übernimmt die Schriftart vom Body */
+    margin-bottom: 8rem; /* Abstand direkt im Stil */
 
-  <!-- Custom CSS -->
-  <link
-    rel="stylesheet"
-    href="css/menu.css"
-  />
+}
 
-  <!-- Interne Styles -->
-  <style>
-    /* ==========================
-       Farbvariablen
-       ========================== */
-    :root {
-      --main-fonts-color: #fff;
-      --main-decor-color: #ffffff;
-
-      --main-bg-color: #444;
-      --secondary-bg-color: var(--main-bg-color);
-      --main-text-color: rgba(245, 245, 245, 0.9);
-      --accent-color: rgba(255, 204, 41, 0.8);
-      --menu-bg-color: #333333cc;
-      --secondary-text-color: rgba(245, 245, 245, 0.5);
+@keyframes shimmer {
+    0% {
+        background-position: 0% 50%;
     }
+    100% {
+        background-position: 100% 50%;
+    }
+}
 
-    /* ==========================
-       Allgemeine Stile
-       ========================== */
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--main-bg-color);
-      color: var(--main-text-color);
-      margin: 0;
-      padding: 0;
-      line-height: 1.8;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Playfair Display', serif;
-      color: var(--main-text-color);
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      line-height: 1.4;
-    }
-    p, li, a {
-      font-family: 'Poppins', sans-serif;
-      font-size: 1rem;
-      font-weight: 300;
-      color: var(--secondary-text-color);
-    }
-    p.lead {
-      font-size: 1.2rem;
-      font-weight: 400;
-      color: var(--main-text-color);
-    }
+hr {
+    background: var(--main-decor-color);
+	margin: 2px;
+	height: 3px;
+	width: 150px;
+    border-radius:5px;
+	border: hidden;
+	margin-inline-start: auto;
+    margin-inline-end: auto;
+}
 
-    /* ==========================
-       Text-Willkommen (Hero)
-       ========================== */
-    .shimmer-text {
-      padding-bottom: 15px;
-      letter-spacing: normal;
-      font-style: normal;
-      font-size: 60px;
-      color: var(--main-fonts-color);
-      text-shadow: 0px 0px 40px var(--main-decor-color);
-      margin-bottom: 8rem;
-    }
-    hr {
-      background: var(--main-decor-color);
-      margin: 2px auto;
-      height: 3px;
-      width: 150px;
-      border-radius: 5px;
-      border: none;
-    }
+/* ==========================
+   Navigation (Navbar Bottom)
+   ========================== */
+.navbar-bottom {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--menu-bg-color);
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
 
-    /* ==========================
-       Navigation (Navbar Bottom)
-       ========================== */
+.nav-list {
+    display: flex;
+    gap: 15px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+    color: var(--menu-text-color);
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-item.active .nav-link {
+    background: var(--accent-color);
+    box-shadow: 0 6px 15px rgba(255, 204, 41, 0.8);
+    transform: scale(1.1);
+}
+
+.nav-link:hover .nav-icon,
+.nav-item.active .nav-icon {
+    color: var(--main-bg-color);
+    transform: scale(1.15);
+}
+
+/* Deaktiviere :focus-Effekte auf mobilen Geräten */
+.nav-link:focus {
+    outline: none;
+    box-shadow: none;
+}
+/* ==========================
+   Karten
+   ========================== */
+   .card {
+    background-color: var(--secondary-bg-color);
+    color: var(--main-text-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================
+   Scroll-Animation
+   ========================== */
+   @keyframes fadeRotate {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) rotateY(90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateY(0);
+  }
+}
+
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+}
+
+.scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ==========================
+   Container-Zentrierung
+   ========================== */
+.center-container {
+    display: flex;
+    justify-content: center; /* Horizontal zentrieren */
+    align-items: center;     /* Vertikal zentrieren */
+    height: 100vh;          /* Volle Fensterhöhe */
+    width: 100%;            /* Volle Fensterbreite */
+    text-align: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* ==========================
+   Lead-Text
+   ========================== */
+.lead {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: rgba(245, 245, 245, 0.9);
+    font-weight: 400;
+}
+
+
+
+/* ==========================
+   Media Queries
+   ========================== */
+
+/* -- max-width: 768px -- */
+@media (max-width: 768px) {
     .navbar-bottom {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: var(--menu-bg-color);
-      padding: 10px 20px;
-      border-radius: 30px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-      z-index: 1000;
-      backdrop-filter: blur(8px);
+        bottom: 5px;
+        padding: 8px 15px;
     }
-    .nav-list {
-      display: flex;
-      gap: 15px;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    .nav-item {
-      position: relative;
-    }
+    
     .nav-link {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      text-decoration: none;
-      transition: all 0.4s ease-in-out;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        width: 40px;
+        height: 40px;
     }
+
     .nav-icon {
-      font-size: 1.3rem;
-      color: var(--menu-text-color);
-      transition: transform 0.3s ease, color 0.3s ease;
-    }
-    .nav-link:hover,
-    .nav-item.active .nav-link {
-      background: var(--accent-color);
-      box-shadow: 0 6px 15px rgba(255, 204, 41, 0.8);
-      transform: scale(1.1);
-    }
-    .nav-link:hover .nav-icon,
-    .nav-item.active .nav-icon {
-      color: var(--main-bg-color);
-      transform: scale(1.15);
+        font-size: 1.2rem;
     }
 
-    /* ==========================
-       Karten
-       ========================== */
-    .card {
-      background-color: var(--secondary-bg-color);
-      color: var(--main-text-color);
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    /* ==========================
-       Scroll-Animation
-       ========================== */
-    .scroll-animate {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
-    }
-    .scroll-animate.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ==========================
-       Container-Zentrierung
-       ========================== */
-    .center-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100%;
-      text-align: center;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-
-    /* ==========================
-       Media Queries
-       ========================== */
-    @media (max-width: 768px) {
-      .navbar-bottom {
-        padding: 8px;
-      }
-      .nav-link {
-        width: 35px;
-        height: 35px;
-      }
-      .nav-icon {
-        font-size: 1rem;
-      }
-      .shimmer-text {
+    .shimmer-text {
         font-size: 2.5rem;
-      }
+        animation: shimmer 3s ease-in-out infinite; /* Langsamere Animation auf Mobilgeräten */
     }
-    @media (max-width: 480px) {
-      .nav-link {
+
+    .scroll-animate {
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+
+    .lead {
+        font-size: 1rem;
+    }
+
+    .center-container {
+        padding: 0 15px;
+    }
+}
+
+/* -- max-width: 480px -- */
+@media (max-width: 480px) {
+    .nav-link {
         width: 35px;
         height: 35px;
-      }
-      .nav-icon {
-        font-size: 1rem;
-      }
-      .shimmer-text {
-        font-size: 2rem;
-      }
     }
-  </style>
+
+    .nav-icon {
+        font-size: 1rem;
+    }
+
+    .shimmer-text {
+        font-size: 2rem;
+    }
+
+    .scroll-animate {
+        transform: translateY(15px);
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    }
+
+    .lead {
+        font-size: 0.9rem;
+    }
+}
+        </style>
 </head>
-
 <body>
-  <!-- Optionales dynamisches Menü (falls genutzt) -->
-  <div id="menuContainer"></div>
+    <div id="menuContainer"></div>
+    <main id="main-content">
+        <!-- Hero Section -->
+        <div class="center-container">
+        <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
 
-  <main id="main-content">
-    <!-- Hero Section -->
-    <div class="center-container">
-      <section
-        id="hero"
-        class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section"
-      >
-        <h3
-          class="display-3 fw-bold scroll-animate shimmer-text"
-          data-animation="animate__fadeInDown"
-        >
-          Willkommen
-          <hr />
-        </h3>
-        <p
-          id="texteins"
-          class="lead scroll-animate"
-          style="text-align: left;"
-          data-animation="animate__fadeInUp"
-        ></p>
-      </section>
-    </div>
+            <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
-    <!-- Features Section -->
-    <section
-      id="features"
-      class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section"
-    >
-      <div class="container">
-        <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-          <!-- Über Mich -->
-          <a
-            href="ubermich.html"
-            class="col text-decoration-none text-reset animated-link"
-          >
-            <div
-              class="card border-0 bg-white text-center scroll-animate p-4"
-              data-animation="animate__zoomIn"
-              data-delay="400"
-            >
-              <i
-                class="bi bi-person-circle display-4 animated-icon mb-3"
-                style="color: #555;"
-              ></i>
-              <h5 class="fw-bold animated-text" style="color: #333;">
-                Über Mich
-              </h5>
-              <p class="animated-text" style="color: #666;">
-                Ich teile hier meine Leidenschaften,
-                Interessen und Erlebnisse.
-              </p>
-            </div>
-          </a>
 
-          <!-- Fotogalerie -->
-          <a
-            href="album.html"
-            class="col text-decoration-none text-reset animated-link"
-          >
-            <div
-              class="card border-0 bg-white text-center scroll-animate p-4"
-              data-animation="animate__zoomIn"
-              data-delay="600"
-            >
-              <i
-                class="bi bi-images display-4 animated-icon mb-3"
-                style="color: #555;"
-              ></i>
-              <h5 class="fw-bold animated-text" style="color: #333;">
-                Fotogalerie
-              </h5>
-              <p class="animated-text" style="color: #666;">
-                Hier findest du einige Fotos von meinen Reisen,
-                von meinem Alltag und von besonderen Ereignissen,
-                an denen ich teilgenommen habe.
-              </p>
-            </div>
-          </a>
+<p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+    Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+    Diese Seite dient als mein digitales Zuhause im<br>
+    World Wide Web, auf der ich meine Interessen,<br>
+    Erfahrungen und Gedanken teilen möchte.
+</p>
+        </section>
         </div>
-      </div>
-    </section>
+        <!-- Features Section -->
+        <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+            <div class="container">
+                <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+                    <!-- Link zu Über Mich -->
+                    <a href="ubermich.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="400">
+                            <i class="bi bi-person-circle display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Über Mich</h5>
+                            <p class="animated-text" style="color: #666;">
+                                Ich teile hier meine Leidenschaften,
+                                Interessen und Erlebnisse.
+                            </p>
+                        </div>
+                    </a>
 
-    <!-- About Section -->
-    <section
-      id="about"
-      class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section"
-    >
-      <p
-        class="lead scroll-animate"
-        data-animation="animate__fadeInUp"
-      >
-        Vielen Dank, dass du meine Homepage besuchst.
-        Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-        Vergiss nicht, regelmäßig vorbeizuschauen,
-        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-      </p>
-      <h2
-        class="scroll-animate"
-        data-animation="animate__fadeIn"
-      >
-        Alles Gute und viel Spaß beim Stöbern!
-      </h2>
-    </section>
+                    <!-- Link zu Fotogalerie -->
+                    <a href="album.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="600">
+                            <i class="bi bi-images display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Fotogalerie</h5>
+                            <p class="animated-text" style="color: #666;">
+                                Hier findest du einige Fotos von meinen Reisen,
+                                von meinem Alltag und von besonderen Ereignissen,
+                                an denen ich teilgenommen habe.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
 
-    <!-- Footer -->
-    <footer class="footer py-3 text-center">
-      <p class="mb-1">
-        <a
-          href="#impressum"
-          id="impressumButton"
-          class="btn-link"
-        >
-          Impressum
-        </a>
-        |
-        <a
-          href="#datenschutz"
-          id="privacyButton"
-          class="btn-link"
-        >
-          Datenschutzerklärung
-        </a>
-        |
-        <a
-          href="mailto:mail@abdulkerimsesli.com"
-          class="btn-link"
-        >
-          Kontakt
-        </a>
-      </p>
-      <p>
-        &copy; 2024 Abdulkerim. Alle Rechte vorbehalten.
-      </p>
-    </footer>
+        <!-- About Section -->
+        <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+            <p class="lead scroll-animate" data-animation="animate__fadeInUp">
+                Vielen Dank, dass du meine Homepage besuchst.
+                Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
+                Vergiss nicht, regelmäßig , vorbeizuschauen,
+                um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+         </p>
+        <h2 class="scroll-animate" data-animation="animate__fadeIn">Alles Gute und viel Spaß beim Stöbern!</h2>
+        </section>
 
-    <!-- Navigation unten fixiert -->
-    <nav class="navbar navbar-bottom">
-      <ul class="nav-list">
-        <li class="nav-item" data-section="hero">
-          <a href="#hero" class="nav-link" aria-label="Zur Startseite">
+        <!-- Footer -->
+        <footer class="footer py-3 text-center">
+            <p class="mb-1">
+
+                <a href="#impressum" id="impressumButton" class="btn-link">Impressum</a> |
+<a href="#datenschutz" id="privacyButton" class="btn-link">Datenschutzerklärung</a> |
+<a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
+                
+            </p>
+            <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
+        </footer>
+
+
+
+<!-- Navigation -->
+<nav class="navbar navbar-bottom">
+    <ul class="nav-list">
+      <li class="nav-item" data-section="hero">
+        <a href="#hero" class="nav-link" aria-label="Zur Startseite">
             <i class="fas fa-home nav-icon" aria-hidden="true"></i>
-          </a>
-        </li>
-        <li class="nav-item" data-section="features">
-          <a href="#features" class="nav-link">
-            <i class="fas fa-star nav-icon"></i>
-          </a>
-        </li>
-        <li class="nav-item" data-section="about">
-          <a href="#about" class="nav-link">
-            <i class="fas fa-user nav-icon"></i>
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </main>
+        </a>
+      </li>
+      <li class="nav-item" data-section="features">
+        <a href="#features" class="nav-link">
+          <i class="fas fa-star nav-icon"></i>
+        </a>
+      </li>
+      <li class="nav-item" data-section="about">
+        <a href="#about" class="nav-link">
+          <i class="fas fa-user nav-icon"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-  <!-- Bootstrap JS (mit defer) -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    defer
-  ></script>
 
-  <!-- Optional: eigenes JS-Menü -->
-  <script src="js/menu.js" defer></script>
 
-  <!-- Scroll-Text-Wechsel beim Hero-Text -->
-  <script defer>
-    document.addEventListener("DOMContentLoaded", () => {
-      const welcomeText = document.getElementById("texteins");
-      const greetings = [
-        "Ich freue mich, dass du den Weg hierher gefunden hast.",
-        "Diese Seite dient als mein digitales Zuhause im",
-        "World Wide Web, auf der ich meine Interessen,",
-        "Erfahrungen und Gedanken teilen möchte."
-      ];
-
-      let lastScrollTop = 0;
-      let scrollAmount = 0;
-
-      window.addEventListener("scroll", () => {
-        const scrollTop = window.scrollY;
-
-        // Prüfe Scroll-Richtung und aktualisiere die Scroll-Menge
-        if (scrollTop > lastScrollTop) {
-          // Scrollt nach unten
-          scrollAmount += scrollTop - lastScrollTop;
-        } else {
-          // Scrollt nach oben
-          scrollAmount -= lastScrollTop - scrollTop;
-        }
-
-        // Index im Array -> alle 80px wechselt die Begrüßung
-        const index = Math.floor(Math.abs(scrollAmount / 80)) % greetings.length;
-        welcomeText.textContent = greetings[index];
-
-        lastScrollTop = scrollTop;
-      });
-    });
-  </script>
-
-  <!-- IntersectionObserver für Scroll-Animationen & aktives Menü -->
-  <script defer>
-    document.addEventListener("DOMContentLoaded", () => {
-      const observerOptions = {
+    </main>
+    </body>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script>
+     document.addEventListener("DOMContentLoaded", () => {
+    const observerOptions = {
         threshold: 0.6,
         rootMargin: "0px 0px -50px 0px"
-      };
+    };
 
-      const navItems = document.querySelectorAll(".nav-item");
-      const sections = document.querySelectorAll("section");
-      const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-      const navLinks = document.querySelectorAll(".nav-link");
+    const navItems = document.querySelectorAll(".nav-item");
+    const sections = document.querySelectorAll("section");
+    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+    const navLinks = document.querySelectorAll(".nav-link");
 
-      const observerCallback = (entries) => {
+    const observerCallback = (entries) => {
         entries.forEach(({ target, isIntersecting }) => {
-          const animationClass = target.dataset.animation || "animate__fadeInUp";
-          const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+            const animationClass = target.dataset.animation || "animate__fadeInUp";
+            const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
 
-          if (isIntersecting) {
-            // Section betritt den Viewport -> Animation & aktives Menü
-            if (target.classList.contains("scroll-animate")) {
-              target.style.transitionDelay = `${delayInS}s`;
-              target.classList.add("visible", "animate__animated", animationClass);
+            if (isIntersecting) {
+                if (target.classList.contains("scroll-animate")) {
+                    target.style.transitionDelay = `${delayInS}s`;
+                    target.classList.add("visible", "animate__animated", animationClass);
+                }
+
+                if (target.id) {
+                    navItems.forEach((item) => item.classList.remove("active"));
+                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                    if (activeNavItem) {
+                        activeNavItem.classList.add("active");
+                    }
+                }
+            } else {
+                if (target.classList.contains("scroll-animate")) {
+                    target.classList.remove("visible", "animate__animated", animationClass);
+                }
             }
-            if (target.id) {
-              navItems.forEach((item) => item.classList.remove("active"));
-              const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-              if (activeNavItem) {
-                activeNavItem.classList.add("active");
-              }
-            }
-          } else {
-            // Section verlässt den Viewport -> Animation entfernen
-            if (target.classList.contains("scroll-animate")) {
-              target.classList.remove("visible", "animate__animated", animationClass);
-            }
-          }
         });
-      };
+    };
 
-      const observer = new IntersectionObserver(observerCallback, observerOptions);
-      sections.forEach((section) => observer.observe(section));
-      scrollAnimateElements.forEach((element) => observer.observe(element));
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    sections.forEach((section) => observer.observe(section));
+    scrollAnimateElements.forEach((element) => observer.observe(element));
 
-      // Smooth Scroll
-      navLinks.forEach((link) => {
+    navLinks.forEach((link) => {
         link.addEventListener("click", (e) => {
-          e.preventDefault();
-          const targetId = link.getAttribute("href").substring(1);
-          const targetSection = document.getElementById(targetId);
+            e.preventDefault();
+            const targetId = link.getAttribute("href").substring(1);
+            const targetSection = document.getElementById(targetId);
 
-          if (targetSection) {
-            targetSection.scrollIntoView({
-              behavior: "smooth",
-              block: "start"
-            });
+            if (targetSection) {
+                targetSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
 
-            // Menü-Status updaten
-            navItems.forEach((item) => item.classList.remove("active"));
-            const clickedNavItem = link.closest(".nav-item");
-            if (clickedNavItem) {
-              clickedNavItem.classList.add("active");
+                // Entferne die 'active'-Klasse von allen Navigationspunkten
+                navItems.forEach((item) => item.classList.remove("active"));
+
+                // Füge die 'active'-Klasse zum geklickten Navigationspunkt hinzu
+                const clickedNavItem = link.closest(".nav-item");
+                if (clickedNavItem) {
+                    clickedNavItem.classList.add("active");
+                }
             }
-          }
         });
-      });
     });
-  </script>
-</body>
+});
+    </script>
+
 </html>
