@@ -2,6 +2,16 @@
     /* ===========================
        BASIS-RESET
     ============================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      min-height: 2000px; /* nur zum Testen, damit wir scrollen können */
+    }
 
     /* ===========================
        HEADER / MENÜ
@@ -147,39 +157,3 @@
     /* ===========================
        RESPONSIVE (MOBILE)
     ============================ */
-    @media (max-width: 768px) {
-      .site-menu__toggle {
-        display: block; /* Burger-Button sichtbar */
-      }
-      .site-menu {
-        position: fixed;
-        top: 60px;
-        right: 0;
-        width: 220px;
-        padding: 1rem;
-        background: #ffffff;
-        border-bottom-left-radius: 10px;
-        border-top-left-radius: 10px;
-        transform: translateX(120%);
-        transition: transform 0.4s ease-in-out;
-        flex-direction: column;
-        gap: 1rem;
-        z-index: 9998;
-      }
-      .site-menu.open {
-        transform: translateX(0);
-      }
-      .site-menu__list {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      /* Submenü in Mobile -> einfach unter dem Punkt ausklappen */
-      .submenu {
-        position: static;
-        top: auto; left: auto;
-        box-shadow: none;
-        border-radius: 0;
-        min-width: 0;
-        margin-left: 1rem; /* etwas Einrückung, optional */
-      }
-    }
