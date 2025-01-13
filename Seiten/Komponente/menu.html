@@ -1,32 +1,58 @@
+<!-- seiten/Komponente/menu.html -->
 <header class="site-header">
-  <a href="#" class="site-logo">Abdulkerim</a>
+  <!-- Logo -->
+  <a href="index.html" class="site-logo">MeinLogo</a>
 
+  <!-- Hamburger-Button (für Mobile) -->
   <button class="site-menu__toggle" aria-label="Menü öffnen/schließen">
     <span class="site-menu__hamburger"></span>
   </button>
 
+  <!-- Navigation -->
   <nav class="site-menu">
     <ul class="site-menu__list">
       <li>
-        <a href="#">
+        <a href="index.html">
           <i class="fas fa-home"></i>
           <span>Start</span>
         </a>
       </li>
       <li>
-        <a href="#">
+        <a href="ueber-uns.html">
           <i class="fas fa-address-card"></i>
           <span>Über uns</span>
         </a>
       </li>
+      <!-- Dropdown/Submenü -->
       <li>
-        <a href="#">
+        <a href="#" class="dropdown-link">
           <i class="fas fa-cogs"></i>
           <span>Leistungen</span>
+          <i class="fas fa-chevron-down submenu-toggle"></i>
         </a>
+        <ul class="submenu">
+          <li>
+            <a href="beratung.html">
+              <i class="fas fa-comments"></i>
+              <span>Beratung</span>
+            </a>
+          </li>
+          <li>
+            <a href="implementierung.html">
+              <i class="fas fa-tools"></i>
+              <span>Implementierung</span>
+            </a>
+          </li>
+          <li>
+            <a href="support.html">
+              <i class="fas fa-headset"></i>
+              <span>Support</span>
+            </a>
+          </li>
+        </ul>
       </li>
       <li>
-        <a href="#">
+        <a href="kontakt.html">
           <i class="fas fa-envelope-open-text"></i>
           <span>Kontakt</span>
         </a>
