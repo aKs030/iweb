@@ -4,7 +4,7 @@
 // script.js
 
 // Menü per Fetch laden
-fetch('menu.html')
+fetch('seiten/komponente/menu.html')
   .then(response => {
     if (!response.ok) {
       throw new Error(`HTTP-Error! Status: ${response.status}`);
