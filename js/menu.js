@@ -1,33 +1,32 @@
-
-  /*************************************************************************
+/*************************************************************************
  * MENU *
  *************************************************************************/
-document.addEventListener("DOMContentLoaded", () => {
-  // Laden der Menüstruktur aus menu.html
-  fetch("seiten/Komponente/menu.html")
-    .then(response => response.text())
-    .then(data => {
-      document.querySelector(".menu-container").innerHTML = data;
-    })
-    .catch(err => console.error("Menu loading failed:", err));
+// script.js
 
-  // Menübutton für Mobilgeräte
-  const menuButton = document.querySelector(".menu-button");
-  const menuItems = document.querySelector(".menu-items");
-
-  // Klick-Event für den Menübutton
-  menuButton?.addEventListener("click", (event) => {
-    event.stopPropagation();
-    menuItems?.classList.toggle("show");
-  });
-
-  // Schließen des Menüs beim Klick außerhalb
-  document.addEventListener("click", (event) => {
-    if (!event.target.closest(".menu")) {
-      menuItems?.classList.remove("show");
+// Menü per Fetch laden
+fetch('menu.html')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP-Error! Status: ${response.status}`);
     }
-  });
-});
+    return response.text();
+  })
+  .then(menuMarkup => {
+    // 1) In #menuContainer einfügen
+    document.getElementById('menuContainer').innerHTML = menuMarkup;
+
+    // 2) Hamburger-Logik erneut setzen, nachdem das Menü im DOM ist
+    const navToggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.nav');
+
+    if (navToggle && nav) {
+      navToggle.addEventListener('click', () => {
+        nav.classList.toggle('open');
+        navToggle.classList.toggle('active');
+      });
+    }
+  })
+  .catch(err => console.error('Fehler beim Laden des Menüs:', err));
 /*************************************************************************
  * BACK TO TOP BUTTON *
  *************************************************************************/
