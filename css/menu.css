@@ -15,9 +15,9 @@
   }
   
   /* =======================
-     HEADER - GLASMORPHISM
+     HEADER (GLASMORPHISM)
      ======================= */
-  .header {
+  .site-header {
     position: fixed;
     top: 0;
     left: 0;
@@ -46,8 +46,7 @@
   /* =======================
      LOGO
      ======================= */
-  .logo {
-    font-family: 'Lobster', cursive, Arial, sans-serif;
+  .site-logo {
     font-size: 1.5rem; /* Kleinere Schriftgröße */
     color: #FFD700;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6);
@@ -57,19 +56,19 @@
     text-decoration: none;
   }
   
-  .logo:hover {
+  .site-logo:hover {
     transform: scale(1.1);
     color: #FFFFFF;
     text-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.8);
   }
   
-  .logo-container {
+  .site-logo__container {
     position: relative;
     display: inline-block;
     padding: 10px;
   }
   
-  .logo-container:hover::after {
+  .site-logo__container:hover::after {
     content: "Zur Startseite";
     position: absolute;
     bottom: -40px;
@@ -97,32 +96,32 @@
   
   @keyframes colorChange {
     0% {
-      color: rgba(0, 0, 0, 0.711); /* Gold */
+      color: rgba(0, 0, 0, 0.711);
     }
     50% {
-      color: #777777; /* Tomato */
+      color: #777777;
     }
     100% {
-      color: #c6c6c6; /* Türkis */
+      color: #c6c6c6;
     }
   }
   
   /* =======================
      MENÜ (DESKTOP)
      ======================= */
-  .menu {
+  .site-menu {
     display: flex;
     align-items: center;
     transition: transform 0.3s ease;
   }
   
-  .menu-list {
+  .site-menu__list {
     list-style: none;
     display: flex;
     gap: 1.5rem; /* Kompakter Abstand */
   }
   
-  .menu-list li a {
+  .site-menu__list li a {
     text-decoration: none;
     color: #444;
     font-weight: 500;
@@ -131,7 +130,7 @@
     transition: color 0.3s ease;
   }
   
-  .menu-list li a::after {
+  .site-menu__list li a::after {
     content: "";
     position: absolute;
     left: 50%;
@@ -142,11 +141,11 @@
     transition: width 0.3s ease, left 0.3s ease;
   }
   
-  .menu-list li a:hover {
+  .site-menu__list li a:hover {
     color: #0077ff;
   }
   
-  .menu-list li a:hover::after {
+  .site-menu__list li a:hover::after {
     width: 100%;
     left: 0;
   }
@@ -154,7 +153,7 @@
   /* =======================
      HAMBURGER-BUTTON
      ======================= */
-  .menu-toggle {
+  .site-menu__toggle {
     display: none;
     background: none;
     border: none;
@@ -164,9 +163,9 @@
     position: relative;
   }
   
-  .hamburger,
-  .hamburger::before,
-  .hamburger::after {
+  .site-menu__hamburger,
+  .site-menu__hamburger::before,
+  .site-menu__hamburger::after {
     content: "";
     display: block;
     background: #444;
@@ -181,17 +180,17 @@
      MEDIA QUERIES (MOBILE)
      ======================= */
   @media (max-width: 768px) {
-    .menu-toggle {
+    .site-menu__toggle {
       display: block;
     }
   
-    .menu {
+    .site-menu {
       position: fixed;
       top: 60px;
       right: 0;
       width: 200px;
       padding: 1rem;
-      background: rgb(255, 255, 255);
+      background: #ffffff;
       backdrop-filter: blur(10px);
       border-bottom-left-radius: 10px;
       border-top-left-radius: 10px;
@@ -202,26 +201,27 @@
       z-index: 9998;
     }
   
-    .menu.open {
+    .site-menu.open {
       transform: translateX(0);
     }
   
-    .menu-list {
+    .site-menu__list {
       flex-direction: column;
       gap: 1rem;
     }
   }
   
-  .menu-toggle.active .hamburger {
+  /* Menü-Toggle im aktiven Zustand */
+  .site-menu__toggle.active .site-menu__hamburger {
     background: transparent;
   }
   
-  .menu-toggle.active .hamburger::before {
+  .site-menu__toggle.active .site-menu__hamburger::before {
     transform: translateY(8px) rotate(45deg);
     background: #0077ff;
   }
   
-  .menu-toggle.active .hamburger::after {
+  .site-menu__toggle.active .site-menu__hamburger::after {
     transform: translateY(-8px) rotate(-45deg);
     background: #0077ff;
   }
@@ -229,7 +229,8 @@
   /* =======================
      SEITENINHALT
      ======================= */
-     main {
-      margin-top: 80px;
-      padding: 1rem;
-    }
+  main {
+    margin-top: 80px;
+    padding: 1rem;
+  }
+  

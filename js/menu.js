@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('seiten/Komponente/menu.html') // Pfad zum Menü
+  // Pfad zum Menü anpassen
+  fetch('/seiten/Komponente/menu.html')
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP-Error! Status: ${response.status}`);
@@ -7,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return response.text();
     })
     .then(menuMarkup => {
-      // Fügt das Menü in den Container ein
+      // Container suchen & Menü einfügen
       const menuContainer = document.getElementById('menuContainer');
       if (!menuContainer) {
         throw new Error('menuContainer nicht gefunden!');
@@ -15,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
       menuContainer.innerHTML = menuMarkup;
 
       // Menü-Toggle Logik
-      const menuToggle = menuContainer.querySelector('.menu-toggle');
-      const menu = menuContainer.querySelector('.menu');
+      const menuToggle = menuContainer.querySelector('.site-menu__toggle');
+      const menu = menuContainer.querySelector('.site-menu');
       if (menuToggle && menu) {
         menuToggle.addEventListener('click', () => {
           menu.classList.toggle('open');
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Logo-Rechtsklick Logik
-      const logoContainer = menuContainer.querySelector('.logo-container');
+      const logoContainer = menuContainer.querySelector('.site-logo__container');
       if (logoContainer) {
         logoContainer.addEventListener('contextmenu', (e) => {
           e.preventDefault(); // Verhindert das Kontextmenü
