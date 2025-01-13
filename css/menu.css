@@ -1,0 +1,195 @@
+
+    /* ===========================
+       BASIS-RESET
+    ============================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+    /*   min-height: 2000px; nur zum Testen, damit wir scrollen können */
+    }
+
+    /* ===========================
+       HEADER / MENÜ
+    ============================ */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+      z-index: 9999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+    }
+
+    /* Logo */
+    .site-logo {
+      font-size: 1.5rem;
+      color: #FFD700;
+      text-decoration: none;
+      transition: transform 0.3s, color 0.3s;
+    }
+    .site-logo:hover {
+      transform: scale(1.1);
+      color: #ffffff;
+    }
+
+    /* Hamburger-Menü-Button */
+    .site-menu__toggle {
+      display: none; /* wird bei kleiner Bildschirmbreite eingeblendet */
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      position: relative;
+    }
+    .site-menu__hamburger,
+    .site-menu__hamburger::before,
+    .site-menu__hamburger::after {
+      content: "";
+      display: block;
+      background: #444;
+      width: 25px;
+      height: 2px;
+      margin: 6px auto;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+    /* X-Form bei aktiver Toggle-Klasse */
+    .site-menu__toggle.active .site-menu__hamburger {
+      background: transparent;
+    }
+    .site-menu__toggle.active .site-menu__hamburger::before {
+      transform: translateY(8px) rotate(45deg);
+      background: #0077ff;
+    }
+    .site-menu__toggle.active .site-menu__hamburger::after {
+      transform: translateY(-8px) rotate(-45deg);
+      background: #0077ff;
+    }
+
+    /* ===========================
+       NAVIGATION (DESKTOP)
+    ============================ */
+    .site-menu {
+      display: flex;
+      align-items: center;
+      transition: transform 0.3s ease;
+    }
+    .site-menu__list {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+    }
+    .site-menu__list li {
+      position: relative; /* wichtig für Submenü */
+    }
+    .site-menu__list li a {
+      display: inline-flex;      /* Icon + Text nebeneinander */
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: #444;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .site-menu__list li a:hover {
+      color: #0077ff;
+    }
+    /* Icons minimal anpassen */
+    .site-menu__list li a i {
+      font-size: 1.1rem;
+      transition: transform 0.3s;
+    }
+    .site-menu__list li a:hover i {
+      transform: scale(1.1);
+    }
+
+    /* ===========================
+       SUBMENÜ (Dropdown)
+    ============================ */
+    .submenu-toggle {
+      font-size: 0.8rem;
+      transition: transform 0.3s;
+    }
+    .submenu {
+      position: absolute;
+      top: 2.2rem;  /* etwas unter dem Hauptlink */
+      left: 0;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border-radius: 4px;
+      list-style: none;
+      display: none;  /* per Default ausgeblendet */
+      flex-direction: column;
+      min-width: 180px; /* etwas breite Box */
+      padding: 0.5rem 0;
+      z-index: 9999;
+    }
+    .submenu li a {
+      color: #444;
+      padding: 0.5rem 1rem;
+      gap: 0.5rem;
+    }
+    .submenu li a:hover {
+      background: #eee;
+      color: #0077ff;
+    }
+    /* Klasse zum Ein-/Ausblenden */
+    .submenu.open {
+      display: flex;
+    }
+    /* Pfeil gedreht, wenn Submenü offen ist */
+    .submenu-toggle.rotate {
+      transform: rotate(180deg);
+    }
+
+    /* ===========================
+       RESPONSIVE (MOBILE)
+    ============================ */
+    @media (max-width: 768px) {
+      .site-menu__toggle {
+        display: block; /* Burger-Button sichtbar */
+      }
+      .site-menu {
+        position: fixed;
+        top: 60px;
+        right: 0;
+        width: 220px;
+        padding: 1rem;
+        background: #ffffff;
+        border-bottom-left-radius: 10px;
+        border-top-left-radius: 10px;
+        transform: translateX(120%);
+        transition: transform 0.4s ease-in-out;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 9998;
+      }
+      .site-menu.open {
+        transform: translateX(0);
+      }
+      .site-menu__list {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      /* Submenü in Mobile -> einfach unter dem Punkt ausklappen */
+      .submenu {
+        position: static;
+        top: auto; left: auto;
+        box-shadow: none;
+        border-radius: 0;
+        min-width: 0;
+        margin-left: 1rem; /* etwas Einrückung, optional */
+      }
+    }
