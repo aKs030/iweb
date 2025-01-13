@@ -1,45 +1,85 @@
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Menü per fetch laden
-  fetch('seiten/Komponente/menu.html')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Netzwerkantwort war nicht ok');
-      }
-      return response.text();
-    })
+  /*************************************************************************
+ * MENU *
+ *************************************************************************/
+document.addEventListener("DOMContentLoaded", () => {
+  // Laden der Menüstruktur aus menu.html
+  fetch("seiten/Komponente/menu.html")
+    .then(response => response.text())
     .then(data => {
-      document.getElementById('main-menu').innerHTML = data;
-
-      // Jetzt den Toggle initialisieren
-      const menuToggleBtn = document.querySelector('.site-menu__toggle');
-      const siteMenu = document.querySelector('.site-menu');
-      const dropdownLinks = document.querySelectorAll('.dropdown-link');
-      const submenuToggles = document.querySelectorAll('.submenu-toggle');
-
-      if (menuToggleBtn && siteMenu) {
-        menuToggleBtn.addEventListener('click', () => {
-          menuToggleBtn.classList.toggle('active');
-          siteMenu.classList.toggle('open');
-        });
-      }
-
-      // Dropdown-Logik für jedes Submenü
-      dropdownLinks.forEach((dropdownLink, index) => {
-        dropdownLink.addEventListener('click', (e) => {
-          // Standardlink unterbinden, wenn man nur das Submenü öffnen will
-          e.preventDefault();
-
-          // Das zugehörige Submenü finden
-          const submenu = dropdownLink.nextElementSibling;
-          const submenuToggleIcon = submenuToggles[index];
-
-          if (submenu) {
-            submenu.classList.toggle('open');
-            submenuToggleIcon.classList.toggle('rotate');
-          }
-        });
-      });
+      document.querySelector(".menu-container").innerHTML = data;
     })
-    .catch(error => console.error('Fehler beim Laden des Menüs:', error));
+    .catch(err => console.error("Menu loading failed:", err));
+
+  // Menübutton für Mobilgeräte
+  const menuButton = document.querySelector(".menu-button");
+  const menuItems = document.querySelector(".menu-items");
+
+  // Klick-Event für den Menübutton
+  menuButton?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    menuItems?.classList.toggle("show");
+  });
+
+  // Schließen des Menüs beim Klick außerhalb
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".menu")) {
+      menuItems?.classList.remove("show");
+    }
+  });
+});
+/*************************************************************************
+ * BACK TO TOP BUTTON *
+ *************************************************************************/
+function smoothScrollToSection(sectionId) {
+  const target = document.getElementById(sectionId);
+  if (target) {
+    window.scrollTo({
+      top: target.offsetTop,
+      behavior: 'smooth',
+    });
+  }
+}
+$(document).ready(function () {
+  // Back-to-Top Button erstellen
+  const backToTopButton = $(
+    `<a href="#top" class="back-to-top">
+      <img src="img/top.png" alt="Back to top" style="max-width: 50px;">
+    </a>`
+  );
+
+  // Button einfügen
+  $("body").append(backToTopButton);
+
+  // CSS für den Button setzen
+  $(".back-to-top").css({
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    display: "none", // Button versteckt initial
+    cursor: "pointer",
+    zIndex: 9999, // Button immer im Vordergrund
+  });
+
+  // Scroll-Event-Listener hinzufügen
+  $(window).on("scroll", function () {
+    if ($(this).scrollTop() > 50) {
+      // Zeige Button, wenn mehr als 50px gescrollt
+      $(".back-to-top").fadeIn();
+    } else {
+      // Verstecke Button, wenn weniger als 50px gescrollt
+      $(".back-to-top").fadeOut();
+    }
+  });
+
+  // Smooth-Scroll nach oben beim Klick
+  $(".back-to-top").on("click", function (e) {
+    e.preventDefault();
+    $("html, body").animate({ scrollTop: 0 }, 800);
+  });
+
+  // Button initial anzeigen, wenn bereits gescrollt
+  if ($(window).scrollTop() > 50) {
+    $(".back-to-top").show();
+  }
 });
