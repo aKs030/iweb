@@ -57,10 +57,16 @@
 =========================== */
 body {
   background-color: var(--main-bg-color);
+  padding-top: 60px;
 
   margin: 0;
   padding: 0;
   line-height: 1.8;
+}
+@media (max-width: 768px) {
+  body {
+    padding-top: 20px; /* oder einen anderen, kleineren Wert */
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
