@@ -1,19 +1,31 @@
 <!-- menu.html -->
-<header class="header">
-  <div class="logo">Meine Website</div>
+<header class="site-header">
 
-  <!-- Hamburger-Button (wird auf kleineren Bildschirmen sichtbar) -->
-  <button class="nav-toggle" aria-label="Navigation umschalten">
-    <span class="hamburger"></span>
+  <!-- Logo -->
+  <a href="index.html" aria-label="Zur Startseite">
+    <div class="site-logo__container" title="Zur Startseite">
+      <!-- Zusätzliche "elegant-logo" Klasse, wenn du möchtest -->
+      <div class="site-logo elegant-logo" style="font-family: 'Lobster', cursive, Arial, sans-serif;">
+        Abdulkerim
+      </div>
+    </div>
+  </a>
+
+  <!-- Hamburger-Button -->
+  <button class="site-menu__toggle" aria-label="Menü umschalten">
+    <span class="site-menu__hamburger"></span>
   </button>
 
-  <!-- Navigation -->
-  <nav class="nav">
-    <ul class="nav-list">
+  <!-- Menü -->
+  <nav class="site-menu">
+    <ul class="site-menu__list">
       <li><a href="index.html">Home</a></li>
       <li><a href="album.html">Fotogalerie</a></li>
       <li><a href="ubermich.html">About me</a></li>
       <li><a href="snake.html">Snake</a></li>
     </ul>
   </nav>
+
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </header>
