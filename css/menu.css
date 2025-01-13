@@ -10,7 +10,6 @@
     body {
       font-family: sans-serif;
       background: #f5f5f5;
-      min-height: 2000px; /* nur zum Testen, damit wir scrollen können */
     }
 
     /* ===========================
