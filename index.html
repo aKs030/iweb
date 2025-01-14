@@ -323,7 +323,14 @@ hr {
 </head>
 <body>
     <!-- Menü einbinden -->
-    <div id="menu-container"></div>
+    <!-- Menü einbinden -->
+    <div id="menu-container">
+        <script>
+            fetch('../pages/komponente/menu.html')
+                .then(response => response.text())
+                .then(data => document.getElementById('menu-container').innerHTML = data);
+        </script>
+    </div>
 
   
     <main id="main-content">
