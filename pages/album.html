@@ -4,82 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foto Galerie</title>
-    <link rel="stylesheet" href="/css/menu.css">
-    <link rel="stylesheet" href="/css/album.css">
+    <style>
+        /* Farbvariablen */
+        :root {
+            --bg-primary: #2c3e50;
+            --bg-secondary: #34495e;
+            --text-primary: #ecf0f1;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --accent-color: #e74c3c;
+            --shadow-light: rgba(0, 0, 0, 0.3);
+            --shadow-dark: rgba(0, 0, 0, 0.7);
+        }
 
-     <style>
         body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--main-bg-color);
-  color: var(--main-text-color);
-  margin: 0;
-  padding: 0;
-  line-height: 1.8;
-}
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-.foto-galerie {
-  padding: 20px;
-  text-align: center;
-}
+        .hero-container {
+            text-align: center;
+            padding: 50px 20px;
+        }
 
-.foto-galerie h1 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 20px;
-}
+        .hero-title {
+            font-size: 3rem;
+            text-shadow: 2px 2px var(--shadow-dark);
+        }
 
-.foto-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-}
+        .hero-text {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            color: var(--text-secondary);
+        }
 
-.foto-item {
-  flex: 1 1 200px;
-  max-width: 300px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
 
-.foto-item img {
-  width: 100%;
-  height: auto;
-  display: block;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
+        .gallery-item {
+            width: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px var(--shadow-light);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-.foto-item:hover img {
-  transform: scale(1.1);
-  opacity: 0.8;
-}
-     </style>
+        .gallery-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 15px var(--shadow-dark);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .navbar {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 10px var(--shadow-light);
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color);
+        }
+    </style>
 </head>
 <body>
-    <!-- Menü einbinden -->
-    <div id="menu-container">
-        <script>
-            fetch('/pages/komponente/menu.html')
-                .then(response => response.text())
-                .then(data => document.getElementById('menu-container').innerHTML = data);
-        </script>
+    <!-- Hero Section -->
+    <div class="hero-container">
+        <h1 class="hero-title">Willkommen in der Foto-Galerie</h1>
+        <p class="hero-text">Hier sind einige schöne Erinnerungen festgehalten.</p>
     </div>
 
     <!-- Foto-Galerie -->
-    <section class="foto-galerie">
-        <h1>Foto Galerie</h1>
-        <div class="foto-container">
-          <div class="foto-item">
-            <img src="https://drive.google.com/uc?id=1m6tIKPPOy5mdegEfAOXhWu3ZxlGzn28A" alt="Foto 1">
-          </div>
-          <div class="foto-item">
-            <img src="https://drive.google.com/uc?id=1g8PfqJtg2sS8BYXrEwyX79ZNDo9xF0pU" alt="Foto 2">
-          </div>
+    <div class="gallery-container">
+        <div class="gallery-item">
+            <img src="https://drive.usercontent.google.com/download?id=1m6tIKPPOy5mdegEfAOXhWu3ZxlGzn28A&authuser=0" alt="Foto 1">
         </div>
-      </section>
+        <div class="gallery-item">
+            <img src="https://drive.google.com/uc?id=1g8PfqJtg2sS8BYXrEwyX79ZNDo9xF0pU" alt="Foto 2">
+        </div>
+    </div>
 
-    <script src="/js/menu.js"></script>
+    <!-- Navigation -->
+    <div class="navbar">
+        <a href="#gallery" class="nav-link">Galerie</a>
+        <a href="#about" class="nav-link">Über</a>
+        <a href="#contact" class="nav-link">Kontakt</a>
+    </div>
 </body>
 </html>
