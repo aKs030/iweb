@@ -326,7 +326,7 @@ hr {
     <!-- Menü einbinden -->
     <div id="menu-container">
         <script>
-            fetch('../pages/komponente/menu.html')
+            fetch('/pages/komponente/menu.html')
                 .then(response => response.text())
                 .then(data => document.getElementById('menu-container').innerHTML = data);
         </script>

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Menü-Komponente laden
-  fetch('../pages/komponente/menu.html')
+  fetch('/pages/komponente/menu.html')
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP-Error! Status: ${response.status}`);
