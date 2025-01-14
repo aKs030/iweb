@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Menü-Komponente laden
-  fetch('../seiten/komponente/menu.html')
+  fetch('menu.html')
     .then(response => {
       if (!response.ok) {
         // Fehler behandeln, wenn die Datei nicht geladen werden kann
