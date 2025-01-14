@@ -3,117 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foto Galerie</title>
+    <title>Scroll-basierte Foto-Galerie</title>
     <style>
-        /* Farbvariablen */
-        :root {
-            --bg-primary: #2c3e50;
-            --bg-secondary: #34495e;
-            --text-primary: #ecf0f1;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --accent-color: #e74c3c;
-            --shadow-light: rgba(0, 0, 0, 0.3);
-            --shadow-dark: rgba(0, 0, 0, 0.7);
-        }
-
         body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
         }
 
-        .hero-container {
-            text-align: center;
-            padding: 50px 20px;
-        }
-
-        .hero-title {
-            font-size: 3rem;
-            text-shadow: 2px 2px var(--shadow-dark);
-        }
-
-        .hero-text {
-            font-size: 1.2rem;
-            margin-top: 10px;
-            color: var(--text-secondary);
-        }
-
-        .gallery-container {
+        .section {
+            height: 100vh;
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
-            padding: 20px;
+            align-items: center;
+            position: relative;
         }
 
-        .gallery-item {
-            width: 300px;
+        .image-container {
+            width: 80%;
+            max-width: 800px;
             border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            box-shadow: 0 4px 10px var(--shadow-light);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
         }
 
-        .gallery-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 6px 15px var(--shadow-dark);
-        }
-
-        .gallery-item img {
+        .image-container img {
             width: 100%;
             height: auto;
-            display: block;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
 
-        .navbar {
-            position: fixed;
-            bottom: 10px;
+        .image-container img.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .details {
+            position: absolute;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--bg-secondary);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
             padding: 10px 20px;
-            border-radius: 25px;
-            box-shadow: 0 4px 10px var(--shadow-light);
-            display: flex;
-            gap: 15px;
-        }
-
-        .nav-link {
-            color: var(--text-primary);
-            text-decoration: none;
+            border-radius: 5px;
             font-size: 1rem;
-            transition: color 0.3s ease;
+            text-align: center;
         }
 
-        .nav-link:hover {
-            color: var(--accent-color);
+        .details span {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <!-- Hero Section -->
-    <div class="hero-container">
-        <h1 class="hero-title">Willkommen in der Foto-Galerie</h1>
-        <p class="hero-text">Hier sind einige schöne Erinnerungen festgehalten.</p>
-    </div>
-
-    <!-- Foto-Galerie -->
-    <div class="gallery-container">
-        <div class="gallery-item">
-            <img src="https://drive.usercontent.google.com/download?id=1m6tIKPPOy5mdegEfAOXhWu3ZxlGzn28A&authuser=0" alt="Foto 1">
-        </div>
-        <div class="gallery-item">
-            <img src="https://drive.google.com/uc?id=1g8PfqJtg2sS8BYXrEwyX79ZNDo9xF0pU" alt="Foto 2">
+    <!-- Sektionen für Bilder -->
+    <div class="section">
+        <div class="image-container">
+            <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1">
+            <div class="details">
+                <span>Bild 1:</span> Beschreibung des ersten Bildes.
+            </div>
         </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="navbar">
-        <a href="#gallery" class="nav-link">Galerie</a>
-        <a href="#about" class="nav-link">Über</a>
-        <a href="#contact" class="nav-link">Kontakt</a>
+    <div class="section">
+        <div class="image-container">
+            <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2">
+            <div class="details">
+                <span>Bild 2:</span> Beschreibung des zweiten Bildes.
+            </div>
+        </div>
     </div>
+
+    <div class="section">
+        <div class="image-container">
+            <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3">
+            <div class="details">
+                <span>Bild 3:</span> Beschreibung des dritten Bildes.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const images = document.querySelectorAll(".image-container img");
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                } else {
+                    entry.target.classList.remove("visible");
+                }
+            });
+        }, {
+            threshold: 0.5 // Bild muss zu 50% sichtbar sein
+        });
+
+        images.forEach(img => observer.observe(img));
+    </script>
 </body>
 </html>
