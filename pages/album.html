@@ -20,7 +20,7 @@
 
         .gallery {
             position: relative;
-            width: 80%;
+            width: 90%;
             max-width: 800px;
             height: 80%;
             overflow: hidden;
@@ -81,6 +81,31 @@
             background: #333;
             transition: width 0.5s ease;
         }
+
+        @media (max-width: 768px) {
+            .gallery {
+                width: 100%;
+                height: 70%;
+            }
+
+            .details {
+                font-size: 0.9rem;
+                bottom: 10px;
+                padding: 8px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery {
+                width: 100%;
+                height: 60%;
+            }
+
+            .details {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -100,7 +125,7 @@
         const progress = document.getElementById("progress");
 
         let currentIndex = 0;
-        let scrollTimeout;
+        let debounceTimer = null;
 
         function showImage(index) {
             images.forEach((img, i) => {
@@ -118,10 +143,10 @@
             progress.style.width = `${((index + 1) / images.length) * 100}%`;
         }
 
-        function debounceScroll(event) {
-            clearTimeout(scrollTimeout);
+        function handleScroll(event) {
+            clearTimeout(debounceTimer);
 
-            scrollTimeout = setTimeout(() => {
+            debounceTimer = setTimeout(() => {
                 if (event.deltaY > 0) {
                     // Nach unten scrollen
                     currentIndex = (currentIndex + 1) % images.length;
@@ -131,11 +156,34 @@
                 }
 
                 showImage(currentIndex);
-            }, 200); // Wartezeit von 200 ms zwischen Scrollereignissen
+            }, 150); // 150ms Pause zwischen Bildwechseln
         }
 
-        // Scroll-Event
-        window.addEventListener("wheel", debounceScroll);
+        // Scroll- und Touch-Unterstützung
+        let touchStartY = 0;
+
+        function handleTouchStart(event) {
+            touchStartY = event.touches[0].clientY;
+        }
+
+        function handleTouchEnd(event) {
+            const touchEndY = event.changedTouches[0].clientY;
+
+            if (touchStartY - touchEndY > 50) {
+                // Nach oben wischen
+                currentIndex = (currentIndex + 1) % images.length;
+            } else if (touchEndY - touchStartY > 50) {
+                // Nach unten wischen
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+            }
+
+            showImage(currentIndex);
+        }
+
+        // Event-Listener hinzufügen
+        window.addEventListener("wheel", handleScroll);
+        window.addEventListener("touchstart", handleTouchStart);
+        window.addEventListener("touchend", handleTouchEnd);
 
         // Initialisiere die Galerie
         showImage(currentIndex);
