@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Pfad zum Menü anpassen
-  fetch('/seiten/komponente/menu.html')
+  // Menü-Komponente laden
+  fetch('../seiten/komponente/menu.html')
     .then(response => {
       if (!response.ok) {
+        // Fehler behandeln, wenn die Datei nicht geladen werden kann
         throw new Error(`HTTP-Error! Status: ${response.status}`);
       }
-      return response.text();
+      return response.text(); // Menü-HTML zurückgeben
     })
     .then(menuMarkup => {
       // Container suchen & Menü einfügen
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       menuContainer.innerHTML = menuMarkup;
 
-      // Menü-Toggle Logik
+      // Menü-Toggle-Logik hinzufügen
       const menuToggle = menuContainer.querySelector('.site-menu__toggle');
       const menu = menuContainer.querySelector('.site-menu');
       if (menuToggle && menu) {
@@ -27,16 +28,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Menu-Toggle-Elemente fehlen.');
       }
 
-      // Logo-Rechtsklick Logik
+      // Logo-Rechtsklick-Verhalten
       const logoContainer = menuContainer.querySelector('.site-logo__container');
       if (logoContainer) {
         logoContainer.addEventListener('contextmenu', (e) => {
-          e.preventDefault(); // Verhindert das Kontextmenü
+          e.preventDefault(); // Kontextmenü verhindern
           window.location.href = '/index.html'; // Weiterleitung zur Startseite
         });
       } else {
         console.error('Logo-Container konnte nicht gefunden werden.');
       }
     })
-    .catch(err => console.error('Fehler beim Laden des Menüs:', err));
+    .catch(err => {
+      // Fehler beim Laden oder Verarbeiten des Menüs
+      console.error('Fehler beim Laden des Menüs:', err);
+    });
 });
