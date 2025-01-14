@@ -1,46 +1,64 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const menuContainer = document.getElementById('menu-container');
+
+  if (!menuContainer) {
+    console.error('Fehler: menuContainer wurde nicht gefunden.');
+    return;
+  }
+
   // Menü-Komponente laden
-  fetch('menu.html')
+  fetch('../pages/komponente/menu.html')
     .then(response => {
       if (!response.ok) {
-        // Fehler behandeln, wenn die Datei nicht geladen werden kann
         throw new Error(`HTTP-Error! Status: ${response.status}`);
       }
-      return response.text(); // Menü-HTML zurückgeben
+      return response.text();
     })
     .then(menuMarkup => {
-      // Container suchen & Menü einfügen
-      const menuContainer = document.getElementById('menuContainer');
-      if (!menuContainer) {
-        throw new Error('menuContainer nicht gefunden!');
-      }
       menuContainer.innerHTML = menuMarkup;
 
-      // Menü-Toggle-Logik hinzufügen
-      const menuToggle = menuContainer.querySelector('.site-menu__toggle');
-      const menu = menuContainer.querySelector('.site-menu');
-      if (menuToggle && menu) {
-        menuToggle.addEventListener('click', () => {
-          menu.classList.toggle('open');
-          menuToggle.classList.toggle('active');
-        });
-      } else {
-        console.error('Menu-Toggle-Elemente fehlen.');
-      }
+      // Menü-Toggle initialisieren
+      initializeMenu(menuContainer);
 
-      // Logo-Rechtsklick-Verhalten
-      const logoContainer = menuContainer.querySelector('.site-logo__container');
-      if (logoContainer) {
-        logoContainer.addEventListener('contextmenu', (e) => {
-          e.preventDefault(); // Kontextmenü verhindern
-          window.location.href = '/index.html'; // Weiterleitung zur Startseite
-        });
-      } else {
-        console.error('Logo-Container konnte nicht gefunden werden.');
-      }
+      // Logo-Verhalten initialisieren
+      initializeLogo(menuContainer);
     })
     .catch(err => {
-      // Fehler beim Laden oder Verarbeiten des Menüs
-      console.error('Fehler beim Laden des Menüs:', err);
+      console.error('Fehler beim Laden des Menüs:', err.message);
     });
 });
+
+/**
+ * Initialisiert die Menü-Toggle-Logik
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
+function initializeMenu(container) {
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
+
+  if (menuToggle && menu) {
+    menuToggle.addEventListener('click', () => {
+      menu.classList.toggle('open');
+      menuToggle.classList.toggle('active');
+    });
+  } else {
+    console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
+  }
+}
+
+/**
+ * Initialisiert das Verhalten für den Logo-Rechtsklick
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
+function initializeLogo(container) {
+  const logoContainer = container.querySelector('.site-logo__container');
+
+  if (logoContainer) {
+    logoContainer.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      window.location.href = '/index.html';
+    });
+  } else {
+    console.warn('Logo-Container konnte nicht gefunden werden.');
+  }
+}
