@@ -6,6 +6,56 @@
     <title>Foto Galerie</title>
     <link rel="stylesheet" href="/css/menu.css">
     <link rel="stylesheet" href="/css/album.css">
+
+     <style>
+        body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--main-bg-color);
+  color: var(--main-text-color);
+  margin: 0;
+  padding: 0;
+  line-height: 1.8;
+}
+
+.foto-galerie {
+  padding: 20px;
+  text-align: center;
+}
+
+.foto-galerie h1 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.foto-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.foto-item {
+  flex: 1 1 200px;
+  max-width: 300px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.foto-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.foto-item:hover img {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+     </style>
 </head>
 <body>
     <!-- Menü einbinden -->
@@ -22,19 +72,10 @@
         <h1>Foto Galerie</h1>
         <div class="foto-container">
           <div class="foto-item">
-            <img src="../img/album/cS-1.jpg" alt="Foto 1">
+            <img src="https://drive.google.com/uc?id=1m6tIKPPOy5mdegEfAOXhWu3ZxlGzn28A" alt="Foto 1">
           </div>
           <div class="foto-item">
-            <img src="../img/album/cS-2.jpg" alt="Foto 2">
-          </div>
-          <div class="foto-item">
-            <img src="../img/album/cS-3.jpg" alt="Foto 3">
-          </div>
-          <div class="foto-item">
-            <img src="../img/album/cS-4.jpg" alt="Foto 4">
-          </div>
-          <div class="foto-item">
-            <img src="../img/album/cS-5.jpg" alt="Foto 5">
+            <img src="https://drive.google.com/uc?id=1g8PfqJtg2sS8BYXrEwyX79ZNDo9xF0pU" alt="Foto 2">
           </div>
         </div>
       </section>
