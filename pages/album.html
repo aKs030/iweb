@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Foto-Galerie mit separaten Thumbnails</title>
+  <title>Foto-Galerie mit zentriertem Hauptfoto</title>
   <style>
     body {
       margin: 0;
-      padding: 20px 0; /* Etwas Außenabstand oben und unten */
+      padding: 20px 0;
       font-family: Arial, sans-serif;
       background-color: #f4f4f4;
       color: #333;
@@ -29,6 +29,8 @@
       background: #000;
     }
 
+    /* Hauptbilder: Absolut positioniert, über den gesamten Container, 
+       wobei das Bild mittels object-position in der Mitte zentriert wird */
     .gallery img.main {
       position: absolute;
       top: 0;
@@ -36,6 +38,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center;
       opacity: 0;
       transform: scale(0.95);
       transition: opacity 1s ease, transform 1s ease;
@@ -83,7 +86,7 @@
       transition: width 0.5s ease;
     }
 
-    /* Navigation-Buttons für Web-Steuerung */
+    /* Navigation-Buttons */
     .nav-button {
       position: absolute;
       top: 50%;
@@ -111,7 +114,7 @@
       right: 10px;
     }
 
-    /* Thumbnails als separater Bereich unter der Galerie */
+    /* Separater Thumbnail-Bereich unter der Galerie */
     .thumbnails {
       margin-top: 20px;
       display: flex;
@@ -213,8 +216,6 @@
 
     let currentIndex = 0;
     let debounceTimer = null;
-
-    // Für Touchscreen: Startwerte für X- und Y-Koordinaten
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -223,7 +224,6 @@
         img.classList.toggle("visible", i === index);
       });
 
-      // Beschreibungen für die Bilder
       const descriptions = [
         "Bild 1: Beschreibung des ersten Bildes.",
         "Bild 2: Beschreibung des zweiten Bildes.",
@@ -233,7 +233,6 @@
       details.classList.add("visible");
       progress.style.width = `${((index + 1) / images.length) * 100}%`;
 
-      // Aktiviere das entsprechende Thumbnail
       thumbnails.forEach((thumb, i) => {
         thumb.classList.toggle("active", i === index);
       });
@@ -243,39 +242,33 @@
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         if (event.deltaY > 0) {
-          // Scrollen nach unten → nächstes Bild
           currentIndex = (currentIndex + 1) % images.length;
         } else {
-          // Scrollen nach oben → vorheriges Bild
           currentIndex = (currentIndex - 1 + images.length) % images.length;
         }
         showImage(currentIndex);
       }, 150);
     }
 
-    // Touchsteuerung: Erfassung der Startposition
     function handleTouchStart(event) {
       touchStartX = event.touches[0].clientX;
       touchStartY = event.touches[0].clientY;
     }
 
-    // Touchsteuerung: Auswertung der Gesten (horizontal und vertikal)
     function handleTouchEnd(event) {
       const touchEndX = event.changedTouches[0].clientX;
       const touchEndY = event.changedTouches[0].clientY;
       const diffX = touchStartX - touchEndX;
       const diffY = touchStartY - touchEndY;
-      const threshold = 50; // Mindestabstand
+      const threshold = 50;
 
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
-        // Horizontale Bewegung
         if (diffX > 0) {
           currentIndex = (currentIndex + 1) % images.length;
         } else {
           currentIndex = (currentIndex - 1 + images.length) % images.length;
         }
       } else if (Math.abs(diffY) > threshold) {
-        // Vertikale Bewegung
         if (diffY > 0) {
           currentIndex = (currentIndex + 1) % images.length;
         } else {
@@ -285,12 +278,10 @@
       showImage(currentIndex);
     }
 
-    // Event-Listener für Scroll und Touch
     window.addEventListener("wheel", handleScroll);
     window.addEventListener("touchstart", handleTouchStart);
     window.addEventListener("touchend", handleTouchEnd);
 
-    // Navigation per Button-Klick
     prevBtn.addEventListener("click", () => {
       currentIndex = (currentIndex - 1 + images.length) % images.length;
       showImage(currentIndex);
@@ -300,7 +291,6 @@
       showImage(currentIndex);
     });
 
-    // Thumbnails: Beim Klick wird das jeweilige Bild angezeigt
     thumbnails.forEach((thumb) => {
       thumb.addEventListener("click", (e) => {
         currentIndex = parseInt(e.target.dataset.index, 10);
@@ -308,7 +298,6 @@
       });
     });
 
-    // Initialisiere die Galerie
     showImage(currentIndex);
   </script>
 </body>
