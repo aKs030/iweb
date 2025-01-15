@@ -3,61 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Galerie – Hauptfoto zentriert</title>
+  <title>Fixierte, horizontal zentrierte Foto-Galerie</title>
   <style>
-    /* Basis-Styling für den Body */
-    body {
+    /* Alle Seiteninhalte fixieren – kein scrollen */
+    html, body {
       margin: 0;
-      padding: 20px 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
       font-family: Arial, sans-serif;
       background-color: #f4f4f4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      box-sizing: border-box;
     }
 
-    /* Galerie-Container */
-    .gallery {
-      position: relative;
+    /* Container, der die gesamte Galerie fixiert in der Mitte des Viewports platziert */
+    .container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       width: 90%;
       max-width: 800px;
       height: 80vh;
-      background: #000;
-      overflow: hidden;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
     }
 
-    /* Hauptbilder – per Default unsichtbar und zentriert */
+    /* Galerie-Container für das Hauptfoto */
+    .gallery {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    /* Hauptbild – horizontal (und vertikal) zentriert im Gallery-Container */
     .gallery img.main {
       position: absolute;
       top: 50%;
       left: 50%;
-      /* Zentrische Positionierung */
       transform: translate(-50%, -50%) scale(0.95);
-      opacity: 0;
-      transition: opacity 1s ease, transform 1s ease;
-      /* Damit das Bild nicht größer als der Container wird */
+      width: auto;
+      height: auto;
       max-width: 100%;
       max-height: 100%;
+      opacity: 0;
+      transition: opacity 1s ease, transform 1s ease;
     }
 
-    /* Sichtbares Bild */
     .gallery img.main.visible {
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
       z-index: 10;
     }
 
-    /* Detailbeschreibung */
+    /* Detailbeschreibung, direkt über dem unteren Rand der Galerie */
     .details {
       position: absolute;
-      bottom: 80px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.7);
@@ -70,11 +77,12 @@
       opacity: 0;
       transition: opacity 1s ease;
     }
+
     .details.visible {
       opacity: 1;
     }
 
-    /* Fortschrittsbalken */
+    /* Fortschrittsbalken am unteren Rand der Galerie */
     .progress-bar {
       position: absolute;
       bottom: 0;
@@ -115,7 +123,7 @@
       right: 10px;
     }
 
-    /* Separater Thumbnail-Bereich unterhalb der Galerie */
+    /* Separater Bereich für Thumbnails unterhalb der Galerie */
     .thumbnails {
       margin-top: 20px;
       display: flex;
@@ -137,15 +145,9 @@
       border-color: #333;
     }
 
-    /* Responsive Anpassungen */
     @media (max-width: 768px) {
-      .gallery {
-        height: 60vh;
-      }
-      .details {
-        font-size: 0.9rem;
-        bottom: 70px;
-        padding: 8px 15px;
+      .container {
+        width: 100%;
       }
       .thumbnails img {
         width: 60px;
@@ -153,13 +155,6 @@
       }
     }
     @media (max-width: 480px) {
-      .gallery {
-        height: 50vh;
-      }
-      .details {
-        font-size: 0.8rem;
-        padding: 5px 10px;
-      }
       .nav-button {
         font-size: 1.5rem;
         padding: 8px;
@@ -172,30 +167,32 @@
   </style>
 </head>
 <body>
-  <div class="gallery" id="gallery">
-    <!-- Hauptbilder -->
-    <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1">
-    <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2">
-    <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3">
+  <div class="container">
+    <div class="gallery" id="gallery">
+      <!-- Hauptbilder -->
+      <img class="main" src="https://via.placeholder.com/800x600/111/fff?text=Bild+1" alt="Bild 1">
+      <img class="main" src="https://via.placeholder.com/800x600/333/fff?text=Bild+2" alt="Bild 2">
+      <img class="main" src="https://via.placeholder.com/800x600/555/fff?text=Bild+3" alt="Bild 3">
 
-    <!-- Detailbeschreibung -->
-    <div class="details" id="details">Bild 1: Beschreibung des ersten Bildes.</div>
+      <!-- Detailbeschreibung -->
+      <div class="details" id="details">Bild 1: Beschreibung des ersten Bildes.</div>
 
-    <!-- Fortschrittsbalken -->
-    <div class="progress-bar">
-      <div class="progress" id="progress"></div>
+      <!-- Fortschrittsbalken -->
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <button class="nav-button left" id="prevBtn">&larr;</button>
+      <button class="nav-button right" id="nextBtn">&rarr;</button>
     </div>
 
-    <!-- Navigation Buttons -->
-    <button class="nav-button left" id="prevBtn">&larr;</button>
-    <button class="nav-button right" id="nextBtn">&rarr;</button>
-  </div>
-
-  <!-- Separater Thumbnail-Bereich unterhalb der Galerie -->
-  <div class="thumbnails" id="thumbnails">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1" data-index="0">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
+    <!-- Thumbnails -->
+    <div class="thumbnails" id="thumbnails">
+      <img src="https://via.placeholder.com/800x600/111/fff?text=Bild+1" alt="Bild 1" data-index="0">
+      <img src="https://via.placeholder.com/800x600/333/fff?text=Bild+2" alt="Bild 2" data-index="1">
+      <img src="https://via.placeholder.com/800x600/555/fff?text=Bild+3" alt="Bild 3" data-index="2">
+    </div>
   </div>
 
   <script>
@@ -216,7 +213,6 @@
         img.classList.toggle("visible", i === index);
       });
 
-      // Beschreibungen für die Bilder
       const descriptions = [
         "Bild 1: Beschreibung des ersten Bildes.",
         "Bild 2: Beschreibung des zweiten Bildes.",
