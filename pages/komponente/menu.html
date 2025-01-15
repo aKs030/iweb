@@ -16,10 +16,31 @@
   <!-- Menü -->
   <nav class="site-menu">
     <ul class="site-menu__list">
-      <li><a href="/index.html">Home</a></li>
-      <li><a href="/pages/album.html">Fotogalerie</a></li>
-      <li><a href="/pages/ubermich.html">About me</a></li>
-      <li><a href="/pages/snake.html">Snake</a></li>
+      <li>
+        <a href="/index.html">
+          <i class="fas fa-home"></i> Home
+        </a>
+      </li>
+      <li>
+        <a href="/pages/album.html">
+          <i class="fas fa-images"></i> Fotogalerie
+        </a>
+      </li>
+      <li>
+        <a href="/pages/ubermich.html">
+          <i class="fas fa-user"></i> About me
+        </a>
+      </li>
+      <li class="has-submenu">
+        <a href="#">
+          <i class="fas fa-ellipsis-h"></i> Weiteres
+        </a>
+        <ul class="submenu">
+          <li><a href="/pages/snake.html"><i class="fas fa-gamepad"></i> Snake</a></li>
+        </ul>
+      </li>
     </ul>
   </nav>
 </header>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
