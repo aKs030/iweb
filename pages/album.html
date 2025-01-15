@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestapelte Foto-Galerie mit Thumbnails</title>
+  <title>Foto-Galerie mit separaten Thumbnails</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
+      padding: 20px 0; /* Etwas Außenabstand oben und unten */
       font-family: Arial, sans-serif;
       background-color: #f4f4f4;
       color: #333;
-      height: 100vh;
-      overflow: hidden;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
 
     .gallery {
       position: relative;
       width: 90%;
       max-width: 800px;
-      height: 80%;
+      height: 80vh;
       overflow: hidden;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -111,20 +111,17 @@
       right: 10px;
     }
 
-    /* Thumbnails */
+    /* Thumbnails als separater Bereich unter der Galerie */
     .thumbnails {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+      margin-top: 20px;
       display: flex;
-      gap: 5px;
-      z-index: 20;
+      gap: 10px;
+      justify-content: center;
     }
 
     .thumbnails img {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       object-fit: cover;
       cursor: pointer;
       opacity: 0.6;
@@ -135,13 +132,13 @@
     .thumbnails img.active,
     .thumbnails img:hover {
       opacity: 1;
-      border-color: #fff;
+      border-color: #333;
     }
 
     @media (max-width: 768px) {
       .gallery {
         width: 100%;
-        height: 70%;
+        height: 60vh;
       }
 
       .details {
@@ -149,24 +146,29 @@
         bottom: 70px;
         padding: 8px 15px;
       }
+
+      .thumbnails img {
+        width: 60px;
+        height: 60px;
+      }
     }
 
     @media (max-width: 480px) {
       .gallery {
         width: 100%;
-        height: 60%;
+        height: 50vh;
       }
 
       .details {
         font-size: 0.8rem;
         padding: 5px 10px;
       }
-      
+
       .nav-button {
         font-size: 1.5rem;
         padding: 8px;
       }
-      
+
       .thumbnails img {
         width: 50px;
         height: 50px;
@@ -192,13 +194,13 @@
     <!-- Navigation Buttons -->
     <button class="nav-button left" id="prevBtn">&larr;</button>
     <button class="nav-button right" id="nextBtn">&rarr;</button>
+  </div>
 
-    <!-- Thumbnails -->
-    <div class="thumbnails" id="thumbnails">
-      <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1" data-index="0">
-      <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
-      <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
-    </div>
+  <!-- Separater Thumbnail-Bereich unterhalb der Galerie -->
+  <div class="thumbnails" id="thumbnails">
+    <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1" data-index="0">
+    <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
+    <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
   </div>
 
   <script>
@@ -227,7 +229,6 @@
         "Bild 2: Beschreibung des zweiten Bildes.",
         "Bild 3: Beschreibung des dritten Bildes."
       ];
-
       details.textContent = descriptions[index];
       details.classList.add("visible");
       progress.style.width = `${((index + 1) / images.length) * 100}%`;
@@ -262,28 +263,22 @@
     function handleTouchEnd(event) {
       const touchEndX = event.changedTouches[0].clientX;
       const touchEndY = event.changedTouches[0].clientY;
-
       const diffX = touchStartX - touchEndX;
       const diffY = touchStartY - touchEndY;
+      const threshold = 50; // Mindestabstand
 
-      // Mindestabstand (Threshold)
-      const threshold = 50;
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
         // Horizontale Bewegung
         if (diffX > 0) {
-          // Swipe nach links → nächstes Bild
           currentIndex = (currentIndex + 1) % images.length;
         } else {
-          // Swipe nach rechts → vorheriges Bild
           currentIndex = (currentIndex - 1 + images.length) % images.length;
         }
       } else if (Math.abs(diffY) > threshold) {
         // Vertikale Bewegung
         if (diffY > 0) {
-          // Swipe nach oben → nächstes Bild
           currentIndex = (currentIndex + 1) % images.length;
         } else {
-          // Swipe nach unten → vorheriges Bild
           currentIndex = (currentIndex - 1 + images.length) % images.length;
         }
       }
@@ -308,7 +303,7 @@
     // Thumbnails: Beim Klick wird das jeweilige Bild angezeigt
     thumbnails.forEach((thumb) => {
       thumb.addEventListener("click", (e) => {
-        currentIndex = parseInt(e.target.dataset.index);
+        currentIndex = parseInt(e.target.dataset.index, 10);
         showImage(currentIndex);
       });
     });
