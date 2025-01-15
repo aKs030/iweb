@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestapelte Foto-Galerie mit Navigation</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestapelte Foto-Galerie mit Thumbnails</title>
   <style>
     body {
       margin: 0;
@@ -17,7 +17,7 @@
       justify-content: center;
       align-items: center;
     }
-    
+
     .gallery {
       position: relative;
       width: 90%;
@@ -26,9 +26,10 @@
       overflow: hidden;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      background: #000;
     }
-    
-    .gallery img {
+
+    .gallery img.main {
       position: absolute;
       top: 0;
       left: 0;
@@ -39,16 +40,16 @@
       transform: scale(0.95);
       transition: opacity 1s ease, transform 1s ease;
     }
-    
-    .gallery img.visible {
+
+    .gallery img.main.visible {
       opacity: 1;
       transform: scale(1);
       z-index: 10;
     }
-    
+
     .details {
       position: absolute;
-      bottom: 20px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.7);
@@ -61,11 +62,11 @@
       opacity: 0;
       transition: opacity 1s ease;
     }
-    
+
     .details.visible {
       opacity: 1;
     }
-    
+
     .progress-bar {
       position: absolute;
       bottom: 0;
@@ -74,14 +75,14 @@
       height: 5px;
       background: #ccc;
     }
-    
+
     .progress {
       width: 0;
       height: 100%;
       background: #333;
       transition: width 0.5s ease;
     }
-    
+
     /* Navigation-Buttons für Web-Steuerung */
     .nav-button {
       position: absolute;
@@ -97,38 +98,65 @@
       border-radius: 50%;
       user-select: none;
     }
-    
+
     .nav-button:hover {
       background: rgba(0, 0, 0, 0.7);
     }
-    
+
     .nav-button.left {
       left: 10px;
     }
-    
+
     .nav-button.right {
       right: 10px;
     }
-    
+
+    /* Thumbnails */
+    .thumbnails {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+      z-index: 20;
+    }
+
+    .thumbnails img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      cursor: pointer;
+      opacity: 0.6;
+      border: 2px solid transparent;
+      transition: opacity 0.3s ease, border-color 0.3s ease;
+    }
+
+    .thumbnails img.active,
+    .thumbnails img:hover {
+      opacity: 1;
+      border-color: #fff;
+    }
+
     @media (max-width: 768px) {
       .gallery {
         width: 100%;
         height: 70%;
       }
-    
+
       .details {
         font-size: 0.9rem;
-        bottom: 10px;
+        bottom: 70px;
         padding: 8px 15px;
       }
     }
-    
+
     @media (max-width: 480px) {
       .gallery {
         width: 100%;
         height: 60%;
       }
-    
+
       .details {
         font-size: 0.8rem;
         padding: 5px 10px;
@@ -138,61 +166,80 @@
         font-size: 1.5rem;
         padding: 8px;
       }
+      
+      .thumbnails img {
+        width: 50px;
+        height: 50px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="gallery" id="gallery">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3">
-    
+    <!-- Hauptbilder -->
+    <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1">
+    <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2">
+    <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3">
+
     <!-- Detailbeschreibung -->
     <div class="details" id="details">Bild 1: Beschreibung des ersten Bildes.</div>
-    
+
     <!-- Fortschrittsbalken -->
     <div class="progress-bar">
       <div class="progress" id="progress"></div>
     </div>
-    
+
     <!-- Navigation Buttons -->
     <button class="nav-button left" id="prevBtn">&larr;</button>
     <button class="nav-button right" id="nextBtn">&rarr;</button>
+
+    <!-- Thumbnails -->
+    <div class="thumbnails" id="thumbnails">
+      <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1" data-index="0">
+      <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
+      <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
+    </div>
   </div>
-  
+
   <script>
-    const images = document.querySelectorAll(".gallery img");
+    const images = document.querySelectorAll(".gallery img.main");
     const details = document.getElementById("details");
     const progress = document.getElementById("progress");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
-    
+    const thumbnails = document.querySelectorAll(".thumbnails img");
+
     let currentIndex = 0;
     let debounceTimer = null;
-    
+
     // Für Touchscreen: Startwerte für X- und Y-Koordinaten
     let touchStartX = 0;
     let touchStartY = 0;
-    
+
     function showImage(index) {
       images.forEach((img, i) => {
         img.classList.toggle("visible", i === index);
       });
-    
+
+      // Beschreibungen für die Bilder
       const descriptions = [
         "Bild 1: Beschreibung des ersten Bildes.",
         "Bild 2: Beschreibung des zweiten Bildes.",
         "Bild 3: Beschreibung des dritten Bildes."
       ];
-    
+
       details.textContent = descriptions[index];
       details.classList.add("visible");
       progress.style.width = `${((index + 1) / images.length) * 100}%`;
+
+      // Aktiviere das entsprechende Thumbnail
+      thumbnails.forEach((thumb, i) => {
+        thumb.classList.toggle("active", i === index);
+      });
     }
-    
+
     function handleScroll(event) {
       clearTimeout(debounceTimer);
-    
       debounceTimer = setTimeout(() => {
         if (event.deltaY > 0) {
           // Scrollen nach unten → nächstes Bild
@@ -201,30 +248,28 @@
           // Scrollen nach oben → vorheriges Bild
           currentIndex = (currentIndex - 1 + images.length) % images.length;
         }
-    
         showImage(currentIndex);
       }, 150);
     }
-    
-    // Touchsteuerung: erfasse Startposition
+
+    // Touchsteuerung: Erfassung der Startposition
     function handleTouchStart(event) {
       touchStartX = event.touches[0].clientX;
       touchStartY = event.touches[0].clientY;
     }
-    
-    // Touchsteuerung: auswerten der Gesten (horizontal und vertikal)
+
+    // Touchsteuerung: Auswertung der Gesten (horizontal und vertikal)
     function handleTouchEnd(event) {
       const touchEndX = event.changedTouches[0].clientX;
       const touchEndY = event.changedTouches[0].clientY;
-    
+
       const diffX = touchStartX - touchEndX;
       const diffY = touchStartY - touchEndY;
-    
-      // Definiere einen Mindestabstand (Threshold)
+
+      // Mindestabstand (Threshold)
       const threshold = 50;
-    
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
-        // Horizontale Bewegung: 
+        // Horizontale Bewegung
         if (diffX > 0) {
           // Swipe nach links → nächstes Bild
           currentIndex = (currentIndex + 1) % images.length;
@@ -233,7 +278,7 @@
           currentIndex = (currentIndex - 1 + images.length) % images.length;
         }
       } else if (Math.abs(diffY) > threshold) {
-        // Vertikale Bewegung:
+        // Vertikale Bewegung
         if (diffY > 0) {
           // Swipe nach oben → nächstes Bild
           currentIndex = (currentIndex + 1) % images.length;
@@ -242,26 +287,32 @@
           currentIndex = (currentIndex - 1 + images.length) % images.length;
         }
       }
-    
       showImage(currentIndex);
     }
-    
-    // Event-Listener hinzufügen
+
+    // Event-Listener für Scroll und Touch
     window.addEventListener("wheel", handleScroll);
     window.addEventListener("touchstart", handleTouchStart);
     window.addEventListener("touchend", handleTouchEnd);
-    
+
     // Navigation per Button-Klick
     prevBtn.addEventListener("click", () => {
       currentIndex = (currentIndex - 1 + images.length) % images.length;
       showImage(currentIndex);
     });
-    
     nextBtn.addEventListener("click", () => {
       currentIndex = (currentIndex + 1) % images.length;
       showImage(currentIndex);
     });
-    
+
+    // Thumbnails: Beim Klick wird das jeweilige Bild angezeigt
+    thumbnails.forEach((thumb) => {
+      thumb.addEventListener("click", (e) => {
+        currentIndex = parseInt(e.target.dataset.index);
+        showImage(currentIndex);
+      });
+    });
+
     // Initialisiere die Galerie
     showImage(currentIndex);
   </script>
