@@ -46,65 +46,58 @@
   /* =======================
      LOGO
      ======================= */
-  .site-logo {
-    font-size: 1.5rem; /* Kleinere Schriftgröße */
-    color: #FFD700;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6);
-    animation: fadeIn 1s ease-out, colorChange 3s infinite alternate;
-    transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
-    cursor: pointer;
-    text-decoration: none;
-  }
-  
-  .site-logo:hover {
-    transform: scale(1.1);
-    color: #FFFFFF;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.8);
-  }
-  
-  .site-logo__container {
-    position: relative;
-    display: inline-block;
-    padding: 10px;
-  }
-  
-  .site-logo__container:hover::after {
-    content: "Zur Startseite";
-    position: absolute;
-    bottom: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(90deg, #0077ff, #00d4ff);
-    color: #fff;
-    padding: 5px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes colorChange {
-    0% {
-      color: rgba(185, 185, 185, 0.711);
-    }
-    50% {
-      color: #777777;
-    }
-    100% {
-      color: #b5b5b544;
-    }
-  }
+     .site-logo {
+       font-size: 1.5rem; /* Größere Schriftgröße für bessere Sichtbarkeit */
+       color: #ffffff;
+       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 0, 0, 0.3);
+       animation: fadeIn 1s ease-out, colorPulse 4s infinite alternate;
+       transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+       cursor: pointer;
+       text-decoration: none;
+     }
+     
+     .site-logo:hover {
+       transform: scale(1.15); /* Leichtes Vergrößern für einen modernen Effekt */
+       color: #FFFFFF;
+       text-shadow: 0 4px 8px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
+     }
+     
+     /* Container-Style für das Logo */
+     .site-logo__container {
+       position: relative;
+       display: inline-block;
+       padding: 12px;
+     }
+     
+ 
+     
+     /* Keyframes für sanftes Einblenden */
+     @keyframes fadeIn {
+       0% {
+         opacity: 0;
+         transform: translateY(15px);
+       }
+       100% {
+         opacity: 1;
+         transform: translateY(0);
+       }
+     }
+     
+     /* Animation für Farbänderung */
+     @keyframes colorPulse {
+       0% {
+         color: #ffffff77;
+         text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+       }
+       50% {
+         color: #b7b7b7;
+         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+       }
+       100% {
+         color: #616161;
+         text-shadow: 0 2px 10px rgba(255, 255, 255, 0.7);
+       }
+     }
   
   /* =======================
      MENÜ (DESKTOP)
