@@ -3,20 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fixierte, horizontal zentrierte Foto-Galerie</title>
+  <title>Galerie mit animiertem Bildwechsel</title>
   <style>
-    /* Seite fixieren: kein Scrollen, gesamter Viewport wird genutzt */
+    /* ==========================
+       Farbvariablen und globale Einstellungen
+       ========================== */
+    :root {
+      --main-fonts-color: #fff;
+      --main-decor-color: #ffffff;
+      --main-bg-color: #444;
+      --secondary-bg-color: #050505;
+      --main-text-color: rgba(245, 245, 245, 0.9);
+      --accent-color: rgba(255, 204, 41, 0.8);
+      --menu-bg-color: #333333cc;
+      --secondary-text-color: rgba(245, 245, 245, 0.5);
+    }
+
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
       height: 100vh;
       width: 100vw;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: var(--main-bg-color);
+      font-family: 'Poppins', sans-serif;
+      overscroll-behavior: none;
     }
 
-    /* Container, der die gesamte Galerie zentral im Viewport platziert */
+    /* ==========================
+       Container & Galerie-Stile
+       ========================== */
     .container {
       position: fixed;
       top: 50%;
@@ -28,20 +44,35 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 20px;
+      
     }
 
-    /* Galerie-Container für das Hauptfoto */
     .gallery {
       position: relative;
       width: 100%;
       height: 100%;
-      background: #000;
+      background: var(--secondary-bg-color);
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       overflow: hidden;
     }
 
-    /* Hauptbild – horizontal und vertikal zentriert */
+    /* ----------------------
+       Animation für den Bildwechsel
+       ---------------------- */
+    @keyframes fadeInSlide {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    /* Hauptbild – standardmäßig unsichtbar, Animation beim Aktivieren */
     .gallery img.main {
       position: absolute;
       top: 50%;
@@ -52,23 +83,21 @@
       max-width: 100%;
       max-height: 100%;
       opacity: 0;
-      transition: opacity 1s ease, transform 1s ease;
     }
-
     .gallery img.main.visible {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+      /* Animation wird beim Hinzufügen der Klasse "visible" gestartet */
+      animation: fadeInSlide 0.8s ease forwards;
       z-index: 10;
     }
 
-    /* Detailbeschreibung direkt über dem unteren Rand der Galerie */
+    /* Detailbeschreibung */
     .details {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.7);
-      color: #fff;
+      color: var(--main-fonts-color);
       padding: 10px 20px;
       border-radius: 5px;
       font-size: 1rem;
@@ -77,24 +106,24 @@
       opacity: 0;
       transition: opacity 1s ease;
     }
-
     .details.visible {
       opacity: 1;
     }
 
-    /* Fortschrittsbalken am unteren Rand der Galerie */
+    /* Fortschrittsbalken */
     .progress-bar {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
       height: 5px;
-      background: #ccc;
+      background: var(--secondary-text-color);
+      z-index: 1000;
     }
     .progress {
       width: 0;
       height: 100%;
-      background: #333;
+      background: var(--accent-color);
       transition: width 0.5s ease;
     }
 
@@ -102,30 +131,28 @@
     .nav-button {
       position: absolute;
       top: 50%;
-      transform: translateY(-50%);
+      transform: translateY(-10%);
       background: rgba(0, 0, 0, 0.5);
       border: none;
-      color: #fff;
+      color: var(--main-fonts-color);
       font-size: 2rem;
       padding: 10px;
       cursor: pointer;
       z-index: 20;
       border-radius: 50%;
-      user-select: none;
+      transition: transform 0.3s ease, background 0.3s ease;
     }
-    .nav-button:hover {
+    .nav-button:hover,
+    .nav-button:focus {
       background: rgba(0, 0, 0, 0.7);
+      transform: scale(1.1);
+      outline: none;
     }
-    .nav-button.left {
-      left: 10px;
-    }
-    .nav-button.right {
-      right: 10px;
-    }
+    .nav-button.left { left: 10px; }
+    .nav-button.right { right: 10px; }
 
-    /* Thumbnails als separater Bereich unterhalb der Galerie */
+    /* Thumbnails */
     .thumbnails {
-      margin-top: 20px;
       display: flex;
       gap: 10px;
       justify-content: center;
@@ -137,150 +164,160 @@
       cursor: pointer;
       opacity: 0.6;
       border: 2px solid transparent;
-      transition: opacity 0.3s ease, border-color 0.3s ease;
+      transition: opacity 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
     }
     .thumbnails img.active,
     .thumbnails img:hover {
       opacity: 1;
-      border-color: #333;
+      border-color: var(--accent-color);
+      transform: scale(1.05);
     }
 
     @media (max-width: 768px) {
-      .container {
-        width: 100%;
-      }
-      .thumbnails img {
-        width: 60px;
-        height: 60px;
-      }
+      .container { width: 100%; }
+      .thumbnails img { width: 60px; height: 60px; }
+      .nav-button { font-size: 1.5rem; padding: 8px; }
     }
     @media (max-width: 480px) {
-      .nav-button {
-        font-size: 1.5rem;
-        padding: 8px;
-      }
-      .thumbnails img {
-        width: 50px;
-        height: 50px;
-      }
+      .nav-button { font-size: 1.5rem; padding: 8px; }
+      .thumbnails img { width: 50px; height: 50px; }
     }
   </style>
 </head>
 <body>
+
   <div class="container">
+
     <div class="gallery" id="gallery">
       <!-- Hauptbilder -->
       <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1">
-      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2">
+      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 2">
       <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3">
 
       <!-- Detailbeschreibung -->
       <div class="details" id="details">Bild 1: Beschreibung des ersten Bildes.</div>
-
       <!-- Fortschrittsbalken -->
       <div class="progress-bar">
         <div class="progress" id="progress"></div>
       </div>
-
+    
       <!-- Navigation Buttons -->
-      <button class="nav-button left" id="prevBtn">&larr;</button>
-      <button class="nav-button right" id="nextBtn">&rarr;</button>
+      <button class="nav-button left" id="prevBtn" aria-label="Vorheriges Bild">&larr;</button>
+      <button class="nav-button right" id="nextBtn" aria-label="Nächstes Bild">&rarr;</button>
     </div>
 
     <!-- Thumbnails -->
     <div class="thumbnails" id="thumbnails">
       <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1" data-index="0">
-      <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
+      <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
       <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
     </div>
   </div>
 
   <script>
+    // Elemente erfassen
     const images = document.querySelectorAll(".gallery img.main");
     const details = document.getElementById("details");
     const progress = document.getElementById("progress");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const thumbnails = document.querySelectorAll(".thumbnails img");
-
+    const totalImages = images.length;
+    
     let currentIndex = 0;
     let debounceTimer = null;
     let touchStartX = 0;
     let touchStartY = 0;
+    const threshold = 50; // Mindestdistanz für einen gültigen Swipe
 
+    // Bildanzeige aktualisieren, inkl. Details, Fortschrittsbalken und Thumbnails
     function showImage(index) {
+      // Entferne evtl. vorhandene Animationen durch Neusetzen der Klasse (optional: forciere Reflow)
       images.forEach((img, i) => {
-        img.classList.toggle("visible", i === index);
+        img.classList.remove("visible");
+        // Erzwinge Neuberechnung, damit die Animation neu abgespielt wird
+        void img.offsetWidth;
+        if (i === index) {
+          img.classList.add("visible");
+        }
       });
 
-      // Beschreibungen für die Bilder (anpassbar)
       const descriptions = [
         "Bild 1: Beschreibung des ersten Bildes.",
         "Bild 2: Beschreibung des zweiten Bildes.",
         "Bild 3: Beschreibung des dritten Bildes."
       ];
-      details.textContent = descriptions[index];
+      details.textContent = descriptions[index] || "";
       details.classList.add("visible");
-      progress.style.width = `${((index + 1) / images.length) * 100}%`;
+      progress.style.width = `${((index + 1) / totalImages) * 100}%`;
 
-      // Aktiviere das entsprechende Thumbnail
       thumbnails.forEach((thumb, i) => {
         thumb.classList.toggle("active", i === index);
       });
     }
 
+    // Navigation: Zum nächsten oder vorherigen Bild
+    function navigate(direction) {
+      if (direction === "next") {
+        currentIndex = (currentIndex + 1) % totalImages;
+      } else if (direction === "prev") {
+        currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+      }
+      showImage(currentIndex);
+    }
+
+    // Scroll-Event (Debounce)
     function handleScroll(event) {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         if (event.deltaY > 0) {
-          currentIndex = (currentIndex + 1) % images.length;
+          navigate("next");
         } else {
-          currentIndex = (currentIndex - 1 + images.length) % images.length;
+          navigate("prev");
         }
-        showImage(currentIndex);
       }, 150);
     }
 
+    // Touch-Events: Start und Ende erfassen
     function handleTouchStart(event) {
       touchStartX = event.touches[0].clientX;
       touchStartY = event.touches[0].clientY;
     }
-
     function handleTouchEnd(event) {
       const touchEndX = event.changedTouches[0].clientX;
       const touchEndY = event.changedTouches[0].clientY;
       const diffX = touchStartX - touchEndX;
       const diffY = touchStartY - touchEndY;
-      const threshold = 50;
 
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
-        if (diffX > 0) {
-          currentIndex = (currentIndex + 1) % images.length;
-        } else {
-          currentIndex = (currentIndex - 1 + images.length) % images.length;
+      // Unterscheide zwischen horizontalen und vertikalen Gesten
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (Math.abs(diffX) > threshold) {
+          navigate(diffX > 0 ? "next" : "prev");
         }
-      } else if (Math.abs(diffY) > threshold) {
-        if (diffY > 0) {
-          currentIndex = (currentIndex + 1) % images.length;
-        } else {
-          currentIndex = (currentIndex - 1 + images.length) % images.length;
+      } else {
+        if (Math.abs(diffY) > threshold) {
+          navigate(diffY > 0 ? "next" : "prev");
         }
       }
-      showImage(currentIndex);
     }
 
-    window.addEventListener("wheel", handleScroll);
-    window.addEventListener("touchstart", handleTouchStart);
-    window.addEventListener("touchend", handleTouchEnd);
+    // Tastatursteuerung
+    function handleKeyDown(event) {
+      if (event.key === "ArrowRight") {
+        navigate("next");
+      } else if (event.key === "ArrowLeft") {
+        navigate("prev");
+      }
+    }
 
-    prevBtn.addEventListener("click", () => {
-      currentIndex = (currentIndex - 1 + images.length) % images.length;
-      showImage(currentIndex);
-    });
-    nextBtn.addEventListener("click", () => {
-      currentIndex = (currentIndex + 1) % images.length;
-      showImage(currentIndex);
-    });
+    // Event Listener setzen
+    window.addEventListener("wheel", handleScroll, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("keydown", handleKeyDown);
+
+    prevBtn.addEventListener("click", () => navigate("prev"));
+    nextBtn.addEventListener("click", () => navigate("next"));
 
     thumbnails.forEach((thumb) => {
       thumb.addEventListener("click", (e) => {
@@ -289,7 +326,7 @@
       });
     });
 
-    // Initialisiere die Galerie
+    // Galerie initialisieren
     showImage(currentIndex);
   </script>
 </body>
