@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Galerie mit animiertem Bildwechsel</title>
+  <link rel="stylesheet" href="/css/menu.css">
+
   <style>
     /* ==========================
        Farbvariablen und globale Einstellungen
@@ -61,16 +63,6 @@
     /* ----------------------
        Animation für den Bildwechsel
        ---------------------- */
-    @keyframes fadeInSlide {
-      0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-      }
-      100% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
-    }
 
     /* Hauptbild – standardmäßig unsichtbar, Animation beim Aktivieren */
     .gallery img.main {
@@ -84,11 +76,32 @@
       max-height: 100%;
       opacity: 0;
     }
-    .gallery img.main.visible {
-      /* Animation wird beim Hinzufügen der Klasse "visible" gestartet */
-      animation: fadeInSlide 0.8s ease forwards;
-      z-index: 10;
-    }
+  
+
+    @keyframes kenBurns {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+.gallery img.main.visible {
+  animation: kenBurns 8s linear forwards, fadeIn 0.8s ease forwards;
+  z-index: 10;
+}
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+
+
+
+
+
+
+
 
     /* Detailbeschreibung */
     .details {
@@ -185,6 +198,7 @@
   </style>
 </head>
 <body>
+    <div id="menu-container"></div>
 
   <div class="container">
 
@@ -213,6 +227,10 @@
       <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
     </div>
   </div>
+
+
+  <script src="/js/menu.js" defer></script>
+
 
   <script>
     // Elemente erfassen
