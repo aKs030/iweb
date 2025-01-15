@@ -195,9 +195,64 @@
       .nav-button { font-size: 1.5rem; padding: 8px; }
       .thumbnails img { width: 50px; height: 50px; }
     }
+
+        /* Popup-Fenster */
+        .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 500px;
+      padding: 20px;
+      background: var(--secondary-bg-color);
+      color: var(--main-fonts-color);
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .popup.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .popup h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--accent-color);
+    }
+    .popup p {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .popup button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      color: var(--main-fonts-color);
+      background: var(--accent-color);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .popup button:hover {
+      background: #ffcc33;
+    }
   </style>
 </head>
 <body>
+    <!-- Popup-Fenster -->
+    <div class="popup" id="introPopup">
+      <h2>Willkommen!</h2>
+      <p>Erkunde die Galerie und entdecke atemberaubende Bilder. Klicke auf "Loslegen", um zu beginnen.</p>
+      <button id="closePopup">Loslegen</button>
+    </div>
     <div id="menu-container"></div>
 
   <div class="container">
@@ -347,5 +402,19 @@
     // Galerie initialisieren
     showImage(currentIndex);
   </script>
+    <script>
+      // Popup-Fenster schließen
+      const popup = document.getElementById("introPopup");
+      const closePopupButton = document.getElementById("closePopup");
+  
+      closePopupButton.addEventListener("click", () => {
+        popup.classList.add("hidden");
+      });
+  
+      // Optional: Popup nach einer Weile automatisch schließen
+      setTimeout(() => {
+        popup.classList.add("hidden");
+      }, 10000); // Schließt nach 10 Sekunden
+    </script>
 </body>
 </html>

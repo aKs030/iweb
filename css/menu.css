@@ -96,13 +96,13 @@
   
   @keyframes colorChange {
     0% {
-      color: rgba(0, 0, 0, 0.711);
+      color: rgba(185, 185, 185, 0.711);
     }
     50% {
       color: #777777;
     }
     100% {
-      color: #c6c6c6;
+      color: #b5b5b544;
     }
   }
   
@@ -282,6 +282,8 @@
   margin-right: 8px;
   font-size: 1.2rem;
   transition: transform 0.3s ease, color 0.3s ease;
+  vertical-align: middle; /* Ausrichtung mit Text */
+
 }
 
 .site-menu__list li a:hover i {
