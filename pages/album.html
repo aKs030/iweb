@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fixierte, horizontal zentrierte Foto-Galerie</title>
   <style>
-    /* Alle Seiteninhalte fixieren – kein scrollen */
+    /* Seite fixieren: kein Scrollen, gesamter Viewport wird genutzt */
     html, body {
       margin: 0;
       padding: 0;
@@ -16,7 +16,7 @@
       background-color: #f4f4f4;
     }
 
-    /* Container, der die gesamte Galerie fixiert in der Mitte des Viewports platziert */
+    /* Container, der die gesamte Galerie zentral im Viewport platziert */
     .container {
       position: fixed;
       top: 50%;
@@ -41,7 +41,7 @@
       overflow: hidden;
     }
 
-    /* Hauptbild – horizontal (und vertikal) zentriert im Gallery-Container */
+    /* Hauptbild – horizontal und vertikal zentriert */
     .gallery img.main {
       position: absolute;
       top: 50%;
@@ -61,7 +61,7 @@
       z-index: 10;
     }
 
-    /* Detailbeschreibung, direkt über dem unteren Rand der Galerie */
+    /* Detailbeschreibung direkt über dem unteren Rand der Galerie */
     .details {
       position: absolute;
       bottom: 20px;
@@ -123,7 +123,7 @@
       right: 10px;
     }
 
-    /* Separater Bereich für Thumbnails unterhalb der Galerie */
+    /* Thumbnails als separater Bereich unterhalb der Galerie */
     .thumbnails {
       margin-top: 20px;
       display: flex;
@@ -170,9 +170,9 @@
   <div class="container">
     <div class="gallery" id="gallery">
       <!-- Hauptbilder -->
-      <img class="main" src="https://via.placeholder.com/800x600/111/fff?text=Bild+1" alt="Bild 1">
-      <img class="main" src="https://via.placeholder.com/800x600/333/fff?text=Bild+2" alt="Bild 2">
-      <img class="main" src="https://via.placeholder.com/800x600/555/fff?text=Bild+3" alt="Bild 3">
+      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1">
+      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2">
+      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3">
 
       <!-- Detailbeschreibung -->
       <div class="details" id="details">Bild 1: Beschreibung des ersten Bildes.</div>
@@ -189,9 +189,9 @@
 
     <!-- Thumbnails -->
     <div class="thumbnails" id="thumbnails">
-      <img src="https://via.placeholder.com/800x600/111/fff?text=Bild+1" alt="Bild 1" data-index="0">
-      <img src="https://via.placeholder.com/800x600/333/fff?text=Bild+2" alt="Bild 2" data-index="1">
-      <img src="https://via.placeholder.com/800x600/555/fff?text=Bild+3" alt="Bild 3" data-index="2">
+      <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1" data-index="0">
+      <img src="https://lh3.googleusercontent.com/pw/AP1GczPhEQ_3G4aDDjPA3AhbfjehGFTRgiMFl7_-w1LnH3BpjyE3V4wAFhbjak4CkcH_pATX_jCnFBb1VqR5UmqHVSt5HvXLIOUBuVmWkiHHnsiiPCtc15snmiMUnrl-uOrmI0gs50KpX3Fu4FagEwSIsmM=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
+      <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
     </div>
   </div>
 
@@ -213,6 +213,7 @@
         img.classList.toggle("visible", i === index);
       });
 
+      // Beschreibungen für die Bilder (anpassbar)
       const descriptions = [
         "Bild 1: Beschreibung des ersten Bildes.",
         "Bild 2: Beschreibung des zweiten Bildes.",
@@ -222,6 +223,7 @@
       details.classList.add("visible");
       progress.style.width = `${((index + 1) / images.length) * 100}%`;
 
+      // Aktiviere das entsprechende Thumbnail
       thumbnails.forEach((thumb, i) => {
         thumb.classList.toggle("active", i === index);
       });
@@ -287,6 +289,7 @@
       });
     });
 
+    // Initialisiere die Galerie
     showImage(currentIndex);
   </script>
 </body>
