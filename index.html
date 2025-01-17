@@ -397,17 +397,24 @@ hr {
 
 
 
+html, body {
+    scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
+    overscroll-behavior: none; /* Keine Überlauf-Effekte beim Scrollen */
+}
 
 main {
-    scroll-snap-type: y mandatory; /* Vertikales Scroll-Snap aktivieren */
-    overflow-y: scroll;           /* Scrollen ermöglichen */
-    height: 100vh;                /* Volle Höhe des Viewports */
+    scroll-snap-type: y mandatory; /* Vertikales Scroll-Snap */
+    height: 100vh; /* Viewport-Höhe für das Haupt-Element */
+    overflow-y: scroll; /* Ermöglicht Scrollen */
 }
 
 section {
-    scroll-snap-align: start;     /* Section am Anfang des Viewports ausrichten */
-    scroll-snap-stop: always;     /* Scroll-Stop erzwingen */
-    height: 100vh;                /* Jede Section nimmt die gesamte Höhe des Viewports ein */
+    scroll-snap-align: start; /* Sections am Anfang des Viewports einrasten */
+    height: 100vh; /* Volle Höhe für jede Section */
+}
+
+section.smooth-snap {
+    scroll-snap-stop: always; /* Sanfteres Scrollen erzwingen */
 }
 
  </style>
