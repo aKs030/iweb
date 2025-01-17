@@ -532,9 +532,10 @@ section {
                 // Mit threshold: 1.0 wird ein Element erst als sichtbar gewertet, wenn es 100% im Viewport ist.
                 // Mit rootMargin ziehen wir 50px vom unteren Rand ab (um etwas Spielraum zu haben).
                 const observerOptions = {
-                    threshold: 1.0,
-                    rootMargin: "0px 0px -50px 0px"
-                };
+    root: null, // Standard: Viewport
+    rootMargin: "0px", // Kein zusätzlicher Spielraum
+    threshold: 0.5, // 50% des Elements müssen sichtbar sein, um die Animation zu starten
+};
             
                 // Auswahl aller relevanten Elemente:
                 const navItems = document.querySelectorAll(".nav-item");
