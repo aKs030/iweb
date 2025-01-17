@@ -192,97 +192,22 @@ hr {
 /* ==========================
    Karten
    ========================== */
-/* Kartencontainer */
-/* Kartencontainer */
-/* Kartencontainer */
-#card-container {
-    position: relative;
-    width: 350px;
-    height: 240px;
-    perspective: 1500px; /* 3D-Perspektive */
-    margin: auto;
-    display: auto; /*  FLEX  */
-    justify-content: center;
-    gap: 15px; /* Abstand zwischen Karten */
-}
-
-/* Kartenstil */
-.card {
-    position: absolute;
-    width: 100%;
+   .card {
+    background-color: var(--secondary-bg-color);
+    color: var(--main-text-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100%;
-    background: rgba(255, 255, 255, 0.9); /* Weiß mit Transparenz */
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    font-weight: bold;
-    color: #222; /* Dunkler Text für Kontrast */
-    transition: 
-        transform 0.6s ease, 
-        opacity 0.6s ease, 
-        z-index 0.3s ease, 
-        filter 0.6s ease, 
-        box-shadow 0.6s ease;
-}
-@media (max-width: 768px) {
-    #card-container {
-        flex-wrap: wrap; /* Karten untereinander anordnen */
-    }
-
-    .card {
-        width: 90%;
-        height: auto;
-    }
-}
-@keyframes cardEntrance {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.card.active {
-    animation: cardEntrance 0.6s ease-out;
-}
-/* Kartenstatus für inaktive Karten */
-.card:not(.active) {
-    transform: scale(0.85) rotateY(-10deg) translateY(40px);
-    opacity: 0.4;
-    z-index: 0;
-    filter: blur(5px) brightness(0.8);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-/* Kartenstatus für aktive Karte */
-.card.active {
-    transform: scale(1) rotateY(0) translateY(0);
-    opacity: 1;
-    z-index: 2;
-    filter: none;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-    border: 2px solid rgba(255, 255, 255, 0.5); /* Dezente Kontur */
-}
-
-/* Kartenstatus für die nächste Karte */
-.card.next {
-    transform: scale(0.9) rotateY(-5deg) translateY(20px);
-    opacity: 0.75;
-    z-index: 1;
-    filter: blur(2px) brightness(0.9);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    justify-content: space-between;
 }
 .card:hover {
-    transform: scale(1.02) rotateY(0);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    transform: translateY(-10px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
+
 /* ==========================
    Scroll-Animation
    ========================== */
@@ -438,31 +363,35 @@ hr {
 </p>
         </section>
         </div>
-
         <!-- Features Section -->
         <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <div id="card-container">
-                <a href="ubermich.html" class="card-link">
-                    <div class="card bg-white text-center p-4">
-                        <i class="bi bi-person-circle display-4 mb-3" style="color: #555;"></i>
-                        <h5 class="fw-bold" style="color: #333;">Über Mich</h5>
-                        <p style="color: #666;">
-                            Ich teile hier meine Leidenschaften,
-                            Interessen und Erlebnisse.
-                        </p>
-                    </div>
-                </a>
-        
-                <a href="album.html" class="card-link">
-                    <div class="card bg-white text-center p-4">
-                        <i class="bi bi-images display-4 mb-3" style="color: #555;"></i>
-                        <h5 class="fw-bold" style="color: #333;">Fotogalerie</h5>
-                        <p style="color: #666;">
-                            Hier findest du einige Fotos von meinen Reisen,
-                            von meinem Alltag und von besonderen Ereignissen.
-                        </p>
-                    </div>
-                </a>
+            <div class="container">
+                <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+                    <!-- Link zu Über Mich -->
+                    <a href="ubermich.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="400">
+                            <i class="bi bi-person-circle display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Über Mich</h5>
+                            <p class="animated-text" style="color: #666;">
+                                Ich teile hier meine Leidenschaften,
+                                Interessen und Erlebnisse.
+                            </p>
+                        </div>
+                    </a>
+
+                    <!-- Link zu Fotogalerie -->
+                    <a href="album.html" class="col text-decoration-none text-reset animated-link">
+                        <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="600">
+                            <i class="bi bi-images display-4 animated-icon mb-3" style="color: #555;"></i>
+                            <h5 class="fw-bold animated-text" style="color: #333;">Fotogalerie</h5>
+                            <p class="animated-text" style="color: #666;">
+                                Hier findest du einige Fotos von meinen Reisen,
+                                von meinem Alltag und von besonderen Ereignissen,
+                                an denen ich teilgenommen habe.
+                            </p>
+                        </div>
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -592,36 +521,47 @@ hr {
 
     </script>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const cards = document.querySelectorAll("#card-container .card");
-    const featuresSection = document.getElementById("features");
-    let activeIndex = 0;
 
-    function updateCards() {
-        cards.forEach((card, index) => {
-            card.classList.remove("active");
-            if (index === activeIndex) {
-                card.classList.add("active");
-            }
-        });
-    }
+document.addEventListener('DOMContentLoaded', () => {
+  const sections = document.querySelectorAll('#features .card');
+  let activeIndex = 0;
 
-    window.addEventListener("scroll", () => {
-        const rect = featuresSection.getBoundingClientRect();
-        if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
-            const maxScroll = rect.height / cards.length;
-            const scrolled = Math.abs(rect.top - window.innerHeight / 2);
-            const newIndex = Math.floor(scrolled / maxScroll);
-
-            if (newIndex !== activeIndex && newIndex < cards.length) {
-                activeIndex = newIndex;
-                updateCards();
-            }
-        }
+  // Funktion, um die aktive Karte zu wechseln
+  const changeSection = (index) => {
+    sections.forEach((section, i) => {
+      if (i === index) {
+        section.classList.add('active');
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        section.classList.remove('active');
+      }
     });
+  };
 
-    // Initial Cards Update
-    updateCards();
+  // IntersectionObserver-Callback
+  const observerCallback = (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const index = Array.from(sections).indexOf(entry.target);
+        if (index !== activeIndex) {
+          activeIndex = index;
+          changeSection(activeIndex);
+        }
+      }
+    });
+  };
+
+  // IntersectionObserver-Optionen
+  const observerOptions = {
+    root: null, // Ganzes Viewport
+    threshold: 0.5, // 50% Sichtbarkeit
+  };
+
+  const observer = new IntersectionObserver(observerCallback, observerOptions);
+  sections.forEach((section) => observer.observe(section));
+
+  // Setze die erste Karte als aktiv
+  changeSection(activeIndex);
 });
 
 </script>
