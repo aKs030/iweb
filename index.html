@@ -398,8 +398,16 @@ hr {
 
 
 
+main {
+    scroll-snap-type: y mandatory; /* Vertikales Scroll-Snap aktivieren */
+    overflow-y: scroll;           /* Scrollen ermöglichen */
+    height: 100vh;                /* Volle Höhe des Viewports */
+}
+
 section {
-    scroll-snap-align: start;
+    scroll-snap-align: start;     /* Section am Anfang des Viewports ausrichten */
+    scroll-snap-stop: always;     /* Scroll-Stop erzwingen */
+    height: 100vh;                /* Jede Section nimmt die gesamte Höhe des Viewports ein */
 }
 
  </style>
