@@ -396,17 +396,18 @@ hr {
  
 
 
+html {
+    scroll-behavior: smooth;
+}
 
 main {
     scroll-snap-type: y mandatory;
-    overflow-y: scroll;
-    height: 100vh; /* Wichtiger Schritt für volles Viewport-Scrollen */
+    scroll-padding-top: 1px; /* Verhindert Clipping bei `scroll-snap` */
 }
 
 section {
     scroll-snap-align: start;
 }
-
 
  </style>
 </head>
