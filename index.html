@@ -533,7 +533,9 @@ section.smooth-snap {
         <script src="/js/menu.js" defer></script>
         
         <script>
-document.addEventListener("DOMContentLoaded", () => {
+2. in den Code integrieren 
+
+        document.addEventListener("DOMContentLoaded", () => {
     /* -------------------------------
        1. Intersection Observer für Animationen und Navigation
        ------------------------------- */
@@ -573,47 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".scroll-animate").forEach(el => observer.observe(el));
 
     /* -------------------------------
-       2. Sehr sanftes Einrasten beim Scrollen
-       ------------------------------- */
-    const sections = document.querySelectorAll("section");
-    const main = document.querySelector("main");
-    let isScrolling = false;
-
-    // Scroll-Ereignis überwachen
-    main.addEventListener("scroll", () => {
-        if (!isScrolling) {
-            isScrolling = true;
-            setTimeout(() => {
-                snapToSection();
-                isScrolling = false;
-            }, 100); // Verhindert zu häufiges Auslösen
-        }
-    });
-
-    const snapToSection = () => {
-        const scrollPosition = main.scrollTop;
-        let closestSection = null;
-        let minDistance = Infinity;
-
-        sections.forEach(section => {
-            const offsetTop = section.offsetTop;
-            const distance = Math.abs(scrollPosition - offsetTop);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestSection = section;
-            }
-        });
-
-        if (closestSection) {
-            closestSection.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-            });
-        }
-    };
-
-    /* -------------------------------
-       3. Navigation Scrollen
+       2. Navigation Scrollen
        ------------------------------- */
     document.querySelectorAll(".nav-link").forEach(link => {
         link.addEventListener("click", (e) => {
@@ -632,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* -------------------------------
-       4. Karten-Animation im Features-Bereich
+       3. Karten-Animation im Features-Bereich
        ------------------------------- */
     const cards = document.querySelectorAll("#card-container .card");
     const featuresSection = document.getElementById("features");
@@ -681,7 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCards();
 
     /* -------------------------------
-       5. Scroll-Sperre für die Section "features"
+       4. Scroll-Sperre für die Section "features"
        ------------------------------- */
     window.addEventListener("wheel", (e) => {
         const rect = featuresSection.getBoundingClientRect();
@@ -690,5 +652,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, { passive: false });
 });
-         </script>
+    </script>
 </html>
