@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -193,73 +191,156 @@ hr {
    ========================== */
 /* Kartencontainer */
 /* Kartencontainer */
-/* Kartencontainer */
-/* Basis-Stil für Karten */
-/* Basis-Stile für Karten */
-/* Basis-Stile für Karten */
-.card {
-    opacity: 0; /* Unsichtbar zu Beginn */
-    transform: scale(0.9) translateY(50px) rotateY(5deg); /* Startposition mit 3D-Effekt */
-    transition: transform 0.8s ease, opacity 0.8s ease; /* Sanftere Übergänge */
-    will-change: transform, opacity; /* Performance-Optimierung */
-    margin-bottom: 30px; /* Zusätzlicher Abstand zwischen den Karten */
-    border-radius: 15px; /* Abgerundete Ecken */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+:root {
+    --transition-duration: 0.6s;
+    --hover-duration: 0.3s;
+    --card-radius: 15px;
+    --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.2);
+    --shadow-inactive: 0 5px 15px rgba(0, 0, 0, 0.3);
+    --shadow-active: 0 10px 25px rgba(255, 204, 41, 0.8);
+    --blur-inactive: 5px;
+    --blur-next: 2px;
+    --brightness-inactive: 0.8;
+    --brightness-next: 0.9;
+    --accent-color: #ffcc29;
 }
 
-/* Karten im sichtbaren Zustand */
-.card.visible {
-    opacity: 1;
-    transform: scale(1) translateY(0) rotateY(0deg); /* Zur normalen Größe und Position */
+
+
+
+/* Allgemeine Scroll-Animationen */
+/* Allgemeine Stile für das `.lead`-Element */
+.lead {
+    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
+    line-height: 1.8; /* Angenehmer Zeilenabstand */
+    font-weight: 300; /* Leichtere Schrift für modernen Look */
+    color: #333; /* Neutraler Farbton */
+    margin: 20px 0; /* Abstand nach oben und unten */
+    text-align: left; /* Standardausrichtung */
 }
 
-/* Karten im unsichtbaren Zustand */
-.card.hidden {
-    opacity: 0;
-    transform: scale(0.8) translateY(50px) rotateY(-5deg); /* Verkleinert und nach unten verschoben */
-}
-
-/* Hover-Effekte */
-.card:hover {
-    transform: scale(1.05) rotateY(0deg); /* Leichte Vergrößerung bei Hover */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Intensiverer Schatten bei Hover */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Schnellere Übergänge bei Hover */
-}
-/* Allgemeiner Text-Stil */
+/* Scroll-Animationen */
 .scroll-animate {
     opacity: 0;
     transform: translateY(30px); /* Startposition */
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    will-change: opacity, transform;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out; /* Animation */
+    will-change: opacity, transform; /* Performance-Optimierung */
 }
 
 /* Sichtbarer Zustand */
 .scroll-animate.visible {
     opacity: 1;
-    transform: translateY(0); /* Zur normalen Position */
+    transform: translateY(0); /* Endposition */
+}
+/* Unsichtbarer Zustand beim Hochscrollen */
+.scroll-animate.hidden {
+    opacity: 0;
+    transform: translateY(-30px); /* Umgekehrte Bewegung */
+}
+/* Anpassung für spezifische Animationen */
+.scroll-animate[data-animation="animate__fadeInUp"] {
+    animation: fadeInUp 0.8s ease-in-out;
 }
 
-/* Verhindern von Neuanimationen */
-.scroll-animate.no-reset {
-    transition: none; /* Keine weitere Transition nach der ersten Animation */
+/* Keyframes für `fadeInUp` */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
-/* Verbesserung der mobilen Ansicht */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .lead {
+        font-size: 1rem; /* Kleinere Schriftgröße für Mobilgeräte */
+        line-height: 1.6; /* Etwas kompakterer Zeilenabstand */
+        text-align: center; /* Zentrierte Ausrichtung auf kleinen Bildschirmen */
+    }
+}
+
+
+
+/* Basis-Stile für Karten */
+.card {
+    opacity: 0;
+    transform: scale(0.9) translateY(50px) rotateY(5deg);
+    transition: transform 0.8s ease, opacity 0.8s ease;
+    will-change: transform, opacity;
+    margin-bottom: -30px;
+    border-radius: var(--card-radius);
+}
+
+/* Sichtbare Karte */
+.card.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotateY(0deg);
+}
+
+/* Unsichtbare Karte */
+.card.hidden {
+    opacity: 0;
+    transform: scale(0.8) translateY(50px) rotateY(-5deg);
+}
+
+/* Hover- und Fokus-Effekte */
+.card:hover, .card:focus {
+    transform: scale(1.05) rotateY(0deg);
+    box-shadow: var(--shadow-hover);
+    transition: transform var(--hover-duration) ease, box-shadow var(--hover-duration) ease;
+}
+
+/* Responsive Anpassungen */
 @media (max-width: 768px) {
     .card {
-        transform: scale(0.95) translateY(20px) rotateY(0deg); /* Vereinfachte Animation */
+        transform: scale(0.95) translateY(20px) rotateY(0deg);
     }
     .card.visible {
-        transform: scale(1) translateY(0); /* Vereinfachte Animationen */
+        transform: scale(1) translateY(0);
     }
     .card.hidden {
-        transform: scale(0.9) translateY(30px); /* Weniger dramatische Effekte */
+        transform: scale(0.9) translateY(30px);
     }
-    .card:hover {
-        transform: scale(1); /* Kein Hover-Effekt auf Mobilgeräten */
+    .card:hover, .card:focus {
+        transform: scale(1); /* Keine Hover-Effekte auf Mobilgeräten */
     }
 }
 
+/* Inaktive Karten */
+.card:not(.active) {
+    transform: scale(0.85) rotateY(-10deg) translateY(40px);
+    opacity: 0.4;
+    z-index: 0;
+    filter: blur(var(--blur-inactive)) brightness(var(--brightness-inactive));
+    box-shadow: var(--shadow-inactive);
+}
 
+/* Aktive Karte */
+.card.active {
+    transform: scale(1.05) rotateY(0) translateY(0);
+    opacity: 1;
+    z-index: 2;
+    filter: none;
+    box-shadow: var(--shadow-active);
+    border: 2px solid var(--accent-color);
+    transition: all 0.4s ease-in-out;
+}
+
+/* Nächste Karte */
+.card.next {
+    transform: scale(0.9) rotateY(-5deg) translateY(20px);
+    opacity: 0.75;
+    z-index: 1;
+    filter: blur(var(--blur-next)) brightness(var(--brightness-next));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+/* ==========================
+   Scroll-Animation
+   ========================== */
 
 /* ==========================
    Container-Zentrierung
@@ -274,19 +355,6 @@ hr {
     padding: 0 20px;
     box-sizing: border-box;
 }
-
-/* ==========================
-   Lead-Text
-   ========================== */
-.lead {
-    font-size: 1.2rem;
-    line-height: 1.8;
-    color: rgba(245, 245, 245, 0.9);
-    font-weight: 400;
-}
-
-
-
 /* ==========================
    Media Queries
    ========================== */
@@ -336,9 +404,7 @@ hr {
         font-size: 2rem;
     }
 
-    .lead {
-        font-size: 0.9rem;
-    }
+
 }
 
 
@@ -364,6 +430,7 @@ hr {
         </div>
 
         <!-- Features Section -->
+        <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <div id="card-container">
                 <a href="ubermich.html" class="card-link">
                     <div class="card bg-white text-center p-4">
@@ -387,6 +454,7 @@ hr {
                     </div>
                 </a>
             </div>
+        </section>
 
         <!-- About Section -->
         <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
@@ -446,150 +514,147 @@ hr {
         <script>
             
             document.addEventListener("DOMContentLoaded", () => {
-    /* ================================
-       Allgemeine Initialisierung
-       ================================ */
-    const cards = document.querySelectorAll("#card-container .card");
-    const featuresSection = document.getElementById("features");
-    const navItems = document.querySelectorAll(".nav-item");
-    const sections = document.querySelectorAll("section");
-    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    /* ================================
-       Karten-Animation mit IntersectionObserver
-       ================================ */
-    const cardObserverOptions = {
-        threshold: 0.3, // Karte wird sichtbar, wenn 30% im Viewport sind
-    };
-
-    const cardObserverCallback = (entries) => {
-        entries.forEach((entry) => {
-            const card = entry.target;
-            const index = Array.from(cards).indexOf(card); // Index der Karte
-
-            if (entry.isIntersecting) {
-                // Karte sichtbar: Animation starten mit dynamischer Verzögerung
-                card.style.transitionDelay = `${index * 0.2}s`;
-                card.classList.add("visible");
-                card.classList.remove("hidden");
-            } else if (entry.boundingClientRect.top > 0) {
-                // Karte unsichtbar: Animation zurücksetzen (für Hochscrollen)
-                card.classList.add("hidden");
-                card.classList.remove("visible");
-            } else if (entry.boundingClientRect.top < 0) {
-                // Karte unsichtbar: Animation zurücksetzen (für Runterscrollen)
-                card.classList.add("hidden");
-                card.classList.remove("visible");
-            }
-        });
-    };
-
-    const cardObserver = new IntersectionObserver(cardObserverCallback, cardObserverOptions);
-
-    // Karten initial als "hidden" markieren und dem Observer hinzufügen
-    cards.forEach((card) => {
-        card.classList.add("hidden");
-        cardObserver.observe(card);
-    });
-
-    /* ================================
-       Allgemeine Scroll-Animationen
-       ================================ */
-    const scrollObserverOptions = {
-        threshold: 0.3,
-    };
-
-    const scrollObserverCallback = (entries) => {
-        entries.forEach(({ target, isIntersecting }) => {
-            const animationClass = target.dataset.animation || "animate__fadeInUp";
-
-            if (isIntersecting) {
-                target.classList.add("visible", "animate__animated", animationClass);
-            } else {
-                target.classList.remove("visible", "animate__animated", animationClass);
-            }
-        });
-    };
-
-    const scrollObserver = new IntersectionObserver(scrollObserverCallback, scrollObserverOptions);
-    scrollAnimateElements.forEach((el) => scrollObserver.observe(el));
-
-    /* ================================
-       Scroll-Sperre für Features Section
-       ================================ */
-    const handleScrollLock = (e) => {
-        const rect = featuresSection.getBoundingClientRect();
-        if (rect.top <= 0 && rect.bottom > window.innerHeight && e.deltaY > 0) {
-            e.preventDefault();
-        }
-    };
-
-    window.addEventListener("wheel", handleScrollLock, { passive: false });
-
-    // Touch-Event für mobile Geräte
-    let touchStartY = 0;
-
-    window.addEventListener("touchstart", (e) => {
-        touchStartY = e.touches[0].clientY;
-    });
-
-    window.addEventListener("touchmove", (e) => {
-        const touchEndY = e.touches[0].clientY;
-        const rect = featuresSection.getBoundingClientRect();
-
-        if (
-            rect.top <= 0 &&
-            rect.bottom > window.innerHeight &&
-            touchStartY > touchEndY // Nach unten scrollen
-        ) {
-            e.preventDefault();
-        }
-    });
-
-    /* ================================
-       Navigation und sanftes Scrollen
-       ================================ */
-    const navObserverOptions = {
-        threshold: 1.0,
+    /* -------------------------------
+       1. Intersection Observer für Animationen und Navigation
+       ------------------------------- */
+    const observerOptions = {
+        threshold: 0.9,
         rootMargin: "0px 0px -50px 0px",
     };
 
-    const navObserverCallback = (entries) => {
+    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+    const navItems = document.querySelectorAll(".nav-item");
+    const navLinks = document.querySelectorAll(".nav-link");
+    const sections = document.querySelectorAll("section");
+
+
+    
+    const observerCallback = (entries, observer) => {
         entries.forEach(({ target, isIntersecting }) => {
-            if (isIntersecting && target.id) {
-                navItems.forEach((item) => item.classList.remove("active"));
-                const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                if (activeNavItem) {
-                    activeNavItem.classList.add("active");
+            const animationClass = target.dataset.animation || "animate__fadeInUp";
+            const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+
+            if (isIntersecting) {
+                if (target.classList.contains("scroll-animate")) {
+                    target.style.transitionDelay = `${delayInS}s`;
+                    target.classList.add("visible", "animate__animated", animationClass);
+                }
+
+                if (target.id) {
+                    navItems.forEach((item) => item.classList.remove("active"));
+                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                    if (activeNavItem) activeNavItem.classList.add("active");
+                }
+            } else {
+                if (target.classList.contains("scroll-animate")) {
+                    target.classList.remove("visible", "animate__animated", animationClass);
                 }
             }
         });
     };
 
-    const navObserver = new IntersectionObserver(navObserverCallback, navObserverOptions);
-    sections.forEach((section) => navObserver.observe(section));
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    [...sections, ...scrollAnimateElements].forEach((el) => observer.observe(el));
 
-    // Navigation: Klick löst sanftes Scrollen aus
+    // Navigation: Sanftes Scrollen und Aktivierung
     navLinks.forEach((link) => {
         link.addEventListener("click", (e) => {
             e.preventDefault();
             const targetId = link.getAttribute("href").substring(1);
             const targetSection = document.getElementById(targetId);
+
             if (targetSection) {
                 targetSection.scrollIntoView({
                     behavior: "smooth",
                     block: "start",
                 });
+
                 navItems.forEach((item) => item.classList.remove("active"));
                 const clickedNavItem = link.closest(".nav-item");
-                if (clickedNavItem) {
-                    clickedNavItem.classList.add("active");
-                }
+                if (clickedNavItem) clickedNavItem.classList.add("active");
             }
         });
     });
+
+    /* -------------------------------
+       2. Karten-Animation im Features-Bereich
+       ------------------------------- */
+    const cards = document.querySelectorAll("#card-container .card");
+    const featuresSection = document.getElementById("features");
+    let activeIndex = 0;
+
+    const updateCards = () => {
+        cards.forEach((card, index) => {
+            card.classList.toggle("active", index === activeIndex);
+        });
+    };
+
+    const handleCardScroll = () => {
+        const rect = featuresSection.getBoundingClientRect();
+        if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
+            const maxScroll = rect.height / cards.length;
+            const scrolled = Math.abs(rect.top - window.innerHeight / 2);
+            const newIndex = Math.floor(scrolled / maxScroll);
+            if (newIndex !== activeIndex && newIndex < cards.length) {
+                activeIndex = newIndex;
+                updateCards();
+            }
+        }
+    };
+
+    const throttle = (fn, wait) => {
+        let isThrottled = false, savedArgs, savedThis;
+        return function wrapper() {
+            if (isThrottled) {
+                savedArgs = arguments;
+                savedThis = this;
+                return;
+            }
+            fn.apply(this, arguments);
+            isThrottled = true;
+            setTimeout(() => {
+                isThrottled = false;
+                if (savedArgs) {
+                    wrapper.apply(savedThis, savedArgs);
+                    savedArgs = savedThis = null;
+                }
+            }, wait);
+        };
+    };
+
+    window.addEventListener("scroll", throttle(handleCardScroll, 100));
+    updateCards();
+
+    /* -------------------------------
+       3. Scroll-Sperre für die Section "features"
+       ------------------------------- */
+    window.addEventListener(
+        "wheel",
+        (e) => {
+            const rect = featuresSection.getBoundingClientRect();
+            if (rect.top <= 0 && rect.bottom > window.innerHeight && e.deltaY > 0) {
+                e.preventDefault();
+            }
+        },
+        { passive: false }
+    );
+
+    /* -------------------------------
+       4. Sichtbarkeitsanimation für scroll-animate Elemente
+       ------------------------------- */
+    const handleScrollAnimation = () => {
+        scrollAnimateElements.forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+            el.classList.toggle("visible", isVisible);
+            el.classList.toggle("hidden", !isVisible);
+        });
+    };
+
+    window.addEventListener("scroll", throttle(handleScrollAnimation, 100));
+    handleScrollAnimation(); // Initialer Check
 });
             
-            </script>
+           
+           </script>
 </html>
