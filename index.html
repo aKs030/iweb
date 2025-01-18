@@ -281,26 +281,44 @@ hr {
 /* ==========================
    Scroll-Animation
    ========================== */
-   @keyframes fadeRotate {
-  0% {
-    opacity: 0;
-    transform: translateY(50px) rotateY(90deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotateY(0);
-  }
+   @media (max-width: 768px) {
+    .scroll-animate {
+        transform: translateY(15px); /* Weniger Bewegung auf kleineren Bildschirmen */
+    }
+}
+   :root {
+    --animation-duration: 0.6s;
+    --animation-easing: ease-in-out;
+    --initial-opacity: 0;
+    --final-opacity: 1;
+    --translate-y-initial: 30px;
+    --translate-y-final: 0;
+    --rotate-y-initial: 90deg;
+    --rotate-y-final: 0;
+    --animation-easing: cubic-bezier(0.25, 0.8, 0.5, 1);
 }
 
 .scroll-animate {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+    opacity: var(--initial-opacity);
+    transform: translateY(var(--translate-y-initial));
+    transition: opacity var(--animation-duration) var(--animation-easing),
+                transform var(--animation-duration) var(--animation-easing);
 }
 
 .scroll-animate.visible {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: var(--final-opacity);
+    transform: translateY(var(--translate-y-final));
+}
+
+@keyframes fadeRotate {
+    0% {
+        opacity: var(--initial-opacity);
+        transform: translateY(var(--translate-y-initial)) rotateY(var(--rotate-y-initial));
+    }
+    100% {
+        opacity: var(--final-opacity);
+        transform: translateY(var(--translate-y-final)) rotateY(var(--rotate-y-final));
+    }
 }
 /* ==========================
    Container-Zentrierung
@@ -353,11 +371,6 @@ hr {
         animation: shimmer 3s ease-in-out infinite; /* Langsamere Animation auf Mobilgeräten */
     }
 
-    .scroll-animate {
-        transform: translateY(20px);
-        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-    }
-
     .lead {
         font-size: 1rem;
     }
@@ -382,10 +395,6 @@ hr {
         font-size: 2rem;
     }
 
-    .scroll-animate {
-        transform: translateY(15px);
-        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-    }
 
     .lead {
         font-size: 0.9rem;
@@ -395,7 +404,24 @@ hr {
 
  
 
+html, body {
+    scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
+    overscroll-behavior: none; /* Keine Überlauf-Effekte beim Scrollen */
+}
 
+main {
+    scroll-snap-type: y mandatory; /* Vertikales Scroll-Snap */
+    height: 100vh; /* Viewport-Höhe für das Haupt-Element */
+}
+
+section {
+    scroll-snap-align: start; /* Sections am Anfang des Viewports einrasten */
+    height: auto; /* Volle Höhe für jede Section */
+}
+
+section.smooth-snap {
+    scroll-snap-stop: always; /* Sanfteres Scrollen erzwingen */
+}
 
 
 
@@ -445,7 +471,7 @@ hr {
                         </p>
                     </div>
                 </a>
-        
+
                 <a href="album.html" class="card-link">
                     <div class="card bg-white text-center p-4">
                         <i class="bi bi-images display-4 mb-3" style="color: #555;"></i>
@@ -537,7 +563,7 @@ hr {
                 const observerCallback = (entries, observer) => {
                     entries.forEach(({ target, isIntersecting }) => {
                         const animationClass = target.dataset.animation || "animate__fadeInUp";
-                        const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+                        const delayInS = parseFloat(target.dataset.delay || "0") / 3000;
             
                         if (isIntersecting) {
                             if (target.classList.contains("scroll-animate")) {
