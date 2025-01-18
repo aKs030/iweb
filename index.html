@@ -397,14 +397,6 @@ hr {
 
 
 
-main {
-    scroll-snap-type: y mandatory;
-    height: 100vh; /* Wichtiger Schritt für volles Viewport-Scrollen */
-}
-
-section {
-    scroll-snap-align: start;
-}
 
 
  </style>
@@ -531,7 +523,7 @@ section {
                 // Mit threshold: 1.0 wird ein Element erst als sichtbar gewertet, wenn es 100% im Viewport ist.
                 // Mit rootMargin ziehen wir 50px vom unteren Rand ab (um etwas Spielraum zu haben).
                 const observerOptions = {
-                    threshold: 1.0,
+                    threshold: 0.3,
                     rootMargin: "0px 0px -50px 0px"
                 };
             
@@ -545,7 +537,7 @@ section {
                 const observerCallback = (entries, observer) => {
                     entries.forEach(({ target, isIntersecting }) => {
                         const animationClass = target.dataset.animation || "animate__fadeInUp";
-                        const delayInS = parseFloat(target.dataset.delay || "0") / 3000;
+                        const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
             
                         if (isIntersecting) {
                             if (target.classList.contains("scroll-animate")) {
