@@ -517,7 +517,7 @@ hr {
                 // Mit threshold: 1.0 wird ein Element erst als sichtbar gewertet, wenn es 100% im Viewport ist.
                 // Mit rootMargin ziehen wir 50px vom unteren Rand ab (um etwas Spielraum zu haben).
                 const observerOptions = {
-                    threshold: 1.0,
+                    threshold: 0.5,
                     rootMargin: "0px 0px -50px 0px"
                 };
             
@@ -529,28 +529,25 @@ hr {
             
                 // Callback-Funktion für den Intersection Observer:
                 const observerCallback = (entries, observer) => {
-                    entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const animationClass = entry.target.dataset.animation || "animate__fadeInUp";
-      entry.target.classList.add("visible", "animate__animated", animationClass);
-      // Beobachtung entfernen, um Flackern zu vermeiden
-      observer.unobserve(entry.target);
-    }
+                    entries.forEach(({ target, isIntersecting }) => {
+                        const animationClass = target.dataset.animation || "animate__fadeInUp";
+                        const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+            
                         if (isIntersecting) {
                             if (target.classList.contains("scroll-animate")) {
                                 target.style.transitionDelay = `${delayInS}s`;
                                 target.classList.add("visible", "animate__animated", animationClass);
                                 // Falls du die Animation nur einmal abspielen lassen möchtest:
-                                // observer.unobserve(target);
+                               // observer.unobserve(target);
                             }
                             
                             if (target.id) {
-                                navItems.forEach(item => item.classList.remove("active"));
-                                const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                                if (activeNavItem) {
-                                    activeNavItem.classList.add("active");
-                                }
-                            }
+    navItems.forEach(item => item.classList.remove("active"));
+    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+    if (activeNavItem) {
+        activeNavItem.classList.add("active");
+    }
+}
                         } else {
                             if (target.classList.contains("scroll-animate")) {
                                 target.classList.remove("visible", "animate__animated", animationClass);
@@ -610,25 +607,16 @@ hr {
                 };
             
                 // Throttle-Funktion, um die Ausführung von handleCardScroll zu drosseln:
-                const throttle = (fn, wait) => {
-                    let isThrottled = false, savedArgs, savedThis;
-                    return function wrapper() {
-                        if (isThrottled) {
-                            savedArgs = arguments;
-                            savedThis = this;
-                            return;
-                        }
-                        fn.apply(this, arguments);
-                        isThrottled = true;
-                        setTimeout(() => {
-                            isThrottled = false;
-                            if (savedArgs) {
-                                wrapper.apply(savedThis, savedArgs);
-                                savedArgs = savedThis = null;
-                            }
-                        }, wait);
-                    };
-                };
+                const throttle = (callback, limit) => {
+    let lastCall = 0;
+    return function(...args) {
+        const now = Date.now();
+        if (now - lastCall >= limit) {
+            lastCall = now;
+            callback(...args);
+        }
+    };
+};
             
                 window.addEventListener("scroll", throttle(handleCardScroll, 100));
                 updateCards();
