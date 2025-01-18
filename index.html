@@ -48,6 +48,7 @@
 
     --main-bg-color: #444;
     --secondary-bg-color: var(--main-bg-color);
+    --main-text-color: rgba(245, 245, 245, 0.9);
     --accent-color: rgba(255, 204, 41, 0.8);
     --menu-bg-color: #333333cc;
     --main-text-color: rgba(245, 245, 245, 0.9);  /* Zweite Definition */
@@ -280,26 +281,26 @@ hr {
 /* ==========================
    Scroll-Animation
    ========================== */
-   .scroll-animate {
+   @keyframes fadeRotate {
+  0% {
     opacity: 0;
-    transform: translateY(30px) rotateY(90deg); /* Konsistenter Startzustand */
+    transform: translateY(50px) rotateY(90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateY(0);
+  }
+}
+
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
     transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
 }
 
 .scroll-animate.visible {
     opacity: 1;
-    transform: translateY(0) rotateY(0); /* Endzustand */
-}
-
-@keyframes fadeRotate {
-    0% {
-        opacity: 0;
-        transform: translateY(50px) rotateY(90deg);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) rotateY(0);
-    }
+    transform: translateY(0);
 }
 /* ==========================
    Container-Zentrierung
@@ -354,7 +355,7 @@ hr {
 
     .scroll-animate {
         transform: translateY(20px);
-        transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Kürzere Animation */
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
     }
 
     .lead {
@@ -393,10 +394,36 @@ hr {
 
 
  
+
+
+
+main {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh; /* Wichtiger Schritt für volles Viewport-Scrollen */
+}
+
+section {
+    scroll-snap-align: start;
+}
+
+
  </style>
 </head>
 <body>
     <div id="menu-container"></div>
+
+    <!-- Menü einbinden -->
+    <!-- Menü einbinden 
+    <div id="menu-container">
+        <script>
+            fetch('/pages/komponente/menu.html')
+                .then(response => response.text())
+                .then(data => document.getElementById('menu-container').innerHTML = data);
+        </script>
+    </div>-->
+
+  
     <main id="main-content">
         <!-- Hero Section -->
         <div class="center-container">
@@ -519,23 +546,23 @@ hr {
                 const observerCallback = (entries, observer) => {
                     entries.forEach(({ target, isIntersecting }) => {
                         const animationClass = target.dataset.animation || "animate__fadeInUp";
-                        const delayInS = parseFloat(target.dataset.delay || "0") / 3000;
+                        const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
             
                         if (isIntersecting) {
                             if (target.classList.contains("scroll-animate")) {
                                 target.style.transitionDelay = `${delayInS}s`;
                                 target.classList.add("visible", "animate__animated", animationClass);
                                 // Falls du die Animation nur einmal abspielen lassen möchtest:
-                               // observer.unobserve(target);
+                                // observer.unobserve(target);
                             }
                             
                             if (target.id) {
-    navItems.forEach(item => item.classList.remove("active"));
-    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-    if (activeNavItem) {
-        activeNavItem.classList.add("active");
-    }
-}
+                                navItems.forEach(item => item.classList.remove("active"));
+                                const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                                if (activeNavItem) {
+                                    activeNavItem.classList.add("active");
+                                }
+                            }
                         } else {
                             if (target.classList.contains("scroll-animate")) {
                                 target.classList.remove("visible", "animate__animated", animationClass);
@@ -595,16 +622,25 @@ hr {
                 };
             
                 // Throttle-Funktion, um die Ausführung von handleCardScroll zu drosseln:
-                const throttle = (callback, limit) => {
-    let lastCall = 0;
-    return function(...args) {
-        const now = Date.now();
-        if (now - lastCall >= limit) {
-            lastCall = now;
-            callback(...args);
-        }
-    };
-};
+                const throttle = (fn, wait) => {
+                    let isThrottled = false, savedArgs, savedThis;
+                    return function wrapper() {
+                        if (isThrottled) {
+                            savedArgs = arguments;
+                            savedThis = this;
+                            return;
+                        }
+                        fn.apply(this, arguments);
+                        isThrottled = true;
+                        setTimeout(() => {
+                            isThrottled = false;
+                            if (savedArgs) {
+                                wrapper.apply(savedThis, savedArgs);
+                                savedArgs = savedThis = null;
+                            }
+                        }, wait);
+                    };
+                };
             
                 window.addEventListener("scroll", throttle(handleCardScroll, 100));
                 updateCards();
@@ -625,5 +661,7 @@ hr {
                     }
                 }, { passive: false });
             });
+
+
             </script>
 </html>
