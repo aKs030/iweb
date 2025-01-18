@@ -519,7 +519,7 @@ hr {
                 const observerCallback = (entries, observer) => {
                     entries.forEach(({ target, isIntersecting }) => {
                         const animationClass = target.dataset.animation || "animate__fadeInUp";
-                        const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
+                        const delayInS = parseFloat(target.dataset.delay || "0") / 3000;
             
                         if (isIntersecting) {
                             if (target.classList.contains("scroll-animate")) {
