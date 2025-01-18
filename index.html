@@ -48,7 +48,6 @@
 
     --main-bg-color: #444;
     --secondary-bg-color: var(--main-bg-color);
-    --main-text-color: rgba(245, 245, 245, 0.9);
     --accent-color: rgba(255, 204, 41, 0.8);
     --menu-bg-color: #333333cc;
     --main-text-color: rgba(245, 245, 245, 0.9);  /* Zweite Definition */
@@ -530,10 +529,13 @@ hr {
             
                 // Callback-Funktion für den Intersection Observer:
                 const observerCallback = (entries, observer) => {
-                    entries.forEach(({ target, isIntersecting }) => {
-                        const animationClass = target.dataset.animation || "animate__fadeInUp";
-                        const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
-            
+                    entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const animationClass = entry.target.dataset.animation || "animate__fadeInUp";
+      entry.target.classList.add("visible", "animate__animated", animationClass);
+      // Beobachtung entfernen, um Flackern zu vermeiden
+      observer.unobserve(entry.target);
+    }
                         if (isIntersecting) {
                             if (target.classList.contains("scroll-animate")) {
                                 target.style.transitionDelay = `${delayInS}s`;
