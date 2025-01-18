@@ -194,137 +194,73 @@ hr {
 /* Kartencontainer */
 /* Kartencontainer */
 /* Kartencontainer */
-#card-container {
-    scroll-snap-type: x mandatory; /* Snap-Funktion für angenehmes Scrollen */
-
-
-    position: relative;
-    width: 350px;
-    height: 240px;
-    perspective: 1500px; /* 3D-Perspektive */
-    margin: auto;
-    justify-content: center;
-    gap: 15px; /* Abstand zwischen Karten */
-}
-
-/* Kartenstil */
+/* Basis-Stil für Karten */
+/* Basis-Stile für Karten */
+/* Basis-Stile für Karten */
 .card {
-    scroll-snap-align: center; /* Karten zentrieren beim Scrollen */
-
-
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.9); /* Weiß mit Transparenz */
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    font-weight: bold;
-    color: #222; /* Dunkler Text für Kontrast */
-        transform: translate3d(0, 0, 0); /* Erzwingt Hardware-Beschleunigung */
-    transition: transform 0.6s ease, opacity 0.6s ease, filter 0.6s ease, box-shadow 0.6s ease;
+    opacity: 0; /* Unsichtbar zu Beginn */
+    transform: scale(0.9) translateY(50px) rotateY(5deg); /* Startposition mit 3D-Effekt */
+    transition: transform 0.8s ease, opacity 0.8s ease; /* Sanftere Übergänge */
+    will-change: transform, opacity; /* Performance-Optimierung */
+    margin-bottom: 30px; /* Zusätzlicher Abstand zwischen den Karten */
+    border-radius: 15px; /* Abgerundete Ecken */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
 }
 
-@media (max-width: 768px) {
-    #card-container {
-        flex-wrap: wrap; /* Karten untereinander anordnen */
-    }
-
-    .card {
-        width: 90%;
-        height: auto;
-    }
-}
-@keyframes cardEntrance {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-
-/* Kartenstatus für inaktive Karten */
-.card:not(.active) {
-    transform: scale(0.85) rotateY(-10deg) translateY(40px);
-    opacity: 0.4;
-    z-index: 0;
-    filter: blur(5px) brightness(0.8);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-/* Kartenstatus für aktive Karte */
-.card.active {
-    transform: scale(1.05) rotateY(0) translateY(0);
+/* Karten im sichtbaren Zustand */
+.card.visible {
     opacity: 1;
-    z-index: 2;
-    filter: none;
-    box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
-    border: 2px solid var(--accent-color);
-    transition: all 0.4s ease-in-out;
+    transform: scale(1) translateY(0) rotateY(0deg); /* Zur normalen Größe und Position */
 }
 
-/* Kartenstatus für die nächste Karte */
-.card.next {
-    transform: scale(0.9) rotateY(-5deg) translateY(20px);
-    opacity: 0.75;
-    z-index: 1;
-    filter: blur(2px) brightness(0.9);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+/* Karten im unsichtbaren Zustand */
+.card.hidden {
+    opacity: 0;
+    transform: scale(0.8) translateY(50px) rotateY(-5deg); /* Verkleinert und nach unten verschoben */
 }
+
+/* Hover-Effekte */
 .card:hover {
-    transform: scale(1.02) rotateY(0);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    transform: scale(1.05) rotateY(0deg); /* Leichte Vergrößerung bei Hover */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Intensiverer Schatten bei Hover */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Schnellere Übergänge bei Hover */
 }
-/* ==========================
-   Scroll-Animation
-   ========================== */
-   @media (max-width: 768px) {
-    .scroll-animate {
-        transform: translateY(15px); /* Weniger Bewegung auf kleineren Bildschirmen */
-    }
-}
-   :root {
-    --animation-duration: 0.6s;
-    --animation-easing: ease-in-out;
-    --initial-opacity: 0;
-    --final-opacity: 1;
-    --translate-y-initial: 30px;
-    --translate-y-final: 0;
-    --rotate-y-initial: 90deg;
-    --rotate-y-final: 0;
-    --animation-easing: cubic-bezier(0.25, 0.8, 0.5, 1);
-}
-
+/* Allgemeiner Text-Stil */
 .scroll-animate {
-    opacity: var(--initial-opacity);
-    transform: translateY(var(--translate-y-initial));
-    transition: opacity var(--animation-duration) var(--animation-easing),
-                transform var(--animation-duration) var(--animation-easing);
+    opacity: 0;
+    transform: translateY(30px); /* Startposition */
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: opacity, transform;
 }
 
+/* Sichtbarer Zustand */
 .scroll-animate.visible {
-    opacity: var(--final-opacity);
-    transform: translateY(var(--translate-y-final));
+    opacity: 1;
+    transform: translateY(0); /* Zur normalen Position */
 }
 
-@keyframes fadeRotate {
-    0% {
-        opacity: var(--initial-opacity);
-        transform: translateY(var(--translate-y-initial)) rotateY(var(--rotate-y-initial));
+/* Verhindern von Neuanimationen */
+.scroll-animate.no-reset {
+    transition: none; /* Keine weitere Transition nach der ersten Animation */
+}
+/* Verbesserung der mobilen Ansicht */
+@media (max-width: 768px) {
+    .card {
+        transform: scale(0.95) translateY(20px) rotateY(0deg); /* Vereinfachte Animation */
     }
-    100% {
-        opacity: var(--final-opacity);
-        transform: translateY(var(--translate-y-final)) rotateY(var(--rotate-y-final));
+    .card.visible {
+        transform: scale(1) translateY(0); /* Vereinfachte Animationen */
+    }
+    .card.hidden {
+        transform: scale(0.9) translateY(30px); /* Weniger dramatische Effekte */
+    }
+    .card:hover {
+        transform: scale(1); /* Kein Hover-Effekt auf Mobilgeräten */
     }
 }
+
+
+
 /* ==========================
    Container-Zentrierung
    ========================== */
@@ -400,51 +336,16 @@ hr {
         font-size: 2rem;
     }
 
-
     .lead {
         font-size: 0.9rem;
     }
 }
 
 
- 
-
-html, body {
-    scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
-}
-
-main {
-    scroll-snap-type: y mandatory; /* Vertikales Scroll-Snap */
-    overflow-y: scroll; /* Ermöglicht Scrollen */
-}
-
-section {
-    scroll-snap-align: start; /* Sections am Anfang des Viewports einrasten */
-    height: 100vh; /* Volle Höhe für jede Section */
-}
-
-section.smooth-snap {
-    scroll-snap-stop: always; /* Sanfteres Scrollen erzwingen */
-}
-
-
-
  </style>
 </head>
 <body>
     <div id="menu-container"></div>
-
-    <!-- Menü einbinden -->
-    <!-- Menü einbinden 
-    <div id="menu-container">
-        <script>
-            fetch('/pages/komponente/menu.html')
-                .then(response => response.text())
-                .then(data => document.getElementById('menu-container').innerHTML = data);
-        </script>
-    </div>-->
-
-  
     <main id="main-content">
         <!-- Hero Section -->
         <div class="center-container">
@@ -463,7 +364,6 @@ section.smooth-snap {
         </div>
 
         <!-- Features Section -->
-        <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
             <div id="card-container">
                 <a href="ubermich.html" class="card-link">
                     <div class="card bg-white text-center p-4">
@@ -475,7 +375,7 @@ section.smooth-snap {
                         </p>
                     </div>
                 </a>
-
+        
                 <a href="album.html" class="card-link">
                     <div class="card bg-white text-center p-4">
                         <i class="bi bi-images display-4 mb-3" style="color: #555;"></i>
@@ -487,7 +387,6 @@ section.smooth-snap {
                     </div>
                 </a>
             </div>
-        </section>
 
         <!-- About Section -->
         <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
@@ -545,144 +444,152 @@ section.smooth-snap {
         <script src="/js/menu.js" defer></script>
         
         <script>
+            
             document.addEventListener("DOMContentLoaded", () => {
-                /* -------------------------------
-                   1. Intersection Observer für Animationen und Navigation
-                   ------------------------------- */
-                // Beobachtungs-Optionen:
-                // Mit threshold: 1.0 wird ein Element erst als sichtbar gewertet, wenn es 100% im Viewport ist.
-                // Mit rootMargin ziehen wir 50px vom unteren Rand ab (um etwas Spielraum zu haben).
-                const observerOptions = {
-                    threshold: 0.3,
-                    rootMargin: "0px 0px -50px 0px"
-                };
-            
-                // Auswahl aller relevanten Elemente:
-                const navItems = document.querySelectorAll(".nav-item");
-                const sections = document.querySelectorAll("section");
-                const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-                const navLinks = document.querySelectorAll(".nav-link");
-            
-                // Callback-Funktion für den Intersection Observer:
-                const observerCallback = (entries, observer) => {
-                    entries.forEach(({ target, isIntersecting }) => {
-                        const animationClass = target.dataset.animation || "animate__fadeInUp";
-                        const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
-            
-                        if (isIntersecting) {
-                            if (target.classList.contains("scroll-animate")) {
-                                target.style.transitionDelay = `${delayInS}s`;
-                                target.classList.add("visible", "animate__animated", animationClass);
-                                // Falls du die Animation nur einmal abspielen lassen möchtest:
-                                // observer.unobserve(target);
-                            }
-                            
-                            if (target.id) {
-                                navItems.forEach(item => item.classList.remove("active"));
-                                const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                                if (activeNavItem) {
-                                    activeNavItem.classList.add("active");
-                                }
-                            }
-                        } else {
-                            if (target.classList.contains("scroll-animate")) {
-                                target.classList.remove("visible", "animate__animated", animationClass);
-                            }
-                        }
-                    });
-                };
-            
-                const observer = new IntersectionObserver(observerCallback, observerOptions);
-                sections.forEach(section => observer.observe(section));
-                scrollAnimateElements.forEach(el => observer.observe(el));
-            
-                // Navigation: Klick auf einen Navigationslink löst ein sanftes Scrollen zur Zielsection aus.
-                navLinks.forEach(link => {
-                    link.addEventListener("click", (e) => {
-                        e.preventDefault();
-                        const targetId = link.getAttribute("href").substring(1);
-                        const targetSection = document.getElementById(targetId);
-                        if (targetSection) {
-                            targetSection.scrollIntoView({
-                                behavior: "smooth",
-                                block: "start"
-                            });
-                            navItems.forEach(item => item.classList.remove("active"));
-                            const clickedNavItem = link.closest(".nav-item");
-                            if (clickedNavItem) {
-                                clickedNavItem.classList.add("active");
-                            }
-                        }
-                    });
+    /* ================================
+       Allgemeine Initialisierung
+       ================================ */
+    const cards = document.querySelectorAll("#card-container .card");
+    const featuresSection = document.getElementById("features");
+    const navItems = document.querySelectorAll(".nav-item");
+    const sections = document.querySelectorAll("section");
+    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+    const navLinks = document.querySelectorAll(".nav-link");
+
+    /* ================================
+       Karten-Animation mit IntersectionObserver
+       ================================ */
+    const cardObserverOptions = {
+        threshold: 0.3, // Karte wird sichtbar, wenn 30% im Viewport sind
+    };
+
+    const cardObserverCallback = (entries) => {
+        entries.forEach((entry) => {
+            const card = entry.target;
+            const index = Array.from(cards).indexOf(card); // Index der Karte
+
+            if (entry.isIntersecting) {
+                // Karte sichtbar: Animation starten mit dynamischer Verzögerung
+                card.style.transitionDelay = `${index * 0.2}s`;
+                card.classList.add("visible");
+                card.classList.remove("hidden");
+            } else if (entry.boundingClientRect.top > 0) {
+                // Karte unsichtbar: Animation zurücksetzen (für Hochscrollen)
+                card.classList.add("hidden");
+                card.classList.remove("visible");
+            } else if (entry.boundingClientRect.top < 0) {
+                // Karte unsichtbar: Animation zurücksetzen (für Runterscrollen)
+                card.classList.add("hidden");
+                card.classList.remove("visible");
+            }
+        });
+    };
+
+    const cardObserver = new IntersectionObserver(cardObserverCallback, cardObserverOptions);
+
+    // Karten initial als "hidden" markieren und dem Observer hinzufügen
+    cards.forEach((card) => {
+        card.classList.add("hidden");
+        cardObserver.observe(card);
+    });
+
+    /* ================================
+       Allgemeine Scroll-Animationen
+       ================================ */
+    const scrollObserverOptions = {
+        threshold: 0.3,
+    };
+
+    const scrollObserverCallback = (entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+            const animationClass = target.dataset.animation || "animate__fadeInUp";
+
+            if (isIntersecting) {
+                target.classList.add("visible", "animate__animated", animationClass);
+            } else {
+                target.classList.remove("visible", "animate__animated", animationClass);
+            }
+        });
+    };
+
+    const scrollObserver = new IntersectionObserver(scrollObserverCallback, scrollObserverOptions);
+    scrollAnimateElements.forEach((el) => scrollObserver.observe(el));
+
+    /* ================================
+       Scroll-Sperre für Features Section
+       ================================ */
+    const handleScrollLock = (e) => {
+        const rect = featuresSection.getBoundingClientRect();
+        if (rect.top <= 0 && rect.bottom > window.innerHeight && e.deltaY > 0) {
+            e.preventDefault();
+        }
+    };
+
+    window.addEventListener("wheel", handleScrollLock, { passive: false });
+
+    // Touch-Event für mobile Geräte
+    let touchStartY = 0;
+
+    window.addEventListener("touchstart", (e) => {
+        touchStartY = e.touches[0].clientY;
+    });
+
+    window.addEventListener("touchmove", (e) => {
+        const touchEndY = e.touches[0].clientY;
+        const rect = featuresSection.getBoundingClientRect();
+
+        if (
+            rect.top <= 0 &&
+            rect.bottom > window.innerHeight &&
+            touchStartY > touchEndY // Nach unten scrollen
+        ) {
+            e.preventDefault();
+        }
+    });
+
+    /* ================================
+       Navigation und sanftes Scrollen
+       ================================ */
+    const navObserverOptions = {
+        threshold: 1.0,
+        rootMargin: "0px 0px -50px 0px",
+    };
+
+    const navObserverCallback = (entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+            if (isIntersecting && target.id) {
+                navItems.forEach((item) => item.classList.remove("active"));
+                const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                if (activeNavItem) {
+                    activeNavItem.classList.add("active");
+                }
+            }
+        });
+    };
+
+    const navObserver = new IntersectionObserver(navObserverCallback, navObserverOptions);
+    sections.forEach((section) => navObserver.observe(section));
+
+    // Navigation: Klick löst sanftes Scrollen aus
+    navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href").substring(1);
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
                 });
+                navItems.forEach((item) => item.classList.remove("active"));
+                const clickedNavItem = link.closest(".nav-item");
+                if (clickedNavItem) {
+                    clickedNavItem.classList.add("active");
+                }
+            }
+        });
+    });
+});
             
-                /* -------------------------------
-                   2. Karten-Animation im Features-Bereich
-                   ------------------------------- */
-                const cards = document.querySelectorAll("#card-container .card");
-                const featuresSection = document.getElementById("features");
-                let activeIndex = 0;
-            
-                const updateCards = () => {
-                    cards.forEach((card, index) => {
-                        card.classList.toggle("active", index === activeIndex);
-                    });
-                };
-            
-                const handleCardScroll = () => {
-                    const rect = featuresSection.getBoundingClientRect();
-                    if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
-                        const maxScroll = rect.height / cards.length;
-                        const scrolled = Math.abs(rect.top - window.innerHeight / 2);
-                        const newIndex = Math.floor(scrolled / maxScroll);
-                        if (newIndex !== activeIndex && newIndex < cards.length) {
-                            activeIndex = newIndex;
-                            updateCards();
-                        }
-                    }
-                };
-            
-                // Throttle-Funktion, um die Ausführung von handleCardScroll zu drosseln:
-                const throttle = (fn, wait) => {
-                    let isThrottled = false, savedArgs, savedThis;
-                    return function wrapper() {
-                        if (isThrottled) {
-                            savedArgs = arguments;
-                            savedThis = this;
-                            return;
-                        }
-                        fn.apply(this, arguments);
-                        isThrottled = true;
-                        setTimeout(() => {
-                            isThrottled = false;
-                            if (savedArgs) {
-                                wrapper.apply(savedThis, savedArgs);
-                                savedArgs = savedThis = null;
-                            }
-                        }, wait);
-                    };
-                };
-            
-                window.addEventListener("scroll", throttle(handleCardScroll, 100));
-                updateCards();
-            
-                /* -------------------------------
-                   3. Scroll-Sperre für die Section "features"
-                   ------------------------------- */
-                // Der folgende Listener blockiert das weitere Scrollen (nach unten),
-                // solange der untere Rand der Section "features" noch nicht den Viewport erreicht hat.
-                window.addEventListener("wheel", (e) => {
-                    // Ermittele die Position der Section "features"
-                    const rect = featuresSection.getBoundingClientRect();
-                    // Wenn der obere Rand der Section bereits oben im Viewport ist (rect.top <= 0)
-                    // und der untere Rand noch nicht den unteren Rand des Viewports erreicht hat (rect.bottom > window.innerHeight)
-                    // und der Nutzer scrollt nach unten (e.deltaY > 0), blockieren wir das Scrollen.
-                    if (rect.top <= 0 && rect.bottom > window.innerHeight && e.deltaY > 0) {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-            });
-
-
             </script>
 </html>
