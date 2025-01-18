@@ -81,7 +81,11 @@ p, li, a {
     color: var(--secondary-text-color);
 }
 
-
+p.lead {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--main-text-color);
+}
 
 /* ==========================
         Text-Willkommen
@@ -276,25 +280,26 @@ hr {
 /* ==========================
    Scroll-Animation
    ========================== */
-.scroll-animate {
+   .scroll-animate {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(30px) rotateY(90deg); /* Konsistenter Startzustand */
     transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
 }
 
 .scroll-animate.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) rotateY(0); /* Endzustand */
 }
+
 @keyframes fadeRotate {
-  0% {
-    opacity: 0;
-    transform: translateY(50px) rotateY(90deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotateY(0);
-  }
+    0% {
+        opacity: 0;
+        transform: translateY(50px) rotateY(90deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotateY(0);
+    }
 }
 /* ==========================
    Container-Zentrierung
@@ -309,6 +314,18 @@ hr {
     padding: 0 20px;
     box-sizing: border-box;
 }
+
+/* ==========================
+   Lead-Text
+   ========================== */
+.lead {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: rgba(245, 245, 245, 0.9);
+    font-weight: 400;
+}
+
+
 
 /* ==========================
    Media Queries
@@ -337,9 +354,12 @@ hr {
 
     .scroll-animate {
         transform: translateY(20px);
-        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Kürzere Animation */
     }
 
+    .lead {
+        font-size: 1rem;
+    }
 
     .center-container {
         padding: 0 15px;
@@ -365,8 +385,15 @@ hr {
         transform: translateY(15px);
         transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     }
+
+    .lead {
+        font-size: 0.9rem;
+    }
 }
-</style>
+
+
+ 
+ </style>
 </head>
 <body>
     <div id="menu-container"></div>
@@ -378,7 +405,7 @@ hr {
             <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
 
 
-<p class="scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+<p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
     Ich freue mich, dass du den Weg hierher gefunden hast.<br>
     Diese Seite dient als mein digitales Zuhause im<br>
     World Wide Web, auf der ich meine Interessen,<br>
@@ -416,7 +443,7 @@ hr {
 
         <!-- About Section -->
         <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <p class="scroll-animate" data-animation="animate__fadeInUp">
+            <p class="lead scroll-animate" data-animation="animate__fadeInUp">
                 Vielen Dank, dass du meine Homepage besuchst.
                 Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
                 Vergiss nicht, regelmäßig , vorbeizuschauen,
@@ -478,7 +505,7 @@ hr {
                 // Mit threshold: 1.0 wird ein Element erst als sichtbar gewertet, wenn es 100% im Viewport ist.
                 // Mit rootMargin ziehen wir 50px vom unteren Rand ab (um etwas Spielraum zu haben).
                 const observerOptions = {
-                    threshold: 0.5,
+                    threshold: 1.0,
                     rootMargin: "0px 0px -50px 0px"
                 };
             
