@@ -227,6 +227,7 @@ hr {
     will-change: opacity, transform; /* Performance-Optimierung */
 }
 
+
 /* Sichtbarer Zustand */
 .scroll-animate.visible {
     opacity: 1;
@@ -415,18 +416,15 @@ hr {
     <main id="main-content">
         <!-- Hero Section -->
         <div class="center-container">
-        <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-
-            <h3 class="display-3 fw-bold scroll-animate shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>
-
-
-<p class="lead scroll-animate" style="text-align: left;" data-animation="animate__fadeInUp">
-    Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-    Diese Seite dient als mein digitales Zuhause im<br>
-    World Wide Web, auf der ich meine Interessen,<br>
-    Erfahrungen und Gedanken teilen möchte.
-</p>
-        </section>
+            <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+                <h3 class="display-3 fw-bold scroll-animate animate__animated animate__fadeInDown shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>               
+                <p class="lead scroll-animate" data-animation="animate__fadeInUp">
+                    Ich freue mich, dass du den Weg hierher gefunden hast.
+                    Diese Seite dient als mein digitales Zuhause im
+                    World Wide Web, auf der ich meine Interessen,
+                    Erfahrungen und Gedanken teilen möchte.
+                </p>
+            </section>
         </div>
 
         <!-- Features Section -->
@@ -470,15 +468,12 @@ hr {
         <!-- Footer -->
         <footer class="footer py-3 text-center">
             <p class="mb-1">
-
                 <a href="#impressum" id="impressumButton" class="btn-link">Impressum</a> |
-<a href="#datenschutz" id="privacyButton" class="btn-link">Datenschutzerklärung</a> |
-<a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
-                
+                <a href="#datenschutz" id="privacyButton" class="btn-link">Datenschutzerklärung</a> |
+                <a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
             </p>
             <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
         </footer>
-
 
 
 <!-- Navigation -->
@@ -505,38 +500,38 @@ hr {
 
 
     </main>
-    </body>
-    <!-- Bootstrap JS -->
+    
+
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
-        <!-- Custom CSS -->
-        <script src="/js/menu.js" defer></script>
-        
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+    <script src="/js/menu.js" defer></script>
+
+</body>
+    
+
         <script>
             
             document.addEventListener("DOMContentLoaded", () => {
-    /* -------------------------------
-       1. Intersection Observer für Animationen und Navigation
-       ------------------------------- */
+    // -------------------------------
+    // 1. Intersection Observer for Section Visibility and Animation
+    // -------------------------------
     const observerOptions = {
-        threshold: 0.9,
-        rootMargin: "0px 0px -50px 0px",
+        threshold: 0.2,  // Weniger strikte Sichtbarkeitsschwelle
+        rootMargin: "0px",
     };
 
     const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
     const navItems = document.querySelectorAll(".nav-item");
-    const navLinks = document.querySelectorAll(".nav-link");
     const sections = document.querySelectorAll("section");
 
-
-    
-    const observerCallback = (entries, observer) => {
+    const observerCallback = (entries) => {
         entries.forEach(({ target, isIntersecting }) => {
             const animationClass = target.dataset.animation || "animate__fadeInUp";
-            const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
 
             if (isIntersecting) {
                 if (target.classList.contains("scroll-animate")) {
-                    target.style.transitionDelay = `${delayInS}s`;
                     target.classList.add("visible", "animate__animated", animationClass);
                 }
 
@@ -556,7 +551,11 @@ hr {
     const observer = new IntersectionObserver(observerCallback, observerOptions);
     [...sections, ...scrollAnimateElements].forEach((el) => observer.observe(el));
 
-    // Navigation: Sanftes Scrollen und Aktivierung
+    // -------------------------------
+    // 2. Smooth Scrolling for Navigation
+    // -------------------------------
+    const navLinks = document.querySelectorAll(".nav-link");
+
     navLinks.forEach((link) => {
         link.addEventListener("click", (e) => {
             e.preventDefault();
@@ -576,9 +575,9 @@ hr {
         });
     });
 
-    /* -------------------------------
-       2. Karten-Animation im Features-Bereich
-       ------------------------------- */
+    // -------------------------------
+    // 3. Card Animation in Features Section
+    // -------------------------------
     const cards = document.querySelectorAll("#card-container .card");
     const featuresSection = document.getElementById("features");
     let activeIndex = 0;
@@ -625,23 +624,9 @@ hr {
     window.addEventListener("scroll", throttle(handleCardScroll, 100));
     updateCards();
 
-    /* -------------------------------
-       3. Scroll-Sperre für die Section "features"
-       ------------------------------- */
-    window.addEventListener(
-        "wheel",
-        (e) => {
-            const rect = featuresSection.getBoundingClientRect();
-            if (rect.top <= 0 && rect.bottom > window.innerHeight && e.deltaY > 0) {
-                e.preventDefault();
-            }
-        },
-        { passive: false }
-    );
-
-    /* -------------------------------
-       4. Sichtbarkeitsanimation für scroll-animate Elemente
-       ------------------------------- */
+    // -------------------------------
+    // 4. Scroll Animation Visibility
+    // -------------------------------
     const handleScrollAnimation = () => {
         scrollAnimateElements.forEach((el) => {
             const rect = el.getBoundingClientRect();
@@ -652,9 +637,9 @@ hr {
     };
 
     window.addEventListener("scroll", throttle(handleScrollAnimation, 100));
-    handleScrollAnimation(); // Initialer Check
+    handleScrollAnimation();
 });
-            
-           
-           </script>
+
+
+        </script>
 </html>
