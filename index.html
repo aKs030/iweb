@@ -14,7 +14,6 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/menu.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&display=swap">
 
@@ -31,6 +30,7 @@
    ========================== */
    @media (hover: none) {
   .nav-link:focus,
+  .nav-link:hover,
   .nav-link:active {
     background: none; /* Entfernt Hintergrundfarbe beim Fokus */
     box-shadow: none; /* Entfernt Schatten */
@@ -40,13 +40,13 @@
 }
 
 
+
 :root {
     --main-fonts-color: #fff;
     --main-decor-color: #ffffff;
 
     --main-bg-color: #444;
     --secondary-bg-color: var(--main-bg-color);
-    --main-text-color: rgba(245, 245, 245, 0.9);
     --accent-color: rgba(255, 204, 41, 0.8);
     --menu-bg-color: #333333cc;
     --main-text-color: rgba(245, 245, 245, 0.9);  /* Zweite Definition */
@@ -432,6 +432,33 @@ hr {
 #back-to-top:hover {
     opacity: 1;
 }
+/* Scroll-Einstellungen für die gesamte Seite */
+html, body {
+    scroll-behavior: smooth; /* Sanftes Scrollen */
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory; /* Erzwingt das Einrasten */
+    scroll-padding-top: 0; /* Kein Abstand beim Einrasten */
+    -webkit-overflow-scrolling: touch;
+
+}
+@media (max-width: 768px) {
+    html, body {
+        scroll-snap-type: y proximity; /* Leichtes Einrasten auf Mobil */
+    }
+}
+/* Jedes Snap-Element einrasten lassen */
+#hero, #about, footer, .card-link {
+    scroll-snap-align: start; /* Beginnt beim Startpunkt */
+    scroll-snap-stop: always; /* Stoppt zwingend beim Einrasten */
+}
+
+/* Erhöhte Sensitivität */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-snap-type: y proximity; /* Erhöhte Empfindlichkeit */
+    }
+}
+
 
  </style>
 </head>
@@ -459,7 +486,7 @@ hr {
                     <div class="card bg-white text-center p-4">
                         <i class="bi bi-person-circle display-4 mb-3" style="color: #555;"></i>
                         <h5 class="fw-bold" style="color: #333;">Über Mich</h5>
-                        <p style="color: #666;">
+                        <p style="color: #444;">
                             Ich teile hier meine Leidenschaften,
                             Interessen und Erlebnisse.
                         </p>
@@ -470,7 +497,7 @@ hr {
                     <div class="card bg-white text-center p-4">
                         <i class="bi bi-images display-4 mb-3" style="color: #555;"></i>
                         <h5 class="fw-bold" style="color: #333;">Fotogalerie</h5>
-                        <p style="color: #666;">
+                        <p style="color: #444;">
                             Hier findest du einige Fotos von meinen Reisen,
                             von meinem Alltag und von besonderen Ereignissen.
                         </p>
@@ -542,8 +569,8 @@ hr {
     // 1. Intersection Observer for Section Visibility and Animation
     // -------------------------------
     const observerOptions = {
-    threshold: 0.3,  // Weniger strikte Sichtbarkeitsschwelle
-    rootMargin: "0px 0px -50px 0px",
+    threshold: 0.4,
+    rootMargin: "-100px 0px -100px 0px",
 };
 
     const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
@@ -679,6 +706,28 @@ hr {
             backToTopBtn.classList.toggle("visible", window.scrollY > 500);
         }, 150));
     }
+});
+
+
+
+
+
+
+document.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    window.scrollBy({
+        top: event.deltaY * 2,  // Erhöhte Geschwindigkeit
+        behavior: 'smooth'
+    });
+}, { passive: false });
+
+document.querySelectorAll('section, .card-link, footer').forEach(section => {
+    section.addEventListener('click', () => {
+        section.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    });
 });
 
 </script>
