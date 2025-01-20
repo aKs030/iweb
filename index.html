@@ -88,19 +88,15 @@ p {
 
 /* ==========================
         Text-Willkommen
-   ========================== */
+========================== */
 .shimmer-text {
-	padding-bottom: 15px;
-    letter-spacing: normal;
-	font-style: normal;
-	font-size: 60px;
-	color: var(--main-fonts-color);
-	text-shadow: 0px 0px 40px var(--main-decor-color);
-    font-family: inherit; /* übernimmt die Schriftart vom Body */
-    margin-bottom: 8rem; /* Abstand direkt im Stil */
-
+padding-bottom: 15px;  /* Fügt unten einen Innenabstand von 15px hinzu */
+letter-spacing: normal;  /* Standardmäßiger Buchstabenabstand */
+font-style: normal;  /* Keine kursiven oder speziellen Schriftstile */
+font-size: 60px;  /* Setzt die Schriftgröße auf 60 Pixel */
+text-shadow: 0px 0px 40px var(--main-decor-color);  /* Fügt einen weichen Schimmer-Effekt mit der Deko-Farbe hinzu */
+margin-bottom: 3rem;  /* Fügt einen unteren Außenabstand von 8rem hinzu */
 }
-
 @keyframes shimmer {
     0% {
         background-position: 0% 50%;
@@ -109,21 +105,38 @@ p {
         background-position: 100% 50%;
     }
 }
-
+/* ==========================
+         hr
+========================== */
 hr {
-    background: var(--main-decor-color);
-	margin: 2px;
-	height: 3px;
-	width: 150px;
-    border-radius:5px;
-	border: hidden;
-	margin-inline-start: auto;
-    margin-inline-end: auto;
+    background: var(--main-decor-color);  /* Verwendet die dekorative Hauptfarbe als Hintergrund */
+    height: 3px;  /* Setzt die Höhe der Linie auf 3 Pixel */
+    width: 190px;  /* Definiert die Breite der Linie auf 150 Pixel */
+    border-radius: 5px;  /* Rundet die Ecken der Linie mit einem Radius von 5px ab */
+    border: hidden;  /* Versteckt die Standard-Grenze, um visuelle Unregelmäßigkeiten zu vermeiden */
+    margin-inline-start: auto;  /* Zentriert die Linie horizontal (Startabstand automatisch) */
+    margin-inline-end: auto;  /* Zentriert die Linie horizontal (Endabstand automatisch) */
 }
-
+/* ==========================
+        .lead`-Element
+========================== */
+.lead {
+    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
+    font-weight: 300; /* Leichtere Schrift für modernen Look */
+    max-width: 800px;  /* Maximale Breite des Textes */
+    margin: 0 auto;  /* Zentrierung */
+    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
+}
+@media (max-width: 768px) {
+    .lead {
+        font-size: 1rem; /* Kleinere Schriftgröße für Mobilgeräte */
+        line-height: 1.6; /* Etwas kompakterer Zeilenabstand */
+        text-align: center; /* Zentrierte Ausrichtung auf kleinen Bildschirmen */
+    }
+}
 /* ==========================
    Navigation (Navbar Bottom)
-   ========================== */
+========================== */
 .navbar-bottom {
     position: fixed;
     bottom: 10px;
@@ -182,23 +195,6 @@ hr {
 .nav-item.active .nav-icon {
     color: var(--main-bg-color);
     transform: scale(1.15);
-}
-/* Allgemeine Scroll-Animationen */
-/* Allgemeine Stile für das `.lead`-Element */
-.lead {
-    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
-    font-weight: 300; /* Leichtere Schrift für modernen Look */
-    max-width: 800px;  /* Maximale Breite des Textes */
-    margin: 0 auto;  /* Zentrierung */
-    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
-}
-/* Responsive Design */
-@media (max-width: 768px) {
-    .lead {
-        font-size: 1rem; /* Kleinere Schriftgröße für Mobilgeräte */
-        line-height: 1.6; /* Etwas kompakterer Zeilenabstand */
-        text-align: center; /* Zentrierte Ausrichtung auf kleinen Bildschirmen */
-    }
 }
 /* ==========================
    Scroll-Animation
@@ -279,47 +275,6 @@ hr {
 /* ==========================
    Media Queries
 ========================== */
-/* -- max-width: 768px -- */
-@media (max-width: 768px) {
-    .navbar-bottom {
-        bottom: 5px;
-        padding: 8px 15px;
-    }
-    
-    .nav-link {
-        width: 40px;
-        height: 40px;
-    }
-
-    .nav-icon {
-        font-size: 1.2rem;
-    }
-
-    .shimmer-text {
-        font-size: 2.5rem;
-        animation: shimmer 3s ease-in-out infinite; /* Langsamere Animation auf Mobilgeräten */
-    }
-
-    .center-container {
-        padding: 0 15px;
-    }
-}
-
-/* -- max-width: 480px -- */
-@media (max-width: 480px) {
-    .nav-link {
-        width: 35px;
-        height: 35px;
-    }
-
-    .nav-icon {
-        font-size: 1rem;
-    }
-
-    .shimmer-text {
-        font-size: 2rem;
-    }
-}
 
 
 
