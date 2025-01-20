@@ -80,7 +80,7 @@ p, li, a {
     color: var(--secondary-text-color);
 }
 
-p.lead {
+p {
     font-size: 1.2rem;
     font-weight: 400;
     color: var(--main-text-color);
@@ -183,13 +183,48 @@ hr {
     color: var(--main-bg-color);
     transform: scale(1.15);
 }
-
-
-
+/* Allgemeine Scroll-Animationen */
+/* Allgemeine Stile für das `.lead`-Element */
+.lead {
+    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
+    font-weight: 300; /* Leichtere Schrift für modernen Look */
+    max-width: 800px;  /* Maximale Breite des Textes */
+    margin: 0 auto;  /* Zentrierung */
+    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+    .lead {
+        font-size: 1rem; /* Kleinere Schriftgröße für Mobilgeräte */
+        line-height: 1.6; /* Etwas kompakterer Zeilenabstand */
+        text-align: center; /* Zentrierte Ausrichtung auf kleinen Bildschirmen */
+    }
+}
+/* ==========================
+   Scroll-Animation
+========================== */
+/* Scroll-Animation - Startzustand */
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(-70px); /* Startposition */
+    transition: transform 2s ease-out,opacity 2s ease-out; /* Sanftere Bewegung */
+    will-change: opacity, transform;
+    pointer-events: none; /* Verhindert Interaktionen mit unsichtbaren Elementen */
+}
+/* Sichtbarer Zustand beim Scrollen */
+.scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(70px);
+    pointer-events: auto; /* Interaktionen aktivieren */
+}
+/* Versteckter Zustand beim Zurückscrollen */
+.scroll-animate.hidden {
+    opacity: 0;
+    transform: translateY(-70px); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
+}
 /* ==========================
    Karten
-   ========================== */
-/* Kartencontainer */
+========================== */
 /* Kartencontainer */
 :root {
     --transition-duration: 0.6s;
@@ -204,129 +239,12 @@ hr {
     --brightness-next: 0.9;
     --accent-color: #ffcc29;
 }
-
-
-
-
-/* Allgemeine Scroll-Animationen */
-/* Allgemeine Stile für das `.lead`-Element */
-.lead {
-    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
-    line-height: 1.8; /* Angenehmer Zeilenabstand */
-    font-weight: 300; /* Leichtere Schrift für modernen Look */
-    color: #333; /* Neutraler Farbton */
-    text-align: left; /* Standardausrichtung */
-
-    max-width: 800px;  /* Maximale Breite des Textes */
-    margin: 0 auto;  /* Zentrierung */
-    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
-}
-
-
-
-/* Scroll-Animation - Startzustand */
-.scroll-animate {
-    opacity: 0;
-    transform: translateY(80px); /* Startposition */
-    transition: opacity 1s ease-out, transform 1s ease-out; /* Sanftere Bewegung */
-    will-change: opacity, transform;
-    pointer-events: none; /* Verhindert Interaktionen mit unsichtbaren Elementen */
-}
-
-/* Sichtbarer Zustand beim Scrollen */
-.scroll-animate.visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto; /* Interaktionen aktivieren */
-}
-
-/* Versteckter Zustand beim Zurückscrollen */
-.scroll-animate.hidden {
-    opacity: 0;
-    transform: translateY(30px); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
-}
-
-/* Zusätzliche Medienabfrage für Benutzer mit eingeschränkter Bewegung */
-@media (prefers-reduced-motion: reduce) {
-    .scroll-animate {
-        transition: none;
-        transform: none;
-        opacity: 1;
-    }
-}
-
-@media (max-width: 768px) {
-    .scroll-animate {
-        transform: translateY(50px);
-        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-    }
-    
-    .scroll-animate.hidden {
-        transform: translateY(20px);
-    }
-}
-/* Responsive Optimierung für kleinere Bildschirme */
-
-
-
-
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .lead {
-        font-size: 1rem; /* Kleinere Schriftgröße für Mobilgeräte */
-        line-height: 1.6; /* Etwas kompakterer Zeilenabstand */
-        text-align: center; /* Zentrierte Ausrichtung auf kleinen Bildschirmen */
-    }
-}
-
-
-
 /* Basis-Stile für Karten */
 .card {
     opacity: 0;
-    transform: scale(0.9) translateY(50px) rotateY(5deg);
-    transition: transform 0.8s ease, opacity 0.8s ease;
-    will-change: transform, opacity;
     margin-bottom: -30px;
     border-radius: var(--card-radius);
 }
-
-/* Sichtbare Karte */
-.card.visible {
-    opacity: 1;
-    transform: scale(1) translateY(0) rotateY(0deg);
-}
-
-/* Unsichtbare Karte */
-.card.hidden {
-    opacity: 0;
-    transform: scale(0.8) translateY(50px) rotateY(-5deg);
-}
-
-/* Hover- und Fokus-Effekte */
-.card:hover, .card:focus {
-    transform: scale(1.05) rotateY(0deg);
-    box-shadow: var(--shadow-hover);
-    transition: transform var(--hover-duration) ease, box-shadow var(--hover-duration) ease;
-}
-
-/* Responsive Anpassungen */
-@media (max-width: 768px) {
-    .card {
-        transform: scale(0.95) translateY(20px) rotateY(0deg);
-    }
-    .card.visible {
-        transform: scale(1) translateY(0);
-    }
-    .card.hidden {
-        transform: scale(0.9) translateY(30px);
-    }
-    .card:hover, .card:focus {
-        transform: scale(1); /* Keine Hover-Effekte auf Mobilgeräten */
-    }
-}
-
 /* Inaktive Karten */
 .card:not(.active) {
     transform: scale(0.85) rotateY(-10deg) translateY(40px);
@@ -335,7 +253,6 @@ hr {
     filter: blur(var(--blur-inactive)) brightness(var(--brightness-inactive));
     box-shadow: var(--shadow-inactive);
 }
-
 /* Aktive Karte */
 .card.active {
     transform: scale(1.05) rotateY(0) translateY(0);
@@ -346,22 +263,9 @@ hr {
     border: 2px solid var(--accent-color);
     transition: all 0.4s ease-in-out;
 }
-
-/* Nächste Karte */
-.card.next {
-    transform: scale(0.9) rotateY(-5deg) translateY(20px);
-    opacity: 0.75;
-    z-index: 1;
-    filter: blur(var(--blur-next)) brightness(var(--brightness-next));
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-/* ==========================
-   Scroll-Animation
-   ========================== */
-
 /* ==========================
    Container-Zentrierung
-   ========================== */
+========================== */
 .center-container {
     display: flex;
     justify-content: center; /* Horizontal zentrieren */
@@ -374,8 +278,7 @@ hr {
 }
 /* ==========================
    Media Queries
-   ========================== */
-
+========================== */
 /* -- max-width: 768px -- */
 @media (max-width: 768px) {
     .navbar-bottom {
@@ -397,10 +300,6 @@ hr {
         animation: shimmer 3s ease-in-out infinite; /* Langsamere Animation auf Mobilgeräten */
     }
 
-    .lead {
-        font-size: 1rem;
-    }
-
     .center-container {
         padding: 0 15px;
     }
@@ -420,8 +319,6 @@ hr {
     .shimmer-text {
         font-size: 2rem;
     }
-
-
 }
 
 
@@ -463,25 +360,12 @@ html, body {
     -webkit-overflow-scrolling: touch;
 
 }
-@media (max-width: 768px) {
-    html, body {
-        scroll-snap-type: y proximity; /* Leichtes Einrasten auf Mobil */
-    }
-}
+
 /* Jedes Snap-Element einrasten lassen */
 #hero, #about, footer, .card-link {
     scroll-snap-align: start; /* Beginnt beim Startpunkt */
     scroll-snap-stop: always; /* Stoppt zwingend beim Einrasten */
 }
-
-/* Erhöhte Sensitivität */
-@media (prefers-reduced-motion: no-preference) {
-    html {
-        scroll-snap-type: y proximity; /* Erhöhte Empfindlichkeit */
-    }
-}
-
-
  </style>
 </head>
 <body>
