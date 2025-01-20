@@ -238,22 +238,7 @@ hr {
     opacity: 0;
     transform: translateY(-30px); /* Umgekehrte Bewegung */
 }
-/* Anpassung für spezifische Animationen */
-.scroll-animate[data-animation="animate__fadeInUp"] {
-    animation: fadeInUp 0.8s ease-in-out;
-}
 
-/* Keyframes für `fadeInUp` */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -621,8 +606,7 @@ hr {
         };
     };
 
-    window.addEventListener("scroll", throttle(handleCardScroll, 100));
-    updateCards();
+    window.addEventListener("scroll", throttle(handleCardScroll, 100), { passive: true });    updateCards();
 
     // -------------------------------
     // 4. Scroll Animation Visibility
