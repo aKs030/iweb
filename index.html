@@ -219,12 +219,11 @@ hr {
     text-align: left; /* Standardausrichtung */
 }
 
-/* Scroll-Animationen - Startzustand */
 /* Scroll-Animation - Startzustand */
 .scroll-animate {
     opacity: 0;
-    transform: translateY(-100px); /* Startposition */
-    transition: opacity 1.2s ease-out, transform 1.2s ease-out; /* Verlängerte Dauer für sanftere Bewegung */
+    transform: translateY(80px); /* Startposition */
+    transition: opacity 1s ease-out, transform 1s ease-out; /* Sanftere Bewegung */
     will-change: opacity, transform;
     pointer-events: none; /* Verhindert Interaktionen mit unsichtbaren Elementen */
 }
@@ -232,22 +231,40 @@ hr {
 /* Sichtbarer Zustand beim Scrollen */
 .scroll-animate.visible {
     opacity: 1;
-    transform: translateY(50px);
+    transform: translateY(0);
     pointer-events: auto; /* Interaktionen aktivieren */
 }
 
-/* Rückwärtsbewegung beim Hochscrollen */
+/* Versteckter Zustand beim Zurückscrollen */
 .scroll-animate.hidden {
     opacity: 0;
-    transform: translateY(-50px); /* Umgekehrte Bewegung nach oben */
+    transform: translateY(30px); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
 }
 
 /* Zusätzliche Medienabfrage für Benutzer mit eingeschränkter Bewegung */
 @media (prefers-reduced-motion: reduce) {
     .scroll-animate {
         transition: none;
+        transform: none;
+        opacity: 1;
     }
 }
+
+@media (max-width: 768px) {
+    .scroll-animate {
+        transform: translateY(50px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+    
+    .scroll-animate.hidden {
+        transform: translateY(20px);
+    }
+}
+/* Responsive Optimierung für kleinere Bildschirme */
+
+
+
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -569,9 +586,9 @@ html, body {
     // 1. Intersection Observer for Section Visibility and Animation
     // -------------------------------
     const observerOptions = {
-    threshold: 0.4,
-    rootMargin: "-100px 0px -100px 0px",
-};
+        threshold: 0.5,  // Weniger häufige Trigger für bessere Performance
+        rootMargin: "0px 0px -50px 50px"  // Mehr Pufferzone für weiche Animationen
+    };
 
     const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
     const navItems = document.querySelectorAll(".nav-item");
