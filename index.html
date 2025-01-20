@@ -219,26 +219,35 @@ hr {
     text-align: left; /* Standardausrichtung */
 }
 
-/* Scroll-Animationen */
+/* Scroll-Animationen - Startzustand */
+/* Scroll-Animation - Startzustand */
 .scroll-animate {
     opacity: 0;
-    transform: translateY(30px); /* Startposition */
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out; /* Animation */
-    will-change: opacity, transform; /* Performance-Optimierung */
+    transform: translateY(-100px); /* Startposition */
+    transition: opacity 1.2s ease-out, transform 1.2s ease-out; /* Verlängerte Dauer für sanftere Bewegung */
+    will-change: opacity, transform;
+    pointer-events: none; /* Verhindert Interaktionen mit unsichtbaren Elementen */
 }
 
-
-/* Sichtbarer Zustand */
+/* Sichtbarer Zustand beim Scrollen */
 .scroll-animate.visible {
     opacity: 1;
-    transform: translateY(0); /* Endposition */
-}
-/* Unsichtbarer Zustand beim Hochscrollen */
-.scroll-animate.hidden {
-    opacity: 0;
-    transform: translateY(-30px); /* Umgekehrte Bewegung */
+    transform: translateY(50px);
+    pointer-events: auto; /* Interaktionen aktivieren */
 }
 
+/* Rückwärtsbewegung beim Hochscrollen */
+.scroll-animate.hidden {
+    opacity: 0;
+    transform: translateY(-50px); /* Umgekehrte Bewegung nach oben */
+}
+
+/* Zusätzliche Medienabfrage für Benutzer mit eingeschränkter Bewegung */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-animate {
+        transition: none;
+    }
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -394,10 +403,41 @@ hr {
 }
 
 
+
+
+
+
+
+#back-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: none;
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 20px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+#back-to-top.visible {
+    display: block;
+    opacity: 1;
+}
+
+#back-to-top:hover {
+    opacity: 1;
+}
+
  </style>
 </head>
 <body>
     <div id="menu-container"></div>
+    <button id="back-to-top" class="back-to-top">↑</button>
     <main id="main-content">
         <!-- Hero Section -->
         <div class="center-container">
@@ -495,135 +535,147 @@ hr {
 
 </body>
     
-
-        <script>
-            
-            document.addEventListener("DOMContentLoaded", () => {
-    // -------------------------------
-    // 1. Intersection Observer for Section Visibility and Animation
-    // -------------------------------
-    const observerOptions = {
-        threshold: 0.2,  // Weniger strikte Sichtbarkeitsschwelle
-        rootMargin: "0px",
-    };
-
-    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-    const navItems = document.querySelectorAll(".nav-item");
-    const sections = document.querySelectorAll("section");
-
-    const observerCallback = (entries) => {
-        entries.forEach(({ target, isIntersecting }) => {
-            const animationClass = target.dataset.animation || "animate__fadeInUp";
-
-            if (isIntersecting) {
-                if (target.classList.contains("scroll-animate")) {
-                    target.classList.add("visible", "animate__animated", animationClass);
-                }
-
-                if (target.id) {
-                    navItems.forEach((item) => item.classList.remove("active"));
-                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                    if (activeNavItem) activeNavItem.classList.add("active");
-                }
-            } else {
-                if (target.classList.contains("scroll-animate")) {
-                    target.classList.remove("visible", "animate__animated", animationClass);
-                }
-            }
-        });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    [...sections, ...scrollAnimateElements].forEach((el) => observer.observe(el));
-
-    // -------------------------------
-    // 2. Smooth Scrolling for Navigation
-    // -------------------------------
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    navLinks.forEach((link) => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute("href").substring(1);
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                targetSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-
-                navItems.forEach((item) => item.classList.remove("active"));
-                const clickedNavItem = link.closest(".nav-item");
-                if (clickedNavItem) clickedNavItem.classList.add("active");
-            }
-        });
-    });
-
-    // -------------------------------
-    // 3. Card Animation in Features Section
-    // -------------------------------
-    const cards = document.querySelectorAll("#card-container .card");
-    const featuresSection = document.getElementById("features");
-    let activeIndex = 0;
-
-    const updateCards = () => {
-        cards.forEach((card, index) => {
-            card.classList.toggle("active", index === activeIndex);
-        });
-    };
-
-    const handleCardScroll = () => {
-        const rect = featuresSection.getBoundingClientRect();
-        if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
-            const maxScroll = rect.height / cards.length;
-            const scrolled = Math.abs(rect.top - window.innerHeight / 2);
-            const newIndex = Math.floor(scrolled / maxScroll);
-            if (newIndex !== activeIndex && newIndex < cards.length) {
-                activeIndex = newIndex;
-                updateCards();
-            }
-        }
-    };
-
-    const throttle = (fn, wait) => {
-        let isThrottled = false, savedArgs, savedThis;
-        return function wrapper() {
-            if (isThrottled) {
-                savedArgs = arguments;
-                savedThis = this;
-                return;
-            }
-            fn.apply(this, arguments);
-            isThrottled = true;
-            setTimeout(() => {
-                isThrottled = false;
-                if (savedArgs) {
-                    wrapper.apply(savedThis, savedArgs);
-                    savedArgs = savedThis = null;
-                }
-            }, wait);
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // -------------------------------
+        // 1. Intersection Observer for Section Visibility and Animation
+        // -------------------------------
+        const observerOptions = {
+            threshold: [0.1, 0.5, 0.9],  // Verbesserte Sichtbarkeitsschwellen
+            rootMargin: "0px 0px -10px 0px",  // Bessere Kontrolle über das Erscheinen
         };
-    };
-
-    window.addEventListener("scroll", throttle(handleCardScroll, 100), { passive: true });    updateCards();
-
-    // -------------------------------
-    // 4. Scroll Animation Visibility
-    // -------------------------------
-    const handleScrollAnimation = () => {
-        scrollAnimateElements.forEach((el) => {
-            const rect = el.getBoundingClientRect();
-            const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
-            el.classList.toggle("visible", isVisible);
-            el.classList.toggle("hidden", !isVisible);
+    
+        const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+        const navItems = document.querySelectorAll(".nav-item");
+        const sections = document.querySelectorAll("section");
+    
+        const observerCallback = (entries) => {
+            entries.forEach(({ target, isIntersecting }) => {
+                const animationClass = target.dataset.animation || "animate__fadeInUp";
+    
+                if (isIntersecting) {
+                    if (target.classList.contains("scroll-animate")) {
+                        target.classList.add("visible", "animate__animated", animationClass);
+                    }
+    
+                    if (target.id && document.querySelector(`.nav-item[data-section="${target.id}"]`)) {
+                        navItems.forEach((item) => item.classList.remove("active"));
+                        const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                        if (activeNavItem) activeNavItem.classList.add("active");
+                    }
+                } else {
+                    if (target.classList.contains("scroll-animate")) {
+                        target.classList.remove("visible", "animate__animated", animationClass);
+                    }
+                }
+            });
+        };
+    
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+        [...sections, ...scrollAnimateElements].forEach((el) => observer.observe(el));
+    
+        // -------------------------------
+        // 2. Smooth Scrolling for Navigation
+        // -------------------------------
+        const navLinks = document.querySelectorAll(".nav-link");
+    
+        navLinks.forEach((link) => {
+            link.addEventListener("click", (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute("href").substring(1);
+                const targetSection = document.getElementById(targetId);
+    
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+    
+                    navItems.forEach((item) => item.classList.remove("active"));
+                    const clickedNavItem = link.closest(".nav-item");
+                    if (clickedNavItem) clickedNavItem.classList.add("active");
+                }
+            });
         });
-    };
-
-    window.addEventListener("scroll", throttle(handleScrollAnimation, 100));
-    handleScrollAnimation();
-});
-
-
-        </script>
+    
+        // -------------------------------
+        // 3. Card Animation in Features Section
+        // -------------------------------
+        const cards = document.querySelectorAll("#card-container .card");
+        const featuresSection = document.getElementById("features");
+        let activeIndex = 0;
+    
+        const updateCards = () => {
+            cards.forEach((card, index) => {
+                card.classList.toggle("active", index === activeIndex);
+            });
+        };
+    
+        const handleCardScroll = () => {
+            const rect = featuresSection.getBoundingClientRect();
+            if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
+                const maxScroll = rect.height / cards.length;
+                const scrolled = Math.abs(rect.top - window.innerHeight / 2);
+                const newIndex = Math.floor(scrolled / maxScroll);
+                if (newIndex !== activeIndex && newIndex < cards.length) {
+                    activeIndex = newIndex;
+                    updateCards();
+                }
+            }
+        };
+    
+        // Throttle function to optimize performance
+        const throttle = (fn, wait) => {
+            let isThrottled = false, savedArgs, savedThis;
+            return function wrapper() {
+                if (isThrottled) {
+                    savedArgs = arguments;
+                    savedThis = this;
+                    return;
+                }
+                fn.apply(this, arguments);
+                isThrottled = true;
+                setTimeout(() => {
+                    isThrottled = false;
+                    if (savedArgs) {
+                        wrapper.apply(savedThis, savedArgs);
+                        savedArgs = savedThis = null;
+                    }
+                }, wait);
+            };
+        };
+    
+        window.addEventListener("scroll", throttle(handleCardScroll, 100), { passive: true });
+        updateCards();
+    
+        // -------------------------------
+        // 4. Scroll Animation Visibility
+        // -------------------------------
+        const handleScrollAnimation = () => {
+            scrollAnimateElements.forEach((el) => {
+                const rect = el.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+                el.classList.toggle("visible", isVisible);
+                el.classList.toggle("hidden", !isVisible);
+            });
+        };
+    
+        window.addEventListener("scroll", throttle(handleScrollAnimation, 100), { passive: true });
+        handleScrollAnimation();
+    
+        // -------------------------------
+        // 5. Back-to-top button functionality
+        // -------------------------------
+        const backToTopBtn = document.getElementById("back-to-top");
+        if (backToTopBtn) {
+            backToTopBtn.addEventListener("click", () => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+    
+            window.addEventListener("scroll", throttle(() => {
+                backToTopBtn.classList.toggle("visible", window.scrollY > 500);
+            }, 100));
+        }
+    });
+    </script>
 </html>
