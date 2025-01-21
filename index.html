@@ -28,20 +28,7 @@
 /* ==========================
    Farbvariablen
    ========================== */
-   @media (hover: none) {
-  .nav-link:focus,
-  .nav-link:hover,
-  .nav-link:active {
-    background: none; /* Entfernt Hintergrundfarbe beim Fokus */
-    box-shadow: none; /* Entfernt Schatten */
-    transform: none;  /* Entfernt Skalierungseffekte */
-    animation: none;  /* Verhindert Animation */
-  }
-}
-
-
-
-:root {
+   :root {
     --main-fonts-color: #fff;
     --main-decor-color: #ffffff;
 
@@ -52,7 +39,6 @@
     --main-text-color: rgba(245, 245, 245, 0.9);  /* Zweite Definition */
     --secondary-text-color: rgba(245, 245, 245, 0.5);
 }
-
 /* ==========================
    Allgemeine Stile
    ========================== */
@@ -196,6 +182,16 @@ hr {
     color: var(--main-bg-color);
     transform: scale(1.15);
 }
+@media (hover: none) {
+  .nav-link:focus,
+  .nav-link:hover,
+  .nav-link:active {
+    background: none; /* Entfernt Hintergrundfarbe beim Fokus */
+    box-shadow: none; /* Entfernt Schatten */
+    transform: none;  /* Entfernt Skalierungseffekte */
+    animation: none;  /* Verhindert Animation */
+  }
+}
 /* ==========================
    Scroll-Animation
 ========================== */
@@ -259,19 +255,6 @@ hr {
     transition: all 0.4s ease-in-out;
 }
 /* ==========================
-   Container-Zentrierung
-========================== */
-.center-container {
-    display: flex;
-    justify-content: center; /* Horizontal zentrieren */
-    align-items: center;     /* Vertikal zentrieren */
-    height: 100vh;          /* Volle Fensterhöhe */
-    width: 100%;            /* Volle Fensterbreite */
-    text-align: center;
-    padding: 0 20px;
-    box-sizing: border-box;
-}
-/* ==========================
    Scroll-Einstellungen
 ========================== */
 html, body {
@@ -282,10 +265,12 @@ html, body {
     -webkit-overflow-scrolling: touch;
 }
 /* Jedes Snap-Element einrasten lassen */
-#hero, #about, footer, .card-link {
+#hero, #about, footer,.card-linkk, .card-link {
     scroll-snap-align: start; /* Beginnt beim Startpunkt */
     scroll-snap-stop: always; /* Stoppt zwingend beim Einrasten */
 }
+/* ==========================
+========================== */
  </style>
 </head>
 <body>
@@ -293,7 +278,6 @@ html, body {
     <button id="back-to-top" class="back-to-top">↑</button>
     <main id="main-content">
         <!-- Hero Section -->
-        <div class="center-container">
             <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
                 <h3 class="display-3 fw-bold scroll-animate animate__animated animate__fadeInDown shimmer-text" data-animation="animate__fadeInDown">Willkommen<hr></h3>               
                 <p class="lead scroll-animate" data-animation="animate__fadeInUp">
@@ -303,7 +287,6 @@ html, body {
                     Erfahrungen und Gedanken teilen möchte.
                 </p>
             </section>
-        </div>
 
         <!-- Features Section -->
         <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
@@ -319,7 +302,7 @@ html, body {
                     </div>
                 </a>
         
-                <a href="album.html" class="card-link">
+                <a href="album.html" class="card-linkk">
                     <div class="card bg-white text-center p-4">
                         <i class="bi bi-images display-4 mb-3" style="color: #555;"></i>
                         <h5 class="fw-bold" style="color: #333;">Fotogalerie</h5>
@@ -352,8 +335,7 @@ html, body {
             </p>
             <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
         </footer>
-
-
+    </main>
 <!-- Navigation -->
 <nav class="navbar navbar-bottom">
     <ul class="nav-list">
@@ -377,17 +359,11 @@ html, body {
 
 
 
-    </main>
-    
-
-
+</body>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
     <script src="/js/menu.js" defer></script>
-
-</body>
-
 <script>
     
     document.addEventListener("DOMContentLoaded", () => {
@@ -547,7 +523,7 @@ document.addEventListener('wheel', (event) => {
     });
 }, { passive: false });
 
-document.querySelectorAll('section, .card-link, footer').forEach(section => {
+document.querySelectorAll('section,card-linkk, .card-link, footer').forEach(section => {
     section.addEventListener('click', () => {
         section.scrollIntoView({
             behavior: 'smooth',
