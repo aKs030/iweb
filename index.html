@@ -257,20 +257,26 @@ hr {
 /* ==========================
    Scroll-Einstellungen
 ========================== */
+/* Für das CSS-Scroll-Snapping nur die Sektionen einbinden */
+section {
+    min-height: 100vh; 
+    scroll-snap-align: center;
+    -webkit-scroll-snap-align: center;
+    scroll-snap-stop: always;
+}
+
 html, body {
-    scroll-behavior: smooth; /* Sanftes Scrollen */
-    overflow-y: auto;
-    scroll-snap-type: y mandatory; /* Erzwingt das Einrasten */
-    scroll-padding-top: 0; /* Kein Abstand beim Einrasten */
+    margin: 0;
+    padding: 0;
+    /* Für das CSS-Scroll-Snapping */
+    scroll-snap-type: y mandatory;
+    -webkit-scroll-snap-type: y mandatory; /* iOS Safari Prefix */
+    /* Wichtig für iOS, damit das Snapping nicht unterbrochen wird */
     -webkit-overflow-scrolling: touch;
+    /* optional: für sanftes Scrollen */
+    scroll-behavior: smooth; 
+    height: 50%;
 }
-/* Jedes Snap-Element einrasten lassen */
-#hero, #about, footer,.card-linkk, .card-link {
-    scroll-snap-align: start; /* Beginnt beim Startpunkt */
-    scroll-snap-stop: always; /* Stoppt zwingend beim Einrasten */
-}
-/* ==========================
-========================== */
  </style>
 </head>
 <body>
@@ -302,7 +308,7 @@ html, body {
                     </div>
                 </a>
         
-                <a href="album.html" class="card-linkk">
+                <a href="album.html" class="card-link">
                     <div class="card bg-white text-center p-4">
                         <i class="bi bi-images display-4 mb-3" style="color: #555;"></i>
                         <h5 class="fw-bold" style="color: #333;">Fotogalerie</h5>
@@ -515,22 +521,7 @@ html, body {
 
 
 
-document.addEventListener('wheel', (event) => {
-    event.preventDefault();
-    window.scrollBy({
-        top: event.deltaY * 2,  // Erhöhte Geschwindigkeit
-        behavior: 'smooth'
-    });
-}, { passive: false });
 
-document.querySelectorAll('section,card-linkk, .card-link, footer').forEach(section => {
-    section.addEventListener('click', () => {
-        section.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    });
-});
 
 </script>
 </html>
