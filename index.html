@@ -6,6 +6,7 @@
     <title>Abdulkerim</title>
 
     <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" defer>
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
@@ -314,17 +315,34 @@ hr {
                 </a>
             </div>
         </section>
+       
 
         <!-- About Section -->
-        <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <p class="lead scroll-animate" data-animation="animate__fadeInUp">
-                Vielen Dank, dass du meine Homepage besuchst.
-                Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-                Vergiss nicht, regelmäßig , vorbeizuschauen,
-                um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-         </p>
-        <h2 class="scroll-animate" data-animation="animate__fadeIn">Alles Gute und viel Spaß beim Stöbern!</h2>
-        </section>
+<section 
+  id="about" 
+  class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section"
+>
+  <!-- p-Element mit Ein- und Ausstiegs-Animation -->
+  <p 
+    class="lead scroll-animate" 
+    data-animation="animate__fadeInUp" 
+    data-exit-animation="animate__fadeOutDown"
+  >
+  Vielen Dank, dass du meine Homepage besuchst.
+  Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
+  Vergiss nicht, regelmäßig , vorbeizuschauen,
+  um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+</p>
+
+  <!-- h2-Element mit Ein- und Ausstiegs-Animation -->
+  <h2 
+    class="scroll-animate" 
+    data-animation="animate__fadeInUp" 
+    data-exit-animation="animate__fadeOutDown"
+  >
+    Alles Gute und viel Spaß beim Stöbern!
+  </h2>
+</section>
 
         <!-- Footer -->
         <footer class="footer py-3 text-center">
@@ -363,150 +381,124 @@ hr {
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="/js/menu.js" defer></script>
-<script>
-    
-    document.addEventListener("DOMContentLoaded", () => {
-    // -------------------------------
-    // 1. Intersection Observer for Section Visibility and Animation
-    // -------------------------------
-    const observerOptions = {
-        threshold: 0.5,  // Weniger häufige Trigger für bessere Performance
-        rootMargin: "0px 0px -50px 50px"  // Mehr Pufferzone für weiche Animationen
-    };
-
-    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-    const navItems = document.querySelectorAll(".nav-item");
-    const sections = document.querySelectorAll("section");
-
-    const observerCallback = (entries) => {
-        entries.forEach(({ target, isIntersecting }) => {
-            const animationClass = target.dataset.animation || "animate__fadeInUp";
-
-            if (isIntersecting) {
-                if (target.classList.contains("scroll-animate")) {
-                    target.classList.add("visible", "animate__animated", animationClass);
-                    target.classList.remove("hidden");  // Entferne versteckte Klasse beim Runterscrollen
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          // Throttle-Funktion zur Performance-Optimierung
+          const throttle = (fn, wait) => {
+            let isThrottled = false, savedArgs, savedThis;
+            return function wrapper(...args) {
+              if (isThrottled) {
+                savedArgs = args;
+                savedThis = this;
+                return;
+              }
+              fn.apply(this, args);
+              isThrottled = true;
+              setTimeout(() => {
+                isThrottled = false;
+                if (savedArgs) {
+                  wrapper.apply(savedThis, savedArgs);
+                  savedArgs = savedThis = null;
                 }
-
-                if (target.id && document.querySelector(`.nav-item[data-section="${target.id}"]`)) {
+              }, wait);
+            };
+          };
+      
+          // 1. Intersection Observer: Animation + Navbar-Aktualisierung
+          const sections = document.querySelectorAll("section");
+          const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+          const navItems = document.querySelectorAll(".nav-item");
+      
+          const observerCallback = (entries) => {
+            entries.forEach(({ target, isIntersecting }) => {
+              const animationClass = target.dataset.animation || "animate__fadeInUp";
+              // Bei Sichtbarkeit
+              if (isIntersecting) {
+                if (target.classList.contains("scroll-animate")) {
+                  target.classList.add("visible", "animate__animated", animationClass);
+                  target.classList.remove("hidden");
+                }
+                // Aktives Nav-Item setzen
+                if (target.id) {
+                  const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                  if (activeNavItem) {
                     navItems.forEach((item) => item.classList.remove("active"));
-                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                    if (activeNavItem) activeNavItem.classList.add("active");
+                    activeNavItem.classList.add("active");
+                  }
                 }
-            } else {
+              } 
+              // Bei Unsichtbarkeit
+              else {
                 if (target.classList.contains("scroll-animate")) {
-                    target.classList.remove("visible", "animate__animated", animationClass);
-                    target.classList.add("hidden");  // Füge versteckte Klasse beim Hochscrollen hinzu
+                  target.classList.remove("visible", "animate__animated", animationClass);
+                  target.classList.add("hidden");
                 }
-            }
-        });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    [...sections, ...scrollAnimateElements].forEach((el) => observer.observe(el));
-
-    // -------------------------------
-    // 2. Smooth Scrolling for Navigation
-    // -------------------------------
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    navLinks.forEach((link) => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute("href").substring(1);
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                targetSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-
+              }
+            });
+          };
+      
+          const observer = new IntersectionObserver(observerCallback, {
+            threshold: 0.5,
+            rootMargin: "0px 0px -50px 50px",
+          });
+      
+          // Beobachtung für alle <section> + scroll-animate-Elemente
+          [...sections, ...scrollAnimateElements].forEach((el) => observer.observe(el));
+      
+          // 2. Smooth Scrolling für Navigation
+          const navLinks = document.querySelectorAll(".nav-link");
+          navLinks.forEach((link) => {
+            link.addEventListener("click", (e) => {
+              e.preventDefault();
+              const targetId = link.getAttribute("href").substring(1);
+              const targetSection = document.getElementById(targetId);
+              if (targetSection) {
+                targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
                 navItems.forEach((item) => item.classList.remove("active"));
                 const clickedNavItem = link.closest(".nav-item");
                 if (clickedNavItem) clickedNavItem.classList.add("active");
-            }
-        });
-    });
-
-    // -------------------------------
-    // 3. Card Animation in Features Section
-    // -------------------------------
-    const cards = document.querySelectorAll("#card-container .card");
-    const featuresSection = document.getElementById("features");
-    let activeIndex = 0;
-
-    const updateCards = () => {
-        cards.forEach((card, index) => {
-            card.classList.toggle("active", index === activeIndex);
-        });
-    };
-
-    const handleCardScroll = () => {
-        const rect = featuresSection.getBoundingClientRect();
-        if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
-            const maxScroll = rect.height / cards.length;
-            const scrolled = Math.abs(rect.top - window.innerHeight / 2);
-            const newIndex = Math.floor(scrolled / maxScroll);
-            if (newIndex !== activeIndex && newIndex < cards.length) {
+              }
+            });
+          });
+      
+          // 3. Karten-Animation im Features-Bereich
+          const featuresSection = document.getElementById("features");
+          const cards = document.querySelectorAll("#card-container .card");
+          let activeIndex = 0;
+      
+          const updateCards = () => {
+            cards.forEach((card, index) => {
+              card.classList.toggle("active", index === activeIndex);
+            });
+          };
+      
+          const handleCardScroll = () => {
+            const rect = featuresSection.getBoundingClientRect();
+            // Ist der mittlere Bereich des Features-Containers im Viewport?
+            if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
+              const maxScroll = rect.height / cards.length;
+              const scrolled = Math.abs(rect.top - window.innerHeight / 2);
+              const newIndex = Math.floor(scrolled / maxScroll);
+              if (newIndex !== activeIndex && newIndex < cards.length) {
                 activeIndex = newIndex;
                 updateCards();
+              }
             }
-        }
-    };
-
-    // Throttle function to optimize performance
-    const throttle = (fn, wait) => {
-        let isThrottled = false, savedArgs, savedThis;
-        return function wrapper() {
-            if (isThrottled) {
-                savedArgs = arguments;
-                savedThis = this;
-                return;
-            }
-            fn.apply(this, arguments);
-            isThrottled = true;
-            setTimeout(() => {
-                isThrottled = false;
-                if (savedArgs) {
-                    wrapper.apply(savedThis, savedArgs);
-                    savedArgs = savedThis = null;
-                }
-            }, wait);
-        };
-    };
-
-    window.addEventListener("scroll", throttle(handleCardScroll, 150), { passive: true });
-    updateCards();
-
-    // -------------------------------
-    // 4. Scroll Animation Visibility
-    // -------------------------------
-   // const handleScrollAnimation = () => {
-   //     scrollAnimateElements.forEach((el) => {
-   //         const rect = el.getBoundingClientRect();
-   //         const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
-   //         el.classList.toggle("visible", isVisible);
-   //         el.classList.toggle("hidden", !isVisible);
-   //     });
-   // };
-
-    //window.addEventListener("scroll", throttle(handleScrollAnimation, 150), { passive: true });
-    //handleScrollAnimation();
-
-    // -------------------------------
-    // 5. Back-to-top button functionality
-    // -------------------------------
-    const backToTopBtn = document.getElementById("back-to-top");
-    if (backToTopBtn) {
-        backToTopBtn.addEventListener("click", () => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
+          };
+      
+          window.addEventListener("scroll", throttle(handleCardScroll, 150), { passive: true });
+          updateCards();
+      
+          // 4. "Back to top"-Button
+          const backToTopBtn = document.getElementById("back-to-top");
+          if (backToTopBtn) {
+            backToTopBtn.addEventListener("click", () => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+            window.addEventListener("scroll", throttle(() => {
+              backToTopBtn.classList.toggle("visible", window.scrollY > 500);
+            }, 150), { passive: true });
+          }
         });
-
-        window.addEventListener("scroll", throttle(() => {
-            backToTopBtn.classList.toggle("visible", window.scrollY > 500);
-        }, 150));
-    }
-});
-</script>
+      </script>
 </html>
