@@ -5,297 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abdulkerim</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/menu.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&display=swap">
-    <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Meta Tags -->
     <meta name="description" content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.">
     <meta name="keywords" content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de">
-    <!-- Internal CSS -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <!-- Bootstrap  -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Benutzerdefinierte Dateien -->
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/index.css">
     <script src="/js/intext.js"></script>
+    <script src="/js/menu.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
 
-    <style>
-/* ==========================
-   Farbvariablen
-   ========================== */
-   :root {
-    --main-fonts-color: #fff;
-    --main-decor-color: #ffffff;
-
-    --main-bg-color: #444;
-    --secondary-bg-color: var(--main-bg-color);
-    --accent-color: rgba(255, 204, 41, 0.8);
-    --menu-bg-color: #333333cc;
-    --main-text-color: rgba(245, 245, 245, 0.9);  /* Zweite Definition */
-    --secondary-text-color: rgba(245, 245, 245, 0.5);
-}
-/* ==========================
-   Allgemeine Stile
-   ========================== */
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
-    margin: 0;
-    padding: 0;
-    line-height: 1.8;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', serif;
-    color: var(--main-text-color);
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    line-height: 1.4;
-}
-p, li, a {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--secondary-text-color);
-}
-
-p {
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--main-text-color);
-}
-
-/* ==========================
-
-        Text-Willkommen
-========================== */
-/* Grundlegendes Aussehen von .shimmer-text */
-.shimmer-text {
-  font-size: 3rem;             /* Schriftgröße anpassen */
-  font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
-  color: #fff;                 /* Grundfarbe, wichtig für den Glüheffekt */
-  text-shadow: 0 0 40px #fff;  /* Weicher Schimmer (Schein) */
-  /* Optionale Abstände */
-  margin-bottom: 1rem;         
-  padding-bottom: 5rem;
-  /* Schimmer mit linear-gradient und Background-Clip */
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.3) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  /* Animation */
-  animation: shimmer 2.5s infinite linear;
-}
-/* Keyframes für die Schimmer-Animation */
-@keyframes shimmer {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
-}
-/* Einfaches HR-Styling passend zum Text */
-.shimmer-text hr {
-  width: 100px;
-  border: none;
-  height: 1.2px;
-  background-color: #fff;
-  margin: 0 auto 0;  /* zentriert unter dem Text */
-  opacity: 0.8;
-}
-/* ==========================
-         hr
-========================== */
-hr {
-    background: var(--main-decor-color);  /* Verwendet die dekorative Hauptfarbe als Hintergrund */
-    height: 3px;  /* Setzt die Höhe der Linie auf 3 Pixel */
-    width: 190px;  /* Definiert die Breite der Linie auf 150 Pixel */
-    border-radius: 5px;  /* Rundet die Ecken der Linie mit einem Radius von 5px ab */
-    border: hidden;  /* Versteckt die Standard-Grenze, um visuelle Unregelmäßigkeiten zu vermeiden */
-    margin-inline-start: auto;  /* Zentriert die Linie horizontal (Startabstand automatisch) */
-    margin-inline-end: auto;  /* Zentriert die Linie horizontal (Endabstand automatisch) */
-}
-/* ==========================
-        .lead`-Element
-========================== */
-.lead {
-    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
-    font-weight: 300; /* Leichtere Schrift für modernen Look */
-    max-width: 800px;  /* Maximale Breite des Textes */
-    margin: 0 auto;  /* Zentrierung */
-    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
-}
-/* ==========================
-   Navigation (Navbar Bottom)
-========================== */
-.navbar-bottom {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: var(--menu-bg-color);
-    padding: 10px 20px;
-    border-radius: 30px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    z-index: 1000;
-    backdrop-filter: blur(8px);
-}
-.nav-list {
-    display: flex;
-    gap: 15px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.nav-item {
-    position: relative;
-}
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    text-decoration: none;
-    transition: all 0.4s ease-in-out;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-.nav-icon {
-    font-size: 1.3rem;
-    color: var(--menu-text-color);
-    transition: transform 0.3s ease, color 0.3s ease;
-}
-.nav-link:hover,
-.nav-item.active .nav-link {
-    background: var(--accent-color);
-    box-shadow: 0 6px 15px rgba(255, 204, 41, 0.8);
-    transform: scale(1.1);
-}
-.nav-link:hover .nav-icon,
-.nav-item.active .nav-icon {
-    color: var(--main-bg-color);
-    transform: scale(1.15);
-}
-@media (hover: none) {
-  .nav-link:focus,
-  .nav-link:hover,
-  .nav-link:active {
-    background: none; /* Entfernt Hintergrundfarbe beim Fokus */
-    box-shadow: none; /* Entfernt Schatten */
-    transform: none;  /* Entfernt Skalierungseffekte */
-    animation: none;  /* Verhindert Animation */
-  }
-}
-/* ==========================
-   Scroll-Animation
-========================== */
-/* Text  Animation */
-.animate__animated {
-  animation-duration: 3s;            /* Länge der Animation */
-  animation-fill-mode: both;         /* Sorgt dafür, dass das Element seinen Zielzustand behält */
-}
-/* Scroll-Animation - Startzustand */
-.scroll-animate {
-    opacity: 0;
-    transform: translateY(170px); /* Startposition */
-    transition: transform 2s ease-out,opacity 2s ease-out; /* Sanftere Bewegung */
-    will-change: opacity, transform;
-    pointer-events: none; /* Verhindert Interaktionen mit unsichtbaren Elementen */
-}
-/* Sichtbarer Zustand beim Scrollen */
-.scroll-animate.visible {
-    opacity: 1;
-    transform: translateY(30px);
-    pointer-events: auto; /* Interaktionen aktivieren */
-}
-/* Versteckter Zustand beim Zurückscrollen */
-.scroll-animate.hidden {
-    opacity: 0;
-    transform: translateY(-70px); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
-}
-/* ==========================
-   Karten
-========================== */
-:root {
-    --transition-duration: 0.6s;
-    --hover-duration: 0.3s;
-    --card-radius: 15px;
-    --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.2);
-    --shadow-inactive: 0 5px 15px rgba(0, 0, 0, 0.3);
-    --shadow-active: 0 10px 25px rgba(255, 204, 41, 0.8);
-    --blur-inactive: 5px;
-    --blur-next: 2px;
-    --brightness-inactive: 0.8;
-    --brightness-next: 0.9;
-    --accent-color: #ffcc29;
-}
-/* Basis-Stile für Karten */
-.card {
-    opacity: 0;
-    margin-bottom: -30px;
-    border-radius: var(--card-radius);
-    transition: all 0.3s ease-in-out;
-}
-/* Inaktive Karten */
-.card:not(.active) {
-    transform: scale(0.85) rotateY(-10deg) translateY(40px);
-    opacity: 0.4;
-    z-index: 0;
-    filter: blur(var(--blur-inactive)) brightness(var(--brightness-inactive));
-    box-shadow: var(--shadow-inactive);
-}
-/* Aktive Karte */
-.card.active {
-    transform: scale(1.05) rotateY(0) translateY(0);
-    opacity: 1;
-    z-index: 2;
-    filter: none;
-    box-shadow: var(--shadow-active);
-    border: 2px solid var(--accent-color);
-    transition: all 0.4s ease-in-out;
-}
-.card-link {
-    text-decoration: none; /* Entferne Unterstreichung */
-    color: inherit; /* Vererbt die Farbe */
-}
-.card h5 {
-    font-size: 1.5rem; /* Größere Überschrift für bessere Lesbarkeit */
-    font-weight: bold;
-    color: #222; /* Dunklerer Text */
-}
-.card p {
-    font-size: 1.1rem; /* Größerer Absatztext */
-    color: #555; /* Verbessertes Grau für bessere Lesbarkeit */
-}
-i {
-    color: #333; /* Icon-Farbe verbessert */
-}
-/* ==========================
-========================== */
- </style>
 </head>
 <body>
     <div id="menu-container"></div>
+    <!-- Back to Top Button -->
     <button id="back-to-top" class="back-to-top">↑</button>
+    
     <main id="main-content">
         <!-- Hero Section -->
         <section id="section-hero">Lade Inhalte...</section>
@@ -305,39 +37,37 @@ i {
         <section id="section-about"></section>
         <!-- Footer -->
         <footer class="footer py-3 text-center">
-            <p class="mb-1">
-                <a href="#impressum" id="impressumButton" class="btn-link">Impressum</a> |
-                <a href="#datenschutz" id="privacyButton" class="btn-link">Datenschutzerklärung</a> |
-                <a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
-            </p>
-            <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
-        </footer>
-    </main>
+          <p class="mb-1">
+              <a href="#impressum" id="impressumButton" class="btn-link">Impressum</a> |
+              <a href="#datenschutz" id="privacyButton" class="btn-link">Datenschutzerklärung</a> |
+              <a href="mailto:mail@abdulkerimsesli.com" class="btn-link">Kontakt</a>
+          </p>
+          <p>&copy; 2024 Abdulkerim. Alle Rechte vorbehalten.</p>
+      </footer>
+  </main>
 <!-- Navigation -->
 <nav class="navbar navbar-bottom">
-    <ul class="nav-list">
+  <ul class="nav-list">
       <li class="nav-item" data-section="section-hero">
-        <a href="#hero" class="nav-link" aria-label="Zur Startseite">
-            <i class="fas fa-home nav-icon" aria-hidden="true"></i>
-        </a>
+          <a href="#section-hero" class="nav-link" aria-label="Zur Startseite">
+              <i class="fas fa-home nav-icon" aria-hidden="true"></i>
+          </a>
       </li>
       <li class="nav-item" data-section="section-features">
-        <a href="#features" class="nav-link">
-          <i class="fas fa-star nav-icon"></i>
-        </a>
+          <a href="#section-features" class="nav-link">
+              <i class="fas fa-star nav-icon"></i>
+          </a>
       </li>
       <li class="nav-item" data-section="section-about">
-        <a href="#about" class="nav-link">
-          <i class="fas fa-user nav-icon"></i>
-        </a>
+          <a href="#section-about" class="nav-link">
+              <i class="fas fa-user nav-icon"></i>
+          </a>
       </li>
-    </ul>
-  </nav>
+  </ul>
+</nav>
 
 </body>
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
-    <script src="/js/menu.js" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {      
           // 1. Intersection Observer: Animation + Navbar-Aktualisierung
