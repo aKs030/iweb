@@ -198,15 +198,29 @@ hr {
 /* Sichtbarer Zustand beim Scrollen */
 .scroll-animate.visible {
     opacity: 1;
-    transform: translateY(30px);
+    transform: translateY(70px);
     pointer-events: auto; /* Interaktionen aktivieren */
 }
 /* Versteckter Zustand beim Zurückscrollen */
 .scroll-animate.hidden {
     opacity: 0;
-    transform: translateY(-70px); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
+    transform: translateY(0); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
 }
-
+  /* 2) Animation: fadeInDown => von oben nach unten */
+  .scroll-animate[data-animation="animate__fadeInDown"].hidden {
+    transform: translateY(70px); /* Start: oben */
+  }
+  .scroll-animate[data-animation="animate__fadeInDown"].visible {
+    transform: translateY(-70px);     /* Endposition: in die Mitte */
+  }
+  
+  /* 3) Animation: fadeInUp => von unten nach oben */
+  .scroll-animate[data-animation="animate__fadeInUp"].hidden {
+    transform: translateY(70px);  /* Start: unten */
+  }
+  .scroll-animate[data-animation="animate__fadeInUp"].visible {
+    transform: translateY(0);     /* Endposition: in die Mitte */
+  }
 /* ==========================
    Karten
 ========================== */
