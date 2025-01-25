@@ -31,20 +31,20 @@ document.addEventListener('DOMContentLoaded', () => {
         about: [
             `
             <section id="about1" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-                <p class="lead scroll-animate animate__fadeInUp">
-                    Vielen Dank für deinen Besuch! Ich hoffe, du findest interessante Inhalte.
-                </p>
-                <h2 class="scroll-animate animate__fadeInUp">
+             <p class="lead scroll-animate" data-animation="animate__fadeInDown">
+                Vielen Dank für deinen Besuch! Ich hoffe, du findest interessante Inhalte.
+            </p>
+                <h2 class="scroll-animate" data-animation="animate__fadeInUp">
                     Viel Spaß beim Stöbern!
-                </h2>
+                 </h2>
             </section>
             `,
             `
             <section id="about2" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-                <p class="lead scroll-animate animate__fadeInUp">
+    <p class="lead scroll-animate" data-animation="animate__fadeInDown">
                     Hier teile ich meine Gedanken und Erfahrungen mit dir. Bleib dran!
                 </p>
-                <h2 class="scroll-animate animate__fadeInUp">
+    <h2 class="scroll-animate" data-animation="animate__fadeInUp">
                     Lass uns gemeinsam Neues entdecken!
                 </h2>
             </section>

@@ -190,7 +190,7 @@ hr {
 /* Scroll-Animation - Startzustand */
 .scroll-animate {
     opacity: 0;
-    transform: translateY(170px); /* Startposition */
+    transform: translateY(-70px); /* Startposition */
     transition: transform 2s ease-out,opacity 2s ease-out; /* Sanftere Bewegung */
     will-change: opacity, transform;
     pointer-events: none; /* Verhindert Interaktionen mit unsichtbaren Elementen */
@@ -206,6 +206,7 @@ hr {
     opacity: 0;
     transform: translateY(-70px); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
 }
+
 /* ==========================
    Karten
 ========================== */
