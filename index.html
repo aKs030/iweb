@@ -78,9 +78,7 @@
     // Alle zu beobachtenden Elemente in ein Set (zur Vermeidung doppelter Einträge)
     const observerTargets = new Set([...sections, ...scrollAnimateElements]);
 
-    /**
-     * IntersectionObserver Callback
-     */
+    // IntersectionObserver Callback
     const observerCallback = (entries, observer) => {
       entries.forEach(({ target, isIntersecting }) => {
         
@@ -88,36 +86,17 @@
         if (target.classList.contains("scroll-animate")) {
           const animationClass = target.dataset.animation || "animate__fadeInUp";
 
-          // Sobald das Element im Viewport erscheint → Klassen hinzufügen
           if (isIntersecting) {
             target.classList.add("visible", "animate__animated", animationClass);
             target.classList.remove("hidden");
-            
-            /**
-             * ————————————————
-             *  Einmalige Animation 
-             * ————————————————
-             * Da wir hier nur FadeIn-Animation haben wollen, 
-             * nehmen wir das Element aus der Beobachtung,
-             * damit die Animation nicht wieder entfernt wird,
-             * wenn man zurückscrollt.
-             */
+
+            // -> Falls du es bei einmaliger Animation belassen willst:
+            // observer.unobserve(target);
+          } else {
+            // Element verlässt den Viewport -> Klassen entfernen
+            target.classList.remove("visible", "animate__animated", animationClass);
+            target.classList.add("hidden");
           }
-          else {
-              target.classList.remove("visible", "animate__animated", animationClass);
-              target.classList.add("hidden");
-            }
-           
-          /* 
-           * Möchtest du stattdessen die Animation *zurücknehmen*, 
-           * sobald das Element den Viewport verlässt, 
-           * dann aktiviere einfach diesen else-Zweig wieder:
-           *
-           * else {
-           *   target.classList.remove("visible", "animate__animated", animationClass);
-           *   target.classList.add("hidden");
-           * }
-           */
         }
 
         // B) Aktives Nav-Item setzen, wenn <section> mit ID
@@ -133,11 +112,22 @@
       });
     };
 
-    // Intersection Observer anlegen
-    const observer = new IntersectionObserver(observerCallback, {
-      threshold: 0.8,
-      rootMargin: "0px 0px -50px 0px",
-    });
+// Beispiel: Wenn Viewport schmaler als 768px => nutze andere threshold/rootMargin
+const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+const observerOptions = isMobile
+  ? { threshold: 0.3, rootMargin: "0px 0px -30px 0px" } 
+  : { threshold: 0.8, rootMargin: "0px 0px -50px 0px" };
+
+const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+
+//    const observer = new IntersectionObserver(observerCallback, {
+//  threshold: 0.8,
+//      rootMargin: "0px 0px -50px 0px",
+//    });
+
+
 
     // Relevante Elemente beobachten
     observerTargets.forEach((el) => observer.observe(el));
