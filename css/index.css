@@ -179,6 +179,7 @@ hr {
     animation: none;  /* Verhindert Animation */
   }
 }
+
 /* ==========================
    Scroll-Animation
 ========================== */
@@ -221,6 +222,51 @@ hr {
   .scroll-animate[data-animation="animate__fadeInUp"].visible {
     transform: translateY(0);     /* Endposition: in die Mitte */
   }
+
+  /* ============ 
+   Mobile 
+   max-width: 768px
+=============*/
+@media (max-width: 768px) {
+  /* Kürzere Animationsdauer auf Mobile */
+  .animate__animated {
+    animation-duration: 2s;
+  }
+
+  /* Weniger translate, damit die Bewegung nicht zu groß wird */
+  .scroll-animate {
+    transform: translateY(-50px); /* Startposition etwas reduziert */
+    transition: transform 1.5s ease-out, opacity 1.5s ease-out;
+  }
+  .scroll-animate.visible {
+    transform: translateY(50px); 
+  }
+  .scroll-animate.hidden {
+    transform: translateY(0);
+  }
+
+  /* Beispiel fadeInDown auf Mobile */
+  .scroll-animate[data-animation="animate__fadeInDown"].hidden {
+    transform: translateY(50px);  /* statt 70px */
+  }
+  .scroll-animate[data-animation="animate__fadeInDown"].visible {
+    transform: translateY(-50px); /* statt -70px */
+  }
+
+  /* Beispiel fadeInUp auf Mobile */
+  .scroll-animate[data-animation="animate__fadeInUp"].hidden {
+    transform: translateY(50px); 
+  }
+  .scroll-animate[data-animation="animate__fadeInUp"].visible {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0s !important;
+    transition: none !important;
+  }
+}
 /* ==========================
    Karten
 ========================== */
