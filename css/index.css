@@ -235,32 +235,32 @@ hr {
 
   /* Kürzere Animate.css-Dauer auf Mobile (optional) */
   .animate__animated {
-    animation-duration: 1.5s;   /* Beispiel: kürzer für Mobile */
+    animation-duration: 3s;   /* Beispiel: kürzer für Mobile */
   }
 
   /* Weniger „weite“ Bewegungen und kürzere Transition-Zeiten */
   .scroll-animate {
-    transform: translateY(-40px);
-    transition: transform 2.5s ease-out, opacity 1.5s ease-out;
+    transform: translateY(-80px);
+    transition: transform 3s ease-out, opacity 3s ease-out;
   }
   .scroll-animate.visible {
-    transform: translateY(40px);
+    transform: translateY(80px);
   }
   .scroll-animate.hidden {
-    transform: translateY(-40px);
+    transform: translateY(-80px);
   }
 
   /* Spezielle Anpassung für fadeInDown */
   .scroll-animate[data-animation="animate__fadeInDown"].hidden {
-    transform: translateY(40px);
+    transform: translateY(80px);
   }
   .scroll-animate[data-animation="animate__fadeInDown"].visible {
-    transform: translateY(-40px);
+    transform: translateY(-80px);
   }
 
   /* Spezielle Anpassung für fadeInUp */
   .scroll-animate[data-animation="animate__fadeInUp"].hidden {
-    transform: translateY(-40px);
+    transform: translateY(-180px);
   }
   .scroll-animate[data-animation="animate__fadeInUp"].visible {
     transform: translateY(-80px);
