@@ -69,29 +69,58 @@
 </body>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    /* --- 1) Intersection Observer: Animation + Navbar-Aktualisierung --- */
+
+    /* --- 1) Intersection Observer --- */
     const sections = document.querySelectorAll("section");
     const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
     const navItems = document.querySelectorAll(".nav-item");
-  
-    // Set aus allen beobachteten Elementen erstellen (um Duplikate zu vermeiden)
+
+    // Alle zu beobachtenden Elemente in ein Set (zur Vermeidung doppelter Einträge)
     const observerTargets = new Set([...sections, ...scrollAnimateElements]);
-  
-    const observerCallback = (entries) => {
+
+    /**
+     * IntersectionObserver Callback
+     */
+    const observerCallback = (entries, observer) => {
       entries.forEach(({ target, isIntersecting }) => {
-        // 1a) Animation ausführen, falls scroll-animate
+        
+        // A) Animationstrigger für .scroll-animate
         if (target.classList.contains("scroll-animate")) {
-          const animationClass = target.dataset.animation || "animate__fadeInUp"; 
+          const animationClass = target.dataset.animation || "animate__fadeInUp";
+
+          // Sobald das Element im Viewport erscheint → Klassen hinzufügen
           if (isIntersecting) {
             target.classList.add("visible", "animate__animated", animationClass);
             target.classList.remove("hidden");
-          } else {
-            target.classList.remove("visible", "animate__animated", animationClass);
-            target.classList.add("hidden");
+            
+            /**
+             * ————————————————
+             *  Einmalige Animation 
+             * ————————————————
+             * Da wir hier nur FadeIn-Animation haben wollen, 
+             * nehmen wir das Element aus der Beobachtung,
+             * damit die Animation nicht wieder entfernt wird,
+             * wenn man zurückscrollt.
+             */
           }
+          else {
+              target.classList.remove("visible", "animate__animated", animationClass);
+              target.classList.add("hidden");
+            }
+           
+          /* 
+           * Möchtest du stattdessen die Animation *zurücknehmen*, 
+           * sobald das Element den Viewport verlässt, 
+           * dann aktiviere einfach diesen else-Zweig wieder:
+           *
+           * else {
+           *   target.classList.remove("visible", "animate__animated", animationClass);
+           *   target.classList.add("hidden");
+           * }
+           */
         }
-  
-        // 1b) Aktives Nav-Item setzen, falls <section> mit ID
+
+        // B) Aktives Nav-Item setzen, wenn <section> mit ID
         if (target.tagName.toLowerCase() === "section" && target.id) {
           if (isIntersecting) {
             const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
@@ -103,15 +132,16 @@
         }
       });
     };
-  
+
+    // Intersection Observer anlegen
     const observer = new IntersectionObserver(observerCallback, {
       threshold: 0.5,
-      rootMargin: "0px 0px -50px 50px",
+      rootMargin: "0px 0px -50px 0px",
     });
-  
-    // Alle relevanten Elemente beobachten
+
+    // Relevante Elemente beobachten
     observerTargets.forEach((el) => observer.observe(el));
-  
+
     /* --- 2) Smooth Scrolling für Navigation --- */
     const navLinks = document.querySelectorAll(".nav-link");
     navLinks.forEach((link) => {
@@ -127,7 +157,7 @@
         }
       });
     });
-  
+
     /* --- 3) Back-to-Top-Button --- */
     const backToTopBtn = document.getElementById("back-to-top");
     if (backToTopBtn) {
@@ -138,8 +168,8 @@
         backToTopBtn.classList.toggle("visible", window.scrollY > 500);
       }, 150), { passive: true });
     }
-  
-    /* --- Hilfsfunktion: Throttle für Scroll-Ereignisse --- */
+
+    /* --- 4) Throttle-Funktion für Scroll Events --- */
     function throttle(fn, wait) {
       let lastTime = 0;
       return function(...args) {
@@ -151,5 +181,5 @@
       };
     }
   });
-  </script>
+</script>
 </html>
