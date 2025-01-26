@@ -185,40 +185,42 @@ hr {
 ========================== */
 /* Text  Animation */
 .animate__animated {
+ animation-duration: 3s;          /*    Länge der Animation */
   animation-fill-mode: both;         /* Sorgt dafür, dass das Element seinen Zielzustand behält */
 }
 /* Scroll-Animation - Startzustand */
 .scroll-animate {
-  /* Wichtig: Startzustand unsichtbar */
-  opacity: 0;
-  transform: translateY(-70px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+    opacity: 0;
+    transform: translateY(-90px); /* Startposition */
+    transition: transform 5s ease-out,opacity 3‚s ease-out; /* Sanftere Bewegung */
+    will-change: opacity, transform;
+    pointer-events: none; /* Verhindert Interaktionen mit unsichtbaren Elementen */
 }
-
-.scroll-animate.hidden {
-  opacity: 0;
-  transform: translateY(-70px);
-}
-
+/* Sichtbarer Zustand beim Scrollen */
 .scroll-animate.visible {
-  opacity: 1;
-  transform: translateY(70px);
+    opacity: 1;
+    transform: translateY(90px);
+    pointer-events: auto; /* Interaktionen aktivieren */
 }
-
+/* Versteckter Zustand beim Zurückscrollen */
+.scroll-animate.hidden {
+    opacity: 0;
+    transform: translateY(-90px); /* Leichte Rückwärtsbewegung für sanftes Zurückrollen */
+}
   /* 2) Animation: fadeInDown => von oben nach unten */
   .scroll-animate[data-animation="animate__fadeInDown"].hidden {
-    transform: translateY(70px); /* Start: oben */
+    transform: translateY(90px); /* Start: oben */
   }
   .scroll-animate[data-animation="animate__fadeInDown"].visible {
-    transform: translateY(-70px);     /* Endposition: in die Mitte */
+    transform: translateY(-90px);     /* Endposition: in die Mitte */
   }
   
   /* 3) Animation: fadeInUp => von unten nach oben */
   .scroll-animate[data-animation="animate__fadeInUp"].hidden {
-    transform: translateY(70px);  /* Start: unten */
+    transform: translateY(-100px);  /* Start: unten */
   }
   .scroll-animate[data-animation="animate__fadeInUp"].visible {
-    transform: translateY(0);     /* Endposition: in die Mitte */
+    transform: translateY(-190px);     /* Endposition: in die Mitte */
   }
 
   
