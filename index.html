@@ -5,9 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abdulkerim</title>
 
+
     <!-- Meta Tags -->
-    <meta name="description" content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.">
-    <meta name="keywords" content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Abdulkerim - Persönliche Webseite">
+    <meta property="og:description" content="Entdecke die Interessen, Erfahrungen und Projekte von Abdulkerim Sesli.">
+    <meta property="og:image" content="/img/icon.png">
+    <meta property="og:url" content="https://www.abdulkerimsesli.de">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@abdulkerimsesli">
+    <meta name="author" content="Abdulkerim Sesli">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Abdulkerim",
+        "url": "https://www.abdulkerimsesli.de",
+        "description": "Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.",
+        "author": {
+          "@type": "Person",
+          "name": "Abdulkerim Sesli",
+          "url": "https://www.abdulkerimsesli.de/about"
+        },
+        "sameAs": [
+          "https://www.linkedin.com/in/abdulkerimsesli",
+          "https://github.com/abdulkerimsesli",
+          "https://twitter.com/abdulkerimsesli"
+        ]
+      }
+      </script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
@@ -24,18 +51,16 @@
 
 </head>
 <body>
+
     <div id="menu-container"></div>
     <!-- Back to Top Button -->
     <button id="back-to-top" class="back-to-top">↑</button>
     
     <main id="main-content">
-        <!-- Hero Section -->
         <section id="section-hero">Lade Inhalte...</section>
-        <!-- Features Section -->
         <section id="section-features"></section>
-        <!-- About Section -->
         <section id="section-about"></section>
-        <!-- Footer -->
+
         <footer class="footer py-3 text-center">
           <p class="mb-1">
               <a href="#impressum" id="impressumButton" class="btn-link">Impressum</a> |
@@ -65,111 +90,110 @@
       </li>
   </ul>
 </nav>
-
+<img src="img/icon.png" alt="Profilbild von Abdulkerim Sesli" loading="lazy" width="10" height="10">
+<a href="pages/ubermich.html" class="btn-link">Über mich</a>
+<a href="pages/snake.html" class="btn-link">Projekte</a>
+<a href="pages/footer.html" class="btn-link">Kontakt</a>
 </body>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
 
-    /* --- 1) Intersection Observer --- */
-    const sections = document.querySelectorAll("section");
-    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-    const navItems = document.querySelectorAll(".nav-item");
+document.addEventListener("DOMContentLoaded", () => {
+  const sections = document.querySelectorAll("section");
+  const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+  const navItems = document.querySelectorAll(".nav-item");
 
-    // Alle zu beobachtenden Elemente in ein Set (zur Vermeidung doppelter Einträge)
-    const observerTargets = new Set([...sections, ...scrollAnimateElements]);
+  const observerTargets = new Set([...sections, ...scrollAnimateElements]);
 
-    // IntersectionObserver Callback
-    const observerCallback = (entries, observer) => {
-      entries.forEach(({ target, isIntersecting }) => {
-        
-        // A) Animationstrigger für .scroll-animate
-        if (target.classList.contains("scroll-animate")) {
-          const animationClass = target.dataset.animation || "animate__fadeInUp";
+  const observerCallback = (entries) => {
+    entries.forEach(({ target, isIntersecting }) => {
+      if (target.classList.contains("scroll-animate")) {
+        const animationClass = target.dataset.animation || "animate__fadeInUp";
 
-          if (isIntersecting) {
-            target.classList.add("visible", "animate__animated", animationClass);
-            target.classList.remove("hidden");
+        if (isIntersecting) {
+          target.classList.remove("animate__animated", animationClass); // Entferne vorhandene Klassen
+          void target.offsetWidth; // Trigger a reflow to restart animation
+          target.classList.add("animate__animated", animationClass, "visible");
+        } else {
+          target.classList.remove("visible");
+        }
+      }
 
-            // -> Falls du es bei einmaliger Animation belassen willst:
-            // observer.unobserve(target);
-          } else {
-            // Element verlässt den Viewport -> Klassen entfernen
-            target.classList.remove("visible", "animate__animated", animationClass);
-            target.classList.add("hidden");
+      if (target.tagName.toLowerCase() === "section" && target.id) {
+        if (isIntersecting) {
+          const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+          if (activeNavItem) {
+            navItems.forEach((item) => item.classList.remove("active"));
+            activeNavItem.classList.add("active");
           }
         }
-
-        // B) Aktives Nav-Item setzen, wenn <section> mit ID
-        if (target.tagName.toLowerCase() === "section" && target.id) {
-          if (isIntersecting) {
-            const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-            if (activeNavItem) {
-              navItems.forEach((item) => item.classList.remove("active"));
-              activeNavItem.classList.add("active");
-            }
-          }
-        }
-      });
-    };
-
-// Beispiel: Wenn Viewport schmaler als 768px => nutze andere threshold/rootMargin
-const isMobile = window.matchMedia("(max-width: 768px)").matches;
-
-const observerOptions = isMobile
-  ? { threshold: 0.3, rootMargin: "0px 0px -30px 0px" } 
-  : { threshold: 0.8, rootMargin: "0px 0px -50px 0px" };
-
-const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-
-//    const observer = new IntersectionObserver(observerCallback, {
-//  threshold: 0.8,
-//      rootMargin: "0px 0px -50px 0px",
-//    });
-
-
-
-    // Relevante Elemente beobachten
-    observerTargets.forEach((el) => observer.observe(el));
-
-    /* --- 2) Smooth Scrolling für Navigation --- */
-    const navLinks = document.querySelectorAll(".nav-link");
-    navLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const targetId = link.getAttribute("href").substring(1);
-        const targetSection = document.getElementById(targetId);
-        if (targetSection) {
-          targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
-          navItems.forEach((item) => item.classList.remove("active"));
-          const clickedNavItem = link.closest(".nav-item");
-          if (clickedNavItem) clickedNavItem.classList.add("active");
-        }
-      });
+      }
     });
+  };
 
-    /* --- 3) Back-to-Top-Button --- */
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  const observerOptions = isMobile
+    ? { threshold: 0.3, rootMargin: "0px 0px -30px 0px" }
+    : { threshold: 0.8, rootMargin: "0px 0px -50px 0px" };
+
+  const observer = new IntersectionObserver(observerCallback, observerOptions);
+  observerTargets.forEach((el) => observer.observe(el));
+
+  
+
+
+
+const navLinks = document.querySelectorAll(".nav-link");
+navLinks.forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    const targetId = link.getAttribute("href").substring(1);
+    const targetSection = document.getElementById(targetId);
+    if (targetSection) {
+      targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -50); // Offset hinzufügen
+      targetSection.setAttribute("tabindex", "-1");
+      targetSection.focus();
+      navItems.forEach((item) => item.classList.remove("active"));
+      link.closest(".nav-item").classList.add("active");
+    }});});
+
     const backToTopBtn = document.getElementById("back-to-top");
-    if (backToTopBtn) {
-      backToTopBtn.addEventListener("click", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-      window.addEventListener("scroll", throttle(() => {
-        backToTopBtn.classList.toggle("visible", window.scrollY > 500);
-      }, 150), { passive: true });
-    }
+function toggleBackToTop() {
+  backToTopBtn.classList.toggle("visible", window.scrollY > 500);}
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });});
+window.addEventListener("scroll", debounce(toggleBackToTop, 200));
+function debounce(fn, delay) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);};}
 
-    /* --- 4) Throttle-Funktion für Scroll Events --- */
-    function throttle(fn, wait) {
-      let lastTime = 0;
-      return function(...args) {
-        const now = Date.now();
-        if (now - lastTime >= wait) {
-          fn.apply(this, args);
-          lastTime = now;
-        }
-      };
+
+    function throttleRAF(callback) {
+  let ticking = false;
+  return function () {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        callback();
+        ticking = false;
+      });
+      ticking = true;
     }
-  });
+  };
+}
+
+window.addEventListener(
+  "scroll",
+  throttleRAF(() => {
+    backToTopBtn.classList.toggle("visible", window.scrollY > 500);
+  }),
+  { passive: true }
+);
+
+
+
+
+});
 </script>
 </html>
