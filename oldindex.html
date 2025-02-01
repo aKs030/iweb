@@ -219,16 +219,29 @@
     /* ==========================
        Scroll-Animation
     ========================== */
-    .scroll-animate {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
-      will-change: opacity, transform;
-    }
-    .scroll-animate.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+ /* Scroll-Animation - Startzustand */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(-90px);     /* Startposition */
+  transition: transform 5s ease-out, opacity 3s ease-out; /* Sanftere Bewegung */
+  will-change: opacity, transform;
+  pointer-events: none;             /* Keine Interaktion, wenn unsichtbar */
+}
+
+/* Sichtbar beim Scrollen */
+.scroll-animate.visible {
+  opacity: 1;
+  transform: translateY(30px);
+  pointer-events: auto;
+}
+
+/* Versteckt beim Zurückscrollen */
+.scroll-animate.hidden {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+
 
     /* ==========================
        Container-Zentrierung
@@ -254,7 +267,13 @@
       font-weight: 400;
     }
     ========================== */
-    
+    .lead {
+    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
+    font-weight: 300; /* Leichtere Schrift für modernen Look */
+    max-width: 800px;  /* Maximale Breite des Textes */
+    margin: 0 auto;  /* Zentrierung */
+    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
+}
   </style>
 </head>
 <body>
@@ -306,7 +325,7 @@
     </section>
     <!-- About Section -->
     <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-        <p class="lead scroll-animate full-visible" data-animation="animate__fadeInUp">
+        <p class="lead scroll-animate" data-animation="animate__fadeInUp">
             Vielen Dank, dass du meine Homepage besuchst.
             Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
             Vergiss nicht, regelmäßig vorbeizuschauen,
@@ -360,7 +379,7 @@
   const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
   const navLinks = document.querySelectorAll(".nav-link");
 
-  // Alle zu beobachtenden Elemente (ohne Dopplungen)
+  // Alle zu beobachtenden Elemente (Doppelerfassungen vermeiden)
   const observedElements = [...new Set([...sections, ...scrollAnimateElements])];
 
   const navObserverOptions = {
@@ -370,7 +389,7 @@
 
   const navObserverCallback = (entries) => {
     entries.forEach(({ target, isIntersecting }) => {
-      // Animieren von Elementen mit der Klasse "scroll-animate" (außer wenn "full-visible")
+      // Animation für Elemente mit "scroll-animate" (außer full-visible)
       if (target.classList.contains("scroll-animate") && !target.classList.contains("full-visible")) {
         const animationClass = target.dataset.animation || "animate__fadeInUp";
         const delayInS = (parseFloat(target.dataset.delay) || 0) / 1000;
@@ -382,11 +401,13 @@
         }
       }
 
-      // Aktivierung der Navigation anhand der Section-ID
-      if (target.id && isIntersecting) {
-        navItems.forEach(item => item.classList.remove("active"));
-        const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-        if (activeNavItem) activeNavItem.classList.add("active");
+      // Navigation-Aktivierung anhand der Section-ID
+      if (target.id) {
+        if (isIntersecting) {
+          navItems.forEach(item => item.classList.remove("active"));
+          const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+          if (activeNavItem) activeNavItem.classList.add("active");
+        }
       }
     });
   };
@@ -394,7 +415,7 @@
   const navObserver = new IntersectionObserver(navObserverCallback, navObserverOptions);
   observedElements.forEach(el => navObserver.observe(el));
 
-  // Klick-Event für sanftes Scrollen
+  // Klick-Event für sanftes Scrollen und Navigation-Aktivierung
   navLinks.forEach(link => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
@@ -409,28 +430,79 @@
     });
   });
 
-  // --- Sequenzielle Animation der Feature-Cards ---
+  // --- Feature Cards Observer & Hover-/Touch-Effekte ---
   const featureCards = document.querySelectorAll("#features .card");
-  if (featureCards.length >= 2) {
-    const card1 = featureCards[0];
-    const card2 = featureCards[1];
+  let activeCardIndex = 0;
+  let initialLoad = true; // Flag, um initiales Scrollen zu unterdrücken
+  let cardChangeTimeout; // Timer für Verzögerung zwischen den Card-Wechseln
 
-    // Starte Animation der ersten Karte
-    const animClass1 = card1.dataset.animation || "animate__zoomIn";
-    const delay1 = card1.dataset.delay ? parseFloat(card1.dataset.delay) / 1000 : 0;
-    card1.style.transitionDelay = `${delay1}s`;
-    card1.classList.add("visible", "animate__animated", animClass1);
+  // Funktion: Aktive Karte festlegen und (nach Verzögerung) in den Viewport scrollen
+  const setActiveCard = (index) => {
+    featureCards.forEach((card, i) => {
+      card.classList.toggle("active", i === index);
+      // Scrollen nur, wenn es nicht der initialLoad ist:
+      if (!initialLoad && i === index) {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  };
 
-    // Sobald die erste Karte fertig animiert ist, starte Animation der zweiten Karte
-    card1.addEventListener("animationend", () => {
-      const animClass2 = card2.dataset.animation || "animate__zoomIn";
-      const delay2 = card2.dataset.delay ? parseFloat(card2.dataset.delay) / 1000 : 0;
-      card2.style.transitionDelay = `${delay2}s`;
-      card2.classList.add("visible", "animate__animated", animClass2);
-    }, { once: true });
+  const cardObserverOptions = {
+    root: null,
+    threshold: 0.5
+  };
+
+  const cardObserverCallback = (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const index = Array.from(featureCards).indexOf(entry.target);
+        if (index !== activeCardIndex) {
+          activeCardIndex = index;
+          // Vor dem Wechsel wird eine Verzögerung eingebaut (hier 300ms)
+          clearTimeout(cardChangeTimeout);
+          cardChangeTimeout = setTimeout(() => {
+            setActiveCard(activeCardIndex);
+          }, 300);
+        }
+      }
+    });
+  };
+
+  const cardObserver = new IntersectionObserver(cardObserverCallback, cardObserverOptions);
+  featureCards.forEach(card => cardObserver.observe(card));
+
+  // Unterschiedliche Event-Listener je nach Geräteunterstützung:
+  if (window.matchMedia('(hover: none)').matches) {
+    // Mobile/Toucheingabe
+    featureCards.forEach(card => {
+      card.addEventListener("touchstart", () => {
+        card.classList.add("active");
+      });
+      card.addEventListener("touchend", () => {
+        // Kurze Verzögerung, damit der Effekt sichtbar bleibt
+        setTimeout(() => {
+          card.classList.remove("active");
+        }, 900);
+      });
+    });
+  } else {
+    // Desktop: Maus-Hover
+    featureCards.forEach(card => {
+      card.addEventListener("mouseenter", () => card.classList.add("active"));
+      card.addEventListener("mouseleave", () => card.classList.remove("active"));
+    });
   }
 
-  // --- Observer für Elemente, die zu 100% sichtbar sein sollen ---
+  // Initialisiere die erste Karte als aktiv
+  setActiveCard(activeCardIndex);
+
+  // Nach kurzer Verzögerung (z. B. 500ms) wird der initialLoad-Flag deaktiviert,
+  // sodass zukünftige Wechsel der Cards das Scrollen auslösen können.
+  setTimeout(() => {
+    initialLoad = false;
+  }, 400);
+
+  // --- Observer für Elemente, die 100% sichtbar sein müssen ---
   const fullObserverOptions = {
     threshold: 1.0  // 100% sichtbar
   };
@@ -442,14 +514,16 @@
         const delayInS = (parseFloat(entry.target.dataset.delay) || 0) / 1000;
         entry.target.style.transitionDelay = `${delayInS}s`;
         entry.target.classList.add("visible", "animate__animated", animationClass);
-        // Nach der Animation wird die Beobachtung beendet
+        // Beobachtung stoppen, wenn die Animation einmal ausgelöst wurde
         observer.unobserve(entry.target);
       }
     });
   };
 
   const fullObserver = new IntersectionObserver(fullObserverCallback, fullObserverOptions);
+  // Beobachte alle Elemente, die die Klasse "full-visible" besitzen
   document.querySelectorAll('.full-visible').forEach(el => fullObserver.observe(el));
-}); </script>
+});
+    </script>
 </body>
 </html>
