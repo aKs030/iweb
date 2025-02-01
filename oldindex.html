@@ -192,21 +192,46 @@ hr {
 /* ==========================
    Karten
    ========================== */
-   .card {
-    background-color: var(--secondary-bg-color);
-    color: var(--main-text-color);
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+/* Basisstil für die Karte */
+.card {
+  background-color: var(--secondary-bg-color);
+  color: var(--main-text-color);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transform: scale(1);
+  border: 2px solid transparent;
+  transition: transform 0.4s ease-in-out,
+              box-shadow 0.4s ease-in-out,
+              border 0.4s ease-in-out;
+  will-change: transform, box-shadow, border;
 }
+
+/* Effekt für den Hover auf Desktop */
 .card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
+
+/* Effekt für aktive Karten (z. B. wenn die Karte zusätzlich die Klasse .active hat) */
+.card.active:hover {
+  transform: scale(1.05);
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
+}
+
+/* Auf Touch-Geräten: simuliere den aktiven Effekt beim Drücken */
+@media (hover: none) {
+  .card:active {
+    transform: scale(1.05);
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
+  }
+}
+
+
+
+
+
 
 /* ==========================
    Scroll-Animation
@@ -221,13 +246,12 @@ hr {
     transform: translateY(0) rotateY(0);
   }
 }
-
 .scroll-animate {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+  will-change: opacity, transform;
 }
-
 .scroll-animate.visible {
     opacity: 1;
     transform: translateY(0);
@@ -256,9 +280,6 @@ hr {
     color: rgba(245, 245, 245, 0.9);
     font-weight: 400;
 }
-
-
-
 /* ==========================
    Media Queries
    ========================== */
@@ -322,31 +343,11 @@ hr {
         font-size: 0.9rem;
     }
 }
-
-
-.card.active {
-    transform: scale(1.05);
-    border: 2px solid var(--accent-color);
-    box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
-    transition: all 0.4s ease-in-out;
-}
  
  </style>
 </head>
 <body>
     <div id="menu-container"></div>
-
-    <!-- Menü einbinden -->
-    <!-- Menü einbinden 
-    <div id="menu-container">
-        <script>
-            fetch('/pages/komponente/menu.html')
-                .then(response => response.text())
-                .then(data => document.getElementById('menu-container').innerHTML = data);
-        </script>
-    </div>-->
-
-  
     <main id="main-content">
         <!-- Hero Section -->
         <div class="center-container">
@@ -449,120 +450,117 @@ hr {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
         <!-- Custom CSS -->
         <script src="/js/menu.js" defer></script>
-        
-    <script>
-     document.addEventListener("DOMContentLoaded", () => {
-    const observerOptions = {
-        threshold: 0.6,
-        rootMargin: "0px 0px -50px 0px"
-    };
-
-    const navItems = document.querySelectorAll(".nav-item");
-    const sections = document.querySelectorAll("section");
-    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-    const navLinks = document.querySelectorAll(".nav-link");
-
-    const observerCallback = (entries) => {
-        entries.forEach(({ target, isIntersecting }) => {
-            const animationClass = target.dataset.animation || "animate__fadeInUp";
-            const delayInS = parseFloat(target.dataset.delay || "0") / 1000;
-
-            if (isIntersecting) {
-                if (target.classList.contains("scroll-animate")) {
-                    target.style.transitionDelay = `${delayInS}s`;
-                    target.classList.add("visible", "animate__animated", animationClass);
-                }
-
-                if (target.id) {
-                    navItems.forEach((item) => item.classList.remove("active"));
-                    const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-                    if (activeNavItem) {
-                        activeNavItem.classList.add("active");
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+              // --- Navigation & Scroll-Animation ---
+              const navItems = document.querySelectorAll(".nav-item");
+              const sections = document.querySelectorAll("section");
+              const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+              const navLinks = document.querySelectorAll(".nav-link");
+            
+              // Alle zu beobachtenden Elemente (Doppelerfassungen vermeiden)
+              const observedElements = [...new Set([...sections, ...scrollAnimateElements])];
+            
+              const navObserverOptions = {
+                threshold: 0.9,
+                rootMargin: "0px 0px -50px 0px"
+              };
+            
+              const navObserverCallback = (entries) => {
+                entries.forEach(({ target, isIntersecting }) => {
+                  const animationClass = target.dataset.animation || "animate__fadeInUp";
+                  const delayInS = (parseFloat(target.dataset.delay) || 0) / 1000;
+            
+                  if (isIntersecting) {
+                    if (target.classList.contains("scroll-animate")) {
+                      target.style.transitionDelay = `${delayInS}s`;
+                      target.classList.add("visible", "animate__animated", animationClass);
                     }
-                }
-            } else {
-                if (target.classList.contains("scroll-animate")) {
+                    if (target.id) {
+                      // Entferne "active" von allen Nav-Items und aktiviere das passende Element
+                      navItems.forEach(item => item.classList.remove("active"));
+                      const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+                      if (activeNavItem) activeNavItem.classList.add("active");
+                    }
+                  } else if (target.classList.contains("scroll-animate")) {
                     target.classList.remove("visible", "animate__animated", animationClass);
-                }
-            }
-        });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    sections.forEach((section) => observer.observe(section));
-    scrollAnimateElements.forEach((element) => observer.observe(element));
-
-    navLinks.forEach((link) => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute("href").substring(1);
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                targetSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
+                  }
                 });
-
-                // Entferne die 'active'-Klasse von allen Navigationspunkten
-                navItems.forEach((item) => item.classList.remove("active"));
-
-                // Füge die 'active'-Klasse zum geklickten Navigationspunkt hinzu
-                const clickedNavItem = link.closest(".nav-item");
-                if (clickedNavItem) {
-                    clickedNavItem.classList.add("active");
-                }
-            }
-        });
-    });
-});
-
-
-
-    </script>
-<script>
-
-document.addEventListener('DOMContentLoaded', () => {
-  const sections = document.querySelectorAll('#features .card');
-  let activeIndex = 0;
-
-  // Funktion, um die aktive Karte zu wechseln
-  const changeSection = (index) => {
-    sections.forEach((section, i) => {
-      if (i === index) {
-        section.classList.add('active');
-        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        section.classList.remove('active');
-      }
-    });
-  };
-
-  // IntersectionObserver-Callback
-  const observerCallback = (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const index = Array.from(sections).indexOf(entry.target);
-        if (index !== activeIndex) {
-          activeIndex = index;
-          changeSection(activeIndex);
-        }
-      }
-    });
-  };
-
-  // IntersectionObserver-Optionen
-  const observerOptions = {
-    root: null, // Ganzes Viewport
-    threshold: 0.5, // 50% Sichtbarkeit
-  };
-
-  const observer = new IntersectionObserver(observerCallback, observerOptions);
-  sections.forEach((section) => observer.observe(section));
-
-  // Setze die erste Karte als aktiv
-  changeSection(activeIndex);
-});
-
-</script>
+              };
+            
+              const navObserver = new IntersectionObserver(navObserverCallback, navObserverOptions);
+              observedElements.forEach(el => navObserver.observe(el));
+            
+              // Klick-Event für sanftes Scrollen und Navigation-Aktivierung
+              navLinks.forEach(link => {
+                link.addEventListener("click", (e) => {
+                  e.preventDefault();
+                  const targetId = link.getAttribute("href").substring(1);
+                  const targetSection = document.getElementById(targetId);
+                  if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                    navItems.forEach(item => item.classList.remove("active"));
+                    const clickedNavItem = link.closest(".nav-item");
+                    if (clickedNavItem) clickedNavItem.classList.add("active");
+                  }
+                });
+              });
+            
+              // --- Feature Cards Observer & Hover-/Touch-Effekte ---
+              const featureCards = document.querySelectorAll("#features .card");
+              let activeCardIndex = 0;
+            
+              // Funktion: Aktive Karte festlegen und in den Viewport scrollen
+              const setActiveCard = (index) => {
+                featureCards.forEach((card, i) => {
+                  card.classList.toggle("active", i === index);
+                  if (i === index) {
+                    card.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                });
+              };
+            
+              const cardObserverOptions = {
+                root: null,
+                threshold: 0.5
+              };
+            
+              const cardObserverCallback = (entries) => {
+                entries.forEach(entry => {
+                  if (entry.isIntersecting) {
+                    const index = Array.from(featureCards).indexOf(entry.target);
+                    if (index !== activeCardIndex) {
+                      activeCardIndex = index;
+                      setActiveCard(activeCardIndex);
+                    }
+                  }
+                });
+              };
+            
+              const cardObserver = new IntersectionObserver(cardObserverCallback, cardObserverOptions);
+              featureCards.forEach(card => cardObserver.observe(card));
+            
+              // Desktop-Hover: "active" Klasse bei Mausbewegung hinzufügen/entfernen
+              featureCards.forEach(card => {
+                card.addEventListener("mouseenter", () => card.classList.add("active"));
+                card.addEventListener("mouseleave", () => card.classList.remove("active"));
+              });
+            
+              // Mobile-Touch: "active" Klasse beim Berühren hinzufügen/entfernen
+              featureCards.forEach(card => {
+                card.addEventListener("touchstart", () => {
+                  card.classList.add("active");
+                });
+                card.addEventListener("touchend", () => {
+                  // Optional: kurze Verzögerung, damit der Effekt sichtbar bleibt
+                  setTimeout(() => {
+                    card.classList.remove("active");
+                  }, 200);
+                });
+              });
+            
+              // Initialisiere die erste Karte als aktiv
+              setActiveCard(activeCardIndex);
+            });
+            </script>
 </html>
