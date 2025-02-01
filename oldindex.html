@@ -390,12 +390,12 @@
     </section>
     <!-- About Section -->
     <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-      <p class="lead scroll-animate" data-animation="animate__fadeInUp">
-        Vielen Dank, dass du meine Homepage besuchst.
-        Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-        Vergiss nicht, regelmäßig vorbeizuschauen,
-        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-      </p>
+        <p class="lead scroll-animate full-visible" data-animation="animate__fadeInUp">
+            Vielen Dank, dass du meine Homepage besuchst.
+            Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
+            Vergiss nicht, regelmäßig vorbeizuschauen,
+            um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+          </p>
       <h2 class="scroll-animate" data-animation="animate__fadeIn">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
@@ -443,40 +443,45 @@
       const sections = document.querySelectorAll("section");
       const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
       const navLinks = document.querySelectorAll(".nav-link");
-
+    
       // Alle zu beobachtenden Elemente (Doppelerfassungen vermeiden)
       const observedElements = [...new Set([...sections, ...scrollAnimateElements])];
-
+    
       const navObserverOptions = {
-        threshold: 0.6,
+        threshold: 0.5,
         rootMargin: "0px 0px -50px 0px"
       };
-
+    
       const navObserverCallback = (entries) => {
         entries.forEach(({ target, isIntersecting }) => {
-          const animationClass = target.dataset.animation || "animate__fadeInUp";
-          const delayInS = (parseFloat(target.dataset.delay) || 0) / 1000;
-
-          if (isIntersecting) {
-            if (target.classList.contains("scroll-animate")) {
+          // Falls das Element als "full-visible" markiert ist, wird es hier nicht animiert
+          // – dafür übernimmt später unser separater Observer die Animation.
+          if (target.classList.contains("scroll-animate") && !target.classList.contains("full-visible")) {
+            const animationClass = target.dataset.animation || "animate__fadeInUp";
+            const delayInS = (parseFloat(target.dataset.delay) || 0) / 1000;
+      
+            if (isIntersecting) {
               target.style.transitionDelay = `${delayInS}s`;
               target.classList.add("visible", "animate__animated", animationClass);
+            } else {
+              target.classList.remove("visible", "animate__animated", animationClass);
             }
-            if (target.id) {
-              // Entferne "active" von allen Nav-Items und aktiviere das passende Element
+          }
+      
+          // Navigation-Aktivierung anhand der Section-ID
+          if (target.id) {
+            if (isIntersecting) {
               navItems.forEach(item => item.classList.remove("active"));
               const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
               if (activeNavItem) activeNavItem.classList.add("active");
             }
-          } else if (target.classList.contains("scroll-animate")) {
-            target.classList.remove("visible", "animate__animated", animationClass);
           }
         });
       };
-
+    
       const navObserver = new IntersectionObserver(navObserverCallback, navObserverOptions);
       observedElements.forEach(el => navObserver.observe(el));
-
+    
       // Klick-Event für sanftes Scrollen und Navigation-Aktivierung
       navLinks.forEach(link => {
         link.addEventListener("click", (e) => {
@@ -491,11 +496,11 @@
           }
         });
       });
-
+    
       // --- Feature Cards Observer & Hover-/Touch-Effekte ---
       const featureCards = document.querySelectorAll("#features .card");
       let activeCardIndex = 0;
-
+    
       // Funktion: Aktive Karte festlegen und in den Viewport scrollen
       const setActiveCard = (index) => {
         featureCards.forEach((card, i) => {
@@ -505,12 +510,12 @@
           }
         });
       };
-
+    
       const cardObserverOptions = {
         root: null,
         threshold: 0.5
       };
-
+    
       const cardObserverCallback = (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -522,10 +527,10 @@
           }
         });
       };
-
+    
       const cardObserver = new IntersectionObserver(cardObserverCallback, cardObserverOptions);
       featureCards.forEach(card => cardObserver.observe(card));
-
+    
       // Unterschiedliche Event-Listener je nach Geräteunterstützung:
       if (window.matchMedia('(hover: none)').matches) {
         // Mobile/Toucheingabe
@@ -547,10 +552,32 @@
           card.addEventListener("mouseleave", () => card.classList.remove("active"));
         });
       }
-
+    
       // Initialisiere die erste Karte als aktiv
       setActiveCard(activeCardIndex);
+    
+      // --- Observer für Elemente, die 100% sichtbar sein müssen ---
+      const fullObserverOptions = {
+        threshold: 1.0  // 100% sichtbar
+      };
+    
+      const fullObserverCallback = (entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && entry.intersectionRatio === 1) {
+            const animationClass = entry.target.dataset.animation || "animate__fadeInUp";
+            const delayInS = (parseFloat(entry.target.dataset.delay) || 0) / 1000;
+            entry.target.style.transitionDelay = `${delayInS}s`;
+            entry.target.classList.add("visible", "animate__animated", animationClass);
+            // Stoppe die Beobachtung, wenn die Animation einmal ausgelöst wurde
+            observer.unobserve(entry.target);
+          }
+        });
+      };
+    
+      const fullObserver = new IntersectionObserver(fullObserverCallback, fullObserverOptions);
+      // Beobachte alle Elemente, die die Klasse "full-visible" besitzen
+      document.querySelectorAll('.full-visible').forEach(el => fullObserver.observe(el));
     });
-  </script>
+    </script>
 </body>
 </html>
