@@ -215,35 +215,10 @@
       }
     }
 
-    /* Mobile-spezifische Anpassungen */
-    @media (max-width: 768px) {
-      .card {
-        /* Reduziere ggf. den Effekt, damit er auf kleineren Bildschirmen dezent wirkt */
-        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border 0.3s ease-in-out;
-      }
-      /* Alternativ kannst du den aktiven Effekt für mobile Geräte leicht abschwächen */
-      @media (hover: none) {
-        .card:active {
-          transform: scale(1.03);
-          border: 2px solid var(--accent-color);
-          box-shadow: 0 8px 20px rgba(255, 204, 41, 0.8);
-        }
-      }
-    }
 
     /* ==========================
        Scroll-Animation
     ========================== */
-    @keyframes fadeRotate {
-      0% {
-        opacity: 0;
-        transform: translateY(50px) rotateY(90deg);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) rotateY(0);
-      }
-    }
     .scroll-animate {
       opacity: 0;
       transform: translateY(30px);
@@ -271,74 +246,15 @@
 
     /* ==========================
        Lead-Text
-    ========================== */
+
     .lead {
       font-size: 1.2rem;
       line-height: 1.8;
       color: rgba(245, 245, 245, 0.9);
       font-weight: 400;
     }
-
-    /* ==========================
-       Media Queries
     ========================== */
-    @media (max-width: 768px) {
-      .navbar-bottom {
-        bottom: 5px;
-        padding: 8px 15px;
-      }
-      
-      .nav-link {
-        width: 40px;
-        height: 40px;
-      }
-  
-      .nav-icon {
-        font-size: 1.2rem;
-      }
-  
-      .shimmer-text {
-        font-size: 2.5rem;
-        animation: shimmer 3s ease-in-out infinite;
-      }
-  
-      .scroll-animate {
-        transform: translateY(20px);
-        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-      }
-  
-      .lead {
-        font-size: 1rem;
-      }
-  
-      .center-container {
-        padding: 0 15px;
-      }
-    }
-  
-    @media (max-width: 480px) {
-      .nav-link {
-        width: 35px;
-        height: 35px;
-      }
-  
-      .nav-icon {
-        font-size: 1rem;
-      }
-  
-      .shimmer-text {
-        font-size: 2rem;
-      }
-  
-      .scroll-animate {
-        transform: translateY(15px);
-        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-      }
-  
-      .lead {
-        font-size: 0.9rem;
-      }
-    }
+    
   </style>
 </head>
 <body>
@@ -375,7 +291,7 @@
           </a>
           <!-- Link zu Fotogalerie -->
           <a href="album.html" class="col text-decoration-none text-reset animated-link">
-            <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="600">
+            <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__zoomIn" data-delay="800">
               <i class="bi bi-images display-4 animated-icon mb-3" style="color: #555;"></i>
               <h5 class="fw-bold animated-text" style="color: #333;">Fotogalerie</h5>
               <p class="animated-text" style="color: #666;">
@@ -438,146 +354,102 @@
   
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // --- Navigation & Scroll-Animation ---
-      const navItems = document.querySelectorAll(".nav-item");
-      const sections = document.querySelectorAll("section");
-      const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
-      const navLinks = document.querySelectorAll(".nav-link");
-    
-      // Alle zu beobachtenden Elemente (Doppelerfassungen vermeiden)
-      const observedElements = [...new Set([...sections, ...scrollAnimateElements])];
-    
-      const navObserverOptions = {
-        threshold: 0.5,
-        rootMargin: "0px 0px -50px 0px"
-      };
-    
-      const navObserverCallback = (entries) => {
-        entries.forEach(({ target, isIntersecting }) => {
-          // Falls das Element als "full-visible" markiert ist, wird es hier nicht animiert
-          // – dafür übernimmt später unser separater Observer die Animation.
-          if (target.classList.contains("scroll-animate") && !target.classList.contains("full-visible")) {
-            const animationClass = target.dataset.animation || "animate__fadeInUp";
-            const delayInS = (parseFloat(target.dataset.delay) || 0) / 1000;
-      
-            if (isIntersecting) {
-              target.style.transitionDelay = `${delayInS}s`;
-              target.classList.add("visible", "animate__animated", animationClass);
-            } else {
-              target.classList.remove("visible", "animate__animated", animationClass);
-            }
-          }
-      
-          // Navigation-Aktivierung anhand der Section-ID
-          if (target.id) {
-            if (isIntersecting) {
-              navItems.forEach(item => item.classList.remove("active"));
-              const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
-              if (activeNavItem) activeNavItem.classList.add("active");
-            }
-          }
-        });
-      };
-    
-      const navObserver = new IntersectionObserver(navObserverCallback, navObserverOptions);
-      observedElements.forEach(el => navObserver.observe(el));
-    
-      // Klick-Event für sanftes Scrollen und Navigation-Aktivierung
-      navLinks.forEach(link => {
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          const targetId = link.getAttribute("href").substring(1);
-          const targetSection = document.getElementById(targetId);
-          if (targetSection) {
-            targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
-            navItems.forEach(item => item.classList.remove("active"));
-            const clickedNavItem = link.closest(".nav-item");
-            if (clickedNavItem) clickedNavItem.classList.add("active");
-          }
-        });
-      });
-    
-      // --- Feature Cards Observer & Hover-/Touch-Effekte ---
-      const featureCards = document.querySelectorAll("#features .card");
-      let activeCardIndex = 0;
-    
-      // Funktion: Aktive Karte festlegen und in den Viewport scrollen
-      const setActiveCard = (index) => {
-        featureCards.forEach((card, i) => {
-          card.classList.toggle("active", i === index);
-          if (i === index) {
-            card.scrollIntoView({ behavior: "smooth", block: "center" });
-          }
-        });
-      };
-    
-      const cardObserverOptions = {
-        root: null,
-        threshold: 0.5
-      };
-    
-      const cardObserverCallback = (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const index = Array.from(featureCards).indexOf(entry.target);
-            if (index !== activeCardIndex) {
-              activeCardIndex = index;
-              setActiveCard(activeCardIndex);
-            }
-          }
-        });
-      };
-    
-      const cardObserver = new IntersectionObserver(cardObserverCallback, cardObserverOptions);
-      featureCards.forEach(card => cardObserver.observe(card));
-    
-      // Unterschiedliche Event-Listener je nach Geräteunterstützung:
-      if (window.matchMedia('(hover: none)').matches) {
-        // Mobile/Toucheingabe
-        featureCards.forEach(card => {
-          card.addEventListener("touchstart", () => {
-            card.classList.add("active");
-          });
-          card.addEventListener("touchend", () => {
-            // Kurze Verzögerung, damit der Effekt sichtbar bleibt
-            setTimeout(() => {
-              card.classList.remove("active");
-            }, 200);
-          });
-        });
-      } else {
-        // Desktop: Maus-Hover
-        featureCards.forEach(card => {
-          card.addEventListener("mouseenter", () => card.classList.add("active"));
-          card.addEventListener("mouseleave", () => card.classList.remove("active"));
-        });
+  // --- Navigation & Scroll-Animation ---
+  const navItems = document.querySelectorAll(".nav-item");
+  const sections = document.querySelectorAll("section");
+  const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+  const navLinks = document.querySelectorAll(".nav-link");
+
+  // Alle zu beobachtenden Elemente (ohne Dopplungen)
+  const observedElements = [...new Set([...sections, ...scrollAnimateElements])];
+
+  const navObserverOptions = {
+    threshold: 0.5,
+    rootMargin: "0px 0px -50px 0px"
+  };
+
+  const navObserverCallback = (entries) => {
+    entries.forEach(({ target, isIntersecting }) => {
+      // Animieren von Elementen mit der Klasse "scroll-animate" (außer wenn "full-visible")
+      if (target.classList.contains("scroll-animate") && !target.classList.contains("full-visible")) {
+        const animationClass = target.dataset.animation || "animate__fadeInUp";
+        const delayInS = (parseFloat(target.dataset.delay) || 0) / 1000;
+        if (isIntersecting) {
+          target.style.transitionDelay = `${delayInS}s`;
+          target.classList.add("visible", "animate__animated", animationClass);
+        } else {
+          target.classList.remove("visible", "animate__animated", animationClass);
+        }
       }
-    
-      // Initialisiere die erste Karte als aktiv
-      setActiveCard(activeCardIndex);
-    
-      // --- Observer für Elemente, die 100% sichtbar sein müssen ---
-      const fullObserverOptions = {
-        threshold: 1.0  // 100% sichtbar
-      };
-    
-      const fullObserverCallback = (entries, observer) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting && entry.intersectionRatio === 1) {
-            const animationClass = entry.target.dataset.animation || "animate__fadeInUp";
-            const delayInS = (parseFloat(entry.target.dataset.delay) || 0) / 1000;
-            entry.target.style.transitionDelay = `${delayInS}s`;
-            entry.target.classList.add("visible", "animate__animated", animationClass);
-            // Stoppe die Beobachtung, wenn die Animation einmal ausgelöst wurde
-            observer.unobserve(entry.target);
-          }
-        });
-      };
-    
-      const fullObserver = new IntersectionObserver(fullObserverCallback, fullObserverOptions);
-      // Beobachte alle Elemente, die die Klasse "full-visible" besitzen
-      document.querySelectorAll('.full-visible').forEach(el => fullObserver.observe(el));
+
+      // Aktivierung der Navigation anhand der Section-ID
+      if (target.id && isIntersecting) {
+        navItems.forEach(item => item.classList.remove("active"));
+        const activeNavItem = document.querySelector(`.nav-item[data-section="${target.id}"]`);
+        if (activeNavItem) activeNavItem.classList.add("active");
+      }
     });
-    </script>
+  };
+
+  const navObserver = new IntersectionObserver(navObserverCallback, navObserverOptions);
+  observedElements.forEach(el => navObserver.observe(el));
+
+  // Klick-Event für sanftes Scrollen
+  navLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute("href").substring(1);
+      const targetSection = document.getElementById(targetId);
+      if (targetSection) {
+        targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        navItems.forEach(item => item.classList.remove("active"));
+        const clickedNavItem = link.closest(".nav-item");
+        if (clickedNavItem) clickedNavItem.classList.add("active");
+      }
+    });
+  });
+
+  // --- Sequenzielle Animation der Feature-Cards ---
+  const featureCards = document.querySelectorAll("#features .card");
+  if (featureCards.length >= 2) {
+    const card1 = featureCards[0];
+    const card2 = featureCards[1];
+
+    // Starte Animation der ersten Karte
+    const animClass1 = card1.dataset.animation || "animate__zoomIn";
+    const delay1 = card1.dataset.delay ? parseFloat(card1.dataset.delay) / 1000 : 0;
+    card1.style.transitionDelay = `${delay1}s`;
+    card1.classList.add("visible", "animate__animated", animClass1);
+
+    // Sobald die erste Karte fertig animiert ist, starte Animation der zweiten Karte
+    card1.addEventListener("animationend", () => {
+      const animClass2 = card2.dataset.animation || "animate__zoomIn";
+      const delay2 = card2.dataset.delay ? parseFloat(card2.dataset.delay) / 1000 : 0;
+      card2.style.transitionDelay = `${delay2}s`;
+      card2.classList.add("visible", "animate__animated", animClass2);
+    }, { once: true });
+  }
+
+  // --- Observer für Elemente, die zu 100% sichtbar sein sollen ---
+  const fullObserverOptions = {
+    threshold: 1.0  // 100% sichtbar
+  };
+
+  const fullObserverCallback = (entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio === 1) {
+        const animationClass = entry.target.dataset.animation || "animate__fadeInUp";
+        const delayInS = (parseFloat(entry.target.dataset.delay) || 0) / 1000;
+        entry.target.style.transitionDelay = `${delayInS}s`;
+        entry.target.classList.add("visible", "animate__animated", animationClass);
+        // Nach der Animation wird die Beobachtung beendet
+        observer.unobserve(entry.target);
+      }
+    });
+  };
+
+  const fullObserver = new IntersectionObserver(fullObserverCallback, fullObserverOptions);
+  document.querySelectorAll('.full-visible').forEach(el => fullObserver.observe(el));
+}); </script>
 </body>
 </html>
