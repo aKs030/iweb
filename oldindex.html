@@ -69,9 +69,15 @@
       color: var(--main-text-color);
       margin: 0;
       padding: 0;
-      line-height: 1.8;
+      
     }
-
+    html, body {
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+}
+    .snap {
+  scroll-snap-align: center; /* start oder center */
+}
     h1, h2, h3, h4, h5, h6 {
       font-family: 'Poppins', sans-serif;
       color: var(--main-text-color);
@@ -318,9 +324,9 @@ hr {
 
 
     <!-- Hero Section -->
-    <section id="hero" class="vh-100 d-flex flex-column align-items-center text-center snap transparent-section">
-      <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-        <br>Willkommen<hr>
+    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen<hr>
       </h3>
       <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
         Ich freue mich, dass du den Weg hierher gefunden hast.<br>
@@ -365,7 +371,7 @@ hr {
       </div>
     </section>
     <!-- About Section -->
-    <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <p class="lead text-animate" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
