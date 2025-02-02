@@ -425,7 +425,7 @@ hr {
       const observedElements = [...new Set([...sections, ...animateElements])];
 
       const navObserverOptions = {
-        threshold: 0.7,
+        threshold: 0.9,
         rootMargin: "0px 0px -50px 0px"
       };
 
@@ -486,7 +486,7 @@ hr {
 
       const cardObserverOptions = {
         root: null,
-        threshold: 0.5
+        threshold: 0.9
       };
 
       const cardObserverCallback = (entries) => {
