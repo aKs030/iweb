@@ -81,10 +81,9 @@
       font-weight: 400;
       color: var(--main-text-color);
     }
-
-    /* ==========================
+/* ==========================
            Text-Willkommen
-    ========================== */
+========================== */
     .shimmer-text {
   font-size: 3rem;             /* Schriftgröße anpassen */
   font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
@@ -137,10 +136,19 @@ hr {
     margin-inline-start: auto;  /* Zentriert die Linie horizontal (Startabstand automatisch) */
     margin-inline-end: auto;  /* Zentriert die Linie horizontal (Endabstand automatisch) */
 }
-
-    /* ==========================
-       Navigation (Navbar Bottom)
-    ========================== */
+/* ==========================
+        .lead`-Element
+========================== */
+.lead {
+    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
+    font-weight: 300; /* Leichtere Schrift für modernen Look */
+    max-width: 800px;  /* Maximale Breite des Textes */
+    margin: 0 auto;  /* Zentrierung */
+    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
+}
+/* ==========================
+ Navigation (Navbar Bottom)
+========================== */
     .navbar-bottom {
       position: fixed;
       bottom: 10px;
@@ -251,10 +259,9 @@ hr {
               transform 2.35s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
 }
-
 .text-animate.visible {
   opacity: 1;
-  transform: translateY(-90px);
+  transform: translateY(0);
 }
 /* ==========================
    Text-Animation
@@ -273,6 +280,60 @@ hr {
   opacity: 1;
   transform: translateY(0);
 }
+
+
+
+
+
+
+
+
+
+/* Textanimation via Animate.css */
+.animate__animated {
+  animation-duration: 3s;           /* Länge der Animation am Desktop */
+  animation-fill-mode: both;        /* Element behält nach der Animation den Zielzustand */
+}
+
+/* Scroll-Animation - Startzustand */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(-90px);     /* Startposition */
+  transition: transform 2s ease-out, opacity 3s ease-out; /* Sanftere Bewegung */
+  will-change: opacity, transform;
+  pointer-events: none;             /* Keine Interaktion, wenn unsichtbar */
+}
+
+/* Sichtbar beim Scrollen */
+.scroll-animate.visible {
+  opacity: 1;
+  transform: translateY(90px);
+  pointer-events: auto;
+}
+
+/* Versteckt beim Zurückscrollen */
+.scroll-animate.hidden {
+  opacity: 0;
+  transform: translateY(-90px);
+}
+
+/* Animation: fadeInDown => von oben nach unten */
+.scroll-animate[data-animation="animate__fadeInDown"].hidden {
+  transform: translateY(90px);
+}
+.scroll-animate[data-animation="animate__fadeInDown"].visible {
+  transform: translateY(-90px);
+}
+
+/* Animation: fadeInUp => von unten nach oben */
+.scroll-animate[data-animation="animate__fadeInUp"].hidden {
+  transform: translateY(-100px);
+}
+.scroll-animate[data-animation="animate__fadeInUp"].visible {
+  transform: translateY(-190px);
+}
+
+
 /* ==========================
        Container-Zentrierung
 ========================== */
@@ -289,13 +350,6 @@ hr {
 /* ==========================
        Lead-Text
  ========================= */
-    .lead {
-      font-size: 1.25rem;
-      font-weight: 300;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
 
   </style>
 </head>
@@ -321,28 +375,32 @@ hr {
       <div class="container">
         <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
           <!-- Link zu Über Mich -->
-          <a href="ubermich.html" class="col text-decoration-none text-reset animated-link">
-            <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="400">
-              <i class="bi bi-person-circle display-4 animated-icon mb-3" style="color: #555;"></i>
-              <h5 class="fw-bold animated-text" style="color: #333;">Über Mich</h5>
-              <p class="animated-text" style="color: #666;">
-                Ich teile hier meine Leidenschaften,<br>
-                Interessen und Erlebnisse.
-              </p>
-            </div>
-          </a>
+          <div class="col">
+            <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+              <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="400">
+                <i class="bi bi-person-circle display-4 animated-icon mb-3 text-muted"></i>
+                <h5 class="fw-bold animated-text text-dark">Über Mich</h5>
+                <p class="animated-text text-secondary">
+                  Ich teile hier meine Leidenschaften,<br>
+                  Interessen und Erlebnisse.
+                </p>
+              </div>
+            </a>
+          </div>
           <!-- Link zu Fotogalerie -->
-          <a href="album.html" class="col text-decoration-none text-reset animated-link">
-            <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInDown" data-delay="800">
-              <i class="bi bi-images display-4 animated-icon mb-3" style="color: #555;"></i>
-              <h5 class="fw-bold animated-text" style="color: #333;">Fotogalerie</h5>
-              <p class="animated-text" style="color: #666;">
-                Hier findest du einige Fotos von meinen Reisen,<br>
-                von meinem Alltag und von besonderen Ereignissen,<br>
-                an denen ich teilgenommen habe.
-              </p>
-            </div>
-          </a>
+          <div class="col">
+            <a href="album.html" class="text-decoration-none text-reset animated-link">
+              <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="800">
+                <i class="bi bi-images display-4 animated-icon mb-3 text-muted"></i>
+                <h5 class="fw-bold animated-text text-dark">Fotogalerie</h5>
+                <p class="animated-text text-secondary">
+                  Hier findest du einige Fotos von meinen Reisen,<br>
+                  von meinem Alltag und von besonderen Ereignissen,<br>
+                  an denen ich teilgenommen habe.
+                </p>
+              </div>
+            </a>
+          </div>
         </div>
       </div>
     </section>
