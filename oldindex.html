@@ -303,7 +303,6 @@ hr {
   <div id="menu-container"></div>
   <main id="main-content">
     <!-- Hero Section -->
-    <div class="center-container">
       <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate shimmer-text" data-animation="animate__fadeInDown">
           Willkommen<hr>
@@ -315,7 +314,6 @@ hr {
           Erfahrungen und Gedanken teilen möchte.
         </p>
       </section>
-    </div>
     <!-- Features Section -->
     <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <div class="container">
@@ -411,7 +409,7 @@ hr {
       const observedElements = [...new Set([...sections, ...animateElements])];
 
       const navObserverOptions = {
-        threshold: 0.8,
+        threshold: 0.7,
         rootMargin: "0px 0px -50px 0px"
       };
 
