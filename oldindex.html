@@ -222,8 +222,8 @@
  /* Scroll-Animation - Startzustand */
 .scroll-animate {
   opacity: 0;
-  transform: translateY(-90px);     /* Startposition */
-  transition: transform 2s ease-out, opacity 2s ease-out; /* Sanftere Bewegung */
+  transform: translateY(-30px);     /* Startposition */
+  transition: transform 1s ease-out, opacity 1s ease-out; /* Sanftere Bewegung */
   will-change: opacity, transform;
   pointer-events: none;             /* Keine Interaktion, wenn unsichtbar */
 }
@@ -381,7 +381,7 @@
   const observedElements = [...new Set([...sections, ...scrollAnimateElements])];
 
   const navObserverOptions = {
-    threshold: 0.5,
+    threshold: 0.8,
     rootMargin: "0px 0px -50px 0px"
   };
 
