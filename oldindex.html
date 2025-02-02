@@ -188,21 +188,21 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       transform: scale(1);
       border: 2px solid transparent;
-      transition: transform 0.4s ease-in-out,
-                  box-shadow 0.4s ease-in-out,
-                  border 0.4s ease-in-out;
+      transition: transform 0.1s ease-in-out,
+                  box-shadow 0.1s ease-in-out,
+                  border 0.1s ease-in-out;
       will-change: transform, box-shadow, border;
     }
 
     /* Desktop-Hover */
     .card:hover {
-      transform: scale(1.03);
+      transform: translateY(20px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
 
     /* Aktiver Effekt bei Hover und aktivierter Karte */
     .card.active:hover {
-      transform: scale(1.05);
+      transform: translateY(20px);
       border: 2px solid var(--accent-color);
       box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
     }
@@ -210,7 +210,7 @@
     /* Auf Touch-Geräten: aktiver Effekt beim Drücken */
     @media (hover: none) {
       .card:active {
-        transform: scale(1.05);
+        transform: translateY(20px);
         border: 2px solid var(--accent-color);
         box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
       }
@@ -223,17 +223,13 @@
     .scroll-animate {
       opacity: 0;
       transform: translateY(-30px);
-      transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
       will-change: opacity, transform;
     }
     .scroll-animate.visible {
       opacity: 1;
-      transform: translateY(30px);
+      transform: translateY(0);
     }
-
-
-
-
 
 /* ==========================
        Container-Zentrierung
@@ -251,13 +247,6 @@
 
     /* ==========================
        Lead-Text
-
-    .lead {
-      font-size: 1.2rem;
-      line-height: 1.8;
-      color: rgba(245, 245, 245, 0.9);
-      font-weight: 400;
-    }
     ========================== */
     .lead {
     font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
@@ -266,6 +255,7 @@
     margin: 0 auto;  /* Zentrierung */
     padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
 }
+
   </style>
 </head>
 <body>
