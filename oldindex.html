@@ -425,7 +425,7 @@ hr {
       const observedElements = [...new Set([...sections, ...animateElements])];
 
       const navObserverOptions = {
-        threshold: 0.9,
+        threshold: 0.5,
         rootMargin: "0px 0px -50px 0px"
       };
 
@@ -486,7 +486,7 @@ hr {
 
       const cardObserverOptions = {
         root: null,
-        threshold: 0.9
+        threshold: 0.5
       };
 
       const cardObserverCallback = (entries) => {
@@ -523,7 +523,7 @@ hr {
 
       // --- Observer für Elemente, die 100% sichtbar sein müssen ---
       const fullObserverOptions = {
-        threshold: 1.0  // 100% sichtbar
+        threshold: 0.5  // 100% sichtbar
       };
 
       const fullObserverCallback = (entries, observer) => {
