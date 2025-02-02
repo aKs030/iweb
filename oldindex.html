@@ -22,6 +22,11 @@
   <meta name="description" content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.">
   <meta name="keywords" content="Abdul, Abdulkerim, Abdulkerim Sesli, abdulkerimsesli.de, www.abdulkerimsesli.de">
   
+  <meta property="og:title" content="Abdulkerim Website">
+<meta property="og:description" content="Abdulkerim">
+<meta property="og:image" content="/img/icon.png">
+<meta property="og:url" content="https://abdulkerimsesli.de">
+<meta name="twitter:card" content="/img/icon.png">
   <!-- Internal CSS -->
   <style>
     /* ==========================
@@ -36,7 +41,13 @@
         animation: none;
       }
     }
-
+    .full-screen-section {
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+.left-text {
+  text-align: left;
+}
     :root {
       --main-fonts-color: #fff;
       --main-decor-color: #ffffff;
@@ -85,8 +96,8 @@
            Text-Willkommen
 ========================== */
     .shimmer-text {
-  font-size: 3rem;             /* Schriftgröße anpassen */
-  font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
   color: #fff;                 /* Grundfarbe, wichtig für den Glüheffekt */
   text-shadow: 0 0 40px #fff;  /* Weicher Schimmer (Schein) */
   /* Optionale Abstände */
@@ -302,18 +313,23 @@ hr {
 <body>
   <div id="menu-container"></div>
   <main id="main-content">
+
+
+
+
     <!-- Hero Section -->
-      <section id="hero" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-        <h3 class="display-3 fw-bold text-animate shimmer-text" data-animation="animate__fadeInDown">
-          Willkommen<hr>
-        </h3>
-        <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
-          Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-          Diese Seite dient als mein digitales Zuhause im<br>
-          World Wide Web, auf der ich meine Interessen,<br>
-          Erfahrungen und Gedanken teilen möchte.
-        </p>
-      </section>
+    <section id="hero" class="vh-100 d-flex flex-column align-items-center text-center snap transparent-section">
+      <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        <br>Willkommen<hr>
+      </h3>
+      <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+
     <!-- Features Section -->
     <section id="features" class="d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <div class="container">
