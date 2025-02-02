@@ -86,31 +86,57 @@
            Text-Willkommen
     ========================== */
     .shimmer-text {
-      padding-bottom: 15px;
-      letter-spacing: normal;
-      font-style: normal;
-      font-size: 60px;
-      color: var(--main-fonts-color);
-      text-shadow: 0px 0px 40px var(--main-decor-color);
-      font-family: inherit;
-      margin-bottom: 8rem;
-    }
+  font-size: 3rem;             /* Schriftgröße anpassen */
+  font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
+  color: #fff;                 /* Grundfarbe, wichtig für den Glüheffekt */
+  text-shadow: 0 0 40px #fff;  /* Weicher Schimmer (Schein) */
+  /* Optionale Abstände */
+  margin-bottom: 1rem;         
+  padding-bottom: 5rem;
+  /* Schimmer mit linear-gradient und Background-Clip */
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 
-    @keyframes shimmer {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
-
-    hr {
-      background: var(--main-decor-color);
-      margin: 2px;
-      height: 3px;
-      width: 150px;
-      border-radius: 5px;
-      border: hidden;
-      margin-inline-start: auto;
-      margin-inline-end: auto;
-    }
+  /* Animation */
+  animation: shimmer 2.5s infinite linear;
+}
+/* Keyframes für die Schimmer-Animation */
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+/* Einfaches HR-Styling passend zum Text */
+.shimmer-text hr {
+  width: 100px;
+  border: none;
+  height: 1.2px;
+  background-color: #fff;
+  margin: 0 auto 0;  /* zentriert unter dem Text */
+  opacity: 0.8;
+}
+/* ==========================
+         hr
+========================== */
+hr {
+    background: var(--main-decor-color);  /* Verwendet die dekorative Hauptfarbe als Hintergrund */
+    height: 3px;  /* Setzt die Höhe der Linie auf 3 Pixel */
+    width: 190px;  /* Definiert die Breite der Linie auf 150 Pixel */
+    border-radius: 5px;  /* Rundet die Ecken der Linie mit einem Radius von 5px ab */
+    border: hidden;  /* Versteckt die Standard-Grenze, um visuelle Unregelmäßigkeiten zu vermeiden */
+    margin-inline-start: auto;  /* Zentriert die Linie horizontal (Startabstand automatisch) */
+    margin-inline-end: auto;  /* Zentriert die Linie horizontal (Endabstand automatisch) */
+}
 
     /* ==========================
        Navigation (Navbar Bottom)
@@ -219,17 +245,17 @@
 ========================== */
 .text-animate {
   opacity: 0;
-  transform: translateY(-90px);
-  /* Übergänge: 0.3s, einfache ease-in-out-Funktion */
-  transition: opacity 1.3s ease-in-out, transform 1.3s ease-in-out;
+  transform: translateY(-90px);  /* Leichter Versatz von unten */
+  /* Hier verwenden wir eine etwas weichere cubic-bezier-Funktion und etwas längere Dauer */
+  transition: opacity 2.35s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 2.35s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
 }
 
 .text-animate.visible {
   opacity: 1;
-  transform: translateY(-90px);
+  transform: translateY(0);
 }
-
 /* ==========================
    Text-Animation
    (Beispiel: Elemente, die von unten hereingleiten oder sanft erscheinen)
@@ -238,8 +264,8 @@
   opacity: 0;
   transform: translateY(-20px);  /* Leichter Versatz von unten */
   /* Hier verwenden wir eine etwas weichere cubic-bezier-Funktion und etwas längere Dauer */
-  transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
 }
 
@@ -247,10 +273,9 @@
   opacity: 1;
   transform: translateY(0);
 }
-
-    /* ==========================
+/* ==========================
        Container-Zentrierung
-    ========================== */
+========================== */
     .center-container {
       display: flex;
       justify-content: center;
@@ -261,10 +286,9 @@
       padding: 0 20px;
       box-sizing: border-box;
     }
-
-    /* ==========================
+/* ==========================
        Lead-Text
-    ========================== */
+ ========================= */
     .lead {
       font-size: 1.25rem;
       font-weight: 300;
@@ -272,6 +296,7 @@
       margin: 0 auto;
       padding: 0 20px;
     }
+
   </style>
 </head>
 <body>
