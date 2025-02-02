@@ -19,7 +19,6 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&display=swap">
 
   <!-- Animate.css -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
   <!-- Meta Tags -->
   <meta name="description" content="Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.">
@@ -49,6 +48,8 @@
       --accent-color: rgba(255, 204, 41, 0.8);
       --menu-bg-color: #333333cc;
       --secondary-text-color: rgba(245, 245, 245, 0.5);
+
+      --menu-text-color: var(--menu-bg-color);
     }
 
     /* ==========================
@@ -64,7 +65,7 @@
     }
 
     h1, h2, h3, h4, h5, h6 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Poppins', sans-serif;
       color: var(--main-text-color);
       font-weight: 500;
       letter-spacing: 0.5px;
@@ -222,7 +223,7 @@
  /* Scroll-Animation - Startzustand */
 .scroll-animate {
   opacity: 0;
-  transform: translateY(-30px);     /* Startposition */
+  transform: translateY(0);     /* Startposition */
   transition: transform 1s ease-out, opacity 1s ease-out; /* Sanftere Bewegung */
   will-change: opacity, transform;
   pointer-events: none;             /* Keine Interaktion, wenn unsichtbar */
@@ -231,14 +232,14 @@
 /* Sichtbar beim Scrollen */
 .scroll-animate.visible {
   opacity: 1;
-  transform: translateY(30px);
+  transform: translateY(0);
   pointer-events: auto;
 }
 
 /* Versteckt beim Zurückscrollen */
 .scroll-animate.hidden {
   opacity: 0;
-  transform: translateY(-30px);
+  transform: translateY(0);
 }
 
 /* ==========================
