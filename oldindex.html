@@ -230,55 +230,62 @@ hr {
        Karten
     ========================== */
     .card {
-      background-color: var(--secondary-bg-color);
-      color: var(--main-text-color);
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      transform: scale(1);
-      border: 2px solid transparent;
-      transition: transform 0.2s ease-in-out,
-                  box-shadow 0.2s ease-in-out,
-                  border 0.1s ease-in-out;
-      will-change: transform, box-shadow, border;
-    }
+  background-color: var(--secondary-bg-color);
+  color: var(--main-text-color);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  /* GPU-Optimierung und konstante Border-Breite */
+  transform: translateZ(0);
+  border: 2px solid transparent;
 
-    /* Desktop-Hover */
-    .card:hover {
-      transform: translateY(30px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
+  /* Gleiche Transition-Dauer und -Kurve */
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.35s ease;
 
-    /* Aktiver Effekt bei Hover und aktivierter Karte */
-    .card.active:hover {
-      transform: translateY(30px);
-      border: 2px solid var(--accent-color);
-      box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
-    }
+  /* Hilft dem Browser, Änderungen zu „ahnen“ */
+  will-change: transform, box-shadow, border-color;
+}
 
-    /* Auf Touch-Geräten: aktiver Effekt beim Drücken */
-    @media (hover: none) {
-      .card:active {
-        transform: translateY(30px);
-        border: 2px solid var(--accent-color);
-        box-shadow: 0 10px 25px rgba(255, 204, 41, 0.8);
-      }
-    }
+/* Desktop-Hover: leichte Anhebung, Skalierung, Schattenverstärkung, Farbänderung der Border */
+.card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  border-color: var(--accent-color);
+}
 
+/* Aktiver Effekt bei Hover und aktiver Karte */
+.card.active:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(255, 204, 41, 0.4);
+  border-color: var(--accent-color);
+}
+
+/* Touch-Geräte: Effekt beim Drücken */
+@media (hover: none) {
+  .card:active {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(255, 204, 41, 0.4);
+    border-color: var(--accent-color);
+  }
+}
 /* ==========================
    Scroll-Animation
    (Beispiel: Elemente, die von oben hereinrutschen)
 ========================== */
 .text-animate {
   opacity: 0;
-  transform: translateY(-90px);  /* Leichter Versatz von unten */
-  /* Hier verwenden wir eine etwas weichere cubic-bezier-Funktion und etwas längere Dauer */
-  transition: opacity 2.35s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 2.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(0, -50px, 0); /* etwas kleinerer Versatz */
+  transition:
+    opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
 }
+
 .text-animate.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate3d(0, -50px, 0);
 }
 /* ==========================
    Text-Animation
