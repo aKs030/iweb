@@ -220,27 +220,20 @@
     /* ==========================
        Scroll-Animation
     ========================== */
- /* Scroll-Animation - Startzustand */
-.scroll-animate {
-  opacity: 0;
-  transform: translateY(-30px);     /* Startposition */
-  transition: transform 1s ease-out, opacity 1s ease-out; /* Sanftere Bewegung */
-  will-change: opacity, transform;
-  pointer-events: none;             /* Keine Interaktion, wenn unsichtbar */
-}
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(-30px);
+      transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+      will-change: opacity, transform;
+    }
+    .scroll-animate.visible {
+      opacity: 1;
+      transform: translateY(30px);
+    }
 
-/* Sichtbar beim Scrollen */
-.scroll-animate.visible {
-  opacity: 1;
-  transform: translateY(30px);
-  pointer-events: auto;
-}
 
-/* Versteckt beim Zurückscrollen */
-.scroll-animate.hidden {
-  opacity: 0;
-  transform: translateY(-30px);
-}
+
+
 
 /* ==========================
        Container-Zentrierung
@@ -452,20 +445,17 @@
   };
 
   const cardObserverCallback = (entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const index = Array.from(featureCards).indexOf(entry.target);
-        if (index !== activeCardIndex) {
-          activeCardIndex = index;
-          // Vor dem Wechsel wird eine Verzögerung eingebaut (hier 300ms)
-          clearTimeout(cardChangeTimeout);
-          cardChangeTimeout = setTimeout(() => {
-            setActiveCard(activeCardIndex);
-          }, 300);
-        }
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const index = Array.from(featureCards).indexOf(entry.target);
+      if (index !== activeCardIndex) {
+        activeCardIndex = index;
+        // Direkter Aufruf ohne Verzögerung
+        setActiveCard(activeCardIndex);
       }
-    });
-  };
+    }
+  });
+};
 
   const cardObserver = new IntersectionObserver(cardObserverCallback, cardObserverOptions);
   featureCards.forEach(card => cardObserver.observe(card));
@@ -481,7 +471,7 @@
         // Kurze Verzögerung, damit der Effekt sichtbar bleibt
         setTimeout(() => {
           card.classList.remove("active");
-        }, 900);
+        }, 500);
       });
     });
   } else {
@@ -495,11 +485,7 @@
   // Initialisiere die erste Karte als aktiv
   setActiveCard(activeCardIndex);
 
-  // Nach kurzer Verzögerung (z. B. 500ms) wird der initialLoad-Flag deaktiviert,
-  // sodass zukünftige Wechsel der Cards das Scrollen auslösen können.
-  setTimeout(() => {
-    initialLoad = false;
-  }, 400);
+
 
   // --- Observer für Elemente, die 100% sichtbar sein müssen ---
   const fullObserverOptions = {
