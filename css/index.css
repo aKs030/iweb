@@ -1,327 +1,290 @@
 /* ==========================
    Farbvariablen
-   ========================== */
-   :root {
-    --main-fonts-color: #fff;
-    --main-decor-color: #ffffff;
-
-    --main-bg-color: #444;
-    --secondary-bg-color: var(--main-bg-color);
-    --accent-color: rgba(255, 204, 41, 0.8);
-    --menu-bg-color: #333333cc;
-    --main-text-color: rgba(245, 245, 245, 0.9);  /* Zweite Definition */
-    --secondary-text-color: rgba(245, 245, 245, 0.5);
+========================== */
+@media (hover: none) {
+  .nav-link:focus,
+  .nav-link:active {
+    background: none;
+    box-shadow: none;
+    transform: none;
+    animation: none;
+  }
 }
+.full-screen-section {
+min-height: 100vh;
+padding: 2rem 0;
+}
+.left-text {
+text-align: left;
+}
+:root {
+  --main-fonts-color: #fff;
+  --main-decor-color: #ffffff;
+  --main-bg-color: #444;
+  --secondary-bg-color: var(--main-bg-color);
+  --main-text-color: rgba(245, 245, 245, 0.9);
+  --accent-color: rgba(255, 204, 41, 0.8);
+  --menu-bg-color: #333333cc;
+  --secondary-text-color: rgba(245, 245, 245, 0.5);
+  --menu-text-color: var(--menu-bg-color);
+}
+
 /* ==========================
    Allgemeine Stile
-   ========================== */
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
-    margin: 0;
-    padding: 0;
-    line-height: 1.8;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', serif;
-    color: var(--main-text-color);
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    line-height: 1.4;
-}
-p, li, a {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--secondary-text-color);
-}
-
-p {
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--main-text-color);
-}
-
-/* ==========================
-
-        Text-Willkommen
 ========================== */
-/* Grundlegendes Aussehen von .shimmer-text */
-.shimmer-text {
-  font-size: 3rem;             /* Schriftgröße anpassen */
-  font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
-  color: #fff;                 /* Grundfarbe, wichtig für den Glüheffekt */
-  text-shadow: 0 0 40px #fff;  /* Weicher Schimmer (Schein) */
-  /* Optionale Abstände */
-  margin-bottom: 1rem;         
-  padding-bottom: 5rem;
-  /* Schimmer mit linear-gradient und Background-Clip */
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.3) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--main-bg-color);
+  color: var(--main-text-color);
+  margin: 0;
+  padding: 0;
+  
+}
+html, body {
+scroll-snap-type: y mandatory;
+overscroll-behavior: contain;
+}
+.snap {
+scroll-snap-align: center; /* start oder center */
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  color: var(--main-text-color);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
 
-  /* Animation */
-  animation: shimmer 2.5s infinite linear;
+p, li, a {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--secondary-text-color);
+}
+
+p.lead {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--main-text-color);
+}
+/* ==========================
+       Text-Willkommen
+========================== */
+.shimmer-text {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
+color: #fff;                 /* Grundfarbe, wichtig für den Glüheffekt */
+text-shadow: 0 0 40px #fff;  /* Weicher Schimmer (Schein) */
+/* Optionale Abstände */
+margin-bottom: 1rem;         
+padding-bottom: 5rem;
+/* Schimmer mit linear-gradient und Background-Clip */
+background: linear-gradient(
+90deg,
+rgba(255, 255, 255, 0.3) 0%,
+rgba(255, 255, 255, 1) 50%,
+rgba(255, 255, 255, 0.3) 100%
+);
+background-size: 200% 100%;
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+
+/* Animation */
+animation: shimmer 2.5s infinite linear;
 }
 /* Keyframes für die Schimmer-Animation */
 @keyframes shimmer {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
+0% {
+background-position: 0% 50%;
+}
+100% {
+background-position: 100% 50%;
+}
 }
 /* Einfaches HR-Styling passend zum Text */
 .shimmer-text hr {
-  width: 100px;
-  border: none;
-  height: 1.2px;
-  background-color: #fff;
-  margin: 0 auto 0;  /* zentriert unter dem Text */
-  opacity: 0.8;
+width: 100px;
+border: none;
+height: 1.2px;
+background-color: #fff;
+margin: 0 auto 0;  /* zentriert unter dem Text */
+opacity: 0.8;
 }
 /* ==========================
-         hr
+     hr
 ========================== */
 hr {
-    background: var(--main-decor-color);  /* Verwendet die dekorative Hauptfarbe als Hintergrund */
-    height: 3px;  /* Setzt die Höhe der Linie auf 3 Pixel */
-    width: 190px;  /* Definiert die Breite der Linie auf 150 Pixel */
-    border-radius: 5px;  /* Rundet die Ecken der Linie mit einem Radius von 5px ab */
-    border: hidden;  /* Versteckt die Standard-Grenze, um visuelle Unregelmäßigkeiten zu vermeiden */
-    margin-inline-start: auto;  /* Zentriert die Linie horizontal (Startabstand automatisch) */
-    margin-inline-end: auto;  /* Zentriert die Linie horizontal (Endabstand automatisch) */
+background: var(--main-decor-color);  /* Verwendet die dekorative Hauptfarbe als Hintergrund */
+height: 3px;  /* Setzt die Höhe der Linie auf 3 Pixel */
+width: 190px;  /* Definiert die Breite der Linie auf 150 Pixel */
+border-radius: 5px;  /* Rundet die Ecken der Linie mit einem Radius von 5px ab */
+border: hidden;  /* Versteckt die Standard-Grenze, um visuelle Unregelmäßigkeiten zu vermeiden */
+margin-inline-start: auto;  /* Zentriert die Linie horizontal (Startabstand automatisch) */
+margin-inline-end: auto;  /* Zentriert die Linie horizontal (Endabstand automatisch) */
 }
 /* ==========================
-        .lead`-Element
+    .lead`-Element
 ========================== */
 .lead {
-    font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
-    font-weight: 300; /* Leichtere Schrift für modernen Look */
-    max-width: 800px;  /* Maximale Breite des Textes */
-    margin: 0 auto;  /* Zentrierung */
-    padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
+font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
+font-weight: 300; /* Leichtere Schrift für modernen Look */
+max-width: 800px;  /* Maximale Breite des Textes */
+margin: 0 auto;  /* Zentrierung */
+padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
 }
 /* ==========================
-   Navigation (Navbar Bottom)
+Navigation (Navbar Bottom)
 ========================== */
 .navbar-bottom {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: var(--menu-bg-color);
-    padding: 10px 20px;
-    border-radius: 30px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    z-index: 1000;
-    backdrop-filter: blur(8px);
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--menu-bg-color);
+  padding: 10px 20px;
+  border-radius: 30px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
 }
+
 .nav-list {
-    display: flex;
-    gap: 15px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  display: flex;
+  gap: 15px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-item {
-    position: relative;
+  position: relative;
 }
 
 .nav-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    text-decoration: none;
-    transition: all 0.4s ease-in-out;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  transition: all 0.4s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
+
 .nav-icon {
-    font-size: 1.3rem;
-    color: var(--menu-text-color);
-    transition: transform 0.3s ease, color 0.3s ease;
+  font-size: 1.3rem;
+  color: var(--menu-text-color);
+  transition: transform 0.3s ease, color 0.3s ease;
 }
+
 .nav-link:hover,
 .nav-item.active .nav-link {
-    background: var(--accent-color);
-    box-shadow: 0 6px 15px rgba(255, 204, 41, 0.8);
-    transform: scale(1.1);
+  background: var(--accent-color);
+  box-shadow: 0 6px 15px rgba(255, 204, 41, 0.8);
+  transform: scale(1.1);
 }
+
 .nav-link:hover .nav-icon,
 .nav-item.active .nav-icon {
-    color: var(--main-bg-color);
-    transform: scale(1.15);
-}
-@media (hover: none) {
-  .nav-link:focus,
-  .nav-link:hover,
-  .nav-link:active {
-    background: none; /* Entfernt Hintergrundfarbe beim Fokus */
-    box-shadow: none; /* Entfernt Schatten */
-    transform: none;  /* Entfernt Skalierungseffekte */
-    animation: none;  /* Verhindert Animation */
-  }
+  color: var(--main-bg-color);
+  transform: scale(1.15);
 }
 
-/* ==========================
-   Scroll-Animation
-========================== */
-/* ==========================
-   Standard / Desktop
-========================== */
-
-/* Textanimation via Animate.css */
-.animate__animated {
-  animation-duration: 3s;           /* Länge der Animation am Desktop */
-  animation-fill-mode: both;        /* Element behält nach der Animation den Zielzustand */
-}
-
-/* Scroll-Animation - Startzustand */
-.scroll-animate {
-  opacity: 0;
-  transform: translateY(-90px);     /* Startposition */
-  transition: transform 5s ease-out, opacity 3s ease-out; /* Sanftere Bewegung */
-  will-change: opacity, transform;
-  pointer-events: none;             /* Keine Interaktion, wenn unsichtbar */
-}
-
-/* Sichtbar beim Scrollen */
-.scroll-animate.visible {
-  opacity: 1;
-  transform: translateY(90px);
-  pointer-events: auto;
-}
-
-/* Versteckt beim Zurückscrollen */
-.scroll-animate.hidden {
-  opacity: 0;
-  transform: translateY(-90px);
-}
-
-/* Animation: fadeInDown => von oben nach unten */
-.scroll-animate[data-animation="animate__fadeInDown"].hidden {
-  transform: translateY(90px);
-}
-.scroll-animate[data-animation="animate__fadeInDown"].visible {
-  transform: translateY(-90px);
-}
-
-/* Animation: fadeInUp => von unten nach oben */
-.scroll-animate[data-animation="animate__fadeInUp"].hidden {
-  transform: translateY(-100px);
-}
-.scroll-animate[data-animation="animate__fadeInUp"].visible {
-  transform: translateY(-190px);
-}
-
-@media (max-width: 768px) {
-
-  /* Kürzere Animate.css-Dauer auf Mobile (optional) */
-  .animate__animated {
-    animation-duration: 3s;   /* Beispiel: kürzer für Mobile */
-  }
-
-  /* Weniger „weite“ Bewegungen und kürzere Transition-Zeiten */
-  .scroll-animate {
-    transform: translateY(-80px);
-    transition: transform 3s ease-out, opacity 3s ease-out;
-  }
-  .scroll-animate.visible {
-    transform: translateY(80px);
-  }
-  .scroll-animate.hidden {
-    transform: translateY(-80px);
-  }
-
-  /* Spezielle Anpassung für fadeInDown */
-  .scroll-animate[data-animation="animate__fadeInDown"].hidden {
-    transform: translateY(80px);
-  }
-  .scroll-animate[data-animation="animate__fadeInDown"].visible {
-    transform: translateY(-80px);
-  }
-
-  /* Spezielle Anpassung für fadeInUp */
-  .scroll-animate[data-animation="animate__fadeInUp"].hidden {
-    transform: translateY(-180px);
-  }
-  .scroll-animate[data-animation="animate__fadeInUp"].visible {
-    transform: translateY(-80px);
-  }
-}
 /* ==========================
    Karten
 ========================== */
-:root {
-    --transition-duration: 0.6s;
-    --hover-duration: 0.3s;
-    --card-radius: 15px;
-    --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.2);
-    --shadow-inactive: 0 5px 15px rgba(0, 0, 0, 0.3);
-    --shadow-active: 0 10px 25px rgba(255, 204, 41, 0.8);
-    --blur-inactive: 5px;
-    --blur-next: 2px;
-    --brightness-inactive: 0.8;
-    --brightness-next: 0.9;
-    --accent-color: #ffcc29;
-}
-/* Basis-Stile für Karten */
 .card {
-    opacity: 0;
-    margin-bottom: -30px;
-    border-radius: var(--card-radius);
-    transition: all 0.3s ease-in-out;
+background-color: var(--secondary-bg-color);
+color: var(--main-text-color);
+border-radius: 15px;
+box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+/* GPU-Optimierung und konstante Border-Breite */
+transform: translateZ(0);
+border: 2px solid transparent;
+
+/* Gleiche Transition-Dauer und -Kurve */
+transition:
+transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+border-color 0.35s ease;
+
+/* Hilft dem Browser, Änderungen zu „ahnen“ */
+will-change: transform, box-shadow, border-color;
 }
-/* Inaktive Karten */
-.card:not(.active) {
-    transform: scale(0.85) rotateY(-10deg) translateY(40px);
-    opacity: 0.4;
-    z-index: 0;
-    filter: blur(var(--blur-inactive)) brightness(var(--brightness-inactive));
-    box-shadow: var(--shadow-inactive);
+
+/* Desktop-Hover: leichte Anhebung, Skalierung, Schattenverstärkung, Farbänderung der Border */
+.card:hover {
+transform: translateY(-6px) scale(1.02);
+box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+border-color: var(--accent-color);
 }
-/* Aktive Karte */
-.card.active {
-    transform: scale(1.05) rotateY(0) translateY(0);
-    opacity: 1;
-    z-index: 2;
-    filter: none;
-    box-shadow: var(--shadow-active);
-    border: 2px solid var(--accent-color);
-    transition: all 0.4s ease-in-out;
+
+/* Aktiver Effekt bei Hover und aktiver Karte */
+.card.active:hover {
+transform: translateY(-6px) scale(1.02);
+box-shadow: 0 12px 30px rgba(255, 204, 41, 0.4);
+border-color: var(--accent-color);
 }
-.card-link {
-    text-decoration: none; /* Entferne Unterstreichung */
-    color: inherit; /* Vererbt die Farbe */
+
+/* Touch-Geräte: Effekt beim Drücken */
+@media (hover: none) {
+.card:active {
+transform: translateY(-6px) scale(1.02);
+box-shadow: 0 12px 30px rgba(255, 204, 41, 0.4);
+border-color: var(--accent-color);
 }
-.card h5 {
-    font-size: 1.5rem; /* Größere Überschrift für bessere Lesbarkeit */
-    font-weight: bold;
-    color: #222; /* Dunklerer Text */
-}
-.card p {
-    font-size: 1.1rem; /* Größerer Absatztext */
-    color: #555; /* Verbessertes Grau für bessere Lesbarkeit */
-}
-i {
-    color: #333; /* Icon-Farbe verbessert */
 }
 /* ==========================
+Text-Animation
 ========================== */
+.text-animate {
+opacity: 0;
+transform: translate3d(0, -50px, 0); /* etwas kleinerer Versatz */
+transition:
+opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+will-change: opacity, transform;
+}
+
+.text-animate.visible {
+opacity: 1;
+transform: translate3d(0, -50px, 0);
+}
+/* ==========================
+Scroll-Animation
+========================== */
+.scroll-animate {
+opacity: 0;
+transform: translateY(-20px);  /* Leichter Versatz von unten */
+/* Hier verwenden wir eine etwas weichere cubic-bezier-Funktion und etwas längere Dauer */
+transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+will-change: opacity, transform;
+}
+
+.scroll.visible {
+opacity: 1;
+transform: translateY(0);
+}
+/* ==========================
+   Container-Zentrierung
+========================== */
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  text-align: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+/* ==========================
+   Lead-Text
+========================= */
+
