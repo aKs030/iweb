@@ -25,18 +25,16 @@
         // Canvas und Spielvariablen
         const canvas = document.createElement('canvas');
         canvas.id = 'gameCanvas';
-        canvas.width = 300;
-        canvas.height = 600;
         document.body.appendChild(canvas);
         const ctx = canvas.getContext('2d');
 
         const COLS = 10;
         const ROWS = 20;
-        const BLOCK_SIZE = 30;
-        const COLORS = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F6'];
+        let BLOCK_SIZE;
         let board = [];
         let currentPiece;
 
+        const COLORS = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F6'];
         const shapes = [
             [[1, 1, 1, 1]],
             [[1, 1], [1, 1]],
@@ -44,6 +42,13 @@
             [[1, 1, 0], [0, 1, 1]],
             [[0, 1, 1], [1, 1, 0]],
         ];
+
+        function resizeCanvas() {
+            const minDimension = Math.min(window.innerWidth, window.innerHeight);
+            BLOCK_SIZE = Math.floor(minDimension / COLS);
+            canvas.width = BLOCK_SIZE * COLS;
+            canvas.height = BLOCK_SIZE * ROWS;
+        }
 
         function resetBoard() {
             board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -93,12 +98,16 @@
         }
 
         function startGame() {
+            resizeCanvas();
             resetBoard();
             spawnPiece();
             update();
         }
 
-        window.onload = startGame;
+        window.onload = () => {
+            startGame();
+            window.addEventListener('resize', resizeCanvas);
+        };
     </script>
     <style>
         body {
@@ -113,6 +122,8 @@
         }
         canvas {
             border: 2px solid #fff;
+            max-width: 100vw;
+            max-height: 100vh;
         }
     </style>
 </head>
