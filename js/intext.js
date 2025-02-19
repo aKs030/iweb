@@ -4,48 +4,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Abschnittsdaten
     const sections = {
-        hero: [
-            `
-            <section id="hero1" class="vh-100 d-flex flex-column align-items-center text-center snap transparent-section">
-                <h3 class="display-3 fw-bold scroll-animate animate__animated animate__fadeInDown shimmer-text">
-                    Willkommen auf meiner Website!
-                    <hr>
-                </h3>
-                <p class="lead scroll-animate animate__fadeInUp">
-                    Entdecke meine neuesten Projekte und Ideen. Lass dich inspirieren!
-                </p>
-            </section>
+hero: [`
+    <section id="hero1" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen1<hr>
+      </h3>
+      <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
             `,
             `
-            <section id="hero2" class="vh-100 d-flex flex-column align-items-center text-center snap transparent-section">
-                <h3 class="display-3 fw-bold scroll-animate animate__animated animate__fadeInDown shimmer-text">
-                    Schön, dass du da bist!
-                    <hr>
-                </h3>
-                <p class="lead scroll-animate animate__fadeInUp">
-                    Hier findest du spannende Einblicke in meine kreativen Projekte.
-                </p>
-            </section>
+    <section id="hero2" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen2<hr>
+      </h3>
+      <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+            `,
             `
-        ],
-        about: [
+    <section id="hero3" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen3<hr>
+      </h3>
+      <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+`],
+
+about: [
             `
             <section id="about1" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
              <p class="lead scroll-animate" data-animation="animate__fadeInDown">
-                Vielen Dank für deinen Besuch! Ich hoffe, du findest interessante Inhalte.
+1
             </p>
                 <h2 class="scroll-animate" data-animation="animate__fadeInUp">
-                    Viel Spaß beim Stöbern!
+1
                  </h2>
             </section>
             `,
             `
             <section id="about2" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
     <p class="lead scroll-animate" data-animation="animate__fadeInDown">
-                    Hier teile ich meine Gedanken und Erfahrungen mit dir. Bleib dran!
+2
                 </p>
     <h2 class="scroll-animate" data-animation="animate__fadeInUp">
-                    Lass uns gemeinsam Neues entdecken!
+2
                 </h2>
             </section>
             `
@@ -58,14 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="card bg-white text-center p-4">
                             <i class="bi bi-person-circle display-4 mb-3"></i>
                             <h5 class="fw-bold">Über Mich</h5>
-                            <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>
+                            <p>Ich teile hier meine Leidenschaften, Interessen und Erlebnisse.</p>1
                         </div>
                     </a>
                     <a href="album.html" class="card-link">
                         <div class="card bg-white text-center p-4">
                             <i class="bi bi-images display-4 mb-3"></i>
                             <h5 class="fw-bold">Fotogalerie</h5>
-                            <p>Hier findest du einige Fotos von meinen Reisen und besonderen Ereignissen.</p>
+                            <p>Hier findest du einige Fotos von meinen Reisen und besonderen Ereignissen.</p>1
                         </div>
                     </a>
                 </div>
@@ -78,14 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="card bg-white text-center p-4">
                             <i class="bi bi-gear-wide-connected display-4 mb-3"></i>
                             <h5 class="fw-bold">Fähigkeiten</h5>
-                            <p>Erfahre mehr über meine technischen und kreativen Skills.</p>
+                            <p>Erfahre mehr über meine technischen und kreativen Skills.</p>2
                         </div>
                     </a>
                     <a href="projekte.html" class="card-link">
                         <div class="card bg-white text-center p-4">
                             <i class="bi bi-lightbulb display-4 mb-3"></i>
                             <h5 class="fw-bold">Projekte</h5>
-                            <p>Entdecke einige meiner erfolgreich umgesetzten Projekte.</p>
+                            <p>Entdecke einige meiner erfolgreich umgesetzten Projekte.</p>2
                         </div>
                     </a>
                 </div>
