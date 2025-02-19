@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris-ähnliches Puzzle-Spiel</title>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3GKZEVUyKXkrNQNm9KCBWPEzjs-MztOo",
+            authDomain: "puzzel-2e4ed.firebaseapp.com",
+            projectId: "puzzel-2e4ed",
+            storageBucket: "puzzel-2e4ed.appspot.com",
+            messagingSenderId: "806681938753",
+            appId: "1:806681938753:web:fc4e9e1b3e9a5629146fc0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function saveHighscore() {
+            const playerName = document.getElementById('playerName').value;
+            const score = Math.floor(Math.random() * 1000);
+            if (playerName) {
+                try {
+                    await addDoc(collection(db, 'highscores'), {
+                        name: playerName,
+                        score: score,
+                        date: new Date()
+                    });
+                    alert('Highscore gespeichert!');
+                    loadHighscores();
+                } catch (e) {
+                    console.error('Fehler beim Speichern:', e);
+                }
+            } else {
+                alert('Bitte gib deinen Namen ein!');
+            }
+        }
+
+        async function loadHighscores() {
+            const highscoreList = document.getElementById('highscoreList');
+            highscoreList.innerHTML = '<h2>Highscores</h2>';
+            const q = query(collection(db, 'highscores'), orderBy('score', 'desc'), limit(10));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                highscoreList.innerHTML += `<p>${data.name}: ${data.score} Punkte</p>`;
+            });
+        }
+
+        window.onload = loadHighscores;
+    </script>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            border: 2px solid #fff;
+        }
+        header {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            text-align: center;
+        }
+        header nav a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        .highscore-form {
+            margin-top: 20px;
+        }
+        input, button {
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="#game">Spiel</a>
+            <a href="#highscores">Highscores</a>
+            <a href="#settings">Einstellungen</a>
+        </nav>
+    </header>
+    <main>
+        <canvas id="gameCanvas" width="300" height="600"></canvas>
+        <div class="highscore-form">
+            <input type="text" id="playerName" placeholder="Dein Name">
+            <button onclick="saveHighscore()">Highscore speichern</button>
+        </div>
+        <div id="highscoreList"></div>
+    </main>
+</body>
+</html>
