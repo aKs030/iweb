@@ -7,6 +7,7 @@
     let ctx;
     let board = [];
     let currentPiece;
+    let animationFrameId;
 
     const COLS = 10;
     const ROWS = 20;
@@ -37,6 +38,8 @@
         BLOCK_SIZE = Math.floor(minDimension / COLS);
         canvas.width = BLOCK_SIZE * COLS;
         canvas.height = BLOCK_SIZE * ROWS;
+        drawBoard();
+        drawPiece();
     }
 
     function resetBoard() {
@@ -83,7 +86,7 @@
     function update() {
         drawBoard();
         drawPiece();
-        requestAnimationFrame(update);
+        animationFrameId = requestAnimationFrame(update);
     }
 
     function startGame() {
@@ -99,6 +102,10 @@
         startGame();
         window.addEventListener('resize', resizeCanvas);
     });
+
+    function stopGame() {
+        cancelAnimationFrame(animationFrameId);
+    }
 </script>
 
 <main>
