@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris-ähnliches Puzzle-Spiel</title>
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
+        // Firebase-Konfiguration
         const firebaseConfig = {
             apiKey: "AIzaSyA3GKZEVUyKXkrNQNm9KCBWPEzjs-MztOo",
             authDomain: "puzzel-2e4ed.firebaseapp.com",
@@ -23,38 +22,83 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function saveHighscore() {
-            const playerName = document.getElementById('playerName').value;
-            const score = Math.floor(Math.random() * 1000);
-            if (playerName) {
-                try {
-                    await addDoc(collection(db, 'highscores'), {
-                        name: playerName,
-                        score: score,
-                        date: new Date()
-                    });
-                    alert('Highscore gespeichert!');
-                    loadHighscores();
-                } catch (e) {
-                    console.error('Fehler beim Speichern:', e);
-                }
-            } else {
-                alert('Bitte gib deinen Namen ein!');
-            }
+        // Canvas und Spielvariablen
+        const canvas = document.createElement('canvas');
+        canvas.id = 'gameCanvas';
+        canvas.width = 300;
+        canvas.height = 600;
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 30;
+        const COLORS = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F6'];
+        let board = [];
+        let currentPiece;
+
+        const shapes = [
+            [[1, 1, 1, 1]],
+            [[1, 1], [1, 1]],
+            [[0, 1, 0], [1, 1, 1]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 1], [1, 1, 0]],
+        ];
+
+        function resetBoard() {
+            board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         }
 
-        async function loadHighscores() {
-            const highscoreList = document.getElementById('highscoreList');
-            highscoreList.innerHTML = '<h2>Highscores</h2>';
-            const q = query(collection(db, 'highscores'), orderBy('score', 'desc'), limit(10));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                highscoreList.innerHTML += `<p>${data.name}: ${data.score} Punkte</p>`;
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            board.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) {
+                        ctx.fillStyle = COLORS[value - 1];
+                        ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.strokeStyle = '#333';
+                        ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                });
             });
         }
 
-        window.onload = loadHighscores;
+        function spawnPiece() {
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+            currentPiece = {
+                shape,
+                x: Math.floor((COLS - shape[0].length) / 2),
+                y: 0,
+                color: Math.floor(Math.random() * COLORS.length) + 1
+            };
+        }
+
+        function drawPiece() {
+            currentPiece.shape.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) {
+                        ctx.fillStyle = COLORS[currentPiece.color - 1];
+                        ctx.fillRect((currentPiece.x + x) * BLOCK_SIZE, (currentPiece.y + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.strokeStyle = '#333';
+                        ctx.strokeRect((currentPiece.x + x) * BLOCK_SIZE, (currentPiece.y + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                });
+            });
+        }
+
+        function update() {
+            drawBoard();
+            drawPiece();
+            requestAnimationFrame(update);
+        }
+
+        function startGame() {
+            resetBoard();
+            spawnPiece();
+            update();
+        }
+
+        window.onload = startGame;
     </script>
     <style>
         body {
@@ -70,44 +114,8 @@
         canvas {
             border: 2px solid #fff;
         }
-        header {
-            width: 100%;
-            padding: 10px;
-            background-color: #333;
-            text-align: center;
-        }
-        header nav a {
-            color: white;
-            margin: 0 10px;
-            text-decoration: none;
-        }
-        header nav a:hover {
-            text-decoration: underline;
-        }
-        .highscore-form {
-            margin-top: 20px;
-        }
-        input, button {
-            padding: 5px;
-            margin: 5px;
-        }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="#game">Spiel</a>
-            <a href="#highscores">Highscores</a>
-            <a href="#settings">Einstellungen</a>
-        </nav>
-    </header>
-    <main>
-        <canvas id="gameCanvas" width="300" height="600"></canvas>
-        <div class="highscore-form">
-            <input type="text" id="playerName" placeholder="Dein Name">
-            <button onclick="saveHighscore()">Highscore speichern</button>
-        </div>
-        <div id="highscoreList"></div>
-    </main>
 </body>
 </html>
