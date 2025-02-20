@@ -13,6 +13,10 @@
        Global & animierter Hintergrund
        =========================== */
        button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   appearance: none;
   -webkit-appearance: none;
   background: linear-gradient(135deg, #666, #444);
@@ -21,14 +25,21 @@
   border-radius: 4px;
   color: #fff;
   font-size: 0.75rem;
-  padding: 0.3rem 0.6rem;
+  padding: 0.4rem 0.6rem;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
+
+button i {
+  font-size: 1rem;
+  margin-bottom: 0.2rem; /* Abstand zwischen Icon und Text */
+}
+
 button:hover {
   background: linear-gradient(135deg, #777, #555);
 }
+
 button:active {
   transform: scale(0.98);
   background: linear-gradient(135deg, #555, #333);
