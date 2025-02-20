@@ -1,125 +1,64 @@
-<script>
-    import { onMount } from 'svelte';
-    import { initializeApp } from 'firebase/app';
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+// Puzzle-Browser-Game ähnlich wie Tetris
 
-    let canvas;
-    let ctx;
-    let board = [];
-    let currentPiece;
-    let animationFrameId;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const grid = 32;
+const rows = 20;
+const cols = 10;
 
-    const COLS = 10;
-    const ROWS = 20;
-    let BLOCK_SIZE;
-    const COLORS = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F6'];
-    const shapes = [
-        [[1, 1, 1, 1]],
-        [[1, 1], [1, 1]],
-        [[0, 1, 0], [1, 1, 1]],
-        [[1, 1, 0], [0, 1, 1]],
-        [[0, 1, 1], [1, 1, 0]],
-    ];
+canvas.width = cols * grid;
+canvas.height = rows * grid;
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA3GKZEVUyKXkrNQNm9KCBWPEzjs-MztOo",
-        authDomain: "puzzel-2e4ed.firebaseapp.com",
-        projectId: "puzzel-2e4ed",
-        storageBucket: "puzzel-2e4ed.appspot.com",
-        messagingSenderId: "806681938753",
-        appId: "1:806681938753:web:fc4e9e1b3e9a5629146fc0"
-    };
+const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#FFBD33'];
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+// Spielfeld erstellen
+let board = Array.from({ length: rows }, () => Array(cols).fill(0));
 
-    function resizeCanvas() {
-        const minDimension = Math.min(window.innerWidth, window.innerHeight);
-        BLOCK_SIZE = Math.floor(minDimension / COLS);
-        canvas.width = BLOCK_SIZE * COLS;
-        canvas.height = BLOCK_SIZE * ROWS;
-        drawBoard();
-        drawPiece();
+// Tetromino-Formen
+const tetrominos = [
+    [[1, 1, 1, 1]], // I
+    [[1, 1, 1], [0, 1, 0]], // T
+    [[1, 1], [1, 1]], // O
+    [[1, 1, 0], [0, 1, 1]], // S
+    [[0, 1, 1], [1, 1, 0]] // Z
+];
+
+let currentPiece = {
+    shape: tetrominos[Math.floor(Math.random() * tetrominos.length)],
+    color: colors[Math.floor(Math.random() * colors.length)],
+    x: 3,
+    y: 0
+};
+
+function drawBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            if (board[row][col]) {
+                ctx.fillStyle = board[row][col];
+                ctx.fillRect(col * grid, row * grid, grid, grid);
+                ctx.strokeRect(col * grid, row * grid, grid, grid);
+            }
+        }
     }
+}
 
-    function resetBoard() {
-        board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-    }
-
-    function drawBoard() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        board.forEach((row, y) => {
-            row.forEach((value, x) => {
-                if (value) {
-                    ctx.fillStyle = COLORS[value - 1];
-                    ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                    ctx.strokeStyle = '#333';
-                    ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                }
-            });
+function drawPiece() {
+    ctx.fillStyle = currentPiece.color;
+    currentPiece.shape.forEach((row, y) => {
+        row.forEach((cell, x) => {
+            if (cell) {
+                ctx.fillRect((currentPiece.x + x) * grid, (currentPiece.y + y) * grid, grid, grid);
+                ctx.strokeRect((currentPiece.x + x) * grid, (currentPiece.y + y) * grid, grid, grid);
+            }
         });
-    }
-
-    function spawnPiece() {
-        const shape = shapes[Math.floor(Math.random() * shapes.length)];
-        currentPiece = {
-            shape,
-            x: Math.floor((COLS - shape[0].length) / 2),
-            y: 0,
-            color: Math.floor(Math.random() * COLORS.length) + 1
-        };
-    }
-
-    function drawPiece() {
-        currentPiece.shape.forEach((row, y) => {
-            row.forEach((value, x) => {
-                if (value) {
-                    ctx.fillStyle = COLORS[currentPiece.color - 1];
-                    ctx.fillRect((currentPiece.x + x) * BLOCK_SIZE, (currentPiece.y + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                    ctx.strokeStyle = '#333';
-                    ctx.strokeRect((currentPiece.x + x) * BLOCK_SIZE, (currentPiece.y + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                }
-            });
-        });
-    }
-
-    function update() {
-        drawBoard();
-        drawPiece();
-        animationFrameId = requestAnimationFrame(update);
-    }
-
-    function startGame() {
-        resizeCanvas();
-        resetBoard();
-        spawnPiece();
-        update();
-    }
-
-    onMount(() => {
-        canvas = document.getElementById('gameCanvas');
-        ctx = canvas.getContext('2d');
-        startGame();
-        window.addEventListener('resize', resizeCanvas);
     });
+}
 
-    function stopGame() {
-        cancelAnimationFrame(animationFrameId);
-    }
-</script>
+function gameLoop() {
+    drawBoard();
+    drawPiece();
+    requestAnimationFrame(gameLoop);
+}
 
-<main>
-    <canvas id="gameCanvas" style="border: 2px solid #fff; max-width: 100vw; max-height: 100vh;"></canvas>
-</main>
-
-<style>
-    main {
-        background-color: #1e1e1e;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-</style>
+gameLoop();
