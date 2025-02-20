@@ -1,64 +1,96 @@
-// Puzzle-Browser-Game ähnlich wie Tetris
+// Puzzle-Browser-Game mit Bootstrap-Integration
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const grid = 32;
-const rows = 20;
-const cols = 10;
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle-Browser-Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        canvas {
+            border: 2px solid #333;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container text-center">
+        <h1 class="my-4">Puzzle-Browser-Game</h1>
+        <canvas id="gameCanvas" width="320" height="640"></canvas>
+        <button class="btn btn-primary mt-3" onclick="restartGame()">Neustart</button>
+    </div>
 
-canvas.width = cols * grid;
-canvas.height = rows * grid;
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const grid = 32;
+        const rows = 20;
+        const cols = 10;
 
-const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#FFBD33'];
+        const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#FFBD33'];
 
-// Spielfeld erstellen
-let board = Array.from({ length: rows }, () => Array(cols).fill(0));
+        let board = Array.from({ length: rows }, () => Array(cols).fill(0));
 
-// Tetromino-Formen
-const tetrominos = [
-    [[1, 1, 1, 1]], // I
-    [[1, 1, 1], [0, 1, 0]], // T
-    [[1, 1], [1, 1]], // O
-    [[1, 1, 0], [0, 1, 1]], // S
-    [[0, 1, 1], [1, 1, 0]] // Z
-];
+        const tetrominos = [
+            [[1, 1, 1, 1]],
+            [[1, 1, 1], [0, 1, 0]],
+            [[1, 1], [1, 1]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 1], [1, 1, 0]]
+        ];
 
-let currentPiece = {
-    shape: tetrominos[Math.floor(Math.random() * tetrominos.length)],
-    color: colors[Math.floor(Math.random() * colors.length)],
-    x: 3,
-    y: 0
-};
+        let currentPiece = {
+            shape: tetrominos[Math.floor(Math.random() * tetrominos.length)],
+            color: colors[Math.floor(Math.random() * colors.length)],
+            x: 3,
+            y: 0
+        };
 
-function drawBoard() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            if (board[row][col]) {
-                ctx.fillStyle = board[row][col];
-                ctx.fillRect(col * grid, row * grid, grid, grid);
-                ctx.strokeRect(col * grid, row * grid, grid, grid);
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (board[row][col]) {
+                        ctx.fillStyle = board[row][col];
+                        ctx.fillRect(col * grid, row * grid, grid, grid);
+                        ctx.strokeRect(col * grid, row * grid, grid, grid);
+                    }
+                }
             }
         }
-    }
-}
 
-function drawPiece() {
-    ctx.fillStyle = currentPiece.color;
-    currentPiece.shape.forEach((row, y) => {
-        row.forEach((cell, x) => {
-            if (cell) {
-                ctx.fillRect((currentPiece.x + x) * grid, (currentPiece.y + y) * grid, grid, grid);
-                ctx.strokeRect((currentPiece.x + x) * grid, (currentPiece.y + y) * grid, grid, grid);
-            }
-        });
-    });
-}
+        function drawPiece() {
+            ctx.fillStyle = currentPiece.color;
+            currentPiece.shape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        ctx.fillRect((currentPiece.x + x) * grid, (currentPiece.y + y) * grid, grid, grid);
+                        ctx.strokeRect((currentPiece.x + x) * grid, (currentPiece.y + y) * grid, grid, grid);
+                    }
+                });
+            });
+        }
 
-function gameLoop() {
-    drawBoard();
-    drawPiece();
-    requestAnimationFrame(gameLoop);
-}
+        function gameLoop() {
+            drawBoard();
+            drawPiece();
+            requestAnimationFrame(gameLoop);
+        }
 
-gameLoop();
+        function restartGame() {
+            board = Array.from({ length: rows }, () => Array(cols).fill(0));
+            currentPiece = {
+                shape: tetrominos[Math.floor(Math.random() * tetrominos.length)],
+                color: colors[Math.floor(Math.random() * colors.length)],
+                x: 3,
+                y: 0
+            };
+        }
+
+        gameLoop();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
