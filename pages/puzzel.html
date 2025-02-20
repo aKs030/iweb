@@ -308,32 +308,23 @@
       <div id="canvas-wrapper">
         <canvas id="tetris" width="200" height="400"></canvas>
       </div>
-      <!-- Scoreboard -->
-      <div id="scoreboard">
-        <p>Punkte: <span id="score">0</span></p>
-        <p>Zeilen: <span id="lines">0</span></p>
-        <p>Level: <span id="level">1</span></p>
-        <div class="button-row">
-          <button id="pause-btn">
-            <i class="fas fa-pause"></i>
-            <span>Pause</span>
-          </button>
-          <button id="reset-btn">
-            <i class="fas fa-redo"></i>
-            <span>Neustart</span>
-          </button>
-          <!-- Ghost Toggle-Button in Scoreboard integriert -->
-          <button id="ghost-toggle-btn">
-            <i class="fas fa-ghost"></i>
-            <span>Ghost: An</span>
-          </button>
-        </div>
+
+      <div class="control-row">
+        <button id="pause-btn">
+          <i class="fas fa-pause"></i>
+          <span>Pause</span>
+        </button>
+        <button id="reset-btn">
+          <i class="fas fa-redo"></i>
+          <span>Neustart</span>
+        </button>
+        <!-- Ghost Toggle-Button in Scoreboard integriert -->
+        <button id="ghost-toggle-btn">
+          <i class="fas fa-ghost"></i>
+          <span>Ghost: An</span>
+        </button>
       </div>
-      <!-- Highscore -->
-      <div id="highscore-container">
-        <h3>Highscores</h3>
-        <ol id="highscore-list"></ol>
-      </div>
+
 
       <div id="controls-wrapper">
         <div id="controls">
@@ -363,6 +354,9 @@
           </div>
         </div>
       </div>
+
+
+
     </div>
 
     <!-- Next-Tetromino -->
@@ -384,7 +378,21 @@
       </div>
     </div>
   </div>
+        <!-- Scoreboard -->
+        <div id="scoreboard">
+            <p>Punkte: <span id="score">0</span></p>
+            <p>Zeilen: <span id="lines">0</span></p>
+            <p>Level: <span id="level">1</span></p>
+      <!-- Highscore -->
+      <div id="highscore-container">
+        <h3>Highscores</h3>
+        <ol id="highscore-list"></ol>
       </div>
+      </div>
+
+          </div>
+
+
 
 
   <!-- On-Screen-Steuerung -->
