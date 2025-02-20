@@ -103,6 +103,23 @@
     /* ===========================
        Scoreboard & Buttons
        =========================== */
+       #highscore-container {
+  margin-top: 10px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  position: relative;
+  z-index: 1;
+}
+
+/* Zusätzliche Regel für die Highscore-Liste */
+#highscore-list {
+  list-style-position: inside; /* Nummerierung wird innerhalb des Elements platziert */
+  text-align: left;            /* sorgt dafür, dass der Text linksbündig ausgerichtet wird */
+  padding-left: 20px;          /* passt den Abstand weiter an */
+}
     #scoreboard {
       margin-top: 10px;
       text-align: center;
@@ -383,12 +400,14 @@
             <p>Punkte: <span id="score">0</span></p>
             <p>Zeilen: <span id="lines">0</span></p>
             <p>Level: <span id="level">1</span></p>
-      <!-- Highscore -->
-      <div id="highscore-container">
-        <h3>Highscores</h3>
-        <ol id="highscore-list"></ol>
       </div>
-      </div>
+
+            <!-- Highscore -->
+            <div id="highscore-container">
+                <h3>Highscores</h3>
+                <ol id="highscore-list"></ol>
+              </div>
+
 
           </div>
 
