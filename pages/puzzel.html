@@ -1,4 +1,4 @@
-
+// Verbesserte Version des Puzzle-Browser-Games mit Bewegung und Steuerung
 
 <!DOCTYPE html>
 <html lang="de">
@@ -29,6 +29,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             gameLoop();
+            document.addEventListener('keydown', handleInput);
         });
 
         const canvas = document.getElementById('gameCanvas');
@@ -50,6 +51,9 @@
         ];
 
         let currentPiece = {};
+        let dropCounter = 0;
+        let dropInterval = 1000;
+        let lastTime = 0;
 
         function resetPiece() {
             currentPiece = {
@@ -85,7 +89,34 @@
             });
         }
 
-        function gameLoop() {
+        function movePiece(offsetX) {
+            currentPiece.x += offsetX;
+        }
+
+        function dropPiece() {
+            currentPiece.y++;
+        }
+
+        function handleInput(event) {
+            if (event.key === 'ArrowLeft') {
+                movePiece(-1);
+            } else if (event.key === 'ArrowRight') {
+                movePiece(1);
+            } else if (event.key === 'ArrowDown') {
+                dropPiece();
+            }
+        }
+
+        function gameLoop(time = 0) {
+            const deltaTime = time - lastTime;
+            lastTime = time;
+
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) {
+                dropPiece();
+                dropCounter = 0;
+            }
+
             drawBoard();
             drawPiece();
             requestAnimationFrame(gameLoop);
