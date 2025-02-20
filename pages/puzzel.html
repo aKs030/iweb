@@ -314,6 +314,11 @@
       <div id="canvas-wrapper">
         <canvas id="tetris" width="200" height="400"></canvas>
       </div>
+      
+
+
+      <div id="controls-wrapper">
+        <div id="controls">
       <div class="control-row">
         <button id="pause-btn">
           <i class="fas fa-pause"></i>
@@ -328,6 +333,12 @@
           <span>Ghost: An</span>
         </button>
       </div>
+        </div>
+      </div>
+
+
+
+
       <div id="controls-wrapper">
         <div id="controls">
           <div class="control-row">
@@ -484,7 +495,7 @@
     let level = 1;
     let gameOver = false;
     let isPaused = false;
-    let ghostEnabled = true;
+    let ghostEnabled = false;
 
     // Canvas & Context
     const canvas = document.getElementById('tetris');
