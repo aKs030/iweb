@@ -16,6 +16,10 @@
       margin: 0;
       padding: 0;
     }
+    html, body {
+  overflow: hidden;
+  touch-action: none;
+}
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(120deg, #f9f9f9, #e2e2e2, #f9f9f9);
@@ -470,6 +474,16 @@
      document.addEventListener('gesturestart', function(e) {
   e.preventDefault();
 });
+
+let lastTouch = 0;
+document.addEventListener('touchend', function(e) {
+  const now = new Date().getTime();
+  if (now - lastTouch <= 300) { // 300ms Schwelle
+    e.preventDefault();
+  }
+  lastTouch = now;
+}, false);
+
   /* Beispiel: Neue Funktion, um Fullscreen anzufordern und die Ausrichtung zu sperren */
   function requestFullscreenAndLock() {
     if (document.documentElement.requestFullscreen) {
