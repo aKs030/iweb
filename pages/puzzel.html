@@ -315,10 +315,7 @@
         <canvas id="tetris" width="200" height="400"></canvas>
       </div>
       
-
-
-      <div id="controls-wrapper">
-        <div id="controls">
+      
       <div class="control-row">
         <button id="pause-btn">
           <i class="fas fa-pause"></i>
@@ -333,10 +330,6 @@
           <span>Ghost: An</span>
         </button>
       </div>
-        </div>
-      </div>
-
-
 
 
       <div id="controls-wrapper">
@@ -832,7 +825,7 @@
     function togglePause() {
       if (gameOver) return;
       isPaused = !isPaused;
-      pauseBtn.querySelector('span').textContent = isPaused ? 'Fortsetzen' : 'Pause';
+      pauseBtn.querySelector('span').textContent = isPaused ? 'Weiter' : 'Pause';
     }
 
     function newGame() {
