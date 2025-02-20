@@ -9,48 +9,11 @@
     /* ===========================
        Global & animierter Hintergrund
        =========================== */
-       @media (max-width: 600px) {
-  h1 {
-    font-size: 1.4rem;
-    padding: 15px 0;
-  }
-  #scoreboard {
-    padding: 10px;
-  }
-  .button-row button {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
-  .control-button {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-  }
-}
-h1 {
-  font-size: clamp(1.5rem, 2vw, 2.5rem);
-}
-#tetris {
-  width: 100%;
-  height: auto;
-  max-width: 90vw;
-  max-height: 80vh;
-  aspect-ratio: 10 / 20;
-}
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    html, body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  height: 100%;
-}
-#main-layout {
-  height: 100%;
-}
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(120deg, #f9f9f9, #e2e2e2, #f9f9f9);
@@ -371,6 +334,35 @@ h1 {
         <h3>Highscores</h3>
         <ol id="highscore-list"></ol>
       </div>
+
+      <div id="controls-wrapper">
+        <div id="controls">
+          <!-- Rotieren -->
+          <div class="control-row">
+            <button id="rotate-btn" class="control-button">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+          <!-- Links, Runter, Rechts -->
+          <div class="control-row">
+            <button id="left-btn" class="control-button">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button id="down-btn" class="control-button">
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <button id="right-btn" class="control-button">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+          <!-- Hard Drop -->
+          <div class="control-row">
+            <button id="drop-btn" class="control-button">
+              <i class="fas fa-arrow-down"></i>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Next-Tetromino -->
@@ -396,34 +388,7 @@ h1 {
 
 
   <!-- On-Screen-Steuerung -->
-  <div id="controls-wrapper">
-    <div id="controls">
-      <!-- Rotieren -->
-      <div class="control-row">
-        <button id="rotate-btn" class="control-button">
-          <i class="fas fa-sync-alt"></i>
-        </button>
-      </div>
-      <!-- Links, Runter, Rechts -->
-      <div class="control-row">
-        <button id="left-btn" class="control-button">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button id="down-btn" class="control-button">
-          <i class="fas fa-chevron-down"></i>
-        </button>
-        <button id="right-btn" class="control-button">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-      <!-- Hard Drop -->
-      <div class="control-row">
-        <button id="drop-btn" class="control-button">
-          <i class="fas fa-arrow-down"></i>
-        </button>
-      </div>
-    </div>
-  </div>
+
 </div>
 
 <!-- Overlay: Game Over -->
