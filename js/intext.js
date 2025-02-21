@@ -1,5 +1,3 @@
-Intext 
-
 document.addEventListener('DOMContentLoaded', () => {
     // Funktion zur zufälligen Auswahl eines Elements aus einem Array
     const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
