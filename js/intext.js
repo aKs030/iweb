@@ -171,13 +171,31 @@ about: [
         ]
     };
 
-    // Abschnitte in die entsprechenden Container einfügen
-    document.getElementById('section-hero').innerHTML = getRandomElement(sections.hero);
-    document.getElementById('section-about').innerHTML = getRandomElement(sections.about);
-    document.getElementById('section-features').innerHTML = getRandomElement(sections.features);
+   
+     // Funktion zum Aktualisieren der Abschnitte mit zufälligen Inhalten
+    const updateSections = () => {
+        document.getElementById('section-hero').innerHTML = getRandomElement(sections.hero);
+        document.getElementById('section-about').innerHTML = getRandomElement(sections.about);
+        document.getElementById('section-features').innerHTML = getRandomElement(sections.features);
 
-    // Initialisierung der Karten-Animation
-    initializeFeatureSections();
+        // Initialisierung der Karten-Animation (falls benötigt)
+        if (typeof initializeFeatureSections === 'function') {
+            initializeFeatureSections();
+        }
+    };
+
+    // Abschnitte initial laden
+    updateSections();
+
+    // Event Listener für das Scrollen hinzufügen (mit Throttling zur Performance-Optimierung)
+    let lastScrollTime = 0;
+    const throttleDelay = 500; // Zeit in ms, um das Neuladen zu begrenzen
+
+    window.addEventListener('scroll', () => {
+        const currentTime = new Date().getTime();
+        if (currentTime - lastScrollTime > throttleDelay) {
+            updateSections();
+            lastScrollTime = currentTime;
+        }
+    });
 });
-
-
