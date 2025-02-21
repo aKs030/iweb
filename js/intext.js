@@ -5,43 +5,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // Abschnittsdaten
     const sections = {
         hero: [
-            `<section class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-                <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+                <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text">
                     Willkommen 1<hr>
                 </h3>
-                <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+                <p class="lead text-animate" style="text-align: left;">
                     Inhalt für Hero 1
                 </p>
-            </section>`,
-            `<section class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-                <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+            </div>`,
+            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+                <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text">
                     Willkommen 2<hr>
                 </h3>
-                <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+                <p class="lead text-animate" style="text-align: left;">
                     Inhalt für Hero 2
                 </p>
-            </section>`
+            </div>`
         ],
         about: [
-            `<section class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-                <p class="lead scroll-animate" data-animation="animate__fadeInDown">
+            `<div class="vh-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <p class="lead scroll-animate">
                     Über mich - Variante 1
                 </p>
-                <h2 class="scroll-animate" data-animation="animate__fadeInUp">
+                <h2>
                     Details zu mir 1
                 </h2>
-            </section>`,
-            `<section class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-                <p class="lead text-animate" data-animation="animate__fadeInUp">
+            </div>`,
+            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+                <p class="lead text-animate">
                     Über mich - Variante 2
                 </p>
-                <h2 class="text-animate" data-animation="animate__fadeInDown">
+                <h2>
                     Details zu mir 2
                 </h2>
-            </section>`
+            </div>`
         ],
         features: [
-            `<section class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
                 <div class="container">
                     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
                         <div class="col">
@@ -58,21 +58,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 </div>
-            </section>`
+            </div>`
         ]
     };
 
     // Funktion zum Aktualisieren der Abschnitte mit zufälligen Inhalten
     const updateSections = () => {
-        document.getElementById('section-hero').innerHTML = getRandomElement(sections.hero);
-        document.getElementById('section-about').innerHTML = getRandomElement(sections.about);
-        document.getElementById('section-features').innerHTML = getRandomElement(sections.features);
+        console.log('Aktualisiere Inhalte...');
+        
+        const heroSection = document.getElementById('section-hero');
+        const aboutSection = document.getElementById('section-about');
+        const featuresSection = document.getElementById('section-features');
+
+        if (heroSection && aboutSection && featuresSection) {
+            heroSection.innerHTML = getRandomElement(sections.hero);
+            aboutSection.innerHTML = getRandomElement(sections.about);
+            featuresSection.innerHTML = getRandomElement(sections.features);
+
+            console.log('Hero-Inhalt:', heroSection.innerHTML);
+            console.log('About-Inhalt:', aboutSection.innerHTML);
+            console.log('Features-Inhalt:', featuresSection.innerHTML);
+        } else {
+            console.error('Ein oder mehrere Container wurden nicht gefunden.');
+        }
     };
 
-    // Abschnitte initial laden
+    // Initiales Laden der Inhalte
     updateSections();
 
-    // Event Listener für das Scrollen hinzufügen (mit Throttling zur Performance-Optimierung)
+    // Scroll-Event mit Throttling zur Performance-Optimierung
     let lastScrollTime = 0;
     const throttleDelay = 500; // Zeit in ms, um das Neuladen zu begrenzen
 
