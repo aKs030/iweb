@@ -1,104 +1,185 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Seite wurde geladen");
+Intext 
 
+document.addEventListener('DOMContentLoaded', () => {
     // Funktion zur zufälligen Auswahl eines Elements aus einem Array
     const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
     // Abschnittsdaten
     const sections = {
-        hero: [
-            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-                <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text">
-                    Willkommen 1<hr>
-                </h3>
-                <p class="lead text-animate" style="text-align: left;">
-                    Inhalt für Hero 1
-                </p>
-            </div>`,
-            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-                <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text">
-                    Willkommen 2<hr>
-                </h3>
-                <p class="lead text-animate" style="text-align: left;">
-                    Inhalt für Hero 2
-                </p>
-            </div>`
-        ],
-        about: [
-            `<div class="vh-100 d-flex flex-column justify-content-center align-items-center text-center">
-                <p class="lead scroll-animate">
-                    Über mich - Variante 1
-                </p>
-                <h2>
-                    Details zu mir 1
-                </h2>
-            </div>`,
-            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-                <p class="lead text-animate">
-                    Über mich - Variante 2
-                </p>
-                <h2>
-                    Details zu mir 2
-                </h2>
-            </div>`
+hero: [`
+    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen1<hr>
+      </h3>
+      <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+            `,
+            `
+    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen2<hr>
+      </h3>
+      <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+            `,
+            `
+    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen3<hr>
+      </h3>
+      <p class="lead text-animate" style="text-align: left;" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+`],
+
+about: [
+            `
+            <section id="about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+             <p class="lead scroll-animate" data-animation="animate__fadeInDown">
+1
+            </p>
+                <h2 class="scroll-animate" data-animation="animate__fadeInUp">
+1
+                 </h2>
+            </section>
+            `,
+            `
+    <section id="about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+      <p class="lead text-animate" data-animation="animate__fadeInUp">
+        Vielen Dank, dass du meine Homepage besuchst.<br>
+        Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
+        Vergiss nicht, regelmäßig vorbeizuschauen,<br>
+        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+      </p>
+      <h2 class="text-animate" data-animation="animate__fadeInDown">
+        Alles Gute und viel Spaß beim Stöbern!
+      </h2>
+    </section>
+            `
         ],
         features: [
-            `<div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-                <div class="container">
-                    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-                        <div class="col">
-                            <h5 class="fw-bold animated-text text-dark">Feature 1</h5>
-                            <p class="animated-text text-secondary">
-                                Beschreibung Feature 1
-                            </p>
-                        </div>
-                        <div class="col">
-                            <h5 class="fw-bold animated-text text-dark">Feature 2</h5>
-                            <p class="animated-text text-secondary">
-                                Beschreibung Feature 2
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>`
+            `
+    <section id="features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+      <div class="container">
+        <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+          <!-- Link zu Über Mich -->
+          <div class="col">
+            <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+              <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="400">
+                <i class="bi bi-person-circle display-4 animated-icon mb-3 text-muted"></i>
+                <h5 class="fw-bold animated-text text-dark">Über Mich</h5>
+                <p class="animated-text text-secondary">
+                  Ich teile hier meine Leidenschaften,<br>
+                  Interessen und Erlebnisse.
+                </p>
+              </div>
+            </a>
+          </div>
+          <div class="col">
+            <a href="album.html" class="text-decoration-none text-reset animated-link">
+              <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="800">
+                <i class="bi bi-images display-4 animated-icon mb-3 text-muted"></i>
+                <h5 class="fw-bold animated-text text-dark">Fotogalerie</h5>
+                <p class="animated-text text-secondary">
+                  Hier findest du einige Fotos von meinen Reisen,<br>
+                  von meinem Alltag und von besonderen Ereignissen,<br>
+                  an denen ich teilgenommen habe.
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+     `,
+            `
+<section id="features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+  <div class="container">
+    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+      <div class="col">
+        <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="400">
+            <i class="bi bi-emoji-smile display-4 animated-icon mb-3 text-primary"></i>
+            <h5 class="fw-bold animated-text text-dark">Wer bin ich?</h5>
+            <p class="animated-text text-secondary">
+              Einblicke in meine Persönlichkeit,<br>
+              meine Hobbys und das, was mich begeistert.
+            </p>
+          </div>
+        </a>
+      </div>
+      <div class="col">
+        <a href="album.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="800">
+            <i class="bi bi-collection-fill display-4 animated-icon mb-3 text-primary"></i>
+            <h5 class="fw-bold animated-text text-dark">Meine Erinnerungen</h5>
+            <p class="animated-text text-secondary">
+              Hier findet ihr eine bunte Sammlung von Fotos,<br>
+              spannenden Eindrücken und besonderen Momenten.
+            </p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+            `,
+            `
+<section id="features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+  <div class="container">
+    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+      <div class="col">
+        <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="400">
+            <i class="bi bi-person-fill display-4 animated-icon mb-3 text-muted"></i>
+            <h5 class="fw-bold animated-text text-dark">Meine Geschichte</h5>
+            <p class="animated-text text-secondary">
+              Erfahre mehr über meine Leidenschaften,<br>
+              Interessen und meine persönlichen Erlebnisse.
+            </p>
+          </div>
+        </a>
+      </div>
+       <div class="col">
+        <a href="album.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__fadeInUp" data-delay="800">
+            <i class="bi bi-camera-fill display-4 animated-icon mb-3 text-muted"></i>
+            <h5 class="fw-bold animated-text text-dark">Mein Album</h5>
+            <p class="animated-text text-secondary">
+              Entdecke Fotos von meinen Reisen,<br>
+              besonderen Momenten und meinem Alltag.
+            </p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+            `
         ]
     };
 
-    // Funktion zum Aktualisieren der Abschnitte mit zufälligen Inhalten
-    const updateSections = () => {
-        document.getElementById('section-hero').innerHTML = getRandomElement(sections.hero);
-        document.getElementById('section-about').innerHTML = getRandomElement(sections.about);
-        document.getElementById('section-features').innerHTML = getRandomElement(sections.features);
-    };
+    // Abschnitte in die entsprechenden Container einfügen
+    document.getElementById('section-hero').innerHTML = getRandomElement(sections.hero);
+    document.getElementById('section-about').innerHTML = getRandomElement(sections.about);
+    document.getElementById('section-features').innerHTML = getRandomElement(sections.features);
 
-    // Initiales Laden der Inhalte
-    updateSections();
-
-    // Intersection Observer initialisieren
-    const options = {
-        root: null, // Standardmäßig das Ansichtsfenster
-        rootMargin: "0px",
-        threshold: 0.5 // 50% des Elements müssen sichtbar sein
-    };
-
-    let isReloading = false;
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !isReloading) {
-                console.log(`Abschnitt sichtbar: ${entry.target.id}`);
-                isReloading = true;
-                
-                // Kleiner Delay, um visuelles Flackern zu vermeiden
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
-            }
-        });
-    }, options);
-
-    // Alle beobachtbaren Abschnitte hinzufügen
-    document.querySelectorAll('.observe-section').forEach(section => {
-        observer.observe(section);
-    });
+    // Initialisierung der Karten-Animation
+    initializeFeatureSections();
 });
+
+
