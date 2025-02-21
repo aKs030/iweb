@@ -80,6 +80,10 @@
   /* =======================
      LOGO
      ======================= */
+     .site-logo.elegant-logo {
+      font-family: 'Lobster', cursive, Arial, sans-serif;
+    }
+    /* Weitere CSS-Regeln können hier folgen */
      .site-logo {
        font-size: 1.5rem; /* Größere Schriftgröße für bessere Sichtbarkeit */
        color: #ffffff;
@@ -297,8 +301,10 @@
 }
 
 .site-menu__list .submenu li a:hover {
-  background-color: #0077ff;
-  color: #fff;
+  text-decoration: none;
+  color: #444;
+  display: block;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .site-menu__list .has-submenu:hover .submenu {

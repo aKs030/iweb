@@ -1,46 +1,62 @@
-<header class="site-header">
-  <!-- Logo -->
-  <a href="/index.html" aria-label="Zur Startseite">
-    <div class="site-logo__container" title="Zur Startseite">
-      <div class="site-logo elegant-logo" style="font-family: 'Lobster', cursive, Arial, sans-serif;">
-        Abdulkerim
-      </div>
-    </div>
-  </a>
 
-  <!-- Hamburger-Button -->
-  <button class="site-menu__toggle" aria-label="Menü umschalten">
-    <span class="site-menu__hamburger"></span>
-  </button>
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Lobster -->
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <!-- Eigene Styles -->
 
-  <!-- Menü -->
-  <nav class="site-menu">
-    <ul class="site-menu__list">
-      <li>
-        <a href="/index.html">
-          <i class="fas fa-home"></i> Home
-        </a>
-      </li>
-      <li>
-        <a href="/pages/album.html">
-          <i class="fas fa-images"></i> Fotogalerie
-        </a>
-      </li>
-      <li>
-        <a href="/pages/ubermich.html">
-          <i class="fas fa-user"></i> About me
-        </a>
-      </li>
-      <li class="has-submenu">
-        <a href="#">
-          <i class="fas fa-ellipsis-h"></i> Weiteres
-        </a>
-        <ul class="submenu">
-          <li><a href="/pages/snake.html"><i class="fas fa-gamepad"></i> Snake</a></li>
+
+
+    <header class="site-header">
+      <!-- Logo -->
+      <a href="/index.html" aria-label="Zur Startseite" title="Zur Startseite">
+        <div class="site-logo__container">
+          <div class="site-logo elegant-logo">
+            Abdulkerim
+          </div>
+        </div>
+      </a>
+
+      <!-- Hamburger-Button -->
+      <button class="site-menu__toggle" aria-label="Menü umschalten">
+        <span class="site-menu__hamburger"></span>
+      </button>
+
+      <!-- Navigation -->
+      <nav class="site-menu">
+        <ul class="site-menu__list">
+          <li>
+            <a href="/index.html">
+              <i class="fas fa-home" aria-hidden="true"></i> Home
+            </a>
+          </li>
+          <li>
+            <a href="/pages/album.html">
+              <i class="fas fa-images" aria-hidden="true"></i> Fotogalerie
+            </a>
+          </li>
+          <li>
+            <a href="/pages/ubermich.html">
+              <i class="fas fa-user" aria-hidden="true"></i> About me
+            </a>
+          </li>
+          <li class="has-submenu">
+            <a href="#">
+              <i class="fas fa-ellipsis-h" aria-hidden="true"></i> Weiteres
+            </a>
+            <ul class="submenu">
+              <li>
+                <a href="/pages/snake.html">
+                  <i class="fas fa-gamepad" aria-hidden="true"></i> Snake
+                </a>
+              </li>
+              <li>
+                <a href="/pages/tetris.html">
+                  <i class="fas fa-gamepad" aria-hidden="true"></i> Tetris
+                </a>
+              </li>
+            </ul>
+          </li>
         </ul>
-      </li>
-    </ul>
-  </nav>
-</header>
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+      </nav>
+    </header>
