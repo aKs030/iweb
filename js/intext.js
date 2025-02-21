@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("Seite wurde geladen");
+
     // Funktion zur zufälligen Auswahl eines Elements aus einem Array
     const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -64,37 +66,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Funktion zum Aktualisieren der Abschnitte mit zufälligen Inhalten
     const updateSections = () => {
-        console.log('Aktualisiere Inhalte...');
-        
-        const heroSection = document.getElementById('section-hero');
-        const aboutSection = document.getElementById('section-about');
-        const featuresSection = document.getElementById('section-features');
-
-        if (heroSection && aboutSection && featuresSection) {
-            heroSection.innerHTML = getRandomElement(sections.hero);
-            aboutSection.innerHTML = getRandomElement(sections.about);
-            featuresSection.innerHTML = getRandomElement(sections.features);
-
-            console.log('Hero-Inhalt:', heroSection.innerHTML);
-            console.log('About-Inhalt:', aboutSection.innerHTML);
-            console.log('Features-Inhalt:', featuresSection.innerHTML);
-        } else {
-            console.error('Ein oder mehrere Container wurden nicht gefunden.');
-        }
+        document.getElementById('section-hero').innerHTML = getRandomElement(sections.hero);
+        document.getElementById('section-about').innerHTML = getRandomElement(sections.about);
+        document.getElementById('section-features').innerHTML = getRandomElement(sections.features);
     };
 
     // Initiales Laden der Inhalte
     updateSections();
 
-    // Scroll-Event mit Throttling zur Performance-Optimierung
-    let lastScrollTime = 0;
-    const throttleDelay = 500; // Zeit in ms, um das Neuladen zu begrenzen
-
+    // Scroll-Event hinzufügen, um die Seite komplett neu zu laden
     window.addEventListener('scroll', () => {
-        const currentTime = new Date().getTime();
-        if (currentTime - lastScrollTime > throttleDelay) {
-            updateSections();
-            lastScrollTime = currentTime;
-        }
+        console.log("Seite wird neu geladen...");
+        window.location.reload(); // Seite komplett neu laden
     });
 });
