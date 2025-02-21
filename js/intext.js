@@ -74,9 +74,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initiales Laden der Inhalte
     updateSections();
 
-    // Scroll-Event hinzufügen, um die Seite komplett neu zu laden
-    window.addEventListener('scroll', () => {
-        console.log("Seite wird neu geladen...");
-        window.location.reload(); // Seite komplett neu laden
+    // Intersection Observer initialisieren
+    const options = {
+        root: null, // Standardmäßig das Ansichtsfenster
+        rootMargin: "0px",
+        threshold: 0.5 // 50% des Elements müssen sichtbar sein
+    };
+
+    let isReloading = false;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isReloading) {
+                console.log(`Abschnitt sichtbar: ${entry.target.id}`);
+                isReloading = true;
+                
+                // Kleiner Delay, um visuelles Flackern zu vermeiden
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+        });
+    }, options);
+
+    // Alle beobachtbaren Abschnitte hinzufügen
+    document.querySelectorAll('.observe-section').forEach(section => {
+        observer.observe(section);
     });
 });
