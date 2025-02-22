@@ -5,8 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Abschnittsdaten
     const sections = {
 hero: [`
-
-
   
     <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
@@ -227,51 +225,32 @@ about: [
         const element = document.getElementById(`section-${sectionId}`);
         if (!element || !sections[sectionId]) return;
 
-        // Zeige Ladeanimation
-        element.innerHTML = '<div class="loading-animation">Lade Inhalt...</div>';
-
-        // Verzögerung für sichtbare Ladeanimation
-        setTimeout(() => {
-            element.innerHTML = getRandomElement(sections[sectionId]);
-            // Initialisiere Animationen für die neue Sektion
-            initializeAnimations(element);
-        }, 500);
+        element.innerHTML = getRandomElement(sections[sectionId]);
+        initializeAnimations(element);
     }
 
-    function initializeSections() {
-        ['hero', 'features', 'about'].forEach(sectionId => {
-            const container = document.getElementById(`section-${sectionId}`);
-            if (container && sections[sectionId]) {
-                container.innerHTML = getRandomElement(sections[sectionId]);
-                initializeAnimations(container);
-            }
-        });
-    }
+    // Event Listener für Sektionsaktualisierungen
+    document.addEventListener('sectionUpdate', (event) => {
+        const { sectionId } = event.detail;
+        updateSection(sectionId);
+    });
 
-    // Ersetzen Sie die bisherige Initialisierung mit diesem Aufruf
-    initializeSections();
+    // Initiale Ladung der Sektionen
+    ['hero', 'features', 'about'].forEach(section => {
+        updateSection(section);
+    });
 
-    // Intersection Observer für Scroll-Snap
+    // Intersection Observer Setup
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const sectionId = entry.target.id.replace('section-', '');
-                const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
-                
-                // Aktualisiere aktiven Navigation-Status
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                if (navItem) {
-                    navItem.classList.add('active');
-                }
-                
                 updateSection(sectionId);
             }
         });
     }, {
-        threshold: 0.7, // 70% der Sektion muss sichtbar sein
-        rootMargin: '-10% 0px' // Kleiner Puffer
+        threshold: 0.7,
+        rootMargin: '-10% 0px'
     });
 
     // Beobachte alle Sektionen
@@ -280,16 +259,6 @@ about: [
         if (element) {
             observer.observe(element);
         }
-    });
-
-    // Optional: Event Listener für manuelle Navigation
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            const section = e.currentTarget.closest('.nav-item').dataset.section;
-            if (section) {
-                updateSection(section);
-            }
-        });
     });
 });
 

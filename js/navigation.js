@@ -27,20 +27,33 @@ export class NavigationManager {
   handleNavClick(e) {
     e.preventDefault();
     const targetId = e.currentTarget.getAttribute("href").substring(1);
-    const targetSection = document.getElementById(targetId);
+    const targetSection = document.getElementById(`section-${targetId}`);
     
     if (targetSection) {
       targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
       this.updateActiveNavItem(e.currentTarget.closest(".nav-item"));
+      
+      // Trigger content update through custom event
+      const updateEvent = new CustomEvent('sectionUpdate', {
+        detail: { sectionId: targetId }
+      });
+      document.dispatchEvent(updateEvent);
     }
   }
 
   handleIntersection(entries) {
     entries.forEach(({ target, isIntersecting }) => {
-      if (target.id && isIntersecting) {
+      if (isIntersecting) {
+        const sectionId = target.id.replace('section-', '');
         this.updateActiveNavItem(
-          document.querySelector(`.nav-item[data-section="${target.id}"]`)
+          document.querySelector(`.nav-item[data-section="${sectionId}"]`)
         );
+        
+        // Trigger content update through custom event
+        const updateEvent = new CustomEvent('sectionUpdate', {
+          detail: { sectionId }
+        });
+        document.dispatchEvent(updateEvent);
       }
     });
   }
