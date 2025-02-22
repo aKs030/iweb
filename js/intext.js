@@ -9,15 +9,15 @@ hero: [`
 
   
     <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-          <h3 class="text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-        Willkommen1<hr>
-      </h3>
-        <p class="lead text-animate" data-animation="animate__fadeInUp">
-          Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-          Diese Seite dient als mein digitales Zuhause im<br>
-          World Wide Web, auf der ich meine Interessen,<br>
-          Erfahrungen und Gedanken teilen möchte.
-        </p>
+            <h3 class="text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+      Willkommen1<hr>
+        </h3>
+      <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
     </section>
             `,
             `
@@ -37,7 +37,32 @@ hero: [`
     <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Willkommen3<hr>
+        </h3>
+      <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+            `,
+            `
+    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen2<hr>
       </h3>
+      <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
+        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
+        Diese Seite dient als mein digitales Zuhause im<br>
+        World Wide Web, auf der ich meine Interessen,<br>
+        Erfahrungen und Gedanken teilen möchte.
+      </p>
+    </section>
+            `,
+            `
+    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        Willkommen3 </h3>
       <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
         Ich freue mich, dass du den Weg hierher gefunden hast.<br>
         Diese Seite dient als mein digitales Zuhause im<br>
