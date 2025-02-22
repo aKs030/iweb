@@ -9,7 +9,7 @@ hero: [`
 
   
     <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <h3 class="text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
       Willkommen1<hr>
         </h3>
       <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
@@ -202,13 +202,77 @@ about: [
         ]
     };
 
-    // Abschnitte in die entsprechenden Container einfügen
-    document.getElementById('section-hero').innerHTML = getRandomElement(sections.hero);
-    document.getElementById('section-about').innerHTML = getRandomElement(sections.about);
-    document.getElementById('section-features').innerHTML = getRandomElement(sections.features);
+    // Funktion zum Initialisieren der Animationen
+    function initializeAnimations(container) {
+        const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
+        animElements.forEach(element => {
+            const animation = element.dataset.animation;
+            if (animation) {
+                // Entferne bestehende Animationsklassen
+                element.classList.remove(animation);
+                element.style.opacity = '0';
+                
+                // Trigger Reflow
+                void element.offsetWidth;
+                
+                // Füge Animationsklassen wieder hinzu
+                element.classList.add('animate__animated', animation);
+                element.style.opacity = '1';
+            }
+        });
+    }
 
-    // Initialisierung der Karten-Animation
-    initializeFeatureSections();
+    // Funktion zum Aktualisieren einer einzelnen Sektion
+    function updateSection(sectionId) {
+        const element = document.getElementById(`section-${sectionId}`);
+        if (!element || !sections[sectionId]) return;
+
+        // Zeige Ladeanimation
+        element.innerHTML = '<div class="loading-animation">Lade Inhalt...</div>';
+
+        // Verzögerung für sichtbare Ladeanimation
+        setTimeout(() => {
+            element.innerHTML = getRandomElement(sections[sectionId]);
+            // Initialisiere Animationen für die neue Sektion
+            initializeAnimations(element);
+        }, 500);
+    }
+
+    // Intersection Observer für Scroll-Snap
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const sectionId = entry.target.id.replace('section-', '');
+                updateSection(sectionId);
+            }
+        });
+    }, {
+        threshold: 0.7, // 70% der Sektion muss sichtbar sein
+        rootMargin: '-10% 0px' // Kleiner Puffer
+    });
+
+    // Beobachte alle Sektionen
+    ['hero', 'features', 'about'].forEach(section => {
+        const element = document.getElementById(`section-${section}`);
+        if (element) {
+            observer.observe(element);
+        }
+    });
+
+    // Initialer Load
+    ['hero', 'features', 'about'].forEach(section => {
+        updateSection(section);
+    });
+
+    // Optional: Event Listener für manuelle Navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const section = e.currentTarget.closest('.nav-item').dataset.section;
+            if (section) {
+                updateSection(section);
+            }
+        });
+    });
 });
 
 
