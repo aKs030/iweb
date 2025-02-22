@@ -2,6 +2,14 @@ export class AnimationManager {
   constructor() {
     this.animateElements = document.querySelectorAll(".scroll-animate, .text-animate");
     this.fullVisibleElements = document.querySelectorAll(".full-visible");
+    // Animation-Konfiguration
+    this.animations = {
+      fadeInUp: {
+        class: 'animate__fadeInUp',
+        duration: '0.8s',
+        timing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+      }
+    };
   }
 
   init() {
@@ -43,14 +51,40 @@ export class AnimationManager {
   }
 
   animateElement(element, isIntersecting) {
-    const animationClass = element.dataset.animation || "animate__fadeInUp";
-    const delayInS = (parseFloat(element.dataset.delay) || 0) / 1000;
-    element.style.transitionDelay = `${delayInS}s`;
+    // Prüfe auf fadeInUp Animation
+    const isFadeInUp = element.dataset.animation === 'animate__fadeInUp';
+    const delay = (parseFloat(element.dataset.delay) || 0);
     
     if (isIntersecting) {
-      element.classList.add("visible", "animate__animated", animationClass);
+      // Element vorbereiten
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(20px)';
+      element.style.visibility = 'visible';
+      
+      // Verzögerung anwenden
+      setTimeout(() => {
+        // Animate.css Klassen
+        element.classList.add('animate__animated', 'animate__fadeInUp');
+        
+        // Custom Styling
+        element.style.animationDuration = this.animations.fadeInUp.duration;
+        element.style.animationTimingFunction = this.animations.fadeInUp.timing;
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+        
+        // Cleanup nach Animation
+        element.addEventListener('animationend', () => {
+          element.classList.remove('animate__animated', 'animate__fadeInUp');
+          // Finale Styles beibehalten
+          element.style.opacity = '1';
+          element.style.transform = 'translateY(0)';
+        }, { once: true });
+      }, delay);
     } else {
-      element.classList.remove("visible", "animate__animated", animationClass);
+      // Reset Styles
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(20px)';
+      element.classList.remove('animate__animated', 'animate__fadeInUp');
     }
   }
 }

@@ -5,18 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Abschnittsdaten
     const sections = {
 hero: [`
+
+
+  
     <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+          <h3 class="text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Willkommen1<hr>
       </h3>
-      <div class="text-container">
         <p class="lead text-animate" data-animation="animate__fadeInUp">
           Ich freue mich, dass du den Weg hierher gefunden hast.<br>
           Diese Seite dient als mein digitales Zuhause im<br>
           World Wide Web, auf der ich meine Interessen,<br>
           Erfahrungen und Gedanken teilen möchte.
         </p>
-      </div>
     </section>
             `,
             `
