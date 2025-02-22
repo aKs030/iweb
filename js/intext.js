@@ -238,11 +238,34 @@ about: [
         }, 500);
     }
 
+    function initializeSections() {
+        ['hero', 'features', 'about'].forEach(sectionId => {
+            const container = document.getElementById(`section-${sectionId}`);
+            if (container && sections[sectionId]) {
+                container.innerHTML = getRandomElement(sections[sectionId]);
+                initializeAnimations(container);
+            }
+        });
+    }
+
+    // Ersetzen Sie die bisherige Initialisierung mit diesem Aufruf
+    initializeSections();
+
     // Intersection Observer für Scroll-Snap
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const sectionId = entry.target.id.replace('section-', '');
+                const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+                
+                // Aktualisiere aktiven Navigation-Status
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                if (navItem) {
+                    navItem.classList.add('active');
+                }
+                
                 updateSection(sectionId);
             }
         });
@@ -257,11 +280,6 @@ about: [
         if (element) {
             observer.observe(element);
         }
-    });
-
-    // Initialer Load
-    ['hero', 'features', 'about'].forEach(section => {
-        updateSection(section);
     });
 
     // Optional: Event Listener für manuelle Navigation
