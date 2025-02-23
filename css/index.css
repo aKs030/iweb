@@ -478,6 +478,48 @@ transform: translateY(0);
     transform: none;
     animation: none;
   }
+
+  .nav-link {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    touch-action: manipulation;
+  }
+  
+  .nav-link:focus,
+  .nav-link:active {
+    background: transparent;
+    outline: none;
+  }
+  
+  .nav-item.active .nav-link {
+    animation: quick-highlight 0.3s ease-out forwards;
+  }
+}
+
+@keyframes quick-highlight {
+  0% {
+    transform: scale(1);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    transform: scale(1.1);
+    background: var(--accent-color);
+  }
+  100% {
+    transform: scale(1);
+    background: transparent;
+  }
+}
+
+/* Verhindern des "Hängenbleibens" von aktiven Zuständen */
+.nav-item .nav-link:active,
+.nav-item .nav-link:focus {
+  transition: none;
+  animation: none;
+}
+
+.nav-item.active {
+  transition: none;
 }
 
 /* Scroll-Snap Verbesserungen */

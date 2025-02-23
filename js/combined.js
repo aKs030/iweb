@@ -173,7 +173,26 @@ export class NavigationManager {
   setupMobileHandling() {
     if (this.isMobile) {
       this.navLinks.forEach(link => {
-        // Verbesserte Touch-Handhabung
+        link.addEventListener('touchstart', (e) => {
+          // Verhindere Standard-Touch-Verhalten
+          e.preventDefault();
+          
+          // Entferne sofort alle aktiven Zustände
+          this.navItems.forEach(item => item.classList.remove("active"));
+          
+          const href = link.getAttribute('href');
+          const targetSection = document.querySelector(href);
+          if (targetSection) {
+            targetSection.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+          
+          // Entferne den Fokus
+          link.blur();
+        }, { passive: false });
+
         link.addEventListener('touchstart', (e) => {
           e.preventDefault();
           this.touchStartY = e.touches[0].clientY;
@@ -227,10 +246,18 @@ export class NavigationManager {
     const targetId = e.currentTarget.getAttribute("href").substring(1);
     const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
     if (targetSection) {
-      targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Entferne aktive Klassen von allen Nav-Elementen, damit das geklickte nicht dauerhaft aktiv bleibt
+      // Sofort den aktiven Zustand entfernen
       this.navItems.forEach(item => item.classList.remove("active"));
       e.currentTarget.blur();
+      
+      targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      
+      // Nach dem Scrollen den Fokus entfernen
+      setTimeout(() => {
+        e.currentTarget.blur();
+        document.activeElement.blur();
+      }, 100);
+
       this.dispatchSectionUpdate(targetId);
     }
   }
@@ -252,13 +279,21 @@ export class NavigationManager {
   updateActiveNavItem(activeItem) {
     if (this.activeNavItem === activeItem) return;
     
-    // Entferne zuerst alle aktiven Klassen
-    this.navItems.forEach(item => item.classList.remove("active"));
+    this.navItems.forEach(item => {
+      item.classList.remove("active");
+      item.querySelector('.nav-link')?.blur();
+    });
     
-    // Setze die neue aktive Klasse
     if (activeItem) {
       activeItem.classList.add("active");
       this.activeNavItem = activeItem;
+      
+      // Entferne den aktiven Status nach kurzer Zeit
+      if (this.isMobile) {
+        setTimeout(() => {
+          activeItem.classList.remove("active");
+        }, 300);
+      }
     } else {
       this.activeNavItem = null;
     }
