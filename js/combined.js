@@ -155,21 +155,42 @@ export class NavigationManager {
     this.sections = document.querySelectorAll("section");
     this.navLinks = document.querySelectorAll(".nav-link");
     this.activeNavItem = null;
+    this.isMobile = window.matchMedia('(hover: none)').matches;
   }
 
   init() {
     this.setupNavigation();
     this.setupScrollObserver();
+    this.setupMobileHandling();
   }
 
   setupNavigation() {
     this.navLinks.forEach(link => link.addEventListener("click", this.handleNavClick.bind(this)));
   }
 
+  setupMobileHandling() {
+    if (this.isMobile) {
+      this.navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          // Entferne sofort die aktive Klasse nach dem Klick
+          this.navItems.forEach(item => item.classList.remove('active'));
+          
+          // Verzögerte Entfernung des Fokus
+          setTimeout(() => {
+            e.currentTarget.blur();
+          }, 100);
+        });
+      });
+    }
+  }
+
   setupScrollObserver() {
     const observer = new IntersectionObserver(
       entries => this.handleIntersection(entries),
-      { threshold: 0.5, rootMargin: "0px 0px -10% 0px" } // leicht angepasst für iOS
+      { 
+        threshold: [0.3, 0.7],  // Mehrere Schwellenwerte für bessere Erkennung
+        rootMargin: "-20% 0px" 
+      }
     );
     this.sections.forEach(section => observer.observe(section));
   }
@@ -188,12 +209,13 @@ export class NavigationManager {
   }
 
   handleIntersection(entries) {
-    entries.forEach(({ target, isIntersecting }) => {
-      if (isIntersecting) {
-        const sectionId = target.id.replace('section-', '');
-        const newActive = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
-        if (newActive && newActive !== this.activeNavItem) {
-          this.updateActiveNavItem(newActive);
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+        const sectionId = entry.target.id.replace('section-', '');
+        const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+        
+        if (navItem && (!this.activeNavItem || this.activeNavItem !== navItem)) {
+          this.updateActiveNavItem(navItem);
           this.dispatchSectionUpdate(sectionId);
         }
       }
@@ -202,9 +224,17 @@ export class NavigationManager {
 
   updateActiveNavItem(activeItem) {
     if (this.activeNavItem === activeItem) return;
+    
+    // Entferne zuerst alle aktiven Klassen
     this.navItems.forEach(item => item.classList.remove("active"));
-    activeItem.classList.add("active");
-    this.activeNavItem = activeItem;
+    
+    // Setze die neue aktive Klasse
+    if (activeItem) {
+      activeItem.classList.add("active");
+      this.activeNavItem = activeItem;
+    } else {
+      this.activeNavItem = null;
+    }
   }
 
   dispatchSectionUpdate(sectionId) {

@@ -199,6 +199,48 @@ Navigation (Navbar Bottom)
   transform: scale(1.15);
 }
 
+/* Navbar-Anpassungen für Mobilgeräte */
+@media (hover: none) {
+  .nav-link {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+  }
+  
+  .nav-link:focus {
+    outline: none;
+  }
+  
+  .nav-item.active .nav-link {
+    animation: pulse-highlight 0.5s ease-out;
+  }
+}
+
+@keyframes pulse-highlight {
+  0% {
+    transform: scale(1);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    transform: scale(1.1);
+    background: var(--accent-color);
+  }
+  100% {
+    transform: scale(1);
+    background: var(--accent-color);
+  }
+}
+
+/* Verbesserte aktive Zustände */
+.nav-item.active .nav-link {
+  background: var(--accent-color);
+  box-shadow: 0 4px 12px rgba(255, 204, 41, 0.4);
+}
+
+.nav-link:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
 /* ==========================
    Karten
 ========================== */
