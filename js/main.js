@@ -1,6 +1,4 @@
-import { AnimationManager } from './animation.js';
-import { NavigationManager } from './navigation.js';
-import { FeatureCardsManager } from './features.js';
+import { AnimationManager, NavigationManager, FeatureCardsManager } from './combined.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   try {
