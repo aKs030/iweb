@@ -172,6 +172,7 @@ Navigation (Navbar Bottom)
   text-decoration: none;
   transition: all 0.4s ease-in-out;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer; /* Neu: Zeigt an, dass der Link klickbar ist */
 }
 
 .nav-icon {

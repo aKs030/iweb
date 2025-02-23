@@ -25,19 +25,26 @@ export class NavigationManager {
   }
 
   handleNavClick(e) {
-    e.preventDefault();
-    const targetId = e.currentTarget.getAttribute("href").substring(1);
-    const targetSection = document.getElementById(`section-${targetId}`);
+    const href = e.currentTarget.getAttribute("href");
+    const targetId = href.substring(1);
+    console.log("Clicked:", targetId); // Debug: Anzeige der geklickten ID
+
+    // Versuche zuerst "section-" + targetId, sonst targetId direkt
+    let targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
+    console.log("Target Section:", targetSection); // Debug: überprüfe, ob die Section gefunden wurde
     
     if (targetSection) {
-      targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      e.preventDefault();
+      targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
       this.updateActiveNavItem(e.currentTarget.closest(".nav-item"));
       
-      // Trigger content update through custom event
       const updateEvent = new CustomEvent('sectionUpdate', {
         detail: { sectionId: targetId }
       });
       document.dispatchEvent(updateEvent);
+    } else {
+      console.warn("Section nicht gefunden, navigiere zur URL:", href);
+      window.location.href = href;
     }
   }
 
