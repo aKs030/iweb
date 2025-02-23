@@ -1,7 +1,18 @@
+.visible {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+section {
+  transition: opacity 0.5s ease-in-out;
+}
+
+section.hidden {
+  opacity: 0;
+}
+
 /* ==========================
    Farbvariablen
 ========================== */
-/* Entferne oder kommentiere den Mobile‑Reset für .nav-link:focus und :active */
 @media (hover: none) {
   .nav-link:focus,
   .nav-link:active {
@@ -10,7 +21,7 @@
     transform: none;
     animation: none;
   }
-} 
+}
 .full-screen-section {
 min-height: 100vh;
 padding: 2rem 0;
@@ -90,6 +101,8 @@ background-size: 200% 100%;
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 
+/* Animation */
+animation: shimmer 2.5s infinite linear;
 }
 /* Keyframes für die Schimmer-Animation */
 @keyframes shimmer {
@@ -173,7 +186,6 @@ Navigation (Navbar Bottom)
   text-decoration: none;
   transition: all 0.4s ease-in-out;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  cursor: pointer; /* Neu: Zeigt an, dass der Link klickbar ist */
 }
 
 .nav-icon {
@@ -284,63 +296,7 @@ transform: translateY(0);
   padding: 0 20px;
   box-sizing: border-box;
 }
-
-/* Styling für Lade-Zustand */
-.section-container {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-size: 1.2rem;
-    color: var(--main-text-color);
-    transition: opacity 0.3s ease;
-}
-
-/* Animation für Laden */
-@keyframes fadeInOut {
-    0% { opacity: 0.3; }
-    50% { opacity: 1; }
-    100% { opacity: 0.3; }
-}
-
-.section-container:empty::before,
-.section-container:only-child::before {
-    content: attr(data-loading);
-    animation: fadeInOut 1.5s infinite;
-}
-
 /* ==========================
-   Loading Text
-========================== */
-.loading-text {
-    font-size: 1.5rem;
-    color: var(--main-text-color);
-    opacity: 0.8;
-    animation: fadeInOut 1.5s infinite;
-}
-
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
-}
-
-/* ==========================
-   Loading Animation
-========================== */
-.loading-animation {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-size: 1.5rem;
-    color: var(--main-text-color);
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 0.4; }
-    50% { opacity: 1; }
-    100% { opacity: 0.4; }
-}
+   Lead-Text
+========================= */
 
