@@ -27,11 +27,11 @@ export class NavigationManager {
   handleNavClick(e) {
     const href = e.currentTarget.getAttribute("href");
     const targetId = href.substring(1);
-    console.log("Clicked:", targetId); // Debug: Anzeige der geklickten ID
+    console.log("Clicked:", targetId);
 
     // Versuche zuerst "section-" + targetId, sonst targetId direkt
-    let targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
-    console.log("Target Section:", targetSection); // Debug: überprüfe, ob die Section gefunden wurde
+    const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
+    console.log("Target Section:", targetSection);
     
     if (targetSection) {
       e.preventDefault();
@@ -42,10 +42,8 @@ export class NavigationManager {
         detail: { sectionId: targetId }
       });
       document.dispatchEvent(updateEvent);
-    } else {
-      console.warn("Section nicht gefunden, navigiere zur URL:", href);
-      window.location.href = href;
     }
+    // Wenn targetSection nicht existiert, wird die Standardnavigation ausgeführt.
   }
 
   handleIntersection(entries) {
