@@ -154,6 +154,7 @@ export class NavigationManager {
     this.navItems = document.querySelectorAll(".nav-item");
     this.sections = document.querySelectorAll("section");
     this.navLinks = document.querySelectorAll(".nav-link");
+    this.activeNavItem = null; // cache current nav item
   }
 
   init() {
@@ -182,6 +183,10 @@ export class NavigationManager {
     const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
     if (targetSection) {
       targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
+      const newActive = document.querySelector(`.nav-item[data-section="${targetId}"]`);
+      if (newActive && newActive !== this.activeNavItem) {
+        this.updateActiveNavItem(newActive);
+      }
       const updateEvent = new CustomEvent('sectionUpdate', {
         detail: { sectionId: targetId }
       });
@@ -194,19 +199,22 @@ export class NavigationManager {
     entries.forEach(({ target, isIntersecting }) => {
       if (isIntersecting) {
         const sectionId = target.id.replace('section-', '');
-        this.updateActiveNavItem(
-          document.querySelector(`.nav-item[data-section="${sectionId}"]`)
-        );
-        const updateEvent = new CustomEvent('sectionUpdate', {
-          detail: { sectionId }
-        });
-        document.dispatchEvent(updateEvent);
+        const newActive = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+        if (newActive && newActive !== this.activeNavItem) {
+          this.updateActiveNavItem(newActive);
+          const updateEvent = new CustomEvent('sectionUpdate', {
+            detail: { sectionId }
+          });
+          document.dispatchEvent(updateEvent);
+        }
       }
     });
   }
 
   updateActiveNavItem(activeItem) {
+    if (this.activeNavItem === activeItem) return;
     this.navItems.forEach(item => item.classList.remove("active"));
-    if (activeItem) activeItem.classList.add("active");
+    activeItem.classList.add("active");
+    this.activeNavItem = activeItem;
   }
 }
