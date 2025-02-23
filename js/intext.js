@@ -1,11 +1,10 @@
 "use strict";
 document.addEventListener('DOMContentLoaded', () => {
-    // Funktion zur zufälligen Auswahl eines Elements aus einem Array
     const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    // Abschnittsdaten
+    // Abschnittsdaten mit aktualisierten IDs
     const sections = {
-        hero: [
+        'seite-1': [
             `
     <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
@@ -46,8 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `
         ],
-        about: [
-            `
+        'seite-3': [
+          `
     <section id="about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <p class="lead text-animate" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
@@ -74,8 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `
         ],
-        features: [
-            `
+        'seite-2': [
+          `
     <section id="features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <div class="container">
         <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
@@ -171,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
   </div>
-</section>
+    </section>
             `
         ]
     };
@@ -198,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Funktion zum Aktualisieren einer einzelnen Sektion
     function updateSection(sectionId) {
-        const element = document.getElementById(`section-${sectionId}`);
+        const element = document.getElementById(sectionId);
         if (!element || !sections[sectionId]) return;
 
         element.innerHTML = getRandomElement(sections[sectionId]);
@@ -212,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initiale Ladung der Sektionen
-    ['hero', 'features', 'about'].forEach(section => {
+    ['seite-1', 'seite-2', 'seite-3'].forEach(section => {
         updateSection(section);
     });
 
@@ -220,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const sectionId = entry.target.id.replace('section-', '');
+                const sectionId = entry.target.id;
                 updateSection(sectionId);
             }
         });
@@ -230,8 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Beobachte alle Sektionen
-    ['hero', 'features', 'about'].forEach(section => {
-        const element = document.getElementById(`section-${section}`);
+    ['seite-1', 'seite-2', 'seite-3'].forEach(section => {
+        const element = document.getElementById(section);
         if (element) {
             observer.observe(element);
         }

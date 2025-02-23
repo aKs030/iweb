@@ -342,6 +342,23 @@ transform: translateY(0);
     100% { opacity: 0.4; }
 }
 
+/* Anpassungen für die Sektionen-Container */
+.sections-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#seite-1,
+#seite-2,
+#seite-3 {
+  width: 100%;
+  min-height: 100vh;
+  scroll-snap-align: center;
+}
+
 /* Mobile-Anpassungen */
 @media (max-width: 768px) {
   .navbar-bottom {
