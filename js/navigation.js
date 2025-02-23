@@ -29,14 +29,12 @@ export class NavigationManager {
     const targetId = href.substring(1);
     console.log("Clicked:", targetId);
 
-    // Versuche zuerst "section-" + targetId, sonst targetId direkt
     const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
     console.log("Target Section:", targetSection);
     
     if (targetSection) {
       e.preventDefault();
       targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
-      this.updateActiveNavItem(e.currentTarget.closest(".nav-item"));
       
       const updateEvent = new CustomEvent('sectionUpdate', {
         detail: { sectionId: targetId }
