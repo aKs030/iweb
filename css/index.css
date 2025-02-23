@@ -29,6 +29,11 @@ text-align: left;
   --menu-text-color: var(--menu-bg-color);
 }
 
+/* Globale iOS‑Anpassungen */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ==========================
    Allgemeine Stile
 ========================== */
@@ -298,9 +303,8 @@ transform: translateY(0);
 
 /* Animation für Laden */
 @keyframes fadeInOut {
-    0% { opacity: 0.3; }
+     0%, 100% { opacity: 0.4; }
     50% { opacity: 1; }
-    100% { opacity: 0.3; }
 }
 
 .section-container:empty::before,
@@ -317,11 +321,6 @@ transform: translateY(0);
     color: var(--main-text-color);
     opacity: 0.8;
     animation: fadeInOut 1.5s infinite;
-}
-
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
 }
 
 /* ==========================

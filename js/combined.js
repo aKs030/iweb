@@ -169,7 +169,7 @@ export class NavigationManager {
   setupScrollObserver() {
     const observer = new IntersectionObserver(
       entries => this.handleIntersection(entries),
-      { threshold: 0.5, rootMargin: "0px 0px -50px 0px" }
+      { threshold: 0.5, rootMargin: "0px 0px -10% 0px" } // leicht angepasst für iOS
     );
     this.sections.forEach(section => observer.observe(section));
   }
