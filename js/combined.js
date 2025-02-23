@@ -154,7 +154,7 @@ export class NavigationManager {
     this.navItems = document.querySelectorAll(".nav-item");
     this.sections = document.querySelectorAll("section");
     this.navLinks = document.querySelectorAll(".nav-link");
-    this.activeNavItem = null; // cache current nav item
+    this.activeNavItem = null;
   }
 
   init() {
@@ -163,14 +163,12 @@ export class NavigationManager {
   }
 
   setupNavigation() {
-    this.navLinks.forEach(link => {
-      link.addEventListener("click", (e) => this.handleNavClick(e));
-    });
+    this.navLinks.forEach(link => link.addEventListener("click", this.handleNavClick.bind(this)));
   }
 
   setupScrollObserver() {
     const observer = new IntersectionObserver(
-      (entries) => this.handleIntersection(entries),
+      entries => this.handleIntersection(entries),
       { threshold: 0.5, rootMargin: "0px 0px -50px 0px" }
     );
     this.sections.forEach(section => observer.observe(section));
@@ -178,17 +176,12 @@ export class NavigationManager {
 
   handleNavClick(e) {
     e.preventDefault();
-    const href = e.currentTarget.getAttribute("href");
-    const targetId = href.substring(1);
+    const targetId = e.currentTarget.getAttribute("href").substring(1);
     const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
     if (targetSection) {
       targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
-      const updateEvent = new CustomEvent('sectionUpdate', {
-        detail: { sectionId: targetId }
-      });
-      document.dispatchEvent(updateEvent);
+      this.dispatchSectionUpdate(targetId);
     }
-    // ...existing code...
   }
 
   handleIntersection(entries) {
@@ -198,10 +191,7 @@ export class NavigationManager {
         const newActive = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
         if (newActive && newActive !== this.activeNavItem) {
           this.updateActiveNavItem(newActive);
-          const updateEvent = new CustomEvent('sectionUpdate', {
-            detail: { sectionId }
-          });
-          document.dispatchEvent(updateEvent);
+          this.dispatchSectionUpdate(sectionId);
         }
       }
     });
@@ -212,5 +202,9 @@ export class NavigationManager {
     this.navItems.forEach(item => item.classList.remove("active"));
     activeItem.classList.add("active");
     this.activeNavItem = activeItem;
+  }
+
+  dispatchSectionUpdate(sectionId) {
+    document.dispatchEvent(new CustomEvent('sectionUpdate', { detail: { sectionId } }));
   }
 }
