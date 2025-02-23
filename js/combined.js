@@ -15,26 +15,6 @@ export class AnimationManager {
     
   }
 
-  // Neue Methode
-  initializeAnimations(container) {
-    const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
-    animElements.forEach(element => {
-      const animation = element.dataset.animation;
-      if (animation) {
-        // Entferne bestehende Animationsklassen
-        element.classList.remove(animation);
-        element.style.opacity = '0';
-        
-        // Trigger Reflow
-        void element.offsetWidth;
-        
-        // Füge Animationsklassen wieder hinzu
-        element.classList.add('animate__animated', animation);
-        element.style.opacity = '1';
-      }
-    });
-  }
-
   init() {
     this.setupScrollAnimations();
     this.setupFullVisibleAnimations();
