@@ -183,21 +183,10 @@ export class NavigationManager {
     const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
     if (targetSection) {
       targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Entferne die direkte Aktualisierung des aktiven Buttons:
-      // const newActive = document.querySelector(`.nav-item[data-section="${targetId}"]`);
-      // if (newActive && newActive !== this.activeNavItem) {
-      //     this.updateActiveNavItem(newActive);
-      // }
       const updateEvent = new CustomEvent('sectionUpdate', {
         detail: { sectionId: targetId }
       });
       document.dispatchEvent(updateEvent);
-      // Fix für mobile Ansicht: aktive Navitems werden nach kurzem Timeout entfernt
-      if (window.matchMedia('(hover: none)').matches) {
-        setTimeout(() => {
-          this.navItems.forEach(item => item.classList.remove("active"));
-        }, 1000);
-      }
     }
     // ...existing code...
   }
