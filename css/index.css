@@ -1,8 +1,7 @@
 /* ==========================
    Farbvariablen
 ========================== */
-/* Entferne oder kommentiere den Mobile‑Reset für .nav-link:focus und :active */
-/* @media (hover: none) {
+ @media (hover: none) {
   .nav-link:focus,
   .nav-link:active {
     background: none;
@@ -10,7 +9,7 @@
     transform: none;
     animation: none;
   }
-} */
+} 
 .full-screen-section {
 min-height: 100vh;
 padding: 2rem 0;
@@ -342,5 +341,32 @@ transform: translateY(0);
     0% { opacity: 0.4; }
     50% { opacity: 1; }
     100% { opacity: 0.4; }
+}
+
+/* Mobile-Anpassungen */
+@media (max-width: 768px) {
+  .navbar-bottom {
+    padding: 8px 15px;
+    border-radius: 20px;
+  }
+  
+  .nav-link {
+    width: 40px;
+    height: 40px;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-icon {
+    font-size: 1.1rem;
+  }
+  
+  .full-screen-section {
+    padding: 1.5rem 0;
+  }
+  
+  .shimmer-text {
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+    padding-bottom: 3rem;
+  }
 }
 
