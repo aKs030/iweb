@@ -268,10 +268,8 @@ will-change: transform, box-shadow, border-color;
 transform: translateY(-6px) scale(1.02);
 box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 border-color: var(--accent-color);
-}
 
-/* Aktiver Effekt bei Hover und aktiver Karte */
-.card.active:hover {
+
 transform: translateY(-6px) scale(1.02);
 box-shadow: 0 12px 30px rgba(255, 204, 41, 0.4);
 border-color: var(--accent-color);
