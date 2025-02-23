@@ -155,11 +155,13 @@ export class NavigationManager {
     this.sections = document.querySelectorAll("section");
     this.navLinks = document.querySelectorAll(".nav-link");
     this.activeNavItem = null; // cache current nav item
+    this.scrollTimeout = null; // Neu: Scroll-Timeout
   }
 
   init() {
     this.setupNavigation();
     this.setupScrollObserver();
+    window.addEventListener("scroll", this.debouncedScroll.bind(this));
   }
 
   setupNavigation() {
@@ -200,6 +202,28 @@ export class NavigationManager {
       }
     }
     // ...existing code...
+  }
+
+  /* Neu: Debounced Scroll Handler */
+  debouncedScroll() {
+    if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
+    this.scrollTimeout = setTimeout(() => {
+      this.updateActiveNavOnScroll();
+    }, 150);
+  }
+
+  /* Neu: Überprüft welche Section in Sicht ist und aktualisiert den Nav-Button */
+  updateActiveNavOnScroll() {
+    this.sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
+        const sectionId = section.id.replace('section-', '');
+        const newActive = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+        if (newActive && newActive !== this.activeNavItem) {
+          this.updateActiveNavItem(newActive);
+        }
+      }
+    });
   }
 
   handleIntersection(entries) {
