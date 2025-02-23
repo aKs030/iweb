@@ -368,5 +368,16 @@ transform: translateY(0);
     font-size: clamp(1.8rem, 6vw, 2.5rem);
     padding-bottom: 3rem;
   }
+  
+  /* Passen Sie hier :focus und :active für Touch-Geräte an,
+     sodass der Klick-Zustand nicht dauerhaft angezeigt wird */
+  .nav-link:focus,
+  .nav-link:active {
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    animation: none;
+    outline: none;
+  }
 }
 
