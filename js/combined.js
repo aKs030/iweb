@@ -156,6 +156,8 @@ export class NavigationManager {
     this.navLinks = document.querySelectorAll(".nav-link");
     this.activeNavItem = null;
     this.isMobile = window.matchMedia('(hover: none)').matches;
+    this.touchStartY = 0;
+    this.lastScrollTime = 0;
   }
 
   init() {
@@ -171,16 +173,41 @@ export class NavigationManager {
   setupMobileHandling() {
     if (this.isMobile) {
       this.navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-          // Entferne sofort die aktive Klasse nach dem Klick
-          this.navItems.forEach(item => item.classList.remove('active'));
+        // Verbesserte Touch-Handhabung
+        link.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          this.touchStartY = e.touches[0].clientY;
           
-          // Verzögerte Entfernung des Fokus
-          setTimeout(() => {
-            e.currentTarget.blur();
-          }, 100);
-        });
+          // Sofortige visuelle Rückmeldung
+          const navItem = link.closest('.nav-item');
+          navItem.classList.add('touching');
+        }, { passive: false });
+
+        link.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          const navItem = link.closest('.nav-item');
+          navItem.classList.remove('touching');
+          
+          // Verhindere zu schnelles wiederholtes Scrollen
+          const now = Date.now();
+          if (now - this.lastScrollTime < 500) return;
+          this.lastScrollTime = now;
+
+          const href = link.getAttribute('href');
+          const targetSection = document.querySelector(href);
+          if (targetSection) {
+            targetSection.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        }, { passive: false });
       });
+
+      // Scroll-Event-Listener für bessere Sektion-Erkennung
+      window.addEventListener('scroll', () => {
+        requestAnimationFrame(this.updateActiveSection.bind(this));
+      }, { passive: true });
     }
   }
 
@@ -234,6 +261,29 @@ export class NavigationManager {
       this.activeNavItem = activeItem;
     } else {
       this.activeNavItem = null;
+    }
+  }
+
+  updateActiveSection() {
+    const scrollPosition = window.scrollY + window.innerHeight / 2;
+    
+    let activeSection = null;
+    this.sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      const sectionTop = rect.top + window.scrollY;
+      const sectionBottom = sectionTop + rect.height;
+      
+      if (scrollPosition >= sectionTop && scrollPosition <= sectionBottom) {
+        activeSection = section;
+      }
+    });
+
+    if (activeSection) {
+      const sectionId = activeSection.id;
+      const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+      if (navItem) {
+        this.updateActiveNavItem(navItem);
+      }
     }
   }
 

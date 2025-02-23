@@ -439,3 +439,72 @@ transform: translateY(0);
   }
 }
 
+/* iOS-spezifische Anpassungen */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    height: -webkit-fill-available;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sections-container {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Verbesserte mobile Navigation */
+@media (hover: none) {
+  .navbar-bottom {
+    bottom: env(safe-area-inset-bottom, 10px);
+    padding: 12px 20px;
+    transform: translateX(-50%) translateZ(0);
+    -webkit-transform: translateX(-50%) translateZ(0);
+  }
+
+  .nav-item.touching .nav-link {
+    transform: scale(0.95);
+    background: var(--accent-color);
+    transition: all 0.2s ease-out;
+  }
+
+  .nav-link:active,
+  .nav-link:focus {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .nav-item.active .nav-link {
+    background: var(--accent-color);
+    transform: none;
+    animation: none;
+  }
+}
+
+/* Scroll-Snap Verbesserungen */
+.snap {
+  scroll-snap-align: start;
+  -webkit-scroll-snap-align: start;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Touch-Feedback Optimierungen */
+.nav-link {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
