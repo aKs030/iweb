@@ -1,3 +1,4 @@
+"use strict";
 import { AnimationManager, NavigationManager, FeatureCardsManager } from './combined.js';
 
 document.addEventListener("DOMContentLoaded", () => {

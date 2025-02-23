@@ -1,3 +1,4 @@
+"use strict";
 // -------------------- AnimationManager (aus animation.js) --------------------
 export class AnimationManager {
   constructor() {
@@ -175,11 +176,11 @@ export class NavigationManager {
   }
 
   handleNavClick(e) {
+    e.preventDefault();
     const href = e.currentTarget.getAttribute("href");
     const targetId = href.substring(1);
     const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
     if (targetSection) {
-      e.preventDefault();
       targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
       const updateEvent = new CustomEvent('sectionUpdate', {
         detail: { sectionId: targetId }
