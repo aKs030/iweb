@@ -234,8 +234,8 @@ export class NavigationManager {
     const observer = new IntersectionObserver(
       entries => this.handleIntersection(entries),
       { 
-        threshold: [0.3, 0.7],  // Mehrere Schwellenwerte für bessere Erkennung
-        rootMargin: "-20% 0px" 
+        threshold: [0.5],  // Einzelner Schwellenwert für bessere Snap-Erkennung
+        rootMargin: "-10% 0px" 
       }
     );
     this.sections.forEach(section => observer.observe(section));
@@ -264,11 +264,11 @@ export class NavigationManager {
 
   handleIntersection(entries) {
     entries.forEach(entry => {
-      if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
         const sectionId = entry.target.id.replace('section-', '');
         const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
         
-        if (navItem && (!this.activeNavItem || this.activeNavItem !== navItem)) {
+        if (navItem) {
           this.updateActiveNavItem(navItem);
           this.dispatchSectionUpdate(sectionId);
         }
@@ -279,6 +279,7 @@ export class NavigationManager {
   updateActiveNavItem(activeItem) {
     if (this.activeNavItem === activeItem) return;
     
+    // Entferne alle aktiven Zustände
     this.navItems.forEach(item => {
       item.classList.remove("active");
       item.querySelector('.nav-link')?.blur();
@@ -288,12 +289,8 @@ export class NavigationManager {
       activeItem.classList.add("active");
       this.activeNavItem = activeItem;
       
-      // Entferne den aktiven Status nach kurzer Zeit
-      if (this.isMobile) {
-        setTimeout(() => {
-          activeItem.classList.remove("active");
-        }, 300);
-      }
+      // Auf Mobilgeräten NICHT den aktiven Status entfernen
+      // Entfernt: setTimeout für das Entfernen der active-Klasse
     } else {
       this.activeNavItem = null;
     }
