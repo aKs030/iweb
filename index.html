@@ -3,8 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Abdulkerim - Persönliche Webseite">
+    <meta property="og:description" content="Entdecke die Interessen, Erfahrungen und Projekte von Abdulkerim Sesli.">
+    <meta property="og:image" content="/img/icon.png">
+    <meta property="og:url" content="https://www.abdulkerimsesli.de">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@abdulkerimsesli">
+    <meta name="author" content="Abdulkerim Sesli">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Abdulkerim</title>
+    
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Abdulkerim",
+        "url": "https://www.abdulkerimsesli.de",
+        "description": "Willkommen auf der persönlichen Webseite von Abdulkerim. Entdecke Interessen, Erfahrungen und Gedanken.",
+        "author": {
+          "@type": "Person",
+          "name": "Abdulkerim Sesli",
+          "url": "https://www.abdulkerimsesli.de/about"
+        },
+        "sameAs": [
+          "https://www.linkedin.com/in/abdulkerimsesli",
+          "https://github.com/abdulkerimsesli",
+          "https://twitter.com/abdulkerimsesli"
+        ]
+      }
+    </script>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -24,33 +51,39 @@
 
 <body>
 <div id="menu-container"></div>
+  <button id="back-to-top" class="back-to-top">↑</button>
   <main id="main-content">
     <!-- Sektionen getrennt -->
     <div class="sections-container">
-      <section id="seite-1"></section>
+      <section id="section-hero" class="snap"></section>
     </div>
     <div class="sections-container">
-      <section id="seite-2"></section>
+      <section id="section-features" class="snap"></section>
     </div>
     <div class="sections-container">
-      <section id="seite-3"></section>
+      <section id="section-about" class="snap"></section>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer py-3 text-center">
+      <!-- ...existing footer code... -->
+    </footer>
 
     <!-- Navigation -->
     <nav class="navbar navbar-bottom">
       <ul class="nav-list">
-        <li class="nav-item" data-section="seite-1">
-          <a href="#seite-1" class="nav-link" aria-label="Zur Startseite">
+        <li class="nav-item" data-section="hero">
+          <a href="#section-hero" class="nav-link" aria-label="Zur Startseite">
             <i class="fas fa-home nav-icon" aria-hidden="true"></i>
           </a>
         </li>
-        <li class="nav-item" data-section="seite-2">
-          <a href="#seite-2" class="nav-link">
+        <li class="nav-item" data-section="features">
+          <a href="#section-features" class="nav-link">
             <i class="fas fa-star nav-icon"></i>
           </a>
         </li>
-        <li class="nav-item" data-section="seite-3">
-          <a href="#seite-3" class="nav-link">
+        <li class="nav-item" data-section="about">
+          <a href="#section-about" class="nav-link">
             <i class="fas fa-user nav-icon"></i>
           </a>
         </li>
