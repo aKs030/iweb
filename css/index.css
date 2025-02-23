@@ -2,7 +2,7 @@
    Farbvariablen
 ========================== */
 /* Entferne oder kommentiere den Mobile‑Reset für .nav-link:focus und :active */
-/* @media (hover: none) {
+@media (hover: none) {
   .nav-link:focus,
   .nav-link:active {
     background: none;
@@ -10,7 +10,7 @@
     transform: none;
     animation: none;
   }
-} */
+} 
 .full-screen-section {
 min-height: 100vh;
 padding: 2rem 0;
