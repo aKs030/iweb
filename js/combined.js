@@ -180,6 +180,8 @@ export class NavigationManager {
     const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
     if (targetSection) {
       targetSection.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Entferne den Fokus, um mobile :active Styles zu entfernen
+      e.currentTarget.blur();
       this.dispatchSectionUpdate(targetId);
     }
   }
