@@ -12,6 +12,27 @@ export class AnimationManager {
         timing: 'cubic-bezier(0.4, 0, 0.2, 1)'
       }
     };
+    
+  }
+
+  // Neue Methode
+  initializeAnimations(container) {
+    const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
+    animElements.forEach(element => {
+      const animation = element.dataset.animation;
+      if (animation) {
+        // Entferne bestehende Animationsklassen
+        element.classList.remove(animation);
+        element.style.opacity = '0';
+        
+        // Trigger Reflow
+        void element.offsetWidth;
+        
+        // Füge Animationsklassen wieder hinzu
+        element.classList.add('animate__animated', animation);
+        element.style.opacity = '1';
+      }
+    });
   }
 
   init() {
@@ -85,6 +106,7 @@ export class FeatureCardsManager {
     this.cards = document.querySelectorAll("#features .card");
     this.activeIndex = 0;
     this.initialLoad = true;
+    
   }
 
   init() {
@@ -158,6 +180,7 @@ export class NavigationManager {
     this.isMobile = window.matchMedia('(hover: none)').matches;
     this.touchStartY = 0;
     this.lastScrollTime = 0;
+    
   }
 
   init() {
