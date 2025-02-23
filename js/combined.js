@@ -191,6 +191,13 @@ export class NavigationManager {
         detail: { sectionId: targetId }
       });
       document.dispatchEvent(updateEvent);
+
+      // Zusätzlicher Fix für mobile Ansicht: Entferne aktivierte Navitems nach kurzem Timeout
+      if (window.matchMedia('(hover: none)').matches) {
+        setTimeout(() => {
+          this.navItems.forEach(item => item.classList.remove("active"));
+        }, 1000);
+      }
     }
     // ...existing code...
   }
