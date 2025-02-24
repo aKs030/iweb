@@ -1,7 +1,7 @@
 /* ==========================
    Farbvariablen
 ========================== */
- @media (hover: none) {
+@media (hover: none) {
   .nav-link:focus,
   .nav-link:active {
     background: none;

@@ -83,7 +83,7 @@ export class AnimationManager {
 // -------------------- FeatureCardsManager (aus features.js) --------------------
 export class FeatureCardsManager {
   constructor() {
-    this.cards = document.querySelectorAll("#features .card");
+    this.cards = document.querySelectorAll("#seite-2 .card");
     this.activeIndex = 0;
     this.initialLoad = true;
     
