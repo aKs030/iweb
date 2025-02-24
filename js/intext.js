@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sections = {
         'seite-1': [
             `
-    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="hero1" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
       Willkommen1<hr>
         </h3>
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `,
             `
-    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="hero2" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Willkommen2<hr>
       </h3>
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `,
             `
-    <section id="hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="hero3" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Willkommen3<hr>
         </h3>
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         'seite-3': [
           `
-    <section id="about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="about1" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <p class="lead text-animate" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `,
             `
-    <section id="about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="about2" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <p class="lead text-animate" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         'seite-2': [
           `
-    <section id="features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="features1" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <div class="container">
         <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
           <!-- Link zu Über Mich -->
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
      `,
             `
-<section id="features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+<section id="features2" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
       <div class="col">
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
             `,
             `
-<section id="features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+<section id="features3" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
       <div class="col">
