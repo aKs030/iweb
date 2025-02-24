@@ -1,394 +1,187 @@
-/* ==========================
-   Farbvariablen
-========================== */
-@media (hover: none) {
-  .nav-link:focus,
-  .nav-link:active {
-    background: none;
-    box-shadow: none;
-    transform: none;
-    animation: none;
-  }
-} 
-.full-screen-section {
-min-height: 100vh;
-padding: 2rem 0;
-}
 .left-text {
-text-align: left;
-}
+  text-align: left;
+  }
+/* ==========================
+   Grundlegende Variablen
+========================== */
 :root {
+  /* Farben */
   --main-fonts-color: #fff;
   --main-decor-color: #ffffff;
   --main-bg-color: #444;
   --secondary-bg-color: var(--main-bg-color);
   --main-text-color: rgba(245, 245, 245, 0.9);
-  --accent-color: rgba(255, 204, 41, 0.8);
-  --menu-bg-color: #333333cc;
   --secondary-text-color: rgba(245, 245, 245, 0.5);
-  --menu-text-color: var(--menu-bg-color);
-}
+  --accent-color: rgba(255, 204, 41, 0.8);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --highlight-shadow: rgba(255, 204, 41, 0.4);
 
-/* Globale iOS‑Anpassungen */
-* {
-  -webkit-tap-highlight-color: transparent;
+  /* Abstände & Größen */
+  --section-padding: 2rem;
+  --border-radius: 15px;
+
+  /* Animationen */
+  --transition-speed: 0.35s;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==========================
    Allgemeine Stile
 ========================== */
-body {
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--main-bg-color);
   color: var(--main-text-color);
-  margin: 0;
-  padding: 0;
-  
+  min-height: 100%;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
-html, body {
-scroll-snap-type: y mandatory;
-overscroll-behavior: contain;
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
 }
-.snap {
-scroll-snap-align: center; /* start oder center */
+
+.full-screen-section,
+.sections-container {
+  min-height: 100vh;
+  padding: var(--section-padding) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', sans-serif;
-  color: var(--main-text-color);
-  font-weight: 500;
+
+h1, h2, h3, h4, h5, h6,
+p, li, a {
+  font-weight: 300;
+  color: var(--secondary-text-color);
   letter-spacing: 0.5px;
   line-height: 1.4;
 }
 
-p, li, a {
-  font-family: 'Poppins', sans-serif;
-  font-size: 1rem;
-  font-weight: 300;
-  color: var(--secondary-text-color);
-}
-
-p.lead {
-  font-size: 1.2rem;
-  font-weight: 400;
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
   color: var(--main-text-color);
 }
+
+p.lead, .lead {
+  font-size: 1.2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+  color: var(--main-text-color);
+  font-weight: 400;
+}
+
 /* ==========================
-       Text-Willkommen
+   Schimmertext
 ========================== */
 .shimmer-text {
   font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: bold;           /* Falls noch mehr Gewicht gewünscht */
-color: #fff;                 /* Grundfarbe, wichtig für den Glüheffekt */
-text-shadow: 0 0 40px #fff;  /* Weicher Schimmer (Schein) */
-/* Optionale Abstände */
-margin-bottom: 1rem;         
-padding-bottom: 5rem;
-/* Schimmer mit linear-gradient und Background-Clip */
-background: linear-gradient(
-90deg,
-rgba(255, 255, 255, 0.3) 0%,
-rgba(255, 255, 255, 1) 50%,
-rgba(255, 255, 255, 0.3) 100%
-);
-background-size: 200% 100%;
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 40px #fff;
+  margin-bottom: 1rem;
+  padding-bottom: 5rem;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 1.5s infinite linear;
 }
-/* Keyframes für die Schimmer-Animation */
+
 @keyframes shimmer {
-0% {
-background-position: 0% 50%;
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
 }
-100% {
-background-position: 100% 50%;
-}
-}
-/* Einfaches HR-Styling passend zum Text */
-.shimmer-text hr {
-width: 100px;
-border: none;
-height: 1.2px;
-background-color: #fff;
-margin: 0 auto 0;  /* zentriert unter dem Text */
-opacity: 0.8;
-}
-/* ==========================
-     hr
-========================== */
-hr {
-background: var(--main-decor-color);  /* Verwendet die dekorative Hauptfarbe als Hintergrund */
-height: 3px;  /* Setzt die Höhe der Linie auf 3 Pixel */
-width: 190px;  /* Definiert die Breite der Linie auf 150 Pixel */
-border-radius: 5px;  /* Rundet die Ecken der Linie mit einem Radius von 5px ab */
-border: hidden;  /* Versteckt die Standard-Grenze, um visuelle Unregelmäßigkeiten zu vermeiden */
-margin-inline-start: auto;  /* Zentriert die Linie horizontal (Startabstand automatisch) */
-margin-inline-end: auto;  /* Zentriert die Linie horizontal (Endabstand automatisch) */
-}
-/* ==========================
-    .lead`-Element
-========================== */
-.lead {
-font-size: 1.25rem; /* Größe für bessere Lesbarkeit */
-font-weight: 300; /* Leichtere Schrift für modernen Look */
-max-width: 800px;  /* Maximale Breite des Textes */
-margin: 0 auto;  /* Zentrierung */
-padding: 0 20px;  /* Abstand auf kleinen Bildschirmen */
-}
-/* ==========================
-Navigation (Navbar Bottom)
-========================== */
-/* Entfernt */
 
 /* ==========================
-   Karten
+   Kartenstil
 ========================== */
 .card {
-background-color: var(--secondary-bg-color);
-color: var(--main-text-color);
-border-radius: 15px;
-box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-/* GPU-Optimierung und konstante Border-Breite */
-transform: translateZ(0);
-border: 2px solid transparent;
-
-/* Gleiche Transition-Dauer und -Kurve */
-transition:
-transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-border-color 0.35s ease;
-
-/* Hilft dem Browser, Änderungen zu „ahnen“ */
-will-change: transform, box-shadow, border-color;
+  background-color: var(--secondary-bg-color);
+  color: var(--main-text-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px var(--shadow-color);
+  border: 2px solid transparent;
+  transform: translateZ(0);
+  transition:
+    transform var(--transition-speed) var(--transition-ease),
+    box-shadow var(--transition-speed) var(--transition-ease),
+    border-color var(--transition-speed) ease;
+  will-change: transform, box-shadow, border-color;
 }
 
-/* Desktop-Hover: leichte Anhebung, Skalierung, Schattenverstärkung, Farbänderung der Border */
-.card:hover {
-transform: translateY(-6px) scale(1.02);
-box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-border-color: var(--accent-color);
-
-
-transform: translateY(-6px) scale(1.02);
-box-shadow: 0 12px 30px rgba(255, 204, 41, 0.4);
-border-color: var(--accent-color);
+.card:hover, .card:active {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px var(--highlight-shadow);
+  border-color: var(--accent-color);
 }
 
-/* Touch-Geräte: Effekt beim Drücken */
-@media (hover: none) {
-.card:active {
-transform: translateY(-6px) scale(1.02);
-box-shadow: 0 12px 30px rgba(255, 204, 41, 0.4);
-border-color: var(--accent-color);
-}
-}
 /* ==========================
-Text-Animation
+   Scroll & Animation
 ========================== */
+.scroll-animate,
 .text-animate {
-opacity: 0;
-transform: translate3d(0, -50px, 0); /* etwas kleinerer Versatz */
-transition:
-opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
-transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-will-change: opacity, transform;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition:
+    opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
 }
 
+.scroll-animate.visible,
 .text-animate.visible {
-opacity: 1;
-transform: translate3d(0, -50px, 0);
-}
-/* ==========================
-Scroll-Animation
-========================== */
-.scroll-animate {
-opacity: 0;
-transform: translateY(-20px);  /* Leichter Versatz von unten */
-/* Hier verwenden wir eine etwas weichere cubic-bezier-Funktion und etwas längere Dauer */
-transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
-          transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-will-change: opacity, transform;
-}
-
-.scroll.visible {
-opacity: 1;
-transform: translateY(0);
-}
-/* ==========================
-   Container-Zentrierung
-========================== */
-.center-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
-  text-align: center;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
-/* Styling für Lade-Zustand */
-.section-container {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-size: 1.2rem;
-    color: var(--main-text-color);
-    transition: opacity 0.3s ease;
-}
-
-/* Animation für Laden */
-@keyframes fadeInOut {
-     0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
-}
-
-.section-container:empty::before,
-.section-container:only-child::before {
-    content: attr(data-loading);
-    animation: fadeInOut 1.5s infinite;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ==========================
-   Loading Text
+   Horizontal Line (hr)
 ========================== */
-.loading-text {
-    font-size: 1.5rem;
-    color: var(--main-text-color);
-    opacity: 0.8;
-    animation: fadeInOut 1.5s infinite;
+hr {
+  background: var(--main-decor-color);
+  height: 3px;
+  width: 190px;
+  border-radius: 5px;
+  border: none;
+  margin: 0 auto;
+  opacity: 0.8;
 }
 
 /* ==========================
-   Loading Animation
+   Mobile-Anpassungen
 ========================== */
-.loading-animation {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-size: 1.5rem;
-    color: var(--main-text-color);
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 0.4; }
-    50% { opacity: 1; }
-    100% { opacity: 0.4; }
-}
-
-/* Anpassungen für die Sektionen-Container */
-.sections-container {
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#seite-1,
-#seite-2,
-#seite-3 {
-  width: 100%;
-  min-height: 100vh;
-  scroll-snap-align: center;
-}
-
-/* Mobile-Anpassungen */
 @media (max-width: 768px) {
-  .navbar-bottom {
-    padding: 8px 15px;
-    border-radius: 20px;
-  }
-  
-  .nav-link {
-    width: 40px;
-    height: 40px;
-    transition: all 0.3s ease;
-  }
-  
-  .nav-icon {
-    font-size: 1.1rem;
-  }
-  
-  .full-screen-section {
-    padding: 1.5rem 0;
-  }
-  
+
   .shimmer-text {
     font-size: clamp(1.8rem, 6vw, 2.5rem);
     padding-bottom: 3rem;
   }
-  
-  /* Passen Sie hier :focus und :active für Touch-Geräte an,
-     sodass der Klick-Zustand nicht dauerhaft angezeigt wird */
-  .nav-link:focus,
-  .nav-link:active {
-    background: transparent;
-    box-shadow: none;
-    transform: none;
-    animation: none;
-    outline: none;
+
+  .full-screen-section {
+    padding: 1.5rem 0;
   }
 }
 
-/* iOS-spezifische Anpassungen */
-@supports (-webkit-touch-callout: none) {
-  html, body {
-    height: -webkit-fill-available;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .sections-container {
-    min-height: -webkit-fill-available;
-  }
-}
-
-/* Verbesserte mobile Navigation */
-/* Entfernt */
-
-/* Scroll-Snap Verbesserungen */
-.snap {
-  scroll-snap-align: start;
-  -webkit-scroll-snap-align: start;
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  height: 100%;
-}
-
-body {
-  min-height: 100%;
-  overflow-y: scroll;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Touch-Feedback Optimierungen */
-.nav-link {
-  touch-action: manipulation;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Scroll-Snap Optimierungen */
 .snap {
   scroll-snap-align: center;
   scroll-snap-stop: always;
 }
-
-html {
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
