@@ -12,7 +12,6 @@ export class AnimationManager {
         timing: 'cubic-bezier(0.4, 0, 0.2, 1)'
       }
     };
-    
   }
 
   init() {
@@ -40,6 +39,8 @@ export class AnimationManager {
     entries.forEach(({ target, isIntersecting }) => {
       if (!target.classList.contains("full-visible")) {
         this.animateElement(target, isIntersecting);
+      } else if (!isIntersecting) {
+        this.resetAnimation(target);
       }
     });
   }
@@ -73,20 +74,23 @@ export class AnimationManager {
         }, { once: true });
       }, delay);
     } else {
-      element.style.opacity = '0';
-      element.style.transform = 'translateY(20px)';
-      element.classList.remove('animate__animated', 'animate__fadeInUp');
+      this.resetAnimation(element);
     }
+  }
+
+  resetAnimation(element) {
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(20px)';
+    element.classList.remove('animate__animated', 'animate__fadeInUp');
   }
 }
 
 // -------------------- FeatureCardsManager (aus features.js) --------------------
 export class FeatureCardsManager {
   constructor() {
-    this.cards = document.querySelectorAll("#seite-2 .card");
+    this.cards = document.querySelectorAll("#section-features .card");
     this.activeIndex = 0;
     this.initialLoad = true;
-    
   }
 
   init() {

@@ -4,9 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Abschnittsdaten mit aktualisierten IDs
     const sections = {
-        'seite-1': [
+        'section-hero': [
             `
-    <section id="seite-1" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="section-hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
       Willkommen1<hr>
         </h3>
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `,
             `
-    <section id="seite-1" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="section-hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Willkommen2<hr>
       </h3>
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `,
             `
-    <section id="seite-1" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="section-hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
         <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Willkommen3<hr>
         </h3>
@@ -45,9 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `
         ],
-        'seite-3': [
+        'section-about': [
           `
-    <section id="seite-3" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <p class="lead text-animate" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `,
             `
-    <section id="seite-3" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <p class="lead text-animate" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
@@ -73,9 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
             `
         ],
-        'seite-2': [
+        'section-features': [
           `
-    <section id="seite-2" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+    <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <div class="container">
         <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
           <!-- Link zu Über Mich -->
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
      `,
             `
-<section id="seite-2" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+<section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
       <div class="col">
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
             `,
             `
-<section id="seite-2" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+<section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
       <div class="col">
@@ -175,27 +175,20 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
-    // Funktion zum Initialisieren der Animationen
     function initializeAnimations(container) {
         const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
         animElements.forEach(element => {
             const animation = element.dataset.animation;
             if (animation) {
-                // Entferne bestehende Animationsklassen
-                element.classList.remove(animation);
+                element.classList.remove('animate__animated', animation);
                 element.style.opacity = '0';
-                
-                // Trigger Reflow
                 void element.offsetWidth;
-                
-                // Füge Animationsklassen wieder hinzu
                 element.classList.add('animate__animated', animation);
                 element.style.opacity = '1';
             }
         });
     }
 
-    // Funktion zum Aktualisieren einer einzelnen Sektion
     function updateSection(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element || !sections[sectionId]) return;
@@ -204,37 +197,57 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeAnimations(element);
     }
 
-    // Event Listener für Sektionsaktualisierungen
     document.addEventListener('sectionUpdate', (event) => {
         const { sectionId } = event.detail;
         updateSection(sectionId);
     });
 
-    // Initiale Ladung der Sektionen
-    ['seite-1', 'seite-2', 'seite-3'].forEach(section => {
-        updateSection(section);
-    });
+    function initSections() {
+        ['section-hero', 'section-features', 'section-about'].forEach(section => {
+            updateSection(section);
+        });
+    }
 
-    // Intersection Observer Setup
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
+    function observeSections() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
                 const sectionId = entry.target.id;
-                updateSection(sectionId);
+                if (entry.isIntersecting) {
+                    updateSection(sectionId);
+                } else {
+                    resetAnimations(sectionId);
+                }
+            });
+        }, {
+            threshold: 0.7,
+            rootMargin: '-10% 0px'
+        });
+
+        ['section-hero', 'section-features', 'section-about'].forEach(section => {
+            const element = document.getElementById(section);
+            if (element) {
+                observer.observe(element);
             }
         });
-    }, {
-        threshold: 0.7,
-        rootMargin: '-10% 0px'
-    });
+    }
 
-    // Beobachte alle Sektionen
-    ['seite-1', 'seite-2', 'seite-3'].forEach(section => {
-        const element = document.getElementById(section);
-        if (element) {
-            observer.observe(element);
-        }
-    });
+    function resetAnimations(sectionId) {
+        const element = document.getElementById(sectionId);
+        if (!element) return;
+
+        const animElements = element.querySelectorAll('.text-animate, .scroll-animate');
+        animElements.forEach(el => {
+            const animation = el.dataset.animation;
+            if (animation) {
+                el.classList.remove('animate__animated', animation);
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(-20px)';
+            }
+        });
+    }
+
+    initSections();
+    observeSections();
 });
 
 
