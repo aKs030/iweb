@@ -161,6 +161,11 @@ export class NavigationManager {
     this.touchStartY = 0;
     this.lastScrollTime = 0;
     
+    // Optimierte Event-Handler
+    this.handleNavClick = this.handleNavClick.bind(this);
+    this.handleTouchStart = this.handleTouchStart.bind(this);
+    this.handleTouchEnd = this.handleTouchEnd.bind(this);
+    this.updateActiveSection = this.updateActiveSection.bind(this);
   }
 
   init() {
@@ -170,84 +175,27 @@ export class NavigationManager {
   }
 
   setupNavigation() {
-    this.navLinks.forEach(link => link.addEventListener("click", this.handleNavClick.bind(this)));
+    this.navLinks.forEach(link => link.addEventListener("click", this.handleNavClick));
   }
 
   setupMobileHandling() {
     if (this.isMobile) {
       this.navLinks.forEach(link => {
-        link.addEventListener('touchstart', (e) => {
-          // Verhindere Standard-Touch-Verhalten
-          e.preventDefault();
-          
-          // Entferne sofort alle aktiven Zustände
-          this.navItems.forEach(item => item.classList.remove("active"));
-          
-          const href = link.getAttribute('href');
-          const targetSection = document.querySelector(href);
-          if (targetSection) {
-            targetSection.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-          
-          // Entferne den Fokus
-          link.blur();
-        }, { passive: false });
-
-        link.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          this.touchStartY = e.touches[0].clientY;
-          
-          // Sofortige visuelle Rückmeldung
-          const navItem = link.closest('.nav-item');
-          navItem.classList.add('touching');
-        }, { passive: false });
-
-        link.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          const navItem = link.closest('.nav-item');
-          navItem.classList.remove('touching');
-          
-          // Verhindere zu schnelles wiederholtes Scrollen
-          const now = Date.now();
-          if (now - this.lastScrollTime < 500) return;
-          this.lastScrollTime = now;
-
-          const href = link.getAttribute('href');
-          const targetSection = document.querySelector(href);
-          if (targetSection) {
-            targetSection.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
-          }
-        }, { passive: false });
+        link.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+        link.addEventListener('touchend', this.handleTouchEnd, { passive: false });
       });
 
       // Scroll-Event-Listener für bessere Sektion-Erkennung
       window.addEventListener('scroll', () => {
-        requestAnimationFrame(this.updateActiveSection.bind(this));
+        requestAnimationFrame(this.updateActiveSection);
       }, { passive: true });
     }
-  }
-
-  setupScrollObserver() {
-    const observer = new IntersectionObserver(
-      entries => this.handleIntersection(entries),
-      { 
-        threshold: [0.5],  // Einzelner Schwellenwert für bessere Snap-Erkennung
-        rootMargin: "-10% 0px" 
-      }
-    );
-    this.sections.forEach(section => observer.observe(section));
   }
 
   handleNavClick(e) {
     e.preventDefault();
     const targetId = e.currentTarget.getAttribute("href").substring(1);
-    const targetSection = document.getElementById(`section-${targetId}`) || document.getElementById(targetId);
+    const targetSection = document.getElementById(targetId);
     if (targetSection) {
       // Sofort den aktiven Zustand entfernen
       this.navItems.forEach(item => item.classList.remove("active"));
@@ -265,10 +213,50 @@ export class NavigationManager {
     }
   }
 
+  handleTouchStart(e) {
+    e.preventDefault();
+    this.touchStartY = e.touches[0].clientY;
+    
+    // Sofortige visuelle Rückmeldung
+    const navItem = e.currentTarget.closest('.nav-item');
+    navItem.classList.add('touching');
+  }
+
+  handleTouchEnd(e) {
+    e.preventDefault();
+    const navItem = e.currentTarget.closest('.nav-item');
+    navItem.classList.remove('touching');
+    
+    // Verhindere zu schnelles wiederholtes Scrollen
+    const now = Date.now();
+    if (now - this.lastScrollTime < 500) return;
+    this.lastScrollTime = now;
+
+    const href = e.currentTarget.getAttribute('href');
+    const targetSection = document.querySelector(href);
+    if (targetSection) {
+      targetSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+
+  setupScrollObserver() {
+    const observer = new IntersectionObserver(
+      entries => this.handleIntersection(entries),
+      { 
+        threshold: [0.5],  // Einzelner Schwellenwert für bessere Snap-Erkennung
+        rootMargin: "-10% 0px" 
+      }
+    );
+    this.sections.forEach(section => observer.observe(section));
+  }
+
   handleIntersection(entries) {
     entries.forEach(entry => {
       if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-        const sectionId = entry.target.id.replace('section-', '');
+        const sectionId = entry.target.id;
         const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
         
         if (navItem) {
