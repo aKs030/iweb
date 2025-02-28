@@ -176,17 +176,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function initializeAnimations(container) {
-        const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
-        animElements.forEach(element => {
-            const animation = element.dataset.animation;
-            if (animation) {
-                element.classList.remove('animate__animated', animation);
-                element.style.opacity = '0';
-                void element.offsetWidth;
-                element.classList.add('animate__animated', animation);
-                element.style.opacity = '1';
-            }
-        });
+        if (container.id === 'section-features') {
+            const cards = container.querySelectorAll('.card');
+            cards.forEach(card => {
+                const animation = card.dataset.animation;
+                const delay = parseInt(card.dataset.delay) || 0;
+                card.classList.remove('animate__animated', animation);
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.classList.add('animate__animated', animation);
+                    card.style.opacity = '1';
+                }, delay);
+            });
+        } else {
+            const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
+            animElements.forEach(element => {
+                const animation = element.dataset.animation;
+                if (animation) {
+                    element.classList.remove('animate__animated', animation);
+                    element.style.opacity = '0';
+                    void element.offsetWidth;
+                    element.classList.add('animate__animated', animation);
+                    element.style.opacity = '1';
+                }
+            });
+        }
     }
 
     function updateSection(sectionId) {
