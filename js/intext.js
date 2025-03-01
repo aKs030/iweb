@@ -175,18 +175,26 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
+    function animateElement(element, animation) {
+        element.classList.remove('animate__animated', animation);
+        element.style.opacity = '0';
+        // Nutze requestAnimationFrame für flüssige Darstellung
+        requestAnimationFrame(() => {
+            element.classList.add('animate__animated', animation);
+            element.style.opacity = '1';
+        });
+    }
+
     function initializeAnimations(container) {
         if (container.id === 'section-features') {
             const cards = container.querySelectorAll('.card');
             cards.forEach(card => {
                 const animation = card.dataset.animation;
                 const delay = parseInt(card.dataset.delay) || 0;
-                card.classList.remove('animate__animated', animation);
                 card.style.opacity = '0';
                 setTimeout(() => {
                     requestAnimationFrame(() => {
-                        card.classList.add('animate__animated', animation);
-                        card.style.opacity = '1';
+                        animateElement(card, animation);
                     });
                 }, delay);
             });
@@ -195,12 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
             animElements.forEach(element => {
                 const animation = element.dataset.animation;
                 if (animation) {
-                    element.classList.remove('animate__animated', animation);
-                    element.style.opacity = '0';
-                    // Entferne unnötigen Reflow, nutze requestAnimationFrame
                     requestAnimationFrame(() => {
-                        element.classList.add('animate__animated', animation);
-                        element.style.opacity = '1';
+                        animateElement(element, animation);
                     });
                 }
             });
