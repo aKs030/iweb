@@ -1,5 +1,6 @@
 "use strict";
 document.addEventListener('DOMContentLoaded', () => {
+    const isMobile = window.matchMedia("(max-width:768px)").matches;
     const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
     // Abschnittsdaten mit aktualisierten IDs
@@ -177,11 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function animateElement(element, animation) {
         element.classList.remove('animate__animated', animation);
-        element.style.opacity = '0';
-        // Nutze requestAnimationFrame für flüssige Darstellung
+        // Verzichten Sie auf das Zurücksetzen der Opazität, um Flickern zu vermeiden
         requestAnimationFrame(() => {
             element.classList.add('animate__animated', animation);
             element.style.opacity = '1';
+            // Kürzere Animationen für mobile Geräte
+            if (isMobile) {
+              element.style.animationDuration = '0.6s';
+            }
         });
     }
 
@@ -190,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const cards = container.querySelectorAll('.card');
             cards.forEach(card => {
                 const animation = card.dataset.animation;
-                const delay = parseInt(card.dataset.delay) || 0;
-                card.style.opacity = '0';
+                // Für mobile Ansichten reduzieren Sie den Delay um 50%
+                const delay = isMobile ? (parseInt(card.dataset.delay) || 0) * 0.5 : (parseInt(card.dataset.delay) || 0);
                 setTimeout(() => {
                     requestAnimationFrame(() => {
                         animateElement(card, animation);
@@ -214,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSection(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element || !sections[sectionId]) return;
-
         element.innerHTML = getRandomElement(sections[sectionId]);
         initializeAnimations(element);
     }
@@ -256,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetAnimations(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element) return;
-
         const animElements = element.querySelectorAll('.text-animate, .scroll-animate');
         animElements.forEach(el => {
             const animation = el.dataset.animation;
@@ -271,5 +273,4 @@ document.addEventListener('DOMContentLoaded', () => {
     initSections();
     observeSections();
 });
-
 
