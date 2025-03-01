@@ -149,6 +149,9 @@ p.lead, .lead {
 /* Für flüssigere Hardwarebeschleunigung */
 .animate__animated {
   will-change: opacity, transform;
+  backface-visibility: hidden; /* Vermeidet Rendering-Probleme */
+  transform: translateZ(0);
+  animation-fill-mode: both;
 }
 
 .scroll-animate.visible,
