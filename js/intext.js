@@ -175,26 +175,17 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
-    function animateElement(element, animation) {
-        element.classList.remove('animate__animated', animation);
-        // Kein manuelles Zurücksetzen der Opazität mehr, falls bereits sichtbar
-        requestAnimationFrame(() => {
-            element.classList.add('animate__animated', animation);
-            element.style.opacity = '1';
-        });
-    }
-
     function initializeAnimations(container) {
         if (container.id === 'section-features') {
             const cards = container.querySelectorAll('.card');
             cards.forEach(card => {
                 const animation = card.dataset.animation;
                 const delay = parseInt(card.dataset.delay) || 0;
-                // Entfernt das explizite Setzen von opacity = '0'
+                card.classList.remove('animate__animated', animation);
+                card.style.opacity = '0';
                 setTimeout(() => {
-                    requestAnimationFrame(() => {
-                        animateElement(card, animation);
-                    });
+                    card.classList.add('animate__animated', animation);
+                    card.style.opacity = '1';
                 }, delay);
             });
         } else {
@@ -202,9 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
             animElements.forEach(element => {
                 const animation = element.dataset.animation;
                 if (animation) {
-                    requestAnimationFrame(() => {
-                        animateElement(element, animation);
-                    });
+                    element.classList.remove('animate__animated', animation);
+                    element.style.opacity = '0';
+                    void element.offsetWidth;
+                    element.classList.add('animate__animated', animation);
+                    element.style.opacity = '1';
                 }
             });
         }
@@ -262,7 +255,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                el.style.transform = 'translateY(-20px)';
+                // Bei mobilen Geräten nicht so viel verschieben
+                if(window.innerWidth <= 768) {
+                    el.style.transform = 'none';
+                } else {
+                    el.style.transform = 'translateY(-20px)';
+                }
             }
         });
     }
