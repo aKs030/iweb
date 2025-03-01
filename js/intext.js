@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
         um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
       </p>
-      <h2 class="text-animate" data-animation="animate__fadeInDown">
+      <h2 class="display-3 fw-bold text-animate animate__animated" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
         um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
       </p>
-      <h2 class="text-animate" data-animation="animate__fadeInDown">
+      <h2 class="display-3 fw-bold text-animate animate__animated" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
