@@ -141,10 +141,30 @@ p.lead, .lead {
 .text-animate {
   opacity: 0;
   transform: translateY(-20px);
-  transition:
-    opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
+}
+
+/* Für flüssigere Hardwarebeschleunigung */
+.animate__animated {
+  will-change: opacity, transform;
+  backface-visibility: hidden; /* Vermeidet Rendering-Probleme */
+  transform: translateZ(0);
+  animation-fill-mode: both;
+}
+
+.animate__fadeInDown {
+  animation-duration: 1s;
+  animation-timing-function: ease-out;
+}
+.animate__fadeInUp {
+  animation-duration: 1s;
+  animation-timing-function: ease-out;
+}
+.animate__flipInX {
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .scroll-animate.visible,
@@ -173,11 +193,41 @@ hr {
 
   .shimmer-text {
     font-size: clamp(1.8rem, 6vw, 2.5rem);
-    padding-bottom: 3rem;
+    padding-bottom: 2rem; /* Weniger Abstand für flüssigere Darstellung */
+    animation-duration: 1.2s; /* Schnellerer Schimmereffekt */
+  }
+  
+  .scroll-animate,
+  .text-animate {
+    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); /* Kürzere Transitions */
+    /* Statt translateY(-20px) ggf. nur kleine Offsets nutzen */
+    transform: translateY(-10px);
+  }
+  
+  .full-screen-section {
+    padding: 1rem 0; /* Reduziertes Padding auf mobilen Geräten */
+  }
+  
+  .card:hover, .card:active {
+    transform: translateY(-4px) scale(1.01); /* Sanftere Hover-Animation */
+    box-shadow: 0 8px 20px var(--highlight-shadow);
   }
 
-  .full-screen-section {
-    padding: 1.5rem 0;
+  /* Hardwarebeschleunigung beibehalten */
+  .animate__animated {
+    will-change: opacity, transform;
+    animation-fill-mode: both;
+  }
+
+  .animate__fadeInDown {
+    animation-duration: 0.8s;
+  }
+  .animate__fadeInUp {
+    animation-duration: 0.8s;
+  }
+  .animate__flipInX {
+    animation-duration: 0.7s;
   }
 }
 

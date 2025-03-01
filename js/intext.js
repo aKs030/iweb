@@ -175,6 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
+    function animateElement(element, animation) {
+        element.classList.remove('animate__animated', animation);
+        requestAnimationFrame(() => {
+            element.classList.add('animate__animated', animation);
+            element.style.opacity = '1';
+        });
+    }
+
     function initializeAnimations(container) {
         if (container.id === 'section-features') {
             const cards = container.querySelectorAll('.card');
@@ -184,11 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('animate__animated', animation);
                 card.style.opacity = '0';
                 setTimeout(() => {
-                    // Erzwinge Reflow und nutze requestAnimationFrame für saubere Animationen:
-                    void card.offsetWidth;
                     requestAnimationFrame(() => {
-                        card.classList.add('animate__animated', animation);
-                        card.style.opacity = '1';
+                        animateElement(card, animation);
                     });
                 }, delay);
             });
@@ -200,8 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     element.classList.remove('animate__animated', animation);
                     element.style.opacity = '0';
                     void element.offsetWidth;
-                    element.classList.add('animate__animated', animation);
-                    element.style.opacity = '1';
+                    requestAnimationFrame(() => {
+                        animateElement(element, animation);
+                    });
                 }
             });
         }
@@ -259,7 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                el.style.transform = 'translateY(-20px)';
+                if(window.innerWidth <= 768) {
+                    el.style.transform = 'translateY(-10px)'; // Leichter Offset für mobile Geräte
+                } else {
+                    el.style.transform = 'translateY(-20px)';
+                }
             }
         });
     }
