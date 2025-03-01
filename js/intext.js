@@ -1,6 +1,5 @@
 "use strict";
 document.addEventListener('DOMContentLoaded', () => {
-    const isMobile = window.matchMedia("(max-width:768px)").matches;
     const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
     // Abschnittsdaten mit aktualisierten IDs
@@ -55,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
         um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
       </p>
-      <h2 class="display-3 fw-bold text-animate animate__animated" data-animation="animate__fadeInDown">
+      <h2 class="text-animate" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
@@ -68,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
         um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
       </p>
-      <h2 class="display-3 fw-bold text-animate animate__animated" data-animation="animate__fadeInDown">
+      <h2 class="text-animate" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
@@ -178,14 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function animateElement(element, animation) {
         element.classList.remove('animate__animated', animation);
-        // Verzichten Sie auf das Zurücksetzen der Opazität, um Flickern zu vermeiden
+        // Kein manuelles Zurücksetzen der Opazität mehr, falls bereits sichtbar
         requestAnimationFrame(() => {
             element.classList.add('animate__animated', animation);
             element.style.opacity = '1';
-            // Kürzere Animationen für mobile Geräte
-            if (isMobile) {
-              element.style.animationDuration = '0.6s';
-            }
         });
     }
 
@@ -194,8 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const cards = container.querySelectorAll('.card');
             cards.forEach(card => {
                 const animation = card.dataset.animation;
-                // Für mobile Ansichten reduzieren Sie den Delay um 50%
-                const delay = isMobile ? (parseInt(card.dataset.delay) || 0) * 0.5 : (parseInt(card.dataset.delay) || 0);
+                const delay = parseInt(card.dataset.delay) || 0;
+                // Entfernt das explizite Setzen von opacity = '0'
                 setTimeout(() => {
                     requestAnimationFrame(() => {
                         animateElement(card, animation);
@@ -218,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSection(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element || !sections[sectionId]) return;
+
         element.innerHTML = getRandomElement(sections[sectionId]);
         initializeAnimations(element);
     }
@@ -259,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetAnimations(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element) return;
+
         const animElements = element.querySelectorAll('.text-animate, .scroll-animate');
         animElements.forEach(el => {
             const animation = el.dataset.animation;
@@ -273,4 +270,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initSections();
     observeSections();
 });
+
 
