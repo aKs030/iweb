@@ -255,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                // Bei mobilen Geräten nicht so viel verschieben
                 if(window.innerWidth <= 768) {
                     el.style.transform = 'none';
                 } else {
