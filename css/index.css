@@ -154,6 +154,19 @@ p.lead, .lead {
   animation-fill-mode: both;
 }
 
+.animate__fadeInDown {
+  animation-duration: 1s;
+  animation-timing-function: ease-out;
+}
+.animate__fadeInUp {
+  animation-duration: 1s;
+  animation-timing-function: ease-out;
+}
+.animate__flipInX {
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
 .scroll-animate.visible,
 .text-animate.visible {
   opacity: 1;
@@ -203,6 +216,16 @@ hr {
   .animate__animated {
     will-change: opacity, transform;
     animation-fill-mode: both;
+  }
+
+  .animate__fadeInDown {
+    animation-duration: 0.8s;
+  }
+  .animate__fadeInUp {
+    animation-duration: 0.8s;
+  }
+  .animate__flipInX {
+    animation-duration: 0.7s;
   }
 }
 

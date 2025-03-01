@@ -57,7 +57,6 @@ export class AnimationManager {
   animateElement(element, isIntersecting) {
     const delay = parseFloat(element.dataset.delay) || 0;
     if (isIntersecting) {
-      // Falls das Element bereits sichtbar ist, Animation nicht erneut starten
       if (element.style.opacity === '1') return;
       element.style.transform = 'translateY(20px)';
       element.style.visibility = 'visible';
@@ -79,7 +78,6 @@ export class AnimationManager {
   }
 
   resetAnimation(element) {
-    // Setzt nur Transform zurück ohne Opacity zu überschreiben, falls bereits unsichtbar
     element.style.transform = 'translateY(20px)';
     element.classList.remove('animate__animated', 'animate__fadeInUp');
   }
