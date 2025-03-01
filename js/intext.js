@@ -175,14 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
-    function animateElement(element, animation) {
-        element.classList.remove('animate__animated', animation);
-        requestAnimationFrame(() => {
-            element.classList.add('animate__animated', animation);
-            element.style.opacity = '1';
-        });
-    }
-
     function initializeAnimations(container) {
         if (container.id === 'section-features') {
             const cards = container.querySelectorAll('.card');
@@ -192,8 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('animate__animated', animation);
                 card.style.opacity = '0';
                 setTimeout(() => {
+                    // Erzwinge Reflow und nutze requestAnimationFrame für saubere Animationen:
+                    void card.offsetWidth;
                     requestAnimationFrame(() => {
-                        animateElement(card, animation);
+                        card.classList.add('animate__animated', animation);
+                        card.style.opacity = '1';
                     });
                 }, delay);
             });
@@ -205,9 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     element.classList.remove('animate__animated', animation);
                     element.style.opacity = '0';
                     void element.offsetWidth;
-                    requestAnimationFrame(() => {
-                        animateElement(element, animation);
-                    });
+                    element.classList.add('animate__animated', animation);
+                    element.style.opacity = '1';
                 }
             });
         }
@@ -265,11 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                if(window.innerWidth <= 768) {
-                    el.style.transform = 'none';
-                } else {
-                    el.style.transform = 'translateY(-200px)';
-                }
+                el.style.transform = 'translateY(-20px)';
             }
         });
     }
