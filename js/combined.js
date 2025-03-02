@@ -55,23 +55,22 @@ export class AnimationManager {
   }
 
   animateElement(element, isIntersecting) {
-    const isFadeInUp = element.dataset.animation === 'animate__fadeInUp';
-    const delay = (parseFloat(element.dataset.delay) || 0);
+    const delay = parseFloat(element.dataset.delay) || 0;
     if (isIntersecting) {
       element.style.opacity = '0';
       element.style.transform = 'translateY(20px)';
       element.style.visibility = 'visible';
       setTimeout(() => {
-        element.classList.add('animate__animated', 'animate__fadeInUp');
-        element.style.animationDuration = this.animations.fadeInUp.duration;
-        element.style.animationTimingFunction = this.animations.fadeInUp.timing;
-        element.style.opacity = '1';
-        element.style.transform = 'translateY(0)';
-        element.addEventListener('animationend', () => {
-          element.classList.remove('animate__animated', 'animate__fadeInUp');
+        requestAnimationFrame(() => {
+          element.classList.add('animate__animated', 'animate__fadeInUp');
+          element.style.animationDuration = this.animations.fadeInUp.duration;
+          element.style.animationTimingFunction = this.animations.fadeInUp.timing;
           element.style.opacity = '1';
           element.style.transform = 'translateY(0)';
-        }, { once: true });
+          element.addEventListener('animationend', () => {
+            element.classList.remove('animate__animated', 'animate__fadeInUp');
+          }, { once: true });
+        });
       }, delay);
     } else {
       this.resetAnimation(element);

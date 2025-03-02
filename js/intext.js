@@ -184,8 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('animate__animated', animation);
                 card.style.opacity = '0';
                 setTimeout(() => {
-                    // Erzwinge Reflow und nutze requestAnimationFrame für saubere Animationen:
-                    void card.offsetWidth;
                     requestAnimationFrame(() => {
                         card.classList.add('animate__animated', animation);
                         card.style.opacity = '1';
@@ -199,9 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (animation) {
                     element.classList.remove('animate__animated', animation);
                     element.style.opacity = '0';
-                    void element.offsetWidth;
-                    element.classList.add('animate__animated', animation);
-                    element.style.opacity = '1';
+                    // Entferne unnötigen Reflow, nutze requestAnimationFrame
+                    requestAnimationFrame(() => {
+                        element.classList.add('animate__animated', animation);
+                        element.style.opacity = '1';
+                    });
                 }
             });
         }
