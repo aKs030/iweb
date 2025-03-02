@@ -4,6 +4,7 @@ export class AnimationManager {
   constructor() {
     this.animateElements = document.querySelectorAll(".scroll-animate, .text-animate");
     this.fullVisibleElements = document.querySelectorAll(".full-visible");
+    // ...existing code...
     this.animations = {
       fadeInUp: {
         class: 'animate__fadeInUp',
@@ -20,14 +21,16 @@ export class AnimationManager {
 
   setupScrollAnimations() {
     const observer = new IntersectionObserver(
-      (entries) => this.handleScrollAnimations(entries)
+      (entries) => this.handleScrollAnimations(entries),
+      { threshold: 0.5, rootMargin: "0px 0px -50px 0px" }
     );
     this.animateElements.forEach(el => observer.observe(el));
   }
 
   setupFullVisibleAnimations() {
     const observer = new IntersectionObserver(
-      (entries, observer) => this.handleFullVisibleAnimations(entries, observer)
+      (entries, observer) => this.handleFullVisibleAnimations(entries, observer),
+      { threshold: 1.0 }
     );
     this.fullVisibleElements.forEach(el => observer.observe(el));
   }
@@ -52,25 +55,23 @@ export class AnimationManager {
   }
 
   animateElement(element, isIntersecting) {
-    const delay = parseFloat(element.dataset.delay) || 0;
-    const offset = window.innerWidth < 768 ? 10 : 20;
+    const isFadeInUp = element.dataset.animation === 'animate__fadeInUp';
+    const delay = (parseFloat(element.dataset.delay) || 0);
     if (isIntersecting) {
       element.style.opacity = '0';
-      element.style.transform = `translateY(${offset}px)`;
+      element.style.transform = 'translateY(20px)';
       element.style.visibility = 'visible';
       setTimeout(() => {
-        requestAnimationFrame(() => {
-          element.classList.add('animate__animated', this.animations.fadeInUp.class);
-          element.style.animationDuration = this.animations.fadeInUp.duration;
-          element.style.animationTimingFunction = this.animations.fadeInUp.timing;
+        element.classList.add('animate__animated', 'animate__fadeInUp');
+        element.style.animationDuration = this.animations.fadeInUp.duration;
+        element.style.animationTimingFunction = this.animations.fadeInUp.timing;
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+        element.addEventListener('animationend', () => {
+          element.classList.remove('animate__animated', 'animate__fadeInUp');
           element.style.opacity = '1';
           element.style.transform = 'translateY(0)';
-          // Einheitlicher animationend-Listener
-          element.addEventListener('animationend', () => {
-            element.classList.remove('animate__animated', this.animations.fadeInUp.class);
-            element.classList.add('visible');
-          }, { once: true });
-        });
+        }, { once: true });
       }, delay);
     } else {
       this.resetAnimation(element);
@@ -78,11 +79,9 @@ export class AnimationManager {
   }
 
   resetAnimation(element) {
-    const offset = window.innerWidth < 768 ? 10 : 20;
     element.style.opacity = '0';
-    element.style.transform = `translateY(${offset}px)`;
-    element.classList.remove('animate__animated', this.animations.fadeInUp.class);
-    element.classList.remove('visible');
+    element.style.transform = 'translateY(20px)';
+    element.classList.remove('animate__animated', 'animate__fadeInUp');
   }
 }
 
@@ -102,7 +101,8 @@ export class FeatureCardsManager {
 
   setupCardObserver() {
     const observer = new IntersectionObserver(
-      (entries) => this.handleCardIntersection(entries)
+      (entries) => this.handleCardIntersection(entries),
+      { threshold: 0.5 }
     );
     this.cards.forEach(card => observer.observe(card));
   }

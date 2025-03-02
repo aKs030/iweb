@@ -255,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                el.style.transform = 'translateY(-20px)';
             }
         });
     }
