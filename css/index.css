@@ -137,14 +137,7 @@ p.lead, .lead {
 /* ==========================
    Scroll & Animation
 ========================== */
-.scroll-animate,
-.text-animate {
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
-}
+
 
 /* Für flüssigere Hardwarebeschleunigung */
 .animate__animated {
@@ -197,11 +190,7 @@ hr {
     animation-duration: 1s; /* Noch schnellerer Schimmereffekt */
   }
   
-  .scroll-animate,
-  .text-animate {
-    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); /* Kürzere Transitions */
-  }
+
   
   .full-screen-section {
     padding: 0.5rem 0; /* Noch geringeres Padding */
