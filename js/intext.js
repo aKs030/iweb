@@ -262,12 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                if(window.innerWidth <= 768) {
-                    // Sanfter Offset für mobile Geräte
-                    el.style.transform = 'translateY(-5px)';
-                } else {
-                    el.style.transform = 'translateY(-10px)';
-                }
+                // Für alle Ansichten Offset entfernen:
+                el.style.transform = 'none';
             }
         });
     }
