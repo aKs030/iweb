@@ -54,9 +54,10 @@ export class AnimationManager {
 
   animateElement(element, isIntersecting) {
     const delay = parseFloat(element.dataset.delay) || 0;
+    const offset = window.innerWidth < 768 ? 10 : 20;
     if (isIntersecting) {
       element.style.opacity = '0';
-      element.style.transform = 'translateY(20px)';
+      element.style.transform = `translateY(${offset}px)`;
       element.style.visibility = 'visible';
       setTimeout(() => {
         requestAnimationFrame(() => {
@@ -76,8 +77,9 @@ export class AnimationManager {
   }
 
   resetAnimation(element) {
+    const offset = window.innerWidth < 768 ? 10 : 20;
     element.style.opacity = '0';
-    element.style.transform = 'translateY(20px)';
+    element.style.transform = `translateY(${offset}px)`;
     element.classList.remove('animate__animated', 'animate__fadeInUp');
   }
 }

@@ -249,14 +249,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetAnimations(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element) return;
-
+        const offset = window.innerWidth < 768 ? 10 : 20;
         const animElements = element.querySelectorAll('.text-animate, .scroll-animate');
         animElements.forEach(el => {
             const animation = el.dataset.animation;
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                el.style.transform = 'translateY(-20px)';
+                el.style.transform = `translateY(-${offset}px)`;
             }
         });
     }
@@ -264,5 +264,4 @@ document.addEventListener('DOMContentLoaded', () => {
     initSections();
     observeSections();
 });
-
 
