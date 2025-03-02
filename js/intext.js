@@ -58,19 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
-            `,
-            `
-    <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-      <p class="lead text-animate" data-animation="animate__fadeInUp">
-        Vielen Dank, dass du meine Homepage besuchst.<br>
-        Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
-        Vergiss nicht, regelmäßig vorbeizuschauen,<br>
-        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-      </p>
-      <h2 class="text-animate" data-animation="animate__fadeInDown">
-        Alles Gute und viel Spaß beim Stöbern!
-      </h2>
-    </section>
             `
         ],
         'section-features': [
@@ -198,6 +185,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     void element.offsetWidth;
                     element.classList.add('animate__animated', animation);
                     element.style.opacity = '1';
+                    // Nach Beenden der Animation den Endzustand fixieren
+                    element.addEventListener('animationend', () => {
+                        element.classList.remove('animate__animated', animation);
+                        element.style.opacity = '1';
+                        element.style.transform = 'translateY(0)';
+                    }, { once: true });
                 }
             });
         }
