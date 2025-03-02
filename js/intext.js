@@ -47,21 +47,21 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         'section-about': [
           `
-    <section id="section-hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-        Willkommen3<hr>
-        </h3>
-      <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
-        Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-        Diese Seite dient als mein digitales Zuhause im<br>
-        World Wide Web, auf der ich meine Interessen,<br>
-        Erfahrungen und Gedanken teilen möchte.
+    <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+      <p class="lead text-animate" data-animation="animate__fadeInUp">
+        Vielen Dank, dass du meine Homepage besuchst.<br>
+        Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
+        Vergiss nicht, regelmäßig vorbeizuschauen,<br>
+        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
       </p>
+      <h2 class="text-animate" data-animation="animate__fadeInDown">
+        Alles Gute und viel Spaß beim Stöbern!
+      </h2>
     </section>
             `,
             `
     <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-    <p class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInUp">
+      <p class="lead text-animate" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <div class="container">
         <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+          <!-- Link zu Über Mich -->
           <div class="col">
             <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
               <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="400">
@@ -183,14 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('animate__animated', animation);
                 card.style.opacity = '0';
                 setTimeout(() => {
-                    requestAnimationFrame(() => {
-                        card.classList.add('animate__animated', animation);
-                        card.style.opacity = '1';
-                        card.addEventListener('animationend', () => {
-                            card.classList.remove('animate__animated', animation);
-                            card.classList.add('visible');
-                        }, { once: true });
-                    });
+                    card.classList.add('animate__animated', animation);
+                    card.style.opacity = '1';
                 }, delay);
             });
         } else {
@@ -200,14 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (animation) {
                     element.classList.remove('animate__animated', animation);
                     element.style.opacity = '0';
-                    requestAnimationFrame(() => {
-                        element.classList.add('animate__animated', animation);
-                        element.style.opacity = '1';
-                        element.addEventListener('animationend', () => {
-                            element.classList.remove('animate__animated', animation);
-                            element.classList.add('visible');
-                        }, { once: true });
-                    });
+                    void element.offsetWidth;
+                    element.classList.add('animate__animated', animation);
+                    element.style.opacity = '1';
                 }
             });
         }
@@ -242,6 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     resetAnimations(sectionId);
                 }
             });
+        }, {
+            threshold: 0.7,
+            rootMargin: '-10% 0px'
         });
 
         ['section-hero', 'section-features', 'section-about'].forEach(section => {
@@ -255,14 +248,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetAnimations(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element) return;
-        const offset = window.innerWidth < 768 ? 10 : 20;
+
         const animElements = element.querySelectorAll('.text-animate, .scroll-animate');
         animElements.forEach(el => {
             const animation = el.dataset.animation;
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                el.style.transform = `translateY(-${offset}px)`;
+                el.style.transform = 'translateY(-20px)';
             }
         });
     }
@@ -270,4 +263,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initSections();
     observeSections();
 });
+
 
