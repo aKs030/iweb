@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
         um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-      </p>
-      <h2 class="text-animate" data-animation="animate__fadeInDown">
+      </p><br>
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
@@ -65,9 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
-        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-      </p>
-      <h2 class="text-animate" data-animation="animate__fadeInDown">
+        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben
+      </p><br>
+        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
