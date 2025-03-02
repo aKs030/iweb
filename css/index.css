@@ -188,31 +188,30 @@ hr {
 
 /* ==========================
    Mobile-Anpassungen
-========================== */
+
 @media (max-width: 768px) {
 
   .shimmer-text {
     font-size: clamp(1.8rem, 6vw, 2.5rem);
-    padding-bottom: 2rem; /* Weniger Abstand für flüssigere Darstellung */
-    animation-duration: 1.2s; /* Schnellerer Schimmereffekt */
+    padding-bottom: 2rem; 
+    animation-duration: 1.2s; 
   }
   
   .scroll-animate,
   .text-animate {
     transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); /* Kürzere Transitions */
+                transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); 
   }
   
   .full-screen-section {
-    padding: 1rem 0; /* Reduziertes Padding auf mobilen Geräten */
+    padding: 1rem 0; 
   }
   
   .card:hover, .card:active {
-    transform: translateY(-4px) scale(1.01); /* Sanftere Hover-Animation */
+    transform: translateY(-4px) scale(1.01); 
     box-shadow: 0 8px 20px var(--highlight-shadow);
   }
 
-  /* Hardwarebeschleunigung beibehalten */
   .animate__animated {
     will-change: opacity, transform;
     animation-fill-mode: both;
@@ -228,7 +227,8 @@ hr {
     animation-duration: 0.7s;
   }
 }
-
+  
+========================== */
 .snap {
   scroll-snap-align: center;
   scroll-snap-stop: always;
