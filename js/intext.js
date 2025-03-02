@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
         um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-      </p><br>
-        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+      </p>
+      <h2 class="text-animate" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
@@ -65,9 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
-        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben
-      </p><br>
-        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+      </p>
+      <h2 class="text-animate" data-animation="animate__fadeInDown">
         Alles Gute und viel Spaß beim Stöbern!
       </h2>
     </section>
@@ -175,14 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
-    function animateElement(element, animation) {
-        element.classList.remove('animate__animated', animation);
-        requestAnimationFrame(() => {
-            element.classList.add('animate__animated', animation);
-            element.style.opacity = '1';
-        });
-    }
-
     function initializeAnimations(container) {
         if (container.id === 'section-features') {
             const cards = container.querySelectorAll('.card');
@@ -192,8 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('animate__animated', animation);
                 card.style.opacity = '0';
                 setTimeout(() => {
+                    // Erzwinge Reflow und nutze requestAnimationFrame für saubere Animationen:
+                    void card.offsetWidth;
                     requestAnimationFrame(() => {
-                        animateElement(card, animation);
+                        card.classList.add('animate__animated', animation);
+                        card.style.opacity = '1';
                     });
                 }, delay);
             });
@@ -205,9 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     element.classList.remove('animate__animated', animation);
                     element.style.opacity = '0';
                     void element.offsetWidth;
-                    requestAnimationFrame(() => {
-                        animateElement(element, animation);
-                    });
+                    element.classList.add('animate__animated', animation);
+                    element.style.opacity = '1';
                 }
             });
         }
@@ -242,7 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     resetAnimations(sectionId);
                 }
             });
-        }); // Entfernt: { threshold: 0.7, rootMargin: '-10% 0px' }
+        }, {
+            threshold: 0.7,
+            rootMargin: '-10% 0px'
+        });
 
         ['section-hero', 'section-features', 'section-about'].forEach(section => {
             const element = document.getElementById(section);
@@ -262,8 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                // Kein Offset setzen:
-                el.style.transform = 'none';
+                el.style.transform = 'translateY(-20px)';
             }
         });
     }

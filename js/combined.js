@@ -20,12 +20,18 @@ export class AnimationManager {
   }
 
   setupScrollAnimations() {
-    const observer = new IntersectionObserver((entries) => this.handleScrollAnimations(entries)); // Options entfernt
+    const observer = new IntersectionObserver(
+      (entries) => this.handleScrollAnimations(entries),
+      { threshold: 0.5, rootMargin: "0px 0px -50px 0px" }
+    );
     this.animateElements.forEach(el => observer.observe(el));
   }
 
   setupFullVisibleAnimations() {
-    const observer = new IntersectionObserver((entries, observer) => this.handleFullVisibleAnimations(entries, observer)); // Options entfernt
+    const observer = new IntersectionObserver(
+      (entries, observer) => this.handleFullVisibleAnimations(entries, observer),
+      { threshold: 1.0 }
+    );
     this.fullVisibleElements.forEach(el => observer.observe(el));
   }
 
@@ -49,23 +55,23 @@ export class AnimationManager {
   }
 
   animateElement(element, isIntersecting) {
-    const delay = parseFloat(element.dataset.delay) || 0;
+    const isFadeInUp = element.dataset.animation === 'animate__fadeInUp';
+    const delay = (parseFloat(element.dataset.delay) || 0);
     if (isIntersecting) {
-      if (element.style.opacity === '1') return;
-      // Keine manuellen offset-Werte mehr: CSS regelt den Startzustand
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(20px)';
       element.style.visibility = 'visible';
       setTimeout(() => {
-        requestAnimationFrame(() => {
-          element.classList.add('animate__animated', 'animate__fadeInUp');
-          element.style.animationDuration = this.animations.fadeInUp.duration;
-          element.style.animationTimingFunction = this.animations.fadeInUp.timing;
+        element.classList.add('animate__animated', 'animate__fadeInUp');
+        element.style.animationDuration = this.animations.fadeInUp.duration;
+        element.style.animationTimingFunction = this.animations.fadeInUp.timing;
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+        element.addEventListener('animationend', () => {
+          element.classList.remove('animate__animated', 'animate__fadeInUp');
           element.style.opacity = '1';
-          element.addEventListener('animationend', () => {
-            element.classList.remove('animate__animated', 'animate__fadeInUp');
-            // Kein Offset:
-            element.style.transform = 'none';
-          }, { once: true });
-        });
+          element.style.transform = 'translateY(0)';
+        }, { once: true });
       }, delay);
     } else {
       this.resetAnimation(element);
@@ -73,8 +79,8 @@ export class AnimationManager {
   }
 
   resetAnimation(element) {
-    // Offset wird nicht gesetzt, nur "none" verwenden.
-    element.style.transform = 'none';
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(20px)';
     element.classList.remove('animate__animated', 'animate__fadeInUp');
   }
 }
