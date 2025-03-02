@@ -47,30 +47,30 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         'section-about': [
           `
-    <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-      <p class="lead text-animate" data-animation="animate__fadeInUp">
-        Vielen Dank, dass du meine Homepage besuchst.<br>
-        Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
-        Vergiss nicht, regelmäßig vorbeizuschauen,<br>
-        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-      </p><br>
-        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-        Alles Gute und viel Spaß beim Stöbern!
-      </h2>
-    </section>
+<section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+  <p class="lead text-animate" data-animation="animate__fadeInUp">
+    Vielen Dank, dass du meine Homepage besuchst.<br>
+    Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
+    Vergiss nicht, regelmäßig vorbeizuschauen,<br>
+    um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+  </p><br>
+  <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+    Alles Gute und viel Spaß beim Stöbern!1 
+  </h3>
+</section>
             `,
             `
-    <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-      <p class="lead text-animate" data-animation="animate__fadeInUp">
-        Vielen Dank, dass du meine Homepage besuchst.<br>
-        Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
-        Vergiss nicht, regelmäßig vorbeizuschauen,<br>
-        um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben
-      </p><br>
-        <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-        Alles Gute und viel Spaß beim Stöbern!
-      </h2>
-    </section>
+<section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+  <p class="lead text-animate" data-animation="animate__fadeInUp">
+    Vielen Dank, dass du meine Homepage besuchst.<br>
+    Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
+    Vergiss nicht, regelmäßig vorbeizuschauen,<br>
+    um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+  </p><br>
+  <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
+    Alles Gute und viel Spaß beim Stöbern!2
+  </h3>
+</section>
             `
         ],
         'section-features': [
