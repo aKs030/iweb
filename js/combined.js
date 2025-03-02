@@ -52,7 +52,7 @@ export class AnimationManager {
     const delay = parseFloat(element.dataset.delay) || 0;
     if (isIntersecting) {
       if (element.style.opacity === '1') return;
-      element.style.transform = 'translateY(20px)';
+      // Keine manuellen offset-Werte mehr: CSS regelt den Startzustand
       element.style.visibility = 'visible';
       setTimeout(() => {
         requestAnimationFrame(() => {
@@ -60,9 +60,9 @@ export class AnimationManager {
           element.style.animationDuration = this.animations.fadeInUp.duration;
           element.style.animationTimingFunction = this.animations.fadeInUp.timing;
           element.style.opacity = '1';
-          element.style.transform = 'translateY(0)';
           element.addEventListener('animationend', () => {
             element.classList.remove('animate__animated', 'animate__fadeInUp');
+            element.style.transform = 'none'; // Finalzustand: translateY(0)
           }, { once: true });
         });
       }, delay);
