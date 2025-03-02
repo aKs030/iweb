@@ -50,6 +50,8 @@ export class AnimationManager {
 
   animateElement(element, isIntersecting) {
     const delay = parseFloat(element.dataset.delay) || 0;
+    // Für mobile Geräte: Bei kleinerem Bildschirm ggf. Verzögerung reduzieren
+    const mobileDelay = (window.innerWidth <= 768) ? delay * 0.5 : delay;
     if (isIntersecting) {
       if (element.style.opacity === '1') return;
       // Keine manuellen offset-Werte mehr: CSS regelt den Startzustand
@@ -66,7 +68,7 @@ export class AnimationManager {
             element.style.transform = 'none';
           }, { once: true });
         });
-      }, delay);
+      }, mobileDelay);
     } else {
       this.resetAnimation(element);
     }

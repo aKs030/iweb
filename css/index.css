@@ -188,30 +188,32 @@ hr {
 
 /* ==========================
    Mobile-Anpassungen
-
+========================== */
 @media (max-width: 768px) {
 
   .shimmer-text {
     font-size: clamp(1.8rem, 6vw, 2.5rem);
-    padding-bottom: 2rem; 
-    animation-duration: 1.2s; 
+    padding-bottom: 1.5rem; /* Reduzierter Abstand */
+    animation-duration: 1s; /* Noch schnellerer Schimmereffekt */
   }
   
   .scroll-animate,
   .text-animate {
-    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); 
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); /* Kürzere Transitions */
   }
   
   .full-screen-section {
-    padding: 1rem 0; 
+    padding: 0.5rem 0; /* Noch geringeres Padding */
   }
   
   .card:hover, .card:active {
-    transform: translateY(-4px) scale(1.01); 
-    box-shadow: 0 8px 20px var(--highlight-shadow);
+    /* Optional: Hover-Effekt ggf. abschwächen oder entfernen */
+    transform: none;
+    box-shadow: none;
   }
 
+  /* Hardwarebeschleunigung beibehalten */
   .animate__animated {
     will-change: opacity, transform;
     animation-fill-mode: both;
@@ -227,8 +229,7 @@ hr {
     animation-duration: 0.7s;
   }
 }
-  
-========================== */
+
 .snap {
   scroll-snap-align: center;
   scroll-snap-stop: always;
