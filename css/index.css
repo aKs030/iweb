@@ -62,6 +62,11 @@ body {
   text-align: center;
 }
 
+.sections-container:last-child {
+  scroll-snap-align: start;
+  padding-bottom: 2rem; /* extra Platz am Ende */
+}
+
 h1, h2, h3, h4, h5, h6,
 p, li, a {
   font-weight: 300;

@@ -132,7 +132,9 @@ export class FeatureCardsManager {
     this.cards.forEach((card, i) => {
       card.classList.toggle("active", i === index);
       if (!this.initialLoad && i === index) {
-        card.scrollIntoView({ behavior: "smooth", block: "center" });
+        requestAnimationFrame(() => {
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
       }
     });
   }

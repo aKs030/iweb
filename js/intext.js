@@ -227,12 +227,16 @@ document.addEventListener('DOMContentLoaded', () => {
             entries.forEach(entry => {
                 const sectionId = entry.target.id;
                 if (entry.isIntersecting) {
-                    updateSection(sectionId);
+                    requestAnimationFrame(() => {
+                        updateSection(sectionId);
+                    });
                 } else {
-                    resetAnimations(sectionId);
+                    requestAnimationFrame(() => {
+                        resetAnimations(sectionId);
+                    });
                 }
             });
-        }, );
+        });
 
         ['section-hero', 'section-features', 'section-about'].forEach(section => {
             const element = document.getElementById(section);
