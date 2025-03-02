@@ -4,6 +4,13 @@ export class AnimationManager {
   constructor() {
     this.animateElements = document.querySelectorAll(".scroll-animate, .text-animate");
     this.fullVisibleElements = document.querySelectorAll(".full-visible");
+    this.animations = {
+      fadeInUp: {
+        class: 'animate__fadeInUp',
+        duration: '0.8s',
+        timing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+      }
+    };
   }
 
   init() {
@@ -53,13 +60,15 @@ export class AnimationManager {
       element.style.visibility = 'visible';
       setTimeout(() => {
         requestAnimationFrame(() => {
-          element.classList.add('animate__animated', 'animate__fadeInUp');
+          element.classList.add('animate__animated', this.animations.fadeInUp.class);
           element.style.animationDuration = this.animations.fadeInUp.duration;
           element.style.animationTimingFunction = this.animations.fadeInUp.timing;
           element.style.opacity = '1';
           element.style.transform = 'translateY(0)';
+          // Einheitlicher animationend-Listener
           element.addEventListener('animationend', () => {
-            element.classList.remove('animate__animated', 'animate__fadeInUp');
+            element.classList.remove('animate__animated', this.animations.fadeInUp.class);
+            element.classList.add('visible');
           }, { once: true });
         });
       }, delay);
@@ -72,7 +81,8 @@ export class AnimationManager {
     const offset = window.innerWidth < 768 ? 10 : 20;
     element.style.opacity = '0';
     element.style.transform = `translateY(${offset}px)`;
-    element.classList.remove('animate__animated', 'animate__fadeInUp');
+    element.classList.remove('animate__animated', this.animations.fadeInUp.class);
+    element.classList.remove('visible');
   }
 }
 

@@ -153,6 +153,14 @@ p.lead, .lead {
   transform: translateY(0);
 }
 
+/* Endzustand für animierte Elemente */
+.scroll-animate.visible,
+.text-animate.visible,
+.full-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
 /* ==========================
    Horizontal Line (hr)
 ========================== */

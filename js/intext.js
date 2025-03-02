@@ -187,6 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     requestAnimationFrame(() => {
                         card.classList.add('animate__animated', animation);
                         card.style.opacity = '1';
+                        card.addEventListener('animationend', () => {
+                            card.classList.remove('animate__animated', animation);
+                            card.classList.add('visible');
+                        }, { once: true });
                     });
                 }, delay);
             });
@@ -197,10 +201,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (animation) {
                     element.classList.remove('animate__animated', animation);
                     element.style.opacity = '0';
-                    // Entferne unnötigen Reflow, nutze requestAnimationFrame
                     requestAnimationFrame(() => {
                         element.classList.add('animate__animated', animation);
                         element.style.opacity = '1';
+                        element.addEventListener('animationend', () => {
+                            element.classList.remove('animate__animated', animation);
+                            element.classList.add('visible');
+                        }, { once: true });
                     });
                 }
             });
