@@ -221,11 +221,6 @@ hr {
     animation-duration: 0.7s;
   }
 
-  .scroll-animate,
-  .text-animate {
-    transition: none;  /* Transition entfernt */
-    transform: none;
-  }
 }
 
 .snap {
