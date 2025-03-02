@@ -4,14 +4,7 @@ export class AnimationManager {
   constructor() {
     this.animateElements = document.querySelectorAll(".scroll-animate, .text-animate");
     this.fullVisibleElements = document.querySelectorAll(".full-visible");
-    // ...existing code...
-    this.animations = {
-      fadeInUp: {
-        class: 'animate__fadeInUp',
-        duration: '0.8s',
-        timing: 'cubic-bezier(0.4, 0, 0.2, 1)'
-      }
-    };
+
   }
 
   init() {
