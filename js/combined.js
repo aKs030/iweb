@@ -21,8 +21,6 @@ export class AnimationManager {
     this.setupFullVisibleAnimations();
   }
 
-
-
   setupFullVisibleAnimations() {
     const observer = new IntersectionObserver(
       (entries, observer) => this.handleFullVisibleAnimations(entries, observer),
@@ -35,8 +33,6 @@ export class AnimationManager {
     entries.forEach(({ target, isIntersecting }) => {
       if (!target.classList.contains("full-visible")) {
         this.animateElement(target, isIntersecting);
-      } else if (!isIntersecting) {
-        this.resetAnimation(target);
       }
     });
   }
@@ -69,15 +65,7 @@ export class AnimationManager {
           element.style.transform = 'translateY(0)';
         }, { once: true });
       }, delay);
-    } else {
-      this.resetAnimation(element);
     }
-  }
-
-  resetAnimation(element) {
-    element.style.opacity = '0';
-    element.style.transform = 'translateY(20px)';
-    element.classList.remove('animate__animated', 'animate__fadeInUp');
   }
 }
 
