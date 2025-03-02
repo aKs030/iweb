@@ -1,7 +1,9 @@
 .left-text {
   text-align: left;
-}
-
+  }
+/* ==========================
+   Grundlegende Variablen
+========================== */
 :root {
   /* Farben */
   --main-fonts-color: #fff;
@@ -23,33 +25,135 @@
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ==========================
+   Allgemeine Stile
+========================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 html, body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--main-bg-color);
   color: var(--main-text-color);
+  min-height: 100%;
   scroll-snap-type: y mandatory;
-  /* Weitere globale Einstellungen */
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
 }
 
 .full-screen-section,
 .sections-container {
   min-height: 100vh;
+  padding: var(--section-padding) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
-.snap {
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
+h1, h2, h3, h4, h5, h6,
+p, li, a {
+  font-weight: 300;
+  color: var(--secondary-text-color);
+  letter-spacing: 0.5px;
+  line-height: 1.4;
 }
 
-/* Optimierung für animierte Elemente */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  color: var(--main-text-color);
+}
+
+p.lead, .lead {
+  font-size: 1.2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+  color: var(--main-text-color);
+  font-weight: 400;
+}
+
+/* ==========================
+   Schimmertext
+========================== */
+.shimmer-text {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 40px #fff;
+  margin-bottom: 1rem;
+  padding-bottom: 5rem;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* ==========================
+   Kartenstil
+========================== */
+.card {
+  background-color: var(--secondary-bg-color);
+  color: var(--main-text-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px var(--shadow-color);
+  border: 2px solid transparent;
+  transform: translateZ(0);
+  transition:
+    transform var(--transition-speed) var(--transition-ease),
+    box-shadow var(--transition-speed) var(--transition-ease),
+    border-color var(--transition-speed) ease;
+  will-change: transform, box-shadow, border-color;
+}
+
+.card:hover, .card:active {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px var(--highlight-shadow);
+  border-color: var(--accent-color);
+}
+
+/* ==========================
+   Scroll & Animation
+========================== */
+.scroll-animate,
+.text-animate {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+/* Für flüssigere Hardwarebeschleunigung */
 .animate__animated {
   will-change: opacity, transform;
-  backface-visibility: hidden;
+  backface-visibility: hidden; /* Vermeidet Rendering-Probleme */
   transform: translateZ(0);
   animation-fill-mode: both;
 }
 
-/* Einheitliche Einstellungen für spezifische Animationen */
 .animate__fadeInDown {
   animation-duration: 1s;
   animation-timing-function: ease-out;
@@ -63,18 +167,57 @@ html, body {
   animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
-/* Basis für scroll- und text-Animationen */
-.scroll-animate,
-.text-animate {
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+.scroll-animate.visible,
+.text-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* Responsive Anpassungen: Mobile */
+/* ==========================
+   Horizontal Line (hr)
+========================== */
+hr {
+  background: var(--main-decor-color);
+  height: 3px;
+  width: 190px;
+  border-radius: 5px;
+  border: none;
+  margin: 0 auto;
+  opacity: 0.8;
+}
+
+/* ==========================
+   Mobile-Anpassungen
+========================== */
 @media (max-width: 768px) {
+
+  .shimmer-text {
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+    padding-bottom: 2rem; /* Weniger Abstand für flüssigere Darstellung */
+    animation-duration: 1.2s; /* Schnellerer Schimmereffekt */
+  }
+  
+  .scroll-animate,
+  .text-animate {
+    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); /* Kürzere Transitions */
+  }
+  
+  .full-screen-section {
+    padding: 1rem 0; /* Reduziertes Padding auf mobilen Geräten */
+  }
+  
+  .card:hover, .card:active {
+    transform: translateY(-4px) scale(1.01); /* Sanftere Hover-Animation */
+    box-shadow: 0 8px 20px var(--highlight-shadow);
+  }
+
+  /* Hardwarebeschleunigung beibehalten */
+  .animate__animated {
+    will-change: opacity, transform;
+    animation-fill-mode: both;
+  }
+
   .animate__fadeInDown {
     animation-duration: 0.8s;
   }
@@ -84,18 +227,9 @@ html, body {
   .animate__flipInX {
     animation-duration: 0.7s;
   }
-  .scroll-animate,
-  .text-animate {
-    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-    /* Leichter Offset für mobile Views */
-    transform: translateY(-10px);
-  }
-  .full-screen-section {
-    padding: 1rem 0;
-  }
-  .card:hover, .card:active {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 8px 20px var(--highlight-shadow);
-  }
+}
+
+.snap {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
 }

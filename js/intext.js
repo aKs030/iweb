@@ -266,9 +266,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
                 if(window.innerWidth <= 768) {
-                    el.style.transform = 'translateY(-10px)'; // Leichter Offset für mobile Geräte
+                    // Sanfter Offset für mobile Geräte
+                    el.style.transform = 'translateY(-5px)';
                 } else {
-                    el.style.transform = 'translateY(-20px)';
+                    el.style.transform = 'translateY(-10px)';
                 }
             }
         });
