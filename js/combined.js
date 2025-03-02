@@ -20,18 +20,12 @@ export class AnimationManager {
   }
 
   setupScrollAnimations() {
-    const observer = new IntersectionObserver(
-      (entries) => this.handleScrollAnimations(entries),
-      { threshold: 0.5, rootMargin: "0px 0px -50px 0px" }
-    );
+    const observer = new IntersectionObserver((entries) => this.handleScrollAnimations(entries)); // Options entfernt
     this.animateElements.forEach(el => observer.observe(el));
   }
 
   setupFullVisibleAnimations() {
-    const observer = new IntersectionObserver(
-      (entries, observer) => this.handleFullVisibleAnimations(entries, observer),
-      { threshold: 1.0 }
-    );
+    const observer = new IntersectionObserver((entries, observer) => this.handleFullVisibleAnimations(entries, observer)); // Options entfernt
     this.fullVisibleElements.forEach(el => observer.observe(el));
   }
 
