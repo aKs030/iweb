@@ -121,12 +121,12 @@ p.lead, .lead {
   box-shadow: 0 4px 15px var(--shadow-color);
   border: 2px solid transparent;
   transform: none;
-  transition: none; /* Transition auf 0 gesetzt */
+  transition: none;  /* Transition entfernt */
   will-change: transform, box-shadow, border-color;
 }
 
 .card:hover, .card:active {
-  transform: none;
+  transform: none; /* Offset entfernt */
   box-shadow: 0 12px 30px var(--highlight-shadow);
   border-color: var(--accent-color);
 }
@@ -137,8 +137,8 @@ p.lead, .lead {
 .scroll-animate,
 .text-animate {
   opacity: 0;
-  transform: none;
-  transition: none; /* Transition auf 0 gesetzt */
+  transform: translateY(0);
+  transition: none;  /* Transition entfernt */
   will-change: opacity, transform;
 }
 
@@ -166,7 +166,7 @@ p.lead, .lead {
 .scroll-animate.visible,
 .text-animate.visible {
   opacity: 1;
-  transform: none;
+  transform: translateY(0);
 }
 
 /* ==========================
@@ -193,11 +193,14 @@ hr {
     animation-duration: 1s; /* Noch schnellerer Schimmereffekt */
   }
   
+
+  
   .full-screen-section {
     padding: 0.5rem 0; /* Noch geringeres Padding */
   }
   
   .card:hover, .card:active {
+    /* Optional: Hover-Effekt ggf. abschwächen oder entfernen */
     transform: none;
     box-shadow: none;
   }
@@ -218,12 +221,10 @@ hr {
     animation-duration: 0.7s;
   }
 
-  /* Entfernen Sie "transition: none" für animierte Elemente */
   .scroll-animate,
   .text-animate {
-    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-    /* transform: none;  entfernen oder beibehalten, wenn der Startzustand in CSS definiert ist */
+    transition: none;  /* Transition entfernt */
+    transform: none;
   }
 }
 
