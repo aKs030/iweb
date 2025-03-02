@@ -134,9 +134,31 @@ p.lead, .lead {
   border-color: var(--accent-color);
 }
 
+/* Optimierte Kartenstile im Kontext von #section-features */
+#section-features .card {
+  background-color: var(--secondary-bg-color);
+  color: var(--main-text-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px var(--shadow-color);
+  border: 2px solid transparent;
+  transform: translateZ(0);
+  transition: transform var(--transition-speed) var(--transition-ease),
+              box-shadow var(--transition-speed) var(--transition-ease),
+              border-color var(--transition-speed) ease;
+  will-change: transform, box-shadow, border-color;
+}
+
+#section-features .card:hover,
+#section-features .card:active {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px var(--highlight-shadow);
+  border-color: var(--accent-color);
+}
+
 /* ==========================
    Scroll & Animation
 ========================== */
+/* Gemeinsame Animationseigenschaften */
 .scroll-animate,
 .text-animate {
   opacity: 0;
@@ -146,18 +168,23 @@ p.lead, .lead {
   will-change: opacity, transform;
 }
 
+/* Sichtbarer Zustand */
+.full-visible,
 .scroll-animate.visible,
-.text-animate.visible,
-.full-visible {  /* Elemente mit .full-visible sind direkt sichtbar */
+.text-animate.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Optimierte Regel für .full-visible (falls separate Behandlung notwendig) */
+/* Sicherstellen, dass Full-Visible-Elemente ohne Verschiebung angezeigt werden */
 .full-visible {
-  /* Sicherstellen, dass full-visible-Elemente ohne Animation angezeigt werden */
-  opacity: 1;
   transform: none;
+}
+
+/* Optional: Klasse um nach Animation den Endzustand zu erzwingen */
+.animate-end {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ==========================
@@ -184,7 +211,23 @@ hr {
   }
 
   .full-screen-section {
-    padding: 1.5rem 0;
+    padding: 1rem 0;
+  }
+
+  .sections-container {
+    padding: 0 1rem;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-size: 1.5rem;
+  }
+
+  .lead, p.lead {
+    font-size: 1rem;
+  }
+
+  body {
+    padding: 0 0.5rem;
   }
 }
 
