@@ -21,16 +21,14 @@ export class AnimationManager {
 
   setupScrollAnimations() {
     const observer = new IntersectionObserver(
-      (entries) => this.handleScrollAnimations(entries),
-      { threshold: 0.5, rootMargin: "0px 0px -50px 0px" }
+      (entries) => this.handleScrollAnimations(entries)
     );
     this.animateElements.forEach(el => observer.observe(el));
   }
 
   setupFullVisibleAnimations() {
     const observer = new IntersectionObserver(
-      (entries, observer) => this.handleFullVisibleAnimations(entries, observer),
-      { threshold: 1.0 }
+      (entries, observer) => this.handleFullVisibleAnimations(entries, observer)
     );
     this.fullVisibleElements.forEach(el => observer.observe(el));
   }
@@ -100,8 +98,7 @@ export class FeatureCardsManager {
 
   setupCardObserver() {
     const observer = new IntersectionObserver(
-      (entries) => this.handleCardIntersection(entries),
-      { threshold: 0.5 }
+      (entries) => this.handleCardIntersection(entries)
     );
     this.cards.forEach(card => observer.observe(card));
   }
