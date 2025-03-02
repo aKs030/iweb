@@ -2,7 +2,9 @@
 // -------------------- AnimationManager (aus animation.js) --------------------
 export class AnimationManager {
   constructor() {
-    this.animateElements = document.querySelectorAll(".scroll-animate, .text-animate");
+    // Ändere die Auswahl, sodass Elemente mit der Klasse "card" ausgeschlossen werden:
+    // this.animateElements = document.querySelectorAll(".scroll-animate, .text-animate");
+    this.animateElements = document.querySelectorAll(".scroll-animate:not(.card), .text-animate:not(.card)");
     this.fullVisibleElements = document.querySelectorAll(".full-visible");
     // ...existing code...
     this.animations = {
@@ -19,13 +21,7 @@ export class AnimationManager {
     this.setupFullVisibleAnimations();
   }
 
-  setupScrollAnimations() {
-    const observer = new IntersectionObserver(
-      (entries) => this.handleScrollAnimations(entries),
-      { threshold: 0.5, rootMargin: "0px 0px -50px 0px" }
-    );
-    this.animateElements.forEach(el => observer.observe(el));
-  }
+
 
   setupFullVisibleAnimations() {
     const observer = new IntersectionObserver(
@@ -59,7 +55,7 @@ export class AnimationManager {
     const delay = (parseFloat(element.dataset.delay) || 0);
     if (isIntersecting) {
       element.style.opacity = '0';
-      element.style.transform = 'translateY(20px)';
+      element.style.transform = 'translateY(0)';
       element.style.visibility = 'visible';
       setTimeout(() => {
         element.classList.add('animate__animated', 'animate__fadeInUp');
