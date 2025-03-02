@@ -146,6 +146,12 @@ p.lead, .lead {
   will-change: opacity, transform;
 }
 
+/* Neu: Direkte Sichtbarkeit für Elemente mit .full-visible */
+.full-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
 /* Für flüssigere Hardwarebeschleunigung */
 .animate__animated {
   will-change: opacity, transform;
@@ -168,6 +174,15 @@ hr {
   border: none;
   margin: 0 auto;
   opacity: 0.8;
+}
+
+/* Verbesserte Styles für #section-features */
+#section-features {
+  padding: var(--section-padding);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
 
 /* ==========================
