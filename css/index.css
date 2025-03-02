@@ -139,6 +139,13 @@ p.lead, .lead {
   border-color: var(--accent-color);
 }
 
+/* Neu hinzugefügte Regel für mobile Touch-Interaktionen */
+.card.touch-active {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px var(--highlight-shadow);
+  border-color: var(--accent-color);
+}
+
 /* ==========================
    Scroll & Animation
 ========================== */
