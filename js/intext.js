@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animation) {
                 el.classList.remove('animate__animated', animation);
                 el.style.opacity = '0';
-                // Für alle Ansichten Offset entfernen:
+                // Kein Offset setzen:
                 el.style.transform = 'none';
             }
         });

@@ -62,7 +62,8 @@ export class AnimationManager {
           element.style.opacity = '1';
           element.addEventListener('animationend', () => {
             element.classList.remove('animate__animated', 'animate__fadeInUp');
-            element.style.transform = 'none'; // Finalzustand: translateY(0)
+            // Kein Offset:
+            element.style.transform = 'none';
           }, { once: true });
         });
       }, delay);
@@ -72,7 +73,8 @@ export class AnimationManager {
   }
 
   resetAnimation(element) {
-    element.style.transform = 'translateY(20px)';
+    // Offset wird nicht gesetzt, nur "none" verwenden.
+    element.style.transform = 'none';
     element.classList.remove('animate__animated', 'animate__fadeInUp');
   }
 }
