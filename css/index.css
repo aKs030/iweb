@@ -121,14 +121,14 @@ p.lead, .lead {
   box-shadow: 0 4px 15px var(--shadow-color);
   border: 2px solid transparent;
   transform: translateZ(0);
-  transition:
-    transform var(--transition-speed) var(--transition-ease),
-    box-shadow var(--transition-speed) var(--transition-ease),
-    border-color var(--transition-speed) ease;
+  transition: transform var(--transition-speed) var(--transition-ease),
+              box-shadow var(--transition-speed) var(--transition-ease),
+              border-color var(--transition-speed) ease;
   will-change: transform, box-shadow, border-color;
 }
 
-.card:hover, .card:active {
+.card:hover,
+.card:active {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 30px var(--highlight-shadow);
   border-color: var(--accent-color);
@@ -146,15 +146,18 @@ p.lead, .lead {
   will-change: opacity, transform;
 }
 
-/* Für flüssigere Hardwarebeschleunigung */
-.animate__animated {
-  will-change: opacity, transform;
-}
-
 .scroll-animate.visible,
-.text-animate.visible {
+.text-animate.visible,
+.full-visible {  /* Elemente mit .full-visible sind direkt sichtbar */
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Optimierte Regel für .full-visible (falls separate Behandlung notwendig) */
+.full-visible {
+  /* Sicherstellen, dass full-visible-Elemente ohne Animation angezeigt werden */
+  opacity: 1;
+  transform: none;
 }
 
 /* ==========================
