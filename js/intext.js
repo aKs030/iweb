@@ -242,10 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     resetAnimations(sectionId);
                 }
             });
-        }, {
-            threshold: 0.7,
-            rootMargin: '-10% 0px'
-        });
+        }); // Entfernt: { threshold: 0.7, rootMargin: '-10% 0px' }
 
         ['section-hero', 'section-features', 'section-about'].forEach(section => {
             const element = document.getElementById(section);
