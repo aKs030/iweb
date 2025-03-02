@@ -4,7 +4,14 @@ export class AnimationManager {
   constructor() {
     this.animateElements = document.querySelectorAll(".scroll-animate, .text-animate");
     this.fullVisibleElements = document.querySelectorAll(".full-visible");
-
+    // ...existing code...
+    this.animations = {
+      fadeInUp: {
+        class: 'animate__fadeInUp',
+        duration: '0.8s',
+        timing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+      }
+    };
   }
 
   init() {
@@ -43,8 +50,6 @@ export class AnimationManager {
 
   animateElement(element, isIntersecting) {
     const delay = parseFloat(element.dataset.delay) || 0;
-    // Für mobile Geräte: Bei kleinerem Bildschirm ggf. Verzögerung reduzieren
-    const mobileDelay = (window.innerWidth <= 768) ? delay * 0.5 : delay;
     if (isIntersecting) {
       if (element.style.opacity === '1') return;
       // Keine manuellen offset-Werte mehr: CSS regelt den Startzustand
@@ -61,7 +66,7 @@ export class AnimationManager {
             element.style.transform = 'none';
           }, { once: true });
         });
-      }, mobileDelay);
+      }, delay);
     } else {
       this.resetAnimation(element);
     }

@@ -120,13 +120,16 @@ p.lead, .lead {
   border-radius: var(--border-radius);
   box-shadow: 0 4px 15px var(--shadow-color);
   border: 2px solid transparent;
-  transform: none;
-  transition: none;  /* Transition entfernt */
+  transform: translateZ(0);
+  transition:
+    transform var(--transition-speed) var(--transition-ease),
+    box-shadow var(--transition-speed) var(--transition-ease),
+    border-color var(--transition-speed) ease;
   will-change: transform, box-shadow, border-color;
 }
 
 .card:hover, .card:active {
-  transform: none; /* Offset entfernt */
+  transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 30px var(--highlight-shadow);
   border-color: var(--accent-color);
 }
@@ -137,30 +140,11 @@ p.lead, .lead {
 .scroll-animate,
 .text-animate {
   opacity: 0;
-  transform: translateY(0);
-  transition: none;  /* Transition entfernt */
+  transform: translateY(-20px);
+  transition:
+    opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
-}
-
-/* Für flüssigere Hardwarebeschleunigung */
-.animate__animated {
-  will-change: opacity, transform;
-  backface-visibility: hidden; /* Vermeidet Rendering-Probleme */
-  transform: translateZ(0);
-  animation-fill-mode: both;
-}
-
-.animate__fadeInDown {
-  animation-duration: 1s;
-  animation-timing-function: ease-out;
-}
-.animate__fadeInUp {
-  animation-duration: 1s;
-  animation-timing-function: ease-out;
-}
-.animate__flipInX {
-  animation-duration: 0.8s;
-  animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .scroll-animate.visible,
@@ -189,38 +173,12 @@ hr {
 
   .shimmer-text {
     font-size: clamp(1.8rem, 6vw, 2.5rem);
-    padding-bottom: 1.5rem; /* Reduzierter Abstand */
-    animation-duration: 1s; /* Noch schnellerer Schimmereffekt */
+    padding-bottom: 3rem;
   }
-  
 
-  
   .full-screen-section {
-    padding: 0.5rem 0; /* Noch geringeres Padding */
+    padding: 1.5rem 0;
   }
-  
-  .card:hover, .card:active {
-    /* Optional: Hover-Effekt ggf. abschwächen oder entfernen */
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* Hardwarebeschleunigung beibehalten */
-  .animate__animated {
-    will-change: opacity, transform;
-    animation-fill-mode: both;
-  }
-
-  .animate__fadeInDown {
-    animation-duration: 0.8s;
-  }
-  .animate__fadeInUp {
-    animation-duration: 0.8s;
-  }
-  .animate__flipInX {
-    animation-duration: 0.7s;
-  }
-
 }
 
 .snap {
