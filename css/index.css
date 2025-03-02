@@ -142,19 +142,7 @@ p.lead, .lead {
 /* ==========================
    Scroll & Animation
 ========================== */
-.scroll-animate,
-.text-animate {
-  opacity: 0;
 
-  will-change: opacity, transform;
-}
-
-.scroll-animate.visible,
-.text-animate.visible,
-.full-visible {  /* Elemente mit .full-visible sind direkt sichtbar */
-  opacity: 1;
-  transform: translateY(0);
-}
 
 /* Optimierte Regel für .full-visible (falls separate Behandlung notwendig) */
 .full-visible {
