@@ -228,30 +228,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sectionId = entry.target.id;
                 if (entry.isIntersecting) {
                     updateSection(sectionId);
-                } else {
-                    resetAnimations(sectionId);
                 }
             });
-        }, );
+        });
 
         ['section-hero', 'section-features', 'section-about'].forEach(section => {
             const element = document.getElementById(section);
             if (element) {
                 observer.observe(element);
-            }
-        });
-    }
-
-    function resetAnimations(sectionId) {
-        const element = document.getElementById(sectionId);
-        if (!element) return;
-
-        const animElements = element.querySelectorAll('.text-animate, .scroll-animate');
-        animElements.forEach(el => {
-            const animation = el.dataset.animation;
-            if (animation) {
-                el.classList.remove('animate__animated', animation);
-                el.style.opacity = '0';
             }
         });
     }
