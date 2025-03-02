@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'section-about': [
           `
     <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-      <p class="lead text-animate" data-animation="animate__fadeInUp">
+      <p class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `,
             `
     <section id="section-about" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-      <p class="lead text-animate" data-animation="animate__fadeInUp">
+    <p class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInUp">
         Vielen Dank, dass du meine Homepage besuchst.<br>
         Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.<br>
         Vergiss nicht, regelmäßig vorbeizuschauen,<br>
@@ -78,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
     <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
       <div class="container">
         <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-          <!-- Link zu Über Mich -->
           <div class="col">
             <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
               <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="400">
