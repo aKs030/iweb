@@ -218,10 +218,12 @@ hr {
     animation-duration: 0.7s;
   }
 
+  /* Entfernen Sie "transition: none" für animierte Elemente */
   .scroll-animate,
   .text-animate {
-    transition: none; /* Kürzere Transitions durch 0 ersetzt */
-    transform: none;
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    /* transform: none;  entfernen oder beibehalten, wenn der Startzustand in CSS definiert ist */
   }
 }
 
