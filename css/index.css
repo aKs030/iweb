@@ -141,19 +141,9 @@ p.lead, .lead {
 .text-animate {
   opacity: 0;
   transform: translateY(-20px);
-  transition: opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
-}
-
-/* Neu: Direkte Sichtbarkeit für Elemente mit .full-visible */
-.full-visible {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-}
-
-/* Für flüssigere Hardwarebeschleunigung */
-.animate__animated {
+  transition:
+    opacity 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
 }
 
@@ -174,15 +164,6 @@ hr {
   border: none;
   margin: 0 auto;
   opacity: 0.8;
-}
-
-/* Verbesserte Styles für #section-features */
-#section-features {
-  padding: var(--section-padding);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
 }
 
 /* ==========================
