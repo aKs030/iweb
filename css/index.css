@@ -80,20 +80,33 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--main-text-color);
 }
 
-p.lead, .lead {
+/* ==========================
+   Lead-Text
+========================== */
+p.lead,
+.lead {
   font-size: 1.2rem;
   max-width: 800px;
   margin: 0 auto;
   padding: 0 20px;
   color: var(--main-text-color);
   font-weight: 400;
+  line-height: 1.6; /* Für eine bessere Lesbarkeit */
 }
 
+/* Ab 1200px Bildschirmbreite (z. B. Desktop/ große Monitore) */
+@media (min-width: 1200px) {
+  p.lead,
+  .lead {
+    font-size: 1.6rem;  /* Größere Schrift für große Bildschirme */
+    max-width: 1200px; /* Breitere Textspalte auf großen Monitoren */
+  }
+}
 /* ==========================
    Schimmertext
 ========================== */
 .shimmer-text {
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(4rem, 5vw, 13rem);
   font-weight: bold;
   color: #fff;
   text-shadow: 0 0 40px #fff;
@@ -111,11 +124,17 @@ p.lead, .lead {
   animation: shimmer 1.5s infinite linear;
 }
 
+@media (max-width: 600px) {
+  .shimmer-text {
+    /* Angepasste Schriftgröße für Smartphones */
+    font-size: clamp(3rem, 5vw, 13rem);
+  }
+}
+
 @keyframes shimmer {
   0% { background-position: 0% 50%; }
   100% { background-position: 100% 50%; }
 }
-
 /* ==========================
    Kartenstil
 ========================== */
@@ -158,17 +177,23 @@ p.lead, .lead {
   transform: none;
 }
 
+.snap {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
 /* ==========================
    Horizontal Line (hr)
 ========================== */
 hr {
-  background: var(--main-decor-color);
-  height: 3px;
-  width: 190px;
-  border-radius: 5px;
-  border: none;
-  margin: 0 auto;
-  opacity: 0.8;
+background: var(--main-decor-color);
+margin: 2px;
+height: 3px;
+width: 150px;
+border-radius:5px;
+border: hidden;
+margin-inline-start: auto;
+margin-inline-end: auto;
 }
 
 /* ==========================
@@ -176,17 +201,9 @@ hr {
 ========================== */
 @media (max-width: 768px) {
 
-  .shimmer-text {
-    font-size: clamp(1.8rem, 6vw, 2.5rem);
-    padding-bottom: 3rem;
-  }
+
 
   .full-screen-section {
     padding: 1.5rem 0;
   }
-}
-
-.snap {
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
 }
