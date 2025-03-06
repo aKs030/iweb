@@ -168,15 +168,6 @@ p.lead,
 /* ==========================
    Scroll & Animation
 ========================== */
-
-
-/* Optimierte Regel für .full-visible (falls separate Behandlung notwendig) */
-.full-visible {
-  /* Sicherstellen, dass full-visible-Elemente ohne Animation angezeigt werden */
-  opacity: 1;
-  transform: none;
-}
-
 .snap {
   scroll-snap-align: center;
   scroll-snap-stop: always;
