@@ -25,6 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Submenu-Links initialisieren
       initializeSubmenuLinks();
+
+      // Klick außerhalb des Menüs schließen
+      document.addEventListener('click', (event) => {
+        const isClickInside = menuContainer.contains(event.target);
+        const isMenuToggle = event.target.closest('.site-menu__toggle');
+        if (!isClickInside && !isMenuToggle) {
+          closeMenu(menuContainer);
+        }
+      });
     })
     .catch(err => {
       console.error('Fehler beim Laden des Menüs:', err.message);
@@ -82,4 +91,18 @@ function initializeSubmenuLinks() {
       }
     });
   });
+}
+
+/**
+ * Schließt das Menü
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
+function closeMenu(container) {
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
+
+  if (menuToggle && menu) {
+    menu.classList.remove('open');
+    menuToggle.classList.remove('active');
+  }
 }
