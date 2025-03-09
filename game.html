@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jump-and-Run Spiel</title>
+    <style>
+        canvas {
+            border: 1px solid #333;
+            display: block;
+            margin: 20px auto;
+            background-color: #87ceeb;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const spieler = {
+            x: 50,
+            y: 0,
+            breite: 30,
+            hoehe: 30,
+            farbe: 'red',
+            geschwindigkeitY: 0,
+            geschwindigkeitX: 3,
+            sprungstaerke: 15,
+            schwerkraft: 0.6,
+            amBoden: false,
+            bewegt: false
+        };
+
+        const bodenHoehe = 50;
+        let punkte = 0;
+        let leben = 3;
+        let level = 1;
+
+        function ladeLevel() {
+            hindernisse = [];
+            gegner = null;
+
+            if (level === 1) {
+                hindernisse.push(
+                    { x: 300, y: canvas.height - bodenHoehe - 40, breite: 40, hoehe: 40 },
+                    { x: 500, y: canvas.height - bodenHoehe - 60, breite: 50, hoehe: 60 }
+                );
+                gegner = { x: 600, y: canvas.height - bodenHoehe - 40, breite: 40, hoehe: 40, farbe: 'purple', bewegung: 2 };
+            } else if (level === 2) {
+                hindernisse.push(
+                    { x: 200, y: canvas.height - bodenHoehe - 50, breite: 50, hoehe: 50 },
+                    { x: 400, y: canvas.height - bodenHoehe - 70, breite: 60, hoehe: 70 },
+                    { x: 650, y: canvas.height - bodenHoehe - 40, breite: 50, hoehe: 50 }
+                );
+                gegner = { x: 450, y: canvas.height - bodenHoehe - 40, breite: 40, hoehe: 40, farbe: 'blue', bewegung: 3 };
+            }
+        }
+
+        const hindernisse = [
+            { x: 300, y: canvas.height - bodenHoehe - 40, breite: 40, hoehe: 40 },
+            { x: 500, y: canvas.height - bodenHoehe - 60, breite: 50, hoehe: 60 }
+        ];
+
+        const gegner = {
+            x: 600,
+            y: canvas.height - bodenHoehe - 40,
+            breite: 40,
+            hoehe: 40,
+            farbe: 'purple',
+            bewegung: 2
+        };
+
+        function zeichneBoden() {
+            ctx.fillStyle = 'green';
+            ctx.fillRect(0, canvas.height - bodenHoehe, canvas.width, bodenHoehe);
+        }
+
+        function zeichneSpieler() {
+            ctx.fillStyle = spieler.farbe;
+            ctx.fillRect(spieler.x, spieler.y, spieler.breite, spieler.hoehe);
+        }
+
+        function zeichneHindernisse() {
+            ctx.fillStyle = 'brown';
+            hindernisse.forEach(hindernis => {
+                ctx.fillRect(hindernis.x, hindernis.y, hindernis.breite, hindernis.hoehe);
+            });
+        }
+
+        function zeichneGegner() {
+            ctx.fillStyle = gegner.farbe;
+            ctx.fillRect(gegner.x, gegner.y, gegner.breite, gegner.hoehe);
+        }
+
+        function zeichneHUD() {
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('Level: ' + level, 10, 90);
+        }
+
+        function updateGegner() {
+            gegner.x += gegner.bewegung;
+            if (gegner.x < 550 || gegner.x > 700) {
+                gegner.bewegung *= -1;
+            }
+        }
+
+        function updateSpieler() {
+            if (spieler.bewegt) {
+                spieler.x += spieler.geschwindigkeitX;
+                punkte += 1; // Punkte erhöhen
+            }
+            spieler.geschwindigkeitY += spieler.schwerkraft;
+            spieler.y += spieler.geschwindigkeitY;
+
+            if (spieler.y + spieler.hoehe >= canvas.height - bodenHoehe) {
+                spieler.y = canvas.height - bodenHoehe - spieler.hoehe;
+                spieler.amBoden = true;
+                spieler.geschwindigkeitY = 0;
+            } else {
+                spieler.amBoden = false;
+            }
+
+            if (spieler.x > canvas.width && level < 2) {
+                level++;
+                ladeLevel();
+                spieler.x = 50; // Spieler zurücksetzen
+            }
+        }
+
+        function pruefeKollision() {
+            // Kollision mit Hindernissen prüfen
+            for (let hindernis of hindernisse) {
+                if (
+                    spieler.x < hindernis.x + hindernis.breite &&
+                    spieler.x + spieler.breite > hindernis.x &&
+                    spieler.y < hindernis.y + hindernis.hoehe &&
+                    spieler.y + spieler.hoehe > hindernis.y
+                ) {
+                    alert("Game Over! Du bist gegen ein Hindernis gelaufen.");
+                    return true;
+                }
+            }
+
+            // Kollision mit dem Gegner prüfen
+            if (
+                spieler.x < gegner.x + gegner.breite &&
+                spieler.x + spieler.breite > gegner.x &&
+                spieler.y < gegner.y + gegner.hoehe &&
+                spieler.y + spieler.hoehe > gegner.y
+            ) {
+                alert("Game Over! Du bist vom Gegner erwischt worden.");
+                return true;
+            }
+
+            return false;
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            updateSpieler();
+            updateGegner();
+
+            // Kollision prüfen
+            if (pruefeKollision()) {
+                return; // Stoppt das Spiel
+            }
+
+            zeichneBoden();
+            zeichneHindernisse();
+            zeichneGegner();
+            zeichneSpieler();
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('Level: ' + level, 10, 30);
+
+            requestAnimationFrame(loop);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if(event.code === 'Space' && spieler.amBoden) {
+                spieler.geschwindigkeitY = -spieler.sprungstaerke;
+            }
+            if(event.code === 'ArrowRight') {
+                spieler.bewegt = true;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if(event.code === 'ArrowRight') {
+                spieler.bewegt = false;
+            }
+        });
+
+        function neustartSpiel() {
+            punkte = 0;
+            leben = 3;
+            level = 1;
+            ladeLevel();
+            resetSpieler();
+            loop();
+        }
+
+        loop();
+    </script>
+</body>
+</html>
