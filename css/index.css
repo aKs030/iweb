@@ -198,3 +198,21 @@ margin-inline-end: auto;
     padding: 1.5rem 0;
   }
 }
+
+/* ==========================
+   Menü
+========================== */
+.has-submenu > a {
+  cursor: pointer;
+}
+
+.submenu {
+  display: none;
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.has-submenu:hover .submenu,
+.has-submenu:focus-within .submenu {
+  display: block;
+}

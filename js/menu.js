@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Logo-Verhalten initialisieren
       initializeLogo(menuContainer);
+
+      // Submenu-Links initialisieren
+      initializeSubmenuLinks();
     })
     .catch(err => {
       console.error('Fehler beim Laden des Menüs:', err.message);
@@ -61,4 +64,22 @@ function initializeLogo(container) {
   } else {
     console.warn('Logo-Container konnte nicht gefunden werden.');
   }
+}
+
+/**
+ * Initialisiert die Submenu-Links
+ */
+function initializeSubmenuLinks() {
+  const submenuLinks = document.querySelectorAll('.has-submenu > a');
+  submenuLinks.forEach(link => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const submenu = link.nextElementSibling;
+      if (submenu.style.display === 'block') {
+        submenu.style.display = 'none';
+      } else {
+        submenu.style.display = 'block';
+      }
+    });
+  });
 }
