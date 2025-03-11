@@ -28,6 +28,20 @@
             margin: 10px;
             font-size: 20px;
         }
+        #gameOverMenu {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid black;
+            padding: 20px;
+            text-align: center;
+        }
+        #gameOverMenu button {
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
@@ -36,6 +50,11 @@
         <button class="control-button" id="leftButton">Links</button>
         <button class="control-button" id="jumpButton">Springen</button>
         <button class="control-button" id="rightButton">Rechts</button>
+    </div>
+    <div id="gameOverMenu">
+        <h1>Game Over</h1>
+        <button onclick="neustartSpiel()">Neustart</button>
+        <button onclick="verlassen()">Verlassen</button>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -144,7 +163,7 @@
                     spieler.y < hindernis.y + hindernis.hoehe &&
                     spieler.y + spieler.hoehe > hindernis.y
                 ) {
-                    alert("Game Over! Du bist gegen ein Hindernis gelaufen.");
+                    spielBeenden("Du bist gegen ein Hindernis gelaufen.");
                     return true;
                 }
             }
@@ -156,11 +175,16 @@
                 spieler.y < gegner.y + gegner.hoehe &&
                 spieler.y + spieler.hoehe > gegner.y
             ) {
-                alert("Game Over! Du bist vom Gegner erwischt worden.");
+                spielBeenden("Du bist vom Gegner erwischt worden.");
                 return true;
             }
 
             return false;
+        }
+
+        function spielBeenden(nachricht) {
+            alert(nachricht);
+            document.getElementById('gameOverMenu').style.display = 'block';
         }
 
         function loop() {
@@ -242,12 +266,17 @@
         }
 
         function neustartSpiel() {
+            document.getElementById('gameOverMenu').style.display = 'none';
             punkte = 0;
             leben = 3;
             level = 1;
             ladeLevel();
             resetSpieler();
             loop();
+        }
+
+        function verlassen() {
+            window.close();
         }
 
         ladeLevel();
