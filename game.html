@@ -17,11 +17,26 @@
                 height: auto;
             }
         }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .control-button {
+            width: 100px;
+            height: 50px;
+            margin: 10px;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
-
+    <div class="controls">
+        <button class="control-button" id="leftButton">Links</button>
+        <button class="control-button" id="jumpButton">Springen</button>
+        <button class="control-button" id="rightButton">Rechts</button>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -37,7 +52,8 @@
             sprungstaerke: 15,
             schwerkraft: 0.6,
             amBoden: false,
-            bewegt: false
+            bewegt: false,
+            richtung: 0 // -1: links, 1: rechts
         };
 
         const bodenHoehe = 50;
@@ -98,7 +114,7 @@
 
         function updateSpieler() {
             if (spieler.bewegt) {
-                spieler.x += spieler.geschwindigkeitX;
+                spieler.x += spieler.richtung * spieler.geschwindigkeitX;
                 punkte += 1; // Punkte erhöhen
             }
             spieler.geschwindigkeitY += spieler.schwerkraft;
@@ -175,27 +191,48 @@
             }
             if (event.code === 'ArrowRight') {
                 spieler.bewegt = true;
+                spieler.richtung = 1;
+            }
+            if (event.code === 'ArrowLeft') {
+                spieler.bewegt = true;
+                spieler.richtung = -1;
             }
         }
 
         function handleKeyUp(event) {
-            if (event.code === 'ArrowRight') {
+            if (event.code === 'ArrowRight' || event.code === 'ArrowLeft') {
                 spieler.bewegt = false;
             }
         }
 
         function handleTouchStart(event) {
-            spieler.bewegt = true;
+            if (event.target.id === 'jumpButton' && spieler.amBoden) {
+                spieler.geschwindigkeitY = -spieler.sprungstaerke;
+            }
+            if (event.target.id === 'rightButton') {
+                spieler.bewegt = true;
+                spieler.richtung = 1;
+            }
+            if (event.target.id === 'leftButton') {
+                spieler.bewegt = true;
+                spieler.richtung = -1;
+            }
         }
 
         function handleTouchEnd(event) {
-            spieler.bewegt = false;
+            if (event.target.id === 'rightButton' || event.target.id === 'leftButton') {
+                spieler.bewegt = false;
+            }
         }
 
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('keyup', handleKeyUp);
-        document.addEventListener('touchstart', handleTouchStart);
-        document.addEventListener('touchend', handleTouchEnd);
+        document.getElementById('jumpButton').addEventListener('touchstart', handleTouchStart);
+        document.getElementById('rightButton').addEventListener('touchstart', handleTouchStart);
+        document.getElementById('leftButton').addEventListener('touchstart', handleTouchStart);
+        document.getElementById('jumpButton').addEventListener('touchend', handleTouchEnd);
+        document.getElementById('rightButton').addEventListener('touchend', handleTouchEnd);
+        document.getElementById('leftButton').addEventListener('touchend', handleTouchEnd);
 
         function resetSpieler() {
             spieler.x = 50;
