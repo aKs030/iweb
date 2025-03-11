@@ -11,6 +11,12 @@
             margin: 20px auto;
             background-color: #87ceeb;
         }
+        @media (max-width: 600px) {
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -178,8 +184,18 @@
             }
         }
 
+        function handleTouchStart(event) {
+            spieler.bewegt = true;
+        }
+
+        function handleTouchEnd(event) {
+            spieler.bewegt = false;
+        }
+
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('keyup', handleKeyUp);
+        document.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchend', handleTouchEnd);
 
         function resetSpieler() {
             spieler.x = 50;
