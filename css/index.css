@@ -1,6 +1,15 @@
 .left-text {
   text-align: left;
   }
+
+
+  .icon-wrapper {
+    transition: transform 0.3s ease-in-out;
+  }
+  .card:hover .icon-wrapper {
+    transform: scale(1.1);
+  }
+
 /* ==========================
    Grundlegende Variablen
 ========================== */

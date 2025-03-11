@@ -99,6 +99,24 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </a>
       </div>
+
+<div class="col">
+  <a href="game.html" class="text-decoration-none text-reset animated-link">
+    <div class="card border-0 bg-white text-center scroll-animate p-4 shadow-lg rounded-3 position-relative" 
+         data-animation="animate__flipInX" 
+         data-delay="800">
+      <div class="icon-wrapper d-flex justify-content-center align-items-center">
+        <i class="bi bi-controller display-4 animated-icon mb-3 text-primary"></i>
+      </div>
+      <h5 class="fw-bold animated-text text-dark">Game-Zone</h5>
+      <p class="animated-text text-secondary">
+        Tauche ein in spannende Spiele!<br>
+        Teste dein Können in kniffligen Herausforderungen.
+      </p>
+    </div>
+  </a>
+</div>
+
     </div>
   </div>
 </section>
