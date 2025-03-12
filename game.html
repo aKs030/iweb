@@ -53,6 +53,7 @@
     </div>
     <div id="gameOverMenu">
         <h1>Game Over</h1>
+        <p id="gameOverMessage"></p>
         <button onclick="neustartSpiel()">Neustart</button>
         <button onclick="verlassen()">Verlassen</button>
     </div>
@@ -183,7 +184,7 @@
         }
 
         function spielBeenden(nachricht) {
-            alert(nachricht);
+            document.getElementById('gameOverMessage').innerText = nachricht;
             document.getElementById('gameOverMenu').style.display = 'block';
         }
 
@@ -257,6 +258,40 @@
         document.getElementById('jumpButton').addEventListener('touchend', handleTouchEnd);
         document.getElementById('rightButton').addEventListener('touchend', handleTouchEnd);
         document.getElementById('leftButton').addEventListener('touchend', handleTouchEnd);
+
+        // Vereinheitlichte Handler für Pointer Events (Touch und Maus)
+        function handleButtonDown(event) {
+            event.preventDefault();
+            const id = event.target.id;
+            if (id === 'jumpButton' && spieler.amBoden) {
+                spieler.geschwindigkeitY = -spieler.sprungstaerke;
+            }
+            if (id === 'rightButton') {
+                spieler.bewegt = true;
+                spieler.richtung = 1;
+            }
+            if (id === 'leftButton') {
+                spieler.bewegt = true;
+                spieler.richtung = -1;
+            }
+        }
+
+        function handleButtonUp(event) {
+            event.preventDefault();
+            const id = event.target.id;
+            if (id === 'rightButton' || id === 'leftButton') {
+                spieler.bewegt = false;
+            }
+        }
+
+        // Pointer Events für mobile Steuerung
+        const buttons = ['jumpButton', 'rightButton', 'leftButton'];
+        buttons.forEach(id => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('pointerdown', handleButtonDown);
+            btn.addEventListener('pointerup', handleButtonUp);
+            btn.addEventListener('pointercancel', handleButtonUp);
+        });
 
         function resetSpieler() {
             spieler.x = 50;

@@ -72,118 +72,195 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         'section-features': [
             `
-<section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+//1
+            <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+    
       <div class="col">
         <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="400">
-            <i class="bi bi-person-circle display-4 animated-icon mb-3 text-muted"></i>
-            <h5 class="fw-bold animated-text text-dark">Über Mich</h5>
-            <p class="animated-text text-secondary">
-              Ich teile hier meine Leidenschaften,<br>
-              Interessen und Erlebnisse.
-            </p>
-          </div>
-        </a>
-      </div>
-      <div class="col">
-        <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="800">
-            <i class="bi bi-images display-4 animated-icon mb-3 text-muted"></i>
-            <h5 class="fw-bold animated-text text-dark">Fotogalerie</h5>
-            <p class="animated-text text-secondary">
-              Hier findest du einige Fotos von meinen Reisen,<br>
-              meinem Alltag und besonderen Ereignissen.
-            </p>
-          </div>
-        </a>
-      </div>
-
-<div class="col">
-  <a href="game.html" class="text-decoration-none text-reset animated-link">
-    <div class="card border-0 bg-white text-center scroll-animate p-4 shadow-lg rounded-3 position-relative" 
-         data-animation="animate__flipInX" 
-         data-delay="800">
-      <div class="icon-wrapper d-flex justify-content-center align-items-center">
-        <i class="bi bi-controller display-4 animated-icon mb-3 text-primary"></i>
-      </div>
-      <h5 class="fw-bold animated-text text-dark">Game-Zone</h5>
-      <p class="animated-text text-secondary">
-        Tauche ein in spannende Spiele!<br>
-        Teste dein Können in kniffligen Herausforderungen.
-      </p>
-    </div>
-  </a>
-</div>
-
-    </div>
-  </div>
-</section>
-            `,
-            `
-<section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-  <div class="container">
-    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-      <div class="col">
-        <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="400">
-            <i class="bi bi-emoji-smile display-4 animated-icon mb-3 text-primary"></i>
-            <h5 class="fw-bold animated-text text-dark">Wer bin ich?</h5>
-            <p class="animated-text text-secondary">
+          <div class="card border-0 bg-white text-center scroll-animate p-4" 
+          data-animation="animate__flipInX" 
+          data-delay="400">
+          <div class="icon-wrapper d-flex justify-content-center align-items-center">
+            <i class="bi bi-person-circle display-4 animated-icon mb-3" style="color: #444;"></i>
+            </div>
+            <h5 class="fw-bold animated-text" style="color: #444;">Wer bin ich?</h5>
+            <p class="animated-text" style="color: #666;">
               Einblicke in meine Persönlichkeit,<br>
               meine Hobbys und das, was mich begeistert.
             </p>
           </div>
         </a>
       </div>
+
       <div class="col">
         <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="800">
-            <i class="bi bi-collection-fill display-4 animated-icon mb-3 text-primary"></i>
-            <h5 class="fw-bold animated-text text-dark">Meine Erinnerungen</h5>
-            <p class="animated-text text-secondary">
+          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          data-animation="animate__flipInX" 
+          data-delay="800">
+          <div class="icon-wrapper d-flex justify-content-center align-items-center">
+          <i class="bi bi-camera-fill display-4 animated-icon mb-3" style="color: #444;"></i>
+            </div>
+            <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
+            <p class="animated-text" style="color: #666;">
               Hier findet ihr eine bunte Sammlung von Fotos,<br>
               spannenden Eindrücken und besonderen Momenten.
             </p>
           </div>
         </a>
       </div>
+
+      <div class="col">
+        <a href="game.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+            data-animation="animate__flipInX" 
+            data-delay="1200">
+            <div class="icon-wrapper d-flex justify-content-center align-items-center">
+            <i class="bi bi-joystick display-4 animated-icon mb-3" style="color: #444;"></i>
+              </div>
+              <h5 class="fw-bold animated-text" style="color: #444;">Game-Zone</h5>
+              <p class="animated-text" style="color: #666;">
+                  Tauche ein in spannende Spiele!<br>
+                  Teste dein Können in kniffligen Herausforderungen.
+              </p>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
 </section>
+
+            
             `,
             `
+
+//2
+
 <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+    
       <div class="col">
         <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="400">
-            <i class="bi bi-person-fill display-4 animated-icon mb-3 text-muted"></i>
-            <h5 class="fw-bold animated-text text-dark">Meine Geschichte</h5>
-            <p class="animated-text text-secondary">
-              Erfahre mehr über meine Leidenschaften,<br>
-              Interessen und persönliche Erlebnisse.
+          <div class="card border-0 bg-white text-center scroll-animate p-4" 
+          data-animation="animate__flipInX" 
+          data-delay="400">
+          <div class="icon-wrapper d-flex justify-content-center align-items-center">
+            <i class="bi bi-person-badge display-4 animated-icon mb-3" style="color: #444;"></i>
+            </div>
+            <h5 class="fw-bold animated-text" style="color: #444;">Wer bin ich?</h5>
+            <p class="animated-text" style="color: #666;">
+              Einblicke in meine Persönlichkeit,<br>
+              meine Hobbys und das, was mich begeistert.
             </p>
           </div>
         </a>
       </div>
+
       <div class="col">
         <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" data-animation="animate__flipInX" data-delay="800">
-            <i class="bi bi-camera-fill display-4 animated-icon mb-3 text-muted"></i>
-            <h5 class="fw-bold animated-text text-dark">Mein Album</h5>
-            <p class="animated-text text-secondary">
-              Entdecke Fotos von meinen Reisen,<br>
-              besonderen Momenten und meinem Alltag.
+          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          data-animation="animate__flipInX" 
+          data-delay="800">
+          <div class="icon-wrapper d-flex justify-content-center align-items-center">
+          <i class="bi bi-images display-4 animated-icon mb-3" style="color: #444;"></i>
+            </div>
+            <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
+            <p class="animated-text" style="color: #666;">
+              Hier findet ihr eine bunte Sammlung von Fotos,<br>
+              spannenden Eindrücken und besonderen Momenten.
             </p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col">
+        <a href="game.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+            data-animation="animate__flipInX" 
+            data-delay="1200">
+            <div class="icon-wrapper d-flex justify-content-center align-items-center">
+            <i class="bi bi-controller display-4 animated-icon mb-3" style="color: #444;"></i>
+              </div>
+              <h5 class="fw-bold animated-text" style="color: #444;">Game-Zone</h5>
+              <p class="animated-text" style="color: #666;">
+                  Tauche ein in spannende Spiele!<br>
+                  Teste dein Können in kniffligen Herausforderungen.
+              </p>
           </div>
         </a>
       </div>
     </div>
   </div>
 </section>
+
+            `,
+            `
+
+ 
+//3
+
+
+<section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+  <div class="container">
+    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+    
+      <div class="col">
+        <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4" 
+          data-animation="animate__flipInX" 
+          data-delay="400">
+          <div class="icon-wrapper d-flex justify-content-center align-items-center">
+            <i class="bi bi-person-lines-fill display-4 animated-icon mb-3" style="color: #444;"></i>
+            </div>
+            <h5 class="fw-bold animated-text" style="color: #444;">Wer bin ich?</h5>
+            <p class="animated-text" style="color: #666;">
+              Einblicke in meine Persönlichkeit,<br>
+              meine Hobbys und das, was mich begeistert.
+            </p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col">
+        <a href="album.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          data-animation="animate__flipInX" 
+          data-delay="800">
+          <div class="icon-wrapper d-flex justify-content-center align-items-center">
+          <i class="bi bi-file-image display-4 animated-icon mb-3" style="color: #444;"></i>
+            </div>
+            <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
+            <p class="animated-text" style="color: #666;">
+              Hier findet ihr eine bunte Sammlung von Fotos,<br>
+              spannenden Eindrücken und besonderen Momenten.
+            </p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col">
+        <a href="game.html" class="text-decoration-none text-reset animated-link">
+          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+            data-animation="animate__flipInX" 
+            data-delay="1200">
+            <div class="icon-wrapper d-flex justify-content-center align-items-center">
+            <i class="bi bi-dice-5 display-4 animated-icon mb-3" style="color: #444;"></i>
+              </div>
+              <h5 class="fw-bold animated-text" style="color: #444;">Game-Zone</h5>
+              <p class="animated-text" style="color: #666;">
+                  Tauche ein in spannende Spiele!<br>
+                  Teste dein Können in kniffligen Herausforderungen.
+              </p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
             `
         ]
     };
