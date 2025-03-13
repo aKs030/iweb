@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         'section-features': [
             `
-//1
+
             <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `,
             `
 
-//2
+
 
 <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">
@@ -197,10 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             `,
             `
-
- 
-//3
-
 
 <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
   <div class="container">

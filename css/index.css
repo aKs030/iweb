@@ -158,6 +158,7 @@ p.lead,
               box-shadow var(--transition-speed) var(--transition-ease),
               border-color var(--transition-speed) ease;
   will-change: transform, box-shadow, border-color;
+  /* Hier werden z.B. Padding, Border-Radius, Transformationen usw. festgelegt */
 }
 
 .card:hover,
@@ -206,5 +207,28 @@ margin-inline-end: auto;
   .full-screen-section {
     padding: 1.5rem 0;
   }
+  
+  .card {
+    padding: 1.5rem; /* Reduziertes Padding für kleinere Karten */
+  }
+  
+  .card h5 {
+    font-size: 1rem; /* Kleinere Überschrift */
+  }
+  
+  .card p {
+    font-size: 0.85rem; /* Kleinere Textgröße in der Karte */
+  }
+  
+  .lead {
+    font-size: 1rem; /* Angepasste Schriftgröße für Lead-Text */
+  }
+
+  #section-features {
+    padding-top: 80px; /* Abstand, damit die Karten nicht von der Menüleiste bedeckt werden */
+    min-height: calc(100vh - 80px); /* Anpassen der Höhe, sodass der Inhalt vollständig sichtbar bleibt */
 }
+}
+
+
 
