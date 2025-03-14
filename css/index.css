@@ -32,14 +32,6 @@
   /* Animationen */
   --transition-speed: 0.35s;
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* -------------------------
-     Globale Variablen für Karten
-  -------------------------- */
-  --card-padding-desktop: 2rem; /* Beispiel: Standard-Padding für Desktop */
-  --card-padding-mobile: 3.1rem; /* Reduziertes Padding für mobile Geräte */
-  --card-font-size-desktop: 1.2rem;
-  --card-font-size-mobile: 2rem;
 }
 
 /* ==========================
@@ -67,17 +59,6 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-
-  width: 95%;
-  max-width: 850px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  margin: auto auto;
-  box-sizing: border-box;
-
-
 }
 
 .full-screen-section,
@@ -177,22 +158,17 @@ p.lead,
               box-shadow var(--transition-speed) var(--transition-ease),
               border-color var(--transition-speed) ease;
   will-change: transform, box-shadow, border-color;
-  padding: var(--card-padding-desktop);
+  /* Hier werden z.B. Padding, Border-Radius, Transformationen usw. festgelegt */
 }
 
-/* Einheitliche Schriftgrößen für Karteninhalte */
-.card h5,
-.lead {
-  font-size: var(--card-font-size-desktop);
-}
-
-.card p {
-  font-size: 0.85rem; /* Für den normalen Text in der Karte */
-}
-
-/* Hover/Active-Zustand */
 .card:hover,
-.card:active,
+.card:active {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px var(--highlight-shadow);
+  border-color: var(--accent-color);
+}
+
+/* Neu hinzugefügte Regel für mobile Touch-Interaktionen */
 .card.touch-active {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 30px var(--highlight-shadow);
@@ -225,34 +201,33 @@ margin-inline-end: auto;
    Mobile-Anpassungen
 ========================== */
 @media (max-width: 768px) {
-  :root {
-    --mobile-header-height: 50px;
-    --card-padding-mobile: 1.2rem;   /* Etwas geringeres Padding für mobile Geräte */
-    --card-font-size-mobile: 0.9rem;  /* Kleinere Überschriften- und Lead-Schrift im Kartendesign */
-  }
+
+
 
   .full-screen-section {
-    padding: 0.1rem 0;
+    padding: 1.5rem 0;
   }
   
   .card {
-    padding: var(--card-padding-mobile);
+    padding: 1.5rem; /* Reduziertes Padding für kleinere Karten */
   }
   
-  .card h5,
-  .lead {
-    font-size: var(--card-font-size-mobile);
+  .card h5 {
+    font-size: 1rem; /* Kleinere Überschrift */
   }
   
-  /* Für den Fließtext in der Karte wird die Schriftgröße weiter reduziert */
   .card p {
-    font-size: 0.8rem;
+    font-size: 0.85rem; /* Kleinere Textgröße in der Karte */
   }
   
-  #section-features {
-    padding-top: var(--mobile-header-height); /* Einheitliche Höhe für den Header */
-    min-height: calc(100vh - var(--mobile-header-height)); /* Dynamische Höhe für vollständige Sichtbarkeit */
+  .lead {
+    font-size: 1rem; /* Angepasste Schriftgröße für Lead-Text */
   }
+
+  #section-features {
+    padding-top: 80px; /* Abstand, damit die Karten nicht von der Menüleiste bedeckt werden */
+    min-height: calc(100vh - 80px); /* Anpassen der Höhe, sodass der Inhalt vollständig sichtbar bleibt */
+}
 }
 
 
