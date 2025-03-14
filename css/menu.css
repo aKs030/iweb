@@ -209,6 +209,18 @@
     border-radius: 2px;
     transition: 0.3s;
   }
+
+  /* Hamburger-Button Fokus-Stil für Barrierefreiheit */
+  .site-menu__toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #0077ff;
+  }
+
+  /* Fokus-Stil für Menü-Links */
+  .site-menu__list li a:focus {
+    outline: none;
+    color: #0077ff;
+  }
   
   /* =======================
      MEDIA QUERIES (MOBILE)

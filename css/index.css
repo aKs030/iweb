@@ -102,15 +102,6 @@ p.lead,
   font-weight: 400;
   line-height: 1.6; /* Für eine bessere Lesbarkeit */
 }
-
-/* Ab 1200px Bildschirmbreite (z. B. Desktop/ große Monitore) */
-@media (min-width: 1200px) {
-  p.lead,
-  .lead {
-    font-size: 1.6rem;  /* Größere Schrift für große Bildschirme */
-    max-width: 1200px; /* Breitere Textspalte auf großen Monitoren */
-  }
-}
 /* ==========================
    Schimmertext
 ========================== */
@@ -161,18 +152,15 @@ p.lead,
 }
 
 .card:hover,
-.card:active {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 30px var(--highlight-shadow);
-  border-color: var(--accent-color);
-}
-
-/* Neu hinzugefügte Regel für mobile Touch-Interaktionen */
+.card:active,
 .card.touch-active {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 30px var(--highlight-shadow);
   border-color: var(--accent-color);
 }
+
+
+
 
 /* ==========================
    Scroll & Animation
@@ -200,13 +188,27 @@ margin-inline-end: auto;
    Mobile-Anpassungen
 ========================== */
 @media (max-width: 768px) {
-
-
-
   .full-screen-section {
     padding: 1.5rem 0;
+    padding-top: 80px; /* Abstand, damit die Karten nicht von der Menüleiste bedeckt werden */
+    min-height: calc(100vh - 80px); /* Anpassen der Höhe, sodass der Inhalt vollständig sichtbar bleibt */
   }
+.card h5 {
+  font-size: 1rem; /* Kleinere Überschrift */
+}
+.card p {
+  font-size: 0.85rem; /* Kleinere Textgröße in der Karte */
+}
+.lead {
+  font-size: 1rem; /* Angepasste Schriftgröße für Lead-Text */
+}
 }
 
-
-
+/* Ab 1200px Bildschirmbreite (z. B. Desktop/ große Monitore) */
+@media (min-width: 1200px) {
+  p.lead,
+  .lead {
+    font-size: 1.6rem;  /* Größere Schrift für große Bildschirme */
+    max-width: 1200px; /* Breitere Textspalte auf großen Monitoren */
+  }
+}

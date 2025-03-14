@@ -53,6 +53,13 @@ function initializeMenu(container) {
       menu.classList.toggle('open');
       menuToggle.classList.toggle('active');
     });
+    // Toggle auch per Enter-Taste aktivieren
+    menuToggle.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        menu.classList.toggle('open');
+        menuToggle.classList.toggle('active');
+      }
+    });
   } else {
     console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
   }

@@ -425,25 +425,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const animationManager = new AnimationManager();
     animationManager.init();
 
-    // Neue Event-Delegation für Touch-Interaktionen auf .card-Elementen
+    // Neue Event-Delegation für Touch-Interaktionen auf .card-Elementen mit passiver Option
     document.addEventListener('touchstart', (event) => {
         const card = event.target.closest('.card');
         if (card) {
             card.classList.add('touch-active');
         }
-    });
+    }, { passive: true });
     document.addEventListener('touchend', (event) => {
         const card = event.target.closest('.card');
         if (card) {
             card.classList.remove('touch-active');
         }
-    });
+    }, { passive: true });
     document.addEventListener('touchcancel', (event) => {
         const card = event.target.closest('.card');
         if (card) {
             card.classList.remove('touch-active');
         }
-    });
+    }, { passive: true });
 });
 
 
