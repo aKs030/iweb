@@ -1,38 +1,3 @@
-#back-to-top {
-  position: fixed;  /* Fixierung am Bildschirmrand */
-  bottom: 15px;  /* Abstand zum unteren Rand */
-  right: 15px;  /* Abstand zum rechten Rand */
-  display: none;  /* Standardmäßig ausgeblendet */
-  padding: 8px 15px;  /* Kleinere Polsterung für kompakteres Design */
-  background: rgba(0, 0, 0, 0.5);  /* Halbtransparentes Schwarz */
-  color: rgba(255, 255, 255, 0.8);  /* Leicht transparente weiße Schrift */
-  border: none;  /* Kein Rand */
-  cursor: pointer;  /* Hand-Cursor für Interaktion */
-  border-radius: 50px;  /* Runde Form für modernen Look */
-  font-size: 14px;  /* Kleinere Schriftgröße */
-  font-weight: bold;  /* Etwas stärker für bessere Lesbarkeit */
-  opacity: 0.6;  /* Leichte Transparenz für dezente Sichtbarkeit */
-  transition: all 0.3s ease-in-out;  /* Sanfter Übergang für Effekte */
-  z-index: 1000;  /* Sicherstellen, dass der Button über anderen Elementen bleibt */
-}
-
-#back-to-top.visible {
-  display: block;  /* Button wird sichtbar bei Scroll */
-  opacity: 0.8;  /* Etwas sichtbarer beim Erscheinen */
-  transform: translateY(-5px);  /* Leichte Animation beim Einblenden */
-}
-
-#back-to-top:hover {
-  opacity: 1;  /* Vollständige Sichtbarkeit bei Hover */
-  background: rgba(0, 0, 0, 0.8);  /* Etwas dunklerer Hintergrund beim Hover */
-  transform: scale(1.05);  /* Leichte Vergrößerung für Feedback */
-}
-
-#back-to-top:active {
-  transform: scale(0.95);  /* Kleinerer Button beim Klicken für Interaktivität */
-}
-
-
 /* =======================
    GRUNDEINSTELLUNGEN
    ======================= */
