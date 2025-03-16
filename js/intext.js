@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </h3>
     <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
       Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-      Diese Seite dient als mein digitales Zuhause im<br>
-      World Wide Web, auf der ich meine Interessen,<br>
+      Diese Seite dient als mein digitales Zuhause im
+      World Wide Web, auf der ich meine Interessen,
       Erfahrungen und Gedanken teilen möchte.
     </p>
 </section>
@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </h3>
     <p class="lead text-animate left-text" data-animation="animate__fadeInUp">
       Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-      Diese Seite dient als mein digitales Zuhause im<br>
-      World Wide Web, auf der ich meine Interessen,<br>
+      Diese Seite dient als mein digitales Zuhause im
+      World Wide Web, auf der ich meine Interessen,
       Erfahrungen und Gedanken teilen möchte.
     </p>
 </section>
