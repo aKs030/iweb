@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="animated-text" style="color: #666;">
               Einblicke in meine Persönlichkeit,<br>
               meine Hobbys und das, was mich begeistert.
+              1
             </p>
           </div>
         </a>
@@ -104,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
             <p class="animated-text" style="color: #666;">
-              Hier findet ihr eine bunte Sammlung von Fotos,<br>
+              Hier findet ihr eine bunte Sammlung von Fotos,
               spannenden Eindrücken und besonderen Momenten.
             </p>
           </div>
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="animated-text" style="color: #666;">
               Einblicke in meine Persönlichkeit,<br>
               meine Hobbys und das, was mich begeistert.
+              2
             </p>
           </div>
         </a>
@@ -168,8 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
             <p class="animated-text" style="color: #666;">
-              Hier findet ihr eine bunte Sammlung von Fotos,<br>
-              spannenden Eindrücken und besonderen Momenten.
+              Hier findet ihr eine bunte Sammlung von Fotos,spannenden Eindrücken und besonderen Momenten.
             </p>
           </div>
         </a>
@@ -214,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="animated-text" style="color: #666;">
               Einblicke in meine Persönlichkeit,<br>
               meine Hobbys und das, was mich begeistert.
+              3
             </p>
           </div>
         </a>
@@ -229,8 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
             <p class="animated-text" style="color: #666;">
-              Hier findet ihr eine bunte Sammlung von Fotos,<br>
-              spannenden Eindrücken und besonderen Momenten.
+              Hier findet ihr eine bunte Sammlung von Fotos, spannenden Eindrücken und besonderen Momenten.
             </p>
           </div>
         </a>
@@ -246,8 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <h5 class="fw-bold animated-text" style="color: #444;">Game-Zone</h5>
               <p class="animated-text" style="color: #666;">
-                  Tauche ein in spannende Spiele!<br>
-                  Teste dein Können in kniffligen Herausforderungen.
+                  Tauche ein in spannende Spiele! Teste dein Können in kniffligen Herausforderungen.
               </p>
           </div>
         </a>
