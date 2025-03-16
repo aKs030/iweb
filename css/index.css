@@ -86,7 +86,7 @@ full-screen-section,
 .container{
   /* Damit das Overlay deinen Inhalt nicht überlagert,
      gibst du "innen" denselben Abstand wie das Overlay außen */
-  margin-top: var(--dynamic-margin, 85px);
+  margin-top: 80px;
   margin-right: 20px;
   margin-bottom: 15px;
   margin-left: 20px;
@@ -224,7 +224,7 @@ body::after {
    Mobile-Anpassungen
 ========================== */
 @media (max-width: 576px) {
-  .card.dynamic-height {
+  .card {
 
     /* Reduzierte Breite und Höhe auf kleinen Screens */
     width: 320px;
@@ -240,4 +240,3 @@ body::after {
     font-size: 0.9rem;
   }
 }
-

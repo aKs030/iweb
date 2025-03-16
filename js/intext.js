@@ -448,21 +448,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
 });
 
-//  Für .container-Elemente   Dynamische Anpassung von margin-top 
-//  ob die mobile Navigationsleiste sichtbar oder ausgeblendet ist, 
-//  und entsprechend die margin-top des .container-Elements anpasst.
-//  Es verwendet das visualViewport-Objekt, um die Höhe des sichtbaren Bereichs zu bestimmen.
-function adjustContainerMargin() {
-  const container = document.querySelector('.container');
-  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  const outerHeight = window.outerHeight;
-  // Prüfen, ob die Browser-Navigationsleiste eingeblendet oder ausgeblendet ist
-  if (viewportHeight < outerHeight * 0.9) {
-      container.style.marginTop = "150px"; // Beispiel: leicht nach unten
-  } else {
-      container.style.marginTop = "85px"; // Originalwert
-  }
-}
-window.visualViewport?.addEventListener('resize', adjustContainerMargin);
-window.addEventListener('resize', adjustContainerMargin);
-adjustContainerMargin();
