@@ -46,30 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
             `
         ],
-        'section-about': [
-            `
-        <section id="section-about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <p class="lead scroll-animate" data-animation="animate__fadeInUp">
-                Vielen Dank, dass du meine Homepage besuchst.
-                Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-                Vergiss nicht, regelmäßig , vorbeizuschauen,
-                um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-         </p>
-        <h2 class="scroll-animate" data-animation="animate__fadeInDown">Alles Gute und viel Spaß beim Stöbern!<hr></h2>
-        </section>
-            `,
-            `
-        <section id="section-about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-            <p class="lead scroll-animate" data-animation="animate__fadeInUp">
-                Vielen Dank, dass du meine Homepage besuchst.
-                Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-                Vergiss nicht, regelmäßig , vorbeizuschauen,
-                um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-         </p>
-        <h2 class="scroll-animate" data-animation="animate__fadeInDown">Alles Gute und viel Spaß beim Stöbern!<hr></h2>
-        </section>
-            `
-        ],
+
         'section-features': [
             `
 
@@ -258,7 +235,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             `
-        ]
+        ],
+
+        'section-about': [
+          `
+      <section id="section-about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+          <p class="lead scroll-animate" data-animation="animate__fadeInUp">
+              Vielen Dank, dass du meine Homepage besuchst.
+              Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
+              Vergiss nicht, regelmäßig , vorbeizuschauen,
+              um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+       </p>
+      <h2 class="scroll-animate" data-animation="animate__fadeInDown">Alles Gute und viel Spaß beim Stöbern!<hr></h2>
+      </section>
+          `,
+          `
+      <section id="section-about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
+          <p class="lead scroll-animate" data-animation="animate__fadeInUp">
+              Vielen Dank, dass du meine Homepage besuchst.
+              Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
+              Vergiss nicht, regelmäßig , vorbeizuschauen,
+              um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
+       </p>
+      <h2 class="scroll-animate" data-animation="animate__fadeInDown">Alles Gute und viel Spaß beim Stöbern!<hr></h2>
+      </section>
+          `
+      ]
     };
 
     // Initialisiert Animationsklassen in den jeweiligen Containern
@@ -446,4 +448,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
 });
 
-
+//  Für .container-Elemente   Dynamische Anpassung von margin-top 
+//  ob die mobile Navigationsleiste sichtbar oder ausgeblendet ist, 
+//  und entsprechend die margin-top des .container-Elements anpasst.
+//  Es verwendet das visualViewport-Objekt, um die Höhe des sichtbaren Bereichs zu bestimmen.
+function adjustContainerMargin() {
+  const container = document.querySelector('.container');
+  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const outerHeight = window.outerHeight;
+  // Prüfen, ob die Browser-Navigationsleiste eingeblendet oder ausgeblendet ist
+  if (viewportHeight < outerHeight * 0.9) {
+      container.style.marginTop = "150px"; // Beispiel: leicht nach unten
+  } else {
+      container.style.marginTop = "85px"; // Originalwert
+  }
+}
+window.visualViewport?.addEventListener('resize', adjustContainerMargin);
+window.addEventListener('resize', adjustContainerMargin);
+adjustContainerMargin();

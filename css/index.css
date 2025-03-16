@@ -49,7 +49,9 @@ html, body {
   min-height: 100%;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
-  overscroll-behavior: contain;
+  @supports (overscroll-behavior: contain) {
+    overscroll-behavior: contain;
+  }
 }
 
 body {
@@ -58,7 +60,16 @@ body {
   overflow-x: hidden;
 }
 
-.full-screen-section,
+/*.
+full-screen-section,
+.sections-container {
+  min-height: 100vh;
+  padding: var(--section-padding) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+*/
 .sections-container {
   min-height: 100vh;
   padding: var(--section-padding) 0;
@@ -70,6 +81,20 @@ body {
 .sections-container:last-child {
   scroll-snap-align: start;
   padding-bottom: 2rem; /* extra Platz am Ende */
+}
+
+.container{
+  /* Damit das Overlay deinen Inhalt nicht überlagert,
+     gibst du "innen" denselben Abstand wie das Overlay außen */
+  margin-top: var(--dynamic-margin, 85px);
+  margin-right: 20px;
+  margin-bottom: 15px;
+  margin-left: 20px;
+  /* Damit die Container-Fläche nicht hinter dem Overlay liegt */
+  position: relative;
+  z-index: 1;
+    /* box-sizing, damit Padding/Margin sauber berechnet wird */
+  box-sizing: border-box;
 }
 
 h1, h2, h3, h4, h5, h6,
@@ -199,7 +224,8 @@ body::after {
    Mobile-Anpassungen
 ========================== */
 @media (max-width: 576px) {
-  .card {
+  .card.dynamic-height {
+
     /* Reduzierte Breite und Höhe auf kleinen Screens */
     width: 320px;
     height: 180px;
@@ -213,22 +239,5 @@ body::after {
   .card .lead {
     font-size: 0.9rem;
   }
-}
-
-.container{
-  /* Damit das Overlay deinen Inhalt nicht überlagert,
-     gibst du "innen" denselben Abstand wie das Overlay außen */
-  margin-top: 85px;
-  margin-right: 20px;
-  margin-bottom: 15px;
-  margin-left: 20px;
-  
-  /* Damit die Container-Fläche nicht hinter dem Overlay liegt */
-  position: relative;
-  z-index: 1;
-  
-
-  /* box-sizing, damit Padding/Margin sauber berechnet wird */
-  box-sizing: border-box;
 }
 
