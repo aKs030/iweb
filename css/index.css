@@ -19,7 +19,7 @@
   --main-text-color: rgba(245, 245, 245, 0.9);
   --secondary-text-color: rgba(245, 245, 245, 0.5);
   --accent-color: rgba(255, 204, 41, 0.8);
-  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-color: rgba(0, 0, 0, 0.2);
   --highlight-shadow: rgba(8, 42, 232, 0.4);
 
   /* Abstände & Größen */
@@ -141,6 +141,7 @@ p.lead,
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shimmer 1.5s infinite linear;
 }
@@ -160,7 +161,12 @@ p.lead,
    Kartenstil
 ========================== */
 .card {
-  background-color: var(--secondary-bg-color);
+  background: rgba(255,255,255,0.1);
+ 
+  padding: 15px;
+  text-align: center;
+  flex: 1;
+
   color: var(--main-text-color);
   border-radius: var(--border-radius);
   box-shadow: 0 4px 15px var(--shadow-color);
@@ -180,6 +186,8 @@ p.lead,
   box-shadow: 0 12px 30px var(--highlight-shadow);
   border-color: var(--accent-color);
 }
+
+
 
 /* ==========================
    Scroll & Animation
@@ -216,8 +224,11 @@ body::after {
   z-index: 9999;        /* Sehr weit oben platzieren */
   
   border-radius: 15px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(255,255,255,0.05);
+
+  box-shadow: 0 4px 15px var(--shadow-color);
+
+
 }
 
 /* ==========================

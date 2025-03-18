@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
       <div class="col">
         <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" 
+                 <div class="card border-0 text-center scroll-animate p-4"
           data-animation="animate__flipInX" 
           data-delay="400">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          <div class="card border-0 text-center scroll-animate p-4"
           data-animation="animate__flipInX" 
           data-delay="800">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="game.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          <div class="card border-0 text-center scroll-animate p-4"
             data-animation="animate__flipInX" 
             data-delay="1200">
             <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
       <div class="col">
         <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" 
+          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="400">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="800">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="game.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
             data-animation="animate__flipInX" 
             data-delay="1200">
             <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
       <div class="col">
         <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4" 
+          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="400">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="800">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="game.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 bg-white text-center scroll-animate p-4 " 
+          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
             data-animation="animate__flipInX" 
             data-delay="1200">
             <div class="icon-wrapper d-flex justify-content-center align-items-center">
