@@ -1,12 +1,7 @@
 .left-text {
   text-align: left;
   }
-  .icon-wrapper {
-    transition: transform 0.3s ease-in-out;
-  }
-  .card:hover .icon-wrapper {
-    transform: scale(1.3);
-  }
+
 /* ==========================
    Grundlegende Variablen
 ========================== */
@@ -16,11 +11,14 @@
   --main-decor-color: #ffffff;
   --main-bg-color: #444;
   --secondary-bg-color: var(--main-bg-color);
-  --main-text-color: rgba(245, 245, 245, 0.9);
-  --secondary-text-color: rgba(245, 245, 245, 0.5);
   --accent-color: rgba(255, 204, 41, 0.8);
   --shadow-color: rgba(0, 0, 0, 0.2);
-  --highlight-shadow: rgba(8, 42, 232, 0.4);
+  --highlight-shadow: #007bff;
+
+  /* Text Farben */
+  --karten-text-color: rgb(255, 255, 255);
+  --main-text-color: rgba(245, 245, 245, 0.9);
+  --secondary-text-color: rgba(245, 245, 245, 0.5);
 
   /* Abstände & Größen */
   --section-padding: 2rem;
@@ -178,6 +176,8 @@ p.lead,
   will-change: transform, box-shadow, border-color;
 
   margin: 0 auto; /* Zum Zentrieren in der Zeile, falls nötig */
+
+  opacity: 0;
 }
 .card:hover,
 .card:active,
@@ -185,9 +185,54 @@ p.lead,
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 30px var(--highlight-shadow);
   border-color: var(--accent-color);
+  
+}
+
+/* Kartentext */
+.card-text {
+  font-size: clamp(0.9rem, 1vw, 1.2rem); /* Dynamische Schriftgröße */
+  color: var(--karten-text-color);
+  line-height: clamp(1.4, 1.6vw, 1.8); /* Dynamische Zeilenhöhe */
+  font-weight: 400;
+  margin-top: clamp(8px, 1.5vw, 16px); /* Dynamischer Abstand zum oberen Element */
+  transition: color 0.3s ease;
+}
+.card:hover .card-text {
+  color: var(--highlight-shadow);
+  transform: scale(1.05); /* Leichte Vergrößerung für mehr Dynamik */
 }
 
 
+/* Kartenüberschrift */
+.card-title {
+  font-size: 1.4rem; /* Text größe */
+  font-weight: bold;
+  color: var(--karten-text-color);
+  text-transform: uppercase; /* Alle Buchstaben groß für einen modernen Look */
+  letter-spacing: 1px; /* Leicht erweiterter Buchstabenabstand für Klarheit */
+  margin-bottom: clamp(3px, 3vw, 5px); /* Dynamischer Abstand */
+
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.card:hover .card-title {
+  color: #007bff; /* Wechselt auf ein lebendiges Blau bei Hover */
+  transform: scale(1.05); /* Leichte Vergrößerung für mehr Dynamik */
+}
+
+.icon-wrapper {
+  width: 85px;
+  height: 85px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  margin-bottom: clamp(5px, 3vw, 20px); /* Dynamischer Abstand */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background 0.3s ease-in-out;
+}
+
+.card:hover .icon-wrapper {
+  transform: scale(1.3);
+}
 
 /* ==========================
    Scroll & Animation

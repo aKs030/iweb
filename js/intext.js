@@ -59,12 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
                  <div class="card border-0 text-center scroll-animate p-4"
           data-animation="animate__flipInX" 
           data-delay="400">
+
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-person-circle display-4 animated-icon mb-3" style="color: #444;"></i>
-            </div>
-            <h5 class="fw-bold animated-text" style="color: #444;">Wer bin ich?</h5>
-            <p class="animated-text" style="color: #666;">
-              Einblicke in meine Persönlichkeit,<br>
+  <i class="bi bi-person-circle display-4 animated-icon"></i>
+</div>
+
+            <h5 class="card-title">Wer bin ich?</h5>
+                    <p class="card-text">
+                Einblicke in meine Persönlichkeit,<br>
               meine Hobbys und das, was mich begeistert.
               1
             </p>
@@ -78,10 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
           data-animation="animate__flipInX" 
           data-delay="800">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
-          <i class="bi bi-camera-fill display-4 animated-icon mb-3" style="color: #444;"></i>
+          <i class="bi bi-camera-fill display-4 animated-icon"></i>
             </div>
-            <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
-            <p class="animated-text" style="color: #666;">
+            <h5 class="card-title">Meine Erinnerungen</h5>
+            <p class="card-text">
               Hier findet ihr eine bunte Sammlung von Fotos,
               spannenden Eindrücken und besonderen Momenten.
             </p>
@@ -95,10 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
             data-animation="animate__flipInX" 
             data-delay="1200">
             <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-joystick display-4 animated-icon mb-3" style="color: #444;"></i>
+            <i class="bi bi-joystick display-4 animated-icon"></i>
               </div>
-              <h5 class="fw-bold animated-text" style="color: #444;">Game-Zone</h5>
-              <p class="animated-text" style="color: #666;">
+<h5 class="card-title">Game-Zone</h5>
+<p class="card-text">
+
                   Tauche ein in spannende Spiele!<br>
                   Teste dein Können in kniffligen Herausforderungen.
               </p>
@@ -121,14 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
       <div class="col">
         <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
+         <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="400">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-person-badge display-4 animated-icon mb-3" style="color: #444;"></i>
+            <i class="bi bi-person-badge display-4 animated-icon"></i>
             </div>
-            <h5 class="fw-bold animated-text" style="color: #444;">Wer bin ich?</h5>
-            <p class="animated-text" style="color: #666;">
+            <h5 class="card-title">Wer bin ich?</h5>
+<p class="card-text">
+
               Einblicke in meine Persönlichkeit,<br>
               meine Hobbys und das, was mich begeistert.
               2
@@ -139,14 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
+<div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="800">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
-          <i class="bi bi-images display-4 animated-icon mb-3" style="color: #444;"></i>
+          <i class="bi bi-images display-4 animated-icon"></i>
             </div>
-            <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
-            <p class="animated-text" style="color: #666;">
+            <h5 class="card-title">Meine Erinnerungen</h5>
+<p class="card-text">
+
               Hier findet ihr eine bunte Sammlung von Fotos,spannenden Eindrücken und besonderen Momenten.
             </p>
           </div>
@@ -155,14 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="game.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
+<div class="card border-0 text-center scroll-animate p-4" "
             data-animation="animate__flipInX" 
             data-delay="1200">
             <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-controller display-4 animated-icon mb-3" style="color: #444;"></i>
+            <i class="bi bi-controller display-4 animated-icon"></i>
               </div>
-              <h5 class="fw-bold animated-text" style="color: #444;">Game-Zone</h5>
-              <p class="animated-text" style="color: #666;">
+<h5 class="card-title">Game-Zone</h5>
+<p class="card-text">
+
                   Tauche ein in spannende Spiele!<br>
                   Teste dein Können in kniffligen Herausforderungen.
               </p>
@@ -182,14 +188,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
       <div class="col">
         <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
+         <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="400">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-person-lines-fill display-4 animated-icon mb-3" style="color: #444;"></i>
+            <i class="bi bi-person-lines-fill display-4 animated-icon"></i>
             </div>
-            <h5 class="fw-bold animated-text" style="color: #444;">Wer bin ich?</h5>
-            <p class="animated-text" style="color: #666;">
+            <h5 class="card-title">Wer bin ich?</h5>
+<p class="card-text">
+
               Einblicke in meine Persönlichkeit,<br>
               meine Hobbys und das, was mich begeistert.
               3
@@ -200,14 +207,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
+        <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="800">
           <div class="icon-wrapper d-flex justify-content-center align-items-center">
-          <i class="bi bi-file-image display-4 animated-icon mb-3" style="color: #444;"></i>
+          <i class="bi bi-file-image display-4 animated-icon"></i>
             </div>
-            <h5 class="fw-bold animated-text" style="color: #444;">Meine Erinnerungen</h5>
-            <p class="animated-text" style="color: #666;">
+            <h5 class="card-title">Meine Erinnerungen</h5>
+<p class="card-text">
+
               Hier findet ihr eine bunte Sammlung von Fotos, spannenden Eindrücken und besonderen Momenten.
             </p>
           </div>
@@ -216,14 +224,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div class="col">
         <a href="game.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4           <div class="card border-0 text-center scroll-animate p-4" "
+         <div class="card border-0 text-center scroll-animate p-4" "
             data-animation="animate__flipInX" 
             data-delay="1200">
             <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-dice-5 display-4 animated-icon mb-3" style="color: #444;"></i>
+            <i class="bi bi-dice-5 display-4 animated-icon"></i>
               </div>
-              <h5 class="fw-bold animated-text" style="color: #444;">Game-Zone</h5>
-              <p class="animated-text" style="color: #666;">
+<h5 class="card-title">Game-Zone</h5>
+<p class="card-text">
                   Tauche ein in spannende Spiele! Teste dein Können in kniffligen Herausforderungen.
               </p>
           </div>
