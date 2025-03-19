@@ -1,6 +1,4 @@
-.left-text {
-  text-align: left;
-  }
+
 
 /* ==========================
    Grundlegende Variablen
@@ -111,16 +109,33 @@ h1, h2, h3, h4, h5, h6 {
 /* ==========================
    Lead-Text
 ========================== */
-p.lead,
 .lead {
-  font-size: 1.2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 20px;
-  color: var(--main-text-color);
+  font-size: clamp(1rem, 1.4vw, 1.6rem); /* Dynamische Schriftgröße für verschiedene Displays */
+  max-width: 850px; /* Etwas breiter für bessere Lesbarkeit */
+  margin: 10px auto; /* Mehr Abstand nach oben/unten */
+  padding: 0 clamp(15px, 3vw, 40px); /* Dynamischer Innenabstand */
+  color: var(--main-text-color, #222); /* Verbesserte Standardfarbe */
   font-weight: 400;
-  line-height: 1.6; /* Für eine bessere Lesbarkeit */
+  line-height: clamp(1.6, 2vw, 1.9); /* Dynamische Zeilenhöhe */
+  letter-spacing: 0.5px; /* Dezente Mikrotypografie für Eleganz */
+  font-family: 'Poppins', sans-serif; /* Hochwertige moderne Schrift */
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
+.lead-wilkommmen {
+  font-size: clamp(1rem, 1.6vw, 1.8rem); /* Optimierte Schriftgröße für HD-Displays */
+  font-weight: 500; /* Kräftigere, aber elegante Darstellung */
+  color: var(--main-text-color, #222); /* Sattes Dunkelgrau für bessere Schärfe */
+  line-height: 1.5; /* Höhere Zeilenhöhe für perfekte Lesbarkeit */
+  letter-spacing: 0.7px; /* Mikro-Typografie für ein edles Finish */
+  font-family: 'Inter', sans-serif; /* Perfekte Schrift für hochauflösende Bildschirme */
+  margin: 20px auto;
+  max-width: 850px; /* Bessere Lesbarkeit durch optimale Textbreite */
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
+  text-rendering: optimizeLegibility; /* Schärfere Darstellung auf Retina/4K-Displays */
+  -webkit-font-smoothing: antialiased;
+  text-align: left;
+}
+
 /* ==========================
    Schimmertext
 ========================== */
@@ -262,18 +277,30 @@ margin-inline-end: auto;
 body::after {
   content: "";
   position: fixed;
-  /* Anstelle von top, right, bottom, left */
-  inset: 80px 15px 10px 15px;
   
-  pointer-events: none; /* Keine Klick-Events abfangen */
-  z-index: 9999;        /* Sehr weit oben platzieren */
+  /* Oben & unten fix (80px, 15px) – Links & rechts dynamisch */
+  inset: 80px 
+         clamp(30px, 4vw, 190px) 
+         15px 
+         clamp(25px, 4vw, 190px);
   
-  border-radius: 15px;
-  background: rgba(255,255,255,0.05);
+  pointer-events: none;
+  z-index: 9999;
 
-  box-shadow: 0 4px 15px var(--shadow-color);
+  border-radius: clamp(15px, 2vw, 30px); /* Weichere Rundungen für moderne Optik */
+  background: rgba(255, 255, 255, 0.03);
 
+  box-shadow: 0 6px 25px var(--shadow-color), 
+              inset 0 0 15px rgba(255, 255, 255, 0.08);
 
+  transition: all 0.4s ease-in-out;
+}
+
+/* ✨ Sanfter Hover-Effekt */
+body:hover::after {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 30px var(--shadow-color),
+              inset 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 /* ==========================
@@ -281,7 +308,6 @@ body::after {
 ========================== */
 @media (max-width: 576px) {
   .card {
-
     /* Reduzierte Breite und Höhe auf kleinen Screens */
     width: 320px;
     height: 180px;
