@@ -109,66 +109,79 @@ h1, h2, h3, h4, h5, h6 {
 /* ==========================
    Lead-Text
 ========================== */
+p.lead,
 .lead {
-  font-size: clamp(1rem, 1.4vw, 1.6rem); /* Dynamische Schriftgröße für verschiedene Displays */
-  max-width: 850px; /* Etwas breiter für bessere Lesbarkeit */
-  margin: 10px auto; /* Mehr Abstand nach oben/unten */
-  padding: 0 clamp(15px, 3vw, 40px); /* Dynamischer Innenabstand */
-  color: var(--main-text-color, #222); /* Verbesserte Standardfarbe */
-  font-weight: 400;
-  line-height: clamp(1.6, 2vw, 1.9); /* Dynamische Zeilenhöhe */
-  letter-spacing: 0.5px; /* Dezente Mikrotypografie für Eleganz */
-  font-family: 'Poppins', sans-serif; /* Hochwertige moderne Schrift */
+  font-size: clamp(1rem, 1.6vw, 1.8rem); /* Dynamische Schriftgröße */
+  font-weight: 500;
+  color: var(--main-text-color, #e0e0e0); /* Edles, weiches Weiß/Grau für besseren Kontrast */
+  line-height: clamp(1.6, 2vw, 2.2); /* Perfekte Lesbarkeit */
+  letter-spacing: 0.8px; /* Mikro-Typografie für sauberes Design */
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  max-width: 75vw; /* Dynamische Textbreite */
+  padding: 0 clamp(10px, 4vw, 190px); /* Gleiche Ränder wie `body::after` */
+  margin: 50px auto;
   transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
-.lead-wilkommmen {
-  font-size: clamp(1rem, 1.6vw, 1.8rem); /* Optimierte Schriftgröße für HD-Displays */
-  font-weight: 500; /* Kräftigere, aber elegante Darstellung */
-  color: var(--main-text-color, #222); /* Sattes Dunkelgrau für bessere Schärfe */
-  line-height: 1.5; /* Höhere Zeilenhöhe für perfekte Lesbarkeit */
-  letter-spacing: 0.7px; /* Mikro-Typografie für ein edles Finish */
-  font-family: 'Inter', sans-serif; /* Perfekte Schrift für hochauflösende Bildschirme */
-  margin: 20px auto;
-  max-width: 850px; /* Bessere Lesbarkeit durch optimale Textbreite */
-  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
-  text-rendering: optimizeLegibility; /* Schärfere Darstellung auf Retina/4K-Displays */
-  -webkit-font-smoothing: antialiased;
-  text-align: left;
+
+/* 🎨 Eleganter Hover-Effekt */
+.lead:hover {
+  color: var(--accent-color, #007bff);
+  transform: translateY(-2px); /* Leichtes Anheben für Interaktivität */
+}
+
+/* ✨ Alternative: Leichter Glow-Effekt für futuristische Optik */
+.lead-glow {
+  text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+}
+
+/* 🌙 Dark Mode für noch bessere Lesbarkeit */
+@media (prefers-color-scheme: dark) {
+  .lead {
+    color: var(--main-text-color, #ddd);
+  }
 }
 
 /* ==========================
    Schimmertext
 ========================== */
 .shimmer-text {
-  font-size: clamp(4rem, 5vw, 13rem);
-  font-weight: bold;
+  font-size: clamp(3rem, 5vw, 12rem); /* Dynamische Schriftgröße */
+  font-weight: 700;
   color: #fff;
-  text-shadow: 0 0 40px #fff;
-  margin-bottom: 1rem;
-  padding-bottom: 5rem;
+  text-align: center;
+  margin-bottom: clamp(1rem, 2vw, 3rem);
+  padding-bottom: clamp(2rem, 3vw, 5rem);
+  letter-spacing: clamp(1px, 0.2vw, 5px); /* Edler Buchstabenabstand */
+  text-transform: uppercase; /* Für eine starke, markante Optik */
+  text-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
+  white-space: nowrap; /* Verhindert Umbruch für saubere Optik */
+
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 0%,
     rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.3) 100%
+    rgba(255, 255, 255, 0.1) 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 1.5s infinite linear;
+  animation: shimmer 1.75s infinite linear;
 }
 
+/* 📱 Optimierung für kleinere Bildschirme */
 @media (max-width: 600px) {
   .shimmer-text {
-    /* Angepasste Schriftgröße für Smartphones */
-    font-size: clamp(3rem, 5vw, 13rem);
+    font-size: clamp(2.5rem, 6vw, 10rem);
+    white-space: normal; /* Erlaubt Umbruch auf kleinen Displays */
   }
 }
 
+/* ✨ Optimierte Shimmer-Animation */
 @keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  0% { background-position: -200% 50%; }
+  100% { background-position: 200% 50%; }
 }
 /* ==========================
    Kartenstil
@@ -280,9 +293,9 @@ body::after {
   
   /* Oben & unten fix (80px, 15px) – Links & rechts dynamisch */
   inset: 80px 
-         clamp(30px, 4vw, 190px) 
+         clamp(10px, 4vw, 190px) 
          15px 
-         clamp(25px, 4vw, 190px);
+         clamp(10px, 4vw, 190px);
   
   pointer-events: none;
   z-index: 9999;
