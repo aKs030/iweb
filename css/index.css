@@ -121,26 +121,11 @@ p.lead,
   max-width: 75vw; /* Dynamische Textbreite */
   padding: 0 clamp(10px, 4vw, 190px); /* Gleiche Ränder wie `body::after` */
   margin: 50px auto;
-  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
+
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-/* 🎨 Eleganter Hover-Effekt */
-.lead:hover {
-  color: var(--accent-color, #007bff);
-  transform: translateY(-2px); /* Leichtes Anheben für Interaktivität */
-}
 
-/* ✨ Alternative: Leichter Glow-Effekt für futuristische Optik */
-.lead-glow {
-  text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
-}
-
-/* 🌙 Dark Mode für noch bessere Lesbarkeit */
-@media (prefers-color-scheme: dark) {
-  .lead {
-    color: var(--main-text-color, #ddd);
-  }
-}
 
 /* ==========================
    Schimmertext
