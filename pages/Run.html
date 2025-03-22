@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -21,18 +22,17 @@
             border: 1px solid #333;
             background-color: #87ceeb;
             width: 100%;
-            height: 100%;
+            flex-grow: 1;
         }
 
         .controls {
             display: flex;
             justify-content: center;
             width: 100%;
-            position: absolute;
-            bottom: 0;
-            padding-bottom: 20px;
+            position: relative;
+            padding: 10px 0; /* Add padding to create some space */
             box-sizing: border-box;
-            background-color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(255, 255, 255, 0.7); /* Add a semi-transparent background for better visibility */
         }
 
         .control-button {
@@ -79,9 +79,8 @@
 
         function resizeCanvas() {
             // Adjust canvas height to consider the available viewport height minus potential browser UI elements
-            const controlsHeight = document.querySelector('.controls').offsetHeight;
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - controlsHeight;
+            canvas.height = window.innerHeight - document.querySelector('.controls').offsetHeight;
         }
 
         window.addEventListener('resize', resizeCanvas);
