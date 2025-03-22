@@ -1,366 +1,392 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jump-and-Run Spiel</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <!-- Wichtig für Smartphones: Skaliert auf Gerätebreite, verhindert Pinch-Zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        #gameContainer {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
+  <title>Jump & Run – High Resolution + Long-Press-Fix</title>
 
-        canvas {
-            border: 1px solid #333;
-            background-color: #87ceeb;
-            width: 100%;
-            flex-grow: 1;
-            /* Verhindert ungewolltes Scrollen/Zoomen bei Berührungen */
-            touch-action: none;
-        }
+  <style>
+    /* ========== Grundlegende Reset-Styles ========== */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;             /* Kein Scrollen */
+      background: #87ceeb;          /* Hellblau */
+      
+      /* Verhindert Textauswahl und Kontextmenü auf iOS & Co. */
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+      touch-action: none;           /* blockiert Scrollen/Zoomen bei Wisch */
+      
+      /* Option: Bei iOS Long-Press wird das Element nicht markiert */
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            position: relative;
-            padding: 10px 0; /* Add padding to create some space */
-            box-sizing: border-box;
-            background-color: rgba(255, 255, 255, 0.7); /* Add a semi-transparent background for better visibility */
-        }
+    /* Container für Canvas + Overlays */
+    #gameContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
 
-        .control-button {
-            width: 80px;
-            height: 40px;
-            margin: 5px;
-            font-size: 16px;
-        }
+    /* ========== Canvas ========== 
+       Interne Auflösung: 720 × 1280; 
+       CSS skaliert das Canvas großflächig. */
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #87ceeb;
+    }
 
-        #gameOverMenu {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border: 2px solid black;
-            padding: 20px;
-            text-align: center;
-            box-sizing: border-box;
-        }
+    /* ========== Steuerungs-Buttons ========== */
+    .controls {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
 
-        #gameOverMenu button {
-            margin: 10px;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    .control-button {
+      width: 100px;
+      height: 50px;
+      margin: 5px;
+      font-size: 18px;
+      cursor: pointer;
+
+      /* Verhindert Textauswahl, Kontextmenü, grauen Tap-Effekt bei iOS */
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+
+    /* ========== Game Over Menü ========== */
+    #gameOverMenu {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border: 2px solid #000;
+      padding: 20px;
+      text-align: center;
+      z-index: 999;
+    }
+    #gameOverMenu button {
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
-        <div class="controls">
-            <button class="control-button" id="leftButton" type="button" title="Move Left">
-                <i class="bi bi-arrow-left"></i>
-            </button>
-            <button class="control-button" id="jumpButton" type="button" title="Jump">
-                <i class="bi bi-arrow-up"></i>
-            </button>
-            <button class="control-button" id="rightButton" type="button" title="Move Right">
-                <i class="bi bi-arrow-right"></i>
-            </button>
-        </div>
-    </div>
-    <div id="gameOverMenu">
-        <h1>Game Over</h1>
-        <p id="gameOverMessage"></p>
-        <button onclick="neustartSpiel()">Neustart</button>
-        <button onclick="verlassen()">Verlassen</button>
-    </div>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
 
-        function resizeCanvas() {
-            // Adjust canvas height to consider the available viewport height minus potential browser UI elements
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - document.querySelector('.controls').offsetHeight;
-        }
+<div id="gameContainer">
+  <!-- Das Canvas mit hoher "logischer" Auflösung (720×1280) -->
+  <canvas id="gameCanvas" width="720" height="1280"></canvas>
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+  <!-- Touch-Buttons -->
+  <div class="controls">
+    <button class="control-button" id="leftButton">Links</button>
+    <button class="control-button" id="jumpButton">Springen</button>
+    <button class="control-button" id="rightButton">Rechts</button>
+  </div>
 
-        const spieler = {
-            x: 50,
-            y: 0,
-            breite: 30,
-            hoehe: 30,
-            farbe: 'red',
-            geschwindigkeitY: 0,
-            geschwindigkeitX: 3,
-            sprungstaerke: 15,
-            schwerkraft: 0.6,
-            amBoden: false,
-            bewegt: false,
-            richtung: 0 // -1: links, 1: rechts
-        };
+  <!-- Game-Over-Menü -->
+  <div id="gameOverMenu">
+    <h1>Game Over</h1>
+    <p id="gameOverMessage"></p>
+    <button onclick="neustart()">Neustart</button>
+    <button onclick="verlassen()">Verlassen</button>
+  </div>
+</div>
 
-        const bodenHoehe = 50;
-        let punkte = 0;
-        let leben = 3;
-        let level = 1;
-        let hindernisse = [];
-        let gegner = null;
+<script>
+/* ========== Kontextmenü bei Long-Press komplett blockieren ========== */
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+}, false);
 
-        function ladeLevel() {
-            hindernisse = [];
-            gegner = null;
+/* ========== Canvas & Retina-Setup ========== */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-            if (level === 1) {
-                hindernisse.push(
-                    { x: 300, y: canvas.height - bodenHoehe - 40, breite: 40, hoehe: 40 },
-                    { x: 500, y: canvas.height - bodenHoehe - 60, breite: 50, hoehe: 60 }
-                );
-                gegner = { x: 600, y: canvas.height - bodenHoehe - 40, breite: 40, hoehe: 40, farbe: 'purple', bewegung: 2 };
-            } else if (level === 2) {
-                hindernisse.push(
-                    { x: 200, y: canvas.height - bodenHoehe - 50, breite: 50, hoehe: 50 },
-                    { x: 400, y: canvas.height - bodenHoehe - 70, breite: 60, hoehe: 70 },
-                    { x: 650, y: canvas.height - bodenHoehe - 40, breite: 50, hoehe: 50 }
-                );
-                gegner = { x: 450, y: canvas.height - bodenHoehe - 40, breite: 40, hoehe: 40, farbe: 'blue', bewegung: 3 };
-            }
-        }
+// Device Pixel Ratio (z.B. iPhone 2x oder 3x Pixel)
+const dpr = window.devicePixelRatio || 1;
+const LOGICAL_WIDTH  = canvas.width;   // 720
+const LOGICAL_HEIGHT = canvas.height;  // 1280
 
-        function zeichneBoden() {
-            ctx.fillStyle = 'green';
-            ctx.fillRect(0, canvas.height - bodenHoehe, canvas.width, bodenHoehe);
-        }
+// Canvas mit der DPI skalieren
+canvas.width  = LOGICAL_WIDTH  * dpr;
+canvas.height = LOGICAL_HEIGHT * dpr;
+ctx.scale(dpr, dpr);
 
-        function zeichneSpieler() {
-            ctx.fillStyle = spieler.farbe;
-            ctx.fillRect(spieler.x, spieler.y, spieler.breite, spieler.hoehe);
-        }
+/* ========== Spiel-Variablen ========== */
+const BODEN_HOEHE = 80;
 
-        function zeichneHindernisse() {
-            ctx.fillStyle = 'brown';
-            hindernisse.forEach(hindernis => {
-                ctx.fillRect(hindernis.x, hindernis.y, hindernis.breite, hindernis.hoehe);
-            });
-        }
+let punkte = 0;
+let level = 1;
+let hindernisse = [];
+let gegner = null;
+let gameOver = false;
 
-        function zeichneGegner() {
-            ctx.fillStyle = gegner.farbe;
-            ctx.fillRect(gegner.x, gegner.y, gegner.breite, gegner.hoehe);
-        }
+// Spieler-Objekt
+const spieler = {
+  x: 100,
+  y: 0,
+  breite: 50,
+  hoehe: 50,
+  farbe: 'red',
+  vx: 4,            // horizontale Geschwindigkeit
+  vy: 0,            // vertikale Geschwindigkeit
+  sprungKraft: 20,  // Sprunghöhe
+  schwerkraft: 0.8, // Gravitation
+  amBoden: false,
+  bewegt: false,
+  richtung: 0       // -1 = links, 1 = rechts
+};
 
-        function updateGegner() {
-            gegner.x += gegner.bewegung;
-            if (gegner.x < 550 || gegner.x > 700) {
-                gegner.bewegung *= -1;
-            }
-        }
+/* ========== Level laden ========== */
+function ladeLevel(stufe) {
+  hindernisse = [];
+  gegner = null;
 
-        function updateSpieler() {
-            if (spieler.bewegt) {
-                spieler.x += spieler.richtung * spieler.geschwindigkeitX;
-                punkte += 1; // Punkte erhöhen
-            }
-            spieler.geschwindigkeitY += spieler.schwerkraft;
-            spieler.y += spieler.geschwindigkeitY;
+  // Beispiel: Zwei Levels
+  if (stufe === 1) {
+    hindernisse.push({ x: 600,  y: LOGICAL_HEIGHT - BODEN_HOEHE - 60, breite: 60, hoehe: 60 });
+    hindernisse.push({ x: 1000, y: LOGICAL_HEIGHT - BODEN_HOEHE - 80, breite: 60, hoehe: 80 });
+    
+    gegner = {
+      x: 1200,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - 50,
+      breite: 50,
+      hoehe: 50,
+      farbe: 'purple',
+      speed: 3,
+      minX: 1150,
+      maxX: 1350
+    };
+  }
+  else if (stufe === 2) {
+    hindernisse.push({ x: 500,  y: LOGICAL_HEIGHT - BODEN_HOEHE - 100, breite: 70, hoehe: 100 });
+    hindernisse.push({ x: 900,  y: LOGICAL_HEIGHT - BODEN_HOEHE - 60,   breite: 60, hoehe: 60  });
+    hindernisse.push({ x: 1400, y: LOGICAL_HEIGHT - BODEN_HOEHE - 120, breite: 50, hoehe: 120 });
 
-            if (spieler.y + spieler.hoehe >= canvas.height - bodenHoehe) {
-                spieler.y = canvas.height - bodenHoehe - spieler.hoehe;
-                spieler.amBoden = true;
-                spieler.geschwindigkeitY = 0;
-            } else {
-                spieler.amBoden = false;
-            }
+    gegner = {
+      x: 1100,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - 50,
+      breite: 50,
+      hoehe: 50,
+      farbe: 'blue',
+      speed: 4,
+      minX: 1050,
+      maxX: 1300
+    };
+  }
+  // Füge nach Bedarf weitere Levels hinzu...
+}
 
-            if (spieler.x > canvas.width && level < 2) {
-                level++;
-                ladeLevel();
-                spieler.x = 50; // Spieler zurücksetzen
-            }
-        }
+/* ========== Zeichnen ========== */
+function zeichneHintergrund() {
+  // Himmel
+  ctx.fillStyle = '#87ceeb';
+  ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-        function pruefeKollision() {
-            // Kollision mit Hindernissen prüfen
-            for (let hindernis of hindernisse) {
-                if (
-                    spieler.x < hindernis.x + hindernis.breite &&
-                    spieler.x + spieler.breite > hindernis.x &&
-                    spieler.y < hindernis.y + hindernis.hoehe &&
-                    spieler.y + spieler.hoehe > hindernis.y
-                ) {
-                    spielBeenden("Du bist gegen ein Hindernis gelaufen.");
-                    return true;
-                }
-            }
+  // Boden
+  ctx.fillStyle = 'green';
+  ctx.fillRect(0, LOGICAL_HEIGHT - BODEN_HOEHE, LOGICAL_WIDTH, BODEN_HOEHE);
+}
 
-            // Kollision mit dem Gegner prüfen
-            if (
-                spieler.x < gegner.x + gegner.breite &&
-                spieler.x + spieler.breite > gegner.x &&
-                spieler.y < gegner.y + gegner.hoehe &&
-                spieler.y + spieler.hoehe > gegner.y
-            ) {
-                spielBeenden("Du bist vom Gegner erwischt worden.");
-                return true;
-            }
+function zeichneSpieler() {
+  ctx.fillStyle = spieler.farbe;
+  ctx.fillRect(spieler.x, spieler.y, spieler.breite, spieler.hoehe);
+}
 
-            return false;
-        }
+function zeichneHindernisse() {
+  ctx.fillStyle = 'brown';
+  hindernisse.forEach(obj => {
+    ctx.fillRect(obj.x, obj.y, obj.breite, obj.hoehe);
+  });
+}
 
-        function spielBeenden(nachricht) {
-            document.getElementById('gameOverMessage').innerText = nachricht;
-            document.getElementById('gameOverMenu').style.display = 'block';
-        }
+function zeichneGegner() {
+  if (!gegner) return;
+  ctx.fillStyle = gegner.farbe;
+  ctx.fillRect(gegner.x, gegner.y, gegner.breite, gegner.hoehe);
+}
 
-        function loop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+function zeichneHud() {
+  ctx.fillStyle = 'black';
+  ctx.font = '28px Arial';
+  ctx.fillText(`Level: ${level}`, 20, 50);
+  ctx.fillText(`Punkte: ${punkte}`, 20, 90);
+}
 
-            updateSpieler();
-            updateGegner();
+/* ========== Update-Logik ========== */
+function updateSpieler() {
+  // Bewegung X
+  if (spieler.bewegt) {
+    spieler.x += spieler.richtung * spieler.vx;
+    punkte++;
+  }
 
-            // Kollision prüfen
-            if (pruefeKollision()) {
-                return; // Stoppt das Spiel
-            }
+  // Schwerkraft
+  spieler.vy += spieler.schwerkraft;
+  spieler.y += spieler.vy;
 
-            zeichneBoden();
-            zeichneHindernisse();
-            zeichneGegner();
-            zeichneSpieler();
-            ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
-            ctx.fillText('Level: ' + level, 10, 30);
+  // Boden-Kollision
+  if (spieler.y + spieler.hoehe >= LOGICAL_HEIGHT - BODEN_HOEHE) {
+    spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
+    spieler.amBoden = true;
+    spieler.vy = 0;
+  } else {
+    spieler.amBoden = false;
+  }
 
-            requestAnimationFrame(loop);
-        }
+  // Level-Wechsel, wenn Spieler rechts rausläuft
+  if (spieler.x > LOGICAL_WIDTH) {
+    if (level === 1) {
+      level = 2;
+      resetSpielerPosition();
+      ladeLevel(level);
+    } else {
+      // Kein weiteres Level? Dann Spiel-Ende "gewonnen"
+      spielBeenden("Du hast alle Levels gemeistert!");
+    }
+  }
+}
 
-        function handleKeyDown(event) {
-            if (event.code === 'Space' && spieler.amBoden) {
-                spieler.geschwindigkeitY = -spieler.sprungstaerke;
-            }
-            if (event.code === 'ArrowRight') {
-                spieler.bewegt = true;
-                spieler.richtung = 1;
-            }
-            if (event.code === 'ArrowLeft') {
-                spieler.bewegt = true;
-                spieler.richtung = -1;
-            }
-        }
+function updateGegner() {
+  if (!gegner) return;
+  gegner.x += gegner.speed;
 
-        function handleKeyUp(event) {
-            if (event.code === 'ArrowRight' || event.code === 'ArrowLeft') {
-                spieler.bewegt = false;
-            }
-        }
+  // Einfaches Hin- und Her
+  if (gegner.x < gegner.minX || (gegner.x + gegner.breite) > gegner.maxX) {
+    gegner.speed *= -1;
+  }
+}
 
-        function handleTouchStart(event) {
-            if (event.target.id === 'jumpButton' && spieler.amBoden) {
-                spieler.geschwindigkeitY = -spieler.sprungstaerke;
-            }
-            if (event.target.id === 'rightButton') {
-                spieler.bewegt = true;
-                spieler.richtung = 1;
-            }
-            if (event.target.id === 'leftButton') {
-                spieler.bewegt = true;
-                spieler.richtung = -1;
-            }
-        }
+function pruefeKollisionen() {
+  // Spieler vs. Hindernisse
+  for (let h of hindernisse) {
+    if (istKollision(spieler, h)) {
+      spielBeenden("Gegen ein Hindernis gerannt!");
+      return;
+    }
+  }
+  // Spieler vs. Gegner
+  if (gegner && istKollision(spieler, gegner)) {
+    spielBeenden("Vom Gegner erwischt!");
+  }
+}
 
-        function handleTouchEnd(event) {
-            if (event.target.id === 'rightButton' || event.target.id === 'leftButton') {
-                spieler.bewegt = false;
-            }
-        }
+function istKollision(a, b) {
+  return (
+    a.x < b.x + b.breite &&
+    a.x + a.breite > b.x &&
+    a.y < b.y + b.hoehe &&
+    a.y + a.hoehe > b.y
+  );
+}
 
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keyup', handleKeyUp);
-        document.getElementById('jumpButton').addEventListener('touchstart', handleTouchStart);
-        document.getElementById('rightButton').addEventListener('touchstart', handleTouchStart);
-        document.getElementById('leftButton').addEventListener('touchstart', handleTouchStart);
-        document.getElementById('jumpButton').addEventListener('touchend', handleTouchEnd);
-        document.getElementById('rightButton').addEventListener('touchend', handleTouchEnd);
-        document.getElementById('leftButton').addEventListener('touchend', handleTouchEnd);
+/* ========== Game Over / Neustart ========== */
+function spielBeenden(nachricht) {
+  gameOver = true;
+  document.getElementById('gameOverMessage').innerText = nachricht;
+  document.getElementById('gameOverMenu').style.display = 'block';
+}
 
-        // Extrahierte Steuerungslogik in eigene Funktion
-        function updateControls(taste, isDown = true) {
-            if (taste === 'jumpButton' && spieler.amBoden && isDown) {
-                spieler.geschwindigkeitY = -spieler.sprungstaerke;
-            }
-            if (taste === 'rightButton') {
-                spieler.bewegt = isDown;
-                spieler.richtung = isDown ? 1 : 0;
-            }
-            if (taste === 'leftButton') {
-                spieler.bewegt = isDown;
-                spieler.richtung = isDown ? -1 : 0;
-            }
-        }
+function neustart() {
+  document.getElementById('gameOverMenu').style.display = 'none';
+  punkte = 0;
+  level = 1;
+  gameOver = false;
+  resetSpielerPosition();
+  ladeLevel(level);
+  gameLoop();
+}
 
-        function handleButtonDown(event) {
-            event.preventDefault();
-            updateControls(event.target.id, true);
-        }
+function verlassen() {
+  alert("Spiel kann auf Mobilgeräten nicht einfach geschlossen werden. Bitte Tab oder App beenden.");
+}
 
-        function handleButtonUp(event) {
-            event.preventDefault();
-            updateControls(event.target.id, false);
-        }
+/* ========== Hilfsfunktionen ========== */
+function resetSpielerPosition() {
+  spieler.x = 100;
+  spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
+  spieler.vy = 0;
+  spieler.bewegt = false;
+  spieler.richtung = 0;
+}
 
-        // Pointer events für mobile Steuerung
-        const buttons = ['jumpButton', 'rightButton', 'leftButton'];
-        buttons.forEach(id => {
-            const btn = document.getElementById(id);
-            btn.addEventListener('pointerdown', handleButtonDown);
-            btn.addEventListener('pointerup', handleButtonUp);
-            btn.addEventListener('pointercancel', handleButtonUp);
-        });
+/* ========== Game-Loop ========== */
+function gameLoop() {
+  if (gameOver) return;
 
-        function resetSpieler() {
-            spieler.x = 50;
-            spieler.y = 0;
-            spieler.geschwindigkeitY = 0;
-            spieler.bewegt = false;
-        }
+  ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-        function neustartSpiel() {
-            document.getElementById('gameOverMenu').style.display = 'none';
-            punkte = 0;
-            leben = 3;
-            level = 1;
-            ladeLevel();
-            resetSpieler();
-            loop();
-        }
+  updateSpieler();
+  updateGegner();
+  pruefeKollisionen();
 
-        function verlassen() {
-            window.close();
-        }
+  zeichneHintergrund();
+  zeichneHindernisse();
+  zeichneGegner();
+  zeichneSpieler();
+  zeichneHud();
 
-        ladeLevel();
-        loop();
-    </script>
+  requestAnimationFrame(gameLoop);
+}
+
+/* ========== Steuerung (Pointer Events) ========== */
+function onPointerDown(e) {
+  e.preventDefault(); // Wichtig gegen Kontextmenü, Textauswahl etc.
+  const id = e.target.id;
+
+  if (id === 'leftButton') {
+    spieler.bewegt = true;
+    spieler.richtung = -1;
+  }
+  else if (id === 'rightButton') {
+    spieler.bewegt = true;
+    spieler.richtung = 1;
+  }
+  else if (id === 'jumpButton' && spieler.amBoden) {
+    spieler.vy = -spieler.sprungKraft;
+  }
+}
+
+function onPointerUp(e) {
+  e.preventDefault();
+  const id = e.target.id;
+
+  if (id === 'leftButton' || id === 'rightButton') {
+    spieler.bewegt = false;
+  }
+}
+
+// Buttons per Pointer-Events anbinden
+['leftButton', 'rightButton', 'jumpButton'].forEach(btnId => {
+  const btn = document.getElementById(btnId);
+  btn.addEventListener('pointerdown', onPointerDown);
+  btn.addEventListener('pointerup', onPointerUp);
+  btn.addEventListener('pointercancel', onPointerUp);
+});
+
+/* ========== Initialer Start ========== */
+ladeLevel(level);
+resetSpielerPosition();
+gameLoop();
+</script>
 </body>
 </html>
