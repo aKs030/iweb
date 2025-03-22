@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -30,7 +31,24 @@
             border: 1px solid #333;
             background-color: #87ceeb;
             width: 100%;
-            height: 100%;
+            flex-grow: 1;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+            padding: 10px 0; /* Add padding to create some space */
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.7); /* Add a semi-transparent background for better visibility */
+        }
+
+        .control-button {
+            width: 80px;
+            height: 40px;
+            margin: 5px;
+            font-size: 16px;
         }
 
         #gameOverMenu {
@@ -54,6 +72,11 @@
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
+        <div class="controls">
+            <button class="control-button" id="leftButton">Links</button>
+            <button class="control-button" id="jumpButton">Springen</button>
+            <button class="control-button" id="rightButton">Rechts</button>
+        </div>
     </div>
     <div id="gameOverMenu">
         <h1>Game Over</h1>
@@ -66,8 +89,9 @@
         const ctx = canvas.getContext('2d');
 
         function resizeCanvas() {
+            // Adjust canvas height to consider the available viewport height minus potential browser UI elements
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.height = window.innerHeight - document.querySelector('.controls').offsetHeight;
         }
 
         window.addEventListener('resize', resizeCanvas);
@@ -222,29 +246,88 @@
             requestAnimationFrame(loop);
         }
 
-        function handleTouchStart(event) {
-            const touchX = event.touches[0].clientX;
-            const touchY = event.touches[0].clientY;
+        function handleKeyDown(event) {
+            if (event.code === 'Space' && spieler.amBoden) {
+                spieler.geschwindigkeitY = -spieler.sprungstaerke;
+            }
+            if (event.code === 'ArrowRight') {
+                spieler.bewegt = true;
+                spieler.richtung = 1;
+            }
+            if (event.code === 'ArrowLeft') {
+                spieler.bewegt = true;
+                spieler.richtung = -1;
+            }
+        }
 
-            if (touchY < window.innerHeight / 2 && spieler.amBoden) {
-                spieler.geschwindigkeitY = -spieler.sprungstaerke; // Sprung
-            } else {
-                if (touchX < window.innerWidth / 2) {
-                    spieler.bewegt = true;
-                    spieler.richtung = -1; // Links
-                } else {
-                    spieler.bewegt = true;
-                    spieler.richtung = 1; // Rechts
-                }
+        function handleKeyUp(event) {
+            if (event.code === 'ArrowRight' || event.code === 'ArrowLeft') {
+                spieler.bewegt = false;
+            }
+        }
+
+        function handleTouchStart(event) {
+            if (event.target.id === 'jumpButton' && spieler.amBoden) {
+                spieler.geschwindigkeitY = -spieler.sprungstaerke;
+            }
+            if (event.target.id === 'rightButton') {
+                spieler.bewegt = true;
+                spieler.richtung = 1;
+            }
+            if (event.target.id === 'leftButton') {
+                spieler.bewegt = true;
+                spieler.richtung = -1;
             }
         }
 
         function handleTouchEnd(event) {
-            spieler.bewegt = false;
+            if (event.target.id === 'rightButton' || event.target.id === 'leftButton') {
+                spieler.bewegt = false;
+            }
         }
 
-        canvas.addEventListener('touchstart', handleTouchStart);
-        canvas.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+        document.getElementById('jumpButton').addEventListener('touchstart', handleTouchStart);
+        document.getElementById('rightButton').addEventListener('touchstart', handleTouchStart);
+        document.getElementById('leftButton').addEventListener('touchstart', handleTouchStart);
+        document.getElementById('jumpButton').addEventListener('touchend', handleTouchEnd);
+        document.getElementById('rightButton').addEventListener('touchend', handleTouchEnd);
+        document.getElementById('leftButton').addEventListener('touchend', handleTouchEnd);
+
+        // Unified handler for pointer events (touch and mouse)
+        function handleButtonDown(event) {
+            event.preventDefault();
+            const id = event.target.id;
+            if (id === 'jumpButton' && spieler.amBoden) {
+                spieler.geschwindigkeitY = -spieler.sprungstaerke;
+            }
+            if (id === 'rightButton') {
+                spieler.bewegt = true;
+                spieler.richtung = 1;
+            }
+            if (id === 'leftButton') {
+                spieler.bewegt = true;
+                spieler.richtung = -1;
+            }
+        }
+
+        function handleButtonUp(event) {
+            event.preventDefault();
+            const id = event.target.id;
+            if (id === 'rightButton' || id === 'leftButton') {
+                spieler.bewegt = false;
+            }
+        }
+
+        // Pointer events for mobile control
+        const buttons = ['jumpButton', 'rightButton', 'leftButton'];
+        buttons.forEach(id => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('pointerdown', handleButtonDown);
+            btn.addEventListener('pointerup', handleButtonUp);
+            btn.addEventListener('pointercancel', handleButtonUp);
+        });
 
         function resetSpieler() {
             spieler.x = 50;
