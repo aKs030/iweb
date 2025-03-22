@@ -2,27 +2,31 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Jump-and-Run Spiel</title>
     <style>
-        canvas {
-            border: 1px solid #333;
-            display: block;
-            margin: 20px auto;
-            background-color: #87ceeb;
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        @media (max-width: 600px) {
-            canvas {
-                width: 100%;
-                height: auto;
-            }
+        canvas {
+            border: 1px solid #333;
+            background-color: #87ceeb;
+            width: 100%;
+            height: calc(100% - 100px); /* Reserve space for buttons */
         }
 
         .controls {
             display: flex;
             justify-content: center;
-            margin-top: 10px;
+            width: 100%;
         }
 
         .control-button {
@@ -50,7 +54,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <div class="controls">
         <button class="control-button" id="leftButton">Links</button>
         <button class="control-button" id="jumpButton">Springen</button>
