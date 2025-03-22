@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -32,6 +31,8 @@
             background-color: #87ceeb;
             width: 100%;
             flex-grow: 1;
+            /* Verhindert ungewolltes Scrollen/Zoomen bei Berührungen */
+            touch-action: none;
         }
 
         .controls {
@@ -68,14 +69,22 @@
             margin: 10px;
         }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         <div class="controls">
-            <button class="control-button" id="leftButton">Links</button>
-            <button class="control-button" id="jumpButton">Springen</button>
-            <button class="control-button" id="rightButton">Rechts</button>
+            <button class="control-button" id="leftButton">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <button class="control-button" id="jumpButton">
+                <i class="bi bi-arrow-up"></i>
+            </button>
+            <button class="control-button" id="rightButton">
+                <i class="bi bi-arrow-right"></i>
+            </button>
         </div>
     </div>
     <div id="gameOverMenu">
@@ -295,32 +304,32 @@
         document.getElementById('rightButton').addEventListener('touchend', handleTouchEnd);
         document.getElementById('leftButton').addEventListener('touchend', handleTouchEnd);
 
-        // Unified handler for pointer events (touch and mouse)
-        function handleButtonDown(event) {
-            event.preventDefault();
-            const id = event.target.id;
-            if (id === 'jumpButton' && spieler.amBoden) {
+        // Extrahierte Steuerungslogik in eigene Funktion
+        function updateControls(taste, isDown = true) {
+            if (taste === 'jumpButton' && spieler.amBoden && isDown) {
                 spieler.geschwindigkeitY = -spieler.sprungstaerke;
             }
-            if (id === 'rightButton') {
-                spieler.bewegt = true;
-                spieler.richtung = 1;
+            if (taste === 'rightButton') {
+                spieler.bewegt = isDown;
+                spieler.richtung = isDown ? 1 : 0;
             }
-            if (id === 'leftButton') {
-                spieler.bewegt = true;
-                spieler.richtung = -1;
+            if (taste === 'leftButton') {
+                spieler.bewegt = isDown;
+                spieler.richtung = isDown ? -1 : 0;
             }
+        }
+
+        function handleButtonDown(event) {
+            event.preventDefault();
+            updateControls(event.target.id, true);
         }
 
         function handleButtonUp(event) {
             event.preventDefault();
-            const id = event.target.id;
-            if (id === 'rightButton' || id === 'leftButton') {
-                spieler.bewegt = false;
-            }
+            updateControls(event.target.id, false);
         }
 
-        // Pointer events for mobile control
+        // Pointer events für mobile Steuerung
         const buttons = ['jumpButton', 'rightButton', 'leftButton'];
         buttons.forEach(id => {
             const btn = document.getElementById(id);
