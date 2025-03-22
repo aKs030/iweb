@@ -20,13 +20,15 @@
             border: 1px solid #333;
             background-color: #87ceeb;
             width: 100%;
-            height: calc(100% - 100px); /* Reserve space for buttons */
+            height: 100%;
         }
 
         .controls {
             display: flex;
             justify-content: center;
             width: 100%;
+            position: absolute;
+            bottom: 10px;
         }
 
         .control-button {
@@ -69,6 +71,14 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         const spieler = {
             x: 50,
