@@ -109,8 +109,19 @@ h1, h2, h3, h4, h5, h6 {
 /* ==========================
    Lead-Text
 ========================== */
-p.lead,
 .lead {
+  font-size: clamp(1rem, 1.4vw, 1.6rem); /* Dynamische Schriftgröße für verschiedene Displays */
+  max-width: 850px; /* Etwas breiter für bessere Lesbarkeit */
+  margin: 10px auto; /* Mehr Abstand nach oben/unten */
+  padding: 0 clamp(15px, 3vw, 40px); /* Dynamischer Innenabstand */
+  color: var(--main-text-color, #222); /* Verbesserte Standardfarbe */
+  font-weight: 400;
+  line-height: clamp(1.6, 2vw, 1.9); /* Dynamische Zeilenhöhe */
+  letter-spacing: 0.5px; /* Dezente Mikrotypografie für Eleganz */
+  font-family: 'Poppins', sans-serif; /* Hochwertige moderne Schrift */
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+.lead-wilkommmen {
   font-size: clamp(1rem, 1.6vw, 1.8rem); /* Dynamische Schriftgröße */
   font-weight: 500;
   color: var(--main-text-color, #e0e0e0); /* Edles, weiches Weiß/Grau für besseren Kontrast */
