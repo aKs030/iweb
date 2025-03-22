@@ -9,6 +9,7 @@
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -77,8 +78,9 @@
         const ctx = canvas.getContext('2d');
 
         function resizeCanvas() {
+            // Adjust canvas height to consider the available viewport height minus potential browser UI elements
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.height = window.innerHeight - document.querySelector('.controls').offsetHeight;
         }
 
         window.addEventListener('resize', resizeCanvas);
