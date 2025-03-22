@@ -11,23 +11,27 @@
             margin: 20px auto;
             background-color: #87ceeb;
         }
+
         @media (max-width: 600px) {
             canvas {
                 width: 100%;
                 height: auto;
             }
         }
+
         .controls {
             display: flex;
             justify-content: center;
             margin-top: 10px;
         }
+
         .control-button {
             width: 100px;
             height: 50px;
             margin: 10px;
             font-size: 20px;
         }
+
         #gameOverMenu {
             display: none;
             position: fixed;
@@ -39,6 +43,7 @@
             padding: 20px;
             text-align: center;
         }
+
         #gameOverMenu button {
             margin: 10px;
         }
@@ -259,7 +264,7 @@
         document.getElementById('rightButton').addEventListener('touchend', handleTouchEnd);
         document.getElementById('leftButton').addEventListener('touchend', handleTouchEnd);
 
-        // Vereinheitlichte Handler für Pointer Events (Touch und Maus)
+        // Unified handler for pointer events (touch and mouse)
         function handleButtonDown(event) {
             event.preventDefault();
             const id = event.target.id;
@@ -284,7 +289,7 @@
             }
         }
 
-        // Pointer Events für mobile Steuerung
+        // Pointer events for mobile control
         const buttons = ['jumpButton', 'rightButton', 'leftButton'];
         buttons.forEach(id => {
             const btn = document.getElementById(id);
