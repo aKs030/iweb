@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="col">
-        <a href="/pages/games.html" class="text-decoration-none text-reset animated-link">
+        <a href="/pages/index-games.html" class="text-decoration-none text-reset animated-link">
           <div class="card border-0 text-center scroll-animate p-4"
             data-animation="animate__flipInX" 
             data-delay="1200">
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="col">
-        <a href="/pages/games.html" class="text-decoration-none text-reset animated-link">
+        <a href="/pages/index-games.html" class="text-decoration-none text-reset animated-link">
 <div class="card border-0 text-center scroll-animate p-4" "
             data-animation="animate__flipInX" 
             data-delay="1200">
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div class="col">
-        <a href="/pages/games.html" class="text-decoration-none text-reset animated-link">
+        <a href="/pages/index-games.html" class="text-decoration-none text-reset animated-link">
          <div class="card border-0 text-center scroll-animate p-4" "
             data-animation="animate__flipInX" 
             data-delay="1200">
