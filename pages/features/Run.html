@@ -159,121 +159,99 @@ const spieler = {
   richtung: 0       // -1 = links, 1 = rechts
 };
 
-// ========== 2. Funktionen ==========
+// === LEVELS KONFIGURATION ===
+const levels = [
+    {
+        hindernisse: [
+            {
+                x: LOGICAL_WIDTH * 0.83,
+                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.046),
+                breite: LOGICAL_WIDTH * 0.083,
+                hoehe: LOGICAL_HEIGHT * 0.046
+            },
+            {
+                x: LOGICAL_WIDTH * 0.28,
+                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.023),
+                breite: LOGICAL_WIDTH * 0.069,
+                hoehe: LOGICAL_HEIGHT * 0.023
+            },
+            {
+                x: LOGICAL_WIDTH * 0.3,
+                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.08),
+                breite: LOGICAL_WIDTH * 0.1,
+                hoehe: LOGICAL_HEIGHT * 0.02,
+                farbe: 'green',
+                safe: true
+            }
+        ],
+        gegner: null
+    },
+    {
+        hindernisse: [
+            {
+                x: LOGICAL_WIDTH * 0.70,
+                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.07),
+                breite: LOGICAL_WIDTH * 0.08,
+                hoehe: LOGICAL_HEIGHT * 0.07
+            },
+            {
+                x: LOGICAL_WIDTH * 0.85,
+                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
+                breite: LOGICAL_WIDTH * 0.07,
+                hoehe: LOGICAL_HEIGHT * 0.04
+            },
+            {
+                x: LOGICAL_WIDTH * 0.42,
+                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.09),
+                breite: LOGICAL_WIDTH * 0.07,
+                hoehe: LOGICAL_HEIGHT * 0.09
+            },
+            {
+                x: LOGICAL_WIDTH * 0.2,
+                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.14),
+                breite: LOGICAL_WIDTH * 0.12,
+                hoehe: LOGICAL_HEIGHT * 0.02,
+                farbe: 'green',
+                safe: true
+            }
+        ],
+        gegner: {
+            x: LOGICAL_WIDTH * 0.85,
+            y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
+            breite: LOGICAL_WIDTH * 0.06,
+            hoehe: LOGICAL_HEIGHT * 0.04,
+            farbe: 'blue',
+            speed: 4,
+            minX: LOGICAL_WIDTH * 0.75,
+            maxX: LOGICAL_WIDTH * 0.95
+        }
+    }
+];
+
+// Lädt das Level basierend auf der aktuellen Stufe
 function ladeLevel(stufe) {
-  hindernisse = [];
-  gegner = null;
-
-// ========== Level ==========
-  if (stufe === 1) {
-    hindernisse.push({
-      x: LOGICAL_WIDTH * 0.83,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.046),
-      breite: LOGICAL_WIDTH * 0.083,
-      hoehe: LOGICAL_HEIGHT * 0.046
-    });
-    hindernisse.push({
-      x: LOGICAL_WIDTH * 0.28,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.023),
-      breite: LOGICAL_WIDTH * 0.069,
-      hoehe: LOGICAL_HEIGHT * 0.023
-    });
-    hindernisse.push({
-      x: LOGICAL_WIDTH * 0.3,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.08),
-      breite: LOGICAL_WIDTH * 0.1,
-      hoehe: LOGICAL_HEIGHT * 0.02,
-      farbe: 'green',
-      safe: true
-    });
+  if (stufe > levels.length) {
+    spielBeenden("Du hast alle Levels gemeistert!");
+    return;
   }
-  else if (stufe === 2) {
-    hindernisse.push({
-      x: LOGICAL_WIDTH * 0.70,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.07),
-      breite: LOGICAL_WIDTH * 0.08,
-      hoehe: LOGICAL_HEIGHT * 0.07
-    });
-    hindernisse.push({
-      x: LOGICAL_WIDTH * 0.85,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
-      breite: LOGICAL_WIDTH * 0.07,
-      hoehe: LOGICAL_HEIGHT * 0.04
-    });
-    hindernisse.push({
-      x: LOGICAL_WIDTH * 0.42,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.09),
-      breite: LOGICAL_WIDTH * 0.07,
-      hoehe: LOGICAL_HEIGHT * 0.09
-    });
-    hindernisse.push({
-      x: LOGICAL_WIDTH * 0.2,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.14),
-      breite: LOGICAL_WIDTH * 0.12,
-      hoehe: LOGICAL_HEIGHT * 0.02,
-      farbe: 'green',
-      safe: true
-    });
-
-    gegner = {
-      x: LOGICAL_WIDTH * 0.85,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
-      breite: LOGICAL_WIDTH * 0.06,
-      hoehe: LOGICAL_HEIGHT * 0.04,
-      farbe: 'blue',
-      speed: 4,
-      minX: LOGICAL_WIDTH * 0.75,
-      maxX: LOGICAL_WIDTH * 0.95
-    };
-  }
+  const currentLevel = levels[stufe - 1];
+  // Deep Copy der Hindernisse, um spätere Modifikationen zu isolieren
+  hindernisse = currentLevel.hindernisse.map(obj => ({ ...obj }));
+  gegner = currentLevel.gegner ? { ...currentLevel.gegner } : null;
 }
 
-function zeichneHintergrund() {
-  // Himmel
-  ctx.fillStyle = '#87ceeb';
-  ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-
-  // Boden
-  ctx.fillStyle = 'green';
-  ctx.fillRect(0, LOGICAL_HEIGHT - BODEN_HOEHE, LOGICAL_WIDTH, BODEN_HOEHE);
-}
-
-function zeichneSpieler() {
-  ctx.fillStyle = spieler.farbe;
-  ctx.fillRect(spieler.x, spieler.y, spieler.breite, spieler.hoehe);
-}
-
-function zeichneHindernisse() {
-  hindernisse.forEach(obj => {
-    ctx.fillStyle = obj.farbe || 'brown';
-    ctx.fillRect(obj.x, obj.y, obj.breite, obj.hoehe);
-  });
-}
-
-function zeichneGegner() {
-  if (!gegner) return;
-  ctx.fillStyle = gegner.farbe;
-  ctx.fillRect(gegner.x, gegner.y, gegner.breite, gegner.hoehe);
-}
-
-function zeichneHud() {
-  // Nur das Level anzeigen, keine Punkte
-  ctx.fillStyle = 'black';
-  ctx.font = '28px Arial';
-  ctx.fillText(`Level: ${level}`, 20, 50);
-}
-
+// Aktualisiert den Spieler und kümmert sich um den Level-Wechsel
 function updateSpieler() {
-  // Bewegung X
+  // Spieler bewegt sich in X-Richtung, falls markiert
   if (spieler.bewegt) {
     spieler.x += spieler.richtung * spieler.vx;
   }
-
-  // Schwerkraft
+  
+  // Gravitation anwenden
   spieler.vy += spieler.schwerkraft;
   spieler.y += spieler.vy;
-
-  // Boden-Kollision
+  
+  // Kollision mit dem Boden
   if (spieler.y + spieler.hoehe >= LOGICAL_HEIGHT - BODEN_HOEHE) {
     spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
     spieler.amBoden = true;
@@ -282,50 +260,45 @@ function updateSpieler() {
     spieler.amBoden = false;
   }
 
-  // Level-Wechsel, wenn Spieler rechts rausläuft
+  // Wenn der Spieler den rechten Rand überschreitet, wechsle Level
   if (spieler.x > LOGICAL_WIDTH) {
-    if (level === 1) {
-      level = 2;
-      resetSpielerPosition();
-      ladeLevel(level);
-    } else {
-      // Kein weiteres Level? Dann Spiel-Ende "gewonnen"
-      spielBeenden("Du hast alle Levels gemeistert!");
-    }
+    level++;
+    resetSpielerPosition();
+    ladeLevel(level);
   }
 }
 
+// Gegner-Bewegung: Hin- und Her-Wandern im definierten Bereich
 function updateGegner() {
   if (!gegner) return;
   gegner.x += gegner.speed;
-
-  // Einfaches Hin- und Her
   if (gegner.x < gegner.minX || (gegner.x + gegner.breite) > gegner.maxX) {
     gegner.speed *= -1;
   }
 }
 
+// Prüft Kollisionen von Spieler mit Hindernissen und Gegner
 function pruefeKollisionen() {
-  // Spieler vs. Hindernisse
-  for (let h of hindernisse) {
+  // Kollision mit Hindernissen
+  hindernisse.forEach(h => {
     if (istKollision(spieler, h)) {
       if (!h.safe) {
         spielBeenden("Gegen ein Hindernis gerannt!");
-        return;
       } else {
-        // Auf sicherem Block landen
+        // Spieler landet sicher auf dem Hindernis
         spieler.y = h.y - spieler.hoehe;
         spieler.vy = 0;
         spieler.amBoden = true;
       }
     }
-  }
-  // Spieler vs. Gegner
+  });
+  // Kollision mit dem Gegner
   if (gegner && istKollision(spieler, gegner)) {
     spielBeenden("Vom Gegner erwischt!");
   }
 }
 
+// Utility-Funktion zur Kollisionsprüfung
 function istKollision(a, b) {
   return (
     a.x < b.x + b.breite &&
@@ -335,12 +308,115 @@ function istKollision(a, b) {
   );
 }
 
+// Zeichnet den Hintergrund (Himmel und Boden)
+function zeichneHintergrund() {
+  ctx.fillStyle = '#87ceeb';
+  ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+  ctx.fillStyle = 'green';
+  ctx.fillRect(0, LOGICAL_HEIGHT - BODEN_HOEHE, LOGICAL_WIDTH, BODEN_HOEHE);
+}
+
+// Zeichnet Spieler, Hindernisse und Gegner
+function zeichneSpieler() {
+  ctx.fillStyle = spieler.farbe;
+  ctx.fillRect(spieler.x, spieler.y, spieler.breite, spieler.hoehe);
+}
+function zeichneHindernisse() {
+  hindernisse.forEach(obj => {
+    ctx.fillStyle = obj.farbe || 'brown';
+    ctx.fillRect(obj.x, obj.y, obj.breite, obj.hoehe);
+  });
+}
+function zeichneGegner() {
+  if (!gegner) return;
+  ctx.fillStyle = gegner.farbe;
+  ctx.fillRect(gegner.x, gegner.y, gegner.breite, gegner.hoehe);
+}
+
+// HUD: Zeigt aktuelles Level an
+function zeichneHud() {
+  ctx.fillStyle = 'black';
+  ctx.font = '28px Arial';
+  ctx.fillText(`Level: ${level}`, 20, 50);
+}
+
+// HauptgameLoop: Aktualisiert alle Elemente und rendert auf dem Canvas
+function gameLoop() {
+  if (gameOver) return;
+  ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+  
+  updateSpieler();
+  updateGegner();
+  pruefeKollisionen();
+  
+  zeichneHintergrund();
+  zeichneHindernisse();
+  zeichneGegner();
+  zeichneSpieler();
+  zeichneHud();
+  
+  requestAnimationFrame(gameLoop);
+}
+
+// === EVENT-HANDLER (Berührung & Tastatur) ===
+const handlePointerDown = (e) => {
+  e.preventDefault();
+  const action = e.target.getAttribute('data-action');
+  if (!action) return;
+  if (action === 'left') {
+    spieler.bewegt = true;
+    spieler.richtung = -1;
+  } else if (action === 'right') {
+    spieler.bewegt = true;
+    spieler.richtung = 1;
+  } else if (action === 'jump' && spieler.amBoden) {
+    spieler.vy = -spieler.sprungKraft;
+  }
+};
+
+const handlePointerUp = (e) => {
+  e.preventDefault();
+  const action = e.target.getAttribute('data-action');
+  if (!action) return;
+  if (action === 'left' || action === 'right') {
+    spieler.bewegt = false;
+  }
+};
+
+['leftArea', 'rightArea', 'jumpArea'].forEach(id => {
+  const area = document.getElementById(id);
+  area.addEventListener('pointerdown', handlePointerDown);
+  area.addEventListener('pointerup', handlePointerUp);
+  area.addEventListener('pointercancel', handlePointerUp);
+});
+
+// Tastaturunterstützung
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') {
+    spieler.bewegt = true;
+    spieler.richtung = -1;
+  } else if (e.key === 'ArrowRight') {
+    spieler.bewegt = true;
+    spieler.richtung = 1;
+  } else if (e.key === ' ' && spieler.amBoden) {
+    spieler.vy = -spieler.sprungKraft;
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    spieler.bewegt = false;
+  }
+});
+
+// Verhindert das Kontextmenü
+document.addEventListener('contextmenu', e => e.preventDefault(), false);
+
+// === SPIEL-STEUERUNG (Neustart & Verlassen) ===
 function spielBeenden(nachricht) {
   gameOver = true;
   document.getElementById('gameOverMessage').innerText = nachricht;
   document.getElementById('gameOverMenu').style.display = 'block';
 }
-
 function neustart() {
   document.getElementById('gameOverMenu').style.display = 'none';
   level = 1;
@@ -349,11 +425,11 @@ function neustart() {
   ladeLevel(level);
   gameLoop();
 }
-
 function verlassen() {
   alert("Spiel kann auf Mobilgeräten nicht einfach geschlossen werden. Bitte Tab oder App beenden.");
 }
 
+// Setzt Spielerposition zurück
 function resetSpielerPosition() {
   spieler.x = 100;
   spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
@@ -362,88 +438,7 @@ function resetSpielerPosition() {
   spieler.richtung = 0;
 }
 
-function gameLoop() {
-  if (gameOver) return;
-
-  ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-
-  updateSpieler();
-  updateGegner();
-  pruefeKollisionen();
-
-  zeichneHintergrund();
-  zeichneHindernisse();
-  zeichneGegner();
-  zeichneSpieler();
-  zeichneHud();
-
-  requestAnimationFrame(gameLoop);
-}
-
-// ========== 3. Event-Listener ==========
-document.addEventListener('contextmenu', function(e) {
-  e.preventDefault();
-}, false);
-
-function onPointerDown(e) {
-  e.preventDefault(); // Gegen Kontextmenü, Textauswahl etc.
-
-  // Per data-Attribut auslesen, welche Aktion gewollt ist
-  const action = e.target.getAttribute('data-action');
-  if (!action) return;
-
-  if (action === 'left') {
-    spieler.bewegt = true;
-    spieler.richtung = -1;
-  }
-  else if (action === 'right') {
-    spieler.bewegt = true;
-    spieler.richtung = 1;
-  }
-  else if (action === 'jump' && spieler.amBoden) {
-    spieler.vy = -spieler.sprungKraft;
-  }
-}
-
-function onPointerUp(e) {
-  e.preventDefault();
-  const action = e.target.getAttribute('data-action');
-  if (!action) return;
-
-  // Bei Loslassen von Links/Rechts den Spieler stoppen
-  if (action === 'left' || action === 'right') {
-    spieler.bewegt = false;
-  }
-}
-
-// „Botsramp“-Flächen anbinden
-['leftArea', 'rightArea', 'jumpArea'].forEach(id => {
-  const area = document.getElementById(id);
-  area.addEventListener('pointerdown', onPointerDown);
-  area.addEventListener('pointerup', onPointerUp);
-  area.addEventListener('pointercancel', onPointerUp);
-});
-
-// Tastatursupport (optional)
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-        spieler.bewegt = true;
-        spieler.richtung = -1;
-    } else if (e.key === 'ArrowRight') {
-        spieler.bewegt = true;
-        spieler.richtung = 1;
-    } else if (e.key === ' ' && spieler.amBoden) { // Space-Taste für Springen
-        spieler.vy = -spieler.sprungKraft;
-    }
-});
-
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        spieler.bewegt = false;
-    }
-});
-
-// ========== 4. Initialer Start ==========
+// === INITIALER START ===
 ladeLevel(level);
 resetSpielerPosition();
 gameLoop();
