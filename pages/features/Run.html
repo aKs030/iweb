@@ -379,6 +379,25 @@ function onPointerUp(e) {
   btn.addEventListener('pointercancel', onPointerUp);
 });
 
+// Tastatursupport hinzufügen
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+        spieler.bewegt = true;
+        spieler.richtung = -1;
+    } else if (e.key === 'ArrowRight') {
+        spieler.bewegt = true;
+        spieler.richtung = 1;
+    } else if (e.key === ' ' && spieler.amBoden) { // Space-Taste für Springen
+        spieler.vy = -spieler.sprungKraft;
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        spieler.bewegt = false;
+    }
+});
+
 /* ========== Initialer Start ========== */
 ladeLevel(level);
 resetSpielerPosition();
