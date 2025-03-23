@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Jump & Run – High Resolution + Long-Press-Fix (Ohne Punkte, Botsramp)</title>
+  <title>Jump & Run</title>
 
   <style>
     /* ========== Grundlegende Reset-Styles ========== */
@@ -105,7 +105,7 @@
   <!-- Das Canvas mit hoher "logischer" Auflösung (720×1280) -->
   <canvas id="gameCanvas" width="720" height="1280"></canvas>
 
-  <!-- Touch-Flächen (Botsramp) -->
+  <!-- Touch-Flächen -->
   <div class="controls">
     <div class="botsramp-button" id="leftArea" data-action="left">Links</div>
     <div class="botsramp-button" id="jumpArea" data-action="jump">Springen</div>
@@ -122,12 +122,7 @@
 </div>
 
 <script>
-/* ========== Kontextmenü bei Long-Press komplett blockieren ========== */
-document.addEventListener('contextmenu', function(e) {
-  e.preventDefault();
-}, false);
-
-/* ========== Canvas & Retina-Setup ========== */
+// ========== 1. Konstanten & Variablen ==========
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -141,7 +136,6 @@ canvas.width  = LOGICAL_WIDTH  * dpr;
 canvas.height = LOGICAL_HEIGHT * dpr;
 ctx.scale(dpr, dpr);
 
-/* ========== Spiel-Variablen ========== */
 const BODEN_HOEHE = 280;
 
 let level = 1;
@@ -154,8 +148,8 @@ const spieler = {
   x: 100,
   y: 0,
   breite: 50,
-  hoehe: 50,
-  farbe: 'red',
+  hoehe: 90,
+  farbe: 'blue',
   vx: 4,            // horizontale Geschwindigkeit
   vy: 0,            // vertikale Geschwindigkeit
   sprungKraft: 20,  // Sprunghöhe
@@ -165,45 +159,75 @@ const spieler = {
   richtung: 0       // -1 = links, 1 = rechts
 };
 
-/* ========== Level laden ========== */
+// ========== 2. Funktionen ==========
 function ladeLevel(stufe) {
   hindernisse = [];
   gegner = null;
 
+// ========== Level ==========
   if (stufe === 1) {
-    hindernisse.push({ x: 600,  y: LOGICAL_HEIGHT - BODEN_HOEHE - 60, breite: 60, hoehe: 60 });
-    hindernisse.push({ x: 1000, y: LOGICAL_HEIGHT - BODEN_HOEHE - 80, breite: 60, hoehe: 80 });
-    
-    gegner = {
-      x: 1200,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - 50,
-      breite: 50,
-      hoehe: 50,
-      farbe: 'purple',
-      speed: 3,
-      minX: 1150,
-      maxX: 1350
-    };
+    hindernisse.push({
+      x: LOGICAL_WIDTH * 0.83,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.046),
+      breite: LOGICAL_WIDTH * 0.083,
+      hoehe: LOGICAL_HEIGHT * 0.046
+    });
+    hindernisse.push({
+      x: LOGICAL_WIDTH * 0.28,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.023),
+      breite: LOGICAL_WIDTH * 0.069,
+      hoehe: LOGICAL_HEIGHT * 0.023
+    });
+    hindernisse.push({
+      x: LOGICAL_WIDTH * 0.3,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.08),
+      breite: LOGICAL_WIDTH * 0.1,
+      hoehe: LOGICAL_HEIGHT * 0.02,
+      farbe: 'green',
+      safe: true
+    });
   }
   else if (stufe === 2) {
-    hindernisse.push({ x: 500,  y: LOGICAL_HEIGHT - BODEN_HOEHE - 100, breite: 70, hoehe: 100 });
-    hindernisse.push({ x: 900,  y: LOGICAL_HEIGHT - BODEN_HOEHE - 60,   breite: 60, hoehe: 60  });
-    hindernisse.push({ x: 1400, y: LOGICAL_HEIGHT - BODEN_HOEHE - 120, breite: 50, hoehe: 120 });
+    hindernisse.push({
+      x: LOGICAL_WIDTH * 0.70,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.07),
+      breite: LOGICAL_WIDTH * 0.08,
+      hoehe: LOGICAL_HEIGHT * 0.07
+    });
+    hindernisse.push({
+      x: LOGICAL_WIDTH * 0.85,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
+      breite: LOGICAL_WIDTH * 0.07,
+      hoehe: LOGICAL_HEIGHT * 0.04
+    });
+    hindernisse.push({
+      x: LOGICAL_WIDTH * 0.42,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.09),
+      breite: LOGICAL_WIDTH * 0.07,
+      hoehe: LOGICAL_HEIGHT * 0.09
+    });
+    hindernisse.push({
+      x: LOGICAL_WIDTH * 0.2,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.14),
+      breite: LOGICAL_WIDTH * 0.12,
+      hoehe: LOGICAL_HEIGHT * 0.02,
+      farbe: 'green',
+      safe: true
+    });
 
     gegner = {
-      x: 1100,
-      y: LOGICAL_HEIGHT - BODEN_HOEHE - 50,
-      breite: 50,
-      hoehe: 50,
+      x: LOGICAL_WIDTH * 0.85,
+      y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
+      breite: LOGICAL_WIDTH * 0.06,
+      hoehe: LOGICAL_HEIGHT * 0.04,
       farbe: 'blue',
       speed: 4,
-      minX: 1050,
-      maxX: 1300
+      minX: LOGICAL_WIDTH * 0.75,
+      maxX: LOGICAL_WIDTH * 0.95
     };
   }
 }
 
-/* ========== Zeichnen ========== */
 function zeichneHintergrund() {
   // Himmel
   ctx.fillStyle = '#87ceeb';
@@ -220,8 +244,8 @@ function zeichneSpieler() {
 }
 
 function zeichneHindernisse() {
-  ctx.fillStyle = 'brown';
   hindernisse.forEach(obj => {
+    ctx.fillStyle = obj.farbe || 'brown';
     ctx.fillRect(obj.x, obj.y, obj.breite, obj.hoehe);
   });
 }
@@ -239,7 +263,6 @@ function zeichneHud() {
   ctx.fillText(`Level: ${level}`, 20, 50);
 }
 
-/* ========== Update-Logik ========== */
 function updateSpieler() {
   // Bewegung X
   if (spieler.bewegt) {
@@ -286,8 +309,15 @@ function pruefeKollisionen() {
   // Spieler vs. Hindernisse
   for (let h of hindernisse) {
     if (istKollision(spieler, h)) {
-      spielBeenden("Gegen ein Hindernis gerannt!");
-      return;
+      if (!h.safe) {
+        spielBeenden("Gegen ein Hindernis gerannt!");
+        return;
+      } else {
+        // Auf sicherem Block landen
+        spieler.y = h.y - spieler.hoehe;
+        spieler.vy = 0;
+        spieler.amBoden = true;
+      }
     }
   }
   // Spieler vs. Gegner
@@ -305,7 +335,6 @@ function istKollision(a, b) {
   );
 }
 
-/* ========== Game Over / Neustart ========== */
 function spielBeenden(nachricht) {
   gameOver = true;
   document.getElementById('gameOverMessage').innerText = nachricht;
@@ -325,7 +354,6 @@ function verlassen() {
   alert("Spiel kann auf Mobilgeräten nicht einfach geschlossen werden. Bitte Tab oder App beenden.");
 }
 
-/* ========== Hilfsfunktionen ========== */
 function resetSpielerPosition() {
   spieler.x = 100;
   spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
@@ -334,7 +362,6 @@ function resetSpielerPosition() {
   spieler.richtung = 0;
 }
 
-/* ========== Game-Loop ========== */
 function gameLoop() {
   if (gameOver) return;
 
@@ -353,7 +380,11 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-/* ========== Steuerung (Pointer Events) ========== */
+// ========== 3. Event-Listener ==========
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+}, false);
+
 function onPointerDown(e) {
   e.preventDefault(); // Gegen Kontextmenü, Textauswahl etc.
 
@@ -412,7 +443,7 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-/* ========== Initialer Start ========== */
+// ========== 4. Initialer Start ==========
 ladeLevel(level);
 resetSpielerPosition();
 gameLoop();
