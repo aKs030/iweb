@@ -5,7 +5,7 @@
   <!-- Wichtig für Smartphones: Skaliert auf Gerätebreite, verhindert Pinch-Zoom -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>Jump & Run – High Resolution + Long-Press-Fix</title>
+  <title>Jump & Run – High Resolution + Long-Press-Fix (Ohne Punkte)</title>
 
   <style>
     /* ========== Grundlegende Reset-Styles ========== */
@@ -22,8 +22,8 @@
       -webkit-touch-callout: none;
       user-select: none;
       touch-action: none;           /* blockiert Scrollen/Zoomen bei Wisch */
-      
-      /* Option: Bei iOS Long-Press wird das Element nicht markiert */
+
+      /* Option: Bei iOS Long-Press wird kein Highlighting gezeigt */
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -134,7 +134,6 @@ ctx.scale(dpr, dpr);
 /* ========== Spiel-Variablen ========== */
 const BODEN_HOEHE = 80;
 
-let punkte = 0;
 let level = 1;
 let hindernisse = [];
 let gegner = null;
@@ -226,10 +225,10 @@ function zeichneGegner() {
 }
 
 function zeichneHud() {
+  // Nur das Level anzeigen, keine Punkte
   ctx.fillStyle = 'black';
   ctx.font = '28px Arial';
   ctx.fillText(`Level: ${level}`, 20, 50);
-  ctx.fillText(`Punkte: ${punkte}`, 20, 90);
 }
 
 /* ========== Update-Logik ========== */
@@ -237,7 +236,6 @@ function updateSpieler() {
   // Bewegung X
   if (spieler.bewegt) {
     spieler.x += spieler.richtung * spieler.vx;
-    punkte++;
   }
 
   // Schwerkraft
@@ -308,7 +306,6 @@ function spielBeenden(nachricht) {
 
 function neustart() {
   document.getElementById('gameOverMenu').style.display = 'none';
-  punkte = 0;
   level = 1;
   gameOver = false;
   resetSpielerPosition();
@@ -369,7 +366,6 @@ function onPointerDown(e) {
 function onPointerUp(e) {
   e.preventDefault();
   const id = e.target.id;
-
   if (id === 'leftButton' || id === 'rightButton') {
     spieler.bewegt = false;
   }
