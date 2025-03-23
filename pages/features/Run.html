@@ -119,6 +119,15 @@
     <button onclick="neustart()">Neustart</button>
     <button onclick="verlassen()">Verlassen</button>
   </div>
+  
+  <!-- Button Group -->
+  <div class="button-group">
+    <button id="duplicateLevelBtn">Level duplizieren</button>
+    <button id="deleteHindernisBtn">Hindernis löschen</button>
+    <button id="deleteGegnerBtn">Gegner löschen</button>
+    <button id="changeColorBtn">Hindernisfarbe ändern</button>
+    <button id="undoBtn">Rückgängig</button>
+  </div>
 </div>
 
 <script>
@@ -159,74 +168,18 @@ const spieler = {
   richtung: 0       // -1 = links, 1 = rechts
 };
 
-// === LEVELS KONFIGURATION ===
-const levels = [
-    {
-        hindernisse: [
-            {
-                x: LOGICAL_WIDTH * 0.83,
-                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.046),
-                breite: LOGICAL_WIDTH * 0.083,
-                hoehe: LOGICAL_HEIGHT * 0.046
-            },
-            {
-                x: LOGICAL_WIDTH * 0.28,
-                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.023),
-                breite: LOGICAL_WIDTH * 0.069,
-                hoehe: LOGICAL_HEIGHT * 0.023
-            },
-            {
-                x: LOGICAL_WIDTH * 0.3,
-                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.08),
-                breite: LOGICAL_WIDTH * 0.1,
-                hoehe: LOGICAL_HEIGHT * 0.02,
-                farbe: 'green',
-                safe: true
-            }
-        ],
-        gegner: null
-    },
-    {
-        hindernisse: [
-            {
-                x: LOGICAL_WIDTH * 0.70,
-                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.07),
-                breite: LOGICAL_WIDTH * 0.08,
-                hoehe: LOGICAL_HEIGHT * 0.07
-            },
-            {
-                x: LOGICAL_WIDTH * 0.85,
-                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
-                breite: LOGICAL_WIDTH * 0.07,
-                hoehe: LOGICAL_HEIGHT * 0.04
-            },
-            {
-                x: LOGICAL_WIDTH * 0.42,
-                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.09),
-                breite: LOGICAL_WIDTH * 0.07,
-                hoehe: LOGICAL_HEIGHT * 0.09
-            },
-            {
-                x: LOGICAL_WIDTH * 0.2,
-                y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.14),
-                breite: LOGICAL_WIDTH * 0.12,
-                hoehe: LOGICAL_HEIGHT * 0.02,
-                farbe: 'green',
-                safe: true
-            }
-        ],
-        gegner: {
-            x: LOGICAL_WIDTH * 0.85,
-            y: LOGICAL_HEIGHT - BODEN_HOEHE - (LOGICAL_HEIGHT * 0.04),
-            breite: LOGICAL_WIDTH * 0.06,
-            hoehe: LOGICAL_HEIGHT * 0.04,
-            farbe: 'blue',
-            speed: 4,
-            minX: LOGICAL_WIDTH * 0.75,
-            maxX: LOGICAL_WIDTH * 0.95
-        }
-    }
-];
+let levels = [];
+
+// Lädt die Level-Daten aus der JSON-Datei
+async function ladeLevelDaten() {
+  try {
+    const response = await fetch('./levels.json');
+    levels = await response.json();
+    ladeLevel(level); // Lade das erste Level nach dem Laden der Daten
+  } catch (error) {
+    console.error('Fehler beim Laden der Level-Daten:', error);
+  }
+}
 
 // Lädt das Level basierend auf der aktuellen Stufe
 function ladeLevel(stufe) {
@@ -439,7 +392,7 @@ function resetSpielerPosition() {
 }
 
 // === INITIALER START ===
-ladeLevel(level);
+ladeLevelDaten(); // Lade die Level-Daten aus der JSON-Datei
 resetSpielerPosition();
 gameLoop();
 </script>
