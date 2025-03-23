@@ -22,16 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   }
 
-  function deleteLevel() {
-    if (levels.length > 1) {
-      levels.splice(currentLevelIndex, 1);
-      currentLevelIndex = Math.max(0, currentLevelIndex - 1);
-      updateLevelSelect();
-      render();
-    } else {
-      alert('Es muss mindestens ein Level vorhanden sein.');
-    }
-  }
 
   function updateLevelSelect() {
     levelSelect.innerHTML = '';
