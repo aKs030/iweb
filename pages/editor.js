@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const addHindernisBtn = document.getElementById('addHindernisBtn');
   const addGegnerBtn = document.getElementById('addGegnerBtn');
   const exportJSONBtn = document.getElementById('exportJSONBtn');
-  const toggleSafeBtn = document.getElementById('toggleSafeBtn');
 
   let levels = [];
   let currentLevelIndex = 0;
@@ -101,40 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentLevelIndex++;
     updateLevelSelect();
     render();
-  }
-
-  function deleteHindernis() {
-    saveState();
-    const currentLevel = levels[currentLevelIndex];
-    if (currentLevel.hindernisse.length > 0) {
-      currentLevel.hindernisse.pop();
-      render();
-    } else {
-      alert('Keine Hindernisse zum Löschen vorhanden.');
-    }
-  }
-
-  function deleteGegner() {
-    saveState();
-    const currentLevel = levels[currentLevelIndex];
-    if (currentLevel.gegner) {
-      currentLevel.gegner = null;
-      render();
-    } else {
-      alert('Kein Gegner zum Löschen vorhanden.');
-    }
-  }
-
-  function changeHindernisColor() {
-    saveState();
-    const currentLevel = levels[currentLevelIndex];
-    if (currentLevel.hindernisse.length > 0) {
-      const lastHindernis = currentLevel.hindernisse[currentLevel.hindernisse.length - 1];
-      lastHindernis.farbe = prompt('Gib eine neue Farbe für das Hindernis ein (z. B. "blue", "#FF0000"):', lastHindernis.farbe || 'brown') || lastHindernis.farbe;
-      render();
-    } else {
-      alert('Keine Hindernisse vorhanden, um die Farbe zu ändern.');
-    }
   }
 
   function resetCurrentLevel() {
@@ -246,19 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     a.click();
     URL.revokeObjectURL(url);
   });
-  toggleSafeBtn.addEventListener('click', () => {
-    const currentLevel = levels[currentLevelIndex];
-    if (!currentLevel.hindernisse.length) return;
-    const lastHindernis = currentLevel.hindernisse[currentLevel.hindernisse.length - 1];
-    lastHindernis.safe = !lastHindernis.safe;
-    render();
-  });
 
   document.getElementById('duplicateLevelBtn').addEventListener('click', duplicateLevel);
-  document.getElementById('deleteHindernisBtn').addEventListener('click', deleteHindernis);
-  document.getElementById('deleteGegnerBtn').addEventListener('click', deleteGegner);
   document.getElementById('undoBtn').addEventListener('click', undo);
-  document.getElementById('changeColorBtn').addEventListener('click', changeHindernisColor);
   document.getElementById('resetLevelBtn').addEventListener('click', resetCurrentLevel);
 
   levelSelect.addEventListener('change', (e) => {
