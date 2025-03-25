@@ -12,33 +12,35 @@
     <section aria-labelledby="editorCanvasLabel">
       <h1 id="editorCanvasLabel">Level-Editor</h1>
       <p>Die Vorschau zeigt den Boden, den Hintergrund, die Steuerungsbuttons und die Spielfeld-Ränder an.</p>
-      <canvas id="editorCanvas" width="720" height="780" aria-label="Editor Canvas"></canvas>
+      <canvas id="editorCanvas" width="720" height="780" aria-label="Editor Canvas">Canvas wird nicht unterstützt</canvas>
     </section>
     
     <!-- Steuerungselemente -->
     <section aria-labelledby="controlsLabel">
+      <h2 id="controlsLabel">Steuerelemente</h2>
 
-      <button id="newLevelBtn" title="Erstelle ein neues Level" aria-label="Neues Level erstellen">Neues Level</button>
+      <button id="newLevelBtn" aria-label="Neues Level erstellen">Neues Level</button>
       
       <label for="levelSelect">Wähle ein Level:</label>
       <select id="levelSelect" aria-label="Level Auswahl"></select>
       
       <div class="button-group">
-        <button id="addHindernisBtn" title="Füge ein Hindernis hinzu" aria-label="Hindernis hinzufügen">Hindernis hinzufügen</button>
-        <button id="addGegnerBtn" title="Füge einen Gegner hinzu" aria-label="Gegner hinzufügen">Gegner hinzufügen</button>
-        <button id="exportJSONBtn" title="Exportiere das Level als JSON" aria-label="Level exportieren">Exportieren</button>
-        <button id="toggleSafeBtn" title="Schalte den Safe-Modus um" aria-label="Safe-Modus umschalten">Toggle Safe</button>
-        <button id="duplicateLevelBtn" title="Dupliziere das aktuelle Level" aria-label="Level duplizieren">Level duplizieren</button>
-        <button id="deleteHindernisBtn" title="Lösche das letzte Hindernis" aria-label="Hindernis löschen">Hindernis löschen</button>
-        <button id="deleteGegnerBtn" title="Lösche den Gegner" aria-label="Gegner löschen">Gegner löschen</button>
-        <button id="undoBtn" title="Mache die letzte Aktion rückgängig" aria-label="Rückgängig machen">Rückgängig</button>
-        <button id="changeColorBtn" title="Ändere die Farbe des letzten Hindernisses" aria-label="Hindernisfarbe ändern">Farbe ändern</button>
-        <button id="resetLevelBtn" title="Setze das aktuelle Level zurück" aria-label="Level zurücksetzen">Level zurücksetzen</button>
-        <button id="addGreenBlockBtn" title="Füge einen sicheren grünen Block hinzu" aria-label="Grünen Block hinzufügen">Grüner Block</button>
+        <button id="addHindernisBtn" aria-label="Hindernis hinzufügen">Hindernis hinzufügen</button>
+        <button id="addGegnerBtn" aria-label="Gegner hinzufügen">Gegner hinzufügen</button>
+        <button id="exportJSONBtn" aria-label="Level exportieren">Exportieren</button>
+        <button id="toggleSafeBtn" aria-label="Safe-Modus umschalten">Toggle Safe</button>
+        <button id="duplicateLevelBtn" aria-label="Level duplizieren">Level duplizieren</button>
+        <button id="deleteHindernisBtn" aria-label="Hindernis löschen">Hindernis löschen</button>
+        <button id="deleteGegnerBtn" aria-label="Gegner löschen">Gegner löschen</button>
+        <button id="undoBtn" aria-label="Rückgängig machen">Rückgängig</button>
+        <button id="changeColorBtn" aria-label="Hindernisfarbe ändern">Farbe ändern</button>
+        <button id="resetLevelBtn" aria-label="Level zurücksetzen">Level zurücksetzen</button>
+        <button id="addGreenBlockBtn" aria-label="Grünen Block hinzufügen">Grüner Block</button>
       </div>
     </section>
 
     <section aria-labelledby="instructionsLabel">
+      <h2 id="instructionsLabel">Anleitung</h2>
       <p>Halten Sie die Umschalttaste (Shift) gedrückt und ziehen Sie mit der Maus, um die Größe eines Blocks zu skalieren.</p>
     </section>
   </main>
