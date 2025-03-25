@@ -111,7 +111,7 @@ canvas {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate3d(-50%, -50%, 0);
   background: linear-gradient(145deg, #ffffff, #e6e6e6);
   color: #333;
   padding: 30px 40px;
@@ -124,7 +124,7 @@ canvas {
 }
 
 #menu.hidden {
-  opacity: 0;
+  opacity: 0.01;
   transform: translate(-50%, -60%);
 }
 
@@ -273,7 +273,7 @@ a:focus, button:focus {
 <body>
     <div id="menuContainer"></div>
   <!-- Webseite Menü -->
-  <div class="banner" style="background: url('img/dummy-background.gif') no-repeat center; background-size: cover; height: 100px;"></div>
+  <div class="banner"></div>
 <div class="main-content">
   
   
@@ -285,11 +285,12 @@ a:focus, button:focus {
     <h2>Wähle eine Steuerung</h2>
     <hr>
     <ul class="nested">
+      <li>
       
-      <!-- Tastatur-Steuerung -->
-      <div style="display: flex; justify-content: center; align-items: center;">
-        <a class="menu-button" id="keyboard-control">
-          <button class="custom-button-flat small pulse-primary">
+      <div class="centered-flex">
+      <div class="centered-flex">
+          <button type="button" class="custom-button-flat small pulse-primary" title="Tastatur-Steuerung">
+          <button type="button" class="custom-button-flat small pulse-primary" title="Tastatur-Steuerung">
             <img src="img/book.png" alt="Tastatur-Icon">
             <span>Tastatur</span>
         </button>
@@ -298,7 +299,7 @@ a:focus, button:focus {
 
       <hr>
       <!-- Touchscreen-Steuerung -->
-      <div style="display: flex; justify-content: center; align-items: center;">
+      <div class="centered-flex">
         <a class="menu-button" id="touch-control">
           <button class="custom-button-flat small pulse-primary">
             <img src="img/book.png" alt="Touchscreen-Icon">
@@ -309,7 +310,7 @@ a:focus, button:focus {
 
       <hr>
       <!-- Joystick-Steuerung -->
-        <div style="display: flex; justify-content: center; align-items: center;">
+        <div class="centered-flex">
           <a class="menu-button" id="joystick-control">
             <button class="custom-button-flat small pulse-primary">
               <img src="img/book.png" alt="Joystick-Icon">
@@ -325,20 +326,19 @@ a:focus, button:focus {
     
     <!-- Highscores -->
     <div id="highscores">
-      <h2>Highscores</h2>
-      <ul id="score-list">Lade Scores...</ul>
+      <ul id="score-list"><li>Lade Scores...</li></ul>
     </div>
   </div>
 
-  <!-- Joystick -->
-  <div id="joystick-container" style="display: none;">
+  <div id="joystick-container" class="hidden">
+    <button type="button" data-dir="up">⬆</button>
     <button data-dir="up">⬆</button>
-    <div>
+    <button type="button" data-dir="up">⬆</button>
       <button data-dir="left">⬅</button>
-      <button data-dir="right">➡</button>
-    </div>
+      <button type="button" data-dir="left">⬅</button>
+      <button type="button" data-dir="right">➡</button>
     <button data-dir="down">⬇</button>
-  </div>
+    <button type="button" data-dir="down">⬇</button>
 
 
   
@@ -570,10 +570,6 @@ window.addEventListener('resize', () => {
     
   </script>
 
-<!--
-<div class="footer-container"></div>
-<div class="banner" style="background: url('img/dummy-background.gif') no-repeat center; background-size: cover; height: 30px;"></div>
--->
 </body>
 </html>
 
