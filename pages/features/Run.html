@@ -1,15 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jump & Run</title>
 
-  <!-- CodeMirror CSS einbinden -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
-  <!-- CodeMirror Theme (optional) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+  <title>Jump & Run</title>
 
   <style>
     /* ========== Grundlegende Reset-Styles ========== */
@@ -18,14 +13,14 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden; /* Kein Scrollen */
-      background: #87ceeb; /* Hellblau */
-
+      overflow: hidden;             /* Kein Scrollen */
+      background: #87ceeb;          /* Hellblau */
+      
       /* Verhindert Textauswahl und Kontextmenü auf iOS & Co. */
       -webkit-user-select: none;
       -webkit-touch-callout: none;
       user-select: none;
-      touch-action: none; /* blockiert Scrollen/Zoomen bei Wisch */
+      touch-action: none;           /* blockiert Scrollen/Zoomen bei Wisch */
 
       /* Option: Bei iOS Long-Press wird kein Highlighting gezeigt */
       -webkit-tap-highlight-color: transparent;
@@ -49,9 +44,9 @@
     }
 
     /* 
-       ========== „Botsramp“-Steuerungsflächen ========== 
-       Du kannst diese DIVs frei positionieren und gestalten.
-       Hier ein Beispiel mit halbtransparenten Flächen am unteren Bildschirmrand.
+      ========== „Botsramp“-Steuerungsflächen ========== 
+      Du kannst diese DIVs frei positionieren und gestalten.
+      Hier ein Beispiel mit halbtransparenten Flächen am unteren Bildschirmrand.
     */
     .controls {
       position: absolute;
@@ -71,7 +66,7 @@
 
       background: rgba(0, 0, 0, 0.2); /* leicht transparent */
       border: 2px solid #000;
-
+      
       /* Verhindert Textauswahl, Kontextmenü, grauen Tap-Effekt bei iOS */
       -webkit-user-select: none;
       -webkit-touch-callout: none;
@@ -102,21 +97,6 @@
       font-size: 16px;
       cursor: pointer;
     }
-
-    /* Textarea-Container für CodeMirror */
-    #codeContainer {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      width: 300px;
-      height: 400px;
-      z-index: 1000;
-    }
-
-    #code {
-      width: 100%;
-      height: 100%;
-    }
   </style>
 </head>
 <body>
@@ -139,290 +119,273 @@
     <button onclick="neustart()">Neustart</button>
     <button onclick="verlassen()">Verlassen</button>
   </div>
-
-  <!-- CodeMirror Editor -->
-  <div id="codeContainer">
-    <textarea id="code" name="code"></textarea>
-  </div>
 </div>
 
-<!-- CodeMirror JS einbinden -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-<!-- CodeMirror Mode für HTML -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/xml/xml.min.js"></script>
-
 <script>
-  // CodeMirror initialisieren
-  var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
-    lineNumbers: true,
-    mode: 'xml',
-    theme: 'dracula'
-  });
+// ========== 1. Konstanten & Variablen ==========
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-  // ========== 1. Konstanten & Variablen ==========
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
+// Device Pixel Ratio (z.B. iPhone 2x oder 3x Pixel)
+const dpr = window.devicePixelRatio || 1;
+const LOGICAL_WIDTH  = canvas.width;   // 720
+const LOGICAL_HEIGHT = canvas.height;  // 1280
 
-  // Device Pixel Ratio (z.B. iPhone 2x oder 3x Pixel)
-  const dpr = window.devicePixelRatio || 1;
-  const LOGICAL_WIDTH  = canvas.width;   // 720
-  const LOGICAL_HEIGHT = canvas.height;  // 1280
+// Canvas mit der DPI skalieren
+canvas.width  = LOGICAL_WIDTH  * dpr;
+canvas.height = LOGICAL_HEIGHT * dpr;
+ctx.scale(dpr, dpr);
 
-  // Canvas mit der DPI skalieren
-  canvas.width  = LOGICAL_WIDTH  * dpr;
-  canvas.height = LOGICAL_HEIGHT * dpr;
-  ctx.scale(dpr, dpr);
+const BODEN_HOEHE = 280;
 
-  const BODEN_HOEHE = 280;
+let level = 1;
+let hindernisse = [];
+let gegner = null;
+let gameOver = false;
 
-  let level = 1;
-  let hindernisse = [];
-  let gegner = null;
-  let gameOver = false;
+// Spieler-Objekt
+const spieler = {
+  x: 100,
+  y: 0,
+  breite: 50,
+  hoehe: 90,
+  farbe: 'blue',
+  vx: 4,            // horizontale Geschwindigkeit
+  vy: 0,            // vertikale Geschwindigkeit
+  sprungKraft: 20,  // Sprunghöhe
+  schwerkraft: 0.8, // Gravitation
+  amBoden: false,
+  bewegt: false,
+  richtung: 0       // -1 = links, 1 = rechts
+};
 
-  // Spieler-Objekt
-  const spieler = {
-    x: 100,
-    y: 0,
-    breite: 50,
-    hoehe: 90,
-    farbe: 'blue',
-    vx: 4,            // horizontale Geschwindigkeit
-    vy: 0,            // vertikale Geschwindigkeit
-    sprungKraft: 20,  // Sprunghöhe
-    schwerkraft: 0.8, // Gravitation
-    amBoden: false,
-    bewegt: false,
-    richtung: 0       // -1 = links, 1 = rechts
-  };
+let levels = [];
 
-  let levels = [];
+// Lädt die Level-Daten aus der JSON-Datei
+async function ladeLevelDaten() {
+  try {
+    const response = await fetch('./levels.json');
+    levels = await response.json();
+    ladeLevel(level); // Lade das erste Level nach dem Laden der Daten
+  } catch (error) {
+    console.error('Fehler beim Laden der Level-Daten:', error);
+  }
+}
 
-  // Lädt die Level-Daten aus der JSON-Datei
-  async function ladeLevelDaten() {
-    try {
-      const response = await fetch('./levels.json');
-      levels = await response.json();
-      ladeLevel(level); // Lade das erste Level nach dem Laden der Daten
-    } catch (error) {
-      console.error('Fehler beim Laden der Level-Daten:', error);
-    }
+// Lädt das Level basierend auf der aktuellen Stufe
+function ladeLevel(stufe) {
+  if (stufe > levels.length) {
+    spielBeenden("Du hast alle Levels gemeistert!");
+    return;
+  }
+  const currentLevel = levels[stufe - 1];
+  // Deep Copy der Hindernisse, um spätere Modifikationen zu isolieren
+  hindernisse = currentLevel.hindernisse.map(obj => ({ ...obj }));
+  gegner = currentLevel.gegner ? { ...currentLevel.gegner } : null;
+}
+
+// Aktualisiert den Spieler und kümmert sich um den Level-Wechsel
+function updateSpieler() {
+  // Spieler bewegt sich in X-Richtung, falls markiert
+  if (spieler.bewegt) {
+    spieler.x += spieler.richtung * spieler.vx;
+  }
+  
+  // Gravitation anwenden
+  spieler.vy += spieler.schwerkraft;
+  spieler.y += spieler.vy;
+  
+  // Kollision mit dem Boden
+  if (spieler.y + spieler.hoehe >= LOGICAL_HEIGHT - BODEN_HOEHE) {
+    spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
+    spieler.amBoden = true;
+    spieler.vy = 0;
+  } else {
+    spieler.amBoden = false;
   }
 
-  // Lädt das Level basierend auf der aktuellen Stufe
-  function ladeLevel(stufe) {
-    if (stufe > levels.length) {
-      spielBeenden("Du hast alle Levels gemeistert!");
-      return;
-    }
-    const currentLevel = levels[stufe - 1];
-    // Deep Copy der Hindernisse, um spätere Modifikationen zu isolieren
-    hindernisse = currentLevel.hindernisse.map(obj => ({ ...obj }));
-    gegner = currentLevel.gegner ? { ...currentLevel.gegner } : null;
-  }
-
-  // Aktualisiert den Spieler und kümmert sich um den Level-Wechsel
-  function updateSpieler() {
-    // Spieler bewegt sich in X-Richtung, falls markiert
-    if (spieler.bewegt) {
-      spieler.x += spieler.richtung * spieler.vx;
-    }
-    
-    // Gravitation anwenden
-    spieler.vy += spieler.schwerkraft;
-    spieler.y += spieler.vy;
-    
-    // Kollision mit dem Boden
-    if (spieler.y + spieler.hoehe >= LOGICAL_HEIGHT - BODEN_HOEHE) {
-      spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
-      spieler.amBoden = true;
-      spieler.vy = 0;
-    } else {
-      spieler.amBoden = false;
-    }
-
-    // Wenn der Spieler den rechten Rand überschreitet, wechsle Level
-    if (spieler.x > LOGICAL_WIDTH) {
-      level++;
-      resetSpielerPosition();
-      ladeLevel(level);
-    }
-  }
-
-  // Gegner-Bewegung: Hin- und Her-Wandern im definierten Bereich
-  function updateGegner() {
-    if (!gegner) return;
-    gegner.x += gegner.speed;
-    if (gegner.x < gegner.minX || (gegner.x + gegner.breite) > gegner.maxX) {
-      gegner.speed *= -1;
-    }
-  }
-
-  // Prüft Kollisionen von Spieler mit Hindernissen und Gegner
-  function pruefeKollisionen() {
-    // Kollision mit Hindernissen
-    hindernisse.forEach(h => {
-      if (istKollision(spieler, h)) {
-        if (!h.safe) {
-          spielBeenden("Gegen ein Hindernis gerannt!");
-        } else {
-          // Spieler landet sicher auf dem Hindernis
-          spieler.y = h.y - spieler.hoehe;
-          spieler.vy = 0;
-          spieler.amBoden = true;
-        }
-      }
-    });
-    // Kollision mit dem Gegner
-    if (gegner && istKollision(spieler, gegner)) {
-      spielBeenden("Vom Gegner erwischt!");
-    }
-  }
-
-  // Utility-Funktion zur Kollisionsprüfung
-  function istKollision(a, b) {
-    return (
-      a.x < b.x + b.breite &&
-      a.x + a.breite > b.x &&
-      a.y < b.y + b.hoehe &&
-      a.y + a.hoehe > b.y
-    );
-  }
-
-  // Zeichnet den Hintergrund (Himmel und Boden)
-  function zeichneHintergrund() {
-    ctx.fillStyle = '#87ceeb';
-    ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-    ctx.fillStyle = 'green';
-    ctx.fillRect(0, LOGICAL_HEIGHT - BODEN_HOEHE, LOGICAL_WIDTH, BODEN_HOEHE);
-  }
-
-  // Zeichnet Spieler, Hindernisse und Gegner
-  function zeichneSpieler() {
-    ctx.fillStyle = spieler.farbe;
-    ctx.fillRect(spieler.x, spieler.y, spieler.breite, spieler.hoehe);
-  }
-  function zeichneHindernisse() {
-    hindernisse.forEach(obj => {
-      ctx.fillStyle = obj.farbe || 'brown';
-      ctx.fillRect(obj.x, obj.y, obj.breite, obj.hoehe);
-    });
-  }
-  function zeichneGegner() {
-    if (!gegner) return;
-    ctx.fillStyle = gegner.farbe;
-    ctx.fillRect(gegner.x, gegner.y, gegner.breite, gegner.hoehe);
-  }
-
-  // HUD: Zeigt aktuelles Level an
-  function zeichneHud() {
-    ctx.fillStyle = 'black';
-    ctx.font = '28px Arial';
-    ctx.fillText(`Level: ${level}`, 20, 50);
-  }
-
-  // HauptgameLoop: Aktualisiert alle Elemente und rendert auf dem Canvas
-  function gameLoop() {
-    if (gameOver) return;
-    ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-    
-    updateSpieler();
-    updateGegner();
-    pruefeKollisionen();
-    
-    zeichneHintergrund();
-    zeichneHindernisse();
-    zeichneGegner();
-    zeichneSpieler();
-    zeichneHud();
-    
-    requestAnimationFrame(gameLoop);
-  }
-
-  // === EVENT-HANDLER (Berührung & Tastatur) ===
-  const handlePointerDown = (e) => {
-    e.preventDefault();
-    const action = e.target.getAttribute('data-action');
-    if (!action) return;
-    if (action === 'left') {
-      spieler.bewegt = true;
-      spieler.richtung = -1;
-    } else if (action === 'right') {
-      spieler.bewegt = true;
-      spieler.richtung = 1;
-    } else if (action === 'jump' && spieler.amBoden) {
-      spieler.vy = -spieler.sprungKraft;
-    }
-  };
-
-  const handlePointerUp = (e) => {
-    e.preventDefault();
-    const action = e.target.getAttribute('data-action');
-    if (!action) return;
-    if (action === 'left' || action === 'right') {
-      spieler.bewegt = false;
-    }
-  };
-
-  ['leftArea', 'rightArea', 'jumpArea'].forEach(id => {
-    const area = document.getElementById(id);
-    area.addEventListener('pointerdown', handlePointerDown);
-    area.addEventListener('pointerup', handlePointerUp);
-    area.addEventListener('pointercancel', handlePointerUp);
-  });
-
-  // Tastaturunterstützung
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-      spieler.bewegt = true;
-      spieler.richtung = -1;
-    } else if (e.key === 'ArrowRight') {
-      spieler.bewegt = true;
-      spieler.richtung = 1;
-    } else if (e.key === ' ' && spieler.amBoden) {
-      spieler.vy = -spieler.sprungKraft;
-    }
-  });
-  document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      spieler.bewegt = false;
-    }
-  });
-
-  // Verhindert das Kontextmenü
-  document.addEventListener('contextmenu', e => e.preventDefault(), false);
-
-  // === SPIEL-STEUERUNG (Neustart & Verlassen) ===
-  function spielBeenden(nachricht) {
-    gameOver = true;
-    document.getElementById('gameOverMessage').innerText = nachricht;
-    document.getElementById('gameOverMenu').style.display = 'block';
-  }
-  function neustart() {
-    document.getElementById('gameOverMenu').style.display = 'none';
-    level = 1;
-    gameOver = false;
+  // Wenn der Spieler den rechten Rand überschreitet, wechsle Level
+  if (spieler.x > LOGICAL_WIDTH) {
+    level++;
     resetSpielerPosition();
     ladeLevel(level);
-    gameLoop();
   }
-  function verlassen() {
-    alert("Spiel kann auf Mobilgeräten nicht einfach geschlossen werden. Bitte Tab oder App beenden.");
-  }
+}
 
-  // Setzt Spielerposition zurück
-  function resetSpielerPosition() {
-    spieler.x = 100;
-    spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
-    spieler.vy = 0;
+// Gegner-Bewegung: Hin- und Her-Wandern im definierten Bereich
+function updateGegner() {
+  if (!gegner) return;
+  gegner.x += gegner.speed;
+  if (gegner.x < gegner.minX || (gegner.x + gegner.breite) > gegner.maxX) {
+    gegner.speed *= -1;
+  }
+}
+
+// Prüft Kollisionen von Spieler mit Hindernissen und Gegner
+function pruefeKollisionen() {
+  // Kollision mit Hindernissen
+  hindernisse.forEach(h => {
+    if (istKollision(spieler, h)) {
+      if (!h.safe) {
+        spielBeenden("Gegen ein Hindernis gerannt!");
+      } else {
+        // Spieler landet sicher auf dem Hindernis
+        spieler.y = h.y - spieler.hoehe;
+        spieler.vy = 0;
+        spieler.amBoden = true;
+      }
+    }
+  });
+  // Kollision mit dem Gegner
+  if (gegner && istKollision(spieler, gegner)) {
+    spielBeenden("Vom Gegner erwischt!");
+  }
+}
+
+// Utility-Funktion zur Kollisionsprüfung
+function istKollision(a, b) {
+  return (
+    a.x < b.x + b.breite &&
+    a.x + a.breite > b.x &&
+    a.y < b.y + b.hoehe &&
+    a.y + a.hoehe > b.y
+  );
+}
+
+// Zeichnet den Hintergrund (Himmel und Boden)
+function zeichneHintergrund() {
+  ctx.fillStyle = '#87ceeb';
+  ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+  ctx.fillStyle = 'green';
+  ctx.fillRect(0, LOGICAL_HEIGHT - BODEN_HOEHE, LOGICAL_WIDTH, BODEN_HOEHE);
+}
+
+// Zeichnet Spieler, Hindernisse und Gegner
+function zeichneSpieler() {
+  ctx.fillStyle = spieler.farbe;
+  ctx.fillRect(spieler.x, spieler.y, spieler.breite, spieler.hoehe);
+}
+function zeichneHindernisse() {
+  hindernisse.forEach(obj => {
+    ctx.fillStyle = obj.farbe || 'brown';
+    ctx.fillRect(obj.x, obj.y, obj.breite, obj.hoehe);
+  });
+}
+function zeichneGegner() {
+  if (!gegner) return;
+  ctx.fillStyle = gegner.farbe;
+  ctx.fillRect(gegner.x, gegner.y, gegner.breite, gegner.hoehe);
+}
+
+// HUD: Zeigt aktuelles Level an
+function zeichneHud() {
+  ctx.fillStyle = 'black';
+  ctx.font = '28px Arial';
+  ctx.fillText(`Level: ${level}`, 20, 50);
+}
+
+// HauptgameLoop: Aktualisiert alle Elemente und rendert auf dem Canvas
+function gameLoop() {
+  if (gameOver) return;
+  ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+  
+  updateSpieler();
+  updateGegner();
+  pruefeKollisionen();
+  
+  zeichneHintergrund();
+  zeichneHindernisse();
+  zeichneGegner();
+  zeichneSpieler();
+  zeichneHud();
+  
+  requestAnimationFrame(gameLoop);
+}
+
+// === EVENT-HANDLER (Berührung & Tastatur) ===
+const handlePointerDown = (e) => {
+  e.preventDefault();
+  const action = e.target.getAttribute('data-action');
+  if (!action) return;
+  if (action === 'left') {
+    spieler.bewegt = true;
+    spieler.richtung = -1;
+  } else if (action === 'right') {
+    spieler.bewegt = true;
+    spieler.richtung = 1;
+  } else if (action === 'jump' && spieler.amBoden) {
+    spieler.vy = -spieler.sprungKraft;
+  }
+};
+
+const handlePointerUp = (e) => {
+  e.preventDefault();
+  const action = e.target.getAttribute('data-action');
+  if (!action) return;
+  if (action === 'left' || action === 'right') {
     spieler.bewegt = false;
-    spieler.richtung = 0;
   }
+};
 
-  // === INITIALER START ===
-  ladeLevelDaten(); // Lade die Level-Daten aus der JSON-Datei
+['leftArea', 'rightArea', 'jumpArea'].forEach(id => {
+  const area = document.getElementById(id);
+  area.addEventListener('pointerdown', handlePointerDown);
+  area.addEventListener('pointerup', handlePointerUp);
+  area.addEventListener('pointercancel', handlePointerUp);
+});
+
+// Tastaturunterstützung
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') {
+    spieler.bewegt = true;
+    spieler.richtung = -1;
+  } else if (e.key === 'ArrowRight') {
+    spieler.bewegt = true;
+    spieler.richtung = 1;
+  } else if (e.key === ' ' && spieler.amBoden) {
+    spieler.vy = -spieler.sprungKraft;
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    spieler.bewegt = false;
+  }
+});
+
+// Verhindert das Kontextmenü
+document.addEventListener('contextmenu', e => e.preventDefault(), false);
+
+// === SPIEL-STEUERUNG (Neustart & Verlassen) ===
+function spielBeenden(nachricht) {
+  gameOver = true;
+  document.getElementById('gameOverMessage').innerText = nachricht;
+  document.getElementById('gameOverMenu').style.display = 'block';
+}
+function neustart() {
+  document.getElementById('gameOverMenu').style.display = 'none';
+  level = 1;
+  gameOver = false;
   resetSpielerPosition();
+  ladeLevel(level);
   gameLoop();
+}
+function verlassen() {
+  alert("Spiel kann auf Mobilgeräten nicht einfach geschlossen werden. Bitte Tab oder App beenden.");
+}
+
+// Setzt Spielerposition zurück
+function resetSpielerPosition() {
+  spieler.x = 100;
+  spieler.y = LOGICAL_HEIGHT - BODEN_HOEHE - spieler.hoehe;
+  spieler.vy = 0;
+  spieler.bewegt = false;
+  spieler.richtung = 0;
+}
+
+// === INITIALER START ===
+ladeLevelDaten(); // Lade die Level-Daten aus der JSON-Datei
+resetSpielerPosition();
+gameLoop();
 </script>
 </body>
 </html>
