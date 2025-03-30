@@ -167,9 +167,29 @@ async function ladeLevelDaten() {
     const response = await fetch('./levels.json');
     levels = await response.json();
     ladeLevel(level); // Lade das erste Level nach dem Laden der Daten
+    resetSpielerPosition();
+    gameLoop(); // Starte den Game Loop erst nach dem erfolgreichen Laden der Daten
   } catch (error) {
     console.error('Fehler beim Laden der Level-Daten:', error);
+    // Fallback: Wenn die JSON-Datei nicht geladen werden kann, verwende Standard-Level
+    initialisiereStandardLevel();
   }
+}
+
+// Hilfsfunktion zur Initialisierung von Standard-Levels
+function initialisiereStandardLevel() {
+  levels = [
+    {
+      hindernisse: [
+        { x: 300, y: 900, breite: 100, hoehe: 20, farbe: 'brown', safe: true },
+        { x: 500, y: 800, breite: 100, hoehe: 20, farbe: 'brown', safe: true }
+      ],
+      gegner: { x: 400, y: 980, breite: 40, hoehe: 40, farbe: 'red', speed: 2, minX: 350, maxX: 550 }
+    }
+  ];
+  ladeLevel(level);
+  resetSpielerPosition();
+  gameLoop();
 }
 
 // Lädt das Level basierend auf der aktuellen Stufe
@@ -188,7 +208,11 @@ function ladeLevel(stufe) {
 function updateSpieler() {
   // Spieler bewegt sich in X-Richtung, falls markiert
   if (spieler.bewegt) {
-    spieler.x += spieler.richtung * spieler.vx;
+    // Verhindere, dass der Spieler den linken Bildschirmrand verlässt
+    let newX = spieler.x + spieler.richtung * spieler.vx;
+    if (newX >= 0) {
+      spieler.x = newX;
+    }
   }
   
   // Gravitation anwenden
@@ -383,9 +407,9 @@ function resetSpielerPosition() {
 }
 
 // === INITIALER START ===
-ladeLevelDaten(); // Lade die Level-Daten aus der JSON-Datei
+ladeLevelDaten(); // Lade die Level-Daten aus der JSON-Datei und starte das Spiel nach dem Laden
 resetSpielerPosition();
-gameLoop();
+// gameLoop() wird erst nach erfolgreichem Laden der Leveldaten aufgerufen
 </script>
 </body>
 </html>
