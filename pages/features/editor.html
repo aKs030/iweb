@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Level-Editor (Drag & Drop)</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      font-family: sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Container für den Editor-Bereich (linke Spalte) und Canvas (rechte Spalte) */
+    #editorContainer {
+      display: flex;
+      width: 100%;
+    }
+    /* Linke Spalte: Einstellungen, Objekt-Liste, JSON */
+    #sidebar {
+      width: 300px;
+      box-sizing: border-box;
+      padding: 10px;
+      border-right: 1px solid #ccc;
+      overflow-y: auto;
+    }
+    #sidebar h2 {
+      margin-top: 0;
+    }
+
+    .radioGroup {
+      margin: 10px 0;
+    }
+    label {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .objektListe {
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      padding: 5px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    .objektItem {
+      border: 1px solid #aaa;
+      padding: 5px;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    .objektItem.selected {
+      background: #ddeeff;
+    }
+    .objektItem input {
+      width: 80px;
+      margin-right: 5px;
+    }
+    .objektItem label {
+      display: inline-block;
+      width: 60px;
+    }
+
+    #jsonOutput {
+      width: 100%;
+      height: 150px;
+      box-sizing: border-box;
+    }
+
+    /* Canvas rechts, nimmt restlichen Platz ein */
+    #canvasContainer {
+      flex: 1;
+      position: relative;
+    }
+    #levelCanvas {
+      display: block;
+      background: #eee;
+      width: 100%;
+      height: 100%;
+      outline: none; /* Canvas-Umriss entfernen */
+    }
+  </style>
+</head>
+<body>
+
+<div id="editorContainer">
+  <!-- Seitenleiste -->
+  <div id="sidebar">
+    <h2>Level-Editor</h2>
+    <p>Wähle aus, welches Objekt du platzieren möchtest, und klicke dann ins Spielfeld (Canvas).</p>
+
+    <!-- Radiobuttons für Objekttyp -->
+    <div class="radioGroup">
+      <input type="radio" id="radioHindernis" name="objektTyp" value="hindernis" checked />
+      <label for="radioHindernis">Hindernis</label>
+      <br />
+      <input type="radio" id="radioGegner" name="objektTyp" value="gegner" />
+      <label for="radioGegner">Gegner</label>
+    </div>
+
+    <!-- Liste aller Objekte (Hindernisse + Gegner) -->
+    <h3>Objekte im Level</h3>
+    <div class="objektListe" id="objektListe"></div>
+
+    <!-- JSON-Ausgabe -->
+    <h3>Level-JSON</h3>
+    <button onclick="erzeugeJson()">JSON erzeugen</button>
+    <button onclick="copyJsonToClipboard()">JSON kopieren</button><br/>
+    <textarea id="jsonOutput" readonly></textarea>
+  </div>
+
+  <!-- Canvas-Vorschau -->
+  <div id="canvasContainer">
+    <!-- Wir verwenden eine feste "logische" Auflösung von 720×1280,
+         skalieren sie aber via CSS auf die verfügbare Größe -->
+    <canvas id="levelCanvas" width="720" height="1280" tabindex="0"></canvas>
+  </div>
+</div>
+
+<script>
+/* ========== Datenstrukturen ========== */
+let objekte = []; // Sammel-Array für Hindernisse und Gegner
+let ausgewaehltesObjekt = null; // Aktuell ausgewähltes Objekt im Editor
+
+// Canvas-Kontext
+const canvas = document.getElementById('levelCanvas');
+const ctx = canvas.getContext('2d');
+
+// Device-Pixel-Ratio anpassen (optional, falls du es wie im Spiel willst)
+const dpr = window.devicePixelRatio || 1;
+canvas.width = 720 * dpr;
+canvas.height = 1280 * dpr;
+ctx.scale(dpr, dpr);
+
+// Drag-Variablen
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+let dragging = false;
+
+/* ========== Event-Listener für Canvas ========== */
+canvas.addEventListener('mousedown', function(e) {
+  const { x, y } = getMousePos(e);
+  // Prüfen, ob wir auf ein Objekt klicken, um es auszuwählen
+  const clickedObj = getObjektAt(x, y);
+  if (clickedObj) {
+    // Objekt auswählen und Verschiebung vorbereiten
+    ausgewaehltesObjekt = clickedObj;
+    dragging = true;
+    dragOffsetX = x - clickedObj.x;
+    dragOffsetY = y - clickedObj.y;
+  } else {
+    // Neues Objekt anlegen (je nach Radiobutton)
+    const objektTyp = document.querySelector('input[name="objektTyp"]:checked').value;
+    let neuesObjekt = null;
+    if (objektTyp === 'hindernis') {
+      neuesObjekt = {
+        type: 'hindernis',
+        x: x,
+        y: y,
+        width: 100,
+        height: 30,
+        color: 'brown',
+        safe: true
+      };
+    } else {
+      // Gegner
+      neuesObjekt = {
+        type: 'gegner',
+        x: x,
+        y: y,
+        width: 40,
+        height: 40,
+        color: 'red',
+        speed: 2,
+        minX: x - 50,
+        maxX: x + 50
+      };
+    }
+    objekte.push(neuesObjekt);
+    ausgewaehltesObjekt = neuesObjekt;
+  }
+  aktualisiereObjektListe();
+  zeichneSzene();
+});
+
+canvas.addEventListener('mousemove', function(e) {
+  if (!dragging || !ausgewaehltesObjekt) return;
+  const { x, y } = getMousePos(e);
+  ausgewaehltesObjekt.x = x - dragOffsetX;
+  ausgewaehltesObjekt.y = y - dragOffsetY;
+  zeichneSzene();
+});
+
+canvas.addEventListener('mouseup', function(e) {
+  dragging = false;
+});
+
+/* ========== Mausposition relativ zur "logischen" Canvas-Größe ========== */
+function getMousePos(evt) {
+  const rect = canvas.getBoundingClientRect();
+  // Mauskoordinaten relativ zur tatsächlichen gerenderten Canvas-Größe
+  const mouseX = evt.clientX - rect.left;
+  const mouseY = evt.clientY - rect.top;
+  // Zurückrechnen auf die "logische" Breite/Höhe (720x1280)
+  return {
+    x: mouseX / (rect.width / 720),
+    y: mouseY / (rect.height / 1280)
+  };
+}
+
+/* ========== Klick auf Objekt ermitteln ========== */
+function getObjektAt(x, y) {
+  // Von oben nach unten suchen, ob ein Objekt an dieser Stelle liegt
+  // Da wir nur "rechteckige" Objekte haben, reicht bounding-box-check
+  for (let i = objekte.length - 1; i >= 0; i--) {
+    const o = objekte[i];
+    if (
+      x >= o.x &&
+      x <= o.x + o.width &&
+      y >= o.y &&
+      y <= o.y + o.height
+    ) {
+      return o;
+    }
+  }
+  return null;
+}
+
+/* ========== Zeichnen der Szene ========== */
+function zeichneSzene() {
+  ctx.clearRect(0, 0, 720, 1280);
+  // Hintergrund
+  ctx.fillStyle = '#87ceeb';
+  ctx.fillRect(0, 0, 720, 1280);
+
+  // Boden (ähnlich wie im Spiel)
+  ctx.fillStyle = 'green';
+  ctx.fillRect(0, 1280 - 280, 720, 280);
+
+  // Objekte zeichnen
+  objekte.forEach(o => {
+    ctx.fillStyle = o.color;
+    ctx.fillRect(o.x, o.y, o.width, o.height);
+    // Kleiner Umriss
+    ctx.strokeStyle = 'black';
+    ctx.strokeRect(o.x, o.y, o.width, o.height);
+  });
+}
+
+/* ========== Liste (Sidebar) aktualisieren ========== */
+function aktualisiereObjektListe() {
+  const container = document.getElementById('objektListe');
+  container.innerHTML = '';
+  objekte.forEach((obj, index) => {
+    const div = document.createElement('div');
+    div.className = 'objektItem' + (obj === ausgewaehltesObjekt ? ' selected' : '');
+    div.onclick = () => {
+      // Klick in der Liste -> Objekt auswählen
+      ausgewaehltesObjekt = obj;
+      aktualisiereObjektListe();
+      zeichneSzene();
+    };
+
+    // Zusammenstellung der Eingabe-Felder
+    if (obj.type === 'hindernis') {
+      div.innerHTML = `
+        <strong>Hindernis #${index}</strong><br/>
+        <label>X:</label><input type="number" value="${obj.x}" oninput="updateObjValue(${index}, 'x', this.value)" /><br/>
+        <label>Y:</label><input type="number" value="${obj.y}" oninput="updateObjValue(${index}, 'y', this.value)" /><br/>
+        <label>Breite:</label><input type="number" value="${obj.width}" oninput="updateObjValue(${index}, 'width', this.value)" /><br/>
+        <label>Höhe:</label><input type="number" value="${obj.height}" oninput="updateObjValue(${index}, 'height', this.value)" /><br/>
+        <label>Farbe:</label><input type="text" value="${obj.color}" oninput="updateObjValue(${index}, 'color', this.value)" /><br/>
+        <label>Safe?</label><input type="checkbox" ${obj.safe ? 'checked' : ''} onchange="updateObjValue(${index}, 'safe', this.checked)" />
+      `;
+    } else {
+      // Gegner
+      div.innerHTML = `
+        <strong>Gegner #${index}</strong><br/>
+        <label>X:</label><input type="number" value="${obj.x}" oninput="updateObjValue(${index}, 'x', this.value)" /><br/>
+        <label>Y:</label><input type="number" value="${obj.y}" oninput="updateObjValue(${index}, 'y', this.value)" /><br/>
+        <label>Breite:</label><input type="number" value="${obj.width}" oninput="updateObjValue(${index}, 'width', this.value)" /><br/>
+        <label>Höhe:</label><input type="number" value="${obj.height}" oninput="updateObjValue(${index}, 'height', this.value)" /><br/>
+        <label>Farbe:</label><input type="text" value="${obj.color}" oninput="updateObjValue(${index}, 'color', this.value)" /><br/>
+        <label>Speed:</label><input type="number" value="${obj.speed}" oninput="updateObjValue(${index}, 'speed', this.value)" /><br/>
+        <label>minX:</label><input type="number" value="${obj.minX}" oninput="updateObjValue(${index}, 'minX', this.value)" /><br/>
+        <label>maxX:</label><input type="number" value="${obj.maxX}" oninput="updateObjValue(${index}, 'maxX', this.value)" />
+      `;
+    }
+    container.appendChild(div);
+  });
+}
+
+/* ========== Objekt-Werte aktualisieren (Eingabefelder) ========== */
+function updateObjValue(index, key, value) {
+  let obj = objekte[index];
+  // Numeric cast bei Zahlenfeldern
+  if (['x','y','width','height','speed','minX','maxX'].includes(key)) {
+    value = parseFloat(value) || 0;
+  }
+  if (key === 'safe') {
+    value = !!value; // Boolean
+  }
+  obj[key] = value;
+  zeichneSzene();
+}
+
+/* ========== JSON-Ausgabe ========== */
+function erzeugeJson() {
+  // Wir erstellen ein Level-Objekt im gleichen Format wie dein Spiel
+  // - Alle hindernisse ins Array "hindernisse"
+  // - Evtl. genau ein gegner-Objekt oder mehrere
+  const hindernisse = objekte
+    .filter(o => o.type === 'hindernis')
+    .map(o => ({
+      x: o.x,
+      y: o.y,
+      breite: o.width,
+      hoehe: o.height,
+      farbe: o.color,
+      safe: o.safe
+    }));
+
+  // Falls du mehrere Gegner erlauben willst, nimm ein Array. 
+  // Wenn nur einer pro Level, verwende den ersten.
+  const gegnerListe = objekte.filter(o => o.type === 'gegner').map(o => ({
+    x: o.x,
+    y: o.y,
+    breite: o.width,
+    hoehe: o.height,
+    farbe: o.color,
+    speed: o.speed,
+    minX: o.minX,
+    maxX: o.maxX
+  }));
+
+  // Hier wird nur ein einzelner Gegner erwartet (falls vorhanden)
+  const levelObj = {
+    hindernisse: hindernisse,
+    gegner: gegnerListe.length > 0 ? gegnerListe[0] : null
+  };
+
+  const jsonStr = JSON.stringify(levelObj, null, 2);
+  document.getElementById('jsonOutput').value = jsonStr;
+}
+
+/* ========== JSON per Klick kopieren ========== */
+async function copyJsonToClipboard() {
+  const text = document.getElementById('jsonOutput').value;
+  if (!text.trim()) {
+    alert("Keine JSON-Daten vorhanden. Bitte zuerst auf 'JSON erzeugen' klicken.");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    alert("JSON wurde in die Zwischenablage kopiert.");
+  } catch (err) {
+    alert("Kopieren fehlgeschlagen: " + err);
+  }
+}
+
+// Beim Laden einmal initial zeichnen
+zeichneSzene();
+</script>
+</body>
+</html>
