@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jump & Run Spiel (Angepasste Reaktion)</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -12,7 +12,7 @@
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         body { display: flex; justify-content: center; align-items: center; background-color: #5c94fc; font-family: 'Press Start 2P', cursive; flex-direction: column; padding: 10px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         #gameContainer { border: 5px solid #000; position: relative; background-color: #e0f8cf; width: 100%; aspect-ratio: 3 / 4; max-height: 90vh; box-shadow: 8px 8px 0 rgba(0,0,0,0.5); margin-bottom: 15px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        canvas { display: block; background-color: #70c5ce; image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges; image-rendering: pixelated; image-rendering: crisp-edges; }
+        canvas { display: block; background-color: #70c5ce; image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges; image-rendering: pixelated; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
         #controls { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 400px; }
         button { font-family: 'Press Start 2P', cursive; padding: 10px; width: 60px; height: 60px; font-size: 14px; cursor: pointer; background-color: #ffcc00; color: #333; border: 3px solid #000; border-radius: 8px; box-shadow: 4px 4px 0 rgba(0,0,0,0.3); transition: all 0.1s ease; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; -webkit-tap-highlight-color: transparent; display: inline-flex; align-items: center; justify-content: center; }
         button:active { box-shadow: 1px 1px 0 rgba(0,0,0,0.3); transform: translate(3px, 3px); }
