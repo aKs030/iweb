@@ -1,365 +1,293 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Level-Editor (Drag & Drop)</title>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      font-family: sans-serif;
-      height: 100vh;
-      overflow: hidden;
-    }
-    /* Container für den Editor-Bereich (linke Spalte) und Canvas (rechte Spalte) */
-    #editorContainer {
-      display: flex;
-      width: 100%;
-    }
-    /* Linke Spalte: Einstellungen, Objekt-Liste, JSON */
-    #sidebar {
-      width: 300px;
-      box-sizing: border-box;
-      padding: 10px;
-      border-right: 1px solid #ccc;
-      overflow-y: auto;
-    }
-    #sidebar h2 {
-      margin-top: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Editor (Eigenschaften Bearbeiten)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column;
+            align-items: center; padding: 15px; background-color: #f0f0f0; margin: 0;
+        }
+        h1 { font-size: 20px; margin-bottom: 15px; }
+        #editorContainer {
+            display: flex; gap: 20px; width: 100%; max-width: 1000px;
+            flex-wrap: wrap; justify-content: center; align-items: flex-start;
+        }
+        #canvasContainer {
+            border: 3px solid #000; width: 300px; height: 400px; position: relative;
+            background-color: #70c5ce; cursor: crosshair; flex-shrink: 0;
+        }
+        canvas { display: block; width: 100%; height: 100%; background-color: transparent; }
+        #controlsPanel { display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
+        #toolbar, #propertiesPanel {
+            padding: 15px; background-color: #e0e0e0; border: 2px solid #999;
+            border-radius: 5px; display: flex; flex-direction: column; gap: 10px;
+        }
+        #toolbar h2, #propertiesPanel h2 { font-size: 14px; margin: 0 0 10px 0; text-align: center; }
+        #toolbar button {
+            font-family: 'Press Start 2P', cursive; padding: 8px 12px; font-size: 12px;
+            cursor: pointer; border: 2px solid #555; border-radius: 5px;
+            background-color: #fff; transition: background-color 0.2s;
+        }
+        #toolbar button.selected { background-color: #ffcc00; border-color: #000; font-weight: bold; }
+        #toolbar button:hover:not(.selected) { background-color: #f8f8f8; }
 
-    .radioGroup {
-      margin: 10px 0;
-    }
-    label {
-      cursor: pointer;
-      user-select: none;
-    }
+        /* Properties Panel Styling */
+        #propertiesPanel { min-height: 120px; /* Mehr Platz für Inputs */ font-size: 10px; line-height: 1.6; }
+        #propOutput { /* Container für dynamischen Inhalt */ }
+        #propertiesPanel label { margin-right: 5px; }
+        #propertiesPanel input[type="number"] {
+            font-family: 'Press Start 2P', cursive; font-size: 10px;
+            width: 60px; padding: 3px; border: 1px solid #555; margin-bottom: 5px;
+            text-align: right;
+        }
+        #propertiesPanel button { /* Apply Button */
+            font-family: 'Press Start 2P', cursive; font-size: 10px; padding: 5px 8px;
+            margin-top: 8px; cursor: pointer; border: 1px solid #555; border-radius: 3px;
+            background-color: #ccc; display: block; /* Eigene Zeile */
+        }
+         #propertiesPanel button:hover { background-color: #bbb; }
 
-    .objektListe {
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      padding: 5px;
-      max-height: 250px;
-      overflow-y: auto;
-    }
-    .objektItem {
-      border: 1px solid #aaa;
-      padding: 5px;
-      margin-bottom: 5px;
-      cursor: pointer;
-    }
-    .objektItem.selected {
-      background: #ddeeff;
-    }
-    .objektItem input {
-      width: 80px;
-      margin-right: 5px;
-    }
-    .objektItem label {
-      display: inline-block;
-      width: 60px;
-    }
 
-    #jsonOutput {
-      width: 100%;
-      height: 150px;
-      box-sizing: border-box;
-    }
+        #exportContainer { margin-top: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; }
+        #exportContainer h2 { font-size: 14px; margin-bottom: 10px; }
+        #exportOutput {
+            width: 100%; height: 200px; font-family: monospace; font-size: 11px;
+            padding: 10px; border: 2px solid #999; background-color: #fff;
+            white-space: pre; overflow: auto;
+        }
+        #editorActions {
+            margin-top: 15px; display: flex; gap: 15px; align-items: center;
+            flex-wrap: wrap; justify-content: center;
+        }
+         #editorActions button, #editorActions label, #editorActions input { font-family: 'Press Start 2P', cursive; font-size: 12px; }
+         #editorActions button { padding: 10px 15px; cursor: pointer; border: 2px solid #555; border-radius: 5px; background-color: #ddd; transition: background-color 0.2s; }
+          #editorActions button:hover { background-color: #ccc; }
+          #copyBtn.copied { background-color: #4CAF50; color: white; }
+          #levelIdInput { width: 60px; padding: 8px; border: 2px solid #555; border-radius: 5px; text-align: right; margin-left: 5px; }
+          #levelIdLabel { margin-left: 10px; }
 
-    /* Canvas rechts, nimmt restlichen Platz ein */
-    #canvasContainer {
-      flex: 1;
-      position: relative;
-    }
-    #levelCanvas {
-      display: block;
-      background: #eee;
-      width: 100%;
-      height: 100%;
-      outline: none; /* Canvas-Umriss entfernen */
-    }
-  </style>
+        /* Visuelle Darstellung & Hervorhebungen (unverändert) */
+        .editor-platform { fill: #6d4c41; stroke: #4e342e; stroke-width: 1px; } .editor-coin { fill: #ffd700; } .editor-enemy { fill: #e53935; } .editor-player { fill: #ff0000; } .editor-grid { stroke: rgba(0, 0, 0, 0.1); stroke-width: 0.5px; } .highlight-delete { stroke: red; stroke-width: 2px; fill: rgba(255,0,0,0.2); } .highlight-select { stroke: blue; stroke-width: 2px; fill: rgba(0,0,255,0.2); }
+    </style>
 </head>
 <body>
 
-<div id="editorContainer">
-  <!-- Seitenleiste -->
-  <div id="sidebar">
-    <h2>Level-Editor</h2>
-    <p>Wähle aus, welches Objekt du platzieren möchtest, und klicke dann ins Spielfeld (Canvas).</p>
+    <h1>Level Editor</h1>
 
-    <!-- Radiobuttons für Objekttyp -->
-    <div class="radioGroup">
-      <input type="radio" id="radioHindernis" name="objektTyp" value="hindernis" checked />
-      <label for="radioHindernis">Hindernis</label>
-      <br />
-      <input type="radio" id="radioGegner" name="objektTyp" value="gegner" />
-      <label for="radioGegner">Gegner</label>
+    <div id="editorContainer">
+        <div id="controlsPanel">
+            <div id="toolbar">
+                <h2>Werkzeuge</h2>
+                <button data-tool="select">Auswählen</button>
+                <button data-tool="platform">Plattform</button>
+                <button data-tool="coin">Münze</button>
+                <button data-tool="enemy">Gegner</button>
+                <button data-tool="player">Spieler Start</button>
+                <button data-tool="delete">Löschen</button>
+            </div>
+            <div id="propertiesPanel">
+                 <h2>Eigenschaften</h2>
+                 <div id="propOutput">Nichts ausgewählt</div>
+            </div>
+        </div>
+
+        <div id="canvasContainer">
+            <canvas id="editorCanvas"></canvas>
+        </div>
     </div>
 
-    <!-- Liste aller Objekte (Hindernisse + Gegner) -->
-    <h3>Objekte im Level</h3>
-    <div class="objektListe" id="objektListe"></div>
+    <div id="exportContainer">
+         <div id="editorActions">
+            <button id="exportBtn">Level Exportieren</button>
+            <button id="copyBtn">Code Kopieren</button>
+            <button id="clearBtn">Level Leeren</button>
+            <label id="levelIdLabel" for="levelIdInput">Level ID:</label>
+            <input type="number" id="levelIdInput" value="1" min="1">
+        </div>
+        <h2>Exportierter Code</h2>
+        <textarea id="exportOutput" readonly placeholder="Hier erscheint der Code nach dem Exportieren..."></textarea>
+    </div>
 
-    <!-- JSON-Ausgabe -->
-    <h3>Level-JSON</h3>
-    <button onclick="erzeugeJson()">JSON erzeugen</button>
-    <button onclick="copyJsonToClipboard()">JSON kopieren</button><br/>
-    <textarea id="jsonOutput" readonly></textarea>
-  </div>
 
-  <!-- Canvas-Vorschau -->
-  <div id="canvasContainer">
-    <!-- Wir verwenden eine feste "logische" Auflösung von 720×1280,
-         skalieren sie aber via CSS auf die verfügbare Größe -->
-    <canvas id="levelCanvas" width="720" height="1280" tabindex="0"></canvas>
-  </div>
-</div>
+    <script>
+        const canvas = document.getElementById('editorCanvas');
+        const ctx = canvas.getContext('2d');
+        const toolbar = document.getElementById('toolbar');
+        const exportOutput = document.getElementById('exportOutput');
+        const exportBtn = document.getElementById('exportBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const propOutput = document.getElementById('propOutput'); // Container für Eigenschaften
+        const levelIdInput = document.getElementById('levelIdInput');
 
-<script>
-/* ========== Datenstrukturen ========== */
-let objekte = []; // Sammel-Array für Hindernisse und Gegner
-let ausgewaehltesObjekt = null; // Aktuell ausgewähltes Objekt im Editor
+        // Editor-Konfiguration (unverändert)
+        const editorWidth = 300; const editorHeight = 400; const gridSize = 10;
+        const defaultCoinRadius = 8; const defaultEnemyWidth = 20; const defaultEnemyHeight = 24;
+        const defaultPlayerWidth = 24; const defaultPlayerHeight = 28; const defaultPlatformHeight = 20;
 
-// Canvas-Kontext
-const canvas = document.getElementById('levelCanvas');
-const ctx = canvas.getContext('2d');
+        // Editor-Status (unverändert)
+        let currentTool = null;
+        let levelData = { platforms: [], coins: [], enemies: [], playerStart: { x: 50, y: editorHeight - 50 } };
+        let mousePos = { x: 0, y: 0 };
+        let isMouseOverCanvas = false; let isMouseDown = false; let isDraggingPlatform = false; let isDraggingElement = false;
+        let dragStartX = 0; let dragStartY = 0; let dragOffsetX = 0; let dragOffsetY = 0;
+        let selectedElement = null; let elementToDelete = null;
 
-// Device-Pixel-Ratio anpassen (optional, falls du es wie im Spiel willst)
-const dpr = window.devicePixelRatio || 1;
-canvas.width = 720 * dpr;
-canvas.height = 1280 * dpr;
-ctx.scale(dpr, dpr);
+        // Canvas Größe setzen
+        canvas.width = editorWidth; canvas.height = editorHeight;
 
-// Drag-Variablen
-let dragOffsetX = 0;
-let dragOffsetY = 0;
-let dragging = false;
+        // --- Hilfsfunktionen ---
+        function snapToGrid(value) { return Math.round(value / gridSize) * gridSize; }
+        function getMousePos(evt) { const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height; return { x: (evt.clientX - rect.left) * scaleX, y: (evt.clientY - rect.top) * scaleY }; }
 
-/* ========== Event-Listener für Canvas ========== */
-canvas.addEventListener('mousedown', function(e) {
-  const { x, y } = getMousePos(e);
-  // Prüfen, ob wir auf ein Objekt klicken, um es auszuwählen
-  const clickedObj = getObjektAt(x, y);
-  if (clickedObj) {
-    // Objekt auswählen und Verschiebung vorbereiten
-    ausgewaehltesObjekt = clickedObj;
-    dragging = true;
-    dragOffsetX = x - clickedObj.x;
-    dragOffsetY = y - clickedObj.y;
-  } else {
-    // Neues Objekt anlegen (je nach Radiobutton)
-    const objektTyp = document.querySelector('input[name="objektTyp"]:checked').value;
-    let neuesObjekt = null;
-    if (objektTyp === 'hindernis') {
-      neuesObjekt = {
-        type: 'hindernis',
-        x: x,
-        y: y,
-        width: 100,
-        height: 30,
-        color: 'brown',
-        safe: true
-      };
-    } else {
-      // Gegner
-      neuesObjekt = {
-        type: 'gegner',
-        x: x,
-        y: y,
-        width: 40,
-        height: 40,
-        color: 'red',
-        speed: 2,
-        minX: x - 50,
-        maxX: x + 50
-      };
-    }
-    objekte.push(neuesObjekt);
-    ausgewaehltesObjekt = neuesObjekt;
-  }
-  aktualisiereObjektListe();
-  zeichneSzene();
-});
+        // --- Element-Prüfung (Hit Detection) ---
+        function getElementAtPos(pos) { /* ... (unverändert) ... */
+             if (levelData.playerStart) { const dx = pos.x - levelData.playerStart.x; const dy = pos.y - levelData.playerStart.y; if ((dx * dx + dy * dy) < (15 * 15)) return { type: 'player', index: 0 }; }
+             for (let i = levelData.enemies.length - 1; i >= 0; i--) { const el = levelData.enemies[i]; if (pos.x >= el.x && pos.x <= el.x + el.width && pos.y >= el.y && pos.y <= el.y + el.height) return { type: 'enemy', index: i }; }
+             for (let i = levelData.coins.length - 1; i >= 0; i--) { const el = levelData.coins[i]; const dx = pos.x - (el.x + el.radius); const dy = pos.y - (el.y + el.radius); if ((dx * dx + dy * dy) < (el.radius * el.radius)) return { type: 'coin', index: i }; }
+             for (let i = levelData.platforms.length - 1; i >= 0; i--) { const el = levelData.platforms[i]; if (pos.x >= el.x && pos.x <= el.x + el.width && pos.y >= el.y && pos.y <= el.y + el.height) return { type: 'platform', index: i }; }
+             return null;
+        }
 
-canvas.addEventListener('mousemove', function(e) {
-  if (!dragging || !ausgewaehltesObjekt) return;
-  const { x, y } = getMousePos(e);
-  ausgewaehltesObjekt.x = x - dragOffsetX;
-  ausgewaehltesObjekt.y = y - dragOffsetY;
-  zeichneSzene();
-});
+        // --- Zeichenfunktionen für den Editor ---
+        function drawGrid() { /* ... (unverändert) ... */ ctx.beginPath(); ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'; ctx.lineWidth = 0.5; for(let x=0; x<=editorWidth; x+=gridSize){ ctx.moveTo(x,0); ctx.lineTo(x,editorHeight); } for(let y=0; y<=editorHeight; y+=gridSize){ ctx.moveTo(0,y); ctx.lineTo(editorWidth,y); } ctx.stroke(); }
+        function drawElements() { /* ... (unverändert, inkl. Hervorhebungen) ... */ ctx.fillStyle = '#6d4c41'; ctx.strokeStyle = '#4e342e'; ctx.lineWidth = 1; levelData.platforms.forEach(p => { ctx.fillRect(p.x, p.y, p.width, p.height); ctx.strokeRect(p.x, p.y, p.width, p.height); }); ctx.fillStyle = '#ffd700'; levelData.coins.forEach(c => { ctx.beginPath(); ctx.arc(c.x + c.radius, c.y + c.radius, c.radius, 0, Math.PI * 2); ctx.fill(); }); ctx.fillStyle = '#e53935'; levelData.enemies.forEach(e => { ctx.fillRect(e.x, e.y, e.width, e.height); }); ctx.fillStyle = '#ff0000'; if (levelData.playerStart) { ctx.beginPath(); ctx.arc(levelData.playerStart.x, levelData.playerStart.y, 10, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = '10px "Press Start 2P"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('P', levelData.playerStart.x, levelData.playerStart.y); } if (selectedElement) { highlightElement(selectedElement, 'select'); } if (currentTool === 'delete' && elementToDelete) { highlightElement(elementToDelete, 'delete'); } }
+        function highlightElement(elementRef, type) { /* ... (unverändert) ... */ let element; switch(elementRef.type) { case 'platform': element = levelData.platforms[elementRef.index]; break; case 'coin': element = levelData.coins[elementRef.index]; break; case 'enemy': element = levelData.enemies[elementRef.index]; break; case 'player': element = levelData.playerStart; break; default: return; } if (!element) return; ctx.strokeStyle = (type === 'select') ? 'blue' : 'red'; ctx.lineWidth = 2; ctx.fillStyle = (type === 'select') ? 'rgba(0,0,255,0.2)' : 'rgba(255,0,0,0.2)'; if (elementRef.type === 'coin') { ctx.beginPath(); ctx.arc(element.x + element.radius, element.y + element.radius, element.radius + 2, 0, Math.PI * 2); ctx.stroke(); ctx.fill(); } else if (elementRef.type === 'player') { ctx.beginPath(); ctx.arc(element.x, element.y, 12, 0, Math.PI * 2); ctx.stroke(); ctx.fill(); } else { ctx.strokeRect(element.x - 1, element.y - 1, element.width + 2, element.height + 2); ctx.fillRect(element.x - 1, element.y - 1, element.width + 2, element.height + 2); } }
+        function drawPreview() { /* ... (unverändert) ... */ if (!isMouseOverCanvas) return; const snappedX = snapToGrid(mousePos.x); const snappedY = snapToGrid(mousePos.y); ctx.globalAlpha = 0.5; if (currentTool && currentTool !== 'select' && currentTool !== 'delete') { switch (currentTool) { case 'platform': if (!isDraggingPlatform) { ctx.fillStyle = '#6d4c41'; ctx.fillRect(snappedX, snappedY, gridSize, defaultPlatformHeight); } break; case 'coin': ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.arc(snappedX + defaultCoinRadius, snappedY + defaultCoinRadius, defaultCoinRadius, 0, Math.PI * 2); ctx.fill(); break; case 'enemy': ctx.fillStyle = '#e53935'; ctx.fillRect(snappedX, snappedY, defaultEnemyWidth, defaultEnemyHeight); break; case 'player': ctx.fillStyle = '#ff0000'; ctx.beginPath(); ctx.arc(snappedX, snappedY, 10, 0, Math.PI * 2); ctx.fill(); break; } } if (isDraggingPlatform) { ctx.fillStyle = '#6d4c41'; const startX = Math.min(dragStartX, snappedX); const width = Math.abs(snappedX - dragStartX) || gridSize; ctx.fillRect(startX, dragStartY, width, defaultPlatformHeight); } ctx.globalAlpha = 1.0; }
+        function drawLevel() { /* ... (unverändert) ... */ ctx.clearRect(0, 0, editorWidth, editorHeight); drawGrid(); drawElements(); drawPreview(); }
 
-canvas.addEventListener('mouseup', function(e) {
-  dragging = false;
-});
+        // --- NEU: Eigenschaften-Panel dynamisch aktualisieren ---
+         function updatePropertiesPanel() {
+             if (selectedElement) {
+                 let element;
+                 let htmlContent = `Typ: ${selectedElement.type}<br>`;
+                 let showApplyButton = false;
 
-/* ========== Mausposition relativ zur "logischen" Canvas-Größe ========== */
-function getMousePos(evt) {
-  const rect = canvas.getBoundingClientRect();
-  // Mauskoordinaten relativ zur tatsächlichen gerenderten Canvas-Größe
-  const mouseX = evt.clientX - rect.left;
-  const mouseY = evt.clientY - rect.top;
-  // Zurückrechnen auf die "logische" Breite/Höhe (720x1280)
-  return {
-    x: mouseX / (rect.width / 720),
-    y: mouseY / (rect.height / 1280)
-  };
-}
+                 switch(selectedElement.type) {
+                     case 'platform':
+                         element = levelData.platforms[selectedElement.index];
+                         if (!element) break;
+                         htmlContent += `X: ${element.x}, Y: ${element.y}<br>`;
+                         htmlContent += `<label for="propWidth">Breite:</label> <input type="number" id="propWidth" value="${element.width}" min="${gridSize}" step="${gridSize}"><br>`;
+                         htmlContent += `Höhe: ${element.height} (fix)`;
+                         showApplyButton = true;
+                         break;
+                     case 'coin':
+                         element = levelData.coins[selectedElement.index];
+                         if (!element) break;
+                         htmlContent += `X: ${element.x}, Y: ${element.y}<br>`;
+                         htmlContent += `Radius: ${element.radius}`;
+                         break;
+                     case 'enemy':
+                         element = levelData.enemies[selectedElement.index];
+                         if (!element) break;
+                         htmlContent += `X: ${element.x}, Y: ${element.y}<br>`;
+                         htmlContent += `Breite: ${element.width}, Höhe: ${element.height}<br>`;
+                         htmlContent += `<label for="propSpeed">Speed Faktor:</label> <input type="number" id="propSpeed" value="${element.speedFactor || 1.0}" step="0.1" min="0.1">`;
+                         showApplyButton = true;
+                         break;
+                     case 'player':
+                         element = levelData.playerStart;
+                         if (!element) break;
+                         htmlContent += `X: ${element.x}, Y: ${element.y}`;
+                         break;
+                     default:
+                         element = null;
+                         htmlContent = "Unbekannter Elementtyp";
+                 }
 
-/* ========== Klick auf Objekt ermitteln ========== */
-function getObjektAt(x, y) {
-  // Von oben nach unten suchen, ob ein Objekt an dieser Stelle liegt
-  // Da wir nur "rechteckige" Objekte haben, reicht bounding-box-check
-  for (let i = objekte.length - 1; i >= 0; i--) {
-    const o = objekte[i];
-    if (
-      x >= o.x &&
-      x <= o.x + o.width &&
-      y >= o.y &&
-      y <= o.y + o.height
-    ) {
-      return o;
-    }
-  }
-  return null;
-}
+                 if (showApplyButton) {
+                     htmlContent += `<br><button id="applyPropsBtn">Anwenden</button>`;
+                 }
+                 propOutput.innerHTML = htmlContent;
 
-/* ========== Zeichnen der Szene ========== */
-function zeichneSzene() {
-  ctx.clearRect(0, 0, 720, 1280);
-  // Hintergrund
-  ctx.fillStyle = '#87ceeb';
-  ctx.fillRect(0, 0, 720, 1280);
+             } else {
+                 propOutput.innerHTML = "Nichts ausgewählt"; // Zurücksetzen
+             }
+         }
 
-  // Boden (ähnlich wie im Spiel)
-  ctx.fillStyle = 'green';
-  ctx.fillRect(0, 1280 - 280, 720, 280);
+        // --- Event Listener ---
+        toolbar.addEventListener('click', (e) => { /* ... (unverändert) ... */ if (e.target.tagName === 'BUTTON') { currentTool = e.target.dataset.tool; selectedElement = null; elementToDelete = null; updatePropertiesPanel(); toolbar.querySelectorAll('button').forEach(btn => btn.classList.remove('selected')); e.target.classList.add('selected'); console.log("Werkzeug ausgewählt:", currentTool); drawLevel(); } });
+        canvasContainer.addEventListener('mousemove', (e) => { /* ... (unverändert, inkl. Dragging & Delete-Highlight) ... */
+             const oldMousePos = { ...mousePos }; mousePos = getMousePos(e); isMouseOverCanvas = true;
+             if (isDraggingElement && selectedElement) { const newX = snapToGrid(mousePos.x - dragOffsetX); const newY = snapToGrid(mousePos.y - dragOffsetY); let elementToMove; switch(selectedElement.type) { case 'platform': elementToMove = levelData.platforms[selectedElement.index]; break; case 'coin': elementToMove = levelData.coins[selectedElement.index]; break; case 'enemy': elementToMove = levelData.enemies[selectedElement.index]; break; case 'player': elementToMove = levelData.playerStart; break; } if (elementToMove) { elementToMove.x = newX; elementToMove.y = newY; updatePropertiesPanel(); } } // Update panel while dragging
+             else { if (currentTool === 'delete') { elementToDelete = getElementAtPos(mousePos); } else { elementToDelete = null; } }
+             if (oldMousePos.x !== mousePos.x || oldMousePos.y !== mousePos.y || isDraggingPlatform || isDraggingElement) { drawLevel(); }
+        });
+        canvasContainer.addEventListener('mouseleave', () => { /* ... (unverändert) ... */ isMouseOverCanvas = false; isDraggingPlatform = false; isDraggingElement = false; isMouseDown = false; elementToDelete = null; drawLevel(); });
+        canvasContainer.addEventListener('mousedown', (e) => { /* ... (unverändert, startet Dragging) ... */
+             isMouseDown = true; mousePos = getMousePos(e); const snappedX = snapToGrid(mousePos.x); const snappedY = snapToGrid(mousePos.y); const clickedElement = getElementAtPos(mousePos);
+             if (currentTool === 'select' && selectedElement && clickedElement && selectedElement.type === clickedElement.type && selectedElement.index === clickedElement.index) { isDraggingElement = true; let element = null; switch(selectedElement.type) { case 'platform': element = levelData.platforms[selectedElement.index]; break; case 'coin': element = levelData.coins[selectedElement.index]; break; case 'enemy': element = levelData.enemies[selectedElement.index]; break; case 'player': element = levelData.playerStart; break; } if (element) { dragOffsetX = mousePos.x - element.x; dragOffsetY = mousePos.y - element.y; } console.log("Starte Verschieben von:", selectedElement); }
+             else if (currentTool === 'platform') { isDraggingPlatform = true; dragStartX = snappedX; dragStartY = snappedY; }
+             else if (currentTool === 'select' && !clickedElement) { selectedElement = null; updatePropertiesPanel(); }
+             drawLevel();
+        });
+        canvasContainer.addEventListener('mouseup', (e) => { /* ... (unverändert, beendet Dragging, platziert/löscht Elemente) ... */
+             if (!isMouseDown) return; isMouseDown = false; mousePos = getMousePos(e); const snappedX = snapToGrid(mousePos.x); const snappedY = snapToGrid(mousePos.y); const clickedElement = getElementAtPos(mousePos);
+             if (isDraggingElement) { isDraggingElement = false; console.log("Verschieben beendet für:", selectedElement); updatePropertiesPanel(); } // Update panel after drag
+             else if (isDraggingPlatform) { isDraggingPlatform = false; const startX = Math.min(dragStartX, snappedX); const width = Math.max(gridSize, Math.abs(snappedX - dragStartX)); const newPlatform = { x: startX, y: dragStartY, width: width, height: defaultPlatformHeight }; levelData.platforms.push(newPlatform); console.log("Plattform hinzugefügt:", newPlatform); }
+             else if (currentTool && currentTool !== 'platform') { if (currentTool === 'select') { if (!isDraggingElement) { selectedElement = clickedElement; updatePropertiesPanel(); console.log("Ausgewählt:", selectedElement); } } else if (currentTool === 'delete') { if (!isDraggingElement && elementToDelete) { let deleted = false; switch(elementToDelete.type) { case 'platform': levelData.platforms.splice(elementToDelete.index, 1); deleted = true; break; case 'coin': levelData.coins.splice(elementToDelete.index, 1); deleted = true; break; case 'enemy': levelData.enemies.splice(elementToDelete.index, 1); deleted = true; break; case 'player': levelData.playerStart = null; deleted = true; break; } if (deleted) { console.log("Element gelöscht:", elementToDelete); elementToDelete = null; if (selectedElement && selectedElement.type === elementToDelete?.type && selectedElement.index === elementToDelete?.index) { selectedElement = null; updatePropertiesPanel(); } } } } else if (currentTool === 'player') { levelData.playerStart = { x: snappedX, y: snappedY }; console.log("Spielerstart gesetzt:", levelData.playerStart); } else { let newElement; switch (currentTool) { case 'coin': const cX=Math.min(snappedX, editorWidth-defaultCoinRadius*2); const cY=Math.min(snappedY, editorHeight-defaultCoinRadius*2); newElement={ x:cX, y:cY, radius:defaultCoinRadius }; levelData.coins.push(newElement); break; case 'enemy': const eX=Math.min(snappedX, editorWidth-defaultEnemyWidth); const eY=Math.min(snappedY, editorHeight-defaultEnemyHeight); newElement={ x:eX, y:eY, width:defaultEnemyWidth, height:defaultEnemyHeight, speedFactor:1.0 }; levelData.enemies.push(newElement); break; } console.log("Element hinzugefügt:", newElement); } }
+             drawLevel();
+        });
 
-  // Objekte zeichnen
-  objekte.forEach(o => {
-    ctx.fillStyle = o.color;
-    ctx.fillRect(o.x, o.y, o.width, o.height);
-    // Kleiner Umriss
-    ctx.strokeStyle = 'black';
-    ctx.strokeRect(o.x, o.y, o.width, o.height);
-  });
-}
+        clearBtn.addEventListener('click', () => { /* ... (unverändert) ... */ if(confirm("Sicher, dass das Level geleert werden soll?")){ levelData={ platforms:[], coins:[], enemies:[], playerStart:{ x:50, y:editorHeight-50 } }; currentTool=null; selectedElement=null; elementToDelete=null; toolbar.querySelectorAll('button').forEach(btn => btn.classList.remove('selected')); exportOutput.value=""; updatePropertiesPanel(); drawLevel(); console.log("Level geleert."); } });
 
-/* ========== Liste (Sidebar) aktualisieren ========== */
-function aktualisiereObjektListe() {
-  const container = document.getElementById('objektListe');
-  container.innerHTML = '';
-  objekte.forEach((obj, index) => {
-    const div = document.createElement('div');
-    div.className = 'objektItem' + (obj === ausgewaehltesObjekt ? ' selected' : '');
-    div.onclick = () => {
-      // Klick in der Liste -> Objekt auswählen
-      ausgewaehltesObjekt = obj;
-      aktualisiereObjektListe();
-      zeichneSzene();
-    };
+        // --- NEU: Event Listener für Eigenschaften-Panel (Event Delegation) ---
+        propOutput.addEventListener('click', (e) => {
+            if (e.target.id === 'applyPropsBtn') {
+                if (!selectedElement) return;
 
-    // Zusammenstellung der Eingabe-Felder
-    if (obj.type === 'hindernis') {
-      div.innerHTML = `
-        <strong>Hindernis #${index}</strong><br/>
-        <label>X:</label><input type="number" value="${obj.x}" oninput="updateObjValue(${index}, 'x', this.value)" /><br/>
-        <label>Y:</label><input type="number" value="${obj.y}" oninput="updateObjValue(${index}, 'y', this.value)" /><br/>
-        <label>Breite:</label><input type="number" value="${obj.width}" oninput="updateObjValue(${index}, 'width', this.value)" /><br/>
-        <label>Höhe:</label><input type="number" value="${obj.height}" oninput="updateObjValue(${index}, 'height', this.value)" /><br/>
-        <label>Farbe:</label><input type="text" value="${obj.color}" oninput="updateObjValue(${index}, 'color', this.value)" /><br/>
-        <label>Safe?</label><input type="checkbox" ${obj.safe ? 'checked' : ''} onchange="updateObjValue(${index}, 'safe', this.checked)" />
-      `;
-    } else {
-      // Gegner
-      div.innerHTML = `
-        <strong>Gegner #${index}</strong><br/>
-        <label>X:</label><input type="number" value="${obj.x}" oninput="updateObjValue(${index}, 'x', this.value)" /><br/>
-        <label>Y:</label><input type="number" value="${obj.y}" oninput="updateObjValue(${index}, 'y', this.value)" /><br/>
-        <label>Breite:</label><input type="number" value="${obj.width}" oninput="updateObjValue(${index}, 'width', this.value)" /><br/>
-        <label>Höhe:</label><input type="number" value="${obj.height}" oninput="updateObjValue(${index}, 'height', this.value)" /><br/>
-        <label>Farbe:</label><input type="text" value="${obj.color}" oninput="updateObjValue(${index}, 'color', this.value)" /><br/>
-        <label>Speed:</label><input type="number" value="${obj.speed}" oninput="updateObjValue(${index}, 'speed', this.value)" /><br/>
-        <label>minX:</label><input type="number" value="${obj.minX}" oninput="updateObjValue(${index}, 'minX', this.value)" /><br/>
-        <label>maxX:</label><input type="number" value="${obj.maxX}" oninput="updateObjValue(${index}, 'maxX', this.value)" />
-      `;
-    }
-    container.appendChild(div);
-  });
-}
+                try {
+                    switch(selectedElement.type) {
+                        case 'platform':
+                            const widthInput = document.getElementById('propWidth');
+                            if (widthInput) {
+                                const newWidth = Math.max(gridSize, parseInt(widthInput.value) || gridSize); // Mindestbreite
+                                levelData.platforms[selectedElement.index].width = newWidth;
+                                console.log(`Plattform ${selectedElement.index} Breite geändert auf ${newWidth}`);
+                            }
+                            break;
+                        case 'enemy':
+                            const speedInput = document.getElementById('propSpeed');
+                            if (speedInput) {
+                                const newSpeed = Math.max(0.1, parseFloat(speedInput.value) || 1.0); // Mindestspeed
+                                levelData.enemies[selectedElement.index].speedFactor = newSpeed;
+                                console.log(`Gegner ${selectedElement.index} Speed Faktor geändert auf ${newSpeed}`);
+                            }
+                            break;
+                    }
+                    updatePropertiesPanel(); // Panel neu aufbauen, um Wert im Input zu aktualisieren
+                    drawLevel(); // Canvas neu zeichnen
+                } catch (error) {
+                    console.error("Fehler beim Anwenden der Eigenschaften:", error);
+                }
+            }
+        });
 
-/* ========== Objekt-Werte aktualisieren (Eingabefelder) ========== */
-function updateObjValue(index, key, value) {
-  let obj = objekte[index];
-  // Numeric cast bei Zahlenfeldern
-  if (['x','y','width','height','speed','minX','maxX'].includes(key)) {
-    value = parseFloat(value) || 0;
-  }
-  if (key === 'safe') {
-    value = !!value; // Boolean
-  }
-  obj[key] = value;
-  zeichneSzene();
-}
 
-/* ========== JSON-Ausgabe ========== */
-function erzeugeJson() {
-  // Wir erstellen ein Level-Objekt im gleichen Format wie dein Spiel
-  // - Alle hindernisse ins Array "hindernisse"
-  // - Evtl. genau ein gegner-Objekt oder mehrere
-  const hindernisse = objekte
-    .filter(o => o.type === 'hindernis')
-    .map(o => ({
-      x: o.x,
-      y: o.y,
-      breite: o.width,
-      hoehe: o.height,
-      farbe: o.color,
-      safe: o.safe
-    }));
+        // --- Export Button Logik ---
+        exportBtn.addEventListener('click', () => { /* ... (unverändert, exportiert aktuelle levelData) ... */
+             const levelId = parseInt(levelIdInput.value) || 1;
+             let outputCode = `{\n`; outputCode += `    levelId: ${levelId},\n`;
+             if (levelData.playerStart) { const relX = (levelData.playerStart.x / editorWidth).toFixed(4); const relY = (levelData.playerStart.y / editorHeight).toFixed(4); outputCode += `    playerStartRel: { x: ${relX}, y: ${relY} },\n`; } else { outputCode += `    playerStartRel: null,\n`; }
+             outputCode += "    platformsRel: [\n"; levelData.platforms.forEach(p => { const relX = (p.x / editorWidth).toFixed(4); const relY = (p.y / editorHeight).toFixed(4); const relW = (p.width / editorWidth).toFixed(4); outputCode += `        { x: ${relX}, y: ${relY}, w: ${relW}, h: ${p.height} }, // Breite: ${p.width}px\n`; }); outputCode += "    ],\n";
+             outputCode += "    coinsRel: [\n"; levelData.coins.forEach(c => { const relX = (c.x / editorWidth).toFixed(4); const relY = (c.y / editorHeight).toFixed(4); const relR = (c.radius / editorWidth).toFixed(4); outputCode += `        { x: ${relX}, y: ${relY}, r: ${relR} },\n`; }); outputCode += "    ],\n";
+             outputCode += "    enemiesRel: [\n"; levelData.enemies.forEach(e => { const relX = (e.x / editorWidth).toFixed(4); const relY = (e.y / editorHeight).toFixed(4); outputCode += `        { x: ${relX}, y: ${relY}, speedFactor: ${(e.speedFactor || 1.0).toFixed(2)} },\n`; }); outputCode += "    ]\n";
+             outputCode += `}, // Ende Level ${levelId}\n`; outputCode += "// Füge dieses Objekt zum 'gameLevels' Array in 'levels.js' hinzu.\n"; outputCode += "// Hinweis: Patrouillenbereich für Gegner muss im Spiel gesetzt werden.\n";
+             exportOutput.value = outputCode; console.log("Level exportiert."); alert(`Level-Code für Level ID ${levelId} wurde generiert und in das Textfeld kopiert!`);
+        });
 
-  // Falls du mehrere Gegner erlauben willst, nimm ein Array. 
-  // Wenn nur einer pro Level, verwende den ersten.
-  const gegnerListe = objekte.filter(o => o.type === 'gegner').map(o => ({
-    x: o.x,
-    y: o.y,
-    breite: o.width,
-    hoehe: o.height,
-    farbe: o.color,
-    speed: o.speed,
-    minX: o.minX,
-    maxX: o.maxX
-  }));
+        // --- Kopieren Button Logik ---
+        copyBtn.addEventListener('click', () => { /* ... (unverändert) ... */ const codeToCopy = exportOutput.value; if (!codeToCopy) { alert("Es gibt keinen Code zum Kopieren. Exportiere zuerst das Level."); return; } navigator.clipboard.writeText(codeToCopy).then(() => { const originalText = copyBtn.textContent; copyBtn.textContent = "Kopiert!"; copyBtn.classList.add('copied'); console.log("Code in Zwischenablage kopiert."); setTimeout(() => { copyBtn.textContent = originalText; copyBtn.classList.remove('copied'); }, 1500); }).catch(err => { console.error("Fehler beim Kopieren in die Zwischenablage:", err); alert("Fehler beim Kopieren. Bitte manuell kopieren."); }); });
 
-  // Hier wird nur ein einzelner Gegner erwartet (falls vorhanden)
-  const levelObj = {
-    hindernisse: hindernisse,
-    gegner: gegnerListe.length > 0 ? gegnerListe[0] : null
-  };
+        // Initiales Zeichnen
+        drawLevel();
 
-  const jsonStr = JSON.stringify(levelObj, null, 2);
-  document.getElementById('jsonOutput').value = jsonStr;
-}
+    </script>
 
-/* ========== JSON per Klick kopieren ========== */
-async function copyJsonToClipboard() {
-  const text = document.getElementById('jsonOutput').value;
-  if (!text.trim()) {
-    alert("Keine JSON-Daten vorhanden. Bitte zuerst auf 'JSON erzeugen' klicken.");
-    return;
-  }
-  try {
-    await navigator.clipboard.writeText(text);
-    alert("JSON wurde in die Zwischenablage kopiert.");
-  } catch (err) {
-    alert("Kopieren fehlgeschlagen: " + err);
-  }
-}
-
-// Beim Laden einmal initial zeichnen
-zeichneSzene();
-</script>
 </body>
 </html>
