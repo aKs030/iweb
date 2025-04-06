@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
     
       <div class="col">
-        <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+        <a href="/pages/ubermich.html" class="text-decoration-none text-reset animated-link">
                  <div class="card border-0 text-center scroll-animate p-4"
           data-animation="animate__flipInX" 
           data-delay="400">
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
     
       <div class="col">
-        <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+        <a href="/pages/ubermich.html" class="text-decoration-none text-reset animated-link">
          <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="400">
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
     
       <div class="col">
-        <a href="ubermich.html" class="text-decoration-none text-reset animated-link">
+        <a href="/pages/ubermich.html" class="text-decoration-none text-reset animated-link">
          <div class="card border-0 text-center scroll-animate p-4" "
           data-animation="animate__flipInX" 
           data-delay="400">
