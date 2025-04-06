@@ -4,312 +4,248 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Über Mich</title>
-    <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/menu.css">
   <script src="/js/menu.js" defer></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
-    /* Scroll-triggered animations optimized */
-    .snap {
- 
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-      height: 95vh;
+  :root{
+    --background-color:#333;
+    --text-color:#f4f4f4;
+    --second-background-color: rgba(0, 0, 0, 0.5);
+  }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+
+    .snap-container {
+      height: 70vh;
       overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      padding-top: 60px;
+    }
+
+    .snap {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 60px);
+      padding: 20px;
+      text-align: center;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.6s ease-out;
+    }
+
+    .snap:last-child {
+      padding-bottom: 80px;
     }
 
     .snap.in-view {
       opacity: 1;
       transform: translateY(0);
     }
-    
-    /* Additional design optimizations */
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      background-color: #444;
-      margin: 0;
-      padding-top: 80px; /* Höhe der Menüleiste */
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+
+    .section-content {
+      max-width: 900px;
+      padding: 40px;
+      background-color: var(--second-background-color);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
 
-    /* Article enhancements */
-    article.section-text {
-      background: #555;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      color: #fff;
-      scroll-snap-align: start;
-    }
-    
-    article.section-text p,
-    article.section-text h2,
-    article.section-text h3 {
-      color: #fff;
-    }
-
-    /* Headings optimization */
-    article.section-text h2 {
-      font-size: 2em;
-      margin-bottom: 10px;
-      border-bottom: 2px solid #fff;
-      padding-bottom: 5px;
-    }
-
-    article.section-text h3 {
-      font-size: 1.5em;
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-
-    /* Icon optimization */
-    .text-center i {
+    .section-content h2 {
       font-size: 2.5em;
-      margin-bottom: 10px;
-      color: #fff;
+      margin-bottom: 20px;
+      color: var(--text-color);
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
     }
 
-    /* Footer styling */
+    .section-content h3 {
+      font-size: 1.8em;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      color: #ddd;
+    }
+
+    .section-content p {
+      font-size: 1.1em;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .section-content hr {
+      border-color: #555;
+      margin: 20px 0;
+    }
+
+    .text-center i {
+      font-size: 3em;
+      margin-bottom: 15px;
+      color: #eee;
+    }
+
+
+
     .footer-container {
       text-align: center;
-      padding: 20px;
+      padding: 30px;
       background-color: #444;
-      color: #fff;
+      color: var(--text-color);
+      font-size: 0.9em;
     }
 
-    /* Responsive design */
     @media (max-width: 768px) {
-      .container {
-        padding: 10px;
+      .section-content {
+        padding: 30px;
       }
-      h2 {
+      .section-content h2 {
+        font-size: 2em;
+      }
+      .section-content h3 {
         font-size: 1.5em;
       }
-      p {
+      .section-content p {
         font-size: 1em;
       }
-    }
-
-    /* Scroll Snap optimization */
-    html, body {
-      scroll-snap-type: y mandatory;
-      scroll-behavior: smooth;
-    }
-    /* Removed duplicate selector */
-    }
-
-    /* Ensure each snap occupies full viewport height */
-
-
-    /* Remove top padding for Hobbys section so that nothing appears above the Hobbys heading */
-    #hobbys {
-      padding-top: 0;
-    }
-
-    /* Sticky header for Hobbys section */
-    #hobbys h2 {
-      position: sticky;
-      top: 0;
-      background-color: #555;
-      padding: 10px;
-      margin: 0;
-      z-index: 1;
-    }
-
-    #menu-container {
-      margin-bottom: 20px;
+      #menu-container ul li {
+        display: block;
+        margin: 10px 0;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div id="menu-container"></div>
-  <main class="container">
-    <!-- SECTION:ÜBERBLICK -->
-    <article id="ueberblick" class="section-text snap">
-      <h2>Überblick</h2>
-      <p>
-        Willkommen auf meiner "Über Mich" Seite! Hier möchte ich dir einen Einblick in mein Leben, 
-        meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Lesen!
-      </p>
-      <p>
-        Ich habe in verschiedenen Bereichen gearbeitet und vielfältige Erfahrungen gesammelt, die mir halfen, meine Fähigkeiten kontinuierlich zu erweitern. Meine Reise war geprägt von Herausforderungen und Erfolgen, die mich sowohl persönlich als auch beruflich wachsen ließen.
-      </p>
+  <nav id="menu-container">
+    <ul>
+      <li><a href="#ueberblick" aria-label="Gehe zum Abschnitt Überblick">Überblick</a></li>
+      <li><a href="#persoenlich" aria-label="Gehe zum Abschnitt Persönlich">Persönlich</a></li>
+      <li><a href="#hobbys" aria-label="Gehe zum Abschnitt Hobbys">Hobbys</a></li>
+      <li><a href="#karriere" aria-label="Gehe zum Abschnitt Karriere">Karriere</a></li>
+      <li><a href="#kontakt" aria-label="Gehe zum Abschnitt Kontakt">Kontakt</a></li>
+    </ul>
+  </nav>
+
+  <main class="snap-container">
+    <article id="ueberblick" class="snap" role="article" aria-labelledby="ueberblick-title">
+      <div class="section-content">
+        <h2 id="ueberblick-title">Überblick</h2>
+        <p>Willkommen auf meiner "Über Mich" Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Lesen!</p>
+        <p>Ich habe in verschiedenen Bereichen gearbeitet und vielfältige Erfahrungen gesammelt, die mir halfen, meine Fähigkeiten kontinuierlich zu erweitern. Meine Reise war geprägt von Herausforderungen und Erfolgen, die mich sowohl persönlich als auch beruflich wachsen ließen.</p>
+      </div>
     </article>
 
-    <!-- SECTION:PERSON -->
-    <article id="persoenlich" class="section-text snap">
-      <h2>Persönlich</h2>
-      <p>
-        Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst!
-        Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben,
-        meine Interessen und meine berufliche Laufbahn geben.
-      </p>
-      <p>
-        Meine Leidenschaft für Technologie und Innovation inspiriert mich ständig, Neues zu lernen und mich weiterzuentwickeln. Ich engagiere mich in spannenden Projekten, die mein Wissen erweitern und mir ermöglichen, meine Erfahrungen mit anderen zu teilen.
-      </p>
+    <article id="persoenlich" class="snap" role="article" aria-labelledby="persoenlich-title">
+      <div class="section-content">
+        <h2 id="persoenlich-title">Persönlich</h2>
+        <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst! Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben.</p>
+        <p>Meine Leidenschaft für Technologie und Innovation inspiriert mich ständig, Neues zu lernen und mich weiterzuentwickeln. Ich engagiere mich in spannenden Projekten, die mein Wissen erweitern und mir ermöglichen, meine Erfahrungen mit anderen zu teilen.</p>
+      </div>
     </article>
 
-    <!-- SECTION:HOBBYS -->
-    <article id="hobbys" class="section-text snap">
-      <h2>Meine Hobbys</h2>
-      <hr>
-      <p>
-        In meiner Freizeit widme ich mich leidenschaftlich meinen Hobbys, die mir nicht nur Freude bereiten,
-        sondern auch Ausgleich und Inspiration im Alltag bieten.
-      </p>
-      <p>
-        Meine Hobbys sind nicht nur ein Ausgleich zu meinem Berufsleben, sondern auch eine Quelle der Inspiration und Kreativität. Sie ermöglichen es mir, meine Energie neu zu fokussieren und frische Ideen zu entwickeln.
-      </p>
+    <article id="hobbys" class="snap" role="article" aria-labelledby="hobbys-title">
+      <div class="section-content">
+        <h2 id="hobbys-title">Meine neuen Hobbys</h2>
+        <hr>
+        <p>Dieser Abschnitt wurde komplett überarbeitet und zeigt jetzt neue Inhalte.</p>
+        <p>Egal ob Kreativität, Bewegung oder Entspannung – hier findest du einen Einblick in meine aktuellen Interessen und Leidenschaften.</p>
 
-      <section>
-        <h3>Reisen</h3>
-        <div class="text-center">
-          <i class="bi bi-globe fs-1"></i>
-        </div>
-        <p>
-          Es gibt nichts Spannenderes, als neue Orte zu entdecken, verschiedene Kulturen kennenzulernen
-          und unvergessliche Erinnerungen zu sammeln. Reisen eröffnet mir die Möglichkeit,
-          meinen Horizont zu erweitern und die Vielfalt unserer Welt zu erleben.
-        </p>
-      </section>
+        <section>
+          <h3>Kochen</h3>
+          <div class="text-center">
+            <i class="bi bi-egg-fried fs-1"></i>
+          </div>
+          <p>Auf der Suche nach immer neuen Rezepten liebe ich es, verschiedene Geschmacksrichtungen und Kulturen kulinarisch zu entdecken.</p>
+        </section>
 
-      <section>
-        <h3>Musik und Technologie</h3>
-        <div class="text-center">
-          <i class="bi bi-music-note-beamed fs-1"></i>
-        </div>
-        <p>
-          Musik begleitet mich durch jede Lebenslage – sie inspiriert, motiviert und entspannt.
-          Genauso faszinieren mich spannende Technologien, die unser Leben prägen
-          und neue Wege für Kreativität und Innovation eröffnen.
-        </p>
-        <p>Wandern und Natur erkunden</p>
-        <p>
-          Die Natur ist für mich ein Ort der Ruhe und Entschleunigung. Beim Wandern kann ich abschalten,
-          die Schönheit unserer Umwelt genießen und neue Energie tanken.
-        </p>
-      </section>
-
-      <section>
-        <h3>Fotografie</h3>
-        <div class="text-center">
-          <i class="bi bi-camera fs-1"></i>
-        </div>
-        <p>
-          Mit meiner Kamera halte ich gerne besondere Momente fest. Ob eindrucksvolle Landschaften,
-          besondere Augenblicke auf Reisen oder alltägliche Details – Fotografie ist meine Art,
-          die Welt aus meiner Perspektive zu zeigen.
-        </p>
-      </section>
-
-      <section>
-        <h3>Fitness und Joggen</h3>
-        <div class="text-center">
-          <i class="bi bi-heart-pulse fs-1"></i>
-        </div>
-        <p>
-          Regelmäßige Bewegung gehört für mich einfach dazu. Beim Joggen und Fitness finde ich
-          nicht nur körperliche Ausgeglichenheit, sondern auch mentalen Fokus.
-        </p>
-      </section>
-
-      <section>
-        <h3>Bücher</h3>
-        <div class="text-center">
-          <i class="bi bi-book fs-1"></i>
-        </div>
-        <p>
-          Bücher sind für mich eine Schatzkammer voller Geschichten, Wissen und Inspiration.
-          Ich liebe es, in verschiedene Genres einzutauchen und dabei immer wieder Neues zu entdecken.
-        </p>
-      </section>
-      <p>
-        Diese Hobbys bereichern mein Leben auf vielfältige Weise und helfen mir, immer wieder
-        neue Perspektiven zu gewinnen.
-      </p>
+        <section>
+          <h3>3D-Druck</h3>
+          <div class="text-center">
+            <i class="bi bi-printer fs-1"></i>
+          </div>
+          <p>Von kleinen Gadgets bis hin zu praktischen Helfern: 3D-Druck verbindet Technik und Kreativität auf faszinierende Weise.</p>
+        </section>
+      </div>
     </article>
 
-    <!-- SECTION:KARRIERE -->
-    <article id="karriere" class="section-text snap">
-      <h2>Karriere</h2>
-      <p>Hier ist ein Überblick über meine beruflichen Stationen.</p>
-      <p>
-        Durch meine vielfältigen beruflichen Stationen habe ich gelernt, Herausforderungen zu meistern und innovative Lösungen zu entwickeln. Jede Station hat mich bereichert und mein berufliches Profil geschärft.
-      </p>
-      <i class="bi bi-person-circle fs-1 text-muted"></i>
+    <article id="karriere" class="snap" role="article" aria-labelledby="karriere-title">
+      <div class="section-content">
+        <h2 id="karriere-title">Karriere</h2>
+        <p>Hier ist ein Überblick über meine beruflichen Stationen.</p>
+        <p>Durch meine vielfältigen beruflichen Stationen habe ich gelernt, Herausforderungen zu meistern und innovative Lösungen zu entwickeln. Jede Station hat mich bereichert und mein berufliches Profil geschärft.</p>
+        <i class="bi bi-person-circle fs-1 text-muted"></i>
+      </div>
     </article>
 
-    <!-- SECTION:KONTAKT -->
-    <article id="kontakt" class="section-text snap">
-      <h2>Kontakt</h2>
-      <p>
-        Vielen Dank für Ihren Besuch! Kontaktieren Sie mich gerne für weitere Informationen.
-      </p>
-      <p>
-        Ich freue mich darauf, von Ihnen zu hören. Nutzen Sie die untenstehenden Kontaktdaten, um direkt mit mir in Verbindung zu treten. Ob Fragen oder Anregungen – ich stehe Ihnen gerne zur Verfügung.
-      </p>
+    <article id="kontakt" class="snap" role="article" aria-labelledby="kontakt-title">
+      <div class="section-content">
+        <h2 id="kontakt-title">Kontakt</h2>
+        <p>Vielen Dank für Ihren Besuch! Kontaktieren Sie mich gerne für weitere Informationen.</p>
+        <p>Ich freue mich darauf, von Ihnen zu hören. Nutzen Sie die untenstehenden Kontaktdaten, um direkt mit mir in Verbindung zu treten. Ob Fragen oder Anregungen – ich stehe Ihnen gerne zur Verfügung.</p>
+      </div>
     </article>
   </main>
 
-  <!-- Optional: Footer-Container -->
-  <footer id="footer-container" class="footer-container"></footer>
-  
+  <footer class="footer-container">
+    <p>&copy; 2025 Abdulkerim. Alle Rechte vorbehalten.</p>
+  </footer>
+
   <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const snapElements = document.querySelectorAll('.snap');
-  const observerOptions = {
-    threshold: 0.2
-  };
+    document.addEventListener("DOMContentLoaded", function() {
+      const snapElements = document.querySelectorAll('.snap');
+      const observerOptions = {threshold: 0.5};
 
-  const observer = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting) {
-        entry.target.classList.add('in-view');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, observerOptions);
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
 
-  snapElements.forEach(element => {
-    observer.observe(element);
-  });
+      snapElements.forEach(element => {
+        observer.observe(element);
+      });
 
-  // Add arrow key navigation for snapping
-  document.addEventListener("keydown", function(event) {
-    if (event.key === "ArrowDown") {
-      const snaps = Array.from(document.querySelectorAll('.snap'));
-      snaps.sort((a, b) => a.offsetTop - b.offsetTop);
-      const currentScroll = window.scrollY;
-      const nextSnap = snaps.find(snap => snap.offsetTop > currentScroll + 10);
-      if (nextSnap) {
-        nextSnap.scrollIntoView({behavior: "smooth"});
-      }
-    } else if (event.key === "ArrowUp") {
-      const snaps = Array.from(document.querySelectorAll('.snap'));
-      snaps.sort((a, b) => a.offsetTop - b.offsetTop);
-      const currentScroll = window.scrollY;
-      let previousSnap;
-      for (let i = snaps.length - 1; i >= 0; i--) {
-        if (snaps[i].offsetTop < currentScroll - 10) {
-          previousSnap = snaps[i];
-          break;
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "ArrowDown") {
+          const snaps = Array.from(document.querySelectorAll('.snap'));
+          snaps.sort((a, b) => a.offsetTop - b.offsetTop);
+          const currentScroll = window.scrollY;
+          const nextSnap = snaps.find(snap => snap.offsetTop > currentScroll + 10);
+          if (nextSnap) {
+            nextSnap.scrollIntoView({ behavior: "smooth" });
+          }
+        } else if (event.key === "ArrowUp") {
+          const snaps = Array.from(document.querySelectorAll('.snap'));
+          snaps.sort((a, b) => a.offsetTop - b.offsetTop);
+          const currentScroll = window.scrollY;
+          let previousSnap;
+          for (let i = snaps.length - 1; i >= 0; i--) {
+            if (snaps[i].offsetTop < currentScroll - 10) {
+              previousSnap = snaps[i];
+              break;
+            }
+          }
+          if (previousSnap) {
+            previousSnap.scrollIntoView({ behavior: "smooth" });
+          }
         }
-      }
-      if (previousSnap) {
-        previousSnap.scrollIntoView({behavior: "smooth"});
-      }
-    }
-  });
-
-});
-</script>
+      });
+    });
+  </script>
 </body>
 </html>
