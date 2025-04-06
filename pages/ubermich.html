@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Über Mich</title>
-  <link rel="stylesheet" href="/css/menu.css">
-  <script src="/js/menu.js" defer></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <meta name="description" content="Persönliche Webseite von Abdulkerim - Erfahren Sie mehr über mich, meine Hobbys, meine Karriere und wie Sie mich kontaktieren können.">
+  <title>Über Mich - Abdulkerim</title>
+  <link rel="stylesheet" href="/css/menu.css"> <script src="/js/menu.js" defer></script> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
   :root{
-    --background-color:#333;
-    --text-color:#f4f4f4;
+    --background-color: #333;
+    --text-color: #f4f4f4;
     --second-background-color: rgba(0, 0, 0, 0.5);
+    --link-color: #61dafb; /* Beispiel-Linkfarbe */
+    --icon-color: #eee; /* Farbe für Icons */
   }
     body {
       font-family: Arial, sans-serif;
@@ -24,31 +25,71 @@
       box-sizing: border-box;
     }
 
+    /* Navigation */
+    #menu-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: rgba(51, 51, 51, 0.9);
+      z-index: 1000;
+      padding: 10px 0;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    #menu-container ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #menu-container ul li {
+      display: inline-block;
+      margin: 0 15px;
+    }
+    #menu-container ul li a {
+      color: var(--text-color);
+      text-decoration: none;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    #menu-container ul li a:hover,
+    #menu-container ul li a:focus {
+      background-color: var(--link-color);
+      color: #222;
+      outline: none;
+    }
+
     .snap-container {
-      height: 70vh;
-      overflow-y: auto;
+      height: 79.8vh;
+      overflow-y: auto; /* Haupt-Scrollen für die Seite */
       scroll-snap-type: y mandatory;
       scroll-behavior: smooth;
-      padding-top: 60px;
     }
 
     .snap {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: calc(100vh - 60px);
-      padding: 20px;
+      justify-content: center; /* Zentriert die .section-content Box vertikal, wenn sie kleiner als max-height ist */
+      align-items: center; /* Zentriert die .section-content Box horizontal */
+      min-height: 100vh; /* Stellt sicher, dass jeder Snap-Bereich mindestens die Viewport-Höhe hat */
+      padding: 80px 20px 40px 20px; /* Oben Platz für Navi, unten Abstand */
       text-align: center;
       scroll-snap-align: start;
       scroll-snap-stop: always;
       opacity: 0;
       transform: translateY(50px);
-      transition: all 0.6s ease-out;
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      box-sizing: border-box;
+    }
+
+    .snap:first-child {
+       /* Kein extra Padding nötig, da .snap bereits Padding hat */
     }
 
     .snap:last-child {
-      padding-bottom: 80px;
+       padding-bottom: 60px; /* Etwas mehr Platz am Ende */
     }
 
     .snap.in-view {
@@ -56,20 +97,62 @@
       transform: translateY(0);
     }
 
+    /* --- MODIFIZIERTER BEREICH FÜR SCROLLBAREN INHALT --- */
     .section-content {
       max-width: 900px;
-      padding: 40px;
       background-color: var(--second-background-color);
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+      /* NEU: Höhe begrenzen und Scrollen ermöglichen */
+      overflow-y: auto; /* Scrollbar nur bei Bedarf */
+      /* max-height: 100vh minus Padding (80+40=120) minus Puffer (z.B. 40px) */
+      max-height: calc(100vh - 160px);
+
+      /* NEU: Padding angepasst (Rechts mehr Platz für Scrollbar) */
+      padding: 40px 50px 40px 40px;
+
+      /* NEU: Optionales Styling für die Scrollbar */
+      scrollbar-width: thin; /* Für Firefox */
+      scrollbar-color: #666 var(--second-background-color); /* Für Firefox */
     }
+
+    /* Optionales Styling für die Scrollbar (Webkit) */
+    .section-content::-webkit-scrollbar {
+      width: 8px;
+    }
+    .section-content::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+    .section-content::-webkit-scrollbar-thumb {
+      background-color: #666;
+      border-radius: 4px;
+      border: 2px solid var(--second-background-color);
+    }
+    .section-content::-webkit-scrollbar-thumb:hover {
+      background-color: #888;
+    }
+    /* --- ENDE MODIFIZIERTER BEREICH --- */
+
 
     .section-content h2 {
       font-size: 2.5em;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: var(--text-color);
       border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
+      padding-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0; /* Verhindert doppelten Margin oben */
+    }
+
+    .section-icon {
+      font-size: 0.9em;
+      margin-right: 15px;
+      color: var(--icon-color);
+      vertical-align: middle;
     }
 
     .section-content h3 {
@@ -83,45 +166,105 @@
       font-size: 1.1em;
       line-height: 1.7;
       margin-bottom: 20px;
+      text-align: left; /* Bessere Lesbarkeit für längere Texte */
     }
+     /* Zentrierung für Elemente, die explizit zentriert sein sollen */
+     .text-center {
+       text-align: center;
+     }
+     .text-center p {
+       text-align: center; /* Überschreibt das Standard-p */
+     }
+
+
+    .section-content ul {
+      list-style: disc; /* Standard-Listenpunkte */
+      margin-left: 20px; /* Einrückung für die Liste */
+      text-align: left; /* Text in Listen linksbündig */
+      padding-left: 20px; /* Zusätzliches Padding für Listenpunkte */
+      margin-bottom: 20px; /* Abstand nach der Liste */
+    }
+    .section-content ul li {
+        margin-bottom: 8px; /* Kleiner Abstand zwischen Listenelementen */
+    }
+
 
     .section-content hr {
       border-color: #555;
-      margin: 20px 0;
+      margin: 30px 0;
     }
 
-    .text-center i {
+    .feature-icon {
       font-size: 3em;
       margin-bottom: 15px;
-      color: #eee;
+      color: var(--icon-color);
     }
 
-
+    .contact-links {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      flex-wrap: wrap;
+    }
+    .contact-links a {
+      color: var(--icon-color);
+      font-size: 2.5em;
+      text-decoration: none;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+    .contact-links a:hover,
+    .contact-links a:focus {
+      color: var(--link-color);
+      transform: scale(1.1);
+      outline: none;
+    }
 
     .footer-container {
       text-align: center;
-      padding: 30px;
-      background-color: #444;
+      padding: 20px;
+      background-color: #222;
       color: var(--text-color);
       font-size: 0.9em;
+      margin-top: -1px; /* Verhindert möglichen 1px Spalt */
     }
 
     @media (max-width: 768px) {
       .section-content {
-        padding: 30px;
+        /* Anpassung max-height für kleinere Bildschirme evtl. nötig, aber vh passt sich an */
+        /* max-height: calc(100vh - 140px); Beispiel: Weniger Puffer */
+        padding: 30px 30px 30px 20px; /* Padding anpassen */
       }
       .section-content h2 {
         font-size: 2em;
+        flex-direction: column;
+        align-items: center;
+      }
+      .section-icon {
+         margin-right: 0;
+         margin-bottom: 10px;
+         font-size: 1em;
       }
       .section-content h3 {
         font-size: 1.5em;
       }
-      .section-content p {
+      .section-content p, .section-content ul { /* Auch Listen auf Mobilgeräten */
         font-size: 1em;
+        text-align: left; /* Sicherstellen, dass Text linksbündig bleibt */
       }
+      .text-center p {
+          text-align: center; /* Zentrierte Absätze bleiben zentriert */
+      }
+
       #menu-container ul li {
         display: block;
         margin: 10px 0;
+      }
+      .contact-links {
+         gap: 20px;
+      }
+      .contact-links a {
+          font-size: 2.2em;
       }
     }
   </style>
@@ -132,6 +275,7 @@
     <ul>
       <li><a href="#ueberblick" aria-label="Gehe zum Abschnitt Überblick">Überblick</a></li>
       <li><a href="#persoenlich" aria-label="Gehe zum Abschnitt Persönlich">Persönlich</a></li>
+      <li><a href="#faehigkeiten" aria-label="Gehe zum Abschnitt Fähigkeiten">Fähigkeiten</a></li>
       <li><a href="#hobbys" aria-label="Gehe zum Abschnitt Hobbys">Hobbys</a></li>
       <li><a href="#karriere" aria-label="Gehe zum Abschnitt Karriere">Karriere</a></li>
       <li><a href="#kontakt" aria-label="Gehe zum Abschnitt Kontakt">Kontakt</a></li>
@@ -139,79 +283,147 @@
   </nav>
 
   <main class="snap-container">
-    <article id="ueberblick" class="snap" role="article" aria-labelledby="ueberblick-title">
+    <article id="ueberblick" class="snap" role="region" aria-labelledby="ueberblick-title">
       <div class="section-content">
-        <h2 id="ueberblick-title">Überblick</h2>
-        <p>Willkommen auf meiner "Über Mich" Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Lesen!</p>
-        <p>Ich habe in verschiedenen Bereichen gearbeitet und vielfältige Erfahrungen gesammelt, die mir halfen, meine Fähigkeiten kontinuierlich zu erweitern. Meine Reise war geprägt von Herausforderungen und Erfolgen, die mich sowohl persönlich als auch beruflich wachsen ließen.</p>
-      </div>
+        <h2 id="ueberblick-title"><i class="bi bi-info-circle-fill section-icon" aria-hidden="true"></i>Überblick</h2>
+        <p>Willkommen auf meiner "Über Mich" Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Entdecken!</p>
+        <p>Ich habe in verschiedenen Bereichen gearbeitet und vielfältige Erfahrungen gesammelt, die mir halfen, meine Fähigkeiten kontinuierlich zu erweitern. Meine Reise war geprägt von spannenden Herausforderungen und Erfolgen, die mich sowohl persönlich als auch beruflich wachsen ließen.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum.</p>
+        </div>
     </article>
 
-    <article id="persoenlich" class="snap" role="article" aria-labelledby="persoenlich-title">
+    <article id="persoenlich" class="snap" role="region" aria-labelledby="persoenlich-title">
       <div class="section-content">
-        <h2 id="persoenlich-title">Persönlich</h2>
-        <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du meine Homepage besuchst! Ich bin 32 Jahre alt und möchte dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben.</p>
-        <p>Meine Leidenschaft für Technologie und Innovation inspiriert mich ständig, Neues zu lernen und mich weiterzuentwickeln. Ich engagiere mich in spannenden Projekten, die mein Wissen erweitern und mir ermöglichen, meine Erfahrungen mit anderen zu teilen.</p>
-      </div>
+        <h2 id="persoenlich-title"><i class="bi bi-person-fill section-icon" aria-hidden="true"></i>Persönlich</h2>
+        <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du hier bist! Ich bin 32 Jahre alt und lebe in [Deine Stadt/Region, falls gewünscht].</p>
+        <p>Meine Leidenschaft für Technologie und Innovation treibt mich ständig an, Neues zu lernen und mich weiterzuentwickeln. Ich engagiere mich gerne in Projekten, die mein Wissen erweitern und mir ermöglichen, kreative Lösungen zu finden und meine Erfahrungen zu teilen.</p>
+         </div>
     </article>
 
-    <article id="hobbys" class="snap" role="article" aria-labelledby="hobbys-title">
+    <article id="faehigkeiten" class="snap" role="region" aria-labelledby="faehigkeiten-title">
+        <div class="section-content">
+          <h2 id="faehigkeiten-title"><i class="bi bi-gear-fill section-icon" aria-hidden="true"></i>Fähigkeiten</h2>
+          <p>Im Laufe meiner Karriere und durch meine Projekte habe ich mir eine Reihe von Fähigkeiten angeeignet. Hier sind einige davon:</p>
+          <h3>Technische Fähigkeiten</h3>
+          <ul>
+            <li>HTML, CSS, JavaScript (Fortgeschritten)</li>
+            <li>Frameworks: React (Gut), Vue.js (Grundlagen), Angular (Grundlagen)</li>
+            <li>Backend: Node.js (Gut), Python (Django/Flask - Grundlagen), PHP (Erfahrung)</li>
+            <li>Datenbanken: SQL (PostgreSQL, MySQL), NoSQL (MongoDB)</li>
+            <li>Cloud: AWS (EC2, S3 - Grundlagen), Docker</li>
+            <li>Versionierung: Git, GitHub/GitLab</li>
+            <li>Testing: Jest, Cypress (Grundlagen)</li>
+            <li>UI/UX Design Prinzipien</li>
+            <li>3D-Modellierung (Blender - Grundlagen) & Druck (Erfahrung mit FDM)</li>
+            <li>Hardware-Grundlagen (Arduino, Raspberry Pi)</li>
+            </ul>
+          <h3>Soft Skills</h3>
+          <ul>
+            <li>Analytische Problemlösung</li>
+            <li>Effektive Teamarbeit und Kollaboration</li>
+            <li>Klare und präzise Kommunikation (schriftlich & mündlich)</li>
+            <li>Hohe Lernbereitschaft und Anpassungsfähigkeit</li>
+            <li>Kreativität und Innovationsdenken</li>
+            <li>Zeitmanagement und Organisation</li>
+            <li>Geduld und Ausdauer bei komplexen Aufgaben</li>
+          </ul>
+          <p>Diese Liste ist nicht abschließend und ich bin stets bemüht, meine Kenntnisse zu erweitern und auf dem neuesten Stand der Technik zu bleiben. Insbesondere im Bereich Cloud Computing und automatisierte Tests möchte ich meine Fähigkeiten weiter vertiefen.</p>
+        </div>
+      </article>
+
+    <article id="hobbys" class="snap" role="region" aria-labelledby="hobbys-title">
       <div class="section-content">
-        <h2 id="hobbys-title">Meine neuen Hobbys</h2>
+        <h2 id="hobbys-title"><i class="bi bi-joystick section-icon" aria-hidden="true"></i>Hobbys & Interessen</h2>
+        <p class="text-center">Neben meiner beruflichen Tätigkeit gibt es einige Dinge, die mich begeistern und mir helfen, abzuschalten und neue Energie zu tanken.</p>
         <hr>
-        <p>Dieser Abschnitt wurde komplett überarbeitet und zeigt jetzt neue Inhalte.</p>
-        <p>Egal ob Kreativität, Bewegung oder Entspannung – hier findest du einen Einblick in meine aktuellen Interessen und Leidenschaften.</p>
 
         <section>
           <h3>Kochen</h3>
           <div class="text-center">
-            <i class="bi bi-egg-fried fs-1"></i>
+            <i class="bi bi-egg-fried feature-icon" aria-hidden="true"></i>
           </div>
-          <p>Auf der Suche nach immer neuen Rezepten liebe ich es, verschiedene Geschmacksrichtungen und Kulturen kulinarisch zu entdecken.</p>
+          <p>Ich liebe es, in der Küche kreativ zu werden, neue Rezepte auszuprobieren und verschiedene Geschmacksrichtungen aus aller Welt zu entdecken. Besonders gerne koche ich türkische Spezialitäten, aber auch italienische Pasta und asiatische Currys stehen hoch im Kurs. Es entspannt mich und ist eine tolle Möglichkeit, Freunde und Familie zu verwöhnen.</p>
         </section>
 
+        <hr>
         <section>
           <h3>3D-Druck</h3>
           <div class="text-center">
-            <i class="bi bi-printer fs-1"></i>
+            <i class="bi bi-printer-fill feature-icon" aria-hidden="true"></i>
           </div>
-          <p>Von kleinen Gadgets bis hin zu praktischen Helfern: 3D-Druck verbindet Technik und Kreativität auf faszinierende Weise.</p>
+          <p>Die Möglichkeit, eigene Ideen Schicht für Schicht Wirklichkeit werden zu lassen, fasziniert mich. Von kleinen Gadgets über Ersatzteile bis hin zu praktischen Alltagshelfern – der 3D-Druck verbindet Technik und Kreativität auf einzigartige Weise. Mein aktuelles Projekt ist ein modulares Gehäusesystem für verschiedene Einplatinencomputer wie den Raspberry Pi.</p>
         </section>
+        <hr>
+        <section>
+          <h3>Lesen</h3>
+           <div class="text-center">
+            <i class="bi bi-book-half feature-icon" aria-hidden="true"></i>
+           </div>
+           <p>Ich lese gerne Fachbücher, um mein Wissen zu erweitern, aber auch Science-Fiction und Fantasy-Romane, um in andere Welten einzutauchen. Es ist eine großartige Möglichkeit, den Horizont zu erweitern und neue Perspektiven zu gewinnen.</p>
+        </section>
+         </div>
+    </article>
+
+    <article id="karriere" class="snap" role="region" aria-labelledby="karriere-title">
+      <div class="section-content">
+        <h2 id="karriere-title"><i class="bi bi-briefcase-fill section-icon" aria-hidden="true"></i>Karriere</h2>
+        <p>Hier ist ein Überblick über meine wichtigsten beruflichen Stationen und Erfahrungen.</p>
+        <p>Durch meine vielfältigen Tätigkeiten habe ich gelernt, Herausforderungen strategisch anzugehen und innovative Lösungen zu entwickeln. Jede Station hat mich wertvolle Lektionen gelehrt und mein berufliches Profil geschärft.</p>
+        <p><em>[Hier könntest du spezifische Stationen, Projekte oder Verantwortlichkeiten detaillierter aufführen, sobald du diese Informationen hinzufügen möchtest.]</em></p>
+        <p>Zum Beispiel:</p>
+        <ul>
+            <li><strong>Position X bei Firma Y (Zeitraum):</strong> Kurze Beschreibung der Hauptaufgaben und Erfolge.</li>
+            <li><strong>Projekt Z (Zeitraum):</strong> Beschreibung des Projekts, deiner Rolle und der verwendeten Technologien.</li>
+        </ul>
+        <p>Ich bin immer offen für neue Herausforderungen und Möglichkeiten, meine Fähigkeiten einzusetzen und weiterzuentwickeln.</p>
       </div>
     </article>
 
-    <article id="karriere" class="snap" role="article" aria-labelledby="karriere-title">
+    <article id="kontakt" class="snap" role="region" aria-labelledby="kontakt-title">
       <div class="section-content">
-        <h2 id="karriere-title">Karriere</h2>
-        <p>Hier ist ein Überblick über meine beruflichen Stationen.</p>
-        <p>Durch meine vielfältigen beruflichen Stationen habe ich gelernt, Herausforderungen zu meistern und innovative Lösungen zu entwickeln. Jede Station hat mich bereichert und mein berufliches Profil geschärft.</p>
-        <i class="bi bi-person-circle fs-1 text-muted"></i>
-      </div>
-    </article>
-
-    <article id="kontakt" class="snap" role="article" aria-labelledby="kontakt-title">
-      <div class="section-content">
-        <h2 id="kontakt-title">Kontakt</h2>
-        <p>Vielen Dank für Ihren Besuch! Kontaktieren Sie mich gerne für weitere Informationen.</p>
-        <p>Ich freue mich darauf, von Ihnen zu hören. Nutzen Sie die untenstehenden Kontaktdaten, um direkt mit mir in Verbindung zu treten. Ob Fragen oder Anregungen – ich stehe Ihnen gerne zur Verfügung.</p>
+        <h2 id="kontakt-title"><i class="bi bi-envelope-fill section-icon" aria-hidden="true"></i>Kontakt</h2>
+        <p class="text-center">Vielen Dank für deinen Besuch! Ich freue mich über Anfragen, Feedback oder einfach einen netten Austausch.</p>
+        <p class="text-center">Nutze gerne eine der folgenden Möglichkeiten, um mit mir in Verbindung zu treten:</p>
+        <div class="contact-links">
+          <a href="mailto:deine.email@example.com" aria-label="Kontakt per E-Mail" title="E-Mail senden">
+            <i class="bi bi-envelope-fill"></i>
+          </a>
+          <a href="https://linkedin.com/in/deinprofil" target="_blank" rel="noopener noreferrer" aria-label="Mein LinkedIn Profil besuchen" title="LinkedIn Profil">
+            <i class="bi bi-linkedin"></i>
+          </a>
+          <a href="https://github.com/deinusername" target="_blank" rel="noopener noreferrer" aria-label="Mein GitHub Profil besuchen" title="GitHub Profil">
+            <i class="bi bi-github"></i>
+          </a>
+          </div>
       </div>
     </article>
   </main>
 
   <footer class="footer-container">
-    <p>&copy; 2025 Abdulkerim. Alle Rechte vorbehalten.</p>
-  </footer>
+    <p>&copy; <script>document.write(new Date().getFullYear())</script> Abdulkerim. Alle Rechte vorbehalten.</p>
+    </footer>
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const snapElements = document.querySelectorAll('.snap');
-      const observerOptions = {threshold: 0.5};
+
+      // Intersection Observer für Einblend-Animation
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.4 // Auslösen, wenn 40% sichtbar sind
+      };
 
       const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('in-view');
-            observer.unobserve(entry.target);
+            // Optional: Beobachtung stoppen nach erster Animation
+            // observer.unobserve(entry.target);
+          } else {
+             // Optional: Animation zurücksetzen, wenn nicht mehr sichtbar
+             // entry.target.classList.remove('in-view');
           }
         });
       }, observerOptions);
@@ -220,31 +432,55 @@
         observer.observe(element);
       });
 
-      document.addEventListener("keydown", function(event) {
-        if (event.key === "ArrowDown") {
+      // Keyboard Navigation (Pfeiltasten)
+      const snapContainer = document.querySelector('.snap-container');
+      if (snapContainer) {
+        snapContainer.addEventListener("keydown", function(event) {
           const snaps = Array.from(document.querySelectorAll('.snap'));
-          snaps.sort((a, b) => a.offsetTop - b.offsetTop);
-          const currentScroll = window.scrollY;
-          const nextSnap = snaps.find(snap => snap.offsetTop > currentScroll + 10);
-          if (nextSnap) {
-            nextSnap.scrollIntoView({ behavior: "smooth" });
-          }
-        } else if (event.key === "ArrowUp") {
-          const snaps = Array.from(document.querySelectorAll('.snap'));
-          snaps.sort((a, b) => a.offsetTop - b.offsetTop);
-          const currentScroll = window.scrollY;
-          let previousSnap;
-          for (let i = snaps.length - 1; i >= 0; i--) {
-            if (snaps[i].offsetTop < currentScroll - 10) {
-              previousSnap = snaps[i];
-              break;
-            }
-          }
-          if (previousSnap) {
-            previousSnap.scrollIntoView({ behavior: "smooth" });
-          }
-        }
-      });
+          const currentScrollTop = snapContainer.scrollTop;
+
+          // Nur auf Pfeiltasten reagieren, wenn der Fokus *nicht* in einem scrollbaren Inhaltsbereich liegt
+          // (oder einem anderen interaktiven Element wie einem Link)
+          const isFocusInsideScrollable = document.activeElement && document.activeElement.closest('.section-content');
+          const isFocusOnInteractive = document.activeElement && (document.activeElement.tagName === 'A' || document.activeElement.tagName === 'BUTTON' || document.activeElement.hasAttribute('tabindex'));
+
+
+          if (!isFocusInsideScrollable && !isFocusOnInteractive) {
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                const nextSnap = snaps.find(snap => snap.offsetTop > currentScrollTop + 10); // +10 Puffer
+                if (nextSnap) {
+                  snapContainer.scrollTo({ top: nextSnap.offsetTop, behavior: "smooth" });
+                }
+              } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                let previousSnap = null;
+                for (let i = snaps.length - 1; i >= 0; i--) {
+                  if (snaps[i].offsetTop < currentScrollTop - 10) { // -10 Puffer
+                    previousSnap = snaps[i];
+                    break;
+                  }
+                }
+                 if (previousSnap) {
+                   snapContainer.scrollTo({ top: previousSnap.offsetTop, behavior: "smooth" });
+                 } else {
+                    snapContainer.scrollTo({ top: 0, behavior: "smooth" });
+                 }
+              }
+           } else if (isFocusInsideScrollable && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+               // Standardverhalten (Scrollen innerhalb von .section-content) zulassen
+               // event.stopPropagation(); // Optional, um Bubbling zu verhindern, falls nötig
+           }
+        });
+
+        // Optional: Fokus initial setzen, um Keyboard-Navi direkt zu ermöglichen
+        // snapContainer.setAttribute('tabindex', '-1'); // Macht Container fokussierbar, aber ohne sichtbaren Umriss
+        // snapContainer.focus(); // Vorsicht: Kann Scroll-Verhalten beim Laden beeinflussen
+
+      } else {
+          console.error("Snap container not found for keyboard navigation.");
+      }
+
     });
   </script>
 </body>
