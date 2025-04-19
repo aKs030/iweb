@@ -74,25 +74,23 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Falls die Antwort weitergeleitet wurde, erzeugen wir eine neue Response, 
-          // um das Redirect-Flag zu entfernen
-          if (response.redirected) {
-            return response.blob().then(body => {
-              const newResponse = new Response(body, {
-                status: response.status,
-                statusText: response.statusText,
-                headers: response.headers
-              });
-              caches.open(RUNTIME_CACHE).then(cache => cache.put(request, newResponse.clone()));
-              return newResponse;
-            });
-          } else {
+          // Prüfen, ob die Antwort gültig und erfolgreich ist (Status 200-299)
+          if (response.ok) {
+            // Antwort klonen, im Runtime-Cache speichern und Original zurückgeben
             const clone = response.clone();
             caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
             return response;
           }
+          // Wenn die Antwort nicht ok ist (z.B. 404), nicht cachen, sondern direkt zurückgeben.
+          // Der .catch() unten behandelt Netzwerkfehler.
+          return response;
         })
-        .catch(() => caches.match('/offline.html')) // Offline-Fallback
+        .catch(error => {
+          // Netzwerkfehler oder Fehler bei der Verarbeitung der Antwort.
+          console.warn(`Netzwerkanfrage für ${request.url} fehlgeschlagen. Liefere Offline-Seite. Fehler: ${error}`);
+          // Offline-Fallback aus dem Cache liefern
+          return caches.match('/offline.html');
+        })
     );
     return;
   }
@@ -104,13 +102,24 @@ self.addEventListener('fetch', event => {
       caches.match(request).then(cached => {
         const networkFetch = fetch(request)
           .then(response => {
-            const clone = response.clone();
-            caches.open(RUNTIME_CACHE)
-                  .then(cache => cache.put(request, clone))
-                  .then(() => trimCache(RUNTIME_CACHE, 50));
+            // Nur erfolgreiche Antworten cachen
+            if (response.ok) {
+              const clone = response.clone();
+              caches.open(RUNTIME_CACHE)
+                    .then(cache => cache.put(request, clone))
+                    .then(() => trimCache(RUNTIME_CACHE, 50));
+            }
             return response;
           })
-          .catch(() => cached); // Fallback, wenn Netzwerk down
+          .catch(() => {
+            // Netzwerkfehler: Gib gecachte Version zurück, falls vorhanden
+            if (cached) {
+              return cached;
+            }
+            // Optional: Hier könnte man auch einen spezifischeren Fallback für Assets anbieten
+            // return new Response('Asset not available offline', { status: 404, statusText: 'Not Found' });
+          });
+        // Gib gecachte Version zurück, falls vorhanden, sonst das Ergebnis des Netzwerk-Fetch
         return cached || networkFetch;
       })
     );
@@ -122,15 +131,25 @@ self.addEventListener('fetch', event => {
   if (dest === 'image') {
     event.respondWith(
       caches.match(request).then(cached => {
+        // Wenn im Cache, direkt zurückgeben
         if (cached) return cached;
 
+        // Sonst vom Netzwerk holen
         return fetch(request)
           .then(response => {
-            const clone = response.clone();
-            caches.open(IMAGE_CACHE)
-                  .then(cache => cache.put(request, clone))
-                  .then(() => trimCache(IMAGE_CACHE, 50));
+            // Nur erfolgreiche Antworten cachen
+            if (response.ok) {
+              const clone = response.clone();
+              caches.open(IMAGE_CACHE)
+                    .then(cache => cache.put(request, clone))
+                    .then(() => trimCache(IMAGE_CACHE, 50));
+            }
             return response;
+          })
+          .catch(error => {
+             // Optional: Fallback-Bild bei Fehler
+             console.warn(`Bild ${request.url} konnte nicht geladen werden. Fehler: ${error}`);
+             // return caches.match('/img/placeholder.png'); // Beispiel für ein Platzhalterbild
           });
       })
     );
@@ -138,4 +157,6 @@ self.addEventListener('fetch', event => {
   }
 
   /* 4. Alles andere → Standard‑Fetch (kein Eingriff) */
+  // Für andere Anfragen wird der Standard-Fetch verwendet.
+  // event.respondWith(fetch(request)); // Explizit, aber nicht notwendig, da Standardverhalten
 });
