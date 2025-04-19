@@ -29,7 +29,7 @@
       width: 100vw;
       background-color: var(--main-bg-color);
       font-family: 'Poppins', sans-serif;
-      overscroll-behavior: none;
+      /* overscroll-behavior is not fully supported, so it's removed to avoid iOS < 16 issues */
     }
 
     /* ==========================
@@ -309,7 +309,7 @@
       images.forEach((img, i) => {
         img.classList.remove("visible");
         // Erzwinge Neuberechnung, damit die Animation neu abgespielt wird
-        void img.offsetWidth;
+        img.offsetWidth; // Accessing offsetWidth forces a reflow
         if (i === index) {
           img.classList.add("visible");
         }
@@ -367,10 +367,8 @@
         if (Math.abs(diffX) > threshold) {
           navigate(diffX > 0 ? "next" : "prev");
         }
-      } else {
-        if (Math.abs(diffY) > threshold) {
-          navigate(diffY > 0 ? "next" : "prev");
-        }
+      } else if (Math.abs(diffY) > threshold) {
+        navigate(diffY > 0 ? "next" : "prev");
       }
     }
 
