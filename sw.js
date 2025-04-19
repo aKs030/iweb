@@ -12,7 +12,8 @@ const IMAGE_CACHE   = `abdulkerim-images-${CACHE_VERSION}`;
    Statische Assets (manuell gepflegt)
    ========================= */
 const STATIC_ASSETS = [
-  '/', '/index.html', '/offline.html',
+  // '/',  // Entfernt, um Redirect-Probleme zu vermeiden
+  '/index.html', '/offline.html',
   '/css/index.css', '/css/menu.css',
   '/img/icon.png'
 ];
@@ -36,7 +37,16 @@ self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(STATIC_ASSETS))
+      .then(async cache => {
+        // Nur Responses ohne Redirect cachen
+        const requests = STATIC_ASSETS.map(async url => {
+          const response = await fetch(url, { cache: 'reload' });
+          if (response.ok && !response.redirected && response.type !== 'opaqueredirect') {
+            await cache.put(url, response);
+          }
+        });
+        return Promise.all(requests);
+      })
       .catch(err => console.warn('Static cache error:', err))
   );
 });
@@ -74,10 +84,9 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          if (response.ok) {
+          if (response.ok && !response.redirected && response.type !== 'opaqueredirect') {
             const clone = response.clone();
             caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
-            return response;
           }
           // Bei HTTP-Fehlern (z.B. 404, 500) trotzdem die Serverantwort zurückgeben
           return response;
