@@ -113,6 +113,9 @@ self.addEventListener('fetch', event => {
   if (['style', 'script', 'worker'].includes(dest)) {
     event.respondWith(
       caches.match(request).then(cached => {
+        // Netzwerk-Fetch wird parallel zur Cache-Prüfung gestartet (implizit durch Promise-Ausführung)
+        // oder sequenziell nach der Cache-Prüfung (wie hier implementiert).
+        // Die sequenzielle Methode ist einfacher, die parallele kann Updates beschleunigen.
         const networkFetch = fetch(request)
           .then(response => {
             // Nur erfolgreiche Antworten cachen

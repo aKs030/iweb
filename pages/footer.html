@@ -2,14 +2,13 @@
   <div class="banner-table flex-column">
     <div class="flex-row">
           <div class="flex-item flex-item-stretch flex-column">
-            <p class="highlight-text">      
-© 2023 [Abdulkerim]. <span class="text text-small text-italic add-top-margin-large">Alle Rechte vorbehalten.</span>
+            <p class="highlight-text">
+© <script>document.write(new Date().getFullYear());</script> Abdulkerim. <span class="text text-small text-italic add-top-margin-large">Alle Rechte vorbehalten.</span>
             <br/>
- <button onclick="alert('Angaben gemäß § 5 TMG:\nAbdulkerim Sesli \nEmail:mail@abdulkerimsesli.com \nHaftungshinweis: \nDie Inhalte dieser Webseite wurden sorgfältig geprüft und nach bestem Wissen erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Jegliche Haftung für Schäden, die direkt oder indirekt aus der Nutzung dieser Webseite entstehen, wird ausgeschlossen.\nUrheberrecht:\nDie durch den Betreiber dieser Webseite erstellten Inhalte und Werke auf dieser Webseite unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Webseite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.\nDatenschutz:\nDie Nutzung dieser Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf dieser Webseite personenbezogene Daten beispielsweise Name oder E-Mail-Adresse erhoben werden, erfolgt dies auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.')"style="color:#000000; text-decoration:none;">Impressum</button>
- <button onclick="alert('1. Wenn Sie unsere Homepage besuchen, erheben wir automatisch Informationen über den von Ihnen genutzten Browser, das Betriebssystem Ihres Geräts, die IP-Adresse Ihres Geräts, den Namen Ihres Internet Service Providers und ähnliche technische Informationen. Diese Informationen werden ausschließlich zu statistischen Zwecken und zur Verbesserung unseres Angebots genutzt. \n2. Wenn Sie unser Kontaktformular nutzen, erheben wir die von Ihnen eingegebenen personenbezogenen Daten wie Name, E-Mail-Adresse, Telefonnummer und Ihre Nachricht. Diese Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage genutzt und nicht an Dritte weitergegeben.\n3. Eine Übermittlung Ihrer personenbezogenen Daten an Dritte erfolgt nur, wenn dies zur Abwicklung Ihrer Anfrage erforderlich ist oder wenn wir gesetzlich dazu verpflichtet sind.\n4. Wir setzen auf unserer Homepage Cookies ein, um unser Angebot nutzerfreundlicher, effektiver und sicherer zu machen. Cookies sind kleine Textdateien, die auf Ihrem Rechner abgelegt werden und die Ihr Browser speichert. Die meisten der von uns verwendeten Cookies sind sogenannte Session-Cookies, die nach Ende Ihres Besuchs automatisch gelöscht werden.\n5. Sie haben das Recht, jederzeit Auskunft über die von uns gespeicherten personenbezogenen Daten zu verlangen. Zudem haben Sie das Recht auf Berichtigung unrichtiger Daten, Einschränkung der Verarbeitung sowie auf Löschung Ihrer Daten. Sie können jederzeit der Verarbeitung Ihrer Daten widersprechen und haben das Recht auf Datenübertragbarkeit.\n6. Wir behalten uns vor, diese Datenschutzerklärung jederzeit anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen in der Datenschutzerklärung umzusetzen. Für Ihren erneuten Besuch gilt dann die neue Datenschutzerklärung.\n7. Wenn Sie Fragen zum Datenschutz haben oder Ihre Rechte als betroffene Person wahrnehmen möchten, können Sie uns jederzeit per E-Mail kontaktieren.\nStand: Mai.2023')"style="color:#000000; text-decoration:none;">Datenschutzerklärung</button>
- <button> 
-<a href= "mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">kontakt</a>
-</button>
+ <!-- Ersetze alert() durch Links zu tatsächlichen Seiten -->
+ <a href="/pages/impressum.html" style="color:#000000; text-decoration:none; margin-right: 5px;">Impressum</a>
+ <a href="/pages/datenschutz.html" style="color:#000000; text-decoration:none; margin-right: 5px;">Datenschutz</a>
+ <a href="mailto:mail@abdulkerimsesli.com?subject=Kontaktformular&body=Nachricht:" style="color:#000000; text-decoration:none;">Kontakt</a>
 </p>
 </div>
     </div>
@@ -118,42 +117,71 @@
   <button class="close">Speichern und Schließen</button>
 </div>
 <script>
-  const cookieBanner = document.getElementById('cookie-banner');
-  const cookieSettings = document.getElementById('cookie-settings');
-  document.querySelector('.accept').addEventListener('click', () => {
-      document.cookie = "cookiesAccepted=true; path=/; max-age=31536000";
-      document.cookie = "analyticsCookies=true; path=/; max-age=31536000";
-      document.cookie = "marketingCookies=true; path=/; max-age=31536000";
-      cookieBanner.style.display = 'none';
-  });
-  document.querySelector('.reject').addEventListener('click', () => {
-      document.cookie = "cookiesAccepted=false; path=/; max-age=31536000";
-      document.cookie = "analyticsCookies=false; path=/; max-age=31536000";
-      document.cookie = "marketingCookies=false; path=/; max-age=31536000";
-      cookieBanner.style.display = 'none';
-  });
-  document.querySelector('.settings').addEventListener('click', () => {
-      cookieSettings.style.display = 'block';
-  });
-  document.querySelector('.close').addEventListener('click', () => {
-      const analytics = document.getElementById('analytics').checked;
-      const marketing = document.getElementById('marketing').checked;
+  // Sicherstellen, dass das Skript erst nach dem Laden des DOMs ausgeführt wird
+  document.addEventListener('DOMContentLoaded', () => {
+    const cookieBanner = document.getElementById('cookie-banner');
+    const cookieSettings = document.getElementById('cookie-settings');
+    const acceptBtn = document.querySelector('.accept');
+    const rejectBtn = document.querySelector('.reject');
+    const settingsBtn = document.querySelector('.settings');
+    const closeSettingsBtn = document.querySelector('#cookie-settings .close');
+    const analyticsCheckbox = document.getElementById('analytics');
+    const marketingCheckbox = document.getElementById('marketing');
 
-      document.cookie = `analyticsCookies=${analytics}; path=/; max-age=31536000`;
-      document.cookie = `marketingCookies=${marketing}; path=/; max-age=31536000`;
-      document.cookie = "cookiesAccepted=true; path=/; max-age=31536000";
+    // Prüfen, ob Elemente vorhanden sind, bevor Event Listener hinzugefügt werden
+    if (cookieBanner && acceptBtn) {
+      acceptBtn.addEventListener('click', () => {
+        document.cookie = "cookiesAccepted=true; path=/; max-age=31536000; SameSite=Lax";
+        document.cookie = "analyticsCookies=true; path=/; max-age=31536000; SameSite=Lax";
+        document.cookie = "marketingCookies=true; path=/; max-age=31536000; SameSite=Lax";
+        cookieBanner.style.display = 'none';
+      });
+    }
 
-      cookieSettings.style.display = 'none';
-      cookieBanner.style.display = 'none';
-  });
-  // Check if cookies were already accepted/rejected
-  const cookies = document.cookie.split('; ').reduce((acc, cookie) => {
+    if (cookieBanner && rejectBtn) {
+      rejectBtn.addEventListener('click', () => {
+        document.cookie = "cookiesAccepted=false; path=/; max-age=31536000; SameSite=Lax";
+        document.cookie = "analyticsCookies=false; path=/; max-age=31536000; SameSite=Lax";
+        document.cookie = "marketingCookies=false; path=/; max-age=31536000; SameSite=Lax";
+        cookieBanner.style.display = 'none';
+      });
+    }
+
+    if (cookieSettings && settingsBtn) {
+      settingsBtn.addEventListener('click', () => {
+        cookieSettings.style.display = 'block';
+      });
+    }
+
+    if (cookieSettings && closeSettingsBtn && analyticsCheckbox && marketingCheckbox) {
+      closeSettingsBtn.addEventListener('click', () => {
+        const analytics = analyticsCheckbox.checked;
+        const marketing = marketingCheckbox.checked;
+
+        document.cookie = `analyticsCookies=${analytics}; path=/; max-age=31536000; SameSite=Lax`;
+        document.cookie = `marketingCookies=${marketing}; path=/; max-age=31536000; SameSite=Lax`;
+        // Annahme: Wenn Einstellungen gespeichert werden, wurden Cookies prinzipiell akzeptiert
+        document.cookie = "cookiesAccepted=true; path=/; max-age=31536000; SameSite=Lax";
+
+        cookieSettings.style.display = 'none';
+        if (cookieBanner) {
+          cookieBanner.style.display = 'none';
+        }
+      });
+    }
+
+    // Check if cookies were already accepted/rejected
+    const cookies = document.cookie.split('; ').reduce((acc, cookie) => {
       const [key, value] = cookie.split('=');
-      acc[key] = value;
+      if (key && value) {
+        acc[decodeURIComponent(key)] = decodeURIComponent(value);
+      }
       return acc;
-  }, {});
-  if (cookies.cookiesAccepted) {
+    }, {});
+
+    if (cookieBanner && cookies.cookiesAccepted) {
       cookieBanner.style.display = 'none';
-  }
+    }
+  });
 </script>
 <!-- < COOKIE BANNER > -->
