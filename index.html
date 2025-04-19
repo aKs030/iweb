@@ -18,6 +18,7 @@
              connect-src 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="manifest" href="/manifest.json">
     <title>Abdulkerim ⭐️</title>
 
     <!-- Preconnect for fonts -->
@@ -87,6 +88,11 @@
                 navigator.serviceWorker.register('/sw.js')
                     .catch(err => console.error('ServiceWorker registration failed:', err));
             });
+        }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
         }
     </script>
 </body>

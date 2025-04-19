@@ -42,6 +42,16 @@ self.addEventListener('install', event => {
   );
 });
 
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('v1').then((cache) => {
+      return cache.addAll([
+        '/offline.html'
+      ]);
+    })
+  );
+});
+
 /* ==========
    ACTIVATE
    ========== */
@@ -138,4 +148,12 @@ self.addEventListener('fetch', event => {
   }
 
   /* 4. Alles andere → Standard‑Fetch (kein Eingriff) */
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match('/offline.html');
+    })
+  );
 });

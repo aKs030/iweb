@@ -1,0 +1,9 @@
+{
+  "name": "Meine Webseite",
+  "short_name": "Website",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#444",
+  "icons": []
+}
