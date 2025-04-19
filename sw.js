@@ -1,6 +1,5 @@
 const CACHE_NAME = 'iweb-cache-v1';
 const ASSETS_TO_CACHE = [
-  // '/' entfernt, um Redirect-Probleme zu vermeiden
   '/index.html',
   '/css/index.css',
   '/css/menu.css',
@@ -20,11 +19,18 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(async cache => {
-        // Nur Responses ohne Redirect cachen
         for (const url of ASSETS_TO_CACHE) {
           try {
-            const response = await fetch(url, { redirect: "follow" });
-            if (response && response.type === 'basic' && response.status === 200) {
+            // Absolute URL erzwingen
+            const absoluteUrl = self.location.origin + url;
+            const response = await fetch(absoluteUrl, { redirect: "follow" });
+            // Nur Response ohne Redirect und Status 200 cachen
+            if (
+              response &&
+              response.type === 'basic' &&
+              response.status === 200 &&
+              !response.redirected
+            ) {
               await cache.put(url, response.clone());
             }
           } catch (e) {
