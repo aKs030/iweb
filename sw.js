@@ -69,29 +69,49 @@ self.addEventListener('fetch', event => {
   const dest = request.destination;
 
   /* 1. Navigations‑Anfragen (HTML‑Dokumente)
-        → Network‑First mit Cache‑Fallback              */
+        → Network‑First mit Cache‑Fallback (umgeschrieben mit async/await) */
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then(response => {
-          // Nur gültige, nicht-umgeleitete Antworten cachen
-          if (response.ok && !response.redirected) {
-            const clone = response.clone();
-            caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
+      (async () => {
+        try {
+          // Versuche zuerst das Netzwerk
+          const networkResponse = await fetch(request);
+
+          // Wenn Netzwerk erfolgreich, ggf. cachen und zurückgeben
+          if (networkResponse.ok && !networkResponse.redirected) {
+            const cache = await caches.open(RUNTIME_CACHE);
+            cache.put(request, networkResponse.clone());
           }
-          // Immer die Netzwerkantwort zurückgeben (Browser behandelt Redirects)
-          return response;
-        })
-        .catch(async () => {
-          // Netzwerkfehler: Versuche zuerst, die angeforderte Seite aus dem Cache zu liefern
+          // Netzwerkantwort zurückgeben (Browser kümmert sich um Redirects etc.)
+          return networkResponse;
+
+        } catch (error) {
+          // Netzwerkfehler (offline)
+          console.log('Netzwerk-Fetch fehlgeschlagen, versuche Cache...', error);
+
+          // Versuche, die angeforderte Seite aus dem Cache zu holen
           const cachedResponse = await caches.match(request);
           if (cachedResponse) {
-            return cachedResponse; // Liefert die gecachte Seite, falls vorhanden
+            console.log('Gecachte Version der angeforderten Seite gefunden:', request.url);
+            return cachedResponse;
           }
+
           // Wenn nicht im Cache, liefere die Offline-Fallback-Seite
+          console.log('Keine gecachte Version gefunden, liefere offline.html');
           const offlineResponse = await caches.match('/offline.html');
-          return offlineResponse; // Liefert die gecachte offline.html oder undefined
-        })
+          if (offlineResponse) {
+            return offlineResponse;
+          }
+
+          // Absoluter Fallback, falls offline.html nicht im Cache ist
+          console.error('Offline-Seite nicht im Cache gefunden!');
+          return new Response("Sie sind offline und die Offline-Seite ist nicht verfügbar.", {
+            status: 503,
+            statusText: "Service Unavailable",
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        }
+      })()
     );
     return; // Wichtig: Beendet die Funktion nach Behandlung von 'navigate'
   }
