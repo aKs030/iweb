@@ -38,16 +38,25 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(async cache => {
+        console.log('[SW] Pre-caching static assets...');
         // Nur Responses ohne Redirect cachen
         const requests = STATIC_ASSETS.map(async url => {
-          const response = await fetch(url, { cache: 'reload' });
-          if (response.ok && !response.redirected && response.type !== 'opaqueredirect') {
-            await cache.put(url, response);
+          try {
+            const response = await fetch(url, { cache: 'reload' });
+            if (response.ok && response.type === 'basic') { // Strengere Prüfung auf 'basic'
+              console.log(`[SW] Caching ${url} - Status: ${response.status}`);
+              await cache.put(url, response);
+            } else {
+              console.warn(`[SW] Skipping cache for ${url} - Status: ${response.status}, Type: ${response.type}, Redirected: ${response.redirected}`);
+            }
+          } catch (err) {
+            console.error(`[SW] Failed to fetch and cache ${url}:`, err);
           }
         });
-        return Promise.all(requests);
+        await Promise.all(requests);
+        console.log('[SW] Static assets pre-cached successfully.');
       })
-      .catch(err => console.warn('Static cache error:', err))
+      .catch(err => console.error('[SW] Static cache opening/putting error:', err))
   );
 });
 
@@ -75,6 +84,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
   const dest = request.destination;
+  const url = new URL(request.url);
+
+  // Ignoriere Anfragen für Chrome-Erweiterungen oder nicht-HTTP/HTTPS-Protokolle
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
 
   // 1. Navigations- und HTML-Anfragen → Network-First mit Offline-Fallback
   if (
@@ -93,20 +108,30 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(error => {
+          console.warn(`[SW] Network fetch failed for ${request.url}:`, error);
           // Nur bei echten Netzwerkfehlern (TypeError) offline.html liefern
           if (error instanceof TypeError) {
-            return caches.match('/offline.html').then(offlineResponse =>
-              offlineResponse ||
-              new Response('Offline page not available in cache.', {
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: { 'Content-Type': 'text/plain' }
-              })
-            );
+            console.log('[SW] Network error detected. Attempting to serve offline page.');
+            // Versuche explizit aus dem STATIC_CACHE zu laden
+            return caches.open(STATIC_CACHE).then(cache => {
+              return cache.match('/offline.html').then(offlineResponse => {
+                if (offlineResponse) {
+                  console.log('[SW] Serving offline page from cache.');
+                  return offlineResponse;
+                } else {
+                  // Fallback, falls auch im STATIC_CACHE nicht gefunden
+                  console.error('[SW] CRITICAL: offline.html not found in STATIC_CACHE!');
+                  return new Response('Offline page not available in cache.', {
+                    status: 503,
+                    statusText: 'Service Unavailable (Offline Page Missing)',
+                    headers: { 'Content-Type': 'text/plain' }
+                  });
+                }
+              });
+            });
           }
           // Bei anderen Fehlern (z.B. Serverfehler, die nicht gecacht wurden) eine generische Fehlermeldung
-          // Wichtig: Dies sollte selten auftreten, da der .then()-Block oben auch Serverfehler zurückgibt.
-          console.error('Fetch error (non-TypeError):', error);
+          console.error('[SW] Fetch error (non-TypeError):', error);
           return new Response('Ein Fehler ist aufgetreten.', {
             status: 500, // Oder einen passenderen Statuscode
             statusText: 'Internal Error',
