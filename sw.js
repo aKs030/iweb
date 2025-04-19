@@ -42,10 +42,12 @@ self.addEventListener('install', event => {
         // Nur Responses ohne Redirect cachen
         const requests = STATIC_ASSETS.map(async url => {
           try {
-            const response = await fetch(url, { cache: 'reload' });
-            if (response.ok && response.type === 'basic') { // Strengere Prüfung auf 'basic'
+            const request = new Request(url, { redirect: 'follow' }); // Explizit Umleitungen folgen
+            const response = await fetch(request, { cache: 'reload' });
+            // Strengere Prüfung: ok, basic type UND nicht umgeleitet
+            if (response.ok && response.type === 'basic' && !response.redirected) {
               console.log(`[SW] Caching ${url} - Status: ${response.status}`);
-              await cache.put(url, response);
+              await cache.put(url, response); // Original-URL als Schlüssel verwenden
             } else {
               console.warn(`[SW] Skipping cache for ${url} - Status: ${response.status}, Type: ${response.type}, Redirected: ${response.redirected}`);
             }
@@ -100,11 +102,15 @@ self.addEventListener('fetch', event => {
       fetch(request)
         .then(response => {
           // Nur erfolgreiche 'basic'-Antworten ohne Weiterleitung cachen
-          if (response.ok && response.type === 'basic') {
+          if (response.ok && response.type === 'basic' && !response.redirected) {
             const clone = response.clone();
             caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
+          } else if (!response.ok) {
+            console.warn(`[SW] Network response for ${request.url} was not ok: ${response.status}`);
+          } else if (response.redirected) {
+            console.warn(`[SW] Network response for ${request.url} was redirected, not caching.`);
           }
-          // Immer die Originalantwort zurückgeben (auch bei Fehlern wie 404)
+          // Immer die Originalantwort zurückgeben (auch bei Fehlern wie 404 oder Redirects)
           return response;
         })
         .catch(error => {
@@ -148,12 +154,14 @@ self.addEventListener('fetch', event => {
       caches.match(request).then(cached => {
         const networkFetch = fetch(request)
           .then(response => {
-            // Nur erfolgreiche 'basic'-Antworten cachen
-            if (response.ok && response.type === 'basic') {
+            // Nur erfolgreiche 'basic'-Antworten ohne Umleitung cachen
+            if (response.ok && response.type === 'basic' && !response.redirected) {
               const clone = response.clone();
               caches.open(RUNTIME_CACHE)
                 .then(cache => cache.put(request, clone))
                 .then(() => trimCache(RUNTIME_CACHE, 50));
+            } else if (response.redirected) {
+                console.warn(`[SW] Stale-While-Revalidate: Response for ${request.url} was redirected, not caching.`);
             }
             return response;
           })
@@ -182,12 +190,14 @@ self.addEventListener('fetch', event => {
         if (cached) return cached;
         return fetch(request)
           .then(response => {
-            // Nur erfolgreiche 'basic'-Antworten cachen
-            if (response.ok && response.type === 'basic') {
+            // Nur erfolgreiche 'basic'-Antworten ohne Umleitung cachen
+            if (response.ok && response.type === 'basic' && !response.redirected) {
               const clone = response.clone();
               caches.open(IMAGE_CACHE)
                 .then(cache => cache.put(request, clone))
                 .then(() => trimCache(IMAGE_CACHE, 50));
+            } else if (response.redirected) {
+                console.warn(`[SW] Cache-First (Image): Response for ${request.url} was redirected, not caching.`);
             }
             return response;
           })
