@@ -12,6 +12,7 @@ const IMAGE_CACHE   = 'abdulkerim-images-v1';
    ========================= */
 const STATIC_ASSETS = [
   '/',                   // Startseite (index.html)
+  '/index.html',         // explizit hinzufügen
   '/offline.html',       // Offline-Fallback-Seite
   '/css/index.css',
   '/css/menu.css',
