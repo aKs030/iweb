@@ -79,18 +79,28 @@ self.addEventListener('fetch', event => {
             caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
             return response;
           }
-          throw new Error(`Server response not OK: ${response.status} ${response.statusText}`);
+          // Bei HTTP-Fehlern (z.B. 404, 500) trotzdem die Serverantwort zurückgeben
+          return response;
         })
-        .catch(() =>
-          caches.match('/offline.html').then(offlineResponse =>
-            offlineResponse ||
-            new Response('Offline page not available in cache.', {
-              status: 503,
-              statusText: 'Service Unavailable',
-              headers: { 'Content-Type': 'text/plain' }
-            })
-          )
-        )
+        .catch(error => {
+          // Nur bei echten Netzwerkfehlern (TypeError) offline.html liefern
+          if (error instanceof TypeError) {
+            return caches.match('/offline.html').then(offlineResponse =>
+              offlineResponse ||
+              new Response('Offline page not available in cache.', {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: { 'Content-Type': 'text/plain' }
+              })
+            );
+          }
+          // Bei anderen Fehlern eine generische Fehlermeldung
+          return new Response('Ein unbekannter Fehler ist aufgetreten.', {
+            status: 500,
+            statusText: 'Internal Error',
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        })
     );
     return;
   }
