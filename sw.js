@@ -13,7 +13,7 @@ const IMAGE_CACHE   = `abdulkerim-images-${CACHE_VERSION}`;
    ========================= */
 const STATIC_ASSETS = [
   // '/',  // Entfernt, um Redirect-Probleme zu vermeiden
-  '/index.html', '/offline.html',
+  '/index.html', '/offline.html', // Stelle sicher, dass offline.html hier aufgeführt ist
   '/css/index.css', '/css/menu.css',
   '/img/icon.png'
 ];
@@ -48,11 +48,23 @@ self.addEventListener('install', event => {
             if (response.ok && response.type === 'basic' && !response.redirected) {
               console.log(`[SW] Caching ${url} - Status: ${response.status}`);
               await cache.put(url, response); // Original-URL als Schlüssel verwenden
+              // Spezifisches Logging für offline.html
+              if (url === '/offline.html') {
+                console.log('[SW] offline.html successfully cached during install.');
+              }
             } else {
               console.warn(`[SW] Skipping cache for ${url} - Status: ${response.status}, Type: ${response.type}, Redirected: ${response.redirected}`);
+              // Spezifisches Logging für offline.html Fehler
+              if (url === '/offline.html') {
+                console.error('[SW] FAILED to cache offline.html during install due to response status/type/redirect.');
+              }
             }
           } catch (err) {
             console.error(`[SW] Failed to fetch and cache ${url}:`, err);
+            // Spezifisches Logging für offline.html Fehler
+            if (url === '/offline.html') {
+              console.error('[SW] FAILED to cache offline.html during install due to fetch error:', err);
+            }
           }
         });
         await Promise.all(requests);
@@ -113,28 +125,41 @@ self.addEventListener('fetch', event => {
           // Immer die Originalantwort zurückgeben (auch bei Fehlern wie 404 oder Redirects)
           return response;
         })
-        .catch(error => {
+        .catch(async error => { // async hinzugefügt für await caches.keys()
           console.warn(`[SW] Network fetch failed for ${request.url}:`, error);
           // Nur bei echten Netzwerkfehlern (TypeError) offline.html liefern
           if (error instanceof TypeError) {
             console.log('[SW] Network error detected. Attempting to serve offline page.');
             // Versuche explizit aus dem STATIC_CACHE zu laden
-            return caches.open(STATIC_CACHE).then(cache => {
-              return cache.match('/offline.html').then(offlineResponse => {
-                if (offlineResponse) {
-                  console.log('[SW] Serving offline page from cache.');
-                  return offlineResponse;
-                } else {
-                  // Fallback, falls auch im STATIC_CACHE nicht gefunden
-                  console.error('[SW] CRITICAL: offline.html not found in STATIC_CACHE!');
-                  return new Response('Offline page not available in cache.', {
-                    status: 503,
-                    statusText: 'Service Unavailable (Offline Page Missing)',
-                    headers: { 'Content-Type': 'text/plain' }
-                  });
-                }
+            try {
+              const cache = await caches.open(STATIC_CACHE);
+              const offlineResponse = await cache.match('/offline.html');
+
+              if (offlineResponse) {
+                console.log('[SW] Serving offline page from cache.');
+                return offlineResponse;
+              } else {
+                // Zusätzliches Debugging, wenn offline.html nicht gefunden wird
+                console.error('[SW] CRITICAL: offline.html not found in STATIC_CACHE!');
+                const keys = await cache.keys();
+                console.log(`[SW] Keys currently in ${STATIC_CACHE}:`, keys.map(k => k.url));
+                const cacheExists = await caches.has(STATIC_CACHE);
+                console.log(`[SW] Does ${STATIC_CACHE} exist? ${cacheExists}`);
+
+                return new Response('Offline page not available in cache.', {
+                  status: 503,
+                  statusText: 'Service Unavailable (Offline Page Missing)',
+                  headers: { 'Content-Type': 'text/plain' }
+                });
+              }
+            } catch (cacheError) {
+              console.error('[SW] Error opening/accessing STATIC_CACHE for offline page:', cacheError);
+              return new Response('Error accessing cache for offline page.', {
+                status: 500,
+                statusText: 'Internal Server Error (Cache Access)',
+                headers: { 'Content-Type': 'text/plain' }
               });
-            });
+            }
           }
           // Bei anderen Fehlern (z.B. Serverfehler, die nicht gecacht wurden) eine generische Fehlermeldung
           console.error('[SW] Fetch error (non-TypeError):', error);
