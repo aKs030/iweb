@@ -83,9 +83,14 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(async () => {
-          // Netzwerkfehler: Versuche, die Offline-Seite aus dem Cache zu liefern
-          const cachedResponse = await caches.match('/offline.html');
-          return cachedResponse; // Liefert die gecachte offline.html oder undefined
+          // Netzwerkfehler: Versuche zuerst, die angeforderte Seite aus dem Cache zu liefern
+          const cachedResponse = await caches.match(request);
+          if (cachedResponse) {
+            return cachedResponse; // Liefert die gecachte Seite, falls vorhanden
+          }
+          // Wenn nicht im Cache, liefere die Offline-Fallback-Seite
+          const offlineResponse = await caches.match('/offline.html');
+          return offlineResponse; // Liefert die gecachte offline.html oder undefined
         })
     );
     return; // Wichtig: Beendet die Funktion nach Behandlung von 'navigate'
