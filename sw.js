@@ -1,3 +1,8 @@
+// sw.js – Ausgefeilteres Cache‑Konzept mit unterschiedlichen Strategien
+
+/* ======================
+   Konstante Cache‑Namen
+   ====================== */
 const STATIC_CACHE  = 'abdulkerim-static-v1';
 const RUNTIME_CACHE = 'abdulkerim-runtime-v1';
 const IMAGE_CACHE   = 'abdulkerim-images-v1';
@@ -9,8 +14,7 @@ const STATIC_ASSETS = [
   '/',                   // Startseite (index.html)
   '/css/index.css',
   '/css/menu.css',
-  '/img/icon.png',
-  '/offline.html'        // Offline‑Fallback‑Seite
+  '/img/icon.png'
 ];
 
 /* ===================================
@@ -65,7 +69,7 @@ self.addEventListener('fetch', event => {
 
   /* 1. Navigations‑Anfragen (HTML‑Dokumente)
         → Network‑First mit Cache‑Fallback              */
-  if (request.mode === 'navigate' && request.method === 'GET') {
+  if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then(response => {
@@ -74,9 +78,7 @@ self.addEventListener('fetch', event => {
           caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
           return response;
         })
-        .catch(() =>
-          caches.match(request).then(resp => resp || caches.match('/offline.html'))
-        )
+        .catch(() => caches.match(request))
     );
     return;
   }
@@ -118,6 +120,7 @@ self.addEventListener('fetch', event => {
           });
       })
     );
+    return;
   }
 
   /* 4. Alles andere → Standard‑Fetch (kein Eingriff) */
