@@ -68,41 +68,33 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const dest = request.destination;
 
-  /* 1. Navigations‑Anfragen (HTML‑Dokumente)
-        → Network‑First mit Cache‑Fallback              */
+  // Navigationsanfragen (HTML-Dokumente): Network-First, dann Cache, dann Offline-Seite
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Prüfen, ob die Antwort gültig und erfolgreich ist (Status 200-299)
           if (response.ok) {
-            // Antwort klonen, im Runtime-Cache speichern und Original zurückgeben
             const clone = response.clone();
-            // Asynchrones Caching, blockiert nicht die Antwort
             caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
             return response;
           }
-          // Wenn die Antwort NICHT ok ist (z.B. 404, 500, 3xx),
-          // werfe einen Fehler, um den .catch() Block auszulösen und die Offline-Seite zu zeigen.
-          // Dies verhindert, dass eine Redirect-Antwort an Safari zurückgegeben wird.
           throw new Error(`Server response not OK: ${response.status} ${response.statusText}`);
         })
-        .catch(error => {
-          // Netzwerkfehler ODER Server-Antwort war nicht ok.
-          console.warn(`Netzwerkanfrage für ${request.url} fehlgeschlagen oder Antwort nicht OK. Liefere Offline-Seite. Fehler:`, error);
-          // Offline-Fallback aus dem Cache liefern
-          return caches.match('/offline.html').then(offlineResponse => {
-            if (offlineResponse) {
-              return offlineResponse;
-            }
-            // Absoluter Fallback, falls offline.html nicht im Cache ist (sollte nicht passieren)
-            console.error('Offline-Seite (/offline.html) nicht im Cache gefunden!');
-            return new Response('Offline page not available in cache.', {
-              status: 503,
-              statusText: 'Service Unavailable',
-              headers: { 'Content-Type': 'text/plain' }
+        .catch(() => {
+          // Erst Cache prüfen, dann Offline-Seite
+          return caches.match(request)
+            .then(cachedResponse => {
+              if (cachedResponse) return cachedResponse;
+              return caches.match('/offline.html');
+            })
+            .then(fallback => {
+              if (fallback) return fallback;
+              return new Response('Offline page not available in cache.', {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: { 'Content-Type': 'text/plain' }
+              });
             });
-          });
         })
     );
     return;

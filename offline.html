@@ -35,10 +35,15 @@
 </head>
 <body>
   <div class="wrapper" role="alert" aria-live="polite">
+    <span class="visually-hidden">Achtung: Sie sind offline.</span>
     <img src="/img/icon.png" alt="Symbol für keine Verbindung">
     <h1>Keine Internet­verbindung</h1>
     <p>Leider bist du momentan offline. Prüfe deine Verbindung und versuche es noch einmal.</p>
     <button onclick="location.reload()">Neu laden</button>
   </div>
+  <script>
+    // Automatisches Neuladen, wenn wieder online
+    window.addEventListener('online', () => location.reload());
+  </script>
 </body>
 </html>
