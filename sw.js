@@ -17,27 +17,24 @@ const ASSETS_TO_CACHE = [
 // Installations-Event: Assets cachen (nur Responses ohne Redirect)
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(async cache => {
-        for (const url of ASSETS_TO_CACHE) {
-          try {
-            // Absolute URL erzwingen
-            const absoluteUrl = self.location.origin + url;
-            const response = await fetch(absoluteUrl, { redirect: "follow" });
-            // Nur Response ohne Redirect und Status 200 cachen
-            if (
-              response &&
-              response.type === 'basic' &&
-              response.status === 200 &&
-              !response.redirected
-            ) {
-              await cache.put(url, response.clone());
-            }
-          } catch (e) {
-            // Fehler beim Caching ignorieren (z.B. offline)
+    caches.open(CACHE_NAME).then(async cache => {
+      for (const url of ASSETS_TO_CACHE) {
+        try {
+          const absoluteUrl = self.location.origin + url;
+          const response = await fetch(absoluteUrl, { redirect: 'manual' });
+          if (
+            response &&
+            response.status === 200 &&
+            !response.redirected &&
+            response.type !== 'opaqueredirect'
+          ) {
+            await cache.put(url, response.clone());
           }
+        } catch (e) {
+          // Fehler beim Caching ignorieren (z.B. offline)
         }
-      })
+      }
+    })
   );
   self.skipWaiting();
 });
