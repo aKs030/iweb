@@ -73,54 +73,57 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        try {
-          // Versuche zuerst das Netzwerk
+        try {(response => {
+          // Versuche zuerst das Netzwerkte Antworten cachen
           const networkResponse = await fetch(request);
-
-          // Wenn Netzwerk erfolgreich, ggf. cachen und zurückgeben
+            const clone = response.clone();
+          // Wenn Netzwerk erfolgreich, ggf. cachen und zurückgebenest, clone));
+          // Wichtig: Nur cachen, wenn die Antwort OK ist UND keine Weiterleitung
+          // Dies verhindert das Cachen von Fehlerseiten oder Redirects, die offline nicht funktionieren. behandelt Redirects)
           if (networkResponse.ok && !networkResponse.redirected) {
             const cache = await caches.open(RUNTIME_CACHE);
-            cache.put(request, networkResponse.clone());
-          }
-          // Netzwerkantwort zurückgeben (Browser kümmert sich um Redirects etc.)
+            // Klonen ist wichtig, da eine Response nur einmal gelesen werden kann
+            cache.put(request, networkResponse.clone());uche, die Offline-Seite aus dem Cache zu liefern
+          }          const cachedResponse = await caches.match('/offline.html');
+          // Netzwerkantwort zurückgeben (Browser kümmert sich um Redirects etc. online)sponse; // Liefert die gecachte offline.html oder undefined
           return networkResponse;
 
-        } catch (error) {
+        } catch (error) {    return; // Wichtig: Beendet die Funktion nach Behandlung von 'navigate'
           // Netzwerkfehler (offline)
-          console.log('Netzwerk-Fetch fehlgeschlagen, versuche Cache...', error);
+          console.log('Netzwerk-Fetch fehlgeschlagen, versuche offline.html...', error);
 
-          // Versuche, die angeforderte Seite aus dem Cache zu holen
-          const cachedResponse = await caches.match(request);
-          if (cachedResponse) {
-            console.log('Gecachte Version der angeforderten Seite gefunden:', request.url);
-            return cachedResponse;
-          }
-
-          // Wenn nicht im Cache, liefere die Offline-Fallback-Seite
-          console.log('Keine gecachte Version gefunden, liefere offline.html');
-          const offlineResponse = await caches.match('/offline.html');
-          if (offlineResponse) {
+          // *** Geänderte Logik: Zuerst die Offline-Seite versuchen ***
+          const offlineResponse = await caches.match('/offline.html');].includes(dest)) {
+          if (offlineResponse) {espondWith(
+            console.log('Liefere offline.html');      caches.match(request).then(cached => {
             return offlineResponse;
           }
+
+          // Optional: Als zweiten Fallback die ursprünglich angeforderte Seite aus dem Cache versuchenCACHE)
+          // const cachedResponse = await caches.match(request);che.put(request, clone))
+          // if (cachedResponse) {       .then(() => trimCache(RUNTIME_CACHE, 50));
+          //   console.log('Gecachte Version der angeforderten Seite gefunden:', request.url);            return response;
+          //   return cachedResponse;
+          // }
 
           // Absoluter Fallback, falls offline.html nicht im Cache ist
           console.error('Offline-Seite nicht im Cache gefunden!');
           return new Response("Sie sind offline und die Offline-Seite ist nicht verfügbar.", {
             status: 503,
             statusText: "Service Unavailable",
-            headers: { 'Content-Type': 'text/plain' }
-          });
+            headers: { 'Content-Type': 'text/plain' }lder
+          });  → Cache‑First + Begrenzung auf 50 Einträge       */
         }
-      })()
-    );
-    return; // Wichtig: Beendet die Funktion nach Behandlung von 'navigate'
+      })() event.respondWith(
+    );      caches.match(request).then(cached => {
+    return; // Wichtig: Beendet die Funktion nach Behandlung von 'navigate'urn cached;
   }
 
-  /* 2. CSS, JS, Worker
+  /* 2. CSS, JS, Workerse => {
         → Stale‑While‑Revalidate                        */
   if (['style', 'script', 'worker'].includes(dest)) {
-    event.respondWith(
-      caches.match(request).then(cached => {
+    event.respondWith( => cache.put(request, clone))
+      caches.match(request).then(cached => {GE_CACHE, 50));
         const networkFetch = fetch(request)
           .then(response => {
             const clone = response.clone();
@@ -128,33 +131,8 @@ self.addEventListener('fetch', event => {
                   .then(cache => cache.put(request, clone))
                   .then(() => trimCache(RUNTIME_CACHE, 50));
             return response;
-          })
-          .catch(() => cached); // Fallback, wenn Netzwerk down
-        return cached || networkFetch;
-      })
-    );
-    return;
-  }
-
-  /* 3. Bilder
-        → Cache‑First + Begrenzung auf 50 Einträge       */
-  if (dest === 'image') {
-    event.respondWith(
-      caches.match(request).then(cached => {
-        if (cached) return cached;
-
-        return fetch(request)
-          .then(response => {
-            const clone = response.clone();
-            caches.open(IMAGE_CACHE)
-                  .then(cache => cache.put(request, clone))
-                  .then(() => trimCache(IMAGE_CACHE, 50));
-            return response;
-          });
-      })
-    );
-    return;
-  }
+          })Alles andere → Standard‑Fetch (kein Eingriff) */
+          .catch(() => cached); // Fallback, wenn Netzwerk down        return cached || networkFetch;      })    );    return;  }  /* 3. Bilder        → Cache‑First + Begrenzung auf 50 Einträge       */  if (dest === 'image') {    event.respondWith(      caches.match(request).then(cached => {        if (cached) return cached;        return fetch(request)          .then(response => {            const clone = response.clone();            caches.open(IMAGE_CACHE)                  .then(cache => cache.put(request, clone))                  .then(() => trimCache(IMAGE_CACHE, 50));            return response;          });      })    );    return;  }
 
   /* 4. Alles andere → Standard‑Fetch (kein Eingriff) */
 });
