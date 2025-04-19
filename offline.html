@@ -34,16 +34,16 @@
   </style>
 </head>
 <body>
+  <noscript>
+    <div style="color:#b00;background:#fff3cd;padding:1rem;border-radius:6px;margin-bottom:1rem;">
+      <strong>Hinweis:</strong> Diese Seite benötigt JavaScript für die Offline-Funktion. Bitte aktivieren Sie JavaScript.
+    </div>
+  </noscript>
   <div class="wrapper" role="alert" aria-live="polite">
-    <span class="visually-hidden">Achtung: Sie sind offline.</span>
-    <img src="/img/icon.png" alt="Symbol für keine Verbindung">
+    <img src="/img/icon.png" alt="Symbol für keine Verbindung" onerror="this.style.display='none'">
     <h1>Keine Internet­verbindung</h1>
     <p>Leider bist du momentan offline. Prüfe deine Verbindung und versuche es noch einmal.</p>
     <button onclick="location.reload()">Neu laden</button>
   </div>
-  <script>
-    // Automatisches Neuladen, wenn wieder online
-    window.addEventListener('online', () => location.reload());
-  </script>
 </body>
 </html>

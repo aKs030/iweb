@@ -68,8 +68,11 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const dest = request.destination;
 
-  // Navigationsanfragen (HTML-Dokumente): Network-First, dann Cache, dann Offline-Seite
-  if (request.mode === 'navigate') {
+  // 1. Navigations- und HTML-Anfragen → Network-First mit Offline-Fallback
+  if (
+    request.mode === 'navigate' ||
+    (request.headers.get('accept') && request.headers.get('accept').includes('text/html'))
+  ) {
     event.respondWith(
       fetch(request)
         .then(response => {
@@ -80,21 +83,19 @@ self.addEventListener('fetch', event => {
           }
           throw new Error(`Server response not OK: ${response.status} ${response.statusText}`);
         })
-        .catch(() => {
-          // Erst Cache prüfen, dann Offline-Seite
-          return caches.match(request)
-            .then(cachedResponse => {
-              if (cachedResponse) return cachedResponse;
-              return caches.match('/offline.html');
-            })
-            .then(fallback => {
-              if (fallback) return fallback;
-              return new Response('Offline page not available in cache.', {
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: { 'Content-Type': 'text/plain' }
-              });
+        .catch(error => {
+          // Liefere offline.html aus dem Cache
+          return caches.match('/offline.html').then(offlineResponse => {
+            if (offlineResponse) {
+              return offlineResponse;
+            }
+            // Fallback, falls offline.html nicht im Cache ist
+            return new Response('Offline page not available in cache.', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: { 'Content-Type': 'text/plain' }
             });
+          });
         })
     );
     return;
