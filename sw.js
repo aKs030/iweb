@@ -12,6 +12,7 @@ const IMAGE_CACHE   = 'abdulkerim-images-v1';
    ========================= */
 const STATIC_ASSETS = [
   '/',                   // Startseite (index.html)
+  '/offline.html',       // Offline-Fallback-Seite
   '/css/index.css',
   '/css/menu.css',
   '/img/icon.png'
@@ -78,7 +79,7 @@ self.addEventListener('fetch', event => {
           caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(() => caches.match('/offline.html')) // Offline-Fallback
     );
     return;
   }
