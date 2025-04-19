@@ -153,7 +153,15 @@ self.addEventListener('fetch', event => {
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/offline.html'))
+      (async () => {
+        try {
+          const response = await fetch(event.request, { redirect: 'manual' });
+          if (!response.ok) throw 'Response failing';
+          return response;
+        } catch {
+          return caches.match('/offline.html');
+        }
+      })()
     );
   } else {
     event.respondWith(fetch(event.request));
