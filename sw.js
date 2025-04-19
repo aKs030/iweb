@@ -74,10 +74,23 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Antwort klonen und in Runtime‑Cache legen
-          const clone = response.clone();
-          caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
-          return response;
+          // Falls die Antwort weitergeleitet wurde, erzeugen wir eine neue Response, 
+          // um das Redirect-Flag zu entfernen
+          if (response.redirected) {
+            return response.blob().then(body => {
+              const newResponse = new Response(body, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+              });
+              caches.open(RUNTIME_CACHE).then(cache => cache.put(request, newResponse.clone()));
+              return newResponse;
+            });
+          } else {
+            const clone = response.clone();
+            caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
+            return response;
+          }
         })
         .catch(() => caches.match('/offline.html')) // Offline-Fallback
     );
