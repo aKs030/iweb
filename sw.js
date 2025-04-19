@@ -42,16 +42,6 @@ self.addEventListener('install', event => {
   );
 });
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open('v1').then((cache) => {
-      return cache.addAll([
-        '/offline.html'
-      ]);
-    })
-  );
-});
-
 /* ==========
    ACTIVATE
    ========== */
@@ -84,27 +74,21 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Falls die Antwort weitergeleitet wurde, erzeugen wir eine neue Response, 
-          // um das Redirect-Flag zu entfernen
-          if (response.redirected) {
-            return response.blob().then(body => {
-              const newResponse = new Response(body, {
-                status: response.status,
-                statusText: response.statusText,
-                headers: response.headers
-              });
-              caches.open(RUNTIME_CACHE).then(cache => cache.put(request, newResponse.clone()));
-              return newResponse;
-            });
-          } else {
+          // Nur gültige, nicht-umgeleitete Antworten cachen
+          if (response.ok && !response.redirected) {
             const clone = response.clone();
             caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
-            return response;
           }
+          // Immer die Netzwerkantwort zurückgeben (Browser behandelt Redirects)
+          return response;
         })
-        .catch(() => caches.match('/offline.html')) // Offline-Fallback
+        .catch(async () => {
+          // Netzwerkfehler: Versuche, die Offline-Seite aus dem Cache zu liefern
+          const cachedResponse = await caches.match('/offline.html');
+          return cachedResponse; // Liefert die gecachte offline.html oder undefined
+        })
     );
-    return;
+    return; // Wichtig: Beendet die Funktion nach Behandlung von 'navigate'
   }
 
   /* 2. CSS, JS, Worker
@@ -148,22 +132,4 @@ self.addEventListener('fetch', event => {
   }
 
   /* 4. Alles andere → Standard‑Fetch (kein Eingriff) */
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      (async () => {
-        try {
-          const response = await fetch(event.request, { redirect: 'manual' });
-          if (!response.ok) throw 'Response failing';
-          return response;
-        } catch {
-          return caches.match('/offline.html');
-        }
-      })()
-    );
-  } else {
-    event.respondWith(fetch(event.request));
-  }
 });
