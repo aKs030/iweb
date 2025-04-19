@@ -1,21 +1,19 @@
-// sw.js – Ausgefeilteres Cache‑Konzept mit unterschiedlichen Strategien
+// Service Worker – Verbesserte und optimierte Konfiguration
 
 /* ======================
-   Konstante Cache‑Namen
+   Zentrale Cache-Version
    ====================== */
-const STATIC_CACHE  = 'abdulkerim-static-v1';
-const RUNTIME_CACHE = 'abdulkerim-runtime-v1';
-const IMAGE_CACHE   = 'abdulkerim-images-v1';
+const CACHE_VERSION = 'v2';
+const STATIC_CACHE  = `abdulkerim-static-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `abdulkerim-runtime-${CACHE_VERSION}`;
+const IMAGE_CACHE   = `abdulkerim-images-${CACHE_VERSION}`;
 
 /* =========================
-   Assets, die wir vorab cachen
+   Statische Assets (manuell gepflegt)
    ========================= */
 const STATIC_ASSETS = [
-  '/',                   // Startseite (index.html)
-  '/index.html',         // explizit hinzufügen
-  '/offline.html',       // Offline-Fallback-Seite
-  '/css/index.css',
-  '/css/menu.css',
+  '/', '/index.html', '/offline.html',
+  '/css/index.css', '/css/menu.css',
   '/img/icon.png'
 ];
 
@@ -25,9 +23,9 @@ const STATIC_ASSETS = [
 async function trimCache(cacheName, maxItems) {
   const cache = await caches.open(cacheName);
   const keys  = await cache.keys();
-  if (keys.length > maxItems) {
+  while (keys.length > maxItems) {
     await cache.delete(keys[0]);
-    return trimCache(cacheName, maxItems); // rekursiv, bis Limit erreicht
+    keys.shift();
   }
 }
 
@@ -35,11 +33,11 @@ async function trimCache(cacheName, maxItems) {
    INSTALL
    ========= */
 self.addEventListener('install', event => {
-  // Neue SW‑Version sofort aktivieren
   self.skipWaiting();
-
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS))
+    caches.open(STATIC_CACHE)
+      .then(cache => cache.addAll(STATIC_ASSETS))
+      .catch(err => console.warn('Static cache error:', err))
   );
 });
 
@@ -48,7 +46,6 @@ self.addEventListener('install', event => {
    ========== */
 self.addEventListener('activate', event => {
   const allowedCaches = [STATIC_CACHE, RUNTIME_CACHE, IMAGE_CACHE];
-
   event.waitUntil(
     caches.keys()
       .then(keys =>
@@ -84,89 +81,65 @@ self.addEventListener('fetch', event => {
           }
           throw new Error(`Server response not OK: ${response.status} ${response.statusText}`);
         })
-        .catch(error => {
-          // Liefere offline.html aus dem Cache
-          return caches.match('/offline.html').then(offlineResponse => {
-            if (offlineResponse) {
-              return offlineResponse;
-            }
-            // Fallback, falls offline.html nicht im Cache ist
-            return new Response('Offline page not available in cache.', {
+        .catch(() =>
+          caches.match('/offline.html').then(offlineResponse =>
+            offlineResponse ||
+            new Response('Offline page not available in cache.', {
               status: 503,
               statusText: 'Service Unavailable',
               headers: { 'Content-Type': 'text/plain' }
-            });
-          });
-        })
+            })
+          )
+        )
     );
     return;
   }
 
-  /* 2. CSS, JS, Worker
-        → Stale‑While‑Revalidate                        */
+  // 2. CSS, JS, Worker → Stale‑While‑Revalidate
   if (['style', 'script', 'worker'].includes(dest)) {
     event.respondWith(
       caches.match(request).then(cached => {
-        // Netzwerk-Fetch wird parallel zur Cache-Prüfung gestartet (implizit durch Promise-Ausführung)
-        // oder sequenziell nach der Cache-Prüfung (wie hier implementiert).
-        // Die sequenzielle Methode ist einfacher, die parallele kann Updates beschleunigen.
         const networkFetch = fetch(request)
           .then(response => {
-            // Nur erfolgreiche Antworten cachen
             if (response.ok) {
               const clone = response.clone();
               caches.open(RUNTIME_CACHE)
-                    .then(cache => cache.put(request, clone))
-                    .then(() => trimCache(RUNTIME_CACHE, 50));
+                .then(cache => cache.put(request, clone))
+                .then(() => trimCache(RUNTIME_CACHE, 50));
             }
             return response;
           })
-          .catch(() => {
-            // Netzwerkfehler: Gib gecachte Version zurück, falls vorhanden
-            if (cached) {
-              return cached;
-            }
-            // Optional: Hier könnte man auch einen spezifischeren Fallback für Assets anbieten
-            // return new Response('Asset not available offline', { status: 404, statusText: 'Not Found' });
-          });
-        // Gib gecachte Version zurück, falls vorhanden, sonst das Ergebnis des Netzwerk-Fetch
+          .catch(() => cached);
         return cached || networkFetch;
       })
     );
     return;
   }
 
-  /* 3. Bilder
-        → Cache‑First + Begrenzung auf 50 Einträge       */
+  // 3. Bilder → Cache‑First + Begrenzung auf 50 Einträge
   if (dest === 'image') {
     event.respondWith(
       caches.match(request).then(cached => {
-        // Wenn im Cache, direkt zurückgeben
         if (cached) return cached;
-
-        // Sonst vom Netzwerk holen
         return fetch(request)
           .then(response => {
-            // Nur erfolgreiche Antworten cachen
             if (response.ok) {
               const clone = response.clone();
               caches.open(IMAGE_CACHE)
-                    .then(cache => cache.put(request, clone))
-                    .then(() => trimCache(IMAGE_CACHE, 50));
+                .then(cache => cache.put(request, clone))
+                .then(() => trimCache(IMAGE_CACHE, 50));
             }
             return response;
           })
-          .catch(error => {
-             // Optional: Fallback-Bild bei Fehler
-             console.warn(`Bild ${request.url} konnte nicht geladen werden. Fehler: ${error}`);
-             // return caches.match('/img/placeholder.png'); // Beispiel für ein Platzhalterbild
-          });
+          .catch(() =>
+            // Optional: Platzhalterbild ausliefern, falls vorhanden
+            caches.match('/img/placeholder.png')
+          );
       })
     );
     return;
   }
 
-  /* 4. Alles andere → Standard‑Fetch (kein Eingriff) */
-  // Für andere Anfragen wird der Standard-Fetch verwendet.
-  // event.respondWith(fetch(request)); // Explizit, aber nicht notwendig, da Standardverhalten
+  // 4. Alles andere → Standard‑Fetch
+  // ...kein Eingriff...
 });
