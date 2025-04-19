@@ -84,11 +84,12 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          if (response.ok && !response.redirected && response.type !== 'opaqueredirect') {
+          // Nur erfolgreiche 'basic'-Antworten ohne Weiterleitung cachen
+          if (response.ok && response.type === 'basic') {
             const clone = response.clone();
             caches.open(RUNTIME_CACHE).then(cache => cache.put(request, clone));
           }
-          // Bei HTTP-Fehlern (z.B. 404, 500) trotzdem die Serverantwort zurückgeben
+          // Immer die Originalantwort zurückgeben (auch bei Fehlern wie 404)
           return response;
         })
         .catch(error => {
@@ -103,9 +104,11 @@ self.addEventListener('fetch', event => {
               })
             );
           }
-          // Bei anderen Fehlern eine generische Fehlermeldung
-          return new Response('Ein unbekannter Fehler ist aufgetreten.', {
-            status: 500,
+          // Bei anderen Fehlern (z.B. Serverfehler, die nicht gecacht wurden) eine generische Fehlermeldung
+          // Wichtig: Dies sollte selten auftreten, da der .then()-Block oben auch Serverfehler zurückgibt.
+          console.error('Fetch error (non-TypeError):', error);
+          return new Response('Ein Fehler ist aufgetreten.', {
+            status: 500, // Oder einen passenderen Statuscode
             statusText: 'Internal Error',
             headers: { 'Content-Type': 'text/plain' }
           });
@@ -120,7 +123,8 @@ self.addEventListener('fetch', event => {
       caches.match(request).then(cached => {
         const networkFetch = fetch(request)
           .then(response => {
-            if (response.ok) {
+            // Nur erfolgreiche 'basic'-Antworten cachen
+            if (response.ok && response.type === 'basic') {
               const clone = response.clone();
               caches.open(RUNTIME_CACHE)
                 .then(cache => cache.put(request, clone))
@@ -128,7 +132,18 @@ self.addEventListener('fetch', event => {
             }
             return response;
           })
-          .catch(() => cached);
+          .catch(() => {
+            // Nur zurückgeben, wenn etwas im Cache war
+            if (cached) return cached;
+            // Ansonsten einen Fehler simulieren oder nichts tun
+            // Hier könnte man eine generische Fehlerantwort für Assets geben
+            return new Response(`Asset ${request.url} not available offline.`, {
+              status: 404,
+              statusText: 'Not Found',
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          });
+        // Gibt gecachte Version zurück oder wartet auf Netzwerkantwort
         return cached || networkFetch;
       })
     );
@@ -142,7 +157,8 @@ self.addEventListener('fetch', event => {
         if (cached) return cached;
         return fetch(request)
           .then(response => {
-            if (response.ok) {
+            // Nur erfolgreiche 'basic'-Antworten cachen
+            if (response.ok && response.type === 'basic') {
               const clone = response.clone();
               caches.open(IMAGE_CACHE)
                 .then(cache => cache.put(request, clone))
@@ -152,13 +168,17 @@ self.addEventListener('fetch', event => {
           })
           .catch(() =>
             // Optional: Platzhalterbild ausliefern, falls vorhanden
-            caches.match('/img/placeholder.png')
+            caches.match('/img/placeholder.png').then(placeholder =>
+              placeholder || new Response('Image not available offline.', {
+                status: 404, statusText: 'Not Found', headers: { 'Content-Type': 'text/plain' }
+              })
+            )
           );
       })
     );
     return;
   }
 
-  // 4. Alles andere → Standard‑Fetch
-  // ...kein Eingriff...
+  // 4. Alles andere → Standard‑Fetch (kein Caching durch den SW)
+  // event.respondWith(fetch(request)); // Explizit machen, dass wir hier nicht eingreifen wollen, außer Standard-Fetch
 });
