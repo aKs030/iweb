@@ -1,4 +1,4 @@
-const CACHE_NAME = 'iweb-cache-v1';
+const CACHE_NAME = 'iweb-cache-v2';
 const ASSETS_TO_CACHE = [
   '/index.html',
   '/css/index.css',
@@ -11,52 +11,36 @@ const ASSETS_TO_CACHE = [
   '/pages/album.html',
   '/pages/ubermich.html',
   '/pages/index-game.html',
-  // Weitere Assets nach Bedarf
+  // ...weitere Assets, die sicher keine Redirects enthalten...
 ];
 
-// Installations-Event: Assets cachen (nur Responses ohne Redirect)
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async cache => {
-      for (const url of ASSETS_TO_CACHE) {
-        try {
-          const absoluteUrl = self.location.origin + url;
-          const response = await fetch(absoluteUrl, { redirect: 'manual' });
-          if (
-            response &&
-            response.status === 200 &&
-            !response.redirected &&
-            response.type !== 'opaqueredirect'
-          ) {
-            await cache.put(url, response.clone());
-          }
-        } catch (e) {
-          // Fehler beim Caching ignorieren (z.B. offline)
-        }
-      }
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Aktivierungs-Event: Alte Caches löschen
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
+    caches.keys().then(cacheNames =>
       Promise.all(
-        keys.filter(key => key !== CACHE_NAME)
-            .map(key => caches.delete(key))
+        cacheNames
+          .filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
       )
     )
   );
   self.clients.claim();
 });
 
-// Fetch-Event: Aus Cache oder Netzwerk laden
-self.addEventListener('fetch', event => {
+self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request))
+      .catch(() => {
+        // Optional: Fallback z.B. auf index.html
+      })
   );
 });
