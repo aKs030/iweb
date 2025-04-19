@@ -90,15 +90,6 @@
     <!-- footer.js entfernt, da es jQuery benötigt und wahrscheinlich nicht verwendet wird -->
     <!-- <script src="/js/footer.js" defer></script> -->
 
-    <!-- Service Worker Registrierung -->
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js")
-            .then(() => console.log("Service Worker registriert"))
-            .catch(err => console.warn("Service Worker-Registrierung fehlgeschlagen:", err));
-        });
-      }
-    </script>
+
 </body>
 </html>

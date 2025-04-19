@@ -416,15 +416,5 @@
         popup.classList.add("hidden");
       }, 10000); // Schließt nach 10 Sekunden
     </script>
-    <!-- Service Worker Registrierung -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registriert:', reg.scope))
-            .catch(err => console.warn('Service Worker Fehler:', err));
-        });
-      }
-    </script>
 </body>
 </html>
