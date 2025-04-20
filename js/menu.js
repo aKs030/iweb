@@ -52,14 +52,12 @@ function initializeMenu(container) {
     menuToggle.addEventListener('click', () => {
       menu.classList.toggle('open');
       menuToggle.classList.toggle('active');
-      menuToggle.setAttribute('aria-expanded', menu.classList.contains('open'));
     });
     // Toggle auch per Enter-Taste aktivieren
     menuToggle.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         menu.classList.toggle('open');
         menuToggle.classList.toggle('active');
-        menuToggle.setAttribute('aria-expanded', menu.classList.contains('open'));
       }
     });
   } else {
@@ -115,9 +113,9 @@ function closeMenu(container) {
   const menu = container.querySelector('.site-menu');
 
   if (menuToggle && menu) {
-    menu.classList.remove('open'); // Schließe alle Submenüs beim Schließen des Hauptmenüs
-    menuToggle.classList.remove('active');   menu.querySelectorAll('.submenu').forEach(sm => sm.style.display = 'none');
-
-
-}  }  }
+    menu.classList.remove('open');
+    menuToggle.classList.remove('active');
+    // Schließe alle Submenüs beim Schließen des Hauptmenüs
+    menu.querySelectorAll('.submenu').forEach(sm => sm.style.display = 'none');
+  }
 }
