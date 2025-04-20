@@ -113,23 +113,30 @@
   <noscript>
     Bitte aktivieren Sie JavaScript, um alle Funktionen dieser Seite nutzen zu können.
   </noscript>
-  <div class="container">
-    <h1>🎮 Spiele</h1>
-    <div class="game-links">
-      <a href="/pages/features/Run.html" class="game-card">
-        <i class="bi bi-lightning-fill game-icon"></i>
-        <span>Run</span>
-      </a>
-      <a href="/pages/features/tetris.html" class="game-card">
-        <i class="bi bi-grid-3x3-gap-fill game-icon"></i>
-        <span>Tetris</span>
-      </a>
-      <a href="/pages/features/snake.html" class="game-card">
-        <i class="bi bi-arrows-move game-icon"></i>
-        <span>Snake</span>
-      </a>
-    </div>
-  </div>
-
+  <main>
+    <section class="container" aria-labelledby="spiele-ueberschrift">
+      <h1 id="spiele-ueberschrift">🎮 Spiele</h1>
+      <ul class="game-links" style="list-style:none; padding:0; margin:0; display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
+        <li>
+          <a href="/pages/features/Run.html" class="game-card">
+            <i class="bi bi-lightning-fill game-icon"></i>
+            <span>Run</span>
+          </a>
+        </li>
+        <li>
+          <a href="/pages/features/tetris.html" class="game-card">
+            <i class="bi bi-grid-3x3-gap-fill game-icon"></i>
+            <span>Tetris</span>
+          </a>
+        </li>
+        <li>
+          <a href="/pages/features/snake.html" class="game-card">
+            <i class="bi bi-arrows-move game-icon"></i>
+            <span>Snake</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </main>
 </body>
 </html>
