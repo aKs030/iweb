@@ -91,10 +91,6 @@ function initializeSubmenuLinks() {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       const submenu = link.nextElementSibling;
-      // Schließe alle anderen offenen Submenüs (nur eines offen)
-      document.querySelectorAll('.submenu').forEach(sm => {
-        if (sm !== submenu) sm.style.display = 'none';
-      });
       if (submenu.style.display === 'block') {
         submenu.style.display = 'none';
       } else {
@@ -115,7 +111,5 @@ function closeMenu(container) {
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
-    // Schließe alle Submenüs beim Schließen des Hauptmenüs
-    menu.querySelectorAll('.submenu').forEach(sm => sm.style.display = 'none');
   }
 }
