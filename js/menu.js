@@ -86,11 +86,16 @@ function initializeLogo(container) {
  * Initialisiert die Submenu-Links
  */
 function initializeSubmenuLinks() {
+  // Selektiere Submenü-Links anhand der neuen Benennung
   const submenuLinks = document.querySelectorAll('.has-submenu > a');
   submenuLinks.forEach(link => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       const submenu = link.nextElementSibling;
+      // Schließe alle anderen offenen Submenüs (nur eines offen)
+      document.querySelectorAll('.submenu').forEach(sm => {
+        if (sm !== submenu) sm.style.display = 'none';
+      });
       if (submenu.style.display === 'block') {
         submenu.style.display = 'none';
       } else {
