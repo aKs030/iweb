@@ -28,7 +28,6 @@
       color: var(--text-color);
       margin: 0;
       padding: 0;
-      overflow: hidden; /* Hintergrund nicht scrollen */
     }
     .section-content {
       max-width: 500px;
@@ -42,9 +41,6 @@
       max-height: 600px; /* Begrenzte Höhe für den Text */
       overflow-y: auto; /* Scrollen nur für den Text aktivieren */
       padding: 20px;
-      /* Custom scrollbar styling for better compatibility */
-      /* Removed unsupported scrollbar-width and scrollbar-color properties */
-      /* Webkit-based custom scrollbar */
       &::-webkit-scrollbar {
         width: 8px;
       }
@@ -70,7 +66,6 @@
       margin-bottom: auto;
       text-align: center;
       padding: auto;
-      z-index: 10; /* Sicherstellen, dass der Header über anderen Elementen bleibt */
     }
     .section-body h3 {
       font-size: 1.8em;
@@ -114,7 +109,7 @@
     @media (max-width: 600px) {
       .section-content {
         max-width: 85vw;
-        margin: 70px auto;
+        margin: 130px auto;
         padding: 10px;
       }
       .section-body {
@@ -128,6 +123,7 @@
   </style>
 </head>
 <body>
+  <div id="menu-container"></div>
   <main class="section-content">
     <div class="dynamic-header">Über Mich</div>
     <div class="section-body">
