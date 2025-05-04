@@ -35,27 +35,27 @@
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(255, 255, 255, 0.3);
       padding: 20px;
-      margin: 60px auto;
+      margin: 110px auto;
     }
     .section-body {
-      max-height: 600px; /* Begrenzte Höhe für den Text */
+      max-height: 510px; /* Begrenzte Höhe für den Text */
       overflow-y: auto; /* Scrollen nur für den Text aktivieren */
       padding: 20px;
-      &::-webkit-scrollbar {
-        width: 8px;
-      }
-      &::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
-      }
-      &::-webkit-scrollbar-thumb {
-        background-color: #666;
-        border-radius: 4px;
-        border: 2px solid var(--second-background-color);
-      }
-      &::-webkit-scrollbar-thumb:hover {
-        background-color: #888;
-      }
+    }
+    .section-body::-webkit-scrollbar {
+      width: 8px;
+    }
+    .section-body::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+    .section-body::-webkit-scrollbar-thumb {
+      background-color: #666;
+      border-radius: 4px;
+      border: 2px solid var(--second-background-color);
+    }
+    .section-body::-webkit-scrollbar-thumb:hover {
+      background-color: #888;
     }
     .dynamic-header {
       position: sticky; /* Sticky-Positionierung für den Header */
@@ -109,7 +109,7 @@
     @media (max-width: 600px) {
       .section-content {
         max-width: 85vw;
-        margin: 130px auto;
+        margin: 120px auto;
         padding: 10px;
       }
       .section-body {
@@ -124,13 +124,13 @@
 </head>
 <body>
   <div id="menu-container"></div>
-  <main class="section-content">
+  <main class="section-content" aria-label="Über mich Inhalt">
     <div class="dynamic-header">Über Mich</div>
     <div class="section-body">
       <h3>Überblick</h3>
       <p>Willkommen auf meiner "Über Mich"-Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Entdecken!</p>
       <h3>Persönlich</h3>
-      <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du hier bist! Ich bin 32 Jahre alt und lebe in [Deine Stadt/Region].</p>
+      <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du hier bist! Ich bin 32 Jahre alt und lebe in Berlin.</p>
       <h3>Fähigkeiten</h3>
       <ul>
         <li>HTML, CSS, JavaScript (Fortgeschritten)</li>
@@ -156,6 +156,9 @@
       </div>
     </div>
   </main>
+  <footer style="text-align: center; padding: 20px; font-size: 0.9em; color: #aaa;">
+    <p>&copy; 2025 Abdulkerim Sesli | <a href="/impressum.html" style="color: var(--link-color);">Impressum</a> | <a href="/datenschutz.html" style="color: var(--link-color);">Datenschutz</a></p>
+  </footer>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const dynamicHeader = document.querySelector('.dynamic-header');
