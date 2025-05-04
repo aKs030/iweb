@@ -207,46 +207,56 @@
       const sectionBody = document.querySelector('.section-body');
 
       let lastHeaderText = headings[0]?.textContent || "";
+      let lastHeaderIndex = 0;
 
-      function setHeaderTextAnimated(newText) {
+      function setHeaderTextAnimated(newText, direction = 'down') {
         if (dynamicHeader.textContent === newText) return;
-        dynamicHeader.classList.add('fade-out');
+        dynamicHeader.style.transition = 'transform 0.4s, opacity 0.4s';
+        dynamicHeader.style.transform = direction === 'down' ? 'translateY(-40px)' : 'translateY(40px)';
+        dynamicHeader.style.opacity = '0';
         setTimeout(() => {
           dynamicHeader.textContent = newText;
-          dynamicHeader.classList.remove('fade-out');
-          dynamicHeader.classList.add('fade-in');
+          dynamicHeader.style.transform = direction === 'down' ? 'translateY(40px)' : 'translateY(-40px)';
           setTimeout(() => {
-            dynamicHeader.classList.remove('fade-in');
-          }, 300);
-        }, 300);
+            dynamicHeader.style.transform = 'translateY(0)';
+            dynamicHeader.style.opacity = '1';
+          }, 20);
+        }, 350);
       }
 
       function updateHeader() {
-        let current = headings[0];
-        for (const h of headings) {
-          const rect = h.getBoundingClientRect();
-          const containerRect = sectionBody.getBoundingClientRect();
+        let currentIdx = 0;
+        let containerRect = sectionBody.getBoundingClientRect();
+        for (let i = 0; i < headings.length; i++) {
+          const rect = headings[i].getBoundingClientRect();
           if (rect.top - containerRect.top <= 10) {
-            current = h;
+            currentIdx = i;
           }
         }
-        if (current.textContent !== lastHeaderText) {
-          setHeaderTextAnimated(current.textContent);
-          lastHeaderText = current.textContent;
+        if (headings[currentIdx].textContent !== lastHeaderText) {
+          const direction = currentIdx > lastHeaderIndex ? 'down' : 'up';
+          setHeaderTextAnimated(headings[currentIdx].textContent, direction);
+          lastHeaderText = headings[currentIdx].textContent;
+          lastHeaderIndex = currentIdx;
         }
       }
 
-      function checkVisibility() {
+      function animateElements() {
         const containerRect = sectionBody.getBoundingClientRect();
         const elements = [...headings, ...paragraphs, ...lists];
-        elements.forEach(element => {
+        elements.forEach((element, idx) => {
           const rect = element.getBoundingClientRect();
           const elemTop = rect.top - containerRect.top;
           const elemBottom = rect.bottom - containerRect.top;
           // Sichtbar, wenn ein Teil im Container sichtbar ist
           if (elemBottom > 0 && elemTop < containerRect.height) {
-            element.classList.add('visible');
-            element.classList.remove('hidden-up');
+            if (!element.classList.contains('visible')) {
+              // Nur beim ersten Einblenden verzögern
+              setTimeout(() => {
+                element.classList.add('visible');
+                element.classList.remove('hidden-up');
+              }, idx * 40);
+            }
           } else if (elemBottom <= 0) {
             element.classList.remove('visible');
             element.classList.add('hidden-up');
@@ -257,16 +267,27 @@
         });
       }
 
-      sectionBody.addEventListener('scroll', () => {
+      // Initial alle Elemente verstecken
+      [...headings, ...paragraphs, ...lists].forEach(el => {
+        el.classList.remove('visible');
+        el.classList.add('hidden-up');
+      });
+
+      function onScrollOrResize() {
         updateHeader();
-        checkVisibility();
+        animateElements();
+      }
+
+      sectionBody.addEventListener('scroll', () => {
+        requestAnimationFrame(onScrollOrResize);
       });
       window.addEventListener('resize', () => {
-        updateHeader();
-        checkVisibility();
+        requestAnimationFrame(onScrollOrResize);
       });
+
+      // Initial
       updateHeader();
-      checkVisibility();
+      animateElements();
     });
   </script>
 </body>
