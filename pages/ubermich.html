@@ -10,7 +10,6 @@
   <script src="/js/menu.js" defer></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <!-- Internes Styling -->
-  <!-- HINWEIS: Es wird dringend empfohlen, dieses CSS in eine externe Datei auszulagern. -->
   <style>
     :root {
       --background-color: #333;
@@ -29,41 +28,19 @@
       color: var(--text-color);
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
     }
-    .snap-container {
-      height: 80vh;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      scroll-behavior: smooth;
-    }
-    .snap {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 90vh;
-      padding: 20px;
-      text-align: center;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-      opacity: 1;
-    }
-    .snap:last-child {
-      padding-bottom: 60px;
-    }
-    
     .section-content {
-      max-width: 900px;
+      max-width: 500px;
       background-color: var(--second-background-color);
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(255, 255, 255, 0.3);
+      padding: 20px;
+      margin: 80px auto;
     }
     .section-body {
-      max-height: 40vh;       /* 50% der Fensterhöhe */
-      overflow-y: auto;
-      padding: 40px 50px 40px 40px;
+      max-height: 600px; /* Begrenzte Höhe für den Text */
+      overflow-y: auto; /* Scrollen nur für den Text aktivieren */
+      padding: 20px;
       scrollbar-width: thin;
       scrollbar-color: #666 var(--second-background-color);
     }
@@ -82,61 +59,36 @@
     .section-body::-webkit-scrollbar-thumb:hover {
       background-color: #888;
     }
-    .section-body p {
-    }
-    .section-content h2 {
-      font-size: 2.5em;
-      margin: 0 0 25px 0;
+    .dynamic-header {
+      position: sticky; /* Sticky-Positionierung für den Header */
+      top: 0; /* Fixiert den Header oben innerhalb des Containers */
+      font-size: 2em;
+      font-weight: bold;
       color: var(--text-color);
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-      border-bottom: 2px solid #eee;
-      padding: 15px 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: sticky;
-      top: 0; /* Damit der Header direkt unter der Navigation bleibt */
-      background-color: var(--second-background-color);
-      z-index: 10;
+      margin-bottom: auto;
+      text-align: center;
+      padding: auto;
+      z-index: 10; /* Sicherstellen, dass der Header über anderen Elementen bleibt */
     }
-    .section-icon {
-      font-size: 0.9em;
-      margin-right: 15px;
-      color: var(--icon-color);
-      vertical-align: middle;
-    }
-    .section-content h3 {
+    .section-body h3 {
       font-size: 1.8em;
-      margin: 30px 0 15px 0;
+      margin: 20px 0;
       color: #ddd;
     }
-    .section-content p {
+    .section-body p {
       font-size: 1.1em;
       line-height: 1.7;
       margin-bottom: 20px;
       text-align: left;
     }
-    .text-center {
-      text-align: center;
-    }
-    .section-content ul {
+    .section-body ul {
       list-style: disc;
       margin-left: 20px;
-      text-align: left;
       padding-left: 20px;
       margin-bottom: 20px;
     }
-    .section-content ul li {
+    .section-body ul li {
       margin-bottom: 8px;
-    }
-    .section-content hr {
-      border-color: #555;
-      margin: 30px 0;
-    }
-    .feature-icon {
-      font-size: 3em;
-      margin-bottom: 15px;
-      color: var(--icon-color);
     }
     .contact-links {
       margin-top: 30px;
@@ -157,299 +109,63 @@
       transform: scale(1.1);
       outline: none;
     }
-
-    @media (max-width: 768px) {
-      .section-content {
-        padding: 30px 30px 30px 20px;
-      }
-      .section-content h2 {
-        font-size: 2em;
-        flex-direction: column;
-        align-items: center;
-      }
-      .section-icon {
-        margin: 0 0 10px 0;
-        font-size: 1em;
-      }
-      .section-content h3 {
-        font-size: 1.5em;
-      }
-      .section-content p, 
-      .section-content ul {
-        font-size: 1em;
-        text-align: left;
-      }
-      .text-center p {
-        text-align: center;
-      }
-      .contact-links {
-        gap: 20px;
-      }
-      .contact-links a {
-        font-size: 2.2em;
-      }
-    }
   </style>
 </head>
 <body>
-
-  <!-- Navigation -->
-  <nav id="menu-container" aria-label="Hauptnavigation">
-    <ul>
-      <li><a href="#ueberblick" aria-label="Gehe zum Abschnitt Überblick">Überblick</a></li>
-      <li><a href="#persoenlich" aria-label="Gehe zum Abschnitt Persönlich">Persönlich</a></li>
-      <li><a href="#faehigkeiten" aria-label="Gehe zum Abschnitt Fähigkeiten">Fähigkeiten</a></li>
-      <li><a href="#hobbys" aria-label="Gehe zum Abschnitt Hobbys">Hobbys</a></li>
-      <li><a href="#karriere" aria-label="Gehe zum Abschnitt Karriere">Karriere</a></li>
-      <li><a href="#kontakt" aria-label="Gehe zum Abschnitt Kontakt">Kontakt</a></li>
-    </ul>
-  </nav>
-
-  <!-- Seiteninhalt -->
-  <main class="snap-container">
-    <!-- Überblick -->
-    <section id="ueberblick" class="snap" role="region" aria-labelledby="ueberblick-title">
-      <div class="section-content">
-        <h2 id="ueberblick-title"><i class="bi bi-info-circle-fill section-icon" aria-hidden="true"></i>Überblick</h2>
-        <div class="section-body">
-          <h3>Einleitung</h3>
-          <p>Willkommen auf meiner "Über Mich"-Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Entdecken!</p>
-          <h3>Berufliche Anfänge</h3>
-          <p>Ich habe in verschiedenen Bereichen gearbeitet und vielfältige Erfahrungen gesammelt, die mir halfen, meine Fähigkeiten kontinuierlich zu erweitern. Meine Reise war geprägt von spannenden Herausforderungen und Erfolgen, die mich sowohl persönlich als auch beruflich wachsen ließen.</p>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-          <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum.</p>
-        </div>
+  <main class="section-content">
+    <div class="dynamic-header">Über Mich</div>
+    <div class="section-body">
+      <h3>Überblick</h3>
+      <p>Willkommen auf meiner "Über Mich"-Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Entdecken!</p>
+      <h3>Persönlich</h3>
+      <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du hier bist! Ich bin 32 Jahre alt und lebe in [Deine Stadt/Region].</p>
+      <h3>Fähigkeiten</h3>
+      <ul>
+        <li>HTML, CSS, JavaScript (Fortgeschritten)</li>
+        <li>Frameworks: React, Vue.js, Angular</li>
+        <li>Backend: Node.js, Python, PHP</li>
+        <li>Datenbanken: SQL, NoSQL</li>
+        <li>Cloud: AWS, Docker</li>
+      </ul>
+      <h3>Hobbys & Interessen</h3>
+      <p>Ich liebe es, in der Küche kreativ zu werden, neue Rezepte auszuprobieren und internationale Geschmackswelten zu entdecken.</p>
+      <h3>Kontakt</h3>
+      <p>Vielen Dank für deinen Besuch! Ich freue mich über Anfragen, Feedback oder einen netten Austausch.</p>
+      <div class="contact-links">
+        <a href="mailto:mail@abdulkerimsesli.com" aria-label="Kontakt per E-Mail">
+          <i class="bi bi-envelope-fill"></i>
+        </a>
+        <a href="https://linkedin.com/in/abdulkerim-sesli" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profil">
+          <i class="bi bi-linkedin"></i>
+        </a>
+        <a href="https://github.com/aKs030" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profil">
+          <i class="bi bi-github"></i>
+        </a>
       </div>
-    </section>
-
-    <!-- Persönlich -->
-    <section id="persoenlich" class="snap" role="region" aria-labelledby="persoenlich-title">
-      <div class="section-content">
-        <h2 id="persoenlich-title"><i class="bi bi-person-fill section-icon" aria-hidden="true"></i>Persönlich</h2>
-        <div class="section-body">
-          <h3>Meine Geschichte</h3>
-          <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du hier bist! Ich bin 32 Jahre alt und lebe in [Deine Stadt/Region].</p>
-          <h3>Leidenschaften</h3>
-          <p>Meine Leidenschaft für Technologie und Innovation treibt mich ständig an, Neues zu lernen und mich weiterzuentwickeln. Ich engagiere mich in Projekten, die mein Wissen erweitern, kreative Lösungen fördern und mir erlauben, Erfahrungen zu teilen.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Fähigkeiten -->
-    <section id="faehigkeiten" class="snap" role="region" aria-labelledby="faehigkeiten-title">
-      <div class="section-content">
-        <h2 id="faehigkeiten-title"><i class="bi bi-gear-fill section-icon" aria-hidden="true"></i>Fähigkeiten</h2>
-        <div class="section-body">
-          <h3>Überblick</h3>
-          <p>Im Laufe meiner Karriere und durch zahlreiche Projekte habe ich mir ein breites Spektrum an Fähigkeiten angeeignet:</p>
-          <h3>Technische Fähigkeiten</h3>
-          <ul>
-            <li>HTML, CSS, JavaScript (Fortgeschritten)</li>
-            <li>Frameworks: React (Gut), Vue.js (Grundlagen), Angular (Grundlagen)</li>
-            <li>Backend: Node.js (Gut), Python (Django/Flask – Grundlagen), PHP (Erfahrung)</li>
-            <li>Datenbanken: SQL (PostgreSQL, MySQL), NoSQL (MongoDB)</li>
-            <li>Cloud: AWS (EC2, S3 – Grundlagen), Docker</li>
-            <li>Versionierung: Git, GitHub/GitLab</li>
-            <li>Testing: Jest, Cypress (Grundlagen)</li>
-            <li>UI/UX Design Prinzipien</li>
-            <li>3D-Modellierung (Blender – Grundlagen) & 3D-Druck (Erfahrung mit FDM)</li>
-            <li>Hardware-Grundlagen (Arduino, Raspberry Pi)</li>
-          </ul>
-          <h3>Soft Skills</h3>
-          <ul>
-            <li>Analytische Problemlösung</li>
-            <li>Effektive Teamarbeit und Kollaboration</li>
-            <li>Klare und präzise Kommunikation (schriftlich & mündlich)</li>
-            <li>Hohe Lernbereitschaft und Anpassungsfähigkeit</li>
-            <li>Kreativität und Innovationsdenken</li>
-            <li>Zeitmanagement und Organisation</li>
-            <li>Geduld und Ausdauer bei komplexen Aufgaben</li>
-          </ul>
-          <p>Diese Liste ist nicht abschließend – ich arbeite ständig daran, meine Kenntnisse zu erweitern und auf dem neuesten Stand zu bleiben, besonders im Bereich Cloud Computing und automatisierte Tests.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Hobbys & Interessen -->
-    <section id="hobbys" class="snap" role="region" aria-labelledby="hobbys-title">
-      <div class="section-content">
-        <h2 id="hobbys-title"><i class="bi bi-joystick section-icon" aria-hidden="true"></i>Hobbys & Interessen</h2>
-        <div class="section-body">
-          <h3>Meine Freizeit</h3>
-          <p class="text-center">Neben meiner beruflichen Tätigkeit gibt es Aktivitäten, die mir helfen, abzuschalten und neue Energie zu tanken.</p>
-          <hr>
-          <section>
-            <h3>Kochen</h3>
-            <div class="text-center">
-              <i class="bi bi-egg-fried feature-icon" aria-hidden="true"></i>
-            </div>
-            <p>Ich liebe es, in der Küche kreativ zu werden, neue Rezepte auszuprobieren und internationale Geschmackswelten zu entdecken – von türkischen Spezialitäten bis hin zu italienischer Pasta und asiatischen Currys.</p>
-          </section>
-          <hr>
-          <section>
-            <h3>3D-Druck</h3>
-            <div class="text-center">
-              <i class="bi bi-printer-fill feature-icon" aria-hidden="true"></i>
-            </div>
-            <p>Eigene Ideen Schicht für Schicht Wirklichkeit werden zu lassen, fasziniert mich. Ob kleine Gadgets, Ersatzteile oder praktische Alltagshelfer – der 3D-Druck verbindet Technik und Kreativität auf einzigartige Weise.</p>
-          </section>
-          <hr>
-          <section>
-            <h3>Lesen</h3>
-            <div class="text-center">
-              <i class="bi bi-book-half feature-icon" aria-hidden="true"></i>
-            </div>
-            <p>Ich lese gerne Fachbücher, um mein Wissen zu erweitern, sowie Science-Fiction und Fantasy, um in andere Welten einzutauchen.</p>
-          </section>
-        </div>
-      </div>
-    </section>
-
-    <!-- Karriere -->
-    <section id="karriere" class="snap" role="region" aria-labelledby="karriere-title">
-      <div class="section-content">
-        <h2 id="karriere-title"><i class="bi bi-briefcase-fill section-icon" aria-hidden="true"></i>Karriere</h2>
-        <div class="section-body">
-          <h3>Beruflicher Werdegang</h3>
-          <p>Hier ist ein Überblick über meine wichtigsten beruflichen Stationen und Erfahrungen.</p>
-          <h3>Erfahrungen</h3>
-          <p>Durch unterschiedliche Tätigkeiten lernte ich, Herausforderungen strategisch anzugehen und innovative Lösungen zu entwickeln. Jede Station prägte mein berufliches Profil.</p>
-          <p><em>[Hier können spezifische Stationen, Projekte oder Verantwortlichkeiten detaillierter ergänzt werden.]</em></p>
-          <ul>
-            <li><strong>Position X bei Firma Y (Zeitraum):</strong> Beschreibung der Hauptaufgaben und Erfolge.</li>
-            <li><strong>Projekt Z (Zeitraum):</strong> Beschreibung des Projekts, der Rolle und der verwendeten Technologien.</li>
-          </ul>
-          <p>Ich bin stets offen für neue Herausforderungen, um meine Fähigkeiten weiter auszubauen.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Kontakt -->
-    <section id="kontakt" class="snap" role="region" aria-labelledby="kontakt-title">
-      <div class="section-content">
-        <h2 id="kontakt-title"><i class="bi bi-envelope-fill section-icon" aria-hidden="true"></i>Kontakt</h2>
-        <div class="section-body">
-          <h3>Kontaktinformationen</h3>
-          <p class="text-center">Vielen Dank für deinen Besuch! Ich freue mich über Anfragen, Feedback oder einen netten Austausch.</p>
-          <h3>Verbinde dich mit mir</h3>
-          <p class="text-center">Nutze eine der folgenden Möglichkeiten, um mit mir in Verbindung zu treten:</p>
-          <div class="contact-links">
-            <!-- Platzhalter aktualisiert -->
-            <a href="mailto:mail@abdulkerimsesli.com" aria-label="Kontakt per E-Mail" title="E-Mail senden">
-              <i class="bi bi-envelope-fill"></i>
-            </a>
-            <a href="https://linkedin.com/in/abdulkerim-sesli" target="_blank" rel="noopener noreferrer" aria-label="Mein LinkedIn Profil besuchen" title="LinkedIn Profil">
-              <i class="bi bi-linkedin"></i>
-            </a>
-            <a href="https://github.com/aKs030" target="_blank" rel="noopener noreferrer" aria-label="Mein GitHub Profil besuchen" title="GitHub Profil">
-              <i class="bi bi-github"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
   </main>
-
-  <div id="footer-container"></div>
-  <script src="/js/footer.js"></script>
-  <!-- JavaScript für Scroll-Animationen, Header-Anpassungen und Tastaturnavigation -->
-  <!-- HINWEIS: Es wird dringend empfohlen, dieses Skript in eine externe Datei auszulagern. -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const snapContainer = document.querySelector('.snap-container');
-      const snapElements = document.querySelectorAll('.snap');
+      const dynamicHeader = document.querySelector('.dynamic-header');
+      const headings = Array.from(document.querySelectorAll('.section-body h3'));
+      const sectionBody = document.querySelector('.section-body');
 
-      // Intersection Observer für die Einblend-Animation der Snap-Elemente
-      const snapObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
+      function updateHeader() {
+        // Finde die letzte Überschrift, die oben oder fast oben sichtbar ist
+        let current = headings[0];
+        for (const h of headings) {
+          const rect = h.getBoundingClientRect();
+          const containerRect = sectionBody.getBoundingClientRect();
+          if (rect.top - containerRect.top <= 10) {
+            current = h;
           }
-        });
-      }, { threshold: 0.4 });
-
-      snapElements.forEach(element => {
-        snapObserver.observe(element);
-      });
-
-      // Tastaturnavigation: Scrollen per Pfeiltasten (wenn nicht in einem interaktiven Element)
-      if (snapContainer) {
-        snapContainer.addEventListener("keydown", (event) => {
-          const snaps = Array.from(document.querySelectorAll('.snap'));
-          const currentScrollTop = snapContainer.scrollTop;
-          const activeElement = document.activeElement;
-          const isInteractive = activeElement && (activeElement.tagName === 'A' || activeElement.tagName === 'BUTTON' || activeElement.hasAttribute('tabindex'));
-
-          if (!activeElement || !activeElement.closest('.section-content') && !isInteractive) {
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
-              const nextSnap = snaps.find(snap => snap.offsetTop > currentScrollTop + 10);
-              if (nextSnap) {
-                snapContainer.scrollTo({ top: nextSnap.offsetTop, behavior: "smooth" });
-              }
-            } else if (event.key === "ArrowUp") {
-              event.preventDefault();
-              let previousSnap = null;
-              for (let i = snaps.length - 1; i >= 0; i--) {
-                if (snaps[i].offsetTop < currentScrollTop - 10) {
-                  previousSnap = snaps[i];
-                  break;
-                }
-              }
-              if (previousSnap) {
-                snapContainer.scrollTo({ top: previousSnap.offsetTop, behavior: "smooth" });
-              } else {
-                snapContainer.scrollTo({ top: 0, behavior: "smooth" });
-              }
-            }
-          }
-        });
-      } else {
-        console.error("Snap-Container nicht gefunden.");
+        }
+        dynamicHeader.textContent = current.textContent;
       }
 
-      // Observer für h3-Überschriften zur Aktualisierung des übergeordneten h2-Headers
-      const headerObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          const sectionContent = entry.target.closest('.section-content');
-          if (!sectionContent) return;
-          const header = sectionContent.querySelector('h2');
-          if (entry.isIntersecting) {
-            // Speichere den ursprünglichen h2-Text, falls noch nicht vorhanden
-            if (!header.dataset.originalText) {
-              header.dataset.originalText = header.textContent;
-            }
-            // Aktualisiere h2 mit dem Text der h3
-            header.textContent = entry.target.textContent;
-          } else {
-            // Zurücksetzen, wenn kein h3 mehr in der Nähe
-            setTimeout(() => {
-              const visibleH3 = Array.from(sectionContent.querySelectorAll('h3')).some(h3 => {
-                const rect = h3.getBoundingClientRect();
-                return rect.top >= 80 - 5 && rect.top <= 80 + 5;
-              });
-              if (!visibleH3 && header.dataset.originalText) {
-                header.textContent = header.dataset.originalText;
-              }
-            }, 100);
-          }
-        });
-      }, { rootMargin: '-80px 0px 0px 0px', threshold: 0 });
-
-      document.querySelectorAll('.section-content h3').forEach(h3 => {
-        headerObserver.observe(h3);
-      });
-
-      // Observer für Scroll-Effekte innerhalb der .section-body Absätze
-      const paragraphObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          entry.target.classList.toggle('in-view', entry.isIntersecting);
-        });
-      }, { threshold: 0.2 });
-
-      document.querySelectorAll('.section-body p').forEach(p => {
-        paragraphObserver.observe(p);
-      });
+      sectionBody.addEventListener('scroll', updateHeader);
+      window.addEventListener('resize', updateHeader);
+      updateHeader();
     });
   </script>
 </body>
