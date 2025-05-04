@@ -65,8 +65,15 @@
       font-weight: bold;
       color: var(--text-color);
       margin-bottom: auto;
-      text-align: center;
-      padding: auto;
+      text-align: left;
+      padding: 0 10px;
+      transition: opacity 0.3s;
+    }
+    .dynamic-header.fade-out {
+      opacity: 0;
+    }
+    .dynamic-header.fade-in {
+      opacity: 1;
     }
     .section-body h3 {
       font-size: 1.8em;
@@ -148,8 +155,8 @@
         padding: 10px; /* Weniger Padding */
       }
       .dynamic-header {
-        font-size: 1.5em; /* Größere Schrift für bessere Lesbarkeit */
-        padding: 10px 0;
+        font-size: 1.8em; /* Größere Schrift für bessere Lesbarkeit */
+        padding: 0 10px;
       }
       .contact-links a {
         font-size: 2em; /* Icons verkleinert */
@@ -199,6 +206,21 @@
       const lists = Array.from(document.querySelectorAll('.section-body ul'));
       const sectionBody = document.querySelector('.section-body');
 
+      let lastHeaderText = headings[0]?.textContent || "";
+
+      function setHeaderTextAnimated(newText) {
+        if (dynamicHeader.textContent === newText) return;
+        dynamicHeader.classList.add('fade-out');
+        setTimeout(() => {
+          dynamicHeader.textContent = newText;
+          dynamicHeader.classList.remove('fade-out');
+          dynamicHeader.classList.add('fade-in');
+          setTimeout(() => {
+            dynamicHeader.classList.remove('fade-in');
+          }, 300);
+        }, 300);
+      }
+
       function updateHeader() {
         let current = headings[0];
         for (const h of headings) {
@@ -208,7 +230,10 @@
             current = h;
           }
         }
-        dynamicHeader.textContent = current.textContent;
+        if (current.textContent !== lastHeaderText) {
+          setHeaderTextAnimated(current.textContent);
+          lastHeaderText = current.textContent;
+        }
       }
 
       function checkVisibility() {
