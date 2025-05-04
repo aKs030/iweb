@@ -72,21 +72,51 @@
       font-size: 1.8em;
       margin: 20px 0;
       color: #ddd;
+      transform: translateY(50px);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s;
+    }
+    .section-body h3.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .section-body h3.hidden-up {
+      transform: translateY(-50px);
+      opacity: 0;
     }
     .section-body p {
       font-size: 1.1em;
       line-height: 1.7;
       margin-bottom: 20px;
       text-align: left;
+      transform: translateY(30px);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, opacity 0.5s 0.1s;
+    }
+    .section-body p.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .section-body p.hidden-up {
+      transform: translateY(-30px);
+      opacity: 0;
     }
     .section-body ul {
       list-style: disc;
       margin-left: 20px;
       padding-left: 20px;
       margin-bottom: 20px;
+      transform: translateY(40px);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, opacity 0.5s 0.2s;
     }
-    .section-body ul li {
-      margin-bottom: 8px;
+    .section-body ul.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .section-body ul.hidden-up {
+      transform: translateY(-40px);
+      opacity: 0;
     }
     .contact-links {
       margin-top: 30px;
@@ -165,10 +195,11 @@
     document.addEventListener("DOMContentLoaded", () => {
       const dynamicHeader = document.querySelector('.dynamic-header');
       const headings = Array.from(document.querySelectorAll('.section-body h3'));
+      const paragraphs = Array.from(document.querySelectorAll('.section-body p'));
+      const lists = Array.from(document.querySelectorAll('.section-body ul'));
       const sectionBody = document.querySelector('.section-body');
 
       function updateHeader() {
-        // Finde die letzte Überschrift, die oben oder fast oben sichtbar ist
         let current = headings[0];
         for (const h of headings) {
           const rect = h.getBoundingClientRect();
@@ -180,9 +211,37 @@
         dynamicHeader.textContent = current.textContent;
       }
 
-      sectionBody.addEventListener('scroll', updateHeader);
-      window.addEventListener('resize', updateHeader);
+      function checkVisibility() {
+        const containerRect = sectionBody.getBoundingClientRect();
+        const elements = [...headings, ...paragraphs, ...lists];
+        elements.forEach(element => {
+          const rect = element.getBoundingClientRect();
+          const elemTop = rect.top - containerRect.top;
+          const elemBottom = rect.bottom - containerRect.top;
+          // Sichtbar, wenn ein Teil im Container sichtbar ist
+          if (elemBottom > 0 && elemTop < containerRect.height) {
+            element.classList.add('visible');
+            element.classList.remove('hidden-up');
+          } else if (elemBottom <= 0) {
+            element.classList.remove('visible');
+            element.classList.add('hidden-up');
+          } else {
+            element.classList.remove('visible');
+            element.classList.remove('hidden-up');
+          }
+        });
+      }
+
+      sectionBody.addEventListener('scroll', () => {
+        updateHeader();
+        checkVisibility();
+      });
+      window.addEventListener('resize', () => {
+        updateHeader();
+        checkVisibility();
+      });
       updateHeader();
+      checkVisibility();
     });
   </script>
 </body>
