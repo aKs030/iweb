@@ -167,13 +167,16 @@
 <body>
   <div id="menu-container"></div>
   <main class="section-content" aria-label="Über mich Inhalt">
-    <div class="dynamic-header">Über Mich</div>
+    <div class="dynamic-header">
+      <span class="header-icon"></span>
+      <span class="header-text"><i class="bi bi-info-circle" aria-hidden="true"></i> Überblick</span>
+    </div>
     <div class="section-body">
-      <h3>Überblick</h3>
+      <!-- <h3><i class="bi bi-info-circle" aria-hidden="true"></i> Überblick</h3> -->
       <p>Willkommen auf meiner "Über Mich"-Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Entdecken!</p>
-      <h3>Persönlich</h3>
+      <h3><i class="bi bi-person" aria-hidden="true"></i> Persönlich</h3>
       <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du hier bist! Ich bin 32 Jahre alt und lebe in Berlin.</p>
-      <h3>Fähigkeiten</h3>
+      <h3><i class="bi bi-tools" aria-hidden="true"></i> Fähigkeiten</h3>
       <ul>
         <li>HTML, CSS, JavaScript (Fortgeschritten)</li>
         <li>Frameworks: React, Vue.js, Angular</li>
@@ -181,9 +184,9 @@
         <li>Datenbanken: SQL, NoSQL</li>
         <li>Cloud: AWS, Docker</li>
       </ul>
-      <h3>Hobbys & Interessen</h3>
+      <h3><i class="bi bi-heart" aria-hidden="true"></i> Hobbys & Interessen</h3>
       <p>Ich liebe es, in der Küche kreativ zu werden, neue Rezepte auszuprobieren und internationale Geschmackswelten zu entdecken.</p>
-      <h3>Kontakt</h3>
+      <h3><i class="bi bi-envelope-paper" aria-hidden="true"></i> Kontakt</h3>
       <p>Vielen Dank für deinen Besuch! Ich freue mich über Anfragen, Feedback oder einen netten Austausch.</p>
       <div class="contact-links">
         <a href="mailto:mail@abdulkerimsesli.com" aria-label="Kontakt per E-Mail">
@@ -201,21 +204,41 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const dynamicHeader = document.querySelector('.dynamic-header');
+      const headerIcon = dynamicHeader.querySelector('.header-icon');
+      const headerText = dynamicHeader.querySelector('.header-text');
       const headings = Array.from(document.querySelectorAll('.section-body h3'));
       const paragraphs = Array.from(document.querySelectorAll('.section-body p'));
       const lists = Array.from(document.querySelectorAll('.section-body ul'));
       const sectionBody = document.querySelector('.section-body');
 
-      let lastHeaderText = headings[0]?.textContent || "";
-      let lastHeaderIndex = 0;
+      // Überblick-Header-Info (statisch)
+      const initialHeader = {
+        iconClass: "bi bi-info-circle",
+        text: "Überblick"
+      };
 
-      function setHeaderTextAnimated(newText, direction = 'down') {
-        if (dynamicHeader.textContent === newText) return;
+      function getHeadingIconAndText(heading) {
+        let iconClass = "";
+        let text = heading.textContent.trim();
+        if (heading.firstElementChild && heading.firstElementChild.tagName === "I") {
+          iconClass = heading.firstElementChild.className;
+          text = heading.textContent.replace(heading.firstElementChild.textContent, '').trim();
+        }
+        return { iconClass, text };
+      }
+
+      let lastIconClass = initialHeader.iconClass;
+      let lastHeaderText = initialHeader.text;
+      let lastHeaderIndex = -1;
+
+      function setHeaderAnimated(newIconClass, newText, direction = 'down') {
+        if (headerText.textContent === newText && headerIcon.firstElementChild?.className === newIconClass) return;
         dynamicHeader.style.transition = 'transform 0.4s, opacity 0.4s';
         dynamicHeader.style.transform = direction === 'down' ? 'translateY(-40px)' : 'translateY(40px)';
         dynamicHeader.style.opacity = '0';
         setTimeout(() => {
-          dynamicHeader.textContent = newText;
+          headerIcon.innerHTML = newIconClass ? `<i class="${newIconClass}" aria-hidden="true"></i>` : '';
+          headerText.textContent = newText;
           dynamicHeader.style.transform = direction === 'down' ? 'translateY(40px)' : 'translateY(-40px)';
           setTimeout(() => {
             dynamicHeader.style.transform = 'translateY(0)';
@@ -225,7 +248,7 @@
       }
 
       function updateHeader() {
-        let currentIdx = 0;
+        let currentIdx = -1;
         let containerRect = sectionBody.getBoundingClientRect();
         for (let i = 0; i < headings.length; i++) {
           const rect = headings[i].getBoundingClientRect();
@@ -233,10 +256,18 @@
             currentIdx = i;
           }
         }
-        if (headings[currentIdx].textContent !== lastHeaderText) {
+        let iconClass, text;
+        if (currentIdx === -1) {
+          iconClass = initialHeader.iconClass;
+          text = initialHeader.text;
+        } else {
+          ({ iconClass, text } = getHeadingIconAndText(headings[currentIdx]));
+        }
+        if (text !== lastHeaderText || iconClass !== lastIconClass) {
           const direction = currentIdx > lastHeaderIndex ? 'down' : 'up';
-          setHeaderTextAnimated(headings[currentIdx].textContent, direction);
-          lastHeaderText = headings[currentIdx].textContent;
+          setHeaderAnimated(iconClass, text, direction);
+          lastHeaderText = text;
+          lastIconClass = iconClass;
           lastHeaderIndex = currentIdx;
         }
       }
@@ -248,10 +279,8 @@
           const rect = element.getBoundingClientRect();
           const elemTop = rect.top - containerRect.top;
           const elemBottom = rect.bottom - containerRect.top;
-          // Sichtbar, wenn ein Teil im Container sichtbar ist
           if (elemBottom > 0 && elemTop < containerRect.height) {
             if (!element.classList.contains('visible')) {
-              // Nur beim ersten Einblenden verzögern
               setTimeout(() => {
                 element.classList.add('visible');
                 element.classList.remove('hidden-up');
@@ -267,7 +296,6 @@
         });
       }
 
-      // Initial alle Elemente verstecken
       [...headings, ...paragraphs, ...lists].forEach(el => {
         el.classList.remove('visible');
         el.classList.add('hidden-up');
