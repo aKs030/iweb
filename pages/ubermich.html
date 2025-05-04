@@ -108,16 +108,20 @@
     }
     @media (max-width: 600px) {
       .section-content {
-        max-width: 85vw;
-        margin: 120px auto;
-        padding: 10px;
+        max-width: 90vw; /* Breite für Smartphones angepasst */
+        margin: 100px auto; /* Weniger Margin für kleinere Bildschirme */
+        padding: 15px; /* Mehr Padding für bessere Lesbarkeit */
       }
       .section-body {
-        padding: 10px;
+        max-height: 400px; /* Höhe reduziert für kleinere Bildschirme */
+        padding: 10px; /* Weniger Padding */
       }
       .dynamic-header {
-        font-size: 1.3em;
-        padding: 8px 0;
+        font-size: 1.5em; /* Größere Schrift für bessere Lesbarkeit */
+        padding: 10px 0;
+      }
+      .contact-links a {
+        font-size: 2em; /* Icons verkleinert */
       }
     }
   </style>
