@@ -1,53 +1,62 @@
-
-
-/* ==========================
-   Grundlegende Variablen
-========================== */
+/* =====================================
+   💡 DESIGN-SYSTEM VARIABLEN
+   Globale Designkonstanten für Farben,
+   Typografie, Abstände, Layout & Animationen
+========================================= */
 :root {
-  /* Farben */
-  --main-fonts-color: #fff;
-  --main-decor-color: #ffffff;
-  --main-bg-color: #444;
-  --secondary-bg-color: var(--main-bg-color);
-  --accent-color: rgba(255, 204, 41, 0.8);
-  --shadow-color: rgba(0, 0, 0, 0.2);
-  --highlight-shadow: #007bff;
+  /* 🎨 Farbpalette */
+  --color-bg: #444; /* Haupt-Hintergrundfarbe */
+  --color-bg-secondary: #333; /* Sekundäre Hintergrundfarbe */
+  --color-text-main: rgba(245, 245, 245, 0.9); /* Haupt-Textfarbe */
+  --color-text-muted: rgba(245, 245, 245, 0.5); /* Gedämpfte Textfarbe */
+  --color-decor: #ffffff; /* Deko-Farbe für Linien etc. */
+  --color-accent: rgba(255, 204, 41, 0.8); /* Akzentfarbe */
+  --color-shadow: rgba(0, 0, 0, 0.2); /* Schattierung */
+  --color-highlight: #007bff; /* Highlight z.B. bei Hover */
 
-  /* Text Farben */
-  --karten-text-color: rgb(255, 255, 255);
-  --main-text-color: rgba(245, 245, 245, 0.9);
-  --secondary-text-color: rgba(245, 245, 245, 0.5);
+  /* 🖋️ Schriftarten & Schriftgrößen */
+  --font-main: 'Poppins', sans-serif;
+  --font-secondary: 'Inter', sans-serif;
+  --font-size-sm: clamp(0.85rem, 1vw, 1rem);
+  --font-size-md: clamp(1rem, 1.2vw, 1.4rem);
+  --font-size-lg: clamp(1.4rem, 2vw, 2rem);
+  --font-size-xl: clamp(2.2rem, 4vw, 3.5rem);
+  --font-size-xxl: clamp(3rem, 6vw, 6rem);
 
-  /* Abstände & Größen */
-  --section-padding: 2rem;
+  /* 📏 Abstände (Spacing) */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+
+  /* 🧱 Layout-Vorgaben */
+  --section-padding: var(--spacing-lg);
+  --container-padding-inline: clamp(10px, 4vw, 190px);
   --border-radius: 15px;
 
-  /* Animationen */
+  /* 🎞️ Übergänge & Animation */
   --transition-speed: 0.35s;
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ==========================
-   Allgemeine Stile
-========================== */
-*,
-*::before,
-*::after {
+/* =====================================
+   🔧 GLOBALER RESET & BASISSTILE
+   Vereinheitlicht grundlegende Stile
+========================================= */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
 html, body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--main-bg-color);
-  color: var(--main-text-color);
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
   min-height: 100%;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
-  @supports (overscroll-behavior: contain) {
-    overscroll-behavior: contain;
-  }
 }
 
 body {
@@ -56,109 +65,93 @@ body {
   overflow-x: hidden;
 }
 
-/*.
-full-screen-section,
-.sections-container {
-  min-height: 100vh;
-  padding: var(--section-padding) 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-*/
-.sections-container {
-  min-height: 100vh;
-  padding: var(--section-padding) 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-.sections-container:last-child {
-  scroll-snap-align: start;
-  padding-bottom: 2rem; /* extra Platz am Ende */
-}
-
-.container{
-  /* Damit das Overlay deinen Inhalt nicht überlagert,
-     gibst du "innen" denselben Abstand wie das Overlay außen */
-  margin-top: 80px;
-  margin-right: 20px;
-  margin-bottom: 15px;
-  margin-left: 20px;
-  /* Damit die Container-Fläche nicht hinter dem Overlay liegt */
-  position: relative;
-  z-index: 1;
-    /* box-sizing, damit Padding/Margin sauber berechnet wird */
+/* =====================================
+   📦 CONTAINER-LAYOUTS
+   Zentrierung & Seitenränder
+========================================= */
+.container,
+.container-xl,
+.container-sm {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--container-padding-inline);
   box-sizing: border-box;
 }
+.container-xl { max-width: 1440px; }
+.container-sm { max-width: 768px; }
 
-h1, h2, h3, h4, h5, h6,
-p, li, a {
+.sections-container {
+  min-height: 100vh;
+  padding-block: var(--section-padding);
+  padding-inline: var(--container-padding-inline);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.sections-container:last-child {
+  scroll-snap-align: start;
+  padding-bottom: var(--spacing-lg);
+}
+
+/* =====================================
+   📝 TYPOGRAFIE & TEXTSTILE
+========================================= */
+h1, h2, h3, h4, h5, h6, p, li, a {
   font-weight: 300;
-  color: var(--secondary-text-color);
   letter-spacing: 0.5px;
   line-height: 1.4;
+  color: var(--color-text-muted);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
-  color: var(--main-text-color);
+  color: var(--color-text-main);
 }
 
-/* ==========================
-   Lead-Text
-========================== */
 .lead {
-  font-size: clamp(1rem, 1.4vw, 1.6rem); /* Dynamische Schriftgröße für verschiedene Displays */
-  max-width: 850px; /* Etwas breiter für bessere Lesbarkeit */
-  margin: 10px auto; /* Mehr Abstand nach oben/unten */
-  padding: 0 clamp(15px, 3vw, 40px); /* Dynamischer Innenabstand */
-  color: var(--main-text-color, #222); /* Verbesserte Standardfarbe */
+  font-size: var(--font-size-md);
+  max-width: 850px;
+  margin: var(--spacing-sm) auto;
+  padding-inline: clamp(15px, 3vw, 40px);
+  color: var(--color-text-main);
   font-weight: 400;
-  line-height: clamp(1.6, 2vw, 1.9); /* Dynamische Zeilenhöhe */
-  letter-spacing: 0.5px; /* Dezente Mikrotypografie für Eleganz */
-  font-family: 'Poppins', sans-serif; /* Hochwertige moderne Schrift */
+  line-height: clamp(1.6, 2vw, 1.9);
+  letter-spacing: 0.5px;
+  font-family: var(--font-main);
   transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
-.lead-wilkommmen {
-  font-size: clamp(1rem, 1.6vw, 1.8rem); /* Dynamische Schriftgröße */
-  font-weight: 500;
-  color: var(--main-text-color, #e0e0e0); /* Edles, weiches Weiß/Grau für besseren Kontrast */
-  line-height: clamp(1.6, 2vw, 2.2); /* Perfekte Lesbarkeit */
-  letter-spacing: 0.8px; /* Mikro-Typografie für sauberes Design */
-  text-align: left;
-  font-family: 'Inter', sans-serif;
-  max-width: 75vw; /* Dynamische Textbreite */
-  padding: 0 clamp(10px, 4vw, 190px); /* Gleiche Ränder wie `body::after` */
-  margin: 50px auto;
 
+.lead-wilkommmen {
+  font-size: clamp(1rem, 1.6vw, 1.8rem);
+  font-weight: 500;
+  color: var(--color-text-main);
+  line-height: clamp(1.6, 2vw, 2.2);
+  letter-spacing: 0.8px;
+  text-align: left;
+  font-family: var(--font-secondary);
+  max-width: 75vw;
+  padding-inline: var(--container-padding-inline);
+  margin: 50px auto;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-
-
-/* ==========================
-   Schimmertext
-========================== */
+/* =====================================
+   ✨ SCHIMMERTEXT-EFFEKT
+========================================= */
 .shimmer-text {
-  font-size: clamp(3rem, 5vw, 12rem); /* Dynamische Schriftgröße */
+  font-size: var(--font-size-xxl);
   font-weight: 700;
   color: #fff;
   text-align: center;
-  margin-bottom: clamp(1rem, 2vw, 3rem);
+  margin-bottom: var(--spacing-lg);
   padding-bottom: clamp(2rem, 3vw, 5rem);
-  letter-spacing: clamp(1px, 0.2vw, 5px); /* Edler Buchstabenabstand */
-  text-transform: uppercase; /* Für eine starke, markante Optik */
+  letter-spacing: clamp(1px, 0.2vw, 5px);
+  text-transform: uppercase;
   text-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
-  white-space: nowrap; /* Verhindert Umbruch für saubere Optik */
-
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
+  white-space: nowrap;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.1));
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -166,81 +159,69 @@ h1, h2, h3, h4, h5, h6 {
   animation: shimmer 1.75s infinite linear;
 }
 
-/* 📱 Optimierung für kleinere Bildschirme */
 @media (max-width: 600px) {
   .shimmer-text {
     font-size: clamp(2.5rem, 6vw, 10rem);
-    white-space: normal; /* Erlaubt Umbruch auf kleinen Displays */
+    white-space: normal;
   }
 }
 
-/* ✨ Optimierte Shimmer-Animation */
 @keyframes shimmer {
   0% { background-position: -200% 50%; }
   100% { background-position: 200% 50%; }
 }
-/* ==========================
-   Kartenstil
-========================== */
+
+/* =====================================
+   🃏 KARTEN-KOMPONENTEN
+========================================= */
 .card {
   background: rgba(255,255,255,0.1);
- 
   padding: 15px;
   text-align: center;
   flex: 1;
-
-  color: var(--main-text-color);
+  color: var(--color-text-main);
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 15px var(--shadow-color);
+  box-shadow: 0 4px 15px var(--color-shadow);
   border: 2px solid transparent;
   transform: translateZ(0);
-  transition: transform var(--transition-speed) var(--transition-ease),
-              box-shadow var(--transition-speed) var(--transition-ease),
-              border-color var(--transition-speed) ease;
+  transition: transform var(--transition-speed) var(--transition-ease), box-shadow var(--transition-speed) var(--transition-ease), border-color var(--transition-speed) ease;
   will-change: transform, box-shadow, border-color;
-
-  margin: 0 auto; /* Zum Zentrieren in der Zeile, falls nötig */
-
+  margin: 0 auto;
   opacity: 0;
 }
 .card:hover,
 .card:active,
 .card.touch-active {
   transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 30px var(--highlight-shadow);
-  border-color: var(--accent-color);
-  
+  box-shadow: 0 12px 30px var(--color-highlight);
+  border-color: var(--color-accent);
 }
 
-/* Kartentext */
-.card-text {
-  font-size: clamp(0.9rem, 1vw, 1.2rem); /* Dynamische Schriftgröße */
-  color: var(--karten-text-color);
-  line-height: clamp(1.4, 1.6vw, 1.8); /* Dynamische Zeilenhöhe */
-  font-weight: 400;
-  margin-top: clamp(8px, 1.5vw, 16px); /* Dynamischer Abstand zum oberen Element */
-  transition: color 0.3s ease;
-}
-.card:hover .card-text {
-  color: var(--highlight-shadow);
-  transform: scale(1.05); /* Leichte Vergrößerung für mehr Dynamik */
-}
-
-
-/* Kartenüberschrift */
 .card-title {
-  font-size: 1.4rem; /* Text größe */
+  font-size: 1.4rem;
   font-weight: bold;
-  color: var(--karten-text-color);
-  text-transform: uppercase; /* Alle Buchstaben groß für einen modernen Look */
-  letter-spacing: 1px; /* Leicht erweiterter Buchstabenabstand für Klarheit */
-  margin-bottom: clamp(3px, 3vw, 5px); /* Dynamischer Abstand */
-
+  color: var(--color-text-main);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: clamp(3px, 3vw, 5px);
   transition: color 0.3s ease, transform 0.3s ease;
 }
 .card:hover .card-title {
-  color: #007bff; /* Wechselt auf ein lebendiges Blau bei Hover */
-  transform: scale(1.05); /* Leichte Vergrößerung für mehr Dynamik */
+  color: var(--color-highlight);
+  transform: scale(1.05);
+}
+
+.card-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-main);
+  line-height: clamp(1.4, 1.6vw, 1.8);
+  font-weight: 400;
+  margin-top: clamp(8px, 1.5vw, 16px);
+  transition: color 0.3s ease;
+}
+.card:hover .card-text {
+  color: var(--color-highlight);
+  transform: scale(1.05);
 }
 
 .icon-wrapper {
@@ -250,84 +231,67 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-  margin-bottom: clamp(5px, 3vw, 20px); /* Dynamischer Abstand */
+  margin-bottom: clamp(5px, 3vw, 20px);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background 0.3s ease-in-out;
 }
-
 .card:hover .icon-wrapper {
   transform: scale(1.3);
 }
 
-/* ==========================
-   Scroll & Animation
-========================== */
+/* =====================================
+   📌 SCROLL & POSITIONIERUNG
+========================================= */
 .snap {
   scroll-snap-align: center;
   scroll-snap-stop: always;
 }
 
-/* ==========================
-   Horizontal Line (hr)
-========================== */
-hr {
-background: var(--main-decor-color);
-margin: 2px;
-height: 3px;
-width: 150px;
-border-radius:5px;
-border: hidden;
-margin-inline-start: auto;
-margin-inline-end: auto;
-}
-
-/* ==========================
-   Viewport Border
-========================== */
+/* =====================================
+   🔲 VIEWPORT-HINTERGRUND-EFFEKT
+========================================= */
 body::after {
   content: "";
   position: fixed;
-  
-  /* Oben & unten fix (80px, 15px) – Links & rechts dynamisch */
-  inset: 80px 
-         clamp(10px, 4vw, 190px) 
-         15px 
-         clamp(10px, 4vw, 190px);
-  
+  inset: 180px var(--container-padding-inline) 150px var(--container-padding-inline);
   pointer-events: none;
   z-index: 9999;
-
-  border-radius: clamp(15px, 2vw, 30px); /* Weichere Rundungen für moderne Optik */
+  border-radius: clamp(15px, 2vw, 30px);
   background: rgba(255, 255, 255, 0.03);
-
-  box-shadow: 0 6px 25px var(--shadow-color), 
-              inset 0 0 15px rgba(255, 255, 255, 0.08);
-
+  box-shadow: 0 6px 25px var(--color-shadow), inset 0 0 15px rgba(255, 255, 255, 0.08);
   transition: all 0.4s ease-in-out;
 }
-
-/* ✨ Sanfter Hover-Effekt */
 body:hover::after {
   background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 30px var(--shadow-color),
-              inset 0 0 20px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 30px var(--color-shadow), inset 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
-/* ==========================
-   Mobile-Anpassungen
-========================== */
-@media (max-width: 576px) {
-  .card {
-    /* Reduzierte Breite und Höhe auf kleinen Screens */
-    width: 320px;
-    height: 180px;
-  }
-  .card h5 {
-    font-size: 0.9rem;
-  }
-  .card p {
-    font-size: 0.7rem;
-  }
-  .card .lead {
-    font-size: 0.9rem;
-  }
+/* =====================================
+   ➖ DEKORATIVE LINIEN
+========================================= */
+hr {
+  background: var(--color-decor);
+  height: 3px;
+  width: 150px;
+  border-radius: 5px;
+  border: none;
+  margin: 2px auto;
 }
+
+/* =====================================
+   🧰 UTILITY-KLASSEN
+   Hilfsklassen für Layout & Debugging
+========================================= */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.font-light { font-weight: 300; }
+.font-bold { font-weight: 700; }
+.text-muted { color: var(--color-text-muted); }
+.text-main { color: var(--color-text-main); }
+.mt-lg { margin-top: var(--spacing-lg); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+.my-lg { margin-block: var(--spacing-lg); }
+.px-lg { padding-inline: var(--spacing-lg); }
+.py-lg { padding-block: var(--spacing-lg); }
+.debug-border { border: 1px solid red !important; }
+.debug-bg { background: rgba(255, 0, 0, 0.1) !important; }
+.debug-grid { outline: 1px dashed limegreen; }
