@@ -225,8 +225,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .icon-wrapper {
-  width: 85px;
-  height: 85px;
   display: flex;
   justify-content: center;
   align-items: center;
