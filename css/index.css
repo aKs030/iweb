@@ -11,6 +11,7 @@
   --color-text-muted: rgba(245, 245, 245, 0.6);
   --color-decor: #ffffff;
   --color-accent: rgba(255, 204, 41, 0.9);
+  --color-accent-hover: rgba(255, 204, 41, 1);
   --color-shadow: rgba(0, 0, 0, 0.25);
   --color-highlight: #007bff;
 
@@ -90,6 +91,11 @@ body {
   background-color: var(--color-accent);
   border-radius: var(--border-radius);
   border: 2px solid var(--color-bg-secondary);
+  transition: background-color 0.3s ease;
+}
+
+.viewport-box::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent-hover);
 }
 
 /* Firefox */
@@ -188,16 +194,8 @@ img {
   to { background-position: 200% 0; }
 }
 
-/* =====================================
-   🔎 SECTION ABOUT ZENTRIERUNG + SCROLL-SNAP
-========================================= */
-#section-about {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  width: 100%;
-  min-height: 60vh;
-  scroll-snap-align: center;
+
+.snap-section{
+  scroll-snap-align: start;
+  min-height: 100%;           /* wichtig fürs Einrasten */
 }
