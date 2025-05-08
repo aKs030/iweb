@@ -4,45 +4,38 @@
    Typografie, Abstände, Layout & Animationen
 ========================================= */
 :root {
-  /* 🎨 Farbpalette */
-  --color-bg: #444; /* Haupt-Hintergrundfarbe */
-  --color-bg-secondary: #333; /* Sekundäre Hintergrundfarbe */
-  --color-text-main: rgba(245, 245, 245, 0.9); /* Haupt-Textfarbe */
-  --color-text-muted: rgba(245, 245, 245, 0.5); /* Gedämpfte Textfarbe */
-  --color-decor: #ffffff; /* Deko-Farbe für Linien etc. */
-  --color-accent: rgba(255, 204, 41, 0.8); /* Akzentfarbe */
-  --color-shadow: rgba(0, 0, 0, 0.2); /* Schattierung */
-  --color-highlight: #007bff; /* Highlight z.B. bei Hover */
+  /* Farben */
+  --color-bg: #444;
+  --color-bg-secondary: #333;
+  --color-text-main: #f5f5f5;
+  --color-text-muted: rgba(245, 245, 245, 0.6);
+  --color-decor: #ffffff;
+  --color-accent: rgba(255, 204, 41, 0.9);
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-highlight: #007bff;
 
-  /* 🖋️ Schriftarten & Schriftgrößen */
+  /* Schriftarten */
   --font-main: 'Poppins', sans-serif;
   --font-secondary: 'Inter', sans-serif;
-  --font-size-sm: clamp(0.85rem, 1vw, 1rem);
-  --font-size-md: clamp(1rem, 1.2vw, 1.4rem);
-  --font-size-lg: clamp(1.4rem, 2vw, 2rem);
-  --font-size-xl: clamp(2.2rem, 4vw, 3.5rem);
-  --font-size-xxl: clamp(3rem, 6vw, 6rem);
 
-  /* 📏 Abstände (Spacing) */
+  /* Abstände & Layout */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
 
-  /* 🧱 Layout-Vorgaben */
   --section-padding: var(--spacing-lg);
-  --container-padding-inline: clamp(10px, 4vw, 190px);
-  --border-radius: 15px;
+  --container-padding-inline: clamp(0.5rem, 3vw, 8rem);
+  --border-radius: 0.8rem;
 
-  /* 🎞️ Übergänge & Animation */
+  /* Animationen */
   --transition-speed: 0.35s;
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* =====================================
    🔧 GLOBALER RESET & BASISSTILE
-   Vereinheitlicht grundlegende Stile
 ========================================= */
 *, *::before, *::after {
   margin: 0;
@@ -51,245 +44,116 @@
 }
 
 html, body {
+  height: 100%;
   font-family: var(--font-main);
   background-color: var(--color-bg);
   color: var(--color-text-main);
-  min-height: 100%;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
+  overflow: hidden;
 }
 
 body {
   display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
+  align-items: center;
+  justify-content: center;
 }
 
 /* =====================================
-   📦 CONTAINER-LAYOUTS
-   Zentrierung & Seitenränder
+   📦 RESPONSIVE VIEWPORT-BOX
 ========================================= */
-.container,
-.container-xl,
-.container-sm {
-  width: 100%;
-  margin-inline: auto;
-  padding-inline: var(--container-padding-inline);
-  box-sizing: border-box;
+.viewport-box {
+  width: min(75vw, 1100px);
+  height: 75vh;
+  background: var(--color-bg-secondary);
+  box-shadow: 0 6px 16px var(--color-shadow);
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  border-radius: var(--border-radius);
+  padding: clamp(0.8rem, 1.5vw, 1.2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.container-xl { max-width: 1440px; }
-.container-sm { max-width: 768px; }
 
 .sections-container {
-  min-height: 100vh;
-  padding-block: var(--section-padding);
-  padding-inline: var(--container-padding-inline);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.sections-container:last-child {
+  width: 100%;
+  max-width: 1000px;
+  min-height: 75vh;
   scroll-snap-align: start;
-  padding-bottom: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.8rem, 2.5vw, 2rem);
 }
 
 /* =====================================
-   📝 TYPOGRAFIE & TEXTSTILE
+   📝 RESPONSIVE TYPOGRAFIE
 ========================================= */
-h1, h2, h3, h4, h5, h6, p, li, a {
-  font-weight: 300;
-  letter-spacing: 0.5px;
-  line-height: 1.4;
+h1, h2, h3, h4, h5, h6 {
+  font-size: clamp(1.3rem, 1.6vw, 1.8rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+p, li, .lead, .card-title, .card-text {
+  font-size: clamp(0.85rem, 1vw, 1rem);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0.4px;
   color: var(--color-text-muted);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 500;
+/* =====================================
+   🃏 RESPONSIVE KARTEN-KOMPONENTEN
+========================================= */
+.card {
+  padding: clamp(0.7rem, 1vw, 1rem);
+  width: 100%;
+  max-width: 320px;
+  margin: clamp(0.5rem, 1vw, 0.8rem) auto;
+  background: rgba(255, 255, 255, 0.1);
   color: var(--color-text-main);
+  border-radius: var(--border-radius);
+  box-shadow: 0 5px 14px var(--color-shadow);
+  transition: transform var(--transition-speed) var(--transition-ease),
+              box-shadow var(--transition-speed) var(--transition-ease),
+              border var(--transition-speed) var(--transition-ease);
+  border: 2px solid transparent;
+  font-size: clamp(0.85rem, 1vw, 1rem);
 }
 
-.lead {
-  font-size: var(--font-size-md);
-  max-width: 850px;
-  margin: var(--spacing-sm) auto;
-  padding-inline: clamp(15px, 3vw, 40px);
-  color: var(--color-text-main);
-  font-weight: 400;
-  line-height: clamp(1.6, 2vw, 1.9);
-  letter-spacing: 0.5px;
-  font-family: var(--font-main);
-  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
+.card:hover {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 12px 25px var(--color-highlight);
+  border-color: var(--color-accent);
 }
 
-.lead-wilkommmen {
-  font-size: clamp(1rem, 1.6vw, 1.8rem);
-  font-weight: 500;
-  color: var(--color-text-main);
-  line-height: clamp(1.6, 2vw, 2.2);
-  letter-spacing: 0.8px;
-  text-align: left;
-  font-family: var(--font-secondary);
-  max-width: 75vw;
-  padding-inline: var(--container-padding-inline);
-  margin: 50px auto;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+.icon-wrapper i {
+  font-size: clamp(1.2rem, 2vw, 2rem);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* =====================================
-   ✨ SCHIMMERTEXT-EFFEKT
+   ✨ RESPONSIVE SCHIMMERTEXT-EFFEKT
 ========================================= */
 .shimmer-text {
-  font-size: var(--font-size-xxl);
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
   font-weight: 700;
-  color: #fff;
-  text-align: center;
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: clamp(2rem, 3vw, 5rem);
-  letter-spacing: clamp(1px, 0.2vw, 5px);
-  text-transform: uppercase;
-  text-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.1));
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.7);
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,1), rgba(255,255,255,0.1));
   background-size: 200% 100%;
-  -webkit-background-clip: text;
   background-clip: text;
+  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shimmer 1.75s infinite linear;
 }
 
-@media (max-width: 600px) {
-  .shimmer-text {
-    font-size: clamp(2.5rem, 6vw, 10rem);
-    white-space: normal;
-  }
-}
-
 @keyframes shimmer {
-  0% { background-position: -200% 50%; }
-  100% { background-position: 200% 50%; }
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
 }
-
-/* =====================================
-   🃏 KARTEN-KOMPONENTEN
-========================================= */
-.card {
-  background: rgba(255,255,255,0.1);
-  padding: 15px;
-  text-align: center;
-  flex: 1;
-  color: var(--color-text-main);
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 15px var(--color-shadow);
-  border: 2px solid transparent;
-  transform: translateZ(0);
-  transition: transform var(--transition-speed) var(--transition-ease), box-shadow var(--transition-speed) var(--transition-ease), border-color var(--transition-speed) ease;
-  will-change: transform, box-shadow, border-color;
-  margin: 0 auto;
-  opacity: 0;
-}
-.card:hover,
-.card:active,
-.card.touch-active {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 30px var(--color-highlight);
-  border-color: var(--color-accent);
-}
-
-.card-title {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: var(--color-text-main);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: clamp(3px, 3vw, 5px);
-  transition: color 0.3s ease, transform 0.3s ease;
-}
-.card:hover .card-title {
-  color: var(--color-highlight);
-  transform: scale(1.05);
-}
-
-.card-text {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-main);
-  line-height: clamp(1.4, 1.6vw, 1.8);
-  font-weight: 400;
-  margin-top: clamp(8px, 1.5vw, 16px);
-  transition: color 0.3s ease;
-}
-.card:hover .card-text {
-  color: var(--color-highlight);
-  transform: scale(1.05);
-}
-
-.icon-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto;
-  margin-bottom: clamp(5px, 3vw, 20px);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background 0.3s ease-in-out;
-}
-.card:hover .icon-wrapper {
-  transform: scale(1.3);
-}
-
-/* =====================================
-   📌 SCROLL & POSITIONIERUNG
-========================================= */
-.snap {
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
-}
-
-/* =====================================
-   🔲 VIEWPORT-HINTERGRUND-EFFEKT
-========================================= */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 180px var(--container-padding-inline) 150px var(--container-padding-inline);
-  pointer-events: none;
-  z-index: 9999;
-  border-radius: clamp(15px, 2vw, 30px);
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: 0 6px 25px var(--color-shadow), inset 0 0 15px rgba(255, 255, 255, 0.08);
-  transition: all 0.4s ease-in-out;
-}
-body:hover::after {
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 30px var(--color-shadow), inset 0 0 20px rgba(255, 255, 255, 0.1);
-}
-
-/* =====================================
-   ➖ DEKORATIVE LINIEN
-========================================= */
-hr {
-  background: var(--color-decor);
-  height: 3px;
-  width: 150px;
-  border-radius: 5px;
-  border: none;
-  margin: 2px auto;
-}
-
-/* =====================================
-   🧰 UTILITY-KLASSEN
-   Hilfsklassen für Layout & Debugging
-========================================= */
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.font-light { font-weight: 300; }
-.font-bold { font-weight: 700; }
-.text-muted { color: var(--color-text-muted); }
-.text-main { color: var(--color-text-main); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
-.my-lg { margin-block: var(--spacing-lg); }
-.px-lg { padding-inline: var(--spacing-lg); }
-.py-lg { padding-block: var(--spacing-lg); }
-.debug-border { border: 1px solid red !important; }
-.debug-bg { background: rgba(255, 0, 0, 0.1) !important; }
-.debug-grid { outline: 1px dashed limegreen; }
