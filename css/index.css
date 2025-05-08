@@ -19,15 +19,15 @@
   --font-secondary: 'Inter', sans-serif;
 
   /* Abstände & Layout */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
+  --spacing-xs: 0.2rem;
+  --spacing-sm: 0.4rem;
+  --spacing-md: 0.8rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
 
   --section-padding: var(--spacing-lg);
-  --container-padding-inline: clamp(0.5rem, 3vw, 8rem);
-  --border-radius: 0.8rem;
+  --container-padding-inline: clamp(0.5rem, 2.5vw, 6rem);
+  --border-radius: 0.7rem;
 
   /* Animationen */
   --transition-speed: 0.35s;
@@ -49,6 +49,7 @@ html, body {
   background-color: var(--color-bg);
   color: var(--color-text-main);
   overflow: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -61,75 +62,104 @@ body {
    📦 RESPONSIVE VIEWPORT-BOX
 ========================================= */
 .viewport-box {
-  width: min(75vw, 1100px);
-  height: 75vh;
+  width: min(70vw, 1000px);
+  height: 70vh;
   background: var(--color-bg-secondary);
-  box-shadow: 0 6px 16px var(--color-shadow);
+  box-shadow: 0 5px 14px var(--color-shadow);
   overflow-y: auto;
   scroll-snap-type: y mandatory;
+  scroll-padding-top: 1rem;
   border-radius: var(--border-radius);
-  padding: clamp(0.8rem, 1.5vw, 1.2rem);
+  padding: clamp(0.6rem, 1vw, 1rem);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* 🎨 Scrollbalken anpassen */
+.viewport-box::-webkit-scrollbar {
+  width: 10px;
+}
+
+.viewport-box::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.viewport-box::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent);
+  border-radius: var(--border-radius);
+  border: 2px solid var(--color-bg-secondary);
+}
+
+/* Firefox */
+.viewport-box {
+  scrollbar-color: var(--color-accent) var(--color-bg-secondary);
+  scrollbar-width: thin;
+}
+
 .sections-container {
   width: 100%;
-  max-width: 1000px;
-  min-height: 75vh;
-  scroll-snap-align: start;
+  max-width: 900px;
+  min-height: 70vh;
+  scroll-snap-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(0.8rem, 2.5vw, 2rem);
+  gap: var(--spacing-md);
+  padding: clamp(0.6rem, 2vw, 1.5rem);
 }
 
 /* =====================================
    📝 RESPONSIVE TYPOGRAFIE
 ========================================= */
 h1, h2, h3, h4, h5, h6 {
-  font-size: clamp(1.3rem, 1.6vw, 1.8rem);
+  font-size: clamp(1.2rem, 1.5vw, 1.7rem);
   font-weight: 600;
   line-height: 1.3;
 }
 
 p, li, .lead, .card-title, .card-text {
-  font-size: clamp(0.85rem, 1vw, 1rem);
+  font-size: clamp(0.8rem, 0.95vw, 1rem);
   line-height: 1.5;
   font-weight: 400;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
   color: var(--color-text-muted);
 }
 
 /* =====================================
    🃏 RESPONSIVE KARTEN-KOMPONENTEN
 ========================================= */
+.sections-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+}
+
 .card {
-  padding: clamp(0.7rem, 1vw, 1rem);
+  padding: clamp(0.6rem, 0.8vw, 0.9rem);
   width: 100%;
-  max-width: 320px;
-  margin: clamp(0.5rem, 1vw, 0.8rem) auto;
-  background: rgba(255, 255, 255, 0.1);
+  max-width: 280px;
+  background: rgba(255, 255, 255, 0.08);
   color: var(--color-text-main);
   border-radius: var(--border-radius);
-  box-shadow: 0 5px 14px var(--color-shadow);
+  box-shadow: 0 4px 12px var(--color-shadow);
   transition: transform var(--transition-speed) var(--transition-ease),
               box-shadow var(--transition-speed) var(--transition-ease),
               border var(--transition-speed) var(--transition-ease);
   border: 2px solid transparent;
-  font-size: clamp(0.85rem, 1vw, 1rem);
+  font-size: clamp(0.8rem, 0.95vw, 0.95rem);
 }
 
 .card:hover {
-  transform: translateY(-4px) scale(1.015);
-  box-shadow: 0 12px 25px var(--color-highlight);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 10px 20px var(--color-highlight);
   border-color: var(--color-accent);
 }
 
 .icon-wrapper i {
-  font-size: clamp(1.2rem, 2vw, 2rem);
+  font-size: clamp(1.1rem, 1.8vw, 1.8rem);
 }
 
 img {
@@ -142,9 +172,9 @@ img {
    ✨ RESPONSIVE SCHIMMERTEXT-EFFEKT
 ========================================= */
 .shimmer-text {
-  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  font-size: clamp(1.5rem, 2vw, 2rem);
   font-weight: 700;
-  text-shadow: 0 0 40px rgba(255, 255, 255, 0.7);
+  text-shadow: 0 0 35px rgba(255, 255, 255, 0.7);
   background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,1), rgba(255,255,255,0.1));
   background-size: 200% 100%;
   background-clip: text;
@@ -156,4 +186,18 @@ img {
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to { background-position: 200% 0; }
+}
+
+/* =====================================
+   🔎 SECTION ABOUT ZENTRIERUNG + SCROLL-SNAP
+========================================= */
+#section-about {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  min-height: 60vh;
+  scroll-snap-align: center;
 }
