@@ -1,65 +1,38 @@
-/* Footer-Stile */
-footer {
-    position: fixed; /* Fixiert den Footer */
-    bottom: 0; /* Am unteren Rand */
-    left: 0; /* Von links starten */
-    width: 100%; /* Volle Breite */
-    background-color: #121212; /* Dunkler Hintergrund */
-    color: #fff; /* Weiße Schrift */
-    padding: 15px 0; /* Vertikaler Innenabstand */
-    text-align: center; /* Zentrierter Text */
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Eleganter Schatten */
-    z-index: 9999; /* Über anderen Elementen */
-}
-
-/* Allgemeine Stile für den Footer */
+/* Footer-Container */
 .site-footer {
-    background-color: #121212;
-    color: #ffffff;
+    background-color: #1a1a1a; /* Dunkler Hintergrund */
+    color: #ffffff; /* Weiße Schriftfarbe */
     text-align: center;
-    padding: 20px;
+    padding: 15px 10px; /* Innenabstand */
     font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
-    border-top: 2px solid #ffcc29; /* Subtiler Akzent */
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 0.85rem; /* Dezente Schriftgröße */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Eleganter Schatten */
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtile obere Linie */
+    position: fixed; /* Footer bleibt am unteren Rand */
+    bottom: 0;
+    left: 0;
+    width: 100%; /* Breite über die gesamte Seite */
+    z-index: 999; /* Sicherstellen, dass der Footer vorne bleibt */
 }
 
-.site-footer .footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
+/* Verlinkungen im Footer */
 .site-footer a {
-    color: #ffcc29;
+    color: #ffcc29; /* Akzentfarbe */
     text-decoration: none;
+    margin: 0 8px; /* Abstand zwischen Links */
     font-weight: 500;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* Sanfte Übergänge */
 }
 
 .site-footer a:hover {
-    color: #ffd700;
-    text-shadow: 0 0 5px rgba(255, 204, 41, 0.8);
+    color: #ffd700; /* Helleres Gelb beim Hover */
+    text-shadow: 0 0 5px rgba(255, 204, 41, 0.8); /* Leichtes Leuchten */
 }
 
-.footer-nav {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap; /* Für kleinere Bildschirme */
-    justify-content: center;
-}
-
-/* Responsivität */
+/* Responsives Design */
 @media (max-width: 768px) {
     .site-footer {
-        font-size: 0.8rem;
-        padding: 15px;
-    }
-    .footer-nav {
-        flex-direction: column;
-        gap: 10px;
+        font-size: 0.75rem; /* Kleinere Schriftgröße für Mobilgeräte */
+        padding: 10px; /* Weniger Abstand */
     }
 }
