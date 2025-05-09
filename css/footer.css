@@ -1,21 +1,7 @@
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
 
-body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.viewport-box {
-    flex: 1;
-}
 
 #footer-container {
-    background: #f8f9fa; /* Beispielhintergrund, nach Wunsch anpassen */
+
     text-align: center;
     padding: 10px 0;
     box-shadow: 0 -1px 5px rgba(0,0,0,0.05);
