@@ -1,3 +1,17 @@
+/* Footer-Stile */
+footer {
+    position: fixed; /* Fixiert den Footer */
+    bottom: 0; /* Am unteren Rand */
+    left: 0; /* Von links starten */
+    width: 100%; /* Volle Breite */
+    background-color: #121212; /* Dunkler Hintergrund */
+    color: #fff; /* Weiße Schrift */
+    padding: 15px 0; /* Vertikaler Innenabstand */
+    text-align: center; /* Zentrierter Text */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Eleganter Schatten */
+    z-index: 9999; /* Über anderen Elementen */
+}
+
 /* Allgemeine Stile für den Footer */
 .site-footer {
     background-color: #121212;
