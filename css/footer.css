@@ -3,6 +3,7 @@ footer {
     width: 100%;
     text-align: center;
     box-sizing: border-box;
+    z-index: 1000;
 }
 
 @media (max-width: 768px) {
