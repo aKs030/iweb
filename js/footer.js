@@ -1,16 +1,28 @@
-document.addEventListener("DOMContentLoaded", function() {
-    // HTML-Inhalt des Footers
-    const footerHTML = `
-        <footer>
-            <p>&copy; 2025 Dein Unternehmen. Alle Rechte vorbehalten.</p>
-            <nav>
-                <a href="impressum.html">Impressum</a> |
-                <a href="datenschutz.html">Datenschutz</a> |
-                <a href="kontakt.html">Kontakt</a>
-            </nav>
-        </footer>
-    `;
+document.addEventListener("DOMContentLoaded", function () {
+    /**
+     * Funktion zum Erstellen des Footers
+     */
+    function createFooter() {
+        // HTML-Inhalt des Footers
+        return `
+            <footer class="site-footer">
+                <p>&copy; ${new Date().getFullYear()} Dein Unternehmen. Alle Rechte vorbehalten.</p>
+                <nav>
+                    <a href="impressum.html">Impressum</a> |
+                    <a href="datenschutz.html">Datenschutz</a> |
+                    <a href="kontakt.html">Kontakt</a>
+                </nav>
+            </footer>
+        `;
+    }
 
-    // Footer in den Platzhalter einfügen
-    document.getElementById("footer-placeholder").innerHTML = footerHTML;
+    /**
+     * Footer dynamisch in den Platzhalter einfügen
+     */
+    const footerPlaceholder = document.getElementById("footer-placeholder");
+    if (footerPlaceholder) {
+        footerPlaceholder.innerHTML = createFooter();
+    } else {
+        console.error("⚠️ Der Footer-Platzhalter (#footer-placeholder) wurde nicht gefunden!");
+    }
 });
