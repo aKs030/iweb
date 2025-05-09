@@ -1,18 +1,24 @@
+/* Standard-Stile für den Footer */
 footer {
-    position: relative;
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-    z-index: 1000;
+    position: relative; /* Standardposition für Desktop */
+    width: 100%; /* Passt sich an die volle Breite an */
+    text-align: center; /* Zentriert den Inhalt */
+    box-sizing: border-box; /* Verhindert unerwartete Breitenprobleme */
+    padding: 20px; /* Fügt etwas Innenabstand hinzu */
+    background-color: #333; /* Hintergrundfarbe */
+    color: #fff; /* Textfarbe */
+    font-size: 1rem; /* Lesbare Schriftgröße */
+    z-index: 10; /* Stellt sicher, dass der Footer über anderen Elementen liegt */
 }
 
+/* Stile für mobile Ansichten (max. 768px) */
 @media (max-width: 768px) {
     footer {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        left: 0;
-        margin: 0;
-        padding: 0;
+        position: fixed; /* Fixiert den Footer am unteren Bildschirmrand */
+        bottom: 0; /* Positioniert den Footer ganz unten */
+        left: 0; /* Stellt sicher, dass der Footer am linken Rand beginnt */
+        width: 100%; /* Passt sich an die volle Breite des Bildschirms an */
+        padding: 10px; /* Etwas kompakterer Innenabstand */
+        font-size: 0.9rem; /* Etwas kleinere Schriftgröße für mobile Geräte */
     }
 }
