@@ -4,3 +4,11 @@ footer {
     text-align: center;
     box-sizing: border-box;
 }
+
+@media (max-width: 768px) {
+    footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+}
