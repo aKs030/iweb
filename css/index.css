@@ -52,6 +52,8 @@ html, body {
   /*overflow: hidden;*/
     overflow: auto;
   scroll-behavior: smooth;
+    color-scheme: dark;
+
 }
 
 body {
