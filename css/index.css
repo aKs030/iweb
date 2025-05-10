@@ -80,6 +80,28 @@ body {
   align-items: center;
 }
 
+/* 🎨 Scrollbalken anpassen */
+.viewport-box::-webkit-scrollbar {
+  width: 10px;
+}
+
+.viewport-box::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.viewport-box::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent);
+  border-radius: var(--border-radius);
+  border: 2px solid var(--color-bg-secondary);
+  transition: background-color 0.3s ease;
+}
+
+.viewport-box::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent-hover);
+}
+
+
 .sections-container {
   width: 100%;
   max-width: 900px;
@@ -174,54 +196,4 @@ img {
 .snap-section{
   scroll-snap-align: start;
   min-height: 100%;           /* wichtig fürs Einrasten */
-}
-
-/* =====================================
-   🎨 SCROLLBALKEN DESIGN
-========================================= */
-
-/* Für WebKit-basierte Browser (Chrome, Safari, Edge) */
-.viewport-box::-webkit-scrollbar {
-  width: 12px; /* Breite des gesamten Scrollbalkens */
-}
-
-.viewport-box::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary); /* Farbe der Scrollleiste (Hintergrund) */
-  border-radius: var(--border-radius); /* Abrundung passend zum Design */
-  margin-block: var(--spacing-xs); /* Kleiner Abstand oben und unten innerhalb des Tracks */
-}
-
-.viewport-box::-webkit-scrollbar-thumb {
-  background-color: var(--color-accent); /* Farbe des Scrollbalken-Griffs */
-  border-radius: var(--border-radius); /* Abrundung des Griffs */
-  border: 3px solid var(--color-bg-secondary); /* Erzeugt einen "Padding"-Effekt um den Thumb */
-}
-
-.viewport-box::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-accent-hover); /* Farbe des Griffs beim Hover */
-}
-
-/* Optional: Ein etwas dezenterer Look für den Root-Scrollbalken, falls der body mal scrollen sollte */
-body::-webkit-scrollbar {
-  width: 10px;
-}
-
-body::-webkit-scrollbar-track {
-  background: var(--color-bg);
-}
-
-body::-webkit-scrollbar-thumb {
-  background-color: var(--color-text-muted);
-  border-radius: var(--border-radius);
-  border: 2px solid var(--color-bg);
-}
-
-body::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-decor);
-}
-
-body {
-  /* Beibehaltung deiner Firefox Scrollbar Styles für den body, falls benötigt */
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-text-muted) var(--color-bg);
 }
