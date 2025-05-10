@@ -1,484 +1,389 @@
 "use strict";
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Hilfsfunktion, um ein zufälliges Element aus einem Array zu erhalten
     const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    // Abschnittsdaten mit aktualisierten IDs
-    const sections = {
-        'section-hero': [
-            `
-<section id="section-hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-    <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-      Willkommen1<hr>
-    </h3>
-    <p class="lead  text-animate" data-animation="animate__fadeInUp">
-      Ich freue mich, dass du den Weg hierher gefunden hast.
-      Diese Seite dient als mein digitales Zuhause im
-      World Wide Web, auf der ich meine Interessen,
-      Erfahrungen und Gedanken teilen möchte.
-    </p>
-</section>
-            `,
-            `
-<section id="section-hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-    <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-      Willkommen2<hr>
-    </h3>
-    <p class="lead lead-wilkommmen text-animate" data-animation="animate__fadeInUp">
-      Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-      Diese Seite dient als mein digitales Zuhause im<br>
-      World Wide Web, auf der ich meine Interessen,<br>
-      Erfahrungen und Gedanken teilen möchte.
-    </p>
-</section>
-            `,
-            `
-<section id="section-hero" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-    <h3 class="display-3 fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-      Willkommen3<hr>
-    </h3>
-    <p class="lead lead-wilkommmen text-animate" data-animation="animate__fadeInUp">
-      Ich freue mich, dass du den Weg hierher gefunden hast.<br>
-      Diese Seite dient als mein digitales Zuhause im<br>
-      World Wide Web, auf der ich meine Interessen,<br>
-      Erfahrungen und Gedanken teilen möchte.
-    </p>
-</section>
-            `
-        ],
+    // Fisher-Yates (Knuth) Shuffle Algorithmus
+    // Mischt ein Array in-place
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]]; // Tausche Elemente
+        }
+        return array; // Gibt das gemischte Array zurück (obwohl es in-place mischt)
+    }
 
-        'section-features': [
-            `
-
-            <section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-  <div class="container">
-    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-    
-      <div class="col">
-        <a href="/pages/ubermich.html" class="text-decoration-none text-reset animated-link">
-                 <div class="card border-0 text-center scroll-animate p-4"
-          data-animation="animate__flipInX" 
-          data-delay="400">
-
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-  <i class="bi bi-person-circle display-4 animated-icon"></i>
-</div>
-
-            <h5 class="card-title">Wer bin ich?</h5>
-                    <p class="card-text">
-                Einblicke in meine Persönlichkeit,<br>
-              meine Hobbys und das, was mich begeistert.
-              1
-            </p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col">
-        <a href="album.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4"
-          data-animation="animate__flipInX" 
-          data-delay="800">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-          <i class="bi bi-camera-fill display-4 animated-icon"></i>
-            </div>
-            <h5 class="card-title">Meine Erinnerungen</h5>
-            <p class="card-text">
-              Hier findet ihr eine bunte Sammlung von Fotos,
-              spannenden Eindrücken und besonderen Momenten.
-            </p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col">
-        <a href="/pages/index-game.html" class="text-decoration-none text-reset animated-link">
-          <div class="card border-0 text-center scroll-animate p-4"
-            data-animation="animate__flipInX" 
-            data-delay="1200">
-            <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-joystick display-4 animated-icon"></i>
-              </div>
-<h5 class="card-title">Game-Zone</h5>
-<p class="card-text">
-
-                  Tauche ein in spannende Spiele!<br>
-                  Teste dein Können in kniffligen Herausforderungen.
-              </p>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-            
-            `,
-            `
-
-
-
-<section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-  <div class="container">
-    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-    
-      <div class="col">
-        <a href="/pages/ubermich.html" class="text-decoration-none text-reset animated-link">
-         <div class="card border-0 text-center scroll-animate p-4" "
-          data-animation="animate__flipInX" 
-          data-delay="400">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-person-badge display-4 animated-icon"></i>
-            </div>
-            <h5 class="card-title">Wer bin ich?</h5>
-<p class="card-text">
-
-              Einblicke in meine Persönlichkeit,<br>
-              meine Hobbys und das, was mich begeistert.
-              2
-            </p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col">
-        <a href="album.html" class="text-decoration-none text-reset animated-link">
-<div class="card border-0 text-center scroll-animate p-4" "
-          data-animation="animate__flipInX" 
-          data-delay="800">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-          <i class="bi bi-images display-4 animated-icon"></i>
-            </div>
-            <h5 class="card-title">Meine Erinnerungen</h5>
-<p class="card-text">
-
-              Hier findet ihr eine bunte Sammlung von Fotos,spannenden Eindrücken und besonderen Momenten.
-            </p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col">
-        <a href="/pages/index-game.html" class="text-decoration-none text-reset animated-link">
-<div class="card border-0 text-center scroll-animate p-4" "
-            data-animation="animate__flipInX" 
-            data-delay="1200">
-            <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-controller display-4 animated-icon"></i>
-              </div>
-<h5 class="card-title">Game-Zone</h5>
-<p class="card-text">
-
-                  Tauche ein in spannende Spiele!<br>
-                  Teste dein Können in kniffligen Herausforderungen.
-              </p>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-            `,
-            `
-
-<section id="section-features" class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-  <div class="container">
-    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-    
-      <div class="col">
-        <a href="/pages/ubermich.html" class="text-decoration-none text-reset animated-link">
-         <div class="card border-0 text-center scroll-animate p-4" "
-          data-animation="animate__flipInX" 
-          data-delay="400">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-person-lines-fill display-4 animated-icon"></i>
-            </div>
-            <h5 class="card-title">Wer bin ich?</h5>
-<p class="card-text">
-
-              Einblicke in meine Persönlichkeit,<br>
-              meine Hobbys und das, was mich begeistert.
-              3
-            </p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col">
-        <a href="album.html" class="text-decoration-none text-reset animated-link">
-        <div class="card border-0 text-center scroll-animate p-4" "
-          data-animation="animate__flipInX" 
-          data-delay="800">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-          <i class="bi bi-file-image display-4 animated-icon"></i>
-            </div>
-            <h5 class="card-title">Meine Erinnerungen</h5>
-<p class="card-text">
-
-              Hier findet ihr eine bunte Sammlung von Fotos, spannenden Eindrücken und besonderen Momenten.
-            </p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col">
-        <a href="/pages/index-game.html" class="text-decoration-none text-reset animated-link">
-         <div class="card border-0 text-center scroll-animate p-4" "
-            data-animation="animate__flipInX" 
-            data-delay="1200">
-            <div class="icon-wrapper d-flex justify-content-center align-items-center">
-            <i class="bi bi-dice-5 display-4 animated-icon"></i>
-              </div>
-<h5 class="card-title">Game-Zone</h5>
-<p class="card-text">
-                  Tauche ein in spannende Spiele! Teste dein Können in kniffligen Herausforderungen.
-              </p>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-            `
-        ],
-
-        'section-about': [
-          `
-      <section id="section-about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-          <p class="lead scroll-animate" data-animation="animate__fadeInUp">
-              Vielen Dank, dass du meine Homepage besuchst.
-              Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-              Vergiss nicht, regelmäßig , vorbeizuschauen,
-              um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-       </p>
-      <h2 class="scroll-animate" data-animation="animate__fadeInDown">Alles Gute und viel Spaß beim Stöbern!<hr></h2>
-      </section>
-          `,
-          `
-      <section id="section-about" class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-          <p class="lead scroll-animate" data-animation="animate__fadeInUp">
-              Vielen Dank, dass du meine Homepage besuchst.
-              Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-              Vergiss nicht, regelmäßig , vorbeizuschauen,
-              um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-       </p>
-      <h2 class="scroll-animate" data-animation="animate__fadeInDown">Alles Gute und viel Spaß beim Stöbern!<hr></h2>
-      </section>
-          `
-      ]
+    // Mapping von Sektions-IDs zu Arrays von HTML-Template-IDs
+    const sectionTemplateIds = {
+        'section-hero': ['template-hero-1', 'template-hero-2', 'template-hero-3'],
+        'section-features': ['template-features-1', 'template-features-2', 'template-features-3'], // Stellen Sie sicher, dass diese Templates 3 Karten enthalten!
+        'section-about': ['template-about-1', 'template-about-2']
     };
 
-    // Animation-Tracking: Speichert, welche Sektionen bereits animiert wurden
+    // Speicher für die gemischten Reihenfolgen der Template-IDs und den aktuellen Index
+    const shuffledSections = {};
+
+    // Initialisiere die gemischten Reihenfolgen beim Skriptstart
+    function initializeShuffledSequences() {
+        for (const sectionId in sectionTemplateIds) {
+            if (sectionTemplateIds.hasOwnProperty(sectionId)) {
+                const originalIds = [...sectionTemplateIds[sectionId]];
+                shuffledSections[sectionId] = {
+                    sequence: shuffleArray(originalIds),
+                    index: 0
+                };
+                 console.log(`Sequenz für ${sectionId} gemischt:`, shuffledSections[sectionId].sequence);
+            }
+        }
+    }
+
+    // Animation-Tracking: Speichert, welche Sektionen bereits erfolgreich animiert wurden seit dem letzten Reset
     const animatedSections = {
         'section-hero': false,
         'section-features': false,
         'section-about': false
     };
-    
-    // Animation-Cooldown-Tracking
+
+    // Animation-Cooldown-Tracking pro Sektion
     let animationCooldowns = {};
-    // Flag zur Überwachung des Scrollings
-    let isAnimating = false;
-    
-    // Prüft, ob für einen Abschnitt eine Animation ausgeführt werden kann
+    const COOLDOWN_DURATION = 800; // ms: Cooldown-Dauer (anpassbar)
+
+    // Prüft, ob für einen Abschnitt eine Animation basierend auf dem Cooldown ausgeführt werden kann
     function canAnimate(sectionId) {
         const now = Date.now();
-        // Cooldown von 1500 ms zwischen Animationen für jede Sektion
-        if (animationCooldowns[sectionId] && now - animationCooldowns[sectionId] < 1500) {
+        if (animationCooldowns[sectionId] && now - animationCooldowns[sectionId] < COOLDOWN_DURATION) {
             return false;
         }
         animationCooldowns[sectionId] = now;
         return true;
     }
 
-    // Verbesserte Animations-Initialisierung mit sequentieller Ausführung
-    function initializeAnimations(container) {
-        const sectionId = container.id;
-        
-        // Prüfen, ob Animation bereits ausgeführt wird oder bereits animiert wurde
-        if (isAnimating || animatedSections[sectionId] || !canAnimate(sectionId)) {
-            console.log(`Überspringe Animation für ${sectionId}: bereits animiert, läuft oder im Cooldown`);
-            return;
+    // Fügt den Karten in der Features Sektion Layout-basierte Klassen hinzu (Upper, Middle, Lower)
+    // Dies basiert auf der Reihenfolge der Karten im HTML/DOM.
+    function addCardLayoutClasses(containerElement) {
+        // Suche Karten nur innerhalb der Features Sektion
+         if (containerElement.parentElement.id !== 'section-features') {
+             return; // Mache nichts, wenn es nicht die Features Sektion ist
+         }
+
+        const cards = containerElement.querySelectorAll('.card');
+        // Diese Logik ist spezifisch für den Fall, dass es genau 3 Karten gibt.
+        if (cards.length === 3) {
+            // Entferne eventuell vorhandene alte Layout-Klassen
+            cards.forEach(card => card.classList.remove('is-upper-card', 'is-middle-card', 'is-lower-card'));
+
+            // Füge neue Klassen basierend auf der Reihenfolge hinzu
+            cards[0].classList.add('is-upper-card');
+            cards[1].classList.add('is-middle-card');
+            cards[2].classList.add('is-lower-card');
+            console.log("Karten-Layout-Klassen hinzugefügt (Upper, Middle, Lower)");
+        } else {
+             // Logge eine Warnung, wenn die Anzahl der Karten nicht 3 ist
+             console.warn(`Features Sektion erwartet 3 Karten für spezielle Animation, aber ${cards.length} gefunden.`);
+             // Stelle sicher, dass keine speziellen Layout-Klassen gesetzt sind, die stören könnten
+             cards.forEach(card => card.classList.remove('is-upper-card', 'is-middle-card', 'is-lower-card'));
         }
-        
-        console.log(`Initialisiere Animation für ${sectionId}`);
-        isAnimating = true;
-        animatedSections[sectionId] = true;
-        
-        // DOM-Aktualisierung abwarten
-        setTimeout(() => {
-            if (container.id === 'section-features') {
-                const cards = container.querySelectorAll('.card');
-                // Stufenweise Animation der Cards
-                let delay = 0;
-                cards.forEach(card => {
-                    const animation = card.dataset.animation;
-                    const baseDelay = parseInt(card.dataset.delay) || 0;
-                    // Cards zurücksetzen
-                    card.classList.remove('animate__animated', animation);
-                    card.style.opacity = '0';
-                    
-                    setTimeout(() => {
-                        card.classList.add('animate__animated', animation);
-                        card.style.opacity = '1';
-                    }, baseDelay + delay);
-                    delay += 100; // Zusätzliche Verzögerung für jede Card
-                });
-            } else {
-                const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
-                // Stufenweise Animation der Textelemente
-                let delay = 0;
-                animElements.forEach(element => {
-                    const animation = element.dataset.animation;
-                    if (animation) {
-                        // Element zurücksetzen
-                        element.classList.remove('animate__animated', animation);
-                        element.style.opacity = '0';
-                        
-                        // Kurze Verzögerung für klare visuelle Trennung
-                        setTimeout(() => {
-                            // Neuzuordnung erzwingen
-                            void element.offsetWidth;
-                            element.classList.add('animate__animated', animation);
-                            element.style.opacity = '1';
-                        }, delay);
-                        delay += 150; // Zusätzliche Verzögerung für jedes Element
-                    }
-                });
-            }
-            
-            // Nach der Animation den isAnimating-Status zurücksetzen
-            setTimeout(() => {
-                isAnimating = false;
-            }, 800);
-        }, 50); // Kurze Verzögerung vor Beginn der Animationen
     }
 
-    // Aktualisiert den Inhalt eines Sections
-    function updateSection(sectionId) {
-        const element = document.getElementById(sectionId);
-        if (!element || !sections[sectionId]) return;
-        
-        console.log(`Aktualisiere Sektion ${sectionId}`);
-        
-        // Komplett neuen Inhalt setzen
-        element.innerHTML = getRandomElement(sections[sectionId]);
-        
-        // Animation mit kurzer Verzögerung starten, um DOM-Updates abzuschließen
+
+    // Initialisiert und startet die sequenziellen Animationen innerhalb eines Containers
+    function initializeAnimations(containerElement) {
+         const sectionId = containerElement.parentElement.id;
+
+         console.log(`Starte innere Animationen innerhalb von ${sectionId}`);
+         animatedSections[sectionId] = true;
+
+
+        requestAnimationFrame(() => {
+            setTimeout(() => { // 50ms anfängliche Verzögerung nach rAF
+
+                const animElements = containerElement.querySelectorAll('.text-animate, .scroll-animate, .card');
+
+                const staggerDelayText = 150;
+                const staggerDelayCard = 100;
+
+                let textDelay = 0;
+                const cardElements = Array.from(containerElement.querySelectorAll('.card'));
+
+
+                animElements.forEach(element => {
+                    const animationData = element.dataset.animation;
+
+                    if (!animationData) return;
+
+                    const possibleAnimations = animationData.split(',')
+                                                            .map(anim => anim.trim())
+                                                            .filter(anim => anim);
+
+                    if (possibleAnimations.length === 0) {
+                        console.warn(`Element hat data-animation="${animationData}", aber keine gültigen Animationen gefunden.`, element);
+                        return;
+                    }
+
+                    const chosenAnimation = getRandomElement(possibleAnimations);
+
+                    // --- Z-Index Steuerung für Karten während der Animation ---
+                     // Setze Z-Index nur für die Dauer der Animation
+                     let initialZIndex = ''; // Standard Z-Index ist oft 'auto' oder 0
+                     if (element.classList.contains('is-middle-card')) {
+                         initialZIndex = '10'; // Mittlere Karte höher
+                     } else if (element.classList.contains('is-upper-card') || element.classList.contains('is-lower-card')) {
+                         initialZIndex = '5'; // Obere/Untere Karten niedriger
+                     }
+                     // Setze den Z-Index direkt als Inline-Style VOR der Animation
+                     if(initialZIndex !== '') {
+                         element.style.zIndex = initialZIndex;
+                          // console.log(`Setze z-index ${initialZIndex} für`, element);
+                     }
+                     // --- Ende Z-Index Steuerung ---
+
+
+                    // Setze das Element in seinen Startzustand zurück (entferne alte Animationen)
+                    element.classList.remove('animate__animated');
+                     const classes = Array.from(element.classList);
+                     classes.forEach(cls => {
+                         if (cls.startsWith('animate__')) {
+                             element.classList.remove(cls);
+                         }
+                     });
+
+                    element.style.opacity = '0';
+
+                    void element.offsetWidth; // Erzwinge Reflow
+
+                    let currentDelay;
+                    if (element.classList.contains('card')) {
+                         const cardBaseDelay = parseInt(element.dataset.delay) || 0;
+                         const cardIndex = cardElements.indexOf(element);
+                         currentDelay = cardBaseDelay + (cardIndex * staggerDelayCard);
+
+                    } else {
+                         currentDelay = textDelay;
+                         textDelay += staggerDelayText;
+                    }
+
+                    // Starte die Animation nach der berechneten Verzögerung
+                    setTimeout(() => {
+                        element.classList.add('animate__animated', chosenAnimation);
+                        element.style.opacity = '1';
+
+                         // Optional: Entferne den Z-Index wieder, NACHDEM die Animation visuell gestartet ist
+                         // Eine kleine Verzögerung hier stellt sicher, dass die Z-Ordnung während des wichtigen Teils der Animation aktiv ist.
+                         // Bei manchen Animationen (wie Fade/Zoom) ist der Z-Index nicht so kritisch wie bei komplexen Bewegungen.
+                         // Testen, ob es besser ist, den Z-Index hier oder erst im resetAnimations zu entfernen.
+                         // Standardmässig entfernen wir es erst im resetAnimations, um es während der GESAMTEN Animation aktiv zu halten.
+                         // setTimeout(() => { el.style.removeProperty('z-index'); }, 500 + currentDelay); // Beispiel: 500ms nach Animationsstart des Elements
+                    }, currentDelay);
+                });
+
+                 console.log(`Innere Animationen für ${sectionId} gestartet.`);
+
+            }, 50);
+        });
+    }
+
+     // Führt den visuellen Reset der Animationen durch (Klassen und Opazität entfernen)
+    // Setzt auch den Z-Index für Karten zurück.
+    function resetAnimations(sectionElement) {
+        // console.log(`Starte visuellen Reset für Sektion ${sectionElement.id}`);
+
+        const currentContent = sectionElement.querySelector('.full-screen-section, .vh-100');
+
+        const elementsToReset = [];
+        if(currentContent) {
+            elementsToReset.push(currentContent); // Container
+            elementsToReset.push(...currentContent.querySelectorAll('.text-animate, .scroll-animate, .card')); // Kinder
+        } else {
+            elementsToReset.push(...sectionElement.querySelectorAll('.text-animate, .scroll-animate, .card'));
+        }
+
+
         setTimeout(() => {
-            requestAnimationFrame(() => {
-                initializeAnimations(element);
+             // console.log(`Führe visuellen Reset nach Timeout für ${sectionElement.id} aus.`);
+            elementsToReset.forEach(el => {
+                el.classList.remove('animate__animated');
+                 const classes = Array.from(el.classList);
+                 classes.forEach(cls => {
+                     if (cls.startsWith('animate__')) {
+                         el.classList.remove(cls);
+                     }
+                 });
+                el.style.opacity = '0';
+                el.style.removeProperty('transition');
+                // --- Z-Index zurücksetzen ---
+                 el.style.removeProperty('z-index');
+                 // --- Ende Z-Index zurücksetzen ---
             });
+             // console.log(`Visueller Reset für ${sectionElement.id} abgeschlossen.`);
         }, 100);
     }
 
-    // Setzt Animationen zurück mit einer Verzögerung
-    function resetAnimations(container) {
-        const sectionId = container.id;
-        console.log(`Setze Animation zurück für ${sectionId}`);
-        
-        // Verzögerung beim Zurücksetzen des Animation-Status, 
-        // damit die Sektion Zeit hat, den Viewport zu verlassen
-        setTimeout(() => {
-            animatedSections[sectionId] = false;
-            
-            const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
-            animElements.forEach(el => {
-                const animation = el.dataset.animation;
-                if (animation) {
-                    el.classList.remove('animate__animated', animation);
-                    el.style.opacity = '0';
-                }
-            });
-        }, 600); // Längere Verzögerung für das Zurücksetzen
+
+    // Aktualisiert den Inhalt einer Sections-Elements aus der gemischten Sequenz und startet Animationen
+    function updateSection(sectionId) {
+        const sectionElement = document.getElementById(sectionId);
+        const sectionSequenceData = shuffledSections[sectionId];
+
+        if (!sectionElement || !sectionSequenceData || sectionSequenceData.sequence.length === 0) {
+            console.error(`Sektion ${sectionId} nicht gefunden oder keine gemischte Sequenz.`);
+            return;
+        }
+
+        const templateId = sectionSequenceData.sequence[sectionSequenceData.index];
+        const template = document.getElementById(templateId);
+
+        if (!template) {
+            console.error(`HTML Template mit ID ${templateId} nicht gefunden.`);
+             sectionSequenceData.index = (sectionSequenceData.index + 1) % sectionSequenceData.sequence.length;
+            return;
+        }
+
+        console.log(`Lade und setze Inhalt aus Template ${templateId} für Sektion ${sectionId}`);
+
+        sectionSequenceData.index = (sectionSequenceData.index + 1) % sectionSequenceData.sequence.length;
+
+        const clonedContent = document.importNode(template.content, true);
+
+        while (sectionElement.firstChild) {
+            sectionElement.removeChild(sectionElement.firstChild);
+        }
+
+        sectionElement.appendChild(clonedContent);
+
+        const newContentContainer = sectionElement.querySelector('.full-screen-section, .vh-100');
+
+        if (newContentContainer) {
+            // --- Füge spezifische Klassen für Karten hinzu (für Z-Index und ggf. spezifische Animationen) ---
+            addCardLayoutClasses(newContentContainer);
+            // --- Ende Klassen hinzufügen ---
+
+            // --- ÜBERGANGSEFFEKT FÜR DEN CONTAINER HINZUFÜGEN ---
+            newContentContainer.style.opacity = '0';
+            newContentContainer.classList.add('animate__animated', 'animate__fadeIn');
+
+            // Initialisiere Animationen für die Elemente IM CONTAINER (inkl. Z-Index Logik in initializeAnimations)
+            initializeAnimations(newContentContainer);
+
+        } else {
+             console.warn(`Kein erwarteter Container (.full-screen-section oder .vh-100) im Template ${templateId} gefunden. Versuche Animation auf Section-Element selbst.`);
+             sectionElement.style.opacity = '0';
+             sectionElement.classList.add('animate__animated', 'animate__fadeIn');
+             initializeAnimations(sectionElement);
+        }
     }
 
-    // Verbesserte Überwachung der Sichtbarkeit der Sections mit höherer Schwelle
+    // Überwacht die Sichtbarkeit der Sections mit dem IntersectionObserver
     function observeSections() {
         const options = {
             root: document.querySelector('.viewport-box'),
             rootMargin: '0px',
-            threshold: 0.5 // Höherer Schwellenwert (50% Sichtbarkeit erforderlich)
+            threshold: 0.5
         };
-        
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const section = entry.target;
                 const sectionId = section.id;
-                
+
                 if (entry.isIntersecting) {
-                    // Animation nur ausführen, wenn die Sektion noch nicht animiert wurde
-                    if (!animatedSections[sectionId] && !isAnimating) {
-                        console.log(`Sektion ${sectionId} ist jetzt genug sichtbar`);
-                        updateSection(sectionId);
-                    }
+                     if (!animatedSections[sectionId] && canAnimate(sectionId)) {
+                         console.log(`Sektion ${sectionId} ist sichtbar und bereit für Initialisierung.`);
+                         updateSection(sectionId);
+                     } else {
+                           // console.log(`Sektion ${sectionId} ist sichtbar, aber bereits animiert oder im Cooldown.`);
+                     }
                 } else {
-                    // Animation zurücksetzen, wenn die Sektion nicht mehr sichtbar ist
+                    animatedSections[sectionId] = false;
+                    delete animationCooldowns[sectionId];
                     resetAnimations(section);
                 }
             });
         }, options);
-        
+
         ['section-hero', 'section-features', 'section-about'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 observer.observe(element);
+            } else {
+                 console.error(`Element mit ID ${id} zum Beobachten nicht gefunden.`);
             }
         });
     }
 
-    // Initialisiert alle Sections
-    function initSections() {
-        ['section-hero', 'section-features', 'section-about'].forEach(id => {
-            updateSection(id);
-        });
-    }
+    // --- Start der Ausführung ---
+    initializeShuffledSequences();
+    observeSections();
 
-    // Hört auf externe Section-Updates
+
+    // --- Event-Handler für externe Trigger ---
+
     document.addEventListener('sectionUpdate', (event) => {
         const { sectionId } = event.detail;
-        // Bei expliziten Updates Animation-Status zurücksetzen
-        animatedSections[sectionId] = false;
-        updateSection(sectionId);
-    });
-    
-    // Vereinfachter Event-Handler für scrollToSection (Doppelten entfernt)
-    document.addEventListener('scrollToSection', (event) => {
-        const { sectionId } = event.detail;
-        if (sectionId) {
-            // Bei manueller Navigation Animation-Status zurücksetzen
+        const sectionElement = document.getElementById(sectionId);
+
+        if (sectionId && sectionElement && shuffledSections[sectionId]) {
+            console.log(`'sectionUpdate' Event für ${sectionId} empfangen. Erzwinge Update/Animation.`);
             animatedSections[sectionId] = false;
-            // Längere Verzögerung, um Scroll abzuschließen
+            delete animationCooldowns[sectionId];
+
             setTimeout(() => {
                 updateSection(sectionId);
-            }, 500);
+            }, 100);
+        } else if (sectionId && !shuffledSections[sectionId]) {
+             console.warn(`'sectionUpdate' Event für Sektion ${sectionId} empfangen, aber keine gemischte Sequenz gefunden.`);
         }
     });
 
-    initSections();
-    observeSections();
+     document.addEventListener('scrollToSection', (event) => {
+         const { sectionId } = event.detail;
+         const sectionElement = document.getElementById(sectionId);
 
-    // Neue Event-Delegation für Touch-Interaktionen auf .card-Elementen mit passiver Option
+         if (sectionId && sectionElement && shuffledSections[sectionId]) {
+              console.log(`'scrollToSection' Event für ${sectionId} empfangen.`);
+
+              animatedSections[sectionId] = false;
+              delete animationCooldowns[sectionId];
+
+              const tempObserver = new IntersectionObserver((entries, observer) => {
+                   entries.forEach(entry => {
+                       if (entry.isIntersecting && entry.target.id === sectionId) {
+                           console.log(`Scroll-Ziel Sektion ${sectionId} ist jetzt sichtbar. Starte Update.`);
+                           observer.unobserve(sectionElement);
+                           updateSection(sectionId);
+                       }
+                   });
+               }, { threshold: 0.7, root: document.querySelector('.viewport-box') });
+
+               tempObserver.observe(sectionElement);
+
+         } else if (sectionId && !shuffledSections[sectionId]) {
+             console.warn(`'scrollToSection' Event für Sektion ${sectionId} empfangen, aber keine gemischte Sequenz gefunden.`);
+         }
+     });
+
+
+    // Event-Delegation für Touch-Interaktionen auf .card-Elementen
     document.addEventListener('touchstart', (event) => {
         const card = event.target.closest('.card');
         if (card) {
             card.classList.add('touch-active');
         }
     }, { passive: true });
+
     document.addEventListener('touchend', (event) => {
         const card = event.target.closest('.card');
         if (card) {
             card.classList.remove('touch-active');
         }
     }, { passive: true });
+
     document.addEventListener('touchcancel', (event) => {
         const card = event.target.closest('.card');
         if (card) {
             card.classList.remove('touch-active');
         }
     }, { passive: true });
-});
 
+});
