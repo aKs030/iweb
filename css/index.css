@@ -49,10 +49,10 @@ html, body {
   font-family: var(--font-main);
   background-color: var(--color-bg);
   color: var(--color-text-main);
-  /*overflow: hidden;*/
-    overflow: auto;
+  overflow: hidden;
   scroll-behavior: smooth;
-    color-scheme: dark;
+      color-scheme: dark;
+
 
 }
 
