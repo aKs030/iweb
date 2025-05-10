@@ -271,68 +271,157 @@ document.addEventListener('DOMContentLoaded', () => {
       ]
     };
 
-    // Initialisiert Animationsklassen in den jeweiligen Containern
-    function initializeAnimations(container) {
-        if (container.id === 'section-features') {
-            const cards = container.querySelectorAll('.card');
-            cards.forEach(card => {
-                const animation = card.dataset.animation;
-                const delay = parseInt(card.dataset.delay) || 0;
-                card.classList.remove('animate__animated', animation);
-                card.style.opacity = '0';
-                setTimeout(() => {
-                    card.classList.add('animate__animated', animation);
-                    card.style.opacity = '1';
-                }, delay);
-            });
-        } else {
-            const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
-            animElements.forEach(element => {
-                const animation = element.dataset.animation;
-                if (animation) {
-                    element.classList.remove('animate__animated', animation);
-                    element.style.opacity = '0';
-                    // Neuzuordnung erzwingen
-                    void element.offsetWidth;
-                    element.classList.add('animate__animated', animation);
-                    element.style.opacity = '1';
-                }
-            });
+    // Animation-Tracking: Speichert, welche Sektionen bereits animiert wurden
+    const animatedSections = {
+        'section-hero': false,
+        'section-features': false,
+        'section-about': false
+    };
+    
+    // Animation-Cooldown-Tracking
+    let animationCooldowns = {};
+    // Flag zur Überwachung des Scrollings
+    let isAnimating = false;
+    
+    // Prüft, ob für einen Abschnitt eine Animation ausgeführt werden kann
+    function canAnimate(sectionId) {
+        const now = Date.now();
+        // Cooldown von 1500 ms zwischen Animationen für jede Sektion
+        if (animationCooldowns[sectionId] && now - animationCooldowns[sectionId] < 1500) {
+            return false;
         }
+        animationCooldowns[sectionId] = now;
+        return true;
+    }
+
+    // Verbesserte Animations-Initialisierung mit sequentieller Ausführung
+    function initializeAnimations(container) {
+        const sectionId = container.id;
+        
+        // Prüfen, ob Animation bereits ausgeführt wird oder bereits animiert wurde
+        if (isAnimating || animatedSections[sectionId] || !canAnimate(sectionId)) {
+            console.log(`Überspringe Animation für ${sectionId}: bereits animiert, läuft oder im Cooldown`);
+            return;
+        }
+        
+        console.log(`Initialisiere Animation für ${sectionId}`);
+        isAnimating = true;
+        animatedSections[sectionId] = true;
+        
+        // DOM-Aktualisierung abwarten
+        setTimeout(() => {
+            if (container.id === 'section-features') {
+                const cards = container.querySelectorAll('.card');
+                // Stufenweise Animation der Cards
+                let delay = 0;
+                cards.forEach(card => {
+                    const animation = card.dataset.animation;
+                    const baseDelay = parseInt(card.dataset.delay) || 0;
+                    // Cards zurücksetzen
+                    card.classList.remove('animate__animated', animation);
+                    card.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        card.classList.add('animate__animated', animation);
+                        card.style.opacity = '1';
+                    }, baseDelay + delay);
+                    delay += 100; // Zusätzliche Verzögerung für jede Card
+                });
+            } else {
+                const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
+                // Stufenweise Animation der Textelemente
+                let delay = 0;
+                animElements.forEach(element => {
+                    const animation = element.dataset.animation;
+                    if (animation) {
+                        // Element zurücksetzen
+                        element.classList.remove('animate__animated', animation);
+                        element.style.opacity = '0';
+                        
+                        // Kurze Verzögerung für klare visuelle Trennung
+                        setTimeout(() => {
+                            // Neuzuordnung erzwingen
+                            void element.offsetWidth;
+                            element.classList.add('animate__animated', animation);
+                            element.style.opacity = '1';
+                        }, delay);
+                        delay += 150; // Zusätzliche Verzögerung für jedes Element
+                    }
+                });
+            }
+            
+            // Nach der Animation den isAnimating-Status zurücksetzen
+            setTimeout(() => {
+                isAnimating = false;
+            }, 800);
+        }, 50); // Kurze Verzögerung vor Beginn der Animationen
     }
 
     // Aktualisiert den Inhalt eines Sections
     function updateSection(sectionId) {
         const element = document.getElementById(sectionId);
         if (!element || !sections[sectionId]) return;
+        
+        console.log(`Aktualisiere Sektion ${sectionId}`);
+        
+        // Komplett neuen Inhalt setzen
         element.innerHTML = getRandomElement(sections[sectionId]);
-        initializeAnimations(element);
+        
+        // Animation mit kurzer Verzögerung starten, um DOM-Updates abzuschließen
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                initializeAnimations(element);
+            });
+        }, 100);
     }
 
-    // Setzt Animationen zurück
+    // Setzt Animationen zurück mit einer Verzögerung
     function resetAnimations(container) {
-        const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
-        animElements.forEach(el => {
-            const animation = el.dataset.animation;
-            if (animation) {
-                el.classList.remove('animate__animated', animation);
-                el.style.opacity = '0';
-            }
-        });
+        const sectionId = container.id;
+        console.log(`Setze Animation zurück für ${sectionId}`);
+        
+        // Verzögerung beim Zurücksetzen des Animation-Status, 
+        // damit die Sektion Zeit hat, den Viewport zu verlassen
+        setTimeout(() => {
+            animatedSections[sectionId] = false;
+            
+            const animElements = container.querySelectorAll('.text-animate, .scroll-animate');
+            animElements.forEach(el => {
+                const animation = el.dataset.animation;
+                if (animation) {
+                    el.classList.remove('animate__animated', animation);
+                    el.style.opacity = '0';
+                }
+            });
+        }, 600); // Längere Verzögerung für das Zurücksetzen
     }
 
-    // Überwacht die Sichtbarkeit der Sections
+    // Verbesserte Überwachung der Sichtbarkeit der Sections mit höherer Schwelle
     function observeSections() {
+        const options = {
+            root: document.querySelector('.viewport-box'),
+            rootMargin: '0px',
+            threshold: 0.5 // Höherer Schwellenwert (50% Sichtbarkeit erforderlich)
+        };
+        
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const section = entry.target;
+                const sectionId = section.id;
+                
                 if (entry.isIntersecting) {
-                    requestAnimationFrame(() => updateSection(section.id));
+                    // Animation nur ausführen, wenn die Sektion noch nicht animiert wurde
+                    if (!animatedSections[sectionId] && !isAnimating) {
+                        console.log(`Sektion ${sectionId} ist jetzt genug sichtbar`);
+                        updateSection(sectionId);
+                    }
                 } else {
-                    requestAnimationFrame(() => resetAnimations(section));
+                    // Animation zurücksetzen, wenn die Sektion nicht mehr sichtbar ist
+                    resetAnimations(section);
                 }
             });
-        });
+        }, options);
+        
         ['section-hero', 'section-features', 'section-about'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -351,7 +440,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hört auf externe Section-Updates
     document.addEventListener('sectionUpdate', (event) => {
         const { sectionId } = event.detail;
+        // Bei expliziten Updates Animation-Status zurücksetzen
+        animatedSections[sectionId] = false;
         updateSection(sectionId);
+    });
+    
+    // Vereinfachter Event-Handler für scrollToSection (Doppelten entfernt)
+    document.addEventListener('scrollToSection', (event) => {
+        const { sectionId } = event.detail;
+        if (sectionId) {
+            // Bei manueller Navigation Animation-Status zurücksetzen
+            animatedSections[sectionId] = false;
+            // Längere Verzögerung, um Scroll abzuschließen
+            setTimeout(() => {
+                updateSection(sectionId);
+            }, 500);
+        }
     });
 
     initSections();
