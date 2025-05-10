@@ -33,6 +33,31 @@ Typografie, Abstände, Layout & Animationen
   /* Animationen */
   --transition-speed: 0.35s;
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* NEU: Variablen für Kartenelemente zur besseren Anpassung an viewport-box */
+  --card-padding-min: var(--spacing-sm);
+  --card-padding-preferred: 2.5vmin; /* Passt sich gut an Höhe und Breite an */
+  --card-padding-max: var(--spacing-md);
+
+  --card-gap-min: var(--spacing-xs);
+  --card-gap-preferred: 1.5vmin;
+  --card-gap-max: var(--spacing-sm);
+
+  --card-icon-main-size-min: 2rem;       /* Für das große Icon in .icon-wrapper */
+  --card-icon-main-size-preferred: 6vmin;
+  --card-icon-main-size-max: 4rem;
+
+  --card-icon-title-size-min: 0.9rem;    /* Für kleinere Icons neben Titeln */
+  --card-icon-title-size-preferred: 2vmin;
+  --card-icon-title-size-max: 1.25rem;
+
+  --card-title-size-min: 1rem;
+  --card-title-size-preferred: 2.2vmin + 0.3rem; /* Kombination für Basis + Skalierung */
+  --card-title-size-max: 1.6rem;
+
+  --card-text-size-min: 0.85rem;
+  --card-text-size-preferred: 1.8vmin + 0.25rem;
+  --card-text-size-max: 1.05rem;
 }
 
 /* =====================================
@@ -49,7 +74,7 @@ html, body {
   font-family: var(--font-main);
   background-color: var(--color-bg);
   color: var(--color-text-main);
-  overflow: hidden;
+  overflow: hidden; /* Verhindert Scrollbalken am Body selbst */
   scroll-behavior: smooth;
 }
 
@@ -64,14 +89,14 @@ body {
 ========================================= */
 .viewport-box {
   width: min(93vw, 1000px);
-  height: 70vh; /* Beibehalten, ggf. für mobile Ansicht mit @media anpassen, falls nötig */
+  height: 70vh;
   background: var(--color-bg-secondary);
   box-shadow: 0 5px 14px var(--color-shadow);
   overflow-y: auto;
   scroll-snap-type: y mandatory;
   scroll-padding-top: clamp(1rem, 2vw, 1.5rem);
   border-radius: var(--border-radius);
-  padding: clamp(0.75rem, 2vw, 2rem); /* Minimal-Padding leicht reduziert für mehr Platz auf kleinen Screens */
+  padding: clamp(0.75rem, 2vw, 2rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,126 +112,144 @@ body {
   width: 100%;
   max-width: 900px;
   min-height: 70vh; /* Sicherstellen, dass Snap funktioniert */
-  scroll-snap-align: center;
+  scroll-snap-align: center; /* Stellt sicher, dass der Container als Ganzes snappt */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: clamp(var(--spacing-md), 3vw, var(--spacing-xl));
-  padding: clamp(0.75rem, 3vw, 2rem); /* Minimal-Padding leicht reduziert */
+  padding: clamp(0.75rem, 3vw, 2rem);
 }
 
 /* =====================================
 📝 RESPONSIVE TYPOGRAFIE (Global)
 ========================================= */
 h1 {
-  font-size: clamp(1.7rem, 2.5vw + 1rem, 3rem); /* Min-Wert leicht reduziert */
+  font-size: clamp(1.7rem, 2.5vw + 1rem, 3rem);
   font-weight: 600;
-  line-height: 1.2; /* Etwas kompakter für große Schrift */
+  line-height: 1.2;
   margin-bottom: clamp(var(--spacing-sm), 1.5vw, var(--spacing-md));
 }
 
 h2 {
-  font-size: clamp(1.4rem, 2vw + 0.8rem, 2.5rem); /* Min-Wert leicht reduziert */
+  font-size: clamp(1.4rem, 2vw + 0.8rem, 2.5rem);
   font-weight: 600;
   line-height: 1.25;
   margin-bottom: clamp(var(--spacing-sm), 1.2vw, var(--spacing-md));
 }
 
 h3 {
-  font-size: clamp(1.2rem, 1.8vw + 0.6rem, 2.1rem); /* Min-Wert leicht reduziert */
+  font-size: clamp(1.2rem, 1.8vw + 0.6rem, 2.1rem);
   font-weight: 600;
   line-height: 1.3;
   margin-bottom: clamp(var(--spacing-xs), 1vw, var(--spacing-sm));
 }
 
-h4, h5, h6 {
-  font-size: clamp(1.05rem, 1.5vw + 0.4rem, 1.8rem); /* Min-Wert leicht reduziert */
+h4, h5, h6 { /* Globale h5, nicht die in der Karte */
+  font-size: clamp(1.05rem, 1.5vw + 0.4rem, 1.8rem);
   font-weight: 600;
   line-height: 1.35;
   margin-bottom: clamp(var(--spacing-xs), 0.8vw, var(--spacing-sm));
 }
 
 p, li {
-  font-size: clamp(0.95rem, 0.4vw + 0.85rem, 1.1rem); /* Min-Wert leicht angepasst (ca. 15.2px), Max-Wert leicht reduziert */
-  line-height: 1.6; /* Beibehalten, gut für Lesbarkeit */
+  font-size: clamp(0.95rem, 0.4vw + 0.85rem, 1.1rem);
+  line-height: 1.6;
   font-weight: 400;
-  letter-spacing: 0.2px; /* Geringfügig reduziert */
+  letter-spacing: 0.2px;
   color: var(--color-text-muted);
   margin-bottom: clamp(var(--spacing-xs), 0.5vw, var(--spacing-sm));
 }
 
 .lead {
   text-align: left;
-  max-width: 55ch; /* Max-Zeichenlänge leicht reduziert für schmalere Screens */
+  max-width: 55ch;
   margin-left: auto;
   margin-right: auto;
-  font-size: clamp(1rem, 0.5vw + 0.85rem, 1.2rem); /* Min-Wert angepasst */
+  font-size: clamp(1rem, 0.5vw + 0.85rem, 1.2rem);
   color: var(--color-text-main);
 }
 
 /* =====================================
 🃏 RESPONSIVE KARTEN-KOMPONENTEN
+   Fokus auf Anpassung von Icon und Text an .viewport-box
 ========================================= */
 .card {
-  padding: clamp(0.7rem, 1.5vw, 1.2rem); /* Minimal-Padding leicht reduziert */
+  padding: clamp(var(--card-padding-min), var(--card-padding-preferred), var(--card-padding-max));
   width: 100%;
-  max-width: 700px;
+  max-width: 700px; /* Kann je nach Spaltenanzahl und viewport-box Breite angepasst werden */
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.08);
   color: var(--color-text-main);
   border-radius: var(--border-radius);
-  box-shadow: 0 3px 10px var(--color-shadow); /* Schatten leicht reduziert */
+  box-shadow: 0 3px 10px var(--color-shadow);
   transition: transform var(--transition-speed) var(--transition-ease),
               box-shadow var(--transition-speed) var(--transition-ease),
               border var(--transition-speed) var(--transition-ease);
-  border: 1px solid transparent; /* Randdicke reduziert für feinere Optik */
+  border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  /* text-align: center; /* Wird oft von Bootstrap-Klassen wie text-center übernommen, hier explizit falls nötig */
+  gap: clamp(var(--card-gap-min), var(--card-gap-preferred), var(--card-gap-max));
 }
 
 .card:hover {
-  transform: translateY(-2px) scale(1.005); /* Hover-Effekt subtiler */
+  transform: translateY(-2px) scale(1.005);
   box-shadow: 0 6px 15px var(--color-highlight);
   border-color: var(--color-accent);
 }
 
-.card .card-title {
-  font-size: clamp(1rem, 1.3vw + 0.45rem, 1.4rem); /* Min- und Max-Werte angepasst für feinere Skalierung in Karten */
-  font-weight: 600;
+/* Icon-Wrapper (für das große Icon oben in der Karte, wie in deiner HTML Struktur) */
+.card .icon-wrapper {
+  /* d-flex, justify-content-center, align-items-center kommen aus Bootstrap oder müssen hier definiert werden */
+  /* margin-bottom: var(--spacing-sm); /* Abstand nach unten, falls nicht durch card-gap abgedeckt */
+  line-height: 1; /* Verhindert zusätzlichen Leerraum durch Zeilenhöhe des Icons */
+}
+
+.card .icon-wrapper i {
+  /* HINWEIS: Wenn du die Bootstrap-Klasse .display-* für Icons nutzt,
+     kann diese font-size-Regel die Bootstrap-Regel überschreiben.
+     Entferne .display-* aus dem HTML, wenn diese Regel die volle Kontrolle haben soll. */
+  font-size: clamp(var(--card-icon-main-size-min), var(--card-icon-main-size-preferred), var(--card-icon-main-size-max));
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* Titel in der Karte */
+.card .card-title { /* Gilt für h5.card-title laut deiner HTML Struktur */
+  font-size: clamp(var(--card-title-size-min), var(--card-title-size-preferred), var(--card-title-size-max));
+  font-weight: 600; /* Bootstrap's .card-title setzt oft schon font-weight, hier zur Sicherheit */
   line-height: 1.3;
   color: var(--color-text-main);
+  margin-bottom: 0; /* Abstand wird durch card gap gesteuert */
 }
 
+/* Text in der Karte */
 .card .card-text {
-  font-size: clamp(0.875rem, 0.3vw + 0.75rem, 1rem); /* Ca. 14px Min, skaliert sanft, Max 16px */
-  line-height: 1.55; /* Leicht reduziert für kompaktere Texte */
+  font-size: clamp(var(--card-text-size-min), var(--card-text-size-preferred), var(--card-text-size-max));
+  line-height: 1.5; /* Etwas kompakter für Karten */
   color: var(--color-text-muted);
+  margin-bottom: 0; /* Abstand wird durch card gap gesteuert */
 }
 
+/* Falls du auch Icons direkt neben Titeln verwendest (nicht in deiner aktuellen HTML, aber im alten CSS) */
 .card .card-title-with-icon {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-xs); /* Abstand zwischen Icon und Titeltext reduziert */
-}
-
-.card .card-title-with-icon i {
-  font-size: clamp(0.95rem, 1.2vw + 0.35rem, 1.25rem); /* Größe des Icons angepasst */
-  flex-shrink: 0;
-  color: var(--color-accent);
-}
-
-.card .icon-wrapper {
-  display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
 }
 
-.card .icon-wrapper i,
-.card > i {
-  font-size: clamp(1rem, 1.5vw, 1.5rem); /* Größe leicht reduziert */
+.card .card-title-with-icon i {
+  font-size: clamp(var(--card-icon-title-size-min), var(--card-icon-title-size-preferred), var(--card-icon-title-size-max));
+  flex-shrink: 0;
+  color: var(--color-accent);
 }
+
+/* Allgemeine Regel für andere Icons direkt in der Karte (weniger spezifisch) */
+.card > i {
+  font-size: clamp(1rem, 2.5vmin, 1.5rem); /* Generische Größe, falls ein Icon direkt Kind der Karte ist */
+}
+
 
 img {
   max-width: 100%;
@@ -215,22 +258,22 @@ img {
 }
 
 .card img {
-  border-radius: calc(var(--border-radius) - 5px); /* Radius angepasst, falls Rand dünner */
+  border-radius: calc(var(--border-radius) - 5px);
 }
 
 /* =====================================
 ✨ RESPONSIVE SCHIMMERTEXT-EFFEKT
 ========================================= */
 .shimmer-text {
-  font-size: clamp(2.2rem, 6vw, 5rem); /* Min-Wert weiter angepasst */
+  font-size: clamp(2.2rem, 6vw, 5rem);
   font-weight: 700;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.6); /* Schatten subtiler */
-  background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.8), rgba(255,255,255,0.05)); /* Verlauf subtiler */
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+  background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.8), rgba(255,255,255,0.05));
   background-size: 200% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 2s infinite linear; /* Animation leicht verlangsamt */
+  animation: shimmer 2s infinite linear;
 }
 
 @keyframes shimmer {
@@ -238,9 +281,14 @@ img {
   to { background-position: 200% 0; }
 }
 
-.snap-section{
-  scroll-snap-align: start;
-  min-height: 100%;
+.snap-section {
+  scroll-snap-align: start; /* Stellt sicher, dass jede Sektion oben einrastet */
+  min-height: 100%; /* Nimmt die volle Höhe der viewport-box ein, um Snap zu ermöglichen */
+  width: 100%; /* Wichtig für korrekte Darstellung innerhalb des Flex-Containers */
+  display: flex; /* Ermöglicht weitere Flexbox-Formatierung innerhalb der Sektion */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Zentriert den Inhalt der Sektion vertikal */
 }
 
 /* =====================================
@@ -248,17 +296,17 @@ img {
 ========================================= */
 .dots-nav {
   position: fixed;
-  right: clamp(1rem, 3vw, 2rem); /* Abstand zum Rand responsiv, kleiner auf Mobile */
+  right: clamp(1rem, 3vw, 2rem);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0.8rem; /* Abstand zwischen Punkten leicht reduziert */
+  gap: 0.8rem;
   z-index: 100;
 }
 
 .dot {
-  width: 10px; /* Größe der Punkte reduziert */
+  width: 10px;
   height: 10px;
   border-radius: 50%;
   background-color: var(--color-text-muted);
@@ -267,35 +315,41 @@ img {
 }
 
 .dot:hover {
-  transform: scale(1.15); /* Hover-Effekt subtiler */
+  transform: scale(1.15);
   background-color: var(--color-accent-hover);
 }
 
 .dot.active {
   background-color: var(--color-accent);
-  transform: scale(1.25); /* Aktiver Punkt subtiler */
-  box-shadow: 0 0 6px var(--color-accent); /* Schatten subtiler */
+  transform: scale(1.25);
+  box-shadow: 0 0 6px var(--color-accent);
 }
 
 /* ===================================================================
 📱 OPTIMIERUNGEN FÜR SEHR KLEINE BILDSCHIRME (max-width: 360px)
-   Feinabstimmung für die kleinsten Geräte. Diese Werte überschreiben
-   oder verfeinern die Minimalwerte der clamp()-Funktionen.
 =================================================================== */
 @media (max-width: 360px) {
   :root {
-    /* Spezifische Spacing-Variablen für kleinste Screens, falls globale clamp-Minima nicht reichen */
-    --spacing-xs: 0.15rem;  /* ca. 2.4px */
-    --spacing-sm: 0.25rem;  /* ca. 4px */
-    --spacing-md: 0.5rem;   /* ca. 8px */
-    --container-padding-inline: clamp(0.6rem, 2.5vw, 1rem); /* Padding für Container nochmals reduziert */
+    --spacing-xs: 0.18rem;  /* Leicht angepasst */
+    --spacing-sm: 0.3rem;
+    --spacing-md: 0.6rem;
+    --container-padding-inline: clamp(0.7rem, 2.5vw, 1.2rem);
+
+    /* Kartenvariablen für kleinste Screens anpassen, falls clamp-Minima nicht reichen */
+    /* Normalerweise sollten die Min-Werte von clamp() hier greifen.
+       Diese Overrides sind nur, wenn die clamp() Minima noch zu groß sind. */
+    --card-icon-main-size-min: 1.8rem;
+    --card-title-size-min: 0.9rem;
+    --card-text-size-min: 0.8rem;
+    --card-padding-min: var(--spacing-sm);
+    --card-gap-min: var(--spacing-xs);
   }
 
   .viewport-box,
   .sections-container {
-    padding-left: var(--spacing-md); /* Sicherstellen, dass Padding nicht zu klein wird */
-    padding-right: var(--spacing-md);
-    gap: var(--spacing-sm); /* Reduzierter Gap */
+    padding-left: var(--spacing-sm); /* Sicherstellen, dass Padding nicht zu klein wird */
+    padding-right: var(--spacing-sm);
+    gap: var(--spacing-sm);
   }
 
   h1 { font-size: 1.5rem; line-height: 1.15; margin-bottom: var(--spacing-sm); }
@@ -303,48 +357,51 @@ img {
   h3 { font-size: 1.1rem; line-height: 1.25; margin-bottom: var(--spacing-xs); }
   h4, h5, h6 { font-size: 1rem; line-height: 1.3; margin-bottom: var(--spacing-xs); }
 
-  p, li { font-size: 0.875rem; line-height: 1.55; letter-spacing: 0.1px; } /* 14px als Untergrenze */
-  .lead { font-size: 0.95rem; max-width: 90%; } /* Lead Text anpassen */
+  p, li { font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px; }
+  .lead { font-size: 0.95rem; max-width: 90%; }
 
+  /* Spezifische Kartenanpassungen, wenn die --card-* Variablen nicht ausreichen oder
+     um sicherzustellen, dass die Basis-clamp-Werte nicht unterschritten werden. */
   .card {
-    padding: var(--spacing-md); /* Konsistenter Padding mit root-Variable */
-    gap: var(--spacing-xs); /* Minimaler Gap in Karten */
+    /* Padding und Gap werden durch die :root Variablen hier schon angepasst */
     border-width: 1px;
   }
 
+  /* Die folgenden Regeln sind nur nötig, falls die :root Variablen-Overrides für
+     --card-*-size-min nicht den gewünschten Effekt haben oder um spezifische
+     line-heights etc. für diese Bildschirmgröße zu setzen. */
+  .card .icon-wrapper i {
+     font-size: var(--card-icon-main-size-min); /* Nutzt die überschriebene Variable */
+  }
   .card .card-title {
-    font-size: 0.95rem; /* Fester, kleinerer Wert für Titel in Karten */
-    line-height: 1.25;
+    font-size: var(--card-title-size-min);
+    line-height: 1.2;
   }
   .card .card-text {
-    font-size: 0.8rem; /* 12.8px, sehr klein, nur wenn unbedingt nötig und gut lesbare Schriftart */
-    line-height: 1.5;
+    font-size: var(--card-text-size-min);
+    line-height: 1.45;
   }
   .card .card-title-with-icon {
-    gap: 0.2rem; /* Noch weniger Abstand */
+    gap: 0.2rem;
   }
   .card .card-title-with-icon i {
-    font-size: 0.9rem; /* Angepasste Icongröße */
-  }
-  .card .icon-wrapper i,
-  .card > i {
-    font-size: 0.95rem; /* Allgemeine Icons in Karten */
+    font-size: 0.85rem; /* Fester, kleinerer Wert für Titel-Icons */
   }
 
   .shimmer-text {
-    font-size: clamp(1.8rem, 6vw, 4rem); /* Shimmer-Text weiter reduziert */
+    font-size: clamp(1.8rem, 6vw, 4rem);
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
   }
 
   .dots-nav {
-    right: 0.5rem; /* Näher am Rand */
+    right: 0.5rem;
     gap: 0.6rem;
   }
   .dot {
-    width: 8px; /* Punkte noch kleiner */
+    width: 8px;
     height: 8px;
   }
   .dot.active {
-     transform: scale(1.2); /* Aktiver Punkt Skalierung reduziert */
+     transform: scale(1.2);
   }
 }
