@@ -17,7 +17,7 @@ Typografie, Abstände, Layout & Animationen
 
   /* Schriftarten */
   --font-main: 'Poppins', sans-serif;
-  --font-secondary: 'Inter', sans-serif;
+  --font-secondary: 'Inter', sans-serif; /* Inter wird aktuell nicht verwendet, kann entfernt werden, wenn nicht geplant */
 
   /* Abstände & Layout */
   --spacing-xs: 0.2rem;   /* 3.2px (bei 16px root) */
@@ -34,25 +34,25 @@ Typografie, Abstände, Layout & Animationen
   --transition-speed: 0.35s;
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* NEU: Variablen für Kartenelemente zur besseren Anpassung an viewport-box */
+  /* Variablen für Kartenelemente */
   --card-padding-min: var(--spacing-sm);
-  --card-padding-preferred: 2.5vmin; /* Passt sich gut an Höhe und Breite an */
+  --card-padding-preferred: 2.5vmin;
   --card-padding-max: var(--spacing-md);
 
   --card-gap-min: var(--spacing-xs);
   --card-gap-preferred: 1.5vmin;
   --card-gap-max: var(--spacing-sm);
 
-  --card-icon-main-size-min: 2rem;       /* Für das große Icon in .icon-wrapper */
+  --card-icon-main-size-min: 2rem;
   --card-icon-main-size-preferred: 6vmin;
   --card-icon-main-size-max: 4rem;
 
-  --card-icon-title-size-min: 0.9rem;    /* Für kleinere Icons neben Titeln */
+  --card-icon-title-size-min: 0.9rem;
   --card-icon-title-size-preferred: 2vmin;
   --card-icon-title-size-max: 1.25rem;
 
   --card-title-size-min: 1rem;
-  --card-title-size-preferred: 2.2vmin + 0.3rem; /* Kombination für Basis + Skalierung */
+  --card-title-size-preferred: 2.2vmin + 0.3rem;
   --card-title-size-max: 1.6rem;
 
   --card-text-size-min: 0.85rem;
@@ -82,6 +82,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Hinzugefügt, um sicherzustellen, dass der Skip-Link sichtbar wird, wenn er Fokus erhält */
+  position: relative;
 }
 
 /* =====================================
@@ -100,7 +102,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
+  position: relative; /* Für .dots-nav, falls es relativ hierzu sein soll */
   scrollbar-width: none; /* Firefox */
 }
 
@@ -108,17 +110,17 @@ body {
   display: none; /* Chrome, Safari, Edge */
 }
 
-.sections-container {
+.sections-container { /* Auch .snap-section in der HTML-Struktur */
   width: 100%;
   max-width: 900px;
-  min-height: 70vh; /* Sicherstellen, dass Snap funktioniert */
-  scroll-snap-align: center; /* Stellt sicher, dass der Container als Ganzes snappt */
+  min-height: 100%; /* Nimmt die volle Höhe der viewport-box ein */
+  /* scroll-snap-align: center; /* Redundant, da .snap-section es überschreibt */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: clamp(var(--spacing-md), 3vw, var(--spacing-xl));
-  padding: clamp(0.75rem, 3vw, 2rem);
+  padding: clamp(0.75rem, 3vw, 2rem); /* Innenabstand für den Inhalt der Sektion */
 }
 
 /* =====================================
@@ -138,6 +140,26 @@ h2 {
   margin-bottom: clamp(var(--spacing-sm), 1.2vw, var(--spacing-md));
 }
 
+/* Spezifische H2 für "About" Sektion mit dekorativer Linie */
+h2.decorative-hr {
+  position: relative;
+  padding-bottom: 0.6em; /* Platz für die Linie, anpassen nach Bedarf */
+  margin-bottom: clamp(var(--spacing-md), 1.5vw, var(--spacing-lg)); /* Etwas mehr Platz nach der Linie */
+}
+
+h2.decorative-hr::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(50px, 20%, 100px); /* Responsive Breite der Linie */
+  height: 2px; /* Dicke der Linie */
+  background-color: var(--color-accent);
+  border-radius: 1px;
+}
+
+
 h3 {
   font-size: clamp(1.2rem, 1.8vw + 0.6rem, 2.1rem);
   font-weight: 600;
@@ -145,7 +167,7 @@ h3 {
   margin-bottom: clamp(var(--spacing-xs), 1vw, var(--spacing-sm));
 }
 
-h4, h5, h6 { /* Globale h5, nicht die in der Karte */
+h4, h5, h6 {
   font-size: clamp(1.05rem, 1.5vw + 0.4rem, 1.8rem);
   font-weight: 600;
   line-height: 1.35;
@@ -172,12 +194,11 @@ p, li {
 
 /* =====================================
 🃏 RESPONSIVE KARTEN-KOMPONENTEN
-   Fokus auf Anpassung von Icon und Text an .viewport-box
 ========================================= */
 .card {
   padding: clamp(var(--card-padding-min), var(--card-padding-preferred), var(--card-padding-max));
   width: 100%;
-  max-width: 700px; /* Kann je nach Spaltenanzahl und viewport-box Breite angepasst werden */
+  max-width: 700px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.08);
   color: var(--color-text-main);
@@ -189,7 +210,6 @@ p, li {
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  /* text-align: center; /* Wird oft von Bootstrap-Klassen wie text-center übernommen, hier explizit falls nötig */
   gap: clamp(var(--card-gap-min), var(--card-gap-preferred), var(--card-gap-max));
 }
 
@@ -199,40 +219,32 @@ p, li {
   border-color: var(--color-accent);
 }
 
-/* Icon-Wrapper (für das große Icon oben in der Karte, wie in deiner HTML Struktur) */
 .card .icon-wrapper {
-  /* d-flex, justify-content-center, align-items-center kommen aus Bootstrap oder müssen hier definiert werden */
-  /* margin-bottom: var(--spacing-sm); /* Abstand nach unten, falls nicht durch card-gap abgedeckt */
-  line-height: 1; /* Verhindert zusätzlichen Leerraum durch Zeilenhöhe des Icons */
+  line-height: 1;
 }
 
 .card .icon-wrapper i {
-  /* HINWEIS: Wenn du die Bootstrap-Klasse .display-* für Icons nutzt,
-     kann diese font-size-Regel die Bootstrap-Regel überschreiben.
-     Entferne .display-* aus dem HTML, wenn diese Regel die volle Kontrolle haben soll. */
   font-size: clamp(var(--card-icon-main-size-min), var(--card-icon-main-size-preferred), var(--card-icon-main-size-max));
   color: var(--color-accent);
   flex-shrink: 0;
 }
 
-/* Titel in der Karte */
-.card .card-title { /* Gilt für h5.card-title laut deiner HTML Struktur */
+.card .card-title {
   font-size: clamp(var(--card-title-size-min), var(--card-title-size-preferred), var(--card-title-size-max));
-  font-weight: 600; /* Bootstrap's .card-title setzt oft schon font-weight, hier zur Sicherheit */
+  font-weight: 600;
   line-height: 1.3;
   color: var(--color-text-main);
-  margin-bottom: 0; /* Abstand wird durch card gap gesteuert */
+  margin-bottom: 0;
 }
 
-/* Text in der Karte */
 .card .card-text {
   font-size: clamp(var(--card-text-size-min), var(--card-text-size-preferred), var(--card-text-size-max));
-  line-height: 1.5; /* Etwas kompakter für Karten */
+  line-height: 1.5;
   color: var(--color-text-muted);
-  margin-bottom: 0; /* Abstand wird durch card gap gesteuert */
+  margin-bottom: 0;
 }
 
-/* Falls du auch Icons direkt neben Titeln verwendest (nicht in deiner aktuellen HTML, aber im alten CSS) */
+/*
 .card .card-title-with-icon {
   display: flex;
   align-items: center;
@@ -245,11 +257,10 @@ p, li {
   color: var(--color-accent);
 }
 
-/* Allgemeine Regel für andere Icons direkt in der Karte (weniger spezifisch) */
 .card > i {
-  font-size: clamp(1rem, 2.5vmin, 1.5rem); /* Generische Größe, falls ein Icon direkt Kind der Karte ist */
+  font-size: clamp(1rem, 2.5vmin, 1.5rem);
 }
-
+*/
 
 img {
   max-width: 100%;
@@ -272,7 +283,8 @@ img {
   background-size: 200% 100%;
   background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: transparent; /* Wichtig für den Effekt, war -webkit-text-fill-color */
+  -webkit-text-fill-color: transparent; /* Für ältere Webkit-Browser */
   animation: shimmer 2s infinite linear;
 }
 
@@ -281,7 +293,7 @@ img {
 ========================================= */
 .update-header {
   text-align: center;
-  background-color: #333;
+  background-color: var(--color-bg-secondary); /* Geändert zu CSS-Variable */
   padding: 2rem 1rem;
   color: white;
   position: relative;
@@ -300,8 +312,9 @@ img {
   height: 10px;
   background: radial-gradient(ellipse at center, rgba(255, 204, 0, 0.8) 0%, rgba(255, 204, 0, 0) 70%);
   position: absolute;
-  bottom: 1rem;
+  bottom: clamp(0.5rem, 1.5vh, 1rem); /* Responsive gemacht */
   left: 0;
+  z-index: 1; /* Sicherstellen, dass es hinter dem Text ist, falls h3 keinen z-index hätte */
 }
 
 @keyframes shimmer {
@@ -309,28 +322,28 @@ img {
   to { background-position: 200% 0; }
 }
 
-.snap-section {
-  scroll-snap-align: start; /* Stellt sicher, dass jede Sektion oben einrastet */
-  min-height: 100%; /* Nimmt die volle Höhe der viewport-box ein, um Snap zu ermöglichen */
-  width: 100%; /* Wichtig für korrekte Darstellung innerhalb des Flex-Containers */
-  display: flex; /* Ermöglicht weitere Flexbox-Formatierung innerhalb der Sektion */
+.snap-section { /* Diese Klasse ist AUF .sections-container Elementen */
+  scroll-snap-align: start;
+  min-height: 100%; /* Nimmt die volle Höhe der viewport-box ein */
+  width: 100%;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Zentriert den Inhalt der Sektion vertikal */
+  justify-content: center;
 }
 
 /* =====================================
 🔵 SCROLL-PUNKTE NAVIGATION
 ========================================= */
 .dots-nav {
-  position: fixed;
+  position: fixed; /* Bezogen auf den Viewport */
   right: clamp(1rem, 3vw, 2rem);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  z-index: 100;
+  z-index: 1000; /* Erhöht, um sicher über anderen Elementen zu sein */
 }
 
 .dot {
@@ -358,14 +371,11 @@ img {
 =================================================================== */
 @media (max-width: 360px) {
   :root {
-    --spacing-xs: 0.18rem;  /* Leicht angepasst */
+    --spacing-xs: 0.18rem;
     --spacing-sm: 0.3rem;
     --spacing-md: 0.6rem;
     --container-padding-inline: clamp(0.7rem, 2.5vw, 1.2rem);
 
-    /* Kartenvariablen für kleinste Screens anpassen, falls clamp-Minima nicht reichen */
-    /* Normalerweise sollten die Min-Werte von clamp() hier greifen.
-       Diese Overrides sind nur, wenn die clamp() Minima noch zu groß sind. */
     --card-icon-main-size-min: 1.8rem;
     --card-title-size-min: 0.9rem;
     --card-text-size-min: 0.8rem;
@@ -375,31 +385,24 @@ img {
 
   .viewport-box,
   .sections-container {
-    padding-left: var(--spacing-sm); /* Sicherstellen, dass Padding nicht zu klein wird */
+    padding-left: var(--spacing-sm);
     padding-right: var(--spacing-sm);
     gap: var(--spacing-sm);
   }
 
   h1 { font-size: 1.5rem; line-height: 1.15; margin-bottom: var(--spacing-sm); }
   h2 { font-size: 1.25rem; line-height: 1.2; margin-bottom: var(--spacing-sm); }
+  h2.decorative-hr { padding-bottom: 0.5em; margin-bottom: var(--spacing-md); }
+  h2.decorative-hr::after { width: 40px; }
+
   h3 { font-size: 1.1rem; line-height: 1.25; margin-bottom: var(--spacing-xs); }
   h4, h5, h6 { font-size: 1rem; line-height: 1.3; margin-bottom: var(--spacing-xs); }
 
   p, li { font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px; }
   .lead { font-size: 0.95rem; max-width: 90%; }
 
-  /* Spezifische Kartenanpassungen, wenn die --card-* Variablen nicht ausreichen oder
-     um sicherzustellen, dass die Basis-clamp-Werte nicht unterschritten werden. */
-  .card {
-    /* Padding und Gap werden durch die :root Variablen hier schon angepasst */
-    border-width: 1px;
-  }
-
-  /* Die folgenden Regeln sind nur nötig, falls die :root Variablen-Overrides für
-     --card-*-size-min nicht den gewünschten Effekt haben oder um spezifische
-     line-heights etc. für diese Bildschirmgröße zu setzen. */
   .card .icon-wrapper i {
-     font-size: var(--card-icon-main-size-min); /* Nutzt die überschriebene Variable */
+     font-size: var(--card-icon-main-size-min);
   }
   .card .card-title {
     font-size: var(--card-title-size-min);
@@ -409,15 +412,9 @@ img {
     font-size: var(--card-text-size-min);
     line-height: 1.45;
   }
-  .card .card-title-with-icon {
-    gap: 0.2rem;
-  }
-  .card .card-title-with-icon i {
-    font-size: 0.85rem; /* Fester, kleinerer Wert für Titel-Icons */
-  }
 
   .shimmer-text {
-    font-size: clamp(1.8rem, 6vw, 4rem);
+    font-size: clamp(1.8rem, 6vw, 4rem); /* clamp minimum kann hier greifen, oder fester Wert */
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
   }
 
