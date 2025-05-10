@@ -20,7 +20,6 @@ Typografie, Abstände, Layout & Animationen
   --font-secondary: 'Inter', sans-serif;
 
   /* Abstände & Layout */
-  /* Beibehalten der relativen Abstände */
   --spacing-xs: 0.2rem;
   --spacing-sm: 0.4rem;
   --spacing-md: 0.8rem;
@@ -28,7 +27,7 @@ Typografie, Abstände, Layout & Animationen
   --spacing-xl: 2rem;
 
   --section-padding: var(--spacing-lg);
-  --container-padding-inline: clamp(0.5rem, 2.5vw, 6rem);
+  --container-padding-inline: clamp(1rem, 2.5vw, 6rem);
   --border-radius: 0.7rem;
 
   /* Animationen */
@@ -50,7 +49,7 @@ html, body {
   font-family: var(--font-main);
   background-color: var(--color-bg);
   color: var(--color-text-main);
-  overflow: hidden; /* Beibehalten, um Scrollen des Bodys zu verhindern */
+  overflow: hidden;
   scroll-behavior: smooth;
 }
 
@@ -65,106 +64,109 @@ body {
 ========================================= */
 .viewport-box {
   width: min(93vw, 1000px);
-  /* Höhe beibehalten, kann je nach Inhalt evtl. min-height benötigen */
   height: 70vh;
   background: var(--color-bg-secondary);
   box-shadow: 0 5px 14px var(--color-shadow);
   overflow-y: auto;
   scroll-snap-type: y mandatory;
-  /* scroll-padding-top responsiv anpassen, basierend auf viewport-box padding oder fest */
-  scroll-padding-top: clamp(1rem, 2vw, 1.5rem); /* Beispiel: passtsich mit an */
+  scroll-padding-top: clamp(1rem, 2vw, 1.5rem);
   border-radius: var(--border-radius);
-  /* Padding der Viewport-Box optimieren: Größerer Minimalwert, etwas schneller skalieren */
-  padding: clamp(1rem, 2vw, 2rem); /* Min 1rem, skaliert mit 2vw, max 2rem */
+  padding: clamp(1rem, 2vw, 2rem);
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative; /* Hinzugefügt für absolute Positionierung der Punkte */
+  position: relative;
   scrollbar-width: none; /* Firefox */
 }
 
-/* Scrollleiste für Chrome verstecken */
 .viewport-box::-webkit-scrollbar {
-  display: none;
+  display: none; /* Chrome, Safari, Edge */
 }
 
 .sections-container {
   width: 100%;
   max-width: 900px;
-  /* min-height beibehalten, um Scroll-Snapping zu unterstützen */
   min-height: 70vh;
   scroll-snap-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Abstand zwischen Sektionen responsiv gestalten */
-  gap: clamp(var(--spacing-md), 3vw, var(--spacing-xl)); /* Skaliert von md zu xl basierend auf 3vw */
-  /* Padding des Containers beibehalten oder leicht anpassen */
-  padding: clamp(1rem, 3vw, 2rem); /* Min 1rem, skaliert mit 3vw, max 2rem */
+  gap: clamp(var(--spacing-md), 3vw, var(--spacing-xl));
+  padding: clamp(1rem, 3vw, 2rem);
 }
 
 /* =====================================
-📝 RESPONSIVE TYPOGRAFIE
+📝 RESPONSIVE TYPOGRAFIE (Global)
 ========================================= */
-h1, h2, h3, h4, h5, h6 {
-  /* Überschriftengrößen leicht anpassen: Größerer Min-Wert, etwas schneller skalieren */
-  font-size: clamp(1.4rem, 2vw, 2rem); /* Min 1.4rem, skaliert mit 2vw, max 2rem */
+h1 {
+  font-size: clamp(1.75rem, 2.5vw + 1rem, 3rem);
   font-weight: 600;
-  line-height: 1.3;
-  /* Optional: Responsiver Abstand unter Überschriften */
-  margin-bottom: clamp(var(--spacing-sm), 1vw, var(--spacing-md));
+  line-height: 1.25;
+  margin-bottom: clamp(var(--spacing-sm), 1.5vw, var(--spacing-md));
 }
 
-p, li, .lead, .card-text {
-  /* Grundtextgröße optimieren: Höherer Minimalwert für bessere Lesbarkeit */
-  font-size: clamp(1rem, 1.1vw, 1.1rem); /* Min 1rem, skaliert mit 1.1vw, max 1.1rem (etwas konstanter) */
-  line-height: 1.6; /* Etwas größeren Zeilenabstand für bessere Lesbarkeit */
+h2 {
+  font-size: clamp(1.5rem, 2vw + 0.8rem, 2.5rem);
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: clamp(var(--spacing-sm), 1.2vw, var(--spacing-md));
+}
+
+h3 {
+  font-size: clamp(1.3rem, 1.8vw + 0.6rem, 2.1rem);
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: clamp(var(--spacing-xs), 1vw, var(--spacing-sm));
+}
+
+h4, h5, h6 {
+  font-size: clamp(1.1rem, 1.5vw + 0.4rem, 1.8rem);
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: clamp(var(--spacing-xs), 0.8vw, var(--spacing-sm));
+}
+
+p, li { /* Globale Stile für Absätze und Listenelemente */
+  font-size: clamp(1rem, 0.4vw + 0.9rem, 1.15rem);
+  line-height: 1.65;
   font-weight: 400;
   letter-spacing: 0.3px;
   color: var(--color-text-muted);
-  /* Optional: Responsiver Abstand unter Absätzen */
   margin-bottom: clamp(var(--spacing-xs), 0.5vw, var(--spacing-sm));
 }
+
 .lead {
   text-align: left;
-  max-width: 60ch;     /* gute Lesbarkeit */
+  max-width: 60ch;
   margin-left: auto;
-  margin-right: auto;  /* zentriert den Block, aber Text bleibt linksbündig */
+  margin-right: auto;
+  font-size: clamp(1.05rem, 0.5vw + 0.9rem, 1.25rem);
+  color: var(--color-text-main);
 }
-
-/* Separates Styling für card-title, falls es sich von p unterscheiden soll */
-.card-title {
-    font-size: clamp(1.1rem, 1.5vw, 1.5rem); /* Etwas größer als normaler Text, kleiner als Hauptüberschriften */
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--color-text-main); /* Titel oft in Hauptfarbe */
-    margin-bottom: var(--spacing-sm); /* Fester Abstand, kann auch responsiv gemacht werden */
-}
-
 
 /* =====================================
 🃏 RESPONSIVE KARTEN-KOMPONENTEN
 ========================================= */
 
 .card {
-  /* Padding der Karte leicht anpassen */
-  padding: clamp(0.8rem, 1vw, 1.2rem); /* Min 0.8rem, skaliert mit 1vw, max 1.2rem */
+  padding: clamp(0.8rem, 1.5vw, 1.2rem); /* Padding leicht angepasst für mehr Flexibilität */
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.08);
-  color: var(--color-text-main); /* Farbe für Elemente innerhalb der Karte, falls nicht spezifisch gesetzt */
+  color: var(--color-text-main);
   border-radius: var(--border-radius);
   box-shadow: 0 4px 12px var(--color-shadow);
   transition: transform var(--transition-speed) var(--transition-ease),
               box-shadow var(--transition-speed) var(--transition-ease),
               border var(--transition-speed) var(--transition-ease);
   border: 2px solid transparent;
-  /* Grundschriftgröße für die Karte - kann nützlich sein, aber clamp() auf p/li ist spezifischer */
-  /* font-size: clamp(0.9rem, 1vw, 1.1rem); */
+  /* Struktur und Abstände innerhalb der Karte */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm); /* Abstand zwischen direkten Kind-Elementen in der Karte */
 }
-
 
 .card:hover {
   transform: translateY(-3px) scale(1.01);
@@ -172,25 +174,74 @@ p, li, .lead, .card-text {
   border-color: var(--color-accent);
 }
 
-.icon-wrapper i {
-  /* Icon-Größen leicht anpassen: Größerer Min-Wert, etwas schneller skalieren */
-  font-size: clamp(1.5rem, 2vw, 2rem); /* Min 1.5rem, skaliert mit 2vw, max 2rem */
+/* Spezifische Typografie für Karten-Titel */
+.card .card-title {
+    font-size: clamp(1.05rem, 1.3vw + 0.5rem, 1.45rem); /* Etwas kompakter, besonders im Minimalwert */
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-text-main);
+    /* margin-bottom wird durch den 'gap' der .card gesteuert, falls .card-title ein direktes Kind ist.
+       Ansonsten kann hier ein spezifischer margin-bottom gesetzt werden, falls nötig. */
 }
 
-img {
+/* Spezifische Typografie für Karten-Text */
+.card .card-text {
+  font-size: clamp(0.9rem, 0.3vw + 0.8rem, 1.05rem); /* Etwas kleiner und skaliert sanfter für Karten */
+  line-height: 1.6; /* Zeilenabstand für gute Lesbarkeit in kompakteren Texten */
+  color: var(--color-text-muted);
+   /* margin-bottom wird durch den 'gap' der .card gesteuert oder kann hier spezifisch sein. */
+}
+
+/* Hilfsklasse für Titel mit Icon in Karten */
+.card .card-title-with-icon {
+  display: flex;
+  align-items: center; /* Vertikale Ausrichtung von Icon und Text */
+  gap: var(--spacing-sm); /* Abstand zwischen Icon und Titeltext */
+}
+
+.card .card-title-with-icon i {
+  font-size: clamp(1rem, 1.2vw + 0.4rem, 1.3rem); /* Größe des Icons passend zum Kartentitel */
+  flex-shrink: 0; /* Verhindert, dass das Icon bei Platzmangel schrumpft */
+  color: var(--color-accent); /* Beispiel: Icons im Titel bekommen Akzentfarbe */
+}
+
+/* Allgemeine Icon-Anpassung innerhalb von Karten */
+.card .icon-wrapper { /* Falls Icons einen eigenen Wrapper haben */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.card .icon-wrapper i,
+.card > i /* Falls Icons direkte Kinder der Karte sind und nicht im Titel oder speziellen Wrapper */ {
+  font-size: clamp(1.1rem, 1.5vw, 1.6rem); /* Leicht reduzierte Größe für allgemeine Icons in Karten */
+  /* Ggf. spezifische Farbe oder Abstände hier */
+}
+
+img { /* Globale Bildstile */
   max-width: 100%;
   height: auto;
   display: block;
-  /* Optional: Responsiver Abstand unter Bildern */
-  margin-bottom: clamp(var(--spacing-sm), 1vw, var(--spacing-md));
 }
+
+/* Bilder spezifisch in Karten (falls sie nicht den vollen Card-Padding nutzen sollen) */
+.card img {
+  /* margin-bottom: var(--spacing-sm); Steuerung über card gap oder spezifisch, falls es nicht das letzte Element ist */
+  border-radius: calc(var(--border-radius) - 4px); /* Beispiel: Etwas kleinerer Radius als die Karte selbst */
+  /* Wenn das Bild das erste Element ist und bis zum Rand gehen soll:
+     margin: calc(-1 * clamp(0.8rem, 1.5vw, 1.2rem)); // Negative Marge in Höhe des Paddings
+     margin-bottom: var(--spacing-sm); // Dann wieder positiven Abstand zum nächsten Element
+     width: calc(100% + 2 * clamp(0.8rem, 1.5vw, 1.2rem)); // Breite anpassen
+     max-width: calc(100% + 2 * clamp(0.8rem, 1.5vw, 1.2rem));
+  */
+}
+
 
 /* =====================================
 ✨ RESPONSIVE SCHIMMERTEXT-EFFEKT
 ========================================= */
 .shimmer-text {
-  /* Schimmertextgröße beibehalten oder anpassen, ist ein dekoratives Element */
-  font-size: clamp(3rem, 6vw, 5rem); /* min 2rem, skaliert mit 6vw, max 5rem */
+  font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 700;
   text-shadow: 0 0 35px rgba(255, 255, 255, 0.7);
   background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,1), rgba(255,255,255,0.1));
@@ -208,7 +259,7 @@ img {
 
 .snap-section{
   scroll-snap-align: start;
-  min-height: 100%; /* wichtig fürs Einrasten */
+  min-height: 100%;
 }
 
 /* =====================================
@@ -216,19 +267,16 @@ img {
 ========================================= */
 .dots-nav {
   position: fixed;
-  /* Positionierung beibehalten - diese Elemente sind relativ zum Viewport positioniert */
   right: 2rem;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  /* Abstand zwischen Punkten beibehalten oder responsiv machen (oft fester Abstand besser) */
   gap: 1rem;
   z-index: 100;
 }
 
 .dot {
-  /* Größe der Punkte beibehalten - feste Größe oft besser für Klickbarkeit */
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -246,4 +294,45 @@ img {
   background-color: var(--color-accent);
   transform: scale(1.3);
   box-shadow: 0 0 8px var(--color-accent);
+}
+
+/* =====================================
+📱 OPTIMIERUNGEN FÜR SEHR KLEINE BILDSCHIRME (BEISPIEL)
+========================================= */
+@media (max-width: 360px) {
+  :root {
+    --container-padding-inline: clamp(0.75rem, 2.5vw, 6rem);
+  }
+
+  h1 { font-size: 1.6rem; line-height: 1.2; }
+  h2 { font-size: 1.35rem; }
+  h3 { font-size: 1.15rem; }
+
+  p, li { font-size: 0.9rem; line-height: 1.6; }
+
+  .shimmer-text { font-size: clamp(2rem, 6vw, 5rem); }
+
+  .card {
+    padding: clamp(0.6rem, 1.5vw, 1.2rem); /* Nochmals reduzierter Padding in Karten für kleinste Screens */
+    gap: var(--spacing-xs); /* Kleinere Abstände in der Karte */
+  }
+
+  .card .card-title {
+    font-size: clamp(0.95rem, 1.3vw + 0.5rem, 1.45rem);
+  }
+  .card .card-text {
+    font-size: clamp(0.85rem, 0.3vw + 0.8rem, 1.05rem);
+  }
+  .card .card-title-with-icon i {
+    font-size: clamp(0.9rem, 1.2vw + 0.4rem, 1.3rem);
+  }
+  .card .icon-wrapper i,
+  .card > i {
+    font-size: clamp(1rem, 1.5vw, 1.6rem);
+  }
+
+  .sections-container {
+    gap: clamp(var(--spacing-sm), 3vw, var(--spacing-xl));
+    padding: clamp(0.75rem, 3vw, 2rem);
+  }
 }
