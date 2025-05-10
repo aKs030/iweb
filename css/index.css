@@ -121,7 +121,6 @@ p, li, .lead, .card-title, .card-text {
 .card {
   padding: clamp(0.6rem, 0.8vw, 0.9rem);
   width: 100%;
-  max-width: 280px;
   background: rgba(255, 255, 255, 0.08);
   color: var(--color-text-main);
   border-radius: var(--border-radius);
