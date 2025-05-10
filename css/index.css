@@ -51,9 +51,6 @@ html, body {
   color: var(--color-text-main);
   overflow: hidden;
   scroll-behavior: smooth;
-      color-scheme: dark;
-
-
 }
 
 body {
@@ -79,28 +76,6 @@ body {
   flex-direction: column;
   align-items: center;
 }
-
-/* 🎨 Scrollbalken anpassen */
-.viewport-box::-webkit-scrollbar {
-  width: 10px;
-}
-
-.viewport-box::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-  border-radius: var(--border-radius);
-}
-
-.viewport-box::-webkit-scrollbar-thumb {
-  background-color: var(--color-accent);
-  border-radius: var(--border-radius);
-  border: 2px solid var(--color-bg-secondary);
-  transition: background-color 0.3s ease;
-}
-
-.viewport-box::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-accent-hover);
-}
-
 
 .sections-container {
   width: 100%;
@@ -135,11 +110,6 @@ p, li, .lead, .card-title, .card-text {
 /* =====================================
    🃏 RESPONSIVE KARTEN-KOMPONENTEN
 ========================================= */
-.sections-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--spacing-md);
-}
 
 .card {
   padding: clamp(0.6rem, 0.8vw, 0.9rem);
