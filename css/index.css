@@ -117,8 +117,8 @@ body {
 📦 RESPONSIVE VIEWPORT-BOX
 ========================================= */
 .viewport-box {
-  width: min(93vw, 1000px);
-  height: 70vh;
+  width: min(90vw, 1000px);
+  height: 65vh;
   background: var(--color-bg-secondary);
   box-shadow: 0 5px 14px var(--color-shadow);
   overflow-y: auto;
@@ -349,7 +349,7 @@ img {
 ========================================= */
 .dots-nav {
   position: fixed;
-  right: clamp(1rem, 3vw, 2rem);
+  right: clamp(var(--spacing-xs), 2vw, var(--spacing-xl) * 555.5); /* Bestimmt die Position für größere Bildschirme */
   top: 50%;
   transform: translateY(-50%);
   display: flex;
