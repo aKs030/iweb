@@ -3,14 +3,15 @@
 ========================================= */
 :root {
   /* Colors */
-  --color-bg: #444;
-  --color-bg-secondary: #333;
+  --color-bg: #333;
+  --color-bg-secondary: #444;
   --color-text-main: #f5f5f5;
   --color-text-muted: rgba(245, 245, 245, 0.6);
   --color-decor: #ffffff;
   --color-accent: rgba(255, 204, 41, 0.9);
   --color-accent-hover: rgba(255, 204, 41, 1);
-  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-shadow: rgba(255, 255, 255, 0.3);
+  --color-shadow-card: rgba(0, 0, 0, 0.25);
   --color-highlight: #007bff;
 
   /* Fonts */
@@ -231,7 +232,7 @@ p, li {
   background: rgba(255, 255, 255, 0.08);
   color: var(--color-text-main);
   border-radius: var(--border-radius);
-  box-shadow: 0 3px 10px var(--color-shadow);
+  box-shadow: 0 3px 10px var(--color-shadow-card);
   transition: transform var(--transition-speed) var(--transition-ease),
               box-shadow var(--transition-speed) var(--transition-ease),
               border-color var(--transition-speed) var(--transition-ease);
@@ -349,7 +350,7 @@ img {
 ========================================= */
 .dots-nav {
   position: fixed;
-  right: clamp(var(--spacing-xs), 2vw, var(--spacing-xl) * 555.5); /* Bestimmt die Position für größere Bildschirme */
+  left: calc(50% + 530px); /* Positioniert etwa in der Mitte zwischen Inhalt und rechtem Rand */
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -358,6 +359,13 @@ img {
   z-index: 1000;
 }
 
+/* Bei schmalen Bildschirmen wieder nach rechts schieben */
+@media (max-width: 1100px) {
+  .dots-nav {
+    left: auto; /* Links-Position zurücksetzen */
+    right: clamp(var(--spacing-xs), 1vw, var(--spacing-lg)); /* Abstand vom rechten Rand */
+  }
+}
 .dot {
   width: 10px;
   height: 10px;
