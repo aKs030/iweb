@@ -104,7 +104,6 @@ body {
   transform-style: preserve-3d;
   transform: rotateY(0deg); /* Expliziter Grundzustand */
   /* Keine transition für transform hier, da die Hover-Animation über @keyframes läuft */
-  /* will-change: transform; */ /* Optional */
 }
 
 .card:hover .icon-wrapper .animated-icon {
@@ -131,13 +130,17 @@ body {
   flex-direction: column;
   align-items: center;
   position: relative;
-  scrollbar-width: none; /* Firefox */
 }
 
 .viewport-box::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+  display: none; /* For WebKit-based browsers (e.g., Chrome < 121, Safari, Edge, Opera, Samsung Internet) */
 }
 
+@supports (scrollbar-width: none) {
+  .viewport-box {
+    scrollbar-width: none; /* For Firefox & other supporting browsers */
+  }
+}
 .sections-container {
   width: 100%;
   max-width: 900px;
@@ -236,7 +239,6 @@ p, li {
   display: flex;
   flex-direction: column;
   gap: clamp(var(--card-gap-min), var(--card-gap-preferred), var(--card-gap-max));
-  /* will-change: transform, box-shadow, border-color; */ /* Optional */
 }
 
 .card:hover {
@@ -250,7 +252,6 @@ p, li {
 }
 
 .card .icon-wrapper i { /* Allgemeine Icon-Stile, .animated-icon ist spezifischer */
-  /* font-size: clamp(var(--card-icon-main-size-min), var(--card-icon-main-size-preferred), var(--card-icon-main-size-max)); */ /* Gesteuert durch .animated-icon */
   color: var(--color-accent);
   flex-shrink: 0;
 }
@@ -289,8 +290,8 @@ img {
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
   background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.8), rgba(255,255,255,0.05));
   background-size: 200% 100%;
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
   animation: shimmer 2s infinite linear;
