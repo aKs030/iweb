@@ -1,10 +1,8 @@
 /* =====================================
-💡 DESIGN-SYSTEM VARIABLEN
-Globale Designkonstanten für Farben,
-Typografie, Abstände, Layout & Animationen
+💡 GLOBAL DESIGN SYSTEM VARIABLES
 ========================================= */
 :root {
-  /* Farben */
+  /* Colors */
   --color-bg: #444;
   --color-bg-secondary: #333;
   --color-text-main: #f5f5f5;
@@ -15,26 +13,26 @@ Typografie, Abstände, Layout & Animationen
   --color-shadow: rgba(0, 0, 0, 0.25);
   --color-highlight: #007bff;
 
-  /* Schriftarten */
+  /* Fonts */
   --font-main: 'Poppins', sans-serif;
-  --font-secondary: 'Inter', sans-serif; /* Inter wird aktuell nicht verwendet, kann entfernt werden, wenn nicht geplant */
+  --font-secondary: 'Inter', sans-serif;
 
-  /* Abstände & Layout */
-  --spacing-xs: 0.2rem;   /* 3.2px (bei 16px root) */
-  --spacing-sm: 0.4rem;   /* 6.4px */
-  --spacing-md: 0.8rem;   /* 12.8px */
-  --spacing-lg: 1.5rem;   /* 24.0px */
-  --spacing-xl: 2rem;     /* 32.0px */
+  /* Spacing & Layout */
+  --spacing-xs: 0.2rem;
+  --spacing-sm: 0.4rem;
+  --spacing-md: 0.8rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
 
   --section-padding: var(--spacing-lg);
   --container-padding-inline: clamp(1rem, 2.5vw, 6rem);
   --border-radius: 0.7rem;
 
-  /* Animationen */
-  --transition-speed: 0.35s;
+  /* Animations */
+  --transition-speed: 0.35s; /* Wird jetzt für die Keyframe-Animation des Icons verwendet */
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Variablen für Kartenelemente */
+  /* Card element variables */
   --card-padding-min: var(--spacing-sm);
   --card-padding-preferred: 2.5vmin;
   --card-padding-max: var(--spacing-md);
@@ -61,7 +59,7 @@ Typografie, Abstände, Layout & Animationen
 }
 
 /* =====================================
-🔧 GLOBALER RESET & BASISSTILE
+🔧 GLOBAL RESET & BASIC STYLES
 ========================================= */
 *, *::before, *::after {
   margin: 0;
@@ -74,7 +72,7 @@ html, body {
   font-family: var(--font-main);
   background-color: var(--color-bg);
   color: var(--color-text-main);
-  overflow: hidden; /* Verhindert Scrollbalken am Body selbst */
+  overflow: hidden;
   scroll-behavior: smooth;
 }
 
@@ -82,8 +80,38 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Hinzugefügt, um sicherzustellen, dass der Skip-Link sichtbar wird, wenn er Fokus erhält */
   position: relative;
+}
+
+/* =====================================
+🎨 ANIMATED ICON STYLES (Final - Keyframe Animation)
+========================================= */
+@keyframes rotateAndReturn {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(160deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.animated-icon {
+  font-size: clamp(var(--card-icon-main-size-min), var(--card-icon-main-size-preferred), var(--card-icon-main-size-max));
+  display: inline-block;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg); /* Expliziter Grundzustand */
+  /* Keine transition für transform hier, da die Hover-Animation über @keyframes läuft */
+  /* will-change: transform; */ /* Optional */
+}
+
+.card:hover .icon-wrapper .animated-icon {
+  animation-name: rotateAndReturn;
+  animation-duration: var(--transition-speed); /* Gesamtdauer für 0->160->0 */
+  animation-timing-function: var(--transition-ease);
+  animation-iteration-count: 1;
 }
 
 /* =====================================
@@ -102,7 +130,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative; /* Für .dots-nav, falls es relativ hierzu sein soll */
+  position: relative;
   scrollbar-width: none; /* Firefox */
 }
 
@@ -110,21 +138,20 @@ body {
   display: none; /* Chrome, Safari, Edge */
 }
 
-.sections-container { /* Auch .snap-section in der HTML-Struktur */
+.sections-container {
   width: 100%;
   max-width: 900px;
-  min-height: 100%; /* Nimmt die volle Höhe der viewport-box ein */
-  /* scroll-snap-align: center; /* Redundant, da .snap-section es überschreibt */
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: clamp(var(--spacing-md), 3vw, var(--spacing-xl));
-  padding: clamp(0.75rem, 3vw, 2rem); /* Innenabstand für den Inhalt der Sektion */
+  padding: clamp(0.75rem, 3vw, 2rem);
 }
 
 /* =====================================
-📝 RESPONSIVE TYPOGRAFIE (Global)
+📝 RESPONSIVE TYPOGRAPHY (Global)
 ========================================= */
 h1 {
   font-size: clamp(1.7rem, 2.5vw + 1rem, 3rem);
@@ -140,11 +167,10 @@ h2 {
   margin-bottom: clamp(var(--spacing-sm), 1.2vw, var(--spacing-md));
 }
 
-/* Spezifische H2 für "About" Sektion mit dekorativer Linie */
 h2.decorative-hr {
   position: relative;
-  padding-bottom: 0.6em; /* Platz für die Linie, anpassen nach Bedarf */
-  margin-bottom: clamp(var(--spacing-md), 1.5vw, var(--spacing-lg)); /* Etwas mehr Platz nach der Linie */
+  padding-bottom: 0.6em;
+  margin-bottom: clamp(var(--spacing-md), 1.5vw, var(--spacing-lg));
 }
 
 h2.decorative-hr::after {
@@ -153,12 +179,11 @@ h2.decorative-hr::after {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: clamp(50px, 20%, 100px); /* Responsive Breite der Linie */
-  height: 2px; /* Dicke der Linie */
+  width: clamp(50px, 20%, 100px);
+  height: 2px;
   background-color: var(--color-accent);
   border-radius: 1px;
 }
-
 
 h3 {
   font-size: clamp(1.2rem, 1.8vw + 0.6rem, 2.1rem);
@@ -193,7 +218,7 @@ p, li {
 }
 
 /* =====================================
-🃏 RESPONSIVE KARTEN-KOMPONENTEN
+🃏 RESPONSIVE CARD COMPONENTS (Optimized)
 ========================================= */
 .card {
   padding: clamp(var(--card-padding-min), var(--card-padding-preferred), var(--card-padding-max));
@@ -206,11 +231,12 @@ p, li {
   box-shadow: 0 3px 10px var(--color-shadow);
   transition: transform var(--transition-speed) var(--transition-ease),
               box-shadow var(--transition-speed) var(--transition-ease),
-              border var(--transition-speed) var(--transition-ease);
+              border-color var(--transition-speed) var(--transition-ease);
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
   gap: clamp(var(--card-gap-min), var(--card-gap-preferred), var(--card-gap-max));
+  /* will-change: transform, box-shadow, border-color; */ /* Optional */
 }
 
 .card:hover {
@@ -223,8 +249,8 @@ p, li {
   line-height: 1;
 }
 
-.card .icon-wrapper i {
-  font-size: clamp(var(--card-icon-main-size-min), var(--card-icon-main-size-preferred), var(--card-icon-main-size-max));
+.card .icon-wrapper i { /* Allgemeine Icon-Stile, .animated-icon ist spezifischer */
+  /* font-size: clamp(var(--card-icon-main-size-min), var(--card-icon-main-size-preferred), var(--card-icon-main-size-max)); */ /* Gesteuert durch .animated-icon */
   color: var(--color-accent);
   flex-shrink: 0;
 }
@@ -244,24 +270,6 @@ p, li {
   margin-bottom: 0;
 }
 
-/*
-.card .card-title-with-icon {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.card .card-title-with-icon i {
-  font-size: clamp(var(--card-icon-title-size-min), var(--card-icon-title-size-preferred), var(--card-icon-title-size-max));
-  flex-shrink: 0;
-  color: var(--color-accent);
-}
-
-.card > i {
-  font-size: clamp(1rem, 2.5vmin, 1.5rem);
-}
-*/
-
 img {
   max-width: 100%;
   height: auto;
@@ -273,7 +281,7 @@ img {
 }
 
 /* =====================================
-✨ RESPONSIVE SCHIMMERTEXT-EFFEKT
+✨ RESPONSIVE SHIMMER TEXT EFFECT
 ========================================= */
 .shimmer-text {
   font-size: clamp(2.2rem, 6vw, 5rem);
@@ -283,17 +291,22 @@ img {
   background-size: 200% 100%;
   background-clip: text;
   -webkit-background-clip: text;
-  color: transparent; /* Wichtig für den Effekt, war -webkit-text-fill-color */
-  -webkit-text-fill-color: transparent; /* Für ältere Webkit-Browser */
+  color: transparent;
+  -webkit-text-fill-color: transparent;
   animation: shimmer 2s infinite linear;
 }
 
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
 /* =====================================
-🔆 UPDATE-HEADER MIT GLOW-EFFEKT
+🔆 UPDATE-HEADER WITH GLOW-EFFECT
 ========================================= */
 .update-header {
   text-align: center;
-  background-color: var(--color-bg-secondary); /* Geändert zu CSS-Variable */
+  background-color: var(--color-bg-secondary);
   padding: 2rem 1rem;
   color: white;
   position: relative;
@@ -312,19 +325,17 @@ img {
   height: 10px;
   background: radial-gradient(ellipse at center, rgba(255, 204, 0, 0.8) 0%, rgba(255, 204, 0, 0) 70%);
   position: absolute;
-  bottom: clamp(0.5rem, 1.5vh, 1rem); /* Responsive gemacht */
+  bottom: clamp(0.5rem, 1.5vh, 1rem);
   left: 0;
-  z-index: 1; /* Sicherstellen, dass es hinter dem Text ist, falls h3 keinen z-index hätte */
+  z-index: 1;
 }
 
-@keyframes shimmer {
-  from { background-position: -200% 0; }
-  to { background-position: 200% 0; }
-}
-
-.snap-section { /* Diese Klasse ist AUF .sections-container Elementen */
+/* =====================================
+📏 SNAP SECTION STYLING
+========================================= */
+.snap-section {
   scroll-snap-align: start;
-  min-height: 100%; /* Nimmt die volle Höhe der viewport-box ein */
+  min-height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -333,17 +344,17 @@ img {
 }
 
 /* =====================================
-🔵 SCROLL-PUNKTE NAVIGATION
+🔵 SCROLL-DOTS NAVIGATION
 ========================================= */
 .dots-nav {
-  position: fixed; /* Bezogen auf den Viewport */
+  position: fixed;
   right: clamp(1rem, 3vw, 2rem);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  z-index: 1000; /* Erhöht, um sicher über anderen Elementen zu sein */
+  z-index: 1000;
 }
 
 .dot {
@@ -367,7 +378,7 @@ img {
 }
 
 /* ===================================================================
-📱 OPTIMIERUNGEN FÜR SEHR KLEINE BILDSCHIRME (max-width: 360px)
+📱 OPTIMIZATIONS FOR VERY SMALL SCREENS (max-width: 360px)
 =================================================================== */
 @media (max-width: 360px) {
   :root {
@@ -401,6 +412,9 @@ img {
   p, li { font-size: 0.875rem; line-height: 1.5; letter-spacing: 0.1px; }
   .lead { font-size: 0.95rem; max-width: 90%; }
 
+  .animated-icon {
+     font-size: var(--card-icon-main-size-min) !important;
+  }
   .card .icon-wrapper i {
      font-size: var(--card-icon-main-size-min);
   }
@@ -414,7 +428,7 @@ img {
   }
 
   .shimmer-text {
-    font-size: clamp(1.8rem, 6vw, 4rem); /* clamp minimum kann hier greifen, oder fester Wert */
+    font-size: clamp(1.8rem, 6vw, 4rem);
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
   }
 
@@ -428,5 +442,42 @@ img {
   }
   .dot.active {
      transform: scale(1.2);
+  }
+}
+
+/* ===================================================================
+🌍 ACCESSIBILITY: REDUCED MOTION PREFERENCES
+=================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Die Keyframe-Animation wird hierdurch ebenfalls stark verkürzt/effektiv deaktiviert */
+  .animated-icon, /* Basis für .animated-icon, falls es andere Animationen/Transitions hätte */
+  .card:hover .icon-wrapper .animated-icon, /* Stoppt die Keyframe-Animation bei Hover */
+  .card:hover { /* Stoppt Karten-Anhebung */
+    transform: none !important; /* Für .card:hover */
+    /* Für .animated-icon, das über 'animation-name' animiert wird,
+       animation-name: none; wäre expliziter, aber animation-duration reicht meist. */
+    animation-name: none !important; /* Sicherstellen, dass die Keyframe-Animation nicht startet */
+
+  }
+
+  .shimmer-text {
+    animation: none !important;
+    color: var(--color-text-main);
+    background: none;
+    text-shadow: none;
+  }
+
+  .dot:hover,
+  .dot.active {
+    transform: none !important;
   }
 }

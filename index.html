@@ -298,6 +298,34 @@
         </template>
 
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const animatedIcons = document.querySelectorAll('.card .animated-icon');
+
+  animatedIcons.forEach(icon => {
+    const card = icon.closest('.card'); // Finde die übergeordnete Karte
+
+    if (card) {
+      const handleAnimationEnd = () => {
+        icon.classList.add('js-rotated'); // Verhindert weitere Animationen über CSS :not()
+        // Der Event-Listener wird dank { once: true } automatisch entfernt.
+      };
+
+      const handleMouseEnter = () => {
+        // Füge den Event-Listener nur hinzu, wenn die Animation noch nicht stattgefunden hat.
+        if (!icon.classList.contains('js-rotated')) {
+          icon.addEventListener('transitionend', handleAnimationEnd, { once: true });
+        }
+        // Die CSS-Regel .card:hover .icon-wrapper .animated-icon:not(.js-rotated)
+        // kümmert sich um das Starten der Transformation.
+      };
+
+      card.addEventListener('mouseenter', handleMouseEnter);
+    }
+  });
+});
+</script>
+
     <script src="/js/intext.js" defer></script>
     <script src="/js/menu.js" defer></script>
     <script src="/js/scroll-dots.js" defer></script>
