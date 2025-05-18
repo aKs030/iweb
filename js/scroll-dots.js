@@ -1,74 +1,98 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sections = document.querySelectorAll('.snap-section');
-    const dots = document.querySelectorAll('.dots-nav .dot');
+    const dots = Array.from(document.querySelectorAll('.dots-nav .dot')); // Konvertiere NodeList zu Array für indexOf
     const viewportBox = document.querySelector('.viewport-box');
     
-    // Variable, um zu verfolgen, ob gerade gescrollt wird
     let isScrolling = false;
-    // Variable, um den letzten aktiven Abschnitt zu verfolgen
     let lastActiveSection = null;
     
-    // Funktion zum Aktualisieren des aktiven Punktes basierend auf der Scroll-Position
     function updateActiveDot() {
         const scrollPosition = viewportBox.scrollTop;
-        
+        let currentActiveIndex = -1;
+
         sections.forEach((section, index) => {
-            // Position der Sektion relativ zum viewport-box
             const sectionTop = section.offsetTop - viewportBox.offsetTop;
             const sectionHeight = section.offsetHeight;
             
-            // Prüfen, ob die Sektion im sichtbaren Bereich ist
-            if (scrollPosition >= sectionTop - 100 && 
+            if (currentActiveIndex === -1 && // Nur den ersten passenden Abschnitt als aktiv markieren
+                scrollPosition >= sectionTop - 100 && 
                 scrollPosition < sectionTop + sectionHeight - 100) {
+                currentActiveIndex = index;
                 
-                // Aktiven Punkt aktualisieren
-                dots.forEach(dot => dot.classList.remove('active'));
-                dots[index].classList.add('active');
-                
-                // Event nur auslösen, wenn die Sektion gewechselt hat und kein aktives Scrollen stattfindet
                 if (lastActiveSection !== section.id && !isScrolling) {
                     lastActiveSection = section.id;
-                    // Event auslösen für intext.js
                     document.dispatchEvent(new CustomEvent('scrollToSection', { 
                         detail: { sectionId: section.id } 
                     }));
                 }
-                
-                // Sektions-ID merken
-                lastActiveSection = section.id;
+                lastActiveSection = section.id; 
             }
+        });
+
+        dots.forEach((dot, index) => {
+            const isActive = index === currentActiveIndex;
+            dot.classList.toggle('active', isActive);
+            dot.setAttribute('aria-selected', isActive.toString());
+            dot.setAttribute('tabindex', isActive ? '0' : '-1');
         });
     }
     
-    // Event-Listener für Klicks auf die Dots
-    dots.forEach(dot => {
-        dot.addEventListener('click', () => {
-            const targetSectionId = dot.getAttribute('data-target');
+    dots.forEach(clickedDot => {
+        clickedDot.addEventListener('click', () => {
+            const targetSectionId = clickedDot.getAttribute('data-target');
             const targetSection = document.getElementById(targetSectionId);
             
             if (targetSection) {
-                // Scroll-Flag setzen
                 isScrolling = true;
                 
-                // Sanft zur Zielsektion scrollen
                 viewportBox.scrollTo({
                     top: targetSection.offsetTop - viewportBox.offsetTop,
                     behavior: 'smooth'
                 });
                 
-                // Aktiven Punkt sofort aktualisieren
-                dots.forEach(d => d.classList.remove('active'));
-                dot.classList.add('active');
+                dots.forEach(dot => {
+                    const isClicked = dot === clickedDot;
+                    dot.classList.toggle('active', isClicked);
+                    dot.setAttribute('aria-selected', isClicked.toString());
+                    dot.setAttribute('tabindex', isClicked ? '0' : '-1');
+                });
+                if (document.activeElement !== clickedDot) {
+                    clickedDot.focus();
+                }
                 
-                // Event auslösen für intext.js
                 document.dispatchEvent(new CustomEvent('scrollToSection', { 
                     detail: { sectionId: targetSectionId } 
                 }));
                 
-                // Scroll-Flag nach dem Scrollen zurücksetzen
                 setTimeout(() => {
                     isScrolling = false;
-                }, 600); // Länger als die Scroll-Animation
+                    updateActiveDot(); 
+                }, 600); 
+            }
+        });
+
+        clickedDot.addEventListener('keydown', (event) => {
+            let currentIndex = dots.indexOf(event.target);
+            let newIndex = currentIndex;
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                newIndex = (currentIndex + 1) % dots.length;
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                newIndex = (currentIndex - 1 + dots.length) % dots.length;
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                newIndex = 0;
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                newIndex = dots.length - 1;
+            }
+
+
+            if (newIndex !== currentIndex) {
+                dots[newIndex].focus(); 
+                dots[newIndex].click(); 
             }
         });
     });

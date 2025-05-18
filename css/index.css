@@ -355,7 +355,7 @@ img {
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.5rem; /* Etwas reduzierter Abstand, da Klickfläche größer wird */
   z-index: 1000;
 }
 
@@ -363,28 +363,51 @@ img {
 @media (max-width: 1100px) {
   .dots-nav {
     left: auto; /* Links-Position zurücksetzen */
-    right: clamp(var(--spacing-xs), 1vw, var(--spacing-lg)); /* Abstand vom rechten Rand */
+    right: clamp(var(--spacing-xs), 1.8vw, var(--spacing-lg)); /* Abstand vom rechten Rand */
   }
 }
 .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  width: 3px; /* Breite des sichtbaren Strichs */
+  height: 20px; /* Höhe des sichtbaren Strichs */
+  border-radius: 1.5px; 
   background-color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--transition-speed) var(--transition-ease);
+  position: relative; /* Für das Pseudo-Element */
+  outline: none; /* Standard-Outline entfernen, da wir eigene Fokusstile haben */
 }
 
+/* Vergrößerter Klickbereich durch ein unsichtbares Pseudo-Element */
+.dot::before {
+  content: "";
+  position: absolute;
+  top: -8px;   /* Klickbereich nach oben erweitern */
+  bottom: -8px; /* Klickbereich nach unten erweitern */
+  left: -8px;  /* Klickbereich nach links erweitern */
+  right: -8px; /* Klickbereich nach rechts erweitern */
+  /* background-color: rgba(0, 255, 0, 0.1); /* Zum Debuggen des Klickbereichs */
+}
+
+
 .dot:hover {
-  transform: scale(1.15);
+  transform: scaleY(1.15); 
   background-color: var(--color-accent-hover);
 }
 
-.dot.active {
+.dot.active,
+.dot:focus-visible { /* Fokus-Stil für Tastaturnutzer, :focus-visible wird von modernen Browsern unterstützt */
   background-color: var(--color-accent);
-  transform: scale(1.25);
-  box-shadow: 0 0 6px var(--color-accent);
+  transform: scaleY(1.25); 
+  box-shadow: 0 0 8px var(--color-accent); /* Etwas vergrößerter Schatten für bessere Sichtbarkeit */
 }
+
+/* Spezifischer Fokus-Stil, falls :focus-visible nicht ausreicht oder für ältere Browser */
+.dot:focus {
+  /* Hier könnten alternative Fokus-Stile stehen, falls :focus-visible nicht greift
+     oder ein anderer Stil für programmatischen Fokus gewünscht ist.
+     Für dieses Design ist :focus-visible aber meist ausreichend. */
+}
+
 
 /* ===================================================================
 📱 OPTIMIZATIONS FOR VERY SMALL SCREENS (max-width: 360px)
@@ -443,14 +466,17 @@ img {
 
   .dots-nav {
     right: 0.5rem;
-    gap: 0.6rem;
+    gap: 0.4rem; /* Angepasster Abstand für kleine Bildschirme */
   }
   .dot {
-    width: 8px;
-    height: 8px;
+    width: 2.5px; 
+    height: 16px; 
+    border-radius: 1px;
   }
-  .dot.active {
-     transform: scale(1.2);
+  .dot.active,
+  .dot:focus-visible {
+     transform: scaleY(1.2); 
+     box-shadow: 0 0 6px var(--color-accent);
   }
 }
 
@@ -486,7 +512,8 @@ img {
   }
 
   .dot:hover,
-  .dot.active {
+  .dot.active,
+  .dot:focus-visible { /* Auch Fokus-Transformation bei reduzierter Bewegung entfernen */
     transform: none !important;
   }
 }
