@@ -1,0 +1,84 @@
+/* _global.css - Globale CSS-Variablen für das Design System */
+
+:root {
+  /* Farben */
+  --color-bg: #333; /* Hintergrundfarbe der Seite */
+  --color-bg-secondary: #444; /* Sekundäre Hintergrundfarbe (z.B. für Karten) */
+  --color-text-main: #f5f5f5; /* Haupttextfarbe */
+  --color-text-muted: rgba(245, 245, 245, 0.6); /* Gedämpfte Textfarbe */
+  --color-decor: #ffffff; /* Dekorative Elemente */
+  --color-accent: rgba(255, 204, 41, 0.9); /* Primäre Akzentfarbe */
+  --color-accent-hover: rgba(255, 204, 41, 1); /* Akzentfarbe beim Hover */
+  --color-shadow-light: rgba(255, 255, 255, 0.3); /* Heller Schatten (z.B. für leichte Effekte) */
+  --color-shadow-dark: rgba(0, 0, 0, 0.25); /* Dunklerer Schatten (z.B. für Karten und Boxen) */
+  --color-card-icon: var(--color-text-muted); /* Farbe für Icons auf Karten */
+  --color-highlight: #007bff; /* Für spezifische Hervorhebungen (ursprünglich) */
+  --color-link: #61dafb; /* Neue Farbe für Links, aus bereitgestelltem Snippet */
+
+  /* Schriftarten */
+  --font-family-main: 'Poppins', sans-serif;
+  --font-family-secondary: 'Inter', sans-serif;
+  --font-family-code: 'Fira Code', 'Cascadia Code', monospace; /* Falls benötigt */
+
+  /* Schriftgrößen (mit Clamp für Responsivität) */
+  --font-size-base: 1rem; /* Basis-Schriftgröße */
+  --font-size-sm: 0.875rem; /* Kleinere Schriftgröße */
+  --font-size-lg: 1.125rem; /* Größere Schriftgröße */
+  --font-size-xl: 1.25rem; /* Extra große Schriftgröße */
+
+  --font-size-h1: clamp(1.7rem, 2.5vw + 1rem, 3rem);
+  --font-size-h2: clamp(1.4rem, 2vw + 0.8rem, 2.5rem);
+  --font-size-h3: clamp(1.2rem, 1.8vw + 0.6rem, 2.1rem);
+  --font-size-h4: clamp(1.05rem, 1.5vw + 0.4rem, 1.8rem);
+  --font-size-p: clamp(0.95rem, 0.4vw + 0.85rem, 1.1rem); /* Für Absätze und Listenpunkte */
+  --font-size-lead: clamp(1rem, 0.5vw + 0.85rem, 1.2rem); /* Für Lead-Texte */
+
+  /* Abstände und Layout-Größen (jetzt auch mit clamp für zusätzliche Fluidität, optional) */
+  --spacing-xs: clamp(0.2rem, 0.5vw, 0.4rem);
+  --spacing-sm: clamp(0.4rem, 1vw, 0.8rem);
+  --spacing-md: clamp(0.8rem, 2vw, 1.5rem);
+  --spacing-lg: clamp(1.5rem, 3vw, 2.5rem);
+  --spacing-xl: clamp(2rem, 4vw, 3.5rem);
+  --spacing-xxl: clamp(3rem, 5vw, 5rem);
+
+  --border-radius: 0.7rem; /* Abgerundete Ecken */
+  --section-padding: var(--spacing-lg); /* Padding für Hauptbereiche */
+  --container-padding-inline: clamp(1rem, 2.5vw, 6rem); /* Horizontaler Container-Abstand */
+
+  /* Übergänge & Animationen */
+  --transition-speed: 0.35s;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spezifische Card-Variablen */
+  --card-padding-min: var(--spacing-sm);
+  --card-padding-preferred: 2.5vmin;
+  --card-padding-max: var(--spacing-md);
+
+  --card-gap-min: var(--spacing-xs);
+  --card-gap-preferred: 1.5vmin;
+  --card-gap-max: var(--spacing-sm);
+
+  --card-icon-main-size-min: 2rem;
+  --card-icon-main-size-preferred: 6vmin;
+  --card-icon-main-size-max: 4rem;
+
+  --card-icon-title-size-min: 0.9rem;
+  --card-icon-title-size-preferred: 2vmin;
+  --card-icon-title-size-max: 1.25rem;
+
+  --card-title-size-min: 1rem;
+  --card-title-size-preferred: 2.2vmin + 0.3rem;
+  --card-title-size-max: 1.6rem;
+
+  --card-text-size-min: 0.85rem;
+  --card-text-size-preferred: 1.8vmin + 0.25rem;
+  --card-text-size-max: 1.05rem;
+}
+
+/* Reduzierte Bewegung - Nur Variablen für Übergänge/Animationen auf 0 setzen */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-speed: 0.01ms;
+    --transition-ease: linear;
+  }
+}
