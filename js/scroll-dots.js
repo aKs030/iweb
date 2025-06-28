@@ -1,11 +1,12 @@
+// js/scroll-dots.js
 document.addEventListener('DOMContentLoaded', () => {
     const sections = document.querySelectorAll('.snap-section');
-    const dots = Array.from(document.querySelectorAll('.dots-nav .dot')); // Konvertiere NodeList zu Array für indexOf
+    const dots = Array.from(document.querySelectorAll('.dots-nav .dot'));
     const viewportBox = document.querySelector('.viewport-box');
-    
+
     let isScrolling = false;
     let lastActiveSection = null;
-    
+
     function updateActiveDot() {
         const scrollPosition = viewportBox.scrollTop;
         let currentActiveIndex = -1;
@@ -13,19 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
         sections.forEach((section, index) => {
             const sectionTop = section.offsetTop - viewportBox.offsetTop;
             const sectionHeight = section.offsetHeight;
-            
-            if (currentActiveIndex === -1 && // Nur den ersten passenden Abschnitt als aktiv markieren
-                scrollPosition >= sectionTop - 100 && 
+
+            if (currentActiveIndex === -1 &&
+                scrollPosition >= sectionTop - 100 &&
                 scrollPosition < sectionTop + sectionHeight - 100) {
                 currentActiveIndex = index;
-                
+
                 if (lastActiveSection !== section.id && !isScrolling) {
                     lastActiveSection = section.id;
-                    document.dispatchEvent(new CustomEvent('scrollToSection', { 
-                        detail: { sectionId: section.id } 
+                    document.dispatchEvent(new CustomEvent('scrollToSection', {
+                        detail: { sectionId: section.id }
                     }));
                 }
-                lastActiveSection = section.id; 
+                lastActiveSection = section.id;
             }
         });
 
@@ -36,20 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
             dot.setAttribute('tabindex', isActive ? '0' : '-1');
         });
     }
-    
+
     dots.forEach(clickedDot => {
         clickedDot.addEventListener('click', () => {
             const targetSectionId = clickedDot.getAttribute('data-target');
             const targetSection = document.getElementById(targetSectionId);
-            
+
             if (targetSection) {
                 isScrolling = true;
-                
+
                 viewportBox.scrollTo({
                     top: targetSection.offsetTop - viewportBox.offsetTop,
                     behavior: 'smooth'
                 });
-                
+
                 dots.forEach(dot => {
                     const isClicked = dot === clickedDot;
                     dot.classList.toggle('active', isClicked);
@@ -59,15 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (document.activeElement !== clickedDot) {
                     clickedDot.focus();
                 }
-                
-                document.dispatchEvent(new CustomEvent('scrollToSection', { 
-                    detail: { sectionId: targetSectionId } 
+
+                document.dispatchEvent(new CustomEvent('scrollToSection', {
+                    detail: { sectionId: targetSectionId }
                 }));
-                
+
                 setTimeout(() => {
                     isScrolling = false;
-                    updateActiveDot(); 
-                }, 600); 
+                    updateActiveDot();
+                }, 600);
             }
         });
 
@@ -89,36 +90,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 newIndex = dots.length - 1;
             }
 
-
             if (newIndex !== currentIndex) {
-                dots[newIndex].focus(); 
-                dots[newIndex].click(); 
+                dots[newIndex].focus();
+                dots[newIndex].click();
             }
         });
     });
-    
-    // Scroll-Event-Listener mit verbessertem Debounce
+
     let scrollTimeout;
     viewportBox.addEventListener('scroll', () => {
-        // Flag setzen, wenn gescrollt wird
         isScrolling = true;
-        
-        // Sofort den aktiven Punkt aktualisieren für flüssiges Feedback
         updateActiveDot();
-        
-        // Bestehende Timeouts löschen
         clearTimeout(scrollTimeout);
-        
-        // Neuen Timeout setzen
         scrollTimeout = setTimeout(() => {
-            // Scroll ist abgeschlossen
             isScrolling = false;
-            
-            // Einen letzten updateActiveDot-Aufruf machen
             updateActiveDot();
-        }, 150); // Warten, bis der Benutzer mit dem Scrollen fertig ist
+        }, 150);
     });
-    
-    // Initialisierung beim Laden
+
     updateActiveDot();
 });

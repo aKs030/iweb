@@ -1,375 +1,103 @@
 <!DOCTYPE html>
 <html lang="de">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-  <!-- Für iOS als Web-App -->
-  <meta content="yes" name="apple-mobile-web-app-capable"/>
-  <meta content="Meine Webseite" name="apple-mobile-web-app-title"/>
-  <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
-  <!-- Apple Touch Icons in verschiedenen Größen -->
-  <link href="/img/touch-icon-180.png" rel="apple-touch-icon" sizes="180x180"/>
-  <link href="/img/touch-icon-152.png" rel="apple-touch-icon" sizes="152x152"/>
-  <link href="/img/touch-icon-120.png" rel="apple-touch-icon" sizes="120x120"/>
-  <link href="/img/touch-icon-180.png" rel="apple-touch-icon"/>
-  <link href="/img/favicon-32.png" rel="icon" sizes="32x32" type="image/png"/>
-  <link href="/img/favicon.ico" rel="icon" type="image/x-icon"/>
-  <meta content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken." name="description"/>
-  <meta content="Abdulkerim, persönliche Website, Webentwicklung, Blog, Portfolio" name="keywords"/>
-  <meta content="Abdulkerim" name="author"/>
-  <meta content="default-src 'self';
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Deine Webseite">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
+    <link rel="apple-touch-icon" href="/img/touch-icon-180.png">
+
+    <link rel="icon" href="/img/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+
+    <meta name="description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken.">
+    <meta name="keywords" content="Abdulkerim, persönliche Website, Webentwicklung, Blog, Portfolio">
+    <meta name="author" content="Abdulkerim">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
                    img-src 'self' data: https:;
                    style-src 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
                    font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net;
                    script-src 'self' https://cdn.jsdelivr.net;
-                   connect-src 'self';" http-equiv="Content-Security-Policy"/>
-  <meta content="strict-origin-when-cross-origin" name="referrer"/>
-  <title>
-   Abdulkerim ⭐️
-  </title>
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Lobster&amp;family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
-  <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" rel="stylesheet"/>
-  <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" integrity="sha384-d/WfYtXfS1niad2g8AWtoRQ9JjL6a8Z9QyZA0Z1E6K5UUv2OE47f1QKgU8SkJj3y" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"/>
-  <link href="/css/menu.css" rel="stylesheet"/>
-  <link href="/css/index.css" rel="stylesheet"/>
- </head>
- <body>
-  <a class="visually-hidden-focusable" href="#main-content">
-   Zum Inhalt springen
-  </a>
-  <header role="banner">
-   <div id="menu-container">
-   </div>
-  </header>
-  <noscript>
-   <div style="text-align:center;padding:1rem;background-color:#ffcc00;color:#000;">
-    <strong>
-     Hinweis:
-    </strong>
-    Diese Website benötigt JavaScript, um korrekt zu funktionieren. Bitte aktivieren Sie JavaScript in Ihrem Browser.
-   </div>
-  </noscript>
-  <main class="viewport-box" id="main-content">
-   <section class="sections-container snap-section" id="section-hero">
-   </section>
-   <section class="sections-container snap-section" id="section-features">
-   </section>
-   <section class="sections-container snap-section" id="section-about">
-   </section>
-   <div aria-label="Seitennavigation" aria-orientation="vertical" class="dots-nav" role="tablist">
-    <div aria-controls="section-hero" aria-label="Zur Startseite" aria-selected="true" class="dot active" data-target="section-hero" role="tab" tabindex="0">
-    </div>
-    <div aria-controls="section-features" aria-label="Zu den Features" aria-selected="false" class="dot" data-target="section-features" role="tab" tabindex="-1">
-    </div>
-    <div aria-controls="section-about" aria-label="Über mich" aria-selected="false" class="dot" data-target="section-about" role="tab" tabindex="-1">
-    </div>
-   </div>
-  </main>
-  <div class="hidden-templates" id="section-templates">
-   <template id="template-hero-1">
-    <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <div class="update-header">
-      <h3 class="fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-       Willkommen
-      </h3>
-      <div class="glow-bar">
-      </div>
-     </div>
-     <p class="lead text-animate" data-animation="animate__fadeInUp">
-      Ich freue mich, dass du den Weg hierher gefunden hast.
-      <br/>
-      Diese Seite dient als mein digitales Zuhause im
-      <br/>
-      World Wide Web, auf der ich meine Interessen,
-      <br/>
-      Erfahrungen und Gedanken teilen möchte.1
-     </p>
-    </div>
-   </template>
-   <template id="template-hero-2">
-    <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <div class="update-header">
-      <h3 class="fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-       Willkommen
-      </h3>
-      <div class="glow-bar">
-      </div>
-     </div>
-     <p class="card-text lead lead-wilkommmen text-animate" data-animation="animate__fadeInUp">
-      Ich freue mich, dass du den Weg hierher gefunden hast.
-      <br/>
-      Diese Seite dient als mein digitales Zuhause im
-      <br/>
-      World Wide Web, auf der ich meine Interessen,
-      <br/>
-      Erfahrungen und Gedanken teilen möchte.
-     </p>
-    </div>
-   </template>
-   <template id="template-hero-3">
-    <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <div class="update-header">
-      <h3 class="fw-bold text-animate animate__animated shimmer-text" data-animation="animate__fadeInDown">
-       Willkommen
-      </h3>
-      <div class="glow-bar">
-      </div>
-     </div>
-     <p class="lead lead-wilkommmen text-animate" data-animation="animate__fadeInUp">
-      Ich freue mich, dass du den Weg hierher gefunden hast.
-      <br/>
-      Diese Seite dient als mein digitales Zuhause im
-      <br/>
-      World Wide Web, auf der ich meine Interessen,
-      <br/>
-      Erfahrungen und Gedanken teilen möchte.3
-     </p>
-    </div>
-   </template>
-   <template id="template-features-1">
-    <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <div class="container">
-      <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="/pages/ubermich.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="400">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-person-circle animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Wer bin ich?
-          </h5>
-          <p class="card-text">
-           Einblicke in meine Persönlichkeit,
-           <br/>
-           meine Hobbys und das, was mich begeistert. 1
-          </p>
-         </div>
-        </a>
-       </div>
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="album.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="800">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-camera-fill animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Meine Erinnerungen
-          </h5>
-          <p class="card-text">
-           Hier findet ihr eine bunte Sammlung von Fotos,
-           <br/>
-           spannenden Eindrücken und besonderen Momenten.
-          </p>
-         </div>
-        </a>
-       </div>
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="/pages/index-game.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="1200">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-joystick animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Game-Zone
-          </h5>
-          <p class="card-text">
-           Tauche ein in spannende Spiele!
-           <br/>
-           Teste dein Können in kniffligen Herausforderungen.
-          </p>
-         </div>
-        </a>
-       </div>
-      </div>
-     </div>
-    </div>
-   </template>
-   <template id="template-features-2">
-    <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <div class="container">
-      <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="/pages/ubermich.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="400">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-person-badge animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Wer bin ich?
-          </h5>
-          <p class="card-text">
-           Einblicke in meine Persönlichkeit,
-           <br/>
-           meine Hobbys und das, was mich begeistert. 2
-          </p>
-         </div>
-        </a>
-       </div>
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="album.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="800">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-images animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Meine Erinnerungen
-          </h5>
-          <p class="card-text">
-           Hier findet ihr eine bunte Sammlung von Fotos, spannenden Eindrücken und besonderen Momenten.
-          </p>
-         </div>
-        </a>
-       </div>
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="/pages/index-game.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="1200">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-controller animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Game-Zone
-          </h5>
-          <p class="card-text">
-           Tauche ein in spannende Spiele!
-           <br/>
-           Teste dein Können in kniffligen Herausforderungen.
-          </p>
-         </div>
-        </a>
-       </div>
-      </div>
-     </div>
-    </div>
-   </template>
-   <template id="template-features-3">
-    <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <div class="container">
-      <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="/pages/ubermich.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="400">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-person-lines-fill animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Wer bin ich?
-          </h5>
-          <p class="card-text">
-           Einblicke in meine Persönlichkeit,
-           <br/>
-           meine Hobbys und das, was mich begeistert. 3
-          </p>
-         </div>
-        </a>
-       </div>
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="album.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="800">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-file-image animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Meine Erinnerungen
-          </h5>
-          <p class="card-text">
-           Hier findet ihr eine bunte Sammlung von Fotos, spannenden Eindrücken und besonderen Momenten.
-          </p>
-         </div>
-        </a>
-       </div>
-       <div class="col">
-        <a class="text-decoration-none text-reset animated-link" href="/pages/index-game.html">
-         <div class="card border-0 text-center scroll-animate" data-animation="animate__flipInX" data-delay="1200">
-          <div class="icon-wrapper d-flex justify-content-center align-items-center">
-           <i aria-hidden="true" class="bi bi-dice-5 animated-icon">
-           </i>
-          </div>
-          <h5 class="card-title">
-           Game-Zone
-          </h5>
-          <p class="card-text">
-           Tauche ein in spannende Spiele! Teste dein Können in kniffligen Herausforderungen.
-          </p>
-         </div>
-        </a>
-       </div>
-      </div>
-     </div>
-    </div>
-   </template>
-   <template id="template-about-1">
-    <div class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <p class="scroll-animate" data-animation="animate__fadeInUp">
-      Vielen Dank, dass du meine Homepage besuchst.
-                    Ich hoffe, dass du hier interessante Inhalte findest und dich gerne auf meiner Seite umsiehst.
-                    Vergiss nicht, regelmäßig vorbeizuschauen,
-                    um über meine neuesten Aktivitäten und Gedanken auf dem Laufenden zu bleiben.
-     </p>
-     <h2 class="scroll-animate decorative-hr" data-animation="animate__fadeInDown">
-      Alles Gute und viel Spaß beim Stöbern!
-     </h2>
-    </div>
-   </template>
-   <template id="template-about-2">
-    <div class="vh-100 d-flex flex-column justify-content-center align-items-center text-center snap transparent-section">
-     <p class="scroll-animate" data-animation="animate__fadeInUp">
-      Schön, dass du hier bist! Ich hoffe, meine Seite gefällt dir.
-                    Schau dich gerne um und entdecke mehr über mich, meine Projekte und Interessen.
-                    Ich aktualisiere die Seite regelmäßig, also komm bald wieder!
-     </p>
-     <h2 class="scroll-animate decorative-hr" data-animation="animate__fadeInDown">
-      Danke für deinen Besuch und viel Freude beim Entdecken!
-     </h2>
-    </div>
-   </template>
-  </div>
-  <script>
-   document.addEventListener('DOMContentLoaded', () => {
-  const animatedIcons = document.querySelectorAll('.card .animated-icon');
+                   connect-src 'self';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
 
-  animatedIcons.forEach(icon => {
-    const card = icon.closest('.card'); // Finde die übergeordnete Karte
+    <title>Abdulkerim ⭐️</title>
 
-    if (card) {
-      const handleAnimationEnd = () => {
-        icon.classList.add('js-rotated'); // Verhindert weitere Animationen über CSS :not()
-        // Der Event-Listener wird dank { once: true } automatisch entfernt.
-      };
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-      const handleMouseEnter = () => {
-        // Füge den Event-Listener nur hinzu, wenn die Animation noch nicht stattgefunden hat.
-        if (!icon.classList.contains('js-rotated')) {
-          icon.addEventListener('transitionend', handleAnimationEnd, { once: true });
-        }
-        // Die CSS-Regel .card:hover .icon-wrapper .animated-icon:not(.js-rotated)
-        // kümmert sich um das Starten der Transformation.
-      };
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" integrity="sha384-d/WfYtXfS1niad2g8AWtoRQ9JjL6a8Z9QyZA0Z1E6K5UUv2OE47f1QKgU8SkJj3y" crossorigin="anonymous">
 
-      card.addEventListener('mouseenter', handleMouseEnter);
-    }
-  });
-});
-  </script>
-  <script defer="" src="/js/intext.js">
-  </script>
-  <script defer="" src="/js/menu.js">
-  </script>
-  <script defer="" src="/js/scroll-dots.js">
-  </script>
-  <script crossorigin="anonymous" defer="" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5HCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js">
-  </script>
- </body>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+
+    <a class="visually-hidden-focusable" href="#main-content">Zum Inhalt springen</a>
+
+    <header role="banner">
+        <div id="menu-container"></div>
+    </header>
+
+    <noscript>
+        <div style="text-align:center;padding:1rem;background-color:#ffcc00;color:#000;">
+            <strong>Hinweis:</strong> Diese Website benötigt JavaScript, um korrekt zu funktionieren. Bitte aktivieren Sie JavaScript in Ihrem Browser.
+        </div>
+    </noscript>
+
+    <main id="main-content" class="viewport-box">
+        <section class="sections-container snap-section" id="section-hero"></section>
+        <section class="sections-container snap-section" id="section-features"></section>
+        <section class="sections-container snap-section" id="section-about"></section>
+
+        <div class="dots-nav" aria-label="Seitennavigation" role="tablist" aria-orientation="vertical">
+            <div class="dot active" data-target="section-hero" aria-label="Zur Startseite" role="tab" aria-controls="section-hero" aria-selected="true" tabindex="0"></div>
+            <div class="dot" data-target="section-features" aria-label="Zu den Features" role="tab" aria-controls="section-features" aria-selected="false" tabindex="-1"></div>
+            <div class="dot" data-target="section-about" aria-label="Über mich" role="tab" aria-controls="section-about" aria-selected="false" tabindex="-1"></div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedIcons = document.querySelectorAll('.card .animated-icon');
+
+            animatedIcons.forEach(icon => {
+                const card = icon.closest('.card'); // Finde die übergeordnete Karte
+
+                if (card) {
+                    const handleAnimationEnd = () => {
+                        icon.classList.add('js-rotated'); // Verhindert weitere Animationen über CSS :not()
+                    };
+
+                    const handleMouseEnter = () => {
+                        if (!icon.classList.contains('js-rotated')) {
+                            icon.addEventListener('transitionend', handleAnimationEnd, { once: true });
+                        }
+                    };
+
+                    card.addEventListener('mouseenter', handleMouseEnter);
+                }
+            });
+        });
+    </script>
+
+    <script src="/js/templateLoader.js" defer></script>
+    <script src="/js/intext.js" defer></script>
+    <script src="/js/menu.js" defer></script>
+    <script src="/js/scroll-dots.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5HCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous" defer></script>
+</body>
 </html>

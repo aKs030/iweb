@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mapping von Sektions-IDs zu Arrays von HTML-Template-IDs
     const sectionTemplateIds = {
         'section-hero': ['template-hero-1', 'template-hero-2', 'template-hero-3'],
-        'section-features': ['template-features-1', 'template-features-2', 'template-features-3'], // Stellen Sie sicher, dass diese Templates 3 Karten enthalten!
+        'section-features': ['template-features-1', 'template-features-2', 'template-features-3'],
         'section-about': ['template-about-1', 'template-about-2']
     };
 
@@ -125,19 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const chosenAnimation = getRandomElement(possibleAnimations);
 
                     // --- Z-Index Steuerung für Karten während der Animation ---
-                     // Setze Z-Index nur für die Dauer der Animation
-                     let initialZIndex = ''; // Standard Z-Index ist oft 'auto' oder 0
+                     let initialZIndex = '';
                      if (element.classList.contains('is-middle-card')) {
-                         initialZIndex = '10'; // Mittlere Karte höher
+                         initialZIndex = '10';
                      } else if (element.classList.contains('is-upper-card') || element.classList.contains('is-lower-card')) {
-                         initialZIndex = '5'; // Obere/Untere Karten niedriger
+                         initialZIndex = '5';
                      }
-                     // Setze den Z-Index direkt als Inline-Style VOR der Animation
                      if(initialZIndex !== '') {
                          element.style.zIndex = initialZIndex;
-                          // console.log(`Setze z-index ${initialZIndex} für`, element);
                      }
-                     // --- Ende Z-Index Steuerung ---
+                    // --- Ende Z-Index Steuerung ---
 
 
                     // Setze das Element in seinen Startzustand zurück (entferne alte Animationen)
@@ -168,13 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         element.classList.add('animate__animated', chosenAnimation);
                         element.style.opacity = '1';
-
-                         // Optional: Entferne den Z-Index wieder, NACHDEM die Animation visuell gestartet ist
-                         // Eine kleine Verzögerung hier stellt sicher, dass die Z-Ordnung während des wichtigen Teils der Animation aktiv ist.
-                         // Bei manchen Animationen (wie Fade/Zoom) ist der Z-Index nicht so kritisch wie bei komplexen Bewegungen.
-                         // Testen, ob es besser ist, den Z-Index hier oder erst im resetAnimations zu entfernen.
-                         // Standardmässig entfernen wir es erst im resetAnimations, um es während der GESAMTEN Animation aktiv zu halten.
-                         // setTimeout(() => { el.style.removeProperty('z-index'); }, 500 + currentDelay); // Beispiel: 500ms nach Animationsstart des Elements
                     }, currentDelay);
                 });
 
@@ -185,23 +175,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
      // Führt den visuellen Reset der Animationen durch (Klassen und Opazität entfernen)
-    // Setzt auch den Z-Index für Karten zurück.
     function resetAnimations(sectionElement) {
-        // console.log(`Starte visuellen Reset für Sektion ${sectionElement.id}`);
-
         const currentContent = sectionElement.querySelector('.full-screen-section, .vh-100');
 
         const elementsToReset = [];
         if(currentContent) {
-            elementsToReset.push(currentContent); // Container
-            elementsToReset.push(...currentContent.querySelectorAll('.text-animate, .scroll-animate, .card')); // Kinder
+            elementsToReset.push(currentContent);
+            elementsToReset.push(...currentContent.querySelectorAll('.text-animate, .scroll-animate, .card'));
         } else {
             elementsToReset.push(...sectionElement.querySelectorAll('.text-animate, .scroll-animate, .card'));
         }
 
 
         setTimeout(() => {
-             // console.log(`Führe visuellen Reset nach Timeout für ${sectionElement.id} aus.`);
             elementsToReset.forEach(el => {
                 el.classList.remove('animate__animated');
                  const classes = Array.from(el.classList);
@@ -212,11 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
                  });
                 el.style.opacity = '0';
                 el.style.removeProperty('transition');
-                // --- Z-Index zurücksetzen ---
                  el.style.removeProperty('z-index');
-                 // --- Ende Z-Index zurücksetzen ---
             });
-             // console.log(`Visueller Reset für ${sectionElement.id} abgeschlossen.`);
         }, 100);
     }
 
@@ -232,11 +215,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const templateId = sectionSequenceData.sequence[sectionSequenceData.index];
+        // Hier greifen wir auf das Template zu, das von templateLoader.js geladen und ins DOM eingefügt wurde.
         const template = document.getElementById(templateId);
 
         if (!template) {
             console.error(`HTML Template mit ID ${templateId} nicht gefunden.`);
-             sectionSequenceData.index = (sectionSequenceData.index + 1) % sectionSequenceData.sequence.length;
+            sectionSequenceData.index = (sectionSequenceData.index + 1) % sectionSequenceData.sequence.length;
             return;
         }
 
@@ -255,17 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const newContentContainer = sectionElement.querySelector('.full-screen-section, .vh-100');
 
         if (newContentContainer) {
-            // --- Füge spezifische Klassen für Karten hinzu (für Z-Index und ggf. spezifische Animationen) ---
             addCardLayoutClasses(newContentContainer);
-            // --- Ende Klassen hinzufügen ---
-
-            // --- ÜBERGANGSEFFEKT FÜR DEN CONTAINER HINZUFÜGEN ---
             newContentContainer.style.opacity = '0';
             newContentContainer.classList.add('animate__animated', 'animate__fadeIn');
-
-            // Initialisiere Animationen für die Elemente IM CONTAINER (inkl. Z-Index Logik in initializeAnimations)
             initializeAnimations(newContentContainer);
-
         } else {
              console.warn(`Kein erwarteter Container (.full-screen-section oder .vh-100) im Template ${templateId} gefunden. Versuche Animation auf Section-Element selbst.`);
              sectionElement.style.opacity = '0';
@@ -291,8 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
                      if (!animatedSections[sectionId] && canAnimate(sectionId)) {
                          console.log(`Sektion ${sectionId} ist sichtbar und bereit für Initialisierung.`);
                          updateSection(sectionId);
-                     } else {
-                           // console.log(`Sektion ${sectionId} ist sichtbar, aber bereits animiert oder im Cooldown.`);
                      }
                 } else {
                     animatedSections[sectionId] = false;
@@ -313,8 +288,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Start der Ausführung ---
-    initializeShuffledSequences();
-    observeSections();
+    initializeShuffledSequences(); // Diese Funktion kann sofort laufen.
+
+    // Warte auf das benutzerdefinierte Event 'templatesLoaded' von templateLoader.js
+    document.addEventListener('templatesLoaded', () => {
+        console.log('Templates wurden geladen. Starte Sektionsbeobachtung.');
+        observeSections(); // Jetzt können wir sicher sein, dass getElementById die Templates finden wird.
+    });
 
 
     // --- Event-Handler für externe Trigger ---
