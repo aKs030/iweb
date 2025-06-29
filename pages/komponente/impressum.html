@@ -4,21 +4,48 @@
   <meta charset="utf-8">
   <title>Impressum</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/_global.css">
+  <link rel="stylesheet" href="/css/datenschutz.css">
+  <script>
+    // Setzt das aktuelle Jahr automatisch
+    window.addEventListener('DOMContentLoaded', function() {
+      var yearSpan = document.getElementById('current-year');
+      if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+    });
+  </script>
 </head>
 <body>
-  <main>
+  <main class="datenschutz-main" role="main">
     <h1>Impressum</h1>
-    <p>
-      Angaben gemäß § 5 TMG:<br>
+    <address>
+      <strong>Angaben gemäß § 5 TMG:</strong><br>
       Abdulkerim<br>
       Musterstraße 1<br>
       12345 Musterstadt<br>
       Deutschland
-    </p>
-    <p>
-      Kontakt:<br>
-      E-Mail: <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a>
-    </p>
+    </address>
+    <section>
+      <strong>Kontakt:</strong><br>
+      E-Mail: <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a><br>
+      Telefon: <a href="tel:+491234567890" aria-label="Telefonnummer anrufen">+49 123 4567890</a>
+      <br>
+      <span style="font-size:0.95em;color:var(--color-text-muted);">Bitte keine Werbung oder unaufgeforderte Angebote.</span>
+    </section>
+    <section>
+      <strong>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:</strong><br>
+      Abdulkerim, Musterstraße 1, 12345 Musterstadt
+    </section>
+    <p class="last-updated">Letzte Aktualisierung: Juni 2024</p>
   </main>
+  <footer class="footer">
+    <p><span id="current-year">2024</span> &copy; Abdulkerim – Alle Rechte vorbehalten.</p>
+    <nav class="footer-nav" aria-label="Footer Navigation">
+      <a href="/index.html">Startseite</a>
+      <span aria-hidden="true">|</span>
+      <a href="/pages/komponente/datenschutz.html">Datenschutz</a>
+      <span aria-hidden="true">|</span>
+      <a href="/pages/komponente/impressum.html" aria-current="page">Impressum</a>
+    </nav>
+  </footer>
 </body>
 </html>
