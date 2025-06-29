@@ -85,7 +85,7 @@ main {
 .lead-text {
     text-align: center;
     color: var(--color-text-muted);
-    font-size: var(--font-size-lead);
+    font-size: var(--font-size-ss);
     margin-bottom: var(--spacing-xl);
     padding-inline: var(--container-padding-inline);
 }
@@ -237,7 +237,7 @@ main {
 
 .image-description h3 {
     font-size: var(--font-size-h3);
-    color: var(--color-accent);
+    color: var(--color-shadow-deco);
     margin-bottom: var(--spacing-xs);
 }
 

@@ -23,6 +23,7 @@
   /* Schriftgrößen (mit Clamp für Responsivität) */
   --font-size-base: 1rem; /* Basis-Schriftgröße */
   --font-size-sm: 0.875rem; /* Kleinere Schriftgröße */
+  --font-size-ss: 0.575rem; /* Kleinere Schriftgröße */
   --font-size-lg: 1.125rem; /* Größere Schriftgröße */
   --font-size-xl: 1.25rem; /* Extra große Schriftgröße */
 
