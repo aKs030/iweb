@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Submenu-Links initialisieren
       initializeSubmenuLinks();
 
+      // Seitentitel im Logo setzen
+      setSiteTitle();
+
       // Klick außerhalb des Menüs schließen
       document.addEventListener('click', (event) => {
         const isClickInside = menuContainer.contains(event.target);
@@ -116,5 +119,25 @@ function closeMenu(container) {
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
+  }
+}
+
+/**
+ * Setzt den Seitentitel im Logo anhand des aktuellen Pfads
+ */
+function setSiteTitle() {
+  const titleMap = {
+    '/index.html': 'Startseite',
+    '/': 'Startseite',
+    '/pages/album.html': 'Fotogalerie',
+    '/pages/ubermich.html': 'Über mich',
+    '/pages/index-game.html': 'Spiele-Übersicht',
+    '/pages/features/wetter.html': 'Wetter',
+  };
+  const path = window.location.pathname;
+  let pageTitle = titleMap[path] || document.title || 'Website';
+  const siteTitleEl = document.getElementById('site-title');
+  if (siteTitleEl) {
+    siteTitleEl.textContent = pageTitle;
   }
 }
