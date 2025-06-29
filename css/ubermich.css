@@ -31,14 +31,23 @@ body {
 📦 VIEWPORT-BOX (Angepasst für inneres Scrolling)
 ========================================= */
 .viewport-box {
-  /* Verwende clamp für Breite und Höhe für flüssigere Responsivität */
-  width: clamp(300px, 90vw, 1000px); /* Min 300px, bevorzugt 90vw, max 1000px */
-  height: clamp(400px, 65vh, 800px); /* Min 400px, bevorzugt 65vh, max 800px */
+  /* Breite: Etwas breiter als zuvor, damit die Hauptkarte mehr Platz hat.
+     - clamp(320px, 95vw, 1200px): Startet bei 320px, geht bis 95% der Viewport-Breite,
+       maximal aber 1200px. Erhöhe 1200px für noch breitere Darstellung auf großen Bildschirmen.
+  */
+  width: clamp(320px, 95vw, 1200px); /* Optimiert für breitere Darstellung */
+  /* Höhe: Beibehaltung oder leichte Anpassung.
+     - clamp(450px, 70vh, 850px): Minimale Höhe leicht erhöht, bevorzugt 70% Viewport-Höhe,
+       maximale Höhe auf 850px erhöht.
+  */
+  height: clamp(450px, 70vh, 850px); /* Optimiert für vertikale Raumausnutzung */
+
   background: var(--color-bg-secondary);
   box-shadow: 0 5px 14px var(--color-shadow-dark);
-  overflow: hidden; /* Verhindert doppeltes Scrollen */
+  overflow: hidden;
   border-radius: var(--border-radius);
-    padding-right: clamp(3rem, 8vw, 10rem); /* deutlich mehr rechts-Puffer */
+  /* padding-right auskommentiert, da scroll-wrapper dies übernimmt */
+  /* padding-right: clamp(3rem, 8vw, 10rem); */
 
   display: flex;
   flex-direction: column;
@@ -53,6 +62,44 @@ body {
 }
 @supports (scrollbar-width: none) {
   .viewport-box {
+    scrollbar-width: none;
+  }
+}
+
+/* NEW: Scroll Wrapper to contain the content and show the scrollbar outside viewport-box */
+.scroll-wrapper {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    /* Dies ist der entscheidende Teil für die Position der Scrollbar "rechts außen".
+       Der Wert 'clamp(4rem, 10vw, 12rem)' bedeutet:
+       - min. 4rem: Mindestabstand vom rechten Rand des Inhalts zum rechten Rand des viewport-box.
+       - 10vw: Bevorzugt 10% der Viewport-Breite.
+       - max. 12rem: Maximaler Abstand von 12rem.
+       Erhöhe diese Werte, um die Scrollbar noch weiter nach rechts zu verschieben.
+    */
+    padding-right: clamp(4rem, 10vw, 12rem);
+    box-sizing: content-box;
+    margin-right: -17px; /* Beibehaltung des Hacks für Scrollbar-Breite */
+}
+
+/* Scrollbar-Stile for scroll-wrapper (bleibt wie gehabt) */
+.scroll-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+.scroll-wrapper::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+.scroll-wrapper::-webkit-scrollbar-thumb {
+    background-color: #666;
+    border-radius: 4px;
+}
+.scroll-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: #888;
+}
+@supports (scrollbar-width: none) {
+  .scroll-wrapper {
     scrollbar-width: none;
   }
 }
@@ -96,29 +143,41 @@ p, li { font-size: var(--font-size-p); line-height: 1.6; font-weight: 400; lette
 
 /* Hauptkarten-Container für ubermich.html - Standard (für mittlere Bildschirme angepasst) */
 .ubermich-main-card {
-    /* clamp für max-width, um flexibler über Bildschirmgrößen zu sein */
-    max-width: clamp(320px, 70vw, 650px);
+    /* Setze die Breite der Hauptkarte auf 100% des scroll-wrappers.
+       Die max-width wird durch den viewport-box (dessen Elternteil) begrenzt.
+       padding: Das innere Padding der Karte, bevor der section-body beginnt.
+       Hier kannst du das äußere Padding deiner Inhalte steuern.
+       Ich habe die Werte etwas erhöht, damit der Inhalt nicht zu weit an den Rand der Karte rückt.
+    */
+    width: 100%; /* Nimmt die volle Breite des scroll-wrappers ein */
+    max-width: none; /* Deaktiviert die eigene max-width, die jetzt vom viewport-box kommt */
     margin: auto;
-    /* Optimiertes Padding mit clamp */
-    padding: clamp(15px, 3vw, 30px);
+    padding: clamp(20px, 4vw, 40px); /* Erhöhtes Padding für mehr Raum um den Inhalt */
 }
 
-/* --- Geändert: .section-body ist jetzt der scrollbare Bereich --- */
+/* --- .section-body: Wider Content Area & Optimized Padding --- */
 .section-body {
-  /* Flexibles Höhenlimit für Inhalte */
-  max-height: clamp(400px, 50vh, 600px);
+  /* Höhe des scrollbaren Bereichs: Etwas mehr Platz für Inhalte.
+     - clamp(500px, 55vh, 700px): Mindesthöhe auf 500px, bevorzugt 55% Viewport-Höhe,
+       maximale Höhe auf 700px erhöht. Dies gibt dem scrollbaren Inhalt mehr vertikalen Raum.
+  */
+  max-height: clamp(500px, 55vh, 700px); /* Erhöhte maximale Höhe für mehr Inhalt */
   overflow-y: auto;
   position: relative;
 
-  /* Seitenabstand so gesetzt, dass Scrollbar Raum hat */
-  padding: clamp(15px, 2vw, 30px) clamp(3rem, 5vw, 6rem);
+  /* Horizontaler Padding für den Inhalt:
+     Dies steuert den Abstand des Textes vom linken und rechten Rand innerhalb des section-body.
+     - clamp(2rem, 5vw, 6rem): Beibehaltung der vorherigen Werte, da sie einen guten Lesefluss unterstützen.
+       Wenn du extrem lange Zeilen möchtest, verringere diese Werte (z.B. clamp(1rem, 2vw, 3rem)).
+       Ich empfehle, hier nicht zu stark zu reduzieren, da lange Zeilen schwer lesbar sind.
+  */
+  padding: clamp(20px, 2.5vw, 35px) clamp(2rem, 5vw, 6rem); /* Anpassung top/bottom, left/right beibehalten */
 
   background-color: var(--color-bg-secondary);
   border-radius: var(--border-radius);
   box-shadow: inset 0 0 10px var(--color-shadow-dark);
   transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
 
-  /* Stabile Scrollbar-Gestaltung */
   scrollbar-gutter: stable both-edges;
 }
 
@@ -167,8 +226,8 @@ p, li { font-size: var(--font-size-p); line-height: 1.6; font-weight: 400; lette
 /* Überschriften und Absätze */
 .section-body h3 {
     /* Optimierte font-size mit clamp */
-    font-size: clamp(1.6em, 3.5vw, 2em);
-    margin: clamp(15px, 2.5vw, 30px) 0;
+    font-size: var(--font-size-h3); /* Nutze die globalen Variablen */
+    margin: var(--spacing-md) 0 var(--spacing-sm); /* Konsistente Abstände */
     color: #ddd;
     transform: translateY(50px);
     opacity: 0;
@@ -184,10 +243,9 @@ p, li { font-size: var(--font-size-p); line-height: 1.6; font-weight: 400; lette
 }
 
 .section-body p {
-    /* Optimierte font-size mit clamp */
-    font-size: clamp(1em, 1.5vw, 1.2em);
+    font-size: var(--font-size-p); /* Nutze die globalen Variablen */
     line-height: 1.7;
-    margin-bottom: clamp(15px, 2vw, 25px);
+    margin-bottom: var(--spacing-sm); /* Konsistente Abstände */
     text-align: left;
     transform: translateY(30px);
     opacity: 0;
@@ -204,9 +262,9 @@ p, li { font-size: var(--font-size-p); line-height: 1.6; font-weight: 400; lette
 
 .section-body ul {
     list-style: disc;
-    margin-left: clamp(15px, 3vw, 30px); /* Optimiert margin-left mit clamp */
-    padding-left: clamp(15px, 3vw, 30px); /* Optimiert padding-left mit clamp */
-    margin-bottom: clamp(15px, 2vw, 25px);
+    margin-left: var(--spacing-lg); /* Nutze globale Variable für Listen-Einzug */
+    padding-left: var(--spacing-sm); /* Kleines Padding zum Marker */
+    margin-bottom: var(--spacing-sm); /* Konsistente Abstände */
     transform: translateY(40px);
     opacity: 0;
     transition: transform var(--transition-speed) var(--transition-ease) 0.2s, opacity var(--transition-speed) 0.2s;
@@ -221,16 +279,16 @@ p, li { font-size: var(--font-size-p); line-height: 1.6; font-weight: 400; lette
 }
 
 .contact-links {
-    margin-top: clamp(20px, 4vw, 40px); /* Optimiert margin-top mit clamp */
+    margin-top: var(--spacing-lg); /* Erhöhe den Abstand nach oben */
     display: flex;
     justify-content: center;
-    gap: clamp(15px, 3vw, 30px); /* Optimiert gap mit clamp */
+    gap: var(--spacing-md); /* Mehr Abstand zwischen den Links */
     flex-wrap: wrap;
 }
+
 .contact-links a {
     color: var(--color-card-icon);
-    /* Optimierte font-size mit clamp */
-    font-size: clamp(2em, 4vw, 3em);
+    font-size: clamp(2.2em, 4.5vw, 3.5em); /* Etwas größere Icons */
     text-decoration: none;
     transition: color var(--transition-speed) ease, transform var(--transition-speed) ease;
 }
