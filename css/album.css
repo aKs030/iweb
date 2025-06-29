@@ -260,7 +260,7 @@ main {
         padding: var(--spacing-xs) var(--spacing-sm);
     }
     .gallery-section {
-        padding-top: 50px; /* Abstand nach oben für mobile Ansicht */
+        padding-top: 30px; /* Abstand nach oben für mobile Ansicht */
     }
 }
 
@@ -288,7 +288,7 @@ main {
         gap: var(--spacing-xs);
     }
     .gallery-section {
-        padding-top: 50px; /* Noch mehr Abstand für sehr kleine Geräte */
+        padding-top: 30px; /* Noch mehr Abstand für sehr kleine Geräte */
     }
 }
 

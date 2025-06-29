@@ -156,20 +156,48 @@
             });
         }
 
-        // Event Listeners for thumbnails
-        thumbnails.forEach((thumb, index) => {
-            thumb.addEventListener('click', () => {
-                updateGallery(index);
-            });
+        // Swipe-Unterstützung für Hero-Image auf Touch-Geräten (z.B. iPhone)
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const swipeThreshold = 50; // Mindestabstand für Swipe in px
+
+        const heroImageDisplay = document.querySelector('.hero-image-display');
+        heroImageDisplay.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+            }
+        });
+        heroImageDisplay.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            const diffX = touchEndX - touchStartX;
+            if (Math.abs(diffX) > swipeThreshold) {
+                if (diffX < 0) {
+                    // Nach links gewischt -> nächstes Bild
+                    updateGallery(currentIndex + 1);
+                } else {
+                    // Nach rechts gewischt -> vorheriges Bild
+                    updateGallery(currentIndex - 1);
+                }
+            }
         });
 
-        // Event Listeners for navigation buttons
+        // Event Listeners für Navigation
         prevButton.addEventListener('click', () => {
             updateGallery(currentIndex - 1);
         });
 
         nextButton.addEventListener('click', () => {
             updateGallery(currentIndex + 1);
+        });
+
+        // Event Listener für Thumbnails (Klick und Tap)
+        thumbnails.forEach((thumb, index) => {
+            thumb.addEventListener('click', () => {
+                updateGallery(index);
+            });
+            thumb.addEventListener('touchend', () => {
+                updateGallery(index);
+            });
         });
 
         // Initialize gallery with the first image
