@@ -1,5 +1,44 @@
-/* _global.css - Globale CSS-Variablen für das Design System */
+html {
+  font-size: 16px; /* 1rem = 16px auf allen Seiten */
+}
 
+body {
+  font-size: var(--font-size-base); /* = 1rem */
+  line-height: 1.5;
+  background: var(--color-bg-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  overflow: hidden; /* Body overflow hidden, viewport-box handles scrolling */
+  scroll-behavior: smooth;
+  line-height: 1.6;
+  font-family: var(--font-family-main);
+        margin-top: -20px; /* Abstand nach unten vergrößern */
+
+}
+
+  
+.container,
+.viewport-box,
+.section-body {
+  font-size: inherit;
+  
+}
+
+p, a, li, span, label {
+  font-size: var(--font-size-p);
+}
+
+/* _global.css - Globale CSS-Variablen für das Design System */
 :root {
   /* Farben */
   --color-bg: #333; /* Hintergrundfarbe der Seite */
@@ -81,7 +120,7 @@
   color: var(--color-text-muted);
   text-align: center;
   padding: 0.2rem 0;
-  font-size: 0.65rem;
+  font-size: 0.75rem !important;
   box-shadow: 0 -1px 5px var(--color-shadow-dark);
   width: 100%;
   position: fixed;

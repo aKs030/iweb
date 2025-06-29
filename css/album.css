@@ -11,27 +11,6 @@
     --hero-white-shadow: 0 10px 30px rgba(255,255,255,0.35); /* Weißer, weicher Schatten */
 }
 
-/* Allgemeine Stile - basierend auf globalen Variablen */
-html, body {
-    height: 100vh; /* Volle Höhe des Viewports */
-    margin: 0;
-    padding: 0;
-    font-family: var(--font-family-main);
-    background-color: var(--color-bg);
-    color: var(--color-text-main);
-    line-height: 1.6;
-    overflow: hidden; /* Scrollen deaktiviert */
-    display: flex;
-    flex-direction: column;
-}
-
-body {
-    min-height: 100vh;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -109,7 +88,7 @@ main {
     /* Optional: max-width für große Bildschirme */
     max-width: 700px;
     margin: 0 auto;
-    margin-top: 15%; /* Abstand nach unten vergrößern */
+    margin-top: 35%; /* Abstand nach unten vergrößern */
 }
 
 .hero-image-display img {
@@ -192,7 +171,7 @@ main {
     white-space: nowrap;
     padding-bottom: var(--spacing-sm); /* Platz für Scrollbar */
     max-width: 100vw;
-        margin-top: 5%; /* Abstand nach unten vergrößern */
+        margin-top: 25%; /* Abstand nach unten vergrößern */
 
     scrollbar-width: thin; /* Firefox */
     scrollbar-color: var(--color-accent) var(--color-bg-secondary); /* Firefox */

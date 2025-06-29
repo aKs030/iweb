@@ -11,22 +11,6 @@
   box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-  font-family: var(--font-family-main);
-  background-color: var(--color-bg);
-  color: var(--color-text-main);
-  overflow: hidden; /* Body overflow hidden, viewport-box handles scrolling */
-  scroll-behavior: smooth;
-}
-
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
 /* =====================================
 🎨 ANIMATED ICON STYLES
 ========================================= */
