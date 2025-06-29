@@ -1,0 +1,161 @@
+/* /css/_privacy.css */
+
+/* * WICHTIG: Die _global.css wird hier importiert. 
+ * Stelle sicher, dass der Pfad korrekt ist, relativ zu dieser Datei.
+ */
+@import url('_global.css'); 
+
+html, body {
+    overflow: auto !important; /* Erlaubt Scrollen und überschreibt globale Einstellung */
+    height: auto !important; /* Wichtig: Ermöglicht dem Body, sich an den Inhalt anzupassen */
+}
+/* Allgemeine Anpassungen für den Hauptinhaltsbereich */
+main {
+    line-height: 1.7; /* Verbessert die Lesbarkeit langer Texte */
+}
+
+/* Überschriften-Anpassungen */
+h1, h2, h3, h4 {
+    color: var(--color-accent); /* Akzentfarbe für Überschriften */
+    margin-top: 2.5rem; /* Abstand über den Überschriften */
+    margin-bottom: 1rem; /* Abstand unter den Überschriften */
+    line-height: 1.2; /* Engere Zeilenhöhe für Überschriften */}
+
+h1 {
+    text-align: center; /* Zentriert die Hauptüberschrift */
+    margin-bottom: 2.5rem; /* Mehr Platz unter der Hauptüberschrift */
+    text-transform: uppercase; /* Optional: Großbuchstaben für die Hauptüberschrift */
+    letter-spacing: 0.05em; /* Optional: Leicht erweiterter Zeichenabstand */
+}
+
+h2 {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Dezente Trennlinie unter Hauptabschnitten */
+    padding-bottom: 0.5rem; /* Abstand zwischen Text und Trennlinie */
+    margin-top: 3rem; /* Etwas mehr Abstand für größere Abschnitte */
+}
+
+/* Absätze und Listen */
+p {
+    margin-bottom: 1.2rem; /* Einheitlicher Abstand zwischen Absätzen */
+}
+
+ul {
+    margin-left: 1.5rem; /* Einzug für Listen */
+    margin-bottom: 1.5rem; /* Abstand unter der Liste */
+}
+
+ul li {
+    margin-bottom: 0.6rem; /* Abstand zwischen Listeneinträgen */
+}
+
+/* Links innerhalb des Inhaltsbereichs */
+main a {
+    color: var(--color-link); /* Links in der Akzentfarbe */
+    text-decoration: underline; /* Unterstreichung für Links */
+    text-decoration-color: rgba(255, 204, 41, 0.5); /* Dezente Unterstrichfarbe */
+    transition: color 0.2s ease-in-out, text-decoration-color 0.2s ease-in-out;
+}
+
+main a:hover {
+    color: var(--color-accent-hover); /* Farbänderung beim Hover */
+    text-decoration-color: var(--color-accent-hover); /* Unterstrichfarbe beim Hover */
+}
+
+/* Spezielle Formatierung für die Adresse (Verantwortlicher, Kontakt) */
+address {
+    font-style: normal; /* Entfernt die standardmäßige Kursivschrift */
+    margin-bottom: 1.5rem; /* Abstand nach der Adresse */
+    line-height: 1.6;
+}
+
+/* Hervorhebung von wichtigen Textteilen (z.B. Rechte) */
+strong {
+    color: var(--color-decor); /* Leicht abweichende Farbe für starke Betonung */
+}
+
+/* Anpassung des Stand-Datums */
+.last-updated { /* Neue Klasse für gezieltere Ansprache */
+    font-size: 0.9em;
+    color: var(--color-text-muted);
+    text-align: right; /* Datum rechtsbündig */
+    margin-top: 3rem; /* Deutlicher Abstand zum vorherigen Text */
+}
+
+/* Datenschutzbereich */
+.datenschutz-main {
+  max-width: 700px;
+  max-height: 700px; /* Optional: Maximalhöhe für den Hauptbereich */
+  margin: 8rem auto 0 auto; /* Mehr Abstand oben, kein Abstand unten */
+  background: var(--color-bg-secondary);
+  padding: 2.5rem 2rem 6rem 2rem; /* Viel Platz unten für Footer, großzügiges Padding */
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 12px var(--color-shadow-dark);
+  color: var(--color-text-main);
+  font-size: var(--font-size-p);
+  line-height: 1.7;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  
+}
+
+/* Mobile Optimierung */
+@media (max-width: 800px) {
+  .datenschutz-main {
+    max-width: 89vw;
+    max-height: auto; /* Optional: Maximalhöhe für den Hauptbereich */
+    padding: 1.2rem ;
+    font-size: 0.97rem;
+    margin-top: 20%;
+    border-radius: 0.3rem;
+    box-shadow: 0 1px 4px var(--color-shadow-dark);
+  }
+}
+
+@media (max-width: 500px) {
+  .datenschutz-main {
+    max-width: 89vw;
+    max-height: 130vw; /* Optional: Maximalhöhe für den Hauptbereich */
+    padding: 1.2rem ;
+    font-size: 0.97rem;
+    margin-top: 29%;
+    border-radius: 0.3rem;
+    box-shadow: 0 1px 4px var(--color-shadow-dark);
+  }
+}
+
+/* Mobile Anpassung */
+@media (max-width: 600px) {
+  .footer {
+    font-size: 1.68rem !important;
+    padding: 0.65rem 1.2rem;
+  }
+  .footer-nav {
+    gap: 0.3rem;
+  }
+}
+
+/* Reduzierte Bewegung - Nur Variablen für Übergänge/Animationen auf 0 setzen */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-speed: 0.01ms;
+    --transition-ease: linear;
+  }
+}
+
+/* Responsive Anpassungen für kleinere Bildschirme (aus _privacy.css) */
+@media (max-width: 768px) {
+    main {
+        padding: 2.5rem !important;
+        margin: 3rem auto;
+    }
+
+    h1 {
+        font-size: clamp(1.5rem, 5vw + 1rem, 2.5rem);
+        margin-bottom: 1.5rem;
+    }
+
+    h2 {
+        font-size: clamp(1.2rem, 4vw + 0.8rem, 2rem);
+        margin-top: 2rem;
+    }
+}
