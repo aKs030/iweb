@@ -89,23 +89,19 @@
   bottom: 0;
   z-index: 100;
 }
-
 .footer p {
   margin: 0;
   line-height: 1;
 }
-
 .footer-nav {
   margin-top: 0.02rem;
 }
-
 .footer-nav a {
   margin: 0 0.3rem;
   font-size: 0.65rem;
   color: var(--color-text-muted);
   text-decoration: none;
 }
-
 .footer-nav a:hover {
   color: var(--color-decor);
   text-decoration: underline;

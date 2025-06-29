@@ -1,4 +1,5 @@
 /* games.css - Spezifische Stile für die Spiele-Seite */
+@import url('_global.css'); /* Variablen importieren */
 
 /* 🌟 Basis-Stil */
 html, body {
