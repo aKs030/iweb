@@ -22,9 +22,7 @@ html, body {
   scroll-behavior: smooth;
   line-height: 1.6;
   font-family: var(--font-family-main);
-
 }
-
   
 .container,
 .viewport-box,
@@ -117,7 +115,7 @@ p, a, li, span, label {
   background-color: var(--color-bg-secondary);
   color: var(--color-text-muted);
   text-align: center;
-  padding: 0.2rem 0;
+  padding: 1.0rem 0; /* Höhe leicht erhöht */
   font-size: 0.75rem !important;
   box-shadow: 0 -1px 5px var(--color-shadow-dark);
   width: 100%;
@@ -129,6 +127,10 @@ p, a, li, span, label {
 .footer p {
   margin: 0;
   line-height: 1;
+  font-size: 0.72rem; /* Schriftgröße etwas kleiner gemacht */
+}
+.footer p #current-year {
+  font-size: inherit; /* Erbt die kleinere Schriftgröße vom Elternelement */
 }
 .footer-nav {
   margin-top: 0.02rem;
