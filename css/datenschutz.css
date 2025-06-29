@@ -1,20 +1,16 @@
 /* /css/_privacy.css */
 
-/* * WICHTIG: Die _global.css wird hier importiert. 
- * Stelle sicher, dass der Pfad korrekt ist, relativ zu dieser Datei.
- */
+
 @import url('_global.css'); 
 
 html, body {
     overflow: auto !important; /* Erlaubt Scrollen und überschreibt globale Einstellung */
     height: auto !important; /* Wichtig: Ermöglicht dem Body, sich an den Inhalt anzupassen */
 }
-/* Allgemeine Anpassungen für den Hauptinhaltsbereich */
 main {
     line-height: 1.7; /* Verbessert die Lesbarkeit langer Texte */
 }
 
-/* Überschriften-Anpassungen */
 h1, h2, h3, h4 {
     color: var(--color-accent); /* Akzentfarbe für Überschriften */
     margin-top: 2.5rem; /* Abstand über den Überschriften */
@@ -34,7 +30,6 @@ h2 {
     margin-top: 3rem; /* Etwas mehr Abstand für größere Abschnitte */
 }
 
-/* Absätze und Listen */
 p {
     margin-bottom: 1.2rem; /* Einheitlicher Abstand zwischen Absätzen */
 }
@@ -48,7 +43,6 @@ ul li {
     margin-bottom: 0.6rem; /* Abstand zwischen Listeneinträgen */
 }
 
-/* Links innerhalb des Inhaltsbereichs */
 main a {
     color: var(--color-link); /* Links in der Akzentfarbe */
     text-decoration: underline; /* Unterstreichung für Links */
@@ -61,19 +55,16 @@ main a:hover {
     text-decoration-color: var(--color-accent-hover); /* Unterstrichfarbe beim Hover */
 }
 
-/* Spezielle Formatierung für die Adresse (Verantwortlicher, Kontakt) */
 address {
     font-style: normal; /* Entfernt die standardmäßige Kursivschrift */
     margin-bottom: 1.5rem; /* Abstand nach der Adresse */
     line-height: 1.6;
 }
 
-/* Hervorhebung von wichtigen Textteilen (z.B. Rechte) */
 strong {
     color: var(--color-decor); /* Leicht abweichende Farbe für starke Betonung */
 }
 
-/* Anpassung des Stand-Datums */
 .last-updated { /* Neue Klasse für gezieltere Ansprache */
     font-size: 0.9em;
     color: var(--color-text-muted);
@@ -81,33 +72,21 @@ strong {
     margin-top: 3rem; /* Deutlicher Abstand zum vorherigen Text */
 }
 
-/* Datenschutzbereich */
 .datenschutz-main {
   max-width: 700px;
-  max-height: 700px;
-  margin: 8rem auto 0 auto;
+  max-height: 700px; /* Optional: Maximalhöhe für den Hauptbereich */
+  margin: 8rem auto 0 auto; /* Mehr Abstand oben, kein Abstand unten */
   background: var(--color-bg-secondary);
-  padding: 2.5rem 2rem 6rem 2rem;
+  padding: 2.5rem 2rem 6rem 2rem; /* Viel Platz unten für Footer, großzügiges Padding */
   border-radius: var(--border-radius);
   box-shadow: 0 2px 12px var(--color-shadow-dark);
   color: var(--color-text-main);
-  font-size: var(--font-size-p); /* Textgröße aus global */
+  font-size: var(--font-size-p);
   line-height: 1.7;
   box-sizing: border-box;
   overflow-x: hidden;
 }
 
-.datenschutz-main h1 {
-  font-size: var(--font-size-h2); /* Textgröße aus global */
-  text-align: center;
-  margin-bottom: 2.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-accent);
-  line-height: 1.1;
-}
-
-/* Mobile Optimierung */
 @media (max-width: 800px) {
   .datenschutz-main {
     max-width: 89vw;
@@ -132,7 +111,6 @@ strong {
   }
 }
 
-/* Mobile Anpassung */
 @media (max-width: 600px) {
   .footer {
     font-size: 1.68rem !important;
