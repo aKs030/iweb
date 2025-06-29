@@ -1,6 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
 
+  // Jahr im Footer setzen
+  const yearEl = document.getElementById('current-year');
+  if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+  }
+
   if (!menuContainer) {
     console.error('Fehler: menuContainer wurde nicht gefunden.');
     return;
@@ -140,4 +146,6 @@ function setSiteTitle() {
   if (siteTitleEl) {
     siteTitleEl.textContent = pageTitle;
   }
+
+  
 }
