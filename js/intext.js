@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sectionTemplateIds = {
         'section-hero': ['template-hero-1', 'template-hero-2', 'template-hero-3'],
         'section-features': ['template-features-1', 'template-features-2', 'template-features-3'],
-        'section-about': ['template-about-1', 'template-about-2']
+        'section-about': ['template-about-1', 'template-about-2', 'template-about-3']
     };
 
     // Speicher für die gemischten Reihenfolgen der Template-IDs und den aktuellen Index

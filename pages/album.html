@@ -1,420 +1,182 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Galerie mit animiertem Bildwechsel</title>
-  <link rel="stylesheet" href="/css/menu.css">
-  <!-- HINWEIS: Es wird dringend empfohlen, dieses CSS in eine externe Datei auszulagern. -->
-  <style>
-    /* ==========================
-       Farbvariablen und globale Einstellungen
-       ========================== */
-    :root {
-      --main-fonts-color: #fff;
-      --main-decor-color: #ffffff;
-      --main-bg-color: #444;
-      --secondary-bg-color: #050505;
-      --main-text-color: rgba(245, 245, 245, 0.9);
-      --accent-color: rgba(255, 204, 41, 0.8);
-      --menu-bg-color: #333333cc;
-      --secondary-text-color: rgba(245, 245, 245, 0.5);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professionelle Fotogalerie - Interaktiv</title>
+    
+    <meta name="description" content="Entdecken Sie eine interaktive Fotogalerie mit atemberaubenden Momentaufnahmen und intuitiver Navigation.">
+    <meta name="keywords" content="Fotogalerie, Fotos, Bilder, interaktiv, Fotografie, professionell, Kunst, Abdo, Slider, Karussell">
+    <meta name="author" content="Abdo">
+    <meta name="robots" content="index, follow">
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
-      background-color: var(--main-bg-color);
-      font-family: 'Poppins', sans-serif;
-      /* overscroll-behavior is not fully supported, so it's removed to avoid iOS < 16 issues */
-    }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-    /* ==========================
-       Container & Galerie-Stile
-       ========================== */
-    .container {
-      position: fixed;
-      top: 55%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 90%;
-      max-width: 800px;
-      height: 80vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      
-    }
+    <link rel="stylesheet" href="/css/album.css">
+    <link rel="stylesheet" href="/css/menu.css">
+    
+    <script src="/js/menu.js" defer></script> 
 
-    .gallery {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: var(--secondary-bg-color);
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-    }
-
-    /* ----------------------
-       Animation für den Bildwechsel
-       ---------------------- */
-
-    /* Hauptbild – standardmäßig unsichtbar, Animation beim Aktivieren */
-    .gallery img.main {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.95);
-      width: auto;
-      height: auto;
-      max-width: 100%;
-      max-height: 100%;
-      opacity: 0;
-    }
-  
-
-    @keyframes kenBurns {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-}
-.gallery img.main.visible {
-  animation: kenBurns 8s linear forwards, fadeIn 0.8s ease forwards;
-  z-index: 10;
-}
-@keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-
-
-
-
-
-
-
-
-    /* Detailbeschreibung */
-    .details {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      color: var(--main-fonts-color);
-      padding: 10px 20px;
-      border-radius: 5px;
-      font-size: 1rem;
-      text-align: center;
-      z-index: 15;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-    .details.visible {
-      opacity: 1;
-    }
-
-    /* Fortschrittsbalken */
-    .progress-bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: var(--secondary-text-color);
-      z-index: 1000;
-    }
-    .progress {
-      width: 0;
-      height: 100%;
-      background: var(--accent-color);
-      transition: width 0.5s ease;
-    }
-
-    /* Navigation-Buttons */
-    .nav-button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-10%);
-      background: rgba(0, 0, 0, 0.5);
-      border: none;
-      color: var(--main-fonts-color);
-      font-size: 2rem;
-      padding: 10px;
-      cursor: pointer;
-      z-index: 20;
-      border-radius: 50%;
-      transition: transform 0.3s ease, background 0.3s ease;
-    }
-    .nav-button:hover,
-    .nav-button:focus {
-      background: rgba(0, 0, 0, 0.7);
-      transform: scale(1.1);
-      outline: none;
-    }
-    .nav-button.left { left: 10px; }
-    .nav-button.right { right: 10px; }
-
-    /* Thumbnails */
-    .thumbnails {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-    .thumbnails img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      cursor: pointer;
-      opacity: 0.6;
-      border: 2px solid transparent;
-      transition: opacity 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-    }
-    .thumbnails img.active,
-    .thumbnails img:hover {
-      opacity: 1;
-      border-color: var(--accent-color);
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 768px) {
-      .container { width: 100%; }
-      .thumbnails img { width: 60px; height: 60px; }
-      .nav-button { font-size: 1.5rem; padding: 8px; }
-    }
-    @media (max-width: 480px) {
-      .nav-button { font-size: 1.5rem; padding: 8px; }
-      .thumbnails img { width: 50px; height: 50px; }
-    }
-
-        /* Popup-Fenster */
-        .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      max-width: 500px;
-      padding: 20px;
-      background: var(--secondary-bg-color);
-      color: var(--main-fonts-color);
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      text-align: center;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
-    }
-    .popup.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-    .popup h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: var(--accent-color);
-    }
-    .popup p {
-      margin: 0;
-      font-size: 1rem;
-    }
-    .popup button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      color: var(--main-fonts-color);
-      background: var(--accent-color);
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    .popup button:hover {
-      background: #ffcc33;
-    }
-  </style>
 </head>
+
 <body>
-    <!-- Popup-Fenster -->
-    <div class="popup" id="introPopup">
-      <h2>Willkommen!</h2>
-      <p>Erkunde die Galerie und entdecke atemberaubende Bilder. Klicke auf "Loslegen", um zu beginnen.</p>
-      <button id="closePopup">Loslegen</button>
-    </div>
-    <div id="menu-container"></div>
+    <header id="menu-container" role="banner" aria-label="Hauptnavigation"></header>
 
-  <div class="container">
+    <main id="main-content">
+        <section class="gallery-section" aria-labelledby="gallery-heading">
+            <div class="container">
+                <h2 id="gallery-heading">Meine Fotografische Reise</h2>
+                <p class="lead-text">
+                    Tauchen Sie ein in meine Bildwelten und entdecken Sie ausgewählte Werke in voller Pracht.
+                </p>
+            </div>
 
-    <div class="gallery" id="gallery">
-      <!-- Hauptbilder -->
-      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1">
-      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 2">
-      <img class="main" src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3">
+            <div class="hero-image-display">
+                <img id="main-gallery-image" src="/img/Album/cS-1.jpg" alt="Hauptbild der Galerie: Luftaufnahme einer dichten, welligen Wolkendecke von oben, die an eine Berglandschaft erinnert, mit klarem blauem Himmel darüber.">
+                
+                <button class="gallery-nav-button prev-button" aria-label="Vorheriges Bild anzeigen">&#10094;</button>
+                <button class="gallery-nav-button next-button" aria-label="Nächstes Bild anzeigen">&#10095;</button>
+            </div>
 
-      <!-- Detailbeschreibung -->
-      <div class="details" id="details">Bild 1: Beschreibung des ersten Bildes.</div>
-      <!-- Fortschrittsbalken -->
-      <div class="progress-bar">
-        <div class="progress" id="progress"></div>
-      </div>
-    
-      <!-- Navigation Buttons -->
-      <button class="nav-button left" id="prevBtn" aria-label="Vorheriges Bild">&larr;</button>
-      <button class="nav-button right" id="nextBtn" aria-label="Nächstes Bild">&rarr;</button>
-    </div>
+            <div class="image-description">
+                <h3 id="image-title">Über den Wolken</h3>
+                <p id="image-detail">Ein majestätischer Blick auf die endlose Weite und die friedliche Stille über dem Horizont.</p>
+            </div>
 
-    <!-- Thumbnails -->
-    <div class="thumbnails" id="thumbnails">
-      <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 1" data-index="0">
-      <img src="https://lh3.googleusercontent.com/pw/AP1GczPHdI-JsRmOsOAwdlI38nt4GMcUWI8XIg-RMydI_KtqmiMxFNyYobLWpymDEYdOq5UhZz8LhETl6UPkmDFBciHEa7pjSV2YjB-X3D641wQMQZIeSYZ4TZJEdayfI7MxJ1axu-8vjVB1RNG5RIAbASE=w1336-h1780-s-no?authuser=0" alt="Bild 2" data-index="1">
-      <img src="https://lh3.googleusercontent.com/pw/AP1GczNzoEFn87AJaAK5kmO90ZD7cCyz8r3UB4WqYFFuf2my4Idk9zeIaA6Pis7miYA0ksahp2tjcKC6vHaa2YMv7VJD-DKyQiVzNep1A5MvtGNiV94jOpL-HlVo_76ylS6DZauWWVtmuU75BnZonkoHKZg=w1776-h1332-s-no?authuser=0" alt="Bild 3" data-index="2">
-    </div>
-  </div>
+            <div class="thumbnails-container">
+                <div class="thumbnails-grid">
+                    <div class="thumbnail-item active" data-index="0">
+                        <img src="/img/Album/cS-1.jpg" alt="Vorschaubild: Luftaufnahme Wolkendecke">
+                    </div>
+                    <div class="thumbnail-item" data-index="1">
+                        <img src="/img/Album/cS-2.jpg" alt="Vorschaubild: Stadtbrücke bei Nacht">
+                    </div>
+                    <div class="thumbnail-item" data-index="2">
+                        <img src="/img/Album/cS-3.jpg" alt="Vorschaubild: Küstenlandschaft mit Felsen">
+                    </div>
+                    <div class="thumbnail-item" data-index="3">
+                        <img src="/img/Album/cS-4.jpg" alt="Vorschaubild: Ruinen unter bewölktem Himmel">
+                    </div>
+                    <div class="thumbnail-item" data-index="4">
+                        <img src="/img/Album/cS-5.jpg" alt="Vorschaubild: Antike Ruinen in Landschaft">
+                    </div>
+                    <div class="thumbnail-item" data-index="5">
+                        <img src="/img/Album/cS-6.jpg" alt="Vorschaubild: Inneres einer Moschee">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; <span id="current-year"></span> Abdo. Alle Rechte vorbehalten.</p>
+        </div>
+    </footer>
 
-  <script src="/js/menu.js" defer></script>
-
-  <!-- HINWEIS: Es wird dringend empfohlen, dieses Skript in eine externe Datei auszulagern. -->
-  <script>
-    // Elemente erfassen
-    const images = document.querySelectorAll(".gallery img.main");
-    const details = document.getElementById("details");
-    const progress = document.getElementById("progress");
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const thumbnails = document.querySelectorAll(".thumbnails img");
-    const totalImages = images.length;
-    
-    let currentIndex = 0;
-    let debounceTimer = null;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    const threshold = 50; // Mindestdistanz für einen gültigen Swipe
-
-    // Bildanzeige aktualisieren, inkl. Details, Fortschrittsbalken und Thumbnails
-    function showImage(index) {
-      // Entferne evtl. vorhandene Animationen durch Neusetzen der Klasse (optional: forciere Reflow)
-      images.forEach((img, i) => {
-        img.classList.remove("visible");
-        // Erzwinge Neuberechnung, damit die Animation neu abgespielt wird
-        img.offsetWidth; // Accessing offsetWidth forces a reflow
-        if (i === index) {
-          img.classList.add("visible");
-        }
-      });
-
-      const descriptions = [
-        "Bild 1: Beschreibung des ersten Bildes.",
-        "Bild 2: Beschreibung des zweiten Bildes.",
-        "Bild 3: Beschreibung des dritten Bildes."
-      ];
-      details.textContent = descriptions[index] || "";
-      details.classList.add("visible");
-      progress.style.width = `${((index + 1) / totalImages) * 100}%`;
-
-      thumbnails.forEach((thumb, i) => {
-        thumb.classList.toggle("active", i === index);
-      });
-    }
-
-    // Navigation: Zum nächsten oder vorherigen Bild
-    function navigate(direction) {
-      if (direction === "next") {
-        currentIndex = (currentIndex + 1) % totalImages;
-      } else if (direction === "prev") {
-        currentIndex = (currentIndex - 1 + totalImages) % totalImages;
-      }
-      showImage(currentIndex);
-    }
-
-    // Scroll-Event (Debounce)
-    function handleScroll(event) {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        if (event.deltaY > 0) {
-          navigate("next");
-        } else {
-          navigate("prev");
-        }
-      }, 150);
-    }
-
-    // Touch-Events: Start und Ende erfassen
-    function handleTouchStart(event) {
-      touchStartX = event.touches[0].clientX;
-      touchStartY = event.touches[0].clientY;
-    }
-    function handleTouchEnd(event) {
-      const touchEndX = event.changedTouches[0].clientX;
-      const touchEndY = event.changedTouches[0].clientY;
-      const diffX = touchStartX - touchEndX;
-      const diffY = touchStartY - touchEndY;
-
-      // Unterscheide zwischen horizontalen und vertikalen Gesten
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (Math.abs(diffX) > threshold) {
-          navigate(diffX > 0 ? "next" : "prev");
-        }
-      } else if (Math.abs(diffY) > threshold) {
-        navigate(diffY > 0 ? "next" : "prev");
-      }
-    }
-
-    // Tastatursteuerung
-    function handleKeyDown(event) {
-      if (event.key === "ArrowRight") {
-        navigate("next");
-      } else if (event.key === "ArrowLeft") {
-        navigate("prev");
-      }
-    }
-
-    // Event Listener setzen
-    window.addEventListener("wheel", handleScroll, { passive: true });
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
-    window.addEventListener("keydown", handleKeyDown);
-
-    prevBtn.addEventListener("click", () => navigate("prev"));
-    nextBtn.addEventListener("click", () => navigate("next"));
-
-    thumbnails.forEach((thumb) => {
-      thumb.addEventListener("click", (e) => {
-        currentIndex = parseInt(e.target.dataset.index, 10);
-        showImage(currentIndex);
-      });
-    });
-
-    // Galerie initialisieren
-    showImage(currentIndex);
-  </script>
     <script>
-      // Popup-Fenster schließen
-      const popup = document.getElementById("introPopup");
-      const closePopupButton = document.getElementById("closePopup");
-  
-      closePopupButton.addEventListener("click", () => {
-        popup.classList.add("hidden");
-      });
-  
-      // Optional: Popup nach einer Weile automatisch schließen
-      setTimeout(() => {
-        popup.classList.add("hidden");
-      }, 10000); // Schließt nach 10 Sekunden
+        const mainImage = document.getElementById('main-gallery-image');
+        const imageTitle = document.getElementById('image-title');
+        const imageDetail = document.getElementById('image-detail');
+        const thumbnails = document.querySelectorAll('.thumbnail-item');
+        const prevButton = document.querySelector('.prev-button');
+        const nextButton = document.querySelector('.next-button');
+
+        const galleryData = [
+            {
+                src: '/img/Album/cS-1.jpg',
+                alt: 'Luftaufnahme einer dichten, welligen Wolkendecke von oben, die an eine Berglandschaft erinnert, mit klarem blauem Himmel darüber.',
+                title: 'Himmel über den Wolken',
+                detail: 'Ein majestätischer Blick auf die endlose Weite und die friedliche Stille über dem Horizont.'
+            },
+            {
+                src: '/img/Album/cS-2.jpg',
+                alt: 'Nachtaufnahme einer beleuchteten Stadtbrücke, deren Lichter sich spektakulär im dunklen Wasser darunter spiegeln.',
+                title: 'Stadtlichter bei Nacht',
+                detail: 'Magische Momente, wenn die Stadt erwacht und in leuchtenden Farben glänzt.'
+            },
+            {
+                src: '/img/Album/cS-3.jpg',
+                alt: 'Dramatische Küstenlandschaft mit einem majestätischen Felsen im dunkelblauen Meer und sanften, grünen Hügeln im Hintergrund unter bewölktem Himmel.',
+                title: 'Küstenzauber',
+                detail: 'Die Ruhe und ursprüngliche Kraft der Natur am Meer, perfekt eingefangen.'
+            },
+            {
+                src: '/img/Album/cS-4.jpg',
+                alt: 'Weitläufige Ansicht antiker Ruinen oder archäologischer Stätten mit massiven Steinmauern und Bodenstrukturen unter einem dramatisch bewölkten Himmel.',
+                title: 'Vergangene Zeiten',
+                detail: 'Spuren der Geschichte in Stein gemeißelt – ein Fenster in alte Zivilisationen.'
+            },
+            {
+                src: '/img/Album/cS-5.jpg',
+                alt: 'Panorama einer weitläufigen, grünen Hügellandschaft mit den zerfallenen Säulen und Mauerresten einer antiken Stadt.',
+                title: 'Geheimnisse der Antike',
+                detail: 'Faszination für alte Kulturen und ihre imposanten Bauwerke in der Natur.'
+            },
+            {
+                src: '/img/Album/cS-6.jpg',
+                alt: 'Das prachtvolle, reich verzierte Innere einer großen Moschee mit einer beeindruckenden, kunstvollen Kuppel und einem detailreichen rötlichen Gebetsteppich auf dem Boden.',
+                title: 'Architektur & Spiritualität',
+                detail: 'Inspiration durch Formen, Licht und die ehrwürdige Atmosphäre heiliger Räume.'
+            }
+        ];
+
+        let currentIndex = 0;
+
+        function updateGallery(index) {
+            // Check if index is valid
+            if (index < 0) {
+                index = galleryData.length - 1; // Wrap around to the end
+            } else if (index >= galleryData.length) {
+                index = 0; // Wrap around to the beginning
+            }
+            currentIndex = index;
+
+            // Update main image and description with fade effect
+            mainImage.style.opacity = 0; // Start fade out
+            setTimeout(() => {
+                mainImage.src = galleryData[currentIndex].src;
+                mainImage.alt = galleryData[currentIndex].alt;
+                imageTitle.textContent = galleryData[currentIndex].title;
+                imageDetail.textContent = galleryData[currentIndex].detail;
+                mainImage.style.opacity = 1; // Fade in new image
+            }, 200); // Duration of the fade-out transition
+
+            // Update active thumbnail class
+            thumbnails.forEach((thumb, idx) => {
+                if (idx === currentIndex) {
+                    thumb.classList.add('active');
+                    // Scroll active thumbnail into view if needed (optional)
+                    thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
+        }
+
+        // Event Listeners for thumbnails
+        thumbnails.forEach((thumb, index) => {
+            thumb.addEventListener('click', () => {
+                updateGallery(index);
+            });
+        });
+
+        // Event Listeners for navigation buttons
+        prevButton.addEventListener('click', () => {
+            updateGallery(currentIndex - 1);
+        });
+
+        nextButton.addEventListener('click', () => {
+            updateGallery(currentIndex + 1);
+        });
+
+        // Initialize gallery with the first image
+        updateGallery(0);
+
+        // Update current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
-    <div id="footer-container"></div>
-    <script src="/js/footer.js"></script>
 </body>
 </html>
