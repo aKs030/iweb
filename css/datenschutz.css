@@ -84,18 +84,27 @@ strong {
 /* Datenschutzbereich */
 .datenschutz-main {
   max-width: 700px;
-  max-height: 700px; /* Optional: Maximalhöhe für den Hauptbereich */
-  margin: 8rem auto 0 auto; /* Mehr Abstand oben, kein Abstand unten */
+  max-height: 700px;
+  margin: 8rem auto 0 auto;
   background: var(--color-bg-secondary);
-  padding: 2.5rem 2rem 6rem 2rem; /* Viel Platz unten für Footer, großzügiges Padding */
+  padding: 2.5rem 2rem 6rem 2rem;
   border-radius: var(--border-radius);
   box-shadow: 0 2px 12px var(--color-shadow-dark);
   color: var(--color-text-main);
-  font-size: var(--font-size-p);
+  font-size: var(--font-size-p); /* Textgröße aus global */
   line-height: 1.7;
   box-sizing: border-box;
   overflow-x: hidden;
-  
+}
+
+.datenschutz-main h1 {
+  font-size: var(--font-size-h2); /* Textgröße aus global */
+  text-align: center;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  line-height: 1.1;
 }
 
 /* Mobile Optimierung */
