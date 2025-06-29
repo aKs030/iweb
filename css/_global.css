@@ -10,8 +10,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: 0;
+        margin-top: -20px; /* Abstand nach unten vergrößern */
+
 }
 
 html, body {
@@ -22,7 +22,6 @@ html, body {
   scroll-behavior: smooth;
   line-height: 1.6;
   font-family: var(--font-family-main);
-        margin-top: -20px; /* Abstand nach unten vergrößern */
 
 }
 
@@ -31,7 +30,6 @@ html, body {
 .viewport-box,
 .section-body {
   font-size: inherit;
-  
 }
 
 p, a, li, span, label {

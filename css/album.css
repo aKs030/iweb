@@ -13,10 +13,11 @@
 
 .container {
     max-width: 1200px;
-    margin: 0 auto;
     padding-inline: var(--container-padding-inline);
     box-sizing: border-box;
     width: 100%;
+        margin-top: 15%; /* Abstand nach unten vergrößern */
+
 }
 
 h1, h2, h3 {
@@ -43,6 +44,7 @@ main {
     min-height: 0; /* Verhindert Überlauf */
     height: 100%;
     box-sizing: border-box;
+    
 }
 
 .gallery-section {
@@ -85,10 +87,7 @@ main {
     height: auto; /* Automatische Höhe für flexible Inhalte */
     padding: var(--spacing-xs);
     box-sizing: border-box;
-    /* Optional: max-width für große Bildschirme */
-    max-width: 700px;
-    margin: 0 auto;
-    margin-top: 35%; /* Abstand nach unten vergrößern */
+
 }
 
 .hero-image-display img {
@@ -171,7 +170,6 @@ main {
     white-space: nowrap;
     padding-bottom: var(--spacing-sm); /* Platz für Scrollbar */
     max-width: 100vw;
-        margin-top: 25%; /* Abstand nach unten vergrößern */
 
     scrollbar-width: thin; /* Firefox */
     scrollbar-color: var(--color-accent) var(--color-bg-secondary); /* Firefox */
