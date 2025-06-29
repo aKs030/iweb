@@ -1,7 +1,14 @@
-/* hero-gallery.css - Design für eine Hero-Fotogalerie mit Thumbnails */
+/* album.css - Design für eine Hero-Fotogalerie mit Thumbnails */
 
 /* Import der globalen Variablen aus _global.css. Muss am Anfang stehen! */
 @import url('_global.css');
+
+/* Custom Border Radii and Accent Color for this specific component */
+:root {
+    --hero-border-radius-sm: 6px; /* Smaller radius for the image inside the frame */
+    --hero-border-radius-lg: 12px; /* Larger radius for the main frame */
+    --hero-accent-border-color: rgba(255, 204, 41, 0.3); /* Lighter, semi-transparent accent based on _global.css --color-accent */
+}
 
 /* Allgemeine Stile - basierend auf globalen Variablen */
 html, body {
@@ -101,8 +108,9 @@ main {
     width: 100%;
     position: relative;
     background-color: var(--color-bg-secondary);
-    border-radius: var(--border-radius);
-    box-shadow: 0 8px 25px var(--color-shadow-dark);
+    /* Refinements for the background frame */
+    border-radius: var(--hero-border-radius-lg); /* Slightly larger border-radius for softer corners */
+    box-shadow: 0 10px 30px var(--color-shadow-dark), 0 0 0 2px var(--hero-accent-border-color); /* Enhanced shadow and subtle accent border */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -110,14 +118,16 @@ main {
     min-height: 0;
     height: 40vh; /* Dynamische Höhe */
     max-height: 50vh;
+    padding: var(--spacing-xs); /* Small inner padding to give the image a slight "frame" effect */
+    box-sizing: border-box; /* Ensure padding is included in the height/width */
 }
 
 .hero-image-display img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: contain; /* Ensures the whole image is visible within the container */
     display: block;
-    border-radius: var(--border-radius);
+    border-radius: var(--hero-border-radius-sm); /* Slightly smaller border-radius for the image itself */
     transition: opacity var(--transition-speed) ease-in-out;
     max-height: 100%;
 }
@@ -127,21 +137,31 @@ main {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6); /* Slightly darker background for better contrast */
     color: var(--color-decor);
     border: none;
     padding: var(--spacing-sm) var(--spacing-md);
     cursor: pointer;
-    font-size: 2rem;
+    font-size: 2.2rem; /* Slightly larger font size for better visibility */
     line-height: 1;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius); /* Using the global border-radius */
     z-index: 10;
-    opacity: 0.8;
-    transition: background-color var(--transition-speed), opacity var(--transition-speed);
+    opacity: 0.9; /* Start with higher opacity */
+    transition: background-color var(--transition-speed), opacity var(--transition-speed), transform var(--transition-speed);
+    /* Adding a subtle scale effect on hover */
+    display: flex; /* Use flexbox to center content */
+    align-items: center;
+    justify-content: center;
+    min-width: 44px; /* Ensure minimum touch target size */
+    min-height: 44px; /* Ensure minimum touch target size */
 }
 .gallery-nav-button:hover {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8); /* Darker on hover */
     opacity: 1;
+    transform: translateY(-50%) scale(1.05); /* Slight zoom effect on hover */
+}
+.gallery-nav-button:active {
+    transform: translateY(-50%) scale(0.98); /* Slight press effect when clicked */
 }
 .prev-button { left: var(--spacing-md); }
 .next-button { right: var(--spacing-md); }
@@ -256,7 +276,7 @@ main {
         height: 60px;
     }
     .gallery-nav-button {
-        font-size: 1.5rem;
+        font-size: 1.8rem; /* Adjusted for smaller screens */
         padding: var(--spacing-xs) var(--spacing-sm);
     }
     .gallery-section {
@@ -282,7 +302,7 @@ main {
     }
     .gallery-nav-button {
         padding: var(--spacing-xs);
-        font-size: 1.2rem;
+        font-size: 1.5rem; /* Adjusted for smallest screens */
     }
     .thumbnails-grid {
         gap: var(--spacing-xs);
