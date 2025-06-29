@@ -5,9 +5,10 @@
 
 /* Custom Border Radii and Accent Color for this specific component */
 :root {
-    --hero-border-radius-sm: 6px; /* Smaller radius for the image inside the frame */
-    --hero-border-radius-lg: 12px; /* Larger radius for the main frame */
-    --hero-accent-border-color: rgba(255, 204, 41, 0.3); /* Lighter, semi-transparent accent based on _global.css --color-accent */
+    --hero-border-radius-sm: 14px; /* Eleganter, stärker abgerundet */
+    --hero-border-radius-lg: 28px; /* Eleganter, stärker abgerundet */
+    --hero-accent-border-color: rgb(7, 7, 7); /* Elegantes, kühles Blau als Akzent */
+    --hero-white-shadow: 0 10px 30px rgba(255,255,255,0.35); /* Weißer, weicher Schatten */
 }
 
 /* Allgemeine Stile - basierend auf globalen Variablen */
@@ -50,21 +51,7 @@ h1 { font-size: var(--font-size-h1); }
 h2 { font-size: var(--font-size-h2); }
 h3 { font-size: var(--font-size-h3); }
 
-/* Header-Stile (leicht angepasst) */
-header {
-    background-color: var(--color-bg-secondary);
-    padding: var(--spacing-lg) 0;
-    text-align: center;
-    box-shadow: 0 4px 15px var(--color-shadow-dark);
-    flex-shrink: 0;
-}
 
-header h1 {
-    color: var(--color-decor);
-    margin: 0;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
 
 /* Hauptinhaltsbereich für die Galerie */
 main {
@@ -110,7 +97,7 @@ main {
     background-color: var(--color-bg-secondary);
     /* Refinements for the background frame */
     border-radius: var(--hero-border-radius-lg); /* Slightly larger border-radius for softer corners */
-    box-shadow: 0 10px 30px var(--color-shadow-dark), 0 0 0 2px var(--hero-accent-border-color); /* Enhanced shadow and subtle accent border */
+    box-shadow: var(--hero-white-shadow), 0 0 0 2px var(--hero-accent-border-color); /* Weißer Schatten + Akzent */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -231,8 +218,8 @@ main {
 }
 
 .thumbnail-item.active {
-    border-color: var(--color-accent); /* Aktives Thumbnail hervorheben */
-    transform: scale(1.05); /* Leichter Zoom für aktives Thumbnail */
+    border-color: var(--color-card-icon); /* Aktives Thumbnail hervorheben */
+    transform: scale(1.15); /* Leichter Zoom für aktives Thumbnail */
 }
 
 .thumbnail-item.active:hover {
