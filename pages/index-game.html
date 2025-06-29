@@ -5,118 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🎮 Spiele</title>
 
-  <!-- Benutzerdefinierte CSS -->
   <link rel="stylesheet" href="/css/menu.css">
-  <script src="/js/menu.js" defer></script>
-  <!-- Bootstrap Icons -->
-
+  <link rel="stylesheet" href="/css/index-game.css"> <link rel="stylesheet" href="/css/_global.css"> <script src="/js/menu.js" defer></script>
+  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    /* 🌟 Basis-Stil */
-    html, body {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-    }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #444;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .container {
-      width: 95%;
-      max-width: 900px;
-      background: rgba(255,255,255,0.05);
-      -webkit-backdrop-filter: blur(10px); /* For Safari */
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      text-align: center;
-      margin-top: 80px; /* Abstand zur Menüleiste */
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 20px;
-    }
-
-    /* 🎮 Spiele-Links als Karten-Widgets */
-    .game-links {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .game-card {
-      position: relative;
-      width: 180px;
-      height: 180px;
-      border-radius: 15px;
-      background: rgba(255,255,255,0.1);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: #fff;
-      font-weight: 600;
-      font-size: 1.2rem;
-    }
-
-    .game-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-
-    .game-icon {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      color: #fff;
-      transition: color 0.3s ease;
-    }
-
-    .game-card:hover .game-icon {
-      color: var(--accent-color, #00bfff);
-    }
-
-    /* 📱 Responsives Design */
-    @media (max-width: 700px) {
-      .container {
-        padding: 15px;
-      }
-      .game-links {
-        flex-direction: column;
-        align-items: center;
-      }
-    }
-  </style>
 </head>
 <body>
   <div id="menu-container"></div>
-  <!-- Hinweis für Besucher ohne JavaScript -->
   <noscript>
     Bitte aktivieren Sie JavaScript, um alle Funktionen dieser Seite nutzen zu können.
   </noscript>
   <main>
     <section class="container" aria-labelledby="spiele-ueberschrift">
       <h1 id="spiele-ueberschrift">🎮 Spiele</h1>
-      <ul class="game-links" style="list-style:none; padding:0; margin:0; display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
+      <ul class="game-links">
         <li>
           <a href="/pages/features/Run.html" class="game-card">
             <i class="bi bi-lightning-fill game-icon"></i>

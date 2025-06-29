@@ -1,0 +1,119 @@
+/* games.css - Spezifische Stile für die Spiele-Seite */
+
+/* 🌟 Basis-Stil */
+html, body {
+  height: 100%;
+  margin: 0;
+  /* overflow: hidden; */ /* Nur wenn der Container das primäre Scrolling übernimmt */
+  /* Wenn die Seite scrollbar sein soll, entfernen Sie 'overflow: hidden;' hier und im Container,
+     und lassen Sie den Browser das Standard-Scrolling handhaben oder steuern Sie es spezifisch.
+     Da der Container nicht wie ein viewport-box designed ist, ist 'overflow: hidden;' hier oft nicht ideal,
+     wenn der Inhalt den Bildschirm übersteigt. Für diese Seite, die wenig Inhalt hat, ist es ok. */
+}
+body {
+  font-family: var(--font-family-main);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  /* Übernahme der fluiden Größenlogik vom .viewport-box */
+  width: clamp(300px, 90vw, 1000px); /* Min 300px, bevorzugt 90vw, max 1000px */
+  /* Die Höhe könnte ebenfalls fluid sein, aber da es eine Spiele-Seite ist,
+     und der Inhalt nicht unbedingt scrollt, behalte ich eine flexible, aber nicht fixierte Höhe bei,
+     es sei denn, du möchtest, dass der Container eine feste Mindest-/Maximalhöhe hat.
+     Für den Inhalt dieser Seite ist auto oft besser. */
+  height: auto; /* Die Höhe passt sich dem Inhalt an */
+  min-height: clamp(400px, 65vh, 800px); /* Eine Mindesthöhe für den Container */
+
+  background: rgba(255,255,255,0.05);
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  /* Padding mit clamp, das auf globale Variablen zugreift */
+  padding: clamp(var(--spacing-sm), 2vw + 0.5rem, var(--spacing-xl)); /* Angepasster calc-Wert für Flexibilität */
+  box-shadow: 0 4px 12px var(--color-shadow-dark);
+  text-align: center;
+  margin-top: 80px; /* Abstand zur Menüleiste */
+  /* Wenn der Inhalt innerhalb des Containers scrollen soll, füge overflow-y hinzu */
+  /* overflow-y: auto; */
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  margin-bottom: var(--spacing-md);
+}
+
+/* 🎮 Spiele-Links als Karten-Widgets */
+.game-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--card-gap-max);
+  flex-wrap: wrap;
+}
+
+.game-card {
+  position: relative;
+  /* Die festen Breiten und Höhen könnten durch fluide Größen wie --card-padding-preferred
+     und eine Kombination aus flex-basis oder grid-template-columns ersetzt werden,
+     wenn die Karten flexibler in der Größe sein sollen.
+     Für den aktuellen Aufbau behalten wir die festen Werte bei. */
+  width: 180px;
+  height: 180px;
+  border-radius: var(--border-radius);
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 4px 10px var(--color-shadow-dark);
+  transition: transform var(--transition-speed) var(--transition-ease), box-shadow var(--transition-speed) var(--transition-ease);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--color-text-main);
+  font-weight: 600;
+  font-size: var(--card-title-size-max);
+}
+
+.game-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px var(--color-shadow-dark);
+}
+
+.game-icon {
+  font-size: var(--card-icon-main-size-max);
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-text-main);
+  transition: color var(--transition-speed) var(--transition-ease);
+}
+
+.game-card:hover .game-icon {
+  color: var(--color-accent);
+}
+
+/* 📱 Responsives Design */
+@media (max-width: 700px) {
+  .container {
+    /* Padding bei kleinen Bildschirmen, kann auch durch clamp abgedeckt werden */
+    padding: var(--spacing-md);
+  }
+  .game-links {
+    flex-direction: column;
+    align-items: center;
+  }
+  .game-card {
+    width: 150px;
+    height: 150px;
+    font-size: var(--card-title-size-min);
+  }
+  .game-icon {
+    font-size: var(--card-icon-main-size-min);
+  }
+}
