@@ -5,7 +5,6 @@
 
 html, body {
     overflow: auto !important; /* Erlaubt Scrollen und überschreibt globale Einstellung */
-    height: auto !important; /* Wichtig: Ermöglicht dem Body, sich an den Inhalt anzupassen */
 }
 main {
     line-height: 1.7; /* Verbessert die Lesbarkeit langer Texte */
@@ -136,62 +135,4 @@ strong {
   overflow-x: hidden;
 }
 
-@media (max-width: 800px) {
-  .datenschutz-main {
-    max-width: 89vw;
-    max-height: auto; /* Optional: Maximalhöhe für den Hauptbereich */
-    padding: 1.2rem ;
-    font-size: 0.97rem;
-    margin-top: 20%;
-    border-radius: 0.3rem;
-    box-shadow: 0 1px 4px var(--color-shadow-dark);
-  }
-}
 
-@media (max-width: 500px) {
-  .datenschutz-main {
-    max-width: 89vw;
-    max-height: 130vw; /* Optional: Maximalhöhe für den Hauptbereich */
-    padding: 1.2rem ;
-    font-size: 0.97rem;
-    margin-top: 29%;
-    border-radius: 0.3rem;
-    box-shadow: 0 1px 4px var(--color-shadow-dark);
-  }
-}
-
-@media (max-width: 600px) {
-  .footer {
-    font-size: 1.68rem !important;
-    padding: 0.65rem 1.2rem;
-  }
-  .footer-nav {
-    gap: 0.3rem;
-  }
-}
-
-/* Reduzierte Bewegung - Nur Variablen für Übergänge/Animationen auf 0 setzen */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --transition-speed: 0.01ms;
-    --transition-ease: linear;
-  }
-}
-
-/* Responsive Anpassungen für kleinere Bildschirme (aus _privacy.css) */
-@media (max-width: 768px) {
-    main {
-        padding: 2.5rem !important;
-        margin: 3rem auto;
-    }
-
-    h1 {
-        font-size: clamp(1.5rem, 5vw + 1rem, 2.5rem);
-        margin-bottom: 1.5rem;
-    }
-
-    h2 {
-        font-size: clamp(1.2rem, 4vw + 0.8rem, 2rem);
-        margin-top: 2rem;
-    }
-}
