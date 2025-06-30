@@ -182,21 +182,18 @@ p, li { font-size: var(--font-size-p); line-height: 1.6; font-weight: 400; lette
 .section-body::-webkit-scrollbar-thumb:hover {
     background-color: #888;
 }
+.header-text {
+      font-size: clamp(2rem, 5vw, 2.5rem); /* Etwas größere, besser lesbare Schrift */
+    font-weight: 700; /* Noch kräftiger für bessere Hervorhebung */
+    color: var(--color-text-main);
+    transition: opacity var(--transition-speed), background-color var(--transition-speed);
+}
 
 /* Dynamischer Header für ubermich.html */
 .dynamic-header {
-    position: sticky;
-    top: 0;
-    /* Optimierte font-size mit clamp */
-    font-size: clamp(1.8em, 4vw, 2.2em);
-    font-weight: bold;
-    color: var(--color-text-main);
-    margin-bottom: auto; /* Fester Abstand statt auto */
     text-align: left;
-    padding: clamp(0.5rem, 1vw, 1rem) clamp(10px, 1.5vw, 15px); /* Mehr vertikales Padding */
-    transition: opacity var(--transition-speed), background-color var(--transition-speed);
-    background-color: var(--color-bg-secondary);
-    z-index: 10;
+    padding: clamp(0.3rem, 0.1vw, 0.2rem);
+
 }
 
 .dynamic-header.fade-out {
