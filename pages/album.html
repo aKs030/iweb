@@ -14,7 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="/css/album.css"> <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/album.css"> 
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/footer.css">
     
     <script src="/js/menu.js" defer></script> 
 
@@ -69,12 +71,15 @@
     </main>
 
   <footer class="footer">
-    <p>&copy; <span id="current-year"></span> Abdulkerim. Alle Rechte vorbehalten.</p>
-    <nav class="footer-nav">
-      <a href="/impressum.html">Impressum</a>
-      <a href="/datenschutz.html">Datenschutz</a>
-      <a href="/kontakt.html">Kontakt</a>
+    <p><span id="current-year">2024</span> &copy; Abdulkerim – Alle Rechte vorbehalten.</p>
+    <nav class="footer-nav" aria-label="Footer Navigation">
+      <a href="/pages/komponente/datenschutz.html" aria-current="page">Datenschutz</a>
+      <span aria-hidden="true">|</span>
+            <a href="/pages/komponente/impressum.html" aria-current="page">Impressum</a>
+      <span aria-hidden="true">|</span>
+            <a href="/pages/komponente/kontakt.html" aria-current="page">Kontakt</a>
     </nav>
+  </footer>
 
     <script>
         const mainImage = document.getElementById('main-gallery-image');

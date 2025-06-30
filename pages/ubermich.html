@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <link rel="stylesheet" href="/css/ubermich.css">
-
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
   <div id="menu-container"></div>
@@ -52,16 +52,16 @@
     </main>
   </div>
 
-<footer class="footer">
-  <div class="container">
-    <p>&copy; <span id="current-year"></span> Abdulkerim. Alle Rechte vorbehalten.</p>
-    <nav class="footer-nav">
-      <a href="/impressum.html">Impressum</a>
-      <a href="/datenschutz.html">Datenschutz</a>
-      <a href="/kontakt.html">Kontakt</a>
+  <footer class="footer">
+    <p><span id="current-year">2024</span> &copy; Abdulkerim – Alle Rechte vorbehalten.</p>
+    <nav class="footer-nav" aria-label="Footer Navigation">
+      <a href="/pages/komponente/datenschutz.html" aria-current="page">Datenschutz</a>
+      <span aria-hidden="true">|</span>
+            <a href="/pages/komponente/impressum.html" aria-current="page">Impressum</a>
+      <span aria-hidden="true">|</span>
+            <a href="/pages/komponente/kontakt.html" aria-current="page">Kontakt</a>
     </nav>
-  </div>
-</footer>
+  </footer>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
