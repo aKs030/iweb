@@ -11,23 +11,6 @@
   box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-  font-family: var(--font-family-main);
-  background-color: var(--color-bg);
-  color: var(--color-text-main);
-  overflow: hidden; /* Behält den Body als nicht scrollbar, viewport-box übernimmt Kontrolle */
-  scroll-behavior: smooth;
-}
-
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  min-height: 100vh; /* Neu: Body nimmt mindestens die volle Höhe des Viewports ein */
-}
-
 /* =====================================
 📦 VIEWPORT-BOX (Angepasst für inneres Scrolling)
 ========================================= */
