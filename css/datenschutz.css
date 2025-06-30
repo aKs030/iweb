@@ -11,6 +11,55 @@ main {
     line-height: 1.7; /* Verbessert die Lesbarkeit langer Texte */
 }
 
+
+/* Footer Stile */
+.footer {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 0.7rem 0; /* Optimiertes vertikales Padding */
+  font-size: 0.75rem !important;
+  box-shadow: 0 -1px 5px var(--color-shadow-dark);
+  width: 100vw; /* Volle Viewport-Breite, robuster als 100% */
+  min-width: 320px;
+  max-width: 100vw;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  margin: 0;
+  box-sizing: border-box;
+}
+.footer p {
+  margin: 0;
+  line-height: 1.2;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+}
+.footer p #current-year {
+  font-size: inherit;
+}
+.footer-nav {
+  margin-top: 0.15rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.footer-nav a {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-nav a:hover,
+.footer-nav a:focus {
+  color: var(--color-decor);
+  text-decoration: underline;
+  outline: none;
+}
+
+
 h1, h2, h3, h4 {
     color: var(--color-accent); /* Akzentfarbe für Überschriften */
     margin-top: 2.5rem; /* Abstand über den Überschriften */
