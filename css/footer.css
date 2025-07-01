@@ -1,15 +1,3 @@
-/* /css/_privacy.css */
-
-
-@import url('_global.css'); 
-
-html, body {
-    overflow: auto !important; /* Erlaubt Scrollen und überschreibt globale Einstellung */
-}
-main {
-    line-height: 1.7; /* Verbessert die Lesbarkeit langer Texte */
-}
-
 
 /* Footer Stile */
 .footer {
