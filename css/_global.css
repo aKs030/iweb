@@ -1,56 +1,129 @@
-.footer, .site-footer {
-  width: 100%;
-  background: var(--color-bg-secondary);
-  border-top: 1px solid var(--color-shadow-dark);
-  padding: var(--spacing-md) 0;
-  margin-top: auto;
-  font-size: var(--font-size-p);
-}
-
-.footer-content {
+/* Footer Stile */
+.footer {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-muted);
   text-align: center;
-}
-
-.footer-content p {
-  color: var(--color-text-muted);
+  padding: 0.7rem 0; /* Optimiertes vertikales Padding */
+  font-size: 0.75rem !important;
+  box-shadow: 0 -1px 5px var(--color-shadow-dark);
+  width: 100vw; /* Volle Viewport-Breite, robuster als 100% */
+  min-width: 320px;
+  max-width: 100vw;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
   margin: 0;
-  font-size: var(--font-size-p);
+  box-sizing: border-box;
 }
-
+.footer p {
+  margin: 0;
+  line-height: 1.2;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+}
+.footer p #current-year {
+  font-size: inherit;
+}
 .footer-nav {
-  margin-top: var(--spacing-xs);
+  margin-top: 0.15rem;
   display: flex;
-  gap: var(--spacing-sm);
   justify-content: center;
+  gap: 0.6rem;
   flex-wrap: wrap;
-  align-items: center;
 }
-
 .footer-nav a {
-  color: var(--color-link);
-  text-decoration: underline;
-  font-size: var(--font-size-p);
-  transition: color var(--transition-speed);
-}
-
-.footer-nav a:hover {
-  color: var(--color-accent-hover);
-}
-
-.footer-nav span {
+  font-size: 0.65rem;
   color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-nav a:hover,
+.footer-nav a:focus {
+  color: var(--color-decor);
+  text-decoration: underline;
+  outline: none;
 }
 
-/* Mobile */
-@media (max-width: 600px) {
-  .footer, .site-footer {
-    font-size: 0.68rem !important;
-    padding: 0.55rem 0.2rem;
-  }
-  .footer-nav {
-    gap: 0.3rem;
-  }
+
+h1, h2, h3, h4 {
+    color: var(--color-accent); /* Akzentfarbe für Überschriften */
+    margin-top: 2.5rem; /* Abstand über den Überschriften */
+    margin-bottom: 1rem; /* Abstand unter den Überschriften */
+    line-height: 1.2; /* Engere Zeilenhöhe für Überschriften */}
+
+h1 {
+    text-align: center; /* Zentriert die Hauptüberschrift */
+    margin-bottom: 2.5rem; /* Mehr Platz unter der Hauptüberschrift */
+    text-transform: uppercase; /* Optional: Großbuchstaben für die Hauptüberschrift */
+    letter-spacing: 0.05em; /* Optional: Leicht erweiterter Zeichenabstand */
 }
+
+h2 {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Dezente Trennlinie unter Hauptabschnitten */
+    padding-bottom: 0.5rem; /* Abstand zwischen Text und Trennlinie */
+    margin-top: 3rem; /* Etwas mehr Abstand für größere Abschnitte */
+}
+
+p {
+    margin-bottom: 1.2rem; /* Einheitlicher Abstand zwischen Absätzen */
+}
+
+ul {
+    margin-left: 1.5rem; /* Einzug für Listen */
+    margin-bottom: 1.5rem; /* Abstand unter der Liste */
+}
+
+ul li {
+    margin-bottom: 0.6rem; /* Abstand zwischen Listeneinträgen */
+}
+
+main a {
+    color: var(--color-link); /* Links in der Akzentfarbe */
+    text-decoration: underline; /* Unterstreichung für Links */
+    text-decoration-color: rgba(255, 204, 41, 0.5); /* Dezente Unterstrichfarbe */
+    transition: color 0.2s ease-in-out, text-decoration-color 0.2s ease-in-out;
+}
+
+main a:hover {
+    color: var(--color-accent-hover); /* Farbänderung beim Hover */
+    text-decoration-color: var(--color-accent-hover); /* Unterstrichfarbe beim Hover */
+}
+
+address {
+    font-style: normal; /* Entfernt die standardmäßige Kursivschrift */
+    margin-bottom: 1.5rem; /* Abstand nach der Adresse */
+    line-height: 1.6;
+}
+
+strong {
+    color: var(--color-decor); /* Leicht abweichende Farbe für starke Betonung */
+}
+
+.last-updated { /* Neue Klasse für gezieltere Ansprache */
+    font-size: 0.9em;
+    color: var(--color-text-muted);
+    text-align: right; /* Datum rechtsbündig */
+    margin-top: 3rem; /* Deutlicher Abstand zum vorherigen Text */
+}
+
+.datenschutz-main {
+  max-width: 700px;
+  max-height: 700px; /* Optional: Maximalhöhe für den Hauptbereich */
+  margin: 8rem auto 0 auto; /* Mehr Abstand oben, kein Abstand unten */
+  background: var(--color-bg-secondary);
+  padding: 2.5rem 2rem 6rem 2rem; /* Viel Platz unten für Footer, großzügiges Padding */
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 12px var(--color-shadow-dark);
+  color: var(--color-text-main);
+  font-size: var(--font-size-p);
+  line-height: 1.7;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+
+
 
 
 html {
@@ -74,7 +147,7 @@ html, body {
   background-color: var(--color-bg);
   color: var(--color-text-main);
   /* overflow: hidden;  <-- Entfernt */
-  overflow-y: scroll; /* Optional: Stellt sicher, dass ein Scrollbalken angezeigt wird, wenn Inhalt überläuft */
+  overflow: hidden; /* Scrollbalken komplett entfernen */
   scroll-behavior: smooth;
   line-height: 1.6;
   font-family: var(--font-family-main);

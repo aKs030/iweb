@@ -1,47 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
-
-  // Jahr im Footer setzen
   const yearEl = document.getElementById('current-year');
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // Footer laden
+  const footerPlaceholder = document.getElementById('footer-placeholder');
+  if (footerPlaceholder) {
+    fetch('/pages/footer.html')
+      .then(r => {
+        if (!r.ok) throw new Error('Footer konnte nicht geladen werden');
+        return r.text();
+      })
+      .then(html => {
+        footerPlaceholder.innerHTML = html;
+      })
+      .catch(() => {
+        // Optional: Fallback oder Fehleranzeige
+        // footerPlaceholder.innerHTML = '<footer class="footer">Footer konnte nicht geladen werden.</footer>';
+      });
+  } else {
+    console.error('Fehler: footer-placeholder wurde nicht gefunden.');
   }
 
+  // Menü laden
   if (!menuContainer) {
     console.error('Fehler: menuContainer wurde nicht gefunden.');
     return;
   }
-
-  // Menü-Komponente laden
   fetch('/pages/komponente/menu.html')
     .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP-Error! Status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
       return response.text();
     })
     .then(menuMarkup => {
       menuContainer.innerHTML = menuMarkup;
-
-      // Menü-Toggle initialisieren
       initializeMenu(menuContainer);
-
-      // Logo-Verhalten initialisieren
       initializeLogo(menuContainer);
-
-      // Submenu-Links initialisieren
       initializeSubmenuLinks();
-
-      // Seitentitel im Logo setzen
       setSiteTitle();
-
-      // Klick außerhalb des Menüs schließen
       document.addEventListener('click', (event) => {
         const isClickInside = menuContainer.contains(event.target);
         const isMenuToggle = event.target.closest('.site-menu__toggle');
-        if (!isClickInside && !isMenuToggle) {
-          closeMenu(menuContainer);
-        }
+        if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
       });
     })
     .catch(err => {
@@ -56,18 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
-
   if (menuToggle && menu) {
-    menuToggle.addEventListener('click', () => {
+    const toggle = () => {
       menu.classList.toggle('open');
       menuToggle.classList.toggle('active');
-    });
-    // Toggle auch per Enter-Taste aktivieren
+    };
+    menuToggle.addEventListener('click', toggle);
     menuToggle.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        menu.classList.toggle('open');
-        menuToggle.classList.toggle('active');
-      }
+      if (event.key === 'Enter') toggle();
     });
   } else {
     console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
@@ -80,7 +76,6 @@ function initializeMenu(container) {
  */
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
-
   if (logoContainer) {
     logoContainer.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -95,21 +90,15 @@ function initializeLogo(container) {
  * Initialisiert die Submenu-Links
  */
 function initializeSubmenuLinks() {
-  // Selektiere Submenü-Links anhand der neuen Benennung
   const submenuLinks = document.querySelectorAll('.has-submenu > a');
   submenuLinks.forEach(link => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       const submenu = link.nextElementSibling;
-      // Schließe alle anderen offenen Submenüs (nur eines offen)
       document.querySelectorAll('.submenu').forEach(sm => {
         if (sm !== submenu) sm.style.display = 'none';
       });
-      if (submenu.style.display === 'block') {
-        submenu.style.display = 'none';
-      } else {
-        submenu.style.display = 'block';
-      }
+      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
     });
   });
 }
@@ -121,7 +110,6 @@ function initializeSubmenuLinks() {
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
-
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
@@ -141,11 +129,7 @@ function setSiteTitle() {
     '/pages/features/wetter.html': 'Wetter',
   };
   const path = window.location.pathname;
-  let pageTitle = titleMap[path] || document.title || 'Website';
+  const pageTitle = titleMap[path] || document.title || 'Website';
   const siteTitleEl = document.getElementById('site-title');
-  if (siteTitleEl) {
-    siteTitleEl.textContent = pageTitle;
-  }
-
-  
+  if (siteTitleEl) siteTitleEl.textContent = pageTitle;
 }
