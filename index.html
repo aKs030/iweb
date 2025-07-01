@@ -43,13 +43,10 @@
 
     <link rel="stylesheet" href="/css/index.css"> 
 </head>
-<body>
+<body id="index-page">
 
-    <a class="visually-hidden-focusable" href="#main-content">Zum Inhalt springen</a>
 
-    <header role="banner">
-        <div id="menu-container"></div>
-    </header>
+    <nav id="menu-container" role="navigation" aria-label="Navigation"></nav>
 
     <noscript>
         <div style="text-align:center;padding:1rem;background-color:#ffcc00;color:#000;">
@@ -69,34 +66,7 @@
         </div>
     </main>
 
-
-<div id="footer-placeholder"></div>
-
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const animatedIcons = document.querySelectorAll('.card .animated-icon');
-
-            animatedIcons.forEach(icon => {
-                const card = icon.closest('.card'); // Finde die übergeordnete Karte
-
-                if (card) {
-                    const handleAnimationEnd = () => {
-                        icon.classList.add('js-rotated'); // Verhindert weitere Animationen über CSS :not()
-                    };
-
-                    const handleMouseEnter = () => {
-                        if (!icon.classList.contains('js-rotated')) {
-                            icon.addEventListener('transitionend', handleAnimationEnd, { once: true });
-                        }
-                    };
-
-                    card.addEventListener('mouseenter', handleMouseEnter);
-                }
-            });
-        });
-    </script>
+    <div id="footer-placeholder"></div>
 
     <script src="/js/templateLoader.js" defer></script>
     <script src="/js/intext.js" defer></script>

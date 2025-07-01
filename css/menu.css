@@ -1,316 +1,336 @@
 /* =======================
    GRUNDEINSTELLUNGEN
    ======================= */
-   * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  
-  /* =======================
+/* =======================
+   TYPOGRAFIE (optimiert)
+   ======================= */
+.site-menu__list li a,
+.site-menu__list .submenu li a,
+.site-menu__list li,
+.site-menu__list .submenu li {
+  font-size: var(--font-size-p);
+  font-family: var(--font-family-main);
+  line-height: 1.6;
+}
+
+.site-menu__list .submenu li a {
+  color: var(--color-text-muted);
+}
+
+.site-menu__list .submenu li a:hover,
+.site-menu__list .submenu li a:focus {
+  color: var(--color-link);
+}
+
+/* =======================
      HEADER (GLASMORPHISM)
      ======================= */
-  .site-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.2);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-    z-index: 9999;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.4rem 1rem; /* Kompaktere Polsterung */
-    animation: fadeInDown 1s ease forwards;
-    opacity: 0;
-    transform: translateY(-20px);
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  z-index: 9999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 1rem; /* Kompaktere Polsterung */
+  animation: fadeInDown 1s ease forwards;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+@keyframes fadeInDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  @keyframes fadeInDown {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* =======================
+}
+
+/* =======================
      LOGO
      ======================= */
-     .site-logo.elegant-logo {
-      font-family: 'Lobster', cursive, Arial, sans-serif;
-    }
-    /* Weitere CSS-Regeln können hier folgen */
-     .site-logo {
-       font-size: var(--font-size-h2); /* statt clamp(1.3rem, 2.5vw, 2.2rem) */
-       color: var(--color-text-main);
-       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 0, 0, 0.3);
-       animation: fadeIn 1s ease-out, colorPulse 4s infinite alternate;
-       transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
-       cursor: pointer;
-       text-decoration: none;
-     }
-     
-     .site-logo:hover {
-       transform: scale(1.15); /* Leichtes Vergrößern für einen modernen Effekt */
-       color: var(--color-decor);
-       text-shadow: 0 4px 8px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
-     }
-     
-     /* Container-Style für das Logo */
-     .site-logo__container {
-       position: relative;
-       display: inline-block;
-       padding: 12px;
-     }
-     
+.site-logo.elegant-logo {
+  font-family: 'Lobster', cursive, Arial, sans-serif;
+}
+/* Weitere CSS-Regeln können hier folgen */
+.site-logo {
+  font-size: var(--font-size-h2); /* statt clamp(1.3rem, 2.5vw, 2.2rem) */
+  color: var(--color-text-main);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1s ease-out, colorPulse 4s infinite alternate;
+  transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.site-logo:hover {
+  transform: scale(1.15); /* Leichtes Vergrößern für einen modernen Effekt */
+  color: var(--color-decor);
+  text-shadow: 0 4px 8px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+/* Container-Style für das Logo */
+.site-logo__container {
+  position: relative;
+  display: inline-block;
+  padding: 12px;
+}
+
+
+
+ /* Keyframes für sanftes Einblenden */
+ @keyframes fadeIn {
+   0% {
+     opacity: 0;
+     transform: translateY(15px);
+   }
+   100% {
+     opacity: 1;
+     transform: translateY(0);
+   }
+ }
  
-     
-     /* Keyframes für sanftes Einblenden */
-     @keyframes fadeIn {
-       0% {
-         opacity: 0;
-         transform: translateY(15px);
-       }
-       100% {
-         opacity: 1;
-         transform: translateY(0);
-       }
-     }
-     
-     /* Animation für Farbänderung */
-     @keyframes colorPulse {
-       0% {
-         color: #ffffff77;
-         text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-       }
-       50% {
-         color: #b7b7b7;
-         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-       }
-       100% {
-         color: #616161;
-         text-shadow: 0 2px 10px rgba(255, 255, 255, 0.7);
-       }
-     }
-  
-  /* =======================
+ /* Animation für Farbänderung */
+ @keyframes colorPulse {
+   0% {
+     color: #ffffff77;
+     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+   }
+   50% {
+     color: #b7b7b7;
+     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+   }
+   100% {
+     color: #616161;
+     text-shadow: 0 2px 10px rgba(255, 255, 255, 0.7);
+   }
+ }
+
+/* =======================
      MENÜ (DESKTOP)
      ======================= */
-  .site-menu {
-    display: flex;
-    align-items: center;
-    transition: transform 0.3s ease;
-  }
-  
-  .site-menu__list {
-    list-style: none;
-    display: flex;
-    gap: 1.5rem; /* Kompakter Abstand */
-  }
-  
-  .site-menu__list li a {
-    text-decoration: none;
-    color: var(--color-text-main);
-    font-weight: 500;
-    font-size: var(--font-size-p); /* Kleinere Schriftgröße */
-    position: relative;
-    transition: color 0.3s ease;
-        display: flex; /* Icon und Text nebeneinander */
+.site-menu {
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
 
-  }
-  
-  .site-menu__list li a::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -3px;
-    width: 0;
-    height: 2px;
-    background: var(--color-link);
-    transition: width 0.3s ease, left 0.3s ease;
-  }
-  
-  .site-menu__list li a:hover {
-    color: var(--color-link);
-  }
-  
-  .site-menu__list li a:hover::after {
-    width: 100%;
-    left: 0;
-  }
-  
-  /* =======================
+.site-menu__list {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem; /* Kompakter Abstand */
+}
+
+.site-menu__list li a {
+  text-decoration: none;
+  color: var(--color-text-main);
+  font-weight: 500;
+  font-size: var(--font-size-p); /* Responsive Schriftgröße */
+  position: relative;
+  transition: color 0.3s ease;
+      display: flex; /* Icon und Text nebeneinander */
+
+}
+
+.site-menu__list li a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: var(--color-link);
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.site-menu__list li a:hover {
+  color: var(--color-link);
+}
+
+.site-menu__list li a:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+/* =======================
      HAMBURGER-BUTTON
      ======================= */
-  .site-menu__toggle {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    position: relative;
-  }
-  
-  .site-menu__hamburger,
-  .site-menu__hamburger::before,
-  .site-menu__hamburger::after {
-    content: "";
-    display: block;
-    background: #444;
-    width: 25px; /* Kleinere Linienbreite */
-    height: 2px;
-    margin: 6px auto;
-    border-radius: 2px;
-    transition: 0.3s;
-  }
+.site-menu__toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
 
-  /* Hamburger-Button Fokus-Stil für Barrierefreiheit */
-  .site-menu__toggle:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--color-link);
-  }
+.site-menu__hamburger,
+.site-menu__hamburger::before,
+.site-menu__hamburger::after {
+  content: "";
+  display: block;
+  background: #444;
+  width: 25px; /* Kleinere Linienbreite */
+  height: 2px;
+  margin: 6px auto;
+  border-radius: 2px;
+  transition: 0.3s;
+}
 
-  /* Fokus-Stil für Menü-Links */
-  .site-menu__list li a:focus {
-    outline: none;
-    color: var(--color-link);
-  }
-  
-  /* =======================
+/* Hamburger-Button Fokus-Stil für Barrierefreiheit */
+.site-menu__toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-link);
+}
+
+/* Fokus-Stil für Menü-Links */
+.site-menu__list li a:focus {
+  outline: none;
+  color: var(--color-link);
+}
+
+/* =======================
      MEDIA QUERIES (MOBILE)
      ======================= */
-  @media (max-width: 768px) {
-    .site-menu__toggle {
-      display: block;
-    }
-  
-    .site-menu {
-      position: fixed;
-      top: 60px;
-      right: 0;
-      width: 200px;
-      padding: 1rem;
-      background: #ffffff;
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-      border-bottom-left-radius: 10px;
-      border-top-left-radius: 10px;
-      transform: translateX(120%);
-      transition: transform 0.4s ease-in-out;
-      flex-direction: column;
-      gap: 1rem;
-      z-index: 9998;
-    }
-  
-    .site-menu.open {
-      transform: translateX(0);
-    }
-  
-    .site-menu__list {
-      flex-direction: column;
-      gap: 1rem;
-    }
+@media (max-width: 768px) {
+  .site-menu__toggle {
+    display: block;
   }
-  
-  /* Menü-Toggle im aktiven Zustand */
-  .site-menu__toggle.active .site-menu__hamburger {
-    background: transparent;
+
+  .site-menu {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    width: 200px;
+    padding: 1rem;
+    background: #ffffff;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-bottom-left-radius: 10px;
+    border-top-left-radius: 10px;
+    transform: translateX(120%);
+    transition: transform 0.4s ease-in-out;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 9998;
   }
-  
-  .site-menu__toggle.active .site-menu__hamburger::before {
-    transform: translateY(8px) rotate(45deg);
-    background: #0077ff;
+
+  .site-menu.open {
+    transform: translateX(0);
   }
-  
-  .site-menu__toggle.active .site-menu__hamburger::after {
-    transform: translateY(-8px) rotate(-45deg);
-    background: #0077ff;
+
+  .site-menu__list {
+    flex-direction: column;
+    gap: 1rem;
   }
-  
-  /* =======================
+}
+
+/* Menü-Toggle im aktiven Zustand */
+.site-menu__toggle.active .site-menu__hamburger {
+  background: transparent;
+}
+
+.site-menu__toggle.active .site-menu__hamburger::before {
+  transform: translateY(8px) rotate(45deg);
+  background: #0077ff;
+}
+
+.site-menu__toggle.active .site-menu__hamburger::after {
+  transform: translateY(-8px) rotate(-45deg);
+  background: #0077ff;
+}
+
+/* =======================
      SEITENINHALT
      ======================= */
-  main {
-    margin-top: 80px;
-    padding: 1rem;
-  }
-  
+main {
+  margin-top: 80px;
+  padding: 1rem;
+}
+
 /* ==========================
    Menü
 ========================== */
 .has-submenu > a {
-  cursor: pointer;
+cursor: pointer;
 }
 
 .submenu {
-  display: none;
-  list-style: none;
-  padding-left: 1rem;
+display: none;
+list-style: none;
+padding-left: 1rem;
 }
 
 .has-submenu:hover .submenu,
 .has-submenu:focus-within .submenu {
-  display: block;
+display: block;
 }
 
-  /* Untermenü */
+/* Untermenü */
 .site-menu__list .has-submenu {
-  position: relative;
+position: relative;
 }
 
 .site-menu__list .submenu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: var(--color-bg-secondary);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 999;
+display: none;
+position: absolute;
+top: 100%;
+left: 0;
+background-color: var(--color-bg-secondary);
+-webkit-backdrop-filter: blur(5px);
+backdrop-filter: blur(5px);
+list-style: none;
+padding: 0;
+margin: 0;
+border: 1px solid rgba(0, 0, 0, 0.1);
+border-radius: 5px;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+z-index: 999;
 }
 
 .site-menu__list .submenu li {
-  padding: 10px 15px;
+padding: 10px 15px;
 }
 
 .site-menu__list .submenu li a {
-  text-decoration: none;
-  color: var(--color-text-main);
-  display: block;
-  transition: background 0.3s ease, color 0.3s ease;
+text-decoration: none;
+color: var(--color-text-main);
+display: block;
+transition: background 0.3s ease, color 0.3s ease;
 }
 
 .site-menu__list .submenu li a:hover {
-  text-decoration: none;
-  color: var(--color-text-main);
-  display: block;
-  transition: background 0.3s ease, color 0.3s ease;
+text-decoration: none;
+color: var(--color-text-main);
+display: block;
+transition: background 0.3s ease, color 0.3s ease;
 }
 
 .site-menu__list .has-submenu:hover .submenu {
-  display: block;
+display: block;
 }
 
 .site-menu__list li a i {
-  margin-right: 8px;
-  font-size: 1.2rem;
-  transition: transform 0.3s ease, color 0.3s ease;
-  vertical-align: middle; /* Ausrichtung mit Text */
+margin-right: 8px;
+font-size: 1.2rem;
+transition: transform 0.3s ease, color 0.3s ease;
+vertical-align: middle; /* Ausrichtung mit Text */
 
 }
 
 .site-menu__list li a:hover i {
-  transform: scale(1.2); /* Vergrößert das Icon leicht */
-  color: var(--color-link); /* Ändert die Farbe */
+transform: scale(1.2); /* Vergrößert das Icon leicht */
+color: var(--color-link); /* Ändert die Farbe */
 }

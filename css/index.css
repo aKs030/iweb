@@ -322,3 +322,19 @@ Eliminierte oder stark reduzierte Media Query für kleine Bildschirme
     transform: none !important;
   }
 }
+
+/* =====================================
+📝 RESPONSIVE TYPOGRAPHY
+========================================= */
+/* Die folgenden Regeln sind global in _global.css definiert und werden nicht mehr benötigt:
+body#index-page h1, h2, h3, h4, h5, h6, p, li
+Nur die .lead-Klasse bleibt als Ausnahme erhalten. */
+
+body#index-page .lead {
+  text-align: left;
+  max-width: 55ch;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: var(--font-size-lead);
+  color: var(--color-text-main);
+}
