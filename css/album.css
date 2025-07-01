@@ -20,19 +20,6 @@
 
 }
 
-h1, h2, h3 {
-    font-family: var(--font-family-secondary);
-    color: var(--color-text-main);
-    margin-bottom: var(--spacing-md);
-    line-height: 1.2;
-}
-
-h1 { font-size: var(--font-size-h1); }
-h2 { font-size: var(--font-size-h2); }
-h3 { font-size: var(--font-size-h3); }
-
-
-
 /* Hauptinhaltsbereich für die Galerie */
 main {
     flex: 1 1 auto;
@@ -110,6 +97,7 @@ main {
     font-size: var(--font-size-h3);
     color: var(--color-shadow-deco);
     margin-bottom: 0;
+    font-family: var(--font-family-secondary); /* Nur hier spezielle Schriftart */
 }
 
 .gallery-description-below-image {
@@ -254,6 +242,8 @@ main {
     }
     .gallery-section {
         padding-top: 30px; /* Abstand nach oben für mobile Ansicht */
+    }
+}
 
 @media (max-width: 480px) {
     .header h1 {
@@ -279,8 +269,6 @@ main {
     }
     .gallery-section {
         padding-top: 30px; /* Noch mehr Abstand für sehr kleine Geräte */
-    }
-}
     }
 }
 

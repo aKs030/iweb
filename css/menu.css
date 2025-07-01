@@ -45,8 +45,8 @@
     }
     /* Weitere CSS-Regeln können hier folgen */
      .site-logo {
-       font-size: clamp(1.3rem, 2.5vw, 2.2rem); /* Responsiv und größer */
-       color: #ffffff;
+       font-size: var(--font-size-h2); /* statt clamp(1.3rem, 2.5vw, 2.2rem) */
+       color: var(--color-text-main);
        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 0, 0, 0.3);
        animation: fadeIn 1s ease-out, colorPulse 4s infinite alternate;
        transition: transform 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
@@ -56,7 +56,7 @@
      
      .site-logo:hover {
        transform: scale(1.15); /* Leichtes Vergrößern für einen modernen Effekt */
-       color: #FFFFFF;
+       color: var(--color-decor);
        text-shadow: 0 4px 8px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
      }
      
@@ -114,9 +114,9 @@
   
   .site-menu__list li a {
     text-decoration: none;
-    color: #444;
+    color: var(--color-text-main);
     font-weight: 500;
-    font-size: 1.2rem; /* Kleinere Schriftgröße */
+    font-size: var(--font-size-p); /* Kleinere Schriftgröße */
     position: relative;
     transition: color 0.3s ease;
         display: flex; /* Icon und Text nebeneinander */
@@ -130,12 +130,12 @@
     bottom: -3px;
     width: 0;
     height: 2px;
-    background: #0077ff;
+    background: var(--color-link);
     transition: width 0.3s ease, left 0.3s ease;
   }
   
   .site-menu__list li a:hover {
-    color: #0077ff;
+    color: var(--color-link);
   }
   
   .site-menu__list li a:hover::after {
@@ -172,13 +172,13 @@
   /* Hamburger-Button Fokus-Stil für Barrierefreiheit */
   .site-menu__toggle:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #0077ff;
+    box-shadow: 0 0 0 2px var(--color-link);
   }
 
   /* Fokus-Stil für Menü-Links */
   .site-menu__list li a:focus {
     outline: none;
-    color: #0077ff;
+    color: var(--color-link);
   }
   
   /* =======================
@@ -268,7 +268,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: rgb(255, 255, 255);
+  background-color: var(--color-bg-secondary);
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
   list-style: none;
@@ -286,14 +286,14 @@
 
 .site-menu__list .submenu li a {
   text-decoration: none;
-  color: #444;
+  color: var(--color-text-main);
   display: block;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
 .site-menu__list .submenu li a:hover {
   text-decoration: none;
-  color: #444;
+  color: var(--color-text-main);
   display: block;
   transition: background 0.3s ease, color 0.3s ease;
 }
@@ -312,5 +312,5 @@
 
 .site-menu__list li a:hover i {
   transform: scale(1.2); /* Vergrößert das Icon leicht */
-  color: #0077ff; /* Ändert die Farbe */
+  color: var(--color-link); /* Ändert die Farbe */
 }

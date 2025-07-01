@@ -15,11 +15,6 @@
   text-align: center;
 }
 
-h1 {
-  font-size: var(--font-size-h1);
-  margin-bottom: var(--spacing-md);
-}
-
 /* 🎮 Spiele-Links als Karten-Widgets */
 .game-links {
   list-style: none;
