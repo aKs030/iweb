@@ -4,18 +4,11 @@
   <meta charset="utf-8">
   <title>Impressum</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/css/_global.css">
-  <link rel="stylesheet" href="/css/footer.css">
-  <script>
-    // Setzt das aktuelle Jahr automatisch
-    window.addEventListener('DOMContentLoaded', function() {
-      var yearSpan = document.getElementById('current-year');
-      if (yearSpan) yearSpan.textContent = new Date().getFullYear();
-    });
-  </script>
 </head>
 <body>
-  <main class="datenschutz-main" role="main">
+<div id="menu-container"></div>
+
+  <main class="impressum-main" role="main">
     <h1>Impressum</h1>
     <address>
       <strong>Angaben gemäß § 5 TMG:</strong><br>
@@ -37,15 +30,8 @@
     </section>
     <p class="last-updated">Letzte Aktualisierung: Juni 2024</p>
   </main>
-  <footer class="footer">
-    <p><span id="current-year">2024</span> &copy; Abdulkerim – Alle Rechte vorbehalten.</p>
-    <nav class="footer-nav" aria-label="Footer Navigation">
-      <a href="/pages/komponente/datenschutz.html" aria-current="page">Datenschutz</a>
-      <span aria-hidden="true">|</span>
-            <a href="/pages/komponente/impressum.html" aria-current="page">Impressum</a>
-      <span aria-hidden="true">|</span>
-            <a href="/pages/komponente/kontakt.html" aria-current="page">Kontakt</a>
-    </nav>
-  </footer>
+
+<div id="footer-placeholder"></div>
+<script src="/js/menu.js"></script>
 </body>
 </html>
