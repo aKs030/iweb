@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
 
-
   // Footer laden
   const footerPlaceholder = document.getElementById('footer-placeholder');
   if (footerPlaceholder) {
@@ -12,13 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .then(html => {
         footerPlaceholder.innerHTML = html;
-        // Jahr setzen, nachdem der Footer geladen wurde
         const yearEl = document.getElementById('current-year');
         if (yearEl) yearEl.textContent = new Date().getFullYear();
       })
       .catch(() => {
         // Optional: Fallback oder Fehleranzeige
-        // footerPlaceholder.innerHTML = '<footer class="footer">Footer konnte nicht geladen werden.</footer>';
       });
   } else {
     console.error('Fehler: footer-placeholder wurde nicht gefunden.');
@@ -38,8 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
       menuContainer.innerHTML = menuMarkup;
       initializeMenu(menuContainer);
       initializeLogo(menuContainer);
-      initializeSubmenuLinks();
+      initializeSubmenuLinks(menuContainer);
       setSiteTitle();
+
+      // Klick außerhalb schließt das Menü (nur für Desktop sinnvoll)
       document.addEventListener('click', (event) => {
         const isClickInside = menuContainer.contains(event.target);
         const isMenuToggle = event.target.closest('.site-menu__toggle');
@@ -52,21 +51,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Initialisiert die Menü-Toggle-Logik
+ * Initialisiert die Menü-Toggle-Logik inkl. Overlay
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
+  const overlay = container.querySelector('.site-menu__overlay');
   if (menuToggle && menu) {
     const toggle = () => {
-      menu.classList.toggle('open');
+      const isOpen = menu.classList.toggle('open');
       menuToggle.classList.toggle('active');
+      if (overlay) overlay.style.display = isOpen ? 'block' : 'none';
     };
     menuToggle.addEventListener('click', toggle);
     menuToggle.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') toggle();
     });
+    // Overlay-Klick schließt Menü
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        menu.classList.remove('open');
+        menuToggle.classList.remove('active');
+        overlay.style.display = 'none';
+      });
+    }
   } else {
     console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
   }
@@ -89,32 +98,36 @@ function initializeLogo(container) {
 }
 
 /**
- * Initialisiert die Submenu-Links
+ * Initialisiert die Submenu-Links (nur ein Submenü offen)
  */
-function initializeSubmenuLinks() {
-  const submenuLinks = document.querySelectorAll('.has-submenu > a');
+function initializeSubmenuLinks(container) {
+  // Wichtig: Im geladenen Menü suchen, nicht im ganzen Dokument
+  const submenuLinks = container.querySelectorAll('.has-submenu > a');
   submenuLinks.forEach(link => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       const submenu = link.nextElementSibling;
-      document.querySelectorAll('.submenu').forEach(sm => {
-        if (sm !== submenu) sm.style.display = 'none';
-      });
-      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      const wasOpen = submenu && submenu.style.display === 'block';
+      // Alle Submenüs schließen
+      container.querySelectorAll('.submenu').forEach(sm => sm.style.display = 'none');
+      // Nur das angeklickte öffnen, falls es vorher zu war
+      if (submenu) submenu.style.display = wasOpen ? 'none' : 'block';
     });
   });
 }
 
 /**
- * Schließt das Menü
+ * Schließt das Menü (inkl. Overlay)
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
+  const overlay = container.querySelector('.site-menu__overlay');
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
+    if (overlay) overlay.style.display = 'none';
   }
 }
 
