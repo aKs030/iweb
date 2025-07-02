@@ -2,22 +2,24 @@
   background:
     linear-gradient(
       to top,
-      rgb(55,55,55) 0%,
+      rgb(54,54,54) 0%,
       rgb(54,54,54) calc(100% - 1px),
       rgb(54,54,54) 100%
     ),
     linear-gradient(
       to right,
-      rgb(58,58,58) 0%,
-      rgb(57,57,57) 50%,
-      rgb(58,58,58) 100%
+      rgb(54,54,54) 0%,
+      rgb(53,53,53) 10%,
+      rgb(51,51,51) 50%,
+      rgb(53,53,53) 90%,
+      rgb(54,54,54) 100%
     );
   color: #bdbdbd;
-  box-shadow: none;
+  box-shadow: 0 -8px 24px -8px rgb(58,58,58), 0 8px 24px -8px rgb(58,58,58);
   border: none;
   text-align: center;
-  padding: 0.5rem 0 0.3rem 0;
-  font-size: 0.62rem;
+  padding: 0.38rem 0 0.22rem 0;
+  font-size: 0.6rem;
   width: 100vw;
   position: fixed;
   left: 0;
@@ -31,23 +33,23 @@
 .footer-nav {
   margin: 0;
   color: #bdbdbd;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
 }
 
 .footer-nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.08rem;
-  margin-bottom: 0.04rem;
+  gap: 0.28rem;
+  margin-top: 0.05rem;
+  margin-bottom: 0.02rem;
 }
 
 .footer-nav a {
   color: #bdbdbd;
   text-decoration: none;
-  font-size: 0.62rem;
-  padding: 0 0.12rem;
+  font-size: 0.6rem;
+  padding: 0 0.09rem;
   letter-spacing: 0.01em;
 }
 
@@ -59,30 +61,30 @@
 
 @media (max-width: 600px) {
   .footer {
-    font-size: 0.54rem;
-    padding: 0.18rem 0 0.04rem 0;
+    font-size: 0.5rem;
+    padding: 0.12rem 0 0.02rem 0;
     max-width: 100vw;
   }
   .footer p,
   .footer-nav {
-    font-size: 0.54rem;
+    font-size: 0.5rem;
     max-width: 97vw;
     margin-left: auto;
     margin-right: auto;
   }
   .footer-nav {
-    gap: 0.18rem;
-    margin-top: 0.04rem;
-    margin-bottom: 0.02rem;
+    gap: 0.12rem;
+    margin-top: 0.01rem;
+    margin-bottom: 0.01rem;
   }
   .footer-nav a {
-    font-size: 0.54rem;
-    padding: 0 0.07rem;
+    font-size: 0.5rem;
+    padding: 0 0.04rem;
   }
   .impressum-main .footer,
   .datenschutz-main .footer {
-    font-size: 0.48rem;
-    padding: 0.08rem 0 0.01rem 0;
+    font-size: 0.44rem;
+    padding: 0.04rem 0 0.005rem 0;
   }
 }
 
