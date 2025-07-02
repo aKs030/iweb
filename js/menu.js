@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
-  const yearEl = document.getElementById('current-year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
 
   // Footer laden
   const footerPlaceholder = document.getElementById('footer-placeholder');
@@ -13,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .then(html => {
         footerPlaceholder.innerHTML = html;
+        // Jahr setzen, nachdem der Footer geladen wurde
+        const yearEl = document.getElementById('current-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
       })
       .catch(() => {
         // Optional: Fallback oder Fehleranzeige

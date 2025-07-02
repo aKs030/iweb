@@ -1,66 +1,62 @@
 <!-- Font Awesome CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
-    <!-- Google Fonts: Lobster -->
-    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
-    <!-- Eigene Styles -->
-    <link rel="stylesheet" href="/css/menu.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+<!-- Google Fonts: Lobster -->
+<link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+<!-- Eigene Styles -->
+<link rel="stylesheet" href="/css/menu.css">
 
 
 
-    <header class="site-header">
-      <!-- Logo -->
-      <a href="/index.html" aria-label="Zur Startseite" title="Zur Startseite">
-        <span class="site-logo__container">
-          <span class="site-logo elegant-logo" id="site-title">
-            <!-- Seitentitel wird per JS eingefügt -->
-          </span>
-        </span>
-      </a>
+<header class="site-header">
+  <!-- Logo -->
+  <a href="/index.html" aria-label="Zur Startseite" title="Zur Startseite">
+    <span class="site-logo__container">
+      <span class="site-logo elegant-logo" id="site-title">
+        <!-- Seitentitel wird per JS eingefügt -->
+      </span>
+    </span>
+  </a>
 
-      <!-- Hamburger-Button -->
-      <button class="site-menu__toggle" aria-label="Menü umschalten">
-        <span class="site-menu__hamburger"></span>
-      </button>
+  <!-- Hamburger-Button -->
+  <button class="site-menu__toggle" aria-label="Menü umschalten">
+    <span class="site-menu__hamburger"></span>
+  </button>
 
-      <!-- Navigation mit Rolle und aria-label -->
-      <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
-        <ul class="site-menu__list">
+  <!-- Navigation mit Rolle und aria-label -->
+  <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
+    <ul class="site-menu__list">
+      <li>
+        <a href="/index.html">
+          <i class="fa-solid fa-house" aria-hidden="true"></i> Startseite
+        </a>
+      </li>
+      <li>
+        <a href="/pages/album.html">
+          <i class="fa-solid fa-images" aria-hidden="true"></i> Fotogalerie
+        </a>
+      </li>
+      <li>
+        <a href="/pages/ubermich.html">
+          <i class="fa-solid fa-user" aria-hidden="true"></i> Über mich
+        </a>
+      </li>
+      <li class="has-submenu">
+        <a href="#" aria-haspopup="true">
+          <i class="fa-solid fa-gamepad" aria-hidden="true"></i> Spiele
+        </a>
+        <ul class="submenu">
           <li>
-            <a href="/index.html">
-              <i class="fa-solid fa-house" aria-hidden="true"></i> Startseite
+            <a href="/pages/index-game.html">
+              <i class="fa-solid fa-joystick" aria-hidden="true"></i> Spiele-Übersicht
             </a>
           </li>
           <li>
-            <a href="/pages/album.html">
-              <i class="fa-solid fa-images" aria-hidden="true"></i> Fotogalerie
+            <a href="/pages/features/wetter.html">
+              <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i> Wetter
             </a>
-          </li>
-          <li>
-            <a href="/pages/ubermich.html">
-              <i class="fa-solid fa-user" aria-hidden="true"></i> Über mich
-            </a>
-          </li>
-          <li class="has-submenu">
-            <a href="#" aria-haspopup="true">
-              <i class="fa-solid fa-gamepad" aria-hidden="true"></i> Spiele
-            </a>
-            <ul class="submenu">
-              <li>
-                <a href="/pages/index-game.html">
-                  <i class="fa-solid fa-joystick" aria-hidden="true"></i> Spiele-Übersicht
-                </a>
-              </li>
-              <li>
-                <a href="/pages/features/wetter.html">
-                  <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i> Wetter
-                </a>
-              </li>
-            </ul>
           </li>
         </ul>
-      </nav>
-    </header>
-<div id="footer-container"></div>
-<script src="/js/footer.js"></script>
-</body>
-</html>
+      </li>
+    </ul>
+  </nav>
+</header>
