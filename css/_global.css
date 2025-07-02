@@ -64,6 +64,10 @@ p, a, li, span, label {
   --font-size-p: clamp(0.95rem, 0.4vw + 0.85rem, 1.1rem); /* Für Absätze und Listenpunkte */
   --font-size-lead: clamp(1rem, 0.5vw + 0.85rem, 1.2rem); /* Für Lead-Texte */
 
+  /* Zusätzliche Schriftgrößen für mobile Footer/Boxen */
+  --font-size-p-small: 0.82rem;
+  --font-size-p-xsmall: 0.68rem;
+
   /* Abstände und Layout-Größen (jetzt auch mit clamp für zusätzliche Fluidität, optional) */
   --spacing-xs: clamp(0.2rem, 0.5vw, 0.4rem);
   --spacing-sm: clamp(0.4rem, 1vw, 0.8rem);

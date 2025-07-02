@@ -7,7 +7,7 @@
   text-align: center;
   box-shadow: none;
   padding: 0.34rem 0 0.19rem 0;
-  font-size: 0.62rem;
+  font-size: var(--font-size-p);
   width: 100vw;
   position: fixed;
   left: 0;
@@ -31,7 +31,7 @@
 .footer-nav {
   margin: 0;
   color: #bdbdbd;
-  font-size: inherit;
+  font-size: var(--font-size-p);
 }
 .footer-nav {
   display: flex;
@@ -43,7 +43,7 @@
 .footer-nav a {
   color: #bdbdbd;
   text-decoration: none;
-  font-size: inherit;
+  font-size: var(--font-size-p);
   padding: 0 0.08rem;
   letter-spacing: 0.01em;
 }
@@ -56,7 +56,7 @@
 /* Mobile Footer */
 @media (max-width: 600px) {
   .footer {
-    font-size: 0.5rem;
+    font-size: var(--font-size-p-small);
     padding: 0.09rem 0 0.01rem 0;
     max-width: 100vw;
   }
@@ -64,17 +64,17 @@
     gap: 0.1rem;
   }
   .footer-nav a {
-    font-size: 0.5rem;
+    font-size: var(--font-size-p-small);
     padding: 0 0.03rem;
   }
 }
 
 /* ========== Dynamischer Header ========== */
 .header-text {
-      font-size: clamp(2rem, 5vw, 2.5rem); /* Etwas größere, besser lesbare Schrift */
-    font-weight: 700; /* Noch kräftiger für bessere Hervorhebung */
-    color: var(--color-text-main);
-    transition: opacity var(--transition-speed), background-color var(--transition-speed);
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-text-main);
+  transition: opacity var(--transition-speed), background-color var(--transition-speed);
 }
 
 /* Dynamischer Header für ubermich.html */
@@ -198,35 +198,134 @@
   }
 }
 
-@media (max-width: 800px) {
-  .impressum-main, .datenschutz-main {
-    max-width: 94vw;
-    margin: 7rem 5vw 3rem 5vw;
-    padding: 2rem 6vw;
-    border-radius: 0.8rem;
-    box-shadow: 0 3px 16px 0 rgba(30,30,35,0.06);
-  }
-  .impressum-main h1, .datenschutz-main h1 {
-    font-size: clamp(1.2rem, 5vw + 1rem, 2.1rem);
-    margin-bottom: 1rem;
-  }
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: clamp(1.1rem, 4vw + 0.8rem, 1.6rem);
-    margin-top: 1rem;
-  }
-  .section-body {
-    padding: 0.1rem 0.05rem 0.4rem 0.05rem;
-    border-radius: 0.14rem;
-  }
-}
-
 /* Footer noch kleiner auf ganz kleinen Geräten */
 @media (max-width: 500px) {
   .footer {
-    font-size: 0.42rem;
+    font-size: var(--font-size-p-xsmall);
     padding: 0.04rem 0 0.005rem 0;
   }
   .footer-nav {
     gap: 0.07rem;
+  }
+  .footer-nav a {
+    font-size: var(--font-size-p-xsmall);
+  }
+}
+
+@media (max-width: 600px) {
+  .impressum-main,
+  .datenschutz-main {
+    font-size: var(--font-size-p-small);
+  }
+}
+@media (max-width: 500px) {
+  .impressum-main,
+  .datenschutz-main {
+    font-size: var(--font-size-p-xsmall);
+  }
+}
+
+@media (max-width: 600px) {
+  .impressum-main h1, .datenschutz-main h1 {
+    font-size: 1.2rem;
+  }
+  .impressum-main h2, .datenschutz-main h2 {
+    font-size: 1.05rem;
+  }
+  .impressum-main h3, .datenschutz-main h3 {
+    font-size: 0.97rem;
+  }
+}
+@media (max-width: 400px) {
+  .impressum-main h1, .datenschutz-main h1 {
+    font-size: 1.05rem;
+  }
+  .impressum-main h2, .datenschutz-main h2 {
+    font-size: 0.95rem;
+  }
+  .impressum-main h3, .datenschutz-main h3 {
+    font-size: 0.89rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .impressum-main h2, .datenschutz-main h2 {
+    font-size: 1rem;
+    word-break: break-word;
+    line-height: 1.2;
+    font-weight: 700;
+    margin-top: 0.6rem;
+    margin-bottom: 0.7rem;
+  }
+  .impressum-main, .datenschutz-main {
+    max-width: 98vw;
+    padding: 1.2rem 2vw 1.2rem 2vw;
+    margin: 4rem auto 2rem auto;
+    border-radius: 0.7rem;
+  }
+}
+@media (max-width: 400px) {
+  .impressum-main h2, .datenschutz-main h2 {
+    font-size: 0.9rem;
+    line-height: 1.1;
+    margin-top: 0.3rem;
+    margin-bottom: 0.4rem;
+  }
+  .impressum-main, .datenschutz-main {
+    max-width: 99vw;
+    padding: 0.7rem 1vw 1rem 1vw;
+    margin: 2rem auto 1rem auto;
+    border-radius: 0.5rem;
+    font-size: 0.6rem;
+  }
+}
+@media (max-width: 600px) {
+  .impressum-main h2, .datenschutz-main h2 {
+    font-size: 0.84rem !important;
+    line-height: 1.16 !important;
+    word-break: break-word !important;
+    text-align: left !important;
+    margin-top: 0.45rem !important;
+    margin-bottom: 0.53rem !important;
+    letter-spacing: 0.01em !important;
+    font-weight: 700 !important;
+    hyphens: auto !important;
+    max-width: 96vw !important;
+    white-space: normal !important;
+  }
+}
+@media (max-width: 400px) {
+  .impressum-main h2, .datenschutz-main h2 {
+    font-size: 0.76rem !important;
+    line-height: 1.12 !important;
+    margin-top: 0.2rem !important;
+    margin-bottom: 0.23rem !important;
+    max-width: 98vw !important;
+  }
+}
+@media (max-width: 600px) {
+  .impressum-main h2,
+  .datenschutz-main h2 {
+    font-size: 0.74rem !important;
+    font-weight: 600 !important;
+    line-height: 1.12 !important;
+    max-width: 94vw !important;
+    margin-top: 0.32rem !important;
+    margin-bottom: 0.38rem !important;
+    letter-spacing: 0 !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    text-align: left !important;
+    hyphens: auto !important;
+  }
+}
+@media (max-width: 400px) {
+  .impressum-main h2,
+  .datenschutz-main h2 {
+    font-size: 0.63rem !important;
+    margin-top: 0.13rem !important;
+    margin-bottom: 0.17rem !important;
+    max-width: 97vw !important;
+    font-weight: 500 !important;
   }
 }
