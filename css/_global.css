@@ -30,7 +30,7 @@ p, a, li, span, label {
 /* _global.css - Globale CSS-Variablen für das Design System */
 :root {
   /* Farben */
-  --color-bg: rgb(58, 57, 60); /* Optimiert: generisches RGB (p3 r58 g57 b60) */
+  --color-bg: rgb(57, 57, 57); /* Optimiert: P3 R57 G57 B57 */
 
   --color-bg-secondary: #444; /* viewport-box index *//*   --color-bg-secondary: #444; Sekundäre Hintergrundfarbe (z.B. für Karten) */
   --color-text-main: #f5f5f5; /* Haupttextfarbe */
