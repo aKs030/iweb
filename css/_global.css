@@ -1,15 +1,20 @@
 html {
   font-size: 16px; /* 1rem = 16px auf allen Seiten */
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
 body {
   font-size: var(--font-size-base); /* = 1rem */
-  line-height: 1.5;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
+  color: var(--color-text-main);
 }
 
 
@@ -142,6 +147,17 @@ p, li {
   letter-spacing: 0.2px;
   color: var(--color-text-muted);
   margin-bottom: var(--spacing-sm);
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+a:hover,
+a:focus {
+  color: var(--color-accent);
+  text-decoration: underline;
 }
 
 /* Card-Komponente entfernt, da jetzt in index.css */

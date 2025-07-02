@@ -30,8 +30,7 @@
   box-shadow: 0 5px 14px var(--color-shadow-dark);
   overflow: hidden;
   border-radius: var(--border-radius);
-  /* padding-right auskommentiert, da scroll-wrapper dies übernimmt */
-  /* padding-right: clamp(3rem, 8vw, 10rem); */
+
 
   display: flex;
   flex-direction: column;
@@ -132,8 +131,6 @@
   border-radius: var(--border-radius);
   box-shadow: inset 0 0 10px var(--color-shadow-dark);
   transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
-
-  scrollbar-gutter: stable both-edges;
 }
 
 
