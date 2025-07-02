@@ -122,6 +122,8 @@
   box-sizing: border-box;
   overflow-x: hidden;
   font-family: var(--font-family-main);
+    margin-left: 7vw;
+    margin-right: 7vw;
 }
 
 /* Responsive für Mobile */
@@ -135,6 +137,8 @@
     font-size: clamp(0.98rem, 2.7vw, 1.12rem);
     line-height: 1.7;
     word-break: break-word;
+    margin-left: 7vw;
+    margin-right: 7vw;
   }
   .section-body {
     padding: clamp(8px, 2vw, 14px) clamp(0.5rem, 2vw, 0.9rem);
@@ -150,6 +154,8 @@
     font-size: clamp(0.85rem, 4vw, 0.98rem);
     padding: var(--spacing-xs);
     max-width: 89vw;
+    margin-left: 5vw;
+    margin-right: 5vw;
   }
   .section-body {
     padding: 0.5rem 0.3rem;
