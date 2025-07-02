@@ -42,8 +42,7 @@ MENÜ LEISTE
   background: transparent;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgb(60, 60, 60);
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1); /* SCHATTEN */
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.36); /* SCHATTEN */
   z-index: 9999;
   display: flex;
   justify-content: space-between;
