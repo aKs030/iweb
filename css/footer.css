@@ -255,3 +255,71 @@
     margin-top: 2rem;
   }
 }
+
+/* Dynamischer Header für Datenschutz/Impressum */
+.dynamic-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-align: left;
+  padding: clamp(0.3rem, 0.1vw, 0.2rem);
+  min-height: 2.5rem;
+  margin-bottom: 1.2rem;
+  transition: opacity var(--transition-speed), background-color var(--transition-speed), transform 0.4s;
+  opacity: 1;
+  will-change: opacity, transform;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg-secondary);
+}
+.dynamic-header .header-icon {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+}
+.dynamic-header .header-text {
+  font-size: clamp(1.3rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--color-text-main);
+  letter-spacing: 0.01em;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.dynamic-header.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.dynamic-header.fade-in {
+  opacity: 1;
+}
+.dynamic-header {
+  transition: transform 0.4s, opacity 0.4s;
+}
+.dynamic-header.animated-up {
+  transform: translateY(-40px);
+  opacity: 0;
+}
+.dynamic-header.animated-down {
+  transform: translateY(40px);
+  opacity: 0;
+}
+.dynamic-header.animated-reset {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.section-body {
+  max-height: clamp(500px, 55vh, 700px);
+  overflow-y: auto;
+  position: relative;
+  padding: clamp(20px, 2.5vw, 35px) clamp(2rem, 5vw, 6rem);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+  box-shadow: inset 0 0 10px var(--color-shadow-dark);
+  transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+  scrollbar-gutter: stable both-edges;
+}
