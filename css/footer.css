@@ -17,22 +17,27 @@
   z-index: 100;
   border-top: none;
 }
+
 .footer::before {
   content: "";
   display: block;
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 1.5px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
   background: linear-gradient(to bottom, #3c3c3c 0%, #393939 100%);
   pointer-events: none;
   z-index: 101;
 }
+
 .footer p,
 .footer-nav {
   margin: 0;
   color: #bdbdbd;
   font-size: var(--font-size-p);
 }
+
 .footer-nav {
   display: flex;
   justify-content: center;
@@ -40,6 +45,7 @@
   gap: 0.24rem;
   margin-top: 0.03rem;
 }
+
 .footer-nav a {
   color: #bdbdbd;
   text-decoration: none;
@@ -47,13 +53,14 @@
   padding: 0 0.08rem;
   letter-spacing: 0.01em;
 }
+
 .footer-nav a:hover,
 .footer-nav a:focus {
   color: #fff;
   text-decoration: underline;
 }
 
-/* Mobile Footer */
+/* ========== Mobile Footer ========== */
 @media (max-width: 600px) {
   .footer {
     font-size: var(--font-size-p-small);
@@ -69,9 +76,18 @@
   }
 }
 
+@media (max-width: 400px) {
+  .footer,
+  .footer-nav,
+  .footer p,
+  .footer-nav a {
+    font-size: var(--font-size-p-xsmall);
+  }
+}
+
 /* ========== Dynamischer Header ========== */
 .header-text {
-  font-size: clamp(2rem, 5vw, 2.5rem);
+  font-size: var(--font-size-h4); /* Nutzt globale Variable */
   font-weight: 700;
   color: var(--color-text-main);
   transition: opacity var(--transition-speed), background-color var(--transition-speed);
@@ -79,253 +95,110 @@
 
 /* Dynamischer Header für ubermich.html */
 .dynamic-header {
-    text-align: left;
-    padding: clamp(0.3rem, 0.1vw, 0.2rem);
-
+  text-align: left;
+  padding: clamp(0.3rem, 0.1vw, 0.2rem);
 }
 
 .dynamic-header.fade-out {
-    opacity: 0;
+  opacity: 0;
 }
 
 .dynamic-header.fade-in {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* ========== Impressum / Datenschutz Haupt-Box ========== */
 .impressum-main,
 .datenschutz-main {
-  max-width: 440px;
-  margin: 6rem auto 5rem auto;
+  max-width: 900px;
+  margin: var(--spacing-xl) auto var(--spacing-lg) auto;
   background: var(--color-bg-secondary);
-  padding: 2.2rem 2rem 2.2rem 2rem;
-  border-radius: 1.2rem;
-  box-shadow: 0 6px 40px 0 rgba(30,30,35,0.08);
+  padding: clamp(32px, 5vw, 56px);
+  border-radius: var(--border-radius);
+  box-shadow: 0 5px 24px var(--color-shadow-dark);
   color: var(--color-text-main);
-  font-size: var(--font-size-p);
-  line-height: 1.7;
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  line-height: 1.8;
   box-sizing: border-box;
   overflow-x: hidden;
+  font-family: var(--font-family-main);
 }
-.impressum-main main,
-.datenschutz-main main { line-height: 1.7; }
 
-/* Typo & Layout */
-.impressum-main h1, .datenschutz-main h1,
-.impressum-main h2, .datenschutz-main h2,
-.impressum-main h3, .datenschutz-main h3,
-.impressum-main h4, .datenschutz-main h4 {
-  color: var(--color-accent);
-  margin-top: 2.2rem;
-  margin-bottom: 1rem;
-  line-height: 1.18;
+/* Responsive für Mobile */
+@media (max-width: 600px) {
+  .impressum-main,
+  .datenschutz-main {
+    max-width: 86vw;
+    margin: var(--spacing-md) auto var(--spacing-sm) auto;
+    padding: clamp(14px, 3vw, 22px);
+    border-radius: var(--border-radius);
+    font-size: clamp(0.98rem, 2.7vw, 1.12rem);
+    line-height: 1.7;
+    word-break: break-word;
+  }
+  .section-body {
+    padding: clamp(8px, 2vw, 14px) clamp(0.5rem, 2vw, 0.9rem);
+    max-height: clamp(220px, 32vh, 300px);
+    font-size: 0.98em;
+    line-height: 1.6;
+  }
 }
-.impressum-main h1, .datenschutz-main h1 {
+
+@media (max-width: 400px) {
+  .impressum-main,
+  .datenschutz-main {
+    font-size: clamp(0.85rem, 4vw, 0.98rem);
+    padding: var(--spacing-xs);
+    max-width: 89vw;
+  }
+  .section-body {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.93em;
+    max-height: 250px;
+  }
+}
+
+/* Headings */
+.impressum-main h1,
+.datenschutz-main h1 {
+  font-size: clamp(2.1rem, 5vw, 2.7rem);
   text-align: center;
-  margin-bottom: 1.7rem;
+  margin-bottom: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-.impressum-main h2, .datenschutz-main h2 {
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding-bottom: 0.4rem;
-  margin-top: 1.4rem;
-}
-.impressum-main p, .datenschutz-main p { margin-bottom: 1.05rem; }
-.impressum-main ul, .datenschutz-main ul { margin-left: 1.1rem; margin-bottom: 1.2rem; }
-.impressum-main ul li, .datenschutz-main ul li { margin-bottom: 0.5rem; }
-.impressum-main main a, .datenschutz-main main a {
-  color: var(--color-link);
-  text-decoration: underline;
-  text-decoration-color: rgba(255,204,41,0.5);
-  transition: color 0.2s, text-decoration-color 0.2s;
-}
-.impressum-main main a:hover, .datenschutz-main main a:hover {
-  color: var(--color-accent-hover);
-  text-decoration-color: var(--color-accent-hover);
-}
-.impressum-main address, .datenschutz-main address {
-  font-style: normal;
-  margin-bottom: 1.2rem;
-  line-height: 1.6;
-}
-.impressum-main strong, .datenschutz-main strong { color: var(--color-decor); }
-.impressum-main .last-updated, .datenschutz-main .last-updated {
-  font-size: 0.92em;
-  color: var(--color-text-muted);
-  text-align: right;
-  margin-top: 2.5rem;
+  color: var(--color-accent);
+  font-family: var(--font-family-main);
 }
 
-/* ========== Section Body ========== */
+.impressum-main h2,
+.datenschutz-main h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  border-bottom: 1px solid var(--color-shadow-light);
+  padding-bottom: var(--spacing-xs);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-accent);
+}
+
+.impressum-main h3,
+.datenschutz-main h3 {
+  font-size: clamp(1.2rem, 2vw, 1.4rem);
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-accent);
+}
+
+/* Section Body */
 .section-body {
-  padding: 0.2rem 0.2rem 0.6rem 0.2rem;
+  padding: clamp(20px, 2.5vw, 35px) clamp(2rem, 5vw, 6rem);
   background: transparent;
   border-radius: var(--border-radius);
   box-shadow: none;
   transition: background-color 0.2s, box-shadow 0.2s;
   overflow: visible;
-  max-height: 60vh;
+  max-height: clamp(500px, 55vh, 700px);
   overflow-y: auto;
-}
-
-/* ========== Responsive Anpassungen ========== */
-@media (max-width: 800px) {
-  .impressum-main, .datenschutz-main {
-    max-width: 97vw;
-    margin: 5.2rem 2vw 2.2rem 2vw;
-    padding: 1.2rem 1vw 1.2rem 1vw;
-    border-radius: 0.8rem;
-    box-shadow: 0 3px 16px 0 rgba(30,30,35,0.06);
-  }
-  .impressum-main h1, .datenschutz-main h1 {
-    font-size: clamp(1.2rem, 5vw + 1rem, 2.1rem);
-    margin-bottom: 1rem;
-  }
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: clamp(1.1rem, 4vw + 0.8rem, 1.6rem);
-    margin-top: 1rem;
-  }
-  .section-body {
-    padding: 0.1rem 0.05rem 0.4rem 0.05rem;
-    border-radius: 0.14rem;
-  }
-  .dynamic-header {
-    padding: 1.2rem 7vw 1rem 7vw;
-    min-height: 3.2rem;
-    font-size: 1.08rem;
-    border-radius: 0.8rem 0.8rem 0 0;
-  }
-}
-
-/* Footer noch kleiner auf ganz kleinen Geräten */
-@media (max-width: 500px) {
-  .footer {
-    font-size: var(--font-size-p-xsmall);
-    padding: 0.04rem 0 0.005rem 0;
-  }
-  .footer-nav {
-    gap: 0.07rem;
-  }
-  .footer-nav a {
-    font-size: var(--font-size-p-xsmall);
-  }
-}
-
-@media (max-width: 600px) {
-  .impressum-main,
-  .datenschutz-main {
-    font-size: var(--font-size-p-small);
-  }
-}
-@media (max-width: 500px) {
-  .impressum-main,
-  .datenschutz-main {
-    font-size: var(--font-size-p-xsmall);
-  }
-}
-
-@media (max-width: 600px) {
-  .impressum-main h1, .datenschutz-main h1 {
-    font-size: 1.2rem;
-  }
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: 1.05rem;
-  }
-  .impressum-main h3, .datenschutz-main h3 {
-    font-size: 0.97rem;
-  }
-}
-@media (max-width: 400px) {
-  .impressum-main h1, .datenschutz-main h1 {
-    font-size: 1.05rem;
-  }
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: 0.95rem;
-  }
-  .impressum-main h3, .datenschutz-main h3 {
-    font-size: 0.89rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: 1rem;
-    word-break: break-word;
-    line-height: 1.2;
-    font-weight: 700;
-    margin-top: 0.6rem;
-    margin-bottom: 0.7rem;
-  }
-  .impressum-main, .datenschutz-main {
-    max-width: 98vw;
-    padding: 1.2rem 2vw 1.2rem 2vw;
-    margin: 4rem auto 2rem auto;
-    border-radius: 0.7rem;
-  }
-}
-@media (max-width: 400px) {
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: 0.9rem;
-    line-height: 1.1;
-    margin-top: 0.3rem;
-    margin-bottom: 0.4rem;
-  }
-  .impressum-main, .datenschutz-main {
-    max-width: 99vw;
-    padding: 0.7rem 1vw 1rem 1vw;
-    margin: 2rem auto 1rem auto;
-    border-radius: 0.5rem;
-    font-size: 0.6rem;
-  }
-}
-@media (max-width: 600px) {
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: 0.84rem !important;
-    line-height: 1.16 !important;
-    word-break: break-word !important;
-    text-align: left !important;
-    margin-top: 0.45rem !important;
-    margin-bottom: 0.53rem !important;
-    letter-spacing: 0.01em !important;
-    font-weight: 700 !important;
-    hyphens: auto !important;
-    max-width: 96vw !important;
-    white-space: normal !important;
-  }
-}
-@media (max-width: 400px) {
-  .impressum-main h2, .datenschutz-main h2 {
-    font-size: 0.76rem !important;
-    line-height: 1.12 !important;
-    margin-top: 0.2rem !important;
-    margin-bottom: 0.23rem !important;
-    max-width: 98vw !important;
-  }
-}
-@media (max-width: 600px) {
-  .impressum-main h2,
-  .datenschutz-main h2 {
-    font-size: 0.74rem !important;
-    font-weight: 600 !important;
-    line-height: 1.12 !important;
-    max-width: 94vw !important;
-    margin-top: 0.32rem !important;
-    margin-bottom: 0.38rem !important;
-    letter-spacing: 0 !important;
-    word-break: break-word !important;
-    white-space: normal !important;
-    text-align: left !important;
-    hyphens: auto !important;
-  }
-}
-@media (max-width: 400px) {
-  .impressum-main h2,
-  .datenschutz-main h2 {
-    font-size: 0.63rem !important;
-    margin-top: 0.13rem !important;
-    margin-bottom: 0.17rem !important;
-    max-width: 97vw !important;
-    font-weight: 500 !important;
-  }
+  font-size: inherit;
+  line-height: inherit;
 }
