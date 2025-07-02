@@ -64,7 +64,12 @@
   align-items: center;
   position: relative;
 }
-
+@media (max-width: 600px) {
+  .viewport-box {
+    margin-top: 2vh; /* Etwas weiter nach oben schieben */
+    padding: clamp(14px, 1.5vw, 22px) clamp(0.5rem, 2vw, 1.5rem); /* Kompakteres Padding */
+  }
+}
 .viewport-box::-webkit-scrollbar {
   display: none;
 }

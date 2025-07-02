@@ -95,7 +95,7 @@ main {
 
 .gallery-title-above-image h3 {
     font-size: var(--font-size-h3);
-    color: var(--color-shadow-deco);
+    color: var(--color-decor); /* vorher: var(--color-shadow-deco) */
     margin-bottom: 0;
     font-family: var(--font-family-secondary); /* Nur hier spezielle Schriftart */
 }

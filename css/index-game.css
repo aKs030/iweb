@@ -1,7 +1,7 @@
 /* games.css - Spezifische Stile für die Spiele-Seite */
 @import url('_global.css'); /* Variablen importieren */
 
-.container {
+.viewport-box {
   width: clamp(300px, 90vw, 1000px); /* Min 300px, bevorzugt 90vw, max 1000px */
   height: auto; /* Die Höhe passt sich dem Inhalt an */
   min-height: clamp(400px, 65vh, 800px); /* Eine Mindesthöhe für den Container */
@@ -67,9 +67,10 @@
 
 /* 📱 Responsives Design */
 @media (max-width: 700px) {
-  .container {
-    /* Padding bei kleinen Bildschirmen, kann auch durch clamp abgedeckt werden */
-    padding: var(--spacing-md);
+  .viewport-box {
+        margin-top: -6vh; /* Weniger stark nach oben schieben für bessere Balance */
+    padding: var(--spacing-sm); /* Kleineres Padding für kleine Bildschirme */
+
   }
   .game-links {
     flex-direction: column;
@@ -84,3 +85,4 @@
     font-size: var(--card-icon-main-size-min);
   }
 }
+

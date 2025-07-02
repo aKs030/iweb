@@ -17,6 +17,8 @@
   margin: 0;
   box-sizing: border-box;
 }
+
+
 .footer p {
   margin: 0;
   line-height: 1.2;
@@ -55,7 +57,7 @@
   .footer-nav {
     gap: 0.3rem;
   }
-} /* <-- Add this closing brace for the @media (max-width: 600px) block */
+}
 
 /* Typografie und Layout NUR für Impressum/Datenschutz */
 .impressum-main,
@@ -184,7 +186,7 @@
 /* Footer mobile Anpassung (nur Footer!) */
 @media (max-width: 600px) {
   .footer {
-    font-size: 1.68rem !important;
+    font-size: 0.68rem !important; /* vorher: 1.68rem, jetzt vereinheitlicht */
     padding: 0.65rem 1.2rem;
   }
   .footer-nav {

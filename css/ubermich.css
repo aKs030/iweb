@@ -91,9 +91,6 @@
 /* =====================================
 📝 TYPOGRAPHY (globale Regeln, hier nur bei Bedarf überschreiben)
 ========================================= */
-/* Entfernt: h1, h2, h3, h4, h5, h6, p, li, .card
-   Diese Regeln sind jetzt in _global.css zentral definiert.
-*/
 
 /* =====================================
 🚀 SPEZIFISCHE STILE FÜR "ÜBER MICH"
@@ -267,5 +264,14 @@
       animation-duration: var(--transition-speed) !important;
       transform: none !important;
       opacity: 1 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .viewport-box {
+    margin-top: 2vh; /* Etwas weiter nach oben schieben */
+  }
+  .section-body {
+    padding: clamp(14px, 1.5vw, 22px) clamp(0.5rem, 2vw, 1.5rem); /* Kompakteres Padding */
   }
 }
