@@ -99,6 +99,26 @@
   .footer-nav,
   .footer p,
   .footer-nav a {
-    font-size: 0.53rem;
+    font-size: 0.53rem !important;
   }
+}
+
+/* Footer-Text auf allen Seiten und in allen Fällen konsistent */
+#footer-placeholder .footer,
+#footer-placeholder .footer *,
+#footer-placeholder .footer-nav,
+#footer-placeholder .footer-nav *,
+#footer-placeholder .footer p,
+#footer-placeholder .footer-nav a,
+body #footer-placeholder .footer,
+body #footer-placeholder .footer *,
+body #footer-placeholder .footer-nav,
+body #footer-placeholder .footer-nav *,
+body #footer-placeholder .footer p,
+body #footer-placeholder .footer-nav a {
+  font-size: 0.53rem !important;
+  color: #ededed !important;
+  line-height: 1.6 !important;
+  font-weight: 200 !important;
+  letter-spacing: 0.003em !important;
 }
