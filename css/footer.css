@@ -1,22 +1,8 @@
 .footer {
-  background:
-    linear-gradient(
-      to top,
-      rgb(54,54,54) 0%,
-      rgb(54,54,54) calc(100% - 1px),
-      rgb(54,54,54) 100%
-    ),
-    linear-gradient(
-      to right,
-      rgb(54,54,54) 0%,
-      rgb(53,53,53) 10%,
-      rgb(51,51,51) 50%,
-      rgb(53,53,53) 90%,
-      rgb(54,54,54) 100%
-    );
+  background: none;
   color: #bdbdbd;
-  box-shadow: 0 -8px 24px -8px rgb(58,58,58), 0 8px 24px -8px rgb(58,58,58);
   border: none;
+  box-shadow: none;
   text-align: center;
   padding: 0.38rem 0 0.22rem 0;
   font-size: 0.6rem;
@@ -61,6 +47,9 @@
 
 @media (max-width: 600px) {
   .footer {
+    background: none;
+    box-shadow: none;
+    border: none;
     font-size: 0.5rem;
     padding: 0.12rem 0 0.02rem 0;
     max-width: 100vw;
@@ -83,6 +72,9 @@
   }
   .impressum-main .footer,
   .datenschutz-main .footer {
+    background: none;
+    box-shadow: none;
+    border: none;
     font-size: 0.44rem;
     padding: 0.04rem 0 0.005rem 0;
   }
