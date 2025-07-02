@@ -1,3 +1,5 @@
+@import url('_global.css'); 
+
 .footer {
   background: none;
   color: #bdbdbd;
@@ -98,3 +100,158 @@
   }
 }
 
+
+
+/* Typografie und Layout NUR für Impressum/Datenschutz */
+.impressum-main,
+.datenschutz-main {
+  max-width: 700px;
+  max-height: 700px;
+  background: var(--color-bg-secondary);
+  padding: 2.5rem 2rem 6rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 12px var(--color-shadow-dark);
+  color: var(--color-text-main);
+  font-size: var(--font-size-p);
+  line-height: 1.7;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.impressum-main main,
+.datenschutz-main main {
+  line-height: 1.7;
+}
+
+.impressum-main h1, 
+.impressum-main h2, 
+.impressum-main h3, 
+.impressum-main h4,
+.datenschutz-main h1, 
+.datenschutz-main h2, 
+.datenschutz-main h3, 
+.datenschutz-main h4 {
+  color: var(--color-accent);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.impressum-main h1,
+.datenschutz-main h1 {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.impressum-main h2,
+.datenschutz-main h2 {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+  margin-top: 3rem;
+}
+
+.impressum-main p,
+.datenschutz-main p {
+  margin-bottom: 1.2rem;
+}
+
+.impressum-main ul,
+.datenschutz-main ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.impressum-main ul li,
+.datenschutz-main ul li {
+  margin-bottom: 0.6rem;
+}
+
+.impressum-main main a,
+.datenschutz-main main a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 204, 41, 0.5);
+  transition: color 0.2s ease-in-out, text-decoration-color 0.2s ease-in-out;
+}
+
+.impressum-main main a:hover,
+.datenschutz-main main a:hover {
+  color: var(--color-accent-hover);
+  text-decoration-color: var(--color-accent-hover);
+}
+
+.impressum-main address,
+.datenschutz-main address {
+  font-style: normal;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.impressum-main strong,
+.datenschutz-main strong {
+  color: var(--color-decor);
+}
+
+.impressum-main .last-updated,
+.datenschutz-main .last-updated {
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+  text-align: right;
+  margin-top: 3rem;
+}
+
+/* Responsive Anpassungen für Impressum/Datenschutz */
+@media (max-width: 800px) {
+  .impressum-main,
+  .datenschutz-main {
+    max-width: 89vw;
+    max-height: auto;
+    padding: 1.2rem;
+    font-size: 0.97rem;
+    border-radius: 0.3rem;
+    box-shadow: 0 1px 4px var(--color-shadow-dark);
+  }
+}
+@media (max-width: 500px) {
+  .impressum-main,
+  .datenschutz-main {
+    max-width: 89vw;
+    max-height: 130vw;
+    padding: 1.2rem;
+    font-size: 0.97rem;
+    border-radius: 0.3rem;
+    box-shadow: 0 1px 4px var(--color-shadow-dark);
+  }
+}
+
+/* Footer mobile Anpassung (nur Footer!) */
+@media (max-width: 600px) {
+  .footer {
+    font-size: 1.68rem !important;
+    padding: 0.65rem 1.2rem;
+  }
+  .footer-nav {
+    gap: 0.3rem;
+  }
+}
+
+/* Responsive Anpassungen für kleinere Bildschirme (nur Impressum/Datenschutz) */
+@media (max-width: 768px) {
+  .impressum-main,
+  .datenschutz-main {
+    padding: 2.5rem !important;
+    margin: 3rem auto;
+  }
+  .impressum-main h1,
+  .datenschutz-main h1 {
+    font-size: clamp(1.5rem, 5vw + 1rem, 2.5rem);
+    margin-bottom: 1.5rem;
+  }
+  .impressum-main h2,
+  .datenschutz-main h2 {
+    font-size: clamp(1.2rem, 4vw + 0.8rem, 2rem);
+    margin-top: 2rem;
+  }
+}
