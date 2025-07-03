@@ -1,0 +1,25 @@
+{
+  "name": "iweb-4",
+  "version": "1.0.0",
+  "description": "Eine moderne, responsive Webseite mit eleganten Animationen und einem benutzerfreundlichen Design.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "purge": "purgecss --config purgecss.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aKs030/iweb.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aKs030/iweb/issues"
+  },
+  "homepage": "https://github.com/aKs030/iweb#readme",
+  "devDependencies": {
+    "purgecss": "^7.0.2"
+  }
+}
