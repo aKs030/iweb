@@ -1,3 +1,5 @@
+// menu.js – final funktionierende Version
+
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
 
@@ -38,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initializeSubmenuLinks(menuContainer);
       setSiteTitle();
 
-      // Klick außerhalb schließt das Menü (nur für Desktop sinnvoll)
+      // Klick außerhalb schließt das Menü (nur Desktop)
       document.addEventListener('click', (event) => {
         const isClickInside = menuContainer.contains(event.target);
         const isMenuToggle = event.target.closest('.site-menu__toggle');
@@ -50,25 +52,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-/**
- * Initialisiert die Menü-Toggle-Logik inkl. Overlay
- * @param {HTMLElement} container - Der Container mit der Menü-Komponente
- */
+// Menü-Toggle-Logik
 function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   const overlay = container.querySelector('.site-menu__overlay');
+
   if (menuToggle && menu) {
     const toggle = () => {
+      const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+      menuToggle.setAttribute('aria-expanded', String(!isExpanded));
       menu.classList.toggle('open');
       menuToggle.classList.toggle('active');
-      // Overlay wird jetzt nur noch durch CSS gesteuert – kein JS mehr nötig!
     };
+
     menuToggle.addEventListener('click', toggle);
     menuToggle.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') toggle();
     });
-    // Overlay-Klick schließt Menü
+
     if (overlay) {
       overlay.addEventListener('click', () => {
         menu.classList.remove('open');
@@ -80,10 +82,7 @@ function initializeMenu(container) {
   }
 }
 
-/**
- * Initialisiert das Verhalten für den Logo-Rechtsklick
- * @param {HTMLElement} container - Der Container mit der Menü-Komponente
- */
+// Logo-Rechtsklick navigiert zur Startseite
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
@@ -96,43 +95,34 @@ function initializeLogo(container) {
   }
 }
 
-/**
- * Initialisiert die Submenu-Links (nur ein Submenü offen – Mobile only)
- */
+// Submenu-Links – nur Mobile
 function initializeSubmenuLinks(container) {
   const submenuLinks = container.querySelectorAll('.has-submenu > a');
   submenuLinks.forEach(link => {
     link.addEventListener('click', (event) => {
-      // Nur für Mobile: JS steuert Submenu!
-      if (window.innerWidth > 768) return; // Auf Desktop keine Klick-Steuerung
+      if (window.innerWidth > 768) return;
       event.preventDefault();
+
       const parentLi = link.parentElement;
       const isOpen = parentLi.classList.contains('open');
-      // Alle Submenüs schließen
+
       container.querySelectorAll('.has-submenu').forEach(li => li.classList.remove('open'));
-      // Nur das angeklickte öffnen, falls es vorher zu war
       if (!isOpen) parentLi.classList.add('open');
     });
   });
 }
 
-/**
- * Schließt das Menü (inkl. Overlay)
- * @param {HTMLElement} container - Der Container mit der Menü-Komponente
- */
+// Menü schließen (z. B. bei Klick außen)
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
-    // Overlay wird jetzt nur noch durch CSS gesteuert
   }
 }
 
-/**
- * Setzt den Seitentitel im Logo anhand des aktuellen Pfads
- */
+// Seitentitel im Logo setzen
 function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
@@ -147,3 +137,4 @@ function setSiteTitle() {
   const siteTitleEl = document.getElementById('site-title');
   if (siteTitleEl) siteTitleEl.textContent = pageTitle;
 }
+
