@@ -343,3 +343,21 @@ body#index-page .lead {
   font-size: var(--font-size-lead);
   color: var(--color-text-main);
 }
+
+/* filepath: /css/index.css */
+:root {
+  --theme-bg: #393939;
+  --theme-fg: #ffffff;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --theme-bg: #ffffff;
+    --theme-fg: #393939;
+  }
+}
+
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-fg);
+}
+/* z. B. für nav-Bar, footer, SVG-Icons etc. ebenfalls var(--theme-*) nutzen */

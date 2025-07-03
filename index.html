@@ -5,14 +5,56 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
+    <!-- Apple PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Deine Webseite">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Abdulkerim ⭐️">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
     <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
     <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
-    <link rel="apple-touch-icon" href="/img/touch-icon-180.png">
+
+<!-- iOS Splash Screens -->
+<link rel="apple-touch-startup-image" href="/img/splash/iphone5_splash.png"
+      media="(device-width: 320px) and (device-height: 568px)
+             and (-webkit-device-pixel-ratio: 2)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/iphone6_splash.png"
+      media="(device-width: 375px) and (device-height: 667px)
+             and (-webkit-device-pixel-ratio: 2)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/iphoneplus_splash.png"
+      media="(device-width: 414px) and (device-height: 736px)
+             and (-webkit-device-pixel-ratio: 3)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/iphonex_splash.png"
+      media="(device-width: 375px) and (device-height: 812px)
+             and (-webkit-device-pixel-ratio: 3)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/iphonexr_splash.png"
+      media="(device-width: 414px) and (device-height: 896px)
+             and (-webkit-device-pixel-ratio: 2)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/iphonexsmax_splash.png"
+      media="(device-width: 414px) and (device-height: 896px)
+             and (-webkit-device-pixel-ratio: 3)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/ipad_splash.png"
+      media="(device-width: 768px) and (device-height: 1024px)
+             and (-webkit-device-pixel-ratio: 2)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/ipadpro1_splash.png"
+      media="(device-width: 834px) and (device-height: 1112px)
+             and (-webkit-device-pixel-ratio: 2)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/ipadpro2_splash.png"
+      media="(device-width: 834px) and (device-height: 1194px)
+             and (-webkit-device-pixel-ratio: 2)">
+
+<link rel="apple-touch-startup-image" href="/img/splash/ipadpro3_splash.png"
+      media="(device-width: 1024px) and (device-height: 1366px)
+             and (-webkit-device-pixel-ratio: 2)">
 
     <link rel="icon" href="/img/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
@@ -28,7 +70,32 @@
                    script-src 'self' https://cdn.jsdelivr.net;
                    connect-src 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="manifest" href="/manifest.json">    <!-- Theme color for Chrome, Firefox OS and Opera -->
     <meta name="theme-color" content="#393939">
+    <meta name="theme-color" content="#393939" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <!-- Fallback for Firefox/Opera via CSS background-color and msapplication-TileColor for Windows -->
+    <meta name="msapplication-TileColor" content="#393939">
+    <!-- Fallback for Safari/Firefox/Opera -->
+    <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#393939">
+    <meta name="msapplication-TileColor" content="#393939">
+    <!-- Note: Firefox and Opera currently do not support theme-color meta tag -->
+    <!-- Theme color for Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#393939">
+    <!-- Theme color for iOS Safari -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="msapplication-TileColor" content="#393939">
+    <style>
+      body {
+        background-color: #393939;
+      }
+      @media (prefers-color-scheme: light) {
+        body {
+          background-color: #ffffff;
+        }
+      }
+    </style>
+    <meta name="msapplication-TileColor" content="#393939">
 
     <title>Abdulkerim ⭐️</title>
 
@@ -69,7 +136,6 @@
     </main>
 
     <div id="footer-placeholder"></div>
-
     <script src="/js/templateLoader.js" defer></script>
     <script src="/js/intext.js" defer></script>
     <script src="/js/menu.js" defer></script>
