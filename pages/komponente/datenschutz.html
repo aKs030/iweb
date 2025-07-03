@@ -100,8 +100,9 @@
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
   <div id="menu-container"></div>
-  <main class="datenschutz-main">
+  <main id="main-content" class="datenschutz-main">
     <div class="dynamic-header">
       <span class="header-icon"></span>
       <span class="header-text"><i class="bi bi-shield-lock" aria-hidden="true"></i> Datenschutz</span>
@@ -109,7 +110,7 @@
     <div class="section-body">
       <h2>Datenschutzerklärung</h2>
       <h3><i class="bi bi-shield-lock" aria-hidden="true"></i> Datenschutz</h3>
-      <p></p>
+      <p>
         Der Schutz Ihrer persönlichen Daten ist uns ein wichtiges Anliegen. In dieser Datenschutzerklärung informieren wir Sie umfassend darüber, wie wir Ihre Daten auf dieser Website im Einklang mit der Datenschutz-Grundverordnung (DSGVO) und dem Bundesdatenschutzgesetz (BDSG) erheben, verarbeiten und nutzen.
       </p>
       <h3 id="verantwortlicher"><i class="bi bi-person-badge" aria-hidden="true"></i> Verantwortlicher</h3>
@@ -189,8 +190,8 @@
     </div>
   </main>
   <div id="footer-placeholder"></div>
-  <script src="/js/menu.js"></script>
-  <script>
+  <script src="/js/menu.js" defer></script>
+  <script defer>
     document.addEventListener("DOMContentLoaded", () => {
       const dynamicHeader = document.querySelector('.dynamic-header');
       const headerIcon = dynamicHeader.querySelector('.header-icon');

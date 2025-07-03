@@ -1,6 +1,6 @@
 /* ubermich.css - Spezifische Stile für die "Über Mich"-Seite */
 
-@import url('_global.css'); /* Variablen importieren */
+@import url('/css/_global.css'); /* Variablen importieren */
 
 /* =====================================
 🔧 GLOBAL RESET & BASIC STYLES

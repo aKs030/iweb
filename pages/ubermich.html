@@ -14,7 +14,7 @@
   <div id="menu-container"></div>
 
   <div class="viewport-box">
-    <main class="section-card ubermich-main-card" aria-label="Über mich Inhalt">
+    <main id="main-content" class="section-card ubermich-main-card" aria-label="Über mich Inhalt">
       <div class="dynamic-header">
         <span class="header-icon"></span>
         <span class="header-text"><i class="bi bi-info-circle" aria-hidden="true"></i> Überblick</span>
@@ -51,8 +51,8 @@
   </div>
 
     <div id="footer-placeholder"></div>
-  <script src="/js/menu.js"></script>
-  <script>
+  <script src="/js/menu.js" defer></script>
+  <script defer>
     document.addEventListener("DOMContentLoaded", () => {
       const dynamicHeader = document.querySelector('.dynamic-header');
       const headerIcon = dynamicHeader.querySelector('.header-icon');
