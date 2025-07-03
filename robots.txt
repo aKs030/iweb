@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Für Google klar definieren, wo die Sitemap liegt:
+Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
