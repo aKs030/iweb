@@ -60,9 +60,9 @@ function initializeMenu(container) {
   const overlay = container.querySelector('.site-menu__overlay');
   if (menuToggle && menu) {
     const toggle = () => {
-      const isOpen = menu.classList.toggle('open');
+      menu.classList.toggle('open');
       menuToggle.classList.toggle('active');
-      if (overlay) overlay.style.display = isOpen ? 'block' : 'none';
+      // Overlay wird jetzt nur noch durch CSS gesteuert – kein JS mehr nötig!
     };
     menuToggle.addEventListener('click', toggle);
     menuToggle.addEventListener('keydown', (event) => {
@@ -73,7 +73,6 @@ function initializeMenu(container) {
       overlay.addEventListener('click', () => {
         menu.classList.remove('open');
         menuToggle.classList.remove('active');
-        overlay.style.display = 'none';
       });
     }
   } else {
@@ -98,20 +97,21 @@ function initializeLogo(container) {
 }
 
 /**
- * Initialisiert die Submenu-Links (nur ein Submenü offen)
+ * Initialisiert die Submenu-Links (nur ein Submenü offen – Mobile only)
  */
 function initializeSubmenuLinks(container) {
-  // Wichtig: Im geladenen Menü suchen, nicht im ganzen Dokument
   const submenuLinks = container.querySelectorAll('.has-submenu > a');
   submenuLinks.forEach(link => {
     link.addEventListener('click', (event) => {
+      // Nur für Mobile: JS steuert Submenu!
+      if (window.innerWidth > 768) return; // Auf Desktop keine Klick-Steuerung
       event.preventDefault();
-      const submenu = link.nextElementSibling;
-      const wasOpen = submenu && submenu.style.display === 'block';
+      const parentLi = link.parentElement;
+      const isOpen = parentLi.classList.contains('open');
       // Alle Submenüs schließen
-      container.querySelectorAll('.submenu').forEach(sm => sm.style.display = 'none');
+      container.querySelectorAll('.has-submenu').forEach(li => li.classList.remove('open'));
       // Nur das angeklickte öffnen, falls es vorher zu war
-      if (submenu) submenu.style.display = wasOpen ? 'none' : 'block';
+      if (!isOpen) parentLi.classList.add('open');
     });
   });
 }
@@ -123,11 +123,10 @@ function initializeSubmenuLinks(container) {
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
-  const overlay = container.querySelector('.site-menu__overlay');
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
-    if (overlay) overlay.style.display = 'none';
+    // Overlay wird jetzt nur noch durch CSS gesteuert
   }
 }
 
