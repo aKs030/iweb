@@ -1,0 +1,162 @@
+<script defer src="https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro.min.js"></script>
+<link rel="stylesheet" href="/css/footer.css">
+
+
+<div id="klaro"></div>
+
+<script type="text/javascript">
+
+    window.klaroConfig = window.klaroConfig || {
+        elementID: 'klaro',
+        lang: navigator.language.startsWith('de') ? 'de' : 'en',
+        styling: {
+            theme: ['light', 'bottom', 'left'],
+        },
+        translations: {
+            de: {
+                consentModal: {
+                    title: 'Einwilligung zu Cookies & Daten',
+                    description: 'Wir nutzen Cookies auf unserer Webseite. Einige von ihnen sind essenziell, während andere uns helfen, diese Webseite und Ihre Erfahrung zu verbessern. Sie können Ihre Einwilligung jederzeit widerrufen.',
+                    privacyPolicy: 'Datenschutzerklärung',
+                    imprint: 'Impressum',
+                    close: 'Schließen',
+                    ok: 'Einverstanden',
+                    learnMore: 'Einstellungen ändern',
+                },
+                purposes: {
+                    analytics: 'Analyse',
+                    essential: 'Essentiell',
+                    youtube: 'YouTube Inhalte',
+                    fonts: 'Web-Schriftarten',
+                },
+                services: {
+                    googleAnalytics: {
+                        title: 'Google Analytics',
+                        description: 'Sammelt anonymisierte Informationen zur Verbesserung der Webseite.',
+                    },
+                    youtube: {
+                        title: 'YouTube',
+                        description: 'Ermöglicht das Abspielen von eingebetteten YouTube-Videos.',
+                    },
+                    googleFonts: {
+                        title: 'Google Fonts',
+                        description: 'Lädt Schriftarten von Google-Servern.',
+                    },
+                },
+            },
+            en: {
+                consentModal: {
+                    title: 'Cookie & Data Consent',
+                    description: 'We use cookies on our website. Some of them are essential, while others help us improve this website and your experience. You can withdraw your consent at any time.',
+                    privacyPolicy: 'Privacy Policy',
+                    imprint: 'Imprint',
+                    close: 'Close',
+                    ok: 'Accept',
+                    learnMore: 'Customize settings',
+                },
+                purposes: {
+                    analytics: 'Analytics',
+                    essential: 'Essential',
+                    youtube: 'YouTube Content',
+                    fonts: 'Web Fonts',
+                },
+                services: {
+                    googleAnalytics: {
+                        title: 'Google Analytics',
+                        description: 'Collects anonymous information to improve our website.',
+                    },
+                    youtube: {
+                        title: 'YouTube',
+                        description: 'Enables playback of embedded YouTube videos.',
+                    },
+                    googleFonts: {
+                        title: 'Google Fonts',
+                        description: 'Loads fonts from Google servers.',
+                    },
+                },
+            },
+        },
+
+        privacyPolicy: '/pages/komponente/datenschutz.html',
+        imprint: '/pages/komponente/impressum.html',
+
+        default: false,
+
+        services: [
+            {
+                name: 'essential',
+                purposes: ['essential'],
+                required: true,
+                default: true,
+            },
+            {
+                name: 'googleAnalytics',
+                default: false,
+                purposes: ['analytics'],
+                cookies: [/^_ga/, /^_gid/, /^_gat/],
+                onAccept: function () {
+                    window['ga-disable-G-S0587RQ4CN'] = false;
+
+                    if (document.querySelector('script[src*="gtag/js?id=G-S0587RQ4CN"]')) return;
+
+                    var gaScript = document.createElement('script');
+                    gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN';
+                    gaScript.async = true;
+                    gaScript.onload = function () {
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', 'G-S0587RQ4CN', { anonymize_ip: true });
+                    };
+                    document.head.appendChild(gaScript);
+                },
+                onDecline: function() {
+                    window['ga-disable-G-S0587RQ4CN'] = true;
+                    document.cookie.split(';').forEach(cookie => {
+                        const cookieName = cookie.trim().split('=')[0];
+                        if (/^_ga|^_gid|^_gat/.test(cookieName)) {
+                            document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+                        }
+                    });
+                },
+            },
+            {
+                name: 'youtube',
+                purposes: ['youtube'],
+                default: false,
+                onlyOnce: true,
+                cookies: [/^(?:YSC|VISITOR_INFO1_LIVE|PREF)/],
+                onAccept: function () {
+                    var ytEmbeds = document.querySelectorAll('[data-type="youtube"]');
+                    ytEmbeds.forEach(el => {
+                        if (!el.dataset.src) return;
+                        var iframe = document.createElement('iframe');
+                        iframe.src = el.dataset.src;
+                        iframe.width = el.dataset.width || '560';
+                        iframe.height = el.dataset.height || '315';
+                        iframe.frameBorder = '0';
+                        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                        iframe.allowFullscreen = true;
+                        el.replaceWith(iframe);
+                    });
+                },
+            },
+            {
+                name: 'googleFonts',
+                purposes: ['fonts'],
+                default: false,
+                onAccept: function () {
+                    if (document.querySelector('link[href*="fonts.googleapis.com"]')) return;
+                    var gfLink = document.createElement('link');
+                    gfLink.rel = 'stylesheet';
+                    gfLink.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap';
+                    document.head.appendChild(gfLink);
+                },
+            },
+        ],
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        klaro.initialize({ config: klaroConfig });
+    });
+</script>
