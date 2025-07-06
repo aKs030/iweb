@@ -228,7 +228,7 @@
     // we assume the user has made a choice and apply it without showing the banner initially.
     // Otherwise, show the banner for first-time visitors or those without a clear choice.
     const storedConsentString = localStorage.getItem('cookieConsent');
-    if (storedConsentString === null || !Object.keys(JSON.parse(storedConsentString)).length) {
+    if (storedConsentString === null) {
       showBanner();
     } else {
       // User has made a choice previously, apply it immediately
@@ -393,7 +393,7 @@
     // we assume the user has made a choice and apply it without showing the banner initially.
     // Otherwise, show the banner for first-time visitors or those without a clear choice.
     const storedConsentString = localStorage.getItem('cookieConsent');
-    if (storedConsentString === null || !Object.keys(JSON.parse(storedConsentString)).length) {
+    if (storedConsentString === null) {
       showBanner();
     } else {
       // User has made a choice previously, apply it immediately
