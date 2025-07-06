@@ -5,18 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <!-- Apple PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Abdulkerim ⭐️">
-    <!-- Theme color for iOS Safari -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="msapplication-TileColor" content="#393939">
-    <!-- Apple Touch Icons -->   
-      <link rel="apple-touch-startup-image" href="/img/splash/iphonexsmax_splash.png"
+    <link rel="apple-touch-startup-image" href="/img/splash/iphonexsmax_splash.png"
           media="(device-width: 414px) and (device-height: 896px)
                  and (-webkit-device-pixel-ratio: 3)">
     
-    <!-- fehlt: schließendes '>' im nächsten Tag -->
     <link rel="apple-touch-startup-image" href="/img/splash/ipad_splash.png"
           media="(device-width: 768px) and (device-height: 1024px)
                  and (-webkit-device-pixel-ratio: 2)">
@@ -28,7 +24,6 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
 <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
 <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
-<!-- iOS Splash Screens -->
 <link rel="apple-touch-startup-image" href="/img/splash/iphone5_splash.png"
       media="(device-width: 320px) and (device-height: 568px)
              and (-webkit-device-pixel-ratio: 2)">
@@ -80,20 +75,15 @@
                    img-src 'self' data: https:;
                    style-src 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
                    font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net;
-                   script-src 'self' https://cdn.jsdelivr.net;
-                   connect-src 'self';">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <link rel="manifest" href="/manifest.json">    <!-- Theme color for Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#393939">
+                   script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com;
+                   connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com;
+                   frame-src 'self';"> <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="manifest" href="/manifest.json">    <meta name="theme-color" content="#393939">
     <meta name="theme-color" content="#393939" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <!-- Fallback for Firefox/Opera via CSS background-color and msapplication-TileColor for Windows -->
     <meta name="msapplication-TileColor" content="#393939">
-    <!-- Fallback for Safari/Firefox/Opera -->
     <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#393939">
     <meta name="msapplication-TileColor" content="#393939">
-    <!-- Note: Firefox and Opera currently do not support theme-color meta tag -->
-    <!-- Theme color for Windows Phone -->
     <meta name="msapplication-navbutton-color" content="#393939">
     <style>
       body {
@@ -121,16 +111,54 @@
 
     <link rel="stylesheet" href="/css/index.css">  
     <link rel="stylesheet" href="/css/cookie-banner.css">
-    <!-- DNS-Prefetch für Drittanbieter -->
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
 </head>
 <body id="index-page">
-    <!-- Cookie Banner -->
-<div id="cookie-banner">
-  <p>Diese Website verwendet Cookies zur Funktionsfähigkeit und zur Analyse. <a href="/komponente/datenschutz.html">Mehr erfahren</a>.</p>
-  <button id="cookie-accept-btn">Alle akzeptieren</button>
-  <button id="cookie-reject-btn">Ablehnen</button>
+    <div id="cookie-banner" aria-live="polite">
+  <p>Diese Website verwendet Cookies zur Funktionsfähigkeit und zur Analyse. <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener noreferrer">Mehr erfahren</a>. <a href="#" id="cookie-banner-settings-link">Cookie-Einstellungen ändern</a></p>
+  <button id="cookie-accept-all-btn" class="primary">Alle akzeptieren</button>
+  <button id="cookie-reject-all-btn" class="outlined">Ablehnen</button>
+</div>
+
+<div id="cookie-settings-modal" aria-modal="true" role="dialog" aria-labelledby="modal-title" style="display: none;">
+  <div class="modal-content animate__animated animate__fadeInDown">
+    <h2 id="modal-title">Ihre Cookie-Einstellungen</h2>
+    <p>Wir verwenden Cookies, um die Funktionalität unserer Website zu gewährleisten und das Nutzererlebnis zu verbessern. Sie können entscheiden, welche Kategorien von Cookies Sie zulassen möchten.</p>
+
+    <div class="cookie-category">
+      <h3>
+        <input type="checkbox" id="cookie-necessary" checked disabled>
+        <label for="cookie-necessary">Notwendige Cookies</label>
+      </h3>
+      <p class="description">Erforderlich für die Grundfunktionen der Website.</p>
+    </div>
+
+    <div class="cookie-category">
+      <h3>
+        <input type="checkbox" id="cookie-analytics">
+        <label for="cookie-analytics">Analyse- und Statistik-Cookies</label>
+      </h3>
+      <p class="description">Hilft uns, die Nutzung der Website anonym zu analysieren.</p>
+    </div>
+
+    <div class="cookie-category">
+      <h3>
+        <input type="checkbox" id="cookie-marketing">
+        <label for="cookie-marketing">Marketing- und Personalisierungs-Cookies</label>
+      </h3>
+      <p class="description">Ermöglicht personalisierte Werbung und Angebote.</p>
+      <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener noreferrer" class="cookie-details-link">Details zu Cookies</a>
+    </div>
+
+    <div id="cookie-confirmation" class="cookie-confirmation">Einstellungen gespeichert!</div>
+
+    <div class="modal-buttons">
+      <button id="cookie-save-settings-btn" class="primary">Auswahl speichern</button>
+      <button id="cookie-accept-all-from-modal-btn" class="primary">Alle akzeptieren</button>
+      <button id="cookie-cancel-settings-btn" class="outlined">Abbrechen</button>
+    </div>
+  </div>
 </div>
     <nav id="menu-container" role="navigation" aria-label="Navigation"></nav>
     
@@ -152,7 +180,7 @@
     </main>
 
     <div id="footer-placeholder"></div>
-    <a id="cookie-settings-link" href="#" aria-label="Cookie-Einstellungen öffnen">Cookie-Einstellungen</a>
+    <a id="cookie-settings-link" href="#" aria-label="Cookie-Einstellungen ändern">Cookie-Einstellungen ändern</a>
     <script src="/js/templateLoader.js" defer></script>
     <script src="/js/cookie-banner.js" defer></script>
     <script src="/js/intext.js" defer></script>
