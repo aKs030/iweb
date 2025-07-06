@@ -1,10 +1,8 @@
-
-// Lädt pages/index-card.html und injiziert .hidden-templates
+// js/templateLoader.js
 
 document.addEventListener('DOMContentLoaded', () => {
     (async () => {
         try {
-            // WICHTIG: Passe diesen Pfad an den tatsächlichen Speicherort deiner index-card.html an!
             const response = await fetch('pages/index-card.html'); 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -19,12 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hiddenTemplatesContainer) {
                 document.body.appendChild(hiddenTemplatesContainer);
                 document.dispatchEvent(new CustomEvent('templatesLoaded'));
-                console.log("index-card.html geladen und .hidden-templates injiziert.");
-            } else {
-                console.warn("Warnung: .hidden-templates Container nicht in index-card.html gefunden.");
             }
         } catch (error) {
-            console.error('Fehler beim Laden von index-card.html oder Templates:', error);
+            console.error('Error loading templates:', error);
         }
     })();
 });
