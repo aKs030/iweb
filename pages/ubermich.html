@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Persönliche Webseite von Abdulkerim - Erfahren Sie mehr über mich, meine Hobbys, meine Karriere und wie Sie mich kontaktieren können.">
+  <title>Über Mich</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <link rel="stylesheet" href="/css/ubermich.css">
+
+</head>
+<body>
+  <div id="menu-container"></div>
+
+  <div class="viewport-box">
+    <main id="main-content" class="section-card ubermich-main-card" aria-label="Über mich Inhalt">
+      <div class="dynamic-header">
+        <span class="header-icon"></span>
+        <span class="header-text"><i class="bi bi-info-circle" aria-hidden="true"></i> Überblick</span>
+      </div>
+      <div class="section-body"><br>
+        <p>Willkommen auf meiner "Über Mich"-Seite! Hier möchte ich dir einen Einblick in mein Leben, meine Interessen und meine berufliche Laufbahn geben. Viel Spaß beim Entdecken!</p>
+        <h3><i class="bi bi-person" aria-hidden="true"></i> Persönlich</h3>
+        <p>Hallo, mein Name ist Abdulkerim und ich freue mich, dass du hier bist! Ich bin 32 Jahre alt und lebe in Berlin.</p>
+        <h3><i class="bi bi-tools" aria-hidden="true"></i> Fähigkeiten</h3>
+        <ul>
+          <li>HTML, CSS, JavaScript (Fortgeschritten)</li>
+          <li>Frameworks: React, Vue.js, Angular</li>
+          <li>Backend: Node.js, Python, PHP</li>
+          <li>Datenbanken: SQL, NoSQL</li>
+          <li>Cloud: AWS, Docker</li>
+        </ul>
+        <h3><i class="bi bi-heart" aria-hidden="true"></i> Hobbys & Interessen</h3>
+        <p>Ich liebe es, in der Küche kreativ zu werden, neue Rezepte auszuprobieren und internationale Geschmackswelten zu entdecken.</p>
+        <h3><i class="bi bi-envelope-paper" aria-hidden="true"></i> Kontakt</h3>
+        <p>Vielen Dank für deinen Besuch! Ich freue mich über Anfragen, Feedback oder einen netten Austausch.</p>
+        <div class="contact-links">
+          <a href="mailto:mail@abdulkerimsesli.com" aria-label="Kontakt per E-Mail">
+            <i class="bi bi-envelope-fill"></i>
+          </a>
+          <a href="https://linkedin.com/in/abdulkerim-sesli" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profil">
+            <i class="bi bi-linkedin"></i>
+          </a>
+          <a href="https://github.com/aKs030" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profil">
+            <i class="bi bi-github"></i>
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+    <div id="footer-placeholder"></div>
+  <script src="/js/menu.js" defer></script>
+  <script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+      const dynamicHeader = document.querySelector('.dynamic-header');
+      const headerIcon = dynamicHeader.querySelector('.header-icon');
+      const headerText = dynamicHeader.querySelector('.header-text');
+      const headings = Array.from(document.querySelectorAll('.section-body h3'));
+      const paragraphs = Array.from(document.querySelectorAll('.section-body p'));
+      const lists = Array.from(document.querySelectorAll('.section-body ul'));
+      const sectionBody = document.querySelector('.section-body');
+
+      // Überblick-Header-Info (statisch)
+      const initialHeader = {
+        iconClass: "bi bi-info-circle",
+        text: "Überblick"
+      };
+
+      function getHeadingIconAndText(heading) {
+        let iconClass = "";
+        let text = heading.textContent.trim();
+        if (heading.firstElementChild && heading.firstElementChild.tagName === "I") {
+          iconClass = heading.firstElementChild.className;
+          text = heading.textContent.replace(heading.firstElementChild.textContent, '').trim();
+        }
+        return { iconClass, text };
+      }
+
+      let lastIconClass = initialHeader.iconClass;
+      let lastHeaderText = initialHeader.text;
+      let lastHeaderIndex = -1;
+
+      function setHeaderAnimated(newIconClass, newText, direction = 'down') {
+        if (headerText.textContent === newText && headerIcon.firstElementChild?.className === newIconClass) return;
+        dynamicHeader.style.transition = 'transform 0.4s, opacity 0.4s';
+        dynamicHeader.style.transform = direction === 'down' ? 'translateY(-40px)' : 'translateY(40px)';
+        dynamicHeader.style.opacity = '0';
+        setTimeout(() => {
+          headerIcon.innerHTML = newIconClass ? `<i class="${newIconClass}" aria-hidden="true"></i>` : '';
+          headerText.textContent = newText;
+          dynamicHeader.style.transform = direction === 'down' ? 'translateY(40px)' : 'translateY(-40px)';
+          setTimeout(() => {
+            dynamicHeader.style.transform = 'translateY(0)';
+            dynamicHeader.style.opacity = '1';
+          }, 20);
+        }, 350);
+      }
+
+      function updateHeader() {
+        let currentIdx = -1;
+        let containerRect = sectionBody.getBoundingClientRect();
+        for (let i = 0; i < headings.length; i++) {
+          const rect = headings[i].getBoundingClientRect();
+          if (rect.top - containerRect.top <= 10) {
+            currentIdx = i;
+          }
+        }
+        let iconClass, text;
+        if (currentIdx === -1) {
+          iconClass = initialHeader.iconClass;
+          text = initialHeader.text;
+        } else {
+          ({ iconClass, text } = getHeadingIconAndText(headings[currentIdx]));
+        }
+        if (text !== lastHeaderText || iconClass !== lastIconClass) {
+          const direction = currentIdx > lastHeaderIndex ? 'down' : 'up';
+          setHeaderAnimated(iconClass, text, direction);
+          lastHeaderText = text;
+          lastIconClass = iconClass;
+          lastHeaderIndex = currentIdx;
+        }
+      }
+
+      function animateElements() {
+        const containerRect = sectionBody.getBoundingClientRect();
+        const elements = [...headings, ...paragraphs, ...lists];
+        elements.forEach((element, idx) => {
+          const rect = element.getBoundingClientRect();
+          const elemTop = rect.top - containerRect.top;
+          const elemBottom = rect.bottom - containerRect.top;
+          if (elemBottom > 0 && elemTop < containerRect.height) {
+            if (!element.classList.contains('visible')) {
+              setTimeout(() => {
+                element.classList.add('visible');
+                element.classList.remove('hidden-up');
+              }, idx * 40);
+            }
+          } else if (elemBottom <= 0) {
+            element.classList.remove('visible');
+            element.classList.add('hidden-up');
+          } else {
+            element.classList.remove('visible');
+            element.classList.remove('hidden-up');
+          }
+        });
+      }
+
+      // Initialisiere Elemente als hidden-up vor dem ersten Scrollen/der ersten Animation
+      [...headings, ...paragraphs, ...lists].forEach(el => {
+        el.classList.remove('visible');
+        el.classList.add('hidden-up');
+      });
+
+      function onScrollOrResize() {
+        updateHeader();
+        animateElements();
+      }
+
+      sectionBody.addEventListener('scroll', () => {
+        requestAnimationFrame(onScrollOrResize);
+      });
+      window.addEventListener('resize', () => {
+        requestAnimationFrame(onScrollOrResize);
+      });
+
+      // Erster Aufruf, um den Header zu setzen und Elemente beim Laden der Seite zu animieren
+      updateHeader();
+      animateElements();
+    });
+  </script>
+</body>
+</html>
