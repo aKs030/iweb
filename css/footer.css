@@ -1,0 +1,83 @@
+@import url('/css/_global.css');
+
+/* ========== Footer ========== */
+.footer {
+  background: none;
+  color: #bdbdbd;
+  text-align: center;
+  box-shadow: none;
+  padding: 0.45rem 0 0.28rem 0; /* etwas mehr Luft */
+  font-size: 0.53rem;
+  line-height: 1.6;
+  font-weight: 200;
+  letter-spacing: 0.003em;
+  width: 100vw;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  box-sizing: border-box;
+  z-index: 100;
+  border-top: none;
+}
+
+.footer::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(to bottom, #3c3c3c 0%, #393939 100%);
+  pointer-events: none;
+  z-index: 101;
+}
+
+.site-footer p {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-text-muted);
+}
+
+.site-footer .footer-nav a {
+  color: var(--color-text-main);
+  text-decoration: none;
+  margin: 0 var(--spacing-sm);
+  font-size: var(--font-size-p);
+  transition: color 0.2s;
+}
+
+.site-footer .footer-nav a:hover,
+.site-footer .footer-nav a:focus {
+  color: var(--color-accent);
+}
+
+/* ========== Mobile Footer ========== */
+@media (max-width: 600px) {
+  .site-footer {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}
+
+@media (max-width: 400px) {
+  .site-footer,
+  .site-footer .footer-nav,
+  .site-footer p,
+  .site-footer .footer-nav a {
+    font-size: 0.53rem !important;
+  }
+}
+
+/* Footer-Text auf allen Seiten und in allen Fällen konsistent */
+#footer-placeholder .footer,
+#footer-placeholder .footer *,
+#footer-placeholder .footer-nav,
+#footer-placeholder .footer-nav *,
+#footer-placeholder .footer p,
+#footer-placeholder .footer-nav a {
+  font-size: 0.53rem !important;
+  color: #ededed !important;
+  line-height: 1.6 !important;
+  font-weight: 200 !important;
+  letter-spacing: 0.003em !important;
+}
