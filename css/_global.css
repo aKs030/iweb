@@ -159,3 +159,5 @@ a:focus {
   color: var(--color-accent);
   text-decoration: underline;
 }
+
+/* Card-Komponente entfernt, da jetzt in index.css */
