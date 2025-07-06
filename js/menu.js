@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
         footerPlaceholder.innerHTML = html;
         const yearEl = document.getElementById('current-year');
         if (yearEl) yearEl.textContent = new Date().getFullYear();
+        // Cookie-Banner-Skript nachladen, sobald Footer im DOM ist
+        const script = document.createElement('script');
+        script.src = '/js/cookie-banner.js';
+        script.defer = true;
+        document.body.appendChild(script);
       })
       .catch(() => {
         // Optional: Fallback oder Fehleranzeige

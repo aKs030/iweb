@@ -346,4 +346,178 @@
       modal.addEventListener('show', () => focusTrap(modal));
     }
   });
+
+  // Footer dynamisch laden, falls noch nicht im DOM
+  function loadFooterAndInitBanner() {
+    if (document.getElementById('footer-placeholder')) {
+      fetch('/pages/komponente/footer.html')
+        .then(r => {
+          if (!r.ok) throw new Error('Footer konnte nicht geladen werden');
+          return r.text();
+        })
+        .then(html => {
+          document.getElementById('footer-placeholder').innerHTML = html;
+          const yearEl = document.getElementById('current-year');
+          if (yearEl) yearEl.textContent = new Date().getFullYear();
+          // Nach dem Laden Footer-Initialisierung starten
+          initCookieBanner();
+        })
+        .catch(() => {
+          // Optional: Fallback oder Fehleranzeige
+        });
+    } else {
+      // Footer-Container nicht gefunden, Cookie-Banner trotzdem initialisieren
+      initCookieBanner();
+    }
+  }
+
+  function initCookieBanner() {
+    const banner = document.getElementById('cookie-banner');
+    const acceptAllBtn = document.getElementById('cookie-accept-all-btn');
+    const rejectAllBtn = document.getElementById('cookie-reject-all-btn');
+    const bannerSettingsLink = document.getElementById('cookie-banner-settings-link');
+    const footerSettingsLink = document.getElementById('cookie-settings-link'); // Your existing footer link
+
+    // Modal elements
+    const modal = document.getElementById('cookie-settings-modal');
+    const analyticsCheckbox = document.getElementById('cookie-analytics');
+    const marketingCheckbox = document.getElementById('cookie-marketing');
+    const saveSettingsBtn = document.getElementById('cookie-save-settings-btn');
+    const acceptAllFromModalBtn = document.getElementById('cookie-accept-all-from-modal-btn');
+    const cancelSettingsBtn = document.getElementById('cookie-cancel-settings-btn');
+
+    let userConsent = getConsent(); // Initial load of consent state
+
+    // Determine whether to show the initial banner
+    // If the localStorage item 'cookieConsent' exists and has been explicitly set (even to all false),
+    // we assume the user has made a choice and apply it without showing the banner initially.
+    // Otherwise, show the banner for first-time visitors or those without a clear choice.
+    const storedConsentString = localStorage.getItem('cookieConsent');
+    if (storedConsentString === null || !Object.keys(JSON.parse(storedConsentString)).length) {
+      showBanner();
+    } else {
+      // User has made a choice previously, apply it immediately
+      applyConsent(userConsent);
+    }
+
+    // --- Event Listeners for main banner ---
+
+    acceptAllBtn.addEventListener('click', () => {
+      userConsent = { necessary: true, analytics: true, marketing: true }; // Accept all
+      saveConsent(userConsent);
+      applyConsent(userConsent);
+      hideBanner();
+      showConfirmation();
+    });
+
+    rejectAllBtn.addEventListener('click', () => {
+      userConsent = { necessary: true, analytics: false, marketing: false }; // Reject all non-necessary
+      saveConsent(userConsent);
+      applyConsent(userConsent); // Ensure analytics is unloaded
+      hideBanner();
+    });
+
+    // --- Event Listeners for settings links (both banner and footer) ---
+    [bannerSettingsLink, footerSettingsLink].forEach(link => {
+      if (link) {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          showSettingsModal();
+        });
+      }
+    });
+
+    // --- Event Listeners for Settings Modal ---
+
+    saveSettingsBtn.addEventListener('click', () => {
+      userConsent = {
+        necessary: true, // Always true
+        analytics: analyticsCheckbox.checked,
+        marketing: marketingCheckbox.checked,
+        // ... include other categories here based on their checkbox state
+      };
+      saveConsent(userConsent);
+      applyConsent(userConsent); // Apply changes
+      hideSettingsModal();
+      showConfirmation();
+    });
+
+    acceptAllFromModalBtn.addEventListener('click', () => {
+        userConsent = { necessary: true, analytics: true, marketing: true };
+        saveConsent(userConsent);
+        applyConsent(userConsent);
+        hideSettingsModal();
+        showConfirmation();
+    });
+
+    cancelSettingsBtn.addEventListener('click', () => {
+      hideSettingsModal();
+      // If the modal was opened when the initial banner was still visible
+      // (i.e., user hadn't made a choice yet), show the banner again.
+      // Otherwise, if opened from the footer link, no banner is needed.
+      const storedConsent = localStorage.getItem('cookieConsent');
+      if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
+         showBanner();
+      }
+    });
+
+    // Close modal if clicking outside (optional, but good UX)
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        hideSettingsModal();
+        // Same logic as cancel button: if no choice made, show banner again.
+        const storedConsent = localStorage.getItem('cookieConsent');
+        if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
+           showBanner();
+        }
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.style.display === 'flex') { // Check if modal is visible
+        hideSettingsModal();
+        // Same logic as cancel button: if no choice made, show banner again.
+        const storedConsent = localStorage.getItem('cookieConsent');
+        if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
+           showBanner();
+        }
+      }
+    });
+
+    // Fokusmanagement für Barrierefreiheit
+    function focusTrap(modal) {
+      const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+      modal.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      });
+    }
+    // Fokusfalle aktivieren, wenn Modal geöffnet wird
+    if (modal) {
+      modal.addEventListener('show', () => focusTrap(modal));
+    }
+  }
+
+  // --- Main Logic ---
+  if (document.getElementById('footer-placeholder')) {
+    // Footer wird dynamisch geladen, also Banner erst nach dem Laden initialisieren
+    loadFooterAndInitBanner();
+  } else {
+    // Footer ist schon im DOM, Banner sofort initialisieren
+    initCookieBanner();
+  }
 })();

@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="/css/footer.css">
-      
+          <link rel="stylesheet" href="/css/cookie-banner.css">
+
 <footer class="site-footer footer">
   <div class="footer-content">
     <p>&copy; <span id="current-year"></span> Abdul Kerim. Alle Rechte vorbehalten.</p>
@@ -7,6 +8,56 @@
       <a href="/pages/komponente/impressum.html">Impressum</a>
       <a href="/pages/komponente/datenschutz.html">Datenschutz</a>
       <a href="/pages/komponente/kontakt.html">Kontakt</a>
+      <a id="cookie-settings-link" href="#" aria-label="Cookie-Einstellungen ändern">Cookie-Einstellungen ändern</a>
     </nav>
   </div>
 </footer>
+
+<div id="cookie-banner" aria-live="polite">
+  <p>Diese Website verwendet Cookies zur Funktionsfähigkeit und zur Analyse. <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener noreferrer">Mehr erfahren</a>. <a href="#" id="cookie-banner-settings-link">Cookie-Einstellungen ändern</a></p>
+  <button id="cookie-accept-all-btn" class="primary">Alle akzeptieren</button>
+  <button id="cookie-reject-all-btn" class="outlined">Ablehnen</button>
+</div>
+
+<div id="cookie-settings-modal" aria-labelledby="modal-title" style="display: none;">
+  <div class="modal-content animate__animated animate__fadeInDown">
+    <h2 id="modal-title">Ihre Cookie-Einstellungen</h2>
+    <p>Wir verwenden Cookies, um die Funktionalität unserer Website zu gewährleisten und das Nutzererlebnis zu verbessern. Sie können entscheiden, welche Kategorien von Cookies Sie zulassen möchten.</p>
+
+    <div class="cookie-category">
+      <h3>
+        <input type="checkbox" id="cookie-necessary" checked disabled>
+        <label for="cookie-necessary">Notwendige Cookies</label>
+      </h3>
+      <p class="description">Erforderlich für die Grundfunktionen der Website.</p>
+    </div>
+
+    <div class="cookie-category">
+      <h3>
+        <input type="checkbox" id="cookie-analytics">
+        <label for="cookie-analytics">Analyse- und Statistik-Cookies</label>
+      </h3>
+      <p class="description">Hilft uns, die Nutzung der Website anonym zu analysieren.</p>
+    </div>
+
+    <div class="cookie-category">
+      <h3>
+        <input type="checkbox" id="cookie-marketing">
+        <label for="cookie-marketing">Marketing- und Personalisierungs-Cookies</label>
+      </h3>
+      <p class="description">Ermöglicht personalisierte Werbung und Angebote.</p>
+      <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener noreferrer" class="cookie-details-link">Details zu Cookies</a>
+    </div>
+
+    <div id="cookie-confirmation" class="cookie-confirmation">Einstellungen gespeichert!</div>
+
+    <div class="modal-buttons">
+      <button id="cookie-save-settings-btn" class="primary">Auswahl speichern</button>
+      <button id="cookie-accept-all-from-modal-btn" class="primary">Alle akzeptieren</button>
+      <button id="cookie-cancel-settings-btn" class="outlined">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="/js/cookie-banner.js" defer></script>
