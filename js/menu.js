@@ -1,5 +1,3 @@
-// menu.js – final funktionierende Version
-
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
 
@@ -40,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initializeSubmenuLinks(menuContainer);
       setSiteTitle();
 
-      // Klick außerhalb schließt das Menü (nur Desktop)
+      // Klick außerhalb schließt das Menü (nur für Desktop sinnvoll)
       document.addEventListener('click', (event) => {
         const isClickInside = menuContainer.contains(event.target);
         const isMenuToggle = event.target.closest('.site-menu__toggle');
@@ -52,25 +50,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Menü-Toggle-Logik
+/**
+ * Initialisiert die Menü-Toggle-Logik inkl. Overlay
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
 function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   const overlay = container.querySelector('.site-menu__overlay');
-
   if (menuToggle && menu) {
     const toggle = () => {
-      const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-      menuToggle.setAttribute('aria-expanded', String(!isExpanded));
       menu.classList.toggle('open');
       menuToggle.classList.toggle('active');
+      // Overlay wird jetzt nur noch durch CSS gesteuert – kein JS mehr nötig!
     };
-
     menuToggle.addEventListener('click', toggle);
     menuToggle.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') toggle();
     });
-
+    // Overlay-Klick schließt Menü
     if (overlay) {
       overlay.addEventListener('click', () => {
         menu.classList.remove('open');
@@ -82,7 +80,10 @@ function initializeMenu(container) {
   }
 }
 
-// Logo-Rechtsklick navigiert zur Startseite
+/**
+ * Initialisiert das Verhalten für den Logo-Rechtsklick
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
@@ -95,34 +96,43 @@ function initializeLogo(container) {
   }
 }
 
-// Submenu-Links – nur Mobile
+/**
+ * Initialisiert die Submenu-Links (nur ein Submenü offen – Mobile only)
+ */
 function initializeSubmenuLinks(container) {
   const submenuLinks = container.querySelectorAll('.has-submenu > a');
   submenuLinks.forEach(link => {
     link.addEventListener('click', (event) => {
-      if (window.innerWidth > 768) return;
+      // Nur für Mobile: JS steuert Submenu!
+      if (window.innerWidth > 768) return; // Auf Desktop keine Klick-Steuerung
       event.preventDefault();
-
       const parentLi = link.parentElement;
       const isOpen = parentLi.classList.contains('open');
-
+      // Alle Submenüs schließen
       container.querySelectorAll('.has-submenu').forEach(li => li.classList.remove('open'));
+      // Nur das angeklickte öffnen, falls es vorher zu war
       if (!isOpen) parentLi.classList.add('open');
     });
   });
 }
 
-// Menü schließen (z. B. bei Klick außen)
+/**
+ * Schließt das Menü (inkl. Overlay)
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
+    // Overlay wird jetzt nur noch durch CSS gesteuert
   }
 }
 
-// Seitentitel im Logo setzen
+/**
+ * Setzt den Seitentitel im Logo anhand des aktuellen Pfads
+ */
 function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
@@ -135,6 +145,5 @@ function setSiteTitle() {
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Website';
   const siteTitleEl = document.getElementById('site-title');
-  if (siteTitleEl) siteTitleEl.textContent = pageTitle;
-}
-
+    if (siteTitleEl) siteTitleEl.textContent = pageTitle;
+  }
