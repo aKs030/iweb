@@ -95,8 +95,10 @@
    * @param {Object} consentState - The consent state to save.
    */
   function saveConsent(consentState) {
-    localStorage.setItem('cookieConsent', JSON.stringify(consentState));
-    console.log("Cookie consent saved:", consentState);
+    // Stelle sicher, dass necessary: true immer gesetzt ist
+    const state = { ...consentState, necessary: true };
+    localStorage.setItem('cookieConsent', JSON.stringify(state));
+    console.log("Cookie consent saved:", state);
   }
 
   /**
@@ -204,10 +206,40 @@
     }
   }
 
+  /**
+   * Prüft und gibt ein gültiges Consent-Objekt zurück, falls vorhanden.
+   * @returns {Object|null} Consent-Objekt oder null, falls ungültig.
+   */
+  function getValidStoredConsent() {
+    const storedConsentString = localStorage.getItem('cookieConsent');
+    if (!storedConsentString) return null;
+    try {
+      const parsedConsent = JSON.parse(storedConsentString);
+      // Akzeptiere auch ältere Consent-Objekte, wenn mindestens eine Entscheidung getroffen wurde
+      if (
+        parsedConsent && typeof parsedConsent === 'object' &&
+        (
+          parsedConsent.necessary === true ||
+          typeof parsedConsent.analytics === 'boolean' ||
+          typeof parsedConsent.marketing === 'boolean'
+        )
+      ) {
+        // Füge necessary: true hinzu, falls nicht vorhanden (Migration)
+        if (typeof parsedConsent.necessary !== 'boolean') {
+          parsedConsent.necessary = true;
+          localStorage.setItem('cookieConsent', JSON.stringify(parsedConsent));
+        }
+        return parsedConsent;
+      }
+    } catch (e) {
+      console.error("Error parsing stored consent:", e);
+    }
+    return null;
+  }
+
   // --- Main Logic on DOMContentLoaded ---
 
   document.addEventListener('DOMContentLoaded', () => {
-    const banner = document.getElementById('cookie-banner');
     const acceptAllBtn = document.getElementById('cookie-accept-all-btn');
     const rejectAllBtn = document.getElementById('cookie-reject-all-btn');
     const bannerSettingsLink = document.getElementById('cookie-banner-settings-link');
@@ -221,17 +253,12 @@
     const acceptAllFromModalBtn = document.getElementById('cookie-accept-all-from-modal-btn');
     const cancelSettingsBtn = document.getElementById('cookie-cancel-settings-btn');
 
-    let userConsent = getConsent(); // Initial load of consent state
-
-    // Determine whether to show the initial banner
-    // If the localStorage item 'cookieConsent' exists and has been explicitly set (even to all false),
-    // we assume the user has made a choice and apply it without showing the banner initially.
-    // Otherwise, show the banner for first-time visitors or those without a clear choice.
-    const storedConsentString = localStorage.getItem('cookieConsent');
-    if (storedConsentString === null) {
+    let userConsent;
+    const validStoredConsent = getValidStoredConsent();
+    if (!validStoredConsent) {
       showBanner();
     } else {
-      // User has made a choice previously, apply it immediately
+      userConsent = validStoredConsent;
       applyConsent(userConsent);
     }
 
@@ -287,12 +314,8 @@
 
     cancelSettingsBtn.addEventListener('click', () => {
       hideSettingsModal();
-      // If the modal was opened when the initial banner was still visible
-      // (i.e., user hadn't made a choice yet), show the banner again.
-      // Otherwise, if opened from the footer link, no banner is needed.
-      const storedConsent = localStorage.getItem('cookieConsent');
-      if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
-         showBanner();
+      if (!getValidStoredConsent()) {
+        showBanner();
       }
     });
 
@@ -300,22 +323,18 @@
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         hideSettingsModal();
-        // Same logic as cancel button: if no choice made, show banner again.
-        const storedConsent = localStorage.getItem('cookieConsent');
-        if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
-           showBanner();
+        if (!getValidStoredConsent()) {
+          showBanner();
         }
       }
     });
 
     // Close modal with Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.style.display === 'flex') { // Check if modal is visible
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
         hideSettingsModal();
-        // Same logic as cancel button: if no choice made, show banner again.
-        const storedConsent = localStorage.getItem('cookieConsent');
-        if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
-           showBanner();
+        if (!getValidStoredConsent()) {
+          showBanner();
         }
       }
     });
@@ -372,7 +391,6 @@
   }
 
   function initCookieBanner() {
-    const banner = document.getElementById('cookie-banner');
     const acceptAllBtn = document.getElementById('cookie-accept-all-btn');
     const rejectAllBtn = document.getElementById('cookie-reject-all-btn');
     const bannerSettingsLink = document.getElementById('cookie-banner-settings-link');
@@ -386,17 +404,14 @@
     const acceptAllFromModalBtn = document.getElementById('cookie-accept-all-from-modal-btn');
     const cancelSettingsBtn = document.getElementById('cookie-cancel-settings-btn');
 
-    let userConsent = getConsent(); // Initial load of consent state
-
-    // Determine whether to show the initial banner
-    // If the localStorage item 'cookieConsent' exists and has been explicitly set (even to all false),
-    // we assume the user has made a choice and apply it without showing the banner initially.
-    // Otherwise, show the banner for first-time visitors or those without a clear choice.
-    const storedConsentString = localStorage.getItem('cookieConsent');
-    if (storedConsentString === null) {
+    // let userConsent = getConsent(); // Initial load of consent state (wird unten gesetzt)
+    let userConsent;
+    // Optimierte Consent-Prüfung
+    const validStoredConsent = getValidStoredConsent();
+    if (!validStoredConsent) {
       showBanner();
     } else {
-      // User has made a choice previously, apply it immediately
+      userConsent = validStoredConsent;
       applyConsent(userConsent);
     }
 
@@ -452,12 +467,8 @@
 
     cancelSettingsBtn.addEventListener('click', () => {
       hideSettingsModal();
-      // If the modal was opened when the initial banner was still visible
-      // (i.e., user hadn't made a choice yet), show the banner again.
-      // Otherwise, if opened from the footer link, no banner is needed.
-      const storedConsent = localStorage.getItem('cookieConsent');
-      if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
-         showBanner();
+      if (!getValidStoredConsent()) {
+        showBanner();
       }
     });
 
@@ -465,22 +476,18 @@
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         hideSettingsModal();
-        // Same logic as cancel button: if no choice made, show banner again.
-        const storedConsent = localStorage.getItem('cookieConsent');
-        if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
-           showBanner();
+        if (!getValidStoredConsent()) {
+          showBanner();
         }
       }
     });
 
     // Close modal with Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.style.display === 'flex') { // Check if modal is visible
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
         hideSettingsModal();
-        // Same logic as cancel button: if no choice made, show banner again.
-        const storedConsent = localStorage.getItem('cookieConsent');
-        if (storedConsent === null || !Object.keys(JSON.parse(storedConsent)).length) {
-           showBanner();
+        if (!getValidStoredConsent()) {
+          showBanner();
         }
       }
     });
