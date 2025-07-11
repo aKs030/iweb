@@ -24,7 +24,11 @@
     }
 
     function hideBanner() {
-      banner.classList.add('hidden');
+      banner.classList.add('slide-out');
+      setTimeout(() => {
+        banner.classList.add('hidden');
+        banner.classList.remove('slide-out');
+      }, 300);
     }
 
     function showSettings() {
@@ -48,8 +52,11 @@
 
     const consent = getConsent();
     if (!consent) {
-      banner.classList.remove('hidden');
-      banner.focus();
+      // Verzögertes Anzeigen für bessere UX
+      setTimeout(() => {
+        banner.classList.remove('hidden');
+        banner.setAttribute('aria-hidden', 'false');
+      }, 500);
     }
 
     acceptBtn.addEventListener('click', function() {

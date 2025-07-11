@@ -1,8 +1,14 @@
-<div id="cookie-banner" class="cookie-banner hidden" tabindex="-1" aria-hidden="true">
+<div id="cookie-banner" class="cookie-banner hidden" role="banner" aria-labelledby="cookie-banner-heading" tabindex="-1" aria-hidden="true">
   <div class="cookie-banner-content">
-    <p>Wir verwenden Cookies, um die Nutzerfreundlichkeit zu verbessern. <a href="#" id="cookie-banner-settings-link">Einstellungen</a></p>
-    <button id="cookie-accept-all-btn">Alle akzeptieren</button>
-    <button id="cookie-reject-all-btn">Nur notwendige</button>
+    <p id="cookie-banner-heading">
+      <span class="cookie-banner-icon" aria-hidden="true">🍪</span>
+      Wir verwenden Cookies, um die Nutzerfreundlichkeit zu verbessern. 
+      <a href="#" id="cookie-banner-settings-link" aria-label="Cookie-Einstellungen öffnen">Einstellungen</a>
+    </p>
+    <div class="cookie-buttons">
+      <button id="cookie-accept-all-btn" aria-describedby="cookie-banner-heading">Alle akzeptieren</button>
+      <button id="cookie-reject-all-btn" aria-describedby="cookie-banner-heading">Nur notwendige</button>
+    </div>
   </div>
 </div>
 <div id="cookie-settings-modal" class="cookie-modal hidden" tabindex="-1" aria-hidden="true">
