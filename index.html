@@ -134,8 +134,33 @@
     </main>
 
     <div id="footer-placeholder"></div>
+
+    <!-- Statischer Cookie-Banner -->
+    <link rel="stylesheet" href="/css/cookie-banner.css">
+    <div id="cookie-banner" class="cookie-banner hidden" tabindex="-1" aria-hidden="true">
+      <div class="cookie-banner-content">
+        <p>Wir verwenden Cookies, um die Nutzerfreundlichkeit zu verbessern. <a href="#" id="cookie-banner-settings-link">Einstellungen</a></p>
+        <button id="cookie-accept-all-btn">Alle akzeptieren</button>
+        <button id="cookie-reject-all-btn">Nur notwendige</button>
+      </div>
+    </div>
+    <div id="cookie-settings-modal" class="cookie-modal hidden" tabindex="-1" aria-hidden="true">
+      <div class="cookie-modal-content">
+        <h2>Cookie-Einstellungen</h2>
+        <form>
+          <label><input type="checkbox" id="cookie-analytics"> Analytics</label><br>
+          <label><input type="checkbox" id="cookie-marketing"> Marketing</label><br>
+          <button type="button" id="cookie-save-settings-btn">Speichern</button>
+          <button type="button" id="cookie-accept-all-from-modal-btn">Alle akzeptieren</button>
+          <button type="button" id="cookie-cancel-settings-btn">Abbrechen</button>
+        </form>
+      </div>
+    </div>
+    <div id="cookie-confirmation" class="cookie-confirmation hidden">Einstellungen gespeichert!</div>
+    <!-- Statischer Cookie-Banner Ende -->
+    <script src="/js/cookie-banner.js" defer></script>
+
     <script src="/js/templateLoader.js" defer></script>
-    
     <script src="/js/intext.js" defer></script>
     <script src="/js/menu.js" defer></script>
     <script src="/js/scroll-dots.js" defer></script>
@@ -161,5 +186,6 @@
   }
 }
 </script>
+
 </body>
 </html>
