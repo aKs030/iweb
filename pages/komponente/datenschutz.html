@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Erfahren Sie, wie Abdulkerim Ihre persönlichen Daten schützt. Unsere Datenschutzerklärung informiert ausführlich über die Datenerhebung, -verarbeitung und Ihre Rechte gemäß DSGVO.">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/cookie-banner.css">
   <style>
     .datenschutz-main {
       max-width: 900px;
@@ -115,6 +116,95 @@
     }
     .cookie-table thead tr {
       background: #f5f5f5;
+    }
+    .cookie-management-section {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .cookie-management-section h3 {
+      color: #495057;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .cookie-category-info {
+      background: white;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-left: 4px solid #007bff;
+    }
+    
+    .cookie-control-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    
+    .cookie-control-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .cookie-control-btn:hover {
+      background: #0056b3;
+    }
+    
+    .cookie-control-btn.secondary {
+      background: #6c757d;
+    }
+    
+    .cookie-control-btn.secondary:hover {
+      background: #545b62;
+    }
+    
+    .cookie-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    
+    .cookie-table th,
+    .cookie-table td {
+      border: 1px solid #dee2e6;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    
+    .cookie-table th {
+      background-color: #e9ecef;
+      font-weight: 600;
+    }
+    
+    .cookie-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    @media (max-width: 768px) {
+      .cookie-control-buttons {
+        flex-direction: column;
+      }
+      
+      .cookie-table {
+        font-size: 0.8rem;
+      }
+      
+      .cookie-table th,
+      .cookie-table td {
+        padding: 0.5rem;
+      }
     }
   </style>
 </head>
@@ -264,6 +354,26 @@
       <p>
         Notwendige Cookies werden nicht in dieser Liste aufgeführt, da sie ausschließlich für den Betrieb der Website erforderlich sind und keine personenbezogenen Daten speichern.
       </p>
+      <div class="cookie-management-section">
+        <h3><i class="bi bi-cookie" aria-hidden="true"></i> Cookie-Einstellungen verwalten</h3>
+        <p>
+          Wir verwenden Cookies, um Ihnen ein optimales Webseiten-Erlebnis zu bieten. Mit einem Klick auf „Alle akzeptieren“ stimmen Sie der Verwendung aller Cookies zu. Über „Einstellungen verwalten“ können Sie Ihre Auswahl anpassen und erhalten weitere Informationen zu den einzelnen Cookie-Arten.
+        </p>
+        <div class="cookie-control-buttons">
+          <button class="cookie-control-btn" id="accept-all-cookies">Alle akzeptieren</button>
+          <button class="cookie-control-btn secondary" id="reject-all-cookies">Alle ablehnen</button>
+          <button class="cookie-control-btn" id="save-cookie-preferences">Einstellungen speichern</button>
+        </div>
+        <div class="cookie-category-info" id="necessary-cookies-info">
+          <strong>Notwendige Cookies:</strong> Diese Cookies sind für die grundlegende Funktionalität der Website erforderlich und können nicht deaktiviert werden.
+        </div>
+        <div class="cookie-category-info" id="analytics-cookies-info" style="display:none;">
+          <strong>Analyse-Cookies:</strong> Diese Cookies helfen uns, die Nutzung der Website zu analysieren und zu verbessern. Sie werden nur gesetzt, wenn Sie ausdrücklich zustimmen.
+        </div>
+        <div class="cookie-category-info" id="marketing-cookies-info" style="display:none;">
+          <strong>Marketing-Cookies:</strong> Diese Cookies werden verwendet, um Ihnen personalisierte Werbung zu zeigen. Sie werden nur gesetzt, wenn Sie Ihre Zustimmung gegeben haben.
+        </div>
+      </div>
       <p class="last-updated">
         Stand: Juni 2025
       </p>

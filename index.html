@@ -136,28 +136,136 @@
 
     <div id="footer-placeholder"></div>
 
-    <!-- Cookie-Banner -->
-    <div id="cookie-banner" class="cookie-banner hidden" tabindex="-1" aria-hidden="true">
-      <div class="cookie-banner-content">
-        <p>Wir verwenden Cookies, um die Nutzerfreundlichkeit zu verbessern. <a href="#" id="cookie-banner-settings-link">Einstellungen</a></p>
-        <button id="cookie-accept-all-btn">Alle akzeptieren</button>
-        <button id="cookie-reject-all-btn">Nur notwendige</button>
-      </div>
+    <!-- 🍪 Cookie Banner v2.0 Enterprise Edition -->
+    <div id="cookie-banner" class="cookie-banner hidden" data-theme="light">
+        <div class="cookie-banner-content">
+            <div class="cookie-banner-icon">🍪</div>
+            <div class="cookie-banner-text">
+                <h3 id="cookie-banner-title">Cookie-Einstellungen</h3>
+                <p id="cookie-banner-description">
+                    Wir verwenden Cookies und ähnliche Technologien, um Ihnen die bestmögliche Erfahrung zu bieten.
+                    Einige sind notwendig für die Funktion der Website, andere helfen uns bei der Verbesserung unserer Dienste.
+                </p>
+                <div class="cookie-banner-links">
+                    <a href="/pages/komponente/datenschutz.html" id="cookie-privacy-link">Datenschutzerklärung</a>
+                    <a href="/pages/komponente/impressum.html" id="cookie-imprint-link">Impressum</a>
+                </div>
+            </div>
+            <div class="cookie-banner-actions">
+                <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-settings-btn">
+                    <span>⚙️</span> Einstellungen
+                </button>
+                <button type="button" class="cookie-btn cookie-btn-outline" id="cookie-reject-btn">
+                    <span>❌</span> Ablehnen
+                </button>
+                <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-btn">
+                    <span>✅</span> Alle akzeptieren
+                </button>
+            </div>
+        </div>
+        <button type="button" class="cookie-banner-close" id="cookie-banner-close" aria-label="Banner schließen">×</button>
+        <div class="cookie-banner-progress">
+            <div class="cookie-banner-progress-bar" id="cookie-progress-bar"></div>
+        </div>
     </div>
-    <div id="cookie-settings-modal" class="cookie-modal hidden" tabindex="-1" aria-hidden="true">
-      <div class="cookie-modal-content">
-        <h2>Cookie-Einstellungen</h2>
-        <form>
-          <label><input type="checkbox" id="cookie-analytics"> Analytics</label><br>
-          <label><input type="checkbox" id="cookie-marketing"> Marketing</label><br>
-          <button type="button" id="cookie-save-settings-btn">Speichern</button>
-          <button type="button" id="cookie-accept-all-from-modal-btn">Alle akzeptieren</button>
-          <button type="button" id="cookie-cancel-settings-btn">Abbrechen</button>
-        </form>
-      </div>
+
+    <!-- Cookie Settings Modal -->
+    <div id="cookie-settings-modal" class="cookie-modal hidden">
+        <div class="cookie-modal-backdrop" id="cookie-modal-backdrop"></div>
+        <div class="cookie-modal-content">
+            <div class="cookie-modal-header">
+                <h2 id="cookie-modal-title">Cookie-Einstellungen verwalten</h2>
+                <button type="button" class="cookie-modal-close" id="cookie-modal-close" aria-label="Modal schließen">×</button>
+            </div>
+            <div class="cookie-modal-body">
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3>🔧 Notwendige Cookies</h3>
+                        <label class="cookie-switch" for="cookie-necessary">
+                            <input type="checkbox" id="cookie-necessary" checked disabled aria-label="Notwendige Cookies (immer aktiv)">
+                            <span class="cookie-slider"></span>
+                        </label>
+                    </div>
+                    <p>Diese Cookies sind für die Grundfunktionen der Website erforderlich und können nicht deaktiviert werden.</p>
+                    <div class="cookie-details" id="necessary-details"></div>
+                </div>
+
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3>📊 Analytics Cookies</h3>
+                        <label class="cookie-switch" for="cookie-analytics">
+                            <input type="checkbox" id="cookie-analytics" aria-label="Analytics Cookies aktivieren/deaktivieren">
+                            <span class="cookie-slider"></span>
+                        </label>
+                    </div>
+                    <p>Helfen uns zu verstehen, wie Besucher mit der Website interagieren, indem Informationen anonym gesammelt und gemeldet werden.</p>
+                    <div class="cookie-details" id="analytics-details"></div>
+                </div>
+
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3>🎯 Marketing Cookies</h3>
+                        <label class="cookie-switch" for="cookie-marketing">
+                            <input type="checkbox" id="cookie-marketing" aria-label="Marketing Cookies aktivieren/deaktivieren">
+                            <span class="cookie-slider"></span>
+                        </label>
+                    </div>
+                    <p>Werden verwendet, um Besuchern auf Webseiten zu folgen. Die Absicht ist, Anzeigen zu zeigen, die relevant und ansprechend sind.</p>
+                    <div class="cookie-details" id="marketing-details"></div>
+                </div>
+
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <h3>📱 Social Media Cookies</h3>
+                        <label class="cookie-switch" for="cookie-social">
+                            <input type="checkbox" id="cookie-social" aria-label="Social Media Cookies aktivieren/deaktivieren">
+                            <span class="cookie-slider"></span>
+                        </label>
+                    </div>
+                    <p>Ermöglichen die Einbindung von sozialen Medien und das Teilen von Inhalten auf sozialen Netzwerken.</p>
+                    <div class="cookie-details" id="social-details"></div>
+                </div>
+            </div>
+            <div class="cookie-modal-footer">
+                <button type="button" class="cookie-btn cookie-btn-outline" id="cookie-reject-all-btn">
+                    Alle ablehnen
+                </button>
+                <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-save-btn">
+                    Auswahl speichern
+                </button>
+                <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-all-btn">
+                    Alle akzeptieren
+                </button>
+            </div>
+        </div>
     </div>
-    <div id="cookie-confirmation" class="cookie-confirmation hidden">Einstellungen gespeichert!</div>
-    <script src="/js/cookie-banner.js" defer></script>
+
+    <!-- Cookie Confirmation Toast -->
+    <div id="cookie-confirmation" class="cookie-confirmation hidden">
+        <div class="cookie-confirmation-content">
+            <span class="cookie-confirmation-icon">✅</span>
+            <span id="cookie-confirmation-text">Einstellungen gespeichert!</span>
+        </div>
+    </div>
+
+    <!-- Cookie Floating Action Button -->
+    <button type="button" id="cookie-fab" class="cookie-fab hidden" aria-label="Cookie-Einstellungen öffnen">
+        🍪
+    </button>
+
+    <!-- Cookie Scanner Status -->
+    <div id="cookie-scanner-status" class="cookie-scanner-status hidden">
+        <div class="cookie-scanner-content">
+            <span class="cookie-scanner-icon">🔍</span>
+            <span id="cookie-scanner-text">Scanning cookies...</span>
+            <div class="cookie-scanner-progress">
+                <div class="cookie-scanner-progress-bar" id="cookie-scanner-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Banner JavaScript - Production Optimized -->
+    <script src="/js/cookie-banner-v2.js" defer></script>
 
     <script src="/js/templateLoader.js" defer></script>
     <script src="/js/intext.js" defer></script>
