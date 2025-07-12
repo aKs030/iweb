@@ -148,7 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     element.style.opacity = '0';
 
-                    void element.offsetWidth; // Erzwinge Reflow
+                    // Erzwinge Reflow - notwendig für Animation
+                    element.getBoundingClientRect();
 
                     let currentDelay;
                     if (element.classList.contains('card')) {

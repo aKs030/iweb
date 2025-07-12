@@ -15,8 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (yearEl) yearEl.textContent = new Date().getFullYear();
         // Cookie-Banner wird statisch in index.html geladen, keine dynamische Nachladung nötig
       })
-      .catch(() => {
-        // Optional: Fallback oder Fehleranzeige
+      .catch(err => {
+        console.error('Fehler beim Laden des Footers:', err.message);
+        // Fallback Footer
+        footerPlaceholder.innerHTML = `
+          <footer class="site-footer footer">
+            <div class="footer-content">
+              <p>&copy; ${new Date().getFullYear()} Abdul Kerim. Alle Rechte vorbehalten.</p>
+            </div>
+          </footer>
+        `;
       });
   } else {
     console.error('Fehler: footer-placeholder wurde nicht gefunden.');
@@ -48,6 +56,21 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(err => {
       console.error('Fehler beim Laden des Menüs:', err.message);
+      // Fallback-Menü für kritische Navigation
+      menuContainer.innerHTML = `
+        <header class="site-header" role="banner">
+          <a href="/index.html" aria-label="Zur Startseite">
+            <span class="site-logo elegant-logo">Abdulkerim ⭐️</span>
+          </a>
+          <nav class="site-menu" role="navigation">
+            <ul class="site-menu__list">
+              <li><a href="/index.html">Startseite</a></li>
+              <li><a href="/pages/ubermich.html">Über mich</a></li>
+              <li><a href="/pages/album.html">Fotogalerie</a></li>
+            </ul>
+          </nav>
+        </header>
+      `;
     });
 });
 

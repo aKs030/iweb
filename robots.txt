@@ -1,0 +1,31 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
+
+# Crawl-delay für bessere Performance
+Crawl-delay: 1
+
+# Spezielle Regeln für verschiedene Bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Blockiere bestimmte Dateien/Verzeichnisse
+Disallow: /js/
+Disallow: /css/
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /img/splash/
+Disallow: /pages/komponente/
+
+# Erlaubte wichtige Bereiche
+Allow: /pages/ubermich.html
+Allow: /pages/album.html
+Allow: /pages/index-game.html
+Allow: /pages/features/wetter.html

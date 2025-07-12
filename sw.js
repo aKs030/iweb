@@ -1,18 +1,24 @@
-const CACHE_NAME = 'iweb5-cookie-v2.0';
+const CACHE_NAME = 'iweb6-v1.0';
 const ASSETS = [
   '/',
   '/index.html',
   '/css/index.css',
   '/css/_global.css',
-  '/css/cookie-banner.css',
+  '/css/cookies.css',
+  '/css/menu.css',
+  '/css/footer.css',
   '/js/templateLoader.js',
   '/js/intext.js',
   '/js/menu.js',
   '/js/scroll-dots.js',
-  '/js/cookie-banner-v2.js',
+  '/js/cookies.js',
   '/img/touch-icon-180.png',
-  '/cookie-banner-test.html',
-  // …weitere wichtige Assets
+  '/img/favicon-32.png',
+  '/img/favicon.ico',
+  '/pages/komponente/menu.html',
+  '/pages/komponente/footer.html',
+  '/pages/index-card.html',
+  '/manifest.json'
 ];
 
 // Cookie Consent Status im Service Worker
@@ -65,6 +71,12 @@ self.addEventListener('fetch', evt => {
 
 // Cookie Consent Message Handler
 self.addEventListener('message', event => {
+  // Sicherheitscheck: Nur Nachrichten von der eigenen Origin akzeptieren
+  if (event.origin !== self.location.origin) {
+    console.warn('SW: Message from unauthorized origin blocked:', event.origin);
+    return;
+  }
+  
   if (event.data && event.data.type === 'COOKIE_CONSENT_UPDATE') {
     cookieConsentStatus = event.data.consent;
     console.log('🍪 SW: Cookie Consent updated:', cookieConsentStatus);

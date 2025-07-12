@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Datenschutzerklärung</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Erfahren Sie, wie Abdulkerim Ihre persönlichen Daten schützt. Unsere Datenschutzerklärung informiert ausführlich über die Datenerhebung, -verarbeitung und Ihre Rechte gemäß DSGVO.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/cookies.css">
+  <style>
+    .datenschutz-main {
+      max-width: 900px;
+      margin: var(--spacing-xl) auto var(--spacing-lg) auto;
+      background: var(--color-bg-secondary);
+      padding: var(--section-padding);
+      border-radius: var(--border-radius);
+      box-shadow: 0 5px 24px var(--color-shadow-dark);
+      color: var(--color-text-main);
+      box-sizing: border-box;
+      overflow-x: hidden;
+      font-family: var(--font-family-main);
+      margin-left: 7vw;
+      margin-right: 7vw;
+    }
+    @media (max-width: 600px) {
+      .datenschutz-main {
+        max-width: 86vw;
+        margin: var(--spacing-md) auto var(--spacing-sm) auto;
+        padding: var(--section-padding);
+        border-radius: var(--border-radius);
+        word-break: break-word;
+        margin-left: 7vw;
+        margin-right: 7vw;
+      }
+      .section-body {
+        padding: var(--section-padding);
+        max-height: clamp(220px, 32vh, 300px);
+      }
+    }
+    @media (max-width: 400px) {
+      .datenschutz-main {
+        padding: var(--spacing-xs);
+        max-width: 89vw;
+        margin-left: 5vw;
+        margin-right: 5vw;
+      }
+      .section-body {
+        padding: var(--spacing-xs);
+        max-height: 250px;
+      }
+    }
+    .datenschutz-main h1 {
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+      margin-top: var(--spacing-xl);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-accent);
+      font-family: var(--font-family-main);
+    }
+    .datenschutz-main h2 {
+      border-bottom: 1px solid var(--color-shadow-light);
+      padding-bottom: var(--spacing-xs);
+      margin-top: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+      color: var(--color-accent);
+    }
+    .datenschutz-main h3 {
+      margin-top: var(--spacing-md);
+      margin-bottom: var(--spacing-xs);
+      color: var(--color-accent);
+    }
+    .section-body {
+      padding: var(--section-padding);
+      background: transparent;
+      border-radius: var(--border-radius);
+      box-shadow: none;
+      transition: background-color 0.2s, box-shadow 0.2s;
+      overflow: visible;
+      max-height: clamp(500px, 55vh, 700px);
+      overflow-y: auto;
+      font-size: inherit;
+      line-height: inherit;
+    }
+    .header-text {
+      font-size: var(--font-size-h4);
+      font-weight: 700;
+      color: var(--color-text-main);
+      transition: opacity var(--transition-speed), background-color var(--transition-speed);
+    }
+    .dynamic-header {
+      text-align: left;
+      padding: clamp(0.3rem, 0.1vw, 0.2rem);
+    }
+    .dynamic-header.fade-out {
+      opacity: 0;
+    }
+    .dynamic-header.fade-in {
+      opacity: 1;
+    }
+    /* DSGVO Cookie-Tabelle */
+    .cookie-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95em;
+      margin-bottom: 1.2em;
+      color: #222;
+      background: #fff;
+    }
+    .cookie-table th, .cookie-table td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: left;
+      color: #222;
+      background: #fff;
+    }
+    .cookie-table thead tr {
+      background: #f5f5f5;
+    }
+    .cookie-management-section {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .cookie-management-section h3 {
+      color: #495057;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .cookie-category-info {
+      background: white;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-left: 4px solid #007bff;
+    }
+    
+    .cookie-control-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    
+    .cookie-control-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .cookie-control-btn:hover {
+      background: #0056b3;
+    }
+    
+    .cookie-control-btn.secondary {
+      background: #6c757d;
+    }
+    
+    .cookie-control-btn.secondary:hover {
+      background: #545b62;
+    }
+    
+    .cookie-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    
+    .cookie-table th,
+    .cookie-table td {
+      border: 1px solid #dee2e6;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    
+    .cookie-table th {
+      background-color: #e9ecef;
+      font-weight: 600;
+    }
+    
+    .cookie-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    @media (max-width: 768px) {
+      .cookie-control-buttons {
+        flex-direction: column;
+      }
+      
+      .cookie-table {
+        font-size: 0.8rem;
+      }
+      
+      .cookie-table th,
+      .cookie-table td {
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="menu-container"></div>
+  <main id="main-content" class="datenschutz-main">
+    <div class="dynamic-header">
+      <span class="header-icon"></span>
+      <span class="header-text"><i class="bi bi-shield-lock" aria-hidden="true"></i> Datenschutz</span>
+    </div>
+    <div class="section-body">
+      <h2>Datenschutzerklärung</h2>
+      <h3><i class="bi bi-shield-lock" aria-hidden="true"></i> Datenschutz</h3>
+      <p>
+        Der Schutz Ihrer persönlichen Daten ist uns ein wichtiges Anliegen. In dieser Datenschutzerklärung informieren wir Sie umfassend darüber, wie wir Ihre Daten auf dieser Website im Einklang mit der Datenschutz-Grundverordnung (DSGVO) und dem Bundesdatenschutzgesetz (BDSG) erheben, verarbeiten und nutzen.
+      </p>
+      <h3 id="verantwortlicher"><i class="bi bi-person-badge" aria-hidden="true"></i> Verantwortlicher</h3>
+      <p>
+        Verantwortlich für die Datenverarbeitung auf dieser Website ist:
+      </p>
+      <address>
+        <strong>Abdulkerim</strong><br>
+        Musterstraße 1<br>
+        12345 Musterstadt<br>
+        Deutschland<br>
+        E-Mail: <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a><br>
+        [Optional: Telefon: Ihre Telefonnummer]<br>
+        [Optional: Website: <a href="https://www.ihre-website.de">www.ihre-website.de</a>]
+      </address>
+      <h3 id="allgemeines"><i class="bi bi-info-circle" aria-hidden="true"></i> Allgemeine Hinweise zur Datenverarbeitung</h3>
+      <h3><i class="bi bi-clipboard-check" aria-hidden="true"></i> Grundsätze der Datenverarbeitung</h3>
+      <p>
+        Wir verarbeiten personenbezogene Daten unserer Nutzer grundsätzlich nur, soweit dies zur Bereitstellung einer funktionsfähigen Website sowie unserer Inhalte und Leistungen erforderlich ist. Die Erhebung und Verarbeitung personenbezogener Daten unserer Nutzer erfolgt regelmäßig nur nach deren <strong>Einwilligung</strong>, es sei denn, die Verarbeitung ist durch gesetzliche Vorschriften gestattet (z.B. zur Erfüllung eines Vertrags oder rechtlicher Pflichten).
+      </p>
+      <h3><i class="bi bi-journal-check" aria-hidden="true"></i> Rechtsgrundlagen der Verarbeitung</h3>
+      <p>
+        Die Verarbeitung Ihrer Daten basiert auf folgenden Rechtsgrundlagen gemäß Art. 6 Abs. 1 DSGVO:
+        <ul>
+          <li><strong>a) Einwilligung:</strong> Soweit Sie uns eine Einwilligung zur Verarbeitung Ihrer Daten erteilt haben.</li>
+          <li><strong>b) Vertragserfüllung und vorvertragliche Maßnahmen:</strong> Zur Erfüllung eines Vertrages mit Ihnen oder zur Durchführung vorvertraglicher Maßnahmen.</li>
+          <li><strong>c) Rechtliche Verpflichtung:</strong> Wenn die Verarbeitung zur Erfüllung einer rechtlichen Verpflichtung erforderlich ist (z.B. gesetzliche Aufbewahrungspflichten).</li>
+          <li><strong>f) Berechtigtes Interesse:</strong> Wenn die Verarbeitung zur Wahrung unserer berechtigten Interessen oder der Interessen Dritter erforderlich ist und Ihre Grundrechte und Grundfreiheiten nicht überwiegen (z.B. zur Gewährleistung der IT-Sicherheit unserer Website).</li>
+        </ul>
+      </p>
+      <h3><i class="bi bi-trash" aria-hidden="true"></i> Datenlöschung und Speicherdauer</h3>
+      <p>
+        Ihre personenbezogenen Daten werden gelöscht oder gesperrt, sobald der Zweck der Speicherung entfällt. Eine Speicherung kann darüber hinaus erfolgen, wenn dies durch europäische oder nationale Gesetze und Vorschriften (z.B. handels- oder steuerrechtliche Aufbewahrungsfristen) vorgesehen wurde. Eine Löschung oder Sperrung erfolgt auch dann, wenn eine vorgeschriebene Speicherfrist abläuft, es sei denn, es besteht die Notwendigkeit zur weiteren Speicherung der Daten für einen Vertragsabschluss oder eine Vertragserfüllung.
+      </p>
+      <h3 id="server-logfiles"><i class="bi bi-hdd-network" aria-hidden="true"></i> Erfassung von Zugriffsdaten / Server-Logfiles</h3>
+      <p>
+        Bei jedem Besuch unserer Website erfasst unser Provider automatisch Informationen in sogenannten <strong>Server-Logfiles</strong>, die Ihr Browser an uns übermittelt. Diese technischen Daten sind für den Betrieb der Website notwendig und dienen der Sicherheit. Folgende Daten werden dabei erfasst:
+        <ul>
+          <li><strong>Browsertyp und Browserversion</strong></li>
+          <li><strong>Verwendetes Betriebssystem</strong></li>
+          <li><strong>Referrer URL</strong> (die zuvor besuchte Seite)</li>
+          <li><strong>Hostname des zugreifenden Rechners</strong></li>
+          <li><strong>Uhrzeit der Serveranfrage</strong></li>
+          <li><strong>IP-Adresse</strong> (in der Regel gekürzt, um eine direkte Zuordnung zu einer Person zu vermeiden)</li>
+        </ul>
+        Diese Daten werden zur Gewährleistung eines reibungslosen Betriebs, zur Analyse und Behebung technischer Probleme sowie zur Abwehr von Angriffsversuchen erhoben. Sie werden nicht mit anderen Datenquellen zusammengeführt und sind nicht bestimmten Personen zuordenbar.
+      </p>
+      <h3 id="ihre-rechte"><i class="bi bi-person-check" aria-hidden="true"></i> Ihre Rechte als betroffene Person</h3>
+      <p>
+        Als von der Datenverarbeitung betroffene Person stehen Ihnen gemäß DSGVO umfassende Rechte gegenüber dem Verantwortlichen zu. Sie können diese Rechte jederzeit geltend machen:
+        <ul>
+          <li><strong>Recht auf Auskunft (Art. 15 DSGVO):</strong> Sie haben das Recht, Auskunft über Ihre von uns verarbeiteten personenbezogenen Daten zu verlangen.</li>
+          <li><strong>Recht auf Berichtigung (Art. 16 DSGVO):</strong> Sie können die unverzügliche Berichtigung unrichtiger oder die Vervollständigung unvollständiger personenbezogener Daten verlangen.</li>
+          <li><strong>Recht auf Löschung („Recht auf Vergessenwerden“) (Art. 17 DSGVO):</strong> Sie haben das Recht, die Löschung Ihrer bei uns gespeicherten Daten zu verlangen, sofern die gesetzlichen Voraussetzungen erfüllt sind.</li>
+          <li><strong>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO):</strong> Sie können die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten verlangen, wenn bestimmte Voraussetzungen vorliegen.</li>
+          <li><strong>Recht auf Datenübertragbarkeit (Art. 20 DSGVO):</strong> Sie haben das Recht, Ihre uns bereitgestellten Daten in einem strukturierten, gängigen und maschinenlesbaren Format zu erhalten oder die Übermittlung an einen anderen Verantwortlichen zu fordern.</li>
+          <li><strong>Widerspruchsrecht (Art. 21 DSGVO):</strong> Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit gegen die Verarbeitung Ihrer personenbezogenen Daten Widerspruch einzulegen, sofern die Verarbeitung aufgrund eines berechtigten Interesses erfolgt.</li>
+          <li><strong>Recht auf Widerruf der Einwilligung (Art. 7 Abs. 3 DSGVO):</strong> Eine einmal erteilte Einwilligung zur Datenverarbeitung können Sie jederzeit mit Wirkung für die Zukunft widerrufen.</li>
+          <li><strong>Recht auf Beschwerde bei einer Aufsichtsbehörde (Art. 77 DSGVO):</strong> Unbeschadet anderer Rechtsbehelfe steht Ihnen das Recht zu, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren, wenn Sie der Ansicht sind, dass die Verarbeitung Ihrer Daten gegen die DSGVO verstößt.</li>
+        </ul>
+      </p>
+      <h3 id="kontakt"><i class="bi bi-envelope-paper" aria-hidden="true"></i> Kontakt</h3>
+      <p>
+        Für Fragen bezüglich Ihrer personenbezogenen Daten, zur Ausübung Ihrer Betroffenenrechte oder bei weiteren Anliegen zum Datenschutz können Sie sich jederzeit an uns wenden:
+      </p>
+      <address>
+        <strong>Abdulkerim</strong><br>
+        E-Mail: <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a>
+      </address>
+      <h3 id="cookies"><i class="bi bi-cookie" aria-hidden="true"></i> Cookies und Einwilligungsmanagement</h3>
+      <p>
+        Unsere Website verwendet Cookies. Cookies sind kleine Textdateien, die auf Ihrem Endgerät gespeichert werden und verschiedene Informationen enthalten können. Einige Cookies sind für den Betrieb der Website technisch notwendig (notwendige Cookies), andere dienen Analyse- und Marketingzwecken und werden nur mit Ihrer ausdrücklichen Einwilligung gesetzt.
+      </p>
+      <ul>
+        <li><strong>Notwendige Cookies:</strong> Diese sind für die grundlegende Funktionalität der Website erforderlich und können nicht deaktiviert werden.</li>
+        <li><strong>Analyse-Cookies:</strong> Diese helfen uns, die Nutzung der Website anonym zu analysieren. Sie werden nur gesetzt, wenn Sie ausdrücklich zustimmen.</li>
+        <li><strong>Marketing-Cookies:</strong> Diese ermöglichen personalisierte Werbung und Angebote. Auch sie werden nur nach Ihrer Einwilligung gesetzt.</li>
+      </ul>
+      <p>
+        Sie können Ihre Cookie-Einstellungen jederzeit über den Link „Cookie-Einstellungen ändern“ im Footer oder im Cookie-Banner anpassen und Ihre Einwilligung widerrufen.
+      </p>
+      <h3 id="google-analytics"><i class="bi bi-bar-chart" aria-hidden="true"></i> Einsatz von Google Analytics</h3>
+      <p>
+        Soweit Sie eingewilligt haben, verwendet diese Website Google Analytics, einen Webanalysedienst der Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland („Google“). Google Analytics verwendet Cookies, die eine Analyse der Benutzung der Website durch Sie ermöglichen. Die durch das Cookie erzeugten Informationen über Ihre Benutzung dieser Website werden in der Regel an einen Server von Google in den USA übertragen und dort gespeichert.
+      </p>
+      <p>
+        Wir haben die IP-Anonymisierung aktiviert, sodass Ihre IP-Adresse von Google innerhalb der Europäischen Union oder in anderen Vertragsstaaten des Abkommens über den Europäischen Wirtschaftsraum zuvor gekürzt wird. Nur in Ausnahmefällen wird die volle IP-Adresse an einen Server von Google in den USA übertragen und dort gekürzt.
+      </p>
+      <p>
+        Die Speicherung von Google-Analytics-Cookies und die Nutzung dieses Analyse-Tools erfolgen nur, wenn Sie ausdrücklich eingewilligt haben (Art. 6 Abs. 1 lit. a DSGVO). Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen, indem Sie die Cookie-Einstellungen aufrufen und die Analyse-Cookies deaktivieren.
+      </p>
+      <p>
+        Weitere Informationen zu Google Analytics finden Sie in der Datenschutzerklärung von Google: <a href="https://support.google.com/analytics/answer/6004245?hl=de" target="_blank" rel="noopener noreferrer">https://support.google.com/analytics/answer/6004245?hl=de</a>
+      </p>
+      <h4>Verwendete Cookies im Überblick</h4>
+      <table class="cookie-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Zweck</th>
+            <th>Speicherdauer</th>
+            <th>Anbieter</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>_ga</td>
+            <td>Unterscheidung von Besuchern (Google Analytics)</td>
+            <td>2 Jahre</td>
+            <td>Google</td>
+          </tr>
+          <tr>
+            <td>_gid</td>
+            <td>Unterscheidung von Besuchern (Google Analytics)</td>
+            <td>24 Stunden</td>
+            <td>Google</td>
+          </tr>
+          <tr>
+            <td>_gat</td>
+            <td>Drosselung der Anfragerate (Google Analytics)</td>
+            <td>1 Minute</td>
+            <td>Google</td>
+          </tr>
+          <tr>
+            <td>_gcl_au</td>
+            <td>Conversion-Tracking (Google Analytics)</td>
+            <td>3 Monate</td>
+            <td>Google</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Notwendige Cookies werden nicht in dieser Liste aufgeführt, da sie ausschließlich für den Betrieb der Website erforderlich sind und keine personenbezogenen Daten speichern.
+      </p>
+      <div class="cookie-management-section">
+        <h3><i class="bi bi-cookie" aria-hidden="true"></i> Cookie-Einstellungen verwalten</h3>
+        <p>
+          Wir verwenden Cookies, um Ihnen ein optimales Webseiten-Erlebnis zu bieten. Mit einem Klick auf „Alle akzeptieren“ stimmen Sie der Verwendung aller Cookies zu. Über „Einstellungen verwalten“ können Sie Ihre Auswahl anpassen und erhalten weitere Informationen zu den einzelnen Cookie-Arten.
+        </p>
+        <div class="cookie-control-buttons">
+          <button class="cookie-control-btn" id="accept-all-cookies">Alle akzeptieren</button>
+          <button class="cookie-control-btn secondary" id="reject-all-cookies">Alle ablehnen</button>
+          <button class="cookie-control-btn" id="save-cookie-preferences">Einstellungen speichern</button>
+        </div>
+        <div class="cookie-category-info" id="necessary-cookies-info">
+          <strong>Notwendige Cookies:</strong> Diese Cookies sind für die grundlegende Funktionalität der Website erforderlich und können nicht deaktiviert werden.
+        </div>
+        <div class="cookie-category-info" id="analytics-cookies-info" style="display:none;">
+          <strong>Analyse-Cookies:</strong> Diese Cookies helfen uns, die Nutzung der Website zu analysieren und zu verbessern. Sie werden nur gesetzt, wenn Sie ausdrücklich zustimmen.
+        </div>
+        <div class="cookie-category-info" id="marketing-cookies-info" style="display:none;">
+          <strong>Marketing-Cookies:</strong> Diese Cookies werden verwendet, um Ihnen personalisierte Werbung zu zeigen. Sie werden nur gesetzt, wenn Sie Ihre Zustimmung gegeben haben.
+        </div>
+      </div>
+      <p class="last-updated">
+        Stand: Juni 2025
+      </p>
+    </div>
+  </main>
+  <div id="footer-placeholder"></div>
+  <script src="/js/menu.js" defer></script>
+  <script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+      const dynamicHeader = document.querySelector('.dynamic-header');
+      const headerIcon = dynamicHeader.querySelector('.header-icon');
+      const headerText = dynamicHeader.querySelector('.header-text');
+      const headings = Array.from(document.querySelectorAll('.section-body h3'));
+      const paragraphs = Array.from(document.querySelectorAll('.section-body p'));
+      const lists = Array.from(document.querySelectorAll('.section-body ul'));
+      const sectionBody = document.querySelector('.section-body');
+
+      const initialHeader = {
+        iconClass: "bi bi-shield-lock",
+        text: "Datenschutz"
+      };
+
+      function getHeadingIconAndText(heading) {
+        let iconClass = "";
+        let text = heading.textContent.trim();
+        if (heading.firstElementChild && heading.firstElementChild.tagName === "I") {
+          iconClass = heading.firstElementChild.className;
+          text = heading.textContent.replace(heading.firstElementChild.textContent, '').trim();
+        }
+        return { iconClass, text };
+      }
+
+      let lastIconClass = initialHeader.iconClass;
+      let lastHeaderText = initialHeader.text;
+      let lastHeaderIndex = -1;
+
+      function setHeaderAnimated(newIconClass, newText, direction = 'down') {
+        if (headerText.textContent === newText && headerIcon.firstElementChild?.className === newIconClass) return;
+        dynamicHeader.classList.remove('animated-up', 'animated-down', 'animated-reset');
+        dynamicHeader.classList.add(direction === 'down' ? 'animated-down' : 'animated-up');
+        setTimeout(() => {
+          headerIcon.innerHTML = newIconClass ? `<i class="${newIconClass}" aria-hidden="true"></i>` : '';
+          headerText.textContent = newText;
+          dynamicHeader.classList.remove('animated-up', 'animated-down');
+          dynamicHeader.classList.add('animated-reset');
+        }, 350);
+      }
+
+      function updateHeader() {
+        let currentIdx = -1;
+        let containerRect = sectionBody.getBoundingClientRect();
+        for (let i = 0; i < headings.length; i++) {
+          const rect = headings[i].getBoundingClientRect();
+          if (rect.top - containerRect.top <= 10) {
+            currentIdx = i;
+          }
+        }
+        let iconClass, text;
+        if (currentIdx === -1) {
+          iconClass = initialHeader.iconClass;
+          text = initialHeader.text;
+        } else {
+          ({ iconClass, text } = getHeadingIconAndText(headings[currentIdx]));
+        }
+        if (text !== lastHeaderText || iconClass !== lastIconClass) {
+          const direction = currentIdx > lastHeaderIndex ? 'down' : 'up';
+          setHeaderAnimated(iconClass, text, direction);
+          lastHeaderText = text;
+          lastIconClass = iconClass;
+          lastHeaderIndex = currentIdx;
+        }
+      }
+
+      function animateElements() {
+        const containerRect = sectionBody.getBoundingClientRect();
+        const elements = [...headings, ...paragraphs, ...lists];
+        elements.forEach((element, idx) => {
+          const rect = element.getBoundingClientRect();
+          const elemTop = rect.top - containerRect.top;
+          const elemBottom = rect.bottom - containerRect.top;
+          if (elemBottom > 0 && elemTop < containerRect.height) {
+            if (!element.classList.contains('visible')) {
+              setTimeout(() => {
+                element.classList.add('visible');
+                element.classList.remove('hidden-up');
+              }, idx * 40);
+            }
+          } else if (elemBottom <= 0) {
+            element.classList.remove('visible');
+            element.classList.add('hidden-up');
+          } else {
+            element.classList.remove('visible');
+            element.classList.remove('hidden-up');
+          }
+        });
+      }
+
+      [...headings, ...paragraphs, ...lists].forEach(el => {
+        el.classList.remove('visible');
+        el.classList.add('hidden-up');
+      });
+
+      function onScrollOrResize() {
+        updateHeader();
+        animateElements();
+      }
+
+      sectionBody.addEventListener('scroll', () => {
+        requestAnimationFrame(onScrollOrResize);
+      });
+      window.addEventListener('resize', () => {
+        requestAnimationFrame(onScrollOrResize);
+      });
+
+      updateHeader();
+      animateElements();
+    });
+  </script>
+</body>
+</html>

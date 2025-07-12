@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Editor (Eigenschaften Bearbeiten)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column;
+            align-items: center; padding: 15px; background-color: #f0f0f0; margin: 0;
+        }
+        h1 { font-size: 20px; margin-bottom: 15px; }
+        #editorContainer {
+            display: flex; gap: 20px; width: 100%; max-width: 1000px;
+            flex-wrap: wrap; justify-content: center; align-items: flex-start;
+        }
+        #canvasContainer {
+            border: 3px solid #000; width: 300px; height: 400px; position: relative;
+            background-color: #70c5ce; cursor: crosshair; flex-shrink: 0;
+        }
+        canvas { display: block; width: 100%; height: 100%; background-color: transparent; }
+        #controlsPanel { display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
+        #toolbar, #propertiesPanel {
+            padding: 15px; background-color: #e0e0e0; border: 2px solid #999;
+            border-radius: 5px; display: flex; flex-direction: column; gap: 10px;
+        }
+        #toolbar h2, #propertiesPanel h2 { font-size: 14px; margin: 0 0 10px 0; text-align: center; }
+        #toolbar button {
+            font-family: 'Press Start 2P', cursive; padding: 8px 12px; font-size: 12px;
+            cursor: pointer; border: 2px solid #555; border-radius: 5px;
+            background-color: #fff; transition: background-color 0.2s;
+        }
+        #toolbar button.selected { background-color: #ffcc00; border-color: #000; font-weight: bold; }
+        #toolbar button:hover:not(.selected) { background-color: #f8f8f8; }
+
+        /* Properties Panel Styling */
+        #propertiesPanel { min-height: 120px; /* Mehr Platz für Inputs */ font-size: 10px; line-height: 1.6; }
+        #propOutput {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            min-height: 50px; /* Ensure some minimum space */
+        }
+        #propertiesPanel label { margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+        #propertiesPanel input[type="number"] {
+            font-family: 'Press Start 2P', cursive; font-size: 10px;
+            width: 60px; padding: 3px; border: 1px solid #555; margin-bottom: 5px;
+            text-align: right;
+        }
+        #propertiesPanel button { /* Apply Button */
+            font-family: 'Press Start 2P', cursive; font-size: 10px; padding: 5px 8px;
+            margin-top: 8px; cursor: pointer; border: 1px solid #555; border-radius: 3px;
+            background-color: #ccc; display: block; /* Eigene Zeile */
+        }
+         #propertiesPanel button:hover { background-color: #bbb; }
+
+
+        #exportContainer { margin-top: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; }
+        #exportContainer h2 { font-size: 14px; margin-bottom: 10px; }
+        #exportOutput {
+            width: 100%; height: 200px; font-family: monospace; font-size: 11px;
+            padding: 10px; border: 2px solid #999; background-color: #fff;
+            white-space: pre; overflow: auto;
+        }
+        #editorActions {
+            margin-top: 15px; display: flex; gap: 15px; align-items: center;
+            flex-wrap: wrap; justify-content: center;
+        }
+         #editorActions button, #editorActions label, #editorActions input { font-family: 'Press Start 2P', cursive; font-size: 12px; }
+         #editorActions button { padding: 10px 15px; cursor: pointer; border: 2px solid #555; border-radius: 5px; background-color: #ddd; transition: background-color 0.2s; }
+          #editorActions button:hover { background-color: #ccc; }
+          #copyBtn.copied { background-color: #4CAF50; color: white; }
+          #levelIdInput { width: 60px; padding: 8px; border: 2px solid #555; border-radius: 5px; text-align: right; margin-left: 5px; }
+          #levelIdLabel { margin-left: 10px; }
+
+        /* Visuelle Darstellung & Hervorhebungen */
+        .editor-platform { fill: #6d4c41; stroke: #4e342e; stroke-width: 1px; }
+        .editor-coin { fill: #ffd700; }
+        .editor-enemy { fill: #e53935; }
+        .editor-player { fill: #ff0000; }
+        .editor-grid { stroke: rgba(0, 0, 0, 0.1); stroke-width: 0.5px; }
+        .highlight-delete { stroke: red; stroke-width: 2px; fill: rgba(255,0,0,0.2); }
+        .highlight-select { stroke: blue; stroke-width: 2px; fill: rgba(0,0,255,0.2); }
+    </style>
+</head>
+<body>
+
+    <h1>Level Editor</h1>
+
+    <div id="editorContainer">
+        <div id="controlsPanel">
+            <div id="toolbar">
+                <h2>Werkzeuge</h2>
+                <button data-tool="select">Auswählen</button>
+                <button data-tool="platform">Plattform</button>
+                <button data-tool="coin">Münze</button>
+                <button data-tool="enemy">Gegner</button>
+                <button data-tool="player">Spieler Start</button>
+                <button data-tool="delete">Löschen</button>
+            </div>
+            <div id="propertiesPanel">
+                 <h2>Eigenschaften</h2>
+                 <div id="propOutput">Nichts ausgewählt</div>
+            </div>
+        </div>
+
+        <div id="canvasContainer">
+            <canvas id="editorCanvas"></canvas>
+        </div>
+    </div>
+
+    <div id="exportContainer">
+         <div id="editorActions">
+            <button id="exportBtn">Level Exportieren</button>
+            <button id="copyBtn">Code Kopieren</button>
+            <button id="clearBtn">Level Leeren</button>
+            <label id="levelIdLabel" for="levelIdInput">Level ID:</label>
+            <input type="number" id="levelIdInput" value="1" min="1">
+        </div>
+        <h2>Exportierter Code</h2>
+        <textarea id="exportOutput" readonly placeholder="Hier erscheint der Code nach dem Exportieren..."></textarea>
+    </div>
+
+    <div id="footer-container"></div>
+    <script src="/js/footer.js"></script>
+
+    <script>
+        const canvas = document.getElementById('editorCanvas');
+        const ctx = canvas.getContext('2d');
+        const toolbar = document.getElementById('toolbar');
+        const exportOutput = document.getElementById('exportOutput');
+        const exportBtn = document.getElementById('exportBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const propOutput = document.getElementById('propOutput'); // Container für Eigenschaften
+        const levelIdInput = document.getElementById('levelIdInput');
+
+        // Editor-Konfiguration
+        const editorWidth = 300;
+        const editorHeight = 400;
+        const gridSize = 10;
+        const defaultCoinRadius = 8;
+        const defaultEnemyWidth = 20;
+        const defaultEnemyHeight = 24;
+        const defaultPlayerWidth = 24; // Visual size, not used for placement directly here
+        const defaultPlayerHeight = 28;// Visual size, not used for placement directly here
+        const defaultPlatformHeight = 20;
+
+        // Editor-Status
+        let currentTool = null;
+        let levelData = {
+            platforms: [],
+            coins: [],
+            enemies: [],
+            playerStart: { x: 50, y: editorHeight - 50 - defaultPlayerHeight/2 } // Adjusted default player Y
+        };
+        let mousePos = { x: 0, y: 0 };
+        let isMouseOverCanvas = false;
+        let isMouseDown = false;
+        let isDraggingPlatform = false;
+        let isDraggingElement = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let selectedElement = null;
+        let elementToDelete = null;
+
+        // Canvas Größe setzen
+        canvas.width = editorWidth;
+        canvas.height = editorHeight;
+
+        // --- Hilfsfunktionen ---
+        function snapToGrid(value) {
+            return Math.round(value / gridSize) * gridSize;
+        }
+
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (evt.clientX - rect.left) * scaleX,
+                y: (evt.clientY - rect.top) * scaleY
+            };
+        }
+
+        // --- Element-Prüfung (Hit Detection) ---
+        function getElementAtPos(pos) {
+            // Check player (treat as a small circle around its center for clicking)
+             if (levelData.playerStart) {
+                const dx = pos.x - levelData.playerStart.x;
+                const dy = pos.y - levelData.playerStart.y;
+                // Using a fixed radius for clicking player
+                if ((dx * dx + dy * dy) < (15 * 15)) { // Click radius around player center
+                     return { type: 'player', index: 0 }; // Index 0 is arbitrary for single player
+                 }
+             }
+            // Check enemies (topmost first)
+            for (let i = levelData.enemies.length - 1; i >= 0; i--) {
+                const el = levelData.enemies[i];
+                if (pos.x >= el.x && pos.x <= el.x + el.width && pos.y >= el.y && pos.y <= el.y + el.height) {
+                    return { type: 'enemy', index: i };
+                }
+            }
+            // Check coins (topmost first)
+            for (let i = levelData.coins.length - 1; i >= 0; i--) {
+                const el = levelData.coins[i];
+                // Check bounding box first for efficiency
+                if (pos.x >= el.x && pos.x <= el.x + el.radius * 2 && pos.y >= el.y && pos.y <= el.y + el.radius * 2) {
+                    // More precise circle check
+                    const dx = pos.x - (el.x + el.radius);
+                    const dy = pos.y - (el.y + el.radius);
+                    if ((dx * dx + dy * dy) < (el.radius * el.radius)) {
+                        return { type: 'coin', index: i };
+                    }
+                }
+            }
+            // Check platforms (topmost first)
+            for (let i = levelData.platforms.length - 1; i >= 0; i--) {
+                const el = levelData.platforms[i];
+                if (pos.x >= el.x && pos.x <= el.x + el.width && pos.y >= el.y && pos.y <= el.y + el.height) {
+                    return { type: 'platform', index: i };
+                }
+            }
+            return null; // Nothing found at this position
+        }
+
+
+        // --- Zeichenfunktionen für den Editor ---
+        function drawGrid() {
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'; // Light grid lines
+            ctx.lineWidth = 0.5;
+            for (let x = 0; x <= editorWidth; x += gridSize) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, editorHeight);
+            }
+            for (let y = 0; y <= editorHeight; y += gridSize) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(editorWidth, y);
+            }
+            ctx.stroke();
+        }
+
+        function drawElements() {
+            // Platforms
+            ctx.fillStyle = '#6d4c41'; // Brown
+            ctx.strokeStyle = '#4e342e'; // Darker brown border
+            ctx.lineWidth = 1;
+            levelData.platforms.forEach(p => {
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.strokeRect(p.x, p.y, p.width, p.height);
+            });
+
+            // Coins
+            ctx.fillStyle = '#ffd700'; // Gold
+            levelData.coins.forEach(c => {
+                ctx.beginPath();
+                // Draw coin centered on its x, y which represent top-left of bounding box
+                ctx.arc(c.x + c.radius, c.y + c.radius, c.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Enemies
+            ctx.fillStyle = '#e53935'; // Red
+            levelData.enemies.forEach(e => {
+                ctx.fillRect(e.x, e.y, e.width, e.height);
+            });
+
+            // Player Start
+            ctx.fillStyle = '#1e88e5'; // Blue
+             if (levelData.playerStart) {
+                 // Draw a simple representation, maybe a circle or small rectangle
+                 const playerDrawRadius = 10;
+                 ctx.beginPath();
+                 ctx.arc(levelData.playerStart.x, levelData.playerStart.y, playerDrawRadius, 0, Math.PI*2);
+                 ctx.fill();
+                 // Add a 'P' marker
+                 ctx.fillStyle = '#fff'; // White text
+                 ctx.font = '10px "Press Start 2P"';
+                 ctx.textAlign = 'center';
+                 ctx.textBaseline = 'middle';
+                 ctx.fillText('P', levelData.playerStart.x, levelData.playerStart.y);
+            }
+
+            // Highlights (Selection & Deletion Preview)
+            if (selectedElement) {
+                highlightElement(selectedElement, 'select');
+            }
+            if (currentTool === 'delete' && elementToDelete) {
+                highlightElement(elementToDelete, 'delete');
+            }
+        }
+
+        function highlightElement(elementRef, type) {
+            let element;
+            switch(elementRef.type) {
+                case 'platform': element = levelData.platforms[elementRef.index]; break;
+                case 'coin':     element = levelData.coins[elementRef.index]; break;
+                case 'enemy':    element = levelData.enemies[elementRef.index]; break;
+                case 'player':   element = levelData.playerStart; break;
+                default: return; // Unknown type
+            }
+
+            if (!element) return; // Element might have been deleted
+
+            ctx.strokeStyle = (type === 'select') ? 'blue' : 'red';
+            ctx.lineWidth = 2;
+            ctx.fillStyle = (type === 'select') ? 'rgba(0,0,255,0.2)' : 'rgba(255,0,0,0.2)';
+
+            if (elementRef.type === 'coin') {
+                ctx.beginPath();
+                ctx.arc(element.x + element.radius, element.y + element.radius, element.radius + 2, 0, Math.PI * 2); // Slightly larger arc
+                ctx.stroke();
+                ctx.fill();
+            } else if (elementRef.type === 'player') {
+                 const playerHighlightRadius = 12; // Slightly larger than draw radius
+                 ctx.beginPath();
+                 ctx.arc(element.x, element.y, playerHighlightRadius, 0, Math.PI * 2);
+                 ctx.stroke();
+                 ctx.fill();
+            } else { // Platforms and Enemies are rectangular
+                ctx.strokeRect(element.x - 1, element.y - 1, element.width + 2, element.height + 2); // Offset rect
+                ctx.fillRect(element.x - 1, element.y - 1, element.width + 2, element.height + 2);
+            }
+        }
+
+        function drawPreview() {
+            if (!isMouseOverCanvas || !currentTool || currentTool === 'select' || currentTool === 'delete') return;
+
+            const snappedX = snapToGrid(mousePos.x);
+            const snappedY = snapToGrid(mousePos.y);
+            ctx.globalAlpha = 0.5; // Make preview semi-transparent
+
+            switch (currentTool) {
+                case 'platform':
+                    // Preview during drag is handled separately
+                    if (!isDraggingPlatform) {
+                         // Show a minimum size preview block
+                         ctx.fillStyle = '#6d4c41';
+                         ctx.fillRect(snappedX, snappedY, gridSize, defaultPlatformHeight);
+                    }
+                    break;
+                case 'coin':
+                    ctx.fillStyle = '#ffd700';
+                    ctx.beginPath();
+                    // Ensure preview fits within canvas bounds
+                    const previewCoinX = Math.min(snappedX, editorWidth - defaultCoinRadius * 2);
+                    const previewCoinY = Math.min(snappedY, editorHeight - defaultCoinRadius * 2);
+                    ctx.arc(previewCoinX + defaultCoinRadius, previewCoinY + defaultCoinRadius, defaultCoinRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'enemy':
+                     ctx.fillStyle = '#e53935';
+                     // Ensure preview fits within canvas bounds
+                     const previewEnemyX = Math.min(snappedX, editorWidth - defaultEnemyWidth);
+                     const previewEnemyY = Math.min(snappedY, editorHeight - defaultEnemyHeight);
+                     ctx.fillRect(previewEnemyX, previewEnemyY, defaultEnemyWidth, defaultEnemyHeight);
+                    break;
+                case 'player':
+                    ctx.fillStyle = '#1e88e5'; // Blue for player preview
+                     const playerPreviewRadius = 10;
+                     ctx.beginPath();
+                     ctx.arc(snappedX, snappedY, playerPreviewRadius, 0, Math.PI*2); // Use snapped pos as center
+                     ctx.fill();
+                    break;
+            }
+
+            // Platform drag preview
+            if (isDraggingPlatform) {
+                ctx.fillStyle = '#6d4c41';
+                const startX = Math.min(dragStartX, snappedX);
+                const currentWidth = Math.abs(snappedX - dragStartX);
+                const width = Math.max(gridSize, currentWidth); // Minimum width of gridSize
+                ctx.fillRect(startX, dragStartY, width, defaultPlatformHeight);
+            }
+
+            ctx.globalAlpha = 1.0; // Reset transparency
+        }
+
+        function drawLevel() {
+            // Clear canvas with background color (or clearRect if background is CSS)
+            // ctx.fillStyle = '#70c5ce'; // Light blue background
+            // ctx.fillRect(0, 0, editorWidth, editorHeight);
+             ctx.clearRect(0, 0, editorWidth, editorHeight); // Use if background is set via CSS
+
+            drawGrid();
+            drawElements(); // Draw placed elements and highlights
+            drawPreview();  // Draw placement previews
+        }
+
+
+        // --- Eigenschaften-Panel dynamisch aktualisieren ---
+         function updatePropertiesPanel() {
+             propOutput.innerHTML = ''; // Clear previous content
+
+             if (selectedElement) {
+                 let element;
+                 let htmlContent = `<div style="margin-bottom: 5px;">Typ: <strong>${selectedElement.type}</strong></div>`;
+                 let showApplyButton = false;
+
+                 try { // Wrap finding element in try-catch in case index is invalid
+                     switch(selectedElement.type) {
+                         case 'platform':
+                             element = levelData.platforms[selectedElement.index];
+                             if (!element) break;
+                             htmlContent += `<div>X: ${element.x}, Y: ${element.y}</div>`;
+                             htmlContent += `<div><label for="propWidth">Breite:</label> <input type="number" id="propWidth" value="${element.width}" min="${gridSize}" step="${gridSize}"></div>`;
+                             htmlContent += `<div>Höhe: ${element.height} (fix)</div>`;
+                             showApplyButton = true;
+                             break;
+                         case 'coin':
+                             element = levelData.coins[selectedElement.index];
+                             if (!element) break;
+                             htmlContent += `<div>X: ${element.x}, Y: ${element.y}</div>`;
+                             htmlContent += `<div>Radius: ${element.radius} (fix)</div>`;
+                             // No editable props currently
+                             break;
+                         case 'enemy':
+                             element = levelData.enemies[selectedElement.index];
+                             if (!element) break;
+                             htmlContent += `<div>X: ${element.x}, Y: ${element.y}</div>`;
+                             htmlContent += `<div>Breite: ${element.width}, Höhe: ${element.height} (fix)</div>`;
+                             htmlContent += `<div><label for="propSpeed">Speed Faktor:</label> <input type="number" id="propSpeed" value="${(element.speedFactor || 1.0).toFixed(1)}" step="0.1" min="0.1"></div>`;
+                             showApplyButton = true;
+                             break;
+                         case 'player':
+                             element = levelData.playerStart;
+                             if (!element) break;
+                             // Player position is changed by dragging, not usually via properties panel
+                             htmlContent += `<div>X: ${element.x}, Y: ${element.y}</div>`;
+                             // Could add editable properties here if needed later
+                             break;
+                         default:
+                             element = null;
+                             htmlContent = "Unbekannter Elementtyp ausgewählt.";
+                     }
+
+                     if (showApplyButton) {
+                         htmlContent += `<button id="applyPropsBtn">Anwenden</button>`;
+                     }
+                     propOutput.innerHTML = htmlContent;
+
+                 } catch (error) {
+                     console.error("Error accessing selected element data:", error);
+                     propOutput.innerHTML = "Fehler beim Laden der Eigenschaften.";
+                     selectedElement = null; // Deselect if data is bad
+                 }
+
+             } else {
+                 propOutput.innerHTML = "Nichts ausgewählt"; // Default message
+             }
+         }
+
+
+        // --- Event Listener ---
+
+        // Toolbar clicks
+        toolbar.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.tool) {
+                currentTool = e.target.dataset.tool;
+                selectedElement = null; // Deselect when changing tool
+                elementToDelete = null; // Clear delete target
+                updatePropertiesPanel(); // Update panel to show "Nothing selected"
+                // Update button styles
+                toolbar.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+                e.target.classList.add('selected');
+                console.log("Werkzeug ausgewählt:", currentTool);
+                drawLevel(); // Redraw to clear highlights if needed
+            }
+        });
+
+        // Mouse moving over canvas
+        canvasContainer.addEventListener('mousemove', (e) => {
+             const oldMousePos = { ...mousePos };
+             mousePos = getMousePos(e);
+             isMouseOverCanvas = true;
+
+             // --- Handle dragging ---
+             if (isDraggingElement && selectedElement) {
+                 const newX = snapToGrid(mousePos.x - dragOffsetX);
+                 const newY = snapToGrid(mousePos.y - dragOffsetY);
+                 let elementToMove;
+                 try { // Safety check
+                     switch(selectedElement.type) {
+                         case 'platform': elementToMove = levelData.platforms[selectedElement.index]; break;
+                         case 'coin':     elementToMove = levelData.coins[selectedElement.index]; break;
+                         case 'enemy':    elementToMove = levelData.enemies[selectedElement.index]; break;
+                         case 'player':   elementToMove = levelData.playerStart; break;
+                     }
+                     if (elementToMove) {
+                         // Basic boundary checks (prevent dragging completely off-canvas)
+                         // Note: Precise bounds depend on element type/size
+                         elementToMove.x = Math.max(0, Math.min(newX, editorWidth - (elementToMove.width || (elementToMove.radius ? elementToMove.radius*2 : 10)))); // Adjust width check
+                         elementToMove.y = Math.max(0, Math.min(newY, editorHeight - (elementToMove.height || (elementToMove.radius ? elementToMove.radius*2 : 10)))); // Adjust height check
+
+                         updatePropertiesPanel(); // Update position info in panel while dragging
+                     }
+                 } catch (error) {
+                     console.error("Error finding element to drag:", error);
+                     isDraggingElement = false; // Stop dragging if error
+                 }
+             }
+             // --- Handle delete highlight ---
+             else if (currentTool === 'delete') {
+                  elementToDelete = getElementAtPos(mousePos);
+             } else {
+                  elementToDelete = null; // Ensure it's null if not using delete tool
+             }
+
+             // Redraw if mouse moved significantly or dragging is active
+             if (Math.abs(oldMousePos.x - mousePos.x) > 1 || Math.abs(oldMousePos.y - mousePos.y) > 1 || isDraggingPlatform || isDraggingElement || (currentTool === 'delete')) {
+                 drawLevel();
+             }
+        });
+
+        // Mouse leaving canvas area
+        canvasContainer.addEventListener('mouseleave', () => {
+             isMouseOverCanvas = false;
+             isDraggingPlatform = false; // Stop platform drag if mouse leaves
+             isDraggingElement = false;  // Stop element drag if mouse leaves
+             isMouseDown = false;        // Reset mouse down state
+             elementToDelete = null;     // Clear delete highlight
+             drawLevel(); // Redraw to remove preview and highlights
+        });
+
+        // Mouse button pressed down
+        canvasContainer.addEventListener('mousedown', (e) => {
+             isMouseDown = true;
+             mousePos = getMousePos(e);
+             const snappedX = snapToGrid(mousePos.x);
+             const snappedY = snapToGrid(mousePos.y);
+             const clickedElement = getElementAtPos(mousePos);
+
+            // --- Logic based on current tool ---
+             if (currentTool === 'select') {
+                 if (clickedElement) {
+                     // If clicking the *already selected* element, start dragging it
+                     if (selectedElement && selectedElement.type === clickedElement.type && selectedElement.index === clickedElement.index) {
+                         isDraggingElement = true;
+                         let element = null;
+                         try { // Safety check
+                             switch(selectedElement.type) {
+                                 case 'platform': element = levelData.platforms[selectedElement.index]; break;
+                                 case 'coin':     element = levelData.coins[selectedElement.index]; break;
+                                 case 'enemy':    element = levelData.enemies[selectedElement.index]; break;
+                                 case 'player':   element = levelData.playerStart; break;
+                             }
+                             if (element) {
+                                 // Calculate offset from element's origin (top-left or center for player/coin)
+                                 dragOffsetX = mousePos.x - element.x;
+                                 dragOffsetY = mousePos.y - element.y;
+                             } else {
+                                 isDraggingElement = false; // Cannot drag if element not found
+                             }
+                         } catch (error) {
+                             console.error("Error getting element for drag start:", error);
+                             isDraggingElement = false;
+                         }
+                         console.log("Starte Verschieben von:", selectedElement);
+                     } else {
+                         // Otherwise, select the newly clicked element (selection happens on mouseup)
+                         isDraggingElement = false; // Ensure not dragging yet
+                     }
+                 } else {
+                     // Clicked empty space with select tool: Deselect
+                     selectedElement = null;
+                     isDraggingElement = false;
+                     updatePropertiesPanel();
+                 }
+             } else if (currentTool === 'platform') {
+                 // Start dragging to define platform width
+                 isDraggingPlatform = true;
+                 dragStartX = snappedX;
+                 dragStartY = snappedY;
+                 isDraggingElement = false; // Ensure not dragging element
+             } else {
+                 // For other tools, placement happens on mouseup, but reset drag states
+                 isDraggingPlatform = false;
+                 isDraggingElement = false;
+             }
+
+             drawLevel(); // Redraw to show selection changes immediately
+         }
+        );
+
+        // Mouse button released
+        canvasContainer.addEventListener('mouseup', (e) => {
+             if (!isMouseDown) return; // Only act if mouse was pressed down on canvas
+             isMouseDown = false;
+             mousePos = getMousePos(e);
+             const snappedX = snapToGrid(mousePos.x);
+             const snappedY = snapToGrid(mousePos.y);
+             const clickedElement = getElementAtPos(mousePos); // Check element at mouseup position
+
+            // --- Finalize Dragging ---
+             if (isDraggingElement) {
+                 isDraggingElement = false; // Stop dragging
+                 console.log("Verschieben beendet für:", selectedElement);
+                 // Position already updated during mousemove, redraw to finalize
+                 updatePropertiesPanel(); // Update final position in panel
+             }
+             // --- Finalize Platform Placement ---
+             else if (isDraggingPlatform) {
+                 isDraggingPlatform = false; // Stop platform drag mode
+                 const startX = Math.min(dragStartX, snappedX);
+                 const currentWidth = Math.abs(snappedX - dragStartX);
+                 const width = Math.max(gridSize, currentWidth); // Ensure minimum width
+                 const newPlatform = { x: startX, y: dragStartY, width: width, height: defaultPlatformHeight };
+                 // Boundary check before adding
+                 if (startX + width <= editorWidth && dragStartY + defaultPlatformHeight <= editorHeight) {
+                     levelData.platforms.push(newPlatform);
+                     console.log("Plattform hinzugefügt:", newPlatform);
+                 } else {
+                      console.log("Plattform außerhalb der Grenzen, nicht hinzugefügt.");
+                 }
+             }
+             // --- Handle Clicks/Placement for other tools ---
+             else if (currentTool && currentTool !== 'platform') { // Exclude platform as it's handled by drag end
+                 if (currentTool === 'select') {
+                     // Select the element clicked on mouseup, unless we were dragging
+                     if (!isDraggingElement) { // Don't re-select if drag just ended
+                         selectedElement = clickedElement;
+                         updatePropertiesPanel(); // Show properties of newly selected item
+                         console.log("Ausgewählt:", selectedElement);
+                     }
+                 } else if (currentTool === 'delete') {
+                     // Use elementToDelete identified on mousemove, confirm it's still under cursor on mouseup
+                     if (elementToDelete && clickedElement && elementToDelete.type === clickedElement.type && elementToDelete.index === clickedElement.index) {
+                         let deleted = false;
+                         let deletedType = elementToDelete.type;
+                         let deletedIndex = elementToDelete.index; // Store before modifying array
+                         try {
+                             switch(elementToDelete.type) {
+                                 case 'platform': levelData.platforms.splice(elementToDelete.index, 1); deleted = true; break;
+                                 case 'coin':     levelData.coins.splice(elementToDelete.index, 1); deleted = true; break;
+                                 case 'enemy':    levelData.enemies.splice(elementToDelete.index, 1); deleted = true; break;
+                                 case 'player':   levelData.playerStart = null; deleted = true; break; // Set to null
+                             }
+                             if (deleted) {
+                                 console.log("Element gelöscht:", { type: deletedType, index: deletedIndex });
+                                 // If the deleted element was the selected one, deselect it
+                                 if (selectedElement && selectedElement.type === deletedType && selectedElement.index === deletedIndex) {
+                                     selectedElement = null;
+                                     updatePropertiesPanel();
+                                 }
+                                 // IMPORTANT: If an element *before* the selected element in the *same* array was deleted,
+                                 // the index of the selected element is now wrong. We should re-validate selection or force re-select.
+                                 // Simplest fix: Deselect *any* element of the same type if its index might be affected.
+                                 else if (selectedElement && selectedElement.type === deletedType && selectedElement.index > deletedIndex) {
+                                       // Adjust index of selected element if it came after the deleted one
+                                       selectedElement.index--;
+                                       console.log(`Selected element index adjusted to ${selectedElement.index} after deletion.`);
+                                       // Optionally, still force deselect for simplicity:
+                                       // selectedElement = null;
+                                       // updatePropertiesPanel();
+                                 }
+                                 elementToDelete = null; // Clear target after deletion
+                             }
+                         } catch (error) {
+                             console.error("Error deleting element:", error);
+                         }
+                     }
+                 } else if (currentTool === 'player') {
+                     // Place/Move player start (allow only one)
+                     levelData.playerStart = { x: snappedX, y: snappedY };
+                     console.log("Spielerstart gesetzt:", levelData.playerStart);
+                 } else if (currentTool === 'coin') {
+                     // Place coin, ensuring it fits within bounds
+                     const cX = Math.min(snappedX, editorWidth - defaultCoinRadius * 2);
+                     const cY = Math.min(snappedY, editorHeight - defaultCoinRadius * 2);
+                     const newElement = { x: cX, y: cY, radius: defaultCoinRadius };
+                     levelData.coins.push(newElement);
+                     console.log("Münze hinzugefügt:", newElement);
+                 } else if (currentTool === 'enemy') {
+                      // Place enemy, ensuring it fits within bounds
+                      const eX = Math.min(snappedX, editorWidth - defaultEnemyWidth);
+                      const eY = Math.min(snappedY, editorHeight - defaultEnemyHeight);
+                      // Add default properties required by the properties panel or export
+                      const newElement = { x: eX, y: eY, width: defaultEnemyWidth, height: defaultEnemyHeight, speedFactor: 1.0 };
+                      levelData.enemies.push(newElement);
+                      console.log("Gegner hinzugefügt:", newElement);
+                 }
+             }
+
+             drawLevel(); // Redraw the canvas with the updated state
+        });
+
+
+        // Clear Button
+        clearBtn.addEventListener('click', () => {
+            if (confirm("Sicher, dass das Level geleert werden soll? Alle Änderungen gehen verloren!")) {
+                levelData = {
+                    platforms: [],
+                    coins: [],
+                    enemies: [],
+                    // Reset player start to a default position
+                    playerStart: { x: 50, y: editorHeight - 50 - defaultPlayerHeight/2 }
+                };
+                currentTool = null; // Reset tool
+                selectedElement = null;
+                elementToDelete = null;
+                isDraggingElement = false;
+                isDraggingPlatform = false;
+                toolbar.querySelectorAll('button').forEach(btn => btn.classList.remove('selected')); // Deselect toolbar buttons
+                exportOutput.value = ""; // Clear export area
+                updatePropertiesPanel(); // Clear properties panel
+                drawLevel(); // Redraw empty canvas
+                console.log("Level geleert.");
+            }
+        });
+
+        // Event Listener für Eigenschaften-Panel (Event Delegation)
+        propOutput.addEventListener('click', (e) => {
+            if (e.target.id === 'applyPropsBtn') {
+                if (!selectedElement) return;
+
+                try {
+                    let changed = false;
+                    switch(selectedElement.type) {
+                        case 'platform':
+                            const widthInput = document.getElementById('propWidth');
+                            if (widthInput && levelData.platforms[selectedElement.index]) {
+                                const newWidth = Math.max(gridSize, parseInt(widthInput.value) || gridSize); // Use current width if parse fails
+                                if (levelData.platforms[selectedElement.index].width !== newWidth) {
+                                     levelData.platforms[selectedElement.index].width = newWidth;
+                                     console.log(`Plattform ${selectedElement.index} Breite geändert auf ${newWidth}`);
+                                     changed = true;
+                                }
+                            }
+                            break;
+                        case 'enemy': {
+                            const speedInput = document.getElementById('propSpeed');
+                            if (speedInput && levelData.enemies[selectedElement.index]) {
+                                const currentSpeed = levelData.enemies[selectedElement.index].speedFactor || 1.0;
+                                const newSpeed = Math.max(0.1, parseFloat(speedInput.value) || currentSpeed); // Use current speed if parse fails
+                                 // Use toFixed for comparison to avoid floating point issues
+                                if (currentSpeed.toFixed(2) !== newSpeed.toFixed(2)) {
+                                    levelData.enemies[selectedElement.index].speedFactor = newSpeed;
+                                    console.log(`Gegner ${selectedElement.index} Speed Faktor geändert auf ${newSpeed.toFixed(2)}`);
+                                    changed = true;
+                                }
+                            }
+                            break;
+                        }
+                         // Add cases for other editable properties here
+                    }
+
+                    if (changed) {
+                        updatePropertiesPanel(); // Panel neu aufbauen, um Wert im Input zu aktualisieren/bestätigen
+                        drawLevel(); // Canvas neu zeichnen, um visuelle änderung (z.B. Breite) darzustellen
+                    } else {
+                        console.log("Keine änderungen angewendet.");
+                    }
+
+                } catch (error) {
+                    console.error("Fehler beim Anwenden der Eigenschaften:", error);
+                     alert("Fehler beim Speichern der Eigenschaften.");
+                     // Optionally reload the panel to show original values
+                     // updatePropertiesPanel();
+                }
+            }
+        });
+
+
+        // Export Button Logik
+        exportBtn.addEventListener('click', () => {
+             const levelId = Math.max(1, parseInt(levelIdInput.value) || 1); // Ensure level ID is at least 1
+             let outputCode = `{\n`;
+             outputCode += `    levelId: ${levelId},\n`;
+
+             // Export Player Start (relative coordinates)
+             if (levelData.playerStart) {
+                 // Export position based on the *center* point used for drawing/selection
+                 const relX = (levelData.playerStart.x / editorWidth).toFixed(4);
+                 const relY = (levelData.playerStart.y / editorHeight).toFixed(4);
+                 outputCode += `    playerStartRel: { x: ${relX}, y: ${relY} },\n`;
+             } else {
+                 outputCode += `    playerStartRel: null, // No player start defined\n`;
+             }
+
+             // Export Platforms (relative coordinates, fixed height)
+             outputCode += "    platformsRel: [\n";
+             levelData.platforms.forEach(p => {
+                 const relX = (p.x / editorWidth).toFixed(4);
+                 const relY = (p.y / editorHeight).toFixed(4);
+                 const relW = (p.width / editorWidth).toFixed(4);
+                 // Height is absolute, as defined in config
+                 outputCode += `        { x: ${relX}, y: ${relY}, w: ${relW}, h: ${p.height} }, // Abs width: ${p.width}px\n`;
+             });
+             outputCode += "    ],\n";
+
+             // Export Coins (relative coordinates and radius)
+             outputCode += "    coinsRel: [\n";
+             levelData.coins.forEach(c => {
+                 // Export position relative to top-left corner
+                 const relX = (c.x / editorWidth).toFixed(4);
+                 const relY = (c.y / editorHeight).toFixed(4);
+                 // Export radius relative to width (keeps aspect ratio)
+                 const relR = (c.radius / editorWidth).toFixed(4);
+                 outputCode += `        { x: ${relX}, y: ${relY}, r: ${relR} }, // Abs radius: ${c.radius}px\n`;
+             });
+             outputCode += "    ],\n";
+
+             // Export Enemies (relative coordinates, include speedFactor)
+             outputCode += "    enemiesRel: [\n";
+             levelData.enemies.forEach(e => {
+                 const relX = (e.x / editorWidth).toFixed(4);
+                 const relY = (e.y / editorHeight).toFixed(4);
+                 // Include width and height relative to editor size if needed in game, or export fixed values
+                 // const relW = (e.width / editorWidth).toFixed(4);
+                 // const relH = (e.height / editorHeight).toFixed(4);
+                 // For simplicity, game might use fixed enemy size based on type later
+                 outputCode += `        { x: ${relX}, y: ${relY}, speedFactor: ${(e.speedFactor || 1.0).toFixed(2)} },\n`;
+             });
+             outputCode += "    ]\n";
+
+             outputCode += `}, // Ende Level ${levelId}\n`;
+             outputCode += "// Füge dieses Objekt zum 'gameLevels' Array in deiner Spieldatei (z.B. 'levels.js') hinzu.\n";
+             outputCode += "// Hinweis: Gegner-Patrouillenbereiche, Typen etc. müssen evtl. im Spielcode definiert werden.\n";
+
+             exportOutput.value = outputCode;
+             console.log("Level exportiert.");
+             alert(`Level-Code für Level ID ${levelId} wurde generiert und in das Textfeld kopiert!`);
+        });
+
+        // Kopieren Button Logik
+        copyBtn.addEventListener('click', () => {
+            const codeToCopy = exportOutput.value;
+            if (!codeToCopy) {
+                alert("Es gibt keinen Code zum Kopieren. Exportiere zuerst das Level.");
+                return;
+            }
+            navigator.clipboard.writeText(codeToCopy).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = "Kopiert!";
+                copyBtn.classList.add('copied');
+                console.log("Code in Zwischenablage kopiert.");
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 1500); // Reset button text after 1.5 seconds
+            }).catch(err => {
+                console.error("Fehler beim Kopieren in die Zwischenablage:", err);
+                alert("Fehler beim Kopieren. Bitte manuell kopieren (Strg+C / Cmd+C).");
+            });
+        });
+
+        // --- Initialisierung ---
+        updatePropertiesPanel(); // Ensure properties panel is in default state
+        drawLevel(); // Initiales Zeichnen des leeren Levels (oder mit Default-Player)
+
+    </script>
+
+</body>
+</html>

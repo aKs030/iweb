@@ -422,8 +422,15 @@
                 // Load current state
                 this.loadConsentState();
                 
-                // Show modal
-                modal.classList.remove('hidden');
+                // Show modal using HTML5 dialog API
+                if (modal.showModal) {
+                    modal.classList.remove('hidden');
+                    modal.showModal();
+                } else {
+                    // Fallback for browsers without dialog support
+                    modal.classList.remove('hidden');
+                    modal.style.display = 'flex';
+                }
                 
                 // Focus management
                 setTimeout(() => {
@@ -432,19 +439,21 @@
                         firstFocusable.focus();
                     }
                 }, 100);
-                
-                // Prevent body scroll
-                document.body.style.overflow = 'hidden';
             }
         }
 
         hideSettings() {
             const modal = document.getElementById('cookie-settings-modal');
             if (modal) {
-                modal.classList.add('hidden');
+                // Close modal using HTML5 dialog API
+                if (modal.close) {
+                    modal.close();
+                } else {
+                    // Fallback for browsers without dialog support
+                    modal.style.display = 'none';
+                }
                 
-                // Restore body scroll
-                document.body.style.overflow = '';
+                modal.classList.add('hidden');
                 
                 // Close all expanded details
                 modal.querySelectorAll('.cookie-details.expanded').forEach(details => {
