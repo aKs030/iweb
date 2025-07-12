@@ -411,7 +411,8 @@
   max-width: 600px;
   width: 100%;
   max-height: 85vh;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   position: relative;
   box-shadow: var(--cb-shadow-lg);
   border: 1px solid var(--cb-border);
@@ -429,6 +430,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .cookie-modal-header h2 {
@@ -462,8 +464,28 @@
 
 .cookie-modal-body {
   padding: 1rem 2rem;
-  max-height: 50vh;
+  flex: 1;
   overflow-y: auto;
+  min-height: 0;
+}
+
+/* Custom Scrollbar für Modal */
+.cookie-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cookie-modal-body::-webkit-scrollbar-track {
+  background: var(--cb-surface);
+  border-radius: 4px;
+}
+
+.cookie-modal-body::-webkit-scrollbar-thumb {
+  background: var(--cb-muted);
+  border-radius: 4px;
+}
+
+.cookie-modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--cb-primary);
 }
 
 .cookie-category {
@@ -640,6 +662,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  flex-shrink: 0;
 }
 
 .cookie-modal-actions-secondary,
@@ -693,6 +716,11 @@
 
 /* Mobile Optimizations for Enhanced Modal */
 @media (max-width: 768px) {
+  .cookie-modal-content {
+    max-height: 90vh;
+    margin: 1rem;
+  }
+  
   .cookie-modal-intro {
     padding: 0 1.5rem 1rem;
   }
@@ -712,6 +740,7 @@
   .cookie-modal-footer {
     flex-direction: column;
     align-items: stretch;
+    padding: 1rem 1.5rem;
   }
   
   .cookie-modal-actions-secondary,
@@ -721,6 +750,19 @@
 }
 
 @media (max-width: 480px) {
+  .cookie-modal-content {
+    max-height: 95vh;
+    margin: 0.5rem;
+  }
+  
+  .cookie-modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+  
+  .cookie-modal-body {
+    padding: 1rem 1.5rem;
+  }
+  
   .cookie-category-info h3 {
     font-size: 1rem;
   }
@@ -728,6 +770,10 @@
   .cookie-category-actions {
     flex-direction: column;
     gap: 0.5rem;
+  }
+  
+  .cookie-modal-footer {
+    padding: 1rem 1.5rem;
   }
   
   .cookie-modal-actions-secondary,
