@@ -1,5 +1,6 @@
 @import url('https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+@import url('_global.css'); /* Importiere globale Variablen zuerst */
 
 *, *::before, *::after {
   margin: 0;
@@ -8,7 +9,17 @@
 }
 
 /* =======================
-   Typography
+   Performance-Optimierungen
+   ======================= */
+.site-header,
+.site-menu,
+.site-menu__list,
+.site-menu__toggle {
+  will-change: transform; /* Verbessert Animation-Performance */
+}
+
+/* =======================
+   Typography & Basis-Styles
    ======================= */
 .site-menu__list li,
 .site-menu__list li a,
@@ -35,7 +46,9 @@
   text-decoration: none;
 }
 .site-header {
-  top: 0; left: 0; width: 100vw;
+  top: 0; 
+  left: 0; 
+  width: 100vw;
   min-height: 48px;
   padding: clamp(0.25rem, 1vw, 0.7rem) clamp(0.5rem, 3vw, 2rem);
   position: fixed;
@@ -50,6 +63,8 @@
   animation: fadeInDownOpacity 1s ease forwards, fadeInDownTransform 1s ease forwards;
   opacity: 0;
   transform: translateY(15px);
+  /* Performance-Optimierung für häufige Updates */
+  contain: layout style;
 }
 
 .site-logo {
@@ -75,6 +90,18 @@
 @keyframes fadeInOpacity { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes fadeInTransform { 0% { transform: translateY(15px);} 100% { transform: translateY(0);} }
 @keyframes fadeIn { 0% { opacity: 0; transform: translateY(15px);} 100% { opacity: 1; transform: translateY(0);} }
+
+/* ===== Animationen ===== */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* =======================
    Menu (Desktop)
@@ -126,7 +153,7 @@
 }
 
 /* =======================
-   Hamburger Button
+   Hamburger Button - Verbesserte Accessibility
    ======================= */
 .site-menu__toggle {
   display: none;
@@ -136,61 +163,95 @@
   width: 36px;
   height: 36px;
   position: relative;
+  border-radius: var(--border-radius);
+  transition: background-color 0.3s;
 }
+
+.site-menu__toggle:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
 .site-menu__hamburger,
 .site-menu__hamburger::before,
 .site-menu__hamburger::after {
   content: "";
   display: block;
-  background: #444;
-  width: 25px; height: 2px;
+  background: var(--color-text-main);
+  width: 25px; 
+  height: 2px;
   margin: 6px auto;
   border-radius: 2px;
-  transition: 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.site-menu__toggle:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-link);
+
+.site-menu__toggle:focus,
+.site-menu__toggle:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+  background-color: rgba(255,255,255,0.1);
 }
-.site-menu__toggle.active .site-menu__hamburger { background: transparent; }
+
+.site-menu__toggle.active .site-menu__hamburger { 
+  background: transparent; 
+}
+
 .site-menu__toggle.active .site-menu__hamburger::before {
-  transform: translateY(8px) rotate(45deg); background: #0077ff;
+  transform: translateY(8px) rotate(45deg); 
+  background: var(--color-link);
 }
+
 .site-menu__toggle.active .site-menu__hamburger::after {
-  transform: translateY(-8px) rotate(-45deg); background: #0077ff;
+  transform: translateY(-8px) rotate(-45deg); 
+  background: var(--color-link);
 }
 
 /* =======================
-   Submenu
+   Submenu - Erweiterte Features
    ======================= */
-.has-submenu > a { cursor: pointer; }
-.site-menu__list .has-submenu { position: relative; }
+.has-submenu > a { 
+  cursor: pointer; 
+  position: relative;
+}
+
+.site-menu__list .has-submenu { 
+  position: relative; 
+}
+
 .site-menu__list .submenu {
   display: none;
   position: absolute;
-  top: 100%; left: 0;
+  top: 100%; 
+  left: 0;
   background: var(--color-bg-secondary);
   min-width: 180px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.13);
-/* (merged into previous definition to avoid duplicate selector) */
-  font-size: 1em;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  z-index: 10000;
 }
 
-/* Submenu Hover-Logik Desktop */
+/* Submenu Hover-Logik Desktop mit verbesserten Timings */
 @media (min-width: 769px) {
   .site-menu__list .has-submenu:hover .submenu,
   .site-menu__list .has-submenu:focus-within .submenu {
     display: block;
     opacity: 1;
     pointer-events: auto;
-    transform: none;
+    transform: translateY(0) scale(1);
   }
+  
   .site-menu__list .submenu {
     opacity: 0;
     pointer-events: none;
     transform: translateY(12px) scale(0.98);
-    transition: opacity 0.18s, transform 0.18s;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: block; /* Trick: display bleibt, wird aber per opacity/pointer gesteuert */
+  }
+  
+  /* Verzögerung beim Schließen für bessere UX */
+  .site-menu__list .has-submenu:not(:hover):not(:focus-within) .submenu {
+    transition-delay: 0.15s;
   }
 }
 
@@ -200,110 +261,182 @@
 main { margin-top: 80px; padding: 1rem; }
 
 /* =======================
-   Mobile Styles
+   Mobile Styles - Erweitert & Optimiert
    ======================= */
 @media (max-width: 768px) {
   .site-menu__toggle {
     display: block;
   }
+  
   .site-header {
     min-height: 44px;
     padding: 0.2rem 0.7rem;
   }
+  
   .site-menu {
     position: fixed;
     top: 44px;
     right: 0;
     width: min(85vw, 290px);
+    max-height: calc(100vh - 44px);
     padding: 1rem 0;
     background: var(--color-bg);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border-bottom-left-radius: 10px;
     border-top-left-radius: 10px;
-    transform: translateX(120%);
-    transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex-direction: column;
     gap: 1rem;
     z-index: 9998;
     box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+    overflow-y: auto;
+    /* Performance-Optimierung */
+    contain: layout style;
   }
+  
   .site-menu.open {
     transform: translateX(0);
   }
+  
   .site-menu__list {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
     padding: 1.3rem 1.4rem;
+    gap: 0.5rem;
   }
+  
   .site-menu__list li a {
-    min-height: 34px;
+    min-height: 44px; /* Touch-friendly */
     font-size: 1rem;
-    padding: 0.3rem 0.4rem;
+    padding: 0.7rem 0.4rem;
+    width: 100%;
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s;
   }
+  
+  .site-menu__list li a:hover,
+  .site-menu__list li a:focus {
+    background-color: rgba(255,255,255,0.05);
+  }
+  
   .site-menu__list .submenu {
     display: none;
     position: static;
-    background: none;
+    background: rgba(255,255,255,0.02);
     border: none;
     box-shadow: none;
-    padding-left: 1.2rem;
+    border-radius: var(--border-radius);
+    margin-top: 0.5rem;
+    padding: 0.5rem;
     opacity: 1 !important;
     pointer-events: auto !important;
     transform: none !important;
     transition: none;
   }
+  
   .site-menu__list .has-submenu.open .submenu {
     display: flex;
     flex-direction: column;
+    animation: slideDown 0.3s ease-out;
   }
-  /* Overlay für Mobile */
+  
+  /* Overlay für Mobile mit verbesserter Performance */
   .site-menu__overlay {
     position: fixed;
     inset: 0;
     z-index: 9997;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+  
+  .site-menu.open + .site-menu__overlay {
+    opacity: 1;
+    visibility: visible;
   }
 }
 
-/* ===== Fokus Styles & Accessibility ===== */
+/* ===== Erweiterte Accessibility & Interactive States ===== */
 .site-menu__list li a:focus-visible,
 .site-menu__list .submenu li a:focus-visible {
   outline: 2px solid var(--color-link);
   outline-offset: 2px;
   background: rgba(0, 119, 255, 0.08);
+  border-radius: var(--border-radius);
 }
 
-/* ===== Aktiver Link ===== */
+/* ===== Aktiver Link mit verbesserter Kennzeichnung ===== */
 .site-menu__list li a.active {
   color: var(--color-link);
   font-weight: 600;
+  background: rgba(0, 119, 255, 0.05);
 }
+
 .site-menu__list li a.active::after {
   width: 100%;
   left: 0;
   background: var(--color-link);
 }
 
-/* ===== Submenu-Pfeil ===== */
+/* ===== Submenu-Pfeil mit Animation ===== */
 .has-submenu > a::after {
   content: "▼";
   display: inline-block;
-  margin-left: 6px;
+  margin-left: 8px;
   font-size: 0.75em;
   vertical-align: middle;
-  transition: transform 0.18s;
-}
-.has-submenu:hover > a::after,
-.has-submenu:focus-within > a::after {
-  transform: rotate(-180deg);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-text-muted);
 }
 
-/* Overlay nur über State sichtbar */
-.site-menu__overlay {
-  display: none;
+.has-submenu:hover > a::after,
+.has-submenu:focus-within > a::after,
+.has-submenu.open > a::after {
+  transform: rotate(180deg);
+  color: var(--color-link);
 }
-.site-menu.open ~ .site-menu__overlay {
-  display: block;
+
+/* ===== Performance-Optimierungen ===== */
+.site-menu__list .submenu,
+.site-menu__toggle,
+.site-header {
+  will-change: transform, opacity;
+}
+
+/* ===== Reduced Motion Support ===== */
+@media (prefers-reduced-motion: reduce) {
+  .site-menu,
+  .site-menu__list .submenu,
+  .has-submenu > a::after,
+  .site-menu__hamburger,
+  .site-menu__hamburger::before,
+  .site-menu__hamburger::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  
+  .site-header {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ===== Screen Reader Only Utility ===== */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }

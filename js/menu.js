@@ -1,161 +1,339 @@
+// Performance-optimierte Variablen
+const currentYear = new Date().getFullYear();
+let resizeTimeout;
+
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
 
-  // Footer laden
+  // Footer laden mit verbesserter Fehlerbehandlung
+  loadFooter();
+  
+  // Menü laden mit optimierter Performance
+  loadMenu(menuContainer);
+});
+
+/**
+ * Lädt den Footer mit optimierter Performance
+ */
+async function loadFooter() {
   const footerPlaceholder = document.getElementById('footer-placeholder');
-  if (footerPlaceholder) {
-    fetch('/pages/komponente/footer.html')
-      .then(r => {
-        if (!r.ok) throw new Error('Footer konnte nicht geladen werden');
-        return r.text();
-      })
-      .then(html => {
-        footerPlaceholder.innerHTML = html;
-        const yearEl = document.getElementById('current-year');
-        if (yearEl) yearEl.textContent = new Date().getFullYear();
-        // Cookie-Banner wird statisch in index.html geladen, keine dynamische Nachladung nötig
-      })
-      .catch(err => {
-        console.error('Fehler beim Laden des Footers:', err.message);
-        // Fallback Footer
-        footerPlaceholder.innerHTML = `
-          <footer class="site-footer footer">
-            <div class="footer-content">
-              <p>&copy; ${new Date().getFullYear()} Abdul Kerim. Alle Rechte vorbehalten.</p>
-            </div>
-          </footer>
-        `;
-      });
-  } else {
-    console.error('Fehler: footer-placeholder wurde nicht gefunden.');
+  if (!footerPlaceholder) {
+    console.warn('Footer-placeholder nicht gefunden - wird übersprungen');
+    return;
   }
 
-  // Menü laden
+  try {
+    const response = await fetch('/pages/komponente/footer.html');
+    if (!response.ok) throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
+    
+    const html = await response.text();
+    footerPlaceholder.innerHTML = html;
+    
+    // Jahr dynamisch setzen
+    const yearEl = document.getElementById('current-year');
+    if (yearEl) yearEl.textContent = currentYear;
+    
+  } catch (err) {
+    console.error('Fehler beim Laden des Footers:', err.message);
+    // Optimierter Fallback Footer
+    footerPlaceholder.innerHTML = createFallbackFooter();
+  }
+}
+
+/**
+ * Erstellt Fallback-Footer HTML
+ */
+function createFallbackFooter() {
+  return `
+    <footer class="site-footer footer" role="contentinfo">
+      <div class="footer-content">
+        <p>&copy; ${currentYear} Abdul Kerim. Alle Rechte vorbehalten.</p>
+      </div>
+    </footer>
+  `;
+}
+
+/**
+ * Lädt das Menü mit optimierter Performance und Fehlerbehandlung
+ * @param {HTMLElement} menuContainer - Der Container für das Menü
+ */
+async function loadMenu(menuContainer) {
   if (!menuContainer) {
     console.error('Fehler: menuContainer wurde nicht gefunden.');
     return;
   }
-  fetch('/pages/komponente/menu.html')
-    .then(response => {
-      if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
-      return response.text();
-    })
-    .then(menuMarkup => {
-      menuContainer.innerHTML = menuMarkup;
-      initializeMenu(menuContainer);
-      initializeLogo(menuContainer);
-      initializeSubmenuLinks(menuContainer);
-      setSiteTitle();
 
-      // Klick außerhalb schließt das Menü (nur für Desktop sinnvoll)
-      document.addEventListener('click', (event) => {
-        const isClickInside = menuContainer.contains(event.target);
-        const isMenuToggle = event.target.closest('.site-menu__toggle');
-        if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
-      });
-    })
-    .catch(err => {
-      console.error('Fehler beim Laden des Menüs:', err.message);
-      // Fallback-Menü für kritische Navigation
-      menuContainer.innerHTML = `
-        <header class="site-header" role="banner">
-          <a href="/index.html" aria-label="Zur Startseite">
-            <span class="site-logo elegant-logo">Abdulkerim ⭐️</span>
-          </a>
-          <nav class="site-menu" role="navigation">
-            <ul class="site-menu__list">
-              <li><a href="/index.html">Startseite</a></li>
-              <li><a href="/pages/ubermich.html">Über mich</a></li>
-              <li><a href="/pages/album.html">Fotogalerie</a></li>
-            </ul>
-          </nav>
-        </header>
-      `;
-    });
-});
+  try {
+    const response = await fetch('/pages/komponente/menu.html');
+    if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
+    
+    const menuMarkup = await response.text();
+    menuContainer.innerHTML = menuMarkup;
+    
+    // Menü-Funktionalitäten initialisieren
+    initializeMenu(menuContainer);
+    initializeLogo(menuContainer);
+    initializeSubmenuLinks(menuContainer);
+    initializeAccessibility(menuContainer);
+    setSiteTitle();
+    
+    // Optimierter Outside-Click Handler mit Debouncing
+    setupOutsideClickHandler(menuContainer);
+    
+    // Resize-Handler für bessere Mobile-Performance
+    setupResizeHandler(menuContainer);
+    
+  } catch (err) {
+    console.error('Fehler beim Laden des Menüs:', err.message);
+    // Verbesserter Fallback mit besserer Accessibility
+    menuContainer.innerHTML = createFallbackMenu();
+  }
+}
 
 /**
- * Initialisiert die Menü-Toggle-Logik inkl. Overlay
+ * Erstellt Fallback-Menü HTML mit verbesserter Accessibility
+ */
+function createFallbackMenu() {
+  return `
+    <header class="site-header" role="banner">
+      <a href="/index.html" aria-label="Zur Startseite">
+        <span class="site-logo elegant-logo">Abdulkerim ⭐️</span>
+      </a>
+      <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
+        <ul class="site-menu__list">
+          <li><a href="/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
+          <li><a href="/pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
+          <li><a href="/pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
+        </ul>
+      </nav>
+    </header>
+  `;
+}
+
+/**
+ * Initialisiert die Menü-Toggle-Logik mit verbesserter Accessibility
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   const overlay = container.querySelector('.site-menu__overlay');
-  if (menuToggle && menu) {
-    const toggle = () => {
-      menu.classList.toggle('open');
-      menuToggle.classList.toggle('active');
-      // Overlay wird jetzt nur noch durch CSS gesteuert – kein JS mehr nötig!
-    };
-    menuToggle.addEventListener('click', toggle);
-    menuToggle.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') toggle();
-    });
-    // Overlay-Klick schließt Menü
-    if (overlay) {
-      overlay.addEventListener('click', () => {
-        menu.classList.remove('open');
-        menuToggle.classList.remove('active');
-      });
-    }
-  } else {
+  
+  if (!menuToggle || !menu) {
     console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
+    return;
+  }
+
+  const toggleMenu = (isOpen = null) => {
+    const willBeOpen = isOpen !== null ? isOpen : !menu.classList.contains('open');
+    
+    menu.classList.toggle('open', willBeOpen);
+    menuToggle.classList.toggle('active', willBeOpen);
+    
+    // ARIA Attribute aktualisieren
+    menuToggle.setAttribute('aria-expanded', willBeOpen.toString());
+    
+    // Body-Scroll verhindern wenn Mobile-Menü offen
+    if (window.innerWidth <= 768) {
+      document.body.style.overflow = willBeOpen ? 'hidden' : '';
+    }
+  };
+  
+  // Event Listeners mit verbesserter Accessibility
+  menuToggle.addEventListener('click', () => toggleMenu());
+  
+  menuToggle.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleMenu();
+    }
+    if (event.key === 'Escape') {
+      toggleMenu(false);
+    }
+  });
+  
+  // Overlay-Klick schließt Menü
+  if (overlay) {
+    overlay.addEventListener('click', () => toggleMenu(false));
   }
 }
 
 /**
- * Initialisiert das Verhalten für den Logo-Rechtsklick
+ * Initialisiert das Verhalten für den Logo-Rechtsklick mit verbesserter UX
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
-  if (logoContainer) {
-    logoContainer.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      window.location.href = '/index.html';
-    });
-  } else {
+  if (!logoContainer) {
     console.warn('Logo-Container konnte nicht gefunden werden.');
+    return;
   }
+  
+  logoContainer.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    // Sanfte Navigation mit Feedback
+    logoContainer.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      logoContainer.style.transform = '';
+      window.location.href = '/index.html';
+    }, 150);
+  });
 }
 
 /**
- * Initialisiert die Submenu-Links (nur ein Submenü offen – Mobile only)
+ * Initialisiert die Submenu-Links mit verbesserter Touch-Unterstützung
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function initializeSubmenuLinks(container) {
   const submenuLinks = container.querySelectorAll('.has-submenu > a');
+  let touchStartTime = 0;
+  
   submenuLinks.forEach(link => {
+    // Touch-Events für bessere Mobile-Erfahrung
+    link.addEventListener('touchstart', () => {
+      touchStartTime = Date.now();
+    }, { passive: true });
+    
     link.addEventListener('click', (event) => {
-      // Nur für Mobile: JS steuert Submenu!
-      if (window.innerWidth > 768) return; // Auf Desktop keine Klick-Steuerung
+      const isMobile = window.innerWidth <= 768;
+      const isQuickTouch = Date.now() - touchStartTime < 500;
+      
+      // Nur für Mobile oder schnelle Touch-Ereignisse: JS steuert Submenu
+      if (!isMobile && !isQuickTouch) return;
+      
       event.preventDefault();
       const parentLi = link.parentElement;
       const isOpen = parentLi.classList.contains('open');
-      // Alle Submenüs schließen
-      container.querySelectorAll('.has-submenu').forEach(li => li.classList.remove('open'));
-      // Nur das angeklickte öffnen, falls es vorher zu war
-      if (!isOpen) parentLi.classList.add('open');
+      
+      // Alle anderen Submenüs schließen
+      container.querySelectorAll('.has-submenu').forEach(li => {
+        if (li !== parentLi) li.classList.remove('open');
+      });
+      
+      // Aktuelles Submenü umschalten
+      parentLi.classList.toggle('open', !isOpen);
+      
+      // ARIA Attribute aktualisieren
+      link.setAttribute('aria-expanded', (!isOpen).toString());
+    });
+    
+    // Keyboard Navigation
+    link.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown' || event.key === 'Enter') {
+        event.preventDefault();
+        const parentLi = link.parentElement;
+        parentLi.classList.add('open');
+        link.setAttribute('aria-expanded', 'true');
+        
+        // Fokus auf erstes Submenu-Element
+        const firstSubmenuLink = parentLi.querySelector('.submenu a');
+        if (firstSubmenuLink) firstSubmenuLink.focus();
+      }
     });
   });
 }
 
 /**
- * Schließt das Menü (inkl. Overlay)
+ * Erweiterte Accessibility-Features
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
+function initializeAccessibility(container) {
+  // Escape-Key schließt alle offenen Submenüs
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      container.querySelectorAll('.has-submenu').forEach(li => {
+        li.classList.remove('open');
+        li.querySelector('a').setAttribute('aria-expanded', 'false');
+      });
+      closeMenu(container);
+    }
+  });
+  
+  // Fokus-Management für bessere Navigation
+  const menuLinks = container.querySelectorAll('a');
+  menuLinks.forEach((link, index) => {
+    link.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        const nextLink = menuLinks[index + 1];
+        if (nextLink) nextLink.focus();
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        const prevLink = menuLinks[index - 1];
+        if (prevLink) prevLink.focus();
+      }
+    });
+  });
+}
+
+/**
+ * Schließt das Menü mit verbesserter State-Verwaltung
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
+  
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
-    // Overlay wird jetzt nur noch durch CSS gesteuert
+    menuToggle.setAttribute('aria-expanded', 'false');
+    
+    // Body-Scroll wiederherstellen
+    document.body.style.overflow = '';
+    
+    // Alle Submenüs schließen
+    container.querySelectorAll('.has-submenu').forEach(li => {
+      li.classList.remove('open');
+      li.querySelector('a').setAttribute('aria-expanded', 'false');
+    });
   }
 }
 
 /**
- * Setzt den Seitentitel im Logo anhand des aktuellen Pfads
+ * Optimierter Outside-Click Handler mit Performance-Verbesserungen
+ * @param {HTMLElement} menuContainer - Der Container mit der Menü-Komponente
+ */
+function setupOutsideClickHandler(menuContainer) {
+  const handleOutsideClick = (event) => {
+    // Nur prüfen wenn Menü offen ist
+    const menu = menuContainer.querySelector('.site-menu');
+    if (!menu?.classList.contains('open')) return;
+    
+    const isClickInside = menuContainer.contains(event.target);
+    const isMenuToggle = event.target.closest('.site-menu__toggle');
+    
+    if (!isClickInside && !isMenuToggle) {
+      closeMenu(menuContainer);
+    }
+  };
+  
+  // Verwende passive Event Listener für bessere Performance
+  document.addEventListener('click', handleOutsideClick, { passive: true });
+}
+
+/**
+ * Resize-Handler für verbesserte Mobile-Performance
+ * @param {HTMLElement} menuContainer - Der Container mit der Menü-Komponente
+ */
+function setupResizeHandler(menuContainer) {
+  const handleResize = () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      // Desktop: Schließe Mobile-Menü wenn zu Desktop gewechselt wird
+      if (window.innerWidth > 768) {
+        closeMenu(menuContainer);
+        document.body.style.overflow = '';
+      }
+    }, 150);
+  };
+  
+  window.addEventListener('resize', handleResize, { passive: true });
+}
+
+/**
+ * Setzt den Seitentitel im Logo mit erweiterten Pfaden
  */
 function setSiteTitle() {
   const titleMap = {
@@ -165,9 +343,22 @@ function setSiteTitle() {
     '/pages/ubermich.html': 'Über mich',
     '/pages/index-game.html': 'Spiele-Übersicht',
     '/pages/features/wetter.html': 'Wetter',
+    '/pages/features/snake.html': 'Snake Spiel',
+    '/pages/features/tetris.html': 'Tetris Spiel',
+    '/pages/features/Run.html': 'Jump & Run',
+    '/pages/features/editor.html': 'Level Editor',
+    '/pages/komponente/kontakt.html': 'Kontakt',
+    '/pages/komponente/impressum.html': 'Impressum',
+    '/pages/komponente/datenschutz.html': 'Datenschutz'
   };
+  
   const path = window.location.pathname;
-  const pageTitle = titleMap[path] || document.title || 'Website';
+  const pageTitle = titleMap[path] || document.title || 'Abdul Kerim';
   const siteTitleEl = document.getElementById('site-title');
-  if (siteTitleEl) siteTitleEl.textContent = pageTitle;
+  
+  if (siteTitleEl) {
+    siteTitleEl.textContent = pageTitle;
+    // Aria-Label für bessere Accessibility
+    siteTitleEl.setAttribute('aria-label', `Aktuelle Seite: ${pageTitle}`);
+  }
 }

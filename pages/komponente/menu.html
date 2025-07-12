@@ -1,35 +1,85 @@
 <link rel="stylesheet" href="/css/menu.css">
-<!-- menu.html -->
+<!-- menu.html - Optimierte Navigation mit erweiterten Features -->
 
 <header class="site-header" role="banner">
-  <!-- Logo -->
-  <a href="/index.html" aria-label="Zur Startseite" title="Zur Startseite">
+  <!-- Logo mit verbesserter Accessibility -->
+  <a href="/index.html" aria-label="Zur Startseite navigieren" title="Zur Startseite">
     <span class="site-logo__container">
-      <span class="site-logo elegant-logo" id="site-title"><!-- per JS gefüllt --></span>
+      <span class="site-logo elegant-logo" id="site-title" aria-live="polite">
+        <!-- Wird per JavaScript gefüllt -->
+      </span>
     </span>
   </a>
 
-  <!-- Hamburger-Button -->
-  <button class="site-menu__toggle" aria-label="Menü umschalten" aria-controls="main-nav" aria-expanded="false">
-    <span class="site-menu__hamburger"></span>
+  <!-- Hamburger-Button mit verbesserter Accessibility -->
+  <button 
+    class="site-menu__toggle" 
+    aria-label="Hauptnavigation umschalten" 
+    aria-controls="main-nav" 
+    aria-expanded="false"
+    type="button"
+  >
+    <span class="site-menu__hamburger" aria-hidden="true"></span>
+    <span class="sr-only">Menü öffnen/schließen</span>
   </button>
 
-  <!-- Navigation -->
+  <!-- Navigation mit korrigierter Accessibility -->
   <nav id="main-nav" class="site-menu" role="navigation" aria-label="Hauptnavigation">
     <ul class="site-menu__list">
-      <li><a href="/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
-      <li><a href="/pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
-      <li><a href="/pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
-      <li class="has-submenu">
-        <a href="#" aria-haspopup="true" aria-expanded="false">
-          <i class="fa-solid fa-gamepad" aria-hidden="true"></i>Spiele
+      <li>
+        <a href="/index.html" tabindex="0">
+          <i class="fa-solid fa-house" aria-hidden="true"></i>
+          <span>Startseite</span>
         </a>
-        <ul class="submenu">
-          <li><a href="/pages/index-game.html"><i class="fa-solid fa-joystick" aria-hidden="true"></i>Spiele-Übersicht</a></li>
-          <li><a href="/pages/features/wetter.html"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>Wetter</a></li>
+      </li>
+      <li>
+        <a href="/pages/album.html" tabindex="0">
+          <i class="fa-solid fa-images" aria-hidden="true"></i>
+          <span>Fotogalerie</span>
+        </a>
+      </li>
+      <li>
+        <a href="/pages/ubermich.html" tabindex="0">
+          <i class="fa-solid fa-user" aria-hidden="true"></i>
+          <span>Über mich</span>
+        </a>
+      </li>
+      <li class="has-submenu">
+        <a 
+          href="#" 
+          aria-haspopup="true" 
+          aria-expanded="false"
+          tabindex="0"
+          id="spiele-menu"
+          aria-describedby="spiele-menu-desc"
+        >
+          <i class="fa-solid fa-gamepad" aria-hidden="true"></i>
+          <span>Spiele</span>
+        </a>
+        <span id="spiele-menu-desc" class="sr-only">Untermenü mit Spielen und Anwendungen</span>
+        <ul class="submenu" aria-labelledby="spiele-menu">
+          <li>
+            <a href="/pages/index-game.html" tabindex="-1">
+              <i class="fa-solid fa-joystick" aria-hidden="true"></i>
+              <span>Spiele-Übersicht</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/features/wetter.html" tabindex="-1">
+              <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
+              <span>Wetter</span>
+            </a>
+          </li>
         </ul>
       </li>
     </ul>
   </nav>
-  <div class="site-menu__overlay"></div>
+  
+  <!-- Overlay für Mobile mit Accessibility -->
+  <div class="site-menu__overlay" aria-hidden="true"></div>
 </header>
+
+<!-- Screen Reader nur Text für bessere Accessibility -->
+<div class="sr-only" id="nav-instructions">
+  Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Enter oder Leertaste zum Öffnen von Untermenüs. Escape schließt alle Menüs.
+</div>
