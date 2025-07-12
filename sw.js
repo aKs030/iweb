@@ -1,4 +1,4 @@
-const CACHE_NAME = 'iweb6-v1.0';
+const CACHE_NAME = 'iweb';
 const ASSETS = [
   '/',
   '/index.html',
@@ -11,7 +11,7 @@ const ASSETS = [
   '/js/intext.js',
   '/js/menu.js',
   '/js/scroll-dots.js',
-  '/js/cookies.js',
+  '/js/cookie-system.js',
   '/img/touch-icon-180.png',
   '/img/favicon-32.png',
   '/img/favicon.ico',
