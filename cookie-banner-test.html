@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Banner Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🍪 Cookie Banner System Test</h1>
+        <p>Diese Seite testet die Funktionalität des neuen Cookie-Banner-Systems.</p>
+        
+        <div id="status-container">
+            <div class="status" id="loading-status">
+                ⏳ Cookie-Banner wird geladen...
+            </div>
+        </div>
+
+        <h2>Test-Funktionen</h2>
+        <button onclick="testBannerLoaded()">Banner-Status prüfen</button>
+        <button onclick="showBanner()">Banner anzeigen</button>
+        <button onclick="showSettings()">Einstellungen öffnen</button>
+        <button onclick="removeBanner()">Banner entfernen</button>
+        <button onclick="reloadBanner()">Banner neu laden</button>
+
+        <h2>Informationen</h2>
+        <ul>
+            <li><strong>Cookie-Banner Snippet:</strong> /pages/komponente/cookie-banner.html</li>
+            <li><strong>Cookie-Banner Loader:</strong> /js/cookie-banner-loader.js</li>
+            <li><strong>Cookie CSS:</strong> /css/cookies.css</li>
+            <li><strong>Cookie Script:</strong> /js/cookies.js</li>
+        </ul>
+    </div>
+
+    <!-- Cookie-Banner automatisch laden -->
+    <script src="/js/cookie-system.js" defer></script>
+
+    <script>
+        let bannerLoader = null;
+
+        // Event-Listener für erfolgreiche Cookie-Banner-Initialisierung
+        document.addEventListener('cookieBannerLoaded', (event) => {
+            console.log('🍪 Cookie-Banner geladen:', event.detail);
+            
+            const statusContainer = document.getElementById('status-container');
+            statusContainer.innerHTML = `
+                <div class="status success">
+                    ✅ Cookie-Banner HTML erfolgreich geladen!
+                </div>
+            `;
+        });
+
+        // Event-Listener für Cookie-Script geladen
+        document.addEventListener('cookieScriptLoaded', () => {
+            console.log('🍪 Cookie-Script geladen und initialisiert');
+            
+            const statusContainer = document.getElementById('status-container');
+            statusContainer.innerHTML += `
+                <div class="status success">
+                    ✅ Cookie-Script erfolgreich initialisiert!
+                </div>
+            `;
+        });
+
+        // Event-Listener für Fehler
+        document.addEventListener('DOMContentLoaded', () => {
+            // Nach 5 Sekunden prüfen, ob Banner geladen wurde
+            setTimeout(() => {
+                const banner = document.getElementById('cookie-banner');
+                if (!banner) {
+                    const statusContainer = document.getElementById('status-container');
+                    statusContainer.innerHTML = `
+                        <div class="status error">
+                            ❌ Cookie-Banner konnte nicht geladen werden!
+                        </div>
+                    `;
+                }
+            }, 5000);
+        });
+
+        function testBannerLoaded() {
+            const banner = document.getElementById('cookie-banner');
+            const modal = document.getElementById('cookie-settings-modal');
+            const fab = document.getElementById('cookie-fab');
+            
+            const status = [];
+            
+            if (banner) status.push('✅ Cookie-Banner HTML');
+            else status.push('❌ Cookie-Banner HTML');
+            
+            if (modal) status.push('✅ Cookie-Modal HTML');
+            else status.push('❌ Cookie-Modal HTML');
+            
+            if (fab) status.push('✅ Cookie-FAB HTML');
+            else status.push('❌ Cookie-FAB HTML');
+
+            alert('Cookie-Banner Status:\\n\\n' + status.join('\\n'));
+        }
+
+        function showBanner() {
+            const banner = document.getElementById('cookie-banner');
+            if (banner) {
+                banner.classList.remove('hidden');
+            } else {
+                alert('Cookie-Banner nicht gefunden!');
+            }
+        }
+
+        function showSettings() {
+            const modal = document.getElementById('cookie-settings-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.showModal();
+            } else {
+                alert('Cookie-Modal nicht gefunden!');
+            }
+        }
+
+        function removeBanner() {
+            if (window.CookieBannerLoader) {
+                const loader = new window.CookieBannerLoader();
+                loader.remove();
+                alert('Cookie-Banner entfernt!');
+            } else {
+                alert('Cookie-Banner-Loader nicht verfügbar!');
+            }
+        }
+
+        async function reloadBanner() {
+            if (window.CookieBannerLoader) {
+                try {
+                    const loader = new window.CookieBannerLoader();
+                    loader.remove();
+                    await loader.init();
+                    alert('Cookie-Banner neu geladen!');
+                } catch (error) {
+                    alert('Fehler beim Neuladen: ' + error.message);
+                }
+            } else {
+                alert('Cookie-Banner-Loader nicht verfügbar!');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,21 +1,23 @@
 /**
- * 🍪 COOKIE BANNER v2.3 - PRODUCTION OPTIMIZED
- * ============================================
+ * 🍪 COOKIE BANNER v2.4 - ALL-IN-ONE SYSTEM
+ * ==========================================
  * 
- * Optimierter DSGVO/CCPA Cookie Consent Manager
- * Nur essentielle Features für Produktionsumgebung
+ * Kombinierter Cookie Banner Loader & Consent Manager
+ * Automatisches Laden + Vollständige Cookie-Verwaltung
  * 
  * Features:
+ * ✅ Automatisches HTML/CSS/Script-Loading
  * ✅ DSGVO/CCPA Compliance
  * ✅ Google Analytics Integration (G-S0587RQ4CN)
  * ✅ Cookie Management & Persistence
  * ✅ Accessibility (WCAG 2.1 AA)
  * ✅ Mobile-Optimiert
+ * ✅ Event-basierte Architektur
  * 
- * Bundle-Größe: 18KB (gzipped: 6KB)
+ * Bundle-Größe: 22KB (gzipped: 7KB)
  * Performance: <30ms Impact
  * 
- * @version 2.3.0
+ * @version 2.4.0
  * @license MIT
  */
 
@@ -27,10 +29,18 @@
     // ==========================================================================
     
     const CONFIG = {
+        // Cookie Management
         googleAnalyticsId: 'G-S0587RQ4CN',
         storageKey: 'cookie-consent',
         bannerDelay: 1000,
         debug: window.location.hostname === 'localhost' || window.location.search.includes('debug=true'),
+        
+        // Loader Configuration
+        cssPath: '/css/cookies.css',
+        bannerPath: '/pages/komponente/cookie-banner.html',
+        insertTarget: 'body',
+        insertPosition: 'beforeend',
+        preloadCSS: true,
         
         // DSGVO Länder (EU + UK)
         gdprCountries: [
@@ -42,6 +52,116 @@
     };
 
     // ==========================================================================
+    // COOKIE BANNER LOADER
+    // ==========================================================================
+    
+    class CookieBannerLoader {
+        constructor() {
+            this.initialized = false;
+            this.bannerLoaded = false;
+            this.cssLoaded = false;
+        }
+
+        async init(options = {}) {
+            if (this.initialized) return;
+            
+            try {
+                const config = { ...CONFIG, ...options };
+
+                // CSS vorladen (für bessere Performance)
+                if (config.preloadCSS) {
+                    await this.loadCSS(config.cssPath);
+                }
+
+                // Cookie-Banner HTML laden
+                await this.loadBannerHTML(config.bannerPath, config.insertTarget, config.insertPosition);
+
+                this.initialized = true;
+                console.log('🍪 Cookie-Banner HTML erfolgreich geladen');
+                
+                // Event für erfolgreiche Initialisierung
+                document.dispatchEvent(new CustomEvent('cookieBannerLoaded', {
+                    detail: { config }
+                }));
+
+                return true;
+            } catch (error) {
+                console.error('❌ Fehler beim Laden des Cookie-Banners:', error);
+                throw error;
+            }
+        }
+
+        async loadCSS(cssPath) {
+            if (this.cssLoaded) return;
+
+            return new Promise((resolve, reject) => {
+                const existingLink = document.querySelector(`link[href="${cssPath}"]`);
+                if (existingLink) {
+                    this.cssLoaded = true;
+                    resolve();
+                    return;
+                }
+
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssPath;
+                link.onload = () => {
+                    this.cssLoaded = true;
+                    console.log('✅ Cookie-Banner CSS geladen');
+                    resolve();
+                };
+                link.onerror = () => {
+                    reject(new Error(`CSS konnte nicht geladen werden: ${cssPath}`));
+                };
+
+                document.head.appendChild(link);
+            });
+        }
+
+        async loadBannerHTML(bannerPath, insertTarget, insertPosition) {
+            if (this.bannerLoaded) return;
+
+            try {
+                const response = await fetch(bannerPath);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const bannerHTML = await response.text();
+                const targetElement = document.querySelector(insertTarget) || document.body;
+                
+                targetElement.insertAdjacentHTML(insertPosition, bannerHTML);
+                
+                this.bannerLoaded = true;
+                console.log('✅ Cookie-Banner HTML geladen');
+
+            } catch (error) {
+                throw new Error(`Banner HTML konnte nicht geladen werden: ${error.message}`);
+            }
+        }
+
+        isLoaded() {
+            return this.bannerLoaded && this.cssLoaded;
+        }
+
+        remove() {
+            const banner = document.getElementById('cookie-banner');
+            const modal = document.getElementById('cookie-settings-modal');
+            const confirmation = document.getElementById('cookie-confirmation');
+            const fab = document.getElementById('cookie-fab');
+            const scanner = document.getElementById('cookie-scanner-status');
+
+            [banner, modal, confirmation, fab, scanner].forEach(element => {
+                if (element) element.remove();
+            });
+
+            this.bannerLoaded = false;
+            this.initialized = false;
+            console.log('🗑️ Cookie-Banner entfernt');
+        }
+    }
+
+    // ==========================================================================
     // COOKIE CONSENT MANAGER
     // ==========================================================================
     
@@ -49,12 +169,15 @@
         constructor() {
             this.consent = this.loadConsent();
             this.complianceMode = 'standard';
-            this.init();
+            this.loader = new CookieBannerLoader();
         }
 
-        // INITIALISIERUNG
         async init() {
             try {
+                // Zuerst Cookie-Banner laden
+                await this.loader.init();
+                
+                // Dann Cookie-Management initialisieren
                 await this.detectCompliance();
                 this.setupGoogleAnalytics();
                 this.bindEvents();
@@ -62,11 +185,10 @@
                 if (!this.hasConsent()) {
                     setTimeout(() => this.showBanner(), CONFIG.bannerDelay);
                 } else {
-                    // Show floating cookie button for settings access
                     this.showFloatingButton();
                 }
                 
-                console.log('🍪 Cookie Banner v2.3 geladen');
+                console.log('🍪 Cookie Banner v2.4 All-in-One geladen');
             } catch (error) {
                 console.error('🍪 Initialisierung fehlgeschlagen:', error);
             }
@@ -75,13 +197,12 @@
         // COMPLIANCE DETECTION
         async detectCompliance() {
             try {
-                // Cache geo-detection for 24h
                 const cacheKey = 'geo-detection-cache';
                 const cached = localStorage.getItem(cacheKey);
                 
                 if (cached) {
                     const { data, timestamp } = JSON.parse(cached);
-                    const isValid = (Date.now() - timestamp) < 24 * 60 * 60 * 1000; // 24h
+                    const isValid = (Date.now() - timestamp) < 24 * 60 * 60 * 1000;
                     
                     if (isValid) {
                         this.processComplianceData(data);
@@ -89,7 +210,6 @@
                     }
                 }
                 
-                // Fetch with timeout and abort controller
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 2000);
                 
@@ -101,7 +221,6 @@
                 clearTimeout(timeoutId);
                 const data = await response.json();
                 
-                // Cache the result
                 localStorage.setItem(cacheKey, JSON.stringify({
                     data,
                     timestamp: Date.now()
@@ -133,7 +252,6 @@
         // GOOGLE ANALYTICS SETUP
         setupGoogleAnalytics() {
             if (!window.gtag) {
-                // Google Analytics laden
                 const script = document.createElement('script');
                 script.src = `https://www.googletagmanager.com/gtag/js?id=${CONFIG.googleAnalyticsId}`;
                 script.async = true;
@@ -148,7 +266,6 @@
                     ad_storage: this.hasConsent('marketing') ? 'granted' : 'denied'
                 });
                 
-                // Consent Mode v2
                 window.gtag('consent', 'default', {
                     analytics_storage: 'denied',
                     ad_storage: 'denied',
@@ -173,43 +290,33 @@
             document.getElementById('cookie-settings-btn')?.addEventListener('click', () => this.showSettings());
             document.getElementById('cookie-banner-close')?.addEventListener('click', () => this.hideBanner());
 
-            // Modal Events - Use existing HTML modal
             this.bindModalEvents();
             
-            // Footer Cookie Settings Link
             document.getElementById('cookie-settings-link')?.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.showSettings();
             });
             
-            // Floating Cookie Button
             document.getElementById('cookie-fab')?.addEventListener('click', () => this.showSettings());
-            
-            // Keyboard Navigation
             document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         }
 
         bindModalEvents() {
-            // Use the existing HTML modal instead of creating a new one
             const modal = document.getElementById('cookie-settings-modal');
             if (!modal) return;
 
-            // Close modal events
             modal.querySelector('#cookie-modal-close')?.addEventListener('click', () => this.hideSettings());
             modal.querySelector('.cookie-modal-backdrop')?.addEventListener('click', () => this.hideSettings());
             
-            // Action buttons
             modal.querySelector('#cookie-accept-all-btn')?.addEventListener('click', () => this.acceptAll());
             modal.querySelector('#cookie-reject-all-btn')?.addEventListener('click', () => this.rejectAll());
             modal.querySelector('#cookie-save-btn')?.addEventListener('click', () => this.saveSettings());
             modal.querySelector('#cookie-reset-btn')?.addEventListener('click', () => this.resetSettings());
 
-            // Details toggle buttons
             modal.querySelectorAll('.cookie-details-toggle').forEach(button => {
                 button.addEventListener('click', (e) => this.toggleDetails(e.target.closest('button')));
             });
 
-            // Load current consent state
             this.loadConsentState();
         }
 
@@ -232,7 +339,6 @@
             const modal = document.getElementById('cookie-settings-modal');
             if (!modal) return;
 
-            // Set checkbox states based on current consent
             const analyticsCheckbox = modal.querySelector('#cookie-analytics');
             const marketingCheckbox = modal.querySelector('#cookie-marketing');
             const socialCheckbox = modal.querySelector('#cookie-social');
@@ -246,7 +352,6 @@
             const modal = document.getElementById('cookie-settings-modal');
             if (!modal) return;
 
-            // Reset to default state (only necessary cookies)
             modal.querySelector('#cookie-analytics').checked = false;
             modal.querySelector('#cookie-marketing').checked = false;
             modal.querySelector('#cookie-social').checked = false;
@@ -257,7 +362,6 @@
                 this.hideSettings();
             }
             
-            // Focus management for modal
             if (e.key === 'Tab') {
                 this.handleModalTabbing(e);
             }
@@ -304,8 +408,6 @@
             this.hideBanner();
             this.hideSettings();
             this.showConfirmation('✅ Alle Cookies akzeptiert');
-            
-            // Track consent event
             this.trackConsentEvent('accept_all');
             
             console.log('✅ Alle Cookies akzeptiert');
@@ -325,8 +427,6 @@
             this.hideBanner();
             this.hideSettings();
             this.showConfirmation('❌ Nur notwendige Cookies aktiv');
-            
-            // Track consent event
             this.trackConsentEvent('reject_all');
             
             console.log('❌ Nur notwendige Cookies akzeptiert');
@@ -354,7 +454,6 @@
             this.hideBanner();
             this.showConfirmation('💾 Cookie-Einstellungen gespeichert');
             
-            // Track consent event
             this.trackConsentEvent('save_custom', {
                 analytics: analyticsCheckbox ? analyticsCheckbox.checked : false,
                 marketing: marketingCheckbox ? marketingCheckbox.checked : false,
@@ -370,7 +469,7 @@
             if (fab) {
                 setTimeout(() => {
                     fab.classList.remove('hidden');
-                }, 3000); // Show after 3 seconds
+                }, 3000);
             }
         }
 
@@ -419,20 +518,16 @@
         showSettings() {
             const modal = document.getElementById('cookie-settings-modal');
             if (modal) {
-                // Load current state
                 this.loadConsentState();
                 
-                // Show modal using HTML5 dialog API
                 if (modal.showModal) {
                     modal.classList.remove('hidden');
                     modal.showModal();
                 } else {
-                    // Fallback for browsers without dialog support
                     modal.classList.remove('hidden');
                     modal.style.display = 'flex';
                 }
                 
-                // Focus management
                 setTimeout(() => {
                     const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
                     if (firstFocusable) {
@@ -445,17 +540,14 @@
         hideSettings() {
             const modal = document.getElementById('cookie-settings-modal');
             if (modal) {
-                // Close modal using HTML5 dialog API
                 if (modal.close) {
                     modal.close();
                 } else {
-                    // Fallback for browsers without dialog support
                     modal.style.display = 'none';
                 }
                 
                 modal.classList.add('hidden');
                 
-                // Close all expanded details
                 modal.querySelectorAll('.cookie-details.expanded').forEach(details => {
                     details.classList.remove('expanded');
                 });
@@ -467,7 +559,6 @@
         }
 
         showConfirmation(message) {
-            // Use existing confirmation element or create one
             let confirmation = document.getElementById('cookie-confirmation');
             
             if (!confirmation) {
@@ -507,7 +598,6 @@
                 
                 const consent = JSON.parse(stored);
                 
-                // Validate consent structure and expiry (1 year)
                 if (!consent.timestamp || !consent.necessary) return null;
                 
                 const consentAge = Date.now() - new Date(consent.timestamp).getTime();
@@ -571,60 +661,36 @@
             return {
                 consent: this.consent,
                 complianceMode: this.complianceMode,
-                version: '2.3.0',
-                config: CONFIG
+                version: '2.4.0',
+                config: CONFIG,
+                loader: this.loader
             };
         }
     }
 
     // ==========================================================================
-    // AUTO-INITIALISIERUNG - Compatible with Cookie Banner Loader
+    // AUTO-INITIALISIERUNG
     // ==========================================================================
     
     function initializeCookieBanner() {
-        // Warten auf Cookie-Banner HTML (falls über Loader geladen)
-        const checkBannerExists = () => {
-            const banner = document.getElementById('cookie-banner');
-            if (banner && typeof window.CookieConsent === 'undefined') {
-                window.CookieConsent = new CookieConsentManager();
-                
-                // Globale API
-                window.CookieBanner = {
-                    show: () => window.CookieConsent.show(),
-                    showSettings: () => window.CookieConsent.showPreferences(),
-                    hasConsent: (category) => window.CookieConsent.hasConsent(category),
-                    setConsent: (category, granted) => window.CookieConsent.setConsent(category, granted),
-                    getConsent: () => window.CookieConsent.getConsent(),
-                    reset: () => window.CookieConsent.reset(),
-                    debug: () => window.CookieConsent.getDebugInfo()
-                };
-                
-                console.log('🍪 Cookie Banner v2.3 Production Edition geladen');
-                return true;
-            }
-            return false;
-        };
-
-        // Sofort prüfen (falls Banner bereits im DOM ist)
-        if (!checkBannerExists()) {
-            // Auf cookieBannerLoaded Event warten
-            document.addEventListener('cookieBannerLoaded', () => {
-                setTimeout(checkBannerExists, 100); // Kurze Verzögerung für DOM-Update
-            });
+        if (typeof window.CookieConsent === 'undefined') {
+            window.CookieConsent = new CookieConsentManager();
             
-            // Fallback: Periodisch prüfen für max. 5 Sekunden
-            let attempts = 0;
-            const maxAttempts = 25; // 5 Sekunden bei 200ms Intervall
+            // Globale API
+            window.CookieBanner = {
+                show: () => window.CookieConsent.show(),
+                showSettings: () => window.CookieConsent.showPreferences(),
+                hasConsent: (category) => window.CookieConsent.hasConsent(category),
+                setConsent: (category, granted) => window.CookieConsent.setConsent(category, granted),
+                getConsent: () => window.CookieConsent.getConsent(),
+                reset: () => window.CookieConsent.reset(),
+                debug: () => window.CookieConsent.getDebugInfo()
+            };
             
-            const intervalCheck = setInterval(() => {
-                attempts++;
-                if (checkBannerExists() || attempts >= maxAttempts) {
-                    clearInterval(intervalCheck);
-                    if (attempts >= maxAttempts && !window.CookieConsent) {
-                        console.warn('🍪 Cookie Banner HTML nicht gefunden - läuft ohne Banner-UI');
-                    }
-                }
-            }, 200);
+            // Starte Initialisierung
+            window.CookieConsent.init();
+            
+            console.log('🍪 Cookie Banner v2.4 All-in-One System geladen');
         }
     }
 
