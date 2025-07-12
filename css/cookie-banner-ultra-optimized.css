@@ -130,15 +130,15 @@
   -webkit-backdrop-filter: var(--cb-blur);
   backdrop-filter: var(--cb-blur);
   color: var(--cb-text);
-  padding: 2rem;
+  padding: .5rem 1.5rem;
   z-index: var(--cb-z-banner);
   border-top: 1px solid var(--cb-border);
-  border-radius: var(--cb-radius) var(--cb-radius) 0 0;
+  border-radius: 0;
   transform: translateY(100%);
   transition: transform var(--cb-transition);
   will-change: transform;
   background-image: var(--cb-gradient-glass);
-  box-shadow: var(--cb-shadow);
+  box-shadow: 0 -2px 8px rgba(0,0,0,.2);
   font-family: var(--cb-font-family);
 }
 
@@ -191,26 +191,32 @@
   box-shadow: var(--cb-shadow);
 }
 
-/* Banner Layout - Grid Optimized */
+/* Banner Layout - Flacher Streifen */
 .cookie-banner-content {
   max-width: 1200px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .cookie-banner-icon {
-  font-size: 2.5rem;
+  font-size: 1.2rem;
   animation: bounce 3s infinite;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,.1));
+  flex-shrink: 0;
+}
+
+.cookie-banner-text {
+  flex: 1;
+  min-width: 250px;
 }
 
 .cookie-banner-text h3 {
-  margin: 0 0 .75rem;
-  font-size: 1.25rem;
-  font-weight: 700;
+  margin: 0 0 .15rem;
+  font-size: .85rem;
+  font-weight: 600;
   background: var(--cb-gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -218,16 +224,16 @@
 }
 
 .cookie-banner-text p {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-  line-height: 1.6;
+  margin: 0;
+  font-size: .75rem;
+  line-height: 1.2;
   color: var(--cb-muted);
 }
 
 .cookie-banner-links {
   display: flex;
-  gap: 1.5rem;
-  margin-top: .75rem;
+  gap: .75rem;
+  margin-top: .25rem;
   flex-wrap: wrap;
 }
 
@@ -258,33 +264,35 @@
 
 .cookie-banner-actions {
   display: flex;
-  gap: .75rem;
-  flex-wrap: wrap;
+  gap: .4rem;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
-/* Close Button */
+/* Close Button - Angepasst für flachen Streifen */
 .cookie-banner-close {
   position: absolute;
-  top: -12px;
-  right: 1rem;
+  top: 50%;
+  right: .75rem;
+  transform: translateY(-50%);
   background: var(--cb-secondary);
   color: white;
   border: none;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.2rem;
+  width: 24px;
+  height: 24px;
+  font-size: .85rem;
   cursor: pointer;
   transition: var(--cb-transition);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--cb-shadow);
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
 }
 
 .cookie-banner-close:hover {
   background: var(--cb-secondary-hover);
-  transform: scale(1.1);
+  transform: translateY(-50%) scale(1.1);
 }
 
 /* Progress Bar */
@@ -306,27 +314,27 @@
   transition: width var(--cb-transition);
 }
 
-/* Button System - Website-angepasst */
+/* Button System - Flacher Streifen optimiert */
 .cookie-btn {
   margin: 0;
-  padding: .875rem 1.75rem;
+  padding: .35rem .9rem;
   border: 2px solid transparent;
   border-radius: var(--cb-radius-sm);
   font-weight: 600;
-  font-size: .95rem;
+  font-size: .75rem;
   font-family: var(--cb-font-family);
   cursor: pointer;
   transition: var(--cb-transition);
   white-space: nowrap;
-  min-width: 140px;
+  min-width: 80px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
+  gap: .25rem;
   text-decoration: none;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--cb-shadow);
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
 }
 
 .cookie-btn::before {
@@ -350,8 +358,8 @@
 }
 
 .cookie-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--cb-shadow-lg);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,.2);
 }
 
 .cookie-btn-secondary {
@@ -360,8 +368,8 @@
 }
 
 .cookie-btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--cb-shadow-lg);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,.2);
 }
 
 .cookie-btn-outline {
@@ -788,163 +796,171 @@
   }
 }
 
-/* Focus Management */
-.cookie-modal-close:focus,
-.cookie-details-toggle:focus,
-.cookie-btn:focus {
-  outline: 2px solid var(--cb-primary);
-  outline-offset: 2px;
-}
-
-/* Animation for Details Expansion */
-@keyframes expandDetails {
-  from {
-    max-height: 0;
-    opacity: 0;
-  }
-  to {
-    max-height: 500px;
-    opacity: 1;
-  }
-}
-
-.cookie-details.expanding {
-  animation: expandDetails var(--cb-transition) ease-out;
-}
-
-/* Animations - GPU Optimized */
-@keyframes slideUp {
-  0% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  60% {
-    transform: translateY(-10px);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes bounce {
-  0%,20%,50%,80%,100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-8px);
-  }
-  60% {
-    transform: translateY(-4px);
-  }
-}
-
-/* Responsive Design - Mobile First für Website */
-@media (max-width:1024px) {
+/* Sehr kleine Geräte und iPhone SE - Ultra kompakt */
+@media (max-width:360px) {
   .cookie-banner {
-    padding: 1.5rem;
+    padding: .35rem .5rem;
+    padding-bottom: calc(.35rem + env(safe-area-inset-bottom));
   }
   .cookie-banner-content {
-    gap: 1.5rem;
-  }
-}
-
-@media (max-width:768px) {
-  .cookie-banner {
-    padding: 1.25rem;
-    border-radius: var(--cb-radius) var(--cb-radius) 0 0;
-  }
-  .cookie-banner-content {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
+    flex-direction: column;
+    gap: .35rem;
     text-align: center;
   }
+  .cookie-banner-text h3 {
+    font-size: .7rem;
+    margin-bottom: .05rem;
+  }
+  .cookie-banner-text p {
+    font-size: .65rem;
+    line-height: 1.0;
+  }
   .cookie-banner-actions {
+    flex-direction: row;
     justify-content: center;
     width: 100%;
-    flex-wrap: wrap;
+    gap: .2rem;
   }
   .cookie-btn {
     flex: 1;
-    min-width: auto;
-    padding: 1rem 1.25rem;
+    padding: .25rem .4rem;
+    font-size: .65rem;
+    min-width: 45px;
   }
-  .cookie-modal {
-    padding: 1rem;
+  .cookie-banner-icon {
+    font-size: .9rem;
+    margin-bottom: .15rem;
   }
-  .cookie-modal-content {
-    max-height: 90vh;
-    border-radius: var(--cb-radius);
-  }
-  .cookie-fab {
-    bottom: 6rem;
-    width: 56px;
-    height: 56px;
+  .cookie-banner-close {
+    top: .25rem;
+    right: .3rem;
+    width: 18px;
+    height: 18px;
+    font-size: .6rem;
   }
 }
 
-@media (max-width:480px) {
+/* iPhone X/11/12/13/14/15 spezifische Optimierungen */
+@media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3),
+       screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
+       screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
   .cookie-banner {
-    padding: 1rem;
+    /* Extra Safe Area für iPhone mit Notch/Dynamic Island */
+    padding: .35rem .75rem;
+    padding-bottom: calc(.35rem + env(safe-area-inset-bottom) + 6px);
+    /* Verbesserte Haptik auf iPhone */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .cookie-btn {
+    /* Optimale Touch-Größe für iPhone - kompakter */
+    min-height: 36px;
+    min-width: 65px;
+    /* iOS-Style Buttons */
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* iPhone Plus/Max Geräte - Kompakter */
+@media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3),
+       screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+  .cookie-banner {
+    padding: .4rem .8rem;
+    padding-bottom: calc(.4rem + env(safe-area-inset-bottom) + 4px);
+  }
+  .cookie-banner-content {
+    gap: .4rem;
   }
   .cookie-banner-text h3 {
-    font-size: 1.125rem;
+    font-size: .8rem;
   }
   .cookie-banner-text p {
-    font-size: .9rem;
-    line-height: 1.5;
+    font-size: .7rem;
   }
   .cookie-btn {
-    padding: .875rem 1rem;
-    font-size: .9rem;
-  }
-  .cookie-modal-content {
-    border-radius: var(--cb-radius-sm);
-    max-height: 95vh;
+    padding: .3rem .6rem;
+    font-size: .7rem;
+    min-width: 60px;
   }
 }
 
-@media (max-width:360px) {
+/* Landscape Orientation für alle iPhones - Ultra kompakt */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .cookie-banner {
+    padding: .25rem .6rem;
+    padding-bottom: calc(.25rem + env(safe-area-inset-bottom));
+    padding-left: calc(.6rem + env(safe-area-inset-left));
+    padding-right: calc(.6rem + env(safe-area-inset-right));
+  }
+  .cookie-banner-content {
+    flex-direction: row;
+    gap: .3rem;
+    align-items: center;
+  }
+  .cookie-banner-text {
+    flex: 1;
+  }
+  .cookie-banner-text h3 {
+    font-size: .7rem;
+    margin-bottom: .05rem;
+  }
+  .cookie-banner-text p {
+    font-size: .65rem;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
   .cookie-banner-actions {
-    flex-direction: column;
-    width: 100%;
+    flex-shrink: 0;
+    gap: .25rem;
   }
   .cookie-btn {
-    width: 100%;
+    padding: .25rem .5rem;
+    font-size: .65rem;
+    min-width: 50px;
   }
-}
-
-/* Accessibility & Performance */
-@media (prefers-reduced-motion:reduce) {
-  .cookie-banner,
-  .cookie-modal,
-  .cookie-confirmation,
-  .cookie-fab,
-  .cookie-btn,
   .cookie-banner-icon {
-    animation: none;
-    transition: none;
+    font-size: .8rem;
+  }
+  .cookie-banner-close {
+    top: .15rem;
+    right: .15rem;
+    width: 14px;
+    height: 16px;
+    font-size: .6rem;
   }
 }
 
-@media (prefers-contrast:high) {
-  .cookie-banner,
-  .cookie-modal-content,
-  .cookie-category {
-    border: 2px solid currentColor;
+/* Desktop - Ultra kompakte Darstellung */
+@media (min-width: 1025px) {
+  .cookie-banner {
+    padding: .4rem 1.5rem;
+  }
+  .cookie-banner-content {
+    gap: .8rem;
+  }
+  .cookie-banner-text h3 {
+    font-size: .8rem;
+    margin-bottom: .1rem;
+  }
+  .cookie-banner-text p {
+    font-size: .7rem;
+    line-height: 1.1;
+  }
+  .cookie-banner-icon {
+    font-size: 1.1rem;
   }
   .cookie-btn {
-    border-width: 3px;
+    padding: .3rem .8rem;
+    font-size: .7rem;
+    min-width: 70px;
   }
-}
-
-/* Print Styles */
-@media print {
-  .cookie-banner,
-  .cookie-modal,
-  .cookie-confirmation,
-  .cookie-fab {
-    display: none!important;
+  .cookie-banner-close {
+    width: 22px;
+    height: 22px;
+    font-size: .8rem;
+    right: .6rem;
   }
 }
