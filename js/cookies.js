@@ -30,6 +30,7 @@
         googleAnalyticsId: 'G-S0587RQ4CN',
         storageKey: 'cookie-consent',
         bannerDelay: 1000,
+        debug: window.location.hostname === 'localhost' || window.location.search.includes('debug=true'),
         
         // DSGVO Länder (EU + UK)
         gdprCountries: [
@@ -60,6 +61,9 @@
                 
                 if (!this.hasConsent()) {
                     setTimeout(() => this.showBanner(), CONFIG.bannerDelay);
+                } else {
+                    // Show floating cookie button for settings access
+                    this.showFloatingButton();
                 }
                 
                 console.log('🍪 Cookie Banner v2.3 geladen');
@@ -71,18 +75,51 @@
         // COMPLIANCE DETECTION
         async detectCompliance() {
             try {
-                const response = await fetch('https://ipapi.co/json/', { timeout: 3000 });
+                // Cache geo-detection for 24h
+                const cacheKey = 'geo-detection-cache';
+                const cached = localStorage.getItem(cacheKey);
+                
+                if (cached) {
+                    const { data, timestamp } = JSON.parse(cached);
+                    const isValid = (Date.now() - timestamp) < 24 * 60 * 60 * 1000; // 24h
+                    
+                    if (isValid) {
+                        this.processComplianceData(data);
+                        return;
+                    }
+                }
+                
+                // Fetch with timeout and abort controller
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                
+                const response = await fetch('https://ipapi.co/json/', {
+                    signal: controller.signal,
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                clearTimeout(timeoutId);
                 const data = await response.json();
                 
-                if (CONFIG.gdprCountries.includes(data.country_code)) {
-                    this.complianceMode = 'gdpr';
-                    this.setBannerMode('gdpr-mode');
-                } else if (data.country_code === 'US' && CONFIG.ccpaStates.includes(data.region)) {
-                    this.complianceMode = 'ccpa';
-                    this.setBannerMode('ccpa-mode');
-                }
+                // Cache the result
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    data,
+                    timestamp: Date.now()
+                }));
+                
+                this.processComplianceData(data);
             } catch (error) {
                 console.log('🌍 Geo-Detection fehlgeschlagen, verwende Standard-Modus');
+            }
+        }
+
+        processComplianceData(data) {
+            if (CONFIG.gdprCountries.includes(data.country_code)) {
+                this.complianceMode = 'gdpr';
+                this.setBannerMode('gdpr-mode');
+            } else if (data.country_code === 'US' && CONFIG.ccpaStates.includes(data.region)) {
+                this.complianceMode = 'ccpa';
+                this.setBannerMode('ccpa-mode');
             }
         }
 
@@ -144,6 +181,9 @@
                 e.preventDefault();
                 this.showSettings();
             });
+            
+            // Floating Cookie Button
+            document.getElementById('cookie-fab')?.addEventListener('click', () => this.showSettings());
             
             // Keyboard Navigation
             document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -265,6 +305,9 @@
             this.hideSettings();
             this.showConfirmation('✅ Alle Cookies akzeptiert');
             
+            // Track consent event
+            this.trackConsentEvent('accept_all');
+            
             console.log('✅ Alle Cookies akzeptiert');
         }
 
@@ -282,6 +325,9 @@
             this.hideBanner();
             this.hideSettings();
             this.showConfirmation('❌ Nur notwendige Cookies aktiv');
+            
+            // Track consent event
+            this.trackConsentEvent('reject_all');
             
             console.log('❌ Nur notwendige Cookies akzeptiert');
         }
@@ -308,7 +354,47 @@
             this.hideBanner();
             this.showConfirmation('💾 Cookie-Einstellungen gespeichert');
             
+            // Track consent event
+            this.trackConsentEvent('save_custom', {
+                analytics: analyticsCheckbox ? analyticsCheckbox.checked : false,
+                marketing: marketingCheckbox ? marketingCheckbox.checked : false,
+                social: socialCheckbox ? socialCheckbox.checked : false
+            });
+            
             console.log('💾 Cookie-Einstellungen gespeichert:', this.consent);
+        }
+
+        // FLOATING BUTTON CONTROLS
+        showFloatingButton() {
+            const fab = document.getElementById('cookie-fab');
+            if (fab) {
+                setTimeout(() => {
+                    fab.classList.remove('hidden');
+                }, 3000); // Show after 3 seconds
+            }
+        }
+
+        hideFloatingButton() {
+            const fab = document.getElementById('cookie-fab');
+            if (fab) {
+                fab.classList.add('hidden');
+            }
+        }
+
+        // ANALYTICS TRACKING
+        trackConsentEvent(action, customData = {}) {
+            if (typeof window.gtag === 'function' && this.hasConsent('analytics')) {
+                window.gtag('event', 'cookie_consent', {
+                    event_category: 'Cookie Banner',
+                    event_label: action,
+                    consent_mode: this.complianceMode,
+                    custom_parameter: JSON.stringify(customData)
+                });
+                
+                if (CONFIG.debug) {
+                    console.log('📊 Tracked consent event:', action, customData);
+                }
+            }
         }
 
         // BANNER & MODAL CONTROLS
@@ -408,9 +494,26 @@
         loadConsent() {
             try {
                 const stored = localStorage.getItem(CONFIG.storageKey);
-                return stored ? JSON.parse(stored) : null;
+                if (!stored) return null;
+                
+                const consent = JSON.parse(stored);
+                
+                // Validate consent structure and expiry (1 year)
+                if (!consent.timestamp || !consent.necessary) return null;
+                
+                const consentAge = Date.now() - new Date(consent.timestamp).getTime();
+                const oneYear = 365 * 24 * 60 * 60 * 1000;
+                
+                if (consentAge > oneYear) {
+                    localStorage.removeItem(CONFIG.storageKey);
+                    console.log('🍪 Consent abgelaufen, erneute Zustimmung erforderlich');
+                    return null;
+                }
+                
+                return consent;
             } catch (error) {
                 console.error('🍪 Consent laden fehlgeschlagen:', error);
+                localStorage.removeItem(CONFIG.storageKey);
                 return null;
             }
         }

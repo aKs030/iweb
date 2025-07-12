@@ -56,6 +56,7 @@
   --cb-z-banner: 10000;
   --cb-z-modal: 10001;
   --cb-z-overlay: 9999;
+  --cb-z-fab: 9998;
   
   /* Transitions - Performance Optimized */
   --cb-transition: .35s cubic-bezier(.4,0,.2,1);
@@ -121,6 +122,19 @@
 
 /* Base Styles */
 .hidden{display:none!important}
+
+/* Reduced motion for users with accessibility needs */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .cookie-banner-icon {
+    animation: none !important;
+  }
+}
 
 /* Cookie Banner - Ultra Optimized */
 .cookie-banner {
@@ -962,5 +976,50 @@
     height: 22px;
     font-size: .8rem;
     right: .6rem;
+  }
+}
+
+/* Floating Action Button - Kompakt und Website-angepasst */
+.cookie-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 48px;
+  height: 48px;
+  background: var(--cb-gradient-primary);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: var(--cb-z-fab);
+  box-shadow: var(--cb-shadow);
+  transition: var(--cb-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--cb-font-family);
+  -webkit-backdrop-filter: var(--cb-blur);
+  backdrop-filter: var(--cb-blur);
+}
+
+.cookie-fab:hover {
+  transform: scale(1.1);
+  box-shadow: var(--cb-shadow-lg);
+}
+
+.cookie-fab.hidden {
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .cookie-fab {
+    bottom: 1rem;
+    right: 1rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
   }
 }
