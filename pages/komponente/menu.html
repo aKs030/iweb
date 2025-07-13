@@ -3,7 +3,7 @@
 
 <header class="site-header" role="banner">
   <!-- Logo mit verbesserter Accessibility -->
-  <a href="/index.html" aria-label="Zur Startseite navigieren" title="Zur Startseite">
+  <a href="/index.html" aria-label="Navigate to the homepage" title="Go to homepage">
     <span class="site-logo__container">
       <span class="site-logo elegant-logo" id="site-title" aria-live="polite">
         <!-- Wird per JavaScript gefüllt -->
@@ -14,60 +14,111 @@
   <!-- Hamburger-Button mit verbesserter Accessibility -->
   <button
     class="site-menu__toggle"
-    aria-label="Hauptnavigation umschalten"
+    aria-label="Toggle main navigation"
     aria-controls="main-nav"
     aria-expanded="false"
     type="button"
   >
     <span class="site-menu__hamburger" aria-hidden="true"></span>
-    <span class="sr-only">Menü öffnen/schließen</span>
+    <span class="sr-only">Open/close menu</span>
   </button>
 
-  <!-- Navigation mit korrigierter Accessibility -->
-  <nav id="main-nav" class="site-menu" role="navigation" aria-label="Hauptnavigation">
+  <!-- Navigation mit optimierter Struktur -->
+  <nav id="main-nav" class="site-menu" role="navigation" aria-label="Main navigation">
     <ul class="site-menu__list">
+      <!-- Home -->
       <li>
         <a href="/index.html" tabindex="0">
           <i class="fa-solid fa-house" aria-hidden="true"></i>
-          <span>Startseite</span>
+          <span>Home</span>
         </a>
       </li>
-      <li>
-        <a href="/pages/album.html" tabindex="0">
-          <i class="fa-solid fa-images" aria-hidden="true"></i>
-          <span>Fotogalerie</span>
-        </a>
-      </li>
+      
+      <!-- About Me -->
       <li>
         <a href="/pages/ubermich.html" tabindex="0">
           <i class="fa-solid fa-user" aria-hidden="true"></i>
-          <span>Über mich</span>
+          <span>About Me</span>
         </a>
       </li>
+      
+      <!-- Gallery (Direct Link) -->
+      <li>
+        <a href="/pages/album.html" tabindex="0">
+          <i class="fa-solid fa-images" aria-hidden="true"></i>
+          <span>Gallery</span>
+        </a>
+      </li>
+      
+      <!-- Games (Direct Link) -->
+      <li>
+        <a href="/pages/index-game.html" tabindex="0">
+          <i class="fa-solid fa-gamepad" aria-hidden="true"></i>
+          <span>Games</span>
+        </a>
+      </li>
+
+      <!-- Tools & Features -->
       <li class="has-submenu">
         <a
           href="#"
           aria-haspopup="true"
           aria-expanded="false"
           tabindex="0"
-          id="spiele-menu"
-          aria-describedby="spiele-menu-desc"
+          id="tools-menu"
+          aria-describedby="tools-menu-desc"
         >
-          <i class="fa-solid fa-gamepad" aria-hidden="true"></i>
-          <span>Spiele</span>
+          <i class="fa-solid fa-tools" aria-hidden="true"></i>
+          <span>Tools</span>
         </a>
-        <span id="spiele-menu-desc" class="sr-only">Untermenü mit Spielen und Anwendungen</span>
-        <ul class="submenu" aria-labelledby="spiele-menu">
-          <li>
-            <a href="/pages/index-game.html" tabindex="-1">
-              <i class="fa-solid fa-joystick" aria-hidden="true"></i>
-              <span>Spiele-Übersicht</span>
-            </a>
-          </li>
+        <span id="tools-menu-desc" class="sr-only">Useful tools and features</span>
+        <ul class="submenu" aria-labelledby="tools-menu">
           <li>
             <a href="/pages/features/wetter.html" tabindex="-1">
               <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
-              <span>Wetter</span>
+              <span>Weather App</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/features/editor.html" tabindex="-1">
+              <i class="fa-solid fa-code" aria-hidden="true"></i>
+              <span>Code Editor</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Information -->
+      <li class="has-submenu">
+        <a
+          href="/pages/komponente/kontakt.html"
+          aria-haspopup="true"
+          aria-expanded="false"
+          tabindex="0"
+          id="contact-menu"
+          aria-describedby="contact-menu-desc"
+        >
+          <i class="fa-solid fa-info-circle" aria-hidden="true"></i>
+          <span>Information</span>
+        </a>
+        <span id="contact-menu-desc" class="sr-only">Contact, legal notice and further information</span>
+        <ul class="submenu" aria-labelledby="contact-menu">
+          <li>
+            <a href="/pages/komponente/kontakt.html" tabindex="-1">
+              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+              <span>Contact</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/komponente/impressum.html" tabindex="-1">
+              <i class="fa-solid fa-info-circle" aria-hidden="true"></i>
+              <span>Legal Notice</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/komponente/datenschutz.html" tabindex="-1">
+              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+              <span>Privacy</span>
             </a>
           </li>
         </ul>
@@ -81,5 +132,5 @@
 
 <!-- Screen Reader nur Text für bessere Accessibility -->
 <div class="sr-only" id="nav-instructions">
-  Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Enter oder Leertaste zum Öffnen von Untermenüs. Escape schließt alle Menüs.
+  Use the arrow keys to navigate. Press Enter or Space to open submenus. Escape closes all menus.
 </div>

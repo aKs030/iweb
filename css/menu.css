@@ -402,6 +402,29 @@ main { margin-top: 80px; padding: 1rem; }
   color: var(--color-link);
 }
 
+/* Styling für Submenu-Kategorien und Trennlinien */
+.submenu-category {
+  padding: 0.5rem 1rem 0.2rem;
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  pointer-events: none; /* Nicht klickbar */
+}
+
+.submenu-divider {
+  list-style: none;
+  padding: 0.3rem 0;
+}
+
+.submenu-divider hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  margin: 0;
+}
+
 /* ===== Performance-Optimierungen ===== */
 .site-menu__list .submenu,
 .site-menu__toggle,
