@@ -83,6 +83,17 @@
                 document.dispatchEvent(new CustomEvent('cookieBannerLoaded', {
                     detail: { config }
                 }));
+                
+                // Überprüfe ob FAB im DOM vorhanden ist
+                setTimeout(() => {
+                    const fab = document.getElementById('cookie-fab');
+                    if (CONFIG.debug) {
+                        console.log('🍪 [DEBUG] Nach dem Laden - FAB im DOM:', !!fab);
+                    }
+                    if (!fab) {
+                        console.warn('🍪 [WARNING] FAB nicht im geladenen HTML gefunden!');
+                    }
+                }, 500);
 
                 return true;
             } catch (error) {
@@ -177,6 +188,9 @@
                 // Zuerst Cookie-Banner laden
                 await this.loader.init();
                 
+                // Kurz warten, damit DOM vollständig geladen ist
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
                 // Dann Cookie-Management initialisieren
                 await this.detectCompliance();
                 this.setupGoogleAnalytics();
@@ -185,7 +199,34 @@
                 if (!this.hasConsent()) {
                     setTimeout(() => this.showBanner(), CONFIG.bannerDelay);
                 } else {
+                    if (CONFIG.debug) {
+                        console.log('🍪 [DEBUG] User hat bereits Zustimmung erteilt, zeige FAB');
+                    }
                     this.showFloatingButton();
+                }
+                
+                // In Debug-Modus: FAB immer anzeigen nach kurzer Verzögerung
+                if (CONFIG.debug) {
+                    setTimeout(() => {
+                        console.log('🍪 [DEBUG] Force-zeige FAB für Debug-Zwecke');
+                        this.showFloatingButton();
+                    }, 2000);
+                }
+                
+                // Force FAB anzeigen für Debug-Zwecke
+                if (CONFIG.debug) {
+                    setTimeout(() => {
+                        const fab = document.getElementById('cookie-fab');
+                        if (fab) {
+                            console.log('🍪 [DEBUG] FAB-Status:', {
+                                element: !!fab,
+                                classes: fab.className,
+                                computedDisplay: window.getComputedStyle(fab).display,
+                                computedVisibility: window.getComputedStyle(fab).visibility,
+                                computedOpacity: window.getComputedStyle(fab).opacity
+                            });
+                        }
+                    }, 3000);
                 }
                 
                 console.log('🍪 Cookie Banner v2.4 All-in-One geladen');
@@ -471,11 +512,35 @@
 
         // FLOATING BUTTON CONTROLS
         showFloatingButton() {
-            const fab = document.getElementById('cookie-fab');
+            let fab = document.getElementById('cookie-fab');
+            
+            // Falls FAB nicht gefunden wird, versuche Fallback
+            if (!fab) {
+                fab = this.createFloatingButtonFallback();
+            }
+            
+            if (CONFIG.debug) {
+                console.log('🍪 [DEBUG] Versuche FAB anzuzeigen:', fab ? 'Element gefunden' : 'Element nicht gefunden');
+            }
             if (fab) {
                 setTimeout(() => {
                     fab.classList.remove('hidden');
+                    if (CONFIG.debug) {
+                        console.log('🍪 [DEBUG] FAB angezeigt, CSS-Klassen:', fab.className);
+                    }
                 }, 1000);
+            } else {
+                console.warn('🍪 [WARNING] Cookie FAB Element nicht gefunden!');
+                // Versuche das Element nach kurzer Verzögerung erneut zu finden
+                setTimeout(() => {
+                    const retryFab = document.getElementById('cookie-fab') || this.createFloatingButtonFallback();
+                    if (retryFab) {
+                        retryFab.classList.remove('hidden');
+                        console.log('🍪 [INFO] FAB nach Retry erfolgreich angezeigt');
+                    } else {
+                        console.error('🍪 [ERROR] FAB Element auch nach Retry nicht gefunden!');
+                    }
+                }, 2000);
             }
         }
 
@@ -484,6 +549,30 @@
             if (fab) {
                 fab.classList.add('hidden');
             }
+        }
+
+        // FALLBACK: FAB manuell erstellen falls nicht im HTML vorhanden
+        createFloatingButtonFallback() {
+            let fab = document.getElementById('cookie-fab');
+            if (fab) return fab; // FAB bereits vorhanden
+
+            console.log('🍪 [INFO] Erstelle FAB Fallback-Element');
+            
+            fab = document.createElement('button');
+            fab.id = 'cookie-fab';
+            fab.className = 'cookie-fab hidden';
+            fab.setAttribute('type', 'button');
+            fab.setAttribute('aria-label', 'Cookie-Einstellungen öffnen');
+            fab.innerHTML = '🍪';
+            fab.addEventListener('click', () => this.showSettings());
+            
+            document.body.appendChild(fab);
+            
+            if (CONFIG.debug) {
+                console.log('🍪 [DEBUG] FAB Fallback erstellt und zum DOM hinzugefügt');
+            }
+            
+            return fab;
         }
 
         // ANALYTICS TRACKING
@@ -690,7 +779,24 @@
                 setConsent: (category, granted) => window.CookieConsent.setConsent(category, granted),
                 getConsent: () => window.CookieConsent.getConsent(),
                 reset: () => window.CookieConsent.reset(),
-                debug: () => window.CookieConsent.getDebugInfo()
+                debug: () => window.CookieConsent.getDebugInfo(),
+                showFAB: () => window.CookieConsent.showFloatingButton(),
+                hideFAB: () => window.CookieConsent.hideFloatingButton(),
+                testFAB: () => {
+                    console.log('🍪 [TEST] FAB Test gestartet...');
+                    const fab = document.getElementById('cookie-fab') || window.CookieConsent.createFloatingButtonFallback();
+                    if (fab) {
+                        fab.classList.remove('hidden');
+                        fab.style.display = 'flex';
+                        fab.style.position = 'fixed';
+                        fab.style.bottom = '2rem';
+                        fab.style.right = '2rem';
+                        fab.style.zIndex = '9998';
+                        console.log('🍪 [TEST] FAB manuell angezeigt');
+                        return true;
+                    }
+                    return false;
+                }
             };
             
             // Starte Initialisierung
