@@ -16,7 +16,7 @@ class WebsiteErrorHandler {
         this.isProduction = window.location.hostname !== 'localhost';
         
         this.setupGlobalHandlers();
-        this.setupPerformanceMonitoring();
+        // Performance monitoring is handled by dedicated performance-monitor-enhanced.js
         
         console.log('Enhanced Error Handler initialized');
     }
@@ -65,53 +65,6 @@ class WebsiteErrorHandler {
                 });
             }
         }, true);
-    }
-    
-    /**
-     * Setup performance monitoring
-     */
-    setupPerformanceMonitoring() {
-        // Monitor long tasks
-        if ('PerformanceObserver' in window) {
-            try {
-                const observer = new PerformanceObserver((list) => {
-                    list.getEntries().forEach((entry) => {
-                        if (entry.duration > 50) { // Tasks longer than 50ms
-                            this.handleError({
-                                type: 'performance',
-                                message: `Long task detected: ${entry.duration}ms`,
-                                duration: entry.duration,
-                                startTime: entry.startTime,
-                                timestamp: Date.now()
-                            });
-                        }
-                    });
-                });
-                
-                observer.observe({ entryTypes: ['longtask'] });
-            } catch (error) {
-                console.warn('PerformanceObserver not fully supported:', error.message);
-            }
-        }
-        
-        // Monitor memory usage (if available)
-        if ('memory' in performance) {
-            setInterval(() => {
-                const memory = performance.memory;
-                const memoryUsage = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
-                
-                if (memoryUsage > 0.9) { // 90% memory usage
-                    this.handleError({
-                        type: 'memory',
-                        message: `High memory usage: ${Math.round(memoryUsage * 100)}%`,
-                        usedHeapSize: memory.usedJSHeapSize,
-                        totalHeapSize: memory.totalJSHeapSize,
-                        heapSizeLimit: memory.jsHeapSizeLimit,
-                        timestamp: Date.now()
-                    });
-                }
-            }, 30000); // Check every 30 seconds
-        }
     }
     
     /**

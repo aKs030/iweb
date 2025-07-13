@@ -129,3 +129,45 @@ Das **iweb-7 Projekt** ist jetzt **production-clean** mit:
 ---
 
 *Bereinigung abgeschlossen: 13. Juli 2025*
+
+# Code-Duplikate Bereinigung - Abgeschlossen
+
+## ✅ Durchgeführte Optimierungen (13. Juli 2025)
+
+### 1. Error Handler Konsolidierung
+- ❌ **Entfernt**: `js/error-handler.js` (veraltete Version)
+- ✅ **Behalten**: `js/enhanced-error-handler.js` (Enterprise-Version)
+- 🔧 **Performance-Monitoring entfernt** aus Error Handler (wird von separater Klasse verwaltet)
+
+### 2. Copyright-Jahr Duplikate bereinigt
+- ✅ **Zentralisiert**: Copyright-Jahr Aktualisierung nur noch in `menu.js`
+- ❌ **Entfernt**: Doppelte Implementierung aus `footer.js`
+
+### 3. DOMContentLoaded Events optimiert
+- ✅ **Neu**: `js/main-init.js` - Zentrale Initialisierung aller Module
+- 🔧 **API**: `window.onWebsiteReady(moduleName, initFunction)` für andere Scripts
+- 📊 **Vorteile**: Koordinierte Initialisierung, bessere Fehlerbehandlung
+
+### 4. Script-Loading optimiert
+- ✅ **Reihenfolge**: main-init.js lädt vor allen anderen Scripts
+- ❌ **Entfernt**: Verweise auf nicht-existierende error-handler.js
+- 🚀 **Performance**: Reduzierte Script-Redundanz
+
+## 📊 Ergebnisse
+- **-1 Datei**: error-handler.js entfernt
+- **-50+ Zeilen**: Duplikate Code entfernt
+- **+1 System**: Zentrale Initialisierung
+- **+Performance**: Weniger redundante Event-Listener
+
+## 🔄 Migration für andere Entwickler
+```javascript
+// Alt: Direkte DOMContentLoaded Events
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialisierung
+});
+
+// Neu: Zentrale Registrierung  
+window.onWebsiteReady('ModuleName', () => {
+    // Initialisierung
+});
+```
