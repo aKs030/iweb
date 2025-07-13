@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8">
   <!-- Optimierter Viewport: Keine Skalierung -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Für iOS: Web-App-Modus -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
@@ -126,7 +126,7 @@ button:active {
       margin: 0 auto;
       display: block;
     }
-  
+
     /* ===========================
        Scoreboard & Buttons
        =========================== */
@@ -349,18 +349,18 @@ button:active {
       <div id="canvas-wrapper">
         <canvas id="tetris" width="200" height="400"></canvas>
       </div>
-      
-      
+
+
       <div class="control-row">
-        <button id="pause-btn">
+        <button type="button" id="pause-btn">
           <i class="fas fa-pause"></i>
           <span>Pause</span>
         </button>
-        <button id="reset-btn">
+        <button type="button" id="reset-btn">
           <i class="fas fa-redo"></i>
           <span>Neustart</span>
         </button>
-        <button id="ghost-toggle-btn">
+        <button type="button" id="ghost-toggle-btn">
           <i class="fas fa-ghost"></i>
           <span>Ghost: An</span>
         </button>
@@ -370,24 +370,24 @@ button:active {
       <div id="controls-wrapper">
         <div id="controls">
           <div class="control-row">
-            <button id="rotate-btn" class="control-button" type="button" title="Rotate Tetromino">
-              <i class="fas fa-sync-alt"></i>
+            <button id="rotate-btn" class="control-button" type="button" title="Rotate Tetromino" aria-label="Tetromino drehen">
+              <i class="fas fa-sync-alt" aria-hidden="true"></i>
             </button>
           </div>
           <div class="control-row">
-            <button id="left-btn" class="control-button" type="button" title="Move Left">
-              <i class="fas fa-chevron-left"></i>
+            <button id="left-btn" class="control-button" type="button" title="Move Left" aria-label="Nach links bewegen">
+              <i class="fas fa-chevron-left" aria-hidden="true"></i>
             </button>
-            <button id="down-btn" class="control-button" type="button" title="Move Down">
-              <i class="fas fa-chevron-down"></i>
+            <button id="down-btn" class="control-button" type="button" title="Move Down" aria-label="Nach unten bewegen">
+              <i class="fas fa-chevron-down" aria-hidden="true"></i>
             </button>
-            <button id="right-btn" class="control-button" type="button" title="Move Right">
-              <i class="fas fa-chevron-right"></i>
+            <button id="right-btn" class="control-button" type="button" title="Move Right" aria-label="Nach rechts bewegen">
+              <i class="fas fa-chevron-right" aria-hidden="true"></i>
             </button>
           </div>
           <div class="control-row">
-            <button id="drop-btn" class="control-button" type="button" title="Drop Tetromino">
-              <i class="fas fa-arrow-down"></i>
+            <button id="drop-btn" class="control-button" type="button" title="Drop Tetromino" aria-label="Tetromino fallen lassen">
+              <i class="fas fa-arrow-down" aria-hidden="true"></i>
             </button>
           </div>
         </div>
@@ -402,7 +402,7 @@ button:active {
           <h3>Hold</h3>
           <canvas id="hold" width="80" height="80"></canvas>
           <div class="button-row">
-            <button id="hold-btn">
+            <button type="button" id="hold-btn">
               <i class="fas fa-hand-paper"></i>
               <span>Hold</span>
             </button>

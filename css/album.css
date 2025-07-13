@@ -31,7 +31,7 @@ main {
     min-height: 0; /* Verhindert Überlauf */
     height: 100%;
     box-sizing: border-box;
-    
+
 }
 
 .gallery-section {

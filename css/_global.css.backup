@@ -38,13 +38,13 @@ p, a, li, span, label {
 
   --color-bg-secondary: #444; /* viewport-box index *//*   --color-bg-secondary: #444; Sekundäre Hintergrundfarbe (z.B. für Karten) */
   --color-text-main: #f5f5f5; /* Haupttextfarbe */
-  --color-text-muted: rgba(245, 245, 245, 60%); /* Gedämpfte Textfarbe */
-  --color-decor: #fff; /* Dekorative Elemente */
+  --color-text-muted: rgba(245, 245, 245, 0.6); /* Gedämpfte Textfarbe */
+  --color-decor: #ffffff; /* Dekorative Elemente */
   --color-accent: #3A85FF; /* Primäre Akzentfarbe *//*   --color-accent: rgba(255, 204, 41, 0.9); Primäre Akzentfarbe */
 
   --color-accent-hover: rgba(255, 204, 41, 1); /* Akzentfarbe beim Hover */
-  --color-shadow-light: rgba(255, 255, 255, 30%); /* Heller Schatten (z.B. für leichte Effekte) */
-  --color-shadow-dark: color-mix(in srgb, black 25%, transparent); /* Dunklerer Schatten (z.B. für Karten und Boxen) */
+  --color-shadow-light: rgba(255, 255, 255, 0.3); /* Heller Schatten (z.B. für leichte Effekte) */
+  --color-shadow-dark: rgba(0, 0, 0, 0.25); /* Dunklerer Schatten (z.B. für Karten und Boxen) */
   --color-card-icon: var(--color-text-muted); /* Farbe für Icons auf Karten */
   --color-highlight: #007bff; /* Für spezifische Hervorhebungen (ursprünglich) */
   --color-link: #61dafb; /* Neue Farbe für Links, aus bereitgestelltem Snippet */
@@ -63,14 +63,14 @@ p, a, li, span, label {
 
   --font-size-h1: clamp(1.7rem, 2.5vw + 1rem, 3rem);
   --font-size-h2: clamp(1.4rem, 2vw + 0.8rem, 2.5rem);
-  --font-size-h3: clamp(1.2rem, 1.8vw + 60%rem, 2.1rem);
+  --font-size-h3: clamp(1.2rem, 1.8vw + 0.6rem, 2.1rem);
   --font-size-h4: clamp(1.05rem, 1.5vw + 0.4rem, 1.8rem);
   --font-size-p: clamp(0.95rem, 0.4vw + 0.85rem, 1.1rem); /* Für Absätze und Listenpunkte */
   --font-size-lead: clamp(1rem, 0.5vw + 0.85rem, 1.2rem); /* Für Lead-Texte */
 
   /* Zusätzliche Schriftgrößen für mobile Footer/Boxen */
   --font-size-p-small: 0.82rem;
-  --font-size-p-xsmall: 60%8rem;
+  --font-size-p-xsmall: 0.68rem;
 
   /* Abstände und Layout-Größen (jetzt auch mit clamp für zusätzliche Fluidität, optional) */
   --spacing-xs: clamp(0.2rem, 0.5vw, 0.4rem);
@@ -85,7 +85,7 @@ p, a, li, span, label {
   --container-padding-inline: clamp(1rem, 2.5vw, 6rem); /* Horizontaler Container-Abstand */
 
   /* Übergänge & Animationen */
-  --transition-speed: 30%5s;
+  --transition-speed: 0.35s;
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Spezifische Card-Variablen */
@@ -106,11 +106,11 @@ p, a, li, span, label {
   --card-icon-title-size-max: 1.25rem;
 
   --card-title-size-min: 1rem;
-  --card-title-size-preferred: 2.2vmin + 30%rem;
+  --card-title-size-preferred: 2.2vmin + 0.3rem;
   --card-title-size-max: 1.6rem;
 
   --card-text-size-min: 0.85rem;
-  --card-text-size-preferred: 1.8vmin + 25%rem;
+  --card-text-size-preferred: 1.8vmin + 0.25rem;
   --card-text-size-max: 1.05rem;
 }
 
@@ -158,14 +158,3 @@ a:focus {
   color: var(--color-accent);
   text-decoration: underline;
 }
-
-/* Noscript Warning */
-.noscript-warning {
-  text-align: center;
-  padding: 1rem;
-  background-color: #ffcc00;
-  color: #000;
-  font-weight: bold;
-}
-
-/* Weitere utility classes... */

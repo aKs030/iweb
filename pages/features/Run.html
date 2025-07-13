@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jump & Run Spiel (Angepasste Reaktion)</title>
+    <title>Jump &amp; Run Spiel (Angepasste Reaktion)</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js.map"></script>
@@ -35,8 +35,32 @@
     </style>
 </head>
 <body>
-    <div id="gameContainer"> <div id="scoreBoard">Punkte: 0</div> <div id="levelDisplay">Level: 1</div> <canvas id="gameCanvas"></canvas> <div id="messageBox"> <div id="messageText">Spiel Nachricht</div> <button id="restartBtn">Neustart</button> </div> </div>
-    <div id="controls"> <button id="leftBtn" aria-label="Links"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 20l-8-8 8-8v16z"/></svg></button> <button id="jumpBtn" aria-label="Springen"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 14l8-8 8 8H4z"/></svg></button> <button id="rightBtn" aria-label="Rechts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20l8-8-8-8v16z"/></svg></button> </div>
+    <div id="gameContainer">
+        <div id="scoreBoard">Punkte: 0</div>
+        <div id="levelDisplay">Level: 1</div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="messageBox">
+            <div id="messageText">Spiel Nachricht</div>
+            <button type="button" id="restartBtn">Neustart</button>
+        </div>
+    </div>
+    <div id="controls">
+        <button type="button" id="leftBtn" aria-label="Links">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14 20l-8-8 8-8v16z"/>
+            </svg>
+        </button>
+        <button type="button" id="jumpBtn" aria-label="Springen">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 14l8-8 8 8H4z"/>
+            </svg>
+        </button>
+        <button type="button" id="rightBtn" aria-label="Rechts">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20l8-8-8-8v16z"/>
+            </svg>
+        </button>
+    </div>
 
     <script>
         // --- DOM Elemente ---
@@ -79,7 +103,7 @@
             constructor(x, y, width, height, color) { this.x=x; this.y=y; this.width=width; this.height=height; this.color=color; this.vx=0; this.vy=0; this.jumping=false; this.grounded=false; this.previousX=x; this.previousY=y; }
             draw() { ctx.fillStyle=this.color; ctx.fillRect(this.x, this.y, this.width, this.height); }
             update(deltaTime) {
-                this.previousX = this.x; 
+                this.previousX = this.x;
                 this.previousY = this.y;
 
                 if (!gameState.gameOver) {
@@ -152,7 +176,7 @@
         function checkPlatformCollisions() { let onGround = false; platforms.forEach(platform => { if (player.x + player.width <= platform.x || player.x >= platform.x + platform.width || player.y + player.height <= platform.y || player.y >= platform.y + platform.height) { return; } if (player.x < platform.x + platform.width && player.x + player.width > platform.x) { if (player.vy >= 0 && player.y + player.height >= platform.y && player.previousY + player.height <= platform.y) { player.y = platform.y - player.height; player.vy = 0; onGround = true; player.jumping = false; } else if (player.vy < 0 && player.y <= platform.y + platform.height && player.previousY >= platform.y + platform.height) { player.y = platform.y + platform.height; player.vy = 1; } } if (!onGround && player.y + player.height > platform.y + 1 && player.y < platform.y + platform.height - 1) { if (player.vx > 0 && player.x + player.width >= platform.x && player.previousX + player.width <= platform.x) { player.x = platform.x - player.width; player.vx = 0; } else if (player.vx < 0 && player.x <= platform.x + platform.width && player.previousX >= platform.x + platform.width) { player.x = platform.x + platform.width; player.vx = 0; } } }); if (onGround) { player.grounded = true; } }
 
         // --- Input Handling (Tastatur) ---
-        function handleKeyDown(e) { 
+        function handleKeyDown(e) {
             if (gameState.gameOver) {
             return;
             }

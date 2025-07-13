@@ -7,29 +7,28 @@
     <meta name="description" content="Erlebe ein spannendes Snake-Spiel, entwickelt von Abdulkerim. Spiele auf jedem Gerät mit responsivem Design und speichere deine Highscores.">
     <meta name="author" content="Abdulkerim">
     <meta name="keywords" content="Snake, Spiel, Highscores, Abdulkerim, Webgame, HTML, JavaScript">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="icon.png">
-  
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700&display=swap" rel="stylesheet">
-  
+
     <!-- Font Awesome -->
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-  
+
     <!-- Stylesheets -->
-    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css"/>
-    <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css"/>
-    <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css"/>
-    <link href="css/style.css" media="screen" rel="stylesheet" type="text/css"/>
-    <link href="css/ubermich.css" media="screen" rel="stylesheet" type="text/css"/>
-    <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css">
+    <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css">
+    <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css">
+    <link href="css/style.css" media="screen" rel="stylesheet" type="text/css">
+    <link href="css/ubermich.css" media="screen" rel="stylesheet" type="text/css">
+    <link href="css/menu.css" media="screen" rel="stylesheet" type="text/css">
 
-
-      <link rel="stylesheet" href="f.css">
+    <link rel="stylesheet" href="f.css">
     <!-- JS -->
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="js/menu.js"></script>
@@ -37,7 +36,7 @@
     <script src="f.js"></script>
 
 
-  
+
     <!-- JavaScript Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" defer></script>
 
@@ -274,8 +273,8 @@ a:focus, button:focus {
   <!-- Webseite Menü -->
   <div class="banner"></div>
 <div class="main-content">
-  
-  
+
+
   <!-- Spielfeld -->
   <canvas id="game" width="400" height="400"></canvas>
 
@@ -285,44 +284,37 @@ a:focus, button:focus {
     <hr>
     <ul class="nested">
       <li>
-      
-      <div class="centered-flex">
-      <div class="centered-flex">
-          <button type="button" class="custom-button-flat small pulse-primary" title="Tastatur-Steuerung">
-          <button type="button" class="custom-button-flat small pulse-primary" title="Tastatur-Steuerung">
+        <!-- Tastatur-Steuerung -->
+        <div class="centered-flex">
+          <button type="button" class="custom-button-flat small pulse-primary" id="keyboard-control" title="Tastatur-Steuerung">
             <img src="img/book.png" alt="Tastatur-Icon">
             <span>Tastatur</span>
-        </button>
-        </a>
-      </div>
-
-      <hr>
-      <!-- Touchscreen-Steuerung -->
-      <div class="centered-flex">
-        <a class="menu-button" id="touch-control">
-          <button class="custom-button-flat small pulse-primary">
+          </button>
+        </div>
+      </li>
+      <li>
+        <hr>
+        <!-- Touchscreen-Steuerung -->
+        <div class="centered-flex">
+          <button type="button" class="custom-button-flat small pulse-primary" id="touch-control" title="Touchscreen-Steuerung">
             <img src="img/book.png" alt="Touchscreen-Icon">
             <span>Touchscreen</span>
           </button>
-        </a>
-      </div>
-
-      <hr>
-      <!-- Joystick-Steuerung -->
-        <div class="centered-flex">
-          <a class="menu-button" id="joystick-control">
-            <button class="custom-button-flat small pulse-primary">
-              <img src="img/book.png" alt="Joystick-Icon">
-              <span>Joystick</span>
-            </button>
-          </a>
         </div>
-
+      </li>
+      <li>
+        <hr>
+        <!-- Joystick-Steuerung -->
+        <div class="centered-flex">
+          <button type="button" class="custom-button-flat small pulse-primary" id="joystick-control" title="Joystick-Steuerung">
+            <img src="img/book.png" alt="Joystick-Icon">
+            <span>Joystick</span>
+          </button>
+        </div>
+      </li>
     </ul>
     <hr>
-    
 
-    
     <!-- Highscores -->
     <div id="highscores">
       <ul id="score-list"><li>Lade Scores...</li></ul>
@@ -331,16 +323,14 @@ a:focus, button:focus {
 
   <div id="joystick-container" class="hidden">
     <button type="button" data-dir="up">⬆</button>
-    <button data-dir="up">⬆</button>
-    <button type="button" data-dir="up">⬆</button>
-      <button data-dir="left">⬅</button>
-      <button type="button" data-dir="left">⬅</button>
-      <button type="button" data-dir="right">➡</button>
-    <button data-dir="down">⬇</button>
+    <button type="button" data-dir="left">⬅</button>
+    <button type="button" data-dir="right">➡</button>
     <button type="button" data-dir="down">⬇</button>
+  </div>
+</div>
 
 
-  
+
   <!-- Punkteanzeige -->
   <div id="score-board">Punkte: 0</div>
 </div>
@@ -504,21 +494,21 @@ window.addEventListener('resize', () => {
   }
 
   // Bewegungslogik
-  if (e.key === "ArrowLeft" && snake.dx === 0) { 
-    snake.dx = -grid; 
-    snake.dy = 0; 
+  if (e.key === "ArrowLeft" && snake.dx === 0) {
+    snake.dx = -grid;
+    snake.dy = 0;
   }
-  if (e.key === "ArrowUp" && snake.dy === 0) { 
-    snake.dy = -grid; 
-    snake.dx = 0; 
+  if (e.key === "ArrowUp" && snake.dy === 0) {
+    snake.dy = -grid;
+    snake.dx = 0;
   }
-  if (e.key === "ArrowRight" && snake.dx === 0) { 
-    snake.dx = grid; 
-    snake.dy = 0; 
+  if (e.key === "ArrowRight" && snake.dx === 0) {
+    snake.dx = grid;
+    snake.dy = 0;
   }
-  if (e.key === "ArrowDown" && snake.dy === 0) { 
-    snake.dy = grid; 
-    snake.dx = 0; 
+  if (e.key === "ArrowDown" && snake.dy === 0) {
+    snake.dy = grid;
+    snake.dx = 0;
   }
 });
 
@@ -527,10 +517,10 @@ window.addEventListener('resize', () => {
     document.getElementById("touch-control").addEventListener("click", () => {
       menu.style.display = "none";
       let touchStartX, touchStartY;
-      canvas.addEventListener('touchstart', (e) => { 
-        e.preventDefault(); 
-        touchStartX = e.touches[0].clientX; 
-        touchStartY = e.touches[0].clientY; 
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
       });
       canvas.addEventListener('touchend', (e) => {
         const diffX = e.changedTouches[0].clientX - touchStartX;
@@ -566,7 +556,7 @@ window.addEventListener('resize', () => {
     fetchScores();
 
 
-    
+
   </script>
 
 </body>
