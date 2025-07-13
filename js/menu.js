@@ -1,5 +1,23 @@
-// Performance-optimierte Variablen
+/**
+ * Responsives Menü-System mit dynamischem Content-Loading
+ * 
+ * Features:
+ * - Dynamisches Laden von Menü und Footer
+ * - Mobile-responsive Navigation
+ * - Accessibility-Unterstützung (ARIA, Keyboard Navigation)
+ * - Touch-optimierte Submenu-Interaktionen
+ * - Performance-optimierte Event-Handler
+ */
+
+// Performance-optimierte Variablen und Konstanten
 const currentYear = new Date().getFullYear();
+const BREAKPOINTS = {
+  MOBILE: 768,
+  TOUCH_TIMEOUT: 500,
+  RESIZE_DEBOUNCE: 150,
+  LOGO_SCALE_DURATION: 150
+};
+
 let resizeTimeout;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Lädt den Footer mit optimierter Performance
+ * Lädt den Footer mit optimierter Performance und verbesserter Fehlerbehandlung
  */
 async function loadFooter() {
   const footerPlaceholder = document.getElementById('footer-placeholder');
@@ -24,14 +42,18 @@ async function loadFooter() {
 
   try {
     const response = await fetch('/pages/komponente/footer.html');
-    if (!response.ok) throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
+    }
     
     const html = await response.text();
     footerPlaceholder.innerHTML = html;
     
-    // Jahr dynamisch setzen
+    // Jahr dynamisch setzen mit Fehlerbehandlung
     const yearEl = document.getElementById('current-year');
-    if (yearEl) yearEl.textContent = currentYear;
+    if (yearEl) {
+      yearEl.textContent = currentYear;
+    }
     
   } catch (err) {
     console.error('Fehler beim Laden des Footers:', err.message);
@@ -134,7 +156,7 @@ function initializeMenu(container) {
     menuToggle.setAttribute('aria-expanded', willBeOpen.toString());
     
     // Body-Scroll verhindern wenn Mobile-Menü offen
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= BREAKPOINTS.MOBILE) {
       document.body.style.overflow = willBeOpen ? 'hidden' : '';
     }
   };
@@ -176,7 +198,7 @@ function initializeLogo(container) {
     setTimeout(() => {
       logoContainer.style.transform = '';
       window.location.href = '/index.html';
-    }, 150);
+    }, BREAKPOINTS.LOGO_SCALE_DURATION);
   });
 }
 
@@ -195,8 +217,8 @@ function initializeSubmenuLinks(container) {
     }, { passive: true });
     
     link.addEventListener('click', (event) => {
-      const isMobile = window.innerWidth <= 768;
-      const isQuickTouch = Date.now() - touchStartTime < 500;
+      const isMobile = window.innerWidth <= BREAKPOINTS.MOBILE;
+      const isQuickTouch = Date.now() - touchStartTime < BREAKPOINTS.TOUCH_TIMEOUT;
       
       // Nur für Mobile oder schnelle Touch-Ereignisse: JS steuert Submenu
       if (!isMobile && !isQuickTouch) return;
@@ -322,11 +344,11 @@ function setupResizeHandler(menuContainer) {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
       // Desktop: Schließe Mobile-Menü wenn zu Desktop gewechselt wird
-      if (window.innerWidth > 768) {
+      if (window.innerWidth > BREAKPOINTS.MOBILE) {
         closeMenu(menuContainer);
         document.body.style.overflow = '';
       }
-    }, 150);
+    }, BREAKPOINTS.RESIZE_DEBOUNCE);
   };
   
   window.addEventListener('resize', handleResize, { passive: true });
