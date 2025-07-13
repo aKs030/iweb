@@ -114,6 +114,29 @@ p, a, li, span, label {
   --card-text-size-max: 1.05rem;
 }
 
+/* Light Theme */
+html[data-theme='light'] {
+  --color-bg: #f0f2f5;
+  --color-bg-secondary: #ffffff;
+  --color-text-main: #1c1e21;
+  --color-text-muted: #606770;
+  --color-link: #1877f2;
+  --color-accent: #1877f2;
+  --color-shadow-dark: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme (default) */
+html[data-theme='dark'] {
+  --color-bg: rgb(57, 57, 57);
+  --color-bg-secondary: #444;
+  --color-text-main: #f5f5f5;
+  --color-text-muted: rgba(245, 245, 245, 60%);
+  --color-link: #61dafb;
+  --color-accent: #3A85FF;
+  --color-shadow-dark: color-mix(in srgb, black 25%, transparent);
+}
+
+
 /* Globale Typografie */
 h1 {
   font-size: var(--font-size-h1);

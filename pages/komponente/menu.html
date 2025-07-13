@@ -11,20 +11,27 @@
     </span>
   </a>
 
-  <!-- Hamburger-Button mit verbesserter Accessibility -->
-  <button
-    class="site-menu__toggle"
-    aria-label="Toggle main navigation"
-    aria-controls="main-nav"
-    aria-expanded="false"
-    type="button"
-  >
-    <span class="site-menu__hamburger" aria-hidden="true"></span>
-    <span class="sr-only">Open/close menu</span>
-  </button>
-
   <!-- Navigation mit optimierter Struktur -->
   <nav id="main-nav" class="site-menu" role="navigation" aria-label="Main navigation">
+    <!-- Aktionen für Mobile-Ansicht -->
+    <div class="mobile-actions">
+      <!-- Suchfunktion -->
+      <div class="search-container">
+        <button id="search-toggle-mobile" class="search-toggle" aria-label="Toggle search" aria-expanded="false">
+          <i class="fa-solid fa-search"></i>
+        </button>
+        <input type="search" id="search-input-mobile" class="search-input" placeholder="Search..." aria-labelledby="search-toggle-mobile">
+      </div>
+      <!-- Theme-Umschalter -->
+      <div class="theme-switcher">
+        <input type="checkbox" id="theme-toggle-mobile" class="theme-toggle-checkbox" aria-label="Toggle dark mode">
+        <label for="theme-toggle-mobile" class="theme-toggle-label">
+          <i class="fa-solid fa-sun"></i>
+          <i class="fa-solid fa-moon"></i>
+        </label>
+      </div>
+    </div>
+
     <ul class="site-menu__list">
       <!-- Home -->
       <li>
@@ -88,6 +95,42 @@
         </ul>
       </li>
 
+      <!-- Social Media -->
+      <li class="has-submenu">
+        <a
+          href="#"
+          aria-haspopup="true"
+          aria-expanded="false"
+          tabindex="0"
+          id="social-menu"
+          aria-describedby="social-menu-desc"
+        >
+          <i class="fa-solid fa-share-alt" aria-hidden="true"></i>
+          <span>Social</span>
+        </a>
+        <span id="social-menu-desc" class="sr-only">Follow us on social media</span>
+        <ul class="submenu" aria-labelledby="social-menu">
+          <li>
+            <a href="https://github.com/aKs030/iweb" target="_blank" rel="noopener noreferrer" tabindex="-1">
+              <i class="fa-brands fa-github" aria-hidden="true"></i>
+              <span>GitHub</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" target="_blank" rel="noopener noreferrer" tabindex="-1">
+              <i class="fa-brands fa-twitter" aria-hidden="true"></i>
+              <span>Twitter</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" target="_blank" rel="noopener noreferrer" tabindex="-1">
+              <i class="fa-brands fa-linkedin" aria-hidden="true"></i>
+              <span>LinkedIn</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
       <!-- Information -->
       <li class="has-submenu">
         <a
@@ -125,6 +168,38 @@
       </li>
     </ul>
   </nav>
+
+  <!-- Aktionen für Desktop-Ansicht -->
+  <div class="header-actions">
+    <!-- Suchfunktion -->
+    <div class="search-container">
+      <button id="search-toggle" class="search-toggle" aria-label="Toggle search" aria-expanded="false">
+        <i class="fa-solid fa-search"></i>
+      </button>
+      <input type="search" id="search-input" class="search-input" placeholder="Search..." aria-labelledby="search-toggle">
+    </div>
+
+    <!-- Theme-Umschalter -->
+    <div class="theme-switcher">
+      <input type="checkbox" id="theme-toggle" class="theme-toggle-checkbox" aria-label="Toggle dark mode">
+      <label for="theme-toggle" class="theme-toggle-label">
+        <i class="fa-solid fa-sun"></i>
+        <i class="fa-solid fa-moon"></i>
+      </label>
+    </div>
+
+    <!-- Hamburger-Button mit verbesserter Accessibility -->
+    <button
+      class="site-menu__toggle"
+      aria-label="Toggle main navigation"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      type="button"
+    >
+      <span class="site-menu__hamburger" aria-hidden="true"></span>
+      <span class="sr-only">Open/close menu</span>
+    </button>
+  </div>
 
   <!-- Overlay für Mobile mit Accessibility -->
   <div class="site-menu__overlay" aria-hidden="true"></div>

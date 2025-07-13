@@ -97,6 +97,8 @@ async function loadMenu(menuContainer) {
     initializeLogo(menuContainer);
     initializeSubmenuLinks(menuContainer);
     initializeAccessibility(menuContainer);
+    initializeThemeSwitcher();
+    initializeSearch();
     setSiteTitle();
     
     // Optimierter Outside-Click Handler mit Debouncing
@@ -383,4 +385,77 @@ function setSiteTitle() {
     // Aria-Label für bessere Accessibility
     siteTitleEl.setAttribute('aria-label', `Aktuelle Seite: ${pageTitle}`);
   }
+}
+
+/**
+ * Initialisiert den Theme-Umschalter
+ */
+function initializeThemeSwitcher() {
+  const themeToggles = document.querySelectorAll('.theme-toggle-checkbox');
+  if (themeToggles.length === 0) return;
+
+  const currentTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  
+  themeToggles.forEach(toggle => {
+    toggle.checked = currentTheme === 'dark';
+  });
+
+  document.body.addEventListener('change', (e) => {
+    if (e.target.classList.contains('theme-toggle-checkbox')) {
+      const newTheme = e.target.checked ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      // Synchronize other toggles
+      themeToggles.forEach(t => {
+        if (t !== e.target) {
+          t.checked = e.target.checked;
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Initialisiert die Suchfunktion
+ */
+function initializeSearch() {
+  const searchContainers = document.querySelectorAll('.search-container');
+  if (searchContainers.length === 0) return;
+
+  searchContainers.forEach(container => {
+    const toggle = container.querySelector('.search-toggle');
+    const input = container.querySelector('.search-input');
+
+    if (!toggle || !input) return;
+
+    // Spezifische Logik für Desktop-Suche mit Toggle
+    if (!container.parentElement.classList.contains('mobile-actions')) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isActive = container.classList.toggle('active');
+        toggle.setAttribute('aria-expanded', isActive);
+        if (isActive) {
+          input.focus();
+        }
+      });
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        alert(`Searching for: ${input.value}`);
+        // Hier würde die eigentliche Suchlogik implementiert
+      }
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    searchContainers.forEach(container => {
+      // Nur die Desktop-Suche bei Klick außerhalb schließen
+      if (!container.parentElement.classList.contains('mobile-actions') && !container.contains(e.target)) {
+        container.classList.remove('active');
+        container.querySelector('.search-toggle').setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
 }
