@@ -1040,37 +1040,50 @@
   }
 }
 
-/* Floating Action Button - Kompakt und Website-angepasst */
+/* Floating Action Button - Modern Glass Design ohne blauen Hintergrund */
 .cookie-fab {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  width: 48px;
-  height: 48px;
-  background: var(--cb-gradient-primary);
-  border: none;
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  color: white;
-  font-size: 1.2rem;
+  color: #444;
+  font-size: 1.3rem;
   cursor: pointer;
   z-index: var(--cb-z-fab);
-  box-shadow: var(--cb-shadow);
-  transition: var(--cb-transition);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 
+              0 4px 16px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--cb-font-family);
-  -webkit-backdrop-filter: var(--cb-blur);
-  backdrop-filter: var(--cb-blur);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  opacity: 0.9;
 }
 
 .cookie-fab:hover {
-  transform: scale(1.1);
-  box-shadow: var(--cb-shadow-lg);
+  transform: scale(1.05) translateY(-2px);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 
+              0 6px 20px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  opacity: 1;
+  color: #333;
+}
+
+.cookie-fab:active {
+  transform: scale(0.95) translateY(0);
+  transition: all 0.1s ease-out;
 }
 
 .cookie-fab.hidden {
-  transform: scale(0);
+  transform: scale(0) translateY(20px);
   opacity: 0;
   pointer-events: none;
 }
@@ -1079,10 +1092,28 @@
   .cookie-fab {
     bottom: 1rem;
     right: 1rem;
-    width: 44px;
-    height: 44px;
-    font-size: 1.1rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
   }
+}
+
+/* Dark Mode Anpassungen für FAB */
+[data-theme="dark"] .cookie-fab {
+  background: rgba(68, 68, 68, 0.8);
+  border: 1px solid rgba(245, 245, 245, 0.15);
+  color: #f5f5f5;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
+              0 4px 16px rgba(0, 0, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .cookie-fab:hover {
+  background: rgba(85, 85, 85, 0.9);
+  color: #ffffff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 
+              0 6px 20px rgba(0, 0, 0, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 /* ===================================================================

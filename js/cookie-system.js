@@ -288,7 +288,10 @@
             document.getElementById('cookie-accept-btn')?.addEventListener('click', () => this.acceptAll());
             document.getElementById('cookie-reject-btn')?.addEventListener('click', () => this.rejectAll());
             document.getElementById('cookie-settings-btn')?.addEventListener('click', () => this.showSettings());
-            document.getElementById('cookie-banner-close')?.addEventListener('click', () => this.hideBanner());
+            document.getElementById('cookie-banner-close')?.addEventListener('click', () => {
+                this.hideBanner();
+                this.showFloatingButton();
+            });
 
             this.bindModalEvents();
             
@@ -408,6 +411,7 @@
             this.hideBanner();
             this.hideSettings();
             this.showConfirmation('✅ Alle Cookies akzeptiert');
+            this.showFloatingButton();
             this.trackConsentEvent('accept_all');
             
             console.log('✅ Alle Cookies akzeptiert');
@@ -427,6 +431,7 @@
             this.hideBanner();
             this.hideSettings();
             this.showConfirmation('❌ Nur notwendige Cookies aktiv');
+            this.showFloatingButton();
             this.trackConsentEvent('reject_all');
             
             console.log('❌ Nur notwendige Cookies akzeptiert');
@@ -453,6 +458,7 @@
             this.hideSettings();
             this.hideBanner();
             this.showConfirmation('💾 Cookie-Einstellungen gespeichert');
+            this.showFloatingButton();
             
             this.trackConsentEvent('save_custom', {
                 analytics: analyticsCheckbox ? analyticsCheckbox.checked : false,
@@ -469,7 +475,7 @@
             if (fab) {
                 setTimeout(() => {
                     fab.classList.remove('hidden');
-                }, 3000);
+                }, 1000);
             }
         }
 
