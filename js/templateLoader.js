@@ -8,13 +8,14 @@
  * - Robuste Fehlerbehandlung
  * - Custom Event für Template-Ready-Status
  * - Performance-optimierte DOM-Manipulation
+ * - Performance-Monitoring Integration
  */
 
 // js/templateLoader.js
 document.addEventListener('DOMContentLoaded', () => {
     (async () => {
         try {
-            console.log('Starte Template-Loading...');
+            const startTime = performance.now();
             
             const response = await fetch('pages/index-card.html');
             if (!response.ok) {
@@ -37,13 +38,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hiddenTemplatesContainer) {
                 document.body.appendChild(hiddenTemplatesContainer);
                 
-                // Bestätige erfolgreiches Laden
+                const endTime = performance.now();
+                const loadTime = endTime - startTime;
                 const templateCount = hiddenTemplatesContainer.querySelectorAll('template').length;
-                console.log(`Templates erfolgreich geladen: ${templateCount} Template(s) gefunden`);
+                console.log(`Templates erfolgreich geladen: ${templateCount} Template(s) in ${Math.round(loadTime)}ms`);
                 
-                // Dispatch Event für abhängige Systeme
                 document.dispatchEvent(new CustomEvent('templatesLoaded', {
-                    detail: { templateCount }
+                    detail: { 
+                        templateCount,
+                        loadTime,
+                        timestamp: Date.now()
+                    }
                 }));
             } else {
                 console.warn('Keine .hidden-templates Container in der geladenen Datei gefunden');
@@ -51,9 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Fehler beim Laden der Templates:', error);
             
-            // Fallback-Event für graceful degradation
-            document.dispatchEvent(new CustomEvent('templatesLoadError', {
-                detail: { error: error.message }
+            // Dispatch error event for monitoring and graceful degradation
+            document.dispatchEvent(new CustomEvent('templateLoadError', {
+                detail: { 
+                    error: error.message, 
+                    timestamp: Date.now() 
+                }
             }));
         }
     })();

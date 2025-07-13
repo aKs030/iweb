@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 sequence: shuffleArray(templateIds),
                 index: 0
             };
-            console.log(`Sequenz für ${sectionId} gemischt:`, shuffledSections[sectionId].sequence);
         }
     }
 
@@ -90,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
             cards[0].classList.add('is-upper-card');
             cards[1].classList.add('is-middle-card');
             cards[2].classList.add('is-lower-card');
-            console.log("Karten-Layout-Klassen hinzugefügt (Upper, Middle, Lower)");
         } else {
             console.warn(`Features Sektion erwartet 3 Karten für spezielle Animation, aber ${cards.length} gefunden.`);
         }
@@ -180,8 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
         animElements.forEach(element => {
             processAnimationElement(element, cardElements, STAGGER_DELAY_TEXT, STAGGER_DELAY_CARD, textDelayRef);
         });
-
-        console.log(`Innere Animationen für ${sectionId} gestartet.`);
     }
 
     // Initialisiert und startet die sequenziellen Animationen innerhalb eines Containers - Optimiert
