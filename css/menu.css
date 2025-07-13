@@ -71,99 +71,122 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* Reduzierter Abstand */
+  gap: 0.6rem; /* Optimierter Abstand */
 }
 
 .mobile-actions {
   display: none; /* Standardmäßig in der Desktop-Ansicht ausblenden */
-  padding: 0.75rem 1.4rem; /* Padding angepasst */
+  padding: 0.8rem 1.2rem; /* Optimiertes Padding */
   border-bottom: 1px solid var(--color-shadow-dark);
-  margin-bottom: 0.75rem; /* Margin angepasst */
-  gap: 0.75rem; /* Abstand angepasst */
-  justify-content: center;
+  margin-bottom: 0.8rem; /* Optimierter Margin */
+  gap: 1rem; /* Verbesserter Abstand */
+  justify-content: space-between; /* Bessere Verteilung */
   align-items: center;
   flex-wrap: wrap;
 }
 
 /* =======================
-   Search Bar
+   Search Bar - Optimiertes Design
    ======================= */
 .search-container {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .search-toggle {
-  background: none;
-  border: none;
-  color: var(--color-text-main);
+  background: rgba(255, 255, 255, 0.05); /* Weniger auffällig */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtiler Rahmen */
+  color: var(--color-text-muted); /* Gedämpfte Farbe */
   cursor: pointer;
-  font-size: 1.1rem; /* Verkleinert */
-  padding: 0.4rem; /* Verkleinert */
+  font-size: 0.85rem; /* Kleinere Größe */
+  padding: 0.4rem; /* Reduziertes Padding */
   border-radius: 50%;
-  transition: background-color 0.3s, color 0.3s;
+  transition: all 0.3s ease;
+  width: 32px; /* Kleinere Breite */
+  height: 32px; /* Kleinere Höhe */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7; /* Leicht transparent */
 }
 
 .search-toggle:hover,
 .search-toggle.active {
   color: var(--color-link);
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(97, 218, 251, 0.1); /* Subtiler Hover */
+  border-color: rgba(97, 218, 251, 0.3);
+  transform: scale(1.02); /* Weniger Skalierung */
+  opacity: 1;
 }
 
 .search-input {
   position: absolute;
   top: 50%;
-  right: 100%;
+  right: calc(100% + 0.4rem); /* Reduzierter Abstand */
   transform: translateY(-50%);
   width: 0;
-  padding: 0.5rem 0;
-  border: none;
-  background: transparent;
+  padding: 0.5rem 0; /* Reduziertes Padding */
+  background: rgba(255, 255, 255, 0.08); /* Subtiler Hintergrund */
   color: var(--color-text-main);
-  border-bottom: 2px solid var(--color-link);
-  transition: width 0.4s ease-in-out, padding 0.4s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtiler Rahmen */
+  border-radius: var(--border-radius);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   visibility: hidden;
   opacity: 0;
   z-index: 1;
+  font-size: 0.85rem; /* Kleinere Schrift */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .search-input:focus {
   outline: none;
+  border-color: rgba(97, 218, 251, 0.4); /* Subtiler Focus */
+  box-shadow: 0 0 0 1px rgba(97, 218, 251, 0.1); /* Reduzierter Schatten */
+}
+
+.search-input::placeholder {
+  color: var(--color-text-muted);
+  font-size: 0.8rem; /* Kleinere Placeholder-Schrift */
 }
 
 .search-container.active .search-input {
-  width: 200px;
-  padding: 0.5rem;
+  width: 180px; /* Reduzierte Breite */
+  padding: 0.5rem 0.8rem; /* Reduziertes Padding */
   visibility: visible;
   opacity: 1;
 }
 
 .mobile-actions .search-container {
   flex-grow: 1;
-  min-width: 150px;
+  max-width: 200px; /* Maximale Breite im Mobile */
 }
 
 .mobile-actions .search-input {
-  position: static;
-  transform: none;
   width: 100%;
   visibility: visible;
   opacity: 1;
-  border: 1px solid var(--color-text-muted);
+  position: static;
+  transform: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius);
-  padding: 0.5rem;
-  background-color: rgba(255,255,255,0.05);
+  padding: 0.7rem;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.9rem;
 }
 
 .mobile-actions .search-toggle {
- display: none; /* Icon im mobilen Menü ausblenden, da das Feld immer sichtbar ist */
+  display: none; /* Icon im mobilen Menü ausblenden */
 }
 
 /* =======================
-   Theme Switcher
+   Theme Switcher - Optimiertes Design
    ======================= */
 .theme-switcher {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .theme-toggle-checkbox {
@@ -171,41 +194,49 @@
 }
 
 .theme-toggle-label {
-  background-color: var(--color-bg-secondary);
-  border-radius: 50px;
+  background: transparent; /* Vollständig transparent */
+  border: none; /* Kein Rahmen */
+  border-radius: 50%; /* Rund wie ein Button */
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 4px; /* Angepasst */
+  justify-content: center;
+  padding: 0.4rem; /* Minimales Padding */
   position: relative;
-  height: 24px; /* Verkleinert */
-  width: 46px; /* Verkleinert */
-  transform: scale(1.2); /* Reduziert */
+  height: 32px; /* Kompakte Größe */
+  width: 32px; /* Kompakte Größe */
+  transition: all 0.3s ease;
+  opacity: 0.6; /* Sehr dezent */
 }
 
-.theme-toggle-label .fa-moon {
-  color: #f1c40f;
+.theme-toggle-label:hover {
+  background: rgba(255, 255, 255, 0.08); /* Subtiler Hover */
+  opacity: 1;
+  transform: scale(1.05); /* Leichte Vergrößerung beim Hover */
 }
 
-.theme-toggle-label .fa-sun {
-  color: #f39c12;
+.theme-toggle-label .theme-icon {
+  color: var(--color-text-muted); /* Gedämpfte Farbe */
+  font-size: 0.9rem; /* Dezente Größe */
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-label:hover .theme-icon {
+  color: var(--color-link); /* Highlight beim Hover */
+}
+
+/* Icon-Wechsel basierend auf Theme-Status */
+.theme-toggle-checkbox:checked + .theme-toggle-label .theme-icon {
+  color: #f39c12; /* Sonne-Farbe im Dark Mode */
 }
 
 .theme-toggle-label::after {
-  content: "";
-  background-color: #fff;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  height: 20px; /* Verkleinert */
-  width: 20px; /* Verkleinert */
-  transition: transform 0.3s ease;
+  display: none; /* Entferne den Slider-Button */
 }
 
-.theme-toggle-checkbox:checked + .theme-toggle-label::after {
-  transform: translateX(22px); /* Angepasst */
+/* Mobile Theme Switcher - auch vereinfacht */
+.mobile-actions .theme-toggle-label {
+  transform: none; /* Keine zusätzliche Skalierung */
 }
 
 .site-logo {
@@ -333,7 +364,7 @@
 
 .site-menu__toggle:focus,
 .site-menu__toggle:focus-visible {
-  outline: 2px solid var(--color-link);
+  outline: 2px solid var(--color_link);
   outline-offset: 2px;
   background-color: rgba(255,255,255,0.1);
 }
@@ -448,10 +479,11 @@ main { margin-top: 80px; padding: 1rem; }
     width: 100%;
     visibility: visible;
     opacity: 1;
-    border: 1px solid var(--color-text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--border-radius);
-    padding: 0.5rem;
-    background-color: rgba(255,255,255,0.05);
+    padding: 0.7rem;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.9rem;
   }
 
   .mobile-actions .search-container {

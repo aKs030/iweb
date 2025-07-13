@@ -392,26 +392,48 @@ function setSiteTitle() {
  */
 function initializeThemeSwitcher() {
   const themeToggles = document.querySelectorAll('.theme-toggle-checkbox');
+  
   if (themeToggles.length === 0) return;
 
   const currentTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
   
+  // Update toggles and icons
   themeToggles.forEach(toggle => {
     toggle.checked = currentTheme === 'dark';
   });
+  
+  updateThemeIcons(currentTheme);
 
   document.body.addEventListener('change', (e) => {
     if (e.target.classList.contains('theme-toggle-checkbox')) {
       const newTheme = e.target.checked ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', newTheme);
       localStorage.setItem('theme', newTheme);
+      
       // Synchronize other toggles
       themeToggles.forEach(t => {
         if (t !== e.target) {
           t.checked = e.target.checked;
         }
       });
+      
+      // Update all theme icons
+      updateThemeIcons(newTheme);
+    }
+  });
+}
+
+/**
+ * Aktualisiert die Theme-Icons basierend auf dem aktuellen Theme
+ */
+function updateThemeIcons(theme) {
+  const themeIcons = document.querySelectorAll('.theme-icon');
+  themeIcons.forEach(icon => {
+    if (theme === 'dark') {
+      icon.className = 'theme-icon fa-solid fa-sun'; // Zeige Sonne im Dark Mode
+    } else {
+      icon.className = 'theme-icon fa-solid fa-moon'; // Zeige Mond im Light Mode
     }
   });
 }
