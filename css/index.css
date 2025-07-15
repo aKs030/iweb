@@ -360,5 +360,10 @@ body {
   background-color: var(--theme-bg);
   color: var(--theme-fg);
   overflow: hidden; /* Body-Scrolling deaktivieren, nur .viewport-box scrollt */
+  overscroll-behavior: none; /* Kein Scroll-Bounce auf Mobilgeräten */
+  position: fixed; /* Verhindert Touch-Scroll auf iOS/Safari */
+  width: 100vw;
+  height: 100vh;
+  touch-action: none; /* Verhindert Touch-Scroll auf Mobilgeräten */
 }
 /* z. B. für nav-Bar, footer, SVG-Icons etc. ebenfalls var(--theme-*) nutzen */
