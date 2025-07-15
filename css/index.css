@@ -359,5 +359,6 @@ body#index-page .lead {
 body {
   background-color: var(--theme-bg);
   color: var(--theme-fg);
+  overflow: hidden; /* Body-Scrolling deaktivieren, nur .viewport-box scrollt */
 }
 /* z. B. für nav-Bar, footer, SVG-Icons etc. ebenfalls var(--theme-*) nutzen */
