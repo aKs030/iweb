@@ -18,7 +18,9 @@ const ASSETS = [
   '/pages/komponente/menu.html',
   '/pages/komponente/footer.html',
   '/pages/index-card.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/offline.html',
+  '/404.html'
 ];
 
 // Cookie Consent Status im Service Worker
@@ -58,13 +60,24 @@ self.addEventListener('fetch', evt => {
   
   evt.respondWith(
     caches.match(evt.request)
-      .then(res => res || fetch(evt.request))
+      .then(res => {
+        if (res) return res;
+        return fetch(evt.request)
+          .then(networkRes => {
+            // Wenn die Antwort 404 ist, zeige die 404.html
+            if (networkRes.status === 404) {
+              return caches.match('/404.html');
+            }
+            return networkRes;
+          })
+      })
       .catch(() => {
         // Offline Fallback für Cookie Banner
         if (evt.request.url.includes('cookie-banner')) {
           return caches.match('/cookie-banner-test.html');
         }
-        return new Response('Offline', { status: 503 });
+        // Offline Fallback für alle anderen Seiten
+        return caches.match('/offline.html');
       })
   );
 });
