@@ -13,7 +13,8 @@
     "test-performance": "node scripts/performance-test.js",
     "compress-images": "imagemin img/**/*.{jpg,png} --plugin=mozjpeg --plugin=optipng --out-dir=img/optimized",
     "check-links": "broken-link-checker http://localhost:8000",
-    "deploy-check": "npm run validate-html && npm run validate-css && npm run check-links"
+    "deploy-check": "npm run validate-html && npm run validate-css && npm run check-links",
+    "purge": "mkdir -p css/purged && npx purgecss --css css/*.css --content pages/**/*.html js/**/*.js --output css/purged/"
   },
   "repository": {
     "type": "git",

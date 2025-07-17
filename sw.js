@@ -19,8 +19,8 @@ const ASSETS = [
   '/pages/komponente/footer.html',
   '/pages/index-card.html',
   '/manifest.json',
-  '/offline.html',
-  '/404.html'
+  '/pages/komponente/offline.html',
+  '/pages/komponente/404.html'
 ];
 
 // Cookie Consent Status im Service Worker
@@ -31,33 +31,28 @@ self.addEventListener('install', evt => {
   evt.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(ASSETS))
-      .then(self.skipWaiting())
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', evt => {
-  console.log('🍪 SW: Activating Cookie Banner v2.0 Support');
   evt.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys
-        .filter(k => k !== CACHE_NAME)
-        .map(k => caches.delete(k))
-      )
-    )
-    .then(self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
 // Enhanced fetch handler mit Cookie-Consent-Awareness
 self.addEventListener('fetch', evt => {
   const url = new URL(evt.request.url);
-  
   // Blockiere Analytics-Requests wenn kein Consent
   if (shouldBlockRequest(url)) {
     evt.respondWith(new Response('', { status: 204 }));
     return;
   }
-  
   evt.respondWith(
     caches.match(evt.request)
       .then(res => {
@@ -65,20 +60,18 @@ self.addEventListener('fetch', evt => {
         return fetch(evt.request)
           .then(networkRes => {
             if (networkRes.status === 404) {
-              return caches.match('/404.html');
+              return caches.match('/pages/komponente/404.html');
             }
             return networkRes;
           })
           .catch(() => {
             // Wenn Netzwerk und Cache fehlschlagen, zeige die 404.html
-            return caches.match('/404.html');
+            return caches.match('/pages/komponente/404.html');
           });
       })
       .catch(() => {
-        // Offline Fallback für Cookie Banner
-        // Fallback für Cookie Banner entfernt, da Datei nicht vorhanden
         // Offline Fallback für alle anderen Seiten
-        return caches.match('/offline.html');
+        return caches.match('/pages/komponente/offline.html');
       })
   );
 });
