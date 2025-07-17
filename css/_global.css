@@ -168,7 +168,7 @@ p, li {
   line-height: 1.6;
   font-weight: 400;
   letter-spacing: 0.2px;
-  color: var(--color-text-muted);
+  color: var(--color-text-main);
   margin-bottom: var(--spacing-sm);
 }
 
@@ -190,22 +190,6 @@ a:focus {
   outline-offset: 2px;
 }
 
-/* Skip Link für Accessibility */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--color-accent);
-  color: white;
-  padding: 8px 16px;
-  text-decoration: none;
-  z-index: 100000;
-  border-radius: 0 0 4px 4px;
-}
-
-.skip-link:focus {
-  top: 0;
-}
 
 /* Noscript Warning */
 .noscript-warning {

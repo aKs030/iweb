@@ -64,18 +64,19 @@ self.addEventListener('fetch', evt => {
         if (res) return res;
         return fetch(evt.request)
           .then(networkRes => {
-            // Wenn die Antwort 404 ist, zeige die 404.html
             if (networkRes.status === 404) {
               return caches.match('/404.html');
             }
             return networkRes;
           })
+          .catch(() => {
+            // Wenn Netzwerk und Cache fehlschlagen, zeige die 404.html
+            return caches.match('/404.html');
+          });
       })
       .catch(() => {
         // Offline Fallback für Cookie Banner
-        if (evt.request.url.includes('cookie-banner')) {
-          return caches.match('/cookie-banner-test.html');
-        }
+        // Fallback für Cookie Banner entfernt, da Datei nicht vorhanden
         // Offline Fallback für alle anderen Seiten
         return caches.match('/offline.html');
       })
