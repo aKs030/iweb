@@ -1,3 +1,4 @@
+
 /**
  * Main Initialization Script
  * Zentrale Koordination aller DOMContentLoaded Events
@@ -6,6 +7,43 @@
  * @version 2.0.0
  * @date 2025-07-13
  */
+
+class MainInitializer {
+    constructor() {
+        this.initModules = [];
+        this.isInitialized = false;
+        this.initStartTime = null;
+        this.priorityModules = new Set(['ErrorHandler', 'PerformanceMonitor', 'SecurityManager']);
+        this.moduleTimings = new Map();
+        this.maxRetries = 3;
+        this.retryDelays = [100, 500, 1000]; // Progressive retry delays
+        
+        // Performance monitoring integration
+        this.recordInitMetric = this.recordInitMetric.bind(this);
+        
+        // Warte auf DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initialize());
+        } else {
+            // DOM ist bereits geladen - verwende setTimeout für asynchrone Ausführung
+            setTimeout(() => this.initialize(), 0);
+        }
+    }
+
+    handleModuleError(name, error) {
+        // Strukturiertes Logging
+        console.error(`❌ Fehler in Modul ${name}:`, error);
+        // Fehler an globalen ErrorHandler weiterleiten (falls vorhanden)
+        if (window.websiteErrorHandler) {
+            window.websiteErrorHandler.handleError({
+                type: 'module_initialization',
+                module: name,
+                message: error.message,
+                stack: error.stack,
+                timestamp: Date.now()
+            });
+        }
+    }
 
 class MainInitializer {
     constructor() {
@@ -118,23 +156,32 @@ class MainInitializer {
      * Führt ein einzelnes Modul aus
      */
     async runModule(name, initFunction, timeout = 5000) {
-        return new Promise((resolve, reject) => {
-            const timeoutId = setTimeout(() => {
-                reject(new Error(`Module ${name} initialization timeout (${timeout}ms)`));
-            }, timeout);
-            
-            // Führe die Initialisierung aus
-            Promise.resolve(initFunction())
-                .then(() => {
-                    clearTimeout(timeoutId);
-                    console.log(`✅ ${name} initialisiert`);
-                    resolve();
-                })
-                .catch((error) => {
-                    clearTimeout(timeoutId);
-                    reject(error);
-                });
-        });
+        try {
+            const startMark = `module-${name}-start`;
+            const endMark = `module-${name}-end`;
+            performance.mark(startMark);
+
+            const result = await Promise.race([
+                initFunction(),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error(`Timeout: ${name}`)), timeout)
+                )
+            ]);
+
+            performance.mark(endMark);
+            performance.measure(`module-${name}`, startMark, endMark);
+
+            console.log(`✅ ${name} initialisiert`);
+            return result;
+        } catch (error) {
+            // Detailliertes Error Tracking
+            if (typeof this.handleModuleError === 'function') {
+                this.handleModuleError(name, error);
+            } else {
+                console.error(`❌ Fehler in Modul ${name}:`, error);
+            }
+            throw error;
+        }
     }
     
     /**

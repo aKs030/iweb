@@ -1,38 +1,128 @@
 {
-  "name": "Abdulkerim ⭐️",
+  "name": "Abdulkerim Sesli - Persönliche Website",
   "short_name": "Abdulkerim",
+  "description": "Persönliche Website von Abdulkerim Sesli mit Portfolio, Blog und Projekten",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#393939",
   "theme_color": "#393939",
-  "orientation": "portrait-primary",
+  "dir": "ltr",
+  "lang": "de-DE",
+  "categories": ["personal", "portfolio", "developer"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "icons": [
     {
-      "src": "/img/touch-icon-180.png",
-      "sizes": "180x180",
-      "type": "image/png"
+      "src": "/img/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/img/touch-icon-152.png",
+      "src": "/img/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-152.png",
       "sizes": "152x152",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/img/touch-icon-120.png",
-      "sizes": "120x120",
-      "type": "image/png"
+      "src": "/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/img/favicon-32.png",
-      "sizes": "32x32",
-      "type": "image/png"
+      "src": "/img/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/img/touch-icon-512.png",
+      "src": "/img/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/img/screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/img/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Über mich",
+      "short_name": "Über",
+      "description": "Erfahre mehr über Abdulkerim",
+      "url": "/pages/ubermich.html",
+      "icons": [
+        {
+          "src": "/img/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Fotogalerie",
+      "short_name": "Fotos",
+      "description": "Bildergalerie ansehen",
+      "url": "/pages/album.html",
+      "icons": [
+        {
+          "src": "/img/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Spiele",
+      "short_name": "Games",
+      "description": "Mini-Spiele spielen",
+      "url": "/pages/index-game.html",
+      "icons": [
+        {
+          "src": "/img/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

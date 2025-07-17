@@ -6,6 +6,7 @@ html {
 *, *::before, *::after {
   box-sizing: inherit;
 }
+
 body {
   font-size: var(--font-size-base); /* = 1rem */
   display: flex;
@@ -16,12 +17,11 @@ body {
   color: var(--color-text-main);
 }
 
-
 html, body {
   height: 100%;
   background-color: var(--color-bg);
   color: var(--color-text-main);
-  overflow: auto; /* war: hidden */
+  overflow: auto;
   scroll-behavior: smooth;
   line-height: 1.6;
   font-family: var(--font-family-main);
@@ -34,45 +34,43 @@ p, a, li, span, label {
 /* _global.css - Globale CSS-Variablen für das Design System */
 :root {
   /* Farben */
-  --color-bg: rgb(57, 57, 57); /* Optimiert: P3 R57 G57 B57 */
-
-  --color-bg-secondary: #444; /* viewport-box index *//*   --color-bg-secondary: #444; Sekundäre Hintergrundfarbe (z.B. für Karten) */
-  --color-text-main: #f5f5f5; /* Haupttextfarbe */
-  --color-text-muted: rgba(245, 245, 245, 60%); /* Gedämpfte Textfarbe */
-  --color-decor: #fff; /* Dekorative Elemente */
-  --color-accent: #3A85FF; /* Primäre Akzentfarbe *//*   --color-accent: rgba(255, 204, 41, 0.9); Primäre Akzentfarbe */
-
-  --color-accent-hover: rgba(255, 204, 41, 1); /* Akzentfarbe beim Hover */
-  --color-shadow-light: rgba(255, 255, 255, 30%); /* Heller Schatten (z.B. für leichte Effekte) */
-  --color-shadow-dark: color-mix(in srgb, black 25%, transparent); /* Dunklerer Schatten (z.B. für Karten und Boxen) */
-  --color-card-icon: var(--color-text-muted); /* Farbe für Icons auf Karten */
-  --color-highlight: #007bff; /* Für spezifische Hervorhebungen (ursprünglich) */
-  --color-link: #61dafb; /* Neue Farbe für Links, aus bereitgestelltem Snippet */
+  --color-bg: rgb(57, 57, 57);
+  --color-bg-secondary: #444;
+  --color-text-main: #f5f5f5;
+  --color-text-muted: rgba(245, 245, 245, 0.6);
+  --color-decor: #ffffff;
+  --color-accent: #3A85FF;
+  --color-accent-hover: rgba(255, 204, 41, 1);
+  --color-shadow-light: rgba(255, 255, 255, 0.3);
+  --color-shadow-dark: rgba(0, 0, 0, 0.25);
+  --color-card-icon: var(--color-text-muted);
+  --color-highlight: #007bff;
+  --color-link: #61dafb;
 
   /* Schriftarten */
   --font-family-main: 'Poppins', sans-serif;
   --font-family-secondary: 'Inter', sans-serif;
-  --font-family-code: 'Fira Code', 'Cascadia Code', monospace; /* Falls benötigt */
+  --font-family-code: 'Fira Code', 'Cascadia Code', monospace;
 
   /* Schriftgrößen (mit Clamp für Responsivität) */
-  --font-size-base: 1rem; /* Basis-Schriftgröße */
-  --font-size-sm: 0.875rem; /* Kleinere Schriftgröße */
-  --font-size-ss: 0.575rem; /* Kleinere Schriftgröße */
-  --font-size-lg: 1.125rem; /* Größere Schriftgröße */
-  --font-size-xl: 1.25rem; /* Extra große Schriftgröße */
+  --font-size-base: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-ss: 0.575rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
 
   --font-size-h1: clamp(1.7rem, 2.5vw + 1rem, 3rem);
   --font-size-h2: clamp(1.4rem, 2vw + 0.8rem, 2.5rem);
-  --font-size-h3: clamp(1.2rem, 1.8vw + 60%rem, 2.1rem);
+  --font-size-h3: clamp(1.2rem, 1.8vw + 0.6rem, 2.1rem);
   --font-size-h4: clamp(1.05rem, 1.5vw + 0.4rem, 1.8rem);
-  --font-size-p: clamp(0.95rem, 0.4vw + 0.85rem, 1.1rem); /* Für Absätze und Listenpunkte */
-  --font-size-lead: clamp(1rem, 0.5vw + 0.85rem, 1.2rem); /* Für Lead-Texte */
+  --font-size-p: clamp(0.95rem, 0.4vw + 0.85rem, 1.1rem);
+  --font-size-lead: clamp(1rem, 0.5vw + 0.85rem, 1.2rem);
 
   /* Zusätzliche Schriftgrößen für mobile Footer/Boxen */
   --font-size-p-small: 0.82rem;
-  --font-size-p-xsmall: 60%8rem;
+  --font-size-p-xsmall: 0.68rem;
 
-  /* Abstände und Layout-Größen (jetzt auch mit clamp für zusätzliche Fluidität, optional) */
+  /* Abstände und Layout-Größen */
   --spacing-xs: clamp(0.2rem, 0.5vw, 0.4rem);
   --spacing-sm: clamp(0.4rem, 1vw, 0.8rem);
   --spacing-md: clamp(0.8rem, 2vw, 1.5rem);
@@ -80,12 +78,12 @@ p, a, li, span, label {
   --spacing-xl: clamp(2rem, 4vw, 3.5rem);
   --spacing-xxl: clamp(3rem, 5vw, 5rem);
 
-  --border-radius: 0.7rem; /* Abgerundete Ecken */
-  --section-padding: var(--spacing-lg); /* Padding für Hauptbereiche */
-  --container-padding-inline: clamp(1rem, 2.5vw, 6rem); /* Horizontaler Container-Abstand */
+  --border-radius: 0.7rem;
+  --section-padding: var(--spacing-lg);
+  --container-padding-inline: clamp(1rem, 2.5vw, 6rem);
 
   /* Übergänge & Animationen */
-  --transition-speed: 30%5s;
+  --transition-speed: 0.35s;
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Spezifische Card-Variablen */
@@ -106,11 +104,11 @@ p, a, li, span, label {
   --card-icon-title-size-max: 1.25rem;
 
   --card-title-size-min: 1rem;
-  --card-title-size-preferred: 2.2vmin + 30%rem;
+  --card-title-size-preferred: calc(2.2vmin + 0.3rem);
   --card-title-size-max: 1.6rem;
 
   --card-text-size-min: 0.85rem;
-  --card-text-size-preferred: 1.8vmin + 25%rem;
+  --card-text-size-preferred: calc(1.8vmin + 0.25rem);
   --card-text-size-max: 1.05rem;
 }
 
@@ -130,12 +128,11 @@ html[data-theme='dark'] {
   --color-bg: rgb(57, 57, 57);
   --color-bg-secondary: #444;
   --color-text-main: #f5f5f5;
-  --color-text-muted: rgba(245, 245, 245, 60%);
+  --color-text-muted: rgba(245, 245, 245, 0.6);
   --color-link: #61dafb;
   --color-accent: #3A85FF;
-  --color-shadow-dark: color-mix(in srgb, black 25%, transparent);
+  --color-shadow-dark: rgba(0, 0, 0, 0.25);
 }
-
 
 /* Globale Typografie */
 h1 {
@@ -144,24 +141,28 @@ h1 {
   line-height: 1.2;
   margin-bottom: var(--spacing-md);
 }
+
 h2 {
   font-size: var(--font-size-h2);
   font-weight: 600;
   line-height: 1.25;
   margin-bottom: var(--spacing-md);
 }
+
 h3 {
   font-size: var(--font-size-h3);
   font-weight: 600;
   line-height: 1.3;
   margin-bottom: var(--spacing-sm);
 }
+
 h4, h5, h6 {
   font-size: var(--font-size-h4);
   font-weight: 600;
   line-height: 1.35;
   margin-bottom: var(--spacing-sm);
 }
+
 p, li {
   font-size: var(--font-size-p);
   line-height: 1.6;
@@ -176,10 +177,34 @@ a {
   text-decoration: underline;
   transition: color 0.2s;
 }
+
 a:hover,
 a:focus {
   color: var(--color-accent);
   text-decoration: underline;
+}
+
+/* Focus Styles für bessere Accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Skip Link für Accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-accent);
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 100000;
+  border-radius: 0 0 4px 4px;
+}
+
+.skip-link:focus {
+  top: 0;
 }
 
 /* Noscript Warning */
@@ -191,4 +216,42 @@ a:focus {
   font-weight: bold;
 }
 
-/* Weitere utility classes... */
+/* Utility Classes */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Performance-optimierte Transitions */
+.transition-colors {
+  transition: color var(--transition-speed) var(--transition-ease),
+              background-color var(--transition-speed) var(--transition-ease),
+              border-color var(--transition-speed) var(--transition-ease);
+}
+
+.transition-transform {
+  transition: transform var(--transition-speed) var(--transition-ease);
+}
+
+.transition-all {
+  transition: all var(--transition-speed) var(--transition-ease);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

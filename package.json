@@ -1,17 +1,17 @@
 {
   "name": "iweb",
   "version": "1.0.0",
-  "description": "Abdulkerims persönliche Website - Modern, responsive und DSGVO-konform",
+  "description": "Abdulkerims persönliche Website – modern, responsive und DSGVO-konform",
   "main": "index.html",
   "scripts": {
     "dev": "python -m http.server 8000",
     "dev-node": "npx http-server -p 8000 -c-1",
-    "build": "echo 'Static site - no build needed'",
+    "build": "echo 'Static site – no build needed'",
     "validate-html": "html-validate index.html pages/**/*.html",
     "validate-css": "stylelint css/**/*.css",
     "lighthouse": "lighthouse http://localhost:8000 --output=html --output-path=./lighthouse-report.html",
     "test-performance": "node scripts/performance-test.js",
-    "compress-images": "imagemin img/**/*.{jpg,png} --out-dir=img/optimized",
+    "compress-images": "imagemin img/**/*.{jpg,png} --plugin=mozjpeg --plugin=optipng --out-dir=img/optimized",
     "check-links": "broken-link-checker http://localhost:8000",
     "deploy-check": "npm run validate-html && npm run validate-css && npm run check-links"
   },
@@ -34,8 +34,8 @@
     "html-validate": "^8.0.0",
     "http-server": "^14.0.0",
     "imagemin": "^8.0.1",
-    "imagemin-mozjpeg": "^7.0.0",
-    "imagemin-pngquant": "^5.0.1",
+    "imagemin-mozjpeg": "^9.0.0",
+    "imagemin-optipng": "^9.0.0",
     "lighthouse": "^12.8.0",
     "stylelint": "^15.0.0",
     "stylelint-config-standard": "^34.0.0"
