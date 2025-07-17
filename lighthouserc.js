@@ -19,7 +19,7 @@ module.exports = {
         'categories:accessibility': ['error', { minScore: 0.95 }],
         'categories:best-practices': ['warn', { minScore: 0.9 }],
         'categories:seo': ['error', { minScore: 0.95 }],
-        'categories:pwa': ['warn', { minScore: 0.8 }],
+        'categories:pwa': ['error', { minScore: 0.8 }],
 
         // Core Web Vitals
         'first-contentful-paint': ['warn', { maxNumericValue: 2000 }],
@@ -27,10 +27,7 @@ module.exports = {
         'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
         'total-blocking-time': ['warn', { maxNumericValue: 300 }],
 
-        // PWA Checks
-        'service-worker': 'error',
-        'installable-manifest': 'error',
-        'themed-omnibox': 'warn',
+
 
         // Security (deaktiviert wegen localhost)
         'is-on-https': 'off',

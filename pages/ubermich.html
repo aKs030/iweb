@@ -9,6 +9,35 @@
 
   <link rel="stylesheet" href="/css/ubermich.css">
 
+  <!-- Apple Touch Icons für iOS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#393939">
+  <!-- Service Worker aktivieren -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+  <!-- Strukturierte Daten: JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Abdulkerim Sesli",
+    "url": "https://www.abdulkerimsesli.de/pages/ubermich.html",
+    "sameAs": [
+      "https://github.com/aKs030",
+      "https://linkedin.com/in/abdulkerim-sesli"
+    ],
+    "jobTitle": "Webentwickler",
+    "description": "Über mich, Hobbys, Karriere und Kontaktmöglichkeiten."
+  }
+  </script>
 </head>
 <body>
   <div id="menu-container"></div>

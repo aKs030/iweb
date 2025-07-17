@@ -11,7 +11,41 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-</head>
+
+  <!-- Apple Touch Icons für iOS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
+  <link rel="preload" href="/img/touch-icon-180.webp" as="image">
+  <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#393939">
+  <!-- Service Worker aktivieren -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+  <!-- Strukturierte Daten: JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Spiele",
+    "url": "https://www.abdulkerimsesli.de/pages/index-game.html",
+    "description": "Interaktive Spiele von Abdulkerim Sesli.",
+    "publisher": {
+      "@type": "Person",
+      "name": "Abdulkerim Sesli",
+      "sameAs": [
+        "https://github.com/aKs030",
+        "https://linkedin.com/in/abdulkerim-sesli"
+      ],
+      "jobTitle": "Webentwickler"
+    }
+  }
+  </script>
 <body>
   <div id="menu-container"></div>
   <noscript>

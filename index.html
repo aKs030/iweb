@@ -13,6 +13,15 @@
     <meta name="generator" content="iweb-7">
     <link rel="canonical" href="https://www.abdulkerimsesli.de/">
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#393939">
+    <!-- Service Worker aktivieren -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
+    </script>
     <!-- Apple Mobile -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Abdulkerim ⭐️">
@@ -35,9 +44,42 @@
     <!-- Favicons -->
     <link rel="icon" href="/img/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <!-- Apple Touch Icons für iOS -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <!-- Strukturierte Daten: JSON-LD -->
+    <!-- Strukturierte Daten: JSON-LD für Person und Website -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Abdulkerim Sesli",
+      "alternateName": "Abdulkerim ⭐️",
+      "url": "https://www.abdulkerimsesli.de/",
+      "description": "Persönliche Website von Abdulkerim Sesli – Portfolio, Blog und Kontakt.",
+      "publisher": {
+        "@type": "Person",
+        "name": "Abdulkerim Sesli",
+        "sameAs": [
+          "https://github.com/aKs030",
+          "https://linkedin.com/in/abdulkerim-sesli"
+        ],
+        "jobTitle": "Webentwickler"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.abdulkerimsesli.de/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <meta property="og:url" content="https://www.abdulkerimsesli.de/">
     <meta property="og:title" content="Abdulkerim ⭐️ - Persönliche Website">
     <meta property="og:description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken.">
@@ -135,7 +177,9 @@
     
     <!-- Main Content -->
     <main id="main-content" class="viewport-box" role="main" aria-label="Hauptinhalt">
-        <section class="sections-container snap-section" id="section-hero" aria-label="Willkommensbereich"></section>
+        <section class="sections-container snap-section" id="section-hero" aria-label="Willkommensbereich">
+            <h1>Willkommen auf Abdulkerims persönlicher Website – Portfolio, Blog &amp; mehr</h1>
+        </section>
         <section class="sections-container snap-section" id="section-features" aria-label="Features"></section>
         <section class="sections-container snap-section" id="section-about" aria-label="Über mich"></section>
         <div class="dots-nav" aria-label="Seitennavigation" role="tablist" aria-orientation="vertical">
