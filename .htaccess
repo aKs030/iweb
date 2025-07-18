@@ -6,13 +6,13 @@
 
 const CACHE_VERSION = 'v2.0.0';
 const CACHE_NAME = `iweb7-${CACHE_VERSION}`;
-const OFFLINE_URL = '/offline.html';
+const OFFLINE_URL = '/pages/komponente/offline.html';
 
 // Assets die immer gecached werden sollen
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/offline.html',
+  '/pages/komponente/offline.html',
   '/css/_global.css',
   '/css/index.css',
   '/css/menu.css',

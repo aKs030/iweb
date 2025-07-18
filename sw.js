@@ -69,7 +69,7 @@ self.addEventListener('fetch', (evt) => {
                 evt.request.destination === 'document' ||
                 evt.request.headers.get('accept').includes('text/html')
               ) {
-                return caches.match('/offline.html');
+                return caches.match('/pages/komponente/offline.html');
               }
               return caches.match('/pages/komponente/404.html');
             }
@@ -81,14 +81,14 @@ self.addEventListener('fetch', (evt) => {
               evt.request.destination === 'document' ||
               evt.request.headers.get('accept').includes('text/html')
             ) {
-              return caches.match('/offline.html');
+              return caches.match('/pages/komponente/offline.html');
             }
             return caches.match('/pages/komponente/404.html');
           });
       })
       .catch(() => {
         // Offline Fallback für alle anderen Seiten
-        return caches.match('/offline.html');
+        return caches.match('/pages/komponente/offline.html');
       })
   );
 });
