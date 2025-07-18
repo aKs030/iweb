@@ -20,33 +20,37 @@ const ASSETS = [
   '/pages/index-card.html',
   '/manifest.json',
   '/pages/komponente/offline.html',
-  '/pages/komponente/404.html'
+  '/pages/komponente/404.html',
 ];
 
 // Cookie Consent Status im Service Worker
 let cookieConsentStatus = null;
 
-self.addEventListener('install', evt => {
+self.addEventListener('install', (evt) => {
   console.log('🍪 SW: Installing Cookie Banner v2.0 Support');
   evt.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
       .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', evt => {
+self.addEventListener('activate', (evt) => {
   evt.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      ))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        )
+      )
       .then(() => self.clients.claim())
   );
 });
 
 // Enhanced fetch handler mit Cookie-Consent-Awareness
-self.addEventListener('fetch', evt => {
+self.addEventListener('fetch', (evt) => {
   const url = new URL(evt.request.url);
   // Blockiere Analytics-Requests wenn kein Consent
   if (shouldBlockRequest(url)) {
@@ -54,13 +58,17 @@ self.addEventListener('fetch', evt => {
     return;
   }
   evt.respondWith(
-    caches.match(evt.request)
-      .then(res => {
+    caches
+      .match(evt.request)
+      .then((res) => {
         if (res) return res;
         return fetch(evt.request)
-          .then(networkRes => {
+          .then((networkRes) => {
             if (networkRes.status === 404) {
-              if (evt.request.destination === 'document' || evt.request.headers.get('accept').includes('text/html')) {
+              if (
+                evt.request.destination === 'document' ||
+                evt.request.headers.get('accept').includes('text/html')
+              ) {
                 return caches.match('/offline.html');
               }
               return caches.match('/pages/komponente/404.html');
@@ -69,7 +77,10 @@ self.addEventListener('fetch', evt => {
           })
           .catch(() => {
             // Wenn Netzwerk und Cache fehlschlagen, zeige offline.html für Dokumente
-            if (evt.request.destination === 'document' || evt.request.headers.get('accept').includes('text/html')) {
+            if (
+              evt.request.destination === 'document' ||
+              evt.request.headers.get('accept').includes('text/html')
+            ) {
               return caches.match('/offline.html');
             }
             return caches.match('/pages/komponente/404.html');
@@ -83,13 +94,13 @@ self.addEventListener('fetch', evt => {
 });
 
 // Cookie Consent Message Handler
-self.addEventListener('message', event => {
+self.addEventListener('message', (event) => {
   // Sicherheitscheck: Nur Nachrichten von der eigenen Origin akzeptieren
   if (event.origin !== self.location.origin) {
     console.warn('SW: Message from unauthorized origin blocked:', event.origin);
     return;
   }
-  
+
   if (event.data && event.data.type === 'COOKIE_CONSENT_UPDATE') {
     cookieConsentStatus = event.data.consent;
     console.log('🍪 SW: Cookie Consent updated:', cookieConsentStatus);
@@ -98,19 +109,23 @@ self.addEventListener('message', event => {
 
 function shouldBlockRequest(url) {
   if (!cookieConsentStatus) return false;
-  
+
   // Blockiere Google Analytics wenn kein Analytics-Consent
-  if (url.hostname.includes('google-analytics.com') || 
-      url.hostname.includes('googletagmanager.com')) {
+  if (
+    url.hostname.includes('google-analytics.com') ||
+    url.hostname.includes('googletagmanager.com')
+  ) {
     return !cookieConsentStatus.analytics;
   }
-  
+
   // Blockiere Social Media Tracker
-  if (url.hostname.includes('facebook.com') || 
-      url.hostname.includes('twitter.com') ||
-      url.hostname.includes('linkedin.com')) {
+  if (
+    url.hostname.includes('facebook.com') ||
+    url.hostname.includes('twitter.com') ||
+    url.hostname.includes('linkedin.com')
+  ) {
     return !cookieConsentStatus.social;
   }
-  
+
   return false;
 }

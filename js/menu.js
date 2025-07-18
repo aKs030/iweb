@@ -1,6 +1,6 @@
 /**
  * Responsives Menü-System mit dynamischem Content-Loading
- * 
+ *
  * Features:
  * - Dynamisches Laden von Menü und Footer
  * - Mobile-responsive Navigation
@@ -15,7 +15,7 @@ const BREAKPOINTS = {
   MOBILE: 768,
   TOUCH_TIMEOUT: 500,
   RESIZE_DEBOUNCE: 150,
-  LOGO_SCALE_DURATION: 150
+  LOGO_SCALE_DURATION: 150,
 };
 
 let resizeTimeout;
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Footer laden mit verbesserter Fehlerbehandlung
   loadFooter();
-  
+
   // Menü laden mit optimierter Performance
   loadMenu(menuContainer);
 });
@@ -43,18 +43,19 @@ async function loadFooter() {
   try {
     const response = await fetch('/pages/komponente/footer.html');
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
+      throw new Error(
+        `HTTP ${response.status}: Footer konnte nicht geladen werden`
+      );
     }
-    
+
     const html = await response.text();
     footerPlaceholder.innerHTML = html;
-    
+
     // Jahr dynamisch setzen mit Fehlerbehandlung
     const yearEl = document.getElementById('current-year');
     if (yearEl) {
       yearEl.textContent = currentYear;
     }
-    
   } catch (err) {
     console.error('Fehler beim Laden des Footers:', err.message);
     // Optimierter Fallback Footer
@@ -88,10 +89,10 @@ async function loadMenu(menuContainer) {
   try {
     const response = await fetch('/pages/komponente/menu.html');
     if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
-    
+
     const menuMarkup = await response.text();
     menuContainer.innerHTML = menuMarkup;
-    
+
     // Menü-Funktionalitäten initialisieren
     initializeMenu(menuContainer);
     initializeLogo(menuContainer);
@@ -100,13 +101,12 @@ async function loadMenu(menuContainer) {
     initializeThemeSwitcher();
     initializeSearch();
     setSiteTitle();
-    
+
     // Optimierter Outside-Click Handler mit Debouncing
     setupOutsideClickHandler(menuContainer);
-    
+
     // Resize-Handler für bessere Mobile-Performance
     setupResizeHandler(menuContainer);
-    
   } catch (err) {
     console.error('Fehler beim Laden des Menüs:', err.message);
     // Verbesserter Fallback mit besserer Accessibility
@@ -142,30 +142,33 @@ function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   const overlay = container.querySelector('.site-menu__overlay');
-  
+
   if (!menuToggle || !menu) {
-    console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
+    console.warn(
+      'Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.'
+    );
     return;
   }
 
   const toggleMenu = (isOpen = null) => {
-    const willBeOpen = isOpen !== null ? isOpen : !menu.classList.contains('open');
-    
+    const willBeOpen =
+      isOpen !== null ? isOpen : !menu.classList.contains('open');
+
     menu.classList.toggle('open', willBeOpen);
     menuToggle.classList.toggle('active', willBeOpen);
-    
+
     // ARIA Attribute aktualisieren
     menuToggle.setAttribute('aria-expanded', willBeOpen.toString());
-    
+
     // Body-Scroll verhindern wenn Mobile-Menü offen
     if (window.innerWidth <= BREAKPOINTS.MOBILE) {
       document.body.style.overflow = willBeOpen ? 'hidden' : '';
     }
   };
-  
+
   // Event Listeners mit verbesserter Accessibility
   menuToggle.addEventListener('click', () => toggleMenu());
-  
+
   menuToggle.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -175,7 +178,7 @@ function initializeMenu(container) {
       toggleMenu(false);
     }
   });
-  
+
   // Overlay-Klick schließt Menü
   if (overlay) {
     overlay.addEventListener('click', () => toggleMenu(false));
@@ -192,7 +195,7 @@ function initializeLogo(container) {
     console.warn('Logo-Container konnte nicht gefunden werden.');
     return;
   }
-  
+
   logoContainer.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     // Sanfte Navigation mit Feedback
@@ -211,36 +214,41 @@ function initializeLogo(container) {
 function initializeSubmenuLinks(container) {
   const submenuLinks = container.querySelectorAll('.has-submenu > a');
   let touchStartTime = 0;
-  
-  submenuLinks.forEach(link => {
+
+  submenuLinks.forEach((link) => {
     // Touch-Events für bessere Mobile-Erfahrung
-    link.addEventListener('touchstart', () => {
-      touchStartTime = Date.now();
-    }, { passive: true });
-    
+    link.addEventListener(
+      'touchstart',
+      () => {
+        touchStartTime = Date.now();
+      },
+      { passive: true }
+    );
+
     link.addEventListener('click', (event) => {
       const isMobile = window.innerWidth <= BREAKPOINTS.MOBILE;
-      const isQuickTouch = Date.now() - touchStartTime < BREAKPOINTS.TOUCH_TIMEOUT;
-      
+      const isQuickTouch =
+        Date.now() - touchStartTime < BREAKPOINTS.TOUCH_TIMEOUT;
+
       // Nur für Mobile oder schnelle Touch-Ereignisse: JS steuert Submenu
       if (!isMobile && !isQuickTouch) return;
-      
+
       event.preventDefault();
       const parentLi = link.parentElement;
       const isOpen = parentLi.classList.contains('open');
-      
+
       // Alle anderen Submenüs schließen
-      container.querySelectorAll('.has-submenu').forEach(li => {
+      container.querySelectorAll('.has-submenu').forEach((li) => {
         if (li !== parentLi) li.classList.remove('open');
       });
-      
+
       // Aktuelles Submenü umschalten
       parentLi.classList.toggle('open', !isOpen);
-      
+
       // ARIA Attribute aktualisieren
       link.setAttribute('aria-expanded', (!isOpen).toString());
     });
-    
+
     // Keyboard Navigation
     link.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowDown' || event.key === 'Enter') {
@@ -248,7 +256,7 @@ function initializeSubmenuLinks(container) {
         const parentLi = link.parentElement;
         parentLi.classList.add('open');
         link.setAttribute('aria-expanded', 'true');
-        
+
         // Fokus auf erstes Submenu-Element
         const firstSubmenuLink = parentLi.querySelector('.submenu a');
         if (firstSubmenuLink) firstSubmenuLink.focus();
@@ -265,14 +273,14 @@ function initializeAccessibility(container) {
   // Escape-Key schließt alle offenen Submenüs
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      container.querySelectorAll('.has-submenu').forEach(li => {
+      container.querySelectorAll('.has-submenu').forEach((li) => {
         li.classList.remove('open');
         li.querySelector('a').setAttribute('aria-expanded', 'false');
       });
       closeMenu(container);
     }
   });
-  
+
   // Fokus-Management für bessere Navigation
   const menuLinks = container.querySelectorAll('a');
   menuLinks.forEach((link, index) => {
@@ -298,17 +306,17 @@ function initializeAccessibility(container) {
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
-  
+
   if (menuToggle && menu) {
     menu.classList.remove('open');
     menuToggle.classList.remove('active');
     menuToggle.setAttribute('aria-expanded', 'false');
-    
+
     // Body-Scroll wiederherstellen
     document.body.style.overflow = '';
-    
+
     // Alle Submenüs schließen
-    container.querySelectorAll('.has-submenu').forEach(li => {
+    container.querySelectorAll('.has-submenu').forEach((li) => {
       li.classList.remove('open');
       li.querySelector('a').setAttribute('aria-expanded', 'false');
     });
@@ -324,15 +332,15 @@ function setupOutsideClickHandler(menuContainer) {
     // Nur prüfen wenn Menü offen ist
     const menu = menuContainer.querySelector('.site-menu');
     if (!menu?.classList.contains('open')) return;
-    
+
     const isClickInside = menuContainer.contains(event.target);
     const isMenuToggle = event.target.closest('.site-menu__toggle');
-    
+
     if (!isClickInside && !isMenuToggle) {
       closeMenu(menuContainer);
     }
   };
-  
+
   // Verwende passive Event Listener für bessere Performance
   document.addEventListener('click', handleOutsideClick, { passive: true });
 }
@@ -352,7 +360,7 @@ function setupResizeHandler(menuContainer) {
       }
     }, BREAKPOINTS.RESIZE_DEBOUNCE);
   };
-  
+
   window.addEventListener('resize', handleResize, { passive: true });
 }
 
@@ -373,13 +381,13 @@ function setSiteTitle() {
     '/pages/features/editor.html': 'Level Editor',
     '/pages/komponente/kontakt.html': 'Kontakt',
     '/pages/komponente/impressum.html': 'Impressum',
-    '/pages/komponente/datenschutz.html': 'Datenschutz'
+    '/pages/komponente/datenschutz.html': 'Datenschutz',
   };
-  
+
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Abdul Kerim';
   const siteTitleEl = document.getElementById('site-title');
-  
+
   if (siteTitleEl) {
     siteTitleEl.textContent = pageTitle;
     // Aria-Label für bessere Accessibility
@@ -392,17 +400,17 @@ function setSiteTitle() {
  */
 function initializeThemeSwitcher() {
   const themeToggles = document.querySelectorAll('.theme-toggle-checkbox');
-  
+
   if (themeToggles.length === 0) return;
 
   const currentTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
-  
+
   // Update toggles and icons
-  themeToggles.forEach(toggle => {
+  themeToggles.forEach((toggle) => {
     toggle.checked = currentTheme === 'dark';
   });
-  
+
   updateThemeIcons(currentTheme);
 
   document.body.addEventListener('change', (e) => {
@@ -410,14 +418,14 @@ function initializeThemeSwitcher() {
       const newTheme = e.target.checked ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', newTheme);
       localStorage.setItem('theme', newTheme);
-      
+
       // Synchronize other toggles
-      themeToggles.forEach(t => {
+      themeToggles.forEach((t) => {
         if (t !== e.target) {
           t.checked = e.target.checked;
         }
       });
-      
+
       // Update all theme icons
       updateThemeIcons(newTheme);
     }
@@ -429,7 +437,7 @@ function initializeThemeSwitcher() {
  */
 function updateThemeIcons(theme) {
   const themeIcons = document.querySelectorAll('.theme-icon');
-  themeIcons.forEach(icon => {
+  themeIcons.forEach((icon) => {
     if (theme === 'dark') {
       icon.className = 'theme-icon fa-solid fa-sun'; // Zeige Sonne im Dark Mode
     } else {
@@ -445,7 +453,7 @@ function initializeSearch() {
   const searchContainers = document.querySelectorAll('.search-container');
   if (searchContainers.length === 0) return;
 
-  searchContainers.forEach(container => {
+  searchContainers.forEach((container) => {
     const toggle = container.querySelector('.search-toggle');
     const input = container.querySelector('.search-input');
 
@@ -472,35 +480,40 @@ function initializeSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    searchContainers.forEach(container => {
+    searchContainers.forEach((container) => {
       // Nur die Desktop-Suche bei Klick außerhalb schließen
-      if (!container.parentElement.classList.contains('mobile-actions') && !container.contains(e.target)) {
+      if (
+        !container.parentElement.classList.contains('mobile-actions') &&
+        !container.contains(e.target)
+      ) {
         container.classList.remove('active');
-        container.querySelector('.search-toggle').setAttribute('aria-expanded', 'false');
+        container
+          .querySelector('.search-toggle')
+          .setAttribute('aria-expanded', 'false');
       }
     });
   });
 }
 
 class MenuManager {
-    constructor() {
-        this.listeners = new Map();
+  constructor() {
+    this.listeners = new Map();
+  }
+
+  addListener(element, event, handler, options) {
+    if (!this.listeners.has(element)) {
+      this.listeners.set(element, new Map());
     }
-    
-    addListener(element, event, handler, options) {
-        if (!this.listeners.has(element)) {
-            this.listeners.set(element, new Map());
-        }
-        this.listeners.get(element).set(event, { handler, options });
-        element.addEventListener(event, handler, options);
-    }
-    
-    cleanup() {
-        this.listeners.forEach((events, element) => {
-            events.forEach((value, event) => {
-                element.removeEventListener(event, value.handler, value.options);
-            });
-        });
-        this.listeners.clear();
-    }
+    this.listeners.get(element).set(event, { handler, options });
+    element.addEventListener(event, handler, options);
+  }
+
+  cleanup() {
+    this.listeners.forEach((events, element) => {
+      events.forEach((value, event) => {
+        element.removeEventListener(event, value.handler, value.options);
+      });
+    });
+    this.listeners.clear();
+  }
 }

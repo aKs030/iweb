@@ -1,250 +1,494 @@
 <!-- 🍪 Cookie Banner v2.0 Enterprise Edition -->
 <div id="cookie-banner" class="cookie-banner hidden" data-theme="light">
-    <div class="cookie-banner-content">
-        <div class="cookie-banner-icon">🍪</div>
-        <div class="cookie-banner-text">
-            <h3 id="cookie-banner-title">Cookie-Einstellungen</h3>
-            <p id="cookie-banner-description">
-                Wir verwenden Cookies und ähnliche Technologien, um Ihnen die bestmögliche Erfahrung zu bieten.
-                Einige sind notwendig für die Funktion der Website, andere helfen uns bei der Verbesserung unserer Dienste.
-            </p>
-            <div class="cookie-banner-links">
-                <a href="/pages/komponente/datenschutz.html" id="cookie-privacy-link">Datenschutzerklärung</a>
-                <a href="/pages/komponente/impressum.html" id="cookie-imprint-link">Impressum</a>
-            </div>
-        </div>
-        <div class="cookie-banner-actions">
-            <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-settings-btn">
-                <span>⚙️</span> Einstellungen
-            </button>
-            <button type="button" class="cookie-btn cookie-btn-outline" id="cookie-reject-btn">
-                <span>❌</span> Ablehnen
-            </button>
-            <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-btn">
-                <span>✅</span> Alle akzeptieren
-            </button>
-        </div>
+  <div class="cookie-banner-content">
+    <div class="cookie-banner-icon">🍪</div>
+    <div class="cookie-banner-text">
+      <h3 id="cookie-banner-title">Cookie-Einstellungen</h3>
+      <p id="cookie-banner-description">
+        Wir verwenden Cookies und ähnliche Technologien, um Ihnen die
+        bestmögliche Erfahrung zu bieten. Einige sind notwendig für die Funktion
+        der Website, andere helfen uns bei der Verbesserung unserer Dienste.
+      </p>
+      <div class="cookie-banner-links">
+        <a href="/pages/komponente/datenschutz.html" id="cookie-privacy-link"
+          >Datenschutzerklärung</a
+        >
+        <a href="/pages/komponente/impressum.html" id="cookie-imprint-link"
+          >Impressum</a
+        >
+      </div>
     </div>
-    <button type="button" class="cookie-banner-close" id="cookie-banner-close" aria-label="Cookie-Banner schließen" title="Schließen">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-    </button>
-    <div class="cookie-banner-progress">
-        <div class="cookie-banner-progress-bar" id="cookie-progress-bar"></div>
+    <div class="cookie-banner-actions">
+      <button
+        type="button"
+        class="cookie-btn cookie-btn-secondary"
+        id="cookie-settings-btn"
+      >
+        <span>⚙️</span> Einstellungen
+      </button>
+      <button
+        type="button"
+        class="cookie-btn cookie-btn-outline"
+        id="cookie-reject-btn"
+      >
+        <span>❌</span> Ablehnen
+      </button>
+      <button
+        type="button"
+        class="cookie-btn cookie-btn-primary"
+        id="cookie-accept-btn"
+      >
+        <span>✅</span> Alle akzeptieren
+      </button>
     </div>
+  </div>
+  <button
+    type="button"
+    class="cookie-banner-close"
+    id="cookie-banner-close"
+    aria-label="Cookie-Banner schließen"
+    title="Schließen"
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
+  <div class="cookie-banner-progress">
+    <div class="cookie-banner-progress-bar" id="cookie-progress-bar"></div>
+  </div>
 </div>
 
 <!-- Cookie Settings Modal - Enhanced Version -->
-<dialog id="cookie-settings-modal" class="cookie-modal hidden" aria-labelledby="cookie-modal-title">
-    <div class="cookie-modal-backdrop" id="cookie-modal-backdrop" aria-hidden="true"></div>
-    <div class="cookie-modal-content">
-        <div class="cookie-modal-header">
-            <h2 id="cookie-modal-title">🍪 Cookie-Einstellungen verwalten</h2>
-            <button type="button" class="cookie-modal-close" id="cookie-modal-close" aria-label="Cookie-Einstellungen schließen">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        </div>
-
-        <div class="cookie-modal-intro">
-            <p>Wir respektieren Ihre Privatsphäre und geben Ihnen die Kontrolle über Ihre Daten. Sie können jede Cookie-Kategorie individuell aktivieren oder deaktivieren.</p>
-        </div>
-
-        <div class="cookie-modal-body" role="tabpanel">
-            <div class="cookie-categories-wrapper">
-                <!-- Notwendige Cookies -->
-                <section class="cookie-category" data-category="necessary">
-                    <header class="cookie-category-header">
-                        <div class="cookie-category-info">
-                            <h3>🔧 Notwendige Cookies</h3>
-                            <span class="cookie-category-status">Immer aktiv</span>
-                        </div>
-                        <div class="cookie-category-actions">
-                            <label class="cookie-switch" for="cookie-necessary" aria-hidden="true">
-                                <input type="checkbox" id="cookie-necessary" checked disabled aria-label="Notwendige Cookies (immer aktiv)">
-                                <span class="cookie-slider"></span>
-                            </label>
-                            <button type="button" class="cookie-details-toggle" aria-label="Details zu notwendigen Cookies anzeigen" aria-expanded="false" aria-controls="necessary-details">
-                                <svg class="cookie-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6,9 12,15 18,9"></polyline>
-                                </svg>
-                            </button>
-                        </div>
-                    </header>
-                    <p class="cookie-category-description">Diese Cookies sind für die Grundfunktionen der Website erforderlich und können nicht deaktiviert werden.</p>
-                    <div class="cookie-details" id="necessary-details" aria-hidden="true">
-                        <div class="cookie-details-content">
-                            <h4>🔍 Details zu notwendigen Cookies:</h4>
-                            <ul class="cookie-list">
-                                <li><strong>Session-Cookie:</strong> Aufrechterhaltung der Benutzersitzung</li>
-                                <li><strong>CSRF-Token:</strong> Schutz vor Cross-Site-Request-Forgery</li>
-                                <li><strong>Cookie-Consent:</strong> Speicherung Ihrer Cookie-Einstellungen</li>
-                                <li><strong>Theme-Preference:</strong> Dark/Light Mode Einstellung</li>
-                            </ul>
-                            <p class="cookie-retention"><strong>Speicherdauer:</strong> Sitzung bzw. 1 Jahr</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Analytics Cookies -->
-                <section class="cookie-category" data-category="analytics">
-                    <header class="cookie-category-header">
-                        <div class="cookie-category-info">
-                            <h3>📊 Analytics Cookies</h3>
-                            <span class="cookie-category-count">2 Anbieter</span>
-                        </div>
-                        <div class="cookie-category-actions">
-                            <label class="cookie-switch" for="cookie-analytics" aria-label="Analytics Cookies aktivieren/deaktivieren">
-                                <input type="checkbox" id="cookie-analytics" aria-describedby="analytics-description">
-                                <span class="cookie-slider"></span>
-                            </label>
-                            <button type="button" class="cookie-details-toggle" aria-label="Details zu Analytics Cookies anzeigen" aria-expanded="false" aria-controls="analytics-details">
-                                <svg class="cookie-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6,9 12,15 18,9"></polyline>
-                                </svg>
-                            </button>
-                        </div>
-                    </header>
-                    <p id="analytics-description" class="cookie-category-description">Helfen uns zu verstehen, wie Besucher mit der Website interagieren, indem Informationen anonymisiert gesammelt werden.</p>
-                    <div class="cookie-details" id="analytics-details" aria-hidden="true">
-                        <div class="cookie-details-content">
-                            <h4>🔍 Analytics Cookie Details:</h4>
-                            <div class="cookie-provider">
-                                <h5>Google Analytics (G-S0587RQ4CN)</h5>
-                                <ul class="cookie-list">
-                                    <li><strong>_ga:</strong> Eindeutige Benutzer-ID (2 Jahre)</li>
-                                    <li><strong>_ga_*:</strong> Sitzungsstatus (2 Jahre)</li>
-                                    <li><strong>_gid:</strong> Eindeutige Benutzer-ID (24 Stunden)</li>
-                                </ul>
-                                <p class="cookie-purpose"><strong>Zweck:</strong> Webseitenanalyse, Besucherstatistiken</p>
-                                <p class="cookie-privacy"><strong>Datenschutz:</strong> <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a></p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Marketing Cookies -->
-                <section class="cookie-category" data-category="marketing">
-                    <header class="cookie-category-header">
-                        <div class="cookie-category-info">
-                            <h3>🎯 Marketing Cookies</h3>
-                            <span class="cookie-category-count">Derzeit keine</span>
-                        </div>
-                        <div class="cookie-category-actions">
-                            <label class="cookie-switch" for="cookie-marketing" aria-label="Marketing Cookies aktivieren/deaktivieren">
-                                <input type="checkbox" id="cookie-marketing" aria-describedby="marketing-description">
-                                <span class="cookie-slider"></span>
-                            </label>
-                            <button type="button" class="cookie-details-toggle" aria-label="Details zu Marketing Cookies anzeigen" aria-expanded="false" aria-controls="marketing-details">
-                                <svg class="cookie-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6,9 12,15 18,9"></polyline>
-                                </svg>
-                            </button>
-                        </div>
-                    </header>
-                    <p id="marketing-description" class="cookie-category-description">Werden für personalisierte Werbung und Remarketing verwendet. Derzeit werden keine Marketing-Cookies eingesetzt.</p>
-                    <div class="cookie-details" id="marketing-details" aria-hidden="true">
-                        <div class="cookie-details-content">
-                            <h4>🔍 Marketing Cookie Details:</h4>
-                            <p class="cookie-empty-state">
-                                <em>Derzeit werden keine Marketing-Cookies verwendet. Diese Option ist für zukünftige Funktionen vorbereitet.</em>
-                            </p>
-                            <p class="cookie-purpose"><strong>Mögliche zukünftige Verwendung:</strong> Retargeting, personalisierte Werbung, Conversion-Tracking</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Social Media Cookies -->
-                <section class="cookie-category" data-category="social">
-                    <header class="cookie-category-header">
-                        <div class="cookie-category-info">
-                            <h3>📱 Social Media Cookies</h3>
-                            <span class="cookie-category-count">Derzeit keine</span>
-                        </div>
-                        <div class="cookie-category-actions">
-                            <label class="cookie-switch" for="cookie-social" aria-label="Social Media Cookies aktivieren/deaktivieren">
-                                <input type="checkbox" id="cookie-social" aria-describedby="social-description">
-                                <span class="cookie-slider"></span>
-                            </label>
-                            <button type="button" class="cookie-details-toggle" aria-label="Details zu Social Media Cookies anzeigen" aria-expanded="false" aria-controls="social-details">
-                                <svg class="cookie-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6,9 12,15 18,9"></polyline>
-                                </svg>
-                            </button>
-                        </div>
-                    </header>
-                    <p id="social-description" class="cookie-category-description">Ermöglichen die Einbindung von sozialen Medien und das Teilen von Inhalten auf sozialen Netzwerken.</p>
-                    <div class="cookie-details" id="social-details" aria-hidden="true">
-                        <div class="cookie-details-content">
-                            <h4>🔍 Social Media Cookie Details:</h4>
-                            <p class="cookie-empty-state">
-                                <em>Derzeit werden keine Social Media Widgets oder Share-Buttons verwendet, die Cookies setzen würden.</em>
-                            </p>
-                            <p class="cookie-purpose"><strong>Mögliche zukünftige Verwendung:</strong> Social Media Plugins, Share-Buttons, Embedded Content</p>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </div>
-
-        <footer class="cookie-modal-footer">
-            <div class="cookie-modal-actions-secondary">
-                <button type="button" class="cookie-btn cookie-btn-outline" id="cookie-reject-all-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="15" y1="9" x2="9" y2="15"></line>
-                        <line x1="9" y1="9" x2="15" y2="15"></line>
-                    </svg>
-                    Alle ablehnen
-                </button>
-                <button type="button" class="cookie-btn cookie-btn-text" id="cookie-reset-btn">
-                    Zurücksetzen
-                </button>
-            </div>
-            <div class="cookie-modal-actions-primary">
-                <button type="button" class="cookie-btn cookie-btn-secondary" id="cookie-save-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
-                        <polyline points="17,21 17,13 7,13 7,21"></polyline>
-                        <polyline points="7,3 7,8 15,8"></polyline>
-                    </svg>
-                    Auswahl speichern
-                </button>
-                <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-all-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20,6 9,17 4,12"></polyline>
-                    </svg>
-                    Alle akzeptieren
-                </button>
-            </div>
-        </footer>
+<dialog
+  id="cookie-settings-modal"
+  class="cookie-modal hidden"
+  aria-labelledby="cookie-modal-title"
+>
+  <div
+    class="cookie-modal-backdrop"
+    id="cookie-modal-backdrop"
+    aria-hidden="true"
+  ></div>
+  <div class="cookie-modal-content">
+    <div class="cookie-modal-header">
+      <h2 id="cookie-modal-title">🍪 Cookie-Einstellungen verwalten</h2>
+      <button
+        type="button"
+        class="cookie-modal-close"
+        id="cookie-modal-close"
+        aria-label="Cookie-Einstellungen schließen"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
+
+    <div class="cookie-modal-intro">
+      <p>
+        Wir respektieren Ihre Privatsphäre und geben Ihnen die Kontrolle über
+        Ihre Daten. Sie können jede Cookie-Kategorie individuell aktivieren oder
+        deaktivieren.
+      </p>
+    </div>
+
+    <div class="cookie-modal-body" role="tabpanel">
+      <div class="cookie-categories-wrapper">
+        <!-- Notwendige Cookies -->
+        <section class="cookie-category" data-category="necessary">
+          <header class="cookie-category-header">
+            <div class="cookie-category-info">
+              <h3>🔧 Notwendige Cookies</h3>
+              <span class="cookie-category-status">Immer aktiv</span>
+            </div>
+            <div class="cookie-category-actions">
+              <label
+                class="cookie-switch"
+                for="cookie-necessary"
+                aria-hidden="true"
+              >
+                <input
+                  type="checkbox"
+                  id="cookie-necessary"
+                  checked
+                  disabled
+                  aria-label="Notwendige Cookies (immer aktiv)"
+                />
+                <span class="cookie-slider"></span>
+              </label>
+              <button
+                type="button"
+                class="cookie-details-toggle"
+                aria-label="Details zu notwendigen Cookies anzeigen"
+                aria-expanded="false"
+                aria-controls="necessary-details"
+              >
+                <svg
+                  class="cookie-chevron"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </button>
+            </div>
+          </header>
+          <p class="cookie-category-description">
+            Diese Cookies sind für die Grundfunktionen der Website erforderlich
+            und können nicht deaktiviert werden.
+          </p>
+          <div class="cookie-details" id="necessary-details" aria-hidden="true">
+            <div class="cookie-details-content">
+              <h4>🔍 Details zu notwendigen Cookies:</h4>
+              <ul class="cookie-list">
+                <li>
+                  <strong>Session-Cookie:</strong> Aufrechterhaltung der
+                  Benutzersitzung
+                </li>
+                <li>
+                  <strong>CSRF-Token:</strong> Schutz vor
+                  Cross-Site-Request-Forgery
+                </li>
+                <li>
+                  <strong>Cookie-Consent:</strong> Speicherung Ihrer
+                  Cookie-Einstellungen
+                </li>
+                <li>
+                  <strong>Theme-Preference:</strong> Dark/Light Mode Einstellung
+                </li>
+              </ul>
+              <p class="cookie-retention">
+                <strong>Speicherdauer:</strong> Sitzung bzw. 1 Jahr
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics Cookies -->
+        <section class="cookie-category" data-category="analytics">
+          <header class="cookie-category-header">
+            <div class="cookie-category-info">
+              <h3>📊 Analytics Cookies</h3>
+              <span class="cookie-category-count">2 Anbieter</span>
+            </div>
+            <div class="cookie-category-actions">
+              <label
+                class="cookie-switch"
+                for="cookie-analytics"
+                aria-label="Analytics Cookies aktivieren/deaktivieren"
+              >
+                <input
+                  type="checkbox"
+                  id="cookie-analytics"
+                  aria-describedby="analytics-description"
+                />
+                <span class="cookie-slider"></span>
+              </label>
+              <button
+                type="button"
+                class="cookie-details-toggle"
+                aria-label="Details zu Analytics Cookies anzeigen"
+                aria-expanded="false"
+                aria-controls="analytics-details"
+              >
+                <svg
+                  class="cookie-chevron"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </button>
+            </div>
+          </header>
+          <p id="analytics-description" class="cookie-category-description">
+            Helfen uns zu verstehen, wie Besucher mit der Website interagieren,
+            indem Informationen anonymisiert gesammelt werden.
+          </p>
+          <div class="cookie-details" id="analytics-details" aria-hidden="true">
+            <div class="cookie-details-content">
+              <h4>🔍 Analytics Cookie Details:</h4>
+              <div class="cookie-provider">
+                <h5>Google Analytics (G-S0587RQ4CN)</h5>
+                <ul class="cookie-list">
+                  <li>
+                    <strong>_ga:</strong> Eindeutige Benutzer-ID (2 Jahre)
+                  </li>
+                  <li><strong>_ga_*:</strong> Sitzungsstatus (2 Jahre)</li>
+                  <li>
+                    <strong>_gid:</strong> Eindeutige Benutzer-ID (24 Stunden)
+                  </li>
+                </ul>
+                <p class="cookie-purpose">
+                  <strong>Zweck:</strong> Webseitenanalyse, Besucherstatistiken
+                </p>
+                <p class="cookie-privacy">
+                  <strong>Datenschutz:</strong>
+                  <a
+                    href="https://policies.google.com/privacy"
+                    target="_blank"
+                    rel="noopener"
+                    >Google Privacy Policy</a
+                  >
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Marketing Cookies -->
+        <section class="cookie-category" data-category="marketing">
+          <header class="cookie-category-header">
+            <div class="cookie-category-info">
+              <h3>🎯 Marketing Cookies</h3>
+              <span class="cookie-category-count">Derzeit keine</span>
+            </div>
+            <div class="cookie-category-actions">
+              <label
+                class="cookie-switch"
+                for="cookie-marketing"
+                aria-label="Marketing Cookies aktivieren/deaktivieren"
+              >
+                <input
+                  type="checkbox"
+                  id="cookie-marketing"
+                  aria-describedby="marketing-description"
+                />
+                <span class="cookie-slider"></span>
+              </label>
+              <button
+                type="button"
+                class="cookie-details-toggle"
+                aria-label="Details zu Marketing Cookies anzeigen"
+                aria-expanded="false"
+                aria-controls="marketing-details"
+              >
+                <svg
+                  class="cookie-chevron"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </button>
+            </div>
+          </header>
+          <p id="marketing-description" class="cookie-category-description">
+            Werden für personalisierte Werbung und Remarketing verwendet.
+            Derzeit werden keine Marketing-Cookies eingesetzt.
+          </p>
+          <div class="cookie-details" id="marketing-details" aria-hidden="true">
+            <div class="cookie-details-content">
+              <h4>🔍 Marketing Cookie Details:</h4>
+              <p class="cookie-empty-state">
+                <em
+                  >Derzeit werden keine Marketing-Cookies verwendet. Diese
+                  Option ist für zukünftige Funktionen vorbereitet.</em
+                >
+              </p>
+              <p class="cookie-purpose">
+                <strong>Mögliche zukünftige Verwendung:</strong> Retargeting,
+                personalisierte Werbung, Conversion-Tracking
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Social Media Cookies -->
+        <section class="cookie-category" data-category="social">
+          <header class="cookie-category-header">
+            <div class="cookie-category-info">
+              <h3>📱 Social Media Cookies</h3>
+              <span class="cookie-category-count">Derzeit keine</span>
+            </div>
+            <div class="cookie-category-actions">
+              <label
+                class="cookie-switch"
+                for="cookie-social"
+                aria-label="Social Media Cookies aktivieren/deaktivieren"
+              >
+                <input
+                  type="checkbox"
+                  id="cookie-social"
+                  aria-describedby="social-description"
+                />
+                <span class="cookie-slider"></span>
+              </label>
+              <button
+                type="button"
+                class="cookie-details-toggle"
+                aria-label="Details zu Social Media Cookies anzeigen"
+                aria-expanded="false"
+                aria-controls="social-details"
+              >
+                <svg
+                  class="cookie-chevron"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </button>
+            </div>
+          </header>
+          <p id="social-description" class="cookie-category-description">
+            Ermöglichen die Einbindung von sozialen Medien und das Teilen von
+            Inhalten auf sozialen Netzwerken.
+          </p>
+          <div class="cookie-details" id="social-details" aria-hidden="true">
+            <div class="cookie-details-content">
+              <h4>🔍 Social Media Cookie Details:</h4>
+              <p class="cookie-empty-state">
+                <em
+                  >Derzeit werden keine Social Media Widgets oder Share-Buttons
+                  verwendet, die Cookies setzen würden.</em
+                >
+              </p>
+              <p class="cookie-purpose">
+                <strong>Mögliche zukünftige Verwendung:</strong> Social Media
+                Plugins, Share-Buttons, Embedded Content
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="cookie-modal-footer">
+      <div class="cookie-modal-actions-secondary">
+        <button
+          type="button"
+          class="cookie-btn cookie-btn-outline"
+          id="cookie-reject-all-btn"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          Alle ablehnen
+        </button>
+        <button
+          type="button"
+          class="cookie-btn cookie-btn-text"
+          id="cookie-reset-btn"
+        >
+          Zurücksetzen
+        </button>
+      </div>
+      <div class="cookie-modal-actions-primary">
+        <button
+          type="button"
+          class="cookie-btn cookie-btn-secondary"
+          id="cookie-save-btn"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+            ></path>
+            <polyline points="17,21 17,13 7,13 7,21"></polyline>
+            <polyline points="7,3 7,8 15,8"></polyline>
+          </svg>
+          Auswahl speichern
+        </button>
+        <button
+          type="button"
+          class="cookie-btn cookie-btn-primary"
+          id="cookie-accept-all-btn"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="20,6 9,17 4,12"></polyline>
+          </svg>
+          Alle akzeptieren
+        </button>
+      </div>
+    </footer>
+  </div>
 </dialog>
 
 <!-- Cookie Confirmation Toast -->
 <div id="cookie-confirmation" class="cookie-confirmation hidden">
-    <div class="cookie-confirmation-content">
-        <span class="cookie-confirmation-icon">✅</span>
-        <span id="cookie-confirmation-text">Einstellungen gespeichert!</span>
-    </div>
+  <div class="cookie-confirmation-content">
+    <span class="cookie-confirmation-icon">✅</span>
+    <span id="cookie-confirmation-text">Einstellungen gespeichert!</span>
+  </div>
 </div>
 
 <!-- Cookie Floating Action Button -->
-<button type="button" id="cookie-fab" class="cookie-fab hidden" aria-label="Cookie-Einstellungen öffnen">
-    🍪
+<button
+  type="button"
+  id="cookie-fab"
+  class="cookie-fab hidden"
+  aria-label="Cookie-Einstellungen öffnen"
+>
+  🍪
 </button>
 
 <!-- Cookie Scanner Status -->
 <div id="cookie-scanner-status" class="cookie-scanner-status hidden">
-    <div class="cookie-scanner-content">
-        <span class="cookie-scanner-icon">🔍</span>
-        <span id="cookie-scanner-text">Scanning cookies...</span>
-        <div class="cookie-scanner-progress">
-            <div class="cookie-scanner-progress-bar" id="cookie-scanner-progress"></div>
-        </div>
+  <div class="cookie-scanner-content">
+    <span class="cookie-scanner-icon">🔍</span>
+    <span id="cookie-scanner-text">Scanning cookies...</span>
+    <div class="cookie-scanner-progress">
+      <div
+        class="cookie-scanner-progress-bar"
+        id="cookie-scanner-progress"
+      ></div>
     </div>
+  </div>
 </div>

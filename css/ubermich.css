@@ -5,7 +5,9 @@
 /* =====================================
 🔧 GLOBAL RESET & BASIC STYLES
 ========================================= */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -24,13 +26,16 @@
      - clamp(450px, 70vh, 850px): Minimale Höhe leicht erhöht, bevorzugt 70% Viewport-Höhe,
        maximale Höhe auf 850px erhöht.
   */
-  height: clamp(450px, 70vh, 850px); /* Optimiert für vertikale Raumausnutzung */
+  height: clamp(
+    450px,
+    70vh,
+    850px
+  ); /* Optimiert für vertikale Raumausnutzung */
 
   background: var(--color-bg-secondary);
   box-shadow: 0 5px 14px var(--color-shadow-dark);
   overflow: hidden;
   border-radius: var(--border-radius);
-
 
   display: flex;
   flex-direction: column;
@@ -51,35 +56,35 @@
 
 /* NEW: Scroll Wrapper to contain the content and show the scrollbar outside viewport-box */
 .scroll-wrapper {
-    width: 100%;
-    height: 100%;
-    overflow-y: scroll;
-    /* Dies ist der entscheidende Teil für die Position der Scrollbar "rechts außen".
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  /* Dies ist der entscheidende Teil für die Position der Scrollbar "rechts außen".
        Der Wert 'clamp(4rem, 10vw, 12rem)' bedeutet:
        - min. 4rem: Mindestabstand vom rechten Rand des Inhalts zum rechten Rand des viewport-box.
        - 10vw: Bevorzugt 10% der Viewport-Breite.
        - max. 12rem: Maximaler Abstand von 12rem.
        Erhöhe diese Werte, um die Scrollbar noch weiter nach rechts zu verschieben.
     */
-    padding-right: clamp(4rem, 10vw, 12rem);
-    box-sizing: content-box;
-    margin-right: -17px; /* Beibehaltung des Hacks für Scrollbar-Breite */
+  padding-right: clamp(4rem, 10vw, 12rem);
+  box-sizing: content-box;
+  margin-right: -17px; /* Beibehaltung des Hacks für Scrollbar-Breite */
 }
 
 /* Scrollbar-Stile for scroll-wrapper (bleibt wie gehabt) */
 .scroll-wrapper::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 .scroll-wrapper::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 .scroll-wrapper::-webkit-scrollbar-thumb {
-    background-color: #666;
-    border-radius: 4px;
+  background-color: #666;
+  border-radius: 4px;
 }
 .scroll-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: #888;
+  background-color: #888;
 }
 @supports (scrollbar-width: none) {
   .scroll-wrapper {
@@ -97,16 +102,20 @@
 
 /* Hauptkarten-Container für ubermich.html - Standard (für mittlere Bildschirme angepasst) */
 .ubermich-main-card {
-    /* Setze die Breite der Hauptkarte auf 100% des scroll-wrappers.
+  /* Setze die Breite der Hauptkarte auf 100% des scroll-wrappers.
        Die max-width wird durch den viewport-box (dessen Elternteil) begrenzt.
        padding: Das innere Padding der Karte, bevor der section-body beginnt.
        Hier kannst du das äußere Padding deiner Inhalte steuern.
        Ich habe die Werte etwas erhöht, damit der Inhalt nicht zu weit an den Rand der Karte rückt.
     */
-    width: 100%; /* Nimmt die volle Breite des scroll-wrappers ein */
-    max-width: none; /* Deaktiviert die eigene max-width, die jetzt vom viewport-box kommt */
-    margin: auto;
-    padding: clamp(20px, 4vw, 40px); /* Erhöhtes Padding für mehr Raum um den Inhalt */
+  width: 100%; /* Nimmt die volle Breite des scroll-wrappers ein */
+  max-width: none; /* Deaktiviert die eigene max-width, die jetzt vom viewport-box kommt */
+  margin: auto;
+  padding: clamp(
+    20px,
+    4vw,
+    40px
+  ); /* Erhöhtes Padding für mehr Raum um den Inhalt */
 }
 
 /* --- .section-body: Wider Content Area & Optimized Padding --- */
@@ -115,7 +124,11 @@
      - clamp(500px, 55vh, 700px): Mindesthöhe auf 500px, bevorzugt 55% Viewport-Höhe,
        maximale Höhe auf 700px erhöht. Dies gibt dem scrollbaren Inhalt mehr vertikalen Raum.
   */
-  max-height: clamp(500px, 55vh, 700px); /* Erhöhte maximale Höhe für mehr Inhalt */
+  max-height: clamp(
+    500px,
+    55vh,
+    700px
+  ); /* Erhöhte maximale Höhe für mehr Inhalt */
   overflow-y: auto;
   position: relative;
 
@@ -130,122 +143,135 @@
   background-color: var(--color-bg-secondary);
   border-radius: var(--border-radius);
   box-shadow: inset 0 0 10px var(--color-shadow-dark);
-  transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+  transition:
+    background-color var(--transition-speed),
+    box-shadow var(--transition-speed);
 }
-
 
 /* Scrollbar-Styling für .section-body */
 .section-body::-webkit-scrollbar {
-    width: 8px;
-
+  width: 8px;
 }
 .section-body::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 .section-body::-webkit-scrollbar-thumb {
-    background-color: #666;
-    border-radius: 4px;
+  background-color: #666;
+  border-radius: 4px;
 }
 .section-body::-webkit-scrollbar-thumb:hover {
-    background-color: #888;
+  background-color: #888;
 }
 .header-text {
-      font-size: clamp(2rem, 5vw, 2.5rem); /* Etwas größere, besser lesbare Schrift */
-    font-weight: 700; /* Noch kräftiger für bessere Hervorhebung */
-    color: var(--color-text-main);
-    transition: opacity var(--transition-speed), background-color var(--transition-speed);
+  font-size: clamp(
+    2rem,
+    5vw,
+    2.5rem
+  ); /* Etwas größere, besser lesbare Schrift */
+  font-weight: 700; /* Noch kräftiger für bessere Hervorhebung */
+  color: var(--color-text-main);
+  transition:
+    opacity var(--transition-speed),
+    background-color var(--transition-speed);
 }
 
 /* Dynamischer Header für ubermich.html */
 .dynamic-header {
-    text-align: left;
-    padding: clamp(0.3rem, 0.1vw, 0.2rem);
-
+  text-align: left;
+  padding: clamp(0.3rem, 0.1vw, 0.2rem);
 }
 
 .dynamic-header.fade-out {
-    opacity: 0;
+  opacity: 0;
 }
 
 .dynamic-header.fade-in {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* Überschriften und Absätze */
 .section-body h3 {
-    /* Optimierte font-size mit clamp */
-    font-size: var(--font-size-h3); /* Nutze die globalen Variablen */
-    margin: var(--spacing-md) 0 var(--spacing-sm); /* Konsistente Abstände */
-    color: #ddd;
-    transform: translateY(50px);
-    opacity: 0;
-    transition: transform var(--transition-speed) var(--transition-ease), opacity var(--transition-speed);
+  /* Optimierte font-size mit clamp */
+  font-size: var(--font-size-h3); /* Nutze die globalen Variablen */
+  margin: var(--spacing-md) 0 var(--spacing-sm); /* Konsistente Abstände */
+  color: #ddd;
+  transform: translateY(50px);
+  opacity: 0;
+  transition:
+    transform var(--transition-speed) var(--transition-ease),
+    opacity var(--transition-speed);
 }
 .section-body h3.visible {
-    transform: translateY(0);
-    opacity: 1;
+  transform: translateY(0);
+  opacity: 1;
 }
 .section-body h3.hidden-up {
-    transform: translateY(-50px);
-    opacity: 0;
+  transform: translateY(-50px);
+  opacity: 0;
 }
 
 .section-body p {
-    font-size: var(--font-size-p); /* Nutze die globalen Variablen */
-    line-height: 1.7;
-    margin-bottom: var(--spacing-sm); /* Konsistente Abstände */
-    text-align: left;
-    transform: translateY(30px);
-    opacity: 0;
-    transition: transform var(--transition-speed) var(--transition-ease) 0.1s, opacity var(--transition-speed) 0.1s;
+  font-size: var(--font-size-p); /* Nutze die globalen Variablen */
+  line-height: 1.7;
+  margin-bottom: var(--spacing-sm); /* Konsistente Abstände */
+  text-align: left;
+  transform: translateY(30px);
+  opacity: 0;
+  transition:
+    transform var(--transition-speed) var(--transition-ease) 0.1s,
+    opacity var(--transition-speed) 0.1s;
 }
 .section-body p.visible {
-    transform: translateY(0);
-    opacity: 1;
+  transform: translateY(0);
+  opacity: 1;
 }
 .section-body p.hidden-up {
-    transform: translateY(-30px);
-    opacity: 0;
+  transform: translateY(-30px);
+  opacity: 0;
 }
 
 .section-body ul {
-    list-style: disc;
-    margin-left: var(--spacing-lg); /* Nutze globale Variable für Listen-Einzug */
-    padding-left: var(--spacing-sm); /* Kleines Padding zum Marker */
-    margin-bottom: var(--spacing-sm); /* Konsistente Abstände */
-    transform: translateY(40px);
-    opacity: 0;
-    transition: transform var(--transition-speed) var(--transition-ease) 0.2s, opacity var(--transition-speed) 0.2s;
+  list-style: disc;
+  margin-left: var(--spacing-lg); /* Nutze globale Variable für Listen-Einzug */
+  padding-left: var(--spacing-sm); /* Kleines Padding zum Marker */
+  margin-bottom: var(--spacing-sm); /* Konsistente Abstände */
+  transform: translateY(40px);
+  opacity: 0;
+  transition:
+    transform var(--transition-speed) var(--transition-ease) 0.2s,
+    opacity var(--transition-speed) 0.2s;
 }
 .section-body ul.visible {
-    transform: translateY(0);
-    opacity: 1;
+  transform: translateY(0);
+  opacity: 1;
 }
 .section-body ul.hidden-up {
-    transform: translateY(-40px);
-    opacity: 0;
+  transform: translateY(-40px);
+  opacity: 0;
 }
 
 .contact-links {
-    margin-top: var(--spacing-lg); /* Erhöhe den Abstand nach oben */
-    display: flex;
-    justify-content: center;
-    gap: var(--spacing-md); /* Mehr Abstand zwischen den Links */
-    flex-wrap: wrap;
+  margin-top: var(--spacing-lg); /* Erhöhe den Abstand nach oben */
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md); /* Mehr Abstand zwischen den Links */
+  flex-wrap: wrap;
 }
 
 .contact-links a {
-    color: var(--color-card-icon);
-    font-size: clamp(2.2em, 4.5vw, 3.5em); /* Etwas größere Icons */
-    text-decoration: none;
-    transition: color var(--transition-speed) ease, transform var(--transition-speed) ease;
+  color: var(--color-card-icon);
+  font-size: clamp(2.2em, 4.5vw, 3.5em); /* Etwas größere Icons */
+  text-decoration: none;
+  transition:
+    color var(--transition-speed) ease,
+    transform var(--transition-speed) ease;
 }
 .contact-links a:hover,
 .contact-links a:focus {
-    color: var(--color-link);
-    transform: scale(1.1);
-    outline: none;
+  color: var(--color-link);
+  transform: scale(1.1);
+  outline: none;
 }
 
 /* ===================================================================
@@ -257,10 +283,10 @@
   .section-body p,
   .section-body ul,
   .contact-links a {
-      transition-duration: var(--transition-speed) !important;
-      animation-duration: var(--transition-speed) !important;
-      transform: none !important;
-      opacity: 1 !important;
+    transition-duration: var(--transition-speed) !important;
+    animation-duration: var(--transition-speed) !important;
+    transform: none !important;
+    opacity: 1 !important;
   }
 }
 

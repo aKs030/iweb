@@ -15,7 +15,11 @@
     "selector-pseudo-element-no-unknown": [
       true,
       {
-        "ignorePseudoElements": ["webkit-scrollbar", "webkit-scrollbar-thumb", "webkit-scrollbar-track"]
+        "ignorePseudoElements": [
+          "webkit-scrollbar",
+          "webkit-scrollbar-thumb",
+          "webkit-scrollbar-track"
+        ]
       }
     ],
     "at-rule-no-unknown": [

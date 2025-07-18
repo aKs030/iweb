@@ -35,7 +35,7 @@ export class CookieConsentManager {
       const consentData = {
         ...consent,
         timestamp: new Date().toISOString(),
-        version: '3.0'
+        version: '3.0',
       };
       localStorage.setItem(this.storageKey, JSON.stringify(consentData));
       this.consent = consentData;

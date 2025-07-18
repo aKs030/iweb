@@ -6,23 +6,24 @@
 
 ### 🎯 **Aktuelle Bewertung: 9.9/10** ⭐️
 
-| Kategorie | Status | Score |
-|-----------|--------|--------|
-| **HTML/Struktur** | ✅ Vollständig | 10/10 |
-| **CSS/Design** | ✅ Optimiert | 10/10 |
-| **JavaScript** | ✅ Modern | 9.8/10 |
-| **PWA** | ✅ Funktional | 10/10 |
-| **Sicherheit** | ✅ Gehärtet | 9.9/10 |
-| **Performance** | ✅ Optimiert | 9.8/10 |
-| **SEO** | ✅ Vollständig | 10/10 |
+| Kategorie         | Status         | Score  |
+| ----------------- | -------------- | ------ |
+| **HTML/Struktur** | ✅ Vollständig | 10/10  |
+| **CSS/Design**    | ✅ Optimiert   | 10/10  |
+| **JavaScript**    | ✅ Modern      | 9.8/10 |
+| **PWA**           | ✅ Funktional  | 10/10  |
+| **Sicherheit**    | ✅ Gehärtet    | 9.9/10 |
+| **Performance**   | ✅ Optimiert   | 9.8/10 |
+| **SEO**           | ✅ Vollständig | 10/10  |
 | **Accessibility** | ✅ WCAG 2.1 AA | 9.9/10 |
-| **Deployment** | ✅ Ready | 10/10 |
+| **Deployment**    | ✅ Ready       | 10/10  |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Installation & Setup:
+
 ```bash
 # 1. Repository klonen/navigieren
 cd /Users/abdo/Desktop/website/iweb-6
@@ -37,6 +38,7 @@ open http://localhost:8080
 ```
 
 ### Produktions-Deployment:
+
 ```bash
 # Vollständiges Deployment
 ./deploy.sh production
@@ -102,6 +104,7 @@ iweb-6/
 ## 🔧 Technologie-Stack
 
 ### Frontend:
+
 - **HTML5**: Semantisch, PWA-ready, WCAG 2.1 AA
 - **CSS3**: Modern (Grid, Flexbox, Custom Properties, clamp())
 - **JavaScript ES6+**: Modular, TypeScript-ready
@@ -109,24 +112,28 @@ iweb-6/
 - **FontAwesome 6.7.2**: Icon-Library
 
 ### PWA Features:
+
 - **Service Worker**: Offline-Support, Caching-Strategien
 - **Web App Manifest**: Installierbare App
 - **Splash Screens**: iOS/Android optimiert
 - **Push Notifications**: Ready (deaktiviert)
 
 ### Performance:
+
 - **Critical CSS**: Above-the-fold Optimierung
 - **Lazy Loading**: Bilder und Komponenten
 - **Compression**: GZIP-ready
 - **CDN**: Externe Resources mit Integrity Checks
 
 ### Security:
+
 - **CSP Headers**: Content Security Policy
 - **HTTPS Redirect**: Automatische Weiterleitung
 - **Origin Validation**: Service Worker Security
 - **Input Sanitization**: XSS Prevention
 
 ### Analytics & Monitoring:
+
 - **Google Analytics 4**: gtag.js mit Consent Mode
 - **Core Web Vitals**: Performance Monitoring
 - **Error Tracking**: Umfassende Fehlerbehandlung
@@ -176,16 +183,18 @@ iweb-6/
    - Input Validation
 
 ### 🔧 **CMS-Integration (Optional)**
+
 ```javascript
 // CMS aktivieren:
 // URL: ?cms=true oder ?edit=true
 // Funktionen: Click-to-Edit, Content-Management
 window.CMS.setContent({
-    hero: { title: "Neuer Titel" }
+  hero: { title: 'Neuer Titel' },
 });
 ```
 
 ### 📊 **Monitoring & Analytics**
+
 ```javascript
 // Performance Monitoring
 window.performanceMonitor.getMetrics();
@@ -202,18 +211,21 @@ gtag('event', 'page_view', { page_title: 'Custom' });
 ## 🚀 Deployment-Strategien
 
 ### 1. **Lokaler Test (empfohlen für Entwicklung)**
+
 ```bash
 ./deploy.sh test
 # → Startet lokalen Server auf http://localhost:8080
 ```
 
 ### 2. **Staging-Deployment**
+
 ```bash
 ./deploy.sh staging
 # → Deployment zu staging.abdulkerimsesli.de
 ```
 
 ### 3. **Produktions-Deployment**
+
 ```bash
 ./deploy.sh production
 # → Vollständiges Deployment zu abdulkerimsesli.de
@@ -221,6 +233,7 @@ gtag('event', 'page_view', { page_title: 'Custom' });
 ```
 
 ### 4. **GitHub Actions (Automatisch)**
+
 - **Trigger**: Push zu main branch
 - **Workflow**: Tests → Build → Deploy → Audit
 - **Konfiguration**: `.github/workflows/deploy.yml`
@@ -230,15 +243,17 @@ gtag('event', 'page_view', { page_title: 'Custom' });
 ## 📈 Performance-Benchmarks
 
 ### **Lighthouse Scores (Ziel vs. Aktuell):**
-| Metrik | Ziel | Aktuell | Status |
-|--------|------|---------|--------|
-| Performance | 90+ | 98 | ✅ |
-| Accessibility | 95+ | 99 | ✅ |
-| Best Practices | 95+ | 100 | ✅ |
-| SEO | 95+ | 100 | ✅ |
-| PWA | Vollständig | 100 | ✅ |
+
+| Metrik         | Ziel        | Aktuell | Status |
+| -------------- | ----------- | ------- | ------ |
+| Performance    | 90+         | 98      | ✅     |
+| Accessibility  | 95+         | 99      | ✅     |
+| Best Practices | 95+         | 100     | ✅     |
+| SEO            | 95+         | 100     | ✅     |
+| PWA            | Vollständig | 100     | ✅     |
 
 ### **Core Web Vitals:**
+
 - **FCP**: 0.8s (Ziel: <1.8s) ✅
 - **LCP**: 1.2s (Ziel: <2.5s) ✅
 - **CLS**: 0.05 (Ziel: <0.1) ✅
@@ -249,6 +264,7 @@ gtag('event', 'page_view', { page_title: 'Custom' });
 ## 🔐 Sicherheits-Features
 
 ### **Implementierte Schutzmaßnahmen:**
+
 1. **Content Security Policy (CSP)**
    - script-src 'self' 'unsafe-inline' trusted domains
    - img-src 'self' data: https:
@@ -271,26 +287,29 @@ gtag('event', 'page_view', { page_title: 'Custom' });
 ## 🎨 Design-System
 
 ### **Farbpalette:**
+
 ```css
 :root {
-    --primary-color: #3a85ff;      /* Hauptfarbe */
-    --secondary-color: #6c757d;    /* Sekundär */
-    --success-color: #28a745;      /* Erfolg */
-    --warning-color: #ffc107;      /* Warnung */
-    --danger-color: #dc3545;       /* Fehler */
-    --dark-color: #343a40;         /* Dunkel */
-    --light-color: #f8f9fa;        /* Hell */
-    --body-bg: #ffffff;            /* Hintergrund */
-    --text-color: #212529;         /* Text */
+  --primary-color: #3a85ff; /* Hauptfarbe */
+  --secondary-color: #6c757d; /* Sekundär */
+  --success-color: #28a745; /* Erfolg */
+  --warning-color: #ffc107; /* Warnung */
+  --danger-color: #dc3545; /* Fehler */
+  --dark-color: #343a40; /* Dunkel */
+  --light-color: #f8f9fa; /* Hell */
+  --body-bg: #ffffff; /* Hintergrund */
+  --text-color: #212529; /* Text */
 }
 ```
 
 ### **Typography:**
+
 - **Primär**: 'Poppins' (Google Fonts)
 - **Fallback**: -apple-system, BlinkMacSystemFont, 'Segoe UI'
 - **Größen**: clamp() für responsive Skalierung
 
 ### **Responsive Breakpoints:**
+
 - **xs**: <576px (Mobile)
 - **sm**: 576px+ (Mobile Landscape)
 - **md**: 768px+ (Tablet)
@@ -303,6 +322,7 @@ gtag('event', 'page_view', { page_title: 'Custom' });
 ## 📱 PWA-Integration
 
 ### **Installation Guide:**
+
 1. **Desktop (Chrome/Edge):**
    - Besuche https://abdulkerimsesli.de
    - Klicke "Installieren" in der Adressleiste
@@ -319,6 +339,7 @@ gtag('event', 'page_view', { page_title: 'Custom' });
    - App wird wie normale App installiert
 
 ### **PWA Features:**
+
 - ✅ Offline-Funktionalität
 - ✅ App-Shell Caching
 - ✅ Background Sync Ready
@@ -330,11 +351,12 @@ gtag('event', 'page_view', { page_title: 'Custom' });
 ## 🧪 Testing & Qualitätssicherung
 
 ### **Automatisierte Tests:**
+
 ```bash
 # HTML Validation
 html5validator --root . --show-warnings
 
-# CSS Validation  
+# CSS Validation
 csslint css/
 
 # JavaScript Syntax
@@ -348,15 +370,17 @@ npm run test:pwa
 ```
 
 ### **Browser-Kompatibilität:**
-| Browser | Version | Status |
-|---------|---------|--------|
-| Chrome | 80+ | ✅ Vollständig |
-| Firefox | 75+ | ✅ Vollständig |
-| Safari | 13+ | ✅ Vollständig |
-| Edge | 80+ | ✅ Vollständig |
-| Opera | 70+ | ✅ Vollständig |
+
+| Browser | Version | Status         |
+| ------- | ------- | -------------- |
+| Chrome  | 80+     | ✅ Vollständig |
+| Firefox | 75+     | ✅ Vollständig |
+| Safari  | 13+     | ✅ Vollständig |
+| Edge    | 80+     | ✅ Vollständig |
+| Opera   | 70+     | ✅ Vollständig |
 
 ### **Device Testing:**
+
 - ✅ iPhone (iOS 13+)
 - ✅ Android (Android 8+)
 - ✅ iPad (iPadOS 13+)
@@ -370,6 +394,7 @@ npm run test:pwa
 ### **Häufige Probleme & Lösungen:**
 
 1. **Service Worker Cache-Probleme:**
+
    ```javascript
    // Cache leeren
    caches.delete('iweb-v1').then(() => location.reload());
@@ -395,6 +420,7 @@ npm run test:pwa
 ## 🚀 Produktions-Checkliste
 
 ### **Vor Go-Live:**
+
 - [x] Domain konfiguriert (abdulkerimsesli.de)
 - [x] SSL-Zertifikat aktiv
 - [x] DNS-Einträge korrekt
@@ -411,6 +437,7 @@ npm run test:pwa
 - [x] DSGVO-konform
 
 ### **Nach Go-Live:**
+
 - [ ] Monitor Performance
 - [ ] Prüfe Analytics-Daten
 - [ ] Search Console überwachen
@@ -422,11 +449,13 @@ npm run test:pwa
 ## 📞 Support & Kontakt
 
 ### **Entwickler-Kontakt:**
+
 - **Email**: mail@abdulkerimsesli.com
 - **GitHub**: @aKs030
 - **LinkedIn**: abdulkerim-sesli
 
 ### **Wichtige Links:**
+
 - **Live-Website**: https://abdulkerimsesli.de
 - **Repository**: GitHub Repository
 - **Documentation**: Diese Datei
@@ -440,7 +469,7 @@ npm run test:pwa
 
 - ⭐️ **Score**: 9.9/10
 - 🚀 **Performance**: Optimiert
-- 🔒 **Security**: Gehärtet  
+- 🔒 **Security**: Gehärtet
 - 📱 **PWA**: Vollständig
 - ♿️ **Accessibility**: WCAG 2.1 AA
 - 🔍 **SEO**: 100% Score
@@ -450,5 +479,5 @@ npm run test:pwa
 
 ---
 
-*Letzte Aktualisierung: $(date)*
-*Version: 2.0 (Production Ready)*
+_Letzte Aktualisierung: $(date)_
+_Version: 2.0 (Production Ready)_

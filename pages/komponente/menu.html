@@ -1,11 +1,18 @@
-<link rel="stylesheet" href="/css/menu.css">
+<link rel="stylesheet" href="/css/menu.css" />
 <!-- Font Awesome für Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+/>
 
 <!-- menu.html - Optimierte Navigation mit erweiterten Features -->
 <header class="site-header" role="banner">
   <!-- Logo mit verbesserter Accessibility -->
-  <a href="/index.html" aria-label="Zur Startseite navigieren" title="Zur Startseite">
+  <a
+    href="/index.html"
+    aria-label="Zur Startseite navigieren"
+    title="Zur Startseite"
+  >
     <span class="site-logo__container">
       <span class="site-logo elegant-logo" id="site-title" aria-live="polite">
         Abdulkerim ⭐️
@@ -14,19 +21,40 @@
   </a>
 
   <!-- Navigation mit optimierter Struktur -->
-  <nav id="main-nav" class="site-menu" role="navigation" aria-label="Hauptnavigation">
+  <nav
+    id="main-nav"
+    class="site-menu"
+    role="navigation"
+    aria-label="Hauptnavigation"
+  >
     <!-- Aktionen für Mobile-Ansicht -->
     <div class="mobile-actions">
       <!-- Suchfunktion -->
       <div class="search-container">
-        <button id="search-toggle-mobile" class="search-toggle" aria-label="Suche umschalten" aria-expanded="false">
+        <button
+          id="search-toggle-mobile"
+          class="search-toggle"
+          aria-label="Suche umschalten"
+          aria-expanded="false"
+        >
           <i class="fa-solid fa-search"></i>
         </button>
-        <input type="search" id="search-input-mobile" class="search-input" placeholder="Suchen..." aria-labelledby="search-toggle-mobile">
+        <input
+          type="search"
+          id="search-input-mobile"
+          class="search-input"
+          placeholder="Suchen..."
+          aria-labelledby="search-toggle-mobile"
+        />
       </div>
       <!-- Theme-Umschalter -->
       <div class="theme-switcher">
-        <input type="checkbox" id="theme-toggle-mobile" class="theme-toggle-checkbox" aria-label="Dark Mode umschalten">
+        <input
+          type="checkbox"
+          id="theme-toggle-mobile"
+          class="theme-toggle-checkbox"
+          aria-label="Dark Mode umschalten"
+        />
         <label for="theme-toggle-mobile" class="theme-toggle-label">
           <i class="theme-icon fa-solid fa-moon"></i>
         </label>
@@ -41,7 +69,7 @@
           <span>Startseite</span>
         </a>
       </li>
-      
+
       <!-- About Me -->
       <li>
         <a href="/pages/ubermich.html" tabindex="0">
@@ -49,7 +77,7 @@
           <span>Über mich</span>
         </a>
       </li>
-      
+
       <!-- Gallery (Direct Link) -->
       <li>
         <a href="/pages/album.html" tabindex="0">
@@ -57,7 +85,7 @@
           <span>Fotogalerie</span>
         </a>
       </li>
-      
+
       <!-- Games (Direct Link) -->
       <li>
         <a href="/pages/index-game.html" tabindex="0">
@@ -79,7 +107,9 @@
           <i class="fa-solid fa-tools" aria-hidden="true"></i>
           <span>Tools</span>
         </a>
-        <span id="tools-menu-desc" class="sr-only">Nützliche Tools und Features</span>
+        <span id="tools-menu-desc" class="sr-only"
+          >Nützliche Tools und Features</span
+        >
         <ul class="submenu" aria-labelledby="tools-menu">
           <li>
             <a href="/pages/features/wetter.html" tabindex="-1">
@@ -109,10 +139,17 @@
           <i class="fa-solid fa-share-alt" aria-hidden="true"></i>
           <span>Social</span>
         </a>
-        <span id="social-menu-desc" class="sr-only">Folgen Sie mir auf Social Media</span>
+        <span id="social-menu-desc" class="sr-only"
+          >Folgen Sie mir auf Social Media</span
+        >
         <ul class="submenu" aria-labelledby="social-menu">
           <li>
-            <a href="https://github.com/aKs030/iweb" target="_blank" rel="noopener noreferrer" tabindex="-1">
+            <a
+              href="https://github.com/aKs030/iweb"
+              target="_blank"
+              rel="noopener noreferrer"
+              tabindex="-1"
+            >
               <i class="fa-brands fa-github" aria-hidden="true"></i>
               <span>GitHub</span>
             </a>
@@ -124,7 +161,12 @@
             </a>
           </li>
           <li>
-            <a href="https://linkedin.com/in/abdulkerim-sesli" target="_blank" rel="noopener noreferrer" tabindex="-1">
+            <a
+              href="https://linkedin.com/in/abdulkerim-sesli"
+              target="_blank"
+              rel="noopener noreferrer"
+              tabindex="-1"
+            >
               <i class="fa-brands fa-linkedin" aria-hidden="true"></i>
               <span>LinkedIn</span>
             </a>
@@ -145,7 +187,9 @@
           <i class="fa-solid fa-info-circle" aria-hidden="true"></i>
           <span>Information</span>
         </a>
-        <span id="contact-menu-desc" class="sr-only">Kontakt, Impressum und weitere Informationen</span>
+        <span id="contact-menu-desc" class="sr-only"
+          >Kontakt, Impressum und weitere Informationen</span
+        >
         <ul class="submenu" aria-labelledby="contact-menu">
           <li>
             <a href="/pages/komponente/kontakt.html" tabindex="-1">
@@ -174,15 +218,31 @@
   <div class="header-actions">
     <!-- Suchfunktion -->
     <div class="search-container">
-      <button id="search-toggle" class="search-toggle" aria-label="Suche umschalten" aria-expanded="false">
+      <button
+        id="search-toggle"
+        class="search-toggle"
+        aria-label="Suche umschalten"
+        aria-expanded="false"
+      >
         <i class="fa-solid fa-search"></i>
       </button>
-      <input type="search" id="search-input" class="search-input" placeholder="Suchen..." aria-labelledby="search-toggle">
+      <input
+        type="search"
+        id="search-input"
+        class="search-input"
+        placeholder="Suchen..."
+        aria-labelledby="search-toggle"
+      />
     </div>
 
     <!-- Theme-Umschalter -->
     <div class="theme-switcher">
-      <input type="checkbox" id="theme-toggle" class="theme-toggle-checkbox" aria-label="Dark Mode umschalten">
+      <input
+        type="checkbox"
+        id="theme-toggle"
+        class="theme-toggle-checkbox"
+        aria-label="Dark Mode umschalten"
+      />
       <label for="theme-toggle" class="theme-toggle-label">
         <i class="theme-icon fa-solid fa-moon"></i>
       </label>
@@ -207,5 +267,6 @@
 
 <!-- Screen Reader nur Text für bessere Accessibility -->
 <div class="sr-only" id="nav-instructions">
-  Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Enter oder Leertaste, um Untermenüs zu öffnen. Escape schließt alle Menüs.
+  Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Enter oder
+  Leertaste, um Untermenüs zu öffnen. Escape schließt alle Menüs.
 </div>

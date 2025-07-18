@@ -6,7 +6,7 @@ module.exports = {
         'http://localhost:8000',
         'http://localhost:8000/pages/ubermich.html',
         'http://localhost:8000/pages/album.html',
-        'http://localhost:8000/pages/index-game.html'
+        'http://localhost:8000/pages/index-game.html',
       ],
       startServerCommand: 'npm run dev-node',
       startServerReadyPattern: 'Available on',
@@ -26,8 +26,6 @@ module.exports = {
         'largest-contentful-paint': ['warn', { maxNumericValue: 4000 }],
         'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
         'total-blocking-time': ['warn', { maxNumericValue: 300 }],
-
-
 
         // Security (deaktiviert wegen localhost)
         'is-on-https': 'off',
@@ -54,11 +52,11 @@ module.exports = {
         'offscreen-images': 'warn',
         'unminified-css': 'warn',
         'unminified-javascript': 'warn',
-        'charset': 'error'
-      }
+        charset: 'error',
+      },
     },
     upload: {
-      target: 'temporary-public-storage'
-    }
-  }
+      target: 'temporary-public-storage',
+    },
+  },
 };

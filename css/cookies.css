@@ -21,16 +21,16 @@
 /* CSS Custom Properties - Website-optimiert für Abdulkerim */
 :root {
   /* Core Colors - Angepasst an Website-Design */
-  --cb-bg: rgba(68,68,68,.96);
+  --cb-bg: rgba(68, 68, 68, 0.96);
   --cb-text: #f5f5f5;
-  --cb-primary: #3A85FF;
+  --cb-primary: #3a85ff;
   --cb-primary-hover: #2d6ce5;
   --cb-secondary: #555;
   --cb-secondary-hover: #666;
-  --cb-surface: rgba(85,85,85,.85);
-  --cb-surface-hover: rgba(95,95,95,.9);
-  --cb-border: rgba(245,245,245,.2);
-  --cb-muted: rgba(245,245,245,.6);
+  --cb-surface: rgba(85, 85, 85, 0.85);
+  --cb-surface-hover: rgba(95, 95, 95, 0.9);
+  --cb-border: rgba(245, 245, 245, 0.2);
+  --cb-muted: rgba(245, 245, 245, 0.6);
 
   /* Status Colors - Website-harmonisch */
   --cb-success: #28a745;
@@ -43,14 +43,18 @@
   --cb-radius-sm: 0.4rem;
   --cb-radius-lg: 1rem;
   --cb-blur: blur(12px);
-  --cb-shadow: 0 8px 32px rgba(0,0,0,.4);
-  --cb-shadow-lg: 0 16px 40px rgba(0,0,0,.5);
+  --cb-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --cb-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
 
   /* Gradients - Website-Style */
-  --cb-gradient-primary: linear-gradient(135deg,#3A85FF,#5A9FFF);
-  --cb-gradient-secondary: linear-gradient(135deg,#555,#666);
-  --cb-gradient-success: linear-gradient(135deg,#28a745,#20c997);
-  --cb-gradient-glass: linear-gradient(135deg,rgba(245,245,245,.1),rgba(245,245,245,.05));
+  --cb-gradient-primary: linear-gradient(135deg, #3a85ff, #5a9fff);
+  --cb-gradient-secondary: linear-gradient(135deg, #555, #666);
+  --cb-gradient-success: linear-gradient(135deg, #28a745, #20c997);
+  --cb-gradient-glass: linear-gradient(
+    135deg,
+    rgba(245, 245, 245, 0.1),
+    rgba(245, 245, 245, 0.05)
+  );
 
   /* Z-Index Scale */
   --cb-z-banner: 10000;
@@ -59,69 +63,72 @@
   --cb-z-fab: 9998;
 
   /* Transitions - Performance Optimized */
-  --cb-transition: .35s cubic-bezier(.4,0,.2,1);
-  --cb-transition-fast: .15s ease-out;
+  --cb-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --cb-transition-fast: 0.15s ease-out;
 
   /* Typography - Website-Font */
   --cb-font-family: 'Poppins', sans-serif;
 }
 
 /* Dark Theme - Angepasst für Website */
-[data-theme="dark"],:root:has([data-theme="dark"]) {
-  --cb-bg: rgba(68,68,68,.96);
+[data-theme='dark'],
+:root:has([data-theme='dark']) {
+  --cb-bg: rgba(68, 68, 68, 0.96);
   --cb-text: #f5f5f5;
-  --cb-primary: #3A85FF;
+  --cb-primary: #3a85ff;
   --cb-primary-hover: #2d6ce5;
   --cb-secondary: #555;
   --cb-secondary-hover: #666;
-  --cb-surface: rgba(85,85,85,.85);
-  --cb-surface-hover: rgba(95,95,95,.9);
-  --cb-border: rgba(245,245,245,.2);
-  --cb-muted: rgba(245,245,245,.6);
-  --cb-gradient-primary: linear-gradient(135deg,#3A85FF,#5A9FFF);
-  --cb-gradient-secondary: linear-gradient(135deg,#555,#666);
+  --cb-surface: rgba(85, 85, 85, 0.85);
+  --cb-surface-hover: rgba(95, 95, 95, 0.9);
+  --cb-border: rgba(245, 245, 245, 0.2);
+  --cb-muted: rgba(245, 245, 245, 0.6);
+  --cb-gradient-primary: linear-gradient(135deg, #3a85ff, #5a9fff);
+  --cb-gradient-secondary: linear-gradient(135deg, #555, #666);
 }
 
 /* Light Theme - Website-kompatibel */
-[data-theme="light"] {
-  --cb-bg: rgba(248,249,250,.96);
+[data-theme='light'] {
+  --cb-bg: rgba(248, 249, 250, 0.96);
   --cb-text: #1a1a1a;
-  --cb-primary: #3A85FF;
+  --cb-primary: #3a85ff;
   --cb-primary-hover: #2d6ce5;
   --cb-secondary: #6c757d;
   --cb-secondary-hover: #5a6268;
-  --cb-surface: rgba(255,255,255,.9);
-  --cb-surface-hover: rgba(240,242,245,.95);
-  --cb-border: rgba(0,0,0,.1);
-  --cb-muted: rgba(108,117,125,.8);
-  --cb-gradient-primary: linear-gradient(135deg,#3A85FF,#5A9FFF);
-  --cb-gradient-secondary: linear-gradient(135deg,#6c757d,#8d959d);
+  --cb-surface: rgba(255, 255, 255, 0.9);
+  --cb-surface-hover: rgba(240, 242, 245, 0.95);
+  --cb-border: rgba(0, 0, 0, 0.1);
+  --cb-muted: rgba(108, 117, 125, 0.8);
+  --cb-gradient-primary: linear-gradient(135deg, #3a85ff, #5a9fff);
+  --cb-gradient-secondary: linear-gradient(135deg, #6c757d, #8d959d);
 }
 
-@media (prefers-color-scheme:dark) {
+@media (prefers-color-scheme: dark) {
   :root {
-    --cb-bg: rgba(68,68,68,.96);
+    --cb-bg: rgba(68, 68, 68, 0.96);
     --cb-text: #f5f5f5;
-    --cb-primary: #3A85FF;
-    --cb-surface: rgba(85,85,85,.85);
-    --cb-border: rgba(245,245,245,.2);
-    --cb-muted: rgba(245,245,245,.6);
+    --cb-primary: #3a85ff;
+    --cb-surface: rgba(85, 85, 85, 0.85);
+    --cb-border: rgba(245, 245, 245, 0.2);
+    --cb-muted: rgba(245, 245, 245, 0.6);
   }
 }
 
-@media (prefers-color-scheme:light) {
+@media (prefers-color-scheme: light) {
   :root {
-    --cb-bg: rgba(248,249,250,.96);
+    --cb-bg: rgba(248, 249, 250, 0.96);
     --cb-text: #1a1a1a;
-    --cb-primary: #3A85FF;
-    --cb-surface: rgba(255,255,255,.9);
-    --cb-border: rgba(0,0,0,.1);
-    --cb-muted: rgba(108,117,125,.8);
+    --cb-primary: #3a85ff;
+    --cb-surface: rgba(255, 255, 255, 0.9);
+    --cb-border: rgba(0, 0, 0, 0.1);
+    --cb-muted: rgba(108, 117, 125, 0.8);
   }
 }
 
 /* Base Styles */
-.hidden{display:none!important}
+.hidden {
+  display: none !important;
+}
 
 /* Reduced motion for users with accessibility needs */
 @media (prefers-reduced-motion: reduce) {
@@ -144,7 +151,7 @@
   -webkit-backdrop-filter: var(--cb-blur);
   backdrop-filter: var(--cb-blur);
   color: var(--cb-text);
-  padding: .8rem 1.5rem .8rem 1.5rem; /* Weniger Platz rechts, da Close-Button außerhalb steht */
+  padding: 0.8rem 1.5rem 0.8rem 1.5rem; /* Weniger Platz rechts, da Close-Button außerhalb steht */
   z-index: var(--cb-z-banner);
   border-top: 1px solid var(--cb-border);
   border-radius: 0;
@@ -152,13 +159,13 @@
   transition: transform var(--cb-transition);
   will-change: transform;
   background-image: var(--cb-gradient-glass);
-  box-shadow: 0 -2px 8px rgba(0,0,0,.2);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
   font-family: var(--cb-font-family);
 }
 
 .cookie-banner:not(.hidden) {
   transform: translateY(0);
-  animation: slideUp .6s cubic-bezier(.68,-.55,.265,1.55);
+  animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .cookie-banner.slide-out {
@@ -168,39 +175,47 @@
 
 /* Compliance Modes - Compact */
 .cookie-banner.gdpr-mode {
-  background-image: linear-gradient(135deg,rgba(16,185,129,.1),var(--cb-bg));
+  background-image: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1),
+    var(--cb-bg)
+  );
   border-top-color: var(--cb-success);
 }
 
 .cookie-banner.gdpr-mode::before {
-  content: "🇪🇺 DSGVO";
+  content: '🇪🇺 DSGVO';
   position: absolute;
   top: -12px;
   left: 2rem;
   background: var(--cb-gradient-success);
   color: white;
-  padding: .25rem .75rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 12px;
-  font-size: .75rem;
+  font-size: 0.75rem;
   font-weight: 600;
   box-shadow: var(--cb-shadow);
 }
 
 .cookie-banner.ccpa-mode {
-  background-image: linear-gradient(135deg,rgba(59,130,246,.1),var(--cb-bg));
+  background-image: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    var(--cb-bg)
+  );
   border-top-color: var(--cb-primary);
 }
 
 .cookie-banner.ccpa-mode::before {
-  content: "🇺🇸 CCPA";
+  content: '🇺🇸 CCPA';
   position: absolute;
   top: -12px;
   left: 2rem;
   background: var(--cb-gradient-primary);
   color: white;
-  padding: .25rem .75rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 12px;
-  font-size: .75rem;
+  font-size: 0.75rem;
   font-weight: 600;
   box-shadow: var(--cb-shadow);
 }
@@ -220,7 +235,7 @@
 .cookie-banner-icon {
   font-size: 1.2rem;
   animation: bounce 3s infinite;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.1));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   flex-shrink: 0;
 }
 
@@ -230,8 +245,8 @@
 }
 
 .cookie-banner-text h3 {
-  margin: 0 0 .15rem;
-  font-size: .85rem;
+  margin: 0 0 0.15rem;
+  font-size: 0.85rem;
   font-weight: 600;
   background: var(--cb-gradient-primary);
   -webkit-background-clip: text;
@@ -241,22 +256,22 @@
 
 .cookie-banner-text p {
   margin: 0;
-  font-size: .75rem;
+  font-size: 0.75rem;
   line-height: 1.2;
   color: var(--cb-muted);
 }
 
 .cookie-banner-links {
   display: flex;
-  gap: .75rem;
-  margin-top: .25rem;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
   flex-wrap: wrap;
 }
 
 .cookie-banner-links a {
   color: var(--cb-primary);
   text-decoration: none;
-  font-size: .9rem;
+  font-size: 0.9rem;
   font-weight: 500;
   transition: var(--cb-transition);
   position: relative;
@@ -280,7 +295,7 @@
 
 .cookie-banner-actions {
   display: flex;
-  gap: .4rem;
+  gap: 0.4rem;
   flex-wrap: nowrap;
   flex-shrink: 0;
 }
@@ -303,7 +318,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   z-index: 2;
@@ -313,7 +328,7 @@
   content: '';
   position: absolute;
   inset: -2px;
-  background: rgba(0,0,0,.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   z-index: -1;
 }
@@ -322,7 +337,7 @@
   background: var(--cb-surface-hover);
   border-color: var(--cb-primary);
   transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0,0,0,.5);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
   color: var(--cb-primary);
 }
 
@@ -375,7 +390,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: rgba(0,0,0,.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 0 0 var(--cb-radius) var(--cb-radius);
   overflow: hidden;
 }
@@ -390,11 +405,11 @@
 /* Button System - Flacher Streifen optimiert */
 .cookie-btn {
   margin: 0;
-  padding: .35rem .9rem;
+  padding: 0.35rem 0.9rem;
   border: 2px solid transparent;
   border-radius: var(--cb-radius-sm);
   font-weight: 600;
-  font-size: .75rem;
+  font-size: 0.75rem;
   font-family: var(--cb-font-family);
   cursor: pointer;
   transition: var(--cb-transition);
@@ -403,11 +418,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .25rem;
+  gap: 0.25rem;
   text-decoration: none;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .cookie-btn::before {
@@ -417,7 +432,12 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: var(--cb-transition);
 }
 
@@ -432,7 +452,7 @@
 
 .cookie-btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .cookie-btn-secondary {
@@ -442,7 +462,7 @@
 
 .cookie-btn-secondary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .cookie-btn-outline {
@@ -464,7 +484,7 @@
 .cookie-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.8);
+  background: rgba(0, 0, 0, 0.8);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   z-index: var(--cb-z-modal);
@@ -497,7 +517,7 @@
   position: relative;
   box-shadow: var(--cb-shadow-lg);
   border: 1px solid var(--cb-border);
-  transform: scale(.9);
+  transform: scale(0.9);
   transition: var(--cb-transition);
 }
 
@@ -531,7 +551,7 @@
   font-size: 1.5rem;
   cursor: pointer;
   color: var(--cb-muted);
-  padding: .5rem;
+  padding: 0.5rem;
   border-radius: var(--cb-radius-sm);
   transition: var(--cb-transition);
   margin-left: 1rem;
@@ -646,7 +666,7 @@
   transition: transform var(--cb-transition);
 }
 
-.cookie-details-toggle[aria-expanded="true"] .cookie-chevron {
+.cookie-details-toggle[aria-expanded='true'] .cookie-chevron {
   transform: rotate(180deg);
 }
 
@@ -689,7 +709,7 @@
 
 .cookie-list li {
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -701,7 +721,7 @@
 .cookie-provider {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: rgba(0,0,0,0.02);
+  background: rgba(0, 0, 0, 0.02);
   border-radius: var(--cb-radius-sm);
   border-left: 3px solid var(--cb-primary);
 }
@@ -729,7 +749,7 @@
   font-style: italic;
   text-align: center;
   padding: 1rem;
-  background: rgba(0,0,0,0.02);
+  background: rgba(0, 0, 0, 0.02);
   border-radius: var(--cb-radius-sm);
 }
 
@@ -871,57 +891,57 @@
 }
 
 /* Sehr kleine Geräte und iPhone SE - Ultra kompakt */
-@media (max-width:360px) {
+@media (max-width: 360px) {
   .cookie-banner {
-    padding: .35rem .5rem;
-    padding-bottom: calc(.35rem + env(safe-area-inset-bottom));
+    padding: 0.35rem 0.5rem;
+    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom));
   }
   .cookie-banner-content {
     flex-direction: column;
-    gap: .35rem;
+    gap: 0.35rem;
     text-align: center;
   }
   .cookie-banner-text h3 {
-    font-size: .7rem;
-    margin-bottom: .05rem;
+    font-size: 0.7rem;
+    margin-bottom: 0.05rem;
   }
   .cookie-banner-text p {
-    font-size: .65rem;
-    line-height: 1.0;
+    font-size: 0.65rem;
+    line-height: 1;
   }
   .cookie-banner-actions {
     flex-direction: row;
     justify-content: center;
     width: 100%;
-    gap: .2rem;
+    gap: 0.2rem;
   }
   .cookie-btn {
     flex: 1;
-    padding: .25rem .4rem;
-    font-size: .65rem;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.65rem;
     min-width: 45px;
   }
   .cookie-banner-icon {
-    font-size: .9rem;
-    margin-bottom: .15rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.15rem;
   }
   .cookie-banner-close {
     top: -14px; /* Hälfte über dem Banner */
-    right: .8rem;
+    right: 0.8rem;
     width: 28px;
     height: 28px;
-    font-size: .9rem;
+    font-size: 0.9rem;
   }
 }
 
 /* iPhone X/11/12/13/14/15 spezifische Optimierungen */
 @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3),
-       screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
-       screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
+  screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
+  screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
   .cookie-banner {
     /* Extra Safe Area für iPhone mit Notch/Dynamic Island */
-    padding: .35rem .75rem;
-    padding-bottom: calc(.35rem + env(safe-area-inset-bottom) + 6px);
+    padding: 0.35rem 0.75rem;
+    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom) + 6px);
     /* Verbesserte Haptik auf iPhone */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -940,23 +960,23 @@
 
 /* iPhone Plus/Max Geräte - Kompakter */
 @media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3),
-       screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+  screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
   .cookie-banner {
-    padding: .4rem .8rem;
-    padding-bottom: calc(.4rem + env(safe-area-inset-bottom) + 4px);
+    padding: 0.4rem 0.8rem;
+    padding-bottom: calc(0.4rem + env(safe-area-inset-bottom) + 4px);
   }
   .cookie-banner-content {
-    gap: .4rem;
+    gap: 0.4rem;
   }
   .cookie-banner-text h3 {
-    font-size: .8rem;
+    font-size: 0.8rem;
   }
   .cookie-banner-text p {
-    font-size: .7rem;
+    font-size: 0.7rem;
   }
   .cookie-btn {
-    padding: .3rem .6rem;
-    font-size: .7rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
     min-width: 60px;
   }
 }
@@ -964,71 +984,71 @@
 /* Landscape Orientation für alle iPhones - Ultra kompakt */
 @media screen and (max-height: 500px) and (orientation: landscape) {
   .cookie-banner {
-    padding: .25rem .6rem;
-    padding-bottom: calc(.25rem + env(safe-area-inset-bottom));
-    padding-left: calc(.6rem + env(safe-area-inset-left));
-    padding-right: calc(.6rem + env(safe-area-inset-right));
+    padding: 0.25rem 0.6rem;
+    padding-bottom: calc(0.25rem + env(safe-area-inset-bottom));
+    padding-left: calc(0.6rem + env(safe-area-inset-left));
+    padding-right: calc(0.6rem + env(safe-area-inset-right));
   }
   .cookie-banner-content {
     flex-direction: row;
-    gap: .3rem;
+    gap: 0.3rem;
     align-items: center;
   }
   .cookie-banner-text {
     flex: 1;
   }
   .cookie-banner-text h3 {
-    font-size: .7rem;
-    margin-bottom: .05rem;
+    font-size: 0.7rem;
+    margin-bottom: 0.05rem;
   }
   .cookie-banner-text p {
-    font-size: .65rem;
+    font-size: 0.65rem;
     -webkit-line-clamp: 1;
     line-clamp: 1;
   }
   .cookie-banner-actions {
     flex-shrink: 0;
-    gap: .25rem;
+    gap: 0.25rem;
   }
   .cookie-btn {
-    padding: .25rem .5rem;
-    font-size: .65rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
     min-width: 50px;
   }
   .cookie-banner-icon {
-    font-size: .8rem;
+    font-size: 0.8rem;
   }
   .cookie-banner-close {
     top: -12px; /* Hälfte über dem Banner */
-    right: .6rem;
+    right: 0.6rem;
     width: 24px;
     height: 24px;
-    font-size: .8rem;
+    font-size: 0.8rem;
   }
 }
 
 /* Desktop - Ultra kompakte Darstellung */
 @media (min-width: 1025px) {
   .cookie-banner {
-    padding: .4rem 1.5rem;
+    padding: 0.4rem 1.5rem;
   }
   .cookie-banner-content {
-    gap: .8rem;
+    gap: 0.8rem;
   }
   .cookie-banner-text h3 {
-    font-size: .8rem;
-    margin-bottom: .1rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.1rem;
   }
   .cookie-banner-text p {
-    font-size: .7rem;
+    font-size: 0.7rem;
     line-height: 1.1;
   }
   .cookie-banner-icon {
     font-size: 1.1rem;
   }
   .cookie-btn {
-    padding: .3rem .8rem;
-    font-size: .7rem;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
     min-width: 70px;
   }
   .cookie-banner-close {
@@ -1068,9 +1088,10 @@
 .cookie-fab:hover {
   transform: scale(1.05) translateY(-2px);
   background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
-              0 6px 20px rgba(0, 0, 0, 0.1),
-              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 6px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   opacity: 1;
   color: #333;
 }
@@ -1098,21 +1119,23 @@
 }
 
 /* Dark Mode Anpassungen für FAB */
-[data-theme="dark"] .cookie-fab {
+[data-theme='dark'] .cookie-fab {
   background: rgba(68, 68, 68, 0.8);
   border: 1px solid rgba(245, 245, 245, 0.15);
   color: #f5f5f5;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
-              0 4px 16px rgba(0, 0, 0, 0.2),
-              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .cookie-fab:hover {
+[data-theme='dark'] .cookie-fab:hover {
   background: rgba(85, 85, 85, 0.9);
   color: #ffffff;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4),
-              0 6px 20px rgba(0, 0, 0, 0.25),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 6px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 /* ===================================================================
@@ -1138,7 +1161,7 @@ dialog.cookie-modal {
 }
 
 dialog.cookie-modal::backdrop {
-  background: rgba(0,0,0,.8);
+  background: rgba(0, 0, 0, 0.8);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }

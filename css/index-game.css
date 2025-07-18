@@ -4,13 +4,21 @@
 .viewport-box {
   width: clamp(300px, 90vw, 1000px); /* Min 300px, bevorzugt 90vw, max 1000px */
   height: auto; /* Die Höhe passt sich dem Inhalt an */
-  min-height: clamp(400px, 65vh, 800px); /* Eine Mindesthöhe für den Container */
-  background: rgba(255,255,255,0.05);
+  min-height: clamp(
+    400px,
+    65vh,
+    800px
+  ); /* Eine Mindesthöhe für den Container */
+  background: rgba(255, 255, 255, 0.05);
   -webkit-backdrop-filter: blur(10px); /* For Safari */
   backdrop-filter: blur(10px);
   border-radius: var(--border-radius);
   /* Padding mit clamp, das auf globale Variablen zugreift */
-  padding: clamp(var(--spacing-sm), 2vw + 0.5rem, var(--spacing-xl)); /* Angepasster calc-Wert für Flexibilität */
+  padding: clamp(
+    var(--spacing-sm),
+    2vw + 0.5rem,
+    var(--spacing-xl)
+  ); /* Angepasster calc-Wert für Flexibilität */
   box-shadow: 0 4px 12px var(--color-shadow-dark);
   text-align: center;
 }
@@ -35,9 +43,11 @@
   width: 180px;
   height: 180px;
   border-radius: var(--border-radius);
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 10px var(--color-shadow-dark);
-  transition: transform var(--transition-speed) var(--transition-ease), box-shadow var(--transition-speed) var(--transition-ease);
+  transition:
+    transform var(--transition-speed) var(--transition-ease),
+    box-shadow var(--transition-speed) var(--transition-ease);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -68,9 +78,8 @@
 /* 📱 Responsives Design */
 @media (max-width: 700px) {
   .viewport-box {
-        margin-top: -6vh; /* Weniger stark nach oben schieben für bessere Balance */
+    margin-top: -6vh; /* Weniger stark nach oben schieben für bessere Balance */
     padding: var(--spacing-sm); /* Kleineres Padding für kleine Bildschirme */
-
   }
   .game-links {
     flex-direction: column;
@@ -85,4 +94,3 @@
     font-size: var(--card-icon-main-size-min);
   }
 }
-

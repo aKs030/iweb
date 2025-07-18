@@ -1,178 +1,184 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🌤️ Wetter in Berlin</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🌤️ Wetter in Berlin</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css"
+    />
 
-  <!-- Benutzerdefinierte CSS -->
-      <link rel="stylesheet" href="/css/menu.css">
-      <script src="/js/menu.js" defer></script>
+    <!-- Benutzerdefinierte CSS -->
+    <link rel="stylesheet" href="/css/menu.css" />
+    <script src="/js/menu.js" defer></script>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-body {
-  font-family: 'Poppins', sans-serif;
-  background: #444;
-  color: #fff;
-  padding: 0;
-  margin: 70px 0 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: #444;
+        color: #fff;
+        padding: 0;
+        margin: 70px 0 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-
-.container {
-  width: 95%;
-  max-width: 850px;
-  background: rgba(255,255,255,0.05);
-  -webkit-backdrop-filter: blur(10px); /* For Safari */
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  margin: auto auto;
-  box-sizing: border-box;
-
-}
-
-
-
-h1 {
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-}
-
-h1::after {
-  width: 60px;
-  height: 2px;
-}
-
-    #forecast {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .day {
-      background: rgba(255,255,255,0.1);
-      border-radius: 15px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-      padding: 15px;
-      text-align: center;
-      flex: 1;
-      max-width: 200px;
-      transition: transform 0.3s ease;
-    }
-
-
-
-    .day i {
-      font-size: 40px;
-      animation: float 4s ease-in-out infinite;
-      margin-bottom: 8px;
-      color: #3184e2;
-    }
-
-    .day-date {
-      font-weight: 600;
-      margin-bottom: 6px;
-      font-size: 1rem;
-
-    }
-
-    .day-info div {
-  font-size: 0.85rem;
-}
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
-
-    @media (max-width: 700px) {
       .container {
-    padding: 15px;
-    margin-bottom: 170px;
-  }
+        width: 95%;
+        max-width: 850px;
+        background: rgba(255, 255, 255, 0.05);
+        -webkit-backdrop-filter: blur(10px); /* For Safari */
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        margin: auto auto;
+        box-sizing: border-box;
+      }
 
-  #forecast {
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+      }
+
+      h1::after {
+        width: 60px;
+        height: 2px;
+      }
+
+      #forecast {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
 
       .day {
-        width: 100%;
-        max-width: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        text-align: center;
+        flex: 1;
+        max-width: 200px;
+        transition: transform 0.3s ease;
       }
+
       .day i {
-    font-size: 35px;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
-
-    }
-  </style>
-</head>
-<body>
-  <div id="menu-container"></div>
-
-  <div class="container">
-    <h1>🌤️ Wetter in Berlin</h1>
-    <div id="forecast"></div>
-
-  </div>
-
-  <div id="footer-container"></div>
-
-  <script>
-    const API_KEY = '05c90cc62e38f1da14068c3e901e4a6e';
-    const forecastElem = document.getElementById('forecast');
-
-    window.addEventListener('DOMContentLoaded', () => {
-      fetchThreeDayForecast('Berlin');
-    });
-
-    async function fetchThreeDayForecast(city) {
-      try {
-        const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&lang=de&units=metric`;
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Fehler beim Abruf (Status: ${response.status})`);
-        }
-        const data = await response.json();
-        displayForecast(data);
-      } catch (error) {
-        forecastElem.innerHTML = `<p>Fehler beim Abruf: ${error.message}</p>`;
+        font-size: 40px;
+        animation: float 4s ease-in-out infinite;
+        margin-bottom: 8px;
+        color: #3184e2;
       }
-    }
 
-    function displayForecast(data) {
-      const dailyData = data.list.filter(item => item.dt_txt.includes('12:00:00')).slice(0, 3);
-      const labels = ["Heute", "Morgen", "Übermorgen"];
-      let html = '';
+      .day-date {
+        font-weight: 600;
+        margin-bottom: 6px;
+        font-size: 1rem;
+      }
 
-      dailyData.forEach((item, index) => {
-        const date = new Date(item.dt_txt).toLocaleDateString('de-DE', {
-          day: '2-digit', month: '2-digit', year: 'numeric'
-        });
-        const description = item.weather[0].description;
-        const temp = Math.round(item.main.temp);
-        const feelsLike = Math.round(item.main.feels_like);
-        const iconClass = getWeatherIconClass(item.weather[0].id);
+      .day-info div {
+        font-size: 0.85rem;
+      }
 
-        html += `
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      @media (max-width: 700px) {
+        .container {
+          padding: 15px;
+          margin-bottom: 170px;
+        }
+
+        #forecast {
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .day {
+          width: 100%;
+          max-width: 300px;
+        }
+        .day i {
+          font-size: 35px;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="menu-container"></div>
+
+    <div class="container">
+      <h1>🌤️ Wetter in Berlin</h1>
+      <div id="forecast"></div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script>
+      const API_KEY = '05c90cc62e38f1da14068c3e901e4a6e';
+      const forecastElem = document.getElementById('forecast');
+
+      window.addEventListener('DOMContentLoaded', () => {
+        fetchThreeDayForecast('Berlin');
+      });
+
+      async function fetchThreeDayForecast(city) {
+        try {
+          const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&lang=de&units=metric`;
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`Fehler beim Abruf (Status: ${response.status})`);
+          }
+          const data = await response.json();
+          displayForecast(data);
+        } catch (error) {
+          forecastElem.innerHTML = `<p>Fehler beim Abruf: ${error.message}</p>`;
+        }
+      }
+
+      function displayForecast(data) {
+        const dailyData = data.list
+          .filter((item) => item.dt_txt.includes('12:00:00'))
+          .slice(0, 3);
+        const labels = ['Heute', 'Morgen', 'Übermorgen'];
+        let html = '';
+
+        dailyData.forEach((item, index) => {
+          const date = new Date(item.dt_txt).toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
+          const description = item.weather[0].description;
+          const temp = Math.round(item.main.temp);
+          const feelsLike = Math.round(item.main.feels_like);
+          const iconClass = getWeatherIconClass(item.weather[0].id);
+
+          html += `
           <div class="day">
             <i class="wi ${iconClass}"></i>
             <div class="day-info">
@@ -183,23 +189,23 @@ h1::after {
             </div>
           </div>
         `;
-      });
+        });
 
-      forecastElem.innerHTML = html;
-    }
+        forecastElem.innerHTML = html;
+      }
 
-    function getWeatherIconClass(code) {
-      if (code >= 200 && code < 300) return 'wi-thunderstorm';
-      if (code >= 300 && code < 500) return 'wi-sprinkle';
-      if (code >= 500 && code < 600) return 'wi-rain';
-      if (code >= 600 && code < 700) return 'wi-snow';
-      if (code >= 700 && code < 800) return 'wi-fog';
-      if (code === 800) return 'wi-day-sunny';
-      if (code === 801) return 'wi-cloudy-gusts';
-      if (code === 802) return 'wi-cloudy';
-      if (code === 803 || code === 804) return 'wi-cloudy-windy';
-      return 'wi-na';
-    }
-  </script>
-</body>
+      function getWeatherIconClass(code) {
+        if (code >= 200 && code < 300) return 'wi-thunderstorm';
+        if (code >= 300 && code < 500) return 'wi-sprinkle';
+        if (code >= 500 && code < 600) return 'wi-rain';
+        if (code >= 600 && code < 700) return 'wi-snow';
+        if (code >= 700 && code < 800) return 'wi-fog';
+        if (code === 800) return 'wi-day-sunny';
+        if (code === 801) return 'wi-cloudy-gusts';
+        if (code === 802) return 'wi-cloudy';
+        if (code === 803 || code === 804) return 'wi-cloudy-windy';
+        return 'wi-na';
+      }
+    </script>
+  </body>
 </html>

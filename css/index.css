@@ -5,7 +5,9 @@
 /* =====================================
 🔧 GLOBAL RESET & BASIC STYLES
 ========================================= */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -27,7 +29,9 @@
 
 .animated-icon {
   /* Größe kommt direkt aus _global.css clamp */
-  font-size: var(--card-icon-main-size-min); /* Startwert vor dem Hover, wird durch Animation angepasst */
+  font-size: var(
+    --card-icon-main-size-min
+  ); /* Startwert vor dem Hover, wird durch Animation angepasst */
   display: inline-block;
   transform-style: preserve-3d;
   transform: rotateY(0deg); /* Expliziter Grundzustand */
@@ -58,7 +62,11 @@
   scroll-padding-top: clamp(var(--spacing-md), 2vw, var(--spacing-lg));
   border-radius: var(--border-radius);
   /* Padding des Viewport-Box selbst */
-  padding: clamp(var(--spacing-sm), 2vw + 0.5rem, var(--spacing-xl)); /* Angepasster calc-Wert für Flexibilität */
+  padding: clamp(
+    var(--spacing-sm),
+    2vw + 0.5rem,
+    var(--spacing-xl)
+  ); /* Angepasster calc-Wert für Flexibilität */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,8 +96,12 @@
   align-items: center;
   justify-content: center;
   /* Gap und Padding nutzen globale clamp()-Variablen */
-  gap: var(--spacing-xl); /* Verwende var(--spacing-xl) für größeren Standard-Gap */
-  padding: var(--section-padding); /* Verwende die globale Sektion-Padding-Variable */
+  gap: var(
+    --spacing-xl
+  ); /* Verwende var(--spacing-xl) für größeren Standard-Gap */
+  padding: var(
+    --section-padding
+  ); /* Verwende die globale Sektion-Padding-Variable */
 }
 
 /* =====================================
@@ -97,7 +109,11 @@
 ========================================= */
 .card {
   /* Padding, Gap, Title-Size und Text-Size kommen direkt aus _global.css clamp */
-  padding: clamp(var(--card-padding-min), var(--card-padding-preferred), var(--card-padding-max));
+  padding: clamp(
+    var(--card-padding-min),
+    var(--card-padding-preferred),
+    var(--card-padding-max)
+  );
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
@@ -105,13 +121,18 @@
   color: var(--color-text-main);
   border-radius: var(--border-radius);
   box-shadow: 0 3px 10px var(--color-shadow-dark);
-  transition: transform var(--transition-speed) var(--transition-ease),
-              box-shadow var(--transition-speed) var(--transition-ease),
-              border-color var(--transition-speed) var(--transition-ease);
+  transition:
+    transform var(--transition-speed) var(--transition-ease),
+    box-shadow var(--transition-speed) var(--transition-ease),
+    border-color var(--transition-speed) var(--transition-ease);
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  gap: clamp(var(--card-gap-min), var(--card-gap-preferred), var(--card-gap-max));
+  gap: clamp(
+    var(--card-gap-min),
+    var(--card-gap-preferred),
+    var(--card-gap-max)
+  );
 }
 
 .card:hover {
@@ -126,13 +147,21 @@
 
 .card .icon-wrapper i {
   /* Größe kommt direkt aus _global.css clamp */
-  font-size: clamp(var(--card-icon-main-size-min), var(--card-icon-main-size-preferred), var(--card-icon-main-size-max));
+  font-size: clamp(
+    var(--card-icon-main-size-min),
+    var(--card-icon-main-size-preferred),
+    var(--card-icon-main-size-max)
+  );
   color: var(--color-card-icon);
   flex-shrink: 0;
 }
 
 .card .card-title {
-  font-size: clamp(var(--card-title-size-min), var(--card-title-size-preferred), var(--card-title-size-max));
+  font-size: clamp(
+    var(--card-title-size-min),
+    var(--card-title-size-preferred),
+    var(--card-title-size-max)
+  );
   font-weight: 600;
   line-height: 1.3;
   color: var(--color-text-main);
@@ -140,7 +169,11 @@
 }
 
 .card .card-text {
-  font-size: clamp(var(--card-text-size-min), var(--card-text-size-preferred), var(--card-text-size-max));
+  font-size: clamp(
+    var(--card-text-size-min),
+    var(--card-text-size-preferred),
+    var(--card-text-size-max)
+  );
   line-height: 1.5;
   color: var(--color-text-muted);
   margin-bottom: 0;
@@ -164,7 +197,12 @@ img {
   font-size: clamp(2.2rem, 6vw, 5rem);
   font-weight: 700;
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
-  background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.8), rgba(255,255,255,0.05));
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0.05)
+  );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -174,8 +212,12 @@ img {
 }
 
 @keyframes shimmer {
-  from { background-position: -200% 0; }
-  to { background-position: 200% 0; }
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
 }
 
 /* =====================================
@@ -201,7 +243,11 @@ img {
 .glow-bar {
   width: 100%;
   height: 10px;
-  background: radial-gradient(ellipse at center, var(--color-accent) 0%, rgba(255, 204, 0, 0) 70%);
+  background: radial-gradient(
+    ellipse at center,
+    var(--color-accent) 0%,
+    rgba(255, 204, 0, 0) 70%
+  );
   position: absolute;
   /* Bottom weiterhin mit clamp */
   bottom: clamp(0.5rem, 1.5vh, 1rem);
@@ -243,7 +289,9 @@ img {
   .dots-nav {
     left: auto;
     /* Nutzt globale clamp()-Variable für den right-Abstand */
-    right: var(--spacing-md); /* Angepasst, um von der _global.css zu profitieren */
+    right: var(
+      --spacing-md
+    ); /* Angepasst, um von der _global.css zu profitieren */
   }
 }
 
@@ -260,7 +308,7 @@ img {
 }
 
 .dot::before {
-  content: "";
+  content: '';
   position: absolute;
   top: -8px;
   bottom: -8px;
@@ -284,7 +332,6 @@ img {
   outline: none;
 }
 
-
 /* ===================================================================
 Eliminierte oder stark reduzierte Media Query für kleine Bildschirme
 =================================================================== */
@@ -292,7 +339,6 @@ Eliminierte oder stark reduzierte Media Query für kleine Bildschirme
    wird diese Media Query weitgehend redundant für Größen und Abstände.
    Sie ist nur noch für sehr spezifische Anpassungen notwendig, die nicht durch clamp() abgedeckt werden. */
 /* @media (max-width: 360px) { ... } -- Dieser Block wurde entfernt */
-
 
 /* ===================================================================
 🌍 ACCESSIBILITY: REDUCED MOTION PREFERENCES

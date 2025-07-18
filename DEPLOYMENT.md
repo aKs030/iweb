@@ -3,6 +3,7 @@
 ## ✅ Vor dem Live-Gang:
 
 ### 🔧 **Technische Prüfungen:**
+
 - [ ] Alle Links funktionieren korrekt
 - [ ] Service Worker Cache ist aktuell
 - [ ] Sitemap.xml ist erreichbar unter `/sitemap.xml`
@@ -11,6 +12,7 @@
 - [ ] Manifest.json lädt korrekt
 
 ### 🔒 **Sicherheit:**
+
 - [ ] HTTPS aktiviert
 - [ ] CSP-Headers funktionieren
 - [ ] .htaccess Security-Headers aktiv
@@ -18,6 +20,7 @@
 - [ ] Datenschutzerklärung vollständig
 
 ### 📊 **Performance:**
+
 - [ ] Google PageSpeed Insights > 90
 - [ ] Core Web Vitals im grünen Bereich
 - [ ] Gzip-Kompression aktiv
@@ -25,6 +28,7 @@
 - [ ] Bilder optimiert
 
 ### 🔍 **SEO:**
+
 - [ ] Google Search Console eingerichtet
 - [ ] Sitemap in GSC eingereicht
 - [ ] Meta-Tags vollständig
@@ -32,6 +36,7 @@
 - [ ] Structured Data validiert
 
 ### 📱 **Testing:**
+
 - [ ] Desktop (Chrome, Firefox, Safari, Edge)
 - [ ] Mobile (iOS Safari, Android Chrome)
 - [ ] Tablet (iPad, Android)
@@ -40,12 +45,14 @@
 ## 🌐 **Nach dem Live-Gang:**
 
 ### 📈 **Monitoring einrichten:**
+
 - [ ] Google Analytics konfiguriert
 - [ ] Google Search Console überwacht
 - [ ] Error-Monitoring aktiviert
 - [ ] Performance-Tracking läuft
 
 ### 🔄 **Wartung:**
+
 - [ ] Backup-System eingerichtet
 - [ ] Update-Prozess definiert
 - [ ] SSL-Zertifikat Auto-Renewal
@@ -54,21 +61,25 @@
 ## 🛠️ **Nützliche Tools:**
 
 ### **Performance Testing:**
+
 - Google PageSpeed Insights: https://pagespeed.web.dev/
 - GTmetrix: https://gtmetrix.com/
 - WebPageTest: https://www.webpagetest.org/
 
 ### **SEO Testing:**
+
 - Google Rich Results Test: https://search.google.com/test/rich-results
 - Meta Tags Analyzer: https://metatags.io/
 - Open Graph Debugger: https://developers.facebook.com/tools/debug/
 
 ### **Accessibility Testing:**
+
 - WAVE: https://wave.webaim.org/
 - axe DevTools (Browser Extension)
 - Lighthouse Accessibility Audit
 
 ### **Validation:**
+
 - HTML Validator: https://validator.w3.org/
 - CSS Validator: https://jigsaw.w3.org/css-validator/
 - JSON-LD Validator: https://search.google.com/structured-data/testing-tool
@@ -78,12 +89,14 @@
 Aktuelle Domain: `https://www.abdulkerimsesli.de`
 
 **Überprüft und angepasst:**
+
 - ✅ sitemap.xml
-- ✅ robots.txt  
+- ✅ robots.txt
 - ✅ index.html (Open Graph, JSON-LD)
 - ✅ Meta-Tags
 
 ## 🎯 **Performance-Ziele:**
+
 - **Lighthouse Score:** > 95
 - **First Contentful Paint:** < 1.5s
 - **Largest Contentful Paint:** < 2.5s
@@ -91,6 +104,7 @@ Aktuelle Domain: `https://www.abdulkerimsesli.de`
 - **First Input Delay:** < 100ms
 
 ---
+
 **Status:** ✅ Produktionsreif
 **Letzte Prüfung:** 12. Juli 2025
 **Nächste Prüfung:** Nach dem ersten Deployment

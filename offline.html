@@ -1,255 +1,260 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Offline - Abdulkerim ⭐️</title>
-    <meta name="description" content="Sie sind offline. Diese Seite wird angezeigt, wenn keine Internetverbindung besteht.">
-    
+    <meta
+      name="description"
+      content="Sie sind offline. Diese Seite wird angezeigt, wenn keine Internetverbindung besteht."
+    />
+
     <style>
-        :root {
-            --color-bg: #393939;
-            --color-text: #f5f5f5;
-            --color-accent: #3A85FF;
-            --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      :root {
+        --color-bg: #393939;
+        --color-text: #f5f5f5;
+        --color-accent: #3a85ff;
+        --font-family:
+          'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      .offline-container {
+        max-width: 600px;
+        width: 100%;
+        animation: fadeIn 0.6s ease-out;
+      }
+
+      .offline-icon {
+        font-size: 5rem;
+        margin-bottom: 2rem;
+        opacity: 0.8;
+        animation: pulse 2s infinite;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+
+      p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+      }
+
+      .offline-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background-color: var(--color-accent);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #2d6ce5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(58, 133, 255, 0.3);
+      }
+
+      .btn-secondary {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--color-text);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .btn-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .cached-pages {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .cached-pages h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .cached-pages ul {
+        list-style: none;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .cached-pages a {
+        color: var(--color-accent);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--color-accent);
+        border-radius: 0.25rem;
+        transition: all 0.3s ease;
+      }
+
+      .cached-pages a:hover {
+        background-color: var(--color-accent);
+        color: white;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        
-        body {
-            font-family: var(--font-family);
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            text-align: center;
-            line-height: 1.6;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.8;
         }
-        
-        .offline-container {
-            max-width: 600px;
-            width: 100%;
-            animation: fadeIn 0.6s ease-out;
+        50% {
+          transform: scale(1.05);
+          opacity: 1;
         }
-        
-        .offline-icon {
-            font-size: 5rem;
-            margin-bottom: 2rem;
-            opacity: 0.8;
-            animation: pulse 2s infinite;
-        }
-        
+      }
+
+      @media (max-width: 600px) {
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
+          font-size: 2rem;
         }
-        
+
+        .offline-icon {
+          font-size: 4rem;
+        }
+
         p {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
+          font-size: 1rem;
         }
-        
+
         .offline-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
+          flex-direction: column;
+          width: 100%;
         }
-        
+
         .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+          width: 100%;
+          justify-content: center;
         }
-        
-        .btn-primary {
-            background-color: var(--color-accent);
-            color: white;
+      }
+
+      /* Light mode support */
+      @media (prefers-color-scheme: light) {
+        :root {
+          --color-bg: #f0f2f5;
+          --color-text: #1c1e21;
         }
-        
-        .btn-primary:hover {
-            background-color: #2d6ce5;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(58, 133, 255, 0.3);
-        }
-        
+
         .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--color-text);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+          background-color: rgba(0, 0, 0, 0.05);
+          border-color: rgba(0, 0, 0, 0.1);
         }
-        
+
         .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
+          background-color: rgba(0, 0, 0, 0.08);
         }
-        
+
         .cached-pages {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+          border-top-color: rgba(0, 0, 0, 0.1);
         }
-        
-        .cached-pages h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .cached-pages ul {
-            list-style: none;
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .cached-pages a {
-            color: var(--color-accent);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--color-accent);
-            border-radius: 0.25rem;
-            transition: all 0.3s ease;
-        }
-        
-        .cached-pages a:hover {
-            background-color: var(--color-accent);
-            color: white;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 0.8;
-            }
-            50% {
-                transform: scale(1.05);
-                opacity: 1;
-            }
-        }
-        
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .offline-icon {
-                font-size: 4rem;
-            }
-            
-            p {
-                font-size: 1rem;
-            }
-            
-            .offline-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-        
-        /* Light mode support */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --color-bg: #f0f2f5;
-                --color-text: #1c1e21;
-            }
-            
-            .btn-secondary {
-                background-color: rgba(0, 0, 0, 0.05);
-                border-color: rgba(0, 0, 0, 0.1);
-            }
-            
-            .btn-secondary:hover {
-                background-color: rgba(0, 0, 0, 0.08);
-            }
-            
-            .cached-pages {
-                border-top-color: rgba(0, 0, 0, 0.1);
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="offline-container">
-        <div class="offline-icon">📡</div>
-        
-        <h1>Sie sind offline</h1>
-        
-        <p>
-            Es scheint, als hätten Sie keine Internetverbindung. 
-            Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.
-        </p>
-        
-        <div class="offline-actions">
-            <button class="btn btn-primary" onclick="window.location.reload()">
-                🔄 Seite neu laden
-            </button>
-            <button class="btn btn-secondary" onclick="history.back()">
-                ← Zurück
-            </button>
-        </div>
-        
-        <div class="cached-pages">
-            <h2>Verfügbare Offline-Seiten</h2>
-            <ul>
-                <li><a href="/">Startseite</a></li>
-                <li><a href="/pages/ubermich.html">Über mich</a></li>
-                <li><a href="/pages/album.html">Fotogalerie</a></li>
-            </ul>
-        </div>
+      <div class="offline-icon">📡</div>
+
+      <h1>Sie sind offline</h1>
+
+      <p>
+        Es scheint, als hätten Sie keine Internetverbindung. Bitte überprüfen
+        Sie Ihre Verbindung und versuchen Sie es erneut.
+      </p>
+
+      <div class="offline-actions">
+        <button class="btn btn-primary" onclick="window.location.reload()">
+          🔄 Seite neu laden
+        </button>
+        <button class="btn btn-secondary" onclick="history.back()">
+          ← Zurück
+        </button>
+      </div>
+
+      <div class="cached-pages">
+        <h2>Verfügbare Offline-Seiten</h2>
+        <ul>
+          <li><a href="/">Startseite</a></li>
+          <li><a href="/pages/ubermich.html">Über mich</a></li>
+          <li><a href="/pages/album.html">Fotogalerie</a></li>
+        </ul>
+      </div>
     </div>
-    
+
     <script>
-        // Prüfe Verbindung alle 5 Sekunden
-        let isOnline = navigator.onLine;
-        
-        setInterval(() => {
-            if (navigator.onLine && !isOnline) {
-                // Verbindung wiederhergestellt
-                window.location.reload();
-            }
-            isOnline = navigator.onLine;
-        }, 5000);
-        
-        // Service Worker Status
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(registration => {
-                console.log('Service Worker ist aktiv:', registration.active);
-            });
+      // Prüfe Verbindung alle 5 Sekunden
+      let isOnline = navigator.onLine;
+
+      setInterval(() => {
+        if (navigator.onLine && !isOnline) {
+          // Verbindung wiederhergestellt
+          window.location.reload();
         }
+        isOnline = navigator.onLine;
+      }, 5000);
+
+      // Service Worker Status
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+          console.log('Service Worker ist aktiv:', registration.active);
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

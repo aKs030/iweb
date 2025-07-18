@@ -16,6 +16,7 @@ Eine **vollständig optimierte**, moderne Personal Website mit **Enterprise-Leve
 ## 🚀 **Quick Start**
 
 ### **Sofort-Test:**
+
 ```bash
 # Test-Server starten
 ./deploy.sh test
@@ -25,6 +26,7 @@ open http://localhost:8080
 ```
 
 ### **Produktions-Deployment:**
+
 ```bash
 # Vollständiges Deployment
 ./deploy.sh production
@@ -35,6 +37,7 @@ open http://localhost:8080
 ## ✨ **Enterprise Features**
 
 ### **🔐 Security Suite**
+
 - **Content Security Policy** (CSP) mit Violation Reporting
 - **XSS Protection** mit Real-time Scanning
 - **Input Validation** und Sanitization
@@ -43,6 +46,7 @@ open http://localhost:8080
 - **HTTPS Enforcement** und Secure Headers
 
 ### **📊 Advanced Monitoring**
+
 - **Core Web Vitals** Tracking
 - **Real-time Performance** Monitoring
 - **Error Tracking** mit Stack Traces
@@ -51,6 +55,7 @@ open http://localhost:8080
 - **Memory Usage** Monitoring
 
 ### **🌍 Internationalization (i18n)**
+
 - **Multi-Language Support** (DE, EN, TR)
 - **Automatic Language Detection**
 - **Dynamic Content Translation**
@@ -58,6 +63,7 @@ open http://localhost:8080
 - **Persistent Language Preferences**
 
 ### **📱 Progressive Web App**
+
 - **Offline-First** Architecture
 - **App Installation** auf allen Plattformen
 - **Background Sync** Ready
@@ -65,6 +71,7 @@ open http://localhost:8080
 - **Native App Experience**
 
 ### **🎨 Content Management**
+
 - **Click-to-Edit** Interface (`?edit=true`)
 - **Live Content Updates**
 - **Visual Editor** mit Admin Panel

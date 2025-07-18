@@ -1,21 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken.">
-    <meta name="keywords" content="Abdulkerim, persönliche Website, Webentwicklung, Blog, Portfolio">
-    <meta name="author" content="Abdulkerim Sesli">
-    <meta name="robots" content="index, follow">
-    <meta name="generator" content="iweb-7">
-    <link rel="canonical" href="https://www.abdulkerimsesli.de/">
-    
+    <meta
+      name="description"
+      content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken."
+    />
+    <meta
+      name="keywords"
+      content="Abdulkerim, persönliche Website, Webentwicklung, Blog, Portfolio"
+    />
+    <meta name="author" content="Abdulkerim Sesli" />
+    <meta name="robots" content="index, follow" />
+    <meta name="generator" content="iweb-7" />
+    <link rel="canonical" href="https://www.abdulkerimsesli.de/" />
+
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#393939">
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#393939" />
     <!-- Service Worker aktivieren -->
     <script>
       if ('serviceWorker' in navigator) {
@@ -23,95 +32,161 @@
       }
     </script>
     <!-- Apple Mobile -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Abdulkerim ⭐️">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="msapplication-TileColor" content="#393939">
-    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Abdulkerim ⭐️" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="msapplication-TileColor" content="#393939" />
+
     <!-- Splash Screens -->
-    <link rel="apple-touch-startup-image" href="/img/splash/iphonexsmax_splash.png"
-          media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="/img/splash/ipad_splash.png"
-          media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="/img/splash/ipadpro1_splash.png"
-          media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)">
-    
+    <link
+      rel="apple-touch-startup-image"
+      href="/img/splash/iphonexsmax_splash.png"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="/img/splash/ipad_splash.png"
+      media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="/img/splash/ipadpro1_splash.png"
+      media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)"
+    />
+
     <!-- Touch Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
-    
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/img/touch-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/img/touch-icon-152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/img/touch-icon-120.png"
+    />
+
     <!-- Favicons -->
-    <link rel="icon" href="/img/favicon-32.png" sizes="32x32" type="image/png">
-    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <link
+      rel="icon"
+      href="/img/favicon-32.png"
+      sizes="32x32"
+      type="image/png"
+    />
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon" />
     <!-- Apple Touch Icons für iOS -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/img/touch-icon-180.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/img/touch-icon-120.png">
-    
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/img/touch-icon-180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/img/touch-icon-152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/img/touch-icon-120.png"
+    />
+
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="website" />
     <!-- Strukturierte Daten: JSON-LD -->
     <!-- Strukturierte Daten: JSON-LD für Person und Website -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Abdulkerim Sesli",
-      "alternateName": "Abdulkerim ⭐️",
-      "url": "https://www.abdulkerimsesli.de/",
-      "description": "Persönliche Website von Abdulkerim Sesli – Portfolio, Blog und Kontakt.",
-      "publisher": {
-        "@type": "Person",
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
         "name": "Abdulkerim Sesli",
-        "sameAs": [
-          "https://github.com/aKs030",
-          "https://linkedin.com/in/abdulkerim-sesli"
-        ],
-        "jobTitle": "Webentwickler"
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://www.abdulkerimsesli.de/search?q={search_term_string}"
+        "alternateName": "Abdulkerim ⭐️",
+        "url": "https://www.abdulkerimsesli.de/",
+        "description": "Persönliche Website von Abdulkerim Sesli – Portfolio, Blog und Kontakt.",
+        "publisher": {
+          "@type": "Person",
+          "name": "Abdulkerim Sesli",
+          "sameAs": [
+            "https://github.com/aKs030",
+            "https://linkedin.com/in/abdulkerim-sesli"
+          ],
+          "jobTitle": "Webentwickler"
         },
-        "query-input": "required name=search_term_string"
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.abdulkerimsesli.de/search?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
       }
-    }
     </script>
-    <meta property="og:url" content="https://www.abdulkerimsesli.de/">
-    <meta property="og:title" content="Abdulkerim ⭐️ - Persönliche Website">
-    <meta property="og:description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken.">
-    <meta property="og:image" content="https://www.abdulkerimsesli.de/img/touch-icon-180.png">
-    <meta property="og:locale" content="de_DE">
+    <meta property="og:url" content="https://www.abdulkerimsesli.de/" />
+    <meta property="og:title" content="Abdulkerim ⭐️ - Persönliche Website" />
+    <meta
+      property="og:description"
+      content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken."
+    />
+    <meta
+      property="og:image"
+      content="https://www.abdulkerimsesli.de/img/touch-icon-180.png"
+    />
+    <meta property="og:locale" content="de_DE" />
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://www.abdulkerimsesli.de/">
-    <meta property="twitter:title" content="Abdulkerim ⭐️ - Persönliche Website">
-    <meta property="twitter:description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken.">
-    <meta property="twitter:image" content="https://www.abdulkerimsesli.de/img/touch-icon-180.png">
-    
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://www.abdulkerimsesli.de/" />
+    <meta
+      property="twitter:title"
+      content="Abdulkerim ⭐️ - Persönliche Website"
+    />
+    <meta
+      property="twitter:description"
+      content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken."
+    />
+    <meta
+      property="twitter:image"
+      content="https://www.abdulkerimsesli.de/img/touch-icon-180.png"
+    />
+
     <!-- Security -->
-    <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self';
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
                    img-src 'self' data: https:;
                    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
                    font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
                    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com;
                    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://ipapi.co;
                    frame-src 'self';
-                   manifest-src 'self';">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    
+                   manifest-src 'self';"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
     <!-- PWA -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#393939">
-    <meta name="theme-color" content="#393939" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#393939">
-    <meta name="msapplication-navbutton-color" content="#393939">
-    
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#393939" />
+    <meta
+      name="theme-color"
+      content="#393939"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#393939" />
+    <meta name="msapplication-navbutton-color" content="#393939" />
+
     <!-- Critical CSS -->
     <style>
       :root {
@@ -119,14 +194,14 @@
         --color-text-main: #f5f5f5;
         --font-family-main: 'Poppins', sans-serif;
       }
-      
+
       body {
         margin: 0;
         background-color: var(--color-bg);
         color: var(--color-text-main);
         font-family: var(--font-family-main);
       }
-      
+
       @media (prefers-color-scheme: light) {
         :root {
           --color-bg: #ffffff;
@@ -134,64 +209,130 @@
         }
       }
     </style>
-    
+
     <title>Abdulkerim ⭐️</title>
-    
+
     <!-- Preconnect -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.google-analytics.com">
-    <link rel="preconnect" href="https://www.googletagmanager.com">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.google-analytics.com" />
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lobster&family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- Styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+
     <!-- Main Styles -->
-    <link rel="stylesheet" href="/css/index.css">
-    
+    <link rel="stylesheet" href="/css/index.css" />
+
     <!-- DNS Prefetch -->
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
     <!-- Preload wichtige Ressourcen -->
-    <link rel="preload" href="/css/_global.css" as="style">
-    <link rel="preload" href="/js/main-init.js" as="script">
-</head>
-<body id="index-page">
-    
+    <link rel="preload" href="/css/_global.css" as="style" />
+    <link rel="preload" href="/js/main-init.js" as="script" />
+  </head>
+  <body id="index-page">
     <!-- Navigation -->
     <nav id="menu-container" aria-label="Hauptnavigation"></nav>
-    
+
     <!-- NoScript -->
     <noscript>
-        <div class="noscript-warning">
-            <strong>Hinweis:</strong> Diese Website benötigt JavaScript, um korrekt zu funktionieren. Bitte aktivieren Sie JavaScript in Ihrem Browser.
-        </div>
+      <div class="noscript-warning">
+        <strong>Hinweis:</strong> Diese Website benötigt JavaScript, um korrekt
+        zu funktionieren. Bitte aktivieren Sie JavaScript in Ihrem Browser.
+      </div>
     </noscript>
-    
+
     <!-- Main Content -->
-    <main id="main-content" class="viewport-box" role="main" aria-label="Hauptinhalt">
-        <section class="sections-container snap-section" id="section-hero" aria-label="Willkommensbereich">
-            <h1>Willkommen auf Abdulkerims persönlicher Website – Portfolio, Blog &amp; mehr</h1>
-        </section>
-        <section class="sections-container snap-section" id="section-features" aria-label="Features"></section>
-        <section class="sections-container snap-section" id="section-about" aria-label="Über mich"></section>
-        <div class="dots-nav" aria-label="Seitennavigation" role="tablist" aria-orientation="vertical">
-            <div class="dot active" data-target="section-hero" aria-label="Zur Startseite" role="tab" aria-controls="section-hero" aria-selected="true" tabindex="0"></div>
-            <div class="dot" data-target="section-features" aria-label="Zu den Features" role="tab" aria-controls="section-features" aria-selected="false" tabindex="-1"></div>
-            <div class="dot" data-target="section-about" aria-label="Über mich" role="tab" aria-controls="section-about" aria-selected="false" tabindex="-1"></div>
-        </div>
+    <main
+      id="main-content"
+      class="viewport-box"
+      role="main"
+      aria-label="Hauptinhalt"
+    >
+      <section
+        class="sections-container snap-section"
+        id="section-hero"
+        aria-label="Willkommensbereich"
+      >
+        <h1>
+          Willkommen auf Abdulkerims persönlicher Website – Portfolio, Blog
+          &amp; mehr
+        </h1>
+      </section>
+      <section
+        class="sections-container snap-section"
+        id="section-features"
+        aria-label="Features"
+      ></section>
+      <section
+        class="sections-container snap-section"
+        id="section-about"
+        aria-label="Über mich"
+      ></section>
+      <div
+        class="dots-nav"
+        aria-label="Seitennavigation"
+        role="tablist"
+        aria-orientation="vertical"
+      >
+        <div
+          class="dot active"
+          data-target="section-hero"
+          aria-label="Zur Startseite"
+          role="tab"
+          aria-controls="section-hero"
+          aria-selected="true"
+          tabindex="0"
+        ></div>
+        <div
+          class="dot"
+          data-target="section-features"
+          aria-label="Zu den Features"
+          role="tab"
+          aria-controls="section-features"
+          aria-selected="false"
+          tabindex="-1"
+        ></div>
+        <div
+          class="dot"
+          data-target="section-about"
+          aria-label="Über mich"
+          role="tab"
+          aria-controls="section-about"
+          aria-selected="false"
+          tabindex="-1"
+        ></div>
+      </div>
     </main>
-    
+
     <!-- Footer -->
     <div id="footer-placeholder"></div>
-    
+
     <!-- Scripts -->
     <script src="/js/main-init.js" defer></script>
     <script src="/js/enhanced-error-handler.js" defer></script>
@@ -204,40 +345,46 @@
     <script src="/js/intext.js" defer></script>
     <script src="/js/menu.js" defer></script>
     <script src="/js/scroll-dots.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5HCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous" defer></script>
-    
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5HCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+      crossorigin="anonymous"
+      defer
+    ></script>
+
     <!-- Service Worker -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .catch(err => console.warn('SW-Registration failed:', err));
+          navigator.serviceWorker
+            .register('/sw.js')
+            .catch((err) => console.warn('SW-Registration failed:', err));
         });
       }
     </script>
-    
+
     <!-- Structured Data -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Abdulkerim Sesli",
-      "alternateName": "Abdulkerim ⭐️",
-      "url": "https://www.abdulkerimsesli.de/",
-      "description": "Persönliche Website von Abdulkerim Sesli – Portfolio, Blog und Kontakt.",
-      "publisher": {
-        "@type": "Person",
-        "name": "Abdulkerim Sesli"
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://www.abdulkerimsesli.de/search?q={search_term_string}"
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Abdulkerim Sesli",
+        "alternateName": "Abdulkerim ⭐️",
+        "url": "https://www.abdulkerimsesli.de/",
+        "description": "Persönliche Website von Abdulkerim Sesli – Portfolio, Blog und Kontakt.",
+        "publisher": {
+          "@type": "Person",
+          "name": "Abdulkerim Sesli"
         },
-        "query-input": "required name=search_term_string"
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.abdulkerimsesli.de/search?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
       }
-    }
     </script>
-</body>
+  </body>
 </html>
