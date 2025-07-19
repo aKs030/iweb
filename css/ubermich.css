@@ -1,5 +1,6 @@
 /* ubermich.css - Spezifische Stile für die "Über Mich"-Seite */
 
+
 @import url('/css/_global.css'); /* Variablen importieren */
 
 /* =====================================
@@ -11,6 +12,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+
 }
 
 /* =====================================
@@ -42,9 +44,11 @@
   align-items: center;
   justify-content: center;
   position: relative;
+
 }
 
 /* Scrollbar-Stile für viewport-box (bleiben hier, sind aber bei overflow: hidden; inaktiv) */
+/* Scrollbar ausblenden */
 .viewport-box::-webkit-scrollbar {
   display: none;
 }
@@ -69,14 +73,16 @@
   padding-right: clamp(4rem, 10vw, 12rem);
   box-sizing: content-box;
   margin-right: -17px; /* Beibehaltung des Hacks für Scrollbar-Breite */
+
 }
 
 /* Scrollbar-Stile for scroll-wrapper (bleibt wie gehabt) */
+/* Scrollbar-Stile */
 .scroll-wrapper::-webkit-scrollbar {
   width: 8px;
 }
 .scroll-wrapper::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0 0 0 / 0.2);
   border-radius: 4px;
 }
 .scroll-wrapper::-webkit-scrollbar-thumb {
@@ -116,6 +122,7 @@
     4vw,
     40px
   ); /* Erhöhtes Padding für mehr Raum um den Inhalt */
+
 }
 
 /* --- .section-body: Wider Content Area & Optimized Padding --- */
@@ -146,14 +153,16 @@
   transition:
     background-color var(--transition-speed),
     box-shadow var(--transition-speed);
+
 }
 
 /* Scrollbar-Styling für .section-body */
+/* Scrollbar-Stile */
 .section-body::-webkit-scrollbar {
   width: 8px;
 }
 .section-body::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0 0 0 / 0.2);
   border-radius: 4px;
 }
 .section-body::-webkit-scrollbar-thumb {
@@ -174,20 +183,24 @@
   transition:
     opacity var(--transition-speed),
     background-color var(--transition-speed);
+
 }
 
 /* Dynamischer Header für ubermich.html */
 .dynamic-header {
   text-align: left;
   padding: clamp(0.3rem, 0.1vw, 0.2rem);
+
 }
 
 .dynamic-header.fade-out {
   opacity: 0;
+
 }
 
 .dynamic-header.fade-in {
   opacity: 1;
+
 }
 
 /* Überschriften und Absätze */
@@ -201,14 +214,17 @@
   transition:
     transform var(--transition-speed) var(--transition-ease),
     opacity var(--transition-speed);
+
 }
 .section-body h3.visible {
   transform: translateY(0);
   opacity: 1;
+
 }
 .section-body h3.hidden-up {
   transform: translateY(-50px);
   opacity: 0;
+
 }
 
 .section-body p {
@@ -221,14 +237,17 @@
   transition:
     transform var(--transition-speed) var(--transition-ease) 0.1s,
     opacity var(--transition-speed) 0.1s;
+
 }
 .section-body p.visible {
   transform: translateY(0);
   opacity: 1;
+
 }
 .section-body p.hidden-up {
   transform: translateY(-30px);
   opacity: 0;
+
 }
 
 .section-body ul {
@@ -241,14 +260,17 @@
   transition:
     transform var(--transition-speed) var(--transition-ease) 0.2s,
     opacity var(--transition-speed) 0.2s;
+
 }
 .section-body ul.visible {
   transform: translateY(0);
   opacity: 1;
+
 }
 .section-body ul.hidden-up {
   transform: translateY(-40px);
   opacity: 0;
+
 }
 
 .contact-links {
@@ -257,6 +279,7 @@
   justify-content: center;
   gap: var(--spacing-md); /* Mehr Abstand zwischen den Links */
   flex-wrap: wrap;
+
 }
 
 .contact-links a {
@@ -266,12 +289,14 @@
   transition:
     color var(--transition-speed) ease,
     transform var(--transition-speed) ease;
+
 }
 .contact-links a:hover,
 .contact-links a:focus {
   color: var(--color-link);
   transform: scale(1.1);
   outline: none;
+
 }
 
 /* ===================================================================

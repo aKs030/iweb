@@ -1,3 +1,4 @@
+
 @import url('https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 @import url('_global.css'); /* Importiere globale Variablen zuerst */
@@ -8,6 +9,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+
 }
 
 /* =======================
@@ -18,6 +20,7 @@
 .site-menu__list,
 .site-menu__toggle {
   will-change: transform; /* Verbessert Animation-Performance */
+
 }
 
 /* =======================
@@ -30,6 +33,7 @@
   font-family: var(--font-family-main);
   font-size: var(--font-size-p);
   line-height: 1.6;
+
 }
 
 /* Farben konsistent aus CSS-Variablen */
@@ -42,12 +46,14 @@
   padding: 0.55rem 1.2rem;
   min-width: 140px;
   font-size: 1em;
+
 }
 .site-menu__list .submenu li a:hover,
 .site-menu__list .submenu li a:focus {
   color: var(--color-link);
   background: rgba(0, 0, 0, 0.05);
   text-decoration: none;
+
 }
 .site-header {
   top: 0;
@@ -72,12 +78,14 @@
   /* Performance-Optimierung für häufige Updates */
   contain: layout style;
   transition: min-height 0.3s var(--transition-ease); /* Übergang für Höhenänderung */
+
 }
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 0.6rem; /* Optimierter Abstand */
+
 }
 
 .mobile-actions {
@@ -89,6 +97,7 @@
   justify-content: space-between; /* Bessere Verteilung */
   align-items: center;
   flex-wrap: wrap;
+
 }
 
 /* =======================
@@ -98,6 +107,7 @@
   position: relative;
   display: flex;
   align-items: center;
+
 }
 
 .search-toggle {
@@ -115,6 +125,7 @@
   align-items: center;
   justify-content: center;
   opacity: 0.7; /* Leicht transparent */
+
 }
 
 .search-toggle:hover,
@@ -124,6 +135,7 @@
   border-color: rgba(97, 218, 251, 0.3);
   transform: scale(1.02); /* Weniger Skalierung */
   opacity: 1;
+
 }
 
 .search-input {
@@ -144,17 +156,20 @@
   font-size: 0.85rem; /* Kleinere Schrift */
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+
 }
 
 .search-input:focus {
   outline: none;
   border-color: rgba(97, 218, 251, 0.4); /* Subtiler Focus */
   box-shadow: 0 0 0 1px rgba(97, 218, 251, 0.1); /* Reduzierter Schatten */
+
 }
 
 .search-input::placeholder {
   color: var(--color-text-muted);
   font-size: 0.8rem; /* Kleinere Placeholder-Schrift */
+
 }
 
 .search-container.active .search-input {

@@ -1,4 +1,5 @@
 /* games.css - Spezifische Stile für die Spiele-Seite */
+
 @import url('_global.css'); /* Variablen importieren */
 
 .viewport-box {
@@ -20,7 +21,9 @@
   ); /* Angepasster calc-Wert für Flexibilität */
   box-shadow: 0 4px 12px var(--color-shadow-dark);
   text-align: center;
+
 }
+
 
 /* 🎮 Spiele-Links als Karten-Widgets */
 .game-links {
@@ -31,6 +34,7 @@
   justify-content: center;
   gap: var(--card-gap-max);
   flex-wrap: wrap;
+
 }
 
 .game-card {
@@ -56,11 +60,13 @@
   color: var(--color-text-main);
   font-weight: 600;
   font-size: var(--card-title-size-max);
+
 }
 
 .game-card:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 20px var(--color-shadow-dark);
+
 }
 
 .game-icon {
@@ -68,11 +74,14 @@
   margin-bottom: var(--spacing-xs);
   color: var(--color-text-main);
   transition: color var(--transition-speed) var(--transition-ease);
+
 }
 
 .game-card:hover .game-icon {
   color: var(--color-accent);
+
 }
+
 
 /* 📱 Responsives Design */
 @media (max-width: 700px) {
@@ -92,4 +101,5 @@
   .game-icon {
     font-size: var(--card-icon-main-size-min);
   }
+
 }

@@ -19,18 +19,19 @@
  */
 
 /* CSS Custom Properties - Website-optimiert für Abdulkerim */
+ 
 :root {
   /* Core Colors - Angepasst an Website-Design */
-  --cb-bg: rgba(68, 68, 68, 0.96);
+  --cb-bg: rgb(68 68 68 / 96%);
   --cb-text: #f5f5f5;
   --cb-primary: #3a85ff;
   --cb-primary-hover: #2d6ce5;
   --cb-secondary: #555;
   --cb-secondary-hover: #666;
-  --cb-surface: rgba(85, 85, 85, 0.85);
-  --cb-surface-hover: rgba(95, 95, 95, 0.9);
-  --cb-border: rgba(245, 245, 245, 0.2);
-  --cb-muted: rgba(245, 245, 245, 0.6);
+  --cb-surface: rgb(85 85 85 / 85%);
+  --cb-surface-hover: rgb(95 95 95 / 90%);
+  --cb-border: rgb(245 245 245 / 20%);
+  --cb-muted: rgb(245 245 245 / 60%);
 
   /* Status Colors - Website-harmonisch */
   --cb-success: #28a745;
@@ -43,8 +44,8 @@
   --cb-radius-sm: 0.4rem;
   --cb-radius-lg: 1rem;
 /* Korrigierte Version: moderne Farbnotation, Prozent für Alpha, Vendor-Präfixe entfernt, Kebab-Case, Shorthand, Media-Queries, Reihenfolge, Kebab-Case für Custom Properties */
-  --cb-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --cb-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+  --cb-shadow: 0 8px 32px rgb(0 0 0 / 40%);
+  --cb-shadow-lg: 0 16px 40px rgb(0 0 0 / 50%);
 
   /* Gradients - Website-Style */
   --cb-gradient-primary: linear-gradient(135deg, #3a85ff, #5a9fff);
@@ -52,8 +53,8 @@
   --cb-gradient-success: linear-gradient(135deg, #28a745, #20c997);
   --cb-gradient-glass: linear-gradient(
     135deg,
-    rgba(245, 245, 245, 0.1),
-    rgba(245, 245, 245, 0.05)
+    rgb(245 245 245 / 10%),
+    rgb(245 245 245 / 5%)
   );
 
   /* Z-Index Scale */
@@ -68,66 +69,72 @@
 
   /* Typography - Website-Font */
   --cb-font-family: 'Poppins', sans-serif;
+
 }
 
 /* Dark Theme - Angepasst für Website */
 [data-theme='dark'],
 :root:has([data-theme='dark']) {
-  --cb-bg: rgba(68, 68, 68, 0.96);
+  --cb-bg: rgb(68 68 68 / 96%);
   --cb-text: #f5f5f5;
   --cb-primary: #3a85ff;
   --cb-primary-hover: #2d6ce5;
   --cb-secondary: #555;
   --cb-secondary-hover: #666;
-  --cb-surface: rgba(85, 85, 85, 0.85);
-  --cb-surface-hover: rgba(95, 95, 95, 0.9);
-  --cb-border: rgba(245, 245, 245, 0.2);
-  --cb-muted: rgba(245, 245, 245, 0.6);
+  --cb-surface: rgb(85 85 85 / 85%);
+  --cb-surface-hover: rgb(95 95 95 / 90%);
+  --cb-border: rgb(245 245 245 / 20%);
+  --cb-muted: rgb(245 245 245 / 60%);
   --cb-gradient-primary: linear-gradient(135deg, #3a85ff, #5a9fff);
   --cb-gradient-secondary: linear-gradient(135deg, #555, #666);
+
 }
 
 /* Light Theme - Website-kompatibel */
 [data-theme='light'] {
-  --cb-bg: rgba(248, 249, 250, 0.96);
+  --cb-bg: rgb(248 249 250 / 96%);
   --cb-text: #1a1a1a;
   --cb-primary: #3a85ff;
   --cb-primary-hover: #2d6ce5;
   --cb-secondary: #6c757d;
   --cb-secondary-hover: #5a6268;
-  --cb-surface: rgba(255, 255, 255, 0.9);
-  --cb-surface-hover: rgba(240, 242, 245, 0.95);
-  --cb-border: rgba(0, 0, 0, 0.1);
-  --cb-muted: rgba(108, 117, 125, 0.8);
+  --cb-surface: rgb(255 255 255 / 90%);
+  --cb-surface-hover: rgb(240 242 245 / 95%);
+  --cb-border: rgb(0 0 0 / 10%);
+  --cb-muted: rgb(108 117 125 / 80%);
   --cb-gradient-primary: linear-gradient(135deg, #3a85ff, #5a9fff);
   --cb-gradient-secondary: linear-gradient(135deg, #6c757d, #8d959d);
+
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --cb-bg: rgba(68, 68, 68, 0.96);
+    --cb-bg: rgb(68 68 68 / 96%);
     --cb-text: #f5f5f5;
     --cb-primary: #3a85ff;
-    --cb-surface: rgba(85, 85, 85, 0.85);
-    --cb-border: rgba(245, 245, 245, 0.2);
-    --cb-muted: rgba(245, 245, 245, 0.6);
+    --cb-surface: rgb(85 85 85 / 85%);
+    --cb-border: rgb(245 245 245 / 20%);
+    --cb-muted: rgb(245 245 245 / 60%);
   }
+
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --cb-bg: rgba(248, 249, 250, 0.96);
+    --cb-bg: rgb(248 249 250 / 96%);
     --cb-text: #1a1a1a;
     --cb-primary: #3a85ff;
-    --cb-surface: rgba(255, 255, 255, 0.9);
-    --cb-border: rgba(0, 0, 0, 0.1);
-    --cb-muted: rgba(108, 117, 125, 0.8);
+    --cb-surface: rgb(255 255 255 / 90%);
+    --cb-border: rgb(0 0 0 / 10%);
+    --cb-muted: rgb(108 117 125 / 80%);
   }
+
 }
 
 /* Base Styles */
 .hidden {
   display: none !important;
+
 }
 
 /* Reduced motion for users with accessibility needs */
@@ -141,6 +148,7 @@
   .cookie-banner-icon {
     animation: none !important;
   }
+
 }
 
 /* Cookie Banner - Ultra Optimized */
@@ -159,28 +167,32 @@
   transition: transform var(--cb-transition);
   will-change: transform;
   background-image: var(--cb-gradient-glass);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -2px 8px rgb(0 0 0 / 20%);
   font-family: var(--cb-font-family);
+
 }
 
 .cookie-banner:not(.hidden) {
   transform: translateY(0);
   animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
 }
 
 .cookie-banner.slide-out {
   transform: translateY(100%);
   transition: transform var(--cb-transition-fast);
+
 }
 
 /* Compliance Modes - Compact */
 .cookie-banner.gdpr-mode {
   background-image: linear-gradient(
     135deg,
-    rgba(16, 185, 129, 0.1),
+    rgb(16 185 129 / 10%),
     var(--cb-bg)
   );
   border-top-color: var(--cb-success);
+
 }
 
 .cookie-banner.gdpr-mode::before {
@@ -195,6 +207,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   box-shadow: var(--cb-shadow);
+
 }
 
 .cookie-banner.ccpa-mode {
@@ -204,6 +217,7 @@
     var(--cb-bg)
   );
   border-top-color: var(--cb-primary);
+
 }
 
 .cookie-banner.ccpa-mode::before {
@@ -218,6 +232,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   box-shadow: var(--cb-shadow);
+
 }
 
 /* Banner Layout - Flacher Streifen */
@@ -230,6 +245,7 @@
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
+
 }
 
 .cookie-banner-icon {
@@ -237,11 +253,13 @@
   animation: bounce 3s infinite;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   flex-shrink: 0;
+
 }
 
 .cookie-banner-text {
   flex: 1;
   min-width: 250px;
+
 }
 
 .cookie-banner-text h3 {
@@ -252,6 +270,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+
 }
 
 .cookie-banner-text p {
@@ -259,6 +278,7 @@
   font-size: 0.75rem;
   line-height: 1.2;
   color: var(--cb-muted);
+
 }
 
 .cookie-banner-links {
@@ -266,6 +286,7 @@
   gap: 0.75rem;
   margin-top: 0.25rem;
   flex-wrap: wrap;
+
 }
 
 .cookie-banner-links a {
@@ -275,6 +296,7 @@
   font-weight: 500;
   transition: var(--cb-transition);
   position: relative;
+
 }
 
 .cookie-banner-links a::after {
@@ -286,11 +308,13 @@
   left: 0;
   background: var(--cb-gradient-primary);
   transition: var(--cb-transition);
+
 }
 
 .cookie-banner-links a:hover::after,
 .cookie-banner-links a:focus::after {
   width: 100%;
+
 }
 
 .cookie-banner-actions {
@@ -298,6 +322,7 @@
   gap: 0.4rem;
   flex-wrap: nowrap;
   flex-shrink: 0;
+
 }
 
 /* Close Button - Rechts oben, halb über dem Banner */
@@ -322,6 +347,7 @@
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   z-index: 2;
+
 }
 
 .cookie-banner-close::before {
@@ -331,6 +357,7 @@
   background: rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   z-index: -1;
+
 }
 
 .cookie-banner-close:hover {
@@ -339,17 +366,20 @@
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
   color: var(--cb-primary);
+
 }
 
 .cookie-banner-close:focus {
   outline: 3px solid var(--cb-primary);
   outline-offset: 2px;
+
 }
 
 /* Verbesserte Zugänglichkeit für Close-Button */
 .cookie-banner-close:active {
   transform: scale(0.95);
   background: rgba(255, 255, 255, 0.4);
+
 }
 
 /* Hover-Effekt für Touch-Geräte */
@@ -359,9 +389,10 @@
   }
 
   .cookie-banner-close:active {
-    background: rgba(255, 255, 255, 0.4);
+    background: rgb(255 255 255 / 40%);
     transform: scale(0.95);
   }
+
 }
 
 /* High contrast mode support */
@@ -370,6 +401,7 @@
     border: 3px solid currentColor;
     background: transparent;
   }
+
 }
 
 /* Reduced motion support */
@@ -381,6 +413,7 @@
   .cookie-banner-close:hover {
     transform: none;
   }
+
 }
 
 /* Progress Bar */
