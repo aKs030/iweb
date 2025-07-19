@@ -28,7 +28,8 @@
     "pre-deploy": "npm run format && npm run lint && npm run deploy-check && npm run optimize",
     "optimize:images": "sharp-cli img/**/*.{jpg,png} --output=img/optimized --webp --avif",
     "generate:srcset": "node scripts/generate-responsive-images.js",
-    "critical-css": "critical index.html --base . --inline --minify > index-critical.html"
+    "critical-css": "critical index.html --base . --inline --minify > index-critical.html",
+    "test:visual": "percy exec -- npx serve -l 8000 -s . & SERVER_PID=$!; sleep 5; percy snapshot ./index.html; kill $SERVER_PID"
   },
   "repository": {
     "type": "git",
