@@ -274,7 +274,6 @@ a:focus, button:focus {
   <div class="banner"></div>
 <div class="main-content">
 
-
   <!-- Spielfeld -->
   <canvas id="game" width="400" height="400"></canvas>
 
@@ -330,7 +329,8 @@ a:focus, button:focus {
   <!-- Punkteanzeige -->
   <div id="score-board">Punkte: 0</div>
 
-<div id="footer-container"></div>
+  <div id="footer-container"></div>
+</div> <!-- .main-content -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
