@@ -4,6 +4,7 @@
   "description": "Abdulkerims persönliche Website – modern, responsive und DSGVO-konform",
   "main": "index.html",
   "scripts": {
+    "check-links-local": "npx serve -l 8000 & SERVER_PID=$!; for i in {1..15}; do if curl -s http://localhost:8000 > /dev/null; then break; fi; echo 'Warte auf Server... ('$i')'; sleep 1; done; npm run check-links; kill $SERVER_PID",
     "dev": "python -m http.server 8000",
     "build": "echo 'Static site – no build needed'",
     "validate-html": "html-validate index.html pages/**/*.html",
