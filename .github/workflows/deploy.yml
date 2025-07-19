@@ -32,6 +32,12 @@ jobs:
         run: npm run validate-css
         continue-on-error: true
 
+      - name: 🌐 Starte lokalen Webserver
+        run: |
+          python3 -m http.server 8000 &
+          sleep 3
+        working-directory: .
+
       - name: 🔍 Check broken links
         run: npm run check-links
         continue-on-error: true
@@ -42,6 +48,12 @@ jobs:
           configPath: './lighthouserc.js'
           uploadArtifacts: true
           temporaryPublicStorage: true
+
+      - name: 📤 Upload Lighthouse Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse_results
+          path: ./.lighthouseci/
 
   security-scan:
     runs-on: ubuntu-latest
