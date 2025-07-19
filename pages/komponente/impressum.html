@@ -98,7 +98,23 @@
       <p class="last-updated">Letzte Aktualisierung: Juni 2024</p>
     </main>
 
+    <button id="share-btn" style="margin:2em auto 1em auto;display:block;">Seite teilen</button>
     <div id="footer-placeholder"></div>
     <script src="/js/menu.js" defer></script>
+    <script src="/js/main-init.js" defer></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('share-btn');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            shareContent(
+              document.title,
+              'Impressum und rechtliche Angaben zu Abdulkerim Sesli und der Website iweb-7.',
+              window.location.href
+            );
+          });
+        }
+      });
+    </script>
   </body>
 </html>

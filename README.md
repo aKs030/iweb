@@ -13,24 +13,34 @@ Eine **vollständig optimierte**, moderne Personal Website mit **Enterprise-Leve
 
 ---
 
-## 🚀 **Quick Start**
 
-### **Sofort-Test:**
+## 🚀 Quick Start
 
+### Prerequisites
+- Node.js 16+
+- Python 3.x (für lokalen Server)
+
+### Installation
 ```bash
-# Test-Server starten
-./deploy.sh test
-
-# Im Browser öffnen
-open http://localhost:8080
+npm install
+npm run dev
 ```
 
-### **Produktions-Deployment:**
+### Available Scripts
+- `npm run dev` - Startet Entwicklungsserver
+- `npm run build` - Optimiert Assets für Production
+- `npm run test` - Führt alle Tests aus
+- `npm run deploy` - Deployment Pipeline
 
-```bash
-# Vollständiges Deployment
-./deploy.sh production
-```
+## 📊 Performance Budget
+- First Contentful Paint: < 1.5s
+- Time to Interactive: < 3.5s
+- Bundle Size: < 200KB (gzipped)
+
+## 🔒 Security
+- CSP Headers implementiert
+- Subresource Integrity für externe Ressourcen
+- Regelmäßige Dependency Updates via Dependabot
 
 ---
 

@@ -327,7 +327,12 @@
       </div>
     </div>
 
+    <script src="/js/form-enhancement.js" defer></script>
     <script>
+      // FormEnhancer für das Suchformular initialisieren
+      const searchForm = document.querySelector('.search-form');
+      if (searchForm) new FormEnhancer(searchForm);
+
       // Log 404 error to analytics if available
       if (typeof gtag === 'function') {
         gtag('event', 'page_not_found', {
@@ -340,6 +345,7 @@
       setTimeout(() => {
         window.location.href = '/';
       }, 30000);
+    </script>
     </script>
   </body>
 </html>

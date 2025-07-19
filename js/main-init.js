@@ -138,6 +138,32 @@ window.onWebsiteReady = (name, initFunction, options = {}) => {
     window.mainInitializer.registerModule(name, initFunction, options);
 };
 
+// Share-Funktion global bereitstellen
+// Importiere share-dialog.js, falls noch nicht geladen
+if (typeof window.showShareDialog === 'undefined') {
+    const script = document.createElement('script');
+    script.src = '/js/share-dialog.js';
+    document.head.appendChild(script);
+}
+
+window.shareContent = async function(title, text, url) {
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text, url });
+    } catch (err) {
+      // Nutzer hat das Teilen abgebrochen oder es ist ein Fehler aufgetreten
+      console.log('Teilen abgebrochen oder Fehler:', err);
+    }
+  } else {
+    // Fallback: Eigener Dialog oder Social Media Links anzeigen
+    if (typeof window.showShareDialog === 'function') {
+      window.showShareDialog(title, text, url);
+      return;
+    }
+    alert('Teilen wird auf diesem Gerät nicht unterstützt.');
+  }
+};
+
 // Registriere alle Module
 window.onWebsiteReady('ErrorHandler', () => {
     // Error Handler ist bereits über enhanced-error-handler.js geladen

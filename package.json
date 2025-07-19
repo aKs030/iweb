@@ -26,6 +26,10 @@
     "security-audit": "npm audit --audit-level moderate",
     "optimize": "npm run compress-images && npm run purge",
     "pre-deploy": "npm run format && npm run lint && npm run deploy-check && npm run optimize"
+   ,
+   "optimize:images": "sharp-cli img/**/*.{jpg,png} --output=img/optimized --webp --avif",
+   "generate:srcset": "node scripts/generate-responsive-images.js",
+   "critical-css": "critical index.html --base . --inline --minify > index-critical.html"
   },
   "repository": {
     "type": "git",

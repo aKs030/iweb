@@ -6,27 +6,59 @@
     <meta name="description" content="Kontaktmöglichkeiten und Adresse von Abdulkerim. Schreiben Sie eine E-Mail oder nutzen Sie das Kontaktformular.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/css/_global.css">
-    <!-- ...optional: weitere Meta-Tags, CSS-Links... -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   </head>
   <body>
     <div id="menu-container"></div>
-    <main id="main-content">
-      <h1>Kontakt</h1>
-      <p>
-        Sie können mich gerne per E-Mail kontaktieren:
-        <br>
-        <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a>
-      </p>
-      <p>
-        Oder nutzen Sie die folgende Adresse:<br>
-        Abdulkerim<br>
-        Musterstraße 1<br>
-        12345 Musterstadt<br>
-        Deutschland
-      </p>
-      <!-- ...optional: Kontaktformular oder weitere Kontaktmöglichkeiten... -->
+    <main id="main-content" class="kontakt-main">
+      <h1 class="kontakt-h1">Kontakt</h1>
+      <section class="kontakt-card">
+        <h2>So erreichst du mich</h2>
+        <ul class="kontakt-card-list">
+          <li>
+            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+            <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+            <span>Abdulkerim, Musterstraße 1, 12345 Musterstadt, Deutschland</span>
+          </li>
+        </ul>
+      </section>
+      <section class="kontakt-section-margin">
+        <h2>Kontaktformular</h2>
+        <form id="kontakt-formular" autocomplete="on">
+          <label for="name">Name*</label>
+          <input type="text" id="name" name="name" required maxlength="50" placeholder="Ihr Name">
+          <label for="email">E-Mail*</label>
+          <input type="email" id="email" name="email" required maxlength="100" placeholder="Ihre E-Mail-Adresse">
+          <label for="nachricht">Nachricht*</label>
+          <textarea id="nachricht" name="nachricht" required maxlength="1000" placeholder="Ihre Nachricht" rows="5"></textarea>
+          <button type="submit">Absenden</button>
+        </form>
+      </section>
+      <button id="share-btn" class="share-btn-layout" aria-label="Seite teilen"><i class="fa-solid fa-share-nodes"></i>Seite teilen</button>
     </main>
     <div id="footer-placeholder"></div>
     <script src="/js/menu.js" defer></script>
+    <script src="/js/main-init.js" defer></script>
+    <script src="/js/form-enhancement.js" defer></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // FormEnhancer für das Kontaktformular initialisieren
+        var kontaktForm = document.getElementById('kontakt-formular');
+        if (kontaktForm) new FormEnhancer(kontaktForm);
+        var btn = document.getElementById('share-btn');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            shareContent(
+              document.title,
+              'Kontaktmöglichkeiten und Adresse von Abdulkerim.',
+              window.location.href
+            );
+          });
+        }
+      });
+    </script>
   </body>
 </html>
