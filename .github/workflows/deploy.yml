@@ -49,7 +49,7 @@ jobs:
           done
           echo "Prüfe HTTP-Status der Startseite vor Link-Check:"
           curl -I http://localhost:8000/
-          npx linkinator http://localhost:8000 --exclude "https?://(www\.)?abdulkerimsesli\.de($|/|\?|#)" || (kill $SERVER_PID && exit 1)
+          npx linkinator http://localhost:8000 --exclude 'https?://(www\.)?abdulkerimsesli\.de($|/|\?|#)' || (kill $SERVER_PID && exit 1)
           kill $SERVER_PID
 
       - name: ⚡ Lighthouse CI
