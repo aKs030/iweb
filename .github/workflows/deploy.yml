@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 
 jobs:
@@ -26,8 +27,8 @@ jobs:
       - name: 🎨 Validate CSS
         run: npm run validate-css
         continue-on-error: true
-      - name: 🔍 SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+      - name: 🔍 SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -64,6 +65,7 @@ jobs:
           PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
 
   performance-budget:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     name: ⚡ Performance Budget Check
     steps:
@@ -81,12 +83,12 @@ jobs:
           configPath: './lighthouserc.js'
           uploadArtifacts: true
           temporaryPublicStorage: true
-          artifactName: lighthouse_results
+          artifactName: lighthouse-results
         continue-on-error: true
       - name: 📤 Upload Lighthouse Results
         uses: actions/upload-artifact@v4
         with:
-          name: lighthouse_results
+          name: lighthouse-results
           path: ./.lighthouseci/
       - name: 📊 Bundle Size Check
         uses: andresz1/size-limit-action@v1
