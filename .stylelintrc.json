@@ -29,5 +29,15 @@
         "ignoreAtRules": ["supports"]
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["css/index.css"],
+      "rules": {
+        "rule-empty-line-before": null,
+        "comment-empty-line-before": null,
+        "no-descending-specificity": null
+      }
+    }
+  ]
 }

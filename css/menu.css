@@ -1,7 +1,7 @@
 
+/* stylelint-disable no-descending-specificity */
 @import url('https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
-@import url('_global.css'); /* Importiere globale Variablen zuerst */
 
 *,
 *::before,
@@ -787,3 +787,5 @@ main {
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+/* stylelint-enable no-descending-specificity */
