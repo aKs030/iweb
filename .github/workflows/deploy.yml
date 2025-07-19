@@ -37,7 +37,12 @@ jobs:
         run: npm run validate-css
 
       - name: 🔍 Check broken links
-        run: npm run check-links
+        run: |
+          npx serve -l 8000 &
+          SERVER_PID=$!
+          sleep 3
+          npm run check-links || (kill $SERVER_PID && exit 1)
+          kill $SERVER_PID
 
       - name: ⚡ Lighthouse CI
         uses: treosh/lighthouse-ci-action@v10
