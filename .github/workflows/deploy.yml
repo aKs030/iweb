@@ -1,4 +1,4 @@
-name: 🚀 Deploy to Production
+name: 🚀 Enhanced Deploy Pipeline
 
 on:
   push:
@@ -6,44 +6,75 @@ on:
   pull_request:
     branches: [main]
 
+
 jobs:
-  test:
+  code-quality:
     runs-on: ubuntu-latest
-    name: 🧪 Quality Assurance
-
+    name: 📊 Code Quality & Security
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-
       - name: 📦 Install dependencies
         run: npm ci
-
       - name: ✅ Validate HTML
         run: npm run validate-html
         continue-on-error: true
-
       - name: 🎨 Validate CSS
         run: npm run validate-css
         continue-on-error: true
-
-
-      - name: 🌐 Starte lokalen Node.js-Server
+      - name: 🔍 SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: 🛡️ Security Headers Check
         run: |
-          npx serve -l 8000 -s . &
-          sleep 5
-        working-directory: .
-
+          npm install -g @httptoolkit/httpolyglot
+          node scripts/check-security-headers.js
+      - name: 🛡️ Security audit
+        run: |
+          npm audit --audit-level moderate
+          git secrets --scan || echo "No secrets found"
+          echo "✅ Security checks completed"
       - name: 🔍 Check broken links
         run: npm run check-links
         continue-on-error: true
 
+  visual-regression:
+    runs-on: ubuntu-latest
+    name: 👁️ Visual Regression Tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - name: 📦 Install dependencies
+        run: npm ci
+      - name: 📸 Percy Visual Tests
+        uses: percy/exec-action@v0.3.1
+        with:
+          command: "npm run test:visual"
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
 
+  performance-budget:
+    runs-on: ubuntu-latest
+    name: ⚡ Performance Budget Check
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - name: 📦 Install dependencies
+        run: npm ci
       - name: ⚡ Lighthouse CI
         uses: treosh/lighthouse-ci-action@v10
         with:
@@ -52,47 +83,37 @@ jobs:
           temporaryPublicStorage: true
           artifactName: lighthouse_results
         continue-on-error: true
-
       - name: 📤 Upload Lighthouse Results
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse_results
           path: ./.lighthouseci/
-
-  security-scan:
-    runs-on: ubuntu-latest
-    name: 🔒 Security Scan
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🛡️ Security audit
+      - name: 📊 Bundle Size Check
+        uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🎯 Performance Budget
         run: |
-          npm audit --audit-level moderate
-          git secrets --scan || echo "No secrets found"
-          echo "✅ Security checks completed"
+          npm run build
+          npm run check:budget
 
   deploy:
-    needs: [test, security-scan]
+    needs: [code-quality, visual-regression, performance-budget]
     runs-on: ubuntu-latest
     name: 🌐 Deploy to Production
     if: github.ref == 'refs/heads/main'
-
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-
       - name: 🚀 Deploy to server
         run: |
           echo "🎯 Ready for deployment!"
-          echo "Files validated and security checked ✅"
-          echo "Manual deployment step required 📋"
-
+          echo "Files validated und geprüft ✅"
+          echo "Manueller Deployment-Schritt erforderlich 📋"
       - name: 📊 Performance Report
         run: |
           echo "## 📊 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ HTML validation passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ CSS validation passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Security scan completed" >> $GITHUB_STEP_SUMMARY
-          echo "- 🚀 Ready for production deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code-Qualität und Security geprüft" >> $GITHUB_STEP_SUMMARY
+          echo "- 👁️ Visuelle Regression getestet" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ Performance-Budget geprüft" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 Bereit für Produktion" >> $GITHUB_STEP_SUMMARY
