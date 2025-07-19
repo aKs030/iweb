@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/css/menu.css" />
+<link rel="stylesheet" href="/css_min/menu.css" />
 <!-- Font Awesome für Icons -->
 <link
   rel="stylesheet"
@@ -8,11 +8,7 @@
 <!-- menu.html - Optimierte Navigation mit erweiterten Features -->
 <header class="site-header" role="banner">
   <!-- Logo mit verbesserter Accessibility -->
-  <a
-    href="/index.html"
-    aria-label="Zur Startseite navigieren"
-    title="Zur Startseite"
-  >
+  <a href="/index.html" aria-label="Zur Startseite navigieren" title="Zur Startseite">
     <span class="site-logo__container">
       <span class="site-logo elegant-logo" id="site-title" aria-live="polite">
         Abdulkerim ⭐️
@@ -27,25 +23,13 @@
     role="navigation"
     aria-label="Hauptnavigation"
   >
-    <!-- Aktionen für Mobile-Ansicht -->
     <div class="mobile-actions">
       <!-- Suchfunktion -->
       <div class="search-container">
-        <button
-          id="search-toggle-mobile"
-          class="search-toggle"
-          aria-label="Suche umschalten"
-          aria-expanded="false"
-        >
+        <button id="search-toggle-desktop" class="search-toggle" aria-label="Suche umschalten" aria-expanded="false" type="button">
           <i class="fa-solid fa-search"></i>
         </button>
-        <input
-          type="search"
-          id="search-input-mobile"
-          class="search-input"
-          placeholder="Suchen..."
-          aria-labelledby="search-toggle-mobile"
-        />
+        <input type="search" id="search-input-desktop" class="search-input" placeholder="Suchen..." aria-labelledby="search-toggle-desktop" />
       </div>
       <!-- Theme-Umschalter -->
       <div class="theme-switcher">
@@ -64,7 +48,7 @@
     <ul class="site-menu__list">
       <!-- Home -->
       <li>
-        <a href="/index.html" tabindex="0">
+        <a href="/index.html">
           <i class="fa-solid fa-house" aria-hidden="true"></i>
           <span>Startseite</span>
         </a>
@@ -72,7 +56,7 @@
 
       <!-- About Me -->
       <li>
-        <a href="/pages/ubermich.html" tabindex="0">
+        <a href="/pages/ubermich.html">
           <i class="fa-solid fa-user" aria-hidden="true"></i>
           <span>Über mich</span>
         </a>
@@ -80,7 +64,7 @@
 
       <!-- Gallery (Direct Link) -->
       <li>
-        <a href="/pages/album.html" tabindex="0">
+        <a href="/pages/album.html">
           <i class="fa-solid fa-images" aria-hidden="true"></i>
           <span>Fotogalerie</span>
         </a>
@@ -88,7 +72,7 @@
 
       <!-- Games (Direct Link) -->
       <li>
-        <a href="/pages/index-game.html" tabindex="0">
+        <a href="/pages/index-game.html">
           <i class="fa-solid fa-gamepad" aria-hidden="true"></i>
           <span>Spiele</span>
         </a>
@@ -100,7 +84,6 @@
           href="#"
           aria-haspopup="true"
           aria-expanded="false"
-          tabindex="0"
           id="tools-menu"
           aria-describedby="tools-menu-desc"
         >
@@ -132,7 +115,6 @@
           href="#"
           aria-haspopup="true"
           aria-expanded="false"
-          tabindex="0"
           id="social-menu"
           aria-describedby="social-menu-desc"
         >
@@ -180,7 +162,6 @@
           href="/pages/komponente/kontakt.html"
           aria-haspopup="true"
           aria-expanded="false"
-          tabindex="0"
           id="contact-menu"
           aria-describedby="contact-menu-desc"
         >
@@ -218,21 +199,10 @@
   <div class="header-actions">
     <!-- Suchfunktion -->
     <div class="search-container">
-      <button
-        id="search-toggle"
-        class="search-toggle"
-        aria-label="Suche umschalten"
-        aria-expanded="false"
-      >
+      <button id="search-toggle" class="search-toggle" aria-label="Suche umschalten" aria-expanded="false" type="button">
         <i class="fa-solid fa-search"></i>
       </button>
-      <input
-        type="search"
-        id="search-input"
-        class="search-input"
-        placeholder="Suchen..."
-        aria-labelledby="search-toggle"
-      />
+      <input type="search" id="search-input" class="search-input" placeholder="Suche..." aria-labelledby="search-toggle" />
     </div>
 
     <!-- Theme-Umschalter -->
@@ -259,11 +229,6 @@
       <span class="site-menu__hamburger" aria-hidden="true"></span>
       <span class="sr-only">Menü öffnen/schließen</span>
     </button>
-  </div>
-
-  <!-- Overlay für Mobile mit Accessibility -->
-  <div class="site-menu__overlay" aria-hidden="true"></div>
-</header>
 
 <!-- Screen Reader nur Text für bessere Accessibility -->
 <div class="sr-only" id="nav-instructions">

@@ -373,7 +373,8 @@
 .site-menu__list li a:hover,
 .site-menu__list li a:focus {
   color: var(--color-link);
-  outline: none;
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
   background-color: rgba(255, 255, 255, 0.07); /* Leichter Hover-Effekt */
 }
 .site-menu__list li a:hover::after,
