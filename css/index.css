@@ -199,9 +199,9 @@ img {
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.8),
-    rgba(255, 255, 255, 0.05)
+    rgb(255 255 255 / 5%),
+    rgb(255 255 255 / 80%),
+    rgb(255 255 255 / 5%)
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;

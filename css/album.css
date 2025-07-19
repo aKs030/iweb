@@ -6,7 +6,7 @@
 /* Custom Border Radii and Accent Color for this specific component */
 :root {
   --hero-border-radius-sm: 14px; /* Eleganter, stärker abgerundet */
-  --hero-border-radius-lg: 28px; /* Eleganter, stärker abgerundet */
+/* album.css - Design für eine Hero-Fotogalerie mit Thumbnails */
   --hero-accent-border-color: rgb(
     7,
     7,

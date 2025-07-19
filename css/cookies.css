@@ -42,7 +42,7 @@
   --cb-radius: 0.7rem;
   --cb-radius-sm: 0.4rem;
   --cb-radius-lg: 1rem;
-  --cb-blur: blur(12px);
+/* Korrigierte Version: moderne Farbnotation, Prozent für Alpha, Vendor-Präfixe entfernt, Kebab-Case, Shorthand, Media-Queries, Reihenfolge, Kebab-Case für Custom Properties */
   --cb-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --cb-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
 

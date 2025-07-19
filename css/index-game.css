@@ -9,8 +9,7 @@
     65vh,
     800px
   ); /* Eine Mindesthöhe für den Container */
-  background: rgba(255, 255, 255, 0.05);
-  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  background: rgb(255 255 255 / 5%);
   backdrop-filter: blur(10px);
   border-radius: var(--border-radius);
   /* Padding mit clamp, das auf globale Variablen zugreift */

@@ -101,7 +101,7 @@
 }
 
 .search-toggle {
-  background: rgba(255, 255, 255, 0.05); /* Weniger auffällig */
+  background: rgb(255 255 255 / 5%); /* Weniger auffällig */
   border: 1px solid rgba(255, 255, 255, 0.1); /* Subtiler Rahmen */
   color: var(--color-text-muted); /* Gedämpfte Farbe */
   cursor: pointer;
@@ -521,6 +521,10 @@ main {
   /* Breakpoint erhöht von 900px auf 1100px */
   .site-menu__toggle {
     display: block;
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 10001;
   }
 
   .header-actions {
