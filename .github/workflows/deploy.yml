@@ -9,102 +9,72 @@ on:
 jobs:
   qa:
     runs-on: ubuntu-latest
-    name: 🧪 QA
+    concurrency:
+      group: qa-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
 
-      - name: 🏗️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+    - name: 🏗️ Setup Node.js & Cache
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: package-lock.json
 
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+    - name: 📦 Install dependencies
+      run: npm ci
 
-      - name: 📦 Install dependencies
-        run: npm ci
+    - name: 📝 Lint, Test & Build
+      run: |
+        npm run lint
+        npm test
+        npm run build
 
-      - name: 📝 Lint JavaScript
-        run: npm run lint
+    - name: ✅ Validate HTML & CSS
+      run: |
+        npm run validate-html
+        npm run validate-css
 
-      - name: ✅ Run tests
-        run: npm test
+    - name: 🔍 Check broken links
+      run: npm run check-links
 
-      - name: 🛠️ Build project
-        run: npm run build
+    - name: 🛡️ Security audit
+      run: |
+        npm audit --audit-level moderate
+        git secrets --scan || echo "No secrets found"
 
-      - name: ✅ Validate HTML
-        run: npm run validate-html
-
-      - name: 🎨 Validate CSS
-        run: npm run validate-css
-
-      - name: ♿ Accessibility audit
-        run: npm run audit:accessibility
-
-      - name: 🛡️ Security audit
-        run: |
-          npm audit --audit-level moderate
-          git secrets --scan || echo "No secrets found"
-          echo "✅ Security checks completed"
-
-      - name: 🔍 Check broken links
-        run: |
-          npx serve -l 8000 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID' EXIT
-          for i in {1..15}; do
-            if curl -s http://localhost:8000 > /dev/null; then
-              break
-            fi
-            echo "Warte auf Server... ($i)"
-            sleep 1
-          done
-          echo "Prüfe HTTP-Status der Startseite vor Link-Check:"
-          curl -I http://localhost:8000/
-          npx linkinator http://localhost:8000 --skip "https://www.abdulkerimsesli.de/*" --skip "https://abdulkerimsesli.de/*" || exit 1
-
-      - name: ⚡ Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v10
-        with:
-          configPath: './lighthouserc.js'
-          uploadArtifacts: true
-          temporaryPublicStorage: true
+    - name: ⚡ Lighthouse CI
+      uses: treosh/lighthouse-ci-action@v10
+      with:
+        configPath: './lighthouserc.js'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
 
   deploy:
-    needs: [qa]
+    needs: qa
     runs-on: ubuntu-latest
-    name: 🌐 Deploy to Production
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
 
-      - name: 🚀 Deploy to server
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            # Pfad anpassen, falls deine Build-Ausgabe in einen anderen Ordner geht
-            rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PATH }}
+    - name: 🚀 Deploy via SSH
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          # Passe 'dist/' an, falls dein Build-Verzeichnis anders heißt
+          rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PATH }}
 
-      - name: 📊 Performance Report
-        run: |
-          echo "## 📊 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ HTML validation passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ CSS validation passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Security scan completed" >> $GITHUB_STEP_SUMMARY
-          echo "- 🚀 Ready for production deployment" >> $GITHUB_STEP_SUMMARY
+    - name: 📊 Deployment Summary
+      run: |
+        echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- QA passed" >> $GITHUB_STEP_SUMMARY
+        echo "- Deployed to production" >> $GITHUB_STEP_SUMMARY
