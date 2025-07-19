@@ -12,7 +12,8 @@
     "lighthouse": "lighthouse http://localhost:8000 --output=html --output-path=./lighthouse-report.html",
     "test-performance": "node scripts/performance-test.js",
     "compress-images": "imagemin img/**/*.{jpg,png} --plugin=mozjpeg --plugin=optipng --out-dir=img/optimized",
-    "check-links": "broken-link-checker http://localhost:8000",
+    "check-links": "linkinator http://localhost:8000",
+  "check-links": "linkinator http://localhost:8000",
     "deploy-check": "npm run validate-html && npm run validate-css && npm run check-links",
     "purge": "mkdir -p css/purged && npx purgecss --css css/*.css --content pages/**/*.html js/**/*.js --output css/purged/",
     "format": "prettier --write ."
@@ -40,6 +41,7 @@
     "imagemin-optipng": "^7.1.0",
     "lighthouse": "^12.8.0",
     "linkinator": "^6.1.4",
+    "live-server": "^1.2.2",
     "prettier": "^3.6.2",
     "stylelint": "^15.0.0",
     "stylelint-config-standard": "^34.0.0"
