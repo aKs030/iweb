@@ -1,116 +1,244 @@
-const CACHE_NAME = 'iweb';
-const ASSETS = [
+/**
+ * Service Worker für iweb-7 - Optimized Version
+ * Version: 3.0.0
+ * Optimierte Cache-Strategie mit Offline-Support
+ */
+
+const CACHE_VERSION = 'v3.0.0';
+const CACHE_NAME = `iweb7-${CACHE_VERSION}`;
+const OFFLINE_URL = '/pages/komponente/offline.html';
+
+// Assets die immer gecached werden sollen
+const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/css/index.css',
-  '/css/_global.css',
-  '/css/cookies.css',
-  '/css/menu.css',
-  '/css/footer.css',
-  '/js/templateLoader.js',
-  '/js/intext.js',
-  '/js/menu.js',
-  '/js/scroll-dots.js',
-  '/js/cookie-system.js',
-  '/img/touch-icon-180.png',
-  '/img/favicon-32.png',
-  '/img/favicon.ico',
-  '/pages/komponente/menu.html',
-  '/pages/komponente/footer.html',
-  '/pages/index-card.html',
-  '/manifest.json',
   '/pages/komponente/offline.html',
   '/pages/komponente/404.html',
+  '/css/_global.css',
+  '/css/index.css',
+  '/css/menu.css',
+  '/js/main-init.js',
+  '/js/menu.js',
+  '/manifest.json',
+  '/img/favicon.ico',
+  '/img/favicon-32.png',
+  '/img/touch-icon-180.png'
 ];
 
-// Cookie Consent Status im Service Worker
+// Cache-Strategien für verschiedene Ressourcen-Typen
+const CACHE_STRATEGIES = {
+  // Network First - für HTML und API calls
+  networkFirst: [
+    /\.html$/,
+    /\/api\//,
+    /\/pages\//
+  ],
+  
+  // Cache First - für Assets
+  cacheFirst: [
+    /\.css$/,
+    /\.js$/,
+    /\.woff2?$/,
+    /\.ttf$/,
+    /\.otf$/
+  ],
+  
+  // Stale While Revalidate - für Bilder
+  staleWhileRevalidate: [
+    /\.jpg$/,
+    /\.jpeg$/,
+    /\.png$/,
+    /\.gif$/,
+    /\.webp$/,
+    /\.svg$/,
+    /\.ico$/
+  ]
+};
+
+// Cookie Consent Status
 let cookieConsentStatus = null;
 
-self.addEventListener('install', (evt) => {
-  console.log('🍪 SW: Installing Cookie Banner v2.0 Support');
-  evt.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
+// Install Event
+self.addEventListener('install', event => {
+  console.log('[ServiceWorker] Installing version:', CACHE_VERSION);
+  
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('[ServiceWorker] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
       .then(() => self.skipWaiting())
+      .catch(error => {
+        console.error('[ServiceWorker] Installation failed:', error);
+      })
   );
 });
 
-self.addEventListener('activate', (evt) => {
-  evt.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-        )
-      )
+// Activate Event
+self.addEventListener('activate', event => {
+  console.log('[ServiceWorker] Activating version:', CACHE_VERSION);
+  
+  event.waitUntil(
+    caches.keys()
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames
+            .filter(cacheName => cacheName.startsWith('iweb7-') && cacheName !== CACHE_NAME)
+            .map(cacheName => {
+              console.log('[ServiceWorker] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            })
+        );
+      })
       .then(() => self.clients.claim())
   );
 });
 
-// Enhanced fetch handler mit Cookie-Consent-Awareness
-self.addEventListener('fetch', (evt) => {
-  const url = new URL(evt.request.url);
-  // Blockiere Analytics-Requests wenn kein Consent
-  if (shouldBlockRequest(url)) {
-    evt.respondWith(new Response('', { status: 204 }));
+// Fetch Event
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Skip non-HTTP(S) requests
+  if (!url.protocol.startsWith('http')) return;
+  
+  // Skip cross-origin requests
+  if (url.origin !== self.location.origin) {
+    // Blockiere Analytics wenn kein Consent
+    if (shouldBlockRequest(url)) {
+      event.respondWith(new Response('', { status: 204 }));
+      return;
+    }
     return;
   }
-  evt.respondWith(
-    caches
-      .match(evt.request)
-      .then((res) => {
-        if (res) return res;
-        return fetch(evt.request)
-          .then((networkRes) => {
-            if (networkRes.status === 404) {
-              if (
-                evt.request.destination === 'document' ||
-                evt.request.headers.get('accept').includes('text/html')
-              ) {
-                return caches.match('/pages/komponente/offline.html');
-              }
-              return caches.match('/pages/komponente/404.html');
-            }
-            return networkRes;
-          })
-          .catch(() => {
-            // Wenn Netzwerk und Cache fehlschlagen, zeige offline.html für Dokumente
-            if (
-              evt.request.destination === 'document' ||
-              evt.request.headers.get('accept').includes('text/html')
-            ) {
-              return caches.match('/pages/komponente/offline.html');
-            }
-            return caches.match('/pages/komponente/404.html');
-          });
-      })
-      .catch(() => {
-        // Offline Fallback für alle anderen Seiten
-        return caches.match('/pages/komponente/offline.html');
-      })
-  );
+  
+  // Determine cache strategy
+  const strategy = getStrategy(request);
+  
+  switch (strategy) {
+    case 'networkFirst':
+      event.respondWith(networkFirst(request));
+      break;
+    case 'cacheFirst':
+      event.respondWith(cacheFirst(request));
+      break;
+    case 'staleWhileRevalidate':
+      event.respondWith(staleWhileRevalidate(request));
+      break;
+    default:
+      event.respondWith(networkFirst(request));
+  }
 });
 
-// Cookie Consent Message Handler
-self.addEventListener('message', (event) => {
-  // Sicherheitscheck: Nur Nachrichten von der eigenen Origin akzeptieren
+// Message Event - Cookie Consent Updates
+self.addEventListener('message', event => {
+  // Sicherheitscheck
   if (event.origin !== self.location.origin) {
-    console.warn('SW: Message from unauthorized origin blocked:', event.origin);
+    console.warn('[ServiceWorker] Message from unauthorized origin blocked');
     return;
   }
 
   if (event.data && event.data.type === 'COOKIE_CONSENT_UPDATE') {
     cookieConsentStatus = event.data.consent;
-    console.log('🍪 SW: Cookie Consent updated:', cookieConsentStatus);
+    console.log('[ServiceWorker] Cookie consent updated:', cookieConsentStatus);
+  }
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
 
+// Helper Functions
+
+function getStrategy(request) {
+  const url = request.url;
+  
+  for (const [strategy, patterns] of Object.entries(CACHE_STRATEGIES)) {
+    if (patterns.some(pattern => pattern.test(url))) {
+      return strategy;
+    }
+  }
+  
+  return 'networkFirst';
+}
+
+// Network First Strategy
+async function networkFirst(request) {
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // Return offline page for navigation requests
+    if (request.mode === 'navigate') {
+      return caches.match(OFFLINE_URL);
+    }
+    
+    // Return 404 page
+    return caches.match('/pages/komponente/404.html');
+  }
+}
+
+// Cache First Strategy
+async function cacheFirst(request) {
+  const cachedResponse = await caches.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.error('[ServiceWorker] Fetch failed:', error);
+    throw error;
+  }
+}
+
+// Stale While Revalidate Strategy
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+  
+  const fetchPromise = fetch(request)
+    .then(networkResponse => {
+      if (networkResponse.ok) {
+        cache.put(request, networkResponse.clone());
+      }
+      return networkResponse;
+    })
+    .catch(error => {
+      console.warn('[ServiceWorker] Revalidation failed:', error);
+      return cachedResponse;
+    });
+  
+  return cachedResponse || fetchPromise;
+}
+
+// Check if request should be blocked based on cookie consent
 function shouldBlockRequest(url) {
   if (!cookieConsentStatus) return false;
 
-  // Blockiere Google Analytics wenn kein Analytics-Consent
+  // Block Google Analytics if no analytics consent
   if (
     url.hostname.includes('google-analytics.com') ||
     url.hostname.includes('googletagmanager.com')
@@ -118,7 +246,7 @@ function shouldBlockRequest(url) {
     return !cookieConsentStatus.analytics;
   }
 
-  // Blockiere Social Media Tracker
+  // Block social media trackers if no social consent
   if (
     url.hostname.includes('facebook.com') ||
     url.hostname.includes('twitter.com') ||
