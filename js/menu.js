@@ -124,7 +124,7 @@ function createFallbackMenu() {
         <span class="site-logo elegant-logo">Abdulkerim ⭐️</span>
       </a>
       <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
-        <ul class="site-menu__list">
+        <ul class="site-menu-list">
           <li><a href="/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
           <li><a href="/pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
           <li><a href="/pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
@@ -139,7 +139,7 @@ function createFallbackMenu() {
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function initializeMenu(container) {
-  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menuToggle = container.querySelector('.site-menu-toggle');
   const menu = container.querySelector('.site-menu');
   const overlay = container.querySelector('.site-menu__overlay');
 
@@ -304,7 +304,7 @@ function initializeAccessibility(container) {
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function closeMenu(container) {
-  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menuToggle = container.querySelector('.site-menu-toggle');
   const menu = container.querySelector('.site-menu');
 
   if (menuToggle && menu) {
@@ -334,7 +334,7 @@ function setupOutsideClickHandler(menuContainer) {
     if (!menu?.classList.contains('open')) return;
 
     const isClickInside = menuContainer.contains(event.target);
-    const isMenuToggle = event.target.closest('.site-menu__toggle');
+    const isMenuToggle = event.target.closest('.site-menu-toggle');
 
     if (!isClickInside && !isMenuToggle) {
       closeMenu(menuContainer);

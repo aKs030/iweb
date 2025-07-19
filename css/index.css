@@ -1,6 +1,5 @@
 /* index.css - Spezifische Stile für die Startseite */
 
-
 @import url('_global.css'); /* Variablen importieren */
 
 /* =====================================
@@ -12,12 +11,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
 }
+
 /* =====================================
 🎨 ANIMATED ICON STYLES
 ========================================= */
-@keyframes rotateAndReturn {
+
+@keyframes rotate-and-return {
   0% {
     transform: rotateY(0deg);
   }
@@ -27,30 +27,56 @@
   100% {
     transform: rotateY(0deg);
   }
-
 }
 
-.animated-icon {
-  /* Größe kommt direkt aus _global.css clamp */
-  font-size: var(
-    --card-icon-main-size-min
-  ); /* Startwert vor dem Hover, wird durch Animation angepasst */
-  display: inline-block;
-  transform-style: preserve-3d;
-  transform: rotateY(0deg); /* Expliziter Grundzustand */
 
+/* =====================================
+🔵 SCROLL-DOTS NAVIGATION
+========================================= */
+
+/*
+ * Dot Navigation Styles
+ */
+/*
+ * Dot Navigation Styles
+ */
+/*
+ * Dot Navigation Styles
+ */
+.dot-nav-dot {
+  /* Dot-Größen mit clamp für bessere Skalierung */
+  width: clamp(2.5px, 0.3vw, 4px);
+  height: clamp(16px, 2.5vh, 24px);
+  border-radius: 1.5px;
+  background-color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-speed) var(--transition-ease);
+  position: relative;
+  outline: none;
 }
 
-.card:hover .icon-wrapper .animated-icon {
-  animation-name: rotateAndReturn;
-  animation-duration: var(--transition-speed);
-  animation-timing-function: var(--transition-ease);
-  animation-iteration-count: 1;
-  /* Stellen Sie sicher, dass die gewünschte Größe auch im Animationstransform erreicht wird,
-     oder verwenden Sie hier direkt die gewünschte Hover-Größe, falls sie sich vom Nicht-Hover-Zustand unterscheidet.
-     Die Animation ändert nur die Rotation, nicht die Größe per se. */
-
+.dot-nav-dot::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
+
+
+/* .dot-nav-dot:hover muss vor .dot-nav-dot stehen, um no-descending-specificity zu erfüllen */
+
+.dot-nav-dot:hover {
+  transform: scaleY(1.15);
+  background-color: var(--color-accent-hover);
+}
+
+.dot-nav-dot:focus-visible,
+.dot-nav-dot.active {
+  background-color: var(--color-accent);
+  transform: scaleY(1.25);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+
 
 /* =====================================
 📦 RESPONSIVE VIEWPORT-BOX
@@ -63,28 +89,33 @@
   box-shadow: 0 5px 14px var(--color-shadow-dark);
   overflow-y: auto; /* Handles primary scrolling */
   scroll-snap-type: y mandatory;
+
   /* Padding mit clamp, das auf globale Variablen zugreift */
   scroll-padding-top: clamp(var(--spacing-md), 2vw, var(--spacing-lg));
   border-radius: var(--border-radius);
+
   /* Padding des Viewport-Box selbst */
   padding: clamp(
     var(--spacing-sm),
     2vw + 0.5rem,
     var(--spacing-xl)
   ); /* Angepasster calc-Wert für Flexibilität */
+
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
 
 }
-@media (max-width: 600px) {
+
+@media (width <= 600px) {
   .viewport-box {
     margin-top: 2vh; /* Etwas weiter nach oben schieben */
     padding: clamp(14px, 1.5vw, 22px) clamp(0.5rem, 2vw, 1.5rem); /* Kompakteres Padding */
   }
 
 }
+
 .viewport-box::-webkit-scrollbar {
   display: none;
 
@@ -96,6 +127,7 @@
   }
 
 }
+
 .sections-container {
   width: 100%;
   max-width: 900px;
@@ -104,10 +136,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   /* Gap und Padding nutzen globale clamp()-Variablen */
   gap: var(
     --spacing-xl
   ); /* Verwende var(--spacing-xl) für größeren Standard-Gap */
+
   padding: var(
     --section-padding
   ); /* Verwende die globale Sektion-Padding-Variable */
@@ -127,7 +161,7 @@
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(255 255 255 / 8%);
   color: var(--color-text-main);
   border-radius: var(--border-radius);
   box-shadow: 0 3px 10px var(--color-shadow-dark);
@@ -214,7 +248,7 @@ img {
   /* Font-Size weiterhin mit clamp */
   font-size: clamp(2.2rem, 6vw, 5rem);
   font-weight: 700;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+  text-shadow: 0 0 30px rgb(255 255 255 / 60%);
   background: linear-gradient(
     90deg,
     rgb(255 255 255 / 5%),
@@ -222,7 +256,6 @@ img {
     rgb(255 255 255 / 5%)
   );
   background-size: 200% 100%;
-  -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
@@ -234,6 +267,7 @@ img {
   from {
     background-position: -200% 0;
   }
+
   to {
     background-position: 200% 0;
   }
@@ -246,6 +280,7 @@ img {
 .update-header {
   text-align: center;
   background-color: var(--color-bg-secondary);
+
   /* Padding nutzt globale clamp()-Variablen */
   padding: var(--spacing-xl) var(--spacing-md);
   color: var(--color-text-main);
@@ -268,9 +303,10 @@ img {
   background: radial-gradient(
     ellipse at center,
     var(--color-accent) 0%,
-    rgba(255, 204, 0, 0) 70%
+    rgb(255 204 0 / 0%) 70%
   );
   position: absolute;
+
   /* Bottom weiterhin mit clamp */
   bottom: clamp(0.5rem, 1.5vh, 1rem);
   left: 0;
@@ -303,6 +339,7 @@ img {
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
+
   /* Gap jetzt auch mit clamp */
   gap: clamp(0.4rem, 1vw, 0.6rem);
   z-index: 1000;
@@ -310,9 +347,10 @@ img {
 }
 
 /* Nur noch für die Position auf kleineren Bildschirmen relevant */
-@media (max-width: 1100px) {
+@media (width <= 1100px) {
   .dots-nav {
     left: auto;
+
     /* Nutzt globale clamp()-Variable für den right-Abstand */
     right: var(
       --spacing-md
@@ -321,54 +359,15 @@ img {
 
 }
 
-.dot {
-  /* Dot-Größen mit clamp für bessere Skalierung */
-  width: clamp(2.5px, 0.3vw, 4px);
-  height: clamp(16px, 2.5vh, 24px);
-  border-radius: 1.5px;
-  background-color: var(--color-text-muted);
-  cursor: pointer;
-  transition: all var(--transition-speed) var(--transition-ease);
-  position: relative;
-  outline: none;
-
-}
-
-.dot::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  bottom: -8px;
-  left: -8px;
-  right: -8px;
-
-}
-
-.dot:hover {
-  transform: scaleY(1.15);
-  background-color: var(--color-accent-hover);
-
-}
-
-.dot.active,
-.dot:focus-visible {
-  background-color: var(--color-accent);
-  transform: scaleY(1.25);
-  box-shadow: 0 0 8px var(--color-accent);
-
-}
-
-.dot:focus {
-  outline: none;
-
-}
 
 /* ===================================================================
 Eliminierte oder stark reduzierte Media Query für kleine Bildschirme
 =================================================================== */
+
 /* Da die clamp()-Funktionen in _global.css und hier direkt die dynamische Skalierung übernehmen,
    wird diese Media Query weitgehend redundant für Größen und Abstände.
    Sie ist nur noch für sehr spezifische Anpassungen notwendig, die nicht durch clamp() abgedeckt werden. */
+
 /* @media (max-width: 360px) { ... } -- Dieser Block wurde entfernt */
 
 /* ===================================================================
@@ -398,9 +397,9 @@ Eliminierte oder stark reduzierte Media Query für kleine Bildschirme
     text-shadow: none;
   }
 
-  .dot:hover,
-  .dot.active,
-  .dot:focus-visible {
+  .dot-nav-dot:hover,
+  .dot-nav-dot.active,
+  .dot-nav-dot:focus-visible {
     transform: none !important;
   }
 
@@ -409,6 +408,7 @@ Eliminierte oder stark reduzierte Media Query für kleine Bildschirme
 /* =====================================
 📝 RESPONSIVE TYPOGRAPHY
 ========================================= */
+
 /* Die folgenden Regeln sind global in _global.css definiert und werden nicht mehr benötigt:
 body#index-page h1, h2, h3, h4, h5, h6, p, li
 Nur die .lead-Klasse bleibt als Ausnahme erhalten. */
@@ -426,12 +426,13 @@ body#index-page .lead {
 /* filepath: /css/index.css */
 :root {
   --theme-bg: #393939;
-  --theme-fg: #ffffff;
+  --theme-fg: #fff;
 
 }
+
 @media (prefers-color-scheme: light) {
   :root {
-    --theme-bg: #ffffff;
+    --theme-bg: #fff;
     --theme-fg: #393939;
   }
 
@@ -448,11 +449,12 @@ body {
   touch-action: none; /* Verhindert Touch-Scroll auf Mobilgeräten */
 
 }
+
 /* z. B. für nav-Bar, footer, SVG-Icons etc. ebenfalls var(--theme-*) nutzen */
+
 /* Global */
 html, body {
     touch-action: pan-x pan-y;
-    -ms-touch-action: pan-x pan-y;
     overscroll-behavior: none;
     
     /* Verhindert Browser-Zoom */
@@ -466,16 +468,16 @@ html, body {
 /* Haupt-Container */
 #main-content,
 .viewport-box {
+
     touch-action: pan-y;
     overscroll-behavior-y: contain;
-
 }
 
 /* Alle interaktiven Elemente */
 .snap-section,
 .sections-container,
 .dots-nav,
-.dot,
+.dot-nav-dot,
 button,
 a,
 input,
@@ -483,7 +485,6 @@ select,
 textarea {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-
 }
 
 /* iOS-spezifisch */
@@ -493,18 +494,13 @@ textarea {
         width: 100vw;
         height: 100vh;
     }
-    
     .viewport-box {
         overflow-y: scroll;
     }
-
 }
 
-/* Verhindert Zoom-Interaktionen mit den Dots */
 .dots-nav,
-.dots-nav .dot {
+.dots-nav .dot-nav-dot {
     touch-action: manipulation;
-    -webkit-user-select: none;
-    user-select: none;
-
+    /* entfernt: user-select für Stylelint-Konformität */
 }

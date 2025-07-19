@@ -12,7 +12,7 @@
 // js/scroll-dots.js
 document.addEventListener('DOMContentLoaded', () => {
   const sections = document.querySelectorAll('.snap-section');
-  const dots = Array.from(document.querySelectorAll('.dots-nav .dot'));
+  const dots = Array.from(document.querySelectorAll('.dots-nav .dot-nav-dot'));
   const viewportBox = document.querySelector('.viewport-box');
 
   // Validierung der erforderlichen Elemente

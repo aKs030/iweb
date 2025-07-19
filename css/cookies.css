@@ -43,6 +43,7 @@
   --cb-radius: 0.7rem;
   --cb-radius-sm: 0.4rem;
   --cb-radius-lg: 1rem;
+
 /* Korrigierte Version: moderne Farbnotation, Prozent für Alpha, Vendor-Präfixe entfernt, Kebab-Case, Shorthand, Media-Queries, Reihenfolge, Kebab-Case für Custom Properties */
   --cb-shadow: 0 8px 32px rgb(0 0 0 / 40%);
   --cb-shadow-lg: 0 16px 40px rgb(0 0 0 / 50%);
@@ -154,12 +155,11 @@
 /* Cookie Banner - Ultra Optimized */
 .cookie-banner {
   position: fixed;
-  inset: auto 0 0 0;
+  inset: auto 0 0;
   background: var(--cb-bg);
-  -webkit-backdrop-filter: var(--cb-blur);
   backdrop-filter: var(--cb-blur);
   color: var(--cb-text);
-  padding: 0.8rem 1.5rem 0.8rem 1.5rem; /* Weniger Platz rechts, da Close-Button außerhalb steht */
+  padding: 0.8rem 1.5rem; /* Weniger Platz rechts, da Close-Button außerhalb steht */
   z-index: var(--cb-z-banner);
   border-top: 1px solid var(--cb-border);
   border-radius: 0;
@@ -213,7 +213,7 @@
 .cookie-banner.ccpa-mode {
   background-image: linear-gradient(
     135deg,
-    rgba(59, 130, 246, 0.1),
+    rgb(59 130 246 / 10%),
     var(--cb-bg)
   );
   border-top-color: var(--cb-primary);
@@ -251,7 +251,7 @@
 .cookie-banner-icon {
   font-size: 1.2rem;
   animation: bounce 3s infinite;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
   flex-shrink: 0;
 
 }
@@ -267,8 +267,6 @@
   font-size: 0.85rem;
   font-weight: 600;
   background: var(--cb-gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
 
 }
@@ -343,8 +341,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
   backdrop-filter: blur(12px);
   z-index: 2;
 
@@ -354,7 +351,7 @@
   content: '';
   position: absolute;
   inset: -2px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgb(0 0 0 / 10%);
   border-radius: 50%;
   z-index: -1;
 
@@ -364,7 +361,7 @@
   background: var(--cb-surface-hover);
   border-color: var(--cb-primary);
   transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 50%);
   color: var(--cb-primary);
 
 }
@@ -378,7 +375,7 @@
 /* Verbesserte Zugänglichkeit für Close-Button */
 .cookie-banner-close:active {
   transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.4);
+  background: rgb(255 255 255 / 40%);
 
 }
 
@@ -398,7 +395,7 @@
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .cookie-banner-close {
-    border: 3px solid currentColor;
+    border: 3px solid currentcolor;
     background: transparent;
   }
 
@@ -423,7 +420,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgb(0 0 0 / 10%);
   border-radius: 0 0 var(--cb-radius) var(--cb-radius);
   overflow: hidden;
 }
@@ -455,7 +452,7 @@
   text-decoration: none;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 }
 
 .cookie-btn::before {
@@ -468,7 +465,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgb(255 255 255 / 20%),
     transparent
   );
   transition: var(--cb-transition);
@@ -485,7 +482,7 @@
 
 .cookie-btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgb(0 0 0 / 20%);
 }
 
 .cookie-btn-secondary {
@@ -495,14 +492,13 @@
 
 .cookie-btn-secondary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgb(0 0 0 / 20%);
 }
 
 .cookie-btn-outline {
   background: transparent;
   color: var(--cb-text);
   border-color: var(--cb-border);
-  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -517,8 +513,7 @@
 .cookie-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgb(0 0 0 / 80%);
   backdrop-filter: blur(8px);
   z-index: var(--cb-z-modal);
   display: flex;
@@ -538,7 +533,6 @@
 
 .cookie-modal-content {
   background: var(--cb-bg);
-  -webkit-backdrop-filter: var(--cb-blur);
   backdrop-filter: var(--cb-blur);
   color: var(--cb-text);
   border-radius: var(--cb-radius);
@@ -572,9 +566,8 @@
   font-size: 1.5rem;
   font-weight: 700;
   background: var(--cb-gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
   flex: 1;
 }
 
@@ -650,7 +643,7 @@
 }
 
 .cookie-category-info h3 {
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.25rem;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--cb-text);
@@ -721,14 +714,14 @@
 }
 
 .cookie-details-content h4 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1rem;
   font-size: 1rem;
   font-weight: 600;
   color: var(--cb-text);
 }
 
 .cookie-details-content h5 {
-  margin: 1rem 0 0.5rem 0;
+  margin: 1rem 0 0.5rem;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--cb-text);
@@ -737,12 +730,12 @@
 .cookie-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1rem;
 }
 
 .cookie-list li {
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgb(0 0 0 / 5%);
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -754,7 +747,7 @@
 .cookie-provider {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.02);
+  background: rgb(0 0 0 / 2%);
   border-radius: var(--cb-radius-sm);
   border-left: 3px solid var(--cb-primary);
 }
@@ -782,7 +775,7 @@
   font-style: italic;
   text-align: center;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.02);
+  background: rgb(0 0 0 / 2%);
   border-radius: var(--cb-radius-sm);
 }
 
@@ -850,7 +843,7 @@
 }
 
 /* Mobile Optimizations for Enhanced Modal */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .cookie-modal-content {
     max-height: 90vh;
     margin: 1rem;
@@ -884,7 +877,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .cookie-modal-content {
     max-height: 95vh;
     margin: 0.5rem;
@@ -924,40 +917,47 @@
 }
 
 /* Sehr kleine Geräte und iPhone SE - Ultra kompakt */
-@media (max-width: 360px) {
+@media (width <= 360px) {
   .cookie-banner {
     padding: 0.35rem 0.5rem;
     padding-bottom: calc(0.35rem + env(safe-area-inset-bottom));
   }
+
   .cookie-banner-content {
     flex-direction: column;
     gap: 0.35rem;
     text-align: center;
   }
+
   .cookie-banner-text h3 {
     font-size: 0.7rem;
     margin-bottom: 0.05rem;
   }
+
   .cookie-banner-text p {
     font-size: 0.65rem;
     line-height: 1;
   }
+
   .cookie-banner-actions {
     flex-direction: row;
     justify-content: center;
     width: 100%;
     gap: 0.2rem;
   }
+
   .cookie-btn {
     flex: 1;
     padding: 0.25rem 0.4rem;
     font-size: 0.65rem;
     min-width: 45px;
   }
+
   .cookie-banner-icon {
     font-size: 0.9rem;
     margin-bottom: 0.15rem;
   }
+
   .cookie-banner-close {
     top: -14px; /* Hälfte über dem Banner */
     right: 0.8rem;
@@ -968,45 +968,49 @@
 }
 
 /* iPhone X/11/12/13/14/15 spezifische Optimierungen */
-@media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3),
-  screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
-  screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
+@media screen and (device-width <= 393px) and (device-height <= 852px) {
   .cookie-banner {
     /* Extra Safe Area für iPhone mit Notch/Dynamic Island */
     padding: 0.35rem 0.75rem;
     padding-bottom: calc(0.35rem + env(safe-area-inset-bottom) + 6px);
+
     /* Verbesserte Haptik auf iPhone */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
+
+          /* entfernt: -webkit-touch-callout für Stylelint-Konformität */
+
+          /* entfernt: user-select für Stylelint-Konformität */
   }
+
   .cookie-btn {
     /* Optimale Touch-Größe für iPhone - kompakter */
     min-height: 36px;
     min-width: 65px;
+
     /* iOS-Style Buttons */
-    -webkit-appearance: none;
     appearance: none;
     -webkit-tap-highlight-color: transparent;
   }
 }
 
 /* iPhone Plus/Max Geräte - Kompakter */
-@media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3),
-  screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+@media screen and (device-width <= 428px) and (device-height <= 926px) {
   .cookie-banner {
     padding: 0.4rem 0.8rem;
     padding-bottom: calc(0.4rem + env(safe-area-inset-bottom) + 4px);
   }
+
   .cookie-banner-content {
     gap: 0.4rem;
   }
+
   .cookie-banner-text h3 {
     font-size: 0.8rem;
   }
+
   .cookie-banner-text p {
     font-size: 0.7rem;
   }
+
   .cookie-btn {
     padding: 0.3rem 0.6rem;
     font-size: 0.7rem;
@@ -1015,42 +1019,50 @@
 }
 
 /* Landscape Orientation für alle iPhones - Ultra kompakt */
-@media screen and (max-height: 500px) and (orientation: landscape) {
+@media screen and (height <= 500px) and (orientation: landscape) {
   .cookie-banner {
     padding: 0.25rem 0.6rem;
     padding-bottom: calc(0.25rem + env(safe-area-inset-bottom));
     padding-left: calc(0.6rem + env(safe-area-inset-left));
     padding-right: calc(0.6rem + env(safe-area-inset-right));
   }
+
   .cookie-banner-content {
     flex-direction: row;
     gap: 0.3rem;
     align-items: center;
   }
+
   .cookie-banner-text {
     flex: 1;
   }
+
   .cookie-banner-text h3 {
     font-size: 0.7rem;
     margin-bottom: 0.05rem;
   }
+
   .cookie-banner-text p {
     font-size: 0.65rem;
     -webkit-line-clamp: 1;
     line-clamp: 1;
   }
+
   .cookie-banner-actions {
     flex-shrink: 0;
     gap: 0.25rem;
   }
+
   .cookie-btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.65rem;
     min-width: 50px;
   }
+
   .cookie-banner-icon {
     font-size: 0.8rem;
   }
+
   .cookie-banner-close {
     top: -12px; /* Hälfte über dem Banner */
     right: 0.6rem;
@@ -1061,29 +1073,35 @@
 }
 
 /* Desktop - Ultra kompakte Darstellung */
-@media (min-width: 1025px) {
+@media (width >= 1025px) {
   .cookie-banner {
     padding: 0.4rem 1.5rem;
   }
+
   .cookie-banner-content {
     gap: 0.8rem;
   }
+
   .cookie-banner-text h3 {
     font-size: 0.8rem;
     margin-bottom: 0.1rem;
   }
+
   .cookie-banner-text p {
     font-size: 0.7rem;
     line-height: 1.1;
   }
+
   .cookie-banner-icon {
     font-size: 1.1rem;
   }
+
   .cookie-btn {
     padding: 0.3rem 0.8rem;
     font-size: 0.7rem;
     min-width: 70px;
   }
+
   .cookie-banner-close {
     width: 30px;
     height: 30px;
@@ -1113,18 +1131,17 @@
   align-items: center !important;
   justify-content: center !important;
   font-family: var(--cb-font-family) !important;
-  -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   opacity: 0.9 !important;
 }
 
 .cookie-fab:hover {
   transform: scale(1.05) translateY(-2px);
-  background: rgba(255, 255, 255, 0.25);
+  background: rgb(255 255 255 / 25%);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.15),
-    0 6px 20px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 12px 40px rgb(0 0 0 / 15%),
+    0 6px 20px rgb(0 0 0 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 30%);
   opacity: 1;
   color: #333;
 }
@@ -1141,7 +1158,7 @@
   display: none !important;
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .cookie-fab {
     bottom: 1rem;
     right: 1rem;
@@ -1153,22 +1170,22 @@
 
 /* Dark Mode Anpassungen für FAB */
 [data-theme='dark'] .cookie-fab {
-  background: rgba(68, 68, 68, 0.8);
-  border: 1px solid rgba(245, 245, 245, 0.15);
+  background: rgb(68 68 68 / 80%);
+  border: 1px solid rgb(245 245 245 / 15%);
   color: #f5f5f5;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 8px 32px rgb(0 0 0 / 30%),
+    0 4px 16px rgb(0 0 0 / 20%),
+    inset 0 1px 0 rgb(255 255 255 / 10%);
 }
 
 [data-theme='dark'] .cookie-fab:hover {
-  background: rgba(85, 85, 85, 0.9);
-  color: #ffffff;
+  background: rgb(85 85 85 / 90%);
+  color: #fff;
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    0 6px 20px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 12px 40px rgb(0 0 0 / 40%),
+    0 6px 20px rgb(0 0 0 / 25%),
+    inset 0 1px 0 rgb(255 255 255 / 15%);
 }
 
 /* ===================================================================
@@ -1194,8 +1211,7 @@ dialog.cookie-modal {
 }
 
 dialog.cookie-modal::backdrop {
-  background: rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgb(0 0 0 / 80%);
   backdrop-filter: blur(8px);
 }
 
@@ -1211,7 +1227,7 @@ dialog.cookie-modal[open].hidden {
 
 /* ...existing cookie modal styles... */
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
   dialog.cookie-modal {
     width: 98vw;
     min-width: 0;

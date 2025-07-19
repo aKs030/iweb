@@ -12,6 +12,7 @@
         ]
       }
     ],
+    "property-no-vendor-prefix": [true, { "ignoreProperties": ["-webkit-backdrop-filter"] }],
     "selector-pseudo-element-no-unknown": [
       true,
       {

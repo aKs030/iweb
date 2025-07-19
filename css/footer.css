@@ -59,14 +59,14 @@
 }
 
 /* ========== Mobile Footer ========== */
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .site-footer {
     padding: var(--spacing-sm) var(--spacing-md);
   }
 
 }
 
-@media (max-width: 400px) {
+@media (width <= 400px) {
   .site-footer,
   .site-footer .footer-nav,
   .site-footer p,
