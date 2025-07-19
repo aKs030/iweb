@@ -47,6 +47,8 @@ jobs:
             echo "Warte auf Server... ($i)"
             sleep 1
           done
+          echo "Prüfe HTTP-Status der Startseite vor Link-Check:"
+          curl -I http://localhost:8000/
           npm run check-links || (kill $SERVER_PID && exit 1)
           kill $SERVER_PID
 
