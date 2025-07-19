@@ -15,26 +15,29 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
+      - name: 🔧 Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nasm libpng-dev
+
       - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: 📦 Install dependencies
         run: npm ci
 
       - name: ✅ Validate HTML
         run: npm run validate-html
-        continue-on-error: true
 
       - name: 🎨 Validate CSS
         run: npm run validate-css
-        continue-on-error: true
 
       - name: 🔍 Check broken links
         run: npm run check-links
-        continue-on-error: true
 
       - name: ⚡ Lighthouse CI
         uses: treosh/lighthouse-ci-action@v10
@@ -51,8 +54,19 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
       - name: 🛡️ Security audit
         run: |
+          npm ci
           npm audit --audit-level moderate
           git secrets --scan || echo "No secrets found"
           echo "✅ Security checks completed"
