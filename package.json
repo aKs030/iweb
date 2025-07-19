@@ -11,7 +11,7 @@
     "lighthouse": "lighthouse http://localhost:8000 --output=html --output-path=./lighthouse-report.html",
     "test-performance": "node scripts/performance-test.js",
     "compress-images": "imagemin img/**/*.{jpg,png} --out-dir=img/optimized",
-    "check-links": "linkinator http://localhost:8000 --exclude https://www.abdulkerimsesli.de/",
+    "check-links": "linkinator http://localhost:8000 --exclude https://www.abdulkerimsesli.de/ --exclude https://www.abdulkerimsesli.de",
     "deploy-check": "npm run validate-html && npm run validate-css && npm run check-links",
     "purge": "mkdir -p css/purged && npx purgecss --css css/*.css --content pages/**/*.html js/**/*.js --output css/purged/",
     "format": "prettier --write .",
