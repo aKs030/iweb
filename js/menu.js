@@ -495,25 +495,4 @@ function initializeSearch() {
   });
 }
 
-class MenuManager {
-  constructor() {
-    this.listeners = new Map();
-  }
-
-  addListener(element, event, handler, options) {
-    if (!this.listeners.has(element)) {
-      this.listeners.set(element, new Map());
-    }
-    this.listeners.get(element).set(event, { handler, options });
-    element.addEventListener(event, handler, options);
-  }
-
-  cleanup() {
-    this.listeners.forEach((events, element) => {
-      events.forEach((value, event) => {
-        element.removeEventListener(event, value.handler, value.options);
-      });
-    });
-    this.listeners.clear();
-  }
-}
+// Klasse MenuManager entfernt, da sie nicht verwendet wird

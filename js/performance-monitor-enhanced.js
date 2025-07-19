@@ -1,3 +1,4 @@
+/* global gtag */
 /**
  * Performance Monitor for iweb-7 Website
  * Real-time performance tracking and optimization

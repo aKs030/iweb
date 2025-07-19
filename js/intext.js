@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Startet die Animationen für alle Elemente
-  function startAnimations(containerElement, sectionId) {
+function startAnimations(containerElement) {
     const animElements = containerElement.querySelectorAll(
       '.text-animate, .scroll-animate, .card'
     );
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     requestAnimationFrame(() => {
       setTimeout(() => {
-        startAnimations(containerElement, sectionId);
+        startAnimations(containerElement);
       }, 50); // Kleine Verzögerung für bessere Animation-Performance
     });
   }

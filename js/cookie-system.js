@@ -1,3 +1,4 @@
+/* global dataLayer */
 /**
  * 🍪 COOKIE BANNER v2.4 - ALL-IN-ONE SYSTEM
  * ==========================================

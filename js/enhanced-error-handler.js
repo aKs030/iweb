@@ -1,3 +1,4 @@
+/* global gtag */
 /**
  * Enhanced Error Handler for iweb-7 Website
  * Production-ready error handling and monitoring system
