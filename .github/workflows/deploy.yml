@@ -32,10 +32,11 @@ jobs:
         run: npm run validate-css
         continue-on-error: true
 
-      - name: 🌐 Starte lokalen Webserver
+
+      - name: 🌐 Starte lokalen Node.js-Server
         run: |
-          python3 -m http.server 8000 &
-          sleep 3
+          npx serve -l 8000 -s . &
+          sleep 5
         working-directory: .
 
       - name: 🔍 Check broken links
