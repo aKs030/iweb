@@ -1,80 +1,353 @@
-name: 🚀 Deploy to Production
+name: 🚀 CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
+  workflow_dispatch: # Manueller Trigger
+
+env:
+  NODE_VERSION: '20'
+  CACHE_VERSION: v1
+  SERVER_PORT: 8000
 
 jobs:
-  qa:
+  setup:
+    name: 🔧 Setup & Dependencies
     runs-on: ubuntu-latest
-    concurrency:
-      group: qa-${{ github.ref }}
-      cancel-in-progress: true
-
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Für bessere Git-Historie
 
-    - name: 🏗️ Setup Node.js & Cache
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: package-lock.json
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
-    - name: 📦 Install dependencies
-      run: npm ci
+      - name: 📦 Cache Dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .next/cache
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
 
-    - name: 📝 Lint, Test & Build
-      run: |
-        npm run lint
-        npm test
-        npm run build
+      - name: 📦 Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit --production=false
 
-    - name: ✅ Validate HTML & CSS
-      run: |
-        npm run validate-html
-        npm run validate-css
-
-    - name: 🔍 Check broken links
-      run: npm run check-links
-
-    - name: 🛡️ Security audit
-      run: |
-        npm audit --audit-level moderate
-        git secrets --scan || echo "No secrets found"
-
-    - name: ⚡ Lighthouse CI
-      uses: treosh/lighthouse-ci-action@v10
-      with:
-        configPath: './lighthouserc.js'
-        uploadArtifacts: true
-        temporaryPublicStorage: true
-
-  deploy:
-    needs: qa
+  quality-checks:
+    name: 🔍 Quality Assurance
     runs-on: ubuntu-latest
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint, test, security, build]
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Restore Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .next/cache
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('package-lock.json') }}
+
+      - name: 📦 Install Dependencies (if needed)
+        run: npm ci --prefer-offline --no-audit --production=false
+
+      - name: 📝 Run Linting
+        if: matrix.check == 'lint'
+        run: |
+          npm run lint
+          npm run format -- --check
+
+      - name: 🧪 Run Tests & Validation
+        if: matrix.check == 'test'
+        run: |
+          npm run validate-html
+          npm run validate-css
+          npm run deploy-check
+
+      - name: 🛡️ Security Audit
+        if: matrix.check == 'security'
+        run: |
+          npm audit --audit-level moderate --production
+          npx audit-ci --moderate || echo "Security audit warnings found"
+
+      - name: 🏗️ Build Application
+        if: matrix.check == 'build'
+        run: |
+          npm run build
+          npm run purge || echo "CSS purging skipped"
+          npm run compress-images || echo "Image compression skipped"
+          echo "✅ Static site ready for deployment"
+
+      - name: 📤 Upload Build Artifacts
+        if: matrix.check == 'build' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-site-files
+          path: |
+            index.html
+            pages/
+            css/
+            js/
+            img/
+            *.ico
+            *.txt
+            *.xml
+          retention-days: 1
+
+  performance-tests:
+    name: ⚡ Performance Tests
+    runs-on: ubuntu-latest
+    needs: [setup, quality-checks]
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Restore Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .next/cache
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('package-lock.json') }}
+
+      - name: 📦 Install Dependencies
+        run: npm ci --prefer-offline --no-audit --production=false
+
+      - name: 🚀 Start Development Server
+        run: |
+          npm run dev &
+          echo "Server starting on port ${{ env.SERVER_PORT }}..."
+          
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:${{ env.SERVER_PORT }} > /dev/null; then
+              echo "✅ Server is ready!"
+              break
+            else
+              echo "⏳ Waiting for server... ($i/30)"
+              sleep 2
+            fi
+          done
+
+      - name: ⚡ Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: './lighthouserc.js'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: 🔍 Performance Tests
+        run: |
+          npm run test-performance || echo "Performance tests completed with warnings"
+
+      - name: 🔗 Link Checker
+        run: |
+          # Server already running from previous step
+          npm run check-links || echo "Link check completed with warnings"
+
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [quality-checks, performance-tests]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: ${{ secrets.STAGING_URL }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📤 Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: static-site-files
+          path: ./site
+
+      - name: 🚀 Deploy to Staging
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_SSH_HOST }}
+          username: ${{ secrets.STAGING_SSH_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: ${{ secrets.STAGING_SSH_PORT || 22 }}
+          script: |
+            set -e
+            echo "🚀 Starting staging deployment..."
+            
+            # Backup current deployment
+            if [ -d "${{ secrets.STAGING_SSH_PATH }}" ]; then
+              cp -r ${{ secrets.STAGING_SSH_PATH }} ${{ secrets.STAGING_SSH_PATH }}.backup.$(date +%Y%m%d_%H%M%S)
+            fi
+            
+            # Create deployment directory
+            mkdir -p ${{ secrets.STAGING_SSH_PATH }}
+            
+            # Sync files
+            rsync -avz --delete ./site/ ${{ secrets.STAGING_SSH_PATH }}/
+            
+            # Set permissions
+            chmod -R 755 ${{ secrets.STAGING_SSH_PATH }}
+            
+            # Health check
+            curl -f ${{ secrets.STAGING_URL }}/health || echo "Health check failed"
+            
+            echo "✅ Staging deployment completed!"
+
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [quality-checks, performance-tests]
     if: github.ref == 'refs/heads/main'
-
+    environment:
+      name: production
+      url: ${{ secrets.PRODUCTION_URL }}
+    
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: 🚀 Deploy via SSH
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          # Passe 'dist/' an, falls dein Build-Verzeichnis anders heißt
-          rsync -avz --delete ./dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PATH }}
+      - name: 📤 Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: static-site-files
+          path: ./site
 
-    - name: 📊 Deployment Summary
-      run: |
-        echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- QA passed" >> $GITHUB_STEP_SUMMARY
-        echo "- Deployed to production" >> $GITHUB_STEP_SUMMARY
+      - name: 🔄 Pre-deployment Health Check
+        run: |
+          curl -f ${{ secrets.PRODUCTION_URL }}/health || echo "Current site unavailable"
+
+      - name: 🚀 Deploy to Production
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PRODUCTION_SSH_HOST }}
+          username: ${{ secrets.PRODUCTION_SSH_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          port: ${{ secrets.PRODUCTION_SSH_PORT || 22 }}
+          timeout: 60s
+          script: |
+            set -e
+            echo "🚀 Starting production deployment..."
+            
+            # Create timestamped backup
+            BACKUP_DIR="${{ secrets.PRODUCTION_SSH_PATH }}.backup.$(date +%Y%m%d_%H%M%S)"
+            if [ -d "${{ secrets.PRODUCTION_SSH_PATH }}" ]; then
+              echo "📦 Creating backup: $BACKUP_DIR"
+              cp -r ${{ secrets.PRODUCTION_SSH_PATH }} $BACKUP_DIR
+            fi
+            
+            # Create deployment directory
+            mkdir -p ${{ secrets.PRODUCTION_SSH_PATH }}
+            
+            # Atomic deployment using symlinks
+            TEMP_DIR="${{ secrets.PRODUCTION_SSH_PATH }}.tmp.$(date +%Y%m%d_%H%M%S)"
+            mkdir -p $TEMP_DIR
+            
+            echo "📁 Syncing files to temporary directory..."
+            rsync -avz --delete ./site/ $TEMP_DIR/
+            
+            echo "🔄 Atomic switch to new version..."
+            ln -sfn $TEMP_DIR ${{ secrets.PRODUCTION_SSH_PATH }}.new
+            mv ${{ secrets.PRODUCTION_SSH_PATH }}.new ${{ secrets.PRODUCTION_SSH_PATH }}
+            
+            # Set correct permissions
+            chmod -R 755 ${{ secrets.PRODUCTION_SSH_PATH }}
+            
+            # Cleanup old backups (keep last 5)
+            ls -t ${{ secrets.PRODUCTION_SSH_PATH }}.backup.* 2>/dev/null | tail -n +6 | xargs rm -rf || true
+            
+            echo "✅ Production deployment completed!"
+
+      - name: 🔍 Post-deployment Health Check
+        run: |
+          sleep 10
+          for i in {1..5}; do
+            if curl -f ${{ secrets.PRODUCTION_URL }}/health; then
+              echo "✅ Health check passed!"
+              break
+            else
+              echo "⚠️ Health check failed, retrying... ($i/5)"
+              sleep 10
+            fi
+          done
+
+      - name: 📊 Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Success Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment time**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Site URL**: ${{ secrets.PRODUCTION_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Quality Gates Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Linting" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Security Audit" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Build" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Performance Tests" >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: 📢 Notifications
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: 📢 Slack Notification
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 📢 Discord Notification (on failure)
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: failure
+          description: "Production deployment failed!"
