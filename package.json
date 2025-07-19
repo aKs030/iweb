@@ -25,11 +25,10 @@
     "test:coverage": "echo 'Static site - coverage not applicable'",
     "security-audit": "npm audit --audit-level moderate",
     "optimize": "npm run compress-images && npm run purge",
-    "pre-deploy": "npm run format && npm run lint && npm run deploy-check && npm run optimize"
-   ,
-   "optimize:images": "sharp-cli img/**/*.{jpg,png} --output=img/optimized --webp --avif",
-   "generate:srcset": "node scripts/generate-responsive-images.js",
-   "critical-css": "critical index.html --base . --inline --minify > index-critical.html"
+    "pre-deploy": "npm run format && npm run lint && npm run deploy-check && npm run optimize",
+    "optimize:images": "sharp-cli img/**/*.{jpg,png} --output=img/optimized --webp --avif",
+    "generate:srcset": "node scripts/generate-responsive-images.js",
+    "critical-css": "critical index.html --base . --inline --minify > index-critical.html"
   },
   "repository": {
     "type": "git",
@@ -46,6 +45,7 @@
   "author": "Abdulkerim",
   "license": "MIT",
   "devDependencies": {
+    "@percy/cli": "^1.31.0",
     "audit-ci": "^7.1.0",
     "eslint": "^8.45.0",
     "gulp-imagemin": "^7.1.0",
