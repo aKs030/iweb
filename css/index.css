@@ -1,51 +1,92 @@
-/* index.css - Optimierte Version ohne ungenutzte Styles */
+/* index.css - Spezifische Stile für die Startseite */
 
-@import url('_global.css');
+@import url('_global.css'); /* Variablen importieren */
 
 /* =====================================
-   ANIMATED ICONS
+🔧 GLOBAL RESET & BASIC STYLES
+========================================= */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* =====================================
+🎨 ANIMATED ICON STYLES
 ========================================= */
 @keyframes rotateAndReturn {
-  0% { transform: rotateY(0deg); }
-  50% { transform: rotateY(160deg); }
-  100% { transform: rotateY(0deg); }
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(160deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
 }
 
 .animated-icon {
-  font-size: clamp(2rem, 6vmin, 4rem);
+  /* Größe kommt direkt aus _global.css clamp */
+  font-size: var(
+    --card-icon-main-size-min
+  ); /* Startwert vor dem Hover, wird durch Animation angepasst */
   display: inline-block;
   transform-style: preserve-3d;
+  transform: rotateY(0deg); /* Expliziter Grundzustand */
 }
 
-.card:hover .animated-icon {
-  animation: rotateAndReturn var(--transition-speed) var(--transition-ease) 1;
+.card:hover .icon-wrapper .animated-icon {
+  animation-name: rotateAndReturn;
+  animation-duration: var(--transition-speed);
+  animation-timing-function: var(--transition-ease);
+  animation-iteration-count: 1;
+  /* Stellen Sie sicher, dass die gewünschte Größe auch im Animationstransform erreicht wird,
+     oder verwenden Sie hier direkt die gewünschte Hover-Größe, falls sie sich vom Nicht-Hover-Zustand unterscheidet.
+     Die Animation ändert nur die Rotation, nicht die Größe per se. */
 }
 
 /* =====================================
-   VIEWPORT BOX
+📦 RESPONSIVE VIEWPORT-BOX
 ========================================= */
 .viewport-box {
-  width: clamp(300px, 90vw, 1000px);
-  height: clamp(400px, 65vh, 800px);
+  /* Optimiert mit clamp für flüssigere Breiten- und Höhenanpassung */
+  width: clamp(300px, 90vw, 1000px); /* Min 300px, bevorzugt 90vw, max 1000px */
+  height: clamp(400px, 65vh, 800px); /* Min 400px, bevorzugt 65vh, max 800px */
   background: var(--color-bg-secondary);
   box-shadow: 0 5px 14px var(--color-shadow-dark);
-  overflow-y: auto;
+  overflow-y: auto; /* Handles primary scrolling */
   scroll-snap-type: y mandatory;
-  scroll-padding-top: var(--spacing-md);
+  /* Padding mit clamp, das auf globale Variablen zugreift */
+  scroll-padding-top: clamp(var(--spacing-md), 2vw, var(--spacing-lg));
   border-radius: var(--border-radius);
-  padding: clamp(var(--spacing-sm), 2vw + 0.5rem, var(--spacing-xl));
+  /* Padding des Viewport-Box selbst */
+  padding: clamp(
+    var(--spacing-sm),
+    2vw + 0.5rem,
+    var(--spacing-xl)
+  ); /* Angepasster calc-Wert für Flexibilität */
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-
+@media (max-width: 600px) {
+  .viewport-box {
+    margin-top: 2vh; /* Etwas weiter nach oben schieben */
+    padding: clamp(14px, 1.5vw, 22px) clamp(0.5rem, 2vw, 1.5rem); /* Kompakteres Padding */
+  }
+}
 .viewport-box::-webkit-scrollbar {
   display: none;
 }
 
+@supports (scrollbar-width: none) {
+  .viewport-box {
+    scrollbar-width: none;
+  }
+}
 .sections-container {
   width: 100%;
   max-width: 900px;
@@ -54,15 +95,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-xl);
-  padding: var(--section-padding);
+  /* Gap und Padding nutzen globale clamp()-Variablen */
+  gap: var(
+    --spacing-xl
+  ); /* Verwende var(--spacing-xl) für größeren Standard-Gap */
+  padding: var(
+    --section-padding
+  ); /* Verwende die globale Sektion-Padding-Variable */
 }
 
 /* =====================================
-   CARD COMPONENTS
+🃏 RESPONSIVE CARD COMPONENTS
 ========================================= */
 .card {
-  padding: clamp(var(--spacing-sm), 2.5vmin, var(--spacing-md));
+  /* Padding, Gap, Title-Size und Text-Size kommen direkt aus _global.css clamp */
+  padding: clamp(
+    var(--card-padding-min),
+    var(--card-padding-preferred),
+    var(--card-padding-max)
+  );
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
@@ -70,12 +121,18 @@
   color: var(--color-text-main);
   border-radius: var(--border-radius);
   box-shadow: 0 3px 10px var(--color-shadow-dark);
-  transition: transform var(--transition-speed) var(--transition-ease),
-              box-shadow var(--transition-speed) var(--transition-ease);
+  transition:
+    transform var(--transition-speed) var(--transition-ease),
+    box-shadow var(--transition-speed) var(--transition-ease),
+    border-color var(--transition-speed) var(--transition-ease);
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  gap: clamp(var(--spacing-xs), 1.5vmin, var(--spacing-sm));
+  gap: clamp(
+    var(--card-gap-min),
+    var(--card-gap-preferred),
+    var(--card-gap-max)
+  );
 }
 
 .card:hover {
@@ -84,46 +141,122 @@
   border-color: var(--color-accent);
 }
 
-.card-title {
-  font-size: clamp(1rem, 2.2vmin + 0.3rem, 1.6rem);
+.card .icon-wrapper {
+  line-height: 1;
+}
+
+.card .icon-wrapper i {
+  /* Größe kommt direkt aus _global.css clamp */
+  font-size: clamp(
+    var(--card-icon-main-size-min),
+    var(--card-icon-main-size-preferred),
+    var(--card-icon-main-size-max)
+  );
+  color: var(--color-card-icon);
+  flex-shrink: 0;
+}
+
+.card .card-title {
+  font-size: clamp(
+    var(--card-title-size-min),
+    var(--card-title-size-preferred),
+    var(--card-title-size-max)
+  );
   font-weight: 600;
   line-height: 1.3;
   color: var(--color-text-main);
   margin-bottom: 0;
 }
 
-.card-text {
-  font-size: clamp(0.85rem, 1.8vmin + 0.25rem, 1.05rem);
+.card .card-text {
+  font-size: clamp(
+    var(--card-text-size-min),
+    var(--card-text-size-preferred),
+    var(--card-text-size-max)
+  );
   line-height: 1.5;
   color: var(--color-text-muted);
   margin-bottom: 0;
 }
 
-.card img {
+img {
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+.card img {
   border-radius: calc(var(--border-radius) - 5px);
 }
 
-/* Special card animations for features section */
-.is-upper-card,
-.is-middle-card,
-.is-lower-card {
-  position: relative;
+/* =====================================
+✨ RESPONSIVE SHIMMER TEXT EFFECT
+========================================= */
+.shimmer-text {
+  /* Font-Size weiterhin mit clamp */
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  font-weight: 700;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0.05)
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s infinite linear;
 }
 
-.is-middle-card {
-  z-index: 10;
-}
-
-.is-upper-card,
-.is-lower-card {
-  z-index: 5;
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
 }
 
 /* =====================================
-   SNAP SECTIONS
+🔆 UPDATE-HEADER WITH GLOW-EFFECT
+========================================= */
+.update-header {
+  text-align: center;
+  background-color: var(--color-bg-secondary);
+  /* Padding nutzt globale clamp()-Variablen */
+  padding: var(--spacing-xl) var(--spacing-md);
+  color: var(--color-text-main);
+  position: relative;
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-md);
+}
+
+.update-header h3 {
+  margin: 0;
+  z-index: 2;
+  position: relative;
+}
+
+.glow-bar {
+  width: 100%;
+  height: 10px;
+  background: radial-gradient(
+    ellipse at center,
+    var(--color-accent) 0%,
+    rgba(255, 204, 0, 0) 70%
+  );
+  position: absolute;
+  /* Bottom weiterhin mit clamp */
+  bottom: clamp(0.5rem, 1.5vh, 1rem);
+  left: 0;
+  z-index: 1;
+}
+
+/* =====================================
+📏 SNAP SECTION STYLING
 ========================================= */
 .snap-section {
   scroll-snap-align: start;
@@ -136,20 +269,34 @@
 }
 
 /* =====================================
-   SCROLL DOTS NAVIGATION
+🔵 SCROLL-DOTS NAVIGATION
 ========================================= */
 .dots-nav {
+  /* Position für große Bildschirme - kann je nach Designwunsch fix sein */
   position: fixed;
   left: calc(50% + 530px);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
+  /* Gap jetzt auch mit clamp */
   gap: clamp(0.4rem, 1vw, 0.6rem);
   z-index: 1000;
 }
 
+/* Nur noch für die Position auf kleineren Bildschirmen relevant */
+@media (max-width: 1100px) {
+  .dots-nav {
+    left: auto;
+    /* Nutzt globale clamp()-Variable für den right-Abstand */
+    right: var(
+      --spacing-md
+    ); /* Angepasst, um von der _global.css zu profitieren */
+  }
+}
+
 .dot {
+  /* Dot-Größen mit clamp für bessere Skalierung */
   width: clamp(2.5px, 0.3vw, 4px);
   height: clamp(16px, 2.5vh, 24px);
   border-radius: 1.5px;
@@ -157,12 +304,16 @@
   cursor: pointer;
   transition: all var(--transition-speed) var(--transition-ease);
   position: relative;
+  outline: none;
 }
 
 .dot::before {
   content: '';
   position: absolute;
-  inset: -8px;
+  top: -8px;
+  bottom: -8px;
+  left: -8px;
+  right: -8px;
 }
 
 .dot:hover {
@@ -177,76 +328,142 @@
   box-shadow: 0 0 8px var(--color-accent);
 }
 
-/* =====================================
-   BODY STYLES
-========================================= */
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text-main);
-  overflow: hidden;
-  overscroll-behavior: none;
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  touch-action: none;
+.dot:focus {
+  outline: none;
 }
 
-/* =====================================
-   RESPONSIVE TYPOGRAPHY
-========================================= */
-body#index-page .lead {
-  text-align: left;
-  max-width: 55ch;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: clamp(1rem, 0.5vw + 0.85rem, 1.2rem);
-  color: var(--color-text-main);
-}
+/* ===================================================================
+Eliminierte oder stark reduzierte Media Query für kleine Bildschirme
+=================================================================== */
+/* Da die clamp()-Funktionen in _global.css und hier direkt die dynamische Skalierung übernehmen,
+   wird diese Media Query weitgehend redundant für Größen und Abstände.
+   Sie ist nur noch für sehr spezifische Anpassungen notwendig, die nicht durch clamp() abgedeckt werden. */
+/* @media (max-width: 360px) { ... } -- Dieser Block wurde entfernt */
 
-/* =====================================
-   MEDIA QUERIES
-========================================= */
-@media (max-width: 1100px) {
-  .dots-nav {
-    left: auto;
-    right: var(--spacing-md);
-  }
-}
-
-@media (max-width: 600px) {
-  .viewport-box {
-    margin-top: 2vh;
-    padding: clamp(14px, 1.5vw, 22px) clamp(0.5rem, 2vw, 1.5rem);
-  }
-  
-  .section-body {
-    padding: var(--section-padding);
-    max-height: clamp(220px, 32vh, 300px);
-  }
-}
-
-@media (max-width: 400px) {
-  .viewport-box {
-    padding: var(--spacing-xs);
-    max-width: 89vw;
-    margin-left: 5vw;
-    margin-right: 5vw;
-  }
-}
-
-/* =====================================
-   ACCESSIBILITY & REDUCED MOTION
-========================================= */
+/* ===================================================================
+🌍 ACCESSIBILITY: REDUCED MOTION PREFERENCES
+=================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  .animated-icon,
-  .card:hover {
-    animation: none !important;
-    transform: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--transition-speed) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--transition-speed) !important;
+    scroll-behavior: auto !important;
   }
-  
+
+  .animated-icon,
+  .card:hover .icon-wrapper .animated-icon,
+  .card:hover {
+    transform: none !important;
+    animation-name: none !important;
+  }
+
+  .shimmer-text {
+    animation: none !important;
+    color: var(--color-text-main);
+    background: none;
+    text-shadow: none;
+  }
+
   .dot:hover,
   .dot.active,
   .dot:focus-visible {
     transform: none !important;
   }
+}
+
+/* =====================================
+📝 RESPONSIVE TYPOGRAPHY
+========================================= */
+/* Die folgenden Regeln sind global in _global.css definiert und werden nicht mehr benötigt:
+body#index-page h1, h2, h3, h4, h5, h6, p, li
+Nur die .lead-Klasse bleibt als Ausnahme erhalten. */
+
+body#index-page .lead {
+  text-align: left;
+  max-width: 55ch;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: var(--font-size-lead);
+  color: var(--color-text-main);
+}
+
+/* filepath: /css/index.css */
+:root {
+  --theme-bg: #393939;
+  --theme-fg: #ffffff;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --theme-bg: #ffffff;
+    --theme-fg: #393939;
+  }
+}
+
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-fg);
+  overflow: hidden; /* Body-Scrolling deaktivieren, nur .viewport-box scrollt */
+  overscroll-behavior: none; /* Kein Scroll-Bounce auf Mobilgeräten */
+  position: fixed; /* Verhindert Touch-Scroll auf iOS/Safari */
+  width: 100vw;
+  height: 100vh;
+  touch-action: none; /* Verhindert Touch-Scroll auf Mobilgeräten */
+}
+/* z. B. für nav-Bar, footer, SVG-Icons etc. ebenfalls var(--theme-*) nutzen */
+/* Global */
+html, body {
+    touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
+    overscroll-behavior: none;
+    
+    /* Verhindert Browser-Zoom */
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+/* Haupt-Container */
+#main-content,
+.viewport-box {
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+}
+
+/* Alle interaktiven Elemente */
+.snap-section,
+.sections-container,
+.dots-nav,
+.dot,
+button,
+a,
+input,
+select,
+textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS-spezifisch */
+@supports (-webkit-touch-callout: none) {
+    body {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+    }
+    
+    .viewport-box {
+        overflow-y: scroll;
+    }
+}
+
+/* Verhindert Zoom-Interaktionen mit den Dots */
+.dots-nav,
+.dots-nav .dot {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
