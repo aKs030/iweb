@@ -32,6 +32,8 @@
     "test:visual": "percy exec -- npx serve -l 8000 -s . & SERVER_PID=$!; sleep 5; percy snapshot ./index.html; kill $SERVER_PID",
     "security-check": "node scripts/check-security-headers.js",
     "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de"
+    ,
+    "security-check-with-server": "node scripts/start-server-and-check.js"
   },
   "repository": {
     "type": "git",

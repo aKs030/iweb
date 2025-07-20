@@ -132,8 +132,7 @@ const ADDITIONAL_CHECKS = {
       const poweredBy = headers['x-powered-by'];
       
       const issues = [];
-      // Use optional chaining and a safe regex to avoid ReDoS
-      if (serverHeader?.match(/\d+\.\d{1,3}/)) {
+      if (serverHeader && serverHeader.match(/\d+\.\d+/)) {
         issues.push('Server-Version wird preisgegeben');
       }
       if (poweredBy) {
@@ -148,18 +147,23 @@ const ADDITIONAL_CHECKS = {
   }
 };
 
-// HTTP(S) Request durchführen
+// HTTP(S) Request durchführen mit IPv4 Fallback
 function makeRequest(url) {
   return new Promise((resolve, reject) => {
     const parsedUrl = new URL(url);
     const protocol = parsedUrl.protocol === 'https:' ? https : http;
     
+    // Ersetze localhost mit 127.0.0.1 für IPv4
+    const hostname = parsedUrl.hostname === 'localhost' ? '127.0.0.1' : parsedUrl.hostname;
+    
     const options = {
-      hostname: parsedUrl.hostname,
+      hostname: hostname,
       port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
       path: parsedUrl.pathname,
       method: 'HEAD',
-      timeout: 10000
+      timeout: 10000,
+      // Explizit IPv4 verwenden
+      family: 4
     };
     
     const req = protocol.request(options, (res) => {
@@ -169,7 +173,31 @@ function makeRequest(url) {
       });
     });
     
-    req.on('error', reject);
+    req.on('error', (error) => {
+      // Bei ECONNREFUSED mit IPv6, versuche IPv4
+      if (error.code === 'ECONNREFUSED' && parsedUrl.hostname === 'localhost') {
+        console.log('IPv6 fehlgeschlagen, versuche IPv4...');
+        options.hostname = '127.0.0.1';
+        
+        const retryReq = protocol.request(options, (res) => {
+          resolve({
+            statusCode: res.statusCode,
+            headers: res.headers
+          });
+        });
+        
+        retryReq.on('error', reject);
+        retryReq.on('timeout', () => {
+          retryReq.destroy();
+          reject(new Error('Request timeout'));
+        });
+        
+        retryReq.end();
+      } else {
+        reject(error);
+      }
+    });
+    
     req.on('timeout', () => {
       req.destroy();
       reject(new Error('Request timeout'));
@@ -235,7 +263,7 @@ function analyzeHeaders(headers) {
   }
   
   // Zusätzliche Checks
-  for (const config of Object.values(ADDITIONAL_CHECKS)) {
+  for (const [checkName, config] of Object.entries(ADDITIONAL_CHECKS)) {
     const result = config.check(headers);
     results.maxScore += 5;
     
@@ -382,15 +410,7 @@ async function main() {
     }
     
   } catch (error) {
-    console.error(`${colors.red}Fehler beim Prüfen der Header:${colors.reset}`);
-    if (error && error.message) {
-      console.error(error.message);
-    } else {
-      console.error(error);
-    }
-    if (error && error.stack) {
-      console.error(error.stack);
-    }
+    console.error(`${colors.red}Fehler beim Prüfen der Header:${colors.reset}`, error.message);
     process.exit(1);
   }
 }

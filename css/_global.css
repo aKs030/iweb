@@ -1,9 +1,11 @@
 /* Kontaktseite Layout & Card */
+  
 .kontakt-main {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
 }
+  
 .kontakt-card {
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius);
@@ -11,46 +13,55 @@
   padding: var(--section-padding);
   margin-bottom: 2em;
 }
+  
 .kontakt-card-list {
   list-style: none;
   padding: 0;
   margin: 1.5em 0 0 0;
 }
+  
 .kontakt-card-list li {
   margin-bottom: 1.2em;
   display: flex;
   align-items: center;
   gap: 0.7em;
 }
+  
 .kontakt-card-list i {
   color: var(--color-accent);
 }
+  
 .kontakt-card-list a {
   color: var(--color-link);
   font-weight: 500;
   text-decoration: none;
 }
+  
 .kontakt-card-list a:hover,
 .kontakt-card-list a:focus {
   color: var(--color-accent);
   text-decoration: underline;
 }
+  
 .kontakt-card h2,
 .kontakt-section-margin h2 {
   text-align: center;
 }
+  
 .kontakt-card h2 {
   margin-top: 0;
   font-size: 1.4em;
 }
+  
 .kontakt-h1 {
   text-align: center;
   margin-bottom: 1.5em;
 }
+  
 .share-btn-layout i {
   margin-right: 0.5em;
 }
-/* Modernes Kontaktformular-Design */
+
 .kontakt-section-margin {
   margin-top: 2em;
   max-width: 420px;
@@ -63,12 +74,14 @@
   border: 1px solid rgb(0 0 0 / 10%);
 }
 
+  
 #kontakt-formular label {
   font-weight: 500;
   color: var(--color-accent);
   margin-bottom: 0.2em;
   display: block;
 }
+  
 #kontakt-formular input,
 #kontakt-formular textarea {
   width: 100%;
@@ -81,15 +94,18 @@
   font-size: 1em;
   transition: border-color 0.2s;
 }
+  
 #kontakt-formular input:focus,
 #kontakt-formular textarea:focus {
   border-color: var(--color-accent);
   outline: none;
 }
+  
 #kontakt-formular textarea {
   resize: vertical;
   min-height: 100px;
 }
+  
 #kontakt-formular button[type="submit"] {
   background: var(--color-accent);
   color: #fff;
@@ -102,6 +118,7 @@
   box-shadow: 0 1px 6px var(--color-shadow-dark);
   transition: background 0.2s, box-shadow 0.2s;
 }
+  
 #kontakt-formular button[type="submit"]:hover,
 #kontakt-formular button[type="submit"]:focus {
   background: var(--color-accent-hover);
@@ -109,7 +126,9 @@
   box-shadow: 0 2px 12px var(--color-shadow-dark);
 }
 
+  
 /* Fehlermeldungen im Formular */
+
 .form-error {
   color: #ff6b6b;
   font-size: 0.92em;
@@ -118,7 +137,9 @@
   padding-left: 2px;
 }
 
+  
 /* Speichern-Indikator */
+
 .form-save-indicator {
   color: #2ecc40;
   font-size: 0.95em;
@@ -127,7 +148,9 @@
   text-align: right;
 }
 
+  
 /* Teilen-Button optisch hervorheben */
+
 .share-btn-layout {
   margin: 2em auto 1em auto;
   display: block;
@@ -142,6 +165,7 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
+  
 .share-btn-layout:hover,
 .share-btn-layout:focus {
   background: linear-gradient(90deg, var(--color-accent-hover), var(--color-accent));
@@ -149,21 +173,26 @@
   box-shadow: 0 2px 16px var(--color-shadow-dark);
 }
 
+  
 /* ========== CSS RESET & BASE ========== */
+  
 html {
   box-sizing: border-box;
 }
 
+  
 *::before,
 *::after {
   box-sizing: inherit;
 }
 
+  
 html,
 body {
   height: 100%;
 }
 
+  
 body {
   font-size: var(--font-size-base);
   display: flex;
@@ -179,6 +208,7 @@ body {
   font-family: var(--font-family-main);
 }
 
+  
 p,
 a,
 li,
@@ -187,7 +217,9 @@ label {
   font-size: var(--font-size-p);
 }
 
+  
 /* ========== DESIGN VARIABLEN ========== */
+  
 :root {
   /* Farben */
   --color-bg: rgb(57 57 57);
@@ -259,7 +291,9 @@ label {
   --card-text-size-max: 1.05rem;
 }
 
+  
 /* Light Theme */
+  
 html[data-theme='light'] {
   --color-bg: #f0f2f5;
   --color-bg-secondary: #fff;
@@ -271,7 +305,9 @@ html[data-theme='light'] {
   --color-shadow-light: rgb(255 255 255 / 80%);
 }
 
+  
 /* Dark Theme */
+  
 html[data-theme='dark'] {
   --color-bg: rgb(57 57 57);
   --color-bg-secondary: #444;
@@ -283,7 +319,9 @@ html[data-theme='dark'] {
   --color-shadow-light: rgb(255 255 255 / 30%);
 }
 
+  
 /* ========== TYPOGRAFIE ========== */
+  
 h1 {
   font-size: var(--font-size-h1);
   font-weight: 600;
@@ -291,6 +329,7 @@ h1 {
   margin-bottom: var(--spacing-md);
 }
 
+  
 h2 {
   font-size: var(--font-size-h2);
   font-weight: 600;
@@ -298,6 +337,7 @@ h2 {
   margin-bottom: var(--spacing-md);
 }
 
+  
 h3 {
   font-size: var(--font-size-h3);
   font-weight: 600;
@@ -305,6 +345,7 @@ h3 {
   margin-bottom: var(--spacing-sm);
 }
 
+  
 h4,
 h5,
 h6 {
@@ -315,6 +356,7 @@ h6 {
 }
 
 
+  
 li {
   font-size: var(--font-size-p);
   line-height: 1.6;
@@ -324,20 +366,25 @@ li {
   margin-bottom: var(--spacing-sm);
 }
 
+  
 /* Verbesserte Link-Styles */
+  
 a {
   color: var(--color-link);
   text-decoration: underline;
   transition: color var(--transition-speed) var(--transition-ease);
 }
 
+  
 a:hover,
 a:focus {
   color: var(--color-accent);
   text-decoration: underline;
 }
 
+  
 /* Accessibility-Verbesserungen */
+  
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -347,7 +394,9 @@ textarea:focus-visible {
   border-radius: 4px;
 }
 
+  
 /* ========== MEDIA QUERIES ========== */
+  
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -359,6 +408,7 @@ textarea:focus-visible {
   }
 }
 
+  
 @media (prefers-contrast: high) {
   :root {
     --color-shadow-dark: rgb(0 0 0 / 80%);
@@ -366,6 +416,7 @@ textarea:focus-visible {
   }
 }
 
+  
 @media print {
   :root {
     --color-bg: white;
@@ -419,6 +470,3 @@ textarea:focus-visible {
     text-shadow: none !important;
   }
 }
-
-
-
