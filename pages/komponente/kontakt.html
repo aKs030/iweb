@@ -6,6 +6,8 @@
     <meta name="description" content="Kontaktieren Sie Abdulkerim - Web-Entwickler aus Berlin. Nutzen Sie das Kontaktformular oder erreichen Sie mich direkt per E-Mail oder Social Media.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#3a85ff">
+    <meta name="msapplication-TileColor" content="#3a85ff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Kontakt - Abdulkerim">
@@ -494,16 +496,17 @@
         </div>
       </div>
       
-      <!-- FAQ Section -->
-      <section class="faq-section">
-        <h2>Häufig gestellte Fragen</h2>
+  
+    !-- FAQ Section -->
+      <section FAQ Sectionsec
+            <h2>Häufig gestellte Fragen</h2>
         
         <div class="faq-item">
           <button class="faq-question">
             Wie schnell antworten Sie auf Anfragen?
           </button>
-          <div class="faq-answer">
-            <p>Ich bemühe mich, alle Anfragen innerhalb von 24 Stunden zu beantworten. Bei komplexeren Projekten kann die erste Einschätzung bis zu 48 Stunden dauern.</p>
+          <divass="faq-ansanswerch bemühe mich,<p>Ich bemühe mich, alle Anfragen innerhalben i 24 Stunden zu beantworten. Bei komplexerennnerhalb vokann die erste Einschätzung bis       
+      <!-- FAQ Sec beantworten.  <omplexeren Projekten kann die erste Einschätzung bis zu 48 Stunden dauern.</p>
           </div>
         </div>
         
@@ -511,8 +514,8 @@
           <button class="faq-question">
             Welche Arten von Projekten übernehmen Sie?
           </button>
-          <div class="faq-answer">
-            <p>Ich arbeite an verschiedenen Web-Projekten, darunter Websites, Web-Applikationen, E-Commerce-Lösungen und individuelle Softwareentwicklung. Kontaktieren Sie mich gerne für Details zu Ihrem spezifischen Projekt.</p>
+          <divass="faq-ansanswerch             <p>Ich arbeite an verschiedenen Web-Projekten, darunter Websites, Web-Applikationen, E-Commerce-Lösungen und individuelle Softwareentwicklung. Kontaktier          <div class="faq-answer">
+            <p>Ich bemühe michsites, Web-Agentionen, E-Commerce-Lösungen und individuelle Softwareentwicklung. Kontaktieren Sie mich gerne für Details zu Ihrem spezifischen Projekt.</p>
           </div>
         </div>
         
@@ -520,8 +523,8 @@
           <button class="faq-question">
             Bieten Sie auch Wartung und Support an?
           </button>
-          <div class="faq-answer">
-            <p>Ja, ich biete umfassende Wartungs- und Supportpakete für alle von mir entwickelten Projekte an. Dies umfasst regelmäßige Updates, Sicherheitsupdates und technischen Support.</p>
+          <divass="faq-ansanswera,             <p>Ja, ich biete umfassende Wartungs- und Supportpakete für alle von mir entwickelten Projekte an. Dies umfasst regelmäßige Updates, Sicherheitsupdates und tec          <div class="portpakete f
+  e von mir entwickelten Projekte an. Dies umfasst regelmäßige Updates, Sicherheitsupdates und technischen Support.</p>
           </div>
         </div>
         
@@ -544,10 +547,8 @@
     
     <script src="/js/menu.js" defer></script>
     <script src="/js/main-init.js" defer></script>
-    <script src="/js/form-enhancement.js" defer></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // FormEnhancer für das Kontaktformular initialisieren
+    <script src="/js/form-enhancement.js" defer></script>cript<script>dEventLdocumenttentLoaded', functiDOMContentLoaded
+        // ormE        // FormEnhancer für das Kontaktformular initialisieren
         var kontaktForm = document.getElementById('kontakt-formular');
         if (kontaktForm) {
           new FormEnhancer(kontaktForm);
@@ -605,9 +606,10 @@
         
         // Prüfe ob aktuell geöffnet
         let isOpen = false;
-        if (day >= 1 && day <= 5 && hour >= 9 && hour < 18) { // Mo-Fr 9-18
-          isOpen = true;
-        } else if (day === 6 && hour >= 10 && hour < 14) { // Sa 10-14
+        if (
+          (day >= 1 && day <= 5 && hour >= 9 && hour < 18) || // Mo-Fr 9-18
+          (day === 6 && hour >= 10 && hour < 14)              // Sa 10-14
+        ) {
           isOpen = true;
         }
         
@@ -619,6 +621,5 @@
           }
         }
       });
-    </script>
   </body>
 </html>

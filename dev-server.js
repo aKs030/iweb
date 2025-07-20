@@ -16,9 +16,9 @@ const app = express();
 // Entferne X-Powered-By Header (Express-Standard)
 app.disable('x-powered-by');
 
-// Setze Server Header auf neutralen Wert
+// Entferne Server Header komplett
 app.use((req, res, next) => {
-  res.setHeader('Server', 'SecureServer');
+  res.removeHeader('Server');
   next();
 });
 const PORT = process.env.PORT || 8000;
@@ -44,19 +44,21 @@ function ensureSelfSignedCert() {
 app.use((req, res, next) => {
   // Content Security Policy (CSP) - möglichst restriktiv, anpassen falls nötig
   res.setHeader('Content-Security-Policy', [
-    "default-src 'self'", // Nur eigene Domain
-    "script-src 'self' https://cdn.jsdelivr.net", // Externe Skripte nur von jsdelivr
-    "style-src 'self' 'unsafe-inline'", // Inline-Styles erlaubt, aber keine externen Stylesheets
-    "img-src 'self' data: https:", // Bilder von eigener Domain, data-URIs und https
-    "font-src 'self' data:", // Schriften von eigener Domain und data-URIs
-    "connect-src 'self' https://api.abdulkerimsesli.de", // API-Zugriffe
-    "frame-ancestors 'none'", // Keine Einbettung als Frame
-    "base-uri 'self'", // Nur eigene Base-URIs
-    "form-action 'self'" // Nur eigene Form-Aktionen
+    "default-src 'self'",
+    "script-src 'self' https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https://api.abdulkerimsesli.de",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
   ].join('; '));
 
   // Pflicht-Header
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -65,12 +67,6 @@ app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   res.setHeader('X-XSS-Protection', '0');
-
-  // Weitere sinnvolle Header (optional, kommentiert)
-  // res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-  // res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  // res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
-
 
   // Beispiel: Setze Test-Cookie mit Secure, HttpOnly, SameSite (falls Cookies verwendet werden)
   res.cookie?.('testcookie', 'test', {
