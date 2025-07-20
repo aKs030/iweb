@@ -1,44 +1,70 @@
 {
   "name": "iweb",
   "version": "1.0.0",
-  "description": "Abdulkerims persönliche Website – modern, responsive und DSGVO-konform",
+  "description": "Abdulkerims persönliche Website – modern, responsive, DSGVO-konform",
   "main": "index.html",
   "scripts": {
-    "dev": "python3 -m http.server 8000",
-    "dev-secure": "node dev-server.js",
-    "dev-node": "npx serve -l 8000 -s .",
-    "build": "echo '✅ Static site – no build needed'",
+    "dev": "node scripts/dev-server.js",
+    "start": "node scripts/dev-server.js",
+    "dev-node": "node scripts/dev-server.js",
+    "build": "echo '✅ Static site – no build step needed'",
     "validate-html": "html-validate index.html pages/**/*.html",
     "validate-css": "stylelint css/**/*.css",
-    "lighthouse": "lighthouse http://localhost:8000 --output=html --output-path=./lighthouse-report.html",
+    "check-links": "linkinator http://localhost:8000 --skip \"https://*.abdulkerimsesli.de/*\" --recurse",
+    "check-links-local": "node scripts/dev-server.js & SERVER_PID=$!; sleep 5; npm run check-links; kill $SERVER_PID",
+    "lighthouse": "lighthouse http://localhost:8000 --output html --output-path ./lighthouse-report.html",
     "test-performance": "node scripts/performance-test.js",
     "compress-images": "imagemin img/**/*.{jpg,png} --out-dir=img/optimized",
-    "check-links": "linkinator http://localhost:8000 --skip \"https://www.abdulkerimsesli.de/*\" --skip \"https://abdulkerimsesli.de/*\" --recurse",
-    "check-links-local": "npx serve -l 8000 & SERVER_PID=$!; for i in {1..15}; do if curl -s http://localhost:8000 > /dev/null; then break; fi; echo 'Warte auf Server... ('$i')'; sleep 1; done; npm run check-links; kill $SERVER_PID",
-    "deploy-check": "npm run validate-html && npm run validate-css && echo '✅ All validation checks passed'",
-    "purge": "mkdir -p css/purged && npx purgecss --css css/*.css --content pages/**/*.html js/**/*.js --output css/purged/",
+    "optimize:images": "sharp-cli img/**/*.{jpg,png} --output=img/optimized --webp --avif",
+    "purge": "mkdir -p css/purged && purgecss --css css/*.css --content pages/**/*.html js/**/*.js --output css/purged/",
+    "optimize": "npm run compress-images && npm run purge",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint \"js/**/*.js\" --fix",
     "lint:check": "eslint \"js/**/*.js\"",
-    "serve": "vite",
-    "test": "echo 'Running static site tests...' && npm run validate-html && npm run validate-css",
-    "test:coverage": "echo 'Static site - coverage not applicable'",
     "security-audit": "npm audit --audit-level moderate",
-    "optimize": "npm run compress-images && npm run purge",
-    "pre-deploy": "npm run format && npm run lint && npm run deploy-check && npm run optimize",
-    "optimize:images": "sharp-cli img/**/*.{jpg,png} --output=img/optimized --webp --avif",
-    "generate:srcset": "node scripts/generate-responsive-images.js",
-    "critical-css": "critical index.html --base . --inline --minify > index-critical.html",
-    "test:visual": "percy exec -- npx serve -l 8000 -s . & SERVER_PID=$!; sleep 5; percy snapshot ./index.html; kill $SERVER_PID",
     "security-check": "node scripts/check-security-headers.js",
     "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de",
-    "security-check-with-server": "node scripts/start-server-and-check.js"
+    "pre-deploy": "npm run format && npm run lint && npm run validate-html && npm run validate-css && npm run optimize",
+    "test": "npm run validate-html && npm run validate-css"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aKs030/iweb.git"
+  "devDependencies": {
+    "@percy/cli": "^1.31.0",
+    "audit-ci": "^7.1.0",
+    "eslint": "^8.45.0",
+    "express": "^4.19.2",
+    "gulp-imagemin": "^7.1.0",
+    "html-validate": "^8.0.0",
+    "imagemin": "^8.0.1",
+    "lighthouse": "^12.8.0",
+    "linkinator": "^6.1.4",
+    "prettier": "^3.6.2",
+    "purgecss": "^6.0.0",
+    "serve": "^14.2.4",
+    "sharp-cli": "^2.1.0",
+    "stylelint": "^15.0.0",
+    "stylelint-config-standard": "^34.0.0",
+    "vite": "^7.0.5"
   },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "overrides": {
+    "cross-spawn": "6.0.6",
+    "http-cache-semantics": "4.1.1",
+    "nth-check": "2.0.1",
+    "semver-regex": "3.1.4",
+    "trim-newlines": "3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
   "keywords": [
     "personal-website",
     "responsive",
@@ -48,61 +74,5 @@
     "performance"
   ],
   "author": "Abdulkerim",
-  "license": "MIT",
-  "devDependencies": {
-    "@percy/cli": "^1.31.0",
-    "audit-ci": "^7.1.0",
-    "eslint": "^8.45.0",
-    "gulp-imagemin": "^7.1.0",
-    "html-validate": "^8.0.0",
-    "imagemin": "^8.0.1",
-    "lighthouse": "^12.8.0",
-    "linkinator": "^6.1.4",
-    "prettier": "^3.6.2",
-    "purgecss": "^6.0.0",
-    "serve": "^14.2.4",
-    "stylelint": "^15.0.0",
-    "stylelint-config-standard": "^34.0.0",
-    "vite": "^7.0.5"
-  },
-  "overrides": {
-    "cross-spawn": "6.0.6",
-    "got": "11.8.5",
-    "http-cache-semantics": "4.1.1",
-    "nth-check": "2.0.1",
-    "semver-regex": "3.1.4",
-    "trim-newlines": "3.0.1"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "dependencies": {
-    "anymatch": "^3.1.3",
-    "braces": "^3.0.3",
-    "chokidar": "^4.0.3",
-    "cssnano": "^7.1.0",
-    "express": "^5.1.0",
-    "micromatch": "^4.0.8",
-    "readdirp": "^4.1.2",
-    "terser": "^5.43.1"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ],
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "es2021": true,
-      "node": true
-    },
-    "extends": "eslint:recommended",
-    "parserOptions": {
-      "ecmaVersion": 12,
-      "sourceType": "module"
-    },
-    "rules": {}
-  }
+  "license": "MIT"
 }
