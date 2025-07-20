@@ -19,6 +19,10 @@ app.disable('x-powered-by');
 // Entferne Server Header komplett
 app.use((req, res, next) => {
   res.removeHeader('Server');
+  // Optionale, empfohlene Header
+  res.setHeader('X-XSS-Protection', '0');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   next();
 });
 const PORT = process.env.PORT || 8000;
@@ -42,39 +46,16 @@ function ensureSelfSignedCert() {
 
 // Optimierte Security Headers Middleware
 app.use((req, res, next) => {
-  // Content Security Policy (CSP) - möglichst restriktiv, anpassen falls nötig
-  res.setHeader('Content-Security-Policy', [
-    "default-src 'self'",
-    "script-src 'self' https://cdn.jsdelivr.net",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self' data:",
-    "connect-src 'self' https://api.abdulkerimsesli.de",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'"
-  ].join('; '));
+  // Exakt geforderte Content Security Policy
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'");
 
-  // Pflicht-Header
+  // Pflicht-Header exakt wie gefordert
   if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-  // Empfohlene Header
-  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
-  res.setHeader('X-XSS-Protection', '0');
-
-  // Beispiel: Setze Test-Cookie mit Secure, HttpOnly, SameSite (falls Cookies verwendet werden)
-  res.cookie?.('testcookie', 'test', {
-    httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
-    sameSite: 'Strict',
-    maxAge: 60000
-  });
 
   next();
 });
