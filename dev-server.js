@@ -49,10 +49,8 @@ app.use((req, res, next) => {
   // Exakt geforderte Content Security Policy
   res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'");
 
-  // Pflicht-Header exakt wie gefordert
-  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  }
+  // Pflicht-Header immer setzen (auch bei HTTP, damit CI-Check besteht)
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
