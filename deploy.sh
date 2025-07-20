@@ -218,26 +218,22 @@ deploy_files() {
             log_success "Deployment erfolgreich! 🎉"
             ;;
         test)
-            # Lokaler Test-Server
-            log_info "Starte lokalen Test-Server..."
-            cd "$BUILD_DIR"
+            # Express-Server für QA-Checks starten
+            log_info "Starte Express-Server für QA-Checks..."
+            node ../scripts/dev-server.js &
+            SERVER_PID=$!
+            sleep 5
             
-            # Python HTTP Server als Fallback
-            if command -v python3 &> /dev/null; then
-                python3 -m http.server 8080 &
-                SERVER_PID=$!
-                echo $SERVER_PID > ../server.pid
-            elif command -v python &> /dev/null; then
-                python -m SimpleHTTPServer 8080 &
-                SERVER_PID=$!
-                echo $SERVER_PID > ../server.pid
+            # Link-Checker ausführen (optional: anpassen, falls anderes Kommando gewünscht)
+            if npm run check-links; then
+                log_success "Link-Check erfolgreich."
             else
-                log_error "Kein HTTP-Server verfügbar!"
-                exit 1
+                log_warning "Link-Check ergab Fehler oder Warnungen."
             fi
             
-            log_success "Test-Server läuft: $DEPLOY_URL"
-            log_info "Server stoppen mit: kill \$(cat server.pid)"
+            # Server sauber beenden
+            kill $SERVER_PID
+            log_info "Express-Server gestoppt. Port 8000 ist frei."
             ;;
     esac
 }

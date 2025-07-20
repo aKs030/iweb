@@ -10,8 +10,8 @@
     "build": "echo '✅ Static site – no build step needed'",
     "validate-html": "html-validate index.html pages/**/*.html",
     "validate-css": "stylelint css/**/*.css",
-    "check-links": "linkinator http://localhost:8000 --skip \"https://*.abdulkerimsesli.de/*\" --recurse --skip 403",
-    "check-links-local": "node scripts/dev-server.js & SERVER_PID=$!; sleep 5; npm run check-links; kill $SERVER_PID",
+    "check-links": "linkinator http://localhost:8000 --recurse --skip-external true",
+    "check-links-local": "lsof -i :8000 | grep LISTEN > /dev/null && npm run check-links || (node scripts/dev-server.js & SERVER_PID=$!; sleep 5; npm run check-links; kill $SERVER_PID)",
     "lighthouse": "lighthouse http://localhost:8000 --output html --output-path ./lighthouse-report.html",
     "test-performance": "node scripts/performance-test.js",
     "compress-images": "imagemin img/**/*.{jpg,png} --out-dir=img/optimized",
@@ -26,11 +26,16 @@
     "security-check": "node scripts/check-security-headers.js",
     "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de",
     "pre-deploy": "npm run format && npm run lint && npm run validate-html && npm run validate-css && npm run optimize",
-    "test": "npm run validate-html && npm run validate-css"
+    "test": "npm run validate-html && npm run validate-css",
+    "minify-css": "cleancss -o css/_global.min.css css/_global.css && cleancss -o css/index.min.css css/index.css && cleancss -o css/menu.min.css css/menu.css",
+    "minify-js": "terser js/main-init.js -o js/main-init.min.js && terser js/menu.js -o js/menu.min.js"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@percy/cli": "^1.31.0",
     "audit-ci": "^7.1.0",
+    "clean-css-cli": "^5.6.3",
+    "cssnano": "^7.1.0",
     "eslint": "^8.45.0",
     "express": "^4.19.2",
     "html-validate": "^8.0.0",
@@ -41,6 +46,7 @@
     "sharp-cli": "^5.2.0",
     "stylelint": "^15.0.0",
     "stylelint-config-standard": "^34.0.0",
+    "terser": "^5.43.1",
     "vite": "^7.0.5"
   },
   "dependencies": {

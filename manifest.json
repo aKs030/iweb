@@ -1,128 +1,50 @@
-{
-  "name": "Abdulkerim Sesli - Persönliche Website",
-  "short_name": "Abdulkerim",
-  "description": "Persönliche Website von Abdulkerim Sesli mit Portfolio, Blog und Projekten",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#393939",
-  "theme_color": "#393939",
-  "dir": "ltr",
-  "lang": "de-DE",
-  "categories": ["personal", "portfolio", "developer"],
-  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
-  "icons": [
-    {
-      "src": "/img/icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/img/icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/img/icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/img/icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/img/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/img/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/img/icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/img/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+[
+  {
+    "url": "http://localhost:8000/",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/abdo/Desktop/website/iweb-7/localhost--2025_07_20_16_54_21.report.html",
+    "jsonPath": "/Users/abdo/Desktop/website/iweb-7/localhost--2025_07_20_16_54_21.report.json",
+    "summary": {
+      "performance": 0.87,
+      "accessibility": 1,
+      "best-practices": 0.89,
+      "seo": 0.92
     }
-  ],
-  "screenshots": [
-    {
-      "src": "/img/screenshot-mobile.png",
-      "sizes": "540x720",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "/img/screenshot-desktop.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide"
+  },
+  {
+    "url": "http://localhost:8000/pages/ubermich.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/abdo/Desktop/website/iweb-7/localhost-pages_ubermich_html-2025_07_20_16_54_32.report.html",
+    "jsonPath": "/Users/abdo/Desktop/website/iweb-7/localhost-pages_ubermich_html-2025_07_20_16_54_32.report.json",
+    "summary": {
+      "performance": 0.93,
+      "accessibility": 1,
+      "best-practices": 0.93,
+      "seo": 0.91
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Über mich",
-      "short_name": "Über",
-      "description": "Erfahre mehr über Abdulkerim",
-      "url": "/pages/ubermich.html",
-      "icons": [
-        {
-          "src": "/img/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Fotogalerie",
-      "short_name": "Fotos",
-      "description": "Bildergalerie ansehen",
-      "url": "/pages/album.html",
-      "icons": [
-        {
-          "src": "/img/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Spiele",
-      "short_name": "Games",
-      "description": "Mini-Spiele spielen",
-      "url": "/pages/index-game.html",
-      "icons": [
-        {
-          "src": "/img/icon-96.png",
-          "sizes": "96x96"
-        }
-      ]
+  },
+  {
+    "url": "http://localhost:8000/pages/album.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/abdo/Desktop/website/iweb-7/localhost-pages_album_html-2025_07_20_16_54_42.report.html",
+    "jsonPath": "/Users/abdo/Desktop/website/iweb-7/localhost-pages_album_html-2025_07_20_16_54_42.report.json",
+    "summary": {
+      "performance": 0.88,
+      "accessibility": 0.96,
+      "best-practices": 0.89,
+      "seo": 0.92
     }
-  ],
-  "related_applications": [],
-  "prefer_related_applications": false,
-  "share_target": {
-    "action": "/share",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
+  },
+  {
+    "url": "http://localhost:8000/pages/index-game.html",
+    "isRepresentativeRun": true,
+    "htmlPath": "/Users/abdo/Desktop/website/iweb-7/localhost-pages_index_game_html-2025_07_20_16_54_52.report.html",
+    "jsonPath": "/Users/abdo/Desktop/website/iweb-7/localhost-pages_index_game_html-2025_07_20_16_54_52.report.json",
+    "summary": {
+      "performance": 0.93,
+      "accessibility": 0.98,
+      "best-practices": 0.89,
+      "seo": 0.82
     }
   }
-}
+]

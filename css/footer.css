@@ -8,7 +8,7 @@
   text-align: center;
   box-shadow: none;
   padding: 0.45rem 0 0.28rem; /* etwas mehr Luft */
-  font-size: 0.53rem;
+  font-size: 1rem;
   line-height: 1.6;
   font-weight: 200;
   letter-spacing: 0.003em;
@@ -71,7 +71,7 @@
   .site-footer .footer-nav,
   .site-footer p,
   .site-footer .footer-nav a {
-    font-size: 0.53rem !important;
+    font-size: 1rem !important;
   }
 
 }
@@ -83,7 +83,7 @@
 #footer-placeholder .footer-nav *,
 #footer-placeholder .footer p,
 #footer-placeholder .footer-nav a {
-  font-size: 0.53rem !important;
+  font-size: 1rem !important;
   color: #ededed !important;
   line-height: 1.6 !important;
   font-weight: 200 !important;
