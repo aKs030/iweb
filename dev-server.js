@@ -12,6 +12,15 @@ const fs = require('fs');
 const https = require('https');
 
 const app = express();
+
+// Entferne X-Powered-By Header (Express-Standard)
+app.disable('x-powered-by');
+
+// Setze Server Header auf neutralen Wert
+app.use((req, res, next) => {
+  res.setHeader('Server', 'SecureServer');
+  next();
+});
 const PORT = process.env.PORT || 8000;
 
 // HTTPS-Konfiguration für lokale Entwicklung
@@ -61,6 +70,15 @@ app.use((req, res, next) => {
   // res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   // res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   // res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+
+
+  // Beispiel: Setze Test-Cookie mit Secure, HttpOnly, SameSite (falls Cookies verwendet werden)
+  res.cookie?.('testcookie', 'test', {
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    sameSite: 'Strict',
+    maxAge: 60000
+  });
 
   next();
 });
