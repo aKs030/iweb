@@ -17,16 +17,23 @@ const app = express();
 app.disable('x-powered-by');
 
 // Security Header Middleware — VOR express.static!
+// Security Header Middleware — VOR express.static!
 app.use((req, res, next) => {
-  res.removeHeader('Server'); // Entfernt Server-Header komplett
+  // Entfernt Server-Header komplett
+  res.removeHeader('Server');
+  // Strikte Transport-Sicherheit (nur über HTTPS wirksam)
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  // MIME-Sniffing verhindern
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'");
+  // Clickjacking verhindern, aber Einbettung auf gleicher Domain erlauben
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  // Content Security Policy: erlaubt eigene Skripte, Styles, Fonts und keine externen Ressourcen
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self';");
+  // Referrer-Policy: nur Ursprungsdomain bei Cross-Origin
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  // Optionale Header:
-  res.setHeader('X-XSS-Protection', '0');
-  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  // Permissions-Policy restriktiv (keine Features erlaubt)
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+  // Cross-Domain-Policies für Flash/Adobe blockieren
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   next();
 });
