@@ -16,15 +16,21 @@ const app = express();
 // Entferne X-Powered-By Header (Express-Standard)
 app.disable('x-powered-by');
 
-// Entferne Server Header komplett
+// Security Header Middleware — VOR express.static!
 app.use((req, res, next) => {
-  res.removeHeader('Server');
-  // Optionale, empfohlene Header
+  res.removeHeader('Server'); // Entfernt Server-Header komplett
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'");
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Optionale Header:
   res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   next();
 });
+
 const PORT = process.env.PORT || 8000;
 
 // HTTPS-Konfiguration für lokale Entwicklung
@@ -43,20 +49,6 @@ function ensureSelfSignedCert() {
     console.log('Selbstsigniertes Zertifikat für HTTPS generiert.');
   }
 }
-
-// Optimierte Security Headers Middleware
-app.use((req, res, next) => {
-  // Exakt geforderte Content Security Policy
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'");
-
-  // Pflicht-Header immer setzen (auch bei HTTP, damit CI-Check besteht)
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-  next();
-});
 
 // Statische Dateien servieren
 app.use(express.static(__dirname, {
