@@ -57,8 +57,12 @@ function ensureSelfSignedCert() {
   if (!fs.existsSync(certDir)) fs.mkdirSync(certDir);
   if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
     // Zertifikat generieren (openssl muss installiert sein)
-    const { execSync } = require('child_process');
-    execSync(`openssl req -x509 -newkey rsa:2048 -nodes -keyout ${keyPath} -out ${certPath} -days 365 -subj "/CN=localhost"`);
+    const { execFileSync } = require('child_process');
+    execFileSync('openssl', [
+      'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+      '-keyout', keyPath, '-out', certPath,
+      '-days', '365', '-subj', '/CN=localhost'
+    ], { stdio: 'inherit' });
     console.log('Selbstsigniertes Zertifikat für HTTPS generiert.');
   }
 }
