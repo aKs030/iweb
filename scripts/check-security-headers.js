@@ -165,6 +165,10 @@ function makeRequest(url) {
       // Explizit IPv4 verwenden
       family: 4
     };
+    // Für lokale Entwicklung: selbstsignierte Zertifikate akzeptieren
+    if (parsedUrl.protocol === 'https:' && (hostname === '127.0.0.1' || hostname === 'localhost')) {
+      options.rejectUnauthorized = false;
+    }
     
     const req = protocol.request(options, (res) => {
       resolve({
@@ -374,7 +378,7 @@ function printResults(url, results) {
 
 // Hauptfunktion
 async function main() {
-  const url = process.argv[2] || 'http://localhost:8000';
+  const url = process.argv[2] || 'https://localhost:8443';
   
   console.log(`${colors.blue}Prüfe Sicherheits-Header für: ${url}${colors.reset}\n`);
   

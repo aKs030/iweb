@@ -7,6 +7,7 @@
 
 const { spawn } = require('child_process');
 const http = require('http');
+const https = require('https');
 
 // Konfiguration
 const PORT = 8000;
@@ -36,59 +37,76 @@ async function waitForServer(port, maxRetries = MAX_RETRIES) {
 }
 
 /**
+ * Wartet bis der HTTPS-Server erreichbar ist
+ */
+async function waitForHttpsServer(port, maxRetries = MAX_RETRIES) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await new Promise((resolve, reject) => {
+        const req = https.get({
+          hostname: 'localhost',
+          port: port,
+          rejectUnauthorized: false,
+          timeout: 1000
+        }, (res) => {
+          resolve();
+        });
+        req.on('error', reject);
+        req.setTimeout(1000);
+      });
+      return true;
+    } catch (error) {
+      console.log(`Warte auf HTTPS-Server... (${i + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+    }
+  }
+  return false;
+}
+
+/**
+ * Führt den Security-Check mit mehreren Versuchen aus
+ */
+async function runSecurityCheckWithRetry(url, maxRetries = 10, delay = 2000) {
+  for (let i = 0; i < maxRetries; i++) {
+    const result = await new Promise((resolve) => {
+      const checkProcess = spawn('node', ['scripts/check-security-headers.js', url], {
+        stdio: 'inherit',
+        shell: true
+      });
+      checkProcess.on('exit', (code) => {
+        resolve(code);
+      });
+    });
+    if (result === 0) {
+      return 0;
+    } else {
+      console.log(`Security-Check fehlgeschlagen, neuer Versuch in ${delay / 1000}s... (${i + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  return 1;
+}
+
+/**
  * Hauptfunktion
  */
 async function main() {
-  console.log('🚀 Starte lokalen Server...');
-  
-  // Server starten
-  const serverProcess = spawn('npx', ['serve', '-l', PORT.toString(), '-s', '.'], {
-    stdio: 'pipe',
-    shell: true
-  });
-
-  serverProcess.stdout.on('data', (data) => {
-    console.log(`Server: ${data.toString().trim()}`);
-  });
-
-  serverProcess.stderr.on('data', (data) => {
-    console.error(`Server Error: ${data.toString().trim()}`);
-  });
-
-  // Cleanup bei Exit
-  process.on('exit', () => {
-    serverProcess.kill();
-  });
-
-  process.on('SIGINT', () => {
-    console.log('\n🛑 Beende Server...');
-    serverProcess.kill();
-    process.exit(0);
-  });
-
-  // Warte auf Server
-  const serverReady = await waitForServer(PORT);
-  
-  if (!serverReady) {
-    console.error('❌ Server konnte nicht gestartet werden');
-    serverProcess.kill();
-    process.exit(1);
-  }
-
-  console.log('✅ Server läuft auf Port ' + PORT);
-  console.log('🔍 Führe Security Header Check aus...\n');
-
-  // Security Check ausführen
-  const checkProcess = spawn('node', ['scripts/check-security-headers.js', `http://localhost:${PORT}`], {
+  // Server nur mit HTTPS starten
+  const serverProcess = spawn('node', ['dev-server.js'], {
     stdio: 'inherit',
-    shell: true
+    shell: true,
+    env: { ...process.env, ONLY_HTTPS: '1' }
   });
 
-  checkProcess.on('exit', (code) => {
-    console.log('\n🏁 Security Check abgeschlossen');
-    serverProcess.kill();
-    process.exit(code || 0);
-  });
+  // Nur auf HTTPS-Server warten
+  await waitForHttpsServer(8443);
+
+  // Security Check mehrfach versuchen
+  const code = await runSecurityCheckWithRetry('https://localhost:8443', 10, 2000);
+
+  console.log('\n🏁 Security Check abgeschlossen');
+  serverProcess.kill();
+  process.exit(code || 0);
 }
 
 // Script ausführen

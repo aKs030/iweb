@@ -9,8 +9,27 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
+const https = require('https');
+
 const app = express();
 const PORT = process.env.PORT || 8000;
+
+// HTTPS-Konfiguration für lokale Entwicklung
+const useHttps = true; // auf false setzen, falls nicht gewünscht
+const httpsPort = 8443;
+const certDir = path.join(__dirname, 'cert');
+const certPath = path.join(certDir, 'localhost-cert.pem');
+const keyPath = path.join(certDir, 'localhost-key.pem');
+
+function ensureSelfSignedCert() {
+  if (!fs.existsSync(certDir)) fs.mkdirSync(certDir);
+  if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+    // Zertifikat generieren (openssl muss installiert sein)
+    const { execSync } = require('child_process');
+    execSync(`openssl req -x509 -newkey rsa:2048 -nodes -keyout ${keyPath} -out ${certPath} -days 365 -subj "/CN=localhost"`);
+    console.log('Selbstsigniertes Zertifikat für HTTPS generiert.');
+  }
+}
 
 // Optimierte Security Headers Middleware
 app.use((req, res, next) => {
@@ -47,7 +66,7 @@ app.use((req, res, next) => {
 });
 
 // Statische Dateien servieren
-app.use(express.static(path.join(__dirname, '../'), {
+app.use(express.static(__dirname, {
   dotfiles: 'ignore',
   etag: true,
   extensions: ['html', 'htm'],
@@ -67,16 +86,55 @@ app.use((req, res) => {
 });
 
 // Server starten
-const server = app.listen(PORT, () => {
-  console.log(`✅ Development server with security headers running on http://localhost:${PORT}`);
-  console.log('🔒 Security headers are active');
-});
+
+// Ermöglicht expliziten Start nur eines Protokolls
+const onlyHttps = process.env.ONLY_HTTPS === '1';
+const onlyHttp = process.env.ONLY_HTTP === '1';
+
+let httpReady = false;
+let httpsReady = !useHttps;
+let server, httpsServer;
+
+function onReady() {
+  if ((httpReady || onlyHttps) && (httpsReady || onlyHttp)) {
+    console.log('🔒 Security headers are active');
+  }
+}
+
+if (!onlyHttps) {
+  server = app.listen(PORT, () => {
+    console.log(`✅ Development server with security headers running on http://localhost:${PORT}`);
+    httpReady = true;
+    onReady();
+  });
+}
+
+if (useHttps && !onlyHttp) {
+  ensureSelfSignedCert();
+  const options = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath)
+  };
+  httpsServer = https.createServer(options, app).listen(httpsPort, () => {
+    console.log(`✅ Secure development server running on https://localhost:${httpsPort}`);
+    httpsReady = true;
+    onReady();
+  });
+}
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n🛑 Shutting down server...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
+  let closed = 0;
+  const total = (server ? 1 : 0) + (httpsServer ? 1 : 0);
+  function done() {
+    closed++;
+    if (closed >= total) {
+      console.log('Server closed');
+      process.exit(0);
+    }
+  }
+  if (server) server.close(done);
+  if (httpsServer) httpsServer.close(done);
+  if (!server && !httpsServer) process.exit(0);
 });
