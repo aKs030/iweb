@@ -1,5 +1,4 @@
-name: 🚀 Deploy to Production
-
+name: "🚀 Deploy to Production"
 
 on:
   push:
@@ -7,29 +6,39 @@ on:
   pull_request:
     branches: [main]
 
-
-
 jobs:
+  # ---------------------------------------------------------------------------
+  # 1) QUALITY-ASSURANCE
+  # ---------------------------------------------------------------------------
   test:
+    name: "🧪 Quality Assurance"
     runs-on: ubuntu-latest
-    name: 🧪 Quality Assurance
+
     steps:
-      - name: 📥 Checkout code
+      - name: "📥 Checkout code"
         uses: actions/checkout@v4
-      - name: 🏗️ Setup Node.js
+
+      - name: "🏗️ Setup Node.js"
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      - name: 📦 Install dependencies
+
+      - name: "📦 Install dependencies"
         run: npm ci
-      - name: ✅ Validate HTML
+        shell: bash
+
+      - name: "✅ Validate HTML"
         run: npm run validate-html
         continue-on-error: true
-      - name: 🎨 Validate CSS
+        shell: bash
+
+      - name: "🎨 Validate CSS"
         run: npm run validate-css
         continue-on-error: true
-      - name: 🌐 Start Server & Check Links
+        shell: bash
+
+      - name: "🌐 Start Server & Check Links"
         run: |
           npx serve -l 8000 -s . &
           SERVER_PID=$!
@@ -37,54 +46,68 @@ jobs:
           npm run check-links || true
           kill $SERVER_PID
         continue-on-error: true
-      - name: ⚡ Lighthouse CI
+        shell: bash
+
+      - name: "⚡ Lighthouse CI"
         uses: treosh/lighthouse-ci-action@v10
         with:
           configPath: './lighthouserc.js'
           uploadArtifacts: true
           temporaryPublicStorage: true
-          artifactName: lighthouse-results
+          artifactName: lighthouse_results      # ⚠️  Unterstrich statt Bindestrich
         continue-on-error: true
-      - name: 📂 Check Lighthouse Report Directory
+
+      - name: "📂 Check Lighthouse Report Directory"
         run: |
           if [ ! -d .lighthouseci ] || [ -z "$(ls -A .lighthouseci)" ]; then
             echo "⚠️  Keine Lighthouse-Reports gefunden!" && exit 1
           fi
+        shell: bash
 
-      - name: 🐞 Zeige Inhalt von .lighthouseci
+      - name: "🗂️ Liste Inhalte von .lighthouseci"
         run: |
           echo "Inhalt von .lighthouseci:"
           ls -l .lighthouseci || echo 'Verzeichnis nicht gefunden'
-      - name: � Upload Lighthouse Results
+        shell: bash
+
+      - name: "📤 Upload Lighthouse Results"
         uses: actions/upload-artifact@v4
         with:
-          name: lighthouse-results
+          name: lighthouse_results              # ⚠️  identisch mit oben
           path: ./.lighthouseci/
 
+  # ---------------------------------------------------------------------------
+  # 2) SECURITY-SCAN
+  # ---------------------------------------------------------------------------
   security-scan:
+    name: "🔒 Security Scan"
     runs-on: ubuntu-latest
-    name: � Security Scan
+
     steps:
-      - name: 📥 Checkout code
+      - name: "📥 Checkout code"
         uses: actions/checkout@v4
-      - name: 🏗️ Setup Node.js
+
+      - name: "🏗️ Setup Node.js"
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      - name: 📦 Install dependencies
+
+      - name: "📦 Install dependencies"
         run: npm ci
-      - name: �️ Security audit
+        shell: bash
+
+      - name: "🔍 Security audit"
         run: |
           npm audit --audit-level moderate || echo "Audit warnings found"
           echo "✅ Security audit completed"
-      - name: 🔍 Check Security Headers
+        shell: bash
+
+      - name: "🛡️ Check Security Headers (local build)"
         run: |
-          # Start server in background
           npx serve -l 8000 -s . &
           SERVER_PID=$!
-          
-          # Wait for server to be ready
+
           echo "Waiting for server to start..."
           for i in {1..30}; do
             if curl -s http://localhost:8000 > /dev/null; then
@@ -94,36 +117,41 @@ jobs:
             echo "Attempt $i/30..."
             sleep 1
           done
-          
-          # Run security headers check
-          node scripts/check-security-headers.js http://localhost:8000
-          
-          # Capture exit code
-          CHECK_EXIT_CODE=$?
-          
-          # Kill server
-          kill $SERVER_PID
-          
-          # Exit with check exit code
-          exit $CHECK_EXIT_CODE
 
+          node scripts/check-security-headers.js http://localhost:8000
+          EXIT_CODE=$?
+
+          kill $SERVER_PID
+          exit $EXIT_CODE
+        shell: bash
+
+  # ---------------------------------------------------------------------------
+  # 3) DEPLOY
+  # ---------------------------------------------------------------------------
   deploy:
-    needs: [test, security-scan]
+    name: "🌐 Deploy to Production"
     runs-on: ubuntu-latest
-    name: 🌐 Deploy to Production
+    needs: [test, security-scan]
     if: github.ref == 'refs/heads/main'
+
     steps:
-      - name: 📥 Checkout code
+      - name: "📥 Checkout code"
         uses: actions/checkout@v4
-      - name: 🚀 Deploy to server
+
+      - name: "🚀 Deploy to server"
         run: |
           echo "🎯 Ready for deployment!"
           echo "Files validated and security checked ✅"
           echo "Manual deployment step required 📋"
-      - name: 📊 Performance Report
+        shell: bash
+
+      - name: "📊 Performance Report"
         run: |
-          echo "## 📊 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ HTML validation passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ CSS validation passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Security scan completed" >> $GITHUB_STEP_SUMMARY
-          echo "- 🚀 Ready for production deployment" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 📊 Deployment Summary"
+            echo "- ✅ HTML validation passed"
+            echo "- ✅ CSS validation passed"
+            echo "- ✅ Security scan completed"
+            echo "- 🚀 Ready for production deployment"
+          } >> "$GITHUB_STEP_SUMMARY"
+        shell: bash
