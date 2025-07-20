@@ -43,7 +43,7 @@ jobs:
           configPath: './lighthouserc.js'
           uploadArtifacts: true
           temporaryPublicStorage: true
-          artifactName: lighthouse_results
+          artifactName: lighthouse-results
         continue-on-error: true
       - name: 📂 Check Lighthouse Report Directory
         run: |
@@ -58,7 +58,7 @@ jobs:
       - name: � Upload Lighthouse Results
         uses: actions/upload-artifact@v4
         with:
-          name: lighthouse_results
+          name: lighthouse-results
           path: ./.lighthouseci/
 
   security-scan:

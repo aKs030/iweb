@@ -6,10 +6,8 @@
   <meta name="description" content="Kontaktieren Sie Abdulkerim - Web-Entwickler aus Berlin. Nutzen Sie das Kontaktformular oder erreichen Sie mich direkt.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#393939">
-  
   <link rel="stylesheet" href="/css/_global.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  
   <style>
     body {
       min-height: 100vh;
@@ -22,7 +20,6 @@
       overflow: hidden;
       font-family: var(--font-family-main);
     }
-    
     .kontakt-viewbox {
       width: clamp(320px, 90vw, 500px);
       height: clamp(400px, 75vh, 650px);
@@ -39,12 +36,10 @@
       -ms-overflow-style: none;
       position: relative;
     }
-    
     /* Hide scrollbar for Chrome, Safari and Opera */
     .kontakt-viewbox::-webkit-scrollbar {
       display: none;
     }
-    
     .snap-section {
       min-height: 100%;
       scroll-snap-align: start;
@@ -56,27 +51,23 @@
       box-sizing: border-box;
       position: relative;
     }
-    
     /* Hero Section */
     .hero-section {
       background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
       color: white;
       text-align: center;
     }
-    
     .kontakt-title {
       font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 700;
       margin-bottom: 0.5rem;
       text-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
-    
     .kontakt-subtitle {
       font-size: clamp(1rem, 2.5vw, 1.2rem);
       opacity: 0.9;
       margin-bottom: 2rem;
     }
-    
     .availability-status {
       display: inline-flex;
       align-items: center;
@@ -88,7 +79,6 @@
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
     }
-    
     .availability-status::before {
       content: '';
       width: 10px;
@@ -97,18 +87,15 @@
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
-    
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.2); }
     }
-    
     /* Contact Methods Section */
     .kontakt-methods {
       width: 100%;
       max-width: 400px;
     }
-    
     .kontakt-method {
       display: flex;
       align-items: center;
@@ -119,40 +106,33 @@
       border-radius: 10px;
       transition: all 0.3s ease;
     }
-    
     .kontakt-method:hover {
       background: rgba(58, 133, 255, 0.1);
       transform: translateX(5px);
     }
-    
     .kontakt-method i {
       font-size: 1.5rem;
       color: var(--color-accent);
       width: 30px;
       text-align: center;
     }
-    
     .kontakt-method-info h3 {
       margin: 0 0 0.25rem 0;
       font-size: 0.9rem;
       color: var(--color-text-muted);
     }
-    
     .kontakt-method-info p {
       margin: 0;
       font-size: 1rem;
     }
-    
     .kontakt-method-info a {
       color: var(--color-text-main);
       text-decoration: none;
       font-weight: 500;
     }
-    
     .kontakt-method-info a:hover {
       color: var(--color-accent);
     }
-    
     /* Social Links */
     .social-links {
       display: flex;
@@ -160,7 +140,6 @@
       margin-top: 2rem;
       justify-content: center;
     }
-    
     .social-link {
       width: 45px;
       height: 45px;
@@ -174,13 +153,11 @@
       transition: all 0.3s ease;
       text-decoration: none;
     }
-    
     .social-link:hover {
       background: var(--color-accent);
       color: white;
       transform: translateY(-3px);
     }
-    
     /* Office Hours */
     .office-hours {
       background: rgba(0,0,0,0.2);
@@ -190,51 +167,42 @@
       width: 100%;
       max-width: 350px;
     }
-    
     .office-hours h3 {
       margin: 0 0 1rem 0;
       color: var(--color-accent);
       font-size: 1.1rem;
     }
-    
     .office-hours-list {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-    
     .office-hours-list li {
       display: flex;
       justify-content: space-between;
       padding: 0.5rem 0;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    
     .office-hours-list li:last-child {
       border-bottom: none;
     }
-    
     /* Form Section */
     .form-section {
       background: var(--color-bg-secondary);
     }
-    
     .kontakt-form {
       width: 100%;
       max-width: 400px;
     }
-    
     .form-title {
       font-size: 1.5rem;
       color: var(--color-text-main);
       margin-bottom: 1.5rem;
       text-align: center;
     }
-    
     .form-group {
       margin-bottom: 1rem;
     }
-    
     .form-group label {
       display: block;
       margin-bottom: 0.3rem;
@@ -242,7 +210,6 @@
       font-weight: 600;
       font-size: 0.9rem;
     }
-    
     .form-group input,
     .form-group textarea,
     .form-group select {
@@ -256,7 +223,6 @@
       transition: border-color 0.3s ease;
       font-family: var(--font-family-main);
     }
-    
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
@@ -264,12 +230,10 @@
       border-color: var(--color-accent);
       box-shadow: 0 0 0 3px rgba(58, 133, 255, 0.1);
     }
-    
     .form-group textarea {
       resize: vertical;
       min-height: 100px;
     }
-    
     .form-checkbox {
       display: flex;
       align-items: flex-start;
@@ -498,7 +462,7 @@
           <i class="fa-solid fa-phone"></i>
           <div class="kontakt-method-info">
             <h3>Telefon</h3>
-            <p><a href="tel:+491234567890">+49 123 4567890</a></p>
+            <p><a href="tel:+491234567890">+49&nbsp;123&nbsp;4567890</a></p>
           </div>
         </div>
         
