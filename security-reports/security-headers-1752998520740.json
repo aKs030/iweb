@@ -1,0 +1,60 @@
+{
+  "url": "http://localhost:8888/iweb-7/",
+  "timestamp": "2025-07-20T08:02:00.740Z",
+  "score": 70,
+  "maxScore": 75,
+  "percentage": 93,
+  "passed": [
+    {
+      "header": "Strict-transport-security",
+      "value": "max-age=31536000; includeSubDomains; preload",
+      "message": "Erzwingt HTTPS-Verbindungen"
+    },
+    {
+      "header": "X-content-type-options",
+      "value": "nosniff",
+      "message": "Verhindert MIME-Type Sniffing"
+    },
+    {
+      "header": "X-frame-options",
+      "value": "SAMEORIGIN",
+      "message": "Schutz vor Clickjacking"
+    },
+    {
+      "header": "X-xss-protection",
+      "value": "0",
+      "message": "XSS-Filter (veraltet, CSP bevorzugen)"
+    },
+    {
+      "header": "Content-security-policy",
+      "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.abdulkerimsesli.de; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
+      "message": "Definiert erlaubte Ressourcen-Quellen"
+    },
+    {
+      "header": "Referrer-policy",
+      "value": "strict-origin-when-cross-origin",
+      "message": "Kontrolliert Referrer-Informationen"
+    },
+    {
+      "header": "Permissions-policy",
+      "value": "geolocation=(), microphone=(), camera=()",
+      "message": "Kontrolliert Browser-Features"
+    },
+    {
+      "header": "X-permitted-cross-domain-policies",
+      "value": "none",
+      "message": "Adobe Flash/PDF Cross-Domain Policy"
+    },
+    {
+      "header": "Cookie-Sicherheit",
+      "message": "Keine Cookies gesetzt"
+    }
+  ],
+  "failed": [],
+  "warnings": [
+    {
+      "header": "Server-Information",
+      "message": "Server-Version wird preisgegeben"
+    }
+  ]
+}

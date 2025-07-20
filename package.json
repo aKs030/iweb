@@ -4,7 +4,7 @@
   "description": "Abdulkerims persönliche Website – modern, responsive und DSGVO-konform",
   "main": "index.html",
   "scripts": {
-    "dev": "python -m http.server 8000",
+    "dev": "python3 -m http.server 8000",
     "dev-node": "npx serve -l 8000 -s .",
     "build": "echo '✅ Static site – no build needed'",
     "validate-html": "html-validate index.html pages/**/*.html",
@@ -29,7 +29,9 @@
     "optimize:images": "sharp-cli img/**/*.{jpg,png} --output=img/optimized --webp --avif",
     "generate:srcset": "node scripts/generate-responsive-images.js",
     "critical-css": "critical index.html --base . --inline --minify > index-critical.html",
-    "test:visual": "percy exec -- npx serve -l 8000 -s . & SERVER_PID=$!; sleep 5; percy snapshot ./index.html; kill $SERVER_PID"
+    "test:visual": "percy exec -- npx serve -l 8000 -s . & SERVER_PID=$!; sleep 5; percy snapshot ./index.html; kill $SERVER_PID",
+    "security-check": "node scripts/check-security-headers.js",
+    "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de"
   },
   "repository": {
     "type": "git",
