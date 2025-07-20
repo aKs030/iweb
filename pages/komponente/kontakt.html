@@ -1,625 +1,415 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="utf-8">
-    <title>Kontakt - Abdulkerim</title>
-    <meta name="description" content="Kontaktieren Sie Abdulkerim - Web-Entwickler aus Berlin. Nutzen Sie das Kontaktformular oder erreichen Sie mich direkt per E-Mail oder Social Media.">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#3a85ff">
-    <meta name="msapplication-TileColor" content="#3a85ff">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Kontakt - Abdulkerim">
-    <meta property="og:description" content="Nehmen Sie Kontakt mit mir auf - für Projekte, Zusammenarbeit oder Fragen.">
-    <meta property="og:type" content="website">
-    <meta property="og:locale" content="de_DE">
-    
-    <link rel="stylesheet" href="/css/_global.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
-    <style>
-      /* Erweiterte Styles für die Kontaktseite */
-      .kontakt-hero {
-        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-        color: white;
-        padding: 3rem 1rem;
-        text-align: center;
-        margin-bottom: 2rem;
-        position: relative;
-        overflow: hidden;
-      }
-      
-      .kontakt-hero::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        animation: pulse 4s ease-in-out infinite;
-      }
-      
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 0.3; }
-      }
-      
-      .kontakt-hero h1 {
-        position: relative;
-        z-index: 1;
-        font-size: clamp(2rem, 5vw, 3rem);
-        margin-bottom: 0.5rem;
-      }
-      
-      .kontakt-hero p {
-        position: relative;
-        z-index: 1;
-        font-size: 1.1rem;
-        opacity: 0.9;
-      }
-      
-      .kontakt-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 1rem;
-      }
-      
-      .kontakt-info-card {
-        background: var(--color-bg-secondary);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        box-shadow: 0 4px 20px var(--color-shadow-dark);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      
-      .kontakt-info-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px var(--color-shadow-dark);
-      }
-      
-      .kontakt-method {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        background: var(--color-bg);
-        border-radius: calc(var(--border-radius) / 2);
-        transition: background 0.3s ease;
-      }
-      
-      .kontakt-method:hover {
-        background: rgba(58, 133, 255, 0.1);
-      }
-      
-      .kontakt-method i {
-        font-size: 1.5rem;
-        color: var(--color-accent);
-        width: 40px;
-        text-align: center;
-      }
-      
-      .kontakt-method-info h3 {
-        margin: 0 0 0.25rem 0;
-        font-size: 1rem;
-        color: var(--color-text-main);
-      }
-      
-      .kontakt-method-info p {
-        margin: 0;
-        font-size: 0.9rem;
-        color: var(--color-text-muted);
-      }
-      
-      .social-links {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-        flex-wrap: wrap;
-      }
-      
-      .social-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 50px;
-        height: 50px;
-        background: var(--color-bg);
-        border-radius: 50%;
-        color: var(--color-text-main);
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 1.2rem;
-      }
-      
-      .social-link:hover {
-        background: var(--color-accent);
-        color: white;
-        transform: scale(1.1);
-      }
-      
-      /* Erweiterte Formular-Styles */
-      #kontakt-formular {
-        background: var(--color-bg-secondary);
-        padding: 2rem;
-        border-radius: var(--border-radius);
-        box-shadow: 0 4px 20px var(--color-shadow-dark);
-      }
-      
-      .form-group {
-        margin-bottom: 1.5rem;
-      }
-      
-      .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: var(--color-accent);
-      }
-      
-      .form-group input,
-      .form-group textarea,
-      .form-group select {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid var(--color-shadow-dark);
-        border-radius: 6px;
-        background: var(--color-bg);
-        color: var(--color-text-main);
-        font-size: 1rem;
-        transition: all 0.3s ease;
-      }
-      
-      .form-group input:focus,
-      .form-group textarea:focus,
-      .form-group select:focus {
-        outline: none;
-        border-color: var(--color-accent);
-        box-shadow: 0 0 0 3px rgba(58, 133, 255, 0.1);
-      }
-      
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-      }
-      
-      @media (max-width: 600px) {
-        .form-row {
-          grid-template-columns: 1fr;
-        }
-      }
-      
-      .form-submit {
-        background: var(--color-accent);
-        color: white;
-        border: none;
-        padding: 1rem 2rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        width: 100%;
-        margin-top: 1rem;
-      }
-      
-      .form-submit:hover {
-        background: var(--color-accent-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px var(--color-shadow-dark);
-      }
-      
-      .form-submit:active {
-        transform: translateY(0);
-      }
-      
-      /* Verfügbarkeits-Status */
-      .availability-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: rgba(40, 167, 69, 0.1);
-        border-radius: 20px;
-        margin-bottom: 2rem;
-      }
-      
-      .availability-status::before {
-        content: '';
-        width: 10px;
-        height: 10px;
-        background: #28a745;
-        border-radius: 50%;
-        animation: blink 2s infinite;
-      }
-      
-      @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
-      }
-      
-      /* Office Hours Widget */
-      .office-hours {
-        background: var(--color-bg);
-        padding: 1.5rem;
-        border-radius: calc(var(--border-radius) / 2);
-        margin-top: 2rem;
-      }
-      
-      .office-hours h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.1rem;
-        color: var(--color-accent);
-      }
-      
-      .office-hours-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      
-      .office-hours-list li {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      
-      .office-hours-list li:last-child {
-        border-bottom: none;
-      }
-      
-      /* FAQ Accordion */
-      .faq-section {
-        margin-top: 3rem;
-        max-width: 800px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      
-      .faq-item {
-        background: var(--color-bg-secondary);
-        border-radius: var(--border-radius);
-        margin-bottom: 1rem;
-        overflow: hidden;
-        box-shadow: 0 2px 8px var(--color-shadow-dark);
-      }
-      
-      .faq-question {
-        width: 100%;
-        padding: 1.5rem;
-        background: none;
-        border: none;
-        color: var(--color-text-main);
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-align: left;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: background 0.3s ease;
-      }
-      
-      .faq-question:hover {
-        background: rgba(58, 133, 255, 0.05);
-      }
-      
-      .faq-question::after {
-        content: '+';
-        font-size: 1.5rem;
-        color: var(--color-accent);
-        transition: transform 0.3s ease;
-      }
-      
-      .faq-item.active .faq-question::after {
-        transform: rotate(45deg);
-      }
-      
-      .faq-answer {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-        padding: 0 1.5rem;
-      }
-      
-      .faq-item.active .faq-answer {
-        max-height: 300px;
-        padding: 0 1.5rem 1.5rem;
-      }
-      
-      /* Success Message */
-      .form-success {
-        display: none;
-        background: rgba(40, 167, 69, 0.1);
-        border: 1px solid rgba(40, 167, 69, 0.3);
-        color: #28a745;
-        padding: 1rem;
-        border-radius: 6px;
-        margin-top: 1rem;
-        text-align: center;
-      }
-      
-      .form-success.show {
-        display: block;
-        animation: slideIn 0.3s ease;
-      }
-      
-      @keyframes slideIn {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="menu-container"></div>
-    
-    <div class="kontakt-hero">
-      <h1>Lass uns in Kontakt treten</h1>
-      <p>Ich freue mich auf Ihre Nachricht und antworte in der Regel innerhalb von 24 Stunden.</p>
-    </div>
-    
-    <main id="main-content" class="kontakt-main">
-      <div class="kontakt-grid">
-        <!-- Kontakt-Informationen -->
-        <div class="kontakt-info-card">
-          <h2>Kontaktinformationen</h2>
-          
-          <div class="availability-status">
-            Verfügbar für neue Projekte
-          </div>
-          
-          <div class="kontakt-method">
-            <i class="fa-solid fa-envelope"></i>
-            <div class="kontakt-method-info">
-              <h3>E-Mail</h3>
-              <p><a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a></p>
-            </div>
-          </div>
-          
-          <div class="kontakt-method">
-            <i class="fa-solid fa-phone"></i>
-            <div class="kontakt-method-info">
-              <h3>Telefon</h3>
-              <p><a href="tel:+491234567890">+49 123 4567890</a></p>
-            </div>
-          </div>
-          
-          <div class="kontakt-method">
-            <i class="fa-solid fa-location-dot"></i>
-            <div class="kontakt-method-info">
-              <h3>Standort</h3>
-              <p>Berlin, Deutschland</p>
-            </div>
-          </div>
-          
-          <div class="social-links">
-            <a href="https://linkedin.com/in/abdulkerim" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-              <i class="fa-brands fa-linkedin-in"></i>
-            </a>
-            <a href="https://github.com/abdulkerim" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <i class="fa-brands fa-github"></i>
-            </a>
-            <a href="https://twitter.com/abdulkerim" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-              <i class="fa-brands fa-twitter"></i>
-            </a>
-            <a href="https://instagram.com/abdulkerim" class="social-link" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <i class="fa-brands fa-instagram"></i>
-            </a>
-          </div>
-          
-          <div class="office-hours">
-            <h3>Erreichbarkeit</h3>
-            <ul class="office-hours-list">
-              <li>
-                <span>Montag - Freitag</span>
-                <span>9:00 - 18:00</span>
-              </li>
-              <li>
-                <span>Samstag</span>
-                <span>10:00 - 14:00</span>
-              </li>
-              <li>
-                <span>Sonntag</span>
-                <span>Geschlossen</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <!-- Kontaktformular -->
-        <div>
-          <form id="kontakt-formular" autocomplete="on">
-            <h2>Nachricht senden</h2>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label for="name">Name *</label>
-                <input type="text" id="name" name="name" required maxlength="50" placeholder="Ihr Name">
-              </div>
-              
-              <div class="form-group">
-                <label for="email">E-Mail *</label>
-                <input type="email" id="email" name="email" required maxlength="100" placeholder="ihre.email@beispiel.de">
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label for="betreff">Betreff</label>
-              <input type="text" id="betreff" name="betreff" maxlength="100" placeholder="Betreff Ihrer Nachricht">
-            </div>
-            
-            <div class="form-group">
-              <label for="art">Art der Anfrage</label>
-              <select id="art" name="art">
-                <option value="">Bitte wählen</option>
-                <option value="projekt">Projektanfrage</option>
-                <option value="zusammenarbeit">Zusammenarbeit</option>
-                <option value="support">Support</option>
-                <option value="feedback">Feedback</option>
-                <option value="sonstiges">Sonstiges</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="nachricht">Nachricht *</label>
-              <textarea id="nachricht" name="nachricht" required maxlength="1000" placeholder="Ihre Nachricht..." rows="6"></textarea>
-            </div>
-            
-            <div class="form-group">
-              <label>
-                <input type="checkbox" name="datenschutz" required>
-                Ich stimme der <a href="/pages/komponente/datenschutz.html" target="_blank">Datenschutzerklärung</a> zu *
-              </label>
-            </div>
-            
-            <button type="submit" class="form-submit">
-              <i class="fa-solid fa-paper-plane"></i> Nachricht senden
-            </button>
-            
-            <div class="form-success" id="form-success">
-              <i class="fa-solid fa-check-circle"></i> Vielen Dank für Ihre Nachricht! Ich melde mich so schnell wie möglich bei Ihnen.
-            </div>
-          </form>
-        </div>
+<head>
+  <meta charset="utf-8">
+  <title>Kontakt - Abdulkerim</title>
+  <meta name="description" content="Kontaktieren Sie Abdulkerim - Web-Entwickler aus Berlin.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#26272a">
+  <link rel="stylesheet" href="/css/_global.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    body {
+      min-height: 100vh;
+      min-width: 100vw;
+      margin: 0;
+      padding: 0;
+      background: #26272a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: system-ui, sans-serif;
+    }
+    .viewbox {
+      width: 95vw;
+      max-width: 480px;
+      height: 90vh;
+      max-height: 820px;
+      background: #35363a;
+      border-radius: 22px;
+      box-shadow: 0 8px 40px #000a, 0 0 0 2px #232325;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+    }
+    .snap-section {
+      min-height: 100%;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1.2rem 2rem 1.2rem;
+      border-bottom: 1px solid #26272a;
+    }
+    .snap-section:last-child { border-bottom: none; }
+    .kontakt-title {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 18px #0009, 0 1px 0 #5a5a5a;
+      margin-bottom: 0.7rem;
+      text-align: center;
+      letter-spacing: -1px;
+    }
+    .kontakt-sub {
+      font-size: 1.12rem;
+      color: #c2c8d5;
+      margin-bottom: 1.4rem;
+      text-align: center;
+      font-weight: 500;
+    }
+    .kontakt-methods {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    .kontakt-method {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+      padding: 0.85rem 1rem;
+      background: #232325;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    .kontakt-method i { font-size: 1.35rem; color: #53aaff; }
+    .kontakt-method a, .kontakt-method span {
+      color: #fff;
+      text-decoration: none;
+      word-break: break-all;
+      font-weight: 500;
+      opacity: 1;
+    }
+    .socials-row {
+      display: flex;
+      gap: 1.1rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
+      justify-content: center;
+    }
+    .social-link {
+      width: 44px;
+      height: 44px;
+      background: #232325;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ecfff;
+      font-size: 1.3rem;
+      transition: background 0.2s, color 0.2s;
+    }
+    .social-link:hover {
+      background: #53aaff;
+      color: #fff;
+    }
+    .office-hours {
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+      width: 100%;
+      background: #222226;
+      border-radius: 8px;
+      padding: 1rem 1.3rem;
+    }
+    .office-hours h3 {
+      margin: 0 0 0.6rem 0;
+      font-size: 1.03rem;
+      color: #9ecfff;
+    }
+    .office-hours-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.99rem;
+    }
+    .office-hours-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.21rem 0;
+    }
+    .office-hours-list li span {
+      color: #e1e5ee;
+      font-weight: 500;
+      opacity: 1;
+    }
+    .office-hours-list li:last-child span {
+      color: #d46c6c;
+      opacity: 0.85;
+    }
+    .availability-status {
+      margin-bottom: 1.2rem;
+      font-size: 1.06rem;
+      color: #61f072;
+      font-weight: 600;
+      text-align: center;
+      background: #253728;
+      border-radius: 6px;
+      padding: 0.2em 0.6em;
+      display: inline-block;
+      box-shadow: 0 1px 6px #132a1740;
+    }
+    /* Formular */
+    .kontakt-formular {
+      width: 100%;
+      margin-top: 1.2rem;
+    }
+    .kontakt-formular label {
+      font-weight: 600;
+      color: #9ecfff;
+      margin-bottom: 0.17rem;
+      display: block;
+    }
+    .kontakt-formular input,
+    .kontakt-formular textarea,
+    .kontakt-formular select {
+      width: 100%;
+      margin-bottom: 1.1rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid #232325;
+      border-radius: 7px;
+      background: #222226;
+      color: #fff;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border 0.2s;
+    }
+    .kontakt-formular input:focus,
+    .kontakt-formular textarea:focus,
+    .kontakt-formular select:focus {
+      border-color: #53aaff;
+      outline: none;
+    }
+    .kontakt-formular textarea { min-height: 120px; max-height: 240px; }
+    .form-group { margin-bottom: 0.9rem; }
+    .form-submit {
+      background: linear-gradient(90deg, #4291ff 60%, #5dfdcb 100%);
+      color: #222;
+      border: none;
+      padding: 1rem 0;
+      font-size: 1.12rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.22s, color 0.18s;
+      margin-top: 0.6rem;
+      box-shadow: 0 1px 8px #3377e920;
+    }
+    .form-submit:hover { background: #53aaff; color: #fff; }
+    .form-success {
+      display: none;
+      background: #172a18;
+      border: 1px solid #51e06f;
+      color: #61f072;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 1.08rem;
+    }
+    .form-success.show { display: block; }
+    /* FAQ */
+    .faq-section {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .faq-section h2 {
+      text-align: center;
+      font-size: 1.19rem;
+      color: #9ecfff;
+      margin: 0 0 1.3rem 0;
+      font-weight: 700;
+    }
+    .faq-item {
+      background: #232325;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 4px #0003;
+    }
+    .faq-question {
+      width: 100%;
+      padding: 1rem 1.1rem;
+      background: none;
+      border: none;
+      color: #f3f6fa;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .faq-question:hover { background: #232e42; }
+    .faq-question::after {
+      content: '+';
+      font-size: 1.3rem;
+      color: #53aaff;
+      transition: transform 0.22s;
+    }
+    .faq-item.active .faq-question::after { transform: rotate(45deg); }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.22s, padding 0.22s;
+      padding: 0 1.2rem;
+      font-size: 0.97rem;
+      color: #ccd6e2;
+    }
+    .faq-item.active .faq-answer {
+      max-height: 200px;
+      padding: 0 1.2rem 1.1rem;
+    }
+    @media (max-width: 600px) {
+      .viewbox { width: 100vw; height: 100vh; border-radius: 0; max-width: none; max-height: none; }
+      .snap-section { padding: 1.2rem 0.2rem 1.2rem 0.2rem; }
+      .faq-section { max-width: 100vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="viewbox">
+    <!-- Section 1: Intro -->
+    <section class="snap-section">
+      <div class="kontakt-title">Kontakt aufnehmen</div>
+      <div class="kontakt-sub">Ich freue mich auf Ihre Nachricht.<br>Antwort in der Regel innerhalb von 24 Stunden.</div>
+      <div class="availability-status" id="availability-status">Verfügbar für neue Projekte</div>
+    </section>
+    <!-- Section 2: Kontaktinfos + Socials -->
+    <section class="snap-section">
+      <div class="kontakt-methods">
+        <div class="kontakt-method"><i class="fa-solid fa-envelope"></i><a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a></div>
+        <div class="kontakt-method"><i class="fa-solid fa-phone"></i><a href="tel:+491234567890">+49 123 4567890</a></div>
+        <div class="kontakt-method"><i class="fa-solid fa-location-dot"></i><span>Berlin, Deutschland</span></div>
       </div>
-      
-  
-    !-- FAQ Section -->
-      <section FAQ Sectionsec
-            <h2>Häufig gestellte Fragen</h2>
-        
-        <div class="faq-item">
-          <button class="faq-question">
-            Wie schnell antworten Sie auf Anfragen?
-          </button>
-          <divass="faq-ansanswerch bemühe mich,<p>Ich bemühe mich, alle Anfragen innerhalben i 24 Stunden zu beantworten. Bei komplexerennnerhalb vokann die erste Einschätzung bis       
-      <!-- FAQ Sec beantworten.  <omplexeren Projekten kann die erste Einschätzung bis zu 48 Stunden dauern.</p>
-          </div>
+      <div class="socials-row">
+        <a href="https://linkedin.com/in/abdulkerim" class="social-link" target="_blank" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        <a href="https://github.com/abdulkerim" class="social-link" target="_blank" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+        <a href="https://twitter.com/abdulkerim" class="social-link" target="_blank" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+        <a href="https://instagram.com/abdulkerim" class="social-link" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+      <div class="office-hours">
+        <h3>Erreichbarkeit</h3>
+        <ul class="office-hours-list">
+          <li><span>Mo–Fr</span><span>9:00–18:00</span></li>
+          <li><span>Sa</span><span>10:00–14:00</span></li>
+          <li><span>So</span><span>Geschlossen</span></li>
+        </ul>
+      </div>
+    </section>
+    <!-- Section 3: Formular -->
+    <section class="snap-section">
+      <form class="kontakt-formular" id="kontakt-formular" autocomplete="on">
+        <div class="form-group">
+          <label for="name">Name *</label>
+          <input type="text" id="name" name="name" required maxlength="50" placeholder="Ihr Name">
         </div>
-        
-        <div class="faq-item">
-          <button class="faq-question">
-            Welche Arten von Projekten übernehmen Sie?
-          </button>
-          <divass="faq-ansanswerch             <p>Ich arbeite an verschiedenen Web-Projekten, darunter Websites, Web-Applikationen, E-Commerce-Lösungen und individuelle Softwareentwicklung. Kontaktier          <div class="faq-answer">
-            <p>Ich bemühe michsites, Web-Agentionen, E-Commerce-Lösungen und individuelle Softwareentwicklung. Kontaktieren Sie mich gerne für Details zu Ihrem spezifischen Projekt.</p>
-          </div>
+        <div class="form-group">
+          <label for="email">E-Mail *</label>
+          <input type="email" id="email" name="email" required maxlength="100" placeholder="ihre.email@beispiel.de">
         </div>
-        
-        <div class="faq-item">
-          <button class="faq-question">
-            Bieten Sie auch Wartung und Support an?
-          </button>
-          <divass="faq-ansanswera,             <p>Ja, ich biete umfassende Wartungs- und Supportpakete für alle von mir entwickelten Projekte an. Dies umfasst regelmäßige Updates, Sicherheitsupdates und tec          <div class="portpakete f
-  e von mir entwickelten Projekte an. Dies umfasst regelmäßige Updates, Sicherheitsupdates und technischen Support.</p>
-          </div>
+        <div class="form-group">
+          <label for="betreff">Betreff</label>
+          <input type="text" id="betreff" name="betreff" maxlength="100" placeholder="Betreff Ihrer Nachricht">
         </div>
-        
+        <div class="form-group">
+          <label for="art">Art der Anfrage</label>
+          <select id="art" name="art">
+            <option value="">Bitte wählen</option>
+            <option value="projekt">Projektanfrage</option>
+            <option value="zusammenarbeit">Zusammenarbeit</option>
+            <option value="support">Support</option>
+            <option value="feedback">Feedback</option>
+            <option value="sonstiges">Sonstiges</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="nachricht">Nachricht *</label>
+          <textarea id="nachricht" name="nachricht" required maxlength="1000" placeholder="Ihre Nachricht..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="datenschutz" required>
+            Ich stimme der <a href="/pages/komponente/datenschutz.html" target="_blank">Datenschutzerklärung</a> zu *
+          </label>
+        </div>
+        <button type="submit" class="form-submit">
+          <i class="fa-solid fa-paper-plane"></i> Nachricht senden
+        </button>
+        <div class="form-success" id="form-success">
+          <i class="fa-solid fa-check-circle"></i> Vielen Dank für Ihre Nachricht!
+        </div>
+      </form>
+    </section>
+    <!-- Section 4: FAQ -->
+    <section class="snap-section">
+      <section class="faq-section">
+        <h2>Häufig gestellte Fragen</h2>
         <div class="faq-item">
-          <button class="faq-question">
-            Arbeiten Sie auch remote?
-          </button>
+          <button class="faq-question">Wie schnell antworten Sie auf Anfragen?</button>
           <div class="faq-answer">
-            <p>Absolut! Ich arbeite regelmäßig mit Kunden aus ganz Deutschland und international zusammen. Moderne Kommunikationstools ermöglichen eine effiziente Zusammenarbeit unabhängig vom Standort.</p>
+            <p>Antwort innerhalb von 24 Stunden, aufwendige Projekte ggf. bis 48 Stunden.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Welche Arten von Projekten übernehmen Sie?</button>
+          <div class="faq-answer">
+            <p>Websites, Webapps, E-Commerce, individuelle Entwicklung. Einfach anfragen.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Bieten Sie auch Wartung und Support an?</button>
+          <div class="faq-answer">
+            <p>Ja, Wartung und technischer Support sind für alle Projekte möglich.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Arbeiten Sie auch remote?</button>
+          <div class="faq-answer">
+            <p>Ja, Zusammenarbeit ist deutschlandweit und international problemlos möglich.</p>
           </div>
         </div>
       </section>
-      
-      <button id="share-btn" class="share-btn-layout" aria-label="Seite teilen" type="button">
-        <i class="fa-solid fa-share-nodes"></i>Seite teilen
-      </button>
-    </main>
-    
-    <div id="footer-placeholder"></div>
-    
-    <script src="/js/menu.js" defer></script>
-    <script src="/js/main-init.js" defer></script>
-    <script src="/js/form-enhancement.js" defer></script>cript<script>dEventLdocumenttentLoaded', functiDOMContentLoaded
-        // ormE        // FormEnhancer für das Kontaktformular initialisieren
-        var kontaktForm = document.getElementById('kontakt-formular');
-        if (kontaktForm) {
-          new FormEnhancer(kontaktForm);
-          
-          // Formular-Submit Handler
-          kontaktForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Hier würde normalerweise die Formular-Verarbeitung stattfinden
-            // Für Demo-Zwecke zeigen wir nur die Erfolgsmeldung
-            document.getElementById('form-success').classList.add('show');
-            
-            // Formular zurücksetzen
-            setTimeout(() => {
-              kontaktForm.reset();
-              document.getElementById('form-success').classList.remove('show');
-            }, 5000);
-          });
-        }
-        
-        // FAQ Accordion
-        const faqItems = document.querySelectorAll('.faq-item');
-        faqItems.forEach(item => {
-          const question = item.querySelector('.faq-question');
-          question.addEventListener('click', () => {
-            // Schließe alle anderen FAQs
-            faqItems.forEach(otherItem => {
-              if (otherItem !== item) {
-                otherItem.classList.remove('active');
-              }
-            });
-            // Toggle current FAQ
-            item.classList.toggle('active');
-          });
+    </section>
+  </div>
+  <script>
+    // FAQ Accordion
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.faq-question').forEach(q => {
+        q.addEventListener('click', function() {
+          const item = this.parentElement;
+          document.querySelectorAll('.faq-item').forEach(i => { if(i!==item) i.classList.remove('active'); });
+          item.classList.toggle('active');
         });
-        
-        // Share Button
-        var btn = document.getElementById('share-btn');
-        if (btn) {
-          btn.addEventListener('click', function() {
-            if (typeof shareContent === 'function') {
-              shareContent(
-                'Kontakt - Abdulkerim',
-                'Nehmen Sie Kontakt mit mir auf für Projekte und Zusammenarbeit.',
-                window.location.href
-              );
-            }
-          });
-        }
-        
-        // Aktuelle Uhrzeit für Office Hours hervorheben
-        const now = new Date();
-        const day = now.getDay();
-        const hour = now.getHours();
-        
-        // Prüfe ob aktuell geöffnet
-        let isOpen = false;
-        if (
-          (day >= 1 && day <= 5 && hour >= 9 && hour < 18) || // Mo-Fr 9-18
-          (day === 6 && hour >= 10 && hour < 14)              // Sa 10-14
-        ) {
-          isOpen = true;
-        }
-        
-        // Zeige Status
-        if (isOpen) {
-          const availabilityStatus = document.querySelector('.availability-status');
-          if (availabilityStatus) {
-            availabilityStatus.textContent = '🟢 Aktuell erreichbar';
-          }
-        }
       });
-  </body>
+      // Formular Feedback
+      var kontaktForm = document.getElementById('kontakt-formular');
+      if (kontaktForm) {
+        kontaktForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          document.getElementById('form-success').classList.add('show');
+          setTimeout(() => {
+            kontaktForm.reset();
+            document.getElementById('form-success').classList.remove('show');
+          }, 4000);
+        });
+      }
+      // Office Hours Status
+      const now = new Date();
+      const day = now.getDay();
+      const hour = now.getHours();
+      let isOpen = false;
+      if ((day >= 1 && day <= 5 && hour >= 9 && hour < 18) || (day === 6 && hour >= 10 && hour < 14)) isOpen = true;
+      if (isOpen) {
+        const availabilityStatus = document.getElementById('availability-status');
+        if (availabilityStatus) availabilityStatus.textContent = '🟢 Aktuell erreichbar';
+      }
+    });
+  </script>
+</body>
 </html>

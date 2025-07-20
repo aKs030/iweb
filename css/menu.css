@@ -789,3 +789,12 @@ main {
 }
 
 /* stylelint-enable no-descending-specificity */
+
+#menu-container,
+.site-header {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 10000;
+}
