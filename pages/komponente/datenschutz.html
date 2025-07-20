@@ -169,28 +169,11 @@
       background: #545b62;
     }
 
-    .cookie-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-      font-size: 0.9rem;
+    #analytics-cookies-info,
+    #marketing-cookies-info {
+      display: none;
     }
 
-    .cookie-table th,
-    .cookie-table td {
-      border: 1px solid #dee2e6;
-      padding: 0.75rem;
-      text-align: left;
-    }
-
-    .cookie-table th {
-      background-color: #e9ecef;
-      font-weight: 600;
-    }
-
-    .cookie-table tr:nth-child(even) {
-      background-color: #f8f9fa;
-    }
 
     @media (max-width: 768px) {
       .cookie-control-buttons {
@@ -363,15 +346,15 @@
         <div class="cookie-control-buttons">
           <button class="cookie-control-btn" id="accept-all-cookies" type="button">Alle akzeptieren</button>
           <button class="cookie-control-btn secondary" id="reject-all-cookies" type="button">Alle ablehnen</button>
-          <button class="cookie-control-btn" id="save-cookie-preferences" type="button">Einstellungen speichern</button>
-        </div>
-        <div class="cookie-category-info" id="necessary-cookies-info">
-          <strong>Notwendige Cookies:</strong> Diese Cookies sind für die grundlegende Funktionalität der Website erforderlich und können nicht deaktiviert werden.
-        </div>
-        <div class="cookie-category-info" id="analytics-cookies-info" style="display:none;">
+        <div class="cookie-category-info" id="analytics-cookies-info">
           <strong>Analyse-Cookies:</strong> Diese Cookies helfen uns, die Nutzung der Website zu analysieren und zu verbessern. Sie werden nur gesetzt, wenn Sie ausdrücklich zustimmen.
         </div>
-        <div class="cookie-category-info" id="marketing-cookies-info" style="display:none;">
+        <div class="cookie-category-info" id="marketing-cookies-info">
+          <strong>Marketing-Cookies:</strong> Diese Cookies werden verwendet, um Ihnen personalisierte Werbung zu zeigen. Sie werden nur gesetzt, wenn Sie Ihre Zustimmung gegeben haben.
+        </div>
+          <strong>Analyse-Cookies:</strong> Diese Cookies helfen uns, die Nutzung der Website zu analysieren und zu verbessern. Sie werden nur gesetzt, wenn Sie ausdrücklich zustimmen.
+        </div>
+        <div class="cookie-category-info" id="marketing-cookies-info">
           <strong>Marketing-Cookies:</strong> Diese Cookies werden verwendet, um Ihnen personalisierte Werbung zu zeigen. Sie werden nur gesetzt, wenn Sie Ihre Zustimmung gegeben haben.
         </div>
       </div>
