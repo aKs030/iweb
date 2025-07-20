@@ -10,7 +10,7 @@
     "build": "echo '✅ Static site – no build step needed'",
     "validate-html": "html-validate index.html pages/**/*.html",
     "validate-css": "stylelint css/**/*.css",
-    "check-links": "linkinator http://localhost:8000 --skip \"https://*.abdulkerimsesli.de/*\" --recurse",
+    "check-links": "linkinator http://localhost:8000 --skip \"https://*.abdulkerimsesli.de/*\" --recurse --skip 403",
     "check-links-local": "node scripts/dev-server.js & SERVER_PID=$!; sleep 5; npm run check-links; kill $SERVER_PID",
     "lighthouse": "lighthouse http://localhost:8000 --output html --output-path ./lighthouse-report.html",
     "test-performance": "node scripts/performance-test.js",

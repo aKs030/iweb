@@ -49,13 +49,21 @@ jobs:
       - name: "🎨 Validate CSS"
         run: npm run validate-css || true    # nicht blockierend
 
+      - name: "🔗 Check internal links"
+        run: |
+          node scripts/dev-server.js &
+          SERVER_PID=$!
+          sleep 5
+          npm run check-links || true
+          kill $SERVER_PID && wait $SERVER_PID || true
+
       - name: "🌐 Start server & check links"
         run: |
-          npx serve -l 8000 -s . &
+          node scripts/express-server.js &
           SERVER_PID=$!
           sleep 5
           npm run check-links || true        # nicht blockierend
-          kill $SERVER_PID
+          kill $SERVER_PID && wait $SERVER_PID || true
 
       - name: "⚡ Lighthouse CI"
         uses: treosh/lighthouse-ci-action@v10

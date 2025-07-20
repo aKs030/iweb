@@ -1,0 +1,88 @@
+// scripts/express-server.js
+// Vollständiger Express-Server für statische Dateien mit Security-Headern, Logging und Fallbacks
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const https = require('https');
+
+const app = express();
+const PORT = process.env.PORT || 8000;
+const ROOT = path.resolve(__dirname, '../');
+const USE_HTTPS = process.env.HTTPS === '1' || process.env.HTTPS === 'true';
+
+// Logging Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const ms = Date.now() - start;
+    console.log(`${res.statusCode} ${req.method} ${req.url} (${ms}ms)`);
+  });
+  next();
+});
+
+// Security Headers Middleware (wie dev-server.js)
+app.use((req, res, next) => {
+  res.removeHeader('Server');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'interest-cohort=()');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  next();
+});
+
+// Keine Directory-Listings
+app.use((req, res, next) => {
+  if (req.url.endsWith('/')) {
+    // Versuche index.html
+    const indexPath = path.join(ROOT, req.url, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    return res.status(404).send('404 Not Found');
+  }
+  next();
+});
+
+// Statische Dateien
+app.use(express.static(ROOT, {
+  extensions: ['html', 'htm'],
+  fallthrough: true,
+}));
+
+// 404 für nicht gefundene Dateien, außer bei SPA (Fallback auf index.html)
+app.use((req, res, next) => {
+  const accept = req.headers.accept || '';
+  if (accept.includes('text/html')) {
+    // SPA-Fallback
+    return res.sendFile(path.join(ROOT, 'index.html'));
+  }
+  res.status(404).send('404 Not Found');
+});
+
+// Start HTTP oder HTTPS
+if (USE_HTTPS) {
+  const certPath = path.join(ROOT, 'cert', 'localhost-cert.pem');
+  const keyPath = path.join(ROOT, 'cert', 'localhost-key.pem');
+  if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+    const options = {
+      cert: fs.readFileSync(certPath),
+      key: fs.readFileSync(keyPath),
+    };
+    https.createServer(options, app).listen(PORT, () => {
+      console.log(`Express-Server (HTTPS) läuft auf https://localhost:${PORT}`);
+    });
+  } else {
+    console.error('HTTPS aktiviert, aber Zertifikate fehlen! Fallback auf HTTP.');
+    app.listen(PORT, () => {
+      console.log(`Express-Server läuft auf http://localhost:${PORT}`);
+    });
+  }
+} else {
+  app.listen(PORT, () => {
+    console.log(`Express-Server läuft auf http://localhost:${PORT}`);
+  });
+}

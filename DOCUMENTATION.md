@@ -29,12 +29,10 @@
 cd /Users/abdo/Desktop/website/iweb-6
 
 # 2. Lokalen Test-Server starten
-./deploy.sh test
-# oder
-python3 -m http.server 8080
+node scripts/express-server.js
 
 # 3. Im Browser öffnen
-open http://localhost:8080
+open http://localhost:8000
 ```
 
 ### Produktions-Deployment:
