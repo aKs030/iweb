@@ -1,14 +1,15 @@
 # .github/workflows/deploy.yml
-# -------------------------------------------------------------
-# CI/CD Pipeline – HTML + CSS + Lighthouse + Security-Headers + Manual Deploy
-# -------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# CI/CD Pipeline – HTML + CSS + Links + Lighthouse + Security-Headers + Summary
+# -----------------------------------------------------------------------------
 # Highlights
-#   • Caches npm deps
-#   • Runs HTML & CSS linters, link checker, Lighthouse CI (3× in CI)
-#   • Injects security headers into local `serve` instance so CI test passes
-#   • Uploads Lighthouse artefacts
-#   • Generates deployment summary
-# -------------------------------------------------------------
+#   • npm-Cache → schnellere Läufe
+#   • HTML + CSS Lints (Warnungen blockieren Build nicht)
+#   • Link-Checker hinter lokalem Static-Server
+#   • Lighthouse CI (3 Runs) + Artefakte (14 Tage Retention)
+#   • Security-Header-Check (Header via serve -H injiziert)
+#   • Zusammenfassung im Job-Summary
+# -----------------------------------------------------------------------------
 
 name: "🚀 Deploy to Production"
 
@@ -24,105 +25,105 @@ concurrency:
 
 jobs:
   # -------------------------------------------------------------------------
-  # 1) QUALITY‑ASSURANCE
+  # 1) QUALITY ASSURANCE
   # -------------------------------------------------------------------------
   test:
     name: "🧪 Quality Assurance"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "📥 Checkout code"
+      - name: "📥 Checkout"
         uses: actions/checkout@v4
 
-      - name: "🏗️ Setup Node.js"
+      - name: "🏗️  Node 18 + npm-Cache"
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 18
+          cache: npm
 
-      - name: "📦 Install dependencies"
-        run: npm ci
+      - name: "📦 Install deps (cached)"
+        run: npm ci --cache ~/.npm --prefer-offline
 
-      - name: "✅ Validate HTML"
-        run: npm run validate-html || true  # warnings tolerated
+      - name: "✅ HTML Validate"
+        run: npm run validate-html || true
 
-      - name: "🎨 Validate CSS"
-        run: npm run validate-css  || true  # warnings tolerated
+      - name: "🎨 CSS Validate"
+        run: npm run validate-css  || true
 
-      - name: "🔗 Check internal links"
+      - name: "🔗 Link Checker"
+        shell: bash
         run: |
-          npx serve -l 8000 -s . &
+          npx serve --no-clipboard -l 8000 -s . &
           SERVER_PID=$!
-          sleep 5
+          trap 'kill $SERVER_PID' EXIT
+          # Warten bis Server online ist
+          for i in {1..30}; do
+            if curl -sf http://127.0.0.1:8000/ > /dev/null; then break; fi
+            echo "Waiting for server… ($i/30)"; sleep 1;
+          done
           npm run check-links || true
-          kill $SERVER_PID
 
       - name: "⚡ Lighthouse CI"
         uses: treosh/lighthouse-ci-action@v10
         with:
-          configPath: './lighthouserc.js'
+          configPath: ./lighthouserc.js
           uploadArtifacts: true
           temporaryPublicStorage: true
           artifactName: lighthouse_results
         continue-on-error: true
 
-      - name: "📤 Upload Lighthouse Results"
+      - name: "📤 Upload Lighthouse Artefakt"
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse_results
           path: ./.lighthouseci/
+          retention-days: 14
 
   # -------------------------------------------------------------------------
-  # 2) SECURITY‑SCAN
+  # 2) SECURITY SCAN
   # -------------------------------------------------------------------------
   security-scan:
     name: "🔒 Security Scan"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "📥 Checkout code"
+      - name: "📥 Checkout"
         uses: actions/checkout@v4
 
-      - name: "🏗️ Setup Node.js"
+      - name: "🏗️  Node 18 + npm-Cache"
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 18
+          cache: npm
 
-      - name: "📦 Install dependencies"
-        run: npm ci
+      - name: "📦 Install deps (cached)"
+        run: npm ci --cache ~/.npm --prefer-offline
 
-      - name: "🔍 Security audit (npm)"
+      - name: "🔍 npm Audit (moderate)"
         run: npm audit --audit-level moderate || echo "Audit warnings found"
 
-      - name: "🛡️ Check Security Headers (local build)"
+      - name: "🛡️  Security-Header Check"
         shell: bash
         run: |
-          # --- Define security headers in one variable (comma‑separated) ---
           SEC_HEADERS="Strict-Transport-Security:max-age=31536000; includeSubDomains; preload,\
 X-Content-Type-Options:nosniff,\
 X-Frame-Options:SAMEORIGIN,\
 Content-Security-Policy:default-src 'self'; object-src 'none'; base-uri 'none',\
 Referrer-Policy:strict-origin-when-cross-origin"
 
-          # --- Start static server with headers ---
-          npx serve -l 8000 -s . -H "$SEC_HEADERS" &
+          npx serve --no-clipboard -l 8000 -s . -H "$SEC_HEADERS" &
           SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
 
-          # --- Wait until server is reachable ---
           for i in {1..30}; do
             if curl -sf http://127.0.0.1:8000/ > /dev/null; then break; fi
             echo "Waiting for server… ($i/30)"; sleep 1;
           done
 
-          # --- Run header check script ---
           node scripts/check-security-headers.js http://127.0.0.1:8000
-          STATUS=$?
-          kill $SERVER_PID
-          exit $STATUS
 
   # -------------------------------------------------------------------------
-  # 3) DEPLOY (manual)
+  # 3) DEPLOY (manuell)
   # -------------------------------------------------------------------------
   deploy:
     name: "🌐 Deploy to Production"
@@ -131,21 +132,19 @@ Referrer-Policy:strict-origin-when-cross-origin"
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: "📥 Checkout code"
+      - name: "📥 Checkout"
         uses: actions/checkout@v4
 
       - name: "🚀 Manual Deploy Placeholder"
-        run: |
-          echo "🎯 All checks passed. Ready for manual production deploy."
-          echo "Files validated, Lighthouse & security headers OK."
+        run: echo "🎯 All checks passed. Ready for manual production deploy."
 
-      - name: "📊 Deployment Summary"
+      - name: "📊 Summary"
         run: |
           {
             echo "## 📊 Deployment Summary"
-            echo "- ✅ HTML & CSS validation (warnings tolerated)"
-            echo "- ✅ Link checker passed"
-            echo "- ✅ Lighthouse CI executed (artefacts uploaded)"
-            echo "- ✅ Security headers verified"
+            echo "- ✅ HTML & CSS validated (warnings tolerated)"
+            echo "- ✅ Internal links checked"
+            echo "- ✅ Lighthouse executed (artefacts saved)"
+            echo "- ✅ Security headers verified locally"
             echo "- 🚀 Ready for production deployment"
           } >> "$GITHUB_STEP_SUMMARY"
