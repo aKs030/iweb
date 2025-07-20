@@ -1,15 +1,14 @@
 # .github/workflows/deploy.yml
-# -----------------------------------------------------------------------------
-# CI/CD Pipeline – HTML + CSS + Links + Lighthouse + Security-Headers + Summary
-# -----------------------------------------------------------------------------
+# -------------------------------------------------------------
+# CI/CD Pipeline – HTML + CSS + Lighthouse + Security-Headers + Manual Deploy
+# -------------------------------------------------------------
 # Highlights
-#   • npm-Cache → schnellere Läufe
-#   • HTML + CSS Lints (Warnungen blockieren Build nicht)
-#   • Link-Checker hinter lokalem Static-Server
-#   • Lighthouse CI (3 Runs) + Artefakte (14 Tage Retention)
-#   • Security-Header-Check (Header via serve -H injiziert)
-#   • Zusammenfassung im Job-Summary
-# -----------------------------------------------------------------------------
+#  - Caches npm deps
+#  - Runs HTML & CSS linters, link checker, Lighthouse CI (3× in CI)
+#  - Local security-headers check (headers injected via `serve -H …`)
+#  - Uploads Lighthouse artefacts
+#  - Generates deployment summary
+# -------------------------------------------------------------
 
 name: "🚀 Deploy to Production"
 
@@ -25,105 +24,102 @@ concurrency:
 
 jobs:
   # -------------------------------------------------------------------------
-  # 1) QUALITY ASSURANCE
+  # 1) QUALITY-ASSURANCE
   # -------------------------------------------------------------------------
   test:
     name: "🧪 Quality Assurance"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "📥 Checkout"
+      - name: "📥 Checkout code"
         uses: actions/checkout@v4
 
-      - name: "🏗️  Node 18 + npm-Cache"
+      - name: "🏗️ Setup Node.js"
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: npm
+          node-version: '18'
+          cache: 'npm'
 
-      - name: "📦 Install deps (cached)"
-        run: npm ci --cache ~/.npm --prefer-offline
+      - name: "📦 Install dependencies"
+        run: npm ci
 
-      - name: "✅ HTML Validate"
-        run: npm run validate-html || true
+      - name: "✅ Validate HTML"
+        run: npm run validate-html || true   # nicht blockierend
 
-      - name: "🎨 CSS Validate"
-        run: npm run validate-css  || true
+      - name: "🎨 Validate CSS"
+        run: npm run validate-css || true    # nicht blockierend
 
-      - name: "🔗 Link Checker"
-        shell: bash
+      - name: "🌐 Start server & check links"
         run: |
-          npx serve --no-clipboard -l 8000 -s . &
+          npx serve -l 8000 -s . &
           SERVER_PID=$!
-          trap 'kill $SERVER_PID' EXIT
-          # Warten bis Server online ist
-          for i in {1..30}; do
-            if curl -sf http://127.0.0.1:8000/ > /dev/null; then break; fi
-            echo "Waiting for server… ($i/30)"; sleep 1;
-          done
-          npm run check-links || true
+          sleep 5
+          npm run check-links || true        # nicht blockierend
+          kill $SERVER_PID
 
       - name: "⚡ Lighthouse CI"
         uses: treosh/lighthouse-ci-action@v10
         with:
-          configPath: ./lighthouserc.js
+          configPath: './lighthouserc.js'
           uploadArtifacts: true
           temporaryPublicStorage: true
-          artifactName: lighthouse_results
+          artifactName: lighthouse_results   # Unterstrich – gültig für Azure-API
         continue-on-error: true
 
-      - name: "📤 Upload Lighthouse Artefakt"
+      - name: "📤 Upload Lighthouse Results"
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse_results
           path: ./.lighthouseci/
-          retention-days: 14
 
   # -------------------------------------------------------------------------
-  # 2) SECURITY SCAN
+  # 2) SECURITY-SCAN
   # -------------------------------------------------------------------------
   security-scan:
     name: "🔒 Security Scan"
     runs-on: ubuntu-latest
 
     steps:
-      - name: "📥 Checkout"
+      - name: "📥 Checkout code"
         uses: actions/checkout@v4
 
-      - name: "🏗️  Node 18 + npm-Cache"
+      - name: "🏗️ Setup Node.js"
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: npm
+          node-version: '18'
+          cache: 'npm'
 
-      - name: "📦 Install deps (cached)"
-        run: npm ci --cache ~/.npm --prefer-offline
+      - name: "📦 Install dependencies"
+        run: npm ci
 
-      - name: "🔍 npm Audit (moderate)"
+      - name: "🔍 Security audit (npm)"
         run: npm audit --audit-level moderate || echo "Audit warnings found"
 
-      - name: "🛡️  Security-Header Check"
-        shell: bash
+      - name: "🛡️ Check Security Headers (local build)"
         run: |
-          SEC_HEADERS="Strict-Transport-Security:max-age=31536000; includeSubDomains; preload,\
-X-Content-Type-Options:nosniff,\
-X-Frame-Options:SAMEORIGIN,\
-Content-Security-Policy:default-src 'self'; object-src 'none'; base-uri 'none',\
-Referrer-Policy:strict-origin-when-cross-origin"
-
-          npx serve --no-clipboard -l 8000 -s . -H "$SEC_HEADERS" &
+          # ⇢ Start static server WITH security headers
+          npx serve -l 8000 -s . \
+            -H "Strict-Transport-Security:max-age=31536000; includeSubDomains; preload" \
+            -H "X-Content-Type-Options:nosniff" \
+            -H "X-Frame-Options:SAMEORIGIN" \
+            -H "Content-Security-Policy:default-src 'self'; object-src 'none'; base-uri 'none'" \
+            -H "Referrer-Policy:strict-origin-when-cross-origin" &
           SERVER_PID=$!
-          trap 'kill $SERVER_PID' EXIT
 
+          # ⇢ Warten bis Server bereit
           for i in {1..30}; do
-            if curl -sf http://127.0.0.1:8000/ > /dev/null; then break; fi
+            if curl -sf http://localhost:8000 > /dev/null; then break; fi
             echo "Waiting for server… ($i/30)"; sleep 1;
           done
 
-          node scripts/check-security-headers.js http://127.0.0.1:8000
+          # ⇢ Security-Header-Check
+          node scripts/check-security-headers.js http://localhost:8000
+          STATUS=$?
+          kill $SERVER_PID
+          exit $STATUS
 
   # -------------------------------------------------------------------------
-  # 3) DEPLOY (manuell)
+  # 3) DEPLOY
   # -------------------------------------------------------------------------
   deploy:
     name: "🌐 Deploy to Production"
@@ -132,19 +128,20 @@ Referrer-Policy:strict-origin-when-cross-origin"
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: "📥 Checkout"
+      - name: "📥 Checkout code"
         uses: actions/checkout@v4
 
-      - name: "🚀 Manual Deploy Placeholder"
-        run: echo "🎯 All checks passed. Ready for manual production deploy."
+      - name: "🚀 Deploy (manual step placeholder)"
+        run: |
+          echo "🎯 Ready for deployment (manual)."
+          echo "Files validated & security checked ✅"
 
-      - name: "📊 Summary"
+      - name: "📊 Deployment Summary"
         run: |
           {
             echo "## 📊 Deployment Summary"
-            echo "- ✅ HTML & CSS validated (warnings tolerated)"
-            echo "- ✅ Internal links checked"
-            echo "- ✅ Lighthouse executed (artefacts saved)"
-            echo "- ✅ Security headers verified locally"
-            echo "- 🚀 Ready for production deployment"
+            echo "- ✅ HTML validation (warnings tolerated)"
+            echo "- ✅ CSS validation (warnings tolerated)"
+            echo "- ✅ Lighthouse & security headers checked"
+            echo "- 🚀 Ready for production deploy"
           } >> "$GITHUB_STEP_SUMMARY"
