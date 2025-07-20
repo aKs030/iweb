@@ -95,28 +95,18 @@ jobs:
       - name: "🔍 Security audit (npm)"
         run: npm audit --audit-level moderate || echo "Audit warnings found"
 
-      - name: "🛡️ Check Security Headers (local build)"
+      - name: "🛡️  Security-Header Check"
         run: |
-          # ⇢ Start static server WITH security headers
-          npx serve -l 8000 -s . \
-            -H "Strict-Transport-Security:max-age=31536000; includeSubDomains; preload" \
-            -H "X-Content-Type-Options:nosniff" \
-            -H "X-Frame-Options:SAMEORIGIN" \
-            -H "Content-Security-Policy:default-src 'self'; object-src 'none'; base-uri 'none'" \
-            -H "Referrer-Policy:strict-origin-when-cross-origin" &
+          node scripts/dev-server.js &
           SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
 
-          # ⇢ Warten bis Server bereit
           for i in {1..30}; do
-            if curl -sf http://localhost:8000 > /dev/null; then break; fi
+            if curl -sf http://127.0.0.1:8000/ > /dev/null; then break; fi
             echo "Waiting for server… ($i/30)"; sleep 1;
           done
 
-          # ⇢ Security-Header-Check
-          node scripts/check-security-headers.js http://localhost:8000
-          STATUS=$?
-          kill $SERVER_PID
-          exit $STATUS
+          node scripts/check-security-headers.js http://127.0.0.1:8000
 
   # -------------------------------------------------------------------------
   # 3) DEPLOY
