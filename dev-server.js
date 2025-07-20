@@ -82,6 +82,17 @@ app.use((req, res) => {
     res.status(404).sendFile(notFoundPath);
   } else {
     res.status(404).send('404 - Not Found');
+// HTTP-zu-HTTPS-Weiterleitung (wenn beide Protokolle aktiv)
+if (useHttps && !onlyHttps && !onlyHttp) {
+  app.use((req, res, next) => {
+    if (!req.secure && req.headers['x-forwarded-proto'] !== 'https') {
+      // Redirect to HTTPS
+      const host = req.headers.host ? req.headers.host.replace(/:.*/, ':' + httpsPort) : 'localhost:' + httpsPort;
+      return res.redirect(301, 'https://' + host + req.originalUrl);
+    }
+    next();
+  });
+}
   }
 });
 
