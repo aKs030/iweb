@@ -25,16 +25,22 @@ app.use((req, res, next) => {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   // MIME-Sniffing verhindern
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  // Clickjacking verhindern, aber Einbettung auf gleicher Domain erlauben
+  // Clickjacking verhindern
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   // Content Security Policy: erlaubt eigene Skripte, Styles, Fonts und keine externen Ressourcen
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self';");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.abdulkerimsesli.de; frame-ancestors 'self'; base-uri 'self'; form-action 'self'");
   // Referrer-Policy: nur Ursprungsdomain bei Cross-Origin
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // X-XSS-Protection (veraltet, aber für Kompatibilität)
+  res.setHeader('X-XSS-Protection', '0');
   // Permissions-Policy restriktiv (keine Features erlaubt)
-  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   // Cross-Domain-Policies für Flash/Adobe blockieren
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  // Moderne Cross-Origin-Header (optional, für maximale Sicherheit)
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   next();
 });
 
