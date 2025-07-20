@@ -5,6 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "python3 -m http.server 8000",
+    "dev-secure": "node dev-server.js",
     "dev-node": "npx serve -l 8000 -s .",
     "build": "echo '✅ Static site – no build needed'",
     "validate-html": "html-validate index.html pages/**/*.html",
@@ -31,8 +32,7 @@
     "critical-css": "critical index.html --base . --inline --minify > index-critical.html",
     "test:visual": "percy exec -- npx serve -l 8000 -s . & SERVER_PID=$!; sleep 5; percy snapshot ./index.html; kill $SERVER_PID",
     "security-check": "node scripts/check-security-headers.js",
-    "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de"
-    ,
+    "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de",
     "security-check-with-server": "node scripts/start-server-and-check.js"
   },
   "repository": {
@@ -81,6 +81,7 @@
     "braces": "^3.0.3",
     "chokidar": "^4.0.3",
     "cssnano": "^7.1.0",
+    "express": "^5.1.0",
     "micromatch": "^4.0.8",
     "readdirp": "^4.1.2",
     "terser": "^5.43.1"
