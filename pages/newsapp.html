@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berlin Live - Real API Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-header {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .header-status {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 107, 107, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #4ecdc4;
+            font-size: 12px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        .api-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ecdc4;
+            border-radius: 50%;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+
+        .news-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #4ecdc4;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(78, 205, 196, 0.3);
+            border-top: 4px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            color: #ff6b6b;
+        }
+
+        .news-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(78, 205, 196, 0.5);
+        }
+
+        .news-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .news-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .news-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .news-time {
+            background: rgba(78, 205, 196, 0.2);
+            padding: 4px 8px;
+            border-radius: 8px;
+            color: #4ecdc4;
+        }
+
+        .news-source {
+            background: rgba(255, 107, 107, 0.2);
+            padding: 4px 8px;
+            border-radius: 8px;
+            color: #ff6b6b;
+        }
+
+        .news-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        .news-excerpt {
+            color: #b0b0b0;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .news-url {
+            font-size: 12px;
+            color: #4ecdc4;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .news-url:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .widget {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .widget-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weather-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .weather-icon {
+            font-size: 40px;
+        }
+
+        .weather-details {
+            flex: 1;
+        }
+
+        .temperature {
+            font-size: 28px;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+
+        .weather-desc {
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+
+        .weather-extra {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .weather-extra div {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+                gap: 20px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .app-header {
+                padding: 20px 15px;
+            }
+
+            .header-status {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: rgba(78, 205, 196, 0.95);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: rgba(255, 107, 107, 0.95);
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🏛️</div>
+                <span>Berlin Live</span>
+            </div>
+            <div class="header-status">
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    <span id="live-time">Live</span>
+                </div>
+                <div class="api-status">
+                    <div class="api-dot" id="api-status-dot"></div>
+                    <span id="api-status-text">APIs verbinden...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <main class="news-section">
+            <div>
+                <div class="section-header">
+                    <div class="section-icon">📰</div>
+                    <h2 class="section-title">Live Nachrichten aus Berlin</h2>
+                </div>
+                
+                <div id="news-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <span>Lade aktuelle Nachrichten...</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <!-- Weather Widget -->
+            <div class="widget">
+                <h3 class="widget-title">
+                    🌤️ Wetter Berlin
+                </h3>
+                <div id="weather-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <span>Lade Wetter...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Sources -->
+            <div class="widget">
+                <h3 class="widget-title">
+                    📡 Live Quellen
+                </h3>
+                <div id="sources-container">
+                    <div style="font-size: 12px; color: #b0b0b0; line-height: 1.5;">
+                        <div>📰 NewsAPI.org - Breaking News</div>
+                        <div>🌤️ OpenWeatherMap - Wetter</div>
+                        <div>🔍 Google News RSS - Lokalnachrichten</div>
+                        <div>📊 Guardian API - International</div>
+                        <div style="margin-top: 10px; color: #4ecdc4;">
+                            <strong>Letzte Aktualisierung:</strong><br>
+                            <span id="last-update">Lade...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Status -->
+            <div class="widget">
+                <h3 class="widget-title">
+                    ⚡ System Status
+                </h3>
+                <div id="api-status-details">
+                    <div style="font-size: 12px; color: #b0b0b0;">
+                        <div id="news-api-status">📰 News API: <span class="status-loading">Verbinde...</span></div>
+                        <div id="weather-api-status">🌤️ Weather API: <span class="status-loading">Verbinde...</span></div>
+                        <div id="cors-status">🔗 CORS Proxy: <span class="status-loading">Prüfe...</span></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <button class="refresh-btn" onclick="refreshAllData()" title="Alle Daten aktualisieren" id="refresh-btn">
+        🔄
+    </button>
+
+    <div class="notification" id="notification">
+        ✅ Daten aktualisiert!
+    </div>
+
+    <script>
+        // Real API Configuration
+        const API_CONFIG = {
+            // KOSTENLOSE APIs - keine API Keys nötig für diese Demos
+            weather: {
+                url: 'https://api.openweathermap.org/data/2.5/weather',
+                key: '7a63669c2fe08b242dbb78b5c5d10e22',
+                city: 'Berlin,DE'
+            },
+            news: {
+                // RSS to JSON Service (kostenlos)
+                rss: 'https://api.rss2json.com/v1/api.json',
+                sources: [
+                    'https://www.tagesspiegel.de/berlin/index.rss',
+                    'https://www.berliner-zeitung.de/feed',
+                    'https://rss.dw.com/rdf/rss-de-ber'
+                ]
+            },
+            // Alternative: NewsAPI.org (kostenlos für Development)
+            newsApi: {
+                url: 'https://newsapi.org/v2/everything',
+                key: 'YOUR_NEWSAPI_KEY_HERE', // Kostenloser Key von newsapi.org
+                query: 'Berlin'
+            }
+        };
+
+        // CORS Proxy alternatives for better reliability
+        const CORS_PROXIES = [
+            'https://api.allorigins.win/raw?url=',
+            'https://api.codetabs.com/v1/proxy?quest=',
+            'https://thingproxy.freeboard.io/fetch/'
+        ];
+        
+        let currentProxyIndex = 0;
+        
+        let apiStatus = {
+            weather: false,
+            news: false,
+            cors: false
+        };
+
+        // Utility Functions
+        function timeAgo(date) {
+            const now = new Date();
+            const diff = now - new Date(date);
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'gerade eben';
+            if (minutes < 60) return `vor ${minutes} Min`;
+            if (hours < 24) return `vor ${hours} Std`;
+            return `vor ${days} Tag${days > 1 ? 'en' : ''}`;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        function updateApiStatus() {
+            const dot = document.getElementById('api-status-dot');
+            const text = document.getElementById('api-status-text');
+            
+            const connectedApis = Object.values(apiStatus).filter(Boolean).length;
+            const totalApis = Object.keys(apiStatus).length;
+            
+            if (connectedApis === totalApis) {
+                dot.style.background = '#4ecdc4';
+                text.textContent = 'Alle APIs verbunden';
+            } else if (connectedApis > 0) {
+                dot.style.background = '#ffa726';
+                text.textContent = `${connectedApis}/${totalApis} APIs aktiv`;
+            } else {
+                dot.style.background = '#ff6b6b';
+                text.textContent = 'Verbindungsfehler';
+            }
+
+            // Update detailed status
+            document.getElementById('news-api-status').innerHTML = 
+                `📰 News API: <span class="${apiStatus.news ? 'status-ok' : 'status-error'}">${apiStatus.news ? 'Verbunden' : 'Fehler'}</span>`;
+            document.getElementById('weather-api-status').innerHTML = 
+                `🌤️ Weather API: <span class="${apiStatus.weather ? 'status-ok' : 'status-error'}">${apiStatus.weather ? 'Verbunden' : 'Fehler'}</span>`;
+            document.getElementById('cors-status').innerHTML = 
+                `🔗 CORS Proxy: <span class="${apiStatus.cors ? 'status-ok' : 'status-error'}">${apiStatus.cors ? 'Aktiv' : 'Fehler'}</span>`;
+        }
+
+        // Weather API with improved error handling and CORS support
+        async function fetchWeatherData() {
+            const weatherContainer = document.getElementById('weather-container');
+            weatherContainer.innerHTML = '<div class="loading"><div class="spinner"></div><span>Lade Wetter...</span></div>';
+            
+            try {
+                console.log('🌤️ Fetching weather data from OpenWeatherMap...');
+                
+                // Try direct OpenWeatherMap API first
+                let response;
+                let data;
+                
+                try {
+                    response = await fetch(
+                        `${API_CONFIG.weather.url}?q=${API_CONFIG.weather.city}&appid=${API_CONFIG.weather.key}&units=metric&lang=de`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                            }
+                        }
+                    );
+                    
+                    if (response.ok) {
+                        data = await response.json();
+                        console.log('✅ Direct OpenWeatherMap API success:', data);
+                    } else {
+                        throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                    }
+                    
+                } catch (directError) {
+                    console.log('⚠️ Direct API failed, trying with CORS proxy...', directError.message);
+                    
+                    // Try with multiple CORS proxies
+                    const currentProxy = CORS_PROXIES[currentProxyIndex];
+                    const proxyUrl = `${currentProxy}${encodeURIComponent(
+                        `${API_CONFIG.weather.url}?q=${API_CONFIG.weather.city}&appid=${API_CONFIG.weather.key}&units=metric&lang=de`
+                    )}`;
+                    
+                    response = await fetch(proxyUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`CORS proxy failed: ${response.status}`);
+                    }
+                    
+                    data = await response.json();
+                    console.log('✅ CORS proxy OpenWeatherMap success:', data);
+                }
+                
+                // Process successful OpenWeatherMap data
+                if (data && data.main && data.weather) {
+                    apiStatus.weather = true;
+                    
+                    // Weather icon mapping from OpenWeatherMap
+                    const iconMap = {
+                        '01d': '☀️', '01n': '🌙',
+                        '02d': '⛅', '02n': '☁️',
+                        '03d': '☁️', '03n': '☁️',
+                        '04d': '☁️', '04n': '☁️',
+                        '09d': '🌦️', '09n': '🌧️',
+                        '10d': '🌦️', '10n': '🌧️',
+                        '11d': '⛈️', '11n': '⛈️',
+                        '13d': '❄️', '13n': '❄️',
+                        '50d': '🌫️', '50n': '🌫️'
+                    };
+                    
+                    const icon = iconMap[data.weather[0].icon] || '🌤️';
+                    const temp = Math.round(data.main.temp);
+                    const feelsLike = Math.round(data.main.feels_like);
+                    const description = data.weather[0].description;
+                    
+                    // Convert wind speed from m/s to km/h
+                    const windSpeed = data.wind ? Math.round(data.wind.speed * 3.6) : 'N/A';
+                    
+                    weatherContainer.innerHTML = `
+                        <div class="weather-info">
+                            <div class="weather-icon">${icon}</div>
+                            <div class="weather-details">
+                                <div class="temperature">${temp}°C</div>
+                                <div class="weather-desc">${description}</div>
+                            </div>
+                        </div>
+                        <div class="weather-extra">
+                            <div><strong>Gefühlt:</strong> ${feelsLike}°C</div>
+                            <div><strong>Luftfeuchte:</strong> ${data.main.humidity}%</div>
+                            <div><strong>Wind:</strong> ${windSpeed} km/h</div>
+                            <div><strong>Luftdruck:</strong> ${data.main.pressure} hPa</div>
+                        </div>
+                        <div style="margin-top: 8px; padding: 6px; background: rgba(78, 205, 196, 0.2); border-radius: 6px; font-size: 11px; color: #4ecdc4;">
+                            ✅ Live von OpenWeatherMap • ${new Date().toLocaleTimeString('de-DE')}
+                        </div>
+                    `;
+                    
+                    console.log('✅ OpenWeatherMap data displayed successfully');
+                    return;
+                }
+                
+            } catch (openWeatherError) {
+                console.error('❌ OpenWeatherMap failed:', openWeatherError);
+                
+                // Try fallback weather service
+                try {
+                    console.log('🔄 Trying fallback weather service...');
+                    
+                    const fallbackResponse = await fetch(`${CORS_PROXIES[currentProxyIndex]}${encodeURIComponent('https://wttr.in/Berlin?format=j1')}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                    
+                    if (fallbackResponse.ok) {
+                        const fallbackData = await fallbackResponse.json();
+                        const current = fallbackData.current_condition[0];
+                        
+                        weatherContainer.innerHTML = `
+                            <div class="weather-info">
+                                <div class="weather-icon">🌤️</div>
+                                <div class="weather-details">
+                                    <div class="temperature">${current.temp_C}°C</div>
+                                    <div class="weather-desc">${current.weatherDesc[0].value}</div>
+                                </div>
+                            </div>
+                            <div class="weather-extra">
+                                <div><strong>Gefühlt:</strong> ${current.FeelsLikeC}°C</div>
+                                <div><strong>Luftfeuchte:</strong> ${current.humidity}%</div>
+                                <div><strong>Wind:</strong> ${current.windspeedKmph} km/h</div>
+                                <div><strong>Sicht:</strong> ${current.visibility} km</div>
+                            </div>
+                            <div style="margin-top: 8px; padding: 6px; background: rgba(255, 182, 72, 0.2); border-radius: 6px; font-size: 11px; color: #ffb648;">
+                                ⚠️ Fallback-Service aktiv • ${new Date().toLocaleTimeString('de-DE')}
+                            </div>
+                        `;
+                        
+                        apiStatus.weather = true;
+                        console.log('✅ Fallback weather service working');
+                        return;
+                    }
+                    
+                } catch (fallbackError) {
+                    console.error('❌ Fallback weather service failed:', fallbackError);
+                }
+                
+                // If all fails, show demo data
+                apiStatus.weather = false;
+                weatherContainer.innerHTML = `
+                    <div class="weather-info">
+                        <div class="weather-icon">🌤️</div>
+                        <div class="weather-details">
+                            <div class="temperature">25°C</div>
+                            <div class="weather-desc">Teilweise bewölkt</div>
+                        </div>
+                    </div>
+                    <div class="weather-extra">
+                        <div><strong>Gefühlt:</strong> 28°C</div>
+                        <div><strong>Luftfeuchte:</strong> 65%</div>
+                        <div><strong>Wind:</strong> 12 km/h</div>
+                        <div><strong>Luftdruck:</strong> 1013 hPa</div>
+                    </div>
+                    <div style="margin-top: 8px; padding: 6px; background: rgba(255, 107, 107, 0.2); border-radius: 6px; font-size: 11px; color: #ff6b6b;">
+                        ❌ Demo-Daten • API nicht verfügbar<br>
+                        <span style="font-size: 10px;">Fehler: ${openWeatherError.message}</span>
+                    </div>
+                `;
+                
+                console.log('⚠️ Showing demo weather data due to API failures');
+            }
+            
+            updateApiStatus();
+        }
+
+        // News API using RSS feeds
+        async function fetchNewsData() {
+            try {
+                console.log('📰 Fetching news data...');
+                
+                const newsContainer = document.getElementById('news-container');
+                newsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><span>Lade Nachrichten...</span></div>';
+                
+                // Verwende kostenlosen RSS to JSON Service
+                const rssFeeds = [
+                    'https://www.tagesspiegel.de/berlin/index.rss',
+                    'https://www.berliner-zeitung.de/feed'
+                ];
+                
+                let allNews = [];
+                
+                for (const feedUrl of rssFeeds) {
+                    try {
+                        const response = await fetch(`${API_CONFIG.news.rss}?rss_url=${encodeURIComponent(feedUrl)}&api_key=public&count=5`);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.status === 'ok' && data.items) {
+                                allNews = [...allNews, ...data.items.map(item => ({
+                                    title: item.title,
+                                    description: item.description.replace(/<[^>]*>/g, '').substring(0, 200) + '...',
+                                    url: item.link,
+                                    publishedAt: item.pubDate,
+                                    source: data.feed.title || 'RSS Feed'
+                                }))];
+                            }
+                        }
+                    } catch (feedError) {
+                        console.warn(`Feed ${feedUrl} failed:`, feedError);
+                    }
+                }
+                
+                // Fallback: Demo News wenn APIs nicht verfügbar
+                if (allNews.length === 0) {
+                    allNews = await fetchDemoNews();
+                } else {
+                    apiStatus.news = true;
+                }
+                
+                // Sort by date
+                allNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+                
+                // Display news
+                displayNews(allNews.slice(0, 10));
+                
+                console.log(`✅ Loaded ${allNews.length} news articles`);
+                
+            } catch (error) {
+                console.error('❌ News API error:', error);
+                apiStatus.news = false;
+                
+                // Show demo news on error
+                const demoNews = await fetchDemoNews();
+                displayNews(demoNews);
+                
+                showNotification('News API nicht verfügbar - Demo-Daten geladen', 'error');
+            }
+            
+            updateApiStatus();
+        }
+
+        // Demo news as fallback
+        async function fetchDemoNews() {
+            return [
+                {
+                    title: "🚨 S-Bahn Störungen: Massive Einschränkungen durch Polizeieinsatz",
+                    description: "Vier S-Bahn Linien sind von Störungen betroffen. Fahrgäste müssen mit Verspätungen und Ausfällen rechnen. Ersatzverkehr wird eingerichtet.",
+                    url: "#",
+                    publishedAt: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(),
+                    source: "Berlin Live Demo"
+                },
+                {
+                    title: "Corona-Lage in Berlin: 35 neue Fälle in der vergangenen Woche",
+                    description: "Die 7-Tage-Inzidenz liegt bei 0,9 pro 100.000 Einwohner. Besonders betroffen sind über 80-Jährige mit einer Inzidenz von 4,6.",
+                    url: "#",
+                    publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    source: "news.de Demo"
+                },
+                {
+                    title: "20. Juli: Wegner erinnert an Widerstand gegen Hitler",
+                    description: "Berlins Regierender Bürgermeister würdigt den Mut der Widerstandskämpfer vor 81 Jahren als einen der bedeutendsten Tage der deutschen Geschichte.",
+                    url: "#",
+                    publishedAt: new Date().toISOString(),
+                    source: "Tagesspiegel Demo"
+                }
+            ];
+        }
+
+        function displayNews(newsArray) {
+            const container = document.getElementById('news-container');
+            
+            if (newsArray.length === 0) {
+                container.innerHTML = '<div class="error">Keine Nachrichten verfügbar</div>';
+                return;
+            }
+            
+            const newsHTML = newsArray.map((article, index) => `
+                <div class="news-card" style="animation-delay: ${index * 0.1}s">
+                    <div class="news-meta">
+                        <span class="news-time">${timeAgo(article.publishedAt)}</span>
+                        <span class="news-source">${article.source}</span>
+                    </div>
+                    <h3 class="news-title">${article.title}</h3>
+                    <p class="news-excerpt">${article.description}</p>
+                    ${article.url !== '#' ? `<a href="${article.url}" target="_blank" class="news-url">Artikel lesen →</a>` : ''}
+                </div>
+            `).join('');
+            
+            container.innerHTML = newsHTML;
+        }
+
+        // Refresh all data
+        async function refreshAllData() {
+            const btn = document.getElementById('refresh-btn');
+            btn.disabled = true;
+            btn.style.transform = 'scale(1.1) rotate(360deg)';
+            
+            try {
+                await Promise.all([
+                    fetchNewsData(),
+                    fetchWeatherData()
+                ]);
+                
+                document.getElementById('last-update').textContent = new Date().toLocaleString('de-DE');
+                showNotification('✅ Alle Daten aktualisiert!');
+                
+            } catch (error) {
+                console.error('Refresh error:', error);
+                showNotification('❌ Fehler beim Aktualisieren', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.style.transform = 'scale(1)';
+            }
+        }
+
+        // Auto-refresh intervals
+        function startAutoRefresh() {
+            // News every 5 minutes
+            setInterval(fetchNewsData, 5 * 60 * 1000);
+            
+            // Weather every 15 minutes
+            setInterval(fetchWeatherData, 15 * 60 * 1000);
+            
+            console.log('🔄 Auto-refresh started');
+        }
+
+        // Update live time
+        function updateLiveTime() {
+            const timeElement = document.getElementById('live-time');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('de-DE', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            timeElement.textContent = `Live • ${timeString}`;
+        }
+
+        // Initialize app
+        async function initializeApp() {
+            console.log('🚀 Initializing Berlin Live App with real APIs...');
+            
+            // Start live time
+            updateLiveTime();
+            setInterval(updateLiveTime, 1000);
+            
+            // Test CORS proxies
+            let corsWorking = false;
+            for (let i = 0; i < CORS_PROXIES.length; i++) {
+                try {
+                    await fetch(CORS_PROXIES[i] + encodeURIComponent('https://httpbin.org/status/200'), { 
+                        method: 'GET',
+                        timeout: 5000 
+                    });
+                    currentProxyIndex = i;
+                    corsWorking = true;
+                    console.log(`✅ CORS proxy ${i + 1} working: ${CORS_PROXIES[i]}`);
+                    break;
+                } catch (error) {
+                    console.warn(`⚠️ CORS proxy ${i + 1} failed: ${CORS_PROXIES[i]}`);
+                }
+            }
+            
+            apiStatus.cors = corsWorking;
+            
+            if (!corsWorking) {
+                console.warn('⚠️ All CORS proxies failed, some features may not work');
+                showNotification('⚠️ Netzwerk-Proxies nicht verfügbar - Eingeschränkte Funktionalität', 'error');
+            }
+            
+            // Load initial data
+            await refreshAllData();
+            
+            // Start auto-refresh
+            startAutoRefresh();
+            
+            console.log('✅ App initialized');
+            
+            // Show setup instructions if APIs not configured
+            if (!apiStatus.weather && !apiStatus.news) {
+                setTimeout(() => {
+                    showNotification('💡 Tipp: Konfiguriere echte API-Keys für Live-Daten!', 'info');
+                }, 3000);
+            }
+        }
+
+        // CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            .status-ok { color: #4ecdc4; font-weight: bold; }
+            .status-error { color: #ff6b6b; font-weight: bold; }
+            .status-loading { color: #ffa726; font-weight: bold; }
+            
+            .news-card {
+                opacity: 0;
+                transform: translateY(20px);
+                animation: slideIn 0.5s ease forwards;
+            }
+            
+            @keyframes slideIn {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        refreshAllData();
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        fetchNewsData();
+                        break;
+                    case 'w':
+                        e.preventDefault();
+                        fetchWeatherData();
+                        break;
+                }
+            }
+        });
+
+        // Error handling for uncaught errors
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            showNotification('❌ Ein unerwarteter Fehler ist aufgetreten', 'error');
+        });
+
+        // Offline detection
+        window.addEventListener('online', () => {
+            showNotification('🌐 Internetverbindung wiederhergestellt');
+            refreshAllData();
+        });
+
+        window.addEventListener('offline', () => {
+            showNotification('📡 Offline - Einige Features nicht verfügbar', 'error');
+        });
+
+        // Add PWA support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(() => {
+                console.log('📱 Service Worker registered for PWA support');
+            }).catch((error) => {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
+
+        // Performance monitoring
+        function logPerformance() {
+            if ('performance' in window) {
+                const perfData = performance.getEntriesByType('navigation')[0];
+                console.log(`⚡ App loaded in ${Math.round(perfData.loadEventEnd - perfData.fetchStart)}ms`);
+            }
+        }
+
+        window.addEventListener('load', logPerformance);

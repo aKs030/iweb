@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Memory-Spiel mit Bestenliste</title>
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+      }
+      .perspective {
+        perspective: 1000px;
+      }
+      .card {
+        position: relative;
+        width: 100%;
+        padding-bottom: 100%;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+      }
+      .card.is-flipped {
+        transform: rotateY(180deg);
+      }
+      .card.is-matched {
+        transform: rotateY(180deg) scale(0.9);
+        opacity: 0.5;
+      }
+      .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .card-front {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: #fff;
+        font-size: 2.5rem;
+      }
+      .card-back {
+        background: linear-gradient(135deg, #818cf8, #4f46e5);
+        transform: rotateY(180deg);
+        font-size: 3rem;
+      }
+      @media (max-width: 640px) {
+        .card-front,
+        .card-back {
+          font-size: 2rem;
+        }
+      }
+      @keyframes tada {
+        10%,
+        20% {
+          transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg);
+        }
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+        }
+        40%,
+        60%,
+        80% {
+          transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+        }
+      }
+      .tada {
+        animation: tada 1s;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-6xl mx-auto text-center mb-6">
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Memory-Spiel</h1>
+      <p class="text-gray-600">Finde die Paare und sichere dir deinen Platz in der Bestenliste!</p>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8 justify-center items-start w-full max-w-6xl mx-auto">
+      <div class="w-full lg:w-1/2 flex flex-col items-center">
+        <div class="w-full max-w-md">
+          <div class="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-md mb-4">
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Benutzername:</label>
+            <input
+              id="username"
+              type="text"
+              placeholder="Spieler123"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          <div
+            class="flex justify-around items-center mb-4 text-lg bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-md"
+          >
+            <p class="text-gray-600">Züge: <span id="moves" class="font-bold text-indigo-600">0</span></p>
+            <p class="text-gray-600">Zeit: <span id="time" class="font-bold text-indigo-600">0s</span></p>
+          </div>
+          <div id="board" class="grid grid-cols-4 gap-4 mb-6"></div>
+          <button
+            id="reset"
+            class="w-full bg-indigo-600 text-white font-bold py-3 rounded-full shadow-lg hover:bg-indigo-700 active:scale-95 transition"
+          >
+            Neues Spiel
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full lg:w-1/2 max-w-md">
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+          <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">🏆 Bestenliste</h2>
+          <div id="leaderboard" class="space-y-3">
+            <p class="text-center text-gray-500">Lade…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 text-center scale-95 transition-transform">
+        <h2 class="text-3xl font-bold text-green-500 mb-4">Gewonnen!</h2>
+        <p id="stats" class="text-gray-700 text-lg mb-6"></p>
+        <p id="saved" class="text-blue-600 font-semibold mb-6"></p>
+        <button
+          id="again"
+          class="bg-green-500 text-white font-bold py-3 rounded-full shadow-lg hover:bg-green-600 active:scale-95 transition"
+        >
+          Nochmal spielen
+        </button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+      import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+      import {
+        getFirestore,
+        collection,
+        onSnapshot,
+        addDoc,
+      } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+      // Deine Firebase-Konfiguration
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBwA8mc9yAuD0RkubA3hHDu3nIpdiDnazY',
+        authDomain: 'memory-4a764.firebaseapp.com',
+        projectId: 'memory-4a764',
+        storageBucket: 'memory-4a764.appspot.com',
+        messagingSenderId: '834884727307',
+        appId: '1:834884727307:web:45f96ef633772b3bb10d0e',
+      };
+      const GAME_ID = 'memory-4a764';
+
+      // DOM
+      const board = document.getElementById('board');
+      const movesEl = document.getElementById('moves');
+      const timeEl = document.getElementById('time');
+      const resetBtn = document.getElementById('reset');
+      const modal = document.getElementById('modal');
+      const statsEl = document.getElementById('stats');
+      const savedEl = document.getElementById('saved');
+      const againBtn = document.getElementById('again');
+      const nameInput = document.getElementById('username');
+      const lbDiv = document.getElementById('leaderboard');
+
+      // Spielvariablen
+      const emojis = ['🍕', '🚀', '🎉', '💡', '🤖', '💎', '🎯', '⭐'];
+      let cards,
+        flipped = [],
+        matched = 0,
+        moves = 0,
+        seconds = 0;
+      let lock = false,
+        timer,
+        started = false,
+        username = '';
+      let db,
+        auth,
+        pending = false;
+
+      (async () => {
+        registerEvents();
+        initBoard();
+        await initFirebase();
+      })();
+
+      function registerEvents() {
+        board.addEventListener('click', onCardClick);
+        resetBtn.addEventListener('click', initBoard);
+        againBtn.addEventListener('click', initBoard);
+        nameInput.addEventListener('change', saveName);
+        nameInput.addEventListener('keyup', (e) => e.key === 'Enter' && (saveName(), nameInput.blur()));
+      }
+
+      function initBoard() {
+        clearInterval(timer);
+        board.innerHTML = '';
+        flipped = [];
+        matched = 0;
+        moves = 0;
+        seconds = 0;
+        lock = false;
+        started = false;
+        movesEl.textContent = '0';
+        timeEl.textContent = '0s';
+        savedEl.textContent = '';
+        modal.classList.add('hidden');
+        cards = shuffle([...emojis, ...emojis]);
+        const stored = localStorage.getItem('memory-username');
+        if (stored) nameInput.value = username = stored;
+        cards.forEach((emoji) => {
+          const w = document.createElement('div');
+          w.className = 'perspective';
+          w.innerHTML = `
+          <div class="card" data-emoji="${emoji}">
+            <div class="card-face card-front">?</div>
+            <div class="card-face card-back">${emoji}</div>
+          </div>`;
+          board.appendChild(w);
+        });
+      }
+
+      async function initFirebase() {
+        try {
+          const app = initializeApp(firebaseConfig);
+          db = getFirestore(app);
+          auth = getAuth(app);
+          await signInAnonymously(auth);
+          loadLeaderboard();
+          if (pending) {
+            saveScore();
+            pending = false;
+          }
+        } catch (e) {
+          console.error('Firebase init failed', e);
+          lbDiv.innerHTML = '<p class="text-center text-red-500">Fehler beim Laden der Bestenliste.</p>';
+        }
+      }
+
+      function loadLeaderboard() {
+        const col = collection(db, `artifacts/${GAME_ID}/public/data/highscores`);
+        onSnapshot(
+          col,
+          (snap) => {
+            lbDiv.innerHTML = '';
+            if (snap.empty) {
+              lbDiv.innerHTML = '<p class="text-center text-gray-500">Noch keine Einträge.</p>';
+              return;
+            }
+            snap.docs
+              .map((d) => d.data())
+              .sort((a, b) => a.moves - b.moves || a.seconds - b.seconds)
+              .slice(0, 10)
+              .forEach((s, i) => {
+                const entry = document.createElement('div');
+                entry.className = `leaderboard-entry flex justify-between items-center p-3 rounded-lg ${i % 2 ? 'bg-white' : 'bg-gray-50'}`;
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+                entry.innerHTML = `
+              <div class="flex items-center">
+                <span class="font-bold text-lg w-8">${medal}</span>
+                <span class="font-semibold text-gray-700">${s.username}</span>
+              </div>
+              <div class="text-right">
+                <p class="font-bold text-indigo-600">${s.moves} Züge</p>
+                <p class="text-sm text-gray-500">${s.seconds}s</p>
+              </div>`;
+                lbDiv.appendChild(entry);
+              });
+          },
+          (err) => {
+            console.error('Snapshot error', err);
+            lbDiv.innerHTML = '<p class="text-center text-red-500">Fehler beim Laden der Bestenliste.</p>';
+          }
+        );
+      }
+
+      function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function saveName() {
+        const v = nameInput.value.trim();
+        if (!v) {
+          nameInput.classList.add('border-red-500');
+          nameInput.placeholder = 'Bitte Namen eingeben!';
+          return false;
+        }
+        nameInput.classList.remove('border-red-500');
+        username = v;
+        localStorage.setItem('memory-username', v);
+        return true;
+      }
+
+      function startTimer() {
+        if (started) return true;
+        if (!username && !saveName()) return false;
+        started = true;
+        timer = setInterval(() => {
+          seconds++;
+          timeEl.textContent = `${seconds}s`;
+        }, 1000);
+        return true;
+      }
+
+      function onCardClick(e) {
+        const c = e.target.closest('.card');
+        if (!c || lock || c.classList.contains('is-flipped')) return;
+        if (!startTimer()) return;
+        c.classList.add('is-flipped');
+        flipped.push(c);
+        if (flipped.length === 2) {
+          movesEl.textContent = ++moves;
+          checkMatch();
+        }
+      }
+
+      function checkMatch() {
+        lock = true;
+        const [a, b] = flipped;
+        if (a.dataset.emoji === b.dataset.emoji) {
+          a.classList.add('is-matched');
+          b.classList.add('is-matched');
+          matched++;
+          if (matched === 1) db ? saveScore() : (pending = true);
+          flipped = [];
+          lock = false;
+          if (matched === emojis.length) endGame();
+        } else {
+          setTimeout(() => {
+            flipped.forEach((x) => x.classList.remove('is-flipped'));
+            flipped = [];
+            lock = false;
+          }, 1200);
+        }
+      }
+
+      async function saveScore() {
+        if (!username) saveName();
+        if (!db) {
+          savedEl.textContent = 'Fehler: DB nicht erreichbar.';
+          return;
+        }
+        savedEl.textContent = 'Speichere…';
+        try {
+          await addDoc(collection(db, `artifacts/${GAME_ID}/public/data/highscores`), {
+            username,
+            moves,
+            seconds,
+            createdAt: new Date(),
+          });
+          savedEl.textContent = 'Ergebnis gespeichert!';
+        } catch (e) {
+          savedEl.textContent = `Fehler: ${e.message || e}`;
+        }
+      }
+
+      function endGame() {
+        clearInterval(timer);
+        started = false;
+        statsEl.textContent = `${moves} Züge • ${seconds}s`;
+        saveScore();
+        modal.classList.remove('hidden');
+        const box = modal.querySelector('div');
+        box.classList.add('tada');
+        box.addEventListener('animationend', () => box.classList.remove('tada'), { once: true });
+      }
+    </script>
+  </body>
+</html>
