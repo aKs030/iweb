@@ -132,7 +132,8 @@ const ADDITIONAL_CHECKS = {
       const poweredBy = headers['x-powered-by'];
       
       const issues = [];
-      if (serverHeader?.match(/\d+\.\d+/)) {
+      // Use optional chaining and a safe regex to avoid ReDoS
+      if (serverHeader?.match(/\d+\.\d{1,3}/)) {
         issues.push('Server-Version wird preisgegeben');
       }
       if (poweredBy) {
