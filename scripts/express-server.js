@@ -23,10 +23,12 @@ app.use((req, res, next) => {
 // Security Headers Middleware (wie dev-server.js)
 app.use((req, res, next) => {
   res.removeHeader('Server');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '0'); // Deaktiviert, CSP wird bevorzugt
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; object-src 'none'; base-uri 'none'");
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');

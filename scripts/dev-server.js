@@ -7,7 +7,7 @@
  * • Nur dependendcy: express (Dev‑Dep in package.json)
  */
 
-/* eslint-disable import/no-commonjs */
+
 const express = require('express');
 const path = require('path');
 
@@ -27,7 +27,10 @@ app.use((_, res, next) => {
     'X-Permitted-Cross-Domain-Policies': 'none',
     'Content-Security-Policy': "default-src 'self'; object-src 'none'; base-uri 'none'",
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Cross-Origin-Embedder-Policy': 'require-corp',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Cross-Origin-Resource-Policy': 'same-origin'
   });
   next();
 });
