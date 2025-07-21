@@ -1,528 +1,523 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-  <meta charset="utf-8">
-  <title>Impressum - Abdulkerim</title>
-  <meta name="description" content="Impressum und rechtliche Angaben zu Abdulkerim und der Website gemäß § 5 TMG.">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#393939">
-  <meta name="robots" content="noindex, follow">
+  <head>
+    <meta charset="utf-8" />
+    <title>Impressum - Abdulkerim</title>
+    <meta name="description" content="Impressum und rechtliche Angaben zu Abdulkerim und der Website gemäß § 5 TMG." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#393939" />
+    <meta name="robots" content="noindex, follow" />
 
-  <link rel="stylesheet" href="/css/_global.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/_global.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 
-  <style>
-    body {
-      min-height: 100vh;
-      margin: 0;
-      padding: 60px 0 60px;
-      background: var(--color-bg);
-      font-family: var(--font-family-main);
-    }
-
-    .impressum-viewbox {
-      margin: 60px auto;
-      width: clamp(320px, 90vw, 500px);
-      height: clamp(400px, 75vh, 650px);
-      background: var(--color-bg-secondary);
-      border-radius: var(--border-radius);
-      box-shadow: 0 8px 40px var(--color-shadow-dark);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      scroll-snap-type: y mandatory;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      position: relative;
-    }
-
-    .impressum-viewbox::-webkit-scrollbar {
-      display: none;
-    }
-
-    .snap-section {
-      min-height: 100%;
-      scroll-snap-align: start;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: clamp(1rem, 3vw, 2rem);
-      box-sizing: border-box;
-      position: relative;
-    }
-
-    /* Hero Section */
-    .hero-section {
-      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-      color: white;
-      text-align: center;
-      justify-content: center;
-    }
-
-    .impressum-title {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
-
-    .impressum-subtitle {
-      font-size: clamp(1rem, 2.5vw, 1.2rem);
-      opacity: 0.9;
-      margin-bottom: 2rem;
-    }
-
-    .legal-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(255,255,255,0.2);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-weight: 600;
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-    }
-
-    .legal-badge i {
-      font-size: 1.2rem;
-    }
-
-    /* Contact Info Card */
-    .info-card {
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .info-card h2 {
-      color: var(--color-accent);
-      font-size: 1.3rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .info-card h2 i {
-      font-size: 1.1rem;
-    }
-
-    .contact-item {
-      margin-bottom: 1.5rem;
-      padding-left: 0;
-    }
-
-    .contact-item strong {
-      display: block;
-      color: var(--color-text-muted);
-      font-size: 0.9rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .contact-item p {
-      margin: 0;
-      color: var(--color-text-main);
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-
-    .contact-item a {
-      color: var(--color-accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .contact-item a:hover {
-      text-decoration: underline;
-    }
-
-    .warning-note {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid rgba(255, 193, 7, 0.3);
-      border-radius: 8px;
-      padding: 0.75rem;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #ffc107;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .warning-note i {
-      font-size: 1rem;
-    }
-    /* Unified card style */
-    .card {
-      background: rgba(255,255,255,0.05);
-      border-radius: 15px;
-      padding: 1.5rem;
-      -webkit-backdrop-filter: blur(5px);
-      backdrop-filter: blur(5px);
-    }
-
-    /* Legal Sections */
-    .legal-section {
-      width: 100%;
-      max-width: 450px;
-    }
-
-    .legal-card {
-      margin-bottom: 1rem;
-    }
-
-    .legal-card h3 {
-      color: var(--color-accent);
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .legal-card h3 i {
-      font-size: 1rem;
-    }
-
-    .legal-card p {
-      color: var(--color-text-muted);
-      line-height: 1.6;
-      margin-bottom: 1rem;
-    }
-
-    .legal-card p:last-child {
-      margin-bottom: 0;
-    }
-
-    .legal-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .legal-list li {
-      padding: 0.75rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      color: var(--color-text-muted);
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-
-    .legal-list li:last-child {
-      border-bottom: none;
-    }
-
-    .legal-list li i {
-      color: var(--color-accent);
-      margin-top: 0.2rem;
-      font-size: 0.8rem;
-    }
-
-    .legal-list a {
-      color: var(--color-accent);
-      text-decoration: none;
-    }
-
-    .legal-list a:hover {
-      text-decoration: underline;
-    }
-
-
-    .disclaimer-card {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid rgba(255, 193, 7, 0.3);
-      border-radius: 15px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .disclaimer-card h2 {
-      color: #ffc107;
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .disclaimer-card p {
-      color: var(--color-text-main);
-      line-height: 1.6;
-      font-size: 0.95rem;
-    }
-
-
-    /* Navigation Dots */
-    .scroll-dots {
-      position: fixed;
-      right: 2rem;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      z-index: 100;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.3);
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .dot:hover {
-      background: rgba(255,255,255,0.5);
-      transform: scale(1.2);
-    }
-
-    .dot.active {
-      background: var(--color-accent);
-      transform: scale(1.3);
-    }
-
-    /* Mobile Anpassungen */
-    @media (max-width: 600px) {
+    <style>
       body {
-        align-items: flex-start;
-        padding-top: 60px;
+        min-height: 100vh;
+        margin: 0;
+        padding: 60px 0 60px;
+        background: var(--color-bg);
+        font-family: var(--font-family-main);
       }
 
       .impressum-viewbox {
-        width: clamp(320px, 90vw, 500px);
-        height: calc(100vh - 60px);
-        border-radius: 0;
         margin: 60px auto;
+        width: clamp(320px, 90vw, 500px);
+        height: clamp(400px, 75vh, 650px);
+        background: var(--color-bg-secondary);
+        border-radius: var(--border-radius);
+        box-shadow: 0 8px 40px var(--color-shadow-dark);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        scroll-snap-type: y mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        position: relative;
       }
 
-      .scroll-dots {
-        display: flex;
+      .impressum-viewbox::-webkit-scrollbar {
+        display: none;
       }
 
       .snap-section {
-        padding: 1rem;
+        min-height: 100%;
+        scroll-snap-align: start;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(1rem, 3vw, 2rem);
+        box-sizing: border-box;
+        position: relative;
       }
 
-      .info-card,
-      .legal-card,
-      .disclaimer-card {
+      /* Hero Section */
+      .hero-section {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        text-align: center;
+        justify-content: center;
+      }
+
+      .impressum-title {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .impressum-subtitle {
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
+        opacity: 0.9;
+        margin-bottom: 2rem;
+      }
+
+      .legal-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      .legal-badge i {
+        font-size: 1.2rem;
+      }
+
+      /* Contact Info Card */
+      .info-card {
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .info-card h2 {
+        color: var(--color-accent);
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .info-card h2 i {
+        font-size: 1.1rem;
+      }
+
+      .contact-item {
+        margin-bottom: 1.5rem;
+        padding-left: 0;
+      }
+
+      .contact-item strong {
+        display: block;
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+      }
+
+      .contact-item p {
+        margin: 0;
+        color: var(--color-text-main);
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+
+      .contact-item a {
+        color: var(--color-accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .contact-item a:hover {
+        text-decoration: underline;
+      }
+
+      .warning-note {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #ffc107;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .warning-note i {
+        font-size: 1rem;
+      }
+      /* Unified card style */
+      .card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
         padding: 1.5rem;
+        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px);
       }
-    }
 
-    /* Menu Container Styles */
-    #menu-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      height: 60px;
-    }
-    /* Footer outside scroll box */
-    .impressum-footer {
-      width: clamp(320px, 90vw, 500px);
-      margin: 1rem auto;
-      text-align: center;
-    }
-    .impressum-footer .footer-links {
-      display: flex;
-      gap: 1.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 0.5rem;
-    }
-    .impressum-footer .footer-links a {
-      color: var(--color-accent);
-      text-decoration: none;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .impressum-footer .footer-links a:hover {
-      text-decoration: underline;
-    }
-    .impressum-footer .impressum-date {
-      font-size: 0.8rem;
-      color: var(--color-text-muted);
-      margin: 0;
-      padding: 0;
-    }
-  </style>
-</head>
-<body>
-  <div id="menu-container"></div>
+      /* Legal Sections */
+      .legal-section {
+        width: 100%;
+        max-width: 450px;
+      }
 
-  <div class="impressum-viewbox">
-    <!-- Hero Section -->
-    <section class="snap-section hero-section">
-      <h1 class="impressum-title">Impressum</h1>
-      <p class="impressum-subtitle">Rechtliche Angaben gemäß § 5 TMG</p>
-      <div class="legal-badge">
-        <i class="fa-solid fa-shield-halved"></i>
-        <span>Rechtlich geprüft</span>
-      </div>
-    </section>
+      .legal-card {
+        margin-bottom: 1rem;
+      }
 
-    <!-- Contact Information Section -->
-    <section class="snap-section">
-      <div class="card info-card">
-        <h2><i class="fa-solid fa-user"></i> Angaben gemäß § 5 TMG</h2>
+      .legal-card h3 {
+        color: var(--color-accent);
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-        <div class="contact-item">
-          <strong>Name und Anschrift</strong>
-          <p>
-            Abdulkerim Sesli<br>
-            Musterstraße 1<br>
-            12345 Musterstadt<br>
-            Deutschland
-          </p>
-        </div>
+      .legal-card h3 i {
+        font-size: 1rem;
+      }
 
-        <div class="contact-item">
-          <strong>Kontakt</strong>
-          <p>
-            E-Mail: <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a><br>
-            Telefon: <a href="tel:+491234567890">+49&nbsp;123&nbsp;4567890</a>
-          </p>
-        </div>
+      .legal-card p {
+        color: var(--color-text-muted);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+      }
 
-        <div class="contact-item">
-          <strong>Verantwortlich für den Inhalt</strong>
-          <p>Nach § 55 Abs. 2 RStV: Abdulkerim Sesli</p>
-        </div>
+      .legal-card p:last-child {
+        margin-bottom: 0;
+      }
 
-        <div class="warning-note">
-          <i class="fa-solid fa-exclamation-triangle"></i>
-          <span>Keine Werbung oder unaufgeforderte Angebote</span>
-        </div>
-      </div>
-    </section>
+      .legal-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
 
-    <!-- Legal Information Section -->
-    <!-- Legal Information: Streitschlichtung -->
-    <section class="snap-section">
-      <div class="legal-section">
-        <div class="card legal-card">
-          <h3><i class="fa-solid fa-gavel"></i> Streitschlichtung</h3>
-          <p>
-            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
-            <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>
-          </p>
-          <p>
-            Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer
-            Verbraucherschlichtungsstelle teilzunehmen.
-          </p>
-        </div>
-      </div>
-    </section>
-    <!-- Legal Information: Urheberrecht -->
-    <section class="snap-section">
-      <div class="legal-section">
-        <div class="card legal-card">
-          <h3><i class="fa-solid fa-copyright"></i> Urheberrecht</h3>
-          <ul class="legal-list">
-            <li><i class="fa-solid fa-check"></i>Alle Inhalte unterliegen dem deutschen Urheberrecht</li>
-            <li><i class="fa-solid fa-check"></i>Vervielfältigung nur mit schriftlicher Genehmigung</li>
-            <li><i class="fa-solid fa-check"></i>Downloads und Kopien nur für den privaten Gebrauch</li>
-            <li><i class="fa-solid fa-check"></i>Kommerzielle Nutzung untersagt</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-    <!-- Legal Information: Haftung für Links -->
-    <section class="snap-section">
-      <div class="legal-section">
-        <div class="card legal-card">
-          <h3><i class="fa-solid fa-link"></i> Haftung für Links</h3>
-          <p>
-            Diese Website enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben.
-            Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.
-          </p>
-        </div>
-      </div>
-    </section>
+      .legal-list li {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--color-text-muted);
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
 
-    <!-- Disclaimer Section -->
-    <section class="snap-section disclaimer-section">
-      <div class="disclaimer-card">
-        <h2><i class="fa-solid fa-triangle-exclamation"></i> Haftungsausschluss</h2>
-        <p>
-          Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt.
-          Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.
-        </p>
-        <p>
-          Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den
-          allgemeinen Gesetzen verantwortlich.
-        </p>
-      </div>
-    </section>
-  </div>
-  <footer class="impressum-footer">
-    <p class="impressum-date">Stand: Januar 2025</p>
-    <div class="footer-links">
-      <a href="/pages/komponente/datenschutz.html">
-        <i class="fa-solid fa-shield"></i> Datenschutz
-      </a>
-      <a href="/pages/komponente/kontakt.html">
-        <i class="fa-solid fa-envelope"></i> Kontakt
-      </a>
-      <a href="/index.html">
-        <i class="fa-solid fa-home"></i> Startseite
-      </a>
-    </div>
-  </footer>
+      .legal-list li:last-child {
+        border-bottom: none;
+      }
 
-  <!-- Navigation Dots -->
-  <div class="scroll-dots">
-    <span class="dot active" data-section="0"></span>
-    <span class="dot" data-section="1"></span>
-    <span class="dot" data-section="2"></span>
-    <span class="dot" data-section="3"></span>
-    <span class="dot" data-section="4"></span>
-    <span class="dot" data-section="5"></span>
-  </div>
+      .legal-list li i {
+        color: var(--color-accent);
+        margin-top: 0.2rem;
+        font-size: 0.8rem;
+      }
 
-  <script src="/js/menu.js" defer></script>
-  <script src="/js/main-init.js" defer></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Scroll Navigation
-      const viewbox = document.querySelector('.impressum-viewbox');
-      const sections = document.querySelectorAll('.snap-section');
-      const dots = document.querySelectorAll('.dot');
+      .legal-list a {
+        color: var(--color-accent);
+        text-decoration: none;
+      }
 
-      let ticking = false;
-      viewbox.addEventListener('scroll', () => {
-        if (!ticking) {
-          window.requestAnimationFrame(() => {
-            const scrollPosition = viewbox.scrollTop;
-            const sectionHeight = viewbox.clientHeight;
-            const currentSection = Math.round(scrollPosition / sectionHeight);
-            dots.forEach((dot, index) => dot.classList.toggle('active', index === currentSection));
-            ticking = false;
-          });
-          ticking = true;
+      .legal-list a:hover {
+        text-decoration: underline;
+      }
+
+      .disclaimer-card {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 15px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .disclaimer-card h2 {
+        color: #ffc107;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .disclaimer-card p {
+        color: var(--color-text-main);
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      /* Navigation Dots */
+      .scroll-dots {
+        position: fixed;
+        right: 2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        z-index: 100;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .dot:hover {
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(1.2);
+      }
+
+      .dot.active {
+        background: var(--color-accent);
+        transform: scale(1.3);
+      }
+
+      /* Mobile Anpassungen */
+      @media (max-width: 600px) {
+        body {
+          align-items: flex-start;
+          padding-top: 60px;
         }
-      });
 
-      // Click on dots to navigate
-      dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-          const targetSection = sections[index];
-          targetSection.scrollIntoView({ behavior: 'smooth' });
+        .impressum-viewbox {
+          width: clamp(320px, 90vw, 500px);
+          height: calc(100vh - 60px);
+          border-radius: 0;
+          margin: 60px auto;
+        }
 
-          dots.forEach(d => d.classList.remove('active'));
-          dot.classList.add('active');
+        .scroll-dots {
+          display: flex;
+        }
+
+        .snap-section {
+          padding: 1rem;
+        }
+
+        .info-card,
+        .legal-card,
+        .disclaimer-card {
+          padding: 1.5rem;
+        }
+      }
+
+      /* Menu Container Styles */
+      #menu-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        height: 60px;
+      }
+      /* Footer outside scroll box */
+      .impressum-footer {
+        width: clamp(320px, 90vw, 500px);
+        margin: 1rem auto;
+        text-align: center;
+      }
+      .impressum-footer .footer-links {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+      }
+      .impressum-footer .footer-links a {
+        color: var(--color-accent);
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .impressum-footer .footer-links a:hover {
+        text-decoration: underline;
+      }
+      .impressum-footer .impressum-date {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="menu-container"></div>
+
+    <div class="impressum-viewbox">
+      <!-- Hero Section -->
+      <section class="snap-section hero-section">
+        <h1 class="impressum-title">Impressum</h1>
+        <p class="impressum-subtitle">Rechtliche Angaben gemäß § 5 TMG</p>
+        <div class="legal-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Rechtlich geprüft</span>
+        </div>
+      </section>
+
+      <!-- Contact Information Section -->
+      <section class="snap-section">
+        <div class="card info-card">
+          <h2><i class="fa-solid fa-user"></i> Angaben gemäß § 5 TMG</h2>
+
+          <div class="contact-item">
+            <strong>Name und Anschrift</strong>
+            <p>
+              Abdulkerim Sesli<br />
+              Musterstraße 1<br />
+              12345 Musterstadt<br />
+              Deutschland
+            </p>
+          </div>
+
+          <div class="contact-item">
+            <strong>Kontakt</strong>
+            <p>
+              E-Mail: <a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a><br />
+              Telefon: <a href="tel:+491234567890">+49&nbsp;123&nbsp;4567890</a>
+            </p>
+          </div>
+
+          <div class="contact-item">
+            <strong>Verantwortlich für den Inhalt</strong>
+            <p>Nach § 55 Abs. 2 RStV: Abdulkerim Sesli</p>
+          </div>
+
+          <div class="warning-note">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            <span>Keine Werbung oder unaufgeforderte Angebote</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Legal Information Section -->
+      <!-- Legal Information: Streitschlichtung -->
+      <section class="snap-section">
+        <div class="legal-section">
+          <div class="card legal-card">
+            <h3><i class="fa-solid fa-gavel"></i> Streitschlichtung</h3>
+            <p>
+              Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
+              <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener"
+                >https://ec.europa.eu/consumers/odr/</a
+              >
+            </p>
+            <p>
+              Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer
+              Verbraucherschlichtungsstelle teilzunehmen.
+            </p>
+          </div>
+        </div>
+      </section>
+      <!-- Legal Information: Urheberrecht -->
+      <section class="snap-section">
+        <div class="legal-section">
+          <div class="card legal-card">
+            <h3><i class="fa-solid fa-copyright"></i> Urheberrecht</h3>
+            <ul class="legal-list">
+              <li><i class="fa-solid fa-check"></i>Alle Inhalte unterliegen dem deutschen Urheberrecht</li>
+              <li><i class="fa-solid fa-check"></i>Vervielfältigung nur mit schriftlicher Genehmigung</li>
+              <li><i class="fa-solid fa-check"></i>Downloads und Kopien nur für den privaten Gebrauch</li>
+              <li><i class="fa-solid fa-check"></i>Kommerzielle Nutzung untersagt</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <!-- Legal Information: Haftung für Links -->
+      <section class="snap-section">
+        <div class="legal-section">
+          <div class="card legal-card">
+            <h3><i class="fa-solid fa-link"></i> Haftung für Links</h3>
+            <p>
+              Diese Website enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Für
+              die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten
+              verantwortlich.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Disclaimer Section -->
+      <section class="snap-section disclaimer-section">
+        <div class="disclaimer-card">
+          <h2><i class="fa-solid fa-triangle-exclamation"></i> Haftungsausschluss</h2>
+          <p>
+            Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und
+            Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.
+          </p>
+          <p>
+            Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen
+            Gesetzen verantwortlich.
+          </p>
+        </div>
+      </section>
+    </div>
+    <footer class="impressum-footer">
+      <p class="impressum-date">Stand: Januar 2025</p>
+      <div class="footer-links">
+        <a href="/pages/komponente/datenschutz.html"> <i class="fa-solid fa-shield"></i> Datenschutz </a>
+        <a href="/pages/komponente/kontakt.html"> <i class="fa-solid fa-envelope"></i> Kontakt </a>
+        <a href="/index.html"> <i class="fa-solid fa-home"></i> Startseite </a>
+      </div>
+    </footer>
+
+    <!-- Navigation Dots -->
+    <div class="scroll-dots">
+      <span class="dot active" data-section="0"></span>
+      <span class="dot" data-section="1"></span>
+      <span class="dot" data-section="2"></span>
+      <span class="dot" data-section="3"></span>
+      <span class="dot" data-section="4"></span>
+      <span class="dot" data-section="5"></span>
+    </div>
+
+    <script src="/assets/js/menu.js" defer></script>
+    <script src="/assets/js/main-init.js" defer></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Scroll Navigation
+        const viewbox = document.querySelector('.impressum-viewbox');
+        const sections = document.querySelectorAll('.snap-section');
+        const dots = document.querySelectorAll('.dot');
+
+        let ticking = false;
+        viewbox.addEventListener('scroll', () => {
+          if (!ticking) {
+            window.requestAnimationFrame(() => {
+              const scrollPosition = viewbox.scrollTop;
+              const sectionHeight = viewbox.clientHeight;
+              const currentSection = Math.round(scrollPosition / sectionHeight);
+              dots.forEach((dot, index) => dot.classList.toggle('active', index === currentSection));
+              ticking = false;
+            });
+            ticking = true;
+          }
+        });
+
+        // Click on dots to navigate
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            const targetSection = sections[index];
+            targetSection.scrollIntoView({ behavior: 'smooth' });
+
+            dots.forEach((d) => d.classList.remove('active'));
+            dot.classList.add('active');
+          });
         });
       });
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>

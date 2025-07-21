@@ -39,7 +39,7 @@
       window.location.search.includes('debug=true'),
 
     // Loader Configuration
-    cssPath: '/css/cookies.css',
+    cssPath: '/assets/css/cookies.css',
     bannerPath: '/pages/komponente/cookie-banner.html',
     insertTarget: 'body',
     insertPosition: 'beforeend',

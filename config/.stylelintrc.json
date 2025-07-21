@@ -32,7 +32,7 @@
   },
   "overrides": [
     {
-      "files": ["css/index.css"],
+      "files": ["assetscss/index.css"],
       "rules": {
         "rule-empty-line-before": null,
         "comment-empty-line-before": null,

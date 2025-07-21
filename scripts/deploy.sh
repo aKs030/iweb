@@ -148,15 +148,7 @@ optimize_assets() {
         }
     fi
     
-    # Minifiziere JavaScript (wenn uglifyjs verfügbar)
-    if command -v uglifyjs &> /dev/null; then
-        log_info "Minifiziere JavaScript..."
-        find "$BUILD_DIR/js" -name "*.js" -not -name "*.min.js" -exec sh -c '
-            uglifyjs "$1" --compress --mangle --output "${1%.js}.min.js" 2>/dev/null && mv "${1%.js}.min.js" "$1" || echo "Skipping $1"
-        ' sh {} \; 2>/dev/null || {
-            log_warning "JavaScript Minifizierung fehlgeschlagen"
-        }
-    fi
+    # JavaScript-Minifizierung entfällt (keine Minified-Dateien mehr notwendig)
     
     # Optimiere Bilder (falls imagemin verfügbar)
     if command -v imagemin &> /dev/null; then

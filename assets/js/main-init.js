@@ -176,7 +176,7 @@ window.onWebsiteReady('PerformanceMonitor', () => {
 }, { priority: 'high' });
 
 window.onWebsiteReady('CookieSystem', async () => {
-    // Cookie System wird über cookie-system.js automatisch initialisiert
+    // Cookie System wird über assets/js/cookie-system.js automatisch initialisiert
     return new Promise(resolve => {
         if (window.CookieConsent) {
             resolve();

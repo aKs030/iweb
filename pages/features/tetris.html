@@ -1,20 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <!-- Optimierter Viewport: Keine Skalierung -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Für iOS: Web-App-Modus -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
-    >
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" />
     <title>Tetris</title>
     <meta
       name="description"
       content="Spiele Tetris online – klassisches Gameplay, Highscore und mobile Steuerung. Entwickelt von Abdulkerim."
-    >
+    />
     <style>
       /* ===========================
        Global & animierter Hintergrund
@@ -521,15 +518,13 @@
     <div id="gameover-overlay">
       <div id="gameover-box">
         <h2>Game Over</h2>
-        <p id="gameover-score-line">
-          Dein Score: <span id="final-score"></span>
-        </p>
+        <p id="gameover-score-line">Dein Score: <span id="final-score"></span></p>
         <p class="info-text">
-          Gib deinen Namen ein und drücke Enter<br>
+          Gib deinen Namen ein und drücke Enter<br />
           oder klicke „Ok“, um zu speichern!
         </p>
         <form id="gameover-form">
-          <label for="player-name">Name:</label><br>
+          <label for="player-name">Name:</label><br />
           <input
             type="text"
             id="player-name"
@@ -538,14 +533,14 @@
             placeholder="Dein Name"
             autocomplete="off"
             enterkeyhint="done"
-          >
+          />
           <button type="submit" id="overlay-submit-btn">Ok</button>
         </form>
       </div>
     </div>
 
     <!-- Alle Skripte als ES6-Modul -->
-    <script src="/js/form-enhancement.js" defer></script>
+    <script src="/assets/js/form-enhancement.js" defer></script>
     <script type="module">
       /* Firebase-Initialisierung und -Import */
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js';
@@ -584,11 +579,7 @@
       }
       async function renderHighScoresFirebase() {
         try {
-          const highscoreQuery = query(
-            collection(db, 'highscores'),
-            orderBy('score', 'desc'),
-            limit(5)
-          );
+          const highscoreQuery = query(collection(db, 'highscores'), orderBy('score', 'desc'), limit(5));
           const querySnapshot = await getDocs(highscoreQuery);
           const listElem = document.getElementById('highscore-list');
           listElem.innerHTML = '';
@@ -760,12 +751,7 @@
         return Array.from({ length: r }, () => Array(c).fill(0));
       }
       function drawBlock(ctx, x, y, color) {
-        const grad = ctx.createLinearGradient(
-          x,
-          y,
-          x + blockSize,
-          y + blockSize
-        );
+        const grad = ctx.createLinearGradient(x, y, x + blockSize, y + blockSize);
         grad.addColorStop(0, lightenColor(color, 40));
         grad.addColorStop(1, color);
         ctx.fillStyle = grad;
@@ -788,12 +774,7 @@
           for (let x = 0; x < currentPiece.matrix[y].length; x++) {
             const val = currentPiece.matrix[y][x];
             if (val !== 0) {
-              drawBlock(
-                context,
-                (ghostPos.x + x) * blockSize,
-                (ghostPos.y + y) * blockSize,
-                colors[val]
-              );
+              drawBlock(context, (ghostPos.x + x) * blockSize, (ghostPos.y + y) * blockSize, colors[val]);
             }
           }
         }
@@ -806,12 +787,7 @@
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < columns; x++) {
             if (grid[y][x] !== 0) {
-              drawBlock(
-                context,
-                x * blockSize,
-                y * blockSize,
-                colors[grid[y][x]]
-              );
+              drawBlock(context, x * blockSize, y * blockSize, colors[grid[y][x]]);
             }
           }
         }
@@ -821,12 +797,7 @@
             for (let x = 0; x < currentPiece.matrix[y].length; x++) {
               const val = currentPiece.matrix[y][x];
               if (val !== 0) {
-                drawBlock(
-                  context,
-                  (position.x + x) * blockSize,
-                  (position.y + y) * blockSize,
-                  colors[val]
-                );
+                drawBlock(context, (position.x + x) * blockSize, (position.y + y) * blockSize, colors[val]);
               }
             }
           }
@@ -843,12 +814,7 @@
           for (let x = 0; x < mat[y].length; x++) {
             const val = mat[y][x];
             if (val !== 0) {
-              drawBlock(
-                nextContext,
-                (x + offsetX) * 20,
-                (y + offsetY) * 20,
-                colors[val]
-              );
+              drawBlock(nextContext, (x + offsetX) * 20, (y + offsetY) * 20, colors[val]);
             }
           }
         }
@@ -864,12 +830,7 @@
           for (let x = 0; x < mat[y].length; x++) {
             const val = mat[y][x];
             if (val !== 0) {
-              drawBlock(
-                holdContext,
-                (x + offsetX) * 20,
-                (y + offsetY) * 20,
-                colors[val]
-              );
+              drawBlock(holdContext, (x + offsetX) * 20, (y + offsetY) * 20, colors[val]);
             }
           }
         }
@@ -883,12 +844,7 @@
             if (val !== 0) {
               const newX = pos.x + x;
               const newY = pos.y + y;
-              if (
-                newX < 0 ||
-                newX >= columns ||
-                newY >= rows ||
-                (newY >= 0 && grid[newY][newX] !== 0)
-              ) {
+              if (newX < 0 || newX >= columns || newY >= rows || (newY >= 0 && grid[newY][newX] !== 0)) {
                 return true;
               }
             }
@@ -955,9 +911,7 @@
         if (gameOver || isPaused || !currentPiece) return;
         const { matrix } = currentPiece;
         const prevState = matrix.map((row) => row.slice());
-        const rotated = matrix[0].map((_, i) =>
-          matrix.map((row) => row[i]).reverse()
-        );
+        const rotated = matrix[0].map((_, i) => matrix.map((row) => row[i]).reverse());
         currentPiece.matrix = rotated;
         if (checkCollision()) {
           currentPiece.matrix = prevState;
@@ -1028,9 +982,7 @@
       function togglePause() {
         if (gameOver) return;
         isPaused = !isPaused;
-        pauseBtn.querySelector('span').textContent = isPaused
-          ? 'Weiter'
-          : 'Pause';
+        pauseBtn.querySelector('span').textContent = isPaused ? 'Weiter' : 'Pause';
       }
 
       function newGame() {
@@ -1154,24 +1106,18 @@
       addContinuousPress('right-btn', () => movePiece('right'), 150);
       addContinuousPress('down-btn', () => moveDown(), 100);
 
-      document
-        .getElementById('rotate-btn')
-        .addEventListener('pointerdown', () => {
-          if (!gameOver && !isPaused) rotateTetromino();
-        });
-      document
-        .getElementById('drop-btn')
-        .addEventListener('pointerdown', () => {
-          if (!gameOver && !isPaused) dropPiece();
-        });
+      document.getElementById('rotate-btn').addEventListener('pointerdown', () => {
+        if (!gameOver && !isPaused) rotateTetromino();
+      });
+      document.getElementById('drop-btn').addEventListener('pointerdown', () => {
+        if (!gameOver && !isPaused) dropPiece();
+      });
       holdBtn.addEventListener('click', () => {
         if (!gameOver && !isPaused) holdTetromino();
       });
       ghostToggleBtn.addEventListener('click', () => {
         ghostEnabled = !ghostEnabled;
-        ghostToggleBtn.querySelector('span').textContent = ghostEnabled
-          ? 'Ghost: An'
-          : 'Ghost: Aus';
+        ghostToggleBtn.querySelector('span').textContent = ghostEnabled ? 'Ghost: An' : 'Ghost: Aus';
         draw();
       });
       pauseBtn.addEventListener('click', togglePause);
@@ -1189,11 +1135,11 @@
         if (gameLoop) clearInterval(gameLoop);
         startGameLoop();
       }
-    // FormEnhancer für das Gameover-Formular initialisieren
-    document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('gameover-form');
-      if (form) new FormEnhancer(form);
-    });
+      // FormEnhancer für das Gameover-Formular initialisieren
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('gameover-form');
+        if (form) new FormEnhancer(form);
+      });
 
       // Initialer Start
       renderHighScoresFirebase();

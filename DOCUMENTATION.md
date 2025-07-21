@@ -1,22 +1,23 @@
 ### Wichtige Dev-Dependencies & Tools
 
-| Paket/Tool         | Zweck / Beschreibung                                  |
-|--------------------|------------------------------------------------------|
-| `eslint`           | Linting für JavaScript, Codequalität                  |
-| `prettier`         | Automatische Code-Formatierung                       |
-| `stylelint`        | Linting für CSS                                      |
-| `purgecss`         | Entfernt ungenutztes CSS                             |
-| `terser`           | Minifiziert JavaScript                               |
-| `lighthouse`       | Performance- und PWA-Analyse                         |
-| `@lhci/cli`        | Lighthouse CI für automatisierte Performance-Tests   |
-| `audit-ci`         | Security Audit für Dependencies                      |
-| `imagemin`/`sharp` | Bildoptimierung (jpg/png/webp/avif)                  |
-| `linkinator`       | Link-Checker für Webseiten                           |
-| `express`          | Dev-Server & Security-Header-Tests                   |
-| `html-validate`    | HTML-Validierung                                     |
-| `@percy/cli`       | Visuelle Regressionstests (optional)                 |
+| Paket/Tool         | Zweck / Beschreibung                               |
+| ------------------ | -------------------------------------------------- |
+| `eslint`           | Linting für JavaScript, Codequalität               |
+| `prettier`         | Automatische Code-Formatierung                     |
+| `stylelint`        | Linting für CSS                                    |
+| `purgecss`         | Entfernt ungenutztes CSS                           |
+| `terser`           | Minifiziert JavaScript                             |
+| `lighthouse`       | Performance- und PWA-Analyse                       |
+| `@lhci/cli`        | Lighthouse CI für automatisierte Performance-Tests |
+| `audit-ci`         | Security Audit für Dependencies                    |
+| `imagemin`/`sharp` | Bildoptimierung (jpg/png/webp/avif)                |
+| `linkinator`       | Link-Checker für Webseiten                         |
+| `express`          | Dev-Server & Security-Header-Tests                 |
+| `html-validate`    | HTML-Validierung                                   |
+| `@percy/cli`       | Visuelle Regressionstests (optional)               |
 
-*Weitere Tools siehe package.json*
+_Weitere Tools siehe package.json_
+
 ## DOCUMENTATION.md
 
 ```markdown
@@ -60,7 +61,7 @@ iweb/ ├── index.html # SPA Entry Point ├── css/ │ ├── \_glob
 ├── index.css # Homepage spezifisch │ ├── menu.css # Navigation System │ ├── cookies.css # Cookie
 Banner Styles │ ├── footer.css # Footer Komponente │ ├── album.css # Galerie Styles │ └──
 ubermich.css # About Page Styles ├── js/ │ ├── main-init.js # Zentrale Initialisierung │ ├──
-cookie-system.js # Cookie Consent Manager │ ├── menu.js # Navigation Controller │ ├──
+assets/js/cookie-system.js # Cookie Consent Manager │ ├── menu.js # Navigation Controller │ ├──
 scroll-dots.js # Scroll Navigation │ ├── templateLoader.js # Dynamic Content Loader │ ├──
 intext.js # Content Animation System │ ├── performance-monitor.js # Performance Tracking │ └──
 enhanced-error-handler.js # Error Management ├── pages/ │ ├── komponente/ # Wiederverwendbare
@@ -93,7 +94,6 @@ Development Scripts
 | `npm run lighthouse`    | Performance-Test mit Lighthouse                     |
 | `npm run compress-images` | Bilder optimieren (jpg/png)                        |
 | `npm run purge`         | Unbenutztes CSS entfernen (PurgeCSS)                |
-| `npm run minify-js`     | JS-Dateien minifizieren (Terser)                    |
 | `npm run security-audit`| Security Audit der Dependencies                     |
 | `npm run security-check`| Security Header Check (lokal)                       |
 | `npm run check-links`   | Link-Checker für lokale Seite                       |
@@ -130,7 +130,7 @@ window.onWebsiteReady(
 );
 ```
 
-### 2. Cookie System (`cookie-system.js`)
+### 2. Cookie System (`assets/js/cookie-system.js`)
 
 **Features**:
 
@@ -398,7 +398,6 @@ npm run compress-images
 npm run purge
 
 # JavaScript minifizieren
-npm run minify-js
 ```
 
 ### Caching Strategy
@@ -725,7 +724,9 @@ test('addiert zwei Zahlen', () => {
 });
 ```
 
-*Hinweis: Für größere Projekte empfiehlt sich der Einsatz von Jest, Vitest oder Mocha für automatisierte Tests. Integrationstests und E2E-Tests können mit Playwright oder Cypress umgesetzt werden.*
+_Hinweis: Für größere Projekte empfiehlt sich der Einsatz von Jest, Vitest oder Mocha für
+automatisierte Tests. Integrationstests und E2E-Tests können mit Playwright oder Cypress umgesetzt
+werden._
 
 ---
 

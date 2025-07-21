@@ -23,27 +23,22 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="/css/album.css" />
-    <link rel="preload" as="image" href="/img/Album/cS-1.jpg" />
+    <link rel="stylesheet" href="/assets/css/album.css" />
+    <link rel="preload" as="image" href="/assets/img/Album/cS-1.jpg" />
 
-    <script src="/js/menu.js" defer></script>
-    <script src="/js/cookie-system.js" defer></script>
+    <script src="/assets/js/menu.js" defer></script>
+    <script src="/assets/js/cookie-system.js" defer></script>
   </head>
 
   <body>
-    <header
-      id="menu-container"
-      role="banner"
-      aria-label="Hauptnavigation"
-    ></header>
+    <header id="menu-container" role="banner" aria-label="Hauptnavigation"></header>
 
     <main id="main-content">
       <section class="gallery-section" aria-labelledby="gallery-heading">
         <div class="container">
           <h6 id="gallery-heading">Meine Fotografische Reise</h6>
           <p class="lead-text">
-            Tauchen Sie ein in meine Bildwelten und entdecken Sie ausgewählte
-            Werke in voller Pracht.
+            Tauchen Sie ein in meine Bildwelten und entdecken Sie ausgewählte Werke in voller Pracht.
           </p>
           <div class="hero-image-display">
             <div class="gallery-title-above-image">
@@ -51,28 +46,17 @@
             </div>
             <img
               id="main-gallery-image"
-              src="/img/Album/cS-1.jpg"
+              src="/assets/img/Album/cS-1.jpg"
               srcset="/img/Album/cS-1.jpg 800w"
               sizes="(max-width: 600px) 100vw, 50vw"
               alt="Hauptbild der Galerie: Luftaufnahme einer dichten, welligen Wolkendecke von oben, die an eine Berglandschaft erinnert, mit klarem blauem Himmel darüber."
               loading="lazy"
             />
-            <button
-              class="gallery-nav-button prev-button"
-              aria-label="Vorheriges Bild anzeigen"
-            >
-              &#10094;
-            </button>
-            <button
-              class="gallery-nav-button next-button"
-              aria-label="Nächstes Bild anzeigen"
-            >
-              &#10095;
-            </button>
+            <button class="gallery-nav-button prev-button" aria-label="Vorheriges Bild anzeigen">&#10094;</button>
+            <button class="gallery-nav-button next-button" aria-label="Nächstes Bild anzeigen">&#10095;</button>
             <div class="gallery-description-below-image">
               <p id="image-detail">
-                Ein majestätischer Blick auf die endlose Weite und die
-                friedliche Stille über dem Horizont.
+                Ein majestätischer Blick auf die endlose Weite und die friedliche Stille über dem Horizont.
               </p>
             </div>
           </div>
@@ -81,46 +65,22 @@
         <div class="thumbnails-container">
           <div class="thumbnails-grid">
             <div class="thumbnail-item active" data-index="0">
-              <img
-                src="/img/Album/cS-1.jpg"
-                alt="Vorschaubild: Luftaufnahme Wolkendecke"
-                loading="lazy"
-              />
+              <img src="/assets/img/Album/cS-1.jpg" alt="Vorschaubild: Luftaufnahme Wolkendecke" loading="lazy" />
             </div>
             <div class="thumbnail-item" data-index="1">
-              <img
-                src="/img/Album/cS-2.jpg"
-                alt="Vorschaubild: Stadtbrücke bei Nacht"
-                loading="lazy"
-              />
+              <img src="/assets/img/Album/cS-2.jpg" alt="Vorschaubild: Stadtbrücke bei Nacht" loading="lazy" />
             </div>
             <div class="thumbnail-item" data-index="2">
-              <img
-                src="/img/Album/cS-3.jpg"
-                alt="Vorschaubild: Küstenlandschaft mit Felsen"
-                loading="lazy"
-              />
+              <img src="/assets/img/Album/cS-3.jpg" alt="Vorschaubild: Küstenlandschaft mit Felsen" loading="lazy" />
             </div>
             <div class="thumbnail-item" data-index="3">
-              <img
-                src="/img/Album/cS-4.jpg"
-                alt="Vorschaubild: Ruinen unter bewölktem Himmel"
-                loading="lazy"
-              />
+              <img src="/assets/img/Album/cS-4.jpg" alt="Vorschaubild: Ruinen unter bewölktem Himmel" loading="lazy" />
             </div>
             <div class="thumbnail-item" data-index="4">
-              <img
-                src="/img/Album/cS-5.jpg"
-                alt="Vorschaubild: Antike Ruinen in Landschaft"
-                loading="lazy"
-              />
+              <img src="/assets/img/Album/cS-5.jpg" alt="Vorschaubild: Antike Ruinen in Landschaft" loading="lazy" />
             </div>
             <div class="thumbnail-item" data-index="5">
-              <img
-                src="/img/Album/cS-6.jpg"
-                alt="Vorschaubild: Inneres einer Moschee"
-                loading="lazy"
-              />
+              <img src="/assets/img/Album/cS-6.jpg" alt="Vorschaubild: Inneres einer Moschee" loading="lazy" />
             </div>
           </div>
         </div>
@@ -142,43 +102,37 @@
           src: '/img/Album/cS-1.jpg',
           alt: 'Luftaufnahme einer dichten, welligen Wolkendecke von oben, die an eine Berglandschaft erinnert, mit klarem blauem Himmel darüber.',
           title: 'Himmel über den Wolken',
-          detail:
-            'Ein majestätischer Blick auf die endlose Weite und die friedliche Stille über dem Horizont.',
+          detail: 'Ein majestätischer Blick auf die endlose Weite und die friedliche Stille über dem Horizont.',
         },
         {
           src: '/img/Album/cS-2.jpg',
           alt: 'Nachtaufnahme einer beleuchteten Stadtbrücke, deren Lichter sich spektakulär im dunklen Wasser darunter spiegeln.',
           title: 'Stadtlichter bei Nacht',
-          detail:
-            'Magische Momente, wenn die Stadt erwacht und in leuchtenden Farben glänzt.',
+          detail: 'Magische Momente, wenn die Stadt erwacht und in leuchtenden Farben glänzt.',
         },
         {
           src: '/img/Album/cS-3.jpg',
           alt: 'Dramatische Küstenlandschaft mit einem majestätischen Felsen im dunkelblauen Meer und sanften, grünen Hügeln im Hintergrund unter bewölktem Himmel.',
           title: 'Küstenzauber',
-          detail:
-            'Die Ruhe und ursprüngliche Kraft der Natur am Meer, perfekt eingefangen.',
+          detail: 'Die Ruhe und ursprüngliche Kraft der Natur am Meer, perfekt eingefangen.',
         },
         {
           src: '/img/Album/cS-4.jpg',
           alt: 'Weitläufige Ansicht antiker Ruinen oder archäologischer Stätten mit massiven Steinmauern und Bodenstrukturen unter einem dramatisch bewölkten Himmel.',
           title: 'Vergangene Zeiten',
-          detail:
-            'Spuren der Geschichte in Stein gemeißelt – ein Fenster in alte Zivilisationen.',
+          detail: 'Spuren der Geschichte in Stein gemeißelt – ein Fenster in alte Zivilisationen.',
         },
         {
           src: '/img/Album/cS-5.jpg',
           alt: 'Panorama einer weitläufigen, grünen Hügellandschaft mit den zerfallenen Säulen und Mauerresten einer antiken Stadt.',
           title: 'Geheimnisse der Antike',
-          detail:
-            'Faszination für alte Kulturen und ihre imposanten Bauwerke in der Natur.',
+          detail: 'Faszination für alte Kulturen und ihre imposanten Bauwerke in der Natur.',
         },
         {
           src: '/img/Album/cS-6.jpg',
           alt: 'Das prachtvolle, reich verzierte Innere einer großen Moschee mit einer beeindruckenden, kunstvollen Kuppel und einem detailreichen rötlichen Gebetsteppich auf dem Boden.',
           title: 'Architektur & Spiritualität',
-          detail:
-            'Inspiration durch Formen, Licht und die ehrwürdige Atmosphäre heiliger Räume.',
+          detail: 'Inspiration durch Formen, Licht und die ehrwürdige Atmosphäre heiliger Räume.',
         },
       ];
 

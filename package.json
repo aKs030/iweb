@@ -26,8 +26,7 @@
     "security-check": "node scripts/check-security-headers.js",
     "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de",
     "pre-deploy": "npm run format && npm run lint && npm run validate-html && npm run validate-css && npm run optimize",
-    "test": "npm run validate-html && npm run validate-css",
-    "minify-js": "terser js/main-init.js -o js/main-init.min.js && terser js/menu.js -o js/menu.min.js"
+    "test": "npm run validate-html && npm run validate-css"
   },
   "devDependencies": {
     "@lhci/cli": "^0.15.1",

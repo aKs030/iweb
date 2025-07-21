@@ -115,8 +115,8 @@ self.addEventListener('push', event => {
     
     const options = {
       body: data.body,
-      icon: '/img/icon-192.png',
-      badge: '/img/badge-72.png',
+      icon: '/assets/img/icon-192.png',
+      badge: '/assets/img/badge-72.png',
       vibrate: [100, 50, 100],
       data: {
         dateOfArrival: Date.now(),
@@ -129,7 +129,7 @@ self.addEventListener('push', event => {
     );
   }
 });
-self.importScripts('js/idb-min.js');
+self.importScripts('assets/js/idb-min.js');
 // Sync-Event für das Kontaktformular
 self.addEventListener('sync', async event => {
   if (event.tag === 'contact-form') {
@@ -176,15 +176,15 @@ const STATIC_ASSETS = [
   '/index.html',
   '/pages/komponente/offline.html',
   '/pages/komponente/404.html',
-  '/css/_global.css',
-  '/css/index.css',
-  '/css/menu.css',
-  '/js/main-init.js',
-  '/js/menu.js',
+  '/assets/css/_global.css',
+  '/assets/css/index.css',
+  '/assets/css/menu.css',
+  '/assets/js/main-init.js',
+  '/assets/js/menu.js',
   '/manifest.json',
-  '/img/favicon.ico',
-  '/img/favicon-32.png',
-  '/img/touch-icon-180.png'
+  '/assets/img/favicon.ico',
+  '/assets/img/favicon-32.png',
+  '/assets/img/touch-icon-180.png'
 ];
 
 // Cache-Strategien für verschiedene Ressourcen-Typen

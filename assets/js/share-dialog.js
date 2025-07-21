@@ -14,10 +14,10 @@ function showShareDialog(title = document.title, text = '', url = window.locatio
   dialog.innerHTML = `
     <div class="share-dialog-content">
       <h3>Teilen</h3>
-      <a href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener" title="WhatsApp"><img src="img/icon-96.png" alt="WhatsApp" /></a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener" title="Facebook"><img src="img/icon-96.png" alt="Facebook" /></a>
-      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}" target="_blank" rel="noopener" title="X/Twitter"><img src="img/icon-96.png" alt="X/Twitter" /></a>
-      <a href="mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n' + url)}" title="E-Mail"><img src="img/icon-96.png" alt="E-Mail" /></a>
+      <a href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener" title="WhatsApp"><img src="assets/img/icon-96.png" alt="WhatsApp" /></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener" title="Facebook"><img src="assets/img/icon-96.png" alt="Facebook" /></a>
+      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}" target="_blank" rel="noopener" title="X/Twitter"><img src="assets/img/icon-96.png" alt="X/Twitter" /></a>
+      <a href="mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n' + url)}" title="E-Mail"><img src="assets/img/icon-96.png" alt="E-Mail" /></a>
       <button id="close-share-dialog">Schließen</button>
     </div>
   `;
