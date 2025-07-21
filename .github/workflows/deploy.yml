@@ -66,13 +66,11 @@ jobs:
           kill $SERVER_PID && wait $SERVER_PID || true
 
       - name: "⚡ Lighthouse CI"
-        uses: treosh/lighthouse-ci-action@v10
-        with:
-          configPath: './lighthouserc.js'
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-          artifactName: lighthouse_results   # Unterstrich – gültig für Azure-API
-        continue-on-error: true
+  id: lighthouse
+  run: |
+    npx lhci autorun --config=lighthouserc.js | tee lhci-output.log
+    cat lhci-output.log
+
 
       - name: "📤 Upload Lighthouse Results"
         uses: actions/upload-artifact@v4
