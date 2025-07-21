@@ -89,6 +89,9 @@
         scrollbar-color: var(--color-accent) transparent;
         position: relative;
         backdrop-filter: blur(10px);
+        /* Verbesserte Ausrichtung für Formular-Container */
+        align-items: stretch;
+        justify-content: center;
       }
 
       /* Verbesserte Scrollbar für Webkit */
@@ -307,11 +310,24 @@
       /* Verbessertes Formular */
       .form-section {
         background: var(--color-bg-secondary);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .form-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
 
       .kontakt-form {
         width: 100%;
         max-width: 400px;
+        margin: 0 auto;
       }
 
       .form-title {
@@ -784,6 +800,7 @@
 
       .kontakt-form {
         max-width: 320px;
+        margin: 0 auto;
       }
       .form-title {
         font-size: 1.1rem;
@@ -946,106 +963,108 @@
 
       <!-- Form Section -->
       <section class="snap-section form-section" role="form" aria-labelledby="contact-form-title">
-        <form class="kontakt-form" id="kontakt-formular" autocomplete="on" novalidate>
-          <h2 id="contact-form-title" class="form-title">Nachricht senden</h2>
+        <div class="form-container">
+          <form class="kontakt-form" id="kontakt-formular" autocomplete="on" novalidate>
+            <h2 id="contact-form-title" class="form-title">Nachricht senden</h2>
 
-          <div class="form-group">
-            <label for="name">Name *</label>
-            <input 
-              type="text" 
-              id="name" 
-              name="name" 
-              required 
-              maxlength="50" 
-              placeholder="Ihr Name"
-              autocomplete="name"
-              aria-describedby="name-error"
-            />
-            <div class="error-message" id="name-error" role="alert"></div>
-          </div>
+            <div class="form-group">
+              <label for="name">Name *</label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                required 
+                maxlength="50" 
+                placeholder="Ihr Name"
+                autocomplete="name"
+                aria-describedby="name-error"
+              />
+              <div class="error-message" id="name-error" role="alert"></div>
+            </div>
 
-          <div class="form-group">
-            <label for="email">E-Mail *</label>
-            <input 
-              type="email" 
-              id="email" 
-              name="email" 
-              required 
-              maxlength="100" 
-              placeholder="ihre.email@beispiel.de"
-              autocomplete="email"
-              aria-describedby="email-error"
-            />
-            <div class="error-message" id="email-error" role="alert"></div>
-          </div>
+            <div class="form-group">
+              <label for="email">E-Mail *</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                required 
+                maxlength="100" 
+                placeholder="ihre.email@beispiel.de"
+                autocomplete="email"
+                aria-describedby="email-error"
+              />
+              <div class="error-message" id="email-error" role="alert"></div>
+            </div>
 
-          <div class="form-group">
-            <label for="betreff">Betreff</label>
-            <input 
-              type="text" 
-              id="betreff" 
-              name="betreff" 
-              maxlength="100" 
-              placeholder="Betreff Ihrer Nachricht"
-              autocomplete="off"
-            />
-          </div>
+            <div class="form-group">
+              <label for="betreff">Betreff</label>
+              <input 
+                type="text" 
+                id="betreff" 
+                name="betreff" 
+                maxlength="100" 
+                placeholder="Betreff Ihrer Nachricht"
+                autocomplete="off"
+              />
+            </div>
 
-          <div class="form-group">
-            <label for="art">Art der Anfrage</label>
-            <select id="art" name="art" autocomplete="off">
-              <option value="">Bitte wählen</option>
-              <option value="projekt">Projektanfrage</option>
-              <option value="zusammenarbeit">Zusammenarbeit</option>
-              <option value="support">Support</option>
-              <option value="feedback">Feedback</option>
-              <option value="sonstiges">Sonstiges</option>
-            </select>
-          </div>
+            <div class="form-group">
+              <label for="art">Art der Anfrage</label>
+              <select id="art" name="art" autocomplete="off">
+                <option value="">Bitte wählen</option>
+                <option value="projekt">Projektanfrage</option>
+                <option value="zusammenarbeit">Zusammenarbeit</option>
+                <option value="support">Support</option>
+                <option value="feedback">Feedback</option>
+                <option value="sonstiges">Sonstiges</option>
+              </select>
+            </div>
 
-          <div class="form-group">
-            <label for="nachricht">Nachricht *</label>
-            <textarea
-              id="nachricht"
-              name="nachricht"
-              required
-              maxlength="1000"
-              placeholder="Ihre Nachricht..."
-              rows="4"
-              aria-describedby="nachricht-error nachricht-counter"
-            ></textarea>
-            <div class="error-message" id="nachricht-error" role="alert"></div>
-            <div id="nachricht-counter" class="character-counter" aria-live="polite">0 / 1000 Zeichen</div>
-          </div>
+            <div class="form-group">
+              <label for="nachricht">Nachricht *</label>
+              <textarea
+                id="nachricht"
+                name="nachricht"
+                required
+                maxlength="1000"
+                placeholder="Ihre Nachricht..."
+                rows="4"
+                aria-describedby="nachricht-error nachricht-counter"
+              ></textarea>
+              <div class="error-message" id="nachricht-error" role="alert"></div>
+              <div id="nachricht-counter" class="character-counter" aria-live="polite">0 / 1000 Zeichen</div>
+            </div>
 
-          <div class="form-checkbox">
-            <input 
-              type="checkbox" 
-              id="datenschutz" 
-              name="datenschutz" 
-              required
-              aria-describedby="datenschutz-error"
-            />
-            <label for="datenschutz">
-              Ich stimme der 
-              <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener">
-                Datenschutzerklärung
-              </a> 
-              zu *
-            </label>
-            <div class="error-message" id="datenschutz-error" role="alert"></div>
-          </div>
+            <div class="form-checkbox">
+              <input 
+                type="checkbox" 
+                id="datenschutz" 
+                name="datenschutz" 
+                required
+                aria-describedby="datenschutz-error"
+              />
+              <label for="datenschutz">
+                Ich stimme der 
+                <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener">
+                  Datenschutzerklärung
+                </a> 
+                zu *
+              </label>
+              <div class="error-message" id="datenschutz-error" role="alert"></div>
+            </div>
 
-          <button type="submit" class="form-submit" id="submit-btn" aria-describedby="submit-status">
-            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> 
-            <span>Nachricht senden</span>
-          </button>
+            <button type="submit" class="form-submit" id="submit-btn" aria-describedby="submit-status">
+              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> 
+              <span>Nachricht senden</span>
+            </button>
 
-          <div class="form-success" id="form-success" role="status" aria-live="polite">
-            <i class="fa-solid fa-check-circle" aria-hidden="true"></i> 
-            Vielen Dank! Ich melde mich schnellstmöglich.
-          </div>
-        </form>
+            <div class="form-success" id="form-success" role="status" aria-live="polite">
+              <i class="fa-solid fa-check-circle" aria-hidden="true"></i> 
+              Vielen Dank! Ich melde mich schnellstmöglich.
+            </div>
+          </form>
+        </div>
       </section>
 
       <!-- FAQ Section -->
