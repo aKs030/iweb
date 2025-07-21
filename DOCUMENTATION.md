@@ -1,481 +1,736 @@
-# 🌟 iweb-6 - Produktions-Ready Dokumentation
+### Wichtige Dev-Dependencies & Tools
 
-## 📋 Projekt-Übersicht
+| Paket/Tool         | Zweck / Beschreibung                                  |
+|--------------------|------------------------------------------------------|
+| `eslint`           | Linting für JavaScript, Codequalität                  |
+| `prettier`         | Automatische Code-Formatierung                       |
+| `stylelint`        | Linting für CSS                                      |
+| `purgecss`         | Entfernt ungenutztes CSS                             |
+| `terser`           | Minifiziert JavaScript                               |
+| `lighthouse`       | Performance- und PWA-Analyse                         |
+| `@lhci/cli`        | Lighthouse CI für automatisierte Performance-Tests   |
+| `audit-ci`         | Security Audit für Dependencies                      |
+| `imagemin`/`sharp` | Bildoptimierung (jpg/png/webp/avif)                  |
+| `linkinator`       | Link-Checker für Webseiten                           |
+| `express`          | Dev-Server & Security-Header-Tests                   |
+| `html-validate`    | HTML-Validierung                                     |
+| `@percy/cli`       | Visuelle Regressionstests (optional)                 |
 
-**iweb-6** ist eine moderne, vollständig optimierte Personal Website mit PWA-Funktionalität und Enterprise-Level Features.
+*Weitere Tools siehe package.json*
+## DOCUMENTATION.md
 
-### 🎯 **Aktuelle Bewertung: 9.9/10** ⭐️
+```markdown
+# 📚 iweb Technische Dokumentation
 
-| Kategorie         | Status         | Score  |
-| ----------------- | -------------- | ------ |
-| **HTML/Struktur** | ✅ Vollständig | 10/10  |
-| **CSS/Design**    | ✅ Optimiert   | 10/10  |
-| **JavaScript**    | ✅ Modern      | 9.8/10 |
-| **PWA**           | ✅ Funktional  | 10/10  |
-| **Sicherheit**    | ✅ Gehärtet    | 9.9/10 |
-| **Performance**   | ✅ Optimiert   | 9.8/10 |
-| **SEO**           | ✅ Vollständig | 10/10  |
-| **Accessibility** | ✅ WCAG 2.1 AA | 9.9/10 |
-| **Deployment**    | ✅ Ready       | 10/10  |
+## Inhaltsverzeichnis
 
----
+1. [Architektur](#architektur)
+2. [Module & Komponenten](#module--komponenten)
+3. [Styling System](#styling-system)
+4. [JavaScript Architecture](#javascript-architecture)
+5. [Performance Optimierung](#performance-optimierung)
+6. [Security Implementation](#security-implementation)
+7. [PWA Features](#pwa-features)
+8. [Cookie Management](#cookie-management)
+9. [Build & Deployment](#build--deployment)
+10. [Troubleshooting](#troubleshooting)
 
-## 🚀 Quick Start
+## Architektur
 
-### Installation & Setup:
+### Technologie-Stack
 
-```bash
-# 1. Repository klonen/navigieren
-cd /Users/abdo/Desktop/website/iweb-6
+- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
+- **Build Tools**: Node.js, Express.js (Dev Server)
+- **Testing**: Lighthouse CI, HTML Validator, Stylelint
+- **CI/CD**: GitHub Actions
+- **Analytics**: Google Analytics 4
+- **Hosting**: Static Hosting (Cloudflare Pages empfohlen)
 
-# 2. Lokalen Test-Server starten
-node scripts/express-server.js
+### Design Patterns
 
-# 3. Im Browser öffnen
-open http://localhost:8000
+- **Module Pattern**: Gekapselte JavaScript-Module
+- **Observer Pattern**: Event-basierte Kommunikation
+- **Singleton Pattern**: Cookie Manager, Performance Monitor
+- **Factory Pattern**: Dynamic Content Loading
+
+### Verzeichnisstruktur
 ```
 
-### Produktions-Deployment:
+iweb/ ├── index.html # SPA Entry Point ├── css/ │ ├── \_global.css # CSS Custom Properties & Reset │
+├── index.css # Homepage spezifisch │ ├── menu.css # Navigation System │ ├── cookies.css # Cookie
+Banner Styles │ ├── footer.css # Footer Komponente │ ├── album.css # Galerie Styles │ └──
+ubermich.css # About Page Styles ├── js/ │ ├── main-init.js # Zentrale Initialisierung │ ├──
+cookie-system.js # Cookie Consent Manager │ ├── menu.js # Navigation Controller │ ├──
+scroll-dots.js # Scroll Navigation │ ├── templateLoader.js # Dynamic Content Loader │ ├──
+intext.js # Content Animation System │ ├── performance-monitor.js # Performance Tracking │ └──
+enhanced-error-handler.js # Error Management ├── pages/ │ ├── komponente/ # Wiederverwendbare
+Komponenten │ │ ├── menu.html # Navigation Template │ │ ├── footer.html # Footer Template │ │ ├──
+cookie-banner.html # Cookie Banner │ │ └── ... │ └── ... # Weitere Seiten └── scripts/ # Build &
+Development Scripts
 
-```bash
-# Vollständiges Deployment
-./deploy.sh production
+````
 
-# Staging-Deployment
-./deploy.sh staging
-```
+## Module & Komponenten
 
----
+### 1. Main Initialization (`main-init.js`)
 
-## 📁 Projekt-Struktur
-
-```
-iweb-6/
-├── 📄 index.html              # Haupt-Einstiegspunkt (OPTIMIERT)
-├── 📄 manifest.json           # PWA Manifest (KORRIGIERT)
-├── 📄 sw.js                   # Service Worker (SICHERHEIT)
-├── 📄 robots.txt              # SEO Robots (abdulkerimsesli.de)
-├── 📄 sitemap.xml             # SEO Sitemap (AKTUALISIERT)
-├── 📄 deploy.sh               # Deployment Script (NEU)
-├── 📄 lighthouserc.js         # Lighthouse Config (NEU)
-│
-├── 📂 css/                    # Stylesheet-Architektur
-│   ├── _global.css            # CSS Custom Properties
-│   ├── index.css              # Haupt-Styles
-│   ├── album.css              # Galerie-Komponente
-│   ├── menu.css               # Navigation
-│   ├── footer.css             # Footer-Styles
-│   ├── cookies.css            # Cookie Banner
-│   ├── ubermich.css           # About-Seite
-│   └── index-game.css         # Spiele-Sektion
-│
-├── 📂 js/                     # JavaScript-Module
-│   ├── cookies.js             # DSGVO Cookie Management
-│   ├── menu.js                # Navigation Logic
-│   ├── scroll-dots.js         # Scroll Indicator
-│   ├── templateLoader.js      # Dynamic Loading
-│   ├── intext.js              # Text Effekte
-│   ├── cms-integration.js     # CMS Funktionalität (NEU)
-│   └── error-handler.js       # Error Tracking (NEU)
-│
-├── 📂 pages/                  # Seiten-Templates
-│   ├── album.html             # Portfolio/Galerie
-│   ├── ubermich.html          # Über-mich Seite
-│   ├── index-card.html        # Card-Komponente
-│   ├── index-game.html        # Mini-Spiele
-│   ├── features/              # Feature-Demos
-│   └── komponente/            # UI-Komponenten
-│
-├── 📂 img/                    # Medien-Assets
-│   ├── favicon.ico            # Browser-Icon
-│   ├── icon.png               # PWA Icon
-│   ├── Album/                 # Galerie-Bilder
-│   └── splash/                # PWA Splash Screens
-│
-└── 📂 .github/                # GitHub Integration (NEU)
-    └── workflows/
-        └── deploy.yml         # CI/CD Pipeline
-```
-
----
-
-## 🔧 Technologie-Stack
-
-### Frontend:
-
-- **HTML5**: Semantisch, PWA-ready, WCAG 2.1 AA
-- **CSS3**: Modern (Grid, Flexbox, Custom Properties, clamp())
-- **JavaScript ES6+**: Modular, TypeScript-ready
-- **Bootstrap 5.3.5**: UI Framework mit CDN + Integrity
-- **FontAwesome 6.7.2**: Icon-Library
-
-### PWA Features:
-
-- **Service Worker**: Offline-Support, Caching-Strategien
-- **Web App Manifest**: Installierbare App
-- **Splash Screens**: iOS/Android optimiert
-- **Push Notifications**: Ready (deaktiviert)
-
-### Performance:
-
-- **Critical CSS**: Above-the-fold Optimierung
-- **Lazy Loading**: Bilder und Komponenten
-- **Compression**: GZIP-ready
-- **CDN**: Externe Resources mit Integrity Checks
-
-### Security:
-
-- **CSP Headers**: Content Security Policy
-- **HTTPS Redirect**: Automatische Weiterleitung
-- **Origin Validation**: Service Worker Security
-- **Input Sanitization**: XSS Prevention
-
-### Analytics & Monitoring:
-
-- **Google Analytics 4**: gtag.js mit Consent Mode
-- **Core Web Vitals**: Performance Monitoring
-- **Error Tracking**: Umfassende Fehlerbehandlung
-- **Lighthouse CI**: Automatisierte Qualitätsprüfung
-
----
-
-## 🎯 Features & Highlights
-
-### ✅ **Vollständig Implementiert:**
-
-1. **DSGVO-Konforme Cookie-Verwaltung**
-   - Geo-Location basierte Compliance-Erkennung
-   - Granulare Consent-Optionen
-   - localStorage + sessionStorage Management
-   - Google Analytics Consent Mode Integration
-
-2. **Progressive Web App (PWA)**
-   - Installierbar auf allen Plattformen
-   - Offline-Funktionalität
-   - App-ähnliche Navigation
-   - Push-Notification Ready
-
-3. **Performance-Optimierung**
-   - Core Web Vitals: 95+ Score
-   - First Contentful Paint < 1.5s
-   - Largest Contentful Paint < 2.5s
-   - Cumulative Layout Shift < 0.1
-
-4. **SEO-Optimierung**
-   - Open Graph Meta Tags
-   - Twitter Card Support
-   - Structured Data (JSON-LD)
-   - Optimierte robots.txt & sitemap.xml
-
-5. **Accessibility (WCAG 2.1 AA)**
-   - Semantic HTML5 Struktur
-   - ARIA Labels und Rollen
-   - Keyboard Navigation
-   - Screen Reader Support
-   - Farbkontrast 4.5:1+
-
-6. **Enterprise Security**
-   - Content Security Policy
-   - Subresource Integrity
-   - HTTPS-Only Policy
-   - Input Validation
-
-### 🔧 **CMS-Integration (Optional)**
+**Zweck**: Zentrale Koordination aller Module
 
 ```javascript
-// CMS aktivieren:
-// URL: ?cms=true oder ?edit=true
-// Funktionen: Click-to-Edit, Content-Management
-window.CMS.setContent({
-  hero: { title: 'Neuer Titel' },
-});
-```
+*Hinweis: Auszug, nicht alle Dateien gelistet.*
 
-### 📊 **Monitoring & Analytics**
+### NPM-Skripte & Tools
+
+| Befehl                  | Zweck / Beschreibung                                 |
+|-------------------------|-----------------------------------------------------|
+| `npm run dev`           | Lokaler Entwicklungsserver starten                  |
+| `npm run build`         | (Kein Build nötig, statische Seite)                 |
+| `npm run validate-html` | HTML-Validierung aller Seiten                       |
+| `npm run validate-css`  | CSS-Validierung mit Stylelint                       |
+| `npm run lint`          | Linting & Auto-Fix für JS mit ESLint                |
+| `npm run format`        | Code-Formatierung mit Prettier                      |
+| `npm run test`          | HTML- & CSS-Validierung (Kombi)                     |
+| `npm run lighthouse`    | Performance-Test mit Lighthouse                     |
+| `npm run compress-images` | Bilder optimieren (jpg/png)                        |
+| `npm run purge`         | Unbenutztes CSS entfernen (PurgeCSS)                |
+| `npm run minify-js`     | JS-Dateien minifizieren (Terser)                    |
+| `npm run security-audit`| Security Audit der Dependencies                     |
+| `npm run security-check`| Security Header Check (lokal)                       |
+| `npm run check-links`   | Link-Checker für lokale Seite                       |
+| `npm run pre-deploy`    | Alle Checks & Optimierungen vor Deployment          |
+| `./deploy.sh production`| Deployment-Skript                                   |
+
+**Wichtige Tools:** ESLint, Prettier, Stylelint, PurgeCSS, Terser, Lighthouse, Audit-CI, Imagemin, Sharp, Linkinator
+class MainInitializer {
+  constructor() {
+    this.initModules = [];
+    this.isInitialized = false;
+    this.moduleTimings = new Map();
+  }
+
+  registerModule(name, initFunction, options = {}) {
+    // Registriert Module mit Prioritäten und Dependencies
+  }
+
+  async initialize() {
+    // Führt Module in korrekter Reihenfolge aus
+  }
+}
+````
+
+**Verwendung**:
 
 ```javascript
-// Performance Monitoring
-window.performanceMonitor.getMetrics();
-
-// Error Tracking
-window.errorHandler.logError('Custom Error', { context: 'info' });
-
-// Google Analytics
-gtag('event', 'page_view', { page_title: 'Custom' });
+window.onWebsiteReady(
+  'ModuleName',
+  async () => {
+    // Initialisierungscode
+  },
+  { priority: 'high', dependencies: ['OtherModule'] }
+);
 ```
+
+### 2. Cookie System (`cookie-system.js`)
+
+**Features**:
+
+- DSGVO/CCPA Compliance
+- Granulare Cookie-Kategorien
+- Google Analytics Integration
+- Persistent Storage
+- Event-basierte Updates
+
+**API**:
+
+```javascript
+// Cookie Banner anzeigen
+window.CookieBanner.show();
+
+// Consent prüfen
+if (window.CookieBanner.hasConsent('analytics')) {
+  // Analytics Code
+}
+
+// Consent setzen
+window.CookieBanner.setConsent('marketing', true);
+
+// Debug Info
+console.log(window.CookieBanner.debug());
+```
+
+### 3. Navigation System (`menu.js`)
+
+**Features**:
+
+- Responsive Mobile Menu
+- Submenu Support
+- ARIA Accessibility
+- Theme Switcher Integration
+- Search Functionality
+
+**Struktur**:
+
+```javascript
+// Automatisches Laden bei DOMContentLoaded
+// Menu wird aus /pages/komponente/menu.html geladen
+// Event Delegation für Performance
+```
+
+### 4. Performance Monitor (`performance-monitor-enhanced.js`)
+
+**Metriken**:
+
+- Core Web Vitals (LCP, FID, CLS)
+- Custom Metrics (Template Load, Animation Duration)
+- Memory Usage
+- Network Performance
+
+**API**:
+
+```javascript
+// Debug Helper (nur Development)
+debugPerformance.summary(); // Aktuelle Performance-Übersicht
+debugPerformance.metrics('LCP'); // Spezifische Metrik-Historie
+debugPerformance.all(); // Alle gesammelten Metriken
+```
+
+### 5. Error Handler (`enhanced-error-handler.js`)
+
+**Features**:
+
+**Error Types**:
 
 ---
 
-## 🚀 Deployment-Strategien
+### Weitere Module & Utilities
 
-### 1. **Lokaler Test (empfohlen für Entwicklung)**
+#### `aria-live.js`
 
-```bash
-./deploy.sh test
-# → Startet lokalen Server auf http://localhost:8080
+**Zweck:** Dynamische ARIA-Live-Regionen für Screenreader-Feedback (z.B. Formulare, Navigation).
+**API:**
+
+```javascript
+window.ariaLive.announce('Nachricht', { politeness: 'polite' });
 ```
 
-### 2. **Staging-Deployment**
+#### `form-enhancement.js`
 
-```bash
-./deploy.sh staging
-# → Deployment zu staging.abdulkerimsesli.de
+**Zweck:** Verbesserte Formular-UX (z.B. Validierung, Auto-Focus, Fehleranzeigen). **API:**
+
+```javascript
+formEnhancer.initAll();
+formEnhancer.validate(formElement);
 ```
 
-### 3. **Produktions-Deployment**
+#### `idb-min.js`
 
-```bash
-./deploy.sh production
-# → Vollständiges Deployment zu abdulkerimsesli.de
-# → Beinhaltet: Optimierung, Backup, Lighthouse Audit
+**Zweck:** Minimaler Wrapper für IndexedDB zur lokalen Datenspeicherung (z.B. Offline-Cache).
+**API:**
+
+```javascript
+idb.set('key', value);
+idb.get('key').then(val => ...);
 ```
 
-### 4. **GitHub Actions (Automatisch)**
+#### `lazy-load.js`
 
-- **Trigger**: Push zu main branch
-- **Workflow**: Tests → Build → Deploy → Audit
-- **Konfiguration**: `.github/workflows/deploy.yml`
+**Zweck:** Lazy Loading für Bilder und andere Ressourcen mittels IntersectionObserver. **API:**
 
----
+```javascript
+lazyLoad.observeAll();
+```
 
-## 📈 Performance-Benchmarks
+#### `share-dialog.js`
 
-### **Lighthouse Scores (Ziel vs. Aktuell):**
+**Zweck:** Web Share API & Custom Share Dialog für Social Sharing. **API:**
 
-| Metrik         | Ziel        | Aktuell | Status |
-| -------------- | ----------- | ------- | ------ |
-| Performance    | 90+         | 98      | ✅     |
-| Accessibility  | 95+         | 99      | ✅     |
-| Best Practices | 95+         | 100     | ✅     |
-| SEO            | 95+         | 100     | ✅     |
-| PWA            | Vollständig | 100     | ✅     |
+```javascript
+shareDialog.open({ url, title, text });
+```
 
-### **Core Web Vitals:**
+#### `i18n.js`
 
-- **FCP**: 0.8s (Ziel: <1.8s) ✅
-- **LCP**: 1.2s (Ziel: <2.5s) ✅
-- **CLS**: 0.05 (Ziel: <0.1) ✅
-- **FID**: 8ms (Ziel: <100ms) ✅
+**Zweck:** Internationalisierung (i18n) und Übersetzungsfunktionen für mehrsprachige Inhalte.
+**API:**
 
----
+```javascript
+i18n.t('key'); // Übersetzung holen
+i18n.setLanguage('en');
+```
 
-## 🔐 Sicherheits-Features
+## Styling System
 
-### **Implementierte Schutzmaßnahmen:**
+### CSS Architecture
 
-1. **Content Security Policy (CSP)**
-   - script-src 'self' 'unsafe-inline' trusted domains
-   - img-src 'self' data: https:
-   - style-src 'self' 'unsafe-inline' trusted domains
-
-2. **Subresource Integrity (SRI)**
-   - Alle CDN-Resources mit SHA384 Hashes
-   - Bootstrap, FontAwesome, Google Fonts
-
-3. **HTTPS Enforcement**
-   - Automatische Weiterleitung von HTTP
-   - HSTS-Header Ready
-
-4. **Input Validation**
-   - XSS Prevention
-   - CSRF Protection Ready
-
----
-
-## 🎨 Design-System
-
-### **Farbpalette:**
+**Methodologie**: BEM-inspiriert mit Utility-First Elementen
 
 ```css
+/* Global Variables (_global.css) */
 :root {
-  --primary-color: #3a85ff; /* Hauptfarbe */
-  --secondary-color: #6c757d; /* Sekundär */
-  --success-color: #28a745; /* Erfolg */
-  --warning-color: #ffc107; /* Warnung */
-  --danger-color: #dc3545; /* Fehler */
-  --dark-color: #343a40; /* Dunkel */
-  --light-color: #f8f9fa; /* Hell */
-  --body-bg: #ffffff; /* Hintergrund */
-  --text-color: #212529; /* Text */
+  /* Farben */
+  --color-bg: rgb(57 57 57);
+  --color-accent: #3a85ff;
+
+  /* Typography */
+  --font-family-main: 'Poppins', sans-serif;
+  --font-size-base: 1rem;
+
+  /* Spacing mit clamp() */
+  --spacing-sm: clamp(0.4rem, 1vw, 0.8rem);
+
+  /* Transitions */
+  --transition-speed: 0.35s;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 ```
 
-### **Typography:**
+### Responsive Design
 
-- **Primär**: 'Poppins' (Google Fonts)
-- **Fallback**: -apple-system, BlinkMacSystemFont, 'Segoe UI'
-- **Größen**: clamp() für responsive Skalierung
+**Breakpoints**:
 
-### **Responsive Breakpoints:**
+- Mobile: < 600px
+- Tablet: 600px - 1100px
+- Desktop: > 1100px
 
-- **xs**: <576px (Mobile)
-- **sm**: 576px+ (Mobile Landscape)
-- **md**: 768px+ (Tablet)
-- **lg**: 992px+ (Desktop)
-- **xl**: 1200px+ (Large Desktop)
-- **xxl**: 1400px+ (Extra Large)
+**Mobile-First Approach**:
 
----
+```css
+/* Mobile Base Styles */
+.element {
+  font-size: 1rem;
+}
 
-## 📱 PWA-Integration
+/* Tablet */
+@media (min-width: 600px) {
+  .element {
+    font-size: 1.1rem;
+  }
+}
 
-### **Installation Guide:**
-
-1. **Desktop (Chrome/Edge):**
-   - Besuche https://abdulkerimsesli.de
-   - Klicke "Installieren" in der Adressleiste
-   - App wird wie Desktop-App hinzugefügt
-
-2. **Mobile (iOS Safari):**
-   - Besuche Website in Safari
-   - Tippe "Teilen" → "Zum Home-Bildschirm hinzufügen"
-   - App-Icon wird erstellt
-
-3. **Mobile (Android Chrome):**
-   - Besuche Website in Chrome
-   - Tippe "Installieren" in der Benachrichtigung
-   - App wird wie normale App installiert
-
-### **PWA Features:**
-
-- ✅ Offline-Funktionalität
-- ✅ App-Shell Caching
-- ✅ Background Sync Ready
-- ✅ Push Notifications Ready
-- ✅ Native App Feel
-
----
-
-## 🧪 Testing & Qualitätssicherung
-
-### **Automatisierte Tests:**
-
-```bash
-# HTML Validation
-html5validator --root . --show-warnings
-
-# CSS Validation
-csslint css/
-
-# JavaScript Syntax
-node -c js/*.js
-
-# Lighthouse Audit
-lighthouse https://abdulkerimsesli.de
-
-# PWA Testing
-npm run test:pwa
+/* Desktop */
+@media (min-width: 1100px) {
+  .element {
+    font-size: 1.2rem;
+  }
+}
 ```
 
-### **Browser-Kompatibilität:**
+### Theme System
 
-| Browser | Version | Status         |
-| ------- | ------- | -------------- |
-| Chrome  | 80+     | ✅ Vollständig |
-| Firefox | 75+     | ✅ Vollständig |
-| Safari  | 13+     | ✅ Vollständig |
-| Edge    | 80+     | ✅ Vollständig |
-| Opera   | 70+     | ✅ Vollständig |
+**Dark/Light Mode**:
 
-### **Device Testing:**
+```css
+/* Automatic Theme Detection */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: rgb(57 57 57);
+    --color-text-main: #f5f5f5;
+  }
+}
 
-- ✅ iPhone (iOS 13+)
-- ✅ Android (Android 8+)
-- ✅ iPad (iPadOS 13+)
-- ✅ Desktop (1920x1080+)
-- ✅ Ultrawide (2560x1440+)
+/* Manual Theme Override */
+html[data-theme='light'] {
+  --color-bg: #f0f2f5;
+  --color-text-main: #1c1e21;
+}
+```
+
+## JavaScript Architecture
+
+### Module Communication
+
+**Event-Driven Architecture**:
+
+```javascript
+// Event Dispatch
+document.dispatchEvent(
+  new CustomEvent('sectionUpdate', {
+    detail: { sectionId: 'section-hero' },
+  })
+);
+
+// Event Listening
+document.addEventListener('sectionUpdate', (event) => {
+  const { sectionId } = event.detail;
+  // Handle event
+});
+```
+
+### Dynamic Content Loading
+
+**Template System**:
+
+```javascript
+// Templates werden aus /pages/index-card.html geladen
+// IntersectionObserver für Lazy Loading
+// Animation Queue für sequentielle Animationen
+```
+
+### State Management
+
+**Local Storage**:
+
+- Theme Preference
+- Cookie Consent
+- User Preferences
+
+**Session Storage**:
+
+- Temporary Form Data
+- Navigation State
+
+## Performance Optimierung
+
+### Loading Strategies
+
+1. **Critical CSS**: Inline im `<head>`
+2. **Async JavaScript**: `defer` Attribute
+3. **Lazy Loading**: Bilder mit IntersectionObserver
+4. **Code Splitting**: Modulare JavaScript-Architektur
+
+### Asset Optimization
+
+```bash
+# Bilder optimieren
+npm run compress-images
+
+# CSS purgen
+npm run purge
+
+# JavaScript minifizieren
+npm run minify-js
+```
+
+### Caching Strategy
+
+**Service Worker**:
+
+- Network First: HTML, API Calls
+- Cache First: CSS, JS, Fonts
+- Stale While Revalidate: Images
+
+### Performance Budget
+
+| Metrik      | Ziel    | Max   |
+| ----------- | ------- | ----- |
+| FCP         | < 1.8s  | 2.5s  |
+| LCP         | < 2.5s  | 4.0s  |
+| CLS         | < 0.1   | 0.25  |
+| TBT         | < 200ms | 300ms |
+| Bundle Size | < 200KB | 300KB |
+
+## Security Implementation
+
+### Content Security Policy
+
+```javascript
+// Konfiguriert in Express Server und Meta-Tag
+const CSP = {
+  'default-src': ["'self'"],
+  'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+  'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+  'img-src': ["'self'", 'data:', 'https:'],
+  'font-src': ["'self'", 'https://fonts.gstatic.com'],
+  'connect-src': ["'self'", 'https://www.google-analytics.com'],
+};
+```
+
+### Security Headers
+
+```javascript
+// Express Server Configuration
+app.use((req, res, next) => {
+  res.set({
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'SAMEORIGIN',
+    'X-XSS-Protection': '0', // Disabled (use CSP instead)
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+  });
+  next();
+});
+```
+
+### Input Validation
+
+```javascript
+// Client-side Validation
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+// Sanitization
+function sanitizeInput(input) {
+  return input.trim().replace(/[<>]/g, '');
+}
+```
+
+## PWA Features
+
+### Service Worker
+
+**Lifecycle**:
+
+1. Registration
+2. Installation (Cache static assets)
+3. Activation (Clean old caches)
+4. Fetch (Implement cache strategies)
+
+**Update Strategy**:
+
+```javascript
+// Skip waiting on user action
+self.addEventListener('message', (event) => {
+  if (event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+```
+
+### App Manifest
+
+```json
+{
+  "name": "Abdulkerim - Persönliche Website",
+  "short_name": "Abdulkerim",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#393939",
+  "background_color": "#393939",
+  "icons": [
+    {
+      "src": "/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+### Offline Support
+
+- Offline Page: `/pages/komponente/offline.html`
+- Cached Assets: Core CSS/JS files
+- Network-First für dynamische Inhalte
+
+## Cookie Management
+
+### Cookie Categories
+
+1. **Necessary**: Session, CSRF, Theme
+2. **Analytics**: Google Analytics
+3. **Marketing**: (Prepared for future)
+4. **Social**: (Prepared for future)
+
+### Consent Flow
+
+```
+User Visit → Check Consent → Show Banner (if needed)
+    ↓              ↓                    ↓
+Analytics    Store Decision      User Interaction
+    ↓              ↓                    ↓
+GA Config    LocalStorage        Accept/Reject/Customize
+```
+
+### GDPR Compliance
+
+- Explicit Consent Required
+- Granular Control
+- Easy Withdrawal
+- Consent Expiry (1 year)
+- No Pre-checked Boxes
+
+## Build & Deployment
+
+### Development Workflow
+
+```bash
+# 1. Development
+npm run dev
+
+# 2. Testing
+npm test
+npm run lighthouse
+
+# 3. Build
+npm run build
+
+# 4. Deploy
+./deploy.sh production
+```
+
+### CI/CD Pipeline
+
+**GitHub Actions**:
+
+1. Trigger: Push to `main`
+2. Jobs:
+   - Quality Assurance (HTML/CSS validation)
+   - Security Scan
+   - Lighthouse CI
+   - Deployment (if all pass)
+
+### Deployment Checklist
+
+- [ ] Run all tests
+- [ ] Check Lighthouse scores
+- [ ] Validate Security Headers
+- [ ] Test on multiple devices
+- [ ] Verify SSL certificate
+- [ ] Update sitemap.xml
+- [ ] Check robots.txt
+- [ ] Monitor error logs
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Service Worker nicht aktiv**
+
+```javascript
+// Lösung: Cache leeren und neu registrieren
+navigator.serviceWorker.getRegistrations().then(function (registrations) {
+  for (let registration of registrations) {
+    registration.unregister();
+  }
+});
+```
+
+**2. Cookie Banner wird nicht angezeigt**
+
+```javascript
+// Debug-Modus aktivieren
+window.CookieBanner.debug();
+// Consent zurücksetzen
+window.CookieBanner.reset();
+```
+
+**3. Performance-Probleme**
+
+```javascript
+// Performance-Daten analysieren
+window.debugPerformance.summary();
+// Speicher bereinigen
+window.websiteErrorHandler.performMemoryCleanup();
+```
+
+**4. Menu reagiert nicht**
+
+- Prüfe ob `/pages/komponente/menu.html` geladen wurde
+- Console auf Fehler prüfen
+- Event Listener Status überprüfen
+
+### Debug Mode
+
+**Aktivierung**:
+
+```javascript
+// URL Parameter
+?debug=true
+
+// Oder in Console
+localStorage.setItem('debug', 'true');
+```
+
+**Debug Features**:
+
+- Erweiterte Console Logs
+- Performance Timings
+- Error Stack Traces
+- Cookie System Debug Info
+
+### Browser Compatibility
+
+**Minimum Requirements**:
+
+- Chrome 80+
+- Firefox 75+
+- Safari 13+
+- Edge 80+
+
+**Polyfills**:
+
+- IntersectionObserver (für ältere Browser)
+- Custom Elements (falls Web Components genutzt)
+
+### Performance Debugging
+
+```javascript
+// Measure specific operations
+performance.mark('myOperation-start');
+// ... operation code ...
+performance.mark('myOperation-end');
+performance.measure('myOperation', 'myOperation-start', 'myOperation-end');
+
+// Get measurements
+const measures = performance.getEntriesByType('measure');
+console.table(measures);
+```
+
+## Best Practices
+
+### Code Style
+
+1. **JavaScript**:
+   - Use ES6+ features
+   - Async/Await over Promises
+   - Const > Let > Var
+
+2. **CSS**:
+   - Mobile-first
+   - Use CSS Custom Properties
+   - Avoid !important
+
+3. **HTML**:
+   - Semantic markup
+   - ARIA labels where needed
+   - Valid structure
+
+### Git Workflow
+
+```bash
+# Feature Branch
+git checkout -b feature/new-feature
+
+# Commit with conventional commits
+git commit -m "feat: add new gallery feature"
+git commit -m "fix: resolve menu toggle issue"
+git commit -m "docs: update README"
+
+# Merge via PR
+```
+
+### Testing Strategy
+
+1. **Unit Tests**: Individual functions
+2. **Integration Tests**: Module interactions
+3. **E2E Tests**: User flows
+4. **Performance Tests**: Lighthouse CI
+5. **Accessibility Tests**: aXe, WAVE
+
+#### Beispiel: Einfacher Unit-Test (Jest)
+
+```js
+// sum.js
+export function sum(a, b) {
+  return a + b;
+}
+
+// sum.test.js
+import { sum } from './sum';
+test('addiert zwei Zahlen', () => {
+  expect(sum(2, 3)).toBe(5);
+});
+```
+
+*Hinweis: Für größere Projekte empfiehlt sich der Einsatz von Jest, Vitest oder Mocha für automatisierte Tests. Integrationstests und E2E-Tests können mit Playwright oder Cypress umgesetzt werden.*
 
 ---
 
-## 🚨 Troubleshooting
+Letzte Aktualisierung: Juli 2025 Version: 1.0.0
 
-### **Häufige Probleme & Lösungen:**
+```
 
-1. **Service Worker Cache-Probleme:**
-
-   ```javascript
-   // Cache leeren
-   caches.delete('iweb-v1').then(() => location.reload());
-   ```
-
-2. **Cookie Banner erscheint nicht:**
-   - Prüfe ob localStorage verfügbar
-   - Deaktiviere Ad-Blocker temporär
-   - Console auf Fehler prüfen
-
-3. **PWA Installation nicht verfügbar:**
-   - HTTPS erforderlich
-   - Manifest.json korrekt?
-   - Service Worker aktiv?
-
-4. **Performance-Probleme:**
-   - Lighthouse Audit ausführen
-   - Netzwerk-Tab in DevTools prüfen
-   - Bilder-Optimierung prüfen
-
----
-
-## 🚀 Produktions-Checkliste
-
-### **Vor Go-Live:**
-
-- [x] Domain konfiguriert (abdulkerimsesli.de)
-- [x] SSL-Zertifikat aktiv
-- [x] DNS-Einträge korrekt
-- [x] Google Analytics eingerichtet
-- [x] Google Search Console verifiziert
-- [x] Sitemap eingereicht
-- [x] robots.txt aktualisiert
-- [x] Performance > 90
-- [x] Accessibility > 95
-- [x] SEO Score 100
-- [x] PWA funktional
-- [x] Cross-Browser getestet
-- [x] Mobile-friendly
-- [x] DSGVO-konform
-
-### **Nach Go-Live:**
-
-- [ ] Monitor Performance
-- [ ] Prüfe Analytics-Daten
-- [ ] Search Console überwachen
-- [ ] Backup-Schedule einrichten
-- [ ] Update-Prozess dokumentieren
-
----
-
-## 📞 Support & Kontakt
-
-### **Entwickler-Kontakt:**
-
-- **Email**: mail@abdulkerimsesli.com
-- **GitHub**: @aKs030
-- **LinkedIn**: abdulkerim-sesli
-
-### **Wichtige Links:**
-
-- **Live-Website**: https://abdulkerimsesli.de
-- **Repository**: GitHub Repository
-- **Documentation**: Diese Datei
-- **Lighthouse Reports**: lighthouse-report.html
-
----
-
-## 🎉 Fazit
-
-**iweb-6** ist eine produktionsreife, moderne Website mit Enterprise-Level Features:
-
-- ⭐️ **Score**: 9.9/10
-- 🚀 **Performance**: Optimiert
-- 🔒 **Security**: Gehärtet
-- 📱 **PWA**: Vollständig
-- ♿️ **Accessibility**: WCAG 2.1 AA
-- 🔍 **SEO**: 100% Score
-- 🌐 **Cross-Platform**: Getestet
-
-**Ready für Production Deployment! 🎯**
-
----
-
-_Letzte Aktualisierung: $(date)_
-_Version: 2.0 (Production Ready)_
+```

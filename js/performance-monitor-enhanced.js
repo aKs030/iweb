@@ -1,6 +1,6 @@
 /* global gtag */
 /**
- * Performance Monitor for iweb-7 Website
+ * Performance Monitor for iweb Website
  * Real-time performance tracking and optimization
  *
  * @author Optimization Team

@@ -161,7 +161,7 @@ async function sendPendingFormData() {
   }
 }
 /**
- * Service Worker für iweb-7 - Optimized Version
+ * Service Worker für iweb - Optimized Version
  * Version: 3.0.0
  * Optimierte Cache-Strategie mit Offline-Support
  */

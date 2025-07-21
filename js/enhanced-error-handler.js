@@ -1,6 +1,6 @@
 /* global gtag */
 /**
- * Enhanced Error Handler for iweb-7 Website
+ * Enhanced Error Handler for iweb Website
  * Production-ready error handling and monitoring system
  *
  * @author Optimization Team

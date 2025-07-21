@@ -27,14 +27,12 @@
     "security-check:prod": "node scripts/check-security-headers.js https://abdulkerimsesli.de",
     "pre-deploy": "npm run format && npm run lint && npm run validate-html && npm run validate-css && npm run optimize",
     "test": "npm run validate-html && npm run validate-css",
-    "minify-css": "cleancss -o css/_global.min.css css/_global.css && cleancss -o css/index.min.css css/index.css && cleancss -o css/menu.min.css css/menu.css",
     "minify-js": "terser js/main-init.js -o js/main-init.min.js && terser js/menu.js -o js/menu.min.js"
   },
   "devDependencies": {
     "@lhci/cli": "^0.15.1",
     "@percy/cli": "^1.31.0",
     "audit-ci": "^7.1.0",
-    "clean-css-cli": "^5.6.3",
     "cssnano": "^7.1.0",
     "eslint": "^8.45.0",
     "express": "^4.19.2",
