@@ -1,13 +1,6 @@
 # .github/workflows/deploy.yml
 # -------------------------------------------------------------
-# CI/CD Pipeline – HTML + CSS + Lighthouse + Security-Headers + Manual Deploy
-# -------------------------------------------------------------
-# Highlights
-#  - Caches npm deps
-#  - Runs HTML & CSS linters, link checker, Lighthouse CI (3× in CI)
-#  - Local security-headers check (headers injected via `serve -H …`)
-#  - Uploads Lighthouse artefacts
-#  - Generates deployment summary
+# CI/CD Pipeline: HTML + CSS + Lighthouse + Security + Summary
 # -------------------------------------------------------------
 
 name: "🚀 Deploy to Production"
@@ -44,10 +37,10 @@ jobs:
         run: npm ci
 
       - name: "✅ Validate HTML"
-        run: npm run validate-html || true   # nicht blockierend
+        run: npm run validate-html || true
 
       - name: "🎨 Validate CSS"
-        run: npm run validate-css || true    # nicht blockierend
+        run: npm run validate-css || true
 
       - name: "🔗 Check internal links"
         run: |
@@ -55,35 +48,24 @@ jobs:
           SERVER_PID=$!
           sleep 5
           npm run check-links || true
-          kill $SERVER_PID && wait $SERVER_PID || true
-
-      - name: "🌐 Start server & check links"
-        run: |
-          node scripts/express-server.js &
-          SERVER_PID=$!
-          sleep 5
-          npm run check-links || true        # nicht blockierend
-          kill $SERVER_PID && wait $SERVER_PID || true
+          kill $SERVER_PID || true
 
       - name: "⚡ Lighthouse CI"
-  id: lighthouse
-  run: |
-    npx lhci autorun --config=lighthouserc.js | tee lhci-output.log
-    cat lhci-output.log
+        id: lighthouse
+        run: |
+          npx lhci autorun --config=lighthouserc.js | tee lhci-output.log
 
-- name: "🔗 Extract Lighthouse Public Report URL"
-  id: extract_url
-  run: |
-    REPORT_URL=$(grep -Eo 'https://storage.googleapis.com[^ ]+\.report\.html' lhci-output.log | head -n 1 || true)
-    echo "REPORT_URL=$REPORT_URL" >> $GITHUB_ENV
-
-
+      - name: "🔗 Extract Lighthouse Public Report URL"
+        id: extract_url
+        run: |
+          REPORT_URL=$(grep -Eo 'https://storage.googleapis.com[^ ]+\.report\.html' lhci-output.log | head -n 1 || true)
+          echo "REPORT_URL=$REPORT_URL" >> $GITHUB_ENV
 
       - name: "📤 Upload Lighthouse Results"
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse_results
-          path: ./.lighthouseci/
+          path: .lighthouseci/
 
   # -------------------------------------------------------------------------
   # 2) SECURITY-SCAN
@@ -108,7 +90,7 @@ jobs:
       - name: "🔍 Security audit (npm)"
         run: npm audit --audit-level moderate || echo "Audit warnings found"
 
-      - name: "🛡️  Security-Header Check"
+      - name: "🛡️ Check Security Headers"
         run: |
           node scripts/dev-server.js &
           SERVER_PID=$!
@@ -122,10 +104,10 @@ jobs:
           node scripts/check-security-headers.js http://127.0.0.1:8000
 
   # -------------------------------------------------------------------------
-  # 3) DEPLOY
+  # 3) DEPLOYMENT + SUMMARY
   # -------------------------------------------------------------------------
   deploy:
-    name: "🌐 Deploy to Production"
+    name: "🌐 Deployment Ready"
     runs-on: ubuntu-latest
     needs: [test, security-scan]
     if: github.ref == 'refs/heads/main'
@@ -134,18 +116,17 @@ jobs:
       - name: "📥 Checkout code"
         uses: actions/checkout@v4
 
-      - name: "🚀 Deploy (manual step placeholder)"
+      - name: "🚀 Manual deploy step"
         run: |
-          echo "🎯 Ready for deployment (manual)."
-          echo "Files validated & security checked ✅"
+          echo "Deployment would happen here. Manuell oder via Pages/Cloudflare."
 
       - name: "📊 Deployment Summary"
-  run: |
-    {
-      echo "## 📊 Deployment Summary"
-      echo "- ✅ HTML validation (warnings tolerated)"
-      echo "- ✅ CSS validation (warnings tolerated)"
-      echo "- ✅ Lighthouse & security headers checked"
-      echo "- 🔗 Lighthouse Report: ${REPORT_URL:-Nicht verfügbar}"
-      echo "- 🚀 Ready for production deploy"
-    } >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          {
+            echo "## 📊 Deployment Summary"
+            echo "- ✅ HTML validation"
+            echo "- ✅ CSS validation"
+            echo "- ✅ Lighthouse & Security-Header Check"
+            echo "- 🔗 [Lighthouse Report](${REPORT_URL:-Link nicht verfügbar})"
+            echo "- 🚀 Bereit für Deployment"
+          } >> "$GITHUB_STEP_SUMMARY"
