@@ -23,6 +23,8 @@ app.use((_, res, next) => {
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
+    'X-XSS-Protection': '0', // Deaktiviert, CSP wird bevorzugt
+    'X-Permitted-Cross-Domain-Policies': 'none',
     'Content-Security-Policy': "default-src 'self'; object-src 'none'; base-uri 'none'",
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
