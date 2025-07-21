@@ -9,9 +9,58 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#393939" />
+    
+    <!-- Preload kritische Ressourcen -->
+    <link rel="preload" href="/assets/css/_global.css" as="style" />
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" as="style" />
+    
     <link rel="stylesheet" href="/assets/css/_global.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    
+    <!-- Schema.org Markup für bessere SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": "Abdulkerim",
+        "jobTitle": "Web-Entwickler",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Berlin",
+          "addressCountry": "DE"
+        },
+        "email": "info@abdulkerim.de",
+        "telephone": "+491234567890",
+        "url": "https://www.abdulkerim.de",
+        "sameAs": [
+          "https://linkedin.com/in/abdulkerim",
+          "https://github.com/abdulkerim",
+          "https://twitter.com/abdulkerim",
+          "https://instagram.com/abdulkerim"
+        ]
+      }
+    }
+    </script>
+    
     <style>
+      /* CSS Custom Properties für bessere Wartbarkeit */
+      :root {
+        --primary-gradient: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+        --glass-bg: rgba(255, 255, 255, 0.08);
+        --glass-bg-hover: rgba(255, 255, 255, 0.12);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --success-color: #28a745;
+        --warning-color: #ffa726;
+        --danger-color: #ff6b6b;
+        --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.15);
+        --shadow-medium: 0 8px 25px rgba(0, 0, 0, 0.2);
+        --shadow-strong: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Performance-optimierte Base Styles */
       body {
         min-height: 100vh;
         margin: 0;
@@ -22,27 +71,46 @@
         justify-content: center;
         overflow: hidden;
         font-family: var(--font-family-main);
+        line-height: 1.6;
       }
+
+      /* Hauptcontainer mit verbesserter Responsivität */
       .kontakt-viewbox {
         width: clamp(320px, 90vw, 500px);
-        height: clamp(400px, 75vh, 650px);
+        height: clamp(200px, 85vh, 800px);
         background: var(--color-bg-secondary);
         border-radius: var(--border-radius);
-        box-shadow: 0 8px 40px var(--color-shadow-dark);
+        box-shadow: var(--shadow-strong);
         display: flex;
         flex-direction: column;
         overflow-y: auto;
         scroll-snap-type: y mandatory;
-        /* Hide scrollbar for Firefox */
-        scrollbar-width: none;
-        /* Hide scrollbar for IE and Edge */
-        -ms-overflow-style: none;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-accent) transparent;
         position: relative;
+        backdrop-filter: blur(10px);
       }
-      /* Hide scrollbar for Chrome, Safari and Opera */
+
+      /* Verbesserte Scrollbar für Webkit */
       .kontakt-viewbox::-webkit-scrollbar {
-        display: none;
+        width: 6px;
       }
+
+      .kontakt-viewbox::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .kontakt-viewbox::-webkit-scrollbar-thumb {
+        background: var(--color-accent);
+        border-radius: 3px;
+        transition: background 0.3s ease;
+      }
+
+      .kontakt-viewbox::-webkit-scrollbar-thumb:hover {
+        background: var(--color-accent-hover);
+      }
+
+      /* Snap Sections mit verbesserter Performance */
       .snap-section {
         min-height: 100%;
         scroll-snap-align: start;
@@ -53,269 +121,368 @@
         padding: clamp(1rem, 3vw, 2rem);
         box-sizing: border-box;
         position: relative;
+        will-change: transform;
       }
-      /* Hero Section */
-      .hero-section {
-        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-        color: white;
-        text-align: center;
-      }
-      .kontakt-title {
-        font-size: clamp(2rem, 5vw, 3rem);
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      }
-      .kontakt-subtitle {
-        font-size: clamp(1rem, 2.5vw, 1.2rem);
-        opacity: 0.9;
-        margin-bottom: 2rem;
-      }
-      .availability-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-      }
-      .availability-status::before {
-        content: '';
-        width: 10px;
-        height: 10px;
-        background: #00ff00;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 0.5;
-          transform: scale(1.2);
-        }
-      }
-      /* Contact Methods Section */
+
+      /* Optimierte Kontaktmethoden */
       .kontakt-methods {
         width: 100%;
         max-width: 400px;
       }
+
       .kontakt-method {
         display: flex;
         align-items: center;
         gap: 1rem;
         margin-bottom: 1rem;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        transition: all 0.3s ease;
+        padding: 1.25rem;
+        background: var(--glass-bg);
+        border-radius: 12px;
+        transition: var(--transition-smooth);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
       }
+
+      .kontakt-method::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+      }
+
       .kontakt-method:hover {
-        background: rgba(58, 133, 255, 0.1);
-        transform: translateX(5px);
+        background: var(--glass-bg-hover);
+        transform: translateX(5px) translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        border-color: rgba(var(--color-accent), 0.3);
       }
+
+      .kontakt-method:hover::before {
+        left: 100%;
+      }
+
       .kontakt-method i {
         font-size: 1.5rem;
         color: var(--color-accent);
         width: 30px;
         text-align: center;
+        transition: transform 0.3s ease;
       }
+
+      .kontakt-method:hover i {
+        transform: scale(1.1);
+      }
+
       .kontakt-method-info h3 {
         margin: 0 0 0.25rem 0;
         font-size: 0.9rem;
         color: var(--color-text-muted);
+        font-weight: 600;
       }
+
       .kontakt-method-info p {
         margin: 0;
         font-size: 1rem;
+        font-weight: 500;
       }
+
       .kontakt-method-info a {
         color: var(--color-text-main);
         text-decoration: none;
-        font-weight: 500;
+        transition: color 0.3s ease;
       }
+
       .kontakt-method-info a:hover {
         color: var(--color-accent);
       }
-      /* Social Links */
+
+      /* Verbesserte Social Links */
       .social-links {
         display: flex;
         gap: 1rem;
         margin-top: 2rem;
         justify-content: center;
       }
+
       .social-link {
-        width: 45px;
-        height: 45px;
-        background: rgba(255, 255, 255, 0.1);
+        width: 50px;
+        height: 50px;
+        background: var(--glass-bg);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--color-text-main);
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
+        font-size: 1.3rem;
+        transition: var(--transition-smooth);
         text-decoration: none;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
       }
+
+      .social-link::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 50%;
+      }
+
       .social-link:hover {
-        background: var(--color-accent);
-        color: white;
-        transform: translateY(-3px);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: var(--shadow-medium);
+        border-color: var(--color-accent);
       }
-      /* Office Hours */
+
+      .social-link:hover::before {
+        opacity: 1;
+      }
+
+      .social-link i {
+        position: relative;
+        z-index: 1;
+        transition: color 0.3s ease;
+      }
+
+      .social-link:hover i {
+        color: white;
+      }
+
+      /* Optimierte Office Hours */
       .office-hours {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
+        background: var(--glass-bg);
+        border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1.5rem;
         width: 100%;
         max-width: 350px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
       }
+
       .office-hours h3 {
         margin: 0 0 1rem 0;
         color: var(--color-accent);
         font-size: 1.1rem;
+        font-weight: 700;
       }
+
       .office-hours-list {
         list-style: none;
         padding: 0;
         margin: 0;
       }
+
       .office-hours-list li {
         display: flex;
         justify-content: space-between;
-        padding: 0.5rem 0;
+        align-items: center;
+        padding: 0.75rem 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: var(--transition-smooth);
       }
+
       .office-hours-list li:last-child {
         border-bottom: none;
       }
-      /* Form Section */
+
+      .office-hours-list li:hover {
+        background: rgba(255, 255, 255, 0.05);
+        margin: 0 -0.5rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        border-radius: 6px;
+      }
+
+      /* Verbessertes Formular */
       .form-section {
         background: var(--color-bg-secondary);
       }
+
       .kontakt-form {
         width: 100%;
         max-width: 400px;
       }
+
       .form-title {
         font-size: 1.5rem;
         color: var(--color-text-main);
         margin-bottom: 1.5rem;
         text-align: center;
+        font-weight: 700;
       }
+
       .form-group {
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
+        position: relative;
       }
+
       .form-group label {
         display: block;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.5rem;
         color: var(--color-accent);
         font-weight: 600;
         font-size: 0.9rem;
+        transition: color 0.3s ease;
       }
+
       .form-group input,
       .form-group textarea,
       .form-group select {
         width: 100%;
-        padding: 0.75rem;
+        padding: 0.875rem 1rem;
         border: 2px solid var(--color-shadow-dark);
-        border-radius: 6px;
+        border-radius: 8px;
         background: var(--color-bg);
         color: var(--color-text-main);
         font-size: 1rem;
-        transition: border-color 0.3s ease;
+        transition: var(--transition-smooth);
         font-family: var(--font-family-main);
+        position: relative;
       }
+
       .form-group input:focus,
       .form-group textarea:focus,
       .form-group select:focus {
         outline: none;
         border-color: var(--color-accent);
         box-shadow: 0 0 0 3px rgba(58, 133, 255, 0.1);
+        transform: translateY(-1px);
       }
+
+      .form-group input:valid,
+      .form-group textarea:valid,
+      .form-group select:valid {
+        border-color: var(--success-color);
+      }
+
       .form-group textarea {
         resize: vertical;
-        min-height: 100px;
+        min-height: 120px;
+        max-height: 200px;
       }
+
+      /* Verbesserte Checkbox */
       .form-checkbox {
         display: flex;
         align-items: flex-start;
-        gap: 0.5rem;
-        margin: 1rem 0;
+        gap: 0.75rem;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: var(--glass-bg);
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
       }
 
       .form-checkbox input[type='checkbox'] {
         margin-top: 0.3rem;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--color-accent);
       }
 
       .form-checkbox label {
         font-size: 0.9rem;
         color: var(--color-text-muted);
+        margin: 0;
+        flex: 1;
       }
 
       .form-checkbox a {
         color: var(--color-accent);
         text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
       }
 
       .form-checkbox a:hover {
         text-decoration: underline;
+        color: var(--color-accent-hover);
       }
 
-      .datenschutz-link {
-        margin-left: 4px;
-      }
-
+      /* Optimierter Submit Button */
       .form-submit {
         width: 100%;
-        padding: 1rem;
-        background: var(--color-accent);
+        padding: 1rem 1.5rem;
+        background: var(--primary-gradient);
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 1.1rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition-smooth);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .form-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
       }
 
       .form-submit:hover {
-        background: var(--color-accent-hover);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px var(--color-shadow-dark);
+        box-shadow: var(--shadow-medium);
       }
 
+      .form-submit:hover::before {
+        left: 100%;
+      }
+
+      .form-submit:active {
+        transform: translateY(0);
+      }
+
+      .form-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Verbesserte Success Message */
       .form-success {
         display: none;
         background: rgba(40, 167, 69, 0.1);
         border: 1px solid rgba(40, 167, 69, 0.3);
-        color: #28a745;
+        color: var(--success-color);
         padding: 1rem;
-        border-radius: 6px;
+        border-radius: 8px;
         margin-top: 1rem;
         text-align: center;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
       }
 
       .form-success.show {
         display: block;
-        animation: fadeIn 0.3s ease;
+        animation: slideInUp 0.3s ease;
       }
 
-      @keyframes fadeIn {
+      @keyframes slideInUp {
         from {
           opacity: 0;
-          transform: translateY(-10px);
+          transform: translateY(20px);
         }
         to {
           opacity: 1;
@@ -323,7 +490,7 @@
         }
       }
 
-      /* FAQ Section */
+      /* Optimierte FAQ Section */
       .faq-section {
         width: 100%;
         max-width: 450px;
@@ -334,23 +501,28 @@
         color: var(--color-text-main);
         margin-bottom: 1.5rem;
         text-align: center;
+        font-weight: 700;
       }
 
       .faq-item {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
+        background: var(--glass-bg);
+        border-radius: 12px;
         margin-bottom: 1rem;
         overflow: hidden;
-        transition: all 0.3s ease;
+        transition: var(--transition-smooth);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
       }
 
       .faq-item:hover {
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--glass-bg-hover);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-soft);
       }
 
       .faq-question {
         width: 100%;
-        padding: 1rem 1.5rem;
+        padding: 1.25rem 1.5rem;
         background: none;
         border: none;
         color: var(--color-text-main);
@@ -374,6 +546,7 @@
         font-size: 1.5rem;
         color: var(--color-accent);
         transition: transform 0.3s ease;
+        font-weight: 300;
       }
 
       .faq-item.active .faq-question::after {
@@ -383,9 +556,7 @@
       .faq-answer {
         max-height: 0;
         overflow: hidden;
-        transition:
-          max-height 0.3s ease,
-          padding 0.3s ease;
+        transition: var(--transition-smooth);
         padding: 0 1.5rem;
         color: var(--color-text-muted);
       }
@@ -395,7 +566,7 @@
         padding: 0 1.5rem 1.5rem;
       }
 
-      /* Navigation Dots */
+      /* Verbesserte Navigation Dots */
       .scroll-dots {
         position: fixed;
         right: 2rem;
@@ -403,17 +574,29 @@
         transform: translateY(-50%);
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.75rem;
         z-index: 100;
       }
 
       .dot {
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.3);
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition-smooth);
+        position: relative;
+        border: 2px solid transparent;
+      }
+
+      .dot::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
 
       .dot:hover {
@@ -424,9 +607,55 @@
       .dot.active {
         background: var(--color-accent);
         transform: scale(1.3);
+        border-color: rgba(255, 255, 255, 0.3);
       }
 
-      /* Mobile Anpassungen */
+      .dot.active::before {
+        opacity: 1;
+      }
+
+      /* Enhanced Error States */
+      .form-group.error input,
+      .form-group.error textarea,
+      .form-group.error select {
+        border-color: var(--danger-color);
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+      }
+
+      .form-group .error-message {
+        color: var(--danger-color);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: none;
+      }
+
+      .form-group.error .error-message {
+        display: block;
+        animation: slideInUp 0.3s ease;
+      }
+
+      /* Loading State */
+      .form-submit.loading {
+        pointer-events: none;
+      }
+
+      .form-submit.loading::after {
+        content: '';
+        width: 20px;
+        height: 20px;
+        border: 2px solid transparent;
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 0.5rem;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Mobile Optimierungen */
       @media (max-width: 600px) {
         body {
           align-items: flex-start;
@@ -446,6 +675,39 @@
         .snap-section {
           padding: 1rem;
         }
+
+        .social-links {
+          gap: 0.75rem;
+        }
+
+        .social-link {
+          width: 45px;
+          height: 45px;
+          font-size: 1.2rem;
+        }
+      }
+
+      /* High contrast mode support */
+      @media (prefers-contrast: high) {
+        .kontakt-method {
+          border-width: 2px;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+          outline: 3px solid var(--color-accent);
+        }
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+        
       }
 
       /* Menu Container Styles */
@@ -456,97 +718,225 @@
         right: 0;
         z-index: 1000;
       }
+
+      /* Print Styles */
+      @media print {
+        .scroll-dots,
+        .faq-section {
+          display: none;
+        }
+        
+        body {
+          background: white;
+          color: black;
+        }
+        
+        .kontakt-viewbox {
+          box-shadow: none;
+          border: 1px solid #ccc;
+        }
+      }
+
+      /* --- Kompakte Kontakt-Viewbox und Inhalte --- */
+      .kontakt-viewbox {
+        width: clamp(320px, 90vw, 500px);
+        max-width: 100vw;
+        height: clamp(200px, 85vh, 800px);
+        padding: 0.5rem 0;
+      }
+
+      .snap-section {
+        padding: 0.7rem 0.5rem;
+      }
+
+
+      .kontakt-methods {
+        max-width: 340px;
+      }
+
+      .kontakt-method {
+        padding: 0.6rem 0.7rem;
+        margin-bottom: 0.6rem;
+        gap: 0.7rem;
+      }
+
+      .kontakt-method i {
+        font-size: 1.1rem;
+        width: 22px;
+      }
+
+      .social-link {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+      }
+
+      .office-hours {
+        padding: 0.6rem 0.7rem;
+        margin-top: 1rem;
+        max-width: 240px;
+      }
+
+      .office-hours-list li {
+        padding: 0.3rem 0;
+        font-size: 0.92rem;
+      }
+
+      .kontakt-form {
+        max-width: 320px;
+      }
+      .form-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.7rem;
+      }
+      .form-group {
+        margin-bottom: 0.7rem;
+      }
+      .form-group label {
+        font-size: 0.85rem;
+        margin-bottom: 0.2rem;
+      }
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.97rem;
+      }
+      .form-group textarea {
+        min-height: 75px;
+        max-height: 140px;
+      }
+      .form-checkbox {
+        gap: 0.5rem;
+        margin: 1rem 0;
+        padding: 0.6rem;
+      }
+      .form-checkbox label {
+        font-size: 0.85rem;
+      }
+      .form-submit {
+        padding: 0.7rem 1rem;
+        font-size: 1rem;
+      }
+      .character-counter {
+        font-size: 0.8rem;
+      }
+
+      .faq-section {
+        max-width: 340px;
+      }
+      .faq-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+      }
+      .faq-item {
+        margin-bottom: 0.5rem;
+      }
+      .faq-question {
+        font-size: 0.95rem;
+        padding: 0.7rem 1rem;
+      }
+      .faq-answer {
+        padding: 0 1rem;
+        font-size: 0.9rem;
+      }
+
+      .scroll-dots {
+        gap: 0.4rem;
+        right: 1rem;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+      }
     </style>
   </head>
   <body>
     <div id="menu-container"></div>
 
     <div class="kontakt-viewbox">
-      <!-- Hero Section -->
-      <section class="snap-section hero-section">
-        <h1 class="kontakt-title">Lass uns reden!</h1>
-        <p class="kontakt-subtitle">Ich freue mich auf deine Nachricht</p>
-        <div class="availability-status">Verfügbar für neue Projekte</div>
-      </section>
 
       <!-- Contact Info Section -->
-      <section class="snap-section">
+      <section class="snap-section" role="main" aria-labelledby="contact-methods-title">
         <div class="kontakt-methods">
-          <div class="kontakt-method">
-            <i class="fa-solid fa-envelope"></i>
+          <h2 id="contact-methods-title" class="sr-only">Kontaktmöglichkeiten</h2>
+          
+          <div class="kontakt-method" role="group" aria-labelledby="email-contact">
+            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
             <div class="kontakt-method-info">
-              <h3>E-Mail</h3>
-              <p><a href="mailto:info@abdulkerim.de">info@abdulkerim.de</a></p>
+              <h3 id="email-contact">E-Mail</h3>
+              <p><a href="mailto:info@abdulkerim.de" aria-label="E-Mail senden an info@abdulkerim.de">info@abdulkerim.de</a></p>
             </div>
           </div>
 
-          <div class="kontakt-method">
-            <i class="fa-solid fa-phone"></i>
+          <div class="kontakt-method" role="group" aria-labelledby="phone-contact">
+            <i class="fa-solid fa-phone" aria-hidden="true"></i>
             <div class="kontakt-method-info">
-              <h3>Telefon</h3>
-              <p><a href="tel:+491234567890">+49&nbsp;123&nbsp;4567890</a></p>
+              <h3 id="phone-contact">Telefon</h3>
+              <p><a href="tel:+491234567890" aria-label="Anrufen: +49 123 4567890">+49&nbsp;123&nbsp;4567890</a></p>
             </div>
           </div>
 
-          <div class="kontakt-method">
-            <i class="fa-solid fa-location-dot"></i>
+          <div class="kontakt-method" role="group" aria-labelledby="location-info">
+            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
             <div class="kontakt-method-info">
-              <h3>Standort</h3>
+              <h3 id="location-info">Standort</h3>
               <p>Berlin, Deutschland</p>
             </div>
           </div>
         </div>
 
-        <div class="social-links">
+        <nav class="social-links" aria-label="Social Media Profile">
           <a
             href="https://linkedin.com/in/abdulkerim"
             class="social-link"
             target="_blank"
-            rel="noopener"
-            aria-label="LinkedIn"
+            rel="noopener noreferrer"
+            aria-label="LinkedIn Profil besuchen"
           >
-            <i class="fa-brands fa-linkedin-in"></i>
+            <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i>
           </a>
           <a
             href="https://github.com/abdulkerim"
             class="social-link"
             target="_blank"
-            rel="noopener"
-            aria-label="GitHub"
+            rel="noopener noreferrer"
+            aria-label="GitHub Profil besuchen"
           >
-            <i class="fa-brands fa-github"></i>
+            <i class="fa-brands fa-github" aria-hidden="true"></i>
           </a>
           <a
             href="https://twitter.com/abdulkerim"
             class="social-link"
             target="_blank"
-            rel="noopener"
-            aria-label="Twitter"
+            rel="noopener noreferrer"
+            aria-label="Twitter Profil besuchen"
           >
-            <i class="fa-brands fa-twitter"></i>
+            <i class="fa-brands fa-twitter" aria-hidden="true"></i>
           </a>
           <a
             href="https://instagram.com/abdulkerim"
             class="social-link"
             target="_blank"
-            rel="noopener"
-            aria-label="Instagram"
+            rel="noopener noreferrer"
+            aria-label="Instagram Profil besuchen"
           >
-            <i class="fa-brands fa-instagram"></i>
+            <i class="fa-brands fa-instagram" aria-hidden="true"></i>
           </a>
-        </div>
-        <div class="office-hours">
-          <h3>Erreichbarkeit</h3>
-          <ul class="office-hours-list">
-            <li>
-              <h3>Erreichbarkeit</h3>
+        </nav>
+
+        <div class="office-hours" role="region" aria-labelledby="office-hours-title">
+          <h3 id="office-hours-title">Erreichbarkeit</h3>
+          <ul class="office-hours-list" role="list">
+            <li role="listitem">
+              <span>Montag - Freitag</span>
               <span>9:00 - 18:00</span>
             </li>
-            <li>
+            <li role="listitem">
               <span>Samstag</span>
               <span>10:00 - 14:00</span>
             </li>
-            <li>
+            <li role="listitem">
               <span>Sonntag</span>
               <span>Geschlossen</span>
             </li>
@@ -555,28 +945,55 @@
       </section>
 
       <!-- Form Section -->
-      <section class="snap-section form-section">
-        <form class="kontakt-form" id="kontakt-formular" autocomplete="on">
-          <h2 class="form-title">Nachricht senden</h2>
+      <section class="snap-section form-section" role="form" aria-labelledby="contact-form-title">
+        <form class="kontakt-form" id="kontakt-formular" autocomplete="on" novalidate>
+          <h2 id="contact-form-title" class="form-title">Nachricht senden</h2>
 
           <div class="form-group">
             <label for="name">Name *</label>
-            <input type="text" id="name" name="name" required maxlength="50" placeholder="Ihr Name" />
+            <input 
+              type="text" 
+              id="name" 
+              name="name" 
+              required 
+              maxlength="50" 
+              placeholder="Ihr Name"
+              autocomplete="name"
+              aria-describedby="name-error"
+            />
+            <div class="error-message" id="name-error" role="alert"></div>
           </div>
 
           <div class="form-group">
             <label for="email">E-Mail *</label>
-            <input type="email" id="email" name="email" required maxlength="100" placeholder="ihre.email@beispiel.de" />
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required 
+              maxlength="100" 
+              placeholder="ihre.email@beispiel.de"
+              autocomplete="email"
+              aria-describedby="email-error"
+            />
+            <div class="error-message" id="email-error" role="alert"></div>
           </div>
 
           <div class="form-group">
             <label for="betreff">Betreff</label>
-            <input type="text" id="betreff" name="betreff" maxlength="100" placeholder="Betreff Ihrer Nachricht" />
+            <input 
+              type="text" 
+              id="betreff" 
+              name="betreff" 
+              maxlength="100" 
+              placeholder="Betreff Ihrer Nachricht"
+              autocomplete="off"
+            />
           </div>
 
           <div class="form-group">
             <label for="art">Art der Anfrage</label>
-            <select id="art" name="art">
+            <select id="art" name="art" autocomplete="off">
               <option value="">Bitte wählen</option>
               <option value="projekt">Projektanfrage</option>
               <option value="zusammenarbeit">Zusammenarbeit</option>
@@ -595,33 +1012,57 @@
               maxlength="1000"
               placeholder="Ihre Nachricht..."
               rows="4"
+              aria-describedby="nachricht-error nachricht-counter"
             ></textarea>
+            <div class="error-message" id="nachricht-error" role="alert"></div>
+            <div id="nachricht-counter" class="character-counter" aria-live="polite">0 / 1000 Zeichen</div>
           </div>
 
           <div class="form-checkbox">
-            <input type="checkbox" id="datenschutz" name="datenschutz" required />
-            <label for="datenschutz"> Ich stimme der Datenschutzerklärung zu * </label>
-            <a href="/pages/komponente/datenschutz.html" target="_blank" class="datenschutz-link"
-              >(Datenschutzerklärung lesen)</a
-            >
+            <input 
+              type="checkbox" 
+              id="datenschutz" 
+              name="datenschutz" 
+              required
+              aria-describedby="datenschutz-error"
+            />
+            <label for="datenschutz">
+              Ich stimme der 
+              <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener">
+                Datenschutzerklärung
+              </a> 
+              zu *
+            </label>
+            <div class="error-message" id="datenschutz-error" role="alert"></div>
           </div>
 
-          <button type="submit" class="form-submit"><i class="fa-solid fa-paper-plane"></i> Nachricht senden</button>
+          <button type="submit" class="form-submit" id="submit-btn" aria-describedby="submit-status">
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> 
+            <span>Nachricht senden</span>
+          </button>
 
-          <div class="form-success" id="form-success">
-            <i class="fa-solid fa-check-circle"></i> Vielen Dank! Ich melde mich schnellstmöglich.
+          <div class="form-success" id="form-success" role="status" aria-live="polite">
+            <i class="fa-solid fa-check-circle" aria-hidden="true"></i> 
+            Vielen Dank! Ich melde mich schnellstmöglich.
           </div>
         </form>
       </section>
 
       <!-- FAQ Section -->
-      <section class="snap-section">
+      <section class="snap-section" role="region" aria-labelledby="faq-title">
         <div class="faq-section">
-          <h2 class="faq-title">Häufig gestellte Fragen</h2>
+          <h2 id="faq-title" class="faq-title">Häufig gestellte Fragen</h2>
 
           <div class="faq-item">
-            <button class="faq-question" type="button">Wie schnell antworten Sie auf Anfragen?</button>
-            <div class="faq-answer">
+            <button 
+              class="faq-question" 
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-1"
+            >
+              Wie schnell antworten Sie auf Anfragen?
+            </button>
+            <div class="faq-answer" id="faq-answer-1" role="region">
               <p>
                 Ich bemühe mich, alle Anfragen innerhalb von 24 Stunden zu beantworten. Bei komplexeren Projekten kann
                 die erste Einschätzung bis zu 48 Stunden dauern.
@@ -630,8 +1071,15 @@
           </div>
 
           <div class="faq-item">
-            <button class="faq-question" type="button">Welche Arten von Projekten übernehmen Sie?</button>
-            <div class="faq-answer">
+            <button 
+              class="faq-question" 
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-2"
+            >
+              Welche Arten von Projekten übernehmen Sie?
+            </button>
+            <div class="faq-answer" id="faq-answer-2" role="region">
               <p>
                 Websites, Web-Applikationen, E-Commerce-Lösungen und individuelle Softwareentwicklung. Kontaktieren Sie
                 mich gerne für Details zu Ihrem spezifischen Projekt.
@@ -640,8 +1088,15 @@
           </div>
 
           <div class="faq-item">
-            <button class="faq-question" type="button">Bieten Sie auch Wartung und Support an?</button>
-            <div class="faq-answer">
+            <button 
+              class="faq-question" 
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-3"
+            >
+              Bieten Sie auch Wartung und Support an?
+            </button>
+            <div class="faq-answer" id="faq-answer-3" role="region">
               <p>
                 Ja, ich biete umfassende Wartungs- und Supportpakete für alle von mir entwickelten Projekte an. Dies
                 umfasst regelmäßige Updates und technischen Support.
@@ -650,8 +1105,15 @@
           </div>
 
           <div class="faq-item">
-            <button class="faq-question" type="button">Arbeiten Sie auch remote?</button>
-            <div class="faq-answer">
+            <button 
+              class="faq-question" 
+              type="button"
+              aria-expanded="false"
+              aria-controls="faq-answer-4"
+            >
+              Arbeiten Sie auch remote?
+            </button>
+            <div class="faq-answer" id="faq-answer-4" role="region">
               <p>
                 Absolut! Ich arbeite mit Kunden aus ganz Deutschland und international zusammen. Moderne Tools
                 ermöglichen effiziente Zusammenarbeit unabhängig vom Standort.
@@ -663,15 +1125,457 @@
     </div>
 
     <!-- Navigation Dots -->
-    <div class="scroll-dots">
-      <span class="dot active" data-section="0"></span>
-      <span class="dot" data-section="1"></span>
-      <span class="dot" data-section="2"></span>
-      <span class="dot" data-section="3"></span>
-    </div>
+    <nav class="scroll-dots" aria-label="Seitennavigation" role="navigation">
+      <button class="dot active" data-section="0" aria-label="Zu Willkommen springen" type="button"></button>
+      <button class="dot" data-section="1" aria-label="Zu Kontaktinformationen springen" type="button"></button>
+      <button class="dot" data-section="2" aria-label="Zu Kontaktformular springen" type="button"></button>
+      <button class="dot" data-section="3" aria-label="Zu FAQ springen" type="button"></button>
+    </nav>
 
+    <!-- Scripts -->
     <script src="/assets/js/menu.js" defer></script>
     <script src="/assets/js/main-init.js" defer></script>
     <script src="/assets/js/form-enhancement.js" defer></script>
+    
+    <script>
+      // Enhanced Contact Form with improved validation and UX
+      class ContactFormManager {
+        constructor() {
+          this.form = document.getElementById('kontakt-formular');
+          this.submitBtn = document.getElementById('submit-btn');
+          this.successMessage = document.getElementById('form-success');
+          this.init();
+        }
+
+        init() {
+          if (!this.form) return;
+          
+          this.setupValidation();
+          this.setupCharacterCounter();
+          this.setupFormSubmission();
+          this.setupAccessibility();
+        }
+
+        setupValidation() {
+          const inputs = this.form.querySelectorAll('input[required], textarea[required]');
+          
+          inputs.forEach(input => {
+            // Real-time validation
+            input.addEventListener('blur', () => this.validateField(input));
+            input.addEventListener('input', () => this.clearError(input));
+            
+            // Accessibility improvements
+            input.addEventListener('invalid', (e) => {
+              e.preventDefault();
+              this.showError(input, this.getErrorMessage(input));
+            });
+          });
+
+          // Checkbox validation
+          const checkbox = document.getElementById('datenschutz');
+          if (checkbox) {
+            checkbox.addEventListener('change', () => {
+              if (checkbox.checked) {
+                this.clearError(checkbox);
+              }
+            });
+          }
+        }
+
+        setupCharacterCounter() {
+          const textarea = document.getElementById('nachricht');
+          const counter = document.getElementById('nachricht-counter');
+          
+          if (textarea && counter) {
+            const updateCounter = () => {
+              const current = textarea.value.length;
+              const max = textarea.getAttribute('maxlength');
+              counter.textContent = `${current} / ${max} Zeichen`;
+              
+              // Visual feedback for approaching limit
+              if (current > max * 0.9) {
+                counter.style.color = 'var(--warning-color)';
+              } else if (current === parseInt(max)) {
+                counter.style.color = 'var(--danger-color)';
+              } else {
+                counter.style.color = 'var(--color-text-muted)';
+              }
+            };
+
+            textarea.addEventListener('input', updateCounter);
+            updateCounter(); // Initial count
+          }
+        }
+
+        setupFormSubmission() {
+          this.form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (this.validateForm()) {
+              await this.submitForm();
+            }
+          });
+        }
+
+        setupAccessibility() {
+          // Enhanced keyboard navigation
+          const formElements = this.form.querySelectorAll('input, textarea, select, button');
+          
+          formElements.forEach((element, index) => {
+            element.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' && element.type !== 'textarea') {
+                e.preventDefault();
+                const nextElement = formElements[index + 1];
+                if (nextElement) {
+                  nextElement.focus();
+                } else {
+                  this.form.querySelector('[type="submit"]').focus();
+                }
+              }
+            });
+          });
+        }
+
+        validateField(input) {
+          const value = input.value.trim();
+          let isValid = true;
+          let message = '';
+
+          // Required field validation
+          if (input.hasAttribute('required') && !value) {
+            isValid = false;
+            message = 'Dieses Feld ist erforderlich.';
+          }
+          
+          // Email validation
+          else if (input.type === 'email' && value) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(value)) {
+              isValid = false;
+              message = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+            }
+          }
+          
+          // Length validation
+          else if (input.hasAttribute('maxlength')) {
+            const maxLength = parseInt(input.getAttribute('maxlength'));
+            if (value.length > maxLength) {
+              isValid = false;
+              message = `Maximale Länge: ${maxLength} Zeichen.`;
+            }
+          }
+
+          // Checkbox validation
+          if (input.type === 'checkbox' && input.hasAttribute('required') && !input.checked) {
+            isValid = false;
+            message = 'Bitte stimmen Sie der Datenschutzerklärung zu.';
+          }
+
+          if (isValid) {
+            this.clearError(input);
+          } else {
+            this.showError(input, message);
+          }
+
+          return isValid;
+        }
+
+        validateForm() {
+          const requiredFields = this.form.querySelectorAll('[required]');
+          let isValid = true;
+
+          requiredFields.forEach(field => {
+            if (!this.validateField(field)) {
+              isValid = false;
+            }
+          });
+
+          return isValid;
+        }
+
+        showError(input, message) {
+          const formGroup = input.closest('.form-group') || input.closest('.form-checkbox');
+          const errorElement = formGroup.querySelector('.error-message');
+          
+          formGroup.classList.add('error');
+          if (errorElement) {
+            errorElement.textContent = message;
+          }
+          
+          // Accessibility: Announce error
+          input.setAttribute('aria-invalid', 'true');
+        }
+
+        clearError(input) {
+          const formGroup = input.closest('.form-group') || input.closest('.form-checkbox');
+          const errorElement = formGroup.querySelector('.error-message');
+          
+          formGroup.classList.remove('error');
+          if (errorElement) {
+            errorElement.textContent = '';
+          }
+          
+          input.removeAttribute('aria-invalid');
+        }
+
+        getErrorMessage(input) {
+          if (input.validity.valueMissing) {
+            return 'Dieses Feld ist erforderlich.';
+          }
+          if (input.validity.typeMismatch) {
+            return 'Bitte geben Sie einen gültigen Wert ein.';
+          }
+          if (input.validity.tooLong) {
+            return `Maximale Länge: ${input.maxLength} Zeichen.`;
+          }
+          return 'Ungültiger Wert.';
+        }
+
+        async submitForm() {
+          // Show loading state
+          this.submitBtn.classList.add('loading');
+          this.submitBtn.disabled = true;
+
+          try {
+            // Simulate form submission (replace with actual endpoint)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Show success message
+            this.successMessage.classList.add('show');
+            this.form.reset();
+            
+            // Reset character counter
+            const counter = document.getElementById('nachricht-counter');
+            if (counter) {
+              counter.textContent = '0 / 1000 Zeichen';
+              counter.style.color = 'var(--color-text-muted)';
+            }
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+              this.successMessage.classList.remove('show');
+            }, 5000);
+            
+          } catch (error) {
+            // Handle submission error
+            console.error('Form submission error:', error);
+            this.showError(this.form, 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
+          } finally {
+            // Reset loading state
+            this.submitBtn.classList.remove('loading');
+            this.submitBtn.disabled = false;
+          }
+        }
+      }
+
+      // Enhanced Scroll Navigation
+      class ScrollNavigationManager {
+        constructor() {
+          this.viewbox = document.querySelector('.kontakt-viewbox');
+          this.sections = document.querySelectorAll('.snap-section');
+          this.dots = document.querySelectorAll('.dot');
+          this.init();
+        }
+
+        init() {
+          if (!this.viewbox || !this.sections.length) return;
+          
+          this.setupScrollListener();
+          this.setupDotNavigation();
+          this.setupKeyboardNavigation();
+        }
+
+        setupScrollListener() {
+          let ticking = false;
+          
+          this.viewbox.addEventListener('scroll', () => {
+            if (!ticking) {
+              requestAnimationFrame(() => {
+                this.updateActiveDot();
+                ticking = false;
+              });
+              ticking = true;
+            }
+          }, { passive: true });
+        }
+
+        setupDotNavigation() {
+          this.dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+              this.scrollToSection(index);
+            });
+          });
+        }
+
+        setupKeyboardNavigation() {
+          document.addEventListener('keydown', (e) => {
+            if (e.target.closest('.kontakt-form')) return; // Don't interfere with form
+            
+            const activeIndex = this.getActiveSection();
+            
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+              e.preventDefault();
+              this.scrollToSection(Math.min(activeIndex + 1, this.sections.length - 1));
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+              e.preventDefault();
+              this.scrollToSection(Math.max(activeIndex - 1, 0));
+            } else if (e.key === 'Home') {
+              e.preventDefault();
+              this.scrollToSection(0);
+            } else if (e.key === 'End') {
+              e.preventDefault();
+              this.scrollToSection(this.sections.length - 1);
+            }
+          });
+        }
+
+        updateActiveDot() {
+          const activeIndex = this.getActiveSection();
+          
+          this.dots.forEach((dot, index) => {
+            const isActive = index === activeIndex;
+            dot.classList.toggle('active', isActive);
+            dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+          });
+        }
+
+        getActiveSection() {
+          const scrollPosition = this.viewbox.scrollTop;
+          const sectionHeight = this.viewbox.clientHeight;
+          return Math.round(scrollPosition / sectionHeight);
+        }
+
+        scrollToSection(index) {
+          if (index < 0 || index >= this.sections.length) return;
+          
+          const targetSection = this.sections[index];
+          targetSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+          
+          // Update dots immediately for better UX
+          this.dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+            dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+          });
+        }
+      }
+
+      // Enhanced FAQ Manager
+      class FAQManager {
+        constructor() {
+          this.faqItems = document.querySelectorAll('.faq-item');
+          this.init();
+        }
+
+        init() {
+          this.faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+            
+            if (question && answer) {
+              question.addEventListener('click', () => {
+                this.toggleFAQ(item);
+              });
+              
+              // Keyboard support
+              question.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  this.toggleFAQ(item);
+                }
+              });
+            }
+          });
+        }
+
+        toggleFAQ(item) {
+          const isActive = item.classList.contains('active');
+          const question = item.querySelector('.faq-question');
+          const answer = item.querySelector('.faq-answer');
+          
+          // Close all other FAQs
+          this.faqItems.forEach(otherItem => {
+            if (otherItem !== item) {
+              otherItem.classList.remove('active');
+              const otherQuestion = otherItem.querySelector('.faq-question');
+              if (otherQuestion) {
+                otherQuestion.setAttribute('aria-expanded', 'false');
+              }
+            }
+          });
+          
+          // Toggle current FAQ
+          item.classList.toggle('active', !isActive);
+          question.setAttribute('aria-expanded', (!isActive).toString());
+          
+          // Smooth scroll to view if opening
+          if (!isActive) {
+            setTimeout(() => {
+              item.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+              });
+            }, 150);
+          }
+        }
+      }
+
+      // Performance Optimization: Intersection Observer for animations
+      class AnimationManager {
+        constructor() {
+          this.init();
+        }
+
+        init() {
+          if ('IntersectionObserver' in window) {
+            this.setupIntersectionObserver();
+          }
+        }
+
+        setupIntersectionObserver() {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+              }
+            });
+          }, {
+            threshold: 0.1,
+            rootMargin: '50px'
+          });
+
+          // Observe animated elements
+          document.querySelectorAll('.kontakt-method, .social-link, .faq-item').forEach(el => {
+            observer.observe(el);
+          });
+        }
+      }
+
+      // Initialize all managers when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        new ContactFormManager();
+        new ScrollNavigationManager();
+        new FAQManager();
+        new AnimationManager();
+
+        // Performance monitoring
+        if (window.performance && window.performance.mark) {
+          performance.mark('kontakt-page-interactive');
+        }
+      });
+
+      // Error handling
+      window.addEventListener('error', (e) => {
+        console.error('Contact page error:', e.error);
+        // Could send to error tracking service
+      });
+
+      // Service Worker registration for offline support
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(console.error);
+      }
+    </script>
   </body>
 </html>
