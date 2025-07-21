@@ -39,6 +39,11 @@ jobs:
       - name: '✅ Validate HTML'
         run: npm run validate-html || true
 
+      - name: '🔎 Lint JavaScript'
+        run: npm run lint:check
+
+      - name: '🧪 Run Unit Tests'
+        run: npx jest --ci --coverage
       - name: '🎨 Validate CSS'
         run: npm run validate-css || true
 

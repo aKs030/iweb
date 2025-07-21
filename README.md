@@ -115,6 +115,18 @@ iweb/
 
 ## 🚀 Deployment
 
+## 🤖 Automatisierte Security & Test-Checks
+
+Dieses Projekt nutzt GitHub Actions für Continuous Integration:
+
+- **ESLint** prüft JavaScript-Codequalität bei jedem Commit
+- **Jest** führt Unit-Tests mit Coverage-Report aus
+- **npm audit** prüft auf Sicherheitslücken in Abhängigkeiten
+- **Security-Header-Check** stellt sicher, dass alle HTTP-Sicherheitsheader korrekt gesetzt sind
+- **HTML/CSS-Validierung** und **Lighthouse** laufen automatisiert
+
+Alle Checks laufen bei jedem Push/PR auf `main` und verhindern fehlerhafte Deployments.
+
 ### Lokaler Build
 
 ```bash

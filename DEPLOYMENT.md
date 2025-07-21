@@ -2,6 +2,14 @@
 
 ## ✅ Vor dem Live-Gang:
 
+---
+
+**Hinweis:** Alle wichtigen Prüfungen (Security, Linting, Unit-Tests, Coverage,
+HTML/CSS-Validierung) laufen automatisiert in der GitHub Actions Pipeline. Ein Deployment erfolgt
+nur bei bestandenem CI.
+
+---
+
 ### 🔧 **Technische Prüfungen:**
 
 - [ ] Alle Links funktionieren korrekt
@@ -105,6 +113,5 @@ Aktuelle Domain: `https://www.abdulkerimsesli.de`
 
 ---
 
-**Status:** ✅ Produktionsreif
-**Letzte Prüfung:** 12. Juli 2025
-**Nächste Prüfung:** Nach dem ersten Deployment
+**Status:** ✅ Produktionsreif **Letzte Prüfung:** 12. Juli 2025 **Nächste Prüfung:** Nach dem
+ersten Deployment

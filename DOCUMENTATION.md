@@ -423,29 +423,55 @@ npm run purge
 ### Content Security Policy
 
 ```javascript
-// Konfiguriert in Express Server und Meta-Tag
+// Einheitliche CSP-Konfiguration (siehe .htaccess, _headers, index.html)
 const CSP = {
   'default-src': ["'self'"],
-  'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-  'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+  'script-src': ["'self'", 'https://cdn.jsdelivr.net', 'https://www.googletagmanager.com'],
+  'style-src': [
+    "'self'",
+    'https://fonts.googleapis.com',
+    'https://cdn.jsdelivr.net',
+    'https://cdnjs.cloudflare.com',
+  ],
   'img-src': ["'self'", 'data:', 'https:'],
-  'font-src': ["'self'", 'https://fonts.gstatic.com'],
-  'connect-src': ["'self'", 'https://www.google-analytics.com'],
+  'font-src': [
+    "'self'",
+    'https://fonts.gstatic.com',
+    'https://cdn.jsdelivr.net',
+    'https://cdnjs.cloudflare.com',
+  ],
+  'connect-src': [
+    "'self'",
+    'https://www.google-analytics.com',
+    'https://region1.google-analytics.com',
+    'https://ipapi.co',
+    'https://api.abdulkerimsesli.de',
+  ],
+  'frame-ancestors': ["'self'"],
+  'base-uri': ["'self'"],
+  'form-action': ["'self'"],
+  'object-src': ["'none'"],
 };
 ```
 
 ### Security Headers
 
 ```javascript
-// Express Server Configuration
+// Express Server Configuration (aktuelle Header)
 app.use((req, res, next) => {
   res.set({
-    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
-    'X-XSS-Protection': '0', // Disabled (use CSP instead)
+    'Content-Security-Policy':
+      "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://ipapi.co https://api.abdulkerimsesli.de; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; base-uri 'self';",
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+    'X-XSS-Protection': '0',
+    'X-Permitted-Cross-Domain-Policies': 'none',
+    'Cross-Origin-Embedder-Policy': 'require-corp',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Cross-Origin-Resource-Policy': 'same-origin',
   });
   next();
 });
