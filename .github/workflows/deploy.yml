@@ -71,6 +71,13 @@ jobs:
     npx lhci autorun --config=lighthouserc.js | tee lhci-output.log
     cat lhci-output.log
 
+- name: "🔗 Extract Lighthouse Public Report URL"
+  id: extract_url
+  run: |
+    REPORT_URL=$(grep -Eo 'https://storage.googleapis.com[^ ]+\.report\.html' lhci-output.log | head -n 1 || true)
+    echo "REPORT_URL=$REPORT_URL" >> $GITHUB_ENV
+
+
 
       - name: "📤 Upload Lighthouse Results"
         uses: actions/upload-artifact@v4
@@ -133,11 +140,12 @@ jobs:
           echo "Files validated & security checked ✅"
 
       - name: "📊 Deployment Summary"
-        run: |
-          {
-            echo "## 📊 Deployment Summary"
-            echo "- ✅ HTML validation (warnings tolerated)"
-            echo "- ✅ CSS validation (warnings tolerated)"
-            echo "- ✅ Lighthouse & security headers checked"
-            echo "- 🚀 Ready for production deploy"
-          } >> "$GITHUB_STEP_SUMMARY"
+  run: |
+    {
+      echo "## 📊 Deployment Summary"
+      echo "- ✅ HTML validation (warnings tolerated)"
+      echo "- ✅ CSS validation (warnings tolerated)"
+      echo "- ✅ Lighthouse & security headers checked"
+      echo "- 🔗 Lighthouse Report: ${REPORT_URL:-Nicht verfügbar}"
+      echo "- 🚀 Ready for production deploy"
+    } >> "$GITHUB_STEP_SUMMARY"
