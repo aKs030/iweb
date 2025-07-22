@@ -9,8 +9,8 @@
                     Entdecke meine Projekte, Interessen und Erfahrungen in der digitalen Welt.
                 </p>
                 <div class="hero-buttons text-animate" data-animation="animate__fadeInUp">
-                    <a href="/pages/ubermich.html" class="btn btn-primary btn-lg me-3">Über mich</a>
-                    <a href="/pages/album.html" class="btn btn-outline-light btn-lg">Portfolio</a>
+                    <a href="/docs/pages/ubermich.html" class="btn btn-primary btn-lg me-3">Über mich</a>
+                    <a href="/docs/pages/album.html" class="btn btn-outline-light btn-lg">Portfolio</a>
                 </div>
             </div>
         </div>
@@ -26,8 +26,8 @@
                     Webentwickler, Kreative Problemlösung und Technologie-Enthusiast
                 </p>
                 <div class="hero-buttons text-animate" data-animation="animate__zoomIn">
-                    <a href="/pages/index-game.html" class="btn btn-success btn-lg me-3">Spiele</a>
-                    <a href="/pages/features/editor.html" class="btn btn-outline-info btn-lg">Tools</a>
+                    <a href="/docs/pages/index-game.html" class="btn btn-success btn-lg me-3">Spiele</a>
+                    <a href="/docs/pages/features/editor.html" class="btn btn-outline-info btn-lg">Tools</a>
                 </div>
             </div>
         </div>
@@ -43,8 +43,8 @@
                     Von der Idee zur Umsetzung - Lass uns zusammen etwas Großartiges schaffen!
                 </p>
                 <div class="hero-buttons text-animate" data-animation="animate__fadeInUp">
-                    <a href="/pages/komponente/kontakt.html" class="btn btn-warning btn-lg me-3">Kontakt</a>
-                    <a href="/pages/album.html" class="btn btn-outline-light btn-lg">Galerie</a>
+                    <a href="/docs/pages/komponente/kontakt.html" class="btn btn-warning btn-lg me-3">Kontakt</a>
+                    <a href="/docs/pages/album.html" class="btn btn-outline-light btn-lg">Galerie</a>
                 </div>
             </div>
         </div>
@@ -140,7 +140,7 @@
                                 <i class="fa-solid fa-weather-sun fa-3x mb-3 text-warning"></i>
                                 <h5 class="card-title">Wetter App</h5>
                                 <p class="card-text">Moderne Wettervorhersage mit API-Integration</p>
-                                <a href="/pages/features/wetter.html" class="btn btn-primary">Anzeigen</a>
+                                <a href="/docs/pages/features/wetter.html" class="btn btn-primary">Anzeigen</a>
                             </div>
                         </div>
                     </div>
@@ -150,7 +150,7 @@
                                 <i class="fa-solid fa-edit fa-3x mb-3 text-info"></i>
                                 <h5 class="card-title">Code Editor</h5>
                                 <p class="card-text">Online-Editor mit Syntax-Highlighting</p>
-                                <a href="/pages/features/editor.html" class="btn btn-primary">Öffnen</a>
+                                <a href="/docs/pages/features/editor.html" class="btn btn-primary">Öffnen</a>
                             </div>
                         </div>
                     </div>
@@ -160,7 +160,7 @@
                                 <i class="fa-solid fa-images fa-3x mb-3 text-success"></i>
                                 <h5 class="card-title">Galerie</h5>
                                 <p class="card-text">Interaktive Foto-Galerie mit Animationen</p>
-                                <a href="/pages/album.html" class="btn btn-primary">Entdecken</a>
+                                <a href="/docs/pages/album.html" class="btn btn-primary">Entdecken</a>
                             </div>
                         </div>
                     </div>
@@ -184,7 +184,7 @@
                             Meine Reise in der Programmierung begann mit der Neugier auf das "Wie" und "Warum" 
                             hinter den digitalen Erlebnissen, die uns täglich umgeben.
                         </p>
-                        <a href="/pages/ubermich.html" class="btn btn-primary text-animate" data-animation="animate__fadeInUp">
+                        <a href="/docs/pages/ubermich.html" class="btn btn-primary text-animate" data-animation="animate__fadeInUp">
                             Mehr erfahren
                         </a>
                     </div>
@@ -236,7 +236,7 @@
                                 <a href="mailto:kontakt@example.com" class="btn btn-outline-primary me-3 scroll-animate" data-animation="animate__bounceIn">
                                     <i class="fa-solid fa-envelope me-2"></i>E-Mail
                                 </a>
-                                <a href="/pages/komponente/kontakt.html" class="btn btn-primary scroll-animate" data-animation="animate__bounceIn">
+                                <a href="/docs/pages/komponente/kontakt.html" class="btn btn-primary scroll-animate" data-animation="animate__bounceIn">
                                     <i class="fa-solid fa-paper-plane me-2"></i>Kontaktformular
                                 </a>
                             </div>

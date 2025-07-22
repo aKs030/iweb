@@ -672,7 +672,7 @@
           let allNews = [];
           // NewsAPI.org mit Proxy
           for (const query of API_CONFIG.newsApi.queries) {
-            const url = `${API_CONFIG.newsApi.url}?q=${encodeURIComponent(query)}&language=${API_CONFIG.newsApi.language}&sortBy=${API_CONFIG.newsApi.sortBy}&pageSize=5&apiKey=${API_CONFIG.newsApi.key}`;
+            const url = `${API_CONFIG.newsApi.url}?q=${encodeURIComponent(query)}&language=${API_CONFIG.newsApi.language}&sortBy=${API_CONFIG.newsApi.sortBy}&docs/pagesize=5&apiKey=${API_CONFIG.newsApi.key}`;
             const proxyUrl = CORS_PROXY + encodeURIComponent(url);
             const newsApiResponse = await fetch(proxyUrl);
             if (newsApiResponse.ok) {

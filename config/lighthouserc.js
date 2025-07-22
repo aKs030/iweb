@@ -21,9 +21,9 @@ module.exports = {
     collect: {
       url: [
         `${BASE_URL}/`,
-        `${BASE_URL}/pages/ubermich.html`,
-        `${BASE_URL}/pages/album.html`,
-        `${BASE_URL}/pages/index-game.html`,
+        `${BASE_URL}/docs/pages/ubermich.html`,
+        `${BASE_URL}/docs/pages/album.html`,
+        `${BASE_URL}/docs/pages/index-game.html`,
       ],
       startServerCommand: BASE_URL.includes('localhost') ? 'npm run dev-node' : undefined,
       startServerReadyPattern: 'Available on',

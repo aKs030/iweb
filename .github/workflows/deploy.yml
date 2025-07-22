@@ -123,7 +123,7 @@ jobs:
 
       - name: '🚀 Manual deploy step'
         run: |
-          echo "Deployment would happen here. Manuell oder via Pages/Cloudflare."
+          echo "Deployment would happen here. Manuell oder via docs/pages/Cloudflare."
 
       - name: '📊 Deployment Summary'
         run: |

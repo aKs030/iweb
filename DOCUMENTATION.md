@@ -45,7 +45,7 @@ _Weitere Tools siehe package.json_
 - **Testing**: Lighthouse CI, HTML Validator, Stylelint
 - **CI/CD**: GitHub Actions
 - **Analytics**: Google Analytics 4
-- **Hosting**: Static Hosting (Cloudflare Pages empfohlen)
+- **Hosting**: Static Hosting (Cloudflare docs/pages empfohlen)
 
 ### Design Patterns
 
@@ -61,10 +61,10 @@ iweb/ ├── index.html # SPA Entry Point ├── css/ │ ├── \_glob
 ├── index.css # Homepage spezifisch │ ├── menu.css # Navigation System │ ├── cookies.css # Cookie
 Banner Styles │ ├── footer.css # Footer Komponente │ ├── album.css # Galerie Styles │ └──
 ubermich.css # About Page Styles ├── js/ │ ├── main-init.js # Zentrale Initialisierung │ ├──
-assets/js/cookie-system.js # Cookie Consent Manager │ ├── menu.js # Navigation Controller │ ├──
+docs/js/cookie-system.js # Cookie Consent Manager │ ├── menu.js # Navigation Controller │ ├──
 scroll-dots.js # Scroll Navigation │ ├── templateLoader.js # Dynamic Content Loader │ ├──
 intext.js # Content Animation System │ ├── performance-monitor.js # Performance Tracking │ └──
-enhanced-error-handler.js # Error Management ├── pages/ │ ├── komponente/ # Wiederverwendbare
+enhanced-error-handler.js # Error Management ├── docs/pages/ │ ├── komponente/ # Wiederverwendbare
 Komponenten │ │ ├── menu.html # Navigation Template │ │ ├── footer.html # Footer Template │ │ ├──
 cookie-banner.html # Cookie Banner │ │ └── ... │ └── ... # Weitere Seiten └── scripts/ # Build &
 Development Scripts
@@ -130,7 +130,7 @@ window.onWebsiteReady(
 );
 ```
 
-### 2. Cookie System (`assets/js/cookie-system.js`)
+### 2. Cookie System (`docs/js/cookie-system.js`)
 
 **Features**:
 
@@ -172,7 +172,7 @@ console.log(window.CookieBanner.debug());
 
 ```javascript
 // Automatisches Laden bei DOMContentLoaded
-// Menu wird aus /pages/komponente/menu.html geladen
+// Menu wird aus /docs/pages/komponente/menu.html geladen
 // Event Delegation für Performance
 ```
 
@@ -361,7 +361,7 @@ document.addEventListener('sectionUpdate', (event) => {
 **Template System**:
 
 ```javascript
-// Templates werden aus /pages/index-card.html geladen
+// Templates werden aus /docs/pages/index-card.html geladen
 // IntersectionObserver für Lazy Loading
 // Animation Queue für sequentielle Animationen
 ```
@@ -499,7 +499,7 @@ function sanitizeInput(input) {
 **Lifecycle**:
 
 1. Registration
-2. Installation (Cache static assets)
+2. Installation (Cache static docs)
 3. Activation (Clean old caches)
 4. Fetch (Implement cache strategies)
 
@@ -536,8 +536,8 @@ self.addEventListener('message', (event) => {
 
 ### Offline Support
 
-- Offline Page: `/pages/komponente/offline.html`
-- Cached Assets: Core CSS/JS files
+- Offline Page: `/docs/pages/komponente/offline.html`
+- Cached docs: Core CSS/JS files
 - Network-First für dynamische Inhalte
 
 ## Cookie Management
@@ -643,7 +643,7 @@ window.websiteErrorHandler.performMemoryCleanup();
 
 **4. Menu reagiert nicht**
 
-- Prüfe ob `/pages/komponente/menu.html` geladen wurde
+- Prüfe ob `/docs/pages/komponente/menu.html` geladen wurde
 - Console auf Fehler prüfen
 - Event Listener Status überprüfen
 

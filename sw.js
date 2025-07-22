@@ -115,8 +115,8 @@ self.addEventListener('push', event => {
     
     const options = {
       body: data.body,
-      icon: '/assets/img/icon-192.png',
-      badge: '/assets/img/badge-72.png',
+      icon: '/docs/img/icon-192.png',
+      badge: '/docs/img/badge-72.png',
       vibrate: [100, 50, 100],
       data: {
         dateOfArrival: Date.now(),
@@ -129,7 +129,7 @@ self.addEventListener('push', event => {
     );
   }
 });
-self.importScripts('assets/js/idb-min.js');
+self.importScripts('docs/js/idb-min.js');
 // Sync-Event für das Kontaktformular
 self.addEventListener('sync', async event => {
   if (event.tag === 'contact-form') {
@@ -168,31 +168,31 @@ async function sendPendingFormData() {
 
 const CACHE_VERSION = 'v3.0.0';
 const CACHE_NAME = `iweb7-${CACHE_VERSION}`;
-const OFFLINE_URL = '/pages/komponente/offline.html';
+const OFFLINE_URL = '/docs/pages/komponente/offline.html';
 
-// Assets die immer gecached werden sollen
+// docs die immer gecached werden sollen
 const STATIC_ASSETS = [
   '/',
   '/docs/index.html',
-  '/pages/komponente/offline.html',
-  '/pages/komponente/404.html',
-  '/assets/css/_global.css',
-  '/assets/css/index.css',
-  '/assets/css/menu.css',
-  '/assets/js/main-init.js',
-  '/assets/js/menu.js',
+  '/docs/pages/komponente/offline.html',
+  '/docs/pages/komponente/404.html',
+  '/docs/css/_global.css',
+  '/docs/css/index.css',
+  '/docs/css/menu.css',
+  '/docs/js/main-init.js',
+  '/docs/js/menu.js',
   '/manifest.json',
-  '/assets/img/favicon.ico',
-  '/assets/img/favicon-32.png',
-  '/assets/img/touch-icon-180.png',
+  '/docs/img/favicon.ico',
+  '/docs/img/favicon-32.png',
+  '/docs/img/touch-icon-180.png',
 ];
 
 // Cache-Strategien für verschiedene Ressourcen-Typen
 const CACHE_STRATEGIES = {
   // Network First - für HTML und API calls
-  networkFirst: [/\.html$/, /\/api\//, /\/pages\//],
+  networkFirst: [/\.html$/, /\/api\//, /\/docs/pages\//],
 
-  // Cache First - für Assets
+  // Cache First - für docs
   cacheFirst: [/\.css$/, /\.js$/, /\.woff2?$/, /\.ttf$/, /\.otf$/],
 
   // Stale While Revalidate - für Bilder
@@ -210,7 +210,7 @@ self.addEventListener('install', (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) => {
-        console.log('[ServiceWorker] Caching static assets');
+        console.log('[ServiceWorker] Caching static docs');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => self.skipWaiting())
@@ -333,7 +333,7 @@ async function networkFirst(request) {
     }
 
     // Return 404 page
-    return caches.match('/pages/komponente/404.html');
+    return caches.match('/docs/pages/komponente/404.html');
   }
 }
 

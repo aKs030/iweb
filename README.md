@@ -1,6 +1,6 @@
 # 🌟 iweb - Enterprise-Ready Personal Website
 
-[![Performance](https://img.shields.io/badge/Performance-98%2F100-brightgreen)](https://pagespeed.web.dev/)
+[![Performance](https://img.shields.io/badge/Performance-98%2F100-brightgreen)](https://docs/pagespeed.web.dev/)
 [![Accessibility](https://img.shields.io/badge/Accessibility-99%2F100-brightgreen)](https://web.dev/accessibility/)
 [![Best Practices](https://img.shields.io/badge/Best%20Practices-100%2F100-brightgreen)](https://web.dev/best-practices/)
 [![SEO](https://img.shields.io/badge/SEO-100%2F100-brightgreen)](https://web.dev/seo/)
@@ -31,7 +31,7 @@ Performance und DSGVO-Konformität.
 - **Dark/Light Mode** - Automatische und manuelle Theme-Umschaltung
 - **DSGVO-konform** - Cookie-Banner mit granularer Kontrolle
 - **SEO-optimiert** - Strukturierte Daten, Sitemap, Meta-Tags
-- **Performance** - Lazy Loading, optimierte Assets, < 3s Ladezeit
+- **Performance** - Lazy Loading, optimierte docs, < 3s Ladezeit
 
 ### Technische Highlights
 
@@ -101,10 +101,10 @@ iweb/
 │   └── cookies.css        # Cookie-Banner-Styles
 ├── js/                    # JavaScript-Module
 │   ├── main-init.js       # Haupt-Initialisierung
-│   ├── assets/js/cookie-system.js   # Cookie-Management
+│   ├── docs/js/cookie-system.js   # Cookie-Management
 │   ├── menu.js            # Navigation-Logik
 │   └── ...                # Weitere Module
-├── pages/                 # HTML-Seiten
+├── docs/pages/                 # HTML-Seiten
 │   ├── ubermich.html      # Über mich
 │   ├── album.html         # Fotogalerie
 │   └── komponente/        # Wiederverwendbare Komponenten
@@ -161,9 +161,9 @@ npm run security-check:prod
 scp -r dist/* user@server:/var/www/html/
 ```
 
-#### Cloudflare Pages
+#### Cloudflare docs/pages
 
-1. Repository mit Cloudflare Pages verbinden
+1. Repository mit Cloudflare docs/pages verbinden
 2. Build-Befehl: `npm run build`
 3. Ausgabe-Verzeichnis: `dist`
 
@@ -180,7 +180,7 @@ PORT=8000
 
 ### Cookie-Banner anpassen
 
-Bearbeite `assets/js/cookie-system.js`:
+Bearbeite `docs/js/cookie-system.js`:
 
 ```javascript
 const CONFIG = {

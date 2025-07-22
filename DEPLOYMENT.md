@@ -29,7 +29,7 @@ nur bei bestandenem CI.
 
 ### 📊 **Performance:**
 
-- [ ] Google PageSpeed Insights > 90
+- [ ] Google docs/pagespeed Insights > 90
 - [ ] Core Web Vitals im grünen Bereich
 - [ ] Gzip-Kompression aktiv
 - [ ] Browser-Caching funktioniert
@@ -70,7 +70,7 @@ nur bei bestandenem CI.
 
 ### **Performance Testing:**
 
-- Google PageSpeed Insights: https://pagespeed.web.dev/
+- Google docs/pagespeed Insights: https://docs/pagespeed.web.dev/
 - GTmetrix: https://gtmetrix.com/
 - WebPageTest: https://www.webpagetest.org/
 

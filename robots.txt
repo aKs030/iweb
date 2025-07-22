@@ -20,10 +20,10 @@ Crawl-delay: 2
 Disallow: /*.js$
 Disallow: /*.css$
 Disallow: /img/splash/
-Disallow: /pages/komponente/
+Disallow: /docs/pages/komponente/
 
 # Erlaubte wichtige Bereiche
-Allow: /pages/ubermich.html
-Allow: /pages/album.html
-Allow: /pages/index-game.html
-Allow: /pages/features/wetter.html
+Allow: /docs/pages/ubermich.html
+Allow: /docs/pages/album.html
+Allow: /docs/pages/index-game.html
+Allow: /docs/pages/features/wetter.html

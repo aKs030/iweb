@@ -35,12 +35,11 @@
     storageKey: 'cookie-consent',
     bannerDelay: 1000,
     debug:
-      window.location.hostname === 'localhost' ||
-      window.location.search.includes('debug=true'),
+      window.location.hostname === 'localhost' || window.location.search.includes('debug=true'),
 
     // Loader Configuration
-    cssPath: '/assets/css/cookies.css',
-    bannerPath: '/pages/komponente/cookie-banner.html',
+    cssPath: '/docs/css/cookies.css',
+    bannerPath: '/docs/pages/komponente/cookie-banner.html',
     insertTarget: 'body',
     insertPosition: 'beforeend',
     preloadCSS: true,
@@ -105,11 +104,7 @@
         }
 
         // Cookie-Banner HTML laden
-        await this.loadBannerHTML(
-          config.bannerPath,
-          config.insertTarget,
-          config.insertPosition
-        );
+        await this.loadBannerHTML(config.bannerPath, config.insertTarget, config.insertPosition);
 
         this.initialized = true;
         console.log('🍪 Cookie-Banner HTML erfolgreich geladen');
@@ -176,17 +171,14 @@
         }
 
         const bannerHTML = await response.text();
-        const targetElement =
-          document.querySelector(insertTarget) || document.body;
+        const targetElement = document.querySelector(insertTarget) || document.body;
 
         targetElement.insertAdjacentHTML(insertPosition, bannerHTML);
 
         this.bannerLoaded = true;
         console.log('✅ Cookie-Banner HTML geladen');
       } catch (error) {
-        throw new Error(
-          `Banner HTML konnte nicht geladen werden: ${error.message}`
-        );
+        throw new Error(`Banner HTML konnte nicht geladen werden: ${error.message}`);
       }
     }
 
@@ -239,9 +231,7 @@
           setTimeout(() => this.showBanner(), CONFIG.bannerDelay);
         } else {
           if (CONFIG.debug) {
-            console.log(
-              '🍪 [DEBUG] User hat bereits Zustimmung erteilt, zeige FAB'
-            );
+            console.log('🍪 [DEBUG] User hat bereits Zustimmung erteilt, zeige FAB');
           }
           this.showFloatingButton();
         }
@@ -321,10 +311,7 @@
       if (CONFIG.gdprCountries.includes(data.country_code)) {
         this.complianceMode = 'gdpr';
         this.setBannerMode('gdpr-mode');
-      } else if (
-        data.country_code === 'US' &&
-        CONFIG.ccpaStates.includes(data.region)
-      ) {
+      } else if (data.country_code === 'US' && CONFIG.ccpaStates.includes(data.region)) {
         this.complianceMode = 'ccpa';
         this.setBannerMode('ccpa-mode');
       }
@@ -352,9 +339,7 @@
 
         window.gtag('js', new Date());
         window.gtag('config', CONFIG.googleAnalyticsId, {
-          analytics_storage: this.hasConsent('analytics')
-            ? 'granted'
-            : 'denied',
+          analytics_storage: this.hasConsent('analytics') ? 'granted' : 'denied',
           ad_storage: this.hasConsent('marketing') ? 'granted' : 'denied',
         });
 
@@ -369,9 +354,7 @@
     updateGoogleAnalytics() {
       if (typeof window.gtag === 'function') {
         window.gtag('consent', 'update', {
-          analytics_storage: this.hasConsent('analytics')
-            ? 'granted'
-            : 'denied',
+          analytics_storage: this.hasConsent('analytics') ? 'granted' : 'denied',
           ad_storage: this.hasConsent('marketing') ? 'granted' : 'denied',
         });
       }
@@ -388,25 +371,19 @@
       document
         .getElementById('cookie-settings-btn')
         ?.addEventListener('click', () => this.showSettings());
-      document
-        .getElementById('cookie-banner-close')
-        ?.addEventListener('click', () => {
-          this.hideBanner();
-          this.showFloatingButton();
-        });
+      document.getElementById('cookie-banner-close')?.addEventListener('click', () => {
+        this.hideBanner();
+        this.showFloatingButton();
+      });
 
       this.bindModalEvents();
 
-      document
-        .getElementById('cookie-settings-link')
-        ?.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.showSettings();
-        });
+      document.getElementById('cookie-settings-link')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showSettings();
+      });
 
-      document
-        .getElementById('cookie-fab')
-        ?.addEventListener('click', () => this.showSettings());
+      document.getElementById('cookie-fab')?.addEventListener('click', () => this.showSettings());
       document.addEventListener('keydown', (e) => this.handleKeyboard(e));
     }
 
@@ -427,17 +404,13 @@
       modal
         .querySelector('#cookie-reject-all-btn')
         ?.addEventListener('click', () => this.rejectAll());
-      modal
-        .querySelector('#cookie-save-btn')
-        ?.addEventListener('click', () => this.saveSettings());
+      modal.querySelector('#cookie-save-btn')?.addEventListener('click', () => this.saveSettings());
       modal
         .querySelector('#cookie-reset-btn')
         ?.addEventListener('click', () => this.resetSettings());
 
       modal.querySelectorAll('.cookie-details-toggle').forEach((button) => {
-        button.addEventListener('click', (e) =>
-          this.toggleDetails(e.target.closest('button'))
-        );
+        button.addEventListener('click', (e) => this.toggleDetails(e.target.closest('button')));
       });
 
       this.loadConsentState();
@@ -466,10 +439,8 @@
       const marketingCheckbox = modal.querySelector('#cookie-marketing');
       const socialCheckbox = modal.querySelector('#cookie-social');
 
-      if (analyticsCheckbox)
-        analyticsCheckbox.checked = this.hasConsent('analytics');
-      if (marketingCheckbox)
-        marketingCheckbox.checked = this.hasConsent('marketing');
+      if (analyticsCheckbox) analyticsCheckbox.checked = this.hasConsent('analytics');
+      if (marketingCheckbox) marketingCheckbox.checked = this.hasConsent('marketing');
       if (socialCheckbox) socialCheckbox.checked = this.hasConsent('social');
     }
 
@@ -610,10 +581,7 @@
         setTimeout(() => {
           fab.classList.remove('hidden');
           if (CONFIG.debug) {
-            console.log(
-              '🍪 [DEBUG] FAB angezeigt, CSS-Klassen:',
-              fab.className
-            );
+            console.log('🍪 [DEBUG] FAB angezeigt, CSS-Klassen:', fab.className);
           }
         }, 1000);
       } else {
@@ -621,15 +589,12 @@
         // Versuche das Element nach kurzer Verzögerung erneut zu finden
         setTimeout(() => {
           const retryFab =
-            document.getElementById('cookie-fab') ||
-            this.createFloatingButtonFallback();
+            document.getElementById('cookie-fab') || this.createFloatingButtonFallback();
           if (retryFab) {
             retryFab.classList.remove('hidden');
             console.log('🍪 [INFO] FAB nach Retry erfolgreich angezeigt');
           } else {
-            console.error(
-              '🍪 [ERROR] FAB Element auch nach Retry nicht gefunden!'
-            );
+            console.error('🍪 [ERROR] FAB Element auch nach Retry nicht gefunden!');
           }
         }, 2000);
       }
@@ -736,17 +701,13 @@
 
         modal.classList.add('hidden');
 
-        modal
-          .querySelectorAll('.cookie-details.expanded')
-          .forEach((details) => {
-            details.classList.remove('expanded');
-          });
+        modal.querySelectorAll('.cookie-details.expanded').forEach((details) => {
+          details.classList.remove('expanded');
+        });
 
-        modal
-          .querySelectorAll('.cookie-details-toggle[aria-expanded="true"]')
-          .forEach((button) => {
-            button.setAttribute('aria-expanded', 'false');
-          });
+        modal.querySelectorAll('.cookie-details-toggle[aria-expanded="true"]').forEach((button) => {
+          button.setAttribute('aria-expanded', 'false');
+        });
       }
     }
 
@@ -873,8 +834,7 @@
         show: () => window.CookieConsent.show(),
         showSettings: () => window.CookieConsent.showPreferences(),
         hasConsent: (category) => window.CookieConsent.hasConsent(category),
-        setConsent: (category, granted) =>
-          window.CookieConsent.setConsent(category, granted),
+        setConsent: (category, granted) => window.CookieConsent.setConsent(category, granted),
         getConsent: () => window.CookieConsent.getConsent(),
         reset: () => window.CookieConsent.reset(),
         debug: () => window.CookieConsent.getDebugInfo(),

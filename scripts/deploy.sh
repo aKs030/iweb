@@ -132,13 +132,13 @@ run_tests() {
 }
 
 optimize_assets() {
-    log_info "Optimiere Assets für Deployment..."
+    log_info "Optimiere docs für Deployment..."
     
     # Erstelle Build-Verzeichnis
     mkdir -p "$BUILD_DIR"
     
     # Kopiere Basis-Files
-    cp -r *.html *.json *.js css/ js/ img/ pages/ "$BUILD_DIR/"
+    cp -r *.html *.json *.js css/ js/ img/ docs/pages/ "$BUILD_DIR/"
     
     # Optimiere CSS (wenn postcss verfügbar)
     if command -v postcss &> /dev/null; then

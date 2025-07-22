@@ -53,7 +53,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Caching-Header für statische Assets
+// Caching-Header für statische docs
 app.use((req, res, next) => {
   if (req.url.match(/\.(css|js|png|jpg|jpeg|gif|webp|svg|ico)$/)) {
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');

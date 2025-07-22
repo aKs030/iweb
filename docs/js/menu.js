@@ -41,7 +41,7 @@ async function loadFooter() {
   }
 
   try {
-    const response = await fetch('/pages/komponente/footer.html');
+    const response = await fetch('/docs/pages/komponente/footer.html');
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
     }
@@ -85,7 +85,7 @@ async function loadMenu(menuContainer) {
   }
 
   try {
-    const response = await fetch('/pages/komponente/menu.html');
+    const response = await fetch('/docs/pages/komponente/menu.html');
     if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
 
     const menuMarkup = await response.text();
@@ -124,8 +124,8 @@ function createFallbackMenu() {
       <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
         <ul class="site-menu-list">
           <li><a href="/docs/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
-          <li><a href="/pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
-          <li><a href="/pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
+          <li><a href="/docs/pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
+          <li><a href="/docs/pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
         </ul>
       </nav>
     </header>
@@ -365,17 +365,17 @@ function setSiteTitle() {
   const titleMap = {
     '/docs/index.html': 'Startseite',
     '/': 'Startseite',
-    '/pages/album.html': 'Fotogalerie',
-    '/pages/ubermich.html': 'Über mich',
-    '/pages/index-game.html': 'Spiele-Übersicht',
-    '/pages/features/wetter.html': 'Wetter',
-    '/pages/features/snake.html': 'Snake Spiel',
-    '/pages/features/tetris.html': 'Tetris Spiel',
-    '/pages/features/Run.html': 'Jump & Run',
-    '/pages/features/editor.html': 'Level Editor',
-    '/pages/komponente/kontakt.html': 'Kontakt',
-    '/pages/komponente/impressum.html': 'Impressum',
-    '/pages/komponente/datenschutz.html': 'Datenschutz',
+    '/docs/pages/album.html': 'Fotogalerie',
+    '/docs/pages/ubermich.html': 'Über mich',
+    '/docs/pages/index-game.html': 'Spiele-Übersicht',
+    '/docs/pages/features/wetter.html': 'Wetter',
+    '/docs/pages/features/snake.html': 'Snake Spiel',
+    '/docs/pages/features/tetris.html': 'Tetris Spiel',
+    '/docs/pages/features/Run.html': 'Jump & Run',
+    '/docs/pages/features/editor.html': 'Level Editor',
+    '/docs/pages/komponente/kontakt.html': 'Kontakt',
+    '/docs/pages/komponente/impressum.html': 'Impressum',
+    '/docs/pages/komponente/datenschutz.html': 'Datenschutz',
   };
 
   const path = window.location.pathname;
