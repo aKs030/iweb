@@ -1,19 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Persönliche Webseite von Abdulkerim - Erfahren Sie mehr über mich, meine Hobbys, meine Karriere und wie Sie mich kontaktieren können.">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Persönliche Webseite von Abdulkerim - Erfahren Sie mehr über mich, meine Hobbys, meine Karriere und wie Sie mich kontaktieren können."
+    />
     <title>Über Mich</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="/assets/css/ubermich.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/assets/css/ubermich.css" />
     <!-- Apple Touch Icons für iOS -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/touch-icon-180.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-120.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/touch-icon-180.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-152.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-120.png" />
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#393939">
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#393939" />
     <!-- Service Worker aktivieren -->
     <script>
       if ('serviceWorker' in navigator) {
@@ -92,120 +95,122 @@
     <script src="/assets/js/menu.js" defer></script>
     <script defer>
       document.addEventListener('DOMContentLoaded', () => {
-        const dynamicHeader = document.querySelector('.dynamic-header');
-        const headerIcon = dynamicHeader.querySelector('.header-icon');
-        const headerText = dynamicHeader.querySelector('.header-text');
-        const headings = Array.from(document.querySelectorAll('.section-body h3'));
-        const paragraphs = Array.from(document.querySelectorAll('.section-body p'));
-        const lists = Array.from(document.querySelectorAll('.section-body ul'));
-        const sectionBody = document.querySelector('.section-body');
+        setTimeout(() => {
+          const dynamicHeader = document.querySelector('.dynamic-header');
+          const headerIcon = dynamicHeader.querySelector('.header-icon');
+          const headerText = dynamicHeader.querySelector('.header-text');
+          const headings = Array.from(document.querySelectorAll('.section-body h3'));
+          const paragraphs = Array.from(document.querySelectorAll('.section-body p'));
+          const lists = Array.from(document.querySelectorAll('.section-body ul'));
+          const sectionBody = document.querySelector('.section-body');
 
-        // Überblick-Header-Info (statisch)
-        const initialHeader = {
-          iconClass: 'bi bi-info-circle',
-          text: 'Überblick',
-        };
+          // Überblick-Header-Info (statisch)
+          const initialHeader = {
+            iconClass: 'bi bi-info-circle',
+            text: 'Überblick',
+          };
 
-        function getHeadingIconAndText(heading) {
-          let iconClass = '';
-          let text = heading.textContent.trim();
-          if (heading.firstElementChild && heading.firstElementChild.tagName === 'I') {
-            iconClass = heading.firstElementChild.className;
-            text = heading.textContent.replace(heading.firstElementChild.textContent, '').trim();
+          function getHeadingIconAndText(heading) {
+            let iconClass = '';
+            let text = heading.textContent.trim();
+            if (heading.firstElementChild && heading.firstElementChild.tagName === 'I') {
+              iconClass = heading.firstElementChild.className;
+              text = heading.textContent.replace(heading.firstElementChild.textContent, '').trim();
+            }
+            return { iconClass, text };
           }
-          return { iconClass, text };
-        }
 
-        let lastIconClass = initialHeader.iconClass;
-        let lastHeaderText = initialHeader.text;
-        let lastHeaderIndex = -1;
+          let lastIconClass = initialHeader.iconClass;
+          let lastHeaderText = initialHeader.text;
+          let lastHeaderIndex = -1;
 
-        function setHeaderAnimated(newIconClass, newText, direction = 'down') {
-          if (headerText.textContent === newText && headerIcon.firstElementChild?.className === newIconClass) return;
-          dynamicHeader.style.transition = 'transform 0.4s, opacity 0.4s';
-          dynamicHeader.style.transform = direction === 'down' ? 'translateY(-40px)' : 'translateY(40px)';
-          dynamicHeader.style.opacity = '0';
-          setTimeout(() => {
-            headerIcon.innerHTML = newIconClass ? `<i class="${newIconClass}" aria-hidden="true"></i>` : '';
-            headerText.textContent = newText;
-            dynamicHeader.style.transform = direction === 'down' ? 'translateY(40px)' : 'translateY(-40px)';
+          function setHeaderAnimated(newIconClass, newText, direction = 'down') {
+            if (headerText.textContent === newText && headerIcon.firstElementChild?.className === newIconClass) return;
+            dynamicHeader.style.transition = 'transform 0.4s, opacity 0.4s';
+            dynamicHeader.style.transform = direction === 'down' ? 'translateY(-40px)' : 'translateY(40px)';
+            dynamicHeader.style.opacity = '0';
             setTimeout(() => {
-              dynamicHeader.style.transform = 'translateY(0)';
-              dynamicHeader.style.opacity = '1';
-            }, 20);
-          }, 350);
-        }
+              headerIcon.innerHTML = newIconClass ? `<i class="${newIconClass}" aria-hidden="true"></i>` : '';
+              headerText.textContent = newText;
+              dynamicHeader.style.transform = direction === 'down' ? 'translateY(40px)' : 'translateY(-40px)';
+              setTimeout(() => {
+                dynamicHeader.style.transform = 'translateY(0)';
+                dynamicHeader.style.opacity = '1';
+              }, 20);
+            }, 350);
+          }
 
-        function updateHeader() {
-          let currentIdx = -1;
-          let containerRect = sectionBody.getBoundingClientRect();
-          for (let i = 0; i < headings.length; i++) {
-            const rect = headings[i].getBoundingClientRect();
-            if (rect.top - containerRect.top <= 10) {
-              currentIdx = i;
-            }
-          }
-          let iconClass, text;
-          if (currentIdx === -1) {
-            iconClass = initialHeader.iconClass;
-            text = initialHeader.text;
-          } else {
-            ({ iconClass, text } = getHeadingIconAndText(headings[currentIdx]));
-          }
-          if (text !== lastHeaderText || iconClass !== lastIconClass) {
-            const direction = currentIdx > lastHeaderIndex ? 'down' : 'up';
-            setHeaderAnimated(iconClass, text, direction);
-            lastHeaderText = text;
-            lastIconClass = iconClass;
-            lastHeaderIndex = currentIdx;
-          }
-        }
-
-        function animateElements() {
-          const containerRect = sectionBody.getBoundingClientRect();
-          const elements = [...headings, ...paragraphs, ...lists];
-          elements.forEach((element, idx) => {
-            const rect = element.getBoundingClientRect();
-            const elemTop = rect.top - containerRect.top;
-            const elemBottom = rect.bottom - containerRect.top;
-            if (elemBottom > 0 && elemTop < containerRect.height) {
-              if (!element.classList.contains('visible')) {
-                setTimeout(() => {
-                  element.classList.add('visible');
-                  element.classList.remove('hidden-up');
-                }, idx * 40);
+          function updateHeader() {
+            let currentIdx = -1;
+            let containerRect = sectionBody.getBoundingClientRect();
+            for (let i = 0; i < headings.length; i++) {
+              const rect = headings[i].getBoundingClientRect();
+              if (rect.top - containerRect.top <= 10) {
+                currentIdx = i;
               }
-            } else if (elemBottom <= 0) {
-              element.classList.remove('visible');
-              element.classList.add('hidden-up');
-            } else {
-              element.classList.remove('visible');
-              element.classList.remove('hidden-up');
             }
+            let iconClass, text;
+            if (currentIdx === -1) {
+              iconClass = initialHeader.iconClass;
+              text = initialHeader.text;
+            } else {
+              ({ iconClass, text } = getHeadingIconAndText(headings[currentIdx]));
+            }
+            if (text !== lastHeaderText || iconClass !== lastIconClass) {
+              const direction = currentIdx > lastHeaderIndex ? 'down' : 'up';
+              setHeaderAnimated(iconClass, text, direction);
+              lastHeaderText = text;
+              lastIconClass = iconClass;
+              lastHeaderIndex = currentIdx;
+            }
+          }
+
+          function animateElements() {
+            const containerRect = sectionBody.getBoundingClientRect();
+            const elements = [...headings, ...paragraphs, ...lists];
+            elements.forEach((element, idx) => {
+              const rect = element.getBoundingClientRect();
+              const elemTop = rect.top - containerRect.top;
+              const elemBottom = rect.bottom - containerRect.top;
+              if (elemBottom > 0 && elemTop < containerRect.height) {
+                if (!element.classList.contains('visible')) {
+                  setTimeout(() => {
+                    element.classList.add('visible');
+                    element.classList.remove('hidden-up');
+                  }, idx * 40);
+                }
+              } else if (elemBottom <= 0) {
+                element.classList.remove('visible');
+                element.classList.add('hidden-up');
+              } else {
+                element.classList.remove('visible');
+                element.classList.remove('hidden-up');
+              }
+            });
+          }
+
+          // Initialisiere Elemente als hidden-up vor dem ersten Scrollen/der ersten Animation
+          [...headings, ...paragraphs, ...lists].forEach((el) => {
+            el.classList.remove('visible');
+            el.classList.add('hidden-up');
           });
-        }
 
-        // Initialisiere Elemente als hidden-up vor dem ersten Scrollen/der ersten Animation
-        [...headings, ...paragraphs, ...lists].forEach((el) => {
-          el.classList.remove('visible');
-          el.classList.add('hidden-up');
-        });
+          function onScrollOrResize() {
+            updateHeader();
+            animateElements();
+          }
 
-        function onScrollOrResize() {
+          sectionBody.addEventListener('scroll', () => {
+            requestAnimationFrame(onScrollOrResize);
+          });
+          window.addEventListener('resize', () => {
+            requestAnimationFrame(onScrollOrResize);
+          });
+
+          // Erster Aufruf, um den Header zu setzen und Elemente beim Laden der Seite zu animieren
           updateHeader();
           animateElements();
-        }
-
-        sectionBody.addEventListener('scroll', () => {
-          requestAnimationFrame(onScrollOrResize);
-        });
-        window.addEventListener('resize', () => {
-          requestAnimationFrame(onScrollOrResize);
-        });
-
-        // Erster Aufruf, um den Header zu setzen und Elemente beim Laden der Seite zu animieren
-        updateHeader();
-        animateElements();
+        }, 100); // 100ms warten, damit intext.js DOM manipulieren kann
       });
     </script>
     <script src="/assets/js/templateLoader.js" defer></script>
