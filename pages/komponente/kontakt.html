@@ -9,41 +9,41 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#393939" />
-    
+
     <!-- Preload kritische Ressourcen -->
-    <link rel="preload" href="/assets/css/_global.css" as="style" />
+    <link rel="preload" href="/docs/css/_global.css" as="style" />
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" as="style" />
-    
-    <link rel="stylesheet" href="/assets/css/_global.css" />
+
+    <link rel="stylesheet" href="/docs/css/_global.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    
+
     <!-- Schema.org Markup für bessere SEO -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "ContactPage",
-      "mainEntity": {
-        "@type": "Person",
-        "name": "Abdulkerim",
-        "jobTitle": "Web-Entwickler",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Berlin",
-          "addressCountry": "DE"
-        },
-        "email": "info@abdulkerim.de",
-        "telephone": "+491234567890",
-        "url": "https://www.abdulkerim.de",
-        "sameAs": [
-          "https://linkedin.com/in/abdulkerim",
-          "https://github.com/abdulkerim",
-          "https://twitter.com/abdulkerim",
-          "https://instagram.com/abdulkerim"
-        ]
+      {
+        "@context": "https://schema.org",
+        "@type": "ContactPage",
+        "mainEntity": {
+          "@type": "Person",
+          "name": "Abdulkerim",
+          "jobTitle": "Web-Entwickler",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Berlin",
+            "addressCountry": "DE"
+          },
+          "email": "info@abdulkerim.de",
+          "telephone": "+491234567890",
+          "url": "https://www.abdulkerim.de",
+          "sameAs": [
+            "https://linkedin.com/in/abdulkerim",
+            "https://github.com/abdulkerim",
+            "https://twitter.com/abdulkerim",
+            "https://instagram.com/abdulkerim"
+          ]
+        }
       }
-    }
     </script>
-    
+
     <style>
       /* CSS Custom Properties für bessere Wartbarkeit */
       :root {
@@ -667,8 +667,12 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       /* Mobile Optimierungen */
@@ -708,7 +712,7 @@
         .kontakt-method {
           border-width: 2px;
         }
-        
+
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
@@ -723,7 +727,6 @@
           animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
         }
-        
       }
 
       /* Menu Container Styles */
@@ -741,12 +744,12 @@
         .faq-section {
           display: none;
         }
-        
+
         body {
           background: white;
           color: black;
         }
-        
+
         .kontakt-viewbox {
           box-shadow: none;
           border: 1px solid #ccc;
@@ -764,7 +767,6 @@
       .snap-section {
         padding: 0.7rem 0.5rem;
       }
-
 
       .kontakt-methods {
         max-width: 340px;
@@ -872,17 +874,20 @@
     <div id="menu-container"></div>
 
     <div class="kontakt-viewbox">
-
       <!-- Contact Info Section -->
       <section class="snap-section" role="main" aria-labelledby="contact-methods-title">
         <div class="kontakt-methods">
           <h2 id="contact-methods-title" class="sr-only">Kontaktmöglichkeiten</h2>
-          
+
           <div class="kontakt-method" role="group" aria-labelledby="email-contact">
             <i class="fa-solid fa-envelope" aria-hidden="true"></i>
             <div class="kontakt-method-info">
               <h3 id="email-contact">E-Mail</h3>
-              <p><a href="mailto:info@abdulkerim.de" aria-label="E-Mail senden an info@abdulkerim.de">info@abdulkerim.de</a></p>
+              <p>
+                <a href="mailto:info@abdulkerim.de" aria-label="E-Mail senden an info@abdulkerim.de"
+                  >info@abdulkerim.de</a
+                >
+              </p>
             </div>
           </div>
 
@@ -969,12 +974,12 @@
 
             <div class="form-group">
               <label for="name">Name *</label>
-              <input 
-                type="text" 
-                id="name" 
-                name="name" 
-                required 
-                maxlength="50" 
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                maxlength="50"
                 placeholder="Ihr Name"
                 autocomplete="name"
                 aria-describedby="name-error"
@@ -984,12 +989,12 @@
 
             <div class="form-group">
               <label for="email">E-Mail *</label>
-              <input 
-                type="email" 
-                id="email" 
-                name="email" 
-                required 
-                maxlength="100" 
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                maxlength="100"
                 placeholder="ihre.email@beispiel.de"
                 autocomplete="email"
                 aria-describedby="email-error"
@@ -999,11 +1004,11 @@
 
             <div class="form-group">
               <label for="betreff">Betreff</label>
-              <input 
-                type="text" 
-                id="betreff" 
-                name="betreff" 
-                maxlength="100" 
+              <input
+                type="text"
+                id="betreff"
+                name="betreff"
+                maxlength="100"
                 placeholder="Betreff Ihrer Nachricht"
                 autocomplete="off"
               />
@@ -1037,30 +1042,28 @@
             </div>
 
             <div class="form-checkbox">
-              <input 
-                type="checkbox" 
-                id="datenschutz" 
-                name="datenschutz" 
+              <input
+                type="checkbox"
+                id="datenschutz"
+                name="datenschutz"
                 required
                 aria-describedby="datenschutz-error"
               />
               <label for="datenschutz">
-                Ich stimme der 
-                <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener">
-                  Datenschutzerklärung
-                </a> 
+                Ich stimme der
+                <a href="/pages/komponente/datenschutz.html" target="_blank" rel="noopener"> Datenschutzerklärung </a>
                 zu *
               </label>
               <div class="error-message" id="datenschutz-error" role="alert"></div>
             </div>
 
             <button type="submit" class="form-submit" id="submit-btn" aria-describedby="submit-status">
-              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> 
+              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
               <span>Nachricht senden</span>
             </button>
 
             <div class="form-success" id="form-success" role="status" aria-live="polite">
-              <i class="fa-solid fa-check-circle" aria-hidden="true"></i> 
+              <i class="fa-solid fa-check-circle" aria-hidden="true"></i>
               Vielen Dank! Ich melde mich schnellstmöglich.
             </div>
           </form>
@@ -1073,12 +1076,7 @@
           <h2 id="faq-title" class="faq-title">Häufig gestellte Fragen</h2>
 
           <div class="faq-item">
-            <button 
-              class="faq-question" 
-              type="button"
-              aria-expanded="false"
-              aria-controls="faq-answer-1"
-            >
+            <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-1">
               Wie schnell antworten Sie auf Anfragen?
             </button>
             <div class="faq-answer" id="faq-answer-1" role="region">
@@ -1090,12 +1088,7 @@
           </div>
 
           <div class="faq-item">
-            <button 
-              class="faq-question" 
-              type="button"
-              aria-expanded="false"
-              aria-controls="faq-answer-2"
-            >
+            <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-2">
               Welche Arten von Projekten übernehmen Sie?
             </button>
             <div class="faq-answer" id="faq-answer-2" role="region">
@@ -1107,12 +1100,7 @@
           </div>
 
           <div class="faq-item">
-            <button 
-              class="faq-question" 
-              type="button"
-              aria-expanded="false"
-              aria-controls="faq-answer-3"
-            >
+            <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-3">
               Bieten Sie auch Wartung und Support an?
             </button>
             <div class="faq-answer" id="faq-answer-3" role="region">
@@ -1124,12 +1112,7 @@
           </div>
 
           <div class="faq-item">
-            <button 
-              class="faq-question" 
-              type="button"
-              aria-expanded="false"
-              aria-controls="faq-answer-4"
-            >
+            <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-4">
               Arbeiten Sie auch remote?
             </button>
             <div class="faq-answer" id="faq-answer-4" role="region">
@@ -1155,7 +1138,7 @@
     <script src="/assets/js/menu.js" defer></script>
     <script src="/assets/js/main-init.js" defer></script>
     <script src="/assets/js/form-enhancement.js" defer></script>
-    
+
     <script>
       // Enhanced Contact Form with improved validation and UX
       class ContactFormManager {
@@ -1168,7 +1151,7 @@
 
         init() {
           if (!this.form) return;
-          
+
           this.setupValidation();
           this.setupCharacterCounter();
           this.setupFormSubmission();
@@ -1177,12 +1160,12 @@
 
         setupValidation() {
           const inputs = this.form.querySelectorAll('input[required], textarea[required]');
-          
-          inputs.forEach(input => {
+
+          inputs.forEach((input) => {
             // Real-time validation
             input.addEventListener('blur', () => this.validateField(input));
             input.addEventListener('input', () => this.clearError(input));
-            
+
             // Accessibility improvements
             input.addEventListener('invalid', (e) => {
               e.preventDefault();
@@ -1204,13 +1187,13 @@
         setupCharacterCounter() {
           const textarea = document.getElementById('nachricht');
           const counter = document.getElementById('nachricht-counter');
-          
+
           if (textarea && counter) {
             const updateCounter = () => {
               const current = textarea.value.length;
               const max = textarea.getAttribute('maxlength');
               counter.textContent = `${current} / ${max} Zeichen`;
-              
+
               // Visual feedback for approaching limit
               if (current > max * 0.9) {
                 counter.style.color = 'var(--warning-color)';
@@ -1229,7 +1212,7 @@
         setupFormSubmission() {
           this.form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             if (this.validateForm()) {
               await this.submitForm();
             }
@@ -1239,7 +1222,7 @@
         setupAccessibility() {
           // Enhanced keyboard navigation
           const formElements = this.form.querySelectorAll('input, textarea, select, button');
-          
+
           formElements.forEach((element, index) => {
             element.addEventListener('keydown', (e) => {
               if (e.key === 'Enter' && element.type !== 'textarea') {
@@ -1265,7 +1248,7 @@
             isValid = false;
             message = 'Dieses Feld ist erforderlich.';
           }
-          
+
           // Email validation
           else if (input.type === 'email' && value) {
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1274,7 +1257,7 @@
               message = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
             }
           }
-          
+
           // Length validation
           else if (input.hasAttribute('maxlength')) {
             const maxLength = parseInt(input.getAttribute('maxlength'));
@@ -1303,7 +1286,7 @@
           const requiredFields = this.form.querySelectorAll('[required]');
           let isValid = true;
 
-          requiredFields.forEach(field => {
+          requiredFields.forEach((field) => {
             if (!this.validateField(field)) {
               isValid = false;
             }
@@ -1315,12 +1298,12 @@
         showError(input, message) {
           const formGroup = input.closest('.form-group') || input.closest('.form-checkbox');
           const errorElement = formGroup.querySelector('.error-message');
-          
+
           formGroup.classList.add('error');
           if (errorElement) {
             errorElement.textContent = message;
           }
-          
+
           // Accessibility: Announce error
           input.setAttribute('aria-invalid', 'true');
         }
@@ -1328,12 +1311,12 @@
         clearError(input) {
           const formGroup = input.closest('.form-group') || input.closest('.form-checkbox');
           const errorElement = formGroup.querySelector('.error-message');
-          
+
           formGroup.classList.remove('error');
           if (errorElement) {
             errorElement.textContent = '';
           }
-          
+
           input.removeAttribute('aria-invalid');
         }
 
@@ -1357,24 +1340,23 @@
 
           try {
             // Simulate form submission (replace with actual endpoint)
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
             // Show success message
             this.successMessage.classList.add('show');
             this.form.reset();
-            
+
             // Reset character counter
             const counter = document.getElementById('nachricht-counter');
             if (counter) {
               counter.textContent = '0 / 1000 Zeichen';
               counter.style.color = 'var(--color-text-muted)';
             }
-            
+
             // Hide success message after 5 seconds
             setTimeout(() => {
               this.successMessage.classList.remove('show');
             }, 5000);
-            
           } catch (error) {
             // Handle submission error
             console.error('Form submission error:', error);
@@ -1398,7 +1380,7 @@
 
         init() {
           if (!this.viewbox || !this.sections.length) return;
-          
+
           this.setupScrollListener();
           this.setupDotNavigation();
           this.setupKeyboardNavigation();
@@ -1406,16 +1388,20 @@
 
         setupScrollListener() {
           let ticking = false;
-          
-          this.viewbox.addEventListener('scroll', () => {
-            if (!ticking) {
-              requestAnimationFrame(() => {
-                this.updateActiveDot();
-                ticking = false;
-              });
-              ticking = true;
-            }
-          }, { passive: true });
+
+          this.viewbox.addEventListener(
+            'scroll',
+            () => {
+              if (!ticking) {
+                requestAnimationFrame(() => {
+                  this.updateActiveDot();
+                  ticking = false;
+                });
+                ticking = true;
+              }
+            },
+            { passive: true }
+          );
         }
 
         setupDotNavigation() {
@@ -1429,9 +1415,9 @@
         setupKeyboardNavigation() {
           document.addEventListener('keydown', (e) => {
             if (e.target.closest('.kontakt-form')) return; // Don't interfere with form
-            
+
             const activeIndex = this.getActiveSection();
-            
+
             if (e.key === 'ArrowDown' || e.key === 'PageDown') {
               e.preventDefault();
               this.scrollToSection(Math.min(activeIndex + 1, this.sections.length - 1));
@@ -1450,7 +1436,7 @@
 
         updateActiveDot() {
           const activeIndex = this.getActiveSection();
-          
+
           this.dots.forEach((dot, index) => {
             const isActive = index === activeIndex;
             dot.classList.toggle('active', isActive);
@@ -1466,13 +1452,13 @@
 
         scrollToSection(index) {
           if (index < 0 || index >= this.sections.length) return;
-          
+
           const targetSection = this.sections[index];
-          targetSection.scrollIntoView({ 
+          targetSection.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'start',
           });
-          
+
           // Update dots immediately for better UX
           this.dots.forEach((dot, i) => {
             dot.classList.toggle('active', i === index);
@@ -1489,15 +1475,15 @@
         }
 
         init() {
-          this.faqItems.forEach(item => {
+          this.faqItems.forEach((item) => {
             const question = item.querySelector('.faq-question');
             const answer = item.querySelector('.faq-answer');
-            
+
             if (question && answer) {
               question.addEventListener('click', () => {
                 this.toggleFAQ(item);
               });
-              
+
               // Keyboard support
               question.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -1513,9 +1499,9 @@
           const isActive = item.classList.contains('active');
           const question = item.querySelector('.faq-question');
           const answer = item.querySelector('.faq-answer');
-          
+
           // Close all other FAQs
-          this.faqItems.forEach(otherItem => {
+          this.faqItems.forEach((otherItem) => {
             if (otherItem !== item) {
               otherItem.classList.remove('active');
               const otherQuestion = otherItem.querySelector('.faq-question');
@@ -1524,17 +1510,17 @@
               }
             }
           });
-          
+
           // Toggle current FAQ
           item.classList.toggle('active', !isActive);
           question.setAttribute('aria-expanded', (!isActive).toString());
-          
+
           // Smooth scroll to view if opening
           if (!isActive) {
             setTimeout(() => {
-              item.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'nearest' 
+              item.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
               });
             }, 150);
           }
@@ -1554,19 +1540,22 @@
         }
 
         setupIntersectionObserver() {
-          const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                entry.target.style.animationPlayState = 'running';
-              }
-            });
-          }, {
-            threshold: 0.1,
-            rootMargin: '50px'
-          });
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.style.animationPlayState = 'running';
+                }
+              });
+            },
+            {
+              threshold: 0.1,
+              rootMargin: '50px',
+            }
+          );
 
           // Observe animated elements
-          document.querySelectorAll('.kontakt-method, .social-link, .faq-item').forEach(el => {
+          document.querySelectorAll('.kontakt-method, .social-link, .faq-item').forEach((el) => {
             observer.observe(el);
           });
         }
