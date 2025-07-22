@@ -17,8 +17,6 @@ Allow: /
 Crawl-delay: 2
 
 # Blockiere bestimmte Dateien/Verzeichnisse
-Disallow: /js/
-Disallow: /css/
 Disallow: /*.js$
 Disallow: /*.css$
 Disallow: /img/splash/
