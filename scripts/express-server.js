@@ -28,7 +28,10 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '0'); // Deaktiviert, CSP wird bevorzugt
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; object-src 'none'; base-uri 'none'");
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; object-src 'none'; base-uri 'none'"
+  );
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
@@ -40,8 +43,8 @@ app.use((req, res, next) => {
 // Keine Directory-Listings
 app.use((req, res, next) => {
   if (req.url.endsWith('/')) {
-    // Versuche index.html
-    const indexPath = path.join(ROOT, req.url, 'index.html');
+    // Versuche docs/index.html
+    const indexPath = path.join(ROOT, req.url, 'docs/index.html');
     if (fs.existsSync(indexPath)) {
       return res.sendFile(indexPath);
     }
@@ -59,17 +62,19 @@ app.use((req, res, next) => {
 });
 
 // Statische Dateien
-app.use(express.static(ROOT, {
-  extensions: ['html', 'htm'],
-  fallthrough: true,
-}));
+app.use(
+  express.static(ROOT, {
+    extensions: ['html', 'htm'],
+    fallthrough: true,
+  })
+);
 
-// 404 für nicht gefundene Dateien, außer bei SPA (Fallback auf index.html)
+// 404 für nicht gefundene Dateien, außer bei SPA (Fallback auf docs/index.html)
 app.use((req, res, next) => {
   const accept = req.headers.accept || '';
   if (accept.includes('text/html')) {
     // SPA-Fallback
-    return res.sendFile(path.join(ROOT, 'index.html'));
+    return res.sendFile(path.join(ROOT, 'docs/index.html'));
   }
   res.status(404).send('404 Not Found');
 });

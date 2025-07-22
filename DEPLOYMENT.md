@@ -99,8 +99,7 @@ Aktuelle Domain: `https://www.abdulkerimsesli.de`
 **Überprüft und angepasst:**
 
 - ✅ sitemap.xml
-- ✅ robots.txt
-- ✅ index.html (Open Graph, JSON-LD)
+- ✅ robots.txt ✅ docs/index.html (Open Graph, JSON-LD)
 - ✅ Meta-Tags
 
 ## 🎯 **Performance-Ziele:**

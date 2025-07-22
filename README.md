@@ -89,7 +89,7 @@ Performance und DSGVO-Konformität.
 
 ```
 iweb/
-├── index.html              # Hauptseite
+├── docs/index.html              # Hauptseite
 ├── manifest.json           # PWA Manifest
 ├── sw.js                   # Service Worker
 ├── robots.txt              # SEO Robots-Datei

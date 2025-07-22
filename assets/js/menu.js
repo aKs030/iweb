@@ -43,9 +43,7 @@ async function loadFooter() {
   try {
     const response = await fetch('/pages/komponente/footer.html');
     if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status}: Footer konnte nicht geladen werden`
-      );
+      throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
     }
 
     const html = await response.text();
@@ -120,12 +118,12 @@ async function loadMenu(menuContainer) {
 function createFallbackMenu() {
   return `
     <header class="site-header" role="banner">
-      <a href="/index.html" aria-label="Zur Startseite">
+      <a href="/docs/index.html" aria-label="Zur Startseite">
         <span class="site-logo elegant-logo">Abdulkerim ⭐️</span>
       </a>
       <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
         <ul class="site-menu-list">
-          <li><a href="/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
+          <li><a href="/docs/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
           <li><a href="/pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
           <li><a href="/pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
         </ul>
@@ -144,15 +142,12 @@ function initializeMenu(container) {
   const overlay = container.querySelector('.site-menu__overlay');
 
   if (!menuToggle || !menu) {
-    console.warn(
-      'Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.'
-    );
+    console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
     return;
   }
 
   const toggleMenu = (isOpen = null) => {
-    const willBeOpen =
-      isOpen !== null ? isOpen : !menu.classList.contains('open');
+    const willBeOpen = isOpen !== null ? isOpen : !menu.classList.contains('open');
 
     menu.classList.toggle('open', willBeOpen);
     menuToggle.classList.toggle('active', willBeOpen);
@@ -202,7 +197,7 @@ function initializeLogo(container) {
     logoContainer.style.transform = 'scale(0.95)';
     setTimeout(() => {
       logoContainer.style.transform = '';
-      window.location.href = '/index.html';
+      window.location.href = '/docs/index.html';
     }, BREAKPOINTS.LOGO_SCALE_DURATION);
   });
 }
@@ -227,8 +222,7 @@ function initializeSubmenuLinks(container) {
 
     link.addEventListener('click', (event) => {
       const isMobile = window.innerWidth <= BREAKPOINTS.MOBILE;
-      const isQuickTouch =
-        Date.now() - touchStartTime < BREAKPOINTS.TOUCH_TIMEOUT;
+      const isQuickTouch = Date.now() - touchStartTime < BREAKPOINTS.TOUCH_TIMEOUT;
 
       // Nur für Mobile oder schnelle Touch-Ereignisse: JS steuert Submenu
       if (!isMobile && !isQuickTouch) return;
@@ -369,7 +363,7 @@ function setupResizeHandler(menuContainer) {
  */
 function setSiteTitle() {
   const titleMap = {
-    '/index.html': 'Startseite',
+    '/docs/index.html': 'Startseite',
     '/': 'Startseite',
     '/pages/album.html': 'Fotogalerie',
     '/pages/ubermich.html': 'Über mich',
@@ -487,9 +481,7 @@ function initializeSearch() {
         !container.contains(e.target)
       ) {
         container.classList.remove('active');
-        container
-          .querySelector('.search-toggle')
-          .setAttribute('aria-expanded', 'false');
+        container.querySelector('.search-toggle').setAttribute('aria-expanded', 'false');
       }
     });
   });

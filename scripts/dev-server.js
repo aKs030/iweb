@@ -7,7 +7,6 @@
  * • Nur dependendcy: express (Dev‑Dep in package.json)
  */
 
-
 const express = require('express');
 const path = require('path');
 
@@ -30,21 +29,22 @@ app.use((_, res, next) => {
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     'Cross-Origin-Embedder-Policy': 'require-corp',
     'Cross-Origin-Opener-Policy': 'same-origin',
-    'Cross-Origin-Resource-Policy': 'same-origin'
+    'Cross-Origin-Resource-Policy': 'same-origin',
   });
   next();
 });
 
 // --- Static files ---------------------------------------------------------
-app.use(express.static(path.resolve(__dirname, '..'), {
-  extensions: ['html', 'htm'],
-  index: 'index.html',
-  maxAge: '1d'
-}));
+app.use(
+  express.static(path.resolve(__dirname, '..'), {
+    extensions: ['html', 'htm'],
+    index: 'docs/index.html',
+    maxAge: '1d',
+  })
+);
 
 // --- 404 fallback ---------------------------------------------------------
 app.use((_, res) => res.status(404).send('404 – Not Found'));
-
 
 // --- Start mit automatischer Port-Auswahl ----------------------------------
 
@@ -63,11 +63,15 @@ function startServer(port) {
 
 function tryNextPort(port) {
   const server = app.listen(port, () => {
-    console.log(`⚠️  Port ${DEFAULT_PORT} war belegt. Server läuft jetzt auf http://localhost:${port}`);
+    console.log(
+      `⚠️  Port ${DEFAULT_PORT} war belegt. Server läuft jetzt auf http://localhost:${port}`
+    );
   });
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.error(`❌ Auch Port ${port} ist belegt. Bitte beende den anderen Prozess oder wähle einen anderen Port (z.B. mit: PORT=8081 node scripts/dev-server.js)`);
+      console.error(
+        `❌ Auch Port ${port} ist belegt. Bitte beende den anderen Prozess oder wähle einen anderen Port (z.B. mit: PORT=8081 node scripts/dev-server.js)`
+      );
       process.exit(1);
     } else {
       throw err;
