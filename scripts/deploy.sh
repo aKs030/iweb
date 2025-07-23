@@ -212,7 +212,6 @@ deploy_files() {
         test)
             # Express-Server für QA-Checks starten
             log_info "Starte Express-Server für QA-Checks..."
-            node ../scripts/dev-server.js &
             SERVER_PID=$!
             sleep 5
             

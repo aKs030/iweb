@@ -49,7 +49,6 @@ jobs:
 
       - name: '🔗 Check internal links'
         run: |
-          node scripts/dev-server.js &
           SERVER_PID=$!
           sleep 5
           npm run check-links || true
@@ -97,7 +96,6 @@ jobs:
 
       - name: '🛡️ Check Security Headers'
         run: |
-          node scripts/dev-server.js &
           SERVER_PID=$!
           trap 'kill $SERVER_PID' EXIT
 

@@ -73,8 +73,8 @@ app.use(
 app.use((req, res, next) => {
   const accept = req.headers.accept || '';
   if (accept.includes('text/html')) {
-    // SPA-Fallback
-    return res.sendFile(path.join(ROOT, 'docs/index.html'));
+    // 404-Fehlerseite ausliefern
+    return res.status(404).sendFile(path.join(ROOT, 'docs/pages/komponente/404.html'));
   }
   res.status(404).send('404 Not Found');
 });

@@ -12,7 +12,7 @@
 | `audit-ci`         | Security Audit für Dependencies                    |
 | `imagemin`/`sharp` | Bildoptimierung (jpg/png/webp/avif)                |
 | `linkinator`       | Link-Checker für Webseiten                         |
-| `express`          | Dev-Server & Security-Header-Tests                 |
+| `express`          | Security-Header-Tests                              |
 | `html-validate`    | HTML-Validierung                                   |
 | `@percy/cli`       | Visuelle Regressionstests (optional)               |
 
