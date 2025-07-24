@@ -121,9 +121,11 @@
           const fab = document.getElementById('cookie-fab');
           if (CONFIG.debug) {
             console.log('🍪 [DEBUG] Nach dem Laden - FAB im DOM:', !!fab);
-          }
-          if (!fab) {
-            console.warn('🍪 [WARNING] FAB nicht im geladenen HTML gefunden!');
+            if (!fab) {
+              console.log('🍪 [DEBUG] FAB nicht im geladenen HTML gefunden!');
+            } else {
+              console.info('🍪 [INFO] FAB ist im geladenen HTML vorhanden.');
+            }
           }
         }, 500);
 
