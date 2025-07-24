@@ -1,50 +1,21 @@
-[
-  {
-    "url": "http://localhost:8000/",
-    "isRepresentativeRun": true,
-    "htmlPath": "/Users/abdo/Desktop/website/iweb-8/localhost--2025_07_20_16_54_21.report.html",
-    "jsonPath": "/Users/abdo/Desktop/website/iweb-8/localhost--2025_07_20_16_54_21.report.json",
-    "summary": {
-      "performance": 0.87,
-      "accessibility": 1,
-      "best-practices": 0.89,
-      "seo": 0.92
+{
+  "name": "iweb App",
+  "short_name": "iweb",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0078d7",
+  "description": "Interaktive Webanwendung mit modernen Features.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  },
-  {
-    "url": "http://localhost:8000/docs/pages/ubermich.html",
-    "isRepresentativeRun": true,
-    "htmlPath": "/Users/abdo/Desktop/website/iweb-8/localhost-docs/pages_ubermich_html-2025_07_20_16_54_32.report.html",
-    "jsonPath": "/Users/abdo/Desktop/website/iweb-8/localhost-docs/pages_ubermich_html-2025_07_20_16_54_32.report.json",
-    "summary": {
-      "performance": 0.93,
-      "accessibility": 1,
-      "best-practices": 0.93,
-      "seo": 0.91
-    }
-  },
-  {
-    "url": "http://localhost:8000/docs/pages/album.html",
-    "isRepresentativeRun": true,
-    "htmlPath": "/Users/abdo/Desktop/website/iweb-8/localhost-docs/pages_album_html-2025_07_20_16_54_42.report.html",
-    "jsonPath": "/Users/abdo/Desktop/website/iweb-8/localhost-docs/pages_album_html-2025_07_20_16_54_42.report.json",
-    "summary": {
-      "performance": 0.88,
-      "accessibility": 0.96,
-      "best-practices": 0.89,
-      "seo": 0.92
-    }
-  },
-  {
-    "url": "http://localhost:8000/docs/pages/index-game.html",
-    "isRepresentativeRun": true,
-    "htmlPath": "/Users/abdo/Desktop/website/iweb-8/localhost-docs/pages_index_game_html-2025_07_20_16_54_52.report.html",
-    "jsonPath": "/Users/abdo/Desktop/website/iweb-8/localhost-docs/pages_index_game_html-2025_07_20_16_54_52.report.json",
-    "summary": {
-      "performance": 0.93,
-      "accessibility": 0.98,
-      "best-practices": 0.89,
-      "seo": 0.82
-    }
-  }
-]
+  ]
+}
