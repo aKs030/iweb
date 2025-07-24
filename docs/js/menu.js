@@ -41,9 +41,8 @@ async function loadFooter() {
   }
 
   try {
-    // Dynamischer Pfad zu footer.html, egal von wo geladen
-    const footerPath = new URL('komponente/footer.html', window.location.pathname).pathname;
-    const response = await fetch(footerPath);
+    // Absoluter Pfad, damit Footer immer gefunden wird
+    const response = await fetch('/docs/pages/komponente/footer.html');
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
     }
@@ -87,9 +86,8 @@ async function loadMenu(menuContainer) {
   }
 
   try {
-    // Dynamischer Pfad zu menu.html, egal von wo geladen
-    const menuPath = new URL('komponente/menu.html', window.location.pathname).pathname;
-    const response = await fetch(menuPath);
+    // Absoluter Pfad, damit Menü immer gefunden wird
+    const response = await fetch('/docs/pages/komponente/menu.html');
     if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
 
     const menuMarkup = await response.text();

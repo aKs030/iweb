@@ -17,9 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const startTime = performance.now();
 
-      // Dynamischer Pfad zu index-card.html, egal von wo geladen
-      const cardPath = new URL('index-card.html', window.location.pathname).pathname;
-      const response = await fetch(cardPath);
+      // Absoluter Pfad, damit Template immer gefunden wird
+      const response = await fetch('/docs/pages/index-card.html');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
       }
