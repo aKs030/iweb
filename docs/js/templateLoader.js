@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const startTime = performance.now();
 
-      const response = await fetch('/docs/pages/index-card.html');
+      const response = await fetch('index-card.html');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
       }

@@ -41,7 +41,7 @@ async function loadFooter() {
   }
 
   try {
-    const response = await fetch('/docs/pages/komponente/footer.html');
+    const response = await fetch('komponente/footer.html');
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
     }
@@ -85,7 +85,7 @@ async function loadMenu(menuContainer) {
   }
 
   try {
-    const response = await fetch('/docs/pages/komponente/menu.html');
+    const response = await fetch('komponente/menu.html');
     if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
 
     const menuMarkup = await response.text();
@@ -118,14 +118,14 @@ async function loadMenu(menuContainer) {
 function createFallbackMenu() {
   return `
     <header class="site-header" role="banner">
-      <a href="/docs/index.html" aria-label="Zur Startseite">
+      <a href="../index.html" aria-label="Zur Startseite">
         <span class="site-logo elegant-logo">Abdulkerim ⭐️</span>
       </a>
       <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
         <ul class="site-menu-list">
-          <li><a href="/docs/index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
-          <li><a href="/docs/pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
-          <li><a href="/docs/pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
+          <li><a href="../index.html"><i class="fa-solid fa-house" aria-hidden="true"></i>Startseite</a></li>
+          <li><a href="../pages/ubermich.html"><i class="fa-solid fa-user" aria-hidden="true"></i>Über mich</a></li>
+          <li><a href="../pages/album.html"><i class="fa-solid fa-images" aria-hidden="true"></i>Fotogalerie</a></li>
         </ul>
       </nav>
     </header>
