@@ -42,7 +42,7 @@ async function loadFooter() {
 
   try {
     // Absoluter Pfad, damit Footer immer gefunden wird
-    const response = await fetch('/docs/pages/komponente/footer.html');
+    const response = await fetch('pages/komponente/footer.html');
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: Footer konnte nicht geladen werden`);
     }
@@ -87,7 +87,7 @@ async function loadMenu(menuContainer) {
 
   try {
     // Absoluter Pfad, damit Menü immer gefunden wird
-    const response = await fetch('/docs/pages/komponente/menu.html');
+    const response = await fetch('pages/komponente/menu.html');
     if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
 
     const menuMarkup = await response.text();

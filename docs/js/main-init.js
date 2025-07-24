@@ -139,7 +139,7 @@ window.onWebsiteReady = (name, initFunction, options = {}) => {
 // Importiere share-dialog.js, falls noch nicht geladen
 if (typeof window.showShareDialog === 'undefined') {
   const script = document.createElement('script');
-  script.src = '/docs/js/share-dialog.js';
+  script.src = 'js/share-dialog.js';
   document.head.appendChild(script);
 }
 
