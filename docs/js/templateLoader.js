@@ -17,7 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const startTime = performance.now();
 
-      const response = await fetch('index-card.html');
+      // Dynamischer Pfad zu index-card.html, egal von wo geladen
+      const cardPath = new URL('index-card.html', window.location.pathname).pathname;
+      const response = await fetch(cardPath);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
       }
