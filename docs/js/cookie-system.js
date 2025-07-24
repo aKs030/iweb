@@ -38,8 +38,8 @@
       window.location.hostname === 'localhost' || window.location.search.includes('debug=true'),
 
     // Loader Configuration
-    cssPath: '/docs/css/cookies.css',
-    bannerPath: '/docs/pages/komponente/cookie-banner.html',
+    cssPath: 'css/cookies.css',
+    bannerPath: 'pages/komponente/cookie-banner.html',
     insertTarget: 'body',
     insertPosition: 'beforeend',
     preloadCSS: true,

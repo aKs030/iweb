@@ -86,7 +86,6 @@
     <link rel="preload" href="js/main-init.js" as="script" />
   </head>
   <body id="index-page">
-    
     <!-- Navigation -->
     <nav id="menu-container" aria-label="Hauptnavigation"></nav>
 
@@ -107,12 +106,12 @@
         </div>
       </section>
       <section class="sections-container snap-section" id="section-features" aria-label="Features">
-                <div class="alert alert-warning text-center mt-3" role="alert">
+        <div class="alert alert-warning text-center mt-3" role="alert">
           <strong>Hinweis:</strong> Diese Webseite befindet sich gerade in Bearbeitung. Wir sind bald zurück!
         </div>
       </section>
       <section class="sections-container snap-section" id="section-about" aria-label="Über mich">
-                <div class="alert alert-warning text-center mt-3" role="alert">
+        <div class="alert alert-warning text-center mt-3" role="alert">
           <strong>Hinweis:</strong> Diese Webseite befindet sich gerade in Bearbeitung. Wir sind bald zurück!
         </div>
       </section>
@@ -169,7 +168,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch((err) => console.warn('SW-Registration failed:', err));
+          navigator.serviceWorker.register('sw.js').catch((err) => console.warn('SW-Registration failed:', err));
         });
       }
     </script>
@@ -199,6 +198,6 @@
         }
       }
     </script>
-    <script src="/docs/js/lazy-load.js" defer></script>
+    <script src="js/lazy-load.js" defer></script>
   </body>
 </html>
