@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <title>Abdulkerim ⭐️</title>
 
@@ -42,25 +42,18 @@
     <meta property="twitter:description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken." />
     <meta property="twitter:image" content="https://www.abdulkerimsesli.de/docs/img/touch-icon-180.png" />
 
-    <!-- Security -->
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-
-    <!-- Preconnect -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-    <!-- Styles -->
-    <link rel="preload" href="css/_global.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="css/_global.css" /></noscript>
+    <!-- STYLES direkt aus deinem /docs/css/ Ordner -->
+    <link rel="stylesheet" href="css/_global.css" />
     <link rel="stylesheet" href="css/index.css" />
 
-    <!-- External CSS -->
+    <!-- EXTERNE STYLES (optional) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" crossorigin="anonymous" />
   </head>
 
@@ -68,60 +61,59 @@
     <!-- Navigation -->
     <nav id="menu-container" aria-label="Hauptnavigation"></nav>
 
-    <!-- NoScript Hinweis -->
+    <!-- JavaScript-Hinweis -->
     <noscript>
       <div class="noscript-warning">
         <strong>Hinweis:</strong> Diese Website benötigt JavaScript, um korrekt zu funktionieren. Bitte aktivieren Sie JavaScript in Ihrem Browser.
       </div>
     </noscript>
 
-    <!-- Inhalt -->
+    <!-- Hauptinhalt -->
     <main id="main-content" class="viewport-box" aria-label="Hauptinhalt">
-      <section class="sections-container snap-section" id="section-hero" aria-label="Willkommensbereich">
+      <section class="sections-container snap-section" id="section-hero">
         <h1>Willkommen auf Abdulkerims persönlicher Website – Portfolio, Blog &amp; mehr</h1>
         <div class="alert alert-warning text-center mt-3" role="alert">
           <strong>Hinweis:</strong> Diese Webseite befindet sich gerade in Bearbeitung. Wir sind bald zurück!
         </div>
       </section>
 
-      <section class="sections-container snap-section" id="section-features" aria-label="Features">
+      <section class="sections-container snap-section" id="section-features">
         <div class="alert alert-warning text-center mt-3" role="alert">
           <strong>Hinweis:</strong> Diese Webseite befindet sich gerade in Bearbeitung. Wir sind bald zurück!
         </div>
       </section>
 
-      <section class="sections-container snap-section" id="section-about" aria-label="Über mich">
+      <section class="sections-container snap-section" id="section-about">
         <div class="alert alert-warning text-center mt-3" role="alert">
           <strong>Hinweis:</strong> Diese Webseite befindet sich gerade in Bearbeitung. Wir sind bald zurück!
         </div>
       </section>
 
-      <!-- Scroll Navigation -->
-      <div class="dots-nav" aria-label="Seitennavigation" role="tablist" aria-orientation="vertical">
-        <div class="dot-nav-dot active" data-target="section-hero" aria-label="Zur Startseite" role="tab" aria-controls="section-hero" aria-selected="true" tabindex="0"></div>
-        <div class="dot-nav-dot" data-target="section-features" aria-label="Zu den Features" role="tab" aria-controls="section-features" aria-selected="false" tabindex="-1"></div>
-        <div class="dot-nav-dot" data-target="section-about" aria-label="Über mich" role="tab" aria-controls="section-about" aria-selected="false" tabindex="-1"></div>
+      <div class="dots-nav" role="tablist" aria-orientation="vertical">
+        <div class="dot-nav-dot active" data-target="section-hero" role="tab" aria-controls="section-hero" aria-selected="true" tabindex="0"></div>
+        <div class="dot-nav-dot" data-target="section-features" role="tab" aria-controls="section-features" aria-selected="false" tabindex="-1"></div>
+        <div class="dot-nav-dot" data-target="section-about" role="tab" aria-controls="section-about" aria-selected="false" tabindex="-1"></div>
       </div>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer-Container -->
     <div id="footer-placeholder"></div>
 
-    <!-- Scripts -->
-    <script src="js/main-init.js" type="text/javascript" defer></script>
-    <script src="js/enhanced-error-handler.js" type="text/javascript" defer></script>
-    <script src="js/performance-monitor-enhanced.js" type="text/javascript" defer></script>
-    <script src="js/cookie-system.js" type="text/javascript" defer></script>
-    <script src="js/templateLoader.js" type="text/javascript" defer></script>
-    <script src="js/intext.js" type="text/javascript" defer></script>
-    <script src="js/menu.js" type="text/javascript" defer></script>
-    <script src="js/scroll-dots.js" type="text/javascript" defer></script>
-    <script src="js/lazy-load.js" type="text/javascript" defer></script>
+    <!-- LOKALE JS-Dateien aus /docs/js/ -->
+    <script src="js/main-init.js" defer></script>
+    <script src="js/enhanced-error-handler.js" defer></script>
+    <script src="js/performance-monitor-enhanced.js" defer></script>
+    <script src="js/cookie-system.js" defer></script>
+    <script src="js/templateLoader.js" defer></script>
+    <script src="js/intext.js" defer></script>
+    <script src="js/menu.js" defer></script>
+    <script src="js/scroll-dots.js" defer></script>
+    <script src="js/lazy-load.js" defer></script>
 
-    <!-- Bootstrap Bundle -->
+    <!-- BOOTSTRAP JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous" defer></script>
 
-    <!-- Service Worker -->
+    <!-- SERVICE WORKER -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -130,7 +122,7 @@
       }
     </script>
 
-    <!-- Strukturierte Daten -->
+    <!-- STRUCTURED DATA -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
