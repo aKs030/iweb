@@ -2,10 +2,5 @@
     "sonarlint.connectedMode.project": {
         "connectionId": "aks030",
         "projectKey": "aKs030_iweb"
-    },
-    "cmake.sourceDirectory": "/Users/abdo/Desktop/website/iweb-8/node_modules/bare-fs",
-    "editor.formatOnSave": true,
-    "[html]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
     }
 }
