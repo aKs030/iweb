@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "description": "Abdulkerims persönliche Website",
   "scripts": {
-    "lint": "npx htmlhint 'docs/**/*.html'",
-    "validate-html": "npx html-validate 'docs/**/*.html'",
+    "lint": "npx htmlhint '*.html' 'pages/**/*.html'",
+    "validate-html": "npx html-validate '*.html' 'pages/**/*.html'",
+    "lighthouse-ci": "npx lighthouse index.html --output html --output-path ./tools/lighthouse-report.html",
     "generate-sitemap": "node tools/generate-sitemap.js",
-    "lighthouse-ci": "npx lighthouse docs/index.html --output html --output-path ./tools/lighthouse-report.html"
+    "build": "echo 'Kein Kopieren mehr nötig, alles liegt im Root.'",
+    "serve": "http-server -c-1",
+    "start": "npm run serve"
   },
   "devDependencies": {
-    "htmlhint": "^1.1.5",
     "html-validate": "^7.17.0",
+    "htmlhint": "^1.1.5",
+    "http-server": "^14.1.1",
     "lighthouse": "^11.0.0"
   }
 }

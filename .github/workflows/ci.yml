@@ -17,36 +17,21 @@ jobs:
         with:
           node-version: 20
 
+
       - name: Install Dependencies
-        run: |
-          if [ -f package.json ]; then
-            npm install
-          else
-            echo "No package.json found, skipping npm install."
-          fi
+        run: npm install
 
-      - name: Run Linter, HTML-Validator, Lighthouse (optional)
-        run: |
-          if [ -f package.json ]; then
-            npm run lint || echo "No linter configured"
-            npm run validate-html || echo "No HTML validator configured"
-            npm run lighthouse-ci || echo "No Lighthouse config"
-          else
-            echo "No package.json – skipping QA steps"
-          fi
 
-      - name: Generate Sitemap
-        run: |
-          if [ -f tools/generate-sitemap.js ]; then
-            npm run generate-sitemap
-          else
-            echo "No sitemap script found, skipping."
-          fi
+      - name: Build Site
+        run: npm run build
 
-      - name: Copy `public/` to `docs/`
+      - name: Run QA (Lint, HTML-Validate, Lighthouse)
         run: |
-          mkdir -p docs
-          cp -r public/* docs/
+          npm run lint || echo "no lint"
+          npm run validate-html || echo "no validate"
+          npm run lighthouse-ci || echo "no lhci"
+
+
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -54,4 +39,4 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           projectName: iweb
-          directory: docs
+          directory: .
