@@ -1,13 +1,22 @@
 # iweb
 
-Statische Website mit moderner Struktur, PWA, Multi-Domain-Support, CI/CD (GitHub Actions) und Deployment auf Cloudflare Pages.
+Portfolio-Website von Abdulkerim Sesli
 
-## Features
-- ⚡ Performance & PWA
-- 🔐 Security
-- 🌐 Mehrere Domains
-- 🚀 CI/CD über GitHub & Cloudflare Pages
+## Lokale Entwicklung
 
-## Struktur
+```bash
+npm install
+npm run serve
+```
 
-Siehe Projektstruktur und Hinweise in der Dokumentation.
+## Sitemap generieren
+
+```bash
+npm run generate-sitemap
+```
+
+## Deployment
+
+Automatisch via GitHub Actions auf Cloudflare Pages (siehe `.github/workflows/ci.yml`).
+
+Alle statischen Dateien liegen in `public/`.
