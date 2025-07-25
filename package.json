@@ -1,0 +1,15 @@
+{
+  "name": "iweb",
+  "version": "1.0.0",
+  "description": "Abdulkerims persönliche Website",
+  "scripts": {
+    "lint": "npx htmlhint 'docs/**/*.html'",
+    "validate-html": "npx html-validate 'docs/**/*.html'",
+    "lighthouse-ci": "npx lighthouse docs/index.html --output html --output-path ./tools/lighthouse-report.html"
+  },
+  "devDependencies": {
+    "htmlhint": "^1.1.5",
+    "html-validate": "^7.17.0",
+    "lighthouse": "^11.0.0"
+  }
+}
