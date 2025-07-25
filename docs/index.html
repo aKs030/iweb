@@ -32,7 +32,7 @@
     <meta property="og:url" content="https://www.abdulkerimsesli.de/" />
     <meta property="og:title" content="Abdulkerim ⭐️ - Persönliche Website" />
     <meta property="og:description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken." />
-    <meta property="og:image" content="https://www.abdulkerimsesli.de/docs/img/touch-icon-180.png" />
+    <meta property="og:image" content="img/touch-icon-180.png" />
     <meta property="og:locale" content="de_DE" />
 
     <!-- Twitter -->
@@ -40,35 +40,32 @@
     <meta property="twitter:url" content="https://www.abdulkerimsesli.de/" />
     <meta property="twitter:title" content="Abdulkerim ⭐️ - Persönliche Website" />
     <meta property="twitter:description" content="Willkommen auf Abdulkerims persönlicher Website. Entdecke seine Interessen, Erfahrungen und Gedanken." />
-    <meta property="twitter:image" content="https://www.abdulkerimsesli.de/docs/img/touch-icon-180.png" />
+    <meta property="twitter:image" content="img/touch-icon-180.png" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-    <!-- STYLES direkt aus deinem /docs/css/ Ordner -->
+    <!-- Lokale Styles -->
     <link rel="stylesheet" href="css/_global.css" />
     <link rel="stylesheet" href="css/index.css" />
 
-    <!-- EXTERNE STYLES (optional) -->
+    <!-- Optional: Icons und Frameworks -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" crossorigin="anonymous" />
   </head>
 
   <body id="index-page">
-    <!-- Navigation -->
     <nav id="menu-container" aria-label="Hauptnavigation"></nav>
 
-    <!-- JavaScript-Hinweis -->
     <noscript>
       <div class="noscript-warning">
-        <strong>Hinweis:</strong> Diese Website benötigt JavaScript, um korrekt zu funktionieren. Bitte aktivieren Sie JavaScript in Ihrem Browser.
+        <strong>Hinweis:</strong> Diese Website benötigt JavaScript. Bitte aktivieren Sie JavaScript in Ihrem Browser.
       </div>
     </noscript>
 
-    <!-- Hauptinhalt -->
     <main id="main-content" class="viewport-box" aria-label="Hauptinhalt">
       <section class="sections-container snap-section" id="section-hero">
         <h1>Willkommen auf Abdulkerims persönlicher Website – Portfolio, Blog &amp; mehr</h1>
@@ -96,10 +93,9 @@
       </div>
     </main>
 
-    <!-- Footer-Container -->
     <div id="footer-placeholder"></div>
 
-    <!-- LOKALE JS-Dateien aus /docs/js/ -->
+    <!-- Lokale Scripts -->
     <script src="js/main-init.js" defer></script>
     <script src="js/enhanced-error-handler.js" defer></script>
     <script src="js/performance-monitor-enhanced.js" defer></script>
@@ -110,19 +106,21 @@
     <script src="js/scroll-dots.js" defer></script>
     <script src="js/lazy-load.js" defer></script>
 
-    <!-- BOOTSTRAP JS -->
+    <!-- Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous" defer></script>
 
-    <!-- SERVICE WORKER -->
+    <!-- Service Worker -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('SW-Registration failed:', err));
+          navigator.serviceWorker.register('./sw.js').catch((err) =>
+            console.warn('SW-Registrierung fehlgeschlagen:', err)
+          );
         });
       }
     </script>
 
-    <!-- STRUCTURED DATA -->
+    <!-- Strukturierte Daten -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
