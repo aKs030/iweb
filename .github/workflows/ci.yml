@@ -35,6 +35,14 @@ jobs:
             echo "No package.json – skipping QA steps"
           fi
 
+      - name: Generate Sitemap
+        run: |
+          if [ -f tools/generate-sitemap.js ]; then
+            npm run generate-sitemap
+          else
+            echo "No sitemap script found, skipping."
+          fi
+
       - name: Copy `public/` to `docs/`
         run: |
           mkdir -p docs

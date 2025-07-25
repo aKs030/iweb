@@ -5,6 +5,7 @@
   "scripts": {
     "lint": "npx htmlhint 'docs/**/*.html'",
     "validate-html": "npx html-validate 'docs/**/*.html'",
+    "generate-sitemap": "node tools/generate-sitemap.js",
     "lighthouse-ci": "npx lighthouse docs/index.html --output html --output-path ./tools/lighthouse-report.html"
   },
   "devDependencies": {
