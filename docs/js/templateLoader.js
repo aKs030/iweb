@@ -11,41 +11,43 @@
  * - Performance-Monitoring Integration
  */
 
-// js/templateLoader.js
+'use strict';
+
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
     try {
       const startTime = performance.now();
 
-      // Absoluter Pfad, damit Template immer gefunden wird
-      const response = await fetch('/docs/pages/index-card.html');
+      // RELATIVER PFAD → funktioniert mit GitHub Pages UND lokal
+      const response = await fetch('pages/index-card.html');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
       }
 
       const text = await response.text();
 
-      // Sicherheitsprüfung für leeren Content
       if (!text.trim()) {
         throw new Error('Template-Datei ist leer oder konnte nicht gelesen werden');
       }
 
-      // DOM-Fragment für bessere Performance
+      // DOM-Fragment für besseres Einfügen
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = text;
 
       const hiddenTemplatesContainer = tempDiv.querySelector('.hidden-templates');
 
       if (hiddenTemplatesContainer) {
+        // Templates am Ende von <body> einfügen
         document.body.appendChild(hiddenTemplatesContainer);
 
-        const endTime = performance.now();
-        const loadTime = endTime - startTime;
+        const loadTime = performance.now() - startTime;
         const templateCount = hiddenTemplatesContainer.querySelectorAll('template').length;
+
         console.log(
-          `Templates erfolgreich geladen: ${templateCount} Template(s) in ${Math.round(loadTime)}ms`
+          `✅ Templates geladen: ${templateCount} in ${Math.round(loadTime)}ms`
         );
 
+        // Event für andere Scripte
         document.dispatchEvent(
           new CustomEvent('templatesLoaded', {
             detail: {
@@ -56,12 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
           })
         );
       } else {
-        console.warn('Keine .hidden-templates Container in der geladenen Datei gefunden');
+        console.warn('⚠️ Kein .hidden-templates-Container gefunden in der geladenen Datei.');
       }
     } catch (error) {
-      console.error('Fehler beim Laden der Templates:', error);
+      console.error('❌ Fehler beim Laden der Templates:', error);
 
-      // Dispatch error event for monitoring and graceful degradation
+      // Event bei Fehler → für Logging oder Fallbacks
       document.dispatchEvent(
         new CustomEvent('templateLoadError', {
           detail: {
