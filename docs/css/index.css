@@ -1,7 +1,7 @@
 /* stylelint-disable rule-empty-line-before comment-empty-line-before no-descending-specificity */
 /* index.css - Spezifische Stile für die Startseite */
 
-@import url('_global.css');
+@import url('/css/_global.css');
 /* =====================================
 🔧 GLOBAL RESET & BASIC STYLES
 ========================================= */

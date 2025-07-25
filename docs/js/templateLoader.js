@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const startTime = performance.now();
 
-      // RELATIVER PFAD → funktioniert mit GitHub Pages UND lokal
-      const response = await fetch('pages/index-card.html');
+      // ABSOLUTER PFAD → funktioniert überall konsistent
+      const response = await fetch('/pages/index-card.html');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
       }
