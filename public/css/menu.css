@@ -1,0 +1,90 @@
+/* Modernes horizontales Menü mit Burger-Menü für Mobilgeräte */
+.main-menu {
+  width: 100%;
+  background: #222;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.main-menu ul {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.main-menu li {
+  margin: 0 1.5rem;
+}
+.main-menu a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding: 1rem 0.5rem;
+  transition: color 0.2s, background 0.2s;
+}
+.main-menu a:hover,
+.main-menu a:focus {
+  color: #ffd700;
+  background: #333;
+  border-radius: 4px;
+}
+
+/* Burger-Button */
+.menu-toggle {
+  display: none;
+  position: absolute;
+  right: 1.5rem;
+  top: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1100;
+}
+.menu-toggle span,
+.menu-toggle span:before,
+.menu-toggle span:after {
+  display: block;
+  background: #fff;
+  height: 3px;
+  width: 28px;
+  border-radius: 2px;
+  position: relative;
+  transition: all 0.3s;
+}
+.menu-toggle span:before {
+  content: '';
+  position: absolute;
+  top: -9px;
+}
+.menu-toggle span:after {
+  content: '';
+  position: absolute;
+  top: 9px;
+}
+
+/* Mobil: Menü verstecken, Burger zeigen */
+@media (max-width: 700px) {
+  .main-menu ul {
+    flex-direction: column;
+    background: #222;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100vw;
+    display: none;
+  }
+  .main-menu.open ul {
+    display: flex;
+  }
+  .main-menu li {
+    margin: 0.5rem 0;
+  }
+  .menu-toggle {
+    display: block;
+  }
+}
