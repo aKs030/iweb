@@ -1,220 +1,53 @@
-<link rel="stylesheet" href="css/menu.css" />
-<!-- Font Awesome für Icons -->
+<!-- menu.html -->
+<link rel="stylesheet" href="../../css/menu.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-<!-- menu.html - Optimierte Navigation mit erweiterten Features -->
 <header class="site-header">
-  <!-- Logo mit verbesserter Accessibility -->
-  <a href="/docs/index.html" aria-label="Zur Startseite navigieren" title="Zur Startseite">
+  <a href="#" data-path="index.html" aria-label="Zur Startseite" title="Start">
     <span class="site-logo__container">
       <span class="site-logo elegant-logo" id="site-title" aria-live="polite"> Abdulkerim ⭐️ </span>
     </span>
   </a>
 
-  <!-- Navigation mit optimierter Struktur -->
   <nav id="main-nav" class="site-menu" aria-label="Hauptnavigation">
-    <div class="mobile-actions">
-      <!-- Suchfunktion -->
-      <div class="search-container">
-        <button
-          id="search-toggle-desktop"
-          class="search-toggle"
-          aria-label="Suche umschalten"
-          aria-expanded="false"
-          type="button"
-        >
-          <i class="fa-solid fa-search"></i>
-        </button>
-        <input
-          type="search"
-          id="search-input-desktop"
-          class="search-input"
-          placeholder="Suchen..."
-          aria-labelledby="search-toggle-desktop"
-        />
-      </div>
-      <!-- Theme-Umschalter -->
-      <div class="theme-switcher">
-        <input
-          type="checkbox"
-          id="theme-toggle-mobile"
-          class="theme-toggle-checkbox"
-          aria-label="Dark Mode umschalten"
-        />
-        <label for="theme-toggle-mobile" class="theme-toggle-label">
-          <i class="theme-icon fa-solid fa-moon"></i>
-        </label>
-      </div>
-    </div>
-
     <ul class="site-menu-list">
-      <!-- Home -->
-      <li>
-        <a href="/docs/index.html">
-          <i class="fa-solid fa-house" aria-hidden="true"></i>
-          <span>Startseite</span>
-        </a>
-      </li>
-
-      <!-- About Me -->
-      <li>
-        <a href="/docs/pages/ubermich.html">
-          <i class="fa-solid fa-user" aria-hidden="true"></i>
-          <span>Über mich</span>
-        </a>
-      </li>
-
-      <!-- Gallery (Direct Link) -->
-      <li>
-        <a href="/docs/pages/album.html">
-          <i class="fa-solid fa-images" aria-hidden="true"></i>
-          <span>Fotogalerie</span>
-        </a>
-      </li>
-
-      <!-- Games (Direct Link) -->
-      <li>
-        <a href="/docs/pages/index-game.html">
-          <i class="fa-solid fa-gamepad" aria-hidden="true"></i>
-          <span>Spiele</span>
-        </a>
-      </li>
-
-      <!-- Tools & Features -->
+      <li><a href="#" data-path="index.html"><i class="fa-solid fa-house"></i><span>Startseite</span></a></li>
+      <li><a href="#" data-path="pages/ubermich.html"><i class="fa-solid fa-user"></i><span>Über mich</span></a></li>
+      <li><a href="#" data-path="pages/album.html"><i class="fa-solid fa-images"></i><span>Fotogalerie</span></a></li>
+      <li><a href="#" data-path="pages/index-game.html"><i class="fa-solid fa-gamepad"></i><span>Spiele</span></a></li>
       <li class="has-submenu">
-        <a href="#" aria-haspopup="true" aria-expanded="false" id="tools-menu" aria-describedby="tools-menu-desc">
-          <i class="fa-solid fa-tools" aria-hidden="true"></i>
-          <span>Tools</span>
-        </a>
-        <span id="tools-menu-desc" class="sr-only">Nützliche Tools und Features</span>
-        <ul class="submenu" aria-labelledby="tools-menu">
-          <li>
-            <a href="/docs/pages/features/wetter.html" tabindex="-1">
-              <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
-              <span>Wetter App</span>
-            </a>
-          </li>
-          <li>
-            <a href="/docs/pages/features/editor.html" tabindex="-1">
-              <i class="fa-solid fa-code" aria-hidden="true"></i>
-              <span>Code Editor</span>
-            </a>
-          </li>
+        <a href="#"><i class="fa-solid fa-tools"></i><span>Tools</span></a>
+        <ul class="submenu">
+          <li><a href="#" data-path="pages/features/wetter.html"><i class="fa-solid fa-cloud-sun"></i><span>Wetter App</span></a></li>
+          <li><a href="#" data-path="pages/features/editor.html"><i class="fa-solid fa-code"></i><span>Code Editor</span></a></li>
         </ul>
       </li>
-
-      <!-- Social Media -->
       <li class="has-submenu">
-        <a href="#" aria-haspopup="true" aria-expanded="false" id="social-menu" aria-describedby="social-menu-desc">
-          <i class="fa-solid fa-share-alt" aria-hidden="true"></i>
-          <span>Social</span>
-        </a>
-        <span id="social-menu-desc" class="sr-only">Folgen Sie mir auf Social Media</span>
-        <ul class="submenu" aria-labelledby="social-menu">
-          <li>
-            <a href="https://github.com/aKs030/iweb" target="_blank" rel="noopener noreferrer" tabindex="-1">
-              <i class="fa-brands fa-github" aria-hidden="true"></i>
-              <span>GitHub</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" target="_blank" rel="noopener noreferrer" tabindex="-1">
-              <i class="fa-brands fa-twitter" aria-hidden="true"></i>
-              <span>Twitter</span>
-            </a>
-          </li>
-          <li>
-            <a href="https://linkedin.com/in/abdulkerim-sesli" target="_blank" rel="noopener noreferrer" tabindex="-1">
-              <i class="fa-brands fa-linkedin" aria-hidden="true"></i>
-              <span>LinkedIn</span>
-            </a>
-          </li>
+        <a href="#"><i class="fa-solid fa-share-alt"></i><span>Social</span></a>
+        <ul class="submenu">
+          <li><a href="https://github.com/aKs030/iweb" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i><span>GitHub</span></a></li>
+          <li><a href="#"><i class="fa-brands fa-twitter"></i><span>Twitter</span></a></li>
+          <li><a href="https://linkedin.com/in/abdulkerim-sesli" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i><span>LinkedIn</span></a></li>
         </ul>
       </li>
-
-      <!-- Information -->
       <li class="has-submenu">
-        <a
-          href="/docs/pages/komponente/kontakt.html"
-          aria-haspopup="true"
-          aria-expanded="false"
-          id="contact-menu"
-          aria-describedby="contact-menu-desc"
-        >
-          <i class="fa-solid fa-info-circle" aria-hidden="true"></i>
-          <span>Information</span>
-        </a>
-        <span id="contact-menu-desc" class="sr-only">Kontakt, Impressum und weitere Informationen</span>
-        <ul class="submenu" aria-labelledby="contact-menu">
-          <li>
-            <a href="/docs/pages/komponente/kontakt.html" tabindex="-1">
-              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-              <span>Kontakt</span>
-            </a>
-          </li>
-          <li>
-            <a href="/docs/pages/komponente/impressum.html" tabindex="-1">
-              <i class="fa-solid fa-info-circle" aria-hidden="true"></i>
-              <span>Impressum</span>
-            </a>
-          </li>
-          <li>
-            <a href="/docs/pages/komponente/datenschutz.html" tabindex="-1">
-              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-              <span>Datenschutz</span>
-            </a>
-          </li>
+        <a href="#"><i class="fa-solid fa-info-circle"></i><span>Information</span></a>
+        <ul class="submenu">
+          <li><a href="#" data-path="pages/komponente/kontakt.html"><i class="fa-solid fa-paper-plane"></i><span>Kontakt</span></a></li>
+          <li><a href="#" data-path="pages/komponente/impressum.html"><i class="fa-solid fa-info-circle"></i><span>Impressum</span></a></li>
+          <li><a href="#" data-path="pages/komponente/datenschutz.html"><i class="fa-solid fa-shield-halved"></i><span>Datenschutz</span></a></li>
         </ul>
       </li>
     </ul>
   </nav>
-
-  <!-- Aktionen für Desktop-Ansicht -->
-  <div class="header-actions">
-    <!-- Suchfunktion -->
-    <div class="search-container">
-      <button
-        id="search-toggle"
-        class="search-toggle"
-        aria-label="Suche umschalten"
-        aria-expanded="false"
-        type="button"
-      >
-        <i class="fa-solid fa-search"></i>
-      </button>
-      <input
-        type="search"
-        id="search-input"
-        class="search-input"
-        placeholder="Suche..."
-        aria-labelledby="search-toggle"
-      />
-    </div>
-
-    <!-- Theme-Umschalter -->
-    <div class="theme-switcher">
-      <input type="checkbox" id="theme-toggle" class="theme-toggle-checkbox" aria-label="Dark Mode umschalten" />
-      <label for="theme-toggle" class="theme-toggle-label">
-        <i class="theme-icon fa-solid fa-moon"></i>
-      </label>
-    </div>
-
-    <!-- Hamburger-Button mit verbesserter Accessibility -->
-  </div>
 </header>
-<button
-  class="site-menu-toggle"
-  aria-label="Hauptnavigation umschalten"
-  aria-controls="main-nav"
-  aria-expanded="false"
-  type="button"
->
-  <span class="site-menu-hamburger" aria-hidden="true"></span>
-  <span class="sr-only">Menü öffnen/schließen</span>
-</button>
 
-<!-- Screen Reader nur Text für bessere Accessibility -->
-<div class="sr-only" id="nav-instructions">
-  Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Enter oder Leertaste, um Untermenüs zu öffnen. Escape
-  schließt alle Menüs.
-</div>
+<script>
+  (function adjustDynamicMenuLinks() {
+    const pathDepth = location.pathname.replace(/\/$/, '').split('/').length;
+    const level = pathDepth > 3 ? '../'.repeat(pathDepth - 3) : './';
+    document.querySelectorAll('a[data-path]').forEach((el) => {
+      el.setAttribute('href', level + el.getAttribute('data-path'));
+    });
+  })();
+</script>
