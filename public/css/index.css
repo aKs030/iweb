@@ -1,88 +1,108 @@
-/* Reset & Base */
-*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 html, body {
-  height:100%; font-family:system-ui, sans-serif;
-  background:#222; color:#f5f5f5;
-  overflow-x:hidden; scroll-behavior:smooth;
-  overscroll-behavior-y:none;
+  height: 100%;
+  font-family: system-ui, sans-serif;
+  background: #222;
+  color: #f5f5f5;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: none;
 }
 
-/* Header */  a
-header {
-  position:fixed; top:0; left:0; right:0;
-  height:60px; background:#333;
-  display:flex; align-items:center; padding:0 2rem;
-  z-index:100;
-}
-header h1 { a
-  font-family:'Pacifico',cursive; font-size:1.75rem;
-  color:#fff; flex:1;
-}
-nav ul { display:flex; gap:1.5rem; list-style:none; }
-nav a {
-  color:#ccc; text-decoration:none; padding:.5rem;
-}
-nav a.active, nav a:hover {
-  color:#fff; border-bottom:2px solid #09f;
-}
-
-/* Main & Viewbox */
+/* ===== Main & Viewbox ===== */
 main {
-  display:flex; justify-content:center; align-items:flex-start;
-  padding-top:80px;
-  height:calc(100vh - 80px); overflow:hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 80px; /* Platz für Header */
+  height: calc(100vh - 80px);
+  overflow: hidden;
 }
 .viewbox {
-  width:clamp(320px,80vw,800px); height:100%;
-  background:rgba(35,35,35,0.95); border-radius:12px;
-  padding:2rem 3rem;
-  box-shadow:0 8px 16px rgba(0,0,0,0.6), inset 0 0 80px rgba(255,255,255,0.05);
-  overflow-y:auto; -webkit-overflow-scrolling:touch;
-  touch-action:pan-y; overscroll-behavior:contain;
-  scroll-snap-type:y mandatory;
+  width: clamp(320px, 80vw, 800px);
+  height: 100%;
+  background: rgba(35,35,35,0.95);
+  border-radius: 12px;
+  padding: 2rem 3rem;
+  box-shadow:
+    0 8px 16px rgba(0,0,0,0.6),
+    inset 0 0 80px rgba(255,255,255,0.05);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
 }
 
-/* Sections */
+/* ===== Sections ===== */
 .viewbox section {
-  scroll-snap-align:start; scroll-snap-stop:always;
-  height:100%; display:flex; flex-direction:column;
-  justify-content:center; padding:0 1rem;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 1rem;
 }
 
-/* Headings */
+/* ===== Headings ===== */
 .viewbox h2 {
-  font-size:2.5rem; color:#fff; text-align:center;
-  margin-bottom:1rem;
-  text-shadow:0 0 8px rgba(255,255,255,0.6), 0 0 16px rgba(255,255,255,0.4);
+  font-size: 2.5rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 1rem;
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.6),
+    0 0 16px rgba(255,255,255,0.4);
 }
 .viewbox h2::after {
-  content:''; display:block;
-  width:60px; height:4px; margin:.5rem auto 2rem;
-  background:linear-gradient(90deg,rgba(9,139,255,1),rgba(16,43,117,1));
-  border-radius:2px;
-  animation:pulseLine 2s ease-in-out infinite alternate;
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  margin: 0.5rem auto 2rem;
+  background: linear-gradient(90deg, rgba(9,139,255,1), rgba(16,43,117,1));
+  border-radius: 2px;
+  animation: pulseLine 2s ease-in-out infinite alternate;
 }
 @keyframes pulseLine {
-  from { transform:scaleX(1); opacity:1; }
-  to   { transform:scaleX(1.5); opacity:.6; }
+  from { transform: scaleX(1); opacity: 1; }
+  to   { transform: scaleX(1.5); opacity: 0.6; }
 }
 
-/* Fotogalerie Grid */
+/* ===== Fotogalerie Grid ===== */
 .gallery-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-  gap:1rem; margin-top:1rem;
-  scroll-snap-align:start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  scroll-snap-align: start;
 }
-.gallery-thumb { overflow:hidden; border-radius:4px; }
+.gallery-thumb {
+  overflow: hidden;
+  border-radius: 4px;
+}
 .gallery-thumb img {
-  width:100%; height:auto; object-fit:cover;
-  transition:transform .3s ease;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
-.gallery-thumb:hover img { transform:scale(1.05); }
+.gallery-thumb:hover img {
+  transform: scale(1.05);
+}
 
-/* Footer */
+/* ===== Footer ===== */
 footer {
-  text-align:center; padding:1rem;
-  font-size:.8rem; color:#777; margin-top:2rem;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 2rem;
 }
