@@ -395,9 +395,23 @@ document.addEventListener('DOMContentLoaded', () => {
           const script = document.createElement('script');
           script.src = 'js/menu.js';
           script.onload = () => {
-            if (typeof MenuSystem === 'function') {
-              new MenuSystem();
+            // Warten, bis die Klasse im globalen Scope verfügbar ist
+            let tries = 0;
+            function tryInitMenuSystem() {
+              if (typeof window.MenuSystem === 'function' || typeof window.MenuSystem === 'object' || typeof MenuSystem === 'function') {
+                if (typeof MenuSystem === 'function') {
+                  new MenuSystem();
+                }
+                return;
+              }
+              if (tries < 10) {
+                tries++;
+                setTimeout(tryInitMenuSystem, 50);
+              } else {
+                console.error('MenuSystem konnte nicht initialisiert werden!');
+              }
             }
+            tryInitMenuSystem();
           };
           document.body.appendChild(script);
         }
