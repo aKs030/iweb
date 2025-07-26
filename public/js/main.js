@@ -1,4 +1,4 @@
-// public/js/main.js - Hauptfunktionalität für die optimierte Homepage
+// js/main.js - Hauptfunktionalität für die optimierte Homepage
 
 // ===== Loading Screen =====
 window.addEventListener('load', () => {
@@ -373,7 +373,7 @@ function initSmoothScroll() {
 
 // ===== Menü dynamisch laden =====
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('public/menu.html')
+  fetch('menu.html')
     .then(response => response.text())
     .then(html => {
       const menuContainer = document.getElementById('menu-container');
@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         menuContainer.innerHTML = html;
         // Menü-Skript nachladen, damit Event-Handler funktionieren
         const script = document.createElement('script');
-        script.src = 'public/js/menu.js';
+        script.src = 'js/menu.js';
         document.body.appendChild(script);
       }
     });

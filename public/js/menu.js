@@ -1,4 +1,4 @@
-// public/js/menu.js - Erweiterte Menü-Funktionalität
+// js/menu.js - Erweiterte Menü-Funktionalität
 
 // ===== Menü-System Initialisierung =====
 class MenuSystem {
@@ -52,7 +52,7 @@ class MenuSystem {
       
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = 'public/css/menu.css';
+      link.href = 'css/menu.css';
       link.onload = resolve;
       document.head.appendChild(link);
     });
@@ -60,7 +60,7 @@ class MenuSystem {
 
   async loadHTML() {
     try {
-      const response = await fetch('/public/menu.html');
+      const response = await fetch('menu.html');
       const html = await response.text();
       
       const menuContainer = document.createElement('div');
