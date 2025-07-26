@@ -24,7 +24,8 @@ class MenuSystem {
     };
     
     this.searchableContent = [];
-    this.init();
+    // Asynchrone Initialisierung außerhalb des Konstruktors
+    setTimeout(() => { this.init(); }, 0);
   }
 
   async init() {
@@ -51,7 +52,7 @@ class MenuSystem {
       
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = '/css/menu.css';
+      link.href = 'public/css/menu.css';
       link.onload = resolve;
       document.head.appendChild(link);
     });
@@ -59,7 +60,7 @@ class MenuSystem {
 
   async loadHTML() {
     try {
-      const response = await fetch('/menu.html');
+      const response = await fetch('public/menu.html');
       const html = await response.text();
       
       const menuContainer = document.createElement('div');
@@ -88,7 +89,7 @@ class MenuSystem {
     this.initTheme();
     this.initScrollBehavior();
     this.initProgressBar();
-    this.initSearch();
+    // this.initSearch(); // entfernt, da nicht definiert
     this.initAccessibility();
   }
 
@@ -454,11 +455,9 @@ class MenuSystem {
             e.preventDefault();
             this.lastFocusableElement.focus();
           }
-        } else {
-          if (document.activeElement === this.lastFocusableElement) {
-            e.preventDefault();
-            this.firstFocusableElement.focus();
-          }
+        } else if (document.activeElement === this.lastFocusableElement) {
+          e.preventDefault();
+          this.firstFocusableElement.focus();
         }
       }
     };

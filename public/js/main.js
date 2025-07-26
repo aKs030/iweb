@@ -373,12 +373,16 @@ function initSmoothScroll() {
 
 // ===== Menü dynamisch laden =====
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('menu.html')
+  fetch('public/menu.html')
     .then(response => response.text())
     .then(html => {
       const menuContainer = document.getElementById('menu-container');
       if (menuContainer) {
         menuContainer.innerHTML = html;
+        // Menü-Skript nachladen, damit Event-Handler funktionieren
+        const script = document.createElement('script');
+        script.src = 'public/js/menu.js';
+        document.body.appendChild(script);
       }
     });
 });
