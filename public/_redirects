@@ -1,7 +1,0 @@
-/fotogalerie     /pages/fotogalerie/index.html     200
-/ueber-mich      /pages/ueber-mich/index.html      200
-/spiele          /pages/spiele/index.html          200
-/404             /404.html                         200
-
-# Catch-all für alle weiteren sauberen Pfade
-/*               /404.html                         404

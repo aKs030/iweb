@@ -1,2 +1,0 @@
-# security.txt
-Contact: mailto:your@email.de

@@ -1,22 +1,18 @@
-# iweb
+# Abdulkerim Sesli Portfolio
 
-Portfolio-Website von Abdulkerim Sesli
+Moderne Portfolio-Struktur für Webentwicklung, Fotografie und digitale Projekte.
 
-## Lokale Entwicklung
+## Struktur
+- `public/` – Statische Assets (HTML, CSS, JS, Bilder, Icons, Manifest)
+- `pages/` – Unterseiten
+- `src/` – Quellcode, Komponenten
+- `data/` – Inhalte, z. B. Projekte als JSON
+- `files/` – Downloads (z. B. Lebenslauf)
 
-```bash
-npm install
-npm run serve
-```
+## Schnellstart
+1. HTML/CSS/JS in `public/` und `pages/` bearbeiten
+2. Assets in `public/img/` und `public/icons/` ablegen
+3. Für Erweiterungen: `src/` nutzen
 
-## Sitemap generieren
-
-```bash
-npm run generate-sitemap
-```
-
-## Deployment
-
-Automatisch via GitHub Actions auf Cloudflare Pages (siehe `.github/workflows/ci.yml`).
-
-Alle statischen Dateien liegen in `public/`.
+## Lizenz
+MIT
