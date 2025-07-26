@@ -375,11 +375,11 @@ function initSmoothScroll() {
 document.addEventListener('DOMContentLoaded', () => {
   // Optimierte Fallback-Logik für menu.html
   function loadMenuHtml() {
-    return fetch('file/menu.html')
+    return fetch('/menu.html')
       .then(response => {
         if (response.ok) return response.text();
         // Fallback auf menu.html im Root
-        return fetch('file/menu.html').then(res => {
+        return fetch('/menu.html').then(res => {
           if (res.ok) return res.text();
           throw new Error('menu.html konnte nicht geladen werden!');
         });

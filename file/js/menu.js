@@ -60,7 +60,7 @@ class MenuSystem {
 
   async loadHTML() {
     try {
-      const response = await fetch('file/menu.html');
+      const response = await fetch('/menu.html');
       const html = await response.text();
       
       const menuContainer = document.createElement('div');
