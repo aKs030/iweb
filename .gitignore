@@ -2,3 +2,41 @@ node_modules/
 .DS_Store
 *.log
 .env
+
+# Build output
+dist/
+build/
+
+# Dependency directories
+.pnp/
+.pnp.js
+
+# Test coverage
+coverage/
+
+# VSCode settings
+.vscode/
+
+# MacOS
+*.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Optional: OS/Editor/Temp
+Thumbs.db
+*.swp
+*.tmp
+
+# Optional: Environment
+.env.local
+.env.development
+.env.test
+.env.production
