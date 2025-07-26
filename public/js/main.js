@@ -371,6 +371,18 @@ function initSmoothScroll() {
   });
 }
 
+// ===== Menü dynamisch laden =====
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('menu.html')
+    .then(response => response.text())
+    .then(html => {
+      const menuContainer = document.getElementById('menu-container');
+      if (menuContainer) {
+        menuContainer.innerHTML = html;
+      }
+    });
+});
+
 // ===== Initialize Everything =====
 document.addEventListener('DOMContentLoaded', () => {
   initScrollAnimations();

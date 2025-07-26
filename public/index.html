@@ -38,7 +38,7 @@
   
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
-  
+
   <!-- Critical CSS (Inline for Performance) -->
   <style>
     /* Critical above-the-fold styles */
@@ -103,11 +103,11 @@
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/index.css">
   
-  <!-- Preload Critical Assets -->
-  <link rel="preload" href="css/menu.css" as="style">
-  <link rel="preload" href="js/menu.js" as="script">
+
 </head>
 <body>
+  <!-- Menü Platzhalter -->
+<div id="menu-container"></div>
   <!-- Loading Screen -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loader"></div>
@@ -549,6 +549,5 @@
 
 <!-- JavaScript am Seitenende für Performance und korrekte Ausführung -->
 <script src="js/main.js"></script>
-<script src="js/menu.js"></script>
 </body>
 </html>
