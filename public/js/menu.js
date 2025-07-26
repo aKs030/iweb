@@ -1,6 +1,7 @@
 // public/js/menu.js - Erweiterte Menü-Funktionalität
 
 // ===== Menü-System Initialisierung =====
+
 class MenuSystem {
   constructor() {
     this.elements = {
@@ -474,7 +475,3 @@ class MenuSystem {
 }
 
 // ===== Initialize Menu System =====
-const menuSystem = new MenuSystem();
-
-// Export for use in other scripts
-window.MenuSystem = menuSystem;

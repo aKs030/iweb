@@ -375,7 +375,7 @@ function initSmoothScroll() {
 document.addEventListener('DOMContentLoaded', () => {
   // Optimierte Fallback-Logik für menu.html
   function loadMenuHtml() {
-    return fetch('public/menu.html')
+    return fetch('menu.html')
       .then(response => {
         if (response.ok) return response.text();
         // Fallback auf menu.html im Root
@@ -394,7 +394,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!document.querySelector('script[src="js/menu.js"]')) {
           const script = document.createElement('script');
           script.src = 'js/menu.js';
-          script.defer = true;
+          script.onload = () => {
+            if (typeof MenuSystem === 'function') {
+              new MenuSystem();
+            }
+          };
           document.body.appendChild(script);
         }
       }
