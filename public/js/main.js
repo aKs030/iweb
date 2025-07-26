@@ -373,17 +373,34 @@ function initSmoothScroll() {
 
 // ===== Menü dynamisch laden =====
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('menu.html')
-    .then(response => response.text())
+  // Optimierte Fallback-Logik für menu.html
+  function loadMenuHtml() {
+    return fetch('public/menu.html')
+      .then(response => {
+        if (response.ok) return response.text();
+        // Fallback auf menu.html im Root
+        return fetch('menu.html').then(res => {
+          if (res.ok) return res.text();
+          throw new Error('menu.html konnte nicht geladen werden!');
+        });
+      });
+  }
+  loadMenuHtml()
     .then(html => {
       const menuContainer = document.getElementById('menu-container');
       if (menuContainer) {
         menuContainer.innerHTML = html;
         // Menü-Skript nachladen, damit Event-Handler funktionieren
-        const script = document.createElement('script');
-        script.src = 'js/menu.js';
-        document.body.appendChild(script);
+        if (!document.querySelector('script[src="js/menu.js"]')) {
+          const script = document.createElement('script');
+          script.src = 'js/menu.js';
+          script.defer = true;
+          document.body.appendChild(script);
+        }
       }
+    })
+    .catch(error => {
+      console.error('Fehler beim Laden des Menüs:', error);
     });
 });
 
