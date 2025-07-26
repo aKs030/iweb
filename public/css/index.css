@@ -1,3 +1,8 @@
+/* Floating Icon Delays */
+.delay-0 { --delay: 0s; }
+.delay-1 { --delay: 1s; }
+.delay-2 { --delay: 2s; }
+.delay-3 { --delay: 3s; }
 /* css/index.css - Optimierte und erweiterte Version */
 
 /* ===== CSS Variables ===== */

@@ -88,7 +88,6 @@ class MenuSystem {
     this.initTheme();
     this.initScrollBehavior();
     this.initProgressBar();
-    this.initSearch();
     this.initAccessibility();
   }
 
