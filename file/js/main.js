@@ -375,11 +375,11 @@ function initSmoothScroll() {
 document.addEventListener('DOMContentLoaded', () => {
   // Optimierte Fallback-Logik für menu.html
   function loadMenuHtml() {
-    return fetch('menu.html')
+    return fetch('file/menu.html')
       .then(response => {
         if (response.ok) return response.text();
         // Fallback auf menu.html im Root
-        return fetch('menu.html').then(res => {
+        return fetch('file/menu.html').then(res => {
           if (res.ok) return res.text();
           throw new Error('menu.html konnte nicht geladen werden!');
         });
@@ -391,9 +391,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (menuContainer) {
         menuContainer.innerHTML = html;
         // Menü-Skript nachladen, damit Event-Handler funktionieren
-        if (!document.querySelector('script[src="js/menu.js"]')) {
+        if (!document.querySelector('script[src="file/js/menu.js"]')) {
           const script = document.createElement('script');
-          script.src = 'js/menu.js';
+          script.src = 'file/js/menu.js';
           script.onload = () => {
             // Warten, bis die Klasse im globalen Scope verfügbar ist
             let tries = 0;
