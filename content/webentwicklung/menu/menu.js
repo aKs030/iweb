@@ -23,7 +23,6 @@ class MenuSystem {
       this.elements.mobileToggle.addEventListener('click', this._mobileMenuHandler);
     }
   }
-  // ...existing code...
   initSearch() {
     // Platzhalter für Suchfunktion
   }

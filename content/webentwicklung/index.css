@@ -1296,3 +1296,52 @@ a:hover {
   opacity: 1;
   transform: translateY(0);
 }
+
+
+
+.galaxy-svg-container {
+  width: 240px;
+  height: 240px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+  background: radial-gradient(circle at center, #0a0a0a 60%, #000);
+  box-shadow: 0 0 60px rgba(0, 170, 255, 0.2);
+}
+
+.galaxy-svg {
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  animation: fadeIn 1.5s ease-out forwards;
+}
+
+.spiral-group {
+  transform-origin: 100px 100px;
+  animation: spin 30s linear infinite;
+}
+
+.stars circle {
+  animation: twinkle 3s ease-in-out infinite alternate;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(0, 170, 255, 0.25); }
+  50%      { box-shadow: 0 0 70px rgba(0, 170, 255, 0.4); }
+}
+
+@keyframes twinkle {
+  from { opacity: 0.4; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1.2); }
+}
