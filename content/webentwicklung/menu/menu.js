@@ -84,7 +84,7 @@ class MenuSystem {
 
   async loadHTML() {
     try {
-      const response = await fetch('/menu.html');
+      const response = await fetch('/content/webentwicklung/menu/menu.html');
       const html = await response.text();
       
       // Füge Skip-Link hinzu
