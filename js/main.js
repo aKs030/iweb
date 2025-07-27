@@ -1,4 +1,3 @@
-// public/js/main.js - Hauptfunktionalität für die optimierte Homepage
 
 // ===== Loading Screen =====
 window.addEventListener('load', () => {
@@ -375,3 +374,25 @@ window.addEventListener('scroll', debounce(() => {
 window.addEventListener('resize', throttle(() => {
   // Resize-based updates
 }, 250));
+
+// ===== Dynamisches Laden von Menü-Styles und Menü-Script =====
+function loadMenuAssets() {
+  // Menü-CSS laden
+  if (!document.querySelector('link[href="/content/webentwicklung/menu/menu.css"]')) {
+    const menuCss = document.createElement('link');
+    menuCss.rel = 'stylesheet';
+    menuCss.href = '/content/webentwicklung/menu/menu.css';
+    document.head.appendChild(menuCss);
+  }
+  // Menü-JS laden
+  if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
+    const menuScript = document.createElement('script');
+    menuScript.src = '/content/webentwicklung/menu/menu.js';
+    menuScript.defer = true;
+    document.body.appendChild(menuScript);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadMenuAssets);
+
+

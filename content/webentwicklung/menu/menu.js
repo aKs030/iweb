@@ -37,7 +37,7 @@ class MenuSystem {
       searchInput: null,
       searchClose: null,
       themeToggle: null,
-      progressBar: null
+      // progressBar entfernt
     };
     
     this.state = {
@@ -87,12 +87,6 @@ class MenuSystem {
       const response = await fetch('/content/webentwicklung/menu/menu.html');
       const html = await response.text();
       
-      // Füge Skip-Link hinzu
-      const skipLink = document.createElement('a');
-      skipLink.href = '#main';
-      skipLink.className = 'skip-to-content';
-      skipLink.textContent = 'Zum Hauptinhalt springen';
-      document.body.insertBefore(skipLink, document.body.firstChild);
 
       // Menü-HTML direkt einfügen
       const tempDiv = document.createElement('div');
@@ -118,7 +112,6 @@ class MenuSystem {
     this.setActiveLink();
     this.initTheme();
     this.initScrollBehavior();
-    this.initProgressBar();
     this.initSearch();
     this.initAccessibility();
   }
@@ -135,7 +128,6 @@ class MenuSystem {
       searchClose: document.getElementById('searchClose'),
       themeToggle: document.getElementById('themeToggle'),
       mobileThemeToggle: document.getElementById('mobileThemeToggle'),
-      progressBar: document.getElementById('progressBar'),
       navLinks: document.querySelectorAll('.nav-link, .mobile-nav-link'),
       dropdownToggles: document.querySelectorAll('.mobile-dropdown-toggle')
     };
@@ -397,24 +389,11 @@ class MenuSystem {
     
     this.state.lastScroll = currentScroll <= 0 ? 0 : currentScroll;
     
-    // Update progress bar
-    this.updateProgressBar();
+    // ProgressBar entfernt
   }
 
   // ===== Progress Bar =====
-  initProgressBar() {
-    this.updateProgressBar();
-  }
-
-  updateProgressBar() {
-    const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
-    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrolled = (winScroll / height) * 100;
-    
-    if (this.elements.progressBar) {
-      this.elements.progressBar.style.width = scrolled + '%';
-    }
-  }
+  // ProgressBar komplett entfernt
 
   // ===== Active Link =====
   setActiveLink() {
