@@ -2,6 +2,31 @@
 
 // ===== Menü-System Initialisierung =====
 class MenuSystem {
+  // ...existing code...
+  initMobileMenuEvents() {
+    if (this.elements.mobileToggle) {
+      this.elements.mobileToggle.removeEventListener('click', this._mobileMenuHandler);
+      this._mobileMenuHandler = () => {
+        console.log('Hamburger-Button wurde geklickt');
+        if (!this.elements.mobileToggle) {
+          console.warn('mobileToggle nicht gefunden!');
+          return;
+        }
+        if (!this.elements.mobileMenu) {
+          console.warn('mobileMenu nicht gefunden!');
+          return;
+        }
+        this.toggleMobileMenu();
+        console.log('mobileToggle active:', this.elements.mobileToggle.classList.contains('active'));
+        console.log('mobileMenu active:', this.elements.mobileMenu.classList.contains('active'));
+      };
+      this.elements.mobileToggle.addEventListener('click', this._mobileMenuHandler);
+    }
+  }
+  // ...existing code...
+  initSearch() {
+    // Platzhalter für Suchfunktion
+  }
   constructor() {
     this.elements = {
       header: null,
@@ -76,6 +101,10 @@ class MenuSystem {
       
       // Setze Padding für Body
       document.body.style.paddingTop = '70px';
+
+      // Nach dem Einfügen: Elemente neu cachen und Events neu binden
+      this.cacheElements();
+      this.bindEvents();
     } catch (error) {
       console.error('Fehler beim Laden des Menüs:', error);
     }
@@ -112,7 +141,7 @@ class MenuSystem {
 
   bindEvents() {
     // Mobile Menu
-    this.elements.mobileToggle?.addEventListener('click', () => this.toggleMobileMenu());
+    this.initMobileMenuEvents();
     
     // Search
     this.elements.searchToggle?.addEventListener('click', () => this.openSearch());

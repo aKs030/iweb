@@ -412,7 +412,7 @@
 }
 
 .mobile-dropdown-content a {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.5rem 0.75rem 3rem;
@@ -424,9 +424,18 @@
 
 .mobile-dropdown-content a:hover {
   color: var(--accent-hover);
+@media (max-width: 900px) {
+  .mobile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+}
   transform: translateX(5px);
 }
-
+  background: rgba(34, 34, 34, 0.12);
 /* ===== Mobile Utilities ===== */
 .mobile-utilities {
   margin-top: 2rem;
@@ -435,9 +444,10 @@
   display: flex;
   gap: 1rem;
 }
-
+  height: 3px;
 .mobile-utilities button {
   flex: 1;
+  /* border-radius: 2px; entfernt, da bereits oben gesetzt */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -445,9 +455,10 @@
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  height: 3px;
   color: var(--text-primary);
   cursor: pointer;
+  /* border-radius: 2px; entfernt, da bereits oben gesetzt */
   transition: all var(--transition-speed) ease;
 }
 
