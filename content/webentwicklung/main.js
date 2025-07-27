@@ -63,27 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ===== Greeting Time-based =====
-function updateGreeting() {
-  const greetingElement = document.getElementById('greeting');
-  if (!greetingElement) return;
-  
-  const hour = new Date().getHours();
-  let greeting;
-  if (hour >= 5 && hour < 12) {
-    greeting = 'Guten Morgen, ich bin';
-  } else if (hour >= 12 && hour < 18) {
-    greeting = 'Guten Tag, ich bin';
-  } else if (hour >= 18 && hour < 22) {
-    greeting = 'Guten Abend, ich bin';
-  } else {
-    greeting = 'Hallo, ich bin';
-  }
-  greetingElement.textContent = greeting;
-}
-
-updateGreeting();
-
 // ===== Particle Animation =====
 function initParticles() {
   const canvas = document.getElementById('particleCanvas');
@@ -376,23 +355,68 @@ window.addEventListener('resize', throttle(() => {
 }, 250));
 
 // ===== Dynamisches Laden von Menü-Styles und Menü-Script =====
-function loadMenuAssets() {
-  // Menü-CSS laden
-  if (!document.querySelector('link[href="/content/webentwicklung/menu/menu.css"]')) {
-    const menuCss = document.createElement('link');
-    menuCss.rel = 'stylesheet';
-    menuCss.href = '/content/webentwicklung/menu/menu.css';
-    document.head.appendChild(menuCss);
+
+const greetings = {
+  morning: [
+    "Guten Morgen und willkommen auf meiner Website!",
+    "Schön, dass du früh vorbeischaust!",
+    "Moin! Entdecke meine Projekte.",
+    "Einen erfolgreichen Start in den Tag!"
+  ],
+  day: [
+    "Herzlich willkommen auf meiner Website!",
+    "Schön, dass du hier bist!",
+    "Willkommen – viel Spaß beim Stöbern!",
+    "Entdecke meine Arbeiten und Projekte!"
+  ],
+  evening: [
+    "Guten Abend und willkommen auf meiner Website!",
+    "Schön, dass du abends reinschaust!",
+    "Genieße den Abend und viel Spaß auf meiner Seite!",
+    "Einen entspannten Abend wünsche ich dir!"
+  ],
+  night: [
+    "Schön, dass du nachts hier bist – willkommen!",
+    "Gute Nacht und viel Spaß beim Stöbern!",
+    "Späte Besucher sind die besten Besucher!",
+    "Willkommen zu später Stunde auf meiner Website!"
+  ]
+};
+
+function getGreetingSet() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11)  return greetings.morning;
+  if (hour >= 11 && hour < 17) return greetings.day;
+  if (hour >= 17 && hour < 22) return greetings.evening;
+  return greetings.night;
+}
+
+function setRandomGreetingHTML(animated = false) {
+  const el = document.getElementById('greetingText');
+  const set = getGreetingSet();
+  let random = set[Math.floor(Math.random() * set.length)];
+  if (set.length > 1 && el.dataset.last === random) {
+    do {
+      random = set[Math.floor(Math.random() * set.length)];
+    } while (random === el.dataset.last);
   }
-  // Menü-JS laden
-  if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
-    const menuScript = document.createElement('script');
-    menuScript.src = '/content/webentwicklung/menu/menu.js';
-    menuScript.defer = true;
-    document.body.appendChild(menuScript);
+  el.dataset.last = random;
+
+  if (animated) {
+    el.classList.add('fade');
+    setTimeout(() => {
+      el.textContent = random;
+      el.classList.remove('fade');
+    }, 400);
+  } else {
+    el.textContent = random;
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadMenuAssets);
-
-
+// Initial anzeigen:
+setRandomGreetingHTML();
+let scrollTimeout = null;
+window.addEventListener('scroll', () => {
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => setRandomGreetingHTML(true), 100);
+});

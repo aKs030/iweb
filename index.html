@@ -41,7 +41,7 @@
 
   <!-- Main Stylesheets -->
   <link rel="stylesheet" href="content/webentwicklung/index.css">
-
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap">
 </head>
 <body>
 
@@ -66,8 +66,6 @@
 <div class="hero-content">
       <div class="hero-text">
         <h1 class="hero-title">
-          <span class="greeting" id="greeting">Hallo, ich bin</span>
-          <span class="name">Abdulkerim</span>
         </h1>
         <p class="hero-subtitle">
           <span class="typed-text" id="typedText"></span>
@@ -89,30 +87,12 @@
       <div class="hero-visual">
         <div class="hero-image-container">
 
-          
 
-<div class="hero-image-wrapper">
-  <div class="galaxy-svg-container">
-    <svg class="galaxy-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Galaxy">
-      <defs>
-        <!-- Glow core -->
-        <radialGradient id="galaxyCore" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-          <stop offset="100%" stop-color="#00aaff" stop-opacity="0" />
-        </radialGradient>
 
-        <!-- blur filter for depth -->
-        <filter id="blur" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur1"/>
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur2"/>
-          <feMerge>
-            <feMergeNode in="blur1"/>
-            <feMergeNode in="blur2"/>
-          </feMerge>
-        </filter>
-      </defs>
 
-      <!-- glowing center -->
+<div class="greeting-text-hero" id="greetingText"></div>
+
+<!-- glowing center -->
       <circle cx="100" cy="100" r="35" fill="url(#galaxyCore)" filter="url(#blur)" />
 
       <!-- stars background (random scatter) -->
@@ -137,7 +117,6 @@
         <circle cx="55" cy="70" r="1.6" fill="#00ccff" filter="url(#blur)"/>
       </g>
     </svg>
-  </div>
 </div>
 
 
