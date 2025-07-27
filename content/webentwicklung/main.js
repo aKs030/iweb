@@ -461,3 +461,71 @@ window.addEventListener('scroll', () => {
   clearTimeout(scrollTimeout);
   scrollTimeout = setTimeout(() => setRandomGreetingHTML(true), 100);
 });
+
+
+// ===== Update Input File for SCM =====
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sections = [...document.querySelectorAll('.section, article')];
+  let isScrolling = false;
+  let scrollTimeout;
+
+  const getCurrentIndex = () => {
+    const midpoint = window.innerHeight / 2;
+    let bestIndex = 0;
+    let minDistance = Infinity;
+
+    sections.forEach((section, i) => {
+      const { top, height } = section.getBoundingClientRect();
+      const center = top + height / 2;
+      const distance = Math.abs(center - midpoint);
+      if (distance < minDistance) {
+        minDistance = distance;
+        bestIndex = i;
+      }
+    });
+
+    return bestIndex;
+  };
+
+  const scrollToIndex = (index) => {
+    if (!sections[index]) return;
+
+    isScrolling = true;
+    clearTimeout(scrollTimeout);
+
+    window.scrollTo({
+      top: sections[index].offsetTop,
+      behavior: 'smooth'
+    });
+
+    scrollTimeout = setTimeout(() => {
+      isScrolling = false;
+    }, 800);
+  };
+
+  window.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      isScrolling = false;
+    }, 150);
+  });
+
+  window.addEventListener(
+    'wheel',
+    (e) => {
+      if (isScrolling) return;
+
+      const current = getCurrentIndex();
+      const direction = e.deltaY > 0 ? 1 : -1;
+      let target = current + direction;
+
+      // Begrenzung auf gültigen Bereich
+      if (target >= 0 && target < sections.length) {
+        e.preventDefault(); // verhindert natives Scrollen
+        scrollToIndex(target);
+      }
+    },
+    { passive: false }
+  );
+});
