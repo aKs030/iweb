@@ -489,20 +489,28 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const scrollToIndex = (index) => {
-    if (!sections[index]) return;
+const scrollToIndex = (index) => {
+  if (!sections[index]) return;
 
-    isScrolling = true;
-    clearTimeout(scrollTimeout);
+  isScrolling = true;
+  clearTimeout(scrollTimeout);
 
-    window.scrollTo({
-      top: sections[index].offsetTop,
-      behavior: 'smooth'
-    });
+  // Entferne die "active"-Klasse von allen Abschnitten
+  sections.forEach((section) => section.classList.remove('active'));
 
-    scrollTimeout = setTimeout(() => {
-      isScrolling = false;
-    }, 800);
-  };
+  // Füge die "active"-Klasse zum aktuellen Abschnitt hinzu
+  sections[index].classList.add('active');
+
+  window.scrollTo({
+    top: sections[index].offsetTop,
+    behavior: 'smooth'
+  });
+
+  scrollTimeout = setTimeout(() => {
+    isScrolling = false;
+  }, 800);
+};
+
 
   // Scroll-Event für Desktop
   window.addEventListener('scroll', () => {
