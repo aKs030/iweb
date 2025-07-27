@@ -87,17 +87,19 @@ class MenuSystem {
       const response = await fetch('/menu.html');
       const html = await response.text();
       
-      const menuContainer = document.createElement('div');
-      menuContainer.innerHTML = html;
-      
       // Füge Skip-Link hinzu
       const skipLink = document.createElement('a');
       skipLink.href = '#main';
       skipLink.className = 'skip-to-content';
       skipLink.textContent = 'Zum Hauptinhalt springen';
-      
       document.body.insertBefore(skipLink, document.body.firstChild);
-      document.body.insertBefore(menuContainer, document.body.firstChild.nextSibling);
+
+      // Menü-HTML direkt einfügen
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      Array.from(tempDiv.children).forEach(child => {
+        document.body.insertBefore(child, document.body.firstChild.nextSibling);
+      });
       
       // Setze Padding für Body
       document.body.style.paddingTop = '70px';
@@ -137,6 +139,10 @@ class MenuSystem {
       navLinks: document.querySelectorAll('.nav-link, .mobile-nav-link'),
       dropdownToggles: document.querySelectorAll('.mobile-dropdown-toggle')
     };
+    console.log('cacheElements:', {
+      mobileToggle: this.elements.mobileToggle,
+      mobileMenu: this.elements.mobileMenu
+    });
   }
 
   bindEvents() {
