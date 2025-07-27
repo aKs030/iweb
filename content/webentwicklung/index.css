@@ -1,5 +1,50 @@
 /* public/css/index.css - Optimierte und erweiterte Version */
+/* Allgemeine Stile */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Verhindert, dass der Benutzer über den Scroll-Mechanismus hinaus scrollt */
+  font-family: Arial, sans-serif;
+}
 
+html {
+  scroll-behavior: smooth; /* Sanftes Scrollen */
+}
+
+/* Sektionen */
+.section, article {
+  height: 100vh; /* Jede Sektion nimmt die volle Höhe des Viewports ein */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  scroll-snap-align: start; /* Positioniert die Sektion beim Scrollen */
+  scroll-snap-stop: always; /* Scroll bleibt an der Sektion stehen */
+  transition: background-color 0.3s ease; /* Sanfte Übergänge für Hintergrundfarben */
+}
+
+/* Beispiel: Unterschiedliche Farben für Abschnitte */
+.section:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+
+.section:nth-child(even) {
+  background-color: #e0e0e0;
+}
+
+/* Aktiver Abschnitt (Hervorgehoben) */
+.section.active, article.active {
+  background-color: #ffeb3b; /* Gelber Hintergrund für Hervorhebung */
+  font-weight: bold;
+}
+
+/* Mobile Optimierung */
+@media (max-width: 768px) {
+  .section, article {
+    font-size: 1.5rem; /* Kleinere Schriftart für mobile Geräte */
+    padding: 20px;
+  }
+}
 /* ===== CSS Variables ===== */
 :root {
   /* Colors */
