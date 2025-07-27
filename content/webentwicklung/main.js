@@ -464,11 +464,11 @@ window.addEventListener('scroll', () => {
 
 
 // ===== Update Input File for SCM =====
-
 document.addEventListener('DOMContentLoaded', () => {
   const sections = [...document.querySelectorAll('.section, article')];
   let isScrolling = false;
   let scrollTimeout;
+  let touchStartY = 0;
 
   const getCurrentIndex = () => {
     const midpoint = window.innerHeight / 2;
@@ -504,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 800);
   };
 
+  // Scroll-Event für Desktop
   window.addEventListener('scroll', () => {
     clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(() => {
@@ -511,6 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 150);
   });
 
+  // Mausrad-Scrollen (Desktop)
   window.addEventListener(
     'wheel',
     (e) => {
@@ -524,6 +526,34 @@ document.addEventListener('DOMContentLoaded', () => {
       if (target >= 0 && target < sections.length) {
         e.preventDefault(); // verhindert natives Scrollen
         scrollToIndex(target);
+      }
+    },
+    { passive: false }
+  );
+
+  // Touch-Events für mobiles Wischen
+  window.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  });
+
+  window.addEventListener(
+    'touchmove',
+    (e) => {
+      if (isScrolling) return;
+
+      const touchEndY = e.touches[0].clientY;
+      const deltaY = touchStartY - touchEndY;
+
+      if (Math.abs(deltaY) > 30) { // Schwellenwert für Swipe-Gesten
+        const current = getCurrentIndex();
+        const direction = deltaY > 0 ? 1 : -1; // Nach unten oder oben wischen
+        let target = current + direction;
+
+        // Begrenzung auf gültigen Bereich
+        if (target >= 0 && target < sections.length) {
+          e.preventDefault(); // verhindert natives Scrollen
+          scrollToIndex(target);
+        }
       }
     },
     { passive: false }
