@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'Game Developer',
       'Kreativer Denker'
     ];
+    // TypeWriter wird nur zur Initialisierung verwendet, keine weitere Nutzung nötig
     new TypeWriter(typedElement, texts);
   }
 });
@@ -69,8 +70,7 @@ function updateGreeting() {
   if (!greetingElement) return;
   
   const hour = new Date().getHours();
-  let greeting = 'Hallo, ich bin';
-  
+  let greeting;
   if (hour >= 5 && hour < 12) {
     greeting = 'Guten Morgen, ich bin';
   } else if (hour >= 12 && hour < 18) {
@@ -80,7 +80,6 @@ function updateGreeting() {
   } else {
     greeting = 'Hallo, ich bin';
   }
-  
   greetingElement.textContent = greeting;
 }
 
@@ -211,11 +210,6 @@ function initScrollAnimations() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('aos-animate');
-        
-        // Count animation for stats
-        if (entry.target.classList.contains('stat-number')) {
-          countUp(entry.target);
-        }
       }
     });
   }, observerOptions);
@@ -225,28 +219,8 @@ function initScrollAnimations() {
     observer.observe(element);
   });
   
-  // Observe stat numbers
-  document.querySelectorAll('.stat-number').forEach(element => {
-    observer.observe(element);
-  });
 }
 
-// ===== Count Up Animation =====
-function countUp(element) {
-  const target = parseInt(element.getAttribute('data-count'));
-  const duration = 2000;
-  const increment = target / (duration / 16);
-  let current = 0;
-  
-  const timer = setInterval(() => {
-    current += increment;
-    if (current >= target) {
-      current = target;
-      clearInterval(timer);
-    }
-    element.textContent = Math.floor(current);
-  }, 16);
-}
 
 // ===== Project Filter =====
 function initProjectFilter() {
@@ -258,29 +232,33 @@ function initProjectFilter() {
       // Update active button
       filterButtons.forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
-      
       const filter = button.getAttribute('data-filter');
-      
       // Filter projects
       projectCards.forEach(card => {
         const category = card.getAttribute('data-category');
-        
         if (filter === 'all' || category === filter) {
-          card.style.display = 'block';
-          setTimeout(() => {
-            card.style.opacity = '1';
-            card.style.transform = 'scale(1)';
-          }, 10);
+          showCard(card);
         } else {
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.8)';
-          setTimeout(() => {
-            card.style.display = 'none';
-          }, 300);
+          hideCard(card);
         }
       });
     });
   });
+  // Hilfsfunktionen für Animationen
+  function showCard(card) {
+    card.style.display = 'block';
+    setTimeout(() => {
+      card.style.opacity = '1';
+      card.style.transform = 'scale(1)';
+    }, 10);
+  }
+  function hideCard(card) {
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.8)';
+    setTimeout(() => {
+      card.style.display = 'none';
+    }, 300);
+  }
 }
 
 // ===== Form Handling =====
@@ -291,37 +269,22 @@ function initForms() {
   
   contactForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    const formData = new FormData(contactForm);
-    const data = Object.fromEntries(formData);
-    
     // Show loading state
     const submitBtn = contactForm.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<span>Wird gesendet...</span>';
     submitBtn.disabled = true;
-    
-    try {
-      // Simulate API call (replace with actual endpoint)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Show success message
-      formStatus.className = 'form-status success';
-      formStatus.textContent = 'Nachricht erfolgreich gesendet! Ich melde mich bald bei dir.';
-      formStatus.style.display = 'block';
-      
-      // Reset form
-      contactForm.reset();
-    } catch (error) {
-      // Show error message
-      formStatus.className = 'form-status error';
-      formStatus.textContent = 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.';
-      formStatus.style.display = 'block';
-    } finally {
-      // Restore button
-      submitBtn.innerHTML = originalText;
-      submitBtn.disabled = false;
-    }
+    // Simulate API call (replace with actual endpoint)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Show success message
+    formStatus.className = 'form-status success';
+    formStatus.textContent = 'Nachricht erfolgreich gesendet! Ich melde mich bald bei dir.';
+    formStatus.style.display = 'block';
+    // Reset form
+    contactForm.reset();
+    // Restore button
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
   });
   
   // Newsletter Form
@@ -329,25 +292,15 @@ function initForms() {
   
   newsletterForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    const email = e.target.querySelector('input[type="email"]').value;
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    
     // Show loading state
     submitBtn.disabled = true;
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Show success (replace with actual feedback)
-      alert('Erfolgreich zum Newsletter angemeldet!');
-      e.target.reset();
-    } catch (error) {
-      alert('Fehler bei der Newsletter-Anmeldung.');
-    } finally {
-      submitBtn.disabled = false;
-    }
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Show success (replace with actual feedback)
+    alert('Erfolgreich zum Newsletter angemeldet!');
+    e.target.reset();
+    submitBtn.disabled = false;
   });
 }
 
