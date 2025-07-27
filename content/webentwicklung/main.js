@@ -63,6 +63,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// ===== Greeting Time-based =====
+function updateGreeting() {
+  const greetingElement = document.getElementById('greeting');
+  if (!greetingElement) return;
+  
+  const hour = new Date().getHours();
+  let greeting;
+  if (hour >= 5 && hour < 12) {
+    greeting = 'Guten Morgen, ich bin';
+  } else if (hour >= 12 && hour < 18) {
+    greeting = 'Guten Tag, ich bin';
+  } else if (hour >= 18 && hour < 22) {
+    greeting = 'Guten Abend, ich bin';
+  } else {
+    greeting = 'Hallo, ich bin';
+  }
+  greetingElement.textContent = greeting;
+}
+
+updateGreeting();
+
 // ===== Particle Animation =====
 function initParticles() {
   const canvas = document.getElementById('particleCanvas');
@@ -355,6 +376,26 @@ window.addEventListener('resize', throttle(() => {
 }, 250));
 
 // ===== Dynamisches Laden von Menü-Styles und Menü-Script =====
+function loadMenuAssets() {
+  // Menü-CSS laden
+  if (!document.querySelector('link[href="/content/webentwicklung/menu/menu.css"]')) {
+    const menuCss = document.createElement('link');
+    menuCss.rel = 'stylesheet';
+    menuCss.href = '/content/webentwicklung/menu/menu.css';
+    document.head.appendChild(menuCss);
+  }
+  // Menü-JS laden
+  if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
+    const menuScript = document.createElement('script');
+    menuScript.src = '/content/webentwicklung/menu/menu.js';
+    menuScript.defer = true;
+    document.body.appendChild(menuScript);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadMenuAssets);
+
+// ===== Update Input File for SCM =====
 
 const greetings = {
   morning: [
