@@ -1,19 +1,36 @@
 /* public/css/index.css - Optimierte und erweiterte Version */
 
+/* Desktop & Standard */
 body {
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
   height: 100vh;
-  scroll-padding-top: 100px; /* für festen Header */
+  scroll-padding-top: 70px; /* Header-Höhe */
+  overscroll-behavior-y: contain; /* verhindert Gummieffekt auf iOS */
 }
 
 .section,
 .hero,
 .about,
 .contact {
-  scroll-snap-align: center;
+  scroll-snap-align: start;
   min-height: 100vh;
-  padding-top: 100px;
+  padding-top: 100px; /* Abstand für Inhalt */
+  box-sizing: border-box;
+}
+
+/* Mobile Optimierung */
+@media (max-width: 768px) {
+  .section,
+  .hero,
+  .about,
+  .contact {
+    padding-top: 80px; /* etwas kompakter auf kleineren Displays */
+  }
+
+  body {
+    scroll-padding-top: 60px; /* ggf. mobile Header kleiner */
+  }
 }
 
 /* ===== CSS Variables ===== */
