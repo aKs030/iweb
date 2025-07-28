@@ -224,14 +224,16 @@ function initScrollAnimations() {
 function initProjectFilter() {
   const filterButtons = document.querySelectorAll('.filter-btn');
   const projectCards = document.querySelectorAll('.project-card');
-  
+
   filterButtons.forEach(button => {
     button.addEventListener('click', () => {
-      // Update active button
+      // Aktive Button-Klasse setzen
       filterButtons.forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
+
       const filter = button.getAttribute('data-filter');
-      // Filter projects
+
+      // Karten filtern
       projectCards.forEach(card => {
         const category = card.getAttribute('data-category');
         if (filter === 'all' || category === filter) {
@@ -242,7 +244,12 @@ function initProjectFilter() {
       });
     });
   });
-  // Hilfsfunktionen für Animationen
+
+  // Initial-Filter aktivieren
+  const activeBtn = document.querySelector('.filter-btn.active') || filterButtons[0];
+  if (activeBtn) activeBtn.click();
+
+  // Animationen für Sichtbarkeit
   function showCard(card) {
     card.style.display = 'block';
     setTimeout(() => {
@@ -250,15 +257,15 @@ function initProjectFilter() {
       card.style.transform = 'scale(1)';
     }, 10);
   }
+
   function hideCard(card) {
     card.style.opacity = '0';
-    card.style.transform = 'scale(0.8)';
+    card.style.transform = 'scale(0.95)';
     setTimeout(() => {
       card.style.display = 'none';
     }, 300);
   }
 }
-
 // ===== Form Handling =====
 function initForms() {
   // Contact Form
