@@ -1,12 +1,13 @@
 /* public/css/index.css - Optimierte und erweiterte Version */
 
-/* Desktop & Standard */
+
+/* === SCROLL-SNAP & SECTION HEIGHT === */
 body {
+  height: 100dvh;
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
-  height: 100vh;
-  scroll-padding-top: 70px; /* Header-Höhe */
-  overscroll-behavior-y: contain; /* verhindert Gummieffekt auf iOS */
+  scroll-padding-top: 70px;
+  overscroll-behavior-y: contain;
 }
 
 .section,
@@ -14,24 +15,42 @@ body {
 .about,
 .contact {
   scroll-snap-align: start;
-  min-height: 100vh;
-  padding-top: 100px; /* Abstand für Inhalt */
-  box-sizing: border-box;
+  min-height: calc(100dvh - 70px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-/* Mobile Optimierung */
+/* Footer snappen */
+footer {
+  scroll-snap-align: start;
+  min-height: calc(100dvh - 70px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Mobile Anpassung */
 @media (max-width: 768px) {
+  body {
+    scroll-padding-top: 70px;
+  }
+
   .section,
   .hero,
   .about,
-  .contact {
-    padding-top: 80px; /* etwas kompakter auf kleineren Displays */
-  }
-
-  body {
-    scroll-padding-top: 60px; /* ggf. mobile Header kleiner */
+  .contact,
+  footer {
+    min-height: calc(100dvh - 70px);
   }
 }
+
+/* AOS Fix */
+[data-aos].aos-animate {
+  opacity: 1 !important;
+  transform: translate(0) scale(1) !important;
+}
+
 
 /* ===== CSS Variables ===== */
 :root {
