@@ -1,6 +1,22 @@
 /* public/css/index.css - Optimierte und erweiterte Version */
 /* Allgemeine Stile */
-  
+/* === Global Scroll Snap für gesamte Seite === */
+body {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+/* Jede Sektion snapt auf Viewport-Start */
+.section {
+  scroll-snap-align: start;
+  min-height: 100vh;
+}
+
+/* Ausnahme-Klassen (falls nötig) */
+.no-snap {
+  scroll-snap-align: unset !important;
+}
 
 /* ===== CSS Variables ===== */
 :root {
