@@ -1,56 +1,6 @@
-/* public/css/index.css - Optimierte und erweiterte Version */
 
 
 /* === SCROLL-SNAP & SECTION HEIGHT === */
-body {
-  height: 100dvh;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-  scroll-padding-top: 70px;
-  overscroll-behavior-y: contain;
-}
-
-.section,
-.hero,
-.about,
-.contact {
-  scroll-snap-align: start;
-  min-height: calc(100dvh - 70px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Footer snappen */
-footer {
-  scroll-snap-align: start;
-  min-height: calc(100dvh - 70px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Mobile Anpassung */
-@media (max-width: 768px) {
-  body {
-    scroll-padding-top: 70px;
-  }
-
-  .section,
-  .hero,
-  .about,
-  .contact,
-  footer {
-    min-height: calc(100dvh - 70px);
-  }
-}
-
-/* AOS Fix */
-[data-aos].aos-animate {
-  opacity: 1 !important;
-  transform: translate(0) scale(1) !important;
-}
-
 
 /* ===== CSS Variables ===== */
 :root {
@@ -121,6 +71,7 @@ footer {
 }
 
 /* ===== Base Styles ===== */
+/* ===== Base Styles ===== */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -128,8 +79,9 @@ footer {
 }
 
 html {
-  scroll-padding-top: 80px;
+  scroll-padding-top: 70px;
   overflow-x: hidden;
+  height: 100%;
 }
 
 body {
@@ -138,9 +90,49 @@ body {
   line-height: 1.6;
   color: var(--text-primary);
   background: var(--bg-dark);
-  overflow-x: hidden;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: 70px;
+  height: 100dvh;
+  overscroll-behavior-y: contain;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Sections ===== */
+.section,
+.hero,
+.about,
+.contact,
+footer {
+  scroll-snap-align: start;
+  min-height: calc(100dvh - 70px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ===== Responsive (mobile) ===== */
+@media (max-width: 768px) {
+  :root {
+    font-size: 14px;
+  }
+  body {
+    scroll-padding-top: 70px;
+  }
+  .section,
+  .hero,
+  .about,
+  .contact,
+  footer {
+    min-height: calc(100dvh - 70px);
+  }
+}
+
+/* ===== AOS Fix ===== */
+[data-aos].aos-animate {
+  opacity: 1 !important;
+  transform: translate(0) scale(1) !important;
 }
 
 /* ===== Typography ===== */
@@ -321,12 +313,13 @@ a:hover {
 
 /* ===== Hero Section ===== */
 .hero {
-  min-height: 100vh;
+  min-height: calc(100dvh - 70px); /* exakt wie alle anderen Sektionen */
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
+  scroll-snap-align: start;
 }
 
 .hero-background {
