@@ -1,4 +1,184 @@
+document.addEventListener(‘DOMContentLoaded’, () => {
+const sections = […document.querySelectorAll(’.section, article’)];
 
+if (sections.length === 0) return; // Exit early if no sections found
+
+let isScrolling = false;
+let scrollTimeout;
+let touchStartY = 0;
+let lastScrollTime = 0;
+let currentIndex = 0;
+
+// Throttle function for better performance
+const throttle = (func, limit) => {
+let inThrottle;
+return function() {
+const args = arguments;
+const context = this;
+if (!inThrottle) {
+func.apply(context, args);
+inThrottle = true;
+setTimeout(() => inThrottle = false, limit);
+}
+}
+};
+
+// Optimized current index calculation with caching
+const getCurrentIndex = () => {
+const scrollTop = window.pageYOffset;
+const viewportHeight = window.innerHeight;
+const midpoint = scrollTop + viewportHeight / 2;
+
+```
+let bestIndex = 0;
+let minDistance = Infinity;
+
+for (let i = 0; i < sections.length; i++) {
+  const section = sections[i];
+  const sectionTop = section.offsetTop;
+  const sectionHeight = section.offsetHeight;
+  const sectionCenter = sectionTop + sectionHeight / 2;
+  const distance = Math.abs(sectionCenter - midpoint);
+  
+  if (distance < minDistance) {
+    minDistance = distance;
+    bestIndex = i;
+  }
+}
+
+return bestIndex;
+```
+
+};
+
+// Improved scroll to index with better state management
+const scrollToIndex = (index) => {
+if (index < 0 || index >= sections.length || index === currentIndex) return;
+
+```
+isScrolling = true;
+currentIndex = index;
+clearTimeout(scrollTimeout);
+
+// Update active states efficiently
+const activeSection = document.querySelector('.section.active, article.active');
+if (activeSection) {
+  activeSection.classList.remove('active');
+}
+sections[index].classList.add('active');
+
+// Use requestAnimationFrame for smoother scrolling
+requestAnimationFrame(() => {
+  window.scrollTo({
+    top: sections[index].offsetTop,
+    behavior: 'smooth'
+  });
+});
+
+scrollTimeout = setTimeout(() => {
+  isScrolling = false;
+}, 1000); // Increased timeout for smoother experience
+```
+
+};
+
+// Debounced scroll handler
+const handleScroll = throttle(() => {
+if (!isScrolling) {
+currentIndex = getCurrentIndex();
+
+```
+  // Update active state during free scrolling
+  const activeSection = document.querySelector('.section.active, article.active');
+  if (activeSection) {
+    activeSection.classList.remove('active');
+  }
+  sections[currentIndex].classList.add('active');
+}
+```
+
+}, 100);
+
+// Optimized wheel handler with better debouncing
+const handleWheel = (e) => {
+const now = Date.now();
+
+```
+// Prevent rapid scrolling
+if (isScrolling || now - lastScrollTime < 50) {
+  e.preventDefault();
+  return;
+}
+
+lastScrollTime = now;
+const direction = e.deltaY > 0 ? 1 : -1;
+const targetIndex = currentIndex + direction;
+
+if (targetIndex >= 0 && targetIndex < sections.length) {
+  e.preventDefault();
+  scrollToIndex(targetIndex);
+}
+```
+
+};
+
+// Improved touch handlers with better gesture detection
+const handleTouchStart = (e) => {
+if (e.touches.length === 1) {
+touchStartY = e.touches[0].clientY;
+}
+};
+
+const handleTouchMove = (e) => {
+if (isScrolling || e.touches.length !== 1) return;
+
+```
+const touchEndY = e.touches[0].clientY;
+const deltaY = touchStartY - touchEndY;
+const threshold = 50; // Increased threshold for better UX
+
+if (Math.abs(deltaY) > threshold) {
+  const direction = deltaY > 0 ? 1 : -1;
+  const targetIndex = currentIndex + direction;
+
+  if (targetIndex >= 0 && targetIndex < sections.length) {
+    e.preventDefault();
+    scrollToIndex(targetIndex);
+  }
+}
+```
+
+};
+
+// Event listeners with passive optimization
+window.addEventListener(‘scroll’, handleScroll, { passive: true });
+window.addEventListener(‘wheel’, handleWheel, { passive: false });
+window.addEventListener(‘touchstart’, handleTouchStart, { passive: true });
+window.addEventListener(‘touchmove’, handleTouchMove, { passive: false });
+
+// Initialize first section as active
+if (sections.length > 0) {
+currentIndex = getCurrentIndex();
+sections[currentIndex].classList.add(‘active’);
+}
+
+// Handle window resize
+const handleResize = throttle(() => {
+currentIndex = getCurrentIndex();
+
+```
+// Update active state after resize
+const activeSection = document.querySelector('.section.active, article.active');
+if (activeSection) {
+  activeSection.classList.remove('active');
+}
+sections[currentIndex].classList.add('active');
+```
+
+}, 250);
+
+window.addEventListener(‘resize’, handleResize, { passive: true });
+});
 // ===== Loading Screen =====
 window.addEventListener('load', () => {
   const loadingScreen = document.getElementById('loadingScreen');
