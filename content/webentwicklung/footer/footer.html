@@ -18,6 +18,11 @@
       --transition-fast: 0.15s ease;
     }
 
+    .footer.section {
+  scroll-snap-align: start;
+  min-height: 100vh;
+}
+
     .footer-container .footer {
       background: var(--bg-section);
       padding: var(--spacing-2xl) 0 var(--spacing-lg);
@@ -183,7 +188,7 @@
     }
   </style>
 
-  <footer class="footer site-footer">
+  <footer class="footer site-footer section">
     <div class="container footer-content">
       <div>
         <h3 class="footer-title">Abdulkerim Sesli</h3>

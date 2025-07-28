@@ -266,48 +266,6 @@ function initProjectFilter() {
     }, 300);
   }
 }
-// ===== Form Handling =====
-function initForms() {
-  // Contact Form
-  const contactForm = document.getElementById('contactForm');
-  const formStatus = document.getElementById('formStatus');
-  
-  contactForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    // Show loading state
-    const submitBtn = contactForm.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<span>Wird gesendet...</span>';
-    submitBtn.disabled = true;
-    // Simulate API call (replace with actual endpoint)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    // Show success message
-    formStatus.className = 'form-status success';
-    formStatus.textContent = 'Nachricht erfolgreich gesendet! Ich melde mich bald bei dir.';
-    formStatus.style.display = 'block';
-    // Reset form
-    contactForm.reset();
-    // Restore button
-    submitBtn.innerHTML = originalText;
-    submitBtn.disabled = false;
-  });
-  
-  // Newsletter Form
-  const newsletterForm = document.getElementById('newsletterForm');
-  
-  newsletterForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    // Show loading state
-    submitBtn.disabled = true;
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    // Show success (replace with actual feedback)
-    alert('Erfolgreich zum Newsletter angemeldet!');
-    e.target.reset();
-    submitBtn.disabled = false;
-  });
-}
 
 // ===== Smooth Scroll for Anchor Links =====
 function initSmoothScroll() {
