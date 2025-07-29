@@ -105,11 +105,11 @@ body {
 .about,
 .contact,
 footer {
-  scroll-snap-align: start;
   min-height: calc(100dvh - 70px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  scroll-snap-align: start;
+  padding-top: 70px; /* optional */
+  padding-bottom: 70px; /* damit nichts unten abgeschnitten wird */
+  display: block;
 }
 
 /* ===== Responsive (mobile) ===== */
