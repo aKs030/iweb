@@ -44,10 +44,6 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
 }
 
-.menu-container .main-header.hide {
-  transform: translateY(-100%);
-}
-
 .menu-container .nav-container {
   max-width: 1200px;
   margin: 0 auto;
