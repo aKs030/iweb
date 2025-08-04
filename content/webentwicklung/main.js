@@ -1,10 +1,21 @@
-// ===== Loading Screen =====
-window.addEventListener('load', () => {
-  const loadingScreen = document.getElementById('loadingScreen');
-  setTimeout(() => {
-    loadingScreen.classList.add('hide');
-  }, 500);
-});
+// ===== Debounce & Throttle =====
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+function throttle(func, limit) {
+  let inThrottle;
+  return function () {
+    if (!inThrottle) {
+      func.apply(this, arguments);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
 
 // ===== Typed Text Animation =====
 class TypeWriter {
@@ -17,22 +28,16 @@ class TypeWriter {
     this.isDeleting = false;
     this.type();
   }
-
   type() {
     const current = this.textIndex % this.texts.length;
     const fullTxt = this.texts[current];
-
     if (this.isDeleting) {
       this.txt = fullTxt.substring(0, this.txt.length - 1);
     } else {
       this.txt = fullTxt.substring(0, this.txt.length + 1);
     }
-
     this.element.textContent = this.txt;
-
-    let typeSpeed = 100;
-    if (this.isDeleting) typeSpeed /= 2;
-
+    let typeSpeed = this.isDeleting ? 50 : 100;
     if (!this.isDeleting && this.txt === fullTxt) {
       typeSpeed = this.wait;
       this.isDeleting = true;
@@ -41,62 +46,22 @@ class TypeWriter {
       this.textIndex++;
       typeSpeed = 500;
     }
-
     setTimeout(() => this.type(), typeSpeed);
   }
 }
 
-// Initialize Typed Text
-document.addEventListener('DOMContentLoaded', () => {
-  const typedElement = document.getElementById('typedText');
-  if (typedElement) {
-    const texts = [
-      'Full-Stack Developer',
-      'UI/UX Designer',
-      'Fotografie-Enthusiast',
-      'Game Developer',
-      'Kreativer Denker'
-    ];
-    // TypeWriter wird nur zur Initialisierung verwendet, keine weitere Nutzung nötig
-    new TypeWriter(typedElement, texts);
-  }
-});
-
-// ===== Greeting Time-based =====
-function updateGreeting() {
-  const greetingElement = document.getElementById('greeting');
-  if (!greetingElement) return;
-  
-  const hour = new Date().getHours();
-  let greeting;
-  if (hour >= 5 && hour < 12) {
-    greeting = 'Guten Morgen, ich bin';
-  } else if (hour >= 12 && hour < 18) {
-    greeting = 'Guten Tag, ich bin';
-  } else if (hour >= 18 && hour < 22) {
-    greeting = 'Guten Abend, ich bin';
-  } else {
-    greeting = 'Hallo, ich bin';
-  }
-  greetingElement.textContent = greeting;
-}
-
-updateGreeting();
-
-// ===== Particle Animation =====
+// ===== Particles =====
 function initParticles() {
   const canvas = document.getElementById('particleCanvas');
   if (!canvas) return;
-  
   const ctx = canvas.getContext('2d');
   let particles = [];
   let animationId;
-  
+
   function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
-  
   class Particle {
     constructor() {
       this.x = Math.random() * canvas.width;
@@ -106,19 +71,12 @@ function initParticles() {
       this.speedY = Math.random() * 2 - 1;
       this.opacity = Math.random() * 0.5 + 0.2;
     }
-    
     update() {
       this.x += this.speedX;
       this.y += this.speedY;
-      
-      if (this.x > canvas.width || this.x < 0) {
-        this.speedX = -this.speedX;
-      }
-      if (this.y > canvas.height || this.y < 0) {
-        this.speedY = -this.speedY;
-      }
+      if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+      if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
     }
-    
     draw() {
       ctx.fillStyle = `rgba(9, 139, 255, ${this.opacity})`;
       ctx.beginPath();
@@ -126,7 +84,6 @@ function initParticles() {
       ctx.fill();
     }
   }
-  
   function createParticles() {
     particles = [];
     const particleCount = Math.min(100, window.innerWidth / 10);
@@ -134,233 +91,38 @@ function initParticles() {
       particles.push(new Particle());
     }
   }
-  
   function animateParticles() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    particles.forEach(particle => {
-      particle.update();
-      particle.draw();
-    });
-    
-    // Draw connections
-    particles.forEach((particle, i) => {
-      particles.slice(i + 1).forEach(otherParticle => {
-        const dx = particle.x - otherParticle.x;
-        const dy = particle.y - otherParticle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < 100) {
-          ctx.strokeStyle = `rgba(9, 139, 255, ${0.1 * (1 - distance / 100)})`;
+    particles.forEach(p => { p.update(); p.draw(); });
+    // Connections
+    particles.forEach((p, i) => {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = p.x - particles[j].x, dy = p.y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 100) {
+          ctx.strokeStyle = `rgba(9,139,255,${0.1 * (1 - dist / 100)})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(particle.x, particle.y);
-          ctx.lineTo(otherParticle.x, otherParticle.y);
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(particles[j].x, particles[j].y);
           ctx.stroke();
         }
-      });
+      }
     });
-    
     animationId = requestAnimationFrame(animateParticles);
   }
-  
   resizeCanvas();
   createParticles();
   animateParticles();
-  
-  window.addEventListener('resize', () => {
+  window.addEventListener('resize', throttle(() => {
     cancelAnimationFrame(animationId);
     resizeCanvas();
     createParticles();
     animateParticles();
-  });
+  }, 250));
 }
 
-initParticles();
-
-// ===== Scroll Animations =====
-function initScrollAnimations() {
-  // Back to Top Button
-  const backToTopBtn = document.getElementById('backToTop');
-  
-  window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 300) {
-      backToTopBtn?.classList.add('show');
-    } else {
-      backToTopBtn?.classList.remove('show');
-    }
-  });
-  
-  backToTopBtn?.addEventListener('click', () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  });
-  
-  // AOS-like animations
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  };
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('aos-animate');
-      }
-    });
-  }, observerOptions);
-  
-  // Observe all elements with data-aos attribute
-  document.querySelectorAll('[data-aos]').forEach(element => {
-    observer.observe(element);
-  });
-  
-}
-
-
-// ===== Project Filter =====
-function initProjectFilter() {
-  const filterButtons = document.querySelectorAll('.filter-btn');
-  const projectCards = document.querySelectorAll('.project-card');
-
-  filterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      // Aktive Button-Klasse setzen
-      filterButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-
-      const filter = button.getAttribute('data-filter');
-
-      // Karten filtern
-      projectCards.forEach(card => {
-        const category = card.getAttribute('data-category');
-        if (filter === 'all' || category === filter) {
-          showCard(card);
-        } else {
-          hideCard(card);
-        }
-      });
-    });
-  });
-
-  // Initial-Filter aktivieren
-  const activeBtn = document.querySelector('.filter-btn.active') || filterButtons[0];
-  if (activeBtn) activeBtn.click();
-
-  // Animationen für Sichtbarkeit
-  function showCard(card) {
-    card.style.display = 'block';
-    setTimeout(() => {
-      card.style.opacity = '1';
-      card.style.transform = 'scale(1)';
-    }, 10);
-  }
-
-  function hideCard(card) {
-    card.style.opacity = '0';
-    card.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-      card.style.display = 'none';
-    }, 300);
-  }
-}
-
-// ===== Smooth Scroll for Anchor Links =====
-function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      
-      if (target) {
-        const offset = 80; // Header height
-        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
-        
-        window.scrollTo({
-          top: targetPosition,
-          behavior: 'smooth'
-        });
-      }
-    });
-  });
-}
-
-// ===== Initialize Everything =====
-document.addEventListener('DOMContentLoaded', () => {
-  initScrollAnimations();
-  initProjectFilter();
-  initForms();
-  initSmoothScroll();
-  
-  // Add animation delays
-  document.querySelectorAll('[data-aos]').forEach((element, index) => {
-    if (!element.hasAttribute('data-aos-delay')) {
-      element.setAttribute('data-aos-delay', index * 50);
-    }
-  });
-});
-
-// ===== Performance Optimization =====
-// Debounce function for scroll events
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-// Throttle function for resize events
-function throttle(func, limit) {
-  let inThrottle;
-  return function() {
-    const args = arguments;
-    const context = this;
-    if (!inThrottle) {
-      func.apply(context, args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
-    }
-  };
-}
-
-// Apply optimizations
-window.addEventListener('scroll', debounce(() => {
-  // Scroll-based animations
-}, 10));
-
-window.addEventListener('resize', throttle(() => {
-  // Resize-based updates
-}, 250));
-
-// ===== Dynamisches Laden von Menü-Styles und Menü-Script =====
-function loadMenuAssets() {
-  // Menü-CSS laden
-  if (!document.querySelector('link[href="/content/webentwicklung/menu/menu.css"]')) {
-    const menuCss = document.createElement('link');
-    menuCss.rel = 'stylesheet';
-    menuCss.href = '/content/webentwicklung/menu/menu.css';
-    document.head.appendChild(menuCss);
-  }
-  // Menü-JS laden
-  if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
-    const menuScript = document.createElement('script');
-    menuScript.src = '/content/webentwicklung/menu/menu.js';
-    menuScript.defer = true;
-    document.body.appendChild(menuScript);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', loadMenuAssets);
-
-// ===== Update Input File for SCM =====
-
+// ===== Greeting Time-based =====
 const greetings = {
   morning: [
     "Guten Morgen und willkommen auf meiner Website!",
@@ -387,7 +149,6 @@ const greetings = {
     "Willkommen zu später Stunde auf meiner Website!"
   ]
 };
-
 function getGreetingSet() {
   const hour = new Date().getHours();
   if (hour >= 5 && hour < 11)  return greetings.morning;
@@ -395,9 +156,9 @@ function getGreetingSet() {
   if (hour >= 17 && hour < 22) return greetings.evening;
   return greetings.night;
 }
-
 function setRandomGreetingHTML(animated = false) {
   const el = document.getElementById('greetingText');
+  if (!el) return;
   const set = getGreetingSet();
   let random = set[Math.floor(Math.random() * set.length)];
   if (set.length > 1 && el.dataset.last === random) {
@@ -406,7 +167,6 @@ function setRandomGreetingHTML(animated = false) {
     } while (random === el.dataset.last);
   }
   el.dataset.last = random;
-
   if (animated) {
     el.classList.add('fade');
     setTimeout(() => {
@@ -418,14 +178,146 @@ function setRandomGreetingHTML(animated = false) {
   }
 }
 
-// Initial anzeigen:
-setRandomGreetingHTML();
-let scrollTimeout = null;
-window.addEventListener('scroll', () => {
-  clearTimeout(scrollTimeout);
-  scrollTimeout = setTimeout(() => setRandomGreetingHTML(true), 100);
+// ===== Project Filter =====
+function initProjectFilter() {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const projectCards = document.querySelectorAll('.project-card');
+  filterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      filterButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      const filter = button.getAttribute('data-filter');
+      projectCards.forEach(card => {
+        const category = card.getAttribute('data-category');
+        if (filter === 'all' || category === filter) showCard(card);
+        else hideCard(card);
+      });
+    });
+  });
+  const activeBtn = document.querySelector('.filter-btn.active') || filterButtons[0];
+  if (activeBtn) activeBtn.click();
+  function showCard(card) {
+    card.style.display = 'block';
+    setTimeout(() => {
+      card.style.opacity = '1';
+      card.style.transform = 'scale(1)';
+    }, 10);
+  }
+  function hideCard(card) {
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      card.style.display = 'none';
+    }, 300);
+  }
+}
+
+// ===== Smooth Scroll for Anchor Links =====
+function initSmoothScroll() {
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        const offset = 80;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+}
+
+// ===== Scroll Animations =====
+function handleScrollEvents() {
+  const backToTopBtn = document.getElementById('backToTop');
+  if (backToTopBtn) {
+    if (window.pageYOffset > 300) backToTopBtn.classList.add('show');
+    else backToTopBtn.classList.remove('show');
+  }
+}
+function initScrollAnimations() {
+  const backToTopBtn = document.getElementById('backToTop');
+  backToTopBtn?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('aos-animate');
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+}
+
+// ===== Dynamisches Laden von Menü-Styles und Menü-Script =====
+function loadMenuAssets() {
+  if (!document.getElementById('menu-container')) return;
+  if (!document.querySelector('link[href="/content/webentwicklung/menu/menu.css"]')) {
+    const menuCss = document.createElement('link');
+    menuCss.rel = 'stylesheet';
+    menuCss.href = '/content/webentwicklung/menu/menu.css';
+    document.head.appendChild(menuCss);
+  }
+  if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
+    const menuScript = document.createElement('script');
+    menuScript.src = '/content/webentwicklung/menu/menu.js';
+    menuScript.defer = true;
+    document.body.appendChild(menuScript);
+  }
+}
+
+// ===== Loading Screen =====
+function initLoadingScreen() {
+  const loadingScreen = document.getElementById('loadingScreen');
+  setTimeout(() => {
+    loadingScreen?.classList.add('hide');
+  }, 500);
+}
+
+// ===== Main Initialization =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Loading screen (muss früh raus)
+  window.addEventListener('load', initLoadingScreen);
+
+  // Typewriter
+  const typedElement = document.getElementById('typedText');
+  if (typedElement) {
+    new TypeWriter(typedElement, [
+      'Full-Stack Developer',
+      'UI/UX Designer',
+      'Fotografie-Enthusiast',
+      'Game Developer',
+      'Kreativer Denker'
+    ]);
+  }
+
+  // Greeting
+  setRandomGreetingHTML();
+
+  // Particles
+  initParticles();
+
+  // Project-Filter
+  initProjectFilter();
+
+  // Scroll / Intersection / BackToTop
+  initScrollAnimations();
+
+  // Smooth Anchor Scroll
+  initSmoothScroll();
+
+  // Add animation delays
+  document.querySelectorAll('[data-aos]').forEach((element, index) => {
+    if (!element.hasAttribute('data-aos-delay')) {
+      element.setAttribute('data-aos-delay', index * 50);
+    }
+  });
+
+  // Menü dynamisch nachladen
+  loadMenuAssets();
 });
 
-
-// ===== Update Input File for SCM =====
-
+// Performance-Optimierungen: global scroll & resize
+window.addEventListener('scroll', debounce(handleScrollEvents, 75));

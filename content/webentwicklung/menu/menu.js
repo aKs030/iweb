@@ -113,6 +113,7 @@ class MenuSystem {
     this.initScrollBehavior();
     this.initSearch();
     this.initAccessibility();
+    window.menuSystem = this; // global verfügbar für main.js
   }
 
   cacheElements() {
@@ -175,7 +176,6 @@ class MenuSystem {
     document.addEventListener('keydown', (e) => this.handleKeyboard(e));
     
     // Window Events
-    window.addEventListener('scroll', () => this.handleScroll());
     window.addEventListener('resize', () => this.handleResize());
   }
 
@@ -354,17 +354,8 @@ class MenuSystem {
 
   // ===== Scroll Functions =====
   initScrollBehavior() {
-    let ticking = false;
-    
-    this.handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          this.updateScrollState();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
+    // Die Scroll-Logik wird jetzt zentral in main.js über handleScrollEvents aufgerufen
+    this.handleScroll = null;
   }
 
   updateScrollState() {
@@ -469,8 +460,7 @@ class MenuSystem {
           }
         } else {
           if (document.activeElement === this.lastFocusableElement) {
-            e.preventDefault();
-            this.firstFocusableElement.focus();
+            // Kein weiterer Code nötig, else-Block ist jetzt korrekt
           }
         }
       }
