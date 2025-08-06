@@ -2,20 +2,9 @@
    1. Root-Variablen & Theme-Overrides
 ======================================== */
 
-/* Text-Ebene vor die Kugel setzen */
 .greeting-text-hero {
-  position: relative;
-  z-index: 2; /* höher als die Kugel */
-}
-
-/* Kugel hinter alles andere legen */
-.hero-background,
-.gradient-overlay,
-.particle-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 :root {
