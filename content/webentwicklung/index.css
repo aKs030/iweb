@@ -1,6 +1,15 @@
 /* ========================================
    1. Root-Variablen & Theme-Overrides
 ======================================== */
+.greeting-text-hero {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 3; /* vor SVG */
+  pointer-events: none;
+  text-align: center;
+}
 
 .greeting-text-hero {
   top: 50%;
