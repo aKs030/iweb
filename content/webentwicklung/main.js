@@ -28,16 +28,19 @@ class TypeWriter {
     this.isDeleting = false;
     this.type();
   }
+
   type() {
     const current = this.textIndex % this.texts.length;
     const fullTxt = this.texts[current];
-    if (this.isDeleting) {
-      this.txt = fullTxt.substring(0, this.txt.length - 1);
-    } else {
-      this.txt = fullTxt.substring(0, this.txt.length + 1);
-    }
+
+    this.txt = this.isDeleting
+      ? fullTxt.substring(0, this.txt.length - 1)
+      : fullTxt.substring(0, this.txt.length + 1);
+
     this.element.textContent = this.txt;
+
     let typeSpeed = this.isDeleting ? 50 : 100;
+
     if (!this.isDeleting && this.txt === fullTxt) {
       typeSpeed = this.wait;
       this.isDeleting = true;
@@ -46,6 +49,7 @@ class TypeWriter {
       this.textIndex++;
       typeSpeed = 500;
     }
+
     setTimeout(() => this.type(), typeSpeed);
   }
 }
@@ -282,14 +286,50 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('load', initLoadingScreen);
 
   // Typewriter
-  const typedElement = document.getElementById('typedText');
-  if (typedElement) {
-    new TypeWriter(typedElement, [
-      'Full-Stack Developer',
-      'UI/UX Designer',
-      'Fotografie-Enthusiast',
-      'Game Developer',
-      'Kreativer Denker'
+  const quotes = [
+    { author: "Rumi", text: "Stille ist nicht leer. Sie ist voller Antworten." },
+    { author: "Nietzsche", text: "Du brauchst Chaos in dir, um einen tanzenden Stern zu gebären." },
+    { author: "Konfuzius", text: "Wohin du auch gehst, geh mit deinem ganzen Herzen." },
+    { author: "Anaïs Nin", text: "Wir sehen die Dinge nicht, wie sie sind, sondern wie wir sind." },
+    { author: "Charlie Chaplin", text: "Ein Tag ohne Lächeln ist ein verlorener Tag." },
+    { author: "Saint-Exupéry", text: "Das Wesentliche ist für die Augen unsichtbar." },
+    { author: "Seneca", text: "Nicht weil es schwer ist, wagen wir es nicht..." },
+    { author: "Emerson", text: "Was in uns liegt, ist größer als alles, was vor uns liegt." }
+  ];
+
+  const authorEl = document.getElementById('quote-author');
+  const typedEl = document.getElementById('typedText');
+
+  if (!authorEl || !typedEl) return;
+
+  let currentIndex = -1;
+  let typewriter = null;
+
+  function getRandomIndexExcept(prevIndex) {
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * quotes.length);
+    } while (idx === prevIndex);
+    return idx;
+  }
+
+  function showQuote() {
+    currentIndex = getRandomIndexExcept(currentIndex);
+    const { author, text } = quotes[currentIndex];
+    authorEl.textContent = `– ${author}`;
+    if (typewriter) {
+      typedEl.textContent = '';
+      typewriter.texts = [text];
+      typewriter.textIndex = 0;
+      typewriter.txt = '';
+      typewriter.isDeleting = false;
+    } else {
+      typewriter = new TypeWriter(typedEl, [text], 3000);
+    }
+  }
+
+  showQuote(); // Erste Initialisierung
+  setInterval(showQuote, 10000); // Alle 10 Sekunden neues Zitat
     ]);
   }
 
