@@ -1,5 +1,23 @@
-
-
+@media (max-width: 768px) {
+  .hero-subtitle,
+  .typed-text {
+    display: inline-block;
+    white-space: nowrap;
+    word-break: normal;
+    overflow: hidden;
+    max-width: 90vw;
+    text-align: center;
+    margin: 0 auto;
+    font-size: 1.1rem;
+  }
+}
+.cursor {
+  display: inline-block;
+  vertical-align: bottom;
+  margin-left: 2px;
+}
+.typed-text { color: var(--text-primary); }
+.cursor { animation: blink 1s infinite; }
 
 /* ========================================
    1. Root-Variablen & Theme-Overrides
@@ -574,8 +592,7 @@ a:hover {
   margin-bottom: var(--spacing-xl);
   min-height: 2em;
 }
-.typed-text { color: var(--text-primary); }
-.cursor { animation: blink 1s infinite; }
+
 @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 .hero-cta { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
 .hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
