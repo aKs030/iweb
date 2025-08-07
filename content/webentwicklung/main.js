@@ -18,7 +18,6 @@ function throttle(func, limit) {
 }
 
 // ===== Typed Text Animation =====
-// ===== TypeWriter-Klasse (global) =====
 class TypeWriter {
   constructor(element, texts, wait = 3000) {
     this.element = element;
@@ -40,7 +39,7 @@ class TypeWriter {
 
     this.element.textContent = this.txt;
 
-    let typeSpeed = this.isDeleting ? 50 : 100;
+    let typeSpeed = this.isDeleting ? 40 : 80;
 
     if (!this.isDeleting && this.txt === fullTxt) {
       typeSpeed = this.wait;
@@ -48,12 +47,15 @@ class TypeWriter {
     } else if (this.isDeleting && this.txt === '') {
       this.isDeleting = false;
       this.textIndex++;
-      typeSpeed = 500;
+      typeSpeed = 400;
     }
 
     setTimeout(() => this.type(), typeSpeed);
   }
 }
+
+
+    
 
 
 // ===== Particles =====
@@ -295,50 +297,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // === Typewriter mit Zitaten ===
   
-  function initTypewriterQuotes() {
+  
   const quotes = [
     { author: "Rumi", text: "Stille ist nicht leer. Sie ist voller Antworten." },
     { author: "Nietzsche", text: "Du brauchst Chaos in dir, um einen tanzenden Stern zu gebären." },
+    { author: "Proust", text: "Die wahre Entdeckung besteht nicht darin, neue Landschaften zu suchen, sondern neue Augen zu haben." },
     { author: "Konfuzius", text: "Wohin du auch gehst, geh mit deinem ganzen Herzen." },
+    { author: "Seneca", text: "Nicht weil es schwer ist, wagen wir es nicht. Weil wir es nicht wagen, ist es schwer." },
     { author: "Anaïs Nin", text: "Wir sehen die Dinge nicht, wie sie sind, sondern wie wir sind." },
-    { author: "Charlie Chaplin", text: "Ein Tag ohne Lächeln ist ein verlorener Tag." },
-    { author: "Saint-Exupéry", text: "Das Wesentliche ist für die Augen unsichtbar." },
-    { author: "Seneca", text: "Nicht weil es schwer ist, wagen wir es nicht..." },
-    { author: "Emerson", text: "Was in uns liegt, ist größer als alles, was vor uns liegt." }
+    { author: "Charlie Chaplin", text: "Ein Tag ohne Lächeln ist ein verlorener Tag." }
   ];
 
   const typedEl = document.getElementById('typedText');
-  if (!typedEl) return;
+  const authorEl = document.getElementById('typedAuthor');
+  let currentIndex = 0;
+  let writerInstance = null;
 
-  let currentIndex = -1;
-  let typewriter = null;
+  function showNextQuote() {
+    const { author, text } = quotes[currentIndex];
+    authorEl.textContent = `– ${author}`;
+    if (writerInstance) writerInstance = null;
 
-  function getRandomIndexExcept(prevIndex) {
-    let idx;
-    do {
-      idx = Math.floor(Math.random() * quotes.length);
-    } while (idx === prevIndex);
-    return idx;
+    writerInstance = new TypeWriter(typedEl, [text], 3000);
+
+    currentIndex = (currentIndex + 1) % quotes.length;
   }
 
-  function showQuote() {
-    currentIndex = getRandomIndexExcept(currentIndex);
-    const quote = quotes[currentIndex].text;
-
-    if (typewriter) {
-      typedEl.textContent = '';
-      typewriter.texts = [quote];
-      typewriter.textIndex = 0;
-      typewriter.txt = '';
-      typewriter.isDeleting = false;
-    } else {
-      typewriter = new TypeWriter(typedEl, [quote], 3000);
-    }
-  }
-
-  showQuote();
-  setInterval(showQuote, 10000);
-}
+  showNextQuote();
+  setInterval(showNextQuote, 9000); // alle 9 Sekunden neues Zitat
 
   // === Weitere Initialisierungen ===
   setRandomGreetingHTML();
