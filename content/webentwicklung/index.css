@@ -1,24 +1,6 @@
-@media (max-width: 768px) {
-  .hero-subtitle,
-  .typed-text {
-    display: inline-block;
-    white-space: nowrap;
-    word-break: normal;
-    overflow: hidden;
-    max-width: 90vw;
-    text-align: center;
-    margin: 0 auto;
-    font-size: 1.1rem;
-  }
-}
 
-.typed-author {
-  display: block;
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.25rem;
-}
+
+
 /* ========================================
    1. Root-Variablen & Theme-Overrides
 ======================================== */
@@ -550,11 +532,17 @@ a:hover {
   min-height: calc(100dvh - 70px);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
   overflow: hidden;
   scroll-snap-align: start;
 }
+
+.hero.section {
+  justify-content: flex-start; /* oder center, je nach gewünschtem Effekt */
+  padding-bottom: 0;
+}
+
 .hero-background {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -590,22 +578,9 @@ a:hover {
 .cursor { animation: blink 1s infinite; }
 @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 .hero-cta { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
-.hero-visual {
-  display: flex;
-  align-items: center;  /* vertikal mittig */
-  justify-content: center; /* horizontal mittig */
-  height: 100vh; /* nimmt volle Höhe */
-  position: relative;
-}
+.hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
 
-.hero-center {
-  display: flex;
-  flex-direction: column; /* Text über Kugel */
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-.hero-image-container { position: relative; display: inline-block; }
+
 .hero-image {
   width: 100%; max-width: 500px; height: auto; display: block;
   border-radius: var(--radius-lg);
@@ -627,66 +602,94 @@ a:hover {
 .floating-icon:nth-child(4) { top: 40%; left: -40px; }
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
 
-.greeting-text-hero {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
-  pointer-events: none;
 
+.hero-image-container {
+  position: relative;
+  width: 60vw;
+  max-width: 340px;
+  aspect-ratio: 1/1;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile: Greeting als Overlay, leicht nach unten versetzt */
+@media (max-width: 768px) {
+  .hero-image-container {
+    min-height: clamp(220px, 50vh, 360px);
+  }
+
+  /* Kugel hinter dem Text */
+  .hero-image-container svg {
+    position: relative;
+    z-index: 1; /* bleibt hinter dem Text */
+    display: block;
+    margin: 0 auto;
+  }
+
+  .greeting-text-hero {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;   /* horizontal zentrieren */
+    align-items: center;       /* vertikal ausrichten */
+    transform: translateY(15%);/* leicht nach unten schieben */
+    margin: 0;
+    padding: 0 12px;
+    text-align: center;
+    z-index: 2;                /* über dem SVG */
+    pointer-events: none;
+  }
+}
+
+.spotlight-bg {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: 120%;
+  height: 60%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  background: radial-gradient(ellipse at center, #fff5 0%, #098bff22 55%, transparent 100%);
+  filter: blur(22px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.greeting-text-hero {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   font-size: clamp(2rem, 5vw, 3.2rem);
   font-weight: 700;
   line-height: 1.18;
   text-align: center;
+  margin: 38px 0 0 0;
   padding: 0 12px;
-  max-width: 98vw;
-  min-height: 2.6em;
-
   background: linear-gradient(90deg, #098bff, #00d4ff 80%);
   background-size: 200% 100%;
   background-position: 0% 50%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-
   filter: drop-shadow(0 2px 18px #00d4ffaa);
-  animation: gradientMove 5.5s linear infinite,
-             pulseGlow 2.5s ease-in-out infinite;
   transition:
     opacity 0.5s cubic-bezier(.39,.575,.56,1),
     background-position 3s linear,
     transform 0.6s cubic-bezier(.39,.575,.56,1);
-
   opacity: 1;
   will-change: opacity, filter, background-position, transform;
-
-  user-select: none;
   -webkit-user-select: none;
+  user-select: none;
   white-space: normal;
   word-break: break-word;
+  max-width: 98vw;
+  min-height: 2.6em;
+  animation: gradientMove 5.5s linear infinite, pulseGlow 2.5s ease-in-out infinite;
 }
+@keyframes gradientMove { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+@keyframes pulseGlow { 0%,100% { filter: drop-shadow(0 2px 16px #00d4ffaa); } 50% { filter: drop-shadow(0 4px 36px #00e6ffcc); } }
+.greeting-text-hero.fade { opacity: 0; transform: translateY(24px) scale(0.98); }
+.greeting-text-hero:not(.fade) { opacity: 1; transform: translateY(0) scale(1); }
 
-@keyframes gradientMove {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-
-@keyframes pulseGlow {
-  0%,100% { filter: drop-shadow(0 2px 16px #00d4ffaa); }
-  50%     { filter: drop-shadow(0 4px 36px #00e6ffcc); }
-}
-
-.greeting-text-hero.fade {
-  opacity: 0;
-  transform: translate(-50%, calc(-50% + 24px)) scale(0.98);
-}
-
-.greeting-text-hero:not(.fade) {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
 /* ========================================
    8. Back-to-Top, Loader, Misc
 ======================================== */
@@ -786,14 +789,17 @@ a:hover {
 @media (max-width: 1024px) {
   .hero-content { grid-template-columns: 1fr; text-align: center; }
   .hero-visual { order: -1; margin-bottom: var(--spacing-xl); }
-  .hero-cta { justify-content: center; }
+  .hero-cta {
+        margin-top: 3.3rem;
+    margin-bottom: 7rem; /* Optional: Button-Gruppe etwas näher an den Rest holen */
+  }
   .contact-content { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
   :root { font-size: 14px; }
   .container { padding: 0 12px; max-width: 100vw; }
   .section { justify-content: center; align-items: center; }
-  .hero { padding: 12px 0; }
+  .hero { justify-content: flex-start; padding: 12px 0; }
   .hero-content { padding: 0 8px; max-width: 100vw; }
   .projects-grid, .skills-grid, .stats-grid { grid-template-columns: 1fr; }
   .floating-icon, .hero-image-decoration { display: none; }
@@ -803,7 +809,11 @@ a:hover {
   .project-image, .project-image img { max-height: 70px; min-height: 50px; }
 }
 @media (max-width: 480px) {
-  .hero-cta { flex-direction: column; width: 100%; }
+  .hero-cta {
+        margin-top: 3.3rem;
+    margin-bottom: 7rem; /* Optional: Button-Gruppe etwas näher an den Rest holen */
+
+  } 
   .btn { width: 100%; justify-content: center; }
   .project-filter { justify-content: flex-start; overflow-x: auto; }
   .filter-btn { flex-shrink: 0; }
