@@ -294,6 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('load', initLoadingScreen);
 
   // === Typewriter mit Zitaten ===
+  
+  function initTypewriterQuotes() {
   const quotes = [
     { author: "Rumi", text: "Stille ist nicht leer. Sie ist voller Antworten." },
     { author: "Nietzsche", text: "Du brauchst Chaos in dir, um einen tanzenden Stern zu gebären." },
@@ -305,40 +307,38 @@ document.addEventListener('DOMContentLoaded', () => {
     { author: "Emerson", text: "Was in uns liegt, ist größer als alles, was vor uns liegt." }
   ];
 
-  const authorEl = document.getElementById('quote-author');
   const typedEl = document.getElementById('typedText');
+  if (!typedEl) return;
 
-  if (authorEl && typedEl) {
-    let currentIndex = -1;
-    let typewriter = null;
+  let currentIndex = -1;
+  let typewriter = null;
 
-    function getRandomIndexExcept(prevIndex) {
-      let idx;
-      do {
-        idx = Math.floor(Math.random() * quotes.length);
-      } while (idx === prevIndex);
-      return idx;
-    }
-
-    function showQuote() {
-      currentIndex = getRandomIndexExcept(currentIndex);
-      const { author, text } = quotes[currentIndex];
-      authorEl.textContent = `– ${author}`;
-
-      if (typewriter) {
-        typedEl.textContent = '';
-        typewriter.texts = [text];
-        typewriter.textIndex = 0;
-        typewriter.txt = '';
-        typewriter.isDeleting = false;
-      } else {
-        typewriter = new TypeWriter(typedEl, [text], 3000);
-      }
-    }
-
-    showQuote();
-    setInterval(showQuote, 10000);
+  function getRandomIndexExcept(prevIndex) {
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * quotes.length);
+    } while (idx === prevIndex);
+    return idx;
   }
+
+  function showQuote() {
+    currentIndex = getRandomIndexExcept(currentIndex);
+    const quote = quotes[currentIndex].text;
+
+    if (typewriter) {
+      typedEl.textContent = '';
+      typewriter.texts = [quote];
+      typewriter.textIndex = 0;
+      typewriter.txt = '';
+      typewriter.isDeleting = false;
+    } else {
+      typewriter = new TypeWriter(typedEl, [quote], 3000);
+    }
+  }
+
+  showQuote();
+  setInterval(showQuote, 10000);
+}
 
   // === Weitere Initialisierungen ===
   setRandomGreetingHTML();
