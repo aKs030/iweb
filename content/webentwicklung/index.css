@@ -1,11 +1,4 @@
 
-.quote-author {
-  display: block;
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin-bottom: 0.3rem;
-  font-style: italic;
-}
 
 /* ========================================
    1. Root-Variablen & Theme-Overrides
