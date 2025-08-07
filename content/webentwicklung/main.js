@@ -19,33 +19,49 @@ function throttle(func, limit) {
 
 // ===== Typed Text Animation =====
 class TypeWriter {
-  constructor(element, texts, wait = 3000) {
-    this.element = element;
-    this.texts = texts;
+  constructor(textElement, authorElement, quotes, wait = 3000) {
+    this.textElement = textElement;
+    this.authorElement = authorElement;
+    this.quotes = quotes;
     this.wait = parseInt(wait, 10);
-    this.textIndex = 0;
+    this.previousIndex = -1;
+    this.currentQuote = this.getRandomQuote();
     this.txt = '';
     this.isDeleting = false;
     this.type();
   }
+
+  getRandomQuote() {
+    let index;
+    do {
+      index = Math.floor(Math.random() * this.quotes.length);
+    } while (index === this.previousIndex && this.quotes.length > 1);
+    this.previousIndex = index;
+    return this.quotes[index];
+  }
+
   type() {
-    const current = this.textIndex % this.texts.length;
-    const fullTxt = this.texts[current];
-    if (this.isDeleting) {
-      this.txt = fullTxt.substring(0, this.txt.length - 1);
-    } else {
-      this.txt = fullTxt.substring(0, this.txt.length + 1);
-    }
-    this.element.textContent = this.txt;
-    let typeSpeed = this.isDeleting ? 50 : 100;
+    const fullTxt = this.currentQuote.text;
+    const author = this.currentQuote.author;
+
+    this.txt = this.isDeleting
+      ? fullTxt.substring(0, this.txt.length - 1)
+      : fullTxt.substring(0, this.txt.length + 1);
+
+    this.textElement.innerHTML = this.txt.replace(/,\s*/g, ',<br>');
+    this.authorElement.textContent = author;
+
+    let typeSpeed = this.isDeleting ? 40 : 80;
+
     if (!this.isDeleting && this.txt === fullTxt) {
       typeSpeed = this.wait;
       this.isDeleting = true;
     } else if (this.isDeleting && this.txt === '') {
       this.isDeleting = false;
-      this.textIndex++;
-      typeSpeed = 500;
+      this.currentQuote = this.getRandomQuote();
+      typeSpeed = 600;
     }
+
     setTimeout(() => this.type(), typeSpeed);
   }
 }
@@ -282,16 +298,18 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('load', initLoadingScreen);
 
   // Typewriter
-  const typedElement = document.getElementById('typedText');
-  if (typedElement) {
-    new TypeWriter(typedElement, [
-      'Full-Stack Developer',
-      'UI/UX Designer',
-      'Fotografie-Enthusiast',
-      'Game Developer',
-      'Kreativer Denker'
-    ]);
-  }
+const typedText = document.getElementById('typedText');
+const typedAuthor = document.getElementById('typedAuthor');
+
+if (typedText && typedAuthor) {
+  new TypeWriter(typedText, typedAuthor, [
+    { author: "Rumi", text: "Der Schmerz reinigt das Herz." },
+    { author: "Nietzsche", text: "Wer ein Warum zum Leben hat, erträgt fast jedes Wie." },
+    { author: "Konfuzius", text: "Der Weg ist das Ziel." },
+    { author: "Goethe", text: "Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen." },
+    { author: "aKs", text: "Das Licht ist nicht laut – es überzeugt durch Klarheit." }
+  ]);
+}
 
   // Greeting
   setRandomGreetingHTML();
