@@ -19,7 +19,7 @@ function throttle(func, limit) {
 
 // ===== Typed Text Animation =====
 class TypeWriter {
-  constructor(element, texts, wait = 3000) {
+  constructor(element, texts, wait = 2800) {
     this.element = element;
     this.texts = texts;
     this.wait = parseInt(wait, 10);
@@ -28,7 +28,6 @@ class TypeWriter {
     this.isDeleting = false;
     this.type();
   }
-
   type() {
     const current = this.textIndex % this.texts.length;
     const fullTxt = this.texts[current];
@@ -39,7 +38,7 @@ class TypeWriter {
 
     this.element.textContent = this.txt;
 
-    let typeSpeed = this.isDeleting ? 40 : 80;
+    let typeSpeed = this.isDeleting ? 44 : 80;
 
     if (!this.isDeleting && this.txt === fullTxt) {
       typeSpeed = this.wait;
@@ -53,6 +52,7 @@ class TypeWriter {
     setTimeout(() => this.type(), typeSpeed);
   }
 }
+
 
 
     
@@ -316,9 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function showNextQuote() {
     const { author, text } = quotes[currentIndex];
     authorEl.textContent = `– ${author}`;
-    if (writerInstance) writerInstance = null;
+    if (writerInstance) writerInstance = null; // für Garbage Collection
 
-    writerInstance = new TypeWriter(typedEl, [text], 3000);
+    writerInstance = new TypeWriter(typedEl, [text], 2700);
 
     currentIndex = (currentIndex + 1) % quotes.length;
   }
