@@ -18,6 +18,7 @@ function throttle(func, limit) {
 }
 
 // ===== Typed Text Animation =====
+// ===== TypeWriter-Klasse (global) =====
 class TypeWriter {
   constructor(element, texts, wait = 3000) {
     this.element = element;
@@ -53,6 +54,7 @@ class TypeWriter {
     setTimeout(() => this.type(), typeSpeed);
   }
 }
+
 
 // ===== Particles =====
 function initParticles() {
@@ -280,8 +282,13 @@ function initLoadingScreen() {
   }, 500);
 }
 
-// ===== Main Initialization =====
 
+
+
+
+
+
+  // ===== Main Init =====
 document.addEventListener('DOMContentLoaded', () => {
   // Loading screen (muss früh raus)
   window.addEventListener('load', initLoadingScreen);
