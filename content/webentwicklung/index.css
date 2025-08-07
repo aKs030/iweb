@@ -1,55 +1,5 @@
- 
 
-/* Typewriter Styling */
-.typed-author {
-  display: block;
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.18em;
-  text-align: center;
-  letter-spacing: 0.02em;
-}
 
-.typed-text {
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-primary);
-  font-size: clamp(1rem, 4vw, 1.4rem);
-  min-width: 280px;
-  max-width: 90vw;
-  vertical-align: middle;
-}
-
-.cursor {
-  display: inline-block;
-  vertical-align: bottom;
-  margin-left: 2px;
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-@media (max-width: 768px) {
-  .hero-subtitle {
-    min-height: 3.2em; /* Platz für mindestens 2 Zeilen */
-  text-align: center;
-  margin-bottom: var(--spacing-lg); 
-  }
-
-  .typed-text {
-    display: inline-block;
-  min-width: 240px;
-  white-space: nowrap;
-  text-align: center;
-  overflow: hidden;
-  }
-}
 
 /* ========================================
    1. Root-Variablen & Theme-Overrides
@@ -617,22 +567,15 @@ a:hover {
   padding: 0 16px;
   z-index: 1;
 }
-.hero-text {
-   animation: fadeInUp 1s ease-out; 
-min-height: 220px; /* oder mehr je nach Design */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
+.hero-text { animation: fadeInUp 1s ease-out; }
 .hero-subtitle {
   font-size: 1.5rem;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-xl);
   min-height: 2em;
 }
-
+.typed-text { color: var(--text-primary); }
+.cursor { animation: blink 1s infinite; }
 @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 .hero-cta { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
 .hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
@@ -867,13 +810,11 @@ min-height: 220px; /* oder mehr je nach Design */
 }
 @media (max-width: 480px) {
   .hero-cta {
+        margin-top: 3.3rem;
+    margin-bottom: 7rem; /* Optional: Button-Gruppe etwas näher an den Rest holen */
 
-
-.hero-cta .btn {
-  min-width: 160px;
-  text-align: center;
-  justify-content: center;
-}
+  } 
+  .btn { width: 100%; justify-content: center; }
   .project-filter { justify-content: flex-start; overflow-x: auto; }
   .filter-btn { flex-shrink: 0; }
   .stats-grid { grid-template-columns: 1fr; }
@@ -898,4 +839,3 @@ min-height: 220px; /* oder mehr je nach Design */
 ::-webkit-scrollbar-track { background: var(--bg-hover); }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: var(--radius-full); border: 3px solid var(--bg-hover); }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-

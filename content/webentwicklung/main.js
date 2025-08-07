@@ -26,47 +26,30 @@ class TypeWriter {
     this.textIndex = 0;
     this.txt = '';
     this.isDeleting = false;
-    this.lastUpdate = performance.now();
-    this.typingSpeed = 100;
-    requestAnimationFrame(this.type.bind(this));
+    this.type();
   }
-
-  type(timestamp) {
-    const delta = timestamp - this.lastUpdate;
-    if (delta < this.typingSpeed) {
-      requestAnimationFrame(this.type.bind(this));
-      return;
-    }
-
-    this.lastUpdate = timestamp;
+  type() {
     const current = this.textIndex % this.texts.length;
     const fullTxt = this.texts[current];
-
     if (this.isDeleting) {
       this.txt = fullTxt.substring(0, this.txt.length - 1);
-      this.typingSpeed = 40;
     } else {
       this.txt = fullTxt.substring(0, this.txt.length + 1);
-      this.typingSpeed = 90;
     }
-
-    // Nur setzen, wenn sich der Text ändert
-    if (this.element.innerText !== this.txt) {
-      this.element.innerText = this.txt;
-    }
-
+    this.element.textContent = this.txt;
+    let typeSpeed = this.isDeleting ? 50 : 100;
     if (!this.isDeleting && this.txt === fullTxt) {
-      this.typingSpeed = this.wait;
+      typeSpeed = this.wait;
       this.isDeleting = true;
     } else if (this.isDeleting && this.txt === '') {
       this.isDeleting = false;
       this.textIndex++;
-      this.typingSpeed = 500;
+      typeSpeed = 500;
     }
-
-    requestAnimationFrame(this.type.bind(this));
+    setTimeout(() => this.type(), typeSpeed);
   }
 }
+
 // ===== Particles =====
 function initParticles() {
   const canvas = document.getElementById('particleCanvas');
@@ -293,63 +276,48 @@ function initLoadingScreen() {
   }, 500);
 }
 
-
-
-
-
-
-
-  // ===== Main Init =====
+// ===== Main Initialization =====
 document.addEventListener('DOMContentLoaded', () => {
   // Loading screen (muss früh raus)
   window.addEventListener('load', initLoadingScreen);
 
-  // === Typewriter mit Zitaten ===
-  
-  
-  const quotes = [
-    { author: "Rumi", text: "Stille ist nicht leer. Sie ist voller Antworten." },
-    { author: "Nietzsche", text: "Du brauchst Chaos in dir, um einen tanzenden Stern zu gebären." },
-    { author: "Proust", text: "Die wahre Entdeckung besteht nicht darin, neue Landschaften zu suchen, sondern neue Augen zu haben." },
-    { author: "Konfuzius", text: "Wohin du auch gehst, geh mit deinem ganzen Herzen." },
-    { author: "Seneca", text: "Nicht weil es schwer ist, wagen wir es nicht. Weil wir es nicht wagen, ist es schwer." },
-    { author: "Anaïs Nin", text: "Wir sehen die Dinge nicht, wie sie sind, sondern wie wir sind." },
-    { author: "Charlie Chaplin", text: "Ein Tag ohne Lächeln ist ein verlorener Tag." }
-  ];
-
-  const typedEl = document.getElementById('typedText');
-  const authorEl = document.getElementById('typedAuthor');
-  let currentIndex = 0;
-  let writerInstance = null;
-
-  function showNextQuote() {
-    const { author, text } = quotes[currentIndex];
-    authorEl.textContent = `– ${author}`;
-    if (writerInstance) writerInstance = null; // für Garbage Collection
-
-    writerInstance = new TypeWriter(typedEl, [text], 2700);
-
-    currentIndex = (currentIndex + 1) % quotes.length;
+  // Typewriter
+  const typedElement = document.getElementById('typedText');
+  if (typedElement) {
+    new TypeWriter(typedElement, [
+      'Full-Stack Developer',
+      'UI/UX Designer',
+      'Fotografie-Enthusiast',
+      'Game Developer',
+      'Kreativer Denker'
+    ]);
   }
 
-  showNextQuote();
-  setInterval(showNextQuote, 9000); // alle 9 Sekunden neues Zitat
-
-  // === Weitere Initialisierungen ===
+  // Greeting
   setRandomGreetingHTML();
+
+  // Particles
   initParticles();
+
+  // Project-Filter
   initProjectFilter();
+
+  // Scroll / Intersection / BackToTop
   initScrollAnimations();
+
+  // Smooth Anchor Scroll
   initSmoothScroll();
 
+  // Add animation delays
   document.querySelectorAll('[data-aos]').forEach((element, index) => {
     if (!element.hasAttribute('data-aos-delay')) {
       element.setAttribute('data-aos-delay', index * 50);
     }
   });
 
+  // Menü dynamisch nachladen
   loadMenuAssets();
 });
 
-// Globale Performance-Optimierung
+// Performance-Optimierungen: global scroll & resize
 window.addEventListener('scroll', debounce(handleScrollEvents, 75));
