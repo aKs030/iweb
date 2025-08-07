@@ -1,3 +1,11 @@
+
+.typed-author {
+  display: block;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
 /* ========================================
    1. Root-Variablen & Theme-Overrides
 ======================================== */
