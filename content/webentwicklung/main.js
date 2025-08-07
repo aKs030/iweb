@@ -19,45 +19,54 @@ function throttle(func, limit) {
 
 // ===== Typed Text Animation =====
 class TypeWriter {
-  constructor(element, texts, wait = 2800) {
+  constructor(element, texts, wait = 3000) {
     this.element = element;
     this.texts = texts;
     this.wait = parseInt(wait, 10);
     this.textIndex = 0;
     this.txt = '';
     this.isDeleting = false;
-    this.type();
+    this.lastUpdate = performance.now();
+    this.typingSpeed = 100;
+    requestAnimationFrame(this.type.bind(this));
   }
-  type() {
+
+  type(timestamp) {
+    const delta = timestamp - this.lastUpdate;
+    if (delta < this.typingSpeed) {
+      requestAnimationFrame(this.type.bind(this));
+      return;
+    }
+
+    this.lastUpdate = timestamp;
     const current = this.textIndex % this.texts.length;
     const fullTxt = this.texts[current];
 
-    this.txt = this.isDeleting
-      ? fullTxt.substring(0, this.txt.length - 1)
-      : fullTxt.substring(0, this.txt.length + 1);
+    if (this.isDeleting) {
+      this.txt = fullTxt.substring(0, this.txt.length - 1);
+      this.typingSpeed = 40;
+    } else {
+      this.txt = fullTxt.substring(0, this.txt.length + 1);
+      this.typingSpeed = 90;
+    }
 
-    this.element.textContent = this.txt;
-
-    let typeSpeed = this.isDeleting ? 44 : 80;
+    // Nur setzen, wenn sich der Text ändert
+    if (this.element.innerText !== this.txt) {
+      this.element.innerText = this.txt;
+    }
 
     if (!this.isDeleting && this.txt === fullTxt) {
-      typeSpeed = this.wait;
+      this.typingSpeed = this.wait;
       this.isDeleting = true;
     } else if (this.isDeleting && this.txt === '') {
       this.isDeleting = false;
       this.textIndex++;
-      typeSpeed = 400;
+      this.typingSpeed = 500;
     }
 
-    setTimeout(() => this.type(), typeSpeed);
+    requestAnimationFrame(this.type.bind(this));
   }
 }
-
-
-
-    
-
-
 // ===== Particles =====
 function initParticles() {
   const canvas = document.getElementById('particleCanvas');
