@@ -16,6 +16,7 @@
   text-overflow: ellipsis;
   color: var(--text-primary);
   font-size: clamp(1rem, 4vw, 1.4rem);
+  min-width: 280px;
   max-width: 90vw;
   vertical-align: middle;
 }
@@ -34,7 +35,9 @@
 
 @media (max-width: 768px) {
   .hero-subtitle {
-    text-align: center;
+    min-height: 3.2em; /* Platz für mindestens 2 Zeilen */
+  text-align: center;
+  margin-bottom: var(--spacing-lg); 
   }
 
   .typed-text {
@@ -609,7 +612,15 @@ a:hover {
   padding: 0 16px;
   z-index: 1;
 }
-.hero-text { animation: fadeInUp 1s ease-out; }
+.hero-text {
+   animation: fadeInUp 1s ease-out; 
+min-height: 220px; /* oder mehr je nach Design */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .hero-subtitle {
   font-size: 1.5rem;
   color: var(--text-secondary);
@@ -851,11 +862,13 @@ a:hover {
 }
 @media (max-width: 480px) {
   .hero-cta {
-        margin-top: 3.3rem;
-    margin-bottom: 7rem; /* Optional: Button-Gruppe etwas näher an den Rest holen */
 
-  } 
-  .btn { width: 100%; justify-content: center; }
+
+.hero-cta .btn {
+  min-width: 160px;
+  text-align: center;
+  justify-content: center;
+}
   .project-filter { justify-content: flex-start; overflow-x: auto; }
   .filter-btn { flex-shrink: 0; }
   .stats-grid { grid-template-columns: 1fr; }
