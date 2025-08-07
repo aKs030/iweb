@@ -281,11 +281,12 @@ function initLoadingScreen() {
 }
 
 // ===== Main Initialization =====
+
 document.addEventListener('DOMContentLoaded', () => {
   // Loading screen (muss früh raus)
   window.addEventListener('load', initLoadingScreen);
 
-  // Typewriter
+  // === Typewriter mit Zitaten ===
   const quotes = [
     { author: "Rumi", text: "Stille ist nicht leer. Sie ist voller Antworten." },
     { author: "Nietzsche", text: "Du brauchst Chaos in dir, um einen tanzenden Stern zu gebären." },
@@ -300,64 +301,53 @@ document.addEventListener('DOMContentLoaded', () => {
   const authorEl = document.getElementById('quote-author');
   const typedEl = document.getElementById('typedText');
 
-  if (!authorEl || !typedEl) return;
+  if (authorEl && typedEl) {
+    let currentIndex = -1;
+    let typewriter = null;
 
-  let currentIndex = -1;
-  let typewriter = null;
-
-  function getRandomIndexExcept(prevIndex) {
-    let idx;
-    do {
-      idx = Math.floor(Math.random() * quotes.length);
-    } while (idx === prevIndex);
-    return idx;
-  }
-
-  function showQuote() {
-    currentIndex = getRandomIndexExcept(currentIndex);
-    const { author, text } = quotes[currentIndex];
-    authorEl.textContent = `– ${author}`;
-    if (typewriter) {
-      typedEl.textContent = '';
-      typewriter.texts = [text];
-      typewriter.textIndex = 0;
-      typewriter.txt = '';
-      typewriter.isDeleting = false;
-    } else {
-      typewriter = new TypeWriter(typedEl, [text], 3000);
+    function getRandomIndexExcept(prevIndex) {
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * quotes.length);
+      } while (idx === prevIndex);
+      return idx;
     }
+
+    function showQuote() {
+      currentIndex = getRandomIndexExcept(currentIndex);
+      const { author, text } = quotes[currentIndex];
+      authorEl.textContent = `– ${author}`;
+
+      if (typewriter) {
+        typedEl.textContent = '';
+        typewriter.texts = [text];
+        typewriter.textIndex = 0;
+        typewriter.txt = '';
+        typewriter.isDeleting = false;
+      } else {
+        typewriter = new TypeWriter(typedEl, [text], 3000);
+      }
+    }
+
+    showQuote();
+    setInterval(showQuote, 10000);
   }
 
-  showQuote(); // Erste Initialisierung
-  setInterval(showQuote, 10000); // Alle 10 Sekunden neues Zitat
-    ]);
-  }
-
-  // Greeting
+  // === Weitere Initialisierungen ===
   setRandomGreetingHTML();
-
-  // Particles
   initParticles();
-
-  // Project-Filter
   initProjectFilter();
-
-  // Scroll / Intersection / BackToTop
   initScrollAnimations();
-
-  // Smooth Anchor Scroll
   initSmoothScroll();
 
-  // Add animation delays
   document.querySelectorAll('[data-aos]').forEach((element, index) => {
     if (!element.hasAttribute('data-aos-delay')) {
       element.setAttribute('data-aos-delay', index * 50);
     }
   });
 
-  // Menü dynamisch nachladen
   loadMenuAssets();
 });
 
-// Performance-Optimierungen: global scroll & resize
+// Globale Performance-Optimierung
 window.addEventListener('scroll', debounce(handleScrollEvents, 75));
