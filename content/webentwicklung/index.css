@@ -8,13 +8,20 @@
     max-width: 90vw;
     text-align: center;
     margin: 0 auto;
-    font-size: 1.1rem;
+font-size: clamp(1rem, 4vw, 1.4rem);
   }
 }
 .cursor {
   display: inline-block;
   vertical-align: bottom;
   margin-left: 2px;
+}
+.typed-text {
+  display: inline-block;
+  max-width: 90vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .typed-text { color: var(--text-primary); }
 .cursor { animation: blink 1s infinite; }
