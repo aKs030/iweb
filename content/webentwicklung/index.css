@@ -74,13 +74,7 @@
 }
 
 
-.section,
-.projects,
-.skills,
-.about,
-.contact {
-  min-height: 100vh;
-}
+
 /* ========================================
    2. Reset, Global & Body
 ======================================== */
@@ -91,7 +85,7 @@
 }
 
 html, body {
-  height: auto;
+  min-height: 100%
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
@@ -101,6 +95,14 @@ body {
   font-family: var(--font-primary);
   background: var(--bg-dark);
   color: var(--text-primary);
+}
+
+.section,
+.projects,
+.skills,
+.about,
+.contact {
+  min-height: 100vh;
 }
 
 /* ========================================
@@ -114,7 +116,6 @@ body {
 }
 
 .section {
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
