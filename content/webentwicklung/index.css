@@ -540,7 +540,7 @@ a:hover {
 min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   padding: 12px 0;
   position: relative;
   overflow: hidden;
@@ -548,7 +548,7 @@ min-height: 100vh;
 }
 
 .hero.section {
-  justify-content: flex-start; /* oder center, je nach gewünschtem Effekt */
+  justify-content: center; /* Inhalte vertikal zentrieren */
   padding-bottom: 0;
 }
 
