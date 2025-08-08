@@ -17,6 +17,11 @@ function throttle(func, limit) {
   };
 }
 
+// Export for testing
+if (typeof module !== 'undefined') {
+  module.exports = { debounce };
+}
+
 // ===== Typed Text Animation =====
 class TypeWriter {
   constructor(textElement, authorElement, quotes, wait = 3000) {
