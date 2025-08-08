@@ -2,6 +2,9 @@
    1. Root-Variablen & Theme-Overrides
 ======================================== */
 :root {
+
+    --header-height: 72px; /* oder dein tatsächlicher Header */
+
   /* Farbpalette */
   --primary-color: #098bff;
   --primary-dark: #0066cc;
@@ -81,10 +84,8 @@
   padding: 0;
 }
 
-html, body {
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-}
+html{ scroll-snap-type:y mandatory; scroll-behavior:smooth; }
+
 
 body {
   font-family: var(--font-primary);
@@ -115,7 +116,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding-block: clamp(1rem, 3vw, 2rem);
+
   scroll-snap-align: center;
   box-sizing: border-box;
   padding-top: 90px;
@@ -441,6 +442,11 @@ a:hover {
   padding: clamp(1.25rem, 3vw, 2rem);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+
+  
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 .skill-category-title {
   font-size: clamp(1.25rem, 3vw, 2rem);
@@ -473,11 +479,6 @@ a:hover {
   flex-shrink: 0;
 }
 
-.contact-item {
-  display: flex;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
 .contact-icon {
   width: 48px;
   height: 48px;
@@ -541,7 +542,6 @@ a:hover {
   justify-content: flex-start;
   padding: 12px 0;
   position: relative;
-  overflow: hidden;
   scroll-snap-align: start;
 }
 
@@ -573,7 +573,9 @@ a:hover {
   margin: 0 auto;
   padding: 0 16px;
   z-index: 1;
+  position: relative;
 }
+
 .hero-text { animation: fadeInUp 1s ease-out; }
 .hero-subtitle {
   font-size: 1.5rem;
@@ -589,14 +591,17 @@ a:hover {
   font-size: clamp(1rem, 2.5vw, 1.2rem);
   margin-bottom: -1.3rem;
 }
-.typed-text { color: var(--text-primary); }
+.typed-text { color: var(--text-primary); 
+  font-weight: 700;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  margin-bottom: 3.3rem;
+  animation: typing 3s steps(30) forwards, blink-caret 0.75s step-end infinite;
+}
 .cursor { animation: blink 1s infinite; }
 @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 
-.hero-cta { 
-  gap: var(--spacing-md); 
-  flex-wrap: wrap; 
-}
+.hero-cta{ display:flex; gap:var(--spacing-md); flex-wrap:wrap; }
+
 
 .hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
 
@@ -634,10 +639,6 @@ a:hover {
   justify-content: center;
 }
 
-@media (max-width: 768px) {
-  .hero-image-container {
-    min-height: clamp(220px, 50vh, 360px);
-  }
 
   /* Kugel hinter dem Text */
   .hero-image-container svg {
@@ -647,20 +648,7 @@ a:hover {
     margin: 0 auto;
   }
 
-  .greeting-text-hero {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: center;   /* horizontal zentrieren */
-    align-items: center;       /* vertikal ausrichten */
-    transform: translateY(15%);/* leicht nach unten schieben */
-    margin: 0;
-    padding: 0 12px;
-    text-align: center;
-    z-index: 2;                /* über dem SVG */
-    pointer-events: none;
-  }
-}
+
 
 .spotlight-bg {
   position: absolute;
@@ -673,6 +661,7 @@ a:hover {
   filter: blur(22px);
   z-index: 1;
   pointer-events: none;
+  
 }
 
 .greeting-text-hero {
@@ -685,18 +674,10 @@ a:hover {
   margin: 38px 0 0 0;
   padding: 0 12px;
   background: linear-gradient(90deg, #098bff, #00d4ff 80%);
-  background-size: 200% 100%;
-  background-position: 0% 50%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 2px 18px #00d4ffaa);
-  transition:
-    opacity 0.5s cubic-bezier(.39,.575,.56,1),
-    background-position 3s linear,
-    transform 0.6s cubic-bezier(.39,.575,.56,1);
   opacity: 1;
-  will-change: opacity, filter, background-position, transform;
   -webkit-user-select: none;
   user-select: none;
   white-space: normal;
@@ -812,8 +793,11 @@ a:hover {
   .contact-content { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
-  :root { font-size: 14px; }
-
+  :root { font-size: 14px; 
+     --header-height: 64px; }
+  .hero-image-container {
+    min-height: clamp(220px, 50vh, 360px);
+  }
   .btn {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
@@ -867,13 +851,10 @@ a:hover {
   .project-image, .project-image img { max-height: 70px; min-height: 50px; }
 }
 @media (max-width: 480px) {
-.hero-subtitle {
-  min-height: 4.5rem; /* sorgt für stabilen Abstand, auch bei 2 Zeilen */
-}
 
-  .btn { 
-    padding: 0.6rem 1.2rem; 
-    font-size: 0.9rem; 
+  .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
   }
   .project-filter { justify-content: flex-start; overflow-x: auto; }
   .filter-btn { flex-shrink: 0; }
