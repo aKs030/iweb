@@ -574,18 +574,11 @@ a:hover {
   padding: 0 16px;
   z-index: 1;
 }
-.hero-text {
-  animation: fadeInUp 1s ease-out;
-  position: relative;
-}
+.hero-text { animation: fadeInUp 1s ease-out; }
 .hero-subtitle {
-  position: absolute;
-  bottom: var(--spacing-xl);
-  right: var(--spacing-xl);
-  text-align: right;
   font-size: 1.5rem;
   color: var(--text-secondary);
-  margin-bottom: 0;
+  margin-bottom: var(--spacing-xl);
   min-height: clamp(3.2rem, 10vw, 5rem);
 }
 
