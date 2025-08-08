@@ -73,6 +73,14 @@
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
 }
 
+
+.section,
+.projects,
+.skills,
+.about,
+.contact {
+  min-height: 100vh;
+}
 /* ========================================
    2. Reset, Global & Body
 ======================================== */
@@ -83,7 +91,7 @@
 }
 
 html, body {
-  height: 100dvh;
+  height: auto;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
@@ -529,7 +537,7 @@ a:hover {
    7. Hero-Bereich & Animations
 ======================================== */
 .hero {
-min-height: 100dvh
+min-height: 100vh
   display: flex;
   align-items: center;
   justify-content: flex-start;
