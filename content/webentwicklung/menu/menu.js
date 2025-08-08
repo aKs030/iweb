@@ -75,7 +75,7 @@ class MenuSystem {
       
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = '/css/menu.css';
+      link.href = '/content/webentwicklung/menu/menu.css';
       link.onload = resolve;
       document.head.appendChild(link);
     });
