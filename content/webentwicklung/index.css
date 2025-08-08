@@ -92,7 +92,7 @@ body {
   color: var(--text-primary);
 }
 
-.hero-content,
+
 .section,
 .projects,
 .skills,
@@ -666,9 +666,9 @@ a:hover {
   position: absolute;
   top: 55%;
   left: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
   width: 120%;
   height: 60%;
-  transform: translate(-50%, -50%) rotate(-8deg);
   background: radial-gradient(ellipse at center, #fff5 0%, #098bff22 55%, transparent 100%);
   filter: blur(22px);
   z-index: 1;
@@ -676,6 +676,7 @@ a:hover {
 }
 
 .greeting-text-hero {
+  position: absolute;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   font-size: clamp(2rem, 5vw, 3.2rem);
   font-weight: 700;
