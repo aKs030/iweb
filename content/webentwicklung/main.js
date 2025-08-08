@@ -337,5 +337,5 @@ if (typedText && typedAuthor) {
   loadMenuAssets();
 });
 
-// Performance-Optimierungen: global scroll & resize
+// Performance-Optimierungen: global scroll
 window.addEventListener('scroll', debounce(handleScrollEvents, 75));
