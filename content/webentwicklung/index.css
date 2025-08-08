@@ -86,6 +86,10 @@
 
 html{ scroll-snap-type:y mandatory; scroll-behavior:smooth; }
 
+html, body {
+  height: 100%;
+  min-height: 100vh;
+}
 
 body {
   font-family: var(--font-primary);
