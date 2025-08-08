@@ -86,24 +86,12 @@
 
 html{ scroll-snap-type:y mandatory; scroll-behavior:smooth; }
 
-html, body {
-  height: 100%;
-  min-height: 100vh;
-}
+
 
 body {
   font-family: var(--font-primary);
   background: var(--bg-dark);
   color: var(--text-primary);
-}
-
-
-.section,
-.projects,
-.skills,
-.about,
-.contact {
-  min-height: 100vh;
 }
 
 /* ========================================
@@ -117,16 +105,19 @@ body {
 }
 
 .section {
+  min-height: 100vh;
+  height: 100vh;
+  scroll-snap-align: start;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-
-  scroll-snap-align: center;
-  box-sizing: border-box;
+}
+.section-inner {
+  width: 100%;
   padding-top: 90px;
   padding-bottom: 40px;
+  flex: 1 0 auto;
 }
-
 .section-header,
 .section-cta {
   text-align: center;
@@ -410,7 +401,6 @@ a:hover {
 ======================================== */
 
 .about {
-
   display: flex;
   flex-direction: column;
   scroll-snap-align: center;
@@ -424,7 +414,6 @@ a:hover {
    5. Lass uns zusammenarbeiten
 ======================================== */
 .contact {
-
   display: flex;
   flex-direction: column;
   scroll-snap-align: center;
@@ -796,35 +785,24 @@ a:hover {
   .hero-visual { order: -1; margin-bottom: var(--spacing-xl); }
   .contact-content { grid-template-columns: 1fr; }
 }
-@media (max-width: 768px) {
-  :root { font-size: 14px; 
-     --header-height: 64px; }
-  .hero-image-container {
-    min-height: clamp(220px, 50vh, 360px);
-  }
-  .btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
+@media (max-width: 768px){
+  :root{
+    font-size: 14px;
+    --header-height: 64px;
   }
 
-  .container {
-    padding: 0 12px;
-    max-width: 100vw;
-  }
+  .section{ height: 100svh; min-height: unset; }
+  .section .container{ padding-top: 64px; padding-bottom: 28px; }
 
-  .section {
+  .hero{
+    height: 100svh;
+    min-height: unset;
+    margin-top: 0;
     justify-content: center;
-    align-items: center;
-  }
-
-  .hero {
-    justify-content: center; /* vorher: flex-start */
-    min-height: calc(100vh - var(--header-height));
-    margin-top: var(--header-height);
     padding: 12px 0;
   }
 
-  .hero-content {
+  .hero-content{
     grid-template-columns: 1fr;
     padding: 0 8px;
     max-width: 100vw;
@@ -832,40 +810,15 @@ a:hover {
     place-items: center;
   }
 
-  .hero-subtitle {
-    min-height: 4.5rem;
-    word-break: break-word;
-  }
+  .hero-subtitle{ min-height: 4.5rem; word-break: break-word; }
 
-  .hero-cta {
-    margin-top: 1rem;
-  }
+  .btn{ padding: .6rem 1.2rem; font-size: .9rem; }
 
-  .projects-grid, .skills-grid, .stats-grid {
-    grid-template-columns: 1fr;
-  }
+  .projects-grid, .skills-grid, .stats-grid{ grid-template-columns: 1fr; }
 
-  .floating-icon,
-  .hero-image-decoration {
-    display: none;
-  }
+  .floating-icon, .hero-image-decoration{ display: none; }
 }
-@media (max-width: 600px) {
-  .project-card { max-width: 98vw; }
-  .project-image, .project-image img { max-height: 70px; min-height: 50px; }
-}
-@media (max-width: 480px) {
 
-  .btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
-  }
-  .project-filter { justify-content: flex-start; overflow-x: auto; }
-  .filter-btn { flex-shrink: 0; }
-  .stats-grid { grid-template-columns: 1fr; }
-  .newsletter-form { flex-direction: column; }
-  .newsletter-form input, .newsletter-form button { width: 100%; }
-}
 @media print {
   .loading-screen, .main-header, .hero-background, .project-filter, .back-to-top { display: none !important; }
   body { color: black; background: white; font-size: 12pt; }
