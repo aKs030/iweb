@@ -92,7 +92,7 @@ body {
   color: var(--text-primary);
 }
 
-.hero,
+.hero-content,
 .section,
 .projects,
 .skills,
@@ -579,7 +579,7 @@ a:hover {
   font-size: 1.5rem;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-xl);
-  min-height: clamp(3.2rem, 10vw, 5rem);
+  min-height: clamp(7.2rem, 10vw, 17rem);
 }
 
 .typed-author {
