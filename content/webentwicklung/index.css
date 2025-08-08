@@ -537,7 +537,8 @@ a:hover {
    7. Hero-Bereich & Animations
 ======================================== */
 .hero {
-min-height: 100vh;
+  min-height: calc(100vh - var(--header-height));
+  margin-top: var(--header-height);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -832,6 +833,8 @@ min-height: 100vh;
 
   .hero {
     justify-content: center; /* vorher: flex-start */
+    min-height: calc(100vh - var(--header-height));
+    margin-top: var(--header-height);
     padding: 12px 0;
   }
 
