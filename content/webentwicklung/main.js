@@ -1,11 +1,14 @@
 // ===== Debounce & Throttle =====
 function debounce(func, wait) {
   let timeout;
-  return function executedFunction(...args) {
+  function debounced(...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), wait);
-  };
+  }
+  debounced.cancel = () => clearTimeout(timeout);
+  return debounced;
 }
+
 function throttle(func, limit) {
   let inThrottle;
   return function () {
@@ -19,7 +22,7 @@ function throttle(func, limit) {
 
 // Export for testing
 if (typeof module !== 'undefined') {
-  module.exports = { debounce };
+  module.exports = { debounce, throttle };
 }
 
 // ===== Typed Text Animation =====
