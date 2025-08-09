@@ -495,9 +495,6 @@ a:hover { color: var(--primary-light); }
   gap: var(--gap-px);
 }
 
-
-.hero-subtitle[data-lines="1"]{ gap: 0; }
-
 /* Autor */
 .hero-subtitle .typed-author{
   color: var(--text-secondary,#b0b0b0);
@@ -513,7 +510,8 @@ a:hover { color: var(--primary-light); }
   text-shadow: 0 2px 8px rgba(0,0,0,.35);
   white-space: normal; /* <br> vom JS erlaubt */
   overflow-wrap: anywhere;
-word-break: normal;
+  word-break: normal;
+  hyphens: auto;
 }
 @supports (text-wrap: balance) {
   .hero-subtitle .typed-text { text-wrap: balance; }
