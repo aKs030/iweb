@@ -89,6 +89,7 @@ body {
   background: var(--bg-dark);
   color: var(--text-primary);
   margin: 0;
+  overflow-x: hidden; /* disable horizontal scrolling on mobile */
 }
 
 
