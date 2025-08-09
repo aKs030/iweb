@@ -82,7 +82,13 @@
 ======================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-body { font-family: var(--font-primary); background: var(--bg-dark); color: var(--text-primary); }
+
+/* Safe-area padding for devices with a notch; does not shift fixed subtitle */
+body { 
+  padding-bottom: constant(safe-area-inset-bottom); /* legacy iOS */
+  padding-bottom: env(safe-area-inset-bottom);      /* modern */
+  font-family: var(--font-primary); background: var(--bg-dark); color: var(--text-primary);
+}
 
 
 /* ========================================
@@ -422,12 +428,13 @@ a:hover { color: var(--primary-light); }
    Hero-Bereich Zentrierung
 ======================= */
 .hero {
+  position: relative;        /* NEU: global, nicht nur @media */
   display: flex;
   align-items: center;       /* Vertikal mittig */
   justify-content: center;   /* Horizontal mittig */
   text-align: center;
   min-height: 100vh;         /* Ganzer Bildschirm */
-  padding: 0 var(--spacing-md);
+  padding: 0 var(--spacing-sm);
 }
 
 .hero-content {
@@ -461,46 +468,88 @@ a:hover { color: var(--primary-light); }
 }
 .particle-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.5; }
 
+/* === Hero-Subtitle: fixed bottom-left + static lift by line count === */
+.hero-subtitle{
+  position: absolute;        /* statt fixed */
+  left: clamp(12px, 2vw, 20px);
+  bottom: clamp(12px, 2vw, 20px);
+  z-index: 10;
+  margin: 0;
+
+  display: flex;               /* wichtig: flex aktivieren */
+  flex-direction: column;
+
+  align-items: flex-start;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  line-height: 1.25;
+  pointer-events: none;          /* blockiert keine Klicks dahinter */
 
 
-.hero-text { animation: fadeInUp 1s ease-out; }
-.hero-subtitle {
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-xl);
-  min-height: clamp(7.2rem, 10vw, 17rem);
-            text-align: left;
-
+  max-width: min(92vw, 820px);
+  height: var(--box-h);
+  gap: var(--gap-px);
 }
 
-.typed-author {
-  display: block;
-  color: var(--text-secondary);
-  font-size: clamp(1rem, 2.5vw, 1.2rem);
-      text-shadow: 0 2px 4px rgba(242, 0, 0, 0.4);
 
-}
-.typed-text {
-  
-  color: var(--text-primary);
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  margin-bottom: 1.3rem;
-  animation: typing 3s steps(30) forwards, blink-caret 0.75s step-end infinite;
-}
-.cursor { animation: blink 1s infinite; }
-@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+.hero-subtitle[data-lines="1"]{ gap: 0; }
 
-  .hero-cta {
-    position: absolute;
-    left: 50%;
-    margin-top: 60%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: var(--spacing-md);
-    pointer-events: auto; /* Buttons bleiben klickbar */
+/* Autor */
+.hero-subtitle .typed-author{
+  color: var(--text-secondary,#b0b0b0);
+  font-weight: 500;
+  font-size: clamp(1rem,2.5vw,1.2rem);
+  text-shadow: 0 2px 6px rgba(0,0,0,.35);
+}
+
+/* Quote + Cursor */
+.hero-subtitle .typed-text{
+  display: inline;
+  color: var(--text-primary,#fff);
+  text-shadow: 0 2px 8px rgba(0,0,0,.35);
+  white-space: normal; /* <br> vom JS erlaubt */
+}
+
+/* Caret über Pseudo-Element – sitzt exakt am Textende */
+.hero-subtitle .typed-text::after{
+  content: '';
+  display: inline-block;
+  width: 0;                  /* nur die Linie */
+  height: 1em;               /* volle Zeilenhöhe */
+  margin-left: 0.1ch;
+  border-left: 2px solid var(--text-primary,#fff);
+  animation: caret-blink 1s steps(1,end) infinite;
+  vertical-align: -0.1em;    /* optischer Ausgleich */
+}
+
+/* alte Cursor-Span ausblenden, falls im Markup vorhanden */
+.hero-subtitle .cursor{ display: none !important; }
+@keyframes caret-blink{50%{opacity:0}}
+
+@media (max-width: 768px){
+  .hero-subtitle{
+    left: clamp(10px, 4vw, 16px);
+    font-size: clamp(1.05rem, 4vw, 1.35rem);
   }
+}
 
-
-
+/* Fallback nur ohne JS (wenn .has-typingjs NICHT gesetzt ist) */
+body:not(.has-typingjs) .hero-subtitle .cursor{ display: none; }
+body:not(.has-typingjs) .hero-subtitle .typed-text{
+  display:inline-block;
+  white-space:nowrap;
+  overflow:hidden;
+  border-right:2px solid var(--text-primary,#fff);
+  width:0;
+  --typing-target:28ch;
+  --typing-steps:28;
+  animation: typing 3s steps(var(--typing-steps)) forwards,
+             blink-caret .75s step-end infinite;
+}
+@keyframes typing { to { width: var(--typing-target); } }
+@keyframes blink-caret { 50% { border-right-color: transparent; } }
 .hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
 .hero-image { width: 100%; max-width: 500px; height: auto; display: block; border-radius: var(--radius-lg); }
 .hero-image-decoration {
@@ -672,33 +721,7 @@ a:hover { color: var(--primary-light); }
     align-self: center;
   }
 
-  /* Text‑Ebene überlagert das Visual, fängt aber keine Klicks ab */
-  .hero-text {
-    grid-row: 1;
-    grid-column: 1;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-              text-align: right;
 
-    
-  }
-
-  /* Untertitel unten rechts */
-  .hero-subtitle {
-  position: fixed;
-  bottom: var(--spacing-xxs);
-  right: var(--spacing-md);
-  margin: 0;
-  z-index: 10;
-  background: none;
-  max-width: 400px;
-  pointer-events: auto;
-  width: 400px;             /* feste Breite */
-}
 
   /* Buttons unten mittig */
   .hero-buttons {
@@ -748,14 +771,7 @@ a:hover { color: var(--primary-light); }
   .projects-grid, .skills-grid, .stats-grid { grid-template-columns: 1fr; }
   .floating-icon, .hero-image-decoration { display: none; }
 
-  .typed-author { font-size: 0.95rem; }
-  .typed-text {
-    font-size: 1.05rem;      /* kleiner */
-    line-height: 1.3;        /* dichter */
-    white-space: normal;     /* Zeilenumbruch zulassen */
-    word-break: break-word;  /* lange Wörter umbrechen */
-    overflow: hidden;        /* Überlauf verhindern */
-  }
+
 }
 
 
