@@ -26,6 +26,7 @@
   --border-color: #2a2a2a;
 
   /* Spacing */
+  --spacing-xxs: 0.1rem;
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
@@ -417,16 +418,40 @@ a:hover { color: var(--primary-light); }
 .social-links a:hover { background: var(--primary-color); color: white; transform: translateY(-3px); }
 
 /* -- Hero & Deko -- */
+/* =======================
+   Hero-Bereich Zentrierung
+======================= */
 .hero {
-  min-height: calc(100vh - var(--header-height));
-  margin-top: var(--header-height);
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 12px 0;
-  position: relative;
-  scroll-snap-align: start;
+  align-items: center;       /* Vertikal mittig */
+  justify-content: center;   /* Horizontal mittig */
+  text-align: center;
+  min-height: 100vh;         /* Ganzer Bildschirm */
+  padding: 0 var(--spacing-md);
 }
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;                /* Abstand zwischen Text und Buttons */
+  max-width: 800px;
+  width: 100%;
+}
+
+/* Buttons sauber nebeneinander */
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;            /* Bei schmalem Screen umbrechen */
+  gap: 1rem;
+  justify-content: center;
+}
+
+.hero-buttons .btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
 .hero.section { justify-content: center; padding-bottom: 0; }
 
 .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
@@ -436,40 +461,30 @@ a:hover { color: var(--primary-light); }
 }
 .particle-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.5; }
 
-.hero-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-2xl);
-  align-items: center;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 16px;
-  z-index: 1;
-  position: relative;
-}
+
 
 .hero-text { animation: fadeInUp 1s ease-out; }
 .hero-subtitle {
-  font-size: 1.5rem;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-xl);
   min-height: clamp(7.2rem, 10vw, 17rem);
-  text-align: left;
+            text-align: left;
+
 }
 
 .typed-author {
   display: block;
   color: var(--text-secondary);
   font-size: clamp(1rem, 2.5vw, 1.2rem);
-  margin-bottom: -1.3rem;
-  text-align: left;
+      text-shadow: 0 2px 4px rgba(242, 0, 0, 0.4);
+
 }
 .typed-text {
+  
   color: var(--text-primary);
   font-size: clamp(1.2rem, 3vw, 1.5rem);
-  margin-bottom: 3.3rem;
+  margin-bottom: 1.3rem;
   animation: typing 3s steps(30) forwards, blink-caret 0.75s step-end infinite;
-  text-align: left;
 }
 .cursor { animation: blink 1s infinite; }
 @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
@@ -477,13 +492,16 @@ a:hover { color: var(--primary-light); }
   .hero-cta {
     position: absolute;
     left: 50%;
+    margin-top: 60%;
     transform: translateX(-50%);
     display: flex;
     gap: var(--spacing-md);
     pointer-events: auto; /* Buttons bleiben klickbar */
   }
-.hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
 
+
+
+.hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
 .hero-image { width: 100%; max-width: 500px; height: auto; display: block; border-radius: var(--radius-lg); }
 .hero-image-decoration {
   position: absolute; top: -20px; right: -20px; width: 100%; height: 100%;
@@ -664,22 +682,34 @@ a:hover { color: var(--primary-light); }
     width: 100%;
     height: 100%;
     pointer-events: none;
+              text-align: right;
+
+    
   }
 
   /* Untertitel unten rechts */
   .hero-subtitle {
-    position: absolute;
-    bottom: var(--spacing-lg);
-    right: var(--spacing-lg);
-    text-align: right;
-    margin-bottom: 0;
-    pointer-events: auto; /* damit Text selektierbar bleibt */
+    position: fixed; /* statt absolute → hängt jetzt am Viewport */
+    bottom: var(--spacing-xxs); /* kleiner Abstand vom Rand */
+    right: var(--spacing-md);
+    margin: 0;
+    z-index: 10; /* sicher über Visuals */
+    background: none; /* kein Block dahinter */
+                text-align: right;
+    max-width: 400px; /* damit es nicht zu breit wird */
+    pointer-events: auto; /* selektierbar */
+    
   }
 
   /* Buttons unten mittig */
-  .hero-cta {
+  .hero-buttons {
+    position: absolute;
+    left: 50%;
     margin-top: 60%;
     transform: translateX(-50%);
+    display: flex;
+    gap: var(--spacing-md);
+    pointer-events: auto; /* Buttons bleiben klickbar */
   }
 }
 
