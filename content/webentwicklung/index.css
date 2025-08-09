@@ -689,17 +689,16 @@ a:hover { color: var(--primary-light); }
 
   /* Untertitel unten rechts */
   .hero-subtitle {
-    position: fixed; /* statt absolute → hängt jetzt am Viewport */
-    bottom: var(--spacing-xxs); /* kleiner Abstand vom Rand */
-    right: var(--spacing-md);
-    margin: 0;
-    z-index: 10; /* sicher über Visuals */
-    background: none; /* kein Block dahinter */
-                text-align: right;
-    max-width: 400px; /* damit es nicht zu breit wird */
-    pointer-events: auto; /* selektierbar */
-    
-  }
+  position: fixed;
+  bottom: var(--spacing-xxs);
+  right: var(--spacing-md);
+  margin: 0;
+  z-index: 10;
+  background: none;
+  max-width: 400px;
+  pointer-events: auto;
+  width: 400px;             /* feste Breite */
+}
 
   /* Buttons unten mittig */
   .hero-buttons {
