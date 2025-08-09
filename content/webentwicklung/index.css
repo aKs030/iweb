@@ -81,13 +81,14 @@
    2) Reset & Global
 ======================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; }
 
 /* Safe-area padding for devices with a notch; does not shift fixed subtitle */
-body { 
-  padding-bottom: constant(safe-area-inset-bottom); /* legacy iOS */
-  padding-bottom: env(safe-area-inset-bottom);      /* modern */
-  font-family: var(--font-primary); background: var(--bg-dark); color: var(--text-primary);
+body {
+  font-family: var(--font-primary);
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  margin: 0;
 }
 
 
@@ -105,6 +106,7 @@ body {
   min-height: 100vh;
   height: 100vh;
   scroll-snap-align: start;
+    scroll-snap-stop: always;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -472,7 +474,8 @@ a:hover { color: var(--primary-light); }
 .hero-subtitle{
   position: absolute;        /* statt fixed */
   left: clamp(12px, 2vw, 20px);
-  bottom: clamp(12px, 2vw, 20px);
+  bottom: calc(clamp(12px, 2vw, 20px) + constant(safe-area-inset-bottom));
+  bottom: calc(clamp(12px, 2vw, 20px) + env(safe-area-inset-bottom));
   z-index: 10;
   margin: 0;
 
@@ -483,13 +486,12 @@ a:hover { color: var(--primary-light); }
   text-align: left;
   -webkit-font-smoothing: antialiased;
 
-  font-size: clamp(1.2rem, 3vw, 1.6rem);
+font-size: clamp(1rem, 2.2vw, 1.25rem);
   line-height: 1.25;
   pointer-events: none;          /* blockiert keine Klicks dahinter */
 
 
-  max-width: min(92vw, 820px);
-  height: var(--box-h);
+  max-width: clamp(480px, 48vw, 720px);
   gap: var(--gap-px);
 }
 
@@ -500,7 +502,7 @@ a:hover { color: var(--primary-light); }
 .hero-subtitle .typed-author{
   color: var(--text-secondary,#b0b0b0);
   font-weight: 500;
-  font-size: clamp(1rem,2.5vw,1.2rem);
+font-size: clamp(0.9rem, 1.8vw, 1.05rem);
   text-shadow: 0 2px 6px rgba(0,0,0,.35);
 }
 
@@ -510,6 +512,11 @@ a:hover { color: var(--primary-light); }
   color: var(--text-primary,#fff);
   text-shadow: 0 2px 8px rgba(0,0,0,.35);
   white-space: normal; /* <br> vom JS erlaubt */
+  overflow-wrap: anywhere;
+word-break: normal;
+}
+@supports (text-wrap: balance) {
+  .hero-subtitle .typed-text { text-wrap: balance; }
 }
 
 /* Caret über Pseudo-Element – sitzt exakt am Textende */
@@ -528,12 +535,7 @@ a:hover { color: var(--primary-light); }
 .hero-subtitle .cursor{ display: none !important; }
 @keyframes caret-blink{50%{opacity:0}}
 
-@media (max-width: 768px){
-  .hero-subtitle{
-    left: clamp(10px, 4vw, 16px);
-    font-size: clamp(1.05rem, 4vw, 1.35rem);
-  }
-}
+
 
 /* Fallback nur ohne JS (wenn .has-typingjs NICHT gesetzt ist) */
 body:not(.has-typingjs) .hero-subtitle .cursor{ display: none; }
@@ -590,9 +592,10 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 .greeting-text-hero {
   position: absolute;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  font-size: clamp(2rem, 5vw, 3.2rem);
+
+  font-size: clamp(1.8rem, 4.2vw, 2.8rem);
+line-height: 1.14;
   font-weight: 700;
-  line-height: 1.18;
   text-align: center;
   margin: 38px 0 0 0;
   padding: 0 12px;
@@ -696,7 +699,10 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 [data-aos="zoom-in"]    { opacity: 0; transform: scale(0.8); transition: all 0.8s ease-out; }
 [data-aos].aos-animate  { opacity: 1; transform: translate(0) scale(1); }
 
-
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
 /* ========================================
    8) Responsive
 ======================================== */
@@ -710,7 +716,6 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
   .hero-content {
     display: grid;
     grid-template-columns: 1fr;
-    position: relative;
   }
 
   /* Visual zentrieren */
@@ -723,16 +728,15 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 
 
 
-  /* Buttons unten mittig */
-  .hero-buttons {
-    position: absolute;
-    left: 50%;
-    margin-top: 60%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: var(--spacing-md);
-    pointer-events: auto; /* Buttons bleiben klickbar */
-  }
+/* Buttons im Flow, sichtbar im Viewport */
+.hero-buttons {
+  position: static;
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-top: clamp(1.2rem, 4vh, 2rem);
+  pointer-events: auto;
+}
 }
 
 
@@ -757,6 +761,7 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     margin-top: 0;
     justify-content: center;
     padding: 12px 0;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .hero-content {
@@ -766,7 +771,11 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     text-align: center;
     place-items: center;
   }
-
+  .hero-subtitle{
+    left: clamp(10px, 4vw, 16px);
+    font-size: clamp(0.97rem, 3.6vw, 1.25rem);
+  }
+  
   .btn { padding: 0.6rem 1.2rem; font-size: 0.9rem; }
   .projects-grid, .skills-grid, .stats-grid { grid-template-columns: 1fr; }
   .floating-icon, .hero-image-decoration { display: none; }
