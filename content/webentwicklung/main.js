@@ -1,11 +1,22 @@
+// Main Initialisierung
+// Enthält:
+//  - Dynamische Imports (typing Module) mit Fallback debounce/throttle
+//  - Partikel-System (adaptiv: FPS-gestützte Dichte, Stats Export window.__particleStats)
+//  - Greeting Text Zufallsauswahl
+//  - Projekt-Filter, Smooth Scroll, BackToTop
+//  - Loader / Snap-Scroll Schutz
+//  - Hero Sichtbarkeits-Observer -> body.hero-active
+//  - Reduce-Motion Persistenz (localStorage 'pref-reduce-motion') & Toggle: window.toggleReducedMotion()
+//  - Anim Debug Toggle Helper: window.toggleAnimDebug()
+//  - Overlay (in animations.js) liest Partikel-/Animations-Stats
 // ===== Dynamic Imports + Fallbacks =====
-let debounce = (fn, wait) => {
-  // Fallback: no debouncing
-  return function (...args) { return fn.apply(this, args); };
+let debounce = (fn, wait = 200) => {
+  let t; return function(...args){ const ctx=this; clearTimeout(t); t=setTimeout(()=>fn.apply(ctx,args), wait); };
 };
-let throttle = (fn /*, limit */) => {
-  // Fallback: no throttling
-  return function (...args) { return fn.apply(this, args); };
+let throttle = (fn, limit = 250) => {
+  let inFlight=false, pending=false, lastArgs, lastThis;
+  function run(){ inFlight=true; fn.apply(lastThis,lastArgs); setTimeout(()=>{ inFlight=false; if(pending){ pending=false; run(); } }, limit); }
+  return function(...args){ lastArgs=args; lastThis=this; if(inFlight){ pending=true; return; } run(); };
 };
 let TypeWriter = null;
 let makeLineMeasurer = null;
@@ -13,23 +24,23 @@ let quotes = [];
 
 async function loadTypedModules() {
   try {
-    const timing = await import('./typed/timing.js');
+    const timing = await import('./home/timing.js');
     debounce = timing.debounce || debounce;
     throttle = timing.throttle || throttle;
   } catch (e) { console.error('[typed] timing.js fehlgeschlagen:', e); }
 
   try {
-    const mod = await import('./typed/TypeWriter.js');
+    const mod = await import('./home/TypeWriter.js');
     TypeWriter = mod.default || mod.TypeWriter || TypeWriter;
   } catch (e) { console.error('[typed] TypeWriter.js fehlgeschlagen:', e); }
 
   try {
-    const lm = await import('./typed/lineMeasurer.js');
+    const lm = await import('./home/lineMeasurer.js');
     makeLineMeasurer = lm.makeLineMeasurer || makeLineMeasurer;
   } catch (e) { console.error('[typed] lineMeasurer.js fehlgeschlagen:', e); }
 
   try {
-    const q = await import('./typed/quotes-de.js');
+    const q = await import('./home/quotes-de.js');
     quotes = q.default || q.quotes || quotes;
   } catch (e) { console.error('[typed] quotes-de.js fehlgeschlagen:', e); }
 }
@@ -41,6 +52,13 @@ function initParticles() {
   const ctx = canvas.getContext('2d');
   let particles = [];
   let animationId;
+  let targetCount = 0;
+  let dynamic = true;
+  let lastFrameTime = performance.now();
+  let fpsSamples = [];
+  let hidden = false;
+  // Export Stats
+  window.__particleStats = window.__particleStats || { fps: 0, count: 0 };
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -68,38 +86,69 @@ function initParticles() {
       ctx.fill();
     }
   }
-  function createParticles() {
+  function createParticles(countOverride) {
     particles = [];
-    const particleCount = Math.min(100, window.innerWidth / 10);
-    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+    const base = Math.min(100, Math.round(window.innerWidth / 10));
+    targetCount = countOverride ?? base;
+    for (let i = 0; i < targetCount; i++) particles.push(new Particle());
   }
+  function adjustParticleDensity(fps){
+    if(!dynamic) return;
+    if(fps < 45 && targetCount > 25){
+      targetCount = Math.max(20, Math.round(targetCount * 0.85));
+      createParticles(targetCount);
+    } else if(fps > 55 && targetCount < 120){
+      targetCount = Math.min(120, Math.round(targetCount * 1.1 + 2));
+      createParticles(targetCount);
+    }
+  }
+  let frameToggle = false;
   function animateParticles() {
+    if(hidden){ animationId = requestAnimationFrame(animateParticles); return; }
+    const now = performance.now();
+    const delta = now - lastFrameTime;
+    lastFrameTime = now;
+    const fps = 1000 / (delta || 1);
+    fpsSamples.push(fps); if(fpsSamples.length > 20) fpsSamples.shift();
+    if(fpsSamples.length === 20){
+      const avg = fpsSamples.reduce((a,b)=>a+b,0)/fpsSamples.length;
+      adjustParticleDensity(avg);
+  window.__particleStats.fps = avg;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => { p.update(); p.draw(); });
-    // Connections
-    particles.forEach((p, i) => {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = p.x - particles[j].x, dy = p.y - particles[j].y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 100) {
-          ctx.strokeStyle = `rgba(9,139,255,${0.1 * (1 - dist / 100)})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.stroke();
+    // Verbindungslinien nur jedes zweite Frame zur Lastreduktion
+    frameToggle = !frameToggle;
+    if(frameToggle){
+      particles.forEach((p, i) => {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = p.x - particles[j].x, dy = p.y - particles[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 100) {
+            ctx.strokeStyle = `rgba(9,139,255,${0.1 * (1 - dist / 100)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
         }
-      }
-    });
+      });
+    }
     animationId = requestAnimationFrame(animateParticles);
   }
   resizeCanvas();
   createParticles();
+  window.__particleStats.count = targetCount;
   animateParticles();
+  document.addEventListener('visibilitychange', () => {
+    hidden = document.hidden;
+  });
   window.addEventListener('resize', throttle(() => {
     cancelAnimationFrame(animationId);
     resizeCanvas();
-    createParticles();
+  createParticles(targetCount);
+    window.__particleStats.count = targetCount;
     animateParticles();
   }, 250));
 }
@@ -259,6 +308,12 @@ function hideLoadingScreen() {
   };
   el.addEventListener('transitionend', remove);
   setTimeout(remove, 700); // Fallback, falls keine Transition feuert
+  // Nach dem Verstecken: Animations-Gate freigeben
+  try {
+    window.AnimationSystem?.releaseLoadingGate?.();
+  } catch(err) {
+    console.warn('releaseLoadingGate failed', err);
+  }
 }
 
 // ===== Main =====
@@ -333,7 +388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const measurer = makeLineMeasurer(subtitleEl);
 
     const startTypewriter = () => {
-      new TypeWriter({
+  const _typeWriter = new TypeWriter({
         textEl: typedText,
         authorEl: typedAuthor,
         quotes,
@@ -353,13 +408,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           subtitleEl.style.setProperty('--box-h', `${boxH}px`);
         }
       });
+      window.__typeWriter = _typeWriter; // Debug Referenz
     };
-
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(startTypewriter);
-    } else {
-      startTypewriter();
-    }
+  const fontsReady = document.fonts?.ready;
+  (fontsReady ?? Promise.resolve()).then(startTypewriter);
   }
 
   // Greeting
@@ -380,6 +432,56 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Smooth Anchor Scroll
   initSmoothScroll();
 
+  // Hero Sichtbarkeits-Observer -> body.hero-active toggeln
+  (function(){
+    const hero = document.getElementById('hero');
+    if(!hero) return;
+    const rootBody = document.body;
+    const heroObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if(e.target === hero){
+          if(e.intersectionRatio >= 0.5) rootBody.classList.add('hero-active');
+          else rootBody.classList.remove('hero-active');
+        }
+      });
+    }, { threshold: [0,0.25,0.5,0.75,1] });
+    heroObs.observe(hero);
+  })();
+
+  // Reduce Motion Toggle
+  (function(){
+    const body = document.body;
+    // Initial aus Persistenz / Systempräferenz
+    let initial = false;
+    try {
+      const saved = localStorage.getItem('pref-reduce-motion');
+      if(saved === '1') initial = true; else if(saved === null){
+        // Fallback auf prefers-reduced-motion
+        initial = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      }
+    } catch(err) {
+      if(window.AnimationSystem?.isDebug?.()) window.AnimationSystem.dlog('localStorage read error', err);
+    }
+    if(initial) body.classList.add('reduce-motion');
+    window.toggleReducedMotion = function(force){
+      const val = force !== undefined ? force : !body.classList.contains('reduce-motion');
+      body.classList.toggle('reduce-motion', !!val);
+      try { localStorage.setItem('pref-reduce-motion', body.classList.contains('reduce-motion') ? '1' : '0'); } catch(err) {
+        if(window.AnimationSystem?.isDebug?.()) window.AnimationSystem.dlog('localStorage write error', err);
+      }
+      if(window.AnimationSystem?.isDebug?.()){
+        window.AnimationSystem.dlog('reduce-motion =', body.classList.contains('reduce-motion'));
+      }
+    };
+  })();
+
+  // Global Debug Toggle Helper
+  window.toggleAnimDebug = function(force){
+    if(!window.AnimationSystem) return;
+    const target = force !== undefined ? !!force : !window.AnimationSystem.isDebug();
+    window.AnimationSystem.setDebug(target);
+  };
+
   // AOS-Delays
   document.querySelectorAll('[data-aos]').forEach((el, idx) => {
     if (!el.hasAttribute('data-aos-delay')) el.setAttribute('data-aos-delay', idx * 50);
@@ -387,4 +489,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Menü dynamisch nachladen
   loadMenuAssets();
+
+  // Force-Start für Hero-Button Animationen beim direkten Seitenaufruf (ohne Scroll)
+  (function(){
+    if(!window.AnimationSystem) return;
+    const hero = document.getElementById('hero');
+    if(!hero) return;
+    const rect = hero.getBoundingClientRect();
+    if(rect.top < window.innerHeight && rect.bottom > 0){
+      const btns = hero.querySelectorAll('.hero-buttons [data-animation].animate-element:not(.is-visible)');
+      btns.forEach(el => {
+        if(typeof window.AnimationSystem.replay === 'function') window.AnimationSystem.replay(el);
+        else el.classList.add('is-visible');
+      });
+    }
+  })();
+
 });

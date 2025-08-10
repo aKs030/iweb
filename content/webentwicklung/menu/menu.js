@@ -7,18 +7,18 @@ class MenuSystem {
     if (this.elements.mobileToggle) {
       this.elements.mobileToggle.removeEventListener('click', this._mobileMenuHandler);
       this._mobileMenuHandler = () => {
-        console.log('Hamburger-Button wurde geklickt');
+  window.AnimationSystem?.dlog?.('Hamburger-Button wurde geklickt');
         if (!this.elements.mobileToggle) {
-          console.warn('mobileToggle nicht gefunden!');
+          window.AnimationSystem?.dlog?.('Warn: mobileToggle nicht gefunden!');
           return;
         }
         if (!this.elements.mobileMenu) {
-          console.warn('mobileMenu nicht gefunden!');
+          window.AnimationSystem?.dlog?.('Warn: mobileMenu nicht gefunden!');
           return;
         }
         this.toggleMobileMenu();
-        console.log('mobileToggle active:', this.elements.mobileToggle.classList.contains('active'));
-        console.log('mobileMenu active:', this.elements.mobileMenu.classList.contains('active'));
+  window.AnimationSystem?.dlog?.('mobileToggle active:', this.elements.mobileToggle.classList.contains('active'));
+  window.AnimationSystem?.dlog?.('mobileMenu active:', this.elements.mobileMenu.classList.contains('active'));
       };
       this.elements.mobileToggle.addEventListener('click', this._mobileMenuHandler);
     }
@@ -48,7 +48,13 @@ class MenuSystem {
     };
     
     this.searchableContent = [];
-    this.init();
+  }
+
+  static create(){
+    const inst = new MenuSystem();
+    // Starte Initialisierung asynchron außerhalb des Konstruktors
+    Promise.resolve().then(()=> inst.init());
+    return inst;
   }
 
   async init() {
@@ -131,7 +137,7 @@ class MenuSystem {
       navLinks: document.querySelectorAll('.nav-link, .mobile-nav-link'),
       dropdownToggles: document.querySelectorAll('.mobile-dropdown-toggle')
     };
-    console.log('cacheElements:', {
+    window.AnimationSystem?.dlog?.('cacheElements', {
       mobileToggle: this.elements.mobileToggle,
       mobileMenu: this.elements.mobileMenu
     });
@@ -452,17 +458,15 @@ class MenuSystem {
     
     // Add focus trap listener
     this.focusTrapHandler = (e) => {
-      if (e.key === 'Tab') {
-        if (e.shiftKey) {
-          if (document.activeElement === this.firstFocusableElement) {
-            e.preventDefault();
-            this.lastFocusableElement.focus();
-          }
-        } else {
-          if (document.activeElement === this.lastFocusableElement) {
-            // Kein weiterer Code nötig, else-Block ist jetzt korrekt
-          }
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === this.firstFocusableElement) {
+          e.preventDefault();
+          this.lastFocusableElement.focus();
         }
+      } else if (document.activeElement === this.lastFocusableElement) {
+        e.preventDefault();
+        this.firstFocusableElement.focus();
       }
     };
     
@@ -478,7 +482,7 @@ class MenuSystem {
 }
 
 // ===== Initialize Menu System =====
-const menuSystem = new MenuSystem();
+const menuSystem = MenuSystem.create();
 
 // Export for use in other scripts
 window.MenuSystem = menuSystem;

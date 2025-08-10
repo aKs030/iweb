@@ -25,7 +25,6 @@
   <div class="loading-screen" id="loadingScreen">
     <div class="loader"></div>
   </div>
-
   <!-- Hero Section -->
   <section class="section hero" id="hero">
     <div class="hero-background">
@@ -33,30 +32,25 @@
       <canvas class="particle-canvas" id="particleCanvas"></canvas>
     </div>
   <div class="container hero-content">
-
-
 <p class="hero-subtitle" data-offset-mode="full">
   <span id="typedAuthor" class="typed-author"></span>
   <span id="typedText"   class="typed-text"></span>
 </p>
-
-
   <!-- Buttons bündeln -->
-<div class="hero-buttons">
-  <a href="#projects" class="btn btn-primary">Projekte entdecken</a>
-  <a href="/content/kontakt/" class="btn btn-secondary">Kontakt</a>
-</div>
+<div class="hero-buttons" data-stagger-group="hero-btns" data-stagger-step="120" data-stagger-base="360">
+  <a href="#projects" class="btn btn-primary btn-crt" data-animation="crt">Projekte entdecken</a>
+  <a href="/content/kontakt/" class="btn btn-secondary btn-crt" data-animation="crt">Kontakt</a>
+  </div>
       <div class="hero-visual">
         <div class="hero-image-container">
             <div class="spotlight-bg"></div>
-
-          <div class="greeting-text-hero" id="greetingText"></div>
+          <div class="greeting-text-hero" id="greetingText" data-animation="greeting" data-delay="480" data-duration="1200" data-easing="cubic-bezier(.22,.8,.28,1)"></div>
           <!-- Floating Icons -->
           <div class="floating-icons">
-            <div class="floating-icon" style="--delay: 0s;"><span>💻</span></div>
-            <div class="floating-icon" style="--delay: 1s;"><span>📷</span></div>
-            <div class="floating-icon" style="--delay: 2s;"><span>🎮</span></div>
-            <div class="floating-icon" style="--delay: 3s;"><span>🎨</span></div>
+            <div class="floating-icon delay-0"><span>💻</span></div>
+            <div class="floating-icon delay-1"><span>📷</span></div>
+            <div class="floating-icon delay-2"><span>🎮</span></div>
+            <div class="floating-icon delay-3"><span>🎨</span></div>
           </div>
         </div>
       </div>
@@ -65,10 +59,6 @@
 
   <!-- Dynamische Features Section (wird per Templates befüllt) -->
   <section class="section features" id="section-features"></section>
-
-
-
-
 
     <!-- Projects Section -->
 <section class="section projects" id="projects">

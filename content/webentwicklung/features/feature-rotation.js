@@ -56,9 +56,9 @@
       document.body.appendChild(container);
       templatesLoaded = true;
       document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
-      console.log("[Features] Templates geladen");
+  window.AnimationSystem?.dlog?.('[Features] Templates geladen');
     } catch (err) {
-      console.error("[Features] Fehler beim Laden:", err);
+  window.AnimationSystem?.dlog?.('[Features] Fehler beim Laden', err);
       document.dispatchEvent(
         new CustomEvent("featuresTemplatesError", { detail: { error: err, url: TEMPLATES_URL } })
       );
@@ -70,7 +70,7 @@
     const sectionEl = document.getElementById(SECTION_ID);
     const tpl = document.getElementById(id);
     if (!sectionEl || !tpl || isAnimating) {
-      if (!tpl) console.warn("[Features] Template fehlt im DOM:", id);
+  if (!tpl) window.AnimationSystem?.dlog?.('[Features] Template fehlt im DOM:', id);
       return;
     }
     isAnimating = true;
@@ -211,7 +211,7 @@
     }
 
     if (prefersReduced) {
-      console.log("[Features] Reduced motion aktiv: Auto-Rotation aus.");
+  window.AnimationSystem?.dlog?.('[Features] Reduced motion aktiv: Auto-Rotation aus.');
     }
   }
 

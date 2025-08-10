@@ -81,8 +81,7 @@
    2) Reset & Global
 ======================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; 
-  -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; }
 body {
   font-family: var(--font-primary);
   background: var(--bg-dark);
@@ -330,7 +329,7 @@ a:hover { color: var(--primary-light); }
 .project-description, .skill-category p, .contact-details p{
   overflow-wrap: anywhere;
   word-break: normal;
-  hyphens: auto;
+  -webkit-hyphens: auto; hyphens: auto;
 }
 .project-category {
   display: inline-block;
@@ -481,6 +480,102 @@ a:hover { color: var(--primary-light); }
   font-size: 1rem;
 }
 
+/* Weichere Button-Einstiegsanimation (anim-soft) reduziert Y-Offset */
+.anim-soft.animate-element {
+  transform: translateY(18px);
+  opacity: 0;
+  transition-timing-function: cubic-bezier(0.4,0,0.3,1);
+}
+.anim-soft.animate-element.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+body.reduce-motion .anim-soft.animate-element { transform: none !important; opacity: 1 !important; }
+
+/* === CRT Power-On Effekt für Buttons === */
+@keyframes crt-power-on {
+  0% { filter: brightness(0) contrast(400%); transform: scaleY(0.05) scaleX(1.3); opacity:0; }
+  8% { filter: brightness(2.2) contrast(250%); transform: scaleY(0.12) scaleX(1.05); opacity:1; }
+  18% { filter: brightness(0.3) contrast(300%); transform: scaleY(0.04) scaleX(1.25); }
+  28% { filter: brightness(2.4) contrast(180%); transform: scaleY(1.08) scaleX(0.96); }
+  40% { filter: brightness(1) contrast(110%); transform: scale(1); }
+  60% { filter: brightness(1.05) contrast(105%); }
+  100% { filter: brightness(1) contrast(100%); transform: scale(1); opacity:1; }
+}
+@keyframes crt-flicker {
+  0%, 100% { opacity:1; }
+  45% { opacity:0.98; }
+  46% { opacity:0.82; }
+  47% { opacity:1; }
+  70% { opacity:0.96; }
+  71% { opacity:0.88; }
+  72% { opacity:1; }
+}
+@keyframes crt-scanlines {
+  0% { background-position:0 0; }
+  100% { background-position:0 4px; }
+}
+@keyframes crt-glow-pulse {
+  0%,100% { box-shadow:0 0 0 rgba(9,139,255,0.0),0 0 0 rgba(255,255,255,0); }
+  50% { box-shadow:0 0 6px rgba(9,139,255,0.35),0 0 14px rgba(255,255,255,0.12); }
+}
+
+.btn-crt {
+  position: relative;
+  isolation: isolate;
+  --crt-bg: linear-gradient(135deg,var(--bg-card),#141414 60%);
+  background: var(--primary-color);
+  /* leichte Desaturierung nach Power-On */
+}
+.btn-crt.btn-secondary { background: transparent; }
+
+/* Grundzustand vor Sichtbarkeit */
+[data-animation="crt"].animate-element {
+  opacity:0;
+  transform: translateY(20px);
+  filter: brightness(0.4) contrast(120%);
+}
+
+[data-animation="crt"].animate-element.is-visible {
+  animation: crt-power-on 900ms cubic-bezier(.22,.61,.36,1) forwards, crt-flicker 4.5s steps(60) 900ms 2;
+  position: relative;
+}
+
+/* Scanline Overlay */
+[data-animation="crt"].animate-element.is-visible::before {
+  content: "";
+  position:absolute; inset:0; pointer-events:none; z-index:1;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0 1px, rgba(0,0,0,0) 1px 3px);
+  mix-blend-mode: overlay;
+  animation: crt-scanlines 120ms linear infinite;
+  opacity:0.55;
+}
+/* Horizontal Bloom Flash */
+[data-animation="crt"].animate-element.is-visible::after {
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:2;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%);
+  opacity:0; animation: crt-glow-pulse 3.2s ease-in-out 400ms infinite;
+}
+
+/* Hover verstärkt leichte Glow-Schicht */
+.btn-crt:hover::after { opacity:0.4; }
+
+/* Sekundärer Button im CRT Stil: Rahmen + invertierter Flash */
+.btn-crt.btn-secondary.animate-element.is-visible {
+  background: var(--bg-card);
+  border:2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+.btn-crt.btn-secondary.animate-element.is-visible:hover { background: var(--primary-color); color:#fff; }
+
+/* Fallback bei Reduced Motion: nur sanftes Einblenden */
+body.reduce-motion [data-animation="crt"].animate-element {
+  opacity:1 !important; transform:none !important; filter:none !important;
+  animation:none !important;
+}
+body.reduce-motion [data-animation="crt"].animate-element::before,
+body.reduce-motion [data-animation="crt"].animate-element::after { display:none !important; }
+
 .hero.section { justify-content: center; padding-bottom: 0; }
 
 .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
@@ -544,7 +639,7 @@ a:hover { color: var(--primary-light); }
   letter-spacing: 0em; /* vorher 0.002em */
   overflow-wrap: anywhere;
   word-break: normal;
-  hyphens: auto;
+  -webkit-hyphens: auto; hyphens: auto;
   opacity: 0.8;
 }
 @supports (text-wrap: balance) {
@@ -595,6 +690,10 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 
 .floating-icons { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
 .floating-icon { position: absolute; font-size: 2rem; animation: float 6s ease-in-out infinite; animation-delay: var(--delay); }
+.floating-icon.delay-0 { --delay: 0s; }
+.floating-icon.delay-1 { --delay: 1s; }
+.floating-icon.delay-2 { --delay: 2s; }
+.floating-icon.delay-3 { --delay: 3s; }
 .floating-icon:nth-child(1) { top: 10%; right: -50px; }
 .floating-icon:nth-child(2) { top: 70%; right: -40px; }
 .floating-icon:nth-child(3) { bottom: 20%; left: -50px; }
@@ -612,6 +711,13 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 /* Kugel hinter dem Text */
 .hero-image-container svg { position: relative; z-index: 1; display: block; margin: 0 auto; }
 
+/* Animations-Pause wenn Hero nicht aktiv */
+body:not(.hero-active) .greeting-text-hero,
+body.reduce-motion .greeting-text-hero { animation-play-state: paused !important; }
+body:not(.hero-active) .floating-icon,
+body.reduce-motion .floating-icon { animation-play-state: paused !important; }
+body.reduce-motion .particle-canvas { opacity: .6; }
+
 .spotlight-bg {
   position: absolute;
   top: 55%; left: 50%;
@@ -623,39 +729,71 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 }
 
   .greeting-text-hero {
+    /* Design Tokens */
+    --greet-fs: clamp(1.6rem, 3.6vw, 2.4rem);
+    --greet-lh: 1.14;
+    --greet-weight: 600;
+    --greet-letter: -0.012em;
+    --greet-max: clamp(16ch, 40vw, 24ch);
+    --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
+    --greet-anim-grad-dur: 16.5s;
+    --greet-anim-pulse-dur: 13.2s;
     position: absolute;
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-
-    /* kleiner, eleganter, ruhiger */
-    font-size: clamp(1.6rem, 3.6vw, 2.4rem);
-    line-height: 1.14;
-    font-weight: 600;
-    letter-spacing: -0.012em;
-
+    font-size: var(--greet-fs);
+    line-height: var(--greet-lh);
+    font-weight: var(--greet-weight);
+    letter-spacing: var(--greet-letter);
     text-align: center;
     text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
     margin: 32px 0 0 0;
     padding: 0 10px;
-
-    /* subtilerer Verlauf, weniger „schreiend“ */
-    background: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-
+    background: var(--greet-grad);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
     opacity: 1;
     -webkit-user-select: none; user-select: none;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: normal;
-    hyphens: auto;
-    max-width: clamp(16ch, 40vw, 24ch);
+  white-space: normal; overflow-wrap: anywhere; word-break: normal; -webkit-hyphens: auto; hyphens: auto;
+    max-width: var(--greet-max);
     min-height: 2.6em;
-    font-variation-settings: "opsz" 18;
-    font-optical-sizing: auto;
-
-    /* Animationen dezenter halten */
-    animation: gradientMove 6.5s linear infinite, pulseGlow 3.2s ease-in-out infinite;
+    font-variation-settings: "opsz" 18; font-optical-sizing: auto;
+    animation: gradientMove var(--greet-anim-grad-dur) linear infinite, pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite;
+  }
+  /* Alternative Theme Modifier */
+  .greeting-text-hero--alt {
+    --greet-grad: linear-gradient(92deg,#fff,#d2efff 60%);
+    --greet-anim-grad-dur: 9s;
+    --greet-anim-pulse-dur: 4.4s;
+    filter: drop-shadow(0 3px 18px rgba(0,180,255,.35));
+  }
+  /* When animation system controls entrance via data-animation */
+  .greeting-text-hero[data-animation] { will-change: opacity, transform; }
+  .greeting-text-hero[data-animation].animate-element { opacity: 0; animation-play-state: paused; }
+  .greeting-text-hero[data-animation].animate-element.is-visible { opacity: 1; animation-play-state: running; }
+  /* Spezielle Eingangstransformation für data-animation="greeting" */
+  /* Scale-In Animation (klein -> overshoot -> final) */
+  .greeting-text-hero[data-animation="greeting"].animate-element {
+    --greet-scale-start: .9;
+    --greet-scale-overshoot: 1.015;
+    --greet-scale-final: 1.0;
+    --greet-scale-dur: 1200ms; /* synchron zu data-duration */
+    transform: scale(var(--greet-scale-start));
+    opacity: 0;
+    transition: opacity .9s cubic-bezier(.4,0,.2,1);
+  }
+  .greeting-text-hero[data-animation="greeting"].animate-element.is-visible {
+    opacity: 1;
+    animation: greeting-scale-in var(--greet-scale-dur) cubic-bezier(.22,.8,.28,1) forwards;
+  }
+  @keyframes greeting-scale-in {
+    0% { transform: scale(var(--greet-scale-start)); }
+    60% { transform: scale(var(--greet-scale-overshoot)); }
+    100% { transform: scale(var(--greet-scale-final)); }
+  }
+  /* leichtes Zurückfedern nach Ankunft */
+  .greeting-text-hero[data-animation="greeting"].animate-element.is-visible:after { content:''; }
+  /* Reduced Motion respect */
+  @media (prefers-reduced-motion: reduce) {
+    .greeting-text-hero { animation: none; }
   }
 @supports (text-wrap: balance) {
   .greeting-text-hero { text-wrap: balance; }
@@ -665,8 +803,8 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
   0%,100% { filter: drop-shadow(0 1px 12px #00d4ff88); }
   50%      { filter: drop-shadow(0 2px 22px #00e6ff99); }
 }
-.greeting-text-hero.fade { opacity: 0; transform: translateY(24px) scale(0.98); }
-.greeting-text-hero:not(.fade) { opacity: 1; transform: translateY(0) scale(1); }
+.greeting-text-hero.fade { opacity: 0; transform: scale(0.98); }
+.greeting-text-hero:not(.fade) { opacity: 1; transform: scale(1); }
 
 /* -- Back-to-Top -- */
 .back-to-top {
@@ -802,10 +940,10 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 
   /* Slightly kompakterer Desktop‑Look for greeting headline */
   .greeting-text-hero{
-    font-size: clamp(1.5rem, 2.6vw, 2.2rem);
-    line-height: 1.12;
-    letter-spacing: -0.014em;
-    max-width: clamp(18ch, 36vw, 24ch);
+    --greet-fs: clamp(1.5rem, 2.6vw, 2.2rem);
+    --greet-lh: 1.12;
+    --greet-letter: -0.014em;
+    --greet-max: clamp(18ch, 36vw, 24ch);
   }
 
   /* Buttons im Flow, sichtbar im Viewport */
@@ -862,13 +1000,13 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
 
   /* Headline kleiner und ruhiger auf Mobile */
   .greeting-text-hero{
-    font-size: clamp(1.35rem, 5.2vw, 1.85rem);
-    line-height: 1.16;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    --greet-fs: clamp(1.35rem, 5.2vw, 1.85rem);
+    --greet-lh: 1.16;
+    --greet-letter: -0.01em;
+    --greet-max: clamp(18ch, 78vw, 26ch);
+    --greet-anim-grad-dur: 7.5s;
+    --greet-anim-pulse-dur: 3.6s;
     margin-top: 20px;
-    max-width: clamp(18ch, 78vw, 26ch);
-    animation: gradientMove 7.5s linear infinite, pulseGlow 3.6s ease-in-out infinite;
   }
 
   .btn { padding: 0.6rem 1.2rem; font-size: 0.9rem; }
