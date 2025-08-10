@@ -510,7 +510,7 @@ a:hover { color: var(--primary-light); }
 
   font-size: clamp(0.9rem, 1.8vw, 1.1rem);
   line-height: 1.22;
-  opacity: 0.9;
+  opacity: 0.82;
   pointer-events: none;          /* blockiert keine Klicks dahinter */
 
   max-width: clamp(480px, 48vw, 720px);
@@ -525,7 +525,7 @@ a:hover { color: var(--primary-light); }
   font-size: clamp(0.85rem, 1.6vw, 0.98rem);
   letter-spacing: 0.006em; /* vorher 0.01em */
   text-shadow: none;
-  opacity: 0.86;
+  opacity: 0.78;
 }
 
 /* Quote + Cursor */
@@ -536,7 +536,7 @@ a:hover { color: var(--primary-light); }
 
   .typed-text{
   font-weight: 300;
-  font-size: 0.86em;        /* etwas kleiner */
+  font-size: 0.82em;        /* etwas kleiner */
   line-height: 1.18;        /* kompakter, eleganter */
   display: inline;
   color: var(--text-secondary, #b0b0b0);
@@ -546,6 +546,7 @@ a:hover { color: var(--primary-light); }
   overflow-wrap: anywhere;
   word-break: normal;
   hyphens: auto;
+  opacity: 0.8;
 }
 @supports (text-wrap: balance) {
   .hero-subtitle .typed-text { text-wrap: balance; }
@@ -556,11 +557,12 @@ a:hover { color: var(--primary-light); }
   content: '';
   display: inline-block;
   width: 0;                  /* nur die Linie */
-  height: 0.86em;               /* volle Zeilenhöhe */
+  height: 0.90em;               /* volle Zeilenhöhe */
   margin-left: 0.06ch;
-  border-left: 1px solid var(--text-primary, #fff);
-  animation: caret-blink 1.4s steps(1,end) infinite;
+  border-left: 2px solid var(--text-primary, #fff);
+  animation: caret-blink 0.9s steps(1,end) infinite;
   vertical-align: -0.1em;    /* optischer Ausgleich */
+  opacity: 1;
 }
 
 /* alte Cursor-Span ausblenden, falls im Markup vorhanden */
@@ -786,7 +788,7 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     max-width: clamp(420px, 38vw, 640px);
   }
   .hero-subtitle .typed-text{ 
-    font-size: 0.84em; 
+    font-size: 0.80em; 
     line-height: 1.16; 
     letter-spacing: 0.001em; 
   }
@@ -794,8 +796,8 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     font-size: clamp(0.82rem, 1.1vw, 0.94rem); 
   }
   .hero-subtitle .typed-text::after{ 
-    height: 0.82em; 
-    border-left-width: 1px; 
+    height: 0.86em; 
+    border-left-width: 2px; 
     margin-left: 0.08ch; 
   }
 
@@ -855,9 +857,9 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     font-size: clamp(0.84rem, 3vw, 0.98rem);
     line-height: 1.18;
   }
-  .hero-subtitle .typed-text{ font-size: 0.86em; line-height: 1.14; letter-spacing: 0.001em; text-shadow: none; }
+  .hero-subtitle .typed-text{ font-size: 0.82em; line-height: 1.14; letter-spacing: 0.001em; text-shadow: none; opacity: 0.8; }
   .hero-subtitle .typed-author{ font-size: clamp(0.80rem, 1.8vw, 0.92rem); }
-  .hero-subtitle .typed-text::after{ height: 0.82em; border-left-width: 1px; margin-left: 0.06ch; }
+  .hero-subtitle .typed-text::after{ height: 0.82em; border-left-width: 2px; margin-left: 0.06ch; }
 
   /* Headline kleiner und ruhiger auf Mobile */
   .greeting-text-hero{
