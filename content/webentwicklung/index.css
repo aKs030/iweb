@@ -494,7 +494,6 @@ a:hover { color: var(--primary-light); }
 .hero-subtitle{
   position: absolute;        /* statt fixed */
   left: clamp(12px, 2vw, 20px);
-  bottom: calc(clamp(12px, 2vw, 20px) + constant(safe-area-inset-bottom));
   bottom: calc(clamp(12px, 2vw, 20px) + env(safe-area-inset-bottom));
   z-index: 10;
   margin: 0;

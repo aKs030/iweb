@@ -10,6 +10,7 @@ export default class TypeWriter {
     shuffle = true,
     loop = true,
     smartBreaks = true,
+    avoidImmediateRepeat = true,
     containerEl = null,          // .hero-subtitle zum Locken
     onBeforeType = null          // Hook: vor dem Tippen reservieren + locken
   }) {
@@ -23,6 +24,7 @@ export default class TypeWriter {
     this.shuffle = !!shuffle;
     this.loop = !!loop;
     this.smartBreaks = !!smartBreaks;
+    this.avoidImmediateRepeat = !!avoidImmediateRepeat;
     this.containerEl = containerEl;
     this.onBeforeType = typeof onBeforeType === 'function' ? onBeforeType : null;
 
@@ -56,8 +58,25 @@ export default class TypeWriter {
   _nextQuote() {
     if (this._queue.length === 0) {
       if (!this.loop) return null;
-      this._queue = this.shuffle ? this._shuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
+
+      // Optional: direkten Wiederholer über Zyklus-Grenzen verhindern
+      const last = this._index;
+      if (this.quotes.length <= 1) {
+        this._queue = [0];
+      } else if (this.avoidImmediateRepeat) {
+        // So lange neu mischen, bis das erste Element nicht dem letzten entspricht
+        do {
+          this._queue = this.shuffle
+            ? this._shuffledIndices(this.quotes.length)
+            : [...Array(this.quotes.length).keys()];
+        } while (this._queue[0] === last);
+      } else {
+        this._queue = this.shuffle
+          ? this._shuffledIndices(this.quotes.length)
+          : [...Array(this.quotes.length).keys()];
+      }
     }
+
     this._index = this._queue.shift();
     this._current = this.quotes[this._index];
     return this._current;
@@ -93,7 +112,7 @@ export default class TypeWriter {
       : full.substring(0, Math.min(full.length, this._txt.length + 1));
 
     this._renderText(this._txt);
-    this.authorEl.textContent = author;
+    this.authorEl.textContent = author.trim() ? author : '';
 
     let delay = this._isDeleting ? this.deleteSpeed : this.typeSpeed;
     if (!this._isDeleting && this._txt.length > 0) {
