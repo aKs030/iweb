@@ -76,12 +76,17 @@
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
 }
 
+ html {
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  height: 100%;
+}
 
 /* ========================================
    2) Reset & Global
 ======================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; height: 100%;}
 body {
   font-family: var(--font-primary);
   background: var(--bg-dark);

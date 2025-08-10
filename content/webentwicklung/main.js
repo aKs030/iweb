@@ -280,10 +280,10 @@ function initScrollAnimations() {
 // ===== Menü-Assets =====
 function loadMenuAssets() {
   if (!document.getElementById('menu-container')) return;
-  if (!document.querySelector('link[href="/content/webentwicklung/menu/menu.css"]')) {
+  if (!document.querySelector('link[href="/content/webentwicklung/menu/menux.css"]')) {
     const menuCss = document.createElement('link');
     menuCss.rel = 'stylesheet';
-    menuCss.href = '/content/webentwicklung/menu/menu.css';
+    menuCss.href = '/content/webentwicklung/menu/menux.css';
     document.head.appendChild(menuCss);
   }
   if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {

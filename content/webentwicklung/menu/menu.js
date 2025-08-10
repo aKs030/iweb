@@ -74,14 +74,14 @@ class MenuSystem {
 
   loadCSS() {
     return new Promise((resolve) => {
-      if (document.querySelector('link[href*="menu.css"]')) {
+      if (document.querySelector('link[href*="menux.css"]')) {
         resolve();
         return;
       }
       
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = '/content/webentwicklung/menu/menu.css';
+      link.href = '/content/webentwicklung/menu/menux.css';
       link.onload = resolve;
       document.head.appendChild(link);
     });
