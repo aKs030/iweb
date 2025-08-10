@@ -81,7 +81,7 @@
    2) Reset & Global
 ======================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; }
+html { scroll-behavior: smooth; }
 
 /* Safe-area padding for devices with a notch; does not shift fixed subtitle */
 body {
@@ -89,6 +89,8 @@ body {
   background: var(--bg-dark);
   color: var(--text-primary);
   margin: 0;
+  scroll-snap-type: y mandatory;
+  overflow-x: hidden; /* disable horizontal scrolling on mobile */
 }
 
 
