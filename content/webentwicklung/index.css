@@ -81,7 +81,7 @@
    2) Reset & Global
 ======================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; height: 100%;}
 body {
   font-family: var(--font-primary);
   background: var(--bg-dark);
@@ -106,20 +106,19 @@ font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
 .section {
-  min-height: 100vh;
-  height: 100vh;
+  min-height: 100dvh;     /* stabiler als 100vh (Safari/URL-Bar) */
+  height: auto;
   scroll-snap-align: start;
-    scroll-snap-stop: always;
-  box-sizing: border-box;
+  scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .section-inner {
   width: 100%;
-  padding-top: 90px;
-  padding-bottom: 40px;
-  flex: 1 0 auto;
+  padding-block: clamp(48px, 8vh, 90px) clamp(16px, 4vh, 32px);
+  flex: 1 1 auto;
 }
 
 .section-header,
@@ -541,12 +540,9 @@ a:hover { color: var(--primary-light); }
 
 @media (max-width: 768px){
   :root{ font-size: 14px; --header-height: 64px; }
-  .section { height: 100svh; min-height: unset; }
-  .section .container { padding-top: var(--header-height); padding-bottom: 28px; }
-  .btn { padding: 0.6rem 1.2rem; font-size: 0.9rem; }
-  .projects-grid, .skills-grid, .stats-grid { grid-template-columns: 1fr; }
+  .section { min-height: 100svh; height: auto; }
+  .section .container { padding-top: var(--header-height); padding-bottom: 20px; }
 }
-
 
 /* ========================================
    9) Print

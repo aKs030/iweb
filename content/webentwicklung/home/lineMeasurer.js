@@ -8,10 +8,13 @@ export function makeLineMeasurer(subtitleEl) {
   document.body.appendChild(measurer);
 
   const cs = getComputedStyle(subtitleEl);
-  ['font-size','line-height','font-family','font-weight','letter-spacing','word-spacing']
+  ['font-size','line-height','font-family','font-weight','letter-spacing','word-spacing',
+   'font-kerning','font-variant-ligatures','text-transform','text-rendering',
+   'word-break','overflow-wrap','hyphens']
     .forEach(p => measurer.style.setProperty(p, cs.getPropertyValue(p)));
 
   function getLineHeightPx(){
+    const cs = getComputedStyle(subtitleEl);
     const lhRaw = cs.lineHeight.trim();
     if (lhRaw.endsWith('px')) {
       const v = parseFloat(lhRaw); if (!isNaN(v)) return v;
@@ -32,18 +35,21 @@ export function makeLineMeasurer(subtitleEl) {
   }
 
   function measure(text, smartBreaks){
+    const cs = getComputedStyle(subtitleEl);
     measurer.innerHTML = '';
     const span = document.createElement('span');
     if (smartBreaks){
+      const frag = document.createDocumentFragment();
       const parts = String(text).split(/(, )/);
       for (const part of parts){
         if (part === ', '){
-          span.appendChild(document.createTextNode(','));
-          span.appendChild(document.createElement('br'));
+          frag.appendChild(document.createTextNode(','));
+          frag.appendChild(document.createElement('br'));
         } else {
-          span.appendChild(document.createTextNode(part));
+          frag.appendChild(document.createTextNode(part));
         }
       }
+      span.appendChild(frag);
     } else {
       span.textContent = String(text);
     }
@@ -61,7 +67,8 @@ export function makeLineMeasurer(subtitleEl) {
     const lh = getLineHeightPx();
     const h  = span.getBoundingClientRect().height;
     if (!lh || !h) return 1;
-    return Math.max(1, Math.min(3, Math.round(h / lh))); // clamp 1..3
+    const clampMax = parseInt(cs.getPropertyValue('--reserve-lines')) || 3;
+    return Math.max(1, Math.min(clampMax, Math.round(h / lh))); // clamp 1..clampMax
   }
 
   return {
