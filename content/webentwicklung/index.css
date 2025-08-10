@@ -81,14 +81,18 @@
    2) Reset & Global
 ======================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; }
-
-/* Safe-area padding for devices with a notch; does not shift fixed subtitle */
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; overflow-x: hidden; 
+  -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   font-family: var(--font-primary);
   background: var(--bg-dark);
   color: var(--text-primary);
   margin: 0;
+  text-rendering: optimizeLegibility;
+-webkit-font-smoothing: antialiased;
+font-kerning: normal;
+font-variant-ligatures: common-ligatures contextual;
+font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
 
@@ -158,6 +162,12 @@ body {
    4) Typografie, Links, Buttons, Tags
 ======================================== */
 h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; margin-bottom: var(--spacing-md); }
+/* Headline-Tracking */
+h1, h2, h3 { letter-spacing: -0.012em; }
+h4, h5, h6 { letter-spacing: -0.006em; }
+@supports (text-wrap: balance){
+  h1, h2, h3, h4, h5, h6, .section-title { text-wrap: balance; }
+}
 h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
 h2 { font-size: clamp(2rem, 4vw, 3rem); }
 h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
@@ -165,7 +175,12 @@ h4 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
 h5 { font-size: 1.125rem; }
 h6 { font-size: 1rem; }
 
-p { margin-bottom: var(--spacing-md); color: var(--text-secondary); }
+p{
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  line-height: 1.6;          /* bessere Lesbarkeit */
+  letter-spacing: 0.003em;   /* minimal mehr Luft */
+}
 
 a {
   color: var(--primary-color);
@@ -312,6 +327,11 @@ a:hover { color: var(--primary-light); }
 .project-content { padding: 1rem 1rem 0.85rem 1rem; }
 .project-title { font-size: clamp(1rem, 2vw, 1.3rem); margin-bottom: 0.5rem; }
 .project-description { font-size: clamp(0.91rem, 1.5vw, 1.04rem); margin-bottom: 0.5rem; }
+.project-description, .skill-category p, .contact-details p{
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
 .project-category {
   display: inline-block;
   font-size: 0.83rem;
@@ -486,8 +506,8 @@ a:hover { color: var(--primary-light); }
   text-align: left;
   -webkit-font-smoothing: antialiased;
 
-  font-size: clamp(1rem, 2.2vw, 1.25rem);
-  line-height: 1.25;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  line-height: 1.22;
   pointer-events: none;          /* blockiert keine Klicks dahinter */
 
   max-width: clamp(480px, 48vw, 720px);
@@ -497,18 +517,28 @@ a:hover { color: var(--primary-light); }
 
 /* Autor */
 .hero-subtitle .typed-author{
-  color: var(--text-secondary,#b0b0b0);
-  font-weight: 500;
-  font-size: clamp(0.9rem, 1.8vw, 1.05rem);
-  text-shadow: 0 2px 6px rgba(0,0,0,.35);
+  color: var(--text-muted, #666666);
+  font-weight: 400;
+  font-size: clamp(0.85rem, 1.6vw, 0.98rem);
+letter-spacing: 0.006em; /* vorher 0.01em */
+  text-shadow: 0 1px 2px rgba(0,0,0,.22);
 }
 
 /* Quote + Cursor */
-.hero-subtitle .typed-text{
+.hero-subtitle .typed-quote {
+  font-weight: 400;
+  font-size: 0.92em;
+}
+
+  .typed-text{
+  font-weight: 300;
+  font-size: 0.88em;        /* etwas kleiner */
+  line-height: 1.18;        /* kompakter, eleganter */
   display: inline;
-  color: var(--text-primary,#fff);
-  text-shadow: 0 2px 8px rgba(0,0,0,.35);
+  color: var(--text-secondary, #b0b0b0);
+  text-shadow: 0 1px 2px rgba(0,0,0,.18); /* dezenter */
   white-space: normal; /* <br> vom JS erlaubt */
+letter-spacing: 0.001em; /* vorher 0.002em */
   overflow-wrap: anywhere;
   word-break: normal;
   hyphens: auto;
@@ -522,9 +552,9 @@ a:hover { color: var(--primary-light); }
   content: '';
   display: inline-block;
   width: 0;                  /* nur die Linie */
-  height: 1em;               /* volle Zeilenhöhe */
+  height: 0.9em;               /* volle Zeilenhöhe */
   margin-left: 0.1ch;
-  border-left: 2px solid var(--text-primary,#fff);
+  border-left: 2px solid var(--text-primary, #fff);
   animation: caret-blink 1s steps(1,end) infinite;
   vertical-align: -0.1em;    /* optischer Ausgleich */
 }
@@ -732,17 +762,36 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     align-self: center;
   }
 
+  /* Desktop: typedText & Subtitle kompakter */
+  .hero-subtitle{
+    font-size: clamp(0.86rem, 1.4vw, 1.02rem);
+    line-height: 1.18;
+    max-width: clamp(420px, 38vw, 640px);
+  }
+  .hero-subtitle .typed-text{ 
+    font-size: 0.84em; 
+    line-height: 1.16; 
+    letter-spacing: 0.001em; 
+  }
+  .hero-subtitle .typed-author{ 
+    font-size: clamp(0.82rem, 1.1vw, 0.94rem); 
+  }
+  .hero-subtitle .typed-text::after{ 
+    height: 0.84em; 
+    border-left-width: 1.6px; 
+    margin-left: 0.08ch; 
+  }
 
 
-/* Buttons im Flow, sichtbar im Viewport */
-.hero-buttons {
-  position: static;
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-md);
-  margin-top: clamp(1.2rem, 4vh, 2rem);
-  pointer-events: auto;
-}
+  /* Buttons im Flow, sichtbar im Viewport */
+  .hero-buttons {
+    position: static;
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: clamp(1.2rem, 4vh, 2rem);
+    pointer-events: auto;
+  }
 }
 
 
@@ -778,9 +827,13 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     place-items: center;
   }
   .hero-subtitle{
-    left: clamp(10px, 4vw, 16px);
-    font-size: clamp(0.97rem, 3.6vw, 1.25rem);
+    left: clamp(8px, 3.5vw, 14px);
+    font-size: clamp(0.84rem, 3vw, 0.98rem);
+    line-height: 1.18;
   }
+  .hero-subtitle .typed-text{ font-size: 0.86em; line-height: 1.14; letter-spacing: 0.001em; }
+  .hero-subtitle .typed-author{ font-size: clamp(0.80rem, 1.8vw, 0.92rem); }
+  .hero-subtitle .typed-text::after{ height: 0.86em; border-left-width: 1.6px; margin-left: 0.08ch; }
   
   .btn { padding: 0.6rem 1.2rem; font-size: 0.9rem; }
   .projects-grid, .skills-grid, .stats-grid { grid-template-columns: 1fr; }
