@@ -18,9 +18,46 @@ let throttle = (fn, limit = 250) => {
   function run(){ inFlight=true; fn.apply(lastThis,lastArgs); setTimeout(()=>{ inFlight=false; if(pending){ pending=false; run(); } }, limit); }
   return function(...args){ lastArgs=args; lastThis=this; if(inFlight){ pending=true; return; } run(); };
 };
-let TypeWriter = null;
-let makeLineMeasurer = null;
-let quotes = [];
+let TypeWriter = null;            // dynamisch geladene Klasse
+let makeLineMeasurer = null;      // lineMeasurer Factory
+let quotes = [];                  // Zitate (quotes-de.js)
+let heroDataModule = null;        // lazy import hero-data.js (greetings + configs)
+
+window.__postHeroEnhancements = async function(){
+  const hero = document.getElementById('hero');
+  if(!hero) return false;
+  // Hero Visibility Observer
+  (async function(){
+    const existing = document.body.__heroObserverAttached;
+    if(existing) return; // vermeiden mehrfach
+    const rootBody = document.body;
+    let cfg = { threshold: [0,0.25,0.5,0.75,1], minActiveRatio: 0.5 };
+    try { const mod = await ensureHeroDataModule(); if(mod?.heroObserverConfig) cfg = { ...cfg, ...mod.heroObserverConfig }; }
+    catch(e){ console.warn('heroObserverConfig load failed', e); }
+    const heroObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if(e.target === hero){
+          const active = e.intersectionRatio >= cfg.minActiveRatio;
+          rootBody.classList.toggle('hero-active', active);
+          const subtitle = document.querySelector('.hero-subtitle');
+          if(subtitle){ subtitle.classList.toggle('hero-subtitle--fixed', active); }
+        }
+      });
+    }, { threshold: cfg.threshold });
+    heroObs.observe(hero);
+    document.body.__heroObserverAttached = true;
+  })();
+  // Force-start button animations
+  (function(){
+    if(!window.AnimationSystem) return;
+    const rect = hero.getBoundingClientRect();
+    if(rect.top < window.innerHeight && rect.bottom > 0){
+      const btns = hero.querySelectorAll('.hero-buttons [data-animation].animate-element:not(.is-visible)');
+      btns.forEach(el => { if(typeof window.AnimationSystem.replay === 'function') window.AnimationSystem.replay(el); else el.classList.add('is-visible'); });
+    }
+  })();
+  return true;
+};
 
 async function loadTypedModules() {
   try {
@@ -153,55 +190,27 @@ function initParticles() {
   }, 250));
 }
 
-// ===== Greeting (Zeit-basiert) =====
-const greetings = {
-  morning: [
-    "Guten Morgen und willkommen auf meiner Website!",
-    "Schön, dass du früh vorbeischaust!",
-    "Moin! Entdecke meine Projekte.",
-    "Einen erfolgreichen Start in den Tag!"
-  ],
-  day: [
-    "Herzlich willkommen auf meiner Website!",
-    "Schön, dass du hier bist!",
-    "Willkommen – viel Spaß beim Stöbern!",
-    "Entdecke meine Arbeiten und Projekte!"
-  ],
-  evening: [
-    "Guten Abend und willkommen auf meiner Website!",
-    "Schön, dass du abends reinschaust!",
-    "Genieße den Abend und viel Spaß auf meiner Seite!",
-    "Einen entspannten Abend wünsche ich dir!"
-  ],
-  night: [
-    "Schön, dass du nachts hier bist – willkommen!",
-    "Gute Nacht und viel Spaß beim Stöbern!",
-    "Späte Besucher sind die besten Besucher!",
-    "Willkommen zu später Stunde auf meiner Website!"
-  ]
-};
-function getGreetingSet() {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 11)  return greetings.morning;
-  if (hour >= 11 && hour < 17) return greetings.day;
-  if (hour >= 17 && hour < 22) return greetings.evening;
-  return greetings.night;
+// ===== Greeting (Zeit-basiert) ausgelagert in hero-data.js =====
+async function ensureHeroDataModule(){
+  if(heroDataModule) return heroDataModule;
+  try {
+    heroDataModule = await import('./home/hero-data.js');
+  } catch(err){ console.error('[hero-data] hero-data.js Import fehlgeschlagen', err); heroDataModule = {}; }
+  return heroDataModule;
 }
-function setRandomGreetingHTML(animated = false) {
+async function setRandomGreetingHTML(animated = false) {
   const el = document.getElementById('greetingText');
   if (!el) return;
-  const set = getGreetingSet();
-  let random = set[Math.floor(Math.random() * set.length)];
-  if (set.length > 1 && el.dataset.last === random) {
-    do { random = set[Math.floor(Math.random() * set.length)]; }
-    while (random === el.dataset.last);
-  }
-  el.dataset.last = random;
+  const mod = await ensureHeroDataModule();
+  const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
+  const pick = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
+  if(!pick) return;
+  el.dataset.last = pick;
   if (animated) {
     el.classList.add('fade');
-    setTimeout(() => { el.textContent = random; el.classList.remove('fade'); }, 400);
+    setTimeout(() => { el.textContent = pick; el.classList.remove('fade'); }, 400);
   } else {
-    el.textContent = random;
+    el.textContent = pick;
   }
 }
 
@@ -338,6 +347,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   __modulesReady = true;
   tryHideLoader();
 
+  // Nach Laden der Module: Hero Typing Initialisierung verfügbar machen (neu ausgelagert in TypeWriter.js)
+  window.__initTyping = function(){
+    return import('./home/TypeWriter.js').then(mod => {
+      if(typeof mod.initHeroSubtitle === 'function'){
+        return mod.initHeroSubtitle({
+          ensureHeroDataModule,
+          makeLineMeasurer,
+            quotes,
+          TypeWriterClass: TypeWriter
+        });
+      }
+      console.warn('initHeroSubtitle nicht gefunden');
+      return false;
+    });
+  };
+
   // Hard fallback, falls irgendwas schiefgeht
   setTimeout(hideLoadingScreen, 5000);
 
@@ -379,45 +404,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, { passive: false });
   })();
 
-  // ===== Typing initialisieren (ausgelagert) =====
-  const subtitleEl  = document.querySelector('.hero-subtitle');
-  const typedText   = document.getElementById('typedText');
-  const typedAuthor = document.getElementById('typedAuthor');
-
-  if (subtitleEl && typedText && typedAuthor && TypeWriter && makeLineMeasurer) {
-    const measurer = makeLineMeasurer(subtitleEl);
-
-    const startTypewriter = () => {
-  const _typeWriter = new TypeWriter({
-        textEl: typedText,
-        authorEl: typedAuthor,
-        quotes,
-        wait: 2400,
-        typeSpeed: 85,
-        deleteSpeed: 40,
-        shuffle: true,
-        loop: true,
-        smartBreaks: true,
-        containerEl: subtitleEl,
-        onBeforeType: (fullText) => {
-          const lines = measurer.reserveFor(fullText, true);
-          const cs  = getComputedStyle(subtitleEl);
-          const lh  = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
-          const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
-          const boxH = (1 * lh) + (lines * lh) + gap; // 1 Autorzeile + N Quotezeilen + 1x Abstand
-          subtitleEl.style.setProperty('--box-h', `${boxH}px`);
-        }
-      });
-      window.__typeWriter = _typeWriter; // Debug Referenz
-    };
-  const fontsReady = document.fonts?.ready;
-  (fontsReady ?? Promise.resolve()).then(startTypewriter);
-  }
+  // ===== Typing initialisieren (ausgelagert in TypeWriter.js) =====
+  window.__initTyping();
 
   // Greeting
   setRandomGreetingHTML();
 
   // Particles
+  // initParticles moved to global for hero lazy load reuse
   initParticles();
 
   // Project-Filter
@@ -433,20 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSmoothScroll();
 
   // Hero Sichtbarkeits-Observer -> body.hero-active toggeln
-  (function(){
-    const hero = document.getElementById('hero');
-    if(!hero) return;
-    const rootBody = document.body;
-    const heroObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if(e.target === hero){
-          if(e.intersectionRatio >= 0.5) rootBody.classList.add('hero-active');
-          else rootBody.classList.remove('hero-active');
-        }
-      });
-    }, { threshold: [0,0.25,0.5,0.75,1] });
-    heroObs.observe(hero);
-  })();
+  window.__postHeroEnhancements();
 
   // Reduce Motion Toggle
   (function(){
@@ -491,18 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadMenuAssets();
 
   // Force-Start für Hero-Button Animationen beim direkten Seitenaufruf (ohne Scroll)
-  (function(){
-    if(!window.AnimationSystem) return;
-    const hero = document.getElementById('hero');
-    if(!hero) return;
-    const rect = hero.getBoundingClientRect();
-    if(rect.top < window.innerHeight && rect.bottom > 0){
-      const btns = hero.querySelectorAll('.hero-buttons [data-animation].animate-element:not(.is-visible)');
-      btns.forEach(el => {
-        if(typeof window.AnimationSystem.replay === 'function') window.AnimationSystem.replay(el);
-        else el.classList.add('is-visible');
-      });
-    }
-  })();
+  // Falls Hero später nachgeladen wird erneut durch hero.js aufrufbar
 
 });
+

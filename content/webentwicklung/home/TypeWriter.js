@@ -92,15 +92,17 @@ export default class TypeWriter {
       this.textEl.textContent = text;
       return;
     }
+    const frag = document.createDocumentFragment();
     const parts = String(text).split(/(, )/);
     for (const part of parts) {
       if (part === ', ') {
-        this.textEl.appendChild(document.createTextNode(','));
-        this.textEl.appendChild(document.createElement('br'));
+        frag.appendChild(document.createTextNode(','));
+        frag.appendChild(document.createElement('br'));
       } else {
-        this.textEl.appendChild(document.createTextNode(part));
+        frag.appendChild(document.createTextNode(part));
       }
     }
+    this.textEl.appendChild(frag);
   }
 
   _tick() {
@@ -117,7 +119,7 @@ export default class TypeWriter {
     let delay = this._isDeleting ? this.deleteSpeed : this.typeSpeed;
     if (!this._isDeleting && this._txt.length > 0) {
       const ch = this._txt[this._txt.length - 1];
-      const punctPause = { ',': 120, '.': 300, '…': 400, '!': 250, '?': 250, ';': 180, ':': 180 };
+      const punctPause = { ',': 120, '.': 300, '…': 400, '!': 250, '?': 250, ';': 180, ':': 180, '—': 220, '–': 180 };
       if (punctPause[ch]) delay += punctPause[ch];
     }
 
@@ -138,4 +140,58 @@ export default class TypeWriter {
     this._clearTimer();
     this._schedule(delay);
   }
+}
+
+// TypeWriter Optionen 
+export const typewriterConfig = {
+  wait: 2400,
+  typeSpeed: 85,
+  deleteSpeed: 40,
+  shuffle: true,
+  loop: true,
+  smartBreaks: true
+};
+
+// Neue Initialisierungsfunktion (aus main.js extrahiert)
+export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer, quotes, TypeWriterClass }) {
+  try {
+    const subtitleEl  = document.querySelector('.hero-subtitle');
+    const typedText   = document.getElementById('typedText');
+    const typedAuthor = document.getElementById('typedAuthor');
+    if (!subtitleEl || !typedText || !typedAuthor || !TypeWriterClass || !makeLineMeasurer || !quotes?.length) return false;
+    let twCfg = {};
+    try { const mod = await ensureHeroDataModule(); twCfg = mod?.typewriterConfig || {}; }
+    catch(e){ console.warn('typewriterConfig load failed', e); }
+    const measurer = makeLineMeasurer(subtitleEl);
+    const startTypewriter = () => {
+      const _typeWriter = new TypeWriterClass({
+        textEl: typedText,
+        authorEl: typedAuthor,
+        quotes,
+        wait: 2400,
+        typeSpeed: 85,
+        deleteSpeed: 40,
+        shuffle: true,
+        loop: true,
+        smartBreaks: true,
+        ...twCfg,
+        containerEl: subtitleEl,
+        onBeforeType: (fullText) => {
+          // Lock EIN, damit die Boxhöhe nicht springt
+          subtitleEl.classList.add('is-locked');
+
+          const lines = measurer.reserveFor(fullText, true);
+          const cs  = getComputedStyle(subtitleEl);
+          const lh  = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
+          const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
+          const boxH = (1 * lh) + (lines * lh) + gap;
+          subtitleEl.style.setProperty('--box-h', `${boxH}px`);
+        }
+      });
+      window.__typeWriter = _typeWriter;
+    };
+    const fontsReady = document.fonts?.ready;
+    (fontsReady ?? Promise.resolve()).then(startTypewriter);
+    return true;
+  } catch(err){ console.warn('initHeroSubtitle error', err); return false; }
 }
