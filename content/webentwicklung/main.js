@@ -1,234 +1,37 @@
-// ===== Utils: Debounce & Throttle =====
-function debounce(func, wait) {
-  let timeout;
-  function debounced(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  }
-  debounced.cancel = () => clearTimeout(timeout);
-  return debounced;
-}
+// ===== Dynamic Imports + Fallbacks =====
+let debounce = (fn, wait) => {
+  // Fallback: no debouncing
+  return function (...args) { return fn.apply(this, args); };
+};
+let throttle = (fn /*, limit */) => {
+  // Fallback: no throttling
+  return function (...args) { return fn.apply(this, args); };
+};
+let TypeWriter = null;
+let makeLineMeasurer = null;
+let quotes = [];
 
-function throttle(func, limit) {
-  let inThrottle;
-  return function () {
-    if (!inThrottle) {
-      func.apply(this, arguments);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-}
+async function loadTypedModules() {
+  try {
+    const timing = await import('./typed/timing.js');
+    debounce = timing.debounce || debounce;
+    throttle = timing.throttle || throttle;
+  } catch (e) { console.error('[typed] timing.js fehlgeschlagen:', e); }
 
-// Export for testing (optional)
-if (typeof module !== 'undefined') {
-  module.exports = { debounce, throttle };
-}
+  try {
+    const mod = await import('./typed/TypeWriter.js');
+    TypeWriter = mod.default || mod.TypeWriter || TypeWriter;
+  } catch (e) { console.error('[typed] TypeWriter.js fehlgeschlagen:', e); }
 
-// ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
-class TypeWriter {
-  constructor({
-    textEl,
-    authorEl,
-    quotes,
-    wait = 2400,
-    typeSpeed = 85,
-    deleteSpeed = 40,
-    shuffle = true,
-    loop = true,
-    smartBreaks = true,
-    containerEl = null,          // .hero-subtitle zum Locken
-    onBeforeType = null          // Hook: vor dem Tippen reservieren + locken
-  }) {
-    if (!textEl || !authorEl || !Array.isArray(quotes) || quotes.length === 0) return;
-    this.textEl = textEl;
-    this.authorEl = authorEl;
-    this.quotes = quotes.slice();
-    this.wait = +wait;
-    this.typeSpeed = +typeSpeed;
-    this.deleteSpeed = +deleteSpeed;
-    this.shuffle = !!shuffle;
-    this.loop = !!loop;
-    this.smartBreaks = !!smartBreaks;
-    this.containerEl = containerEl;
-    this.onBeforeType = typeof onBeforeType === 'function' ? onBeforeType : null;
+  try {
+    const lm = await import('./typed/lineMeasurer.js');
+    makeLineMeasurer = lm.makeLineMeasurer || makeLineMeasurer;
+  } catch (e) { console.error('[typed] lineMeasurer.js fehlgeschlagen:', e); }
 
-    this._timer = null;
-    this._isDeleting = false;
-    this._txt = '';
-    this._queue = this.shuffle ? this._shuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
-    this._index = this._queue.shift();
-    this._current = this.quotes[this._index];
-
-    // CSS-Fallback ausschalten
-    document.body.classList.add('has-typingjs');
-
-    // Vor dem ersten Tippen reservieren + locken
-    if (this.onBeforeType) this.onBeforeType(this._current.text);
-
-    this._tick();
-  }
-
-  destroy() {
-    this._clearTimer();
-    document.body.classList.remove('has-typingjs');
-  }
-
-  _shuffledIndices(n) {
-    const arr = [...Array(n).keys()];
-    for (let i = n - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
-  _nextQuote() {
-    if (this._queue.length === 0) {
-      if (!this.loop) return null;
-      this._queue = this.shuffle ? this._shuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
-    }
-    this._index = this._queue.shift();
-    this._current = this.quotes[this._index];
-    return this._current;
-  }
-
-  _schedule(ms) { this._timer = setTimeout(() => this._tick(), ms); }
-  _clearTimer() { if (this._timer) { clearTimeout(this._timer); this._timer = null; } }
-
-  _renderText(text) {
-    // smartBreaks: ", " → Komma behalten + <br>
-    this.textEl.textContent = '';
-    if (!this.smartBreaks) {
-      this.textEl.textContent = text;
-      return;
-    }
-    const parts = String(text).split(/(, )/);
-    for (const part of parts) {
-      if (part === ', ') {
-        this.textEl.appendChild(document.createTextNode(','));
-        this.textEl.appendChild(document.createElement('br'));
-      } else {
-        this.textEl.appendChild(document.createTextNode(part));
-      }
-    }
-  }
-
-  _tick() {
-    const full = String(this._current.text || '');
-    const author = String(this._current.author || '');
-
-    this._txt = this._isDeleting
-      ? full.substring(0, Math.max(0, this._txt.length - 1))
-      : full.substring(0, Math.min(full.length, this._txt.length + 1));
-
-    this._renderText(this._txt);
-    this.authorEl.textContent = author;
-
-    let delay = this._isDeleting ? this.deleteSpeed : this.typeSpeed;
-    if (!this._isDeleting && this._txt.length > 0) {
-      const ch = this._txt[this._txt.length - 1];
-      const punctPause = { ',': 120, '.': 300, '…': 400, '!': 250, '?': 250, ';': 180, ':': 180 };
-      if (punctPause[ch]) delay += punctPause[ch];
-    }
-
-    if (!this._isDeleting && this._txt === full) {
-      delay = this.wait;
-      this._isDeleting = true;
-    } else if (this._isDeleting && this._txt === '') {
-      this._isDeleting = false;
-      // Lock entfernen; nächste Quote wird im onBeforeType neu gelockt
-      if (this.containerEl) this.containerEl.classList.remove('is-locked');
-
-      const next = this._nextQuote();
-      if (!next) { this.destroy(); return; }
-
-      if (this.onBeforeType) this.onBeforeType(next.text);
-      delay = 600;
-    }
-
-    this._clearTimer();
-    this._schedule(delay);
-  }
-}
-
-// ===== Mess-Utility: Höhe VOR dem Tippen bestimmen =====
-function makeLineMeasurer(subtitleEl) {
-  const measurer = document.createElement('div');
-  measurer.style.cssText = [
-    'position:absolute','left:-9999px','top:0','visibility:hidden',
-    'white-space:normal','pointer-events:none'
-  ].join(';');
-  document.body.appendChild(measurer);
-
-  const cs = getComputedStyle(subtitleEl);
-  ['font-size','line-height','font-family','font-weight','letter-spacing','word-spacing']
-    .forEach(p => measurer.style.setProperty(p, cs.getPropertyValue(p)));
-
-  function getLineHeightPx(){
-    const lhRaw = cs.lineHeight.trim();
-    if (lhRaw.endsWith('px')) {
-      const v = parseFloat(lhRaw); if (!isNaN(v)) return v;
-    }
-    const num = parseFloat(lhRaw);
-    if (!isNaN(num)) {
-      const fsRaw = cs.fontSize.trim();
-      const fs = parseFloat(fsRaw);
-      if (!isNaN(fs)) return num * fs;
-    }
-    measurer.innerHTML = '';
-    const one = document.createElement('span');
-    one.textContent = 'A';
-    one.style.display = 'inline-block';
-    measurer.appendChild(one);
-    const h = one.getBoundingClientRect().height;
-    return h || 0;
-  }
-
-  function measure(text, smartBreaks){
-    measurer.innerHTML = '';
-    const span = document.createElement('span');
-    if (smartBreaks){
-      const parts = String(text).split(/(, )/);
-      for (const part of parts){
-        if (part === ', '){
-          span.appendChild(document.createTextNode(','));
-          span.appendChild(document.createElement('br'));
-        } else {
-          span.appendChild(document.createTextNode(part));
-        }
-      }
-    } else {
-      span.textContent = String(text);
-    }
-    measurer.appendChild(span);
-
-    // echte verfügbare Breite ab linker Kante + Cap wie im CSS
-    const rect = subtitleEl.getBoundingClientRect();
-    const left = rect.left || 0;
-    const safeMargin = 12;
-    const available = Math.max(0, window.innerWidth - left - safeMargin);
-    const cap = Math.min(window.innerWidth * 0.92, 820);
-    const width = Math.max(1, Math.min(available || cap, cap));
-    measurer.style.width = width + 'px';
-
-    const lh = getLineHeightPx();
-    const h  = span.getBoundingClientRect().height;
-    if (!lh || !h) return 1;
-    return Math.max(1, Math.min(3, Math.round(h / lh))); // clamp 1..3
-  }
-
-  return {
-    reserveFor(text, smartBreaks = true){
-      const lh = getLineHeightPx();
-      subtitleEl.style.setProperty('--lh-px', lh ? `${lh}px` : '0px');
-      subtitleEl.style.setProperty('--gap-px', lh ? `${(lh * 0.25)}px` : '0px');
-      const lines = measure(text, smartBreaks);
-      subtitleEl.style.setProperty('--lines', String(lines));
-      subtitleEl.setAttribute('data-lines', String(lines));
-      return lines;
-    }
-  };
+  try {
+    const q = await import('./typed/quotes-de.js');
+    quotes = q.default || q.quotes || quotes;
+  } catch (e) { console.error('[typed] quotes-de.js fehlgeschlagen:', e); }
 }
 
 // ===== Particles =====
@@ -433,82 +236,107 @@ function loadMenuAssets() {
   }
 }
 
-// ===== Loading Screen =====
-function initLoadingScreen() {
-  const loadingScreen = document.getElementById('loadingScreen');
-  setTimeout(() => { loadingScreen?.classList.add('hide'); }, 500);
+// ===== Loader State =====
+let __modulesReady = false;
+let __windowLoaded = false;
+let __loaderStart = 0;
+const __MIN_LOADER_MS = 700; // Mindestanzeige, damit man den Loader sieht
+
+// ===== Loading Screen (robust) =====
+function hideLoadingScreen() {
+  const el = document.getElementById('loadingScreen');
+  if (!el) return;
+  el.classList.add('hide');
+  el.setAttribute('aria-hidden', 'true');
+  // Hard inline styles als Fallback, falls CSS-Klasse fehlt
+  el.style.opacity = '0';
+  el.style.pointerEvents = 'none';
+  el.style.visibility = 'hidden';
+  // Nach Transition endgültig aus dem Layout nehmen
+  const remove = () => {
+    el.style.display = 'none';
+    el.removeEventListener('transitionend', remove);
+  };
+  el.addEventListener('transitionend', remove);
+  setTimeout(remove, 700); // Fallback, falls keine Transition feuert
 }
 
 // ===== Main =====
-document.addEventListener('DOMContentLoaded', () => {
-  // Loading screen
-  window.addEventListener('load', initLoadingScreen);
+document.addEventListener('DOMContentLoaded', async () => {
+  // Loading screen: sichtbar lassen, bis Module + window load fertig sind
+  __loaderStart = performance.now();
 
-// Prevent overscroll/bounce ONLY am ersten Snap (Home) und letzten (Footer)
-(function () {
-  // Grenzen bestimmen: erstes .section (oder #hero), letztes .section, Footer bevorzugen
-  function getSnapBounds() {
-    const sections = Array.from(document.querySelectorAll('.section'));
-    let first = sections[0] || document.querySelector('#hero') || document.body;
-    let last  = sections[sections.length - 1] || document.querySelector('footer') || document.body;
-    const realFooter = document.querySelector('footer');
-    if (realFooter) last = realFooter;
-    return { first, last };
+  function tryHideLoader() {
+    // nur schließen, wenn Module geladen
+    if (!__modulesReady) return;
+    // warte bis window "load" oder readyState complete (Assets geladen)
+    if (!__windowLoaded && document.readyState !== 'complete') return;
+    const elapsed = performance.now() - __loaderStart;
+    const wait = Math.max(0, __MIN_LOADER_MS - elapsed);
+    setTimeout(hideLoadingScreen, wait);
   }
 
-  function atTopOfFirst() {
-    const { first } = getSnapBounds();
-    const top = Math.max(0, first?.offsetTop || 0);
-    return window.scrollY <= top + 1; // 1px Toleranz
-  }
+  window.addEventListener('load', () => { __windowLoaded = true; tryHideLoader(); });
 
-  function atBottomOfLast() {
-    const { last } = getSnapBounds();
-    const lastTop = last?.offsetTop || 0;
-    const lastBottom = lastTop + (last?.offsetHeight || 0);
-    const viewBottom = window.scrollY + window.innerHeight;
-    return viewBottom >= lastBottom - 1; // 1px Toleranz
-  }
+  // Module laden (dynamisch). Wenn fertig, erneut prüfen.
+  await loadTypedModules();
+  __modulesReady = true;
+  tryHideLoader();
 
-  // Desktop (Mausrad / Trackpad): nur an den Rändern blockieren
-  window.addEventListener('wheel', (e) => {
-    const dy = e.deltaY;
-    if ((dy < 0 && atTopOfFirst()) || (dy > 0 && atBottomOfLast())) {
-      e.preventDefault();
+  // Hard fallback, falls irgendwas schiefgeht
+  setTimeout(hideLoadingScreen, 5000);
+
+  // Prevent overscroll/bounce NUR am ersten Snap und letzten (Footer)
+  (function () {
+    function getSnapBounds() {
+      const sections = Array.from(document.querySelectorAll('.section'));
+      let first = sections[0] || document.querySelector('#hero') || document.body;
+      let last  = sections[sections.length - 1] || document.querySelector('footer') || document.body;
+      const realFooter = document.querySelector('footer');
+      if (realFooter) last = realFooter;
+      return { first, last };
     }
-  }, { passive: false });
-
-  // Touch (Mobile/iOS): Bounce an den Rändern verhindern
-  let startY = 0;
-  window.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
-  window.addEventListener('touchmove', (e) => {
-    const y = e.touches[0].clientY;
-    const goingDown = y > startY; // Finger runter => Scroll nach oben
-    const goingUp   = y < startY; // Finger rauf   => Scroll nach unten
-    if ((goingDown && atTopOfFirst()) || (goingUp && atBottomOfLast())) {
-      e.preventDefault();
+    function atTopOfFirst() {
+      const { first } = getSnapBounds();
+      const top = Math.max(0, first?.offsetTop || 0);
+      return window.scrollY <= top + 1;
     }
-  }, { passive: false });
-})();
+    function atBottomOfLast() {
+      const { last } = getSnapBounds();
+      const lastTop = last?.offsetTop || 0;
+      const lastBottom = lastTop + (last?.offsetHeight || 0);
+      const viewBottom = window.scrollY + window.innerHeight;
+      return viewBottom >= lastBottom - 1;
+    }
+    // Desktop
+    window.addEventListener('wheel', (e) => {
+      const dy = e.deltaY;
+      if ((dy < 0 && atTopOfFirst()) || (dy > 0 && atBottomOfLast())) e.preventDefault();
+    }, { passive: false });
+    // Touch
+    let startY = 0;
+    window.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      const y = e.touches[0].clientY;
+      const goingDown = y > startY;
+      const goingUp   = y < startY;
+      if ((goingDown && atTopOfFirst()) || (goingUp && atBottomOfLast())) e.preventDefault();
+    }, { passive: false });
+  })();
 
-  const subtitleEl = document.querySelector('.hero-subtitle');
-  const typedText  = document.getElementById('typedText');
-  const typedAuthor= document.getElementById('typedAuthor');
+  // ===== Typing initialisieren (ausgelagert) =====
+  const subtitleEl  = document.querySelector('.hero-subtitle');
+  const typedText   = document.getElementById('typedText');
+  const typedAuthor = document.getElementById('typedAuthor');
 
-  if (subtitleEl && typedText && typedAuthor) {
+  if (subtitleEl && typedText && typedAuthor && TypeWriter && makeLineMeasurer) {
     const measurer = makeLineMeasurer(subtitleEl);
 
     const startTypewriter = () => {
       new TypeWriter({
         textEl: typedText,
         authorEl: typedAuthor,
-        quotes: [
-          { author: 'Rumi',      text: 'Der Schmerz reinigt das Herz.' },
-          { author: 'Nietzsche', text: 'Wer ein Warum zum Leben hat, erträgt fast jedes Wie.' },
-          { author: 'Konfuzius', text: 'Der Weg ist das Ziel.' },
-          { author: 'Goethe',    text: 'Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen.' },
-          { author: 'aKs',       text: 'Das Licht ist nicht laut, es überzeugt durch Klarheit.' }
-        ],
+        quotes,
         wait: 2400,
         typeSpeed: 85,
         deleteSpeed: 40,
@@ -516,14 +344,14 @@ document.addEventListener('DOMContentLoaded', () => {
         loop: true,
         smartBreaks: true,
         containerEl: subtitleEl,
-onBeforeType: (fullText) => {
-  const lines = measurer.reserveFor(fullText, true);
-  const cs  = getComputedStyle(subtitleEl);
-  const lh  = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
-  const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
-  const boxH = (1 * lh) + (lines * lh) + gap; // 1 Autorzeile + N Quotezeilen + 1x Abstand
-  subtitleEl.style.setProperty('--box-h', `${boxH}px`);
-}
+        onBeforeType: (fullText) => {
+          const lines = measurer.reserveFor(fullText, true);
+          const cs  = getComputedStyle(subtitleEl);
+          const lh  = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
+          const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
+          const boxH = (1 * lh) + (lines * lh) + gap; // 1 Autorzeile + N Quotezeilen + 1x Abstand
+          subtitleEl.style.setProperty('--box-h', `${boxH}px`);
+        }
       });
     };
 
@@ -546,6 +374,9 @@ onBeforeType: (fullText) => {
   // Scroll / Intersection / BackToTop
   initScrollAnimations();
 
+  // Performance: Scroll-Handler (nach geladener timing.js)
+  window.addEventListener('scroll', debounce(handleScrollEvents, 75));
+
   // Smooth Anchor Scroll
   initSmoothScroll();
 
@@ -557,6 +388,3 @@ onBeforeType: (fullText) => {
   // Menü dynamisch nachladen
   loadMenuAssets();
 });
-
-// Performance: Scroll-Handler
-window.addEventListener('scroll', debounce(handleScrollEvents, 75));
