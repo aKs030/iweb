@@ -617,36 +617,49 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
   z-index: 1; pointer-events: none;
 }
 
-.greeting-text-hero {
-  position: absolute;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  .greeting-text-hero {
+    position: absolute;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 
-  font-size: clamp(1.8rem, 4.2vw, 2.8rem);
-  line-height: 1.12;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  text-align: center;
-  text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
-  margin: 38px 0 0 0;
-  padding: 0 12px;
-  background: linear-gradient(90deg, #098bff, #00d4ff 80%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  opacity: 1;
-  -webkit-user-select: none; user-select: none;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: normal;
-  hyphens: auto;
-  max-width: clamp(16ch, 46vw, 22ch); min-height: 2.6em;
-  animation: gradientMove 5.5s linear infinite, pulseGlow 2.5s ease-in-out infinite;
-}
+    /* kleiner, eleganter, ruhiger */
+    font-size: clamp(1.6rem, 3.6vw, 2.4rem);
+    line-height: 1.14;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+
+    text-align: center;
+    text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
+    margin: 32px 0 0 0;
+    padding: 0 10px;
+
+    /* subtilerer Verlauf, weniger „schreiend“ */
+    background: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    opacity: 1;
+    -webkit-user-select: none; user-select: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    hyphens: auto;
+    max-width: clamp(16ch, 40vw, 24ch);
+    min-height: 2.6em;
+    font-variation-settings: "opsz" 18;
+    font-optical-sizing: auto;
+
+    /* Animationen dezenter halten */
+    animation: gradientMove 6.5s linear infinite, pulseGlow 3.2s ease-in-out infinite;
+  }
 @supports (text-wrap: balance) {
   .greeting-text-hero { text-wrap: balance; }
 }
 @keyframes gradientMove { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-@keyframes pulseGlow { 0%,100% { filter: drop-shadow(0 2px 16px #00d4ffaa); } 50% { filter: drop-shadow(0 4px 36px #00e6ffcc); } }
+@keyframes pulseGlow { 
+  0%,100% { filter: drop-shadow(0 1px 12px #00d4ff88); }
+  50%      { filter: drop-shadow(0 2px 22px #00e6ff99); }
+}
 .greeting-text-hero.fade { opacity: 0; transform: translateY(24px) scale(0.98); }
 .greeting-text-hero:not(.fade) { opacity: 1; transform: translateY(0) scale(1); }
 
@@ -782,6 +795,13 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
     margin-left: 0.08ch; 
   }
 
+  /* Slightly kompakterer Desktop‑Look for greeting headline */
+  .greeting-text-hero{
+    font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+    line-height: 1.12;
+    letter-spacing: -0.014em;
+    max-width: clamp(18ch, 36vw, 24ch);
+  }
 
   /* Buttons im Flow, sichtbar im Viewport */
   .hero-buttons {
@@ -834,12 +854,21 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{
   .hero-subtitle .typed-text{ font-size: 0.86em; line-height: 1.14; letter-spacing: 0.001em; }
   .hero-subtitle .typed-author{ font-size: clamp(0.80rem, 1.8vw, 0.92rem); }
   .hero-subtitle .typed-text::after{ height: 0.86em; border-left-width: 1.6px; margin-left: 0.08ch; }
-  
+
+  /* Headline kleiner und ruhiger auf Mobile */
+  .greeting-text-hero{
+    font-size: clamp(1.35rem, 5.2vw, 1.85rem);
+    line-height: 1.16;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 20px;
+    max-width: clamp(18ch, 78vw, 26ch);
+    animation: gradientMove 7.5s linear infinite, pulseGlow 3.6s ease-in-out infinite;
+  }
+
   .btn { padding: 0.6rem 1.2rem; font-size: 0.9rem; }
   .projects-grid, .skills-grid, .stats-grid { grid-template-columns: 1fr; }
   .floating-icon, .hero-image-decoration { display: none; }
-
-
 }
 
 
