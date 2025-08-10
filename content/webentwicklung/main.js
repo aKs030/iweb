@@ -444,6 +444,53 @@ document.addEventListener('DOMContentLoaded', () => {
   // Loading screen
   window.addEventListener('load', initLoadingScreen);
 
+// Prevent overscroll/bounce ONLY am ersten Snap (Home) und letzten (Footer)
+(function () {
+  // Grenzen bestimmen: erstes .section (oder #hero), letztes .section, Footer bevorzugen
+  function getSnapBounds() {
+    const sections = Array.from(document.querySelectorAll('.section'));
+    let first = sections[0] || document.querySelector('#hero') || document.body;
+    let last  = sections[sections.length - 1] || document.querySelector('footer') || document.body;
+    const realFooter = document.querySelector('footer');
+    if (realFooter) last = realFooter;
+    return { first, last };
+  }
+
+  function atTopOfFirst() {
+    const { first } = getSnapBounds();
+    const top = Math.max(0, first?.offsetTop || 0);
+    return window.scrollY <= top + 1; // 1px Toleranz
+  }
+
+  function atBottomOfLast() {
+    const { last } = getSnapBounds();
+    const lastTop = last?.offsetTop || 0;
+    const lastBottom = lastTop + (last?.offsetHeight || 0);
+    const viewBottom = window.scrollY + window.innerHeight;
+    return viewBottom >= lastBottom - 1; // 1px Toleranz
+  }
+
+  // Desktop (Mausrad / Trackpad): nur an den Rändern blockieren
+  window.addEventListener('wheel', (e) => {
+    const dy = e.deltaY;
+    if ((dy < 0 && atTopOfFirst()) || (dy > 0 && atBottomOfLast())) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Touch (Mobile/iOS): Bounce an den Rändern verhindern
+  let startY = 0;
+  window.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    const y = e.touches[0].clientY;
+    const goingDown = y > startY; // Finger runter => Scroll nach oben
+    const goingUp   = y < startY; // Finger rauf   => Scroll nach unten
+    if ((goingDown && atTopOfFirst()) || (goingUp && atBottomOfLast())) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+})();
+
   const subtitleEl = document.querySelector('.hero-subtitle');
   const typedText  = document.getElementById('typedText');
   const typedAuthor= document.getElementById('typedAuthor');
