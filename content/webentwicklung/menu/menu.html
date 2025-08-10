@@ -1,134 +1,66 @@
+<!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <!-- Google Fonts: Lobster -->
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <!-- Eigene Styles -->
+    <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
 
-<div class="menu-container">
-  <header class="main-header" id="mainHeader">
-      <div class="nav-container">
-          <!-- Logo -->
-          <a href="/" class="logo">
-              <span class="logo-icon">AK</span>
-              <span class="logo-text">Portfolio</span>
-          </a>
 
-          <!-- Main Navigation -->
-          <nav class="main-nav">
-              <ul class="nav-links" aria-label="Hauptnavigation">
-                  <li><a href="/" class="nav-link" data-page="home">Startseite</a></li>
-                  <li class="dropdown">
-                      <a href="#" class="nav-link dropdown-toggle">Projekte</a>
-                      <div class="dropdown-menu">
-                          <a href="/pages/webentwicklung/"><span class="icon">🌐</span>Webentwicklung</a>
-                          <a href="/pages/fotogalerie/"><span class="icon">📷</span>Fotografie</a>
-                          <a href="/pages/spiele/"><span class="icon">🎮</span>Spiele</a>
-                          <a href="/pages/design/"><span class="icon">🎨</span>Design</a>
-                      </div>
-                  </li>
-                  <li><a href="/pages/ueber-mich/" class="nav-link" data-page="about">Über mich</a></li>
-                  <li class="dropdown">
-                      <a href="#" class="nav-link dropdown-toggle">Mehr</a>
-                      <div class="dropdown-menu">
-                          <a href="/pages/blog/"><span class="icon">📝</span>Blog</a>
-                          <a href="/pages/tutorials/"><span class="icon">🎓</span>Tutorials</a>
-                          <a href="/pages/tools/"><span class="icon">🛠️</span>Tools</a>
-                          <a href="/pages/kontakt/"><span class="icon">📧</span>Kontakt</a>
-                      </div>
-                  </li>
-              </ul>
 
-              <!-- Utility Buttons -->
-              <div class="nav-utilities">
-                  <button class="theme-toggle" id="themeToggle" aria-label="Theme wechseln" title="Theme wechseln">
-                      <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="5"/>
-                          <line x1="12" y1="1" x2="12" y2="3"/>
-                          <line x1="12" y1="21" x2="12" y2="23"/>
-                          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                          <line x1="1" y1="12" x2="3" y2="12"/>
-                          <line x1="21" y1="12" x2="23" y2="12"/>
-                          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                      </svg>
-                      <svg class="moon-icon" style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                      </svg>
-                  </button>
-                  <button class="search-toggle" id="searchToggle" aria-label="Suche öffnen" title="Suchen">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="11" cy="11" r="8"/>
-                          <path d="m21 21-4.35-4.35"/>
-                      </svg>
-                  </button>
-              </div>
-          </nav>
+    <header class="site-header">
+      <!-- Logo -->
+      <a href="/index.html" aria-label="Zur Startseite" title="Zur Startseite">
+        <span class="site-logo__container">
+          <span class="site-logo elegant-logo" id="site-title">
+            <!-- Seitentitel wird per JS eingefügt -->
+          </span>
+        </span>
+      </a>
 
-          <!-- Mobile Menu Toggle -->
-          <button class="mobile-toggle" id="mobileToggle" aria-label="Menü öffnen">
-              <span class="hamburger"></span>
-          </button>
-      </div>
-  </header>
+      <!-- Hamburger-Button -->
+      <button class="site-menu__toggle" aria-label="Menü umschalten">
+        <span class="site-menu__hamburger"></span>
+      </button>
 
-  <!-- Mobile Menu -->
-  <nav class="mobile-menu" id="mobileMenu" aria-label="Mobiles Hauptmenü">
-              <div class="mobile-menu-content" aria-label="Mobiles Menü">
-          <ul class="mobile-nav-links">
-              <li><a href="/" class="mobile-nav-link" data-page="home">Startseite</a></li>
+      <!-- Navigation mit Rolle und aria-label -->
+      <nav class="site-menu" role="navigation" aria-label="Hauptnavigation">
+        <ul class="site-menu__list">
+          <li>
+            <a href="/index.html">
+              <i class="fa-solid fa-house" aria-hidden="true"></i> Startseite
+            </a>
+          </li>
+          <li>
+            <a href="/pages/album.html">
+              <i class="fa-solid fa-images" aria-hidden="true"></i> Fotogalerie
+            </a>
+          </li>
+          <li>
+            <a href="/pages/ubermich.html">
+              <i class="fa-solid fa-user" aria-hidden="true"></i> Über mich
+            </a>
+          </li>
+          <li class="has-submenu">
+            <a href="#" aria-haspopup="true">
+              <i class="fa-solid fa-gamepad" aria-hidden="true"></i> Spiele
+            </a>
+            <ul class="submenu">
               <li>
-                  <button class="mobile-dropdown-toggle" data-dropdown="projects">
-                      Projekte
-                      <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                  </button>
-                  <div class="mobile-dropdown-content" id="projects-dropdown">
-                      <a href="/pages/webentwicklung/">🌐 Webentwicklung</a>
-                      <a href="/pages/fotogalerie/">📷 Fotografie</a>
-                      <a href="/pages/spiele/">🎮 Spiele</a>
-                      <a href="/pages/design/">🎨 Design</a>
-                  </div>
+                <a href="/pages/index-game.html">
+                  <i class="fa-solid fa-joystick" aria-hidden="true"></i> Spiele-Übersicht
+                </a>
               </li>
-              <li><a href="/pages/ueber-mich/" class="mobile-nav-link" data-page="about">Über mich</a></li>
               <li>
-                  <button class="mobile-dropdown-toggle" data-dropdown="more">
-                      Mehr
-                      <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                  </button>
-                  <div class="mobile-dropdown-content" id="more-dropdown">
-                      <a href="/pages/blog/">📝 Blog</a>
-                      <a href="/pages/tutorials/">🎓 Tutorials</a>
-                      <a href="/pages/tools/">🛠️ Tools</a>
-                      <a href="/pages/kontakt/">📧 Kontakt</a>
-                  </div>
+                <a href="/pages/features/wetter.html">
+                  <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i> Wetter
+                </a>
               </li>
-          </ul>
-          
-          <!-- Mobile Utility Buttons -->
-          <div class="mobile-utilities">
-              <button class="mobile-theme-toggle" id="mobileThemeToggle">
-                  <span class="theme-icon">🌙</span>
-                  <span>Dark Mode</span>
-              </button>
-              <button class="mobile-search-btn" id="mobileSearchBtn">
-                  <span>🔍</span>
-                  <span>Suchen</span>
-              </button>
-          </div>
-      </div>
-  </nav>
-
-  <!-- Search Overlay -->
-  <div class="search-overlay" id="searchOverlay">
-      <div class="search-container">
-          <input type="text" class="search-input" id="searchInput" placeholder="Suchen..." autocomplete="off">
-          <button class="search-close" id="searchClose" aria-label="Suche schließen">&times;</button>
-          
-          <!-- Search Results -->
-          <div class="search-results" id="searchResults" style="display: none;">
-              <h3 aria-label="Suchergebnisse">Suchergebnisse</h3>
-              <ul id="searchResultsList"></ul>
-          </div>
-      </div>
-  </div>
-</div>
-
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </header>
+<div id="footer-container"></div>
+<script src="/js/footer.js"></script>
+</body>
+</html>

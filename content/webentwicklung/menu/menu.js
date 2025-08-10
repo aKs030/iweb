@@ -1,488 +1,135 @@
-// public/js/menu.js - Erweiterte Menü-Funktionalität
+document.addEventListener('DOMContentLoaded', () => {
+  const menuContainer = document.getElementById('menu-container');
+  const yearEl = document.getElementById('current-year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-// ===== Menü-System Initialisierung =====
-class MenuSystem {
-  // ...existing code...
-  initMobileMenuEvents() {
-    if (this.elements.mobileToggle) {
-      this.elements.mobileToggle.removeEventListener('click', this._mobileMenuHandler);
-      this._mobileMenuHandler = () => {
-  window.AnimationSystem?.dlog?.('Hamburger-Button wurde geklickt');
-        if (!this.elements.mobileToggle) {
-          window.AnimationSystem?.dlog?.('Warn: mobileToggle nicht gefunden!');
-          return;
-        }
-        if (!this.elements.mobileMenu) {
-          window.AnimationSystem?.dlog?.('Warn: mobileMenu nicht gefunden!');
-          return;
-        }
-        this.toggleMobileMenu();
-  window.AnimationSystem?.dlog?.('mobileToggle active:', this.elements.mobileToggle.classList.contains('active'));
-  window.AnimationSystem?.dlog?.('mobileMenu active:', this.elements.mobileMenu.classList.contains('active'));
-      };
-      this.elements.mobileToggle.addEventListener('click', this._mobileMenuHandler);
-    }
-  }
-  initSearch() {
-    // Platzhalter für Suchfunktion
-  }
-  constructor() {
-    this.elements = {
-      header: null,
-      mobileToggle: null,
-      mobileMenu: null,
-      searchToggle: null,
-      searchOverlay: null,
-      searchInput: null,
-      searchClose: null,
-      themeToggle: null,
-      // progressBar entfernt
-    };
-    
-    this.state = {
-      mobileMenuOpen: false,
-      searchOpen: false,
-      theme: localStorage.getItem('theme') || 'dark',
-      lastScroll: 0,
-      scrollDirection: 'up'
-    };
-    
-    this.searchableContent = [];
-  }
-
-  static create(){
-    const inst = new MenuSystem();
-    // Starte Initialisierung asynchron außerhalb des Konstruktors
-    Promise.resolve().then(()=> inst.init());
-    return inst;
-  }
-
-  async init() {
-    // Lade CSS
-    await this.loadCSS();
-    
-    // Lade HTML
-    await this.loadHTML();
-    
-    // Initialisiere nach DOM-Load
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setup());
-    } else {
-      this.setup();
-    }
-  }
-
-  loadCSS() {
-    return new Promise((resolve) => {
-      if (document.querySelector('link[href*="menux.css"]')) {
-        resolve();
-        return;
-      }
-      
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = '/content/webentwicklung/menu/menux.css';
-      link.onload = resolve;
-      document.head.appendChild(link);
-    });
-  }
-
-  async loadHTML() {
-    try {
-      const response = await fetch('/content/webentwicklung/menu/menu.html');
-      const html = await response.text();
-      
-
-      // Menü-HTML direkt einfügen
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      Array.from(tempDiv.children).forEach(child => {
-        document.body.insertBefore(child, document.body.firstChild.nextSibling);
+  // Footer laden
+  const footerPlaceholder = document.getElementById('footer-placeholder');
+  if (footerPlaceholder) {
+    fetch('/pages/komponente/footer.html')
+      .then(r => {
+        if (!r.ok) throw new Error('Footer konnte nicht geladen werden');
+        return r.text();
+      })
+      .then(html => {
+        footerPlaceholder.innerHTML = html;
+      })
+      .catch(() => {
+        // Optional: Fallback oder Fehleranzeige
+        // footerPlaceholder.innerHTML = '<footer class="footer">Footer konnte nicht geladen werden.</footer>';
       });
-      
-      // Setze Padding für Body
-      document.body.style.paddingTop = '70px';
-
-      // Nach dem Einfügen: Elemente neu cachen und Events neu binden
-      this.cacheElements();
-      this.bindEvents();
-    } catch (error) {
-      console.error('Fehler beim Laden des Menüs:', error);
-    }
+  } else {
+    console.error('Fehler: footer-placeholder wurde nicht gefunden.');
   }
 
-  setup() {
-    this.cacheElements();
-    this.bindEvents();
-    this.setActiveLink();
-    this.initTheme();
-    this.initScrollBehavior();
-    this.initSearch();
-    this.initAccessibility();
-    window.menuSystem = this; // global verfügbar für main.js
+  // Menü laden
+  if (!menuContainer) {
+    console.error('Fehler: menuContainer wurde nicht gefunden.');
+    return;
   }
-
-  cacheElements() {
-    this.elements = {
-      header: document.getElementById('mainHeader'),
-      mobileToggle: document.getElementById('mobileToggle'),
-      mobileMenu: document.getElementById('mobileMenu'),
-      searchToggle: document.getElementById('searchToggle'),
-      mobileSearchBtn: document.getElementById('mobileSearchBtn'),
-      searchOverlay: document.getElementById('searchOverlay'),
-      searchInput: document.getElementById('searchInput'),
-      searchClose: document.getElementById('searchClose'),
-      themeToggle: document.getElementById('themeToggle'),
-      mobileThemeToggle: document.getElementById('mobileThemeToggle'),
-      navLinks: document.querySelectorAll('.nav-link, .mobile-nav-link'),
-      dropdownToggles: document.querySelectorAll('.mobile-dropdown-toggle')
-    };
-    window.AnimationSystem?.dlog?.('cacheElements', {
-      mobileToggle: this.elements.mobileToggle,
-      mobileMenu: this.elements.mobileMenu
-    });
-  }
-
-  bindEvents() {
-    // Mobile Menu
-    this.initMobileMenuEvents();
-    
-    // Search
-    this.elements.searchToggle?.addEventListener('click', () => this.openSearch());
-    this.elements.mobileSearchBtn?.addEventListener('click', () => {
-      this.closeMobileMenu();
-      this.openSearch();
-    });
-    this.elements.searchClose?.addEventListener('click', () => this.closeSearch());
-    this.elements.searchOverlay?.addEventListener('click', (e) => {
-      if (e.target === this.elements.searchOverlay) {
-        this.closeSearch();
-      }
-    });
-    
-    // Theme Toggle
-    this.elements.themeToggle?.addEventListener('click', () => this.toggleTheme());
-    this.elements.mobileThemeToggle?.addEventListener('click', () => this.toggleTheme());
-    
-    // Mobile Dropdowns
-    this.elements.dropdownToggles.forEach(toggle => {
-      toggle.addEventListener('click', () => this.toggleMobileDropdown(toggle));
-    });
-    
-    // Navigation Links
-    this.elements.navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        if (this.state.mobileMenuOpen) {
-          this.closeMobileMenu();
-        }
+  fetch('/content/webentwicklung/menu/menu.html')
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
+      return response.text();
+    })
+    .then(menuMarkup => {
+      menuContainer.innerHTML = menuMarkup;
+      initializeMenu(menuContainer);
+      initializeLogo(menuContainer);
+      initializeSubmenuLinks();
+      setSiteTitle();
+      document.addEventListener('click', (event) => {
+        const isClickInside = menuContainer.contains(event.target);
+        const isMenuToggle = event.target.closest('.site-menu__toggle');
+        if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
       });
+    })
+    .catch(err => {
+      console.error('Fehler beim Laden des Menüs:', err.message);
     });
-    
-    // Keyboard Events
-    document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-    
-    // Window Events
-    window.addEventListener('resize', () => this.handleResize());
-  }
+});
 
-  // ===== Mobile Menu Functions =====
-  toggleMobileMenu() {
-    this.state.mobileMenuOpen = !this.state.mobileMenuOpen;
-    
-    this.elements.mobileToggle.classList.toggle('active');
-    this.elements.mobileMenu.classList.toggle('active');
-    
-    // Prevent body scroll when menu is open
-    document.body.style.overflow = this.state.mobileMenuOpen ? 'hidden' : '';
-    
-    // Accessibility
-    this.elements.mobileToggle.setAttribute('aria-expanded', this.state.mobileMenuOpen);
-    this.elements.mobileMenu.setAttribute('aria-hidden', !this.state.mobileMenuOpen);
-    
-    // Focus management
-    if (this.state.mobileMenuOpen) {
-      this.trapFocus(this.elements.mobileMenu);
-    } else {
-      this.releaseFocus();
-    }
-  }
-
-  closeMobileMenu() {
-    if (this.state.mobileMenuOpen) {
-      this.toggleMobileMenu();
-    }
-  }
-
-  toggleMobileDropdown(toggle) {
-    const dropdownId = toggle.dataset.dropdown;
-    const dropdown = document.getElementById(`${dropdownId}-dropdown`);
-    
-    if (!dropdown) return;
-    
-    const isActive = dropdown.classList.contains('active');
-    
-    // Close all dropdowns
-    document.querySelectorAll('.mobile-dropdown-content').forEach(d => {
-      d.classList.remove('active');
-    });
-    document.querySelectorAll('.mobile-dropdown-toggle').forEach(t => {
-      t.classList.remove('active');
-    });
-    
-    // Open clicked dropdown
-    if (!isActive) {
-      dropdown.classList.add('active');
-      toggle.classList.add('active');
-    }
-  }
-
-  // ===== Search Functions =====
-  openSearch() {
-    this.state.searchOpen = true;
-    this.elements.searchOverlay.classList.add('active');
-    this.elements.searchInput.focus();
-    document.body.style.overflow = 'hidden';
-    
-    // Load searchable content
-    this.loadSearchableContent();
-  }
-
-  closeSearch() {
-    this.state.searchOpen = false;
-    this.elements.searchOverlay.classList.remove('active');
-    this.elements.searchInput.value = '';
-    document.body.style.overflow = '';
-    
-    // Clear search results
-    const resultsContainer = document.getElementById('searchResults');
-    if (resultsContainer) {
-      resultsContainer.style.display = 'none';
-    }
-  }
-
-  async loadSearchableContent() {
-    if (this.searchableContent.length > 0) return;
-    
-    // Define searchable pages
-    const pages = [
-      { title: 'Startseite', url: '/', keywords: ['home', 'start', 'portfolio'] },
-      { title: 'Webentwicklung', url: '/pages/webentwicklung/', keywords: ['web', 'development', 'coding', 'programmierung'] },
-      { title: 'Fotogalerie', url: '/pages/fotogalerie/', keywords: ['fotos', 'bilder', 'gallery', 'photography'] },
-      { title: 'Spiele', url: '/pages/spiele/', keywords: ['games', 'memory', 'puzzle', 'spielen'] },
-      { title: 'Über mich', url: '/pages/ueber-mich/', keywords: ['about', 'über', 'person', 'info'] },
-      { title: 'Blog', url: '/pages/blog/', keywords: ['artikel', 'posts', 'neuigkeiten'] },
-      { title: 'Kontakt', url: '/pages/kontakt/', keywords: ['contact', 'email', 'nachricht'] }
-    ];
-    
-    this.searchableContent = pages;
-    
-    // Setup search input listener
-    this.elements.searchInput.addEventListener('input', (e) => {
-      this.performSearch(e.target.value);
-    });
-  }
-
-  performSearch(query) {
-    if (!query || query.length < 2) {
-      document.getElementById('searchResults').style.display = 'none';
-      return;
-    }
-    
-    const results = this.searchableContent.filter(page => {
-      const searchText = query.toLowerCase();
-      return page.title.toLowerCase().includes(searchText) ||
-             page.keywords.some(keyword => keyword.includes(searchText));
-    });
-    
-    this.displaySearchResults(results);
-  }
-
-  displaySearchResults(results) {
-    const resultsContainer = document.getElementById('searchResults');
-    const resultsList = document.getElementById('searchResultsList');
-    
-    if (!resultsContainer || !resultsList) return;
-    
-    resultsList.innerHTML = '';
-    
-    if (results.length === 0) {
-      resultsList.innerHTML = '<li>Keine Ergebnisse gefunden</li>';
-    } else {
-      results.forEach(result => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = result.url;
-        a.textContent = result.title;
-        a.addEventListener('click', () => this.closeSearch());
-        li.appendChild(a);
-        resultsList.appendChild(li);
-      });
-    }
-    
-    resultsContainer.style.display = 'block';
-  }
-
-  // ===== Theme Functions =====
-  initTheme() {
-    // Apply saved theme
-    document.documentElement.setAttribute('data-theme', this.state.theme);
-    this.updateThemeIcon();
-  }
-
-  toggleTheme() {
-    this.state.theme = this.state.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', this.state.theme);
-    localStorage.setItem('theme', this.state.theme);
-    this.updateThemeIcon();
-    
-    // Animate theme change
-    document.documentElement.style.transition = 'background-color 0.3s ease';
-  }
-
-  updateThemeIcon() {
-    const sunIcon = this.elements.themeToggle?.querySelector('.sun-icon');
-    const moonIcon = this.elements.themeToggle?.querySelector('.moon-icon');
-    const mobileThemeText = this.elements.mobileThemeToggle?.querySelector('span:last-child');
-    const mobileThemeIcon = this.elements.mobileThemeToggle?.querySelector('.theme-icon');
-    
-    if (this.state.theme === 'dark') {
-      sunIcon?.style.setProperty('display', 'block');
-      moonIcon?.style.setProperty('display', 'none');
-      if (mobileThemeText) mobileThemeText.textContent = 'Light Mode';
-      if (mobileThemeIcon) mobileThemeIcon.textContent = '☀️';
-    } else {
-      sunIcon?.style.setProperty('display', 'none');
-      moonIcon?.style.setProperty('display', 'block');
-      if (mobileThemeText) mobileThemeText.textContent = 'Dark Mode';
-      if (mobileThemeIcon) mobileThemeIcon.textContent = '🌙';
-    }
-  }
-
-  // ===== Scroll Functions =====
-  initScrollBehavior() {
-    // Die Scroll-Logik wird jetzt zentral in main.js über handleScrollEvents aufgerufen
-    this.handleScroll = null;
-  }
-
-  updateScrollState() {
-    const currentScroll = window.pageYOffset;
-    
-    // Add/remove scrolled class
-    if (currentScroll > 50) {
-      this.elements.header?.classList.add('scrolled');
-    } else {
-      this.elements.header?.classList.remove('scrolled');
-    }
-    
-    // Hide/show header on scroll
-    if (currentScroll > this.state.lastScroll && currentScroll > 100) {
-      // Scrolling down
-      this.elements.header?.classList.add('hide');
-    } else {
-      // Scrolling up
-      this.elements.header?.classList.remove('hide');
-    }
-    
-    this.state.lastScroll = currentScroll <= 0 ? 0 : currentScroll;
-    
-    // ProgressBar entfernt
-  }
-
-  // ===== Progress Bar =====
-  // ProgressBar komplett entfernt
-
-  // ===== Active Link =====
-  setActiveLink() {
-    const currentPath = window.location.pathname;
-    
-    this.elements.navLinks.forEach(link => {
-      const linkPath = new URL(link.href).pathname;
-      
-      if (linkPath === currentPath || 
-          (currentPath !== '/' && currentPath.startsWith(linkPath) && linkPath !== '/')) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
-    });
-  }
-
-  // ===== Keyboard Navigation =====
-  handleKeyboard(e) {
-    // ESC key
-    if (e.key === 'Escape') {
-      if (this.state.searchOpen) {
-        this.closeSearch();
-      } else if (this.state.mobileMenuOpen) {
-        this.closeMobileMenu();
-      }
-    }
-    
-    // Search shortcut (Ctrl/Cmd + K)
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      this.openSearch();
-    }
-  }
-
-  // ===== Resize Handler =====
-  handleResize() {
-    // Close mobile menu on resize to desktop
-    if (window.innerWidth > 768 && this.state.mobileMenuOpen) {
-      this.closeMobileMenu();
-    }
-  }
-
-  // ===== Accessibility =====
-  initAccessibility() {
-    // ARIA labels
-    this.elements.mobileToggle?.setAttribute('aria-label', 'Menü öffnen');
-    this.elements.mobileToggle?.setAttribute('aria-expanded', 'false');
-    this.elements.mobileMenu?.setAttribute('aria-hidden', 'true');
-    
-    // Focus trap for mobile menu
-    this.focusableElements = [];
-  }
-
-  trapFocus(container) {
-    const focusableSelectors = 'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select';
-    this.focusableElements = container.querySelectorAll(focusableSelectors);
-    
-    if (this.focusableElements.length === 0) return;
-    
-    this.firstFocusableElement = this.focusableElements[0];
-    this.lastFocusableElement = this.focusableElements[this.focusableElements.length - 1];
-    
-    // Focus first element
-    this.firstFocusableElement.focus();
-    
-    // Add focus trap listener
-    this.focusTrapHandler = (e) => {
-      if (e.key !== 'Tab') return;
-      if (e.shiftKey) {
-        if (document.activeElement === this.firstFocusableElement) {
-          e.preventDefault();
-          this.lastFocusableElement.focus();
-        }
-      } else if (document.activeElement === this.lastFocusableElement) {
-        e.preventDefault();
-        this.firstFocusableElement.focus();
-      }
+/**
+ * Initialisiert die Menü-Toggle-Logik
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
+function initializeMenu(container) {
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
+  if (menuToggle && menu) {
+    const toggle = () => {
+      menu.classList.toggle('open');
+      menuToggle.classList.toggle('active');
     };
-    
-    document.addEventListener('keydown', this.focusTrapHandler);
-  }
-
-  releaseFocus() {
-    if (this.focusTrapHandler) {
-      document.removeEventListener('keydown', this.focusTrapHandler);
-      this.focusTrapHandler = null;
-    }
+    menuToggle.addEventListener('click', toggle);
+    menuToggle.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') toggle();
+    });
+  } else {
+    console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
   }
 }
 
-// ===== Initialize Menu System =====
-const menuSystem = MenuSystem.create();
+/**
+ * Initialisiert das Verhalten für den Logo-Rechtsklick
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
+function initializeLogo(container) {
+  const logoContainer = container.querySelector('.site-logo__container');
+  if (logoContainer) {
+    logoContainer.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      window.location.href = '/index.html';
+    });
+  } else {
+    console.warn('Logo-Container konnte nicht gefunden werden.');
+  }
+}
 
-// Export for use in other scripts
-window.MenuSystem = menuSystem;
+/**
+ * Initialisiert die Submenu-Links
+ */
+function initializeSubmenuLinks() {
+  const submenuLinks = document.querySelectorAll('.has-submenu > a');
+  submenuLinks.forEach(link => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const submenu = link.nextElementSibling;
+      document.querySelectorAll('.submenu').forEach(sm => {
+        if (sm !== submenu) sm.style.display = 'none';
+      });
+      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+    });
+  });
+}
+
+/**
+ * Schließt das Menü
+ * @param {HTMLElement} container - Der Container mit der Menü-Komponente
+ */
+function closeMenu(container) {
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
+  if (menuToggle && menu) {
+    menu.classList.remove('open');
+    menuToggle.classList.remove('active');
+  }
+}
+
+/**
+ * Setzt den Seitentitel im Logo anhand des aktuellen Pfads
+ */
+function setSiteTitle() {
+  const titleMap = {
+    '/index.html': 'Startseite',
+    '/': 'Startseite',
+    '/pages/album.html': 'Fotogalerie',
+    '/pages/ubermich.html': 'Über mich',
+    '/pages/index-game.html': 'Spiele-Übersicht',
+    '/pages/features/wetter.html': 'Wetter',
+  };
+  const path = window.location.pathname;
+  const pageTitle = titleMap[path] || document.title || 'Website';
+  const siteTitleEl = document.getElementById('site-title');
+  if (siteTitleEl) siteTitleEl.textContent = pageTitle;
+}
