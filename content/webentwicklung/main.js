@@ -1,11 +1,14 @@
-// ===== Debounce & Throttle =====
+// ===== Utils: Debounce & Throttle =====
 function debounce(func, wait) {
   let timeout;
-  return function executedFunction(...args) {
+  function debounced(...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), wait);
-  };
+  }
+  debounced.cancel = () => clearTimeout(timeout);
+  return debounced;
 }
+
 function throttle(func, limit) {
   let inThrottle;
   return function () {
@@ -17,58 +20,215 @@ function throttle(func, limit) {
   };
 }
 
-// Export for testing
+// Export for testing (optional)
 if (typeof module !== 'undefined') {
-  module.exports = { debounce };
+  module.exports = { debounce, throttle };
 }
 
-// ===== Typed Text Animation =====
+// ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
 class TypeWriter {
-  constructor(textElement, authorElement, quotes, wait = 3000) {
-    this.textElement = textElement;
-    this.authorElement = authorElement;
-    this.quotes = quotes;
-    this.wait = parseInt(wait, 10);
-    this.previousIndex = -1;
-    this.currentQuote = this.getRandomQuote();
-    this.txt = '';
-    this.isDeleting = false;
-    this.type();
+  constructor({
+    textEl,
+    authorEl,
+    quotes,
+    wait = 2400,
+    typeSpeed = 85,
+    deleteSpeed = 40,
+    shuffle = true,
+    loop = true,
+    smartBreaks = true,
+    containerEl = null,          // .hero-subtitle zum Locken
+    onBeforeType = null          // Hook: vor dem Tippen reservieren + locken
+  }) {
+    if (!textEl || !authorEl || !Array.isArray(quotes) || quotes.length === 0) return;
+    this.textEl = textEl;
+    this.authorEl = authorEl;
+    this.quotes = quotes.slice();
+    this.wait = +wait;
+    this.typeSpeed = +typeSpeed;
+    this.deleteSpeed = +deleteSpeed;
+    this.shuffle = !!shuffle;
+    this.loop = !!loop;
+    this.smartBreaks = !!smartBreaks;
+    this.containerEl = containerEl;
+    this.onBeforeType = typeof onBeforeType === 'function' ? onBeforeType : null;
+
+    this._timer = null;
+    this._isDeleting = false;
+    this._txt = '';
+    this._queue = this.shuffle ? this._shuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
+    this._index = this._queue.shift();
+    this._current = this.quotes[this._index];
+
+    // CSS-Fallback ausschalten
+    document.body.classList.add('has-typingjs');
+
+    // Vor dem ersten Tippen reservieren + locken
+    if (this.onBeforeType) this.onBeforeType(this._current.text);
+
+    this._tick();
   }
 
-  getRandomQuote() {
-    let index;
-    do {
-      index = Math.floor(Math.random() * this.quotes.length);
-    } while (index === this.previousIndex && this.quotes.length > 1);
-    this.previousIndex = index;
-    return this.quotes[index];
+  destroy() {
+    this._clearTimer();
+    document.body.classList.remove('has-typingjs');
   }
 
-  type() {
-    const fullTxt = this.currentQuote.text;
-    const author = this.currentQuote.author;
+  _shuffledIndices(n) {
+    const arr = [...Array(n).keys()];
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
 
-    this.txt = this.isDeleting
-      ? fullTxt.substring(0, this.txt.length - 1)
-      : fullTxt.substring(0, this.txt.length + 1);
+  _nextQuote() {
+    if (this._queue.length === 0) {
+      if (!this.loop) return null;
+      this._queue = this.shuffle ? this._shuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
+    }
+    this._index = this._queue.shift();
+    this._current = this.quotes[this._index];
+    return this._current;
+  }
 
-    this.textElement.innerHTML = this.txt.replace(/,\s*/g, ',<br>');
-    this.authorElement.textContent = author;
+  _schedule(ms) { this._timer = setTimeout(() => this._tick(), ms); }
+  _clearTimer() { if (this._timer) { clearTimeout(this._timer); this._timer = null; } }
 
-    let typeSpeed = this.isDeleting ? 40 : 80;
+  _renderText(text) {
+    // smartBreaks: ", " → Komma behalten + <br>
+    this.textEl.textContent = '';
+    if (!this.smartBreaks) {
+      this.textEl.textContent = text;
+      return;
+    }
+    const parts = String(text).split(/(, )/);
+    for (const part of parts) {
+      if (part === ', ') {
+        this.textEl.appendChild(document.createTextNode(','));
+        this.textEl.appendChild(document.createElement('br'));
+      } else {
+        this.textEl.appendChild(document.createTextNode(part));
+      }
+    }
+  }
 
-    if (!this.isDeleting && this.txt === fullTxt) {
-      typeSpeed = this.wait;
-      this.isDeleting = true;
-    } else if (this.isDeleting && this.txt === '') {
-      this.isDeleting = false;
-      this.currentQuote = this.getRandomQuote();
-      typeSpeed = 600;
+  _tick() {
+    const full = String(this._current.text || '');
+    const author = String(this._current.author || '');
+
+    this._txt = this._isDeleting
+      ? full.substring(0, Math.max(0, this._txt.length - 1))
+      : full.substring(0, Math.min(full.length, this._txt.length + 1));
+
+    this._renderText(this._txt);
+    this.authorEl.textContent = author;
+
+    let delay = this._isDeleting ? this.deleteSpeed : this.typeSpeed;
+    if (!this._isDeleting && this._txt.length > 0) {
+      const ch = this._txt[this._txt.length - 1];
+      const punctPause = { ',': 120, '.': 300, '…': 400, '!': 250, '?': 250, ';': 180, ':': 180 };
+      if (punctPause[ch]) delay += punctPause[ch];
     }
 
-    setTimeout(() => this.type(), typeSpeed);
+    if (!this._isDeleting && this._txt === full) {
+      delay = this.wait;
+      this._isDeleting = true;
+    } else if (this._isDeleting && this._txt === '') {
+      this._isDeleting = false;
+      // Lock entfernen; nächste Quote wird im onBeforeType neu gelockt
+      if (this.containerEl) this.containerEl.classList.remove('is-locked');
+
+      const next = this._nextQuote();
+      if (!next) { this.destroy(); return; }
+
+      if (this.onBeforeType) this.onBeforeType(next.text);
+      delay = 600;
+    }
+
+    this._clearTimer();
+    this._schedule(delay);
   }
+}
+
+// ===== Mess-Utility: Höhe VOR dem Tippen bestimmen =====
+function makeLineMeasurer(subtitleEl) {
+  const measurer = document.createElement('div');
+  measurer.style.cssText = [
+    'position:absolute','left:-9999px','top:0','visibility:hidden',
+    'white-space:normal','pointer-events:none'
+  ].join(';');
+  document.body.appendChild(measurer);
+
+  const cs = getComputedStyle(subtitleEl);
+  ['font-size','line-height','font-family','font-weight','letter-spacing','word-spacing']
+    .forEach(p => measurer.style.setProperty(p, cs.getPropertyValue(p)));
+
+  function getLineHeightPx(){
+    const lhRaw = cs.lineHeight.trim();
+    if (lhRaw.endsWith('px')) {
+      const v = parseFloat(lhRaw); if (!isNaN(v)) return v;
+    }
+    const num = parseFloat(lhRaw);
+    if (!isNaN(num)) {
+      const fsRaw = cs.fontSize.trim();
+      const fs = parseFloat(fsRaw);
+      if (!isNaN(fs)) return num * fs;
+    }
+    measurer.innerHTML = '';
+    const one = document.createElement('span');
+    one.textContent = 'A';
+    one.style.display = 'inline-block';
+    measurer.appendChild(one);
+    const h = one.getBoundingClientRect().height;
+    return h || 0;
+  }
+
+  function measure(text, smartBreaks){
+    measurer.innerHTML = '';
+    const span = document.createElement('span');
+    if (smartBreaks){
+      const parts = String(text).split(/(, )/);
+      for (const part of parts){
+        if (part === ', '){
+          span.appendChild(document.createTextNode(','));
+          span.appendChild(document.createElement('br'));
+        } else {
+          span.appendChild(document.createTextNode(part));
+        }
+      }
+    } else {
+      span.textContent = String(text);
+    }
+    measurer.appendChild(span);
+
+    // echte verfügbare Breite ab linker Kante + Cap wie im CSS
+    const rect = subtitleEl.getBoundingClientRect();
+    const left = rect.left || 0;
+    const safeMargin = 12;
+    const available = Math.max(0, window.innerWidth - left - safeMargin);
+    const cap = Math.min(window.innerWidth * 0.92, 820);
+    const width = Math.max(1, Math.min(available || cap, cap));
+    measurer.style.width = width + 'px';
+
+    const lh = getLineHeightPx();
+    const h  = span.getBoundingClientRect().height;
+    if (!lh || !h) return 1;
+    return Math.max(1, Math.min(3, Math.round(h / lh))); // clamp 1..3
+  }
+
+  return {
+    reserveFor(text, smartBreaks = true){
+      const lh = getLineHeightPx();
+      subtitleEl.style.setProperty('--lh-px', lh ? `${lh}px` : '0px');
+      subtitleEl.style.setProperty('--gap-px', lh ? `${(lh * 0.25)}px` : '0px');
+      const lines = measure(text, smartBreaks);
+      subtitleEl.style.setProperty('--lines', String(lines));
+      subtitleEl.setAttribute('data-lines', String(lines));
+      return lines;
+    }
+  };
 }
 
 // ===== Particles =====
@@ -108,9 +268,7 @@ function initParticles() {
   function createParticles() {
     particles = [];
     const particleCount = Math.min(100, window.innerWidth / 10);
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
-    }
+    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
   }
   function animateParticles() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -119,7 +277,7 @@ function initParticles() {
     particles.forEach((p, i) => {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = p.x - particles[j].x, dy = p.y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.hypot(dx, dy);
         if (dist < 100) {
           ctx.strokeStyle = `rgba(9,139,255,${0.1 * (1 - dist / 100)})`;
           ctx.lineWidth = 1;
@@ -143,7 +301,7 @@ function initParticles() {
   }, 250));
 }
 
-// ===== Greeting Time-based =====
+// ===== Greeting (Zeit-basiert) =====
 const greetings = {
   morning: [
     "Guten Morgen und willkommen auf meiner Website!",
@@ -183,17 +341,13 @@ function setRandomGreetingHTML(animated = false) {
   const set = getGreetingSet();
   let random = set[Math.floor(Math.random() * set.length)];
   if (set.length > 1 && el.dataset.last === random) {
-    do {
-      random = set[Math.floor(Math.random() * set.length)];
-    } while (random === el.dataset.last);
+    do { random = set[Math.floor(Math.random() * set.length)]; }
+    while (random === el.dataset.last);
   }
   el.dataset.last = random;
   if (animated) {
     el.classList.add('fade');
-    setTimeout(() => {
-      el.textContent = random;
-      el.classList.remove('fade');
-    }, 400);
+    setTimeout(() => { el.textContent = random; el.classList.remove('fade'); }, 400);
   } else {
     el.textContent = random;
   }
@@ -219,17 +373,12 @@ function initProjectFilter() {
   if (activeBtn) activeBtn.click();
   function showCard(card) {
     card.style.display = 'block';
-    setTimeout(() => {
-      card.style.opacity = '1';
-      card.style.transform = 'scale(1)';
-    }, 10);
+    setTimeout(() => { card.style.opacity = '1'; card.style.transform = 'scale(1)'; }, 10);
   }
   function hideCard(card) {
     card.style.opacity = '0';
     card.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-      card.style.display = 'none';
-    }, 300);
+    setTimeout(() => { card.style.display = 'none'; }, 300);
   }
 }
 
@@ -242,16 +391,13 @@ function initSmoothScroll() {
       if (target) {
         const offset = 80;
         const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({
-          top: targetPosition,
-          behavior: 'smooth'
-        });
+        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
       }
     });
   });
 }
 
-// ===== Scroll Animations =====
+// ===== Scroll Animations & BackToTop =====
 function handleScrollEvents() {
   const backToTopBtn = document.getElementById('backToTop');
   if (backToTopBtn) {
@@ -265,14 +411,12 @@ function initScrollAnimations() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) entry.target.classList.add('aos-animate');
-    });
+    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('aos-animate'); });
   }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
   document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
 }
 
-// ===== Dynamisches Laden von Menü-Styles und Menü-Script =====
+// ===== Menü-Assets =====
 function loadMenuAssets() {
   if (!document.getElementById('menu-container')) return;
   if (!document.querySelector('link[href="/content/webentwicklung/menu/menu.css"]')) {
@@ -292,29 +436,56 @@ function loadMenuAssets() {
 // ===== Loading Screen =====
 function initLoadingScreen() {
   const loadingScreen = document.getElementById('loadingScreen');
-  setTimeout(() => {
-    loadingScreen?.classList.add('hide');
-  }, 500);
+  setTimeout(() => { loadingScreen?.classList.add('hide'); }, 500);
 }
 
-// ===== Main Initialization =====
+// ===== Main =====
 document.addEventListener('DOMContentLoaded', () => {
-  // Loading screen (muss früh raus)
+  // Loading screen
   window.addEventListener('load', initLoadingScreen);
 
-  // Typewriter
-const typedText = document.getElementById('typedText');
-const typedAuthor = document.getElementById('typedAuthor');
+  const subtitleEl = document.querySelector('.hero-subtitle');
+  const typedText  = document.getElementById('typedText');
+  const typedAuthor= document.getElementById('typedAuthor');
 
-if (typedText && typedAuthor) {
-  new TypeWriter(typedText, typedAuthor, [
-    { author: "Rumi", text: "Der Schmerz reinigt das Herz." },
-    { author: "Nietzsche", text: "Wer ein Warum zum Leben hat, erträgt fast jedes Wie." },
-    { author: "Konfuzius", text: "Der Weg ist das Ziel." },
-    { author: "Goethe", text: "Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen." },
-    { author: "aKs", text: "Das Licht ist nicht laut – es überzeugt durch Klarheit." }
-  ]);
+  if (subtitleEl && typedText && typedAuthor) {
+    const measurer = makeLineMeasurer(subtitleEl);
+
+    const startTypewriter = () => {
+      new TypeWriter({
+        textEl: typedText,
+        authorEl: typedAuthor,
+        quotes: [
+          { author: 'Rumi',      text: 'Der Schmerz reinigt das Herz.' },
+          { author: 'Nietzsche', text: 'Wer ein Warum zum Leben hat, erträgt fast jedes Wie.' },
+          { author: 'Konfuzius', text: 'Der Weg ist das Ziel.' },
+          { author: 'Goethe',    text: 'Auch aus Steinen, die einem in den Weg gelegt werden, kann man Schönes bauen.' },
+          { author: 'aKs',       text: 'Das Licht ist nicht laut, es überzeugt durch Klarheit.' }
+        ],
+        wait: 2400,
+        typeSpeed: 85,
+        deleteSpeed: 40,
+        shuffle: true,
+        loop: true,
+        smartBreaks: true,
+        containerEl: subtitleEl,
+onBeforeType: (fullText) => {
+  const lines = measurer.reserveFor(fullText, true);
+  const cs  = getComputedStyle(subtitleEl);
+  const lh  = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
+  const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
+  const boxH = (1 * lh) + (lines * lh) + gap; // 1 Autorzeile + N Quotezeilen + 1x Abstand
+  subtitleEl.style.setProperty('--box-h', `${boxH}px`);
 }
+      });
+    };
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(startTypewriter);
+    } else {
+      startTypewriter();
+    }
+  }
 
   // Greeting
   setRandomGreetingHTML();
@@ -331,16 +502,14 @@ if (typedText && typedAuthor) {
   // Smooth Anchor Scroll
   initSmoothScroll();
 
-  // Add animation delays
-  document.querySelectorAll('[data-aos]').forEach((element, index) => {
-    if (!element.hasAttribute('data-aos-delay')) {
-      element.setAttribute('data-aos-delay', index * 50);
-    }
+  // AOS-Delays
+  document.querySelectorAll('[data-aos]').forEach((el, idx) => {
+    if (!el.hasAttribute('data-aos-delay')) el.setAttribute('data-aos-delay', idx * 50);
   });
 
   // Menü dynamisch nachladen
   loadMenuAssets();
 });
 
-// Performance-Optimierungen: global scroll
+// Performance: Scroll-Handler
 window.addEventListener('scroll', debounce(handleScrollEvents, 75));

@@ -33,26 +33,19 @@
       <canvas class="particle-canvas" id="particleCanvas"></canvas>
     </div>
   <div class="container hero-content">
-      <div class="hero-text">
 
-<p class="hero-subtitle">
-  <span id="typedAuthor" class="typed-author"></span><br>
-  <span id="typedText" class="typed-text"></span><span class="cursor">|</span>
+
+<p class="hero-subtitle" data-offset-mode="full">
+  <span id="typedAuthor" class="typed-author"></span>
+  <span id="typedText"   class="typed-text"></span>
 </p>
 
 
-          <a href="#projects" class="btn btn-primary">
-            <span>Projekte entdecken</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-          <a href="/content/kontakt/" class="btn btn-secondary">
-            <span>Kontakt</span>
-          </a>
-
-          
-      </div>
+  <!-- Buttons bündeln -->
+<div class="hero-buttons">
+  <a href="#projects" class="btn btn-primary">Projekte entdecken</a>
+  <a href="/content/kontakt/" class="btn btn-secondary">Kontakt</a>
+</div>
       <div class="hero-visual">
         <div class="hero-image-container">
             <div class="spotlight-bg"></div>
@@ -89,8 +82,7 @@
     <button class="filter-btn" data-filter="game">Spiele</button>
     <button class="filter-btn" data-filter="design">Design</button>
   </div>
-  <div class="container">
-    <div class="projects-grid">
+  <div class="projects-grid">
           <!-- Web Project -->
           <article class="project-card" data-category="web" data-aos="fade-up">
             <div class="project-image">
@@ -165,10 +157,9 @@
             </div>
           </article>
        </div>
-  </div>
-  <div class="section-cta">
-    <a href="/pages/projekte/" class="btn btn-outline">Alle Projekte ansehen</a>
-  </div>
+    <div class="section-cta">
+      <a href="/pages/projekte/" class="btn btn-outline">Alle Projekte ansehen</a>
+    </div>
   </div>
 </section>
 
@@ -361,6 +352,6 @@
 
   <!-- Main Script -->
   <script src="/content/webentwicklung/main.js" defer></script>
-  <script src="/content/webentwicklung/footer/footer.js"></script>
+  <script src="/content/webentwicklung/footer/footer.js" defer></script>
 </body>
 </html>

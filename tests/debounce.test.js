@@ -16,4 +16,15 @@ describe('debounce', () => {
     jest.advanceTimersByTime(1);
     expect(callback).toHaveBeenCalledTimes(1);
   });
+
+  test('cancel prevents the callback from firing', () => {
+    const callback = jest.fn();
+    const debounced = debounce(callback, 100);
+
+    debounced();
+    debounced.cancel();
+    jest.advanceTimersByTime(100);
+
+    expect(callback).not.toHaveBeenCalled();
+  });
 });
