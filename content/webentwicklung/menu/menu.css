@@ -57,6 +57,7 @@ html, body {
   animation: fadeInDownOpacity 1s ease forwards, fadeInDownTransform 1s ease forwards;
   opacity: 0;
   transform: translateY(15px);
+  touch-action: pan-y;
 }
 
 .site-logo {
