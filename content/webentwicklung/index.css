@@ -79,7 +79,7 @@
 html, body {
   height: 100%;
   overflow-x: hidden;
-  touch-action: pen-y;
+  touch-action: pan-y;
   
 }
 

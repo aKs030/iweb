@@ -11,7 +11,14 @@
 //  - Overlay (in animations.js) liest Partikel-/Animations-Stats
 // ===== Dynamic Imports + Fallbacks =====
 let debounce = (fn, wait = 200) => {
-  let t; return function(...args){ const ctx=this; clearTimeout(t); t=setTimeout(()=>fn.apply(ctx,args), wait); };
+  let t;
+  function debounced(...args){
+    const ctx=this;
+    clearTimeout(t);
+    t=setTimeout(()=>fn.apply(ctx,args), wait);
+  }
+  debounced.cancel = () => clearTimeout(t);
+  return debounced;
 };
 let throttle = (fn, limit = 250) => {
   let inFlight=false, pending=false, lastArgs, lastThis;
@@ -475,4 +482,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Falls Hero später nachgeladen wird erneut durch hero.js aufrufbar
 
 });
+
+// Für Tests exportieren
+if (typeof module !== 'undefined') {
+  module.exports = { debounce, throttle };
+}
 
