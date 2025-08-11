@@ -35,7 +35,10 @@
   text-decoration: none;
 }
 .site-header {
-  top: 0; left: 0; width: 100vw;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   min-height: 48px;
   padding: clamp(0.25rem, 1vw, 0.7rem) clamp(0.5rem, 3vw, 2rem);
   position: fixed;
