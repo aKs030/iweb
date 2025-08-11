@@ -271,8 +271,9 @@ function initSmoothScroll() {
 // ===== Scroll Animations & BackToTop =====
 function handleScrollEvents() {
   const backToTopBtn = document.getElementById('backToTop');
+  const y = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
   if (backToTopBtn) {
-    if (window.pageYOffset > 300) backToTopBtn.classList.add('show');
+    if (y > 300) backToTopBtn.classList.add('show');
     else backToTopBtn.classList.remove('show');
   }
 }
@@ -378,6 +379,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Prevent overscroll/bounce NUR am ersten Snap und letzten (Footer)
   (function () {
+    function getScrollY(){
+      return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    }
     function getSnapBounds() {
       const sections = Array.from(document.querySelectorAll('.section'));
       let first = sections[0] || document.querySelector('#hero') || document.body;
@@ -389,13 +393,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     function atTopOfFirst() {
       const { first } = getSnapBounds();
       const top = Math.max(0, first?.offsetTop || 0);
-      return window.scrollY <= top + 1;
+      return getScrollY() <= top + 1;
     }
     function atBottomOfLast() {
       const { last } = getSnapBounds();
       const lastTop = last?.offsetTop || 0;
       const lastBottom = lastTop + (last?.offsetHeight || 0);
-      const viewBottom = window.scrollY + window.innerHeight;
+      const viewBottom = getScrollY() + window.innerHeight;
       return viewBottom >= lastBottom - 1;
     }
     // Desktop
@@ -432,6 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Performance: Scroll-Handler (nach geladener timing.js)
   window.addEventListener('scroll', debounce(handleScrollEvents, 75));
+  handleScrollEvents();
 
   // Smooth Anchor Scroll
   initSmoothScroll();
