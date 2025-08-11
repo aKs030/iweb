@@ -76,11 +76,14 @@
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
 }
 
- html {
-  overflow-x: hidden;
+html, body {
+  height: 100%;
+  touch-action: pan-y;
+}
+
+body {
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
-  height: 100%;
 }
 
 /* ========================================
