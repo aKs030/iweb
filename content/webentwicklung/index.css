@@ -278,7 +278,7 @@ a:hover { color: var(--primary-light); }
   box-sizing: border-box;
   justify-content: center;
   align-items: center;
-  background: var(--bg-section);
+  background: transparent;
 }
 
 .project-filter {
@@ -360,7 +360,7 @@ a:hover { color: var(--primary-light); }
   box-sizing: border-box;
   justify-content: center;
   align-items: center;
-  background: var(--bg-section);
+  background: transparent;
 }
 
 .skills-grid,
@@ -400,7 +400,7 @@ a:hover { color: var(--primary-light); }
   box-sizing: border-box;
   justify-content: center;
   align-items: center;
-  background: var(--bg-section);
+  background: transparent;
 }
 
 /* -- Contact -- */
@@ -411,7 +411,7 @@ a:hover { color: var(--primary-light); }
   box-sizing: border-box;
   justify-content: center;
   align-items: center;
-  background: var(--bg-section);
+  background: transparent;
 }
 
 .contact-content {
