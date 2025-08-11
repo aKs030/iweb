@@ -10,15 +10,48 @@
 //  - Anim Debug Toggle Helper: window.toggleAnimDebug()
 //  - Overlay (in animations.js) liest Partikel-/Animations-Stats
 // ===== Dynamic Imports + Fallbacks =====
-let debounce = (fn, wait = 200) => {
-  let t;
-  function debounced(...args){
-    const ctx=this;
-    clearTimeout(t);
-    t=setTimeout(()=>fn.apply(ctx,args), wait);
+export function debounce(fn, wait = 200) {
+  let t = null;
+  let lastArgs = null;
+  let lastThis = null;
+
+  function invoke() {
+    const args = lastArgs, ctx = lastThis;
+    lastArgs = lastThis = null;
+    t = null;
+    fn.apply(ctx, args || []);
   }
-  debounced.cancel = () => clearTimeout(t);
+
+  function debounced(...args) {
+    lastArgs = args;
+    lastThis = this;
+    if (t !== null) clearTimeout(t);
+    t = setTimeout(invoke, wait);
+  }
+
+  debounced.cancel = () => {
+    if (t !== null) {
+      clearTimeout(t);
+      t = null;
+      lastArgs = lastThis = null;
+      return true;           // gut für Tests
+    }
+    return false;
+  };
+
+  debounced.flush = () => {
+    if (t !== null) {
+      clearTimeout(t);
+      invoke();
+      return true;
+    }
+    return false;
+  };
+
+  debounced.pending = () => t !== null;
+
   return debounced;
+}
 };
 let throttle = (fn, limit = 250) => {
   let inFlight=false, pending=false, lastArgs, lastThis;
