@@ -1,71 +1,71 @@
 "use strict";
 /**
- * Universelles Animation System
+ * Universelles Animation System – nur Opacity (keine Translate/Scale-Bewegung mehr)
  * Features:
  *  - Attribute:
  *      data-animation        : Name (fadeInUp, fadeInLeft, fadeIn, zoomIn ...)
  *      data-delay            : Startverzögerung in ms (optional)
  *      data-duration         : Dauer in ms (optional, default 600)
+ *      data-easing           : CSS easing (optional)
+ *      data-distance         : (ignoriert – keine Bewegung mehr)
  *      data-stagger-group    : Gruppierung für automatisches Staggering
  *      data-stagger-step     : Schrittweite in ms (Default 80) für Gruppe
  *      data-stagger-base     : Basis-Offset (Startdelay) bei Wrapper-Verteilung
  *      data-stagger-jitter   : Zufalls-Variation (+/- ms) auf berechneten Delay (Default 20)
- *  - Sichtbarkeits-Triggers via IntersectionObserver (0.1 Threshold)
- *  - Automatischer Reset beim Verlassen des Viewports für Replay
- *  - Sauberes Replay per AnimationSystem.replay(el)
- *  - Temporäre will-change Optimierung während Animation
- *  - Debug-Modus (persistiert über localStorage 'anim-debug'):
- *        AnimationSystem.setDebug(true/false)
- *        Overlay mit: aktive Animationen / beobachtete Elemente / Partikel-FPS & Count
- *        Öffentliche Logger-Funktion: AnimationSystem.dlog(...)
- *  - Stagger Gruppen: Falls Elemente gleicher Gruppe kein eigenes data-delay haben, wird delay = index*step gesetzt
- *  - Statistik: AnimationSystem.getStats()
- *  - Gruppensteuerung: AnimationSystem.pauseGroup(name) / resumeGroup(name) / pauseAll() / resumeAll()
- *  - Respektiert prefers-reduced-motion (zeigt Elemente sofort)
+ *  - Sichtbarkeits-Trigger via IntersectionObserver
+ *  - Automatisches Staggering
+ *  - Replay: AnimationSystem.replay(el)
+ *  - Debug-Overlay: AnimationSystem.setDebug(true/false)
+ *  - Respektiert prefers-reduced-motion
  */
 (function(){
   const ATTR = 'data-animation';
   const DELAY_ATTR = 'data-delay';
   const DURATION_ATTR = 'data-duration';
   const EASING_ATTR = 'data-easing';
-  const DISTANCE_ATTR = 'data-distance';
   const STAGGER_GROUP_ATTR = 'data-stagger-group';
   const STAGGER_STEP_ATTR = 'data-stagger-step';
   const STAGGER_BASE_ATTR = 'data-stagger-base';
   const STAGGER_JITTER_ATTR = 'data-stagger-jitter';
+
   const ACTIVE_CLASS = 'is-animating';
+
   // Debug Flag (persistierbar)
   let __debug = false;
   try { __debug = localStorage.getItem('anim-debug') === '1'; } catch(_e) {}
   const dlog = (...args) => { if(__debug) console.log('[AnimationSystem]', ...args); };
+
   // Statistik
   const __stats = { activeAnimations: 0, observed: 0, lastScan: 0 };
-  const __groups = new Map(); // groupName -> { paused:boolean }
+  const __groups = new Map();           // groupName -> { paused:boolean }
   const __pendingTimers = new WeakMap(); // el -> timeout id
-  const __delayedQueue = new Map(); // groupName -> Set<el>
+  const __delayedQueue = new Map();     // groupName -> Set<el>
+
   // Loading Gate: blockiert Start bis freigegeben
   let __loadingGateActive = true;
   const __loadingHeld = new Set();
+
+  // Debug-Overlay
   let overlayTimer = null;
   let overlayEl = null;
-  
-  // Basis Animation CSS
+
+  // *** Nur Opacity, keine Bewegung/Transforms ***
   const animationCSS = `
     .animate-element {
       opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity;
     }
-    .animate-element.is-visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .animate-fadeInUp { transform: translateY(50px); }
-    .animate-fadeInDown { transform: translateY(-50px); }
-    .animate-fadeInLeft { transform: translateX(-50px) translateY(0); }
-    .animate-fadeInRight { transform: translateX(50px) translateY(0); }
-    .animate-zoomIn { transform: scale(0.8) translateY(0); }
-    .animate-fadeIn { transform: translateY(0); }
+    .animate-element.is-visible { opacity: 1; }
+
+    /* Varianten bleiben semantisch erhalten (Klassen für Selektoren),
+       aber ohne Positions-/Skalierungsänderungen */
+    .animate-fadeInUp    {}
+    .animate-fadeInDown  {}
+    .animate-fadeInLeft  {}
+    .animate-fadeInRight {}
+    .animate-zoomIn      {}
+    .animate-fadeIn      {}
   `;
 
   // CSS in Head einfügen
@@ -82,46 +82,35 @@
   function initElement(el){
     const animType = el.getAttribute(ATTR);
     if(!animType) return;
-    
+
     el.classList.add('animate-element');
-    if(animType !== 'fadeIn'){
+    // Semantische Variant-Klasse (ohne Effekt, aber für Selektoren nutzbar)
+    if(animType && animType !== 'fadeIn'){
       el.classList.add(`animate-${animType}`);
     }
-    
+
     const duration = parseInt(el.getAttribute(DURATION_ATTR) || '600', 10);
-    el.style.transitionDuration = duration + 'ms';
+    if (Number.isFinite(duration)) el.style.transitionDuration = duration + 'ms';
+
     const easing = el.getAttribute(EASING_ATTR);
     if(easing){ el.style.transitionTimingFunction = easing; }
-    // Optional: distance anpassen wenn Standard translateY Basis genutzt
-    const dist = el.getAttribute(DISTANCE_ATTR);
-    if(dist && !el.classList.contains('is-visible')){
-      // Nur anwenden falls Standard translate Richtung (vereinfachter Check)
-      const num = parseInt(dist,10);
-      if(!isNaN(num)){
-        // Wenn bereits transform gesetzt, nur ersetzen wenn Basis pattern
-        const base = el.style.transform || '';
-        if(/translate[XY]\(/.test(base)){
-          // lassen wir unangetastet
-        } else {
-          el.style.transform = `translateY(${num}px)`;
-        }
-      }
-    }
-    
+
     if(prefersReduced){
-      el.classList.add('is-visible');
+      el.classList.add('is-visible');  // sofort sichtbar
       return;
     }
   }
 
   function animateElement(el){
     if(el.classList.contains(ACTIVE_CLASS)) return;
+
     // Loading Gate Prüfung
     if(__loadingGateActive){
       __loadingHeld.add(el);
       dlog('gate hold', el);
       return;
     }
+
     // Gruppen-Pause prüfen
     const g = el.getAttribute(STAGGER_GROUP_ATTR) || el.closest(`[${STAGGER_GROUP_ATTR}]`)?.getAttribute(STAGGER_GROUP_ATTR);
     if(g && __groups.get(g)?.paused){
@@ -130,62 +119,54 @@
       dlog('queue (paused group)', g, el);
       return;
     }
-    
-  const delay = parseInt(el.getAttribute(DELAY_ATTR) || '0', 10);
+
+    const delay = parseInt(el.getAttribute(DELAY_ATTR) || '0', 10) || 0;
+
     el.classList.add(ACTIVE_CLASS);
-    // will-change nur kurzfristig setzen
+
+    // will-change nur kurz
     const prevWill = el.style.willChange;
-    el.style.willChange = 'opacity, transform';
-    
+    el.style.willChange = 'opacity';
+
     const tId = setTimeout(() => {
       el.classList.add('is-visible');
       __pendingTimers.delete(el);
     }, delay);
     __pendingTimers.set(el, tId);
     __stats.activeAnimations++;
-    
-    // Nach Animation wieder entfernen für Re-Trigger
+
+    // Nach Ende wieder ACTIVE-Flag runter, will-change zurück
     setTimeout(() => {
       el.classList.remove(ACTIVE_CLASS);
-      // will-change zurücksetzen
       if(prevWill) el.style.willChange = prevWill; else el.style.removeProperty('will-change');
       __stats.activeAnimations = Math.max(0, __stats.activeAnimations - 1);
-    }, delay + parseInt(el.getAttribute(DURATION_ATTR) || '600', 10));
+    }, delay + (parseInt(el.getAttribute(DURATION_ATTR) || '600', 10) || 600));
   }
 
   function resetElement(el){
     el.classList.remove('is-visible', ACTIVE_CLASS);
     if(el.style && el.style.willChange){ el.style.removeProperty('will-change'); }
-  if(el.hasAttribute(EASING_ATTR)) el.style.removeProperty('transition-timing-function');
+    if(el.hasAttribute(EASING_ATTR)) el.style.removeProperty('transition-timing-function');
   }
 
-  // Forciert ein sauberes erneutes Abspielen: sofort reset, Reflow erzwingen, dann animate
+  // Sauberes Replay
   function replayElement(el){
     if(!el) return;
     resetElement(el);
-    // Reflow erzwingen, damit Transition erneut greift
-    void el.offsetWidth; // eslint-disable-line no-unused-expressions
+    void el.offsetWidth; // Reflow erzwingen
     animateElement(el);
   }
 
-  // IntersectionObserver für alle animierbaren Elemente
+  // *** WICHTIG: Beim Verlassen NICHT zurücksetzen – Ausblenden übernimmt Scroll-Fade ***
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if(entry.isIntersecting){
         animateElement(entry.target);
       } else {
-        // Reset für Re-Trigger beim erneuten Eintritt
-        setTimeout(() => {
-          if(!entry.isIntersecting){
-            resetElement(entry.target);
-          }
-        }, 100);
+        // Nichts tun (kein resetElement hier), damit kein Flackern
       }
     });
-  }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
   function applyStagger(elements){
     // Gruppierung nach STAGGER_GROUP_ATTR
@@ -197,35 +178,32 @@
       groups.get(grp).push(el);
     });
     groups.forEach(list => {
-      // Schritt über Attribut an erstem Element, fallback 80ms
       let step = parseInt(list[0].getAttribute(STAGGER_STEP_ATTR) || '80', 10);
       if(!(step >= 0)) step = 80;
       list.forEach((el,i) => {
         if(!el.hasAttribute(DELAY_ATTR)){
-          el.setAttribute(DELAY_ATTR, i * step + '');
+          el.setAttribute(DELAY_ATTR, String(i * step));
         }
       });
     });
 
-    // Wrapper-basierte Stagger (Eltern mit data-stagger-group, Kinder ohne eigenes data-delay)
+    // Wrapper-basiertes Staggering
     const wrappers = document.querySelectorAll(`[${STAGGER_GROUP_ATTR}]`);
     wrappers.forEach(wrapper => {
-      // Wenn Wrapper selbst animierbar, Kinder separat behandeln
-      const wGroup = wrapper.getAttribute(STAGGER_GROUP_ATTR);
       const step = parseInt(wrapper.getAttribute(STAGGER_STEP_ATTR) || '80', 10) || 80;
       const base = parseInt(wrapper.getAttribute(STAGGER_BASE_ATTR) || '0', 10) || 0;
       const jitter = parseInt(wrapper.getAttribute(STAGGER_JITTER_ATTR) || '20', 10) || 0;
-      // Selektiere nur direkte Kinder mit data-animation (oder alle Nachfahren?) -> direkt ist stabiler
+
       const childAnim = Array.from(wrapper.querySelectorAll('[data-animation]'))
         .filter(child => !child.hasAttribute(DELAY_ATTR) && child.closest(`[${STAGGER_GROUP_ATTR}]`) === wrapper);
-      if(childAnim.length === 0) return;
+
       childAnim.forEach((child, idx) => {
         let d = base + idx * step;
         if(jitter){
           const j = Math.round((Math.random() * 2 - 1) * jitter);
           d = Math.max(0, d + j);
         }
-        child.setAttribute(DELAY_ATTR, d + '');
+        child.setAttribute(DELAY_ATTR, String(d));
       });
     });
   }
@@ -237,7 +215,6 @@
     state.paused = paused;
     dlog('group', group, paused ? 'paused' : 'resumed');
     if(!paused){
-      // Resume: alle wartenden Elemente animieren
       const queued = __delayedQueue.get(group);
       if(queued){
         queued.forEach(el => animateElement(el));
@@ -299,10 +276,8 @@
       if(!__loadingGateActive) return;
       __loadingGateActive = false;
       dlog('loading gate release');
-      // Held elements jetzt starten (Intersection Zustand prüfen)
       __loadingHeld.forEach(el => {
         if(el.isConnected){
-          // Falls schon sichtbar laut Observer-Klasse (manuell prüfen)
           animateElement(el);
         }
       });
@@ -322,80 +297,53 @@
         dlog('smokeTest start');
         const before = this.getStats();
         dlog('stats.before', before);
-        // Toggle debug off/on
         this.setDebug(!this.isDebug());
         this.setDebug(!this.isDebug());
-        // Force replay first anim element
         const first = document.querySelector('[data-animation]');
         if(first) { this.replay(first); dlog('replayed first element'); }
-        setTimeout(()=>{
-          dlog('smokeTest end', this.getStats());
-        }, 800);
+        setTimeout(()=>{ dlog('smokeTest end', this.getStats()); }, 800);
         return true;
       } catch(err){ console.error('smokeTest failed', err); return false; }
-  },
-  pauseGroup, resumeGroup, pauseAll, resumeAll, cancelQueued
+    },
+    pauseGroup, resumeGroup, pauseAll, resumeAll, cancelQueued
   };
 
   // Auto-Init
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', scan);
   } else {
-    scan();
+    setTimeout(scan, 10);
   }
 
-  // Initialisierung mit Debug-Ausgaben
   dlog('init');
-  // Falls Debug aktiv (Persistenz), Overlay herstellen
-  if(__debug){ ensureOverlay(); }
-  
+
   // Re-scan bei dynamischen Inhalten
-  document.addEventListener('sectionContentChanged', () => {
-  dlog('sectionContentChanged');
-    setTimeout(scan, 50); // Kurz warten bis DOM geupdated
-  });
-  document.addEventListener('featuresTemplatesLoaded', () => {
-  dlog('featuresTemplatesLoaded');
-    setTimeout(scan, 50); // Kurz warten bis DOM geupdated  
-  });
-  
-  // Sofortiger Scan wenn DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', scan);
-  } else {
-    setTimeout(scan, 10); // Kurz warten für andere Scripts
-  }
-  
-  // MutationObserver für dynamische Inhalte
+  document.addEventListener('sectionContentChanged', () => { dlog('sectionContentChanged'); setTimeout(scan, 50); });
+  document.addEventListener('featuresTemplatesLoaded', () => { dlog('featuresTemplatesLoaded'); setTimeout(scan, 50); });
+
+  // MutationObserver (nur Features-Section, wie gehabt)
   const mutationObserver = new MutationObserver((mutations) => {
     let needsRescan = false;
     mutations.forEach(mutation => {
       if(mutation.type === 'childList' && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach(node => {
           if(node.nodeType === 1 && (
-            node.matches && node.matches('[data-animation]') ||
-            node.querySelector && node.querySelector('[data-animation]')
+            (node.matches && node.matches('[data-animation]')) ||
+            (node.querySelector && node.querySelector('[data-animation]'))
           )) {
             needsRescan = true;
           }
         });
       }
     });
-    if(needsRescan) {
-      setTimeout(scan, 50);
-    }
+    if(needsRescan) setTimeout(scan, 50);
   });
-  
-  // Features Section beobachten für dynamische Template-Inhalte
+
   const featuresSection = document.getElementById('section-features');
   if(featuresSection) {
-    mutationObserver.observe(featuresSection, {
-      childList: true,
-      subtree: true
-    });
+    mutationObserver.observe(featuresSection, { childList: true, subtree: true });
   }
 
-  // Cleanup bei Unload
   window.addEventListener('beforeunload', () => {
     observer.disconnect();
     mutationObserver.disconnect();
