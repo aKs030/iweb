@@ -57,24 +57,6 @@
   --radius-full: 9999px;
 }
 
-/* Light Theme */
-[data-theme="light"] {
-  --bg-dark: #ffffff;
-  --bg-section: #f8f9fa;
-  --bg-card: #ffffff;
-  --bg-hover: #f0f0f0;
-
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-muted: #999999;
-
-  --border-color: #e0e0e0;
-
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
-}
 
 html, body {
   height: 100%;
@@ -83,11 +65,6 @@ html, body {
   
 }
 
-body {
-  
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-}
 
 /* ========================================
    2) Reset & Global
@@ -103,6 +80,9 @@ body {
 font-kerning: normal;
 font-variant-ligatures: common-ligatures contextual;
 font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  /* aus vorherigem Block zusammengeführt */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
 }
 
 
@@ -126,14 +106,9 @@ font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   box-sizing: border-box;
 }
 
-.section-inner {
-  width: 100%;
-  padding-block: clamp(48px, 8vh, 90px) clamp(16px, 4vh, 32px);
-  flex: 1 1 auto;
-}
 
-.section-header,
-.section-cta {
+
+.section-header {
   text-align: center;
   margin-bottom: 1.5rem;
   margin-top: 0;
@@ -242,14 +217,7 @@ a:hover { color: var(--primary-light); }
 }
 .btn-outline:hover { background: var(--primary-color); color: white; }
 
-.btn-block { width: 100%; justify-content: center; }
-
-.tag {
-  padding: 0.18rem 0.7rem;
-  background: var(--bg-hover);
-  border-radius: var(--radius-full);
-  font-size: 0.82rem;
-}
+/* .btn-block und .tag werden im Projekt nicht verwendet – entfernt */
 
 .highlight-item {
   display: flex;
@@ -270,8 +238,8 @@ a:hover { color: var(--primary-light); }
    5) Komponenten
 ======================================== */
 
-/* Textfluss-Regeln ohne .project-description */
-.skill-category p, .contact-details p{
+/* Textfluss-Regeln */
+.skill-category p{
   overflow-wrap: anywhere;
   word-break: normal;
   -webkit-hyphens: auto; hyphens: auto;
@@ -370,39 +338,8 @@ a:hover { color: var(--primary-light); }
 /* ========================================
    6) Utilities & Effekte
 ======================================== */
-.gradient-text {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.pulse { animation: pulse 2s infinite; }
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(9, 139, 255, 0.4); }
-  70% { box-shadow: 0 0 0 20px rgba(9, 139, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(9, 139, 255, 0); }
-}
-.skeleton {
-  background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-}
-@keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-.glass {
-  background: rgba(255,255,255,0.05);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.card-3d { transform-style: preserve-3d; transition: transform var(--transition-base); }
-.card-3d:hover { transform: rotateY(5deg) rotateX(5deg); }
-.text-reveal { overflow: hidden; }
-.text-reveal span {
-  display: inline-block; transform: translateY(100%);
-  animation: textReveal 0.8s ease-out forwards;
-  animation-delay: calc(var(--index) * 0.1s);
-}
-@keyframes textReveal { to { transform: translateY(0); } }
-.parallax { transform: translateZ(0); will-change: transform; }
-.observe { opacity: 0; transform: translateY(20px); transition: all 0.8s ease-out; }
-.observe.visible { opacity: 1; transform: translateY(0); }
+/* Unbenutzte Utility-Klassen entfernt: gradient-text, pulse(+keyframes), skeleton(+keyframes),
+   glass, card-3d, text-reveal(+keyframes), parallax, observe */
 
 
 /* ========================================
@@ -430,7 +367,7 @@ a:hover { color: var(--primary-light); }
 /* ========================================
    8) Responsive
 ======================================== */
-@media (max-width: 1024px) { .contact-content { grid-template-columns: 1fr; } }
+/* ungenutztes .contact-content Layout entfernt */
 
 @media (max-width: 768px){
   :root{ font-size: 14px; --header-height: 64px; }
