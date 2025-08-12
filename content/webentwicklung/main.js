@@ -491,21 +491,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const NEAR_ZERO = 0.04; // Klickschutz-Schwelle
 
-    function applyOpacity(){
-      const vh = window.innerHeight;
-      const start = vh * 0.55; // ab hier beginnt Ausfaden
-      const end   = vh * 0.10; // hier 0
+      function applyOpacity(){
+        const vh = window.innerHeight;
+        const start = vh * 0.55; // ab hier beginnt Ausfaden
+        const end   = vh * 0.10; // hier 0
+        const maxShift = 40;     // maximale Verschiebung nach oben in px
 
-      for (const el of fadeEls) {
-        const r = el.getBoundingClientRect();
-        const mid = r.top + r.height/2;
-        let t = (mid - end) / (start - end); // 1..0
-        if (t > 1) t = 1; else if (t < 0) t = 0;
+        for (const el of fadeEls) {
+          const r = el.getBoundingClientRect();
+          const mid = r.top + r.height/2;
+          let t = (mid - end) / (start - end); // 1..0
+          if (t > 1) t = 1; else if (t < 0) t = 0;
 
-        el.style.opacity = t.toFixed(3);
-        el.style.pointerEvents = (t < NEAR_ZERO) ? 'none' : '';
+          const shift = (1 - t) * -maxShift; // 0..-maxShift
+          el.style.opacity = t.toFixed(3);
+          el.style.transform = t === 1 ? '' : `translateY(${shift.toFixed(1)}px)`;
+          el.style.pointerEvents = (t < NEAR_ZERO) ? 'none' : '';
+        }
       }
-    }
 
     const onScroll = () => applyOpacity();
     const onResize = () => applyOpacity();
