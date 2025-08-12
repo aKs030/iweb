@@ -3,23 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // Footer laden
+  // Footer: kein Remote-Fetch, um 404s zu vermeiden; optional minimaler Fallback
   const footerPlaceholder = document.getElementById('footer-placeholder');
   if (footerPlaceholder) {
-    fetch('/pages/komponente/footer.html')
-      .then(r => {
-        if (!r.ok) throw new Error('Footer konnte nicht geladen werden');
-        return r.text();
-      })
-      .then(html => {
-        footerPlaceholder.innerHTML = html;
-      })
-      .catch(() => {
-        // Optional: Fallback oder Fehleranzeige
-        // footerPlaceholder.innerHTML = '<footer class="footer">Footer konnte nicht geladen werden.</footer>';
-      });
-  } else {
-    console.error('Fehler: footer-placeholder wurde nicht gefunden.');
+    // Wenn du eine Footer-Datei hast, bitte Pfad hier eintragen und Fetch reaktivieren.
+    // footerPlaceholder.innerHTML = '<footer class="footer">&copy; <span id="current-year"></span> Abdulkerim Sesli</footer>';
   }
 
   // Menü laden
@@ -123,8 +111,11 @@ function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
     '/': 'Startseite',
-    '/pages/album.html': 'Fotogalerie',
-    '/pages/ubermich.html': 'Über mich',
+    '/pages/album.html': 'Album',
+    '/pages/ueber-mich/': 'Über mich',
+    '/pages/webentwicklung/project-1.html': 'E‑Commerce Platform',
+    '/pages/fotogalerie/urban.html': 'Urban Exploration',
+    '/pages/spiele/space-defender.html': 'Space Defender',
     '/pages/index-game.html': 'Spiele-Übersicht',
     '/pages/features/wetter.html': 'Wetter',
   };
@@ -133,3 +124,22 @@ function setSiteTitle() {
   const siteTitleEl = document.getElementById('site-title');
   if (siteTitleEl) siteTitleEl.textContent = pageTitle;
 }
+
+// Aktiven Link im Menü markieren
+function setActiveMenuLink() {
+  try {
+    const path = window.location.pathname.replace(/index\.html$/, '');
+    document.querySelectorAll('.site-menu a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if (!href) return;
+      // Normalisieren (index.html entfernen)
+      const norm = href.replace(/index\.html$/, '');
+      if (norm === path) a.classList.add('active');
+      else a.classList.remove('active');
+    });
+  } catch {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setActiveMenuLink();
+});

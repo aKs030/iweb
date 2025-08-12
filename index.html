@@ -6,10 +6,15 @@
   <meta name="description" content="Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte. Entdecke meine Arbeiten und lass uns zusammenarbeiten.">
   <meta name="keywords" content="Abdulkerim Sesli, Portfolio, Webentwicklung, Frontend, Fotografie, Berlin, Developer">
   <meta name="author" content="Abdulkerim Sesli">
+  <meta property="og:title" content="Abdulkerim – Digital Portfolio">
+  <meta property="og:description" content="Webentwicklung, Fotografie und kreative Projekte.">
+  <meta property="og:type" content="website">
 
   <!-- Open Graph & PWA / Icons / Fonts etc... -->
-  <link rel="icon" href="/img/icons/favicon.ico" type="image/x-icon">
-  <link rel="apple-touch-icon" href="/img/icons/icon-192.png">
+  <link rel="icon" href="/content/img/icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" sizes="192x192" href="/content/img/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/content/img/icons/icon-192.png">
+  <link rel="mask-icon" href="/content/img/icons/favicon.svg" color="#07a1ff">
   <link rel="manifest" href="/manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,102 +33,10 @@
   </div>
   
   <!-- Hero wird dynamisch geladen -->
-  <section id="hero" class="section hero" data-hero-src="/content/webentwicklung/home/hero.html"></section>
+  <section id="hero" class="section hero" data-hero-src="/pages/home/hero.html"></section>
   <section class="section features" id="section-features"></section>
 
-    <!-- Projects Section -->
-<section class="section projects" id="projects">
-  <div class="container">
-  <div class="section-header">
-    <h2 class="section-title">Meine Projekte</h2>
-    <p class="section-subtitle">Eine Auswahl meiner besten Arbeiten</p>
-  </div>
-  <div class="project-filter">
-    <button class="filter-btn active" data-filter="web">Web</button>
-    <button class="filter-btn" data-filter="photo">Fotografie</button>
-    <button class="filter-btn" data-filter="game">Spiele</button>
-    <button class="filter-btn" data-filter="design">Design</button>
-  </div>
-  <div class="projects-grid">
-          <!-- Web Project -->
-          <article class="project-card" data-category="web" data-aos="fade-up">
-            <div class="project-image">
-              <img src="/img/project-web-1.jpg" alt="E-Commerce Platform" loading="lazy">
-              <div class="project-overlay">
-                <a href="/pages/webentwicklung/project-1.html" class="project-link" title="Projekt: E-Commerce Platform">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/>
-                    <line x1="10" y1="14" x2="21" y2="3"/>
-                  </svg>
-                </a>
-              </div>
-            </div>
-            <div class="project-content">
-              <span class="project-category">Webentwicklung</span>
-              <h3 class="project-title">E-Commerce Platform</h3>
-              <p class="project-description">Moderne Shopping-Plattform mit React und Node.js</p>
-              <div class="project-tags">
-                <span class="tag">React</span>
-                <span class="tag">Node.js</span>
-                <span class="tag">MongoDB</span>
-              </div>
-            </div>
-          </article>
-          
-          <!-- Photo Project -->
-          <article class="project-card" data-category="photo" data-aos="fade-up" data-aos-delay="100">
-            <div class="project-image">
-              <img src="/img/project-photo-1.jpg" alt="Urban Exploration" loading="lazy">
-              <div class="project-overlay">
-                <a href="/pages/fotogalerie/urban.html" class="project-link" title="Projekt: Urban Exploration">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg>
-                </a>
-              </div>
-            </div>
-            <div class="project-content">
-              <span class="project-category">Fotografie</span>
-              <h3 class="project-title">Urban Exploration</h3>
-              <p class="project-description">Architektur und Straßenfotografie in Berlin</p>
-              <div class="project-tags">
-                <span class="tag">Street</span>
-                <span class="tag">Architecture</span>
-              </div>
-            </div>
-          </article>
-          
-          <!-- Game Project -->
-          <article class="project-card" data-category="game" data-aos="fade-up" data-aos-delay="200">
-            <div class="project-image">
-              <img src="/img/project-game-1.jpg" alt="Space Defender" loading="lazy">
-              <div class="project-overlay">
-                <a href="/pages/spiele/space-defender.html" class="project-link" title="Projekt: Space Defender">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
-                </a>
-              </div>
-            </div>
-            <div class="project-content">
-              <span class="project-category">Spiele</span>
-              <h3 class="project-title">Space Defender</h3>
-              <p class="project-description">Retro-inspiriertes Weltraum-Shooter-Spiel</p>
-              <div class="project-tags">
-                <span class="tag">JavaScript</span>
-                <span class="tag">Canvas</span>
-              </div>
-            </div>
-          </article>
-       </div>
-    <div class="section-cta">
-      <a href="/pages/projekte/" class="btn btn-outline">Alle Projekte ansehen</a>
-    </div>
-  </div>
-</section>
+  <!-- Projects Section entfernt -->
 
     <!-- Skills Section -->
     <section class="section skills" id="skills">
@@ -217,7 +130,7 @@
             </div>
             <div class="about-cta" data-animation="fadeInUp" data-delay="500">
               <a href="/pages/ueber-mich/" class="btn btn-primary">Mehr erfahren</a>
-              <a href="/files/lebenslauf.pdf" class="btn btn-outline" download>
+              <a href="#" class="btn btn-outline">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                   <polyline points="7 10 12 15 17 10"/>
@@ -229,56 +142,7 @@
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="section contact" id="contact">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Lass uns zusammenarbeiten</h2>
-          <p class="section-subtitle">Hast du ein Projekt im Kopf? Lass uns darüber sprechen!</p>
-        </div>
-        
-        <div class="contact-content">
-          <div class="contact-info" data-aos="fade-right">
-            <div class="contact-item">
-              <div class="contact-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-              </div>
-              <div class="contact-details">
-                <h3>Standort</h3>
-                <p>Berlin, Deutschland</p>
-              </div>
-            </div>
-            
-            <div class="contact-item">
-              <div class="contact-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-              </div>
-              <div class="contact-details">
-                <h3>E-Mail</h3>
-                <p><a href="mailto:contact@abdulkerim.de">contact@abdulkerim.de</a></p>
-              </div>
-            </div>
-            
-            <div class="contact-item">
-              <div class="contact-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-              </div>
-              <div class="contact-details">
-                <h3>Telefon</h3>
-                <p><a href="tel:+4917612345678">+49 176 1234 5678</a></p>
-              </div>
-            </div>
-            
+                  
             <div class="social-links">
               <a href="https://github.com/abdulkerim" target="_blank" rel="noopener" aria-label="GitHub">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -296,16 +160,10 @@
                             </svg>
                 </a>
               </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
     </section>
 
 
 
-  <div id="footer-container" class="section"></div>
   <button class="back-to-top" id="backToTop" aria-label="Nach oben scrollen">
     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M18 15l-6-6-6 6"/>
@@ -314,11 +172,10 @@
 
   <!-- Animationen -->
   <script src="/content/webentwicklung/animations.js" defer></script>
-  <script src="/content/webentwicklung/home/hero.js" defer></script>
+  <script src="/pages/home/hero.js" defer></script>
   <!-- Main Script -->
   <script src="/content/webentwicklung/main.js" defer></script>
-  <script src="/content/webentwicklung/footer/footer.js" defer></script>
-  <script src="/content/webentwicklung/features/feature-rotation.js" defer></script>
+  <script src="/pages/features/feature-rotation.js" defer></script>
   <script src="/content/webentwicklung/menu/menu.js" defer></script>
 </body>
 </html>

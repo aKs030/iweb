@@ -71,23 +71,23 @@ window.__postHeroEnhancements = async function(){
 
 async function loadTypedModules() {
   try {
-    const timing = await import('./home/timing.js');
+    const timing = await import('../../pages/home/timing.js');
     debounce = timing.debounce || debounce;
     throttle = timing.throttle || throttle;
   } catch (e) { console.error('[typed] timing.js fehlgeschlagen:', e); }
 
   try {
-    const mod = await import('./home/TypeWriter.js');
+    const mod = await import('../../pages/home/TypeWriter.js');
     TypeWriter = mod.default || mod.TypeWriter || TypeWriter;
   } catch (e) { console.error('[typed] TypeWriter.js fehlgeschlagen:', e); }
 
   try {
-    const lm = await import('./home/lineMeasurer.js');
+    const lm = await import('../../pages/home/lineMeasurer.js');
     makeLineMeasurer = lm.makeLineMeasurer || makeLineMeasurer;
   } catch (e) { console.error('[typed] lineMeasurer.js fehlgeschlagen:', e); }
 
   try {
-    const q = await import('./home/quotes-de.js');
+    const q = await import('../../pages/home/quotes-de.js');
     quotes = q.default || q.quotes || quotes;
   } catch (e) { console.error('[typed] quotes-de.js fehlgeschlagen:', e); }
 }
@@ -204,7 +204,7 @@ function initParticles() {
 async function ensureHeroDataModule(){
   if(heroDataModule) return heroDataModule;
   try {
-    heroDataModule = await import('./home/hero-data.js');
+    heroDataModule = await import('../../pages/home/hero-data.js');
   } catch(err){ console.error('[hero-data] hero-data.js Import fehlgeschlagen', err); heroDataModule = {}; }
   return heroDataModule;
 }
@@ -224,10 +224,10 @@ async function setRandomGreetingHTML(animated = false) {
   }
 }
 
-// ===== Project Filter =====
 function initProjectFilter() {
   const filterButtons = document.querySelectorAll('.filter-btn');
   const projectCards = document.querySelectorAll('.project-card');
+  if (!filterButtons.length || !projectCards.length) return; // nothing to init
   filterButtons.forEach(button => {
     button.addEventListener('click', () => {
       filterButtons.forEach(btn => btn.classList.remove('active'));
@@ -291,12 +291,7 @@ function initScrollAnimations() {
 // ===== Menü-Assets =====
 function loadMenuAssets() {
   if (!document.getElementById('menu-container')) return;
-  if (!document.querySelector('link[href="/content/webentwicklung/menu/menux.css"]')) {
-    const menuCss = document.createElement('link');
-    menuCss.rel = 'stylesheet';
-    menuCss.href = '/content/webentwicklung/menu/menux.css';
-    document.head.appendChild(menuCss);
-  }
+    // CSS wird bereits in menu.html eingebunden
   if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
     const menuScript = document.createElement('script');
     menuScript.src = '/content/webentwicklung/menu/menu.js';
@@ -360,17 +355,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Nach Laden der Module: Hero Typing Initialisierung verfügbar machen (neu ausgelagert in TypeWriter.js)
   window.__initTyping = function(){
-    return import('./home/TypeWriter.js').then(mod => {
+    return import('../../pages/home/TypeWriter.js').then(mod => {
       if(typeof mod.initHeroSubtitle === 'function'){
-        return mod.initHeroSubtitle({
+        return Promise.resolve(mod.initHeroSubtitle({
           ensureHeroDataModule,
           makeLineMeasurer,
             quotes,
           TypeWriterClass: TypeWriter
-        });
+        }));
       }
       console.warn('initHeroSubtitle nicht gefunden');
-      return false;
+      return Promise.resolve(false);
     });
   };
 

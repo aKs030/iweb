@@ -2,7 +2,7 @@
 
 /**
  * Features: Templates laden + Rotation steuern (ein Modul)
- * - Lädt /content/webentwicklung/features/features-templates.html
+ * - Lädt /pages/features/features-templates.html
  * - Rotiert Templates in #section-features
  * - Sichtbarkeits- & Motion-Respekt, Public-API unter window.FeatureRotation
  */
@@ -16,7 +16,7 @@
     "template-features-4",
     "template-features-5",
   ];
-  const TEMPLATES_URL = "/content/webentwicklung/features/features-templates.html";
+  const TEMPLATES_URL = "/pages/features/features-templates.html";
   const ROTATION_INTERVAL_MS = 14000;
 
   // ===== State =====
