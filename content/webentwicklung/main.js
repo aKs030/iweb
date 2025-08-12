@@ -283,9 +283,19 @@ function initScrollAnimations() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('aos-animate'); });
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('aos-animate');
+      } else {
+        entry.target.classList.remove('aos-animate');
+        entry.target.style.transform = 'none';
+      }
+    });
   }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-  document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+  document.querySelectorAll('[data-aos]').forEach(el => {
+    el.style.transform = 'none';
+    observer.observe(el);
+  });
 }
 
 // ===== Menü-Assets =====
@@ -435,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initScrollAnimations();
 
   // Performance: Scroll-Handler (nach geladener timing.js)
-  window.addEventListener('scroll', debounce(handleScrollEvents, 75));
+  window.addEventListener('scroll', debounce(handleScrollEvents, 75), { passive: true });
   handleScrollEvents();
 
   // Smooth Anchor Scroll
