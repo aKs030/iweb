@@ -523,25 +523,7 @@ a:hover { color: var(--primary-light); }
 
 
 /* ========================================
-   7) Keyframes & AOS-Style
-======================================== */
-
-/* === AOS: nur Opacity, keine Bewegungen mehr === */
-[data-aos]{
-  opacity: 0;
-  transition: opacity 0.6s ease-out;
-  transform: none !important;   /* Bewegung killen */
-}
-[data-aos].aos-animate{
-  opacity: 1;
-  transform: none !important;
-}
-
-/* Scroll-Fade Helper (optional für gezielte Elemente) */
-.scroll-fade-soft { will-change: opacity; transition: opacity .12s linear; }
-
-/* ========================================
-   8) Responsive
+   7) Responsive
 ======================================== */
 @media (max-width: 1024px) { .contact-content { grid-template-columns: 1fr; } }
 
@@ -552,7 +534,7 @@ a:hover { color: var(--primary-light); }
 }
 
 /* ========================================
-   9) Print
+   8) Print
 ======================================== */
 @media print {
   .loading-screen, .main-header, .hero-background, .project-filter, .back-to-top { display: none !important; }
@@ -565,7 +547,7 @@ a:hover { color: var(--primary-light); }
 
 
 /* ========================================
-   10) Accessibility & Scrollbar
+   9) Accessibility & Scrollbar
 ======================================== */
 *:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 ::selection { background: var(--primary-color); color: white; }
