@@ -20,4 +20,7 @@ document.addEventListener('hero:loaded', () => {
     const canvas = document.getElementById('particleCanvas');
     if(canvas && !canvas.__initialized){ initParticles(); canvas.__initialized = true; }
   }
+  if (typeof initScrollAnimations === 'function') {
+    initScrollAnimations();
+  }
 });
