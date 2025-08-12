@@ -8,7 +8,6 @@
 //  - Hero Sichtbarkeits-Observer -> body.hero-active
 //  - Reduce-Motion Persistenz (localStorage 'pref-reduce-motion') & Toggle: window.toggleReducedMotion()
 //  - Anim Debug Toggle Helper: window.toggleAnimDebug()
-//  - Overlay (in animations.js) liest Partikel-/Animations-Stats
 // ===== Dynamic Imports + Fallbacks =====
 let debounce = (fn, wait = 200) => {
   let t;
@@ -53,15 +52,6 @@ window.__postHeroEnhancements = async function(){
     }, { threshold: cfg.threshold });
     heroObs.observe(hero);
     document.body.__heroObserverAttached = true;
-  })();
-  // Force-start button animations
-  (function(){
-    if(!window.AnimationSystem) return;
-    const rect = hero.getBoundingClientRect();
-    if(rect.top < window.innerHeight && rect.bottom > 0){
-      const btns = hero.querySelectorAll('.hero-buttons [data-animation].animate-element:not(.is-visible)');
-      btns.forEach(el => { if(typeof window.AnimationSystem.replay === 'function') window.AnimationSystem.replay(el); else el.classList.add('is-visible'); });
-    }
   })();
   return true;
 };
@@ -477,52 +467,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Menü dynamisch nachladen
   loadMenuAssets();
 
-  // =========================
-  // *** Scroll-Fade (Opacity) – ersetzt vertikale Bewegungen ***
-  // =========================
-  (function(){
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced || document.body.classList.contains('reduce-motion')) return;
-
-    // Welche Elemente sollen progressiv ausfaden?
-    // -> Alle, die animierbar sind ODER explizit .scroll-fade-soft tragen
-    const fadeEls = Array.from(document.querySelectorAll('[data-animation], .scroll-fade-soft'));
-    if (!fadeEls.length) return;
-
-    const NEAR_ZERO = 0.04; // Klickschutz-Schwelle
-
-      function applyOpacity(){
-        const vh = window.innerHeight;
-        const start = vh * 0.55; // ab hier beginnt Ausfaden
-        const end   = vh * 0.10; // hier 0
-        const maxShift = 40;     // maximale Verschiebung nach oben in px
-
-        for (const el of fadeEls) {
-          const r = el.getBoundingClientRect();
-          const mid = r.top + r.height/2;
-          let t = (mid - end) / (start - end); // 1..0
-          if (t > 1) t = 1; else if (t < 0) t = 0;
-
-          const shift = (1 - t) * -maxShift; // 0..-maxShift
-          el.style.opacity = t.toFixed(3);
-          el.style.transform = t === 1 ? '' : `translateY(${shift.toFixed(1)}px)`;
-          el.style.pointerEvents = (t < NEAR_ZERO) ? 'none' : '';
-        }
-      }
-
-    const onScroll = () => applyOpacity();
-    const onResize = () => applyOpacity();
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize, { passive: true });
-
-    // Initial
-    applyOpacity();
-
-    // Bei dynamischem Content nachziehen
-    document.addEventListener('sectionContentChanged', () => setTimeout(applyOpacity, 50));
-    document.addEventListener('featuresTemplatesLoaded', () => setTimeout(applyOpacity, 50));
-  })();
 
 });
 
