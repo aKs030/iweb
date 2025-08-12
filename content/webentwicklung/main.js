@@ -16,12 +16,9 @@ let debounce = (fn, wait = 200) => {
     const ctx=this;
     clearTimeout(t);
     t=setTimeout(()=>fn.apply(ctx,args), wait);
-
   }
   debounced.cancel = () => clearTimeout(t);
-
-return debounced;
-
+  return debounced;
 };
 let throttle = (fn, limit = 250) => {
   let inFlight=false, pending=false, lastArgs, lastThis;
@@ -160,7 +157,7 @@ function initParticles() {
     if(fpsSamples.length === 20){
       const avg = fpsSamples.reduce((a,b)=>a+b,0)/fpsSamples.length;
       adjustParticleDensity(avg);
-  window.__particleStats.fps = avg;
+      window.__particleStats.fps = avg;
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => { p.update(); p.draw(); });
@@ -194,7 +191,7 @@ function initParticles() {
   window.addEventListener('resize', throttle(() => {
     cancelAnimationFrame(animationId);
     resizeCanvas();
-  createParticles(targetCount);
+    createParticles(targetCount);
     window.__particleStats.count = targetCount;
     animateParticles();
   }, 250));
@@ -323,18 +320,15 @@ function hideLoadingScreen() {
   if (!el) return;
   el.classList.add('hide');
   el.setAttribute('aria-hidden', 'true');
-  // Hard inline styles als Fallback, falls CSS-Klasse fehlt
   el.style.opacity = '0';
   el.style.pointerEvents = 'none';
   el.style.visibility = 'hidden';
-  // Nach Transition endgültig aus dem Layout nehmen
   const remove = () => {
     el.style.display = 'none';
     el.removeEventListener('transitionend', remove);
   };
   el.addEventListener('transitionend', remove);
-  setTimeout(remove, 700); // Fallback, falls keine Transition feuert
-  // Nach dem Verstecken: Animations-Gate freigeben
+  setTimeout(remove, 700);
   try {
     window.AnimationSystem?.releaseLoadingGate?.();
   } catch(err) {
@@ -344,13 +338,10 @@ function hideLoadingScreen() {
 
 // ===== Main =====
 document.addEventListener('DOMContentLoaded', async () => {
-  // Loading screen: sichtbar lassen, bis Module + window load fertig sind
   __loaderStart = performance.now();
 
   function tryHideLoader() {
-    // nur schließen, wenn Module geladen
     if (!__modulesReady) return;
-    // warte bis window "load" oder readyState complete (Assets geladen)
     if (!__windowLoaded && document.readyState !== 'complete') return;
     const elapsed = performance.now() - __loaderStart;
     const wait = Math.max(0, __MIN_LOADER_MS - elapsed);
@@ -359,19 +350,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   window.addEventListener('load', () => { __windowLoaded = true; tryHideLoader(); });
 
-  // Module laden (dynamisch). Wenn fertig, erneut prüfen.
   await loadTypedModules();
   __modulesReady = true;
   tryHideLoader();
 
-  // Nach Laden der Module: Hero Typing Initialisierung verfügbar machen (neu ausgelagert in TypeWriter.js)
   window.__initTyping = function(){
     return import('./home/TypeWriter.js').then(mod => {
       if(typeof mod.initHeroSubtitle === 'function'){
         return mod.initHeroSubtitle({
           ensureHeroDataModule,
           makeLineMeasurer,
-            quotes,
+          quotes,
           TypeWriterClass: TypeWriter
         });
       }
@@ -380,10 +369,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   };
 
-  // Hard fallback, falls irgendwas schiefgeht
   setTimeout(hideLoadingScreen, 5000);
 
-  // Prevent overscroll/bounce NUR am ersten Snap und letzten (Footer)
+  // Prevent overscroll/bounce am ersten Snap und letzten (Footer)
   (function () {
     function getScrollY(){
       return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
@@ -424,14 +412,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, { passive: false });
   })();
 
-  // ===== Typing initialisieren (ausgelagert in TypeWriter.js) =====
+  // ===== Typing initialisieren =====
   window.__initTyping();
 
   // Greeting
   setRandomGreetingHTML();
 
   // Particles
-  // initParticles moved to global for hero lazy load reuse
   initParticles();
 
   // Project-Filter
@@ -440,7 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Scroll / Intersection / BackToTop
   initScrollAnimations();
 
-  // Performance: Scroll-Handler (nach geladener timing.js)
+  // Performance: Scroll-Handler
   window.addEventListener('scroll', debounce(handleScrollEvents, 75), { passive: true });
   handleScrollEvents();
 
@@ -453,12 +440,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Reduce Motion Toggle
   (function(){
     const body = document.body;
-    // Initial aus Persistenz / Systempräferenz
     let initial = false;
     try {
       const saved = localStorage.getItem('pref-reduce-motion');
       if(saved === '1') initial = true; else if(saved === null){
-        // Fallback auf prefers-reduced-motion
         initial = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       }
     } catch(err) {
@@ -486,14 +471,55 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // AOS-Delays
   document.querySelectorAll('[data-aos]').forEach((el, idx) => {
-    if (!el.hasAttribute('data-aos-delay')) el.setAttribute('data-aos-delay', idx * 50);
+    if (!el.hasAttribute('data-aos-delay')) el.setAttribute('data-aos-delay', String(idx * 50));
   });
 
   // Menü dynamisch nachladen
   loadMenuAssets();
 
-  // Force-Start für Hero-Button Animationen beim direkten Seitenaufruf (ohne Scroll)
-  // Falls Hero später nachgeladen wird erneut durch hero.js aufrufbar
+  // =========================
+  // *** Scroll-Fade (Opacity) – ersetzt vertikale Bewegungen ***
+  // =========================
+  (function(){
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced || document.body.classList.contains('reduce-motion')) return;
+
+    // Welche Elemente sollen progressiv ausfaden?
+    // -> Alle, die animierbar sind ODER explizit .scroll-fade-soft tragen
+    const fadeEls = Array.from(document.querySelectorAll('[data-animation], .scroll-fade-soft'));
+    if (!fadeEls.length) return;
+
+    const NEAR_ZERO = 0.04; // Klickschutz-Schwelle
+
+    function applyOpacity(){
+      const vh = window.innerHeight;
+      const start = vh * 0.55; // ab hier beginnt Ausfaden
+      const end   = vh * 0.10; // hier 0
+
+      for (const el of fadeEls) {
+        const r = el.getBoundingClientRect();
+        const mid = r.top + r.height/2;
+        let t = (mid - end) / (start - end); // 1..0
+        if (t > 1) t = 1; else if (t < 0) t = 0;
+
+        el.style.opacity = t.toFixed(3);
+        el.style.pointerEvents = (t < NEAR_ZERO) ? 'none' : '';
+      }
+    }
+
+    const onScroll = () => applyOpacity();
+    const onResize = () => applyOpacity();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
+
+    // Initial
+    applyOpacity();
+
+    // Bei dynamischem Content nachziehen
+    document.addEventListener('sectionContentChanged', () => setTimeout(applyOpacity, 50));
+    document.addEventListener('featuresTemplatesLoaded', () => setTimeout(applyOpacity, 50));
+  })();
 
 });
 
@@ -501,4 +527,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 if (typeof module !== 'undefined') {
   module.exports = { debounce, throttle };
 }
-
