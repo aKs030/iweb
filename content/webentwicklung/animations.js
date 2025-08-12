@@ -126,7 +126,7 @@
 
     // will-change nur kurz
     const prevWill = el.style.willChange;
-    el.style.willChange = 'opacity';
+    el.style.willChange = 'opacity, transform';
 
     const tId = setTimeout(() => {
       el.classList.add('is-visible');
