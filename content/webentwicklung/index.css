@@ -537,8 +537,6 @@ a:hover { color: var(--primary-light); }
   transform: none !important;
 }
 
-/* Scroll-Fade Helper (optional für gezielte Elemente) */
-.scroll-fade-soft { will-change: opacity; transition: opacity .12s linear; }
 
 /* ========================================
    8) Responsive
