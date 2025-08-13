@@ -449,6 +449,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       if(saved === '1') initial = true; else if(saved === null){
         // Fallback auf prefers-reduced-motion
         initial = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Sicherheits-Fallback: falls initialer IntersectionObserver die Buttons (crt) nicht animiert hat
+    setTimeout(() => {
+      try {
+        const hero = document.getElementById('hero');
+        if(!hero || !window.AnimationSystem) return;
+        // Erneut scannen (falls Buttons noch nicht init) und gezielt replay auf CRT Buttons, die noch nicht sichtbar sind
+        window.AnimationSystem.scan?.();
+        hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')
+          .forEach(btn => {
+            if(typeof window.AnimationSystem.replay === 'function') window.AnimationSystem.replay(btn);
+            else btn.classList.add('is-visible');
+          });
+      } catch(err){ console.warn('Hero Button Anim Fallback fehlgeschlagen', err); }
+    }, 450);
       }
     } catch(err) {
       if(window.AnimationSystem?.isDebug?.()) window.AnimationSystem.dlog('localStorage read error', err);
@@ -480,9 +494,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Menü dynamisch nachladen
   loadMenuAssets();
-
-  // Force-Start für Hero-Button Animationen beim direkten Seitenaufruf (ohne Scroll)
-  // Falls Hero später nachgeladen wird erneut durch hero.js aufrufbar
 
 });
 
