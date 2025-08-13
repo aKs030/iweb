@@ -6,6 +6,11 @@
   'use strict';
   if(window.AnimationSystem) return; // Bereits vorhanden
 
+  // Scrollrichtung erkennen für Re-Trigger beim Hochscrollen
+  let lastScrollY = window.scrollY;
+  let scrollDir = 'down';
+  let ticking = false; // rAF Throttle
+
   const ATTR = {
     anim: 'data-animation',
     delay: 'data-delay',
@@ -62,13 +67,43 @@
   const observer = !prefersReduced && new IntersectionObserver(entries => {
     for(const { isIntersecting, target } of entries){
       if(isIntersecting){
+        if(scrollDir === 'up') reset(target); // neu starten beim Hochscrollen
         animate(target);
       } else {
         // leichte Verzögerung minimiert Flackern beim Scrollen
-        setTimeout(() => { if(!document.hidden) reset(target); }, 100);
+        setTimeout(() => { if(!document.hidden) reset(target); }, 120);
       }
     }
-  }, { threshold: 0.1 });
+  }, { threshold: 0.12 });
+
+  // Re-Trigger Logik bei Hochscrollen für bereits sichtbare Elemente im oberen Bereich
+  const retriggerOnScrollUp = () => {
+    ticking = false;
+    if(prefersReduced || scrollDir !== 'up') return;
+    const vh = window.innerHeight;
+    document.querySelectorAll('[' + ATTR.anim + ']').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if(r.top >= 0 && r.top < vh * 0.7){
+        if(el.classList.contains('is-visible') && !el.classList.contains(CLASS_ACTIVE)){
+          // reset erzwingen (kurzer Reflow damit CSS Transition erneut greift)
+          el.classList.remove('is-visible');
+          // Reflow
+          void el.offsetWidth;
+          animate(el);
+        }
+      }
+    });
+  };
+
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    scrollDir = (y < lastScrollY) ? 'up' : 'down';
+    lastScrollY = y;
+    if(!ticking){
+      ticking = true;
+      requestAnimationFrame(retriggerOnScrollUp);
+    }
+  }, { passive: true });
 
   const scan = () => {
     ensureCSS();
@@ -78,9 +113,37 @@
     });
   };
 
+  // MutationObserver für dynamisch eingefügte Inhalte (z.B. Template-Klone)
+  const processed = new WeakSet();
+  const handleNewEl = el => {
+    if(!el || processed.has(el) || !el.hasAttribute?.(ATTR.anim)) return;
+    init(el);
+    if(observer) observer.observe(el);
+    processed.add(el);
+  };
+  const mutationObserver = new MutationObserver(mutations => {
+    for(const m of mutations){
+      if(m.type === 'childList'){
+        m.addedNodes.forEach(node => {
+          if(node.nodeType !== 1) return; // Element
+          if(node.hasAttribute && node.hasAttribute(ATTR.anim)) handleNewEl(node);
+          // auch verschachtelte
+          node.querySelectorAll?.('[' + ATTR.anim + ']').forEach(handleNewEl);
+        });
+      } else if(m.type === 'attributes' && m.attributeName === ATTR.anim){
+        handleNewEl(m.target);
+      }
+    }
+  });
+
+  const startObserving = () => {
+    mutationObserver.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: [ATTR.anim] });
+  };
+
+  const boot = () => { scan(); startObserving(); };
   (document.readyState === 'loading')
-    ? document.addEventListener('DOMContentLoaded', scan)
-    : scan();
+    ? document.addEventListener('DOMContentLoaded', boot)
+    : boot();
 
   window.AnimationSystem = { scan, animate, reset };
 })();
