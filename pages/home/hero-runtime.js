@@ -65,8 +65,8 @@ function forceHeroButtonsAnimation(hero){
     if(rect.top < innerHeight && rect.bottom > 0){
       hero.querySelectorAll('.hero-buttons [data-animation].animate-element:not(.is-visible)')
         .forEach(el => {
-          if(typeof window.AnimationSystem.replay === 'function') window.AnimationSystem.replay(el);
-          else el.classList.add('is-visible');
+          // Replay entfernt: direkte Sichtbarkeit setzen
+          el.classList.add('is-visible');
         });
     }
   } catch {}

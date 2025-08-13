@@ -4,7 +4,7 @@
  */
 (function(){
   'use strict';
-  if(window.AnimationSystem?.__active) return; // Nur einmal initialisieren
+  if(window.AnimationSystem) return; // Bereits vorhanden
 
   const ATTR = {
     anim: 'data-animation',
@@ -57,7 +57,6 @@
   };
 
   const reset = el => { if(el) el.classList.remove('is-visible', CLASS_ACTIVE); };
-  const replay = el => { if(!el) return; reset(el); el.offsetWidth; animate(el); };
 
   // IntersectionObserver nur, wenn Animationen nicht reduziert werden sollen
   const observer = !prefersReduced && new IntersectionObserver(entries => {
@@ -83,5 +82,5 @@
     ? document.addEventListener('DOMContentLoaded', scan)
     : scan();
 
-  window.AnimationSystem = { __active: true, scan, animate, reset, replay };
+  window.AnimationSystem = { scan, animate, reset };
 })();

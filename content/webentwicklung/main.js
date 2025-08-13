@@ -192,8 +192,7 @@ function hideLoadingScreen(){
   const rm=()=>{ el.style.display='none'; el.removeEventListener('transitionend', rm); };
   el.addEventListener('transitionend', rm);
   setTimeout(rm,700);
-  try{ window.AnimationSystem?.releaseLoadingGate?.(); }
-  catch(e){ console.warn('releaseLoadingGate failed', e); }
+  // Debug-API entfernt: releaseLoadingGate Aufruf gestrichen
 }
 
 // ===== Main =====
@@ -257,38 +256,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     try{
       const saved=localStorage.getItem('pref-reduce-motion');
       reduced = saved==='1' || (saved===null && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    }catch(e){
-      if(window.AnimationSystem?.isDebug?.()) window.AnimationSystem.dlog('ls read',e);
-    }
+  }catch(e){ /* Debug-Logging entfernt */ }
     if(reduced) body.classList.add('reduce-motion');
     window.toggleReducedMotion = force => {
       const val = force!==undefined ? force : !body.classList.contains('reduce-motion');
       body.classList.toggle('reduce-motion', !!val);
-      try { localStorage.setItem('pref-reduce-motion', body.classList.contains('reduce-motion') ? '1':'0'); }
-      catch(e){ if(window.AnimationSystem?.isDebug?.()) window.AnimationSystem.dlog('ls write',e); }
-      if(window.AnimationSystem?.isDebug?.()) window.AnimationSystem.dlog('reduce-motion =', body.classList.contains('reduce-motion'));
+  try { localStorage.setItem('pref-reduce-motion', body.classList.contains('reduce-motion') ? '1':'0'); }
+  catch(e){ /* Debug-Logging entfernt */ }
     };
     // Fallback für CRT Buttons
     setTimeout(()=>{
       try{
-        const hero=document.getElementById('hero');
-        if(!hero||!window.AnimationSystem) return;
-        window.AnimationSystem.scan?.();
+  const hero=document.getElementById('hero');
+  if(!hero||!window.AnimationSystem) return;
+  window.AnimationSystem.scan?.();
         hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')
           ?.forEach(btn=>{
-            if(typeof window.AnimationSystem.replay==='function') window.AnimationSystem.replay(btn);
-            else btn.classList.add('is-visible');
+            // Replay entfernt: direkte Sichtbarkeit setzen
+            btn.classList.add('is-visible');
           });
       }catch(err){ console.warn('Hero Button Anim Fallback',err); }
     },450);
   })();
 
-  // Global Debug Toggle Helper
-  window.toggleAnimDebug = force => {
-    if(!window.AnimationSystem) return;
-    const tgt = force!==undefined ? !!force : !window.AnimationSystem.isDebug();
-    window.AnimationSystem.setDebug(tgt);
-  };
+  // Debug-Toggle entfernt
 
   // AOS-Delays
   document.querySelectorAll('[data-aos]').forEach((el,i)=> el.hasAttribute('data-aos-delay')||el.setAttribute('data-aos-delay', i*50));

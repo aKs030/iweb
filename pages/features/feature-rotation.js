@@ -7,7 +7,7 @@
  * - Sichtbarkeits- & Motion-Respekt, Public-API unter window.FeatureRotation
  */
 (function () {
-  // ===== Config =====
+  // Config
   const SECTION_ID = "section-features";
   const ALL_TEMPLATE_IDS = [
     "template-features-1",
@@ -18,7 +18,7 @@
   ];
   const TEMPLATES_URL = "/pages/features/features-templates.html"; // Auto-Rotation entfernt
 
-  // ===== State =====
+  // State
   let currentIndex = 0;
   let shuffledTemplates = [];
   // Tracking für Scroll-Wiedereintritt
@@ -29,7 +29,7 @@
 
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // ===== Utils =====
+  // Utils
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -42,7 +42,7 @@
     return ALL_TEMPLATE_IDS.some((id) => document.getElementById(id));
   }
 
-  // ===== Loader =====
+  // Loader
   async function loadTemplatesOnce() {
     if (templatesLoaded) return;
     try {
@@ -54,22 +54,20 @@
       container.innerHTML = html;
       document.body.appendChild(container);
       templatesLoaded = true;
-      document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
-  window.AnimationSystem?.dlog?.('[Features] Templates geladen');
+  document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
     } catch (err) {
-  window.AnimationSystem?.dlog?.('[Features] Fehler beim Laden', err);
+  // optionales Logging entfernt
       document.dispatchEvent(
         new CustomEvent("featuresTemplatesError", { detail: { error: err, url: TEMPLATES_URL } })
       );
     }
   }
 
-  // ===== Rotation =====
+  // Rotation
   function applyTemplate(id) {
     const sectionEl = document.getElementById(SECTION_ID);
     const tpl = document.getElementById(id);
-    if (!sectionEl || !tpl || isAnimating) {
-  if (!tpl) window.AnimationSystem?.dlog?.('[Features] Template fehlt im DOM:', id);
+  if (!sectionEl || !tpl || isAnimating) {
       return;
     }
     isAnimating = true;
@@ -122,11 +120,9 @@
     currentIndex = (currentIndex + 1) % shuffledTemplates.length;
     applyTemplate(shuffledTemplates[currentIndex]);
   }
-  function randomTemplate() { /* nicht benötigt, entfernt */ }
-  function stopInterval() {}
-  function startInterval() {}
+  // Entfernte: ungenutzte randomTemplate / Interval-Funktionen
 
-  // ===== Observer =====
+  // Observer
   function setupScrollObserver() {
     const sectionEl = document.getElementById(SECTION_ID);
     if (!sectionEl) return;
@@ -148,7 +144,7 @@
     observer.observe(sectionEl);
   }
 
-  // ===== Bootstrap =====
+  // Bootstrap
   function bootstrap() {
     if (bootstrapped) return;
     bootstrapped = true;
@@ -167,19 +163,16 @@
       }
     }
 
-  if (prefersReduced) { /* Hinweis entfernte Rotation */ }
+  if (prefersReduced) { /* Rotation bleibt manuell bei Reduced Motion */ }
   }
 
-  // ===== Public API =====
+  // Public API
   window.FeatureRotation = {
     next: () => nextTemplate(),
     current: () => ({ index: currentIndex, id: shuffledTemplates[currentIndex] }),
   };
 
-  // ===== Global Events =====
-  // Entfernt: Event-Listener "sectionUpdate" & diverse Custom Events (featureTemplateWillChange, featureTemplateChanged, sectionContentChanged), da keine Verwendungen gefunden.
-
-  // visibilitychange entfernt
+  // Global Events
 
   // Wenn Templates geladen sind -> bootstrap
   document.addEventListener("featuresTemplatesLoaded", bootstrap);
