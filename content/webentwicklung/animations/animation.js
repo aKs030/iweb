@@ -147,3 +147,185 @@
 
   window.AnimationSystem = { scan, animate, reset };
 })();
+
+/* ---------------------------------------------------------
+ * Feature Rotation Modul (zusammengeführt aus feature-rotation.js)
+ * Lädt Feature-Templates und wechselt sie bei Scroll-Interaktion.
+ * Öffentliche API: window.FeatureRotation { next(), current() }
+ * Abhängigkeiten: keine – läuft unabhängig vom AnimationSystem.
+ * --------------------------------------------------------- */
+(function(){
+  'use strict';
+  if(window.FeatureRotation) return; // Doppelladung verhindern
+
+  const SECTION_ID = 'section-features';
+  const ALL_TEMPLATE_IDS = [
+    'template-features-1',
+    'template-features-2',
+    'template-features-3',
+    'template-features-4',
+    'template-features-5'
+  ];
+  const TEMPLATES_URL = '/pages/features/features-templates.html';
+
+  let currentIndex = 0;
+  let shuffledTemplates = [];
+  let cycleCount = 0; // (reserviert – aktuell nicht aktiv genutzt)
+  let wasVisible = false;
+  let isAnimating = false;
+  let pendingSwitch = false;
+  let templatesLoaded = false;
+  let bootstrapped = false;
+  let lastAboveThreshold = false;
+  let exitDebounce = false;
+  const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function shuffle(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function hasAnyTemplateInDOM(){
+    return ALL_TEMPLATE_IDS.some(id => document.getElementById(id));
+  }
+
+  async function loadTemplatesOnce(){
+    if(templatesLoaded) return;
+    try {
+      const res = await fetch(TEMPLATES_URL, { credentials: 'same-origin' });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const html = await res.text();
+      const container = document.createElement('div');
+      container.style.display = 'none';
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      templatesLoaded = true;
+      document.dispatchEvent(new CustomEvent('featuresTemplatesLoaded'));
+    } catch(err){
+      document.dispatchEvent(new CustomEvent('featuresTemplatesError', { detail: { error: err, url: TEMPLATES_URL } }));
+    }
+  }
+
+  function applyTemplate(id, { isInitial = false } = {}){
+    const sectionEl = document.getElementById(SECTION_ID);
+    const tpl = document.getElementById(id);
+    if(!sectionEl || !tpl) return;
+    if(isAnimating && !isInitial){
+      pendingSwitch = true; return;
+    }
+    isAnimating = true;
+
+    const previousId = sectionEl.dataset.currentTemplate || null;
+
+    function finalizeEnter(){
+      isAnimating = false;
+      if(pendingSwitch){
+        pendingSwitch = false;
+        nextTemplate();
+      }
+    }
+
+    function doSwap(){
+      const frag = document.importNode(tpl.content, true);
+      sectionEl.innerHTML = '';
+      sectionEl.appendChild(frag);
+      sectionEl.dataset.currentTemplate = id;
+      sectionEl.style.opacity = '0';
+      sectionEl.style.transform = 'translateY(10px)';
+      sectionEl.style.transition = 'all 0.4s cubic-bezier(0.25,0.46,0.45,0.94)';
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          sectionEl.style.opacity = '1';
+          sectionEl.style.transform = 'translateY(0)';
+        });
+        setTimeout(finalizeEnter, 400);
+      });
+    }
+
+    if(isInitial || !previousId){
+      doSwap();
+      return;
+    }
+
+    const ref = document.getElementById(SECTION_ID);
+    if(ref){
+      ref.style.transition = 'all 0.2s cubic-bezier(0.25,0.46,0.45,0.94)';
+      ref.style.opacity = '0';
+      ref.style.transform = 'translateY(-5px)';
+    }
+    setTimeout(doSwap, 200);
+  }
+
+  function nextTemplate(){
+    if(shuffledTemplates.length === 0) return;
+    const currentId = shuffledTemplates[currentIndex];
+    let candidates = shuffledTemplates.filter(id => id !== currentId);
+    if(candidates.length === 0) return;
+    const nextId = candidates[Math.floor(Math.random() * candidates.length)];
+    currentIndex = shuffledTemplates.indexOf(nextId);
+    if(!isAnimating){
+      applyTemplate(nextId);
+    } else {
+      pendingSwitch = true;
+    }
+  }
+
+  function setupScrollObserver(){
+    const sectionEl = document.getElementById(SECTION_ID);
+    if(!sectionEl) return;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if(entry.target !== sectionEl) return;
+        const ratio = entry.intersectionRatio;
+        const nowVisible = entry.isIntersecting && ratio > 0;
+        const EXIT_THRESHOLD = 0.35;
+        const REENTER_THRESHOLD = 0.45;
+        if(ratio >= REENTER_THRESHOLD){
+          lastAboveThreshold = true;
+        }
+        if(lastAboveThreshold && ratio > 0 && ratio < EXIT_THRESHOLD && !exitDebounce){
+          lastAboveThreshold = false;
+          exitDebounce = true;
+          nextTemplate();
+          setTimeout(()=>{ exitDebounce = false; }, 500);
+        }
+        if(nowVisible && !sectionEl.dataset.currentTemplate){
+          applyTemplate(shuffledTemplates[currentIndex], { isInitial: true });
+        }
+        wasVisible = nowVisible;
+      });
+    }, { threshold: [0,0.1,0.25,0.35,0.5,0.75,1] });
+    observer.observe(sectionEl);
+  }
+
+  function bootstrap(){
+    if(bootstrapped) return;
+    bootstrapped = true;
+    shuffledTemplates = shuffle([...ALL_TEMPLATE_IDS]);
+    setupScrollObserver();
+    const sectionEl = document.getElementById(SECTION_ID);
+    if(sectionEl && hasAnyTemplateInDOM() && !sectionEl.dataset.currentTemplate){
+      applyTemplate(shuffledTemplates[currentIndex], { isInitial: true });
+    }
+    if(prefersReduced){ /* Keine Auto-Rotation bei Reduced Motion */ }
+  }
+
+  window.FeatureRotation = {
+    next: () => nextTemplate(),
+    current: () => ({ index: currentIndex, id: shuffledTemplates[currentIndex] })
+  };
+
+  document.addEventListener('featuresTemplatesLoaded', bootstrap);
+  document.addEventListener('DOMContentLoaded', () => {
+    if(hasAnyTemplateInDOM()){
+      templatesLoaded = true;
+      bootstrap();
+    } else {
+      loadTemplatesOnce();
+    }
+  });
+})();
+
