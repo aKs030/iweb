@@ -16,14 +16,13 @@
     "template-features-4",
     "template-features-5",
   ];
-  const TEMPLATES_URL = "/pages/features/features-templates.html";
-  const ROTATION_INTERVAL_MS = 14000;
+  const TEMPLATES_URL = "/pages/features/features-templates.html"; // Auto-Rotation entfernt
 
   // ===== State =====
   let currentIndex = 0;
   let shuffledTemplates = [];
-  let intervalHandle = null;
-  let isVisible = false;
+  // Tracking für Scroll-Wiedereintritt
+  let wasVisible = false;
   let isAnimating = false;
   let templatesLoaded = false;
   let bootstrapped = false;
@@ -75,21 +74,10 @@
     }
     isAnimating = true;
 
-    const previousId = sectionEl.dataset.currentTemplate || null;
-    document.dispatchEvent(
-      new CustomEvent("featureTemplateWillChange", { detail: { from: previousId, to: id } })
-    );
+  const previousId = sectionEl.dataset.currentTemplate || null; // nur intern genutzt für Transition
 
     function finalizeEnter() {
       isAnimating = false;
-      document.dispatchEvent(
-        new CustomEvent("featureTemplateChanged", {
-          detail: { templateId: id, index: currentIndex, from: previousId },
-        })
-      );
-      document.dispatchEvent(
-        new CustomEvent("sectionContentChanged", { detail: { section: SECTION_ID, template: id } })
-      );
     }
 
     function doSwap() {
@@ -130,36 +118,13 @@
   }
 
   function nextTemplate() {
-    if (isAnimating) return;
+    if (isAnimating || shuffledTemplates.length === 0) return;
     currentIndex = (currentIndex + 1) % shuffledTemplates.length;
     applyTemplate(shuffledTemplates[currentIndex]);
   }
-
-  function randomTemplate() {
-    if (isAnimating) return;
-    if (shuffledTemplates.length === 0) return;
-    let newIndex;
-    do {
-      newIndex = Math.floor(Math.random() * shuffledTemplates.length);
-    } while (newIndex === currentIndex && shuffledTemplates.length > 1);
-    currentIndex = newIndex;
-    applyTemplate(shuffledTemplates[currentIndex]);
-  }
-
-  function startInterval() {
-    if (prefersReduced) return; // kein Auto-Rotate bei reduced motion
-    if (intervalHandle) return;
-    intervalHandle = setInterval(() => {
-      if (isVisible) nextTemplate();
-    }, ROTATION_INTERVAL_MS);
-  }
-
-  function stopInterval() {
-    if (intervalHandle) {
-      clearInterval(intervalHandle);
-      intervalHandle = null;
-    }
-  }
+  function randomTemplate() { /* nicht benötigt, entfernt */ }
+  function stopInterval() {}
+  function startInterval() {}
 
   // ===== Observer =====
   function setupScrollObserver() {
@@ -169,25 +134,17 @@
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.target.id !== SECTION_ID) return;
-
-          if (entry.isIntersecting) {
-            isVisible = true;
-            // Initialer Wechsel beim Eintritt
-            randomTemplate();
-            startInterval();
-          } else {
-            isVisible = false;
-            stopInterval();
+          if (entry.target !== sectionEl) return;
+          const nowVisible = entry.isIntersecting && entry.intersectionRatio > 0;
+          if (nowVisible && !wasVisible) {
+            // Sichtbar geworden (auch beim Hochscrollen) -> nächstes Template
+            nextTemplate();
           }
+          wasVisible = nowVisible;
         });
       },
-      {
-        threshold: 0.3,
-        rootMargin: "0px 0px -100px 0px",
-      }
+      { threshold: [0, 0.1, 0.25] }
     );
-
     observer.observe(sectionEl);
   }
 
@@ -210,47 +167,19 @@
       }
     }
 
-    if (prefersReduced) {
-  window.AnimationSystem?.dlog?.('[Features] Reduced motion aktiv: Auto-Rotation aus.');
-    }
+  if (prefersReduced) { /* Hinweis entfernte Rotation */ }
   }
 
   // ===== Public API =====
   window.FeatureRotation = {
     next: () => nextTemplate(),
-    prev: () => {
-      if (isAnimating) return;
-      currentIndex =
-        (currentIndex - 1 + shuffledTemplates.length) % shuffledTemplates.length;
-      applyTemplate(shuffledTemplates[currentIndex]);
-    },
-    goto: (i) => {
-      if (isAnimating) return;
-      if (!(i >= 0 && i < shuffledTemplates.length)) return;
-      currentIndex = i;
-      applyTemplate(shuffledTemplates[currentIndex]);
-    },
-    random: () => randomTemplate(),
-    current: () => ({
-      index: currentIndex,
-      id: shuffledTemplates[currentIndex],
-    }),
-    pause: () => stopInterval(),
-    resume: () => startInterval(),
+    current: () => ({ index: currentIndex, id: shuffledTemplates[currentIndex] }),
   };
 
   // ===== Global Events =====
-  document.addEventListener("sectionUpdate", (e) => {
-    if (e.detail && e.detail.sectionId === SECTION_ID) nextTemplate();
-  });
+  // Entfernt: Event-Listener "sectionUpdate" & diverse Custom Events (featureTemplateWillChange, featureTemplateChanged, sectionContentChanged), da keine Verwendungen gefunden.
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      stopInterval();
-    } else if (isVisible) {
-      startInterval();
-    }
-  });
+  // visibilitychange entfernt
 
   // Wenn Templates geladen sind -> bootstrap
   document.addEventListener("featuresTemplatesLoaded", bootstrap);
