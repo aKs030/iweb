@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "aks030",
+        "projectKey": "aKs030_iweb"
+    }
+}
