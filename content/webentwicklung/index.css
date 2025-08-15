@@ -81,7 +81,7 @@ font-kerning: normal;
 font-variant-ligatures: common-ligatures contextual;
 font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   /* aus vorherigem Block zusammengeführt */
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y proximity; /* allow natural scrolling instead of forcing snaps */
   scroll-behavior: smooth;
 }
 
@@ -363,6 +363,7 @@ a:hover { color: var(--primary-light); }
 /* Accessibility: reduce motion */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+  html, body { scroll-behavior: auto; } /* avoid smooth scroll for reduced motion preference */
 }
 /* ========================================
    8) Responsive
