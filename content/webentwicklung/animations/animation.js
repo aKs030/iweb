@@ -40,8 +40,10 @@
   const init = el => {
     const type = el.getAttribute(ATTR.anim);
     if(!type) return;
-    el.classList.add('animate-element');
-    if(type !== 'fadeIn') el.classList.add('animate-' + type);
+    // Allen Animationstypen ein spezifisches Klassenpräfix geben
+    // Dadurch erhält z.B. "fadeIn" die Klasse "animate-fadeIn" und verliert
+    // die standardmäßige vertikale Verschiebung.
+    el.classList.add('animate-element', 'animate-' + type);
 
     el.style.transitionDuration = getInt(el, ATTR.dur, 600) + 'ms';
     const ease = el.getAttribute(ATTR.ease);
@@ -57,11 +59,19 @@
     const delay = getInt(el, ATTR.delay, 0);
     const dur = getInt(el, ATTR.dur, 600);
     el.classList.add(CLASS_ACTIVE);
-    setTimeout(() => el.classList.add('is-visible'), delay);
-    setTimeout(() => el.classList.remove(CLASS_ACTIVE), delay + dur);
+    el.style.transitionDelay = delay + 'ms';
+    el.classList.add('is-visible');
+    setTimeout(() => {
+      el.classList.remove(CLASS_ACTIVE);
+      el.style.transitionDelay = '';
+    }, delay + dur);
   };
 
-  const reset = el => { if(el) el.classList.remove('is-visible', CLASS_ACTIVE); };
+  const reset = el => {
+    if(!el) return;
+    el.classList.remove('is-visible', CLASS_ACTIVE);
+    el.style.transitionDelay = '';
+  };
 
   // IntersectionObserver nur, wenn Animationen nicht reduziert werden sollen
   const observer = !prefersReduced && new IntersectionObserver(entries => {
