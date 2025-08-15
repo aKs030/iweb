@@ -82,6 +82,7 @@ font-variant-ligatures: common-ligatures contextual;
 font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   /* aus vorherigem Block zusammengeführt */
   scroll-snap-type: y proximity; /* allow natural scrolling instead of forcing snaps */
+  scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
   scroll-behavior: smooth;
 }
 
