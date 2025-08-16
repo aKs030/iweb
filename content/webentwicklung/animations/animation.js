@@ -1,237 +1,157 @@
-!function () {
+/*! AnimationSystem v2 (light, no thrash) */
+(() => {
   "use strict";
   if (window.AnimationSystem) return;
 
-  // ====== Config / State ======
-  const ATTR = {
-    anim:  "data-animation",
-    delay: "data-delay",
-    dur:   "data-duration",
-    ease:  "data-easing",
-  };
-  const CLS = {
-    base: "animate-element",
-    visible: "is-visible",
-    animating: "is-animating",
-  };
+  const ATTR = { anim:"data-animation", delay:"data-delay", dur:"data-duration", ease:"data-easing", once:"data-once" };
+  const CLS  = { base:"animate-element", vis:"is-visible", run:"is-animating" };
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let lastY = window.scrollY;
-  let scrollDir = "down"; // "down" | "up"
-  let rafScheduled = false;
+  let lastY = window.scrollY, dir = "down", rafScheduled = false;
 
-  // Track all known/observed elements
   const elements = new Set();
+  const seenOnce = new WeakSet();    // für data-once
   const observed = new WeakSet();
 
-  // ====== Utils ======
-  const parseIntAttr = (el, name, fallback) => {
+  // ---- helpers ------------------------------------------------------------
+  const numAttr = (el, name, fb) => {
     const v = el.getAttribute(name);
-    if (v == null || v === "") return fallback;
-    const n = parseInt(v, 10);
-    return Number.isNaN(n) ? fallback : n; // 0 ist erlaubt
+    if (v == null || v === "") return fb;
+    const n = parseInt(v, 10); return Number.isNaN(n) ? fb : n;
   };
 
-  const ensureBaseCSS = () => {
-    if (document.getElementById("anim-css")) return;
-    const style = document.createElement("style");
-    style.id = "anim-css";
-    style.textContent =
-      ".animate-element{opacity:0;transform:translateY(30px);transition:all .6s ease}" +
-      ".animate-element.is-visible{opacity:1;transform:translateY(0)}" +
-      ".animate-fadeInUp{transform:translateY(50px)}" +
-      ".animate-fadeInDown{transform:translateY(-50px)}" +
-      ".animate-fadeInLeft{transform:translateX(-50px)}" +
-      ".animate-fadeInRight{transform:translateX(50px)}" +
-      ".animate-zoomIn{transform:scale(.85)}" +
-      ".animate-fadeIn{transform:translateY(0)}";
-    document.head.appendChild(style);
-  };
+  // CSS nur einmal injizieren, eindeutig namespacen
+  (function ensureCSS(){
+    if (document.getElementById("anim-css-v2")) return;
+    const s = document.createElement("style");
+    s.id = "anim-css-v2";
+    s.textContent = `
+      .${CLS.base}{opacity:0;transform:translateY(24px);transition-property:opacity,transform;transition-duration:.6s;transition-timing-function:cubic-bezier(.25,.46,.45,.94);will-change:opacity,transform}
+      .${CLS.base}.${CLS.vis}{opacity:1;transform:none}
+      .animate-fadeInUp   {transform:translateY(48px)}
+      .animate-fadeInDown {transform:translateY(-48px)}
+      .animate-fadeInLeft {transform:translateX(-48px)}
+      .animate-fadeInRight{transform:translateX(48px)}
+      .animate-zoomIn     {transform:scale(.9)}
+      .animate-fadeIn     {transform:none}
+    `;
+    document.head.appendChild(s);
+  })();
 
-  // ====== Element Init / Apply ======
-  const setupElement = (el) => {
+  const setup = (el) => {
     const type = el.getAttribute(ATTR.anim);
     if (!type) return;
-
-    // Grundklassen + spezifische Klasse
     el.classList.add(CLS.base, "animate-" + type);
-
-    // Dauer + Easing aus data-*
-    el.style.transitionDuration = parseIntAttr(el, ATTR.dur, 600) + "ms";
+    el.style.transitionDuration = (numAttr(el, ATTR.dur, 600)) + "ms";
     const ease = el.getAttribute(ATTR.ease);
     if (ease) el.style.transitionTimingFunction = ease;
-
-    // Reduced motion -> sofort sichtbar
-    if (prefersReduced) el.classList.add(CLS.visible);
+    if (REDUCED) el.classList.add(CLS.vis); // respektiere reduced-motion
   };
 
   const animateIn = (el) => {
-    if (!el || prefersReduced) return;
-    if (el.classList.contains(CLS.animating)) return;
-
-    const delay = parseIntAttr(el, ATTR.delay, 0);
-    const dur = parseIntAttr(el, ATTR.dur, 600);
-
-    el.classList.add(CLS.animating);
-    // Delay nur setzen, wenn >0
+    if (!el || REDUCED || el.classList.contains(CLS.run)) return;
+    const delay = numAttr(el, ATTR.delay, 0);
+    const dur   = numAttr(el, ATTR.dur, 600);
+    el.classList.add(CLS.run);
     if (delay) el.style.transitionDelay = delay + "ms";
-    // Sichtbar schalten, CSS-Transition übernimmt
-    el.classList.add(CLS.visible);
-
-    // Nach Ablauf: animating-Flag weg + Delay zurücksetzen
+    el.classList.add(CLS.vis);
+    const total = delay + dur;
     window.setTimeout(() => {
-      el.classList.remove(CLS.animating);
+      el.classList.remove(CLS.run);
       if (delay) el.style.transitionDelay = "";
-    }, delay + dur);
+      if (el.hasAttribute(ATTR.once)) seenOnce.add(el);
+    }, total);
   };
 
-  const resetEl = (el) => {
-    if (!el) return;
-    el.classList.remove(CLS.visible, CLS.animating);
+  const reset = (el) => {
+    if (!el || REDUCED) return;
+    if (seenOnce.has(el)) return; // bei data-once nie zurücksetzen
+    el.classList.remove(CLS.vis, CLS.run);
     el.style.transitionDelay = "";
   };
 
-  // ====== IntersectionObserver ======
-  const io = !prefersReduced && new IntersectionObserver((entries) => {
+  const io = !REDUCED && new IntersectionObserver((entries) => {
     for (const entry of entries) {
       const el = entry.target;
       if (entry.isIntersecting) {
-        if (scrollDir === "up") {
-          // Wenn nach oben gescrollt und Element wieder in Sicht -> vorherigen Zustand entfernen
-          resetEl(el);
-          // rAF, um Stiländerungen zu flushen, ohne forced reflow
-          requestAnimationFrame(() => animateIn(el));
-        } else {
-          animateIn(el);
-        }
+        // Beim Hochscrollen kurze Rücksetzung, dann neu animieren → flüssiger
+        if (dir === "up" && !seenOnce.has(el)) { reset(el); requestAnimationFrame(() => animateIn(el)); }
+        else animateIn(el);
       } else {
-        // Aus dem Viewport -> nur zurücksetzen, wenn Seite sichtbar ist
-        // (verhindert Flackern bei Tab-Wechseln)
-        if (!document.hidden) {
-          // leichte Verzögerung, damit schnelle Scrollbewegungen nicht ständig togglen
-          setTimeout(() => {
-            if (!document.hidden) resetEl(el);
-          }, 120);
-        }
+        // Sichtbar -> rausgescrollt: ggf. zurücksetzen (außer once)
+        if (!document.hidden) reset(el);
       }
     }
-  }, { threshold: 0.12 });
+  }, {
+    // etwas vor Sichtbereich triggern, wirkt smoother
+    root: null,
+    rootMargin: "0px 0px -10% 0px",
+    threshold: 0.1
+  });
 
-  // ====== Scroll Direction + Up-Replay ======
   const onScroll = () => {
-    const y = window.scrollY;
-    scrollDir = y < lastY ? "up" : "down";
-    lastY = y;
+    const y = window.scrollY; dir = y < lastY ? "up" : "down"; lastY = y;
+    if (REDUCED || dir !== "up" || rafScheduled) return;
 
-    if (prefersReduced || scrollDir !== "up") return;
-    if (rafScheduled) return;
+    // Nur beim Hochscrollen: nahe Elemente re-animate (ohne Layout-Spam)
     rafScheduled = true;
-
     requestAnimationFrame(() => {
       rafScheduled = false;
-
-      // Replay-Logik beim Hochscrollen: Elemente im unteren 70%-Fenster erneut animieren
       const vh = window.innerHeight;
       for (const el of elements) {
-        if (!el.isConnected) continue;
-        if (!el.classList.contains(CLS.base)) continue;
-
-        const rect = el.getBoundingClientRect();
-        const inRange = rect.top >= 0 && rect.top < 0.7 * vh;
-
-        // Bereits sichtbar & nicht gerade animierend -> kurz zurücksetzen und direkt wieder animieren
-        if (inRange && el.classList.contains(CLS.visible) && !el.classList.contains(CLS.animating)) {
-          resetEl(el);
-          // rAF, um Style-Änderungen zu committen, ohne offsetWidth-Hack
-          requestAnimationFrame(() => animateIn(el));
+        if (!el.isConnected || !el.classList.contains(CLS.base) || seenOnce.has(el)) continue;
+        const r = el.getBoundingClientRect();
+        if (r.top >= 0 && r.top < 0.66 * vh && el.classList.contains(CLS.vis) && !el.classList.contains(CLS.run)) {
+          reset(el); requestAnimationFrame(() => animateIn(el));
         }
       }
     });
   };
 
-  // ====== Bootstrapping / Scanning ======
-  const registerEl = (el) => {
+  const register = (el) => {
     if (!el || observed.has(el)) return;
-    setupElement(el);
+    setup(el);
     elements.add(el);
-    if (io) io.observe(el);
+    io?.observe(el);
     observed.add(el);
   };
 
-  const scan = () => {
-    ensureBaseCSS();
-    document.querySelectorAll("[" + ATTR.anim + "]").forEach(registerEl);
-  };
+  const scan = () => document.querySelectorAll(`[${ATTR.anim}]`).forEach(register);
 
-  // ====== MutationObserver: neue Knoten / Attributwechsel ======
-  const mo = new MutationObserver((mutations) => {
-    for (const m of mutations) {
+  const mo = new MutationObserver((ms) => {
+    for (const m of ms) {
       if (m.type === "childList") {
-        m.addedNodes.forEach((node) => {
-          if (node.nodeType !== 1) return;
-          const el = /** @type {Element} */ (node);
-          if (el.hasAttribute?.(ATTR.anim)) registerEl(el);
-          el.querySelectorAll?.("[" + ATTR.anim + "]").forEach(registerEl);
+        m.addedNodes.forEach(n => {
+          if (n.nodeType !== 1) return;
+          const el = /** @type {Element} */ (n);
+          if (el.hasAttribute?.(ATTR.anim)) register(el);
+          el.querySelectorAll?.(`[${ATTR.anim}]`).forEach(register);
         });
       } else if (m.type === "attributes" && m.attributeName === ATTR.anim) {
-        const el = m.target;
-        registerEl(el);
+        register(m.target);
       }
     }
   });
 
-  const startObserving = () => {
-    mo.observe(document.documentElement, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: [ATTR.anim],
-    });
-  };
-
-  // ====== Event Listener ======
-  const onScrollPassive = { passive: true };
-  const onVisibility = () => {
-    // Wenn Tab wieder aktiv ist, IntersectionObserver triggert ohnehin
-    // Hier kein extra Handling nötig – Platzhalter falls gewünscht.
-  };
-
-  const init = () => {
+  function init() {
     scan();
-    startObserving();
-    if (!prefersReduced) {
-      window.addEventListener("scroll", onScroll, onScrollPassive);
-      document.addEventListener("visibilitychange", onVisibility, false);
-    }
-  };
+    mo.observe(document.documentElement, { subtree:true, childList:true, attributes:true, attributeFilter:[ATTR.anim] });
+    if (!REDUCED) window.addEventListener("scroll", onScroll, { passive:true });
+  }
 
-  const destroy = () => {
-    // Cleanup
+  function destroy() {
     if (io) {
-      for (const el of elements) {
-        try { io.unobserve(el); } catch {}
-      }
+      for (const el of elements) { try { io.unobserve(el); } catch {} }
       io.disconnect();
     }
     mo.disconnect();
-    if (!prefersReduced) {
-      window.removeEventListener("scroll", onScroll, onScrollPassive);
-      document.removeEventListener("visibilitychange", onVisibility, false);
-    }
+    if (!REDUCED) window.removeEventListener("scroll", onScroll, { passive:true });
     elements.clear();
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
   }
 
-  // ====== Public API (kompatibel) ======
-  window.AnimationSystem = {
-    scan,                 // erneut scannen (z. B. nach Template-Swap)
-    animate: animateIn,   // gezielt ein Element animieren
-    reset: resetEl,       // Sichtbarkeit zurücksetzen
-    destroy,              // NEU: alles aufräumen
-  };
-}();
+  (document.readyState === "loading")
+    ? document.addEventListener("DOMContentLoaded", init, { once:true })
+    : init();
+
+  window.AnimationSystem = { scan, animate: animateIn, reset, destroy };
+})();

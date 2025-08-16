@@ -1,253 +1,130 @@
 (() => {
   "use strict";
-  if (window.FeatureRotation) return; // Doppel-Init verhindern
+  if (window.FeatureRotation) return;
 
-  // ==== Konfiguration ====
-  const SECTION_ID      = "section-features";
-  const TEMPLATE_IDS    = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
-  const TEMPLATE_URL    = "/pages/features/features-templates.html";
+  const SECTION_ID = "section-features";
+  const TEMPLATE_IDS = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
+  const TEMPLATE_URL = "/pages/features/features-templates.html";
 
-  const ANIM_OUT_MS     = 200;
-  const ANIM_IN_MS      = 400;
-  const EASING          = "cubic-bezier(0.25,0.46,0.45,0.94)";
+  const ANIM_OUT = 200, ANIM_IN = 400, EASE = "cubic-bezier(0.25,0.46,0.45,0.94)";
+  const THRESHOLDS = [0, .1, .25, .35, .5, .75, 1];
+  const ENTER = 0.45, EXIT = 0.35, COOLDOWN = 500;
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Intersection-Trigger: erst „gesehen“, dann ganz leicht raus -> wechsle
-  const IO_THRESHOLDS   = [0, .1, .25, .35, .5, .75, 1];
-  const IO_ENTER_RATIO  = 0.45; // ab hier „im View“
-  const IO_MIN_RATIO    = 0.35; // unter diesen Wert nach „gesehen“ -> wechseln
-  const IO_COOLDOWN_MS  = 500;
+  let order = [], i = 0, anim = false, queued = false;
+  let loaded = false, seen = false, cool = false;
+  const timers = new Set();
+  let io = null;
 
-  const PREFERS_REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const byId = id => document.getElementById(id);
+  const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; };
+  const clearTimers = () => { for (const t of timers) clearTimeout(t); timers.clear(); };
+  const shuffle = a => { for (let k=a.length-1;k>0;k--){ const j=(Math.random()*(k+1))|0; [a[k],a[j]]=[a[j],a[k]]; } return a; };
 
-  // ==== State ====
-  let order = [];        // gemischte Reihenfolge der TEMPLATE_IDS
-  let idx = 0;           // aktueller Index in order
-  let isAnimating = false;
-  let switchQueued = false;
-
-  let templatesLoaded = false;
-  let seenInView = false;
-  let ioCooldown = false;
-
-  // Cleanup
-  const timeouts = new Set();
-  let observer = null;
-
-  // ==== Utils ====
-  const setTimeoutTracked = (fn, ms) => {
-    const t = setTimeout(() => { timeouts.delete(t); fn(); }, ms);
-    timeouts.add(t);
-    return t;
-  };
-
-  const clearAllTimeouts = () => {
-    for (const t of timeouts) clearTimeout(t);
-    timeouts.clear();
-  };
-
-  const byId = (id) => document.getElementById(id);
-
-  const shuffle = (arr) => {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-
-  const ensureTemplatesInDOM = async () => {
-    if (templatesLoaded) return;
-    // wenn bereits ein Template-Tag existiert, nicht laden
-    const exists = TEMPLATE_IDS.some(id => byId(id));
-    if (exists) {
-      templatesLoaded = true;
-      document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
-      return;
-    }
+  async function ensureTemplates() {
+    if (loaded) return;
+    if (TEMPLATE_IDS.some(id => byId(id))) { loaded = true; document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded")); return; }
     try {
       const res = await fetch(TEMPLATE_URL, { credentials: "same-origin" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const html = await res.text();
-      const container = document.createElement("div");
-      container.style.display = "none";
-      container.innerHTML = html;
-      document.body.appendChild(container);
-      templatesLoaded = true;
+      if (!res.ok) throw new Error("HTTP "+res.status);
+      const wrap = document.createElement("div");
+      wrap.style.display = "none";
+      wrap.innerHTML = await res.text();
+      document.body.appendChild(wrap);
+      loaded = true;
       document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
     } catch (error) {
       document.dispatchEvent(new CustomEvent("featuresTemplatesError", { detail: { error, url: TEMPLATE_URL } }));
     }
-  };
+  }
 
-  const pickNextIndexDifferent = (currentIndex) => {
-    if (order.length <= 1) return currentIndex;
-    // wähle ein anderes Element (gleichmäßiger)
-    let candidate;
-    do {
-      candidate = Math.floor(Math.random() * order.length);
-    } while (candidate === currentIndex);
-    return candidate;
-  };
-
-  // ==== DOM/Animation ====
-  const applyTemplate = (templateId, { initial = false } = {}) => {
-    const section = byId(SECTION_ID);
-    const tpl = byId(templateId);
+  function mount(templateId, initial=false) {
+    const section = byId(SECTION_ID), tpl = byId(templateId);
     if (!section || !tpl) return;
 
-    if (isAnimating && !initial) { // aktuell animiert -> nächsten Wechsel vormerken
-      switchQueued = true;
-      return;
-    }
+    if (anim && !initial) { queued = true; return; }
+    anim = true;
 
-    isAnimating = true;
-    const prevId = section.dataset.currentTemplate || null;
-
-    const end = () => {
-      isAnimating = false;
-      if (switchQueued) {
-        switchQueued = false;
-        // Sofort nach Ende zum nächsten springen
-        rotateToRandomDifferent();
-      }
+    const done = () => {
+      anim = false;
+      if (queued) { queued = false; rotateDifferent(); }
     };
 
     const mountNew = () => {
-      const fragment = document.importNode(tpl.content, true);
-      section.innerHTML = "";
-      section.appendChild(fragment);
+      const frag = tpl.content ? document.importNode(tpl.content, true) : null;
+      section.replaceChildren(frag || tpl.cloneNode(true));
       section.dataset.currentTemplate = templateId;
 
-      if (PREFERS_REDUCED) {
-        // keine Animation
-        section.style.opacity = "1";
-        section.style.transform = "none";
-        end();
-        return;
-      }
+      if (REDUCED) { section.style.opacity = "1"; section.style.transform = "none"; done(); return; }
 
-      // Fade/Slide-In
       section.style.opacity = "0";
       section.style.transform = "translateY(10px)";
-      section.style.transition = `all ${ANIM_IN_MS}ms ${EASING}`;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          section.style.opacity = "1";
-          section.style.transform = "translateY(0)";
-        });
-      });
-      setTimeoutTracked(end, ANIM_IN_MS);
+      section.style.transition = `transform ${ANIM_IN}ms ${EASE}, opacity ${ANIM_IN}ms ${EASE}`;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        section.style.opacity = "1";
+        section.style.transform = "translateY(0)";
+      }));
+      later(done, ANIM_IN);
     };
 
-    if (initial || !prevId) {
-      mountNew();
-      return;
-    }
+    if (initial || !section.dataset.currentTemplate || REDUCED) { mountNew(); return; }
 
-    // Fade/Slide-Out der aktuellen Version
-    if (!PREFERS_REDUCED) {
-      section.style.transition = `all ${ANIM_OUT_MS}ms ${EASING}`;
-      section.style.opacity = "0";
-      section.style.transform = "translateY(-5px)";
-    }
-    setTimeoutTracked(mountNew, PREFERS_REDUCED ? 0 : ANIM_OUT_MS);
-  };
+    section.style.transition = `transform ${ANIM_OUT}ms ${EASE}, opacity ${ANIM_OUT}ms ${EASE}`;
+    section.style.opacity = "0";
+    section.style.transform = "translateY(-5px)";
+    later(mountNew, ANIM_OUT);
+  }
 
-  const rotateToRandomDifferent = () => {
+  function rotateDifferent() {
     if (!order.length) return;
-    const currentId = order[idx];
-    if (order.length === 1) {
-      applyTemplate(currentId);
-      return;
-    }
-    const newIdx = pickNextIndexDifferent(idx);
-    idx = newIdx;
-    applyTemplate(order[idx]);
-  };
+    if (order.length === 1) { mount(order[i]); return; }
+    let n; do { n = (Math.random() * order.length) | 0; } while (n === i);
+    i = n; mount(order[i]);
+  }
 
-  const mountInitialIfNeeded = () => {
+  function mountInitialIfNeeded() {
+    const section = byId(SECTION_ID);
+    if (section && !section.dataset.currentTemplate && order.length) mount(order[i], true);
+  }
+
+  function observe() {
     const section = byId(SECTION_ID);
     if (!section) return;
-    if (!section.dataset.currentTemplate && order.length) {
-      applyTemplate(order[idx], { initial: true });
-    }
-  };
+    if (io) io.disconnect();
 
-  // ==== Intersection Observer ====
-  const setupObserver = () => {
-    const section = byId(SECTION_ID);
-    if (!section) return;
-    if (observer) observer.disconnect();
+    io = new IntersectionObserver((ents) => {
+      for (const e of ents) {
+        if (e.target !== section) continue;
+        const r = e.intersectionRatio;
+        if (r >= ENTER) seen = true;
 
-    observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== section) continue;
-        const r = entry.intersectionRatio;
-        const isInView = entry.isIntersecting && r > 0;
-
-        if (r >= IO_ENTER_RATIO) seenInView = true;
-
-        // „gesehen“, dann leicht rausfallen -> wechsle; Cooldown verhindert Bouncing
-        if (seenInView && r > 0 && r < IO_MIN_RATIO && !ioCooldown) {
-          seenInView = false;
-          ioCooldown = true;
-          rotateToRandomDifferent();
-          setTimeoutTracked(() => { ioCooldown = false; }, IO_COOLDOWN_MS);
+        if (seen && r > 0 && r < EXIT && !cool) {
+          seen = false; cool = true; rotateDifferent();
+          later(() => { cool = false; }, COOLDOWN);
         }
-
-        if (isInView && !byId(SECTION_ID).dataset.currentTemplate) {
-          // erstes Mount im View
-          mountInitialIfNeeded();
-        }
+        if ((e.isIntersecting && r > 0) && !section.dataset.currentTemplate) mountInitialIfNeeded();
       }
-    }, { threshold: IO_THRESHOLDS });
+    }, { threshold: THRESHOLDS });
 
-    observer.observe(section);
-  };
+    io.observe(section);
+  }
 
-  // ==== Init ====
-  const init = async () => {
+  async function init() {
     order = shuffle([...TEMPLATE_IDS]);
-    setupObserver();
+    observe();
+
     const section = byId(SECTION_ID);
+    if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) mount(order[i], true);
 
-    if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) {
-      // Templates sind schon im DOM
-      applyTemplate(order[idx], { initial: true });
-    }
+    if (!loaded) { await ensureTemplates(); mountInitialIfNeeded(); }
+  }
 
-    if (!templatesLoaded) {
-      await ensureTemplatesInDOM();
-      // falls noch nichts gemountet wurde, jetzt initial mounten
-      mountInitialIfNeeded();
-    }
+  window.FeatureRotation = {
+    next: rotateDifferent,
+    current: () => ({ index: i, id: order[i] }),
+    destroy() { io?.disconnect(); io=null; clearTimers(); delete window.FeatureRotation; }
   };
 
-  // ==== Public API ====
-  const api = {
-    next() { rotateToRandomDifferent(); },
-    current() { return { index: idx, id: order[idx] }; },
-    destroy() {
-      if (observer) { observer.disconnect(); observer = null; }
-      clearAllTimeouts();
-      // keine weiteren globalen Listener nötig
-      // optional: Section leeren
-      // const s = byId(SECTION_ID); if (s) { s.innerHTML = ""; delete s.dataset.currentTemplate; }
-      delete window.FeatureRotation;
-    }
-  };
-
-  // Exponieren
-  window.FeatureRotation = api;
-
-  // Events
-  document.addEventListener("featuresTemplatesLoaded", () => {
-    // sicherstellen, dass gemountet wird wenn noch nicht
-    mountInitialIfNeeded();
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    // sofort loslegen
-    init();
-  });
+  document.addEventListener("featuresTemplatesLoaded", mountInitialIfNeeded, { once:false });
+  (document.readyState === "loading") ? document.addEventListener("DOMContentLoaded", init, { once:true }) : init();
 })();
