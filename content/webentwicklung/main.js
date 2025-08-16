@@ -145,6 +145,11 @@
     const btn = document.getElementById("backToTop"); if(!btn) return;
     (scrollY>300) ? btn.classList.add("show") : btn.classList.remove("show");
   }
+  function updateBackground(){
+    const h=document.documentElement.scrollHeight - innerHeight;
+    const sc = h>0 ? scrollY/h : 0;
+    document.body.style.backgroundPosition = `center ${sc*100}%`;
+  }
   function initScrollAnimations(){
     document.getElementById("backToTop")?.addEventListener("click", ()=> scrollTo({ top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto":"smooth" }));
     const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add("aos-animate"); }), { threshold:0.1, rootMargin:"0px 0px -50px 0px" });
@@ -205,6 +210,8 @@
     initScrollAnimations();
     addEventListener("scroll", debounce(handleScrollEvents, 75), { passive:true });
     handleScrollEvents();
+    addEventListener("scroll", throttle(updateBackground, 20), { passive:true });
+    updateBackground();
 
     // Smooth Anchor Scroll
     initSmoothScroll();
