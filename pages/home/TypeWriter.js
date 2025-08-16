@@ -159,6 +159,9 @@ export const typewriterConfig = {
 };
 
 // Neue Initialisierungsfunktion (aus main.js extrahiert)
+import { createLogger } from '../../content/webentwicklung/utils/logger.js';
+const logTW = createLogger('typewriter');
+
 export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer, quotes, TypeWriterClass }) {
   try {
     const subtitleEl  = document.querySelector('.hero-subtitle');
@@ -166,8 +169,8 @@ export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer,
     const typedAuthor = document.getElementById('typedAuthor');
     if (!subtitleEl || !typedText || !typedAuthor || !TypeWriterClass || !makeLineMeasurer || !quotes?.length) return false;
     let twCfg = {};
-    try { const mod = await ensureHeroDataModule(); twCfg = mod?.typewriterConfig || {}; }
-    catch(e){ console.warn('typewriterConfig load failed', e); }
+  try { const mod = await ensureHeroDataModule(); twCfg = mod?.typewriterConfig || {}; }
+  catch(e){ logTW.warn('typewriterConfig load failed', e); }
     const measurer = makeLineMeasurer(subtitleEl);
     const startTypewriter = () => {
       const _typeWriter = new TypeWriterClass({
@@ -199,5 +202,5 @@ export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer,
     const fontsReady = document.fonts?.ready;
     (fontsReady ?? Promise.resolve()).then(startTypewriter);
     return true;
-  } catch(err){ console.warn('initHeroSubtitle error', err); return false; }
+  } catch(err){ logTW.warn('initHeroSubtitle error', err); return false; }
 }

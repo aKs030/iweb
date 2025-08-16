@@ -1,3 +1,6 @@
+import { createLogger } from '../utils/logger.js';
+const logMenu = createLogger('menu');
+
 document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
   const yearEl = document.getElementById('current-year');
@@ -12,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Menü laden
   if (!menuContainer) {
-    console.error('Fehler: menuContainer wurde nicht gefunden.');
+    logMenu.error('Fehler: menuContainer wurde nicht gefunden.');
     return;
   }
   fetch('/content/webentwicklung/menu/menu.html')
@@ -33,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     })
     .catch(err => {
-      console.error('Fehler beim Laden des Menüs:', err.message);
+      logMenu.error('Fehler beim Laden des Menüs:', err.message);
     });
 });
 
@@ -63,7 +66,7 @@ function initializeMenu(container) {
       if (event.key === 'Enter') toggle();
     });
   } else {
-    console.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
+  logMenu.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
   }
 }
 
@@ -79,7 +82,7 @@ function initializeLogo(container) {
       window.location.href = '/index.html';
     });
   } else {
-    console.warn('Logo-Container konnte nicht gefunden werden.');
+  logMenu.warn('Logo-Container konnte nicht gefunden werden.');
   }
 }
 

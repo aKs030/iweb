@@ -1,70 +1,68 @@
-// Nutzung der zentralen Shuffle-Utility (Fallback nur falls Import fehlschlägt)
-let shuffleArray;
-try {
-  // relativer Pfad vom Feature-Skript zur gemeinsamen Util-Datei
-  ({ shuffle: shuffleArray } = await import("../../content/webentwicklung/utils/common-utils.js"));
-} catch {
-  // Minimaler Fallback (sollte im Normalfall nicht benutzt werden)
-  shuffleArray = (array) => {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-}
-const checkReducedMotionFeatures = () => {
-  try {
-    const saved = localStorage.getItem("pref-reduce-motion");
-    return saved === "1" || (saved === null && matchMedia("(prefers-reduced-motion: reduce)").matches);
-  } catch {
-    return matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }
-};
+// Zentrale Utilities nutzen
+import { shuffle as shuffleArray, prefersReducedMotion, TimerManager } from "../../content/webentwicklung/utils/common-utils.js";
+import { createLogger } from "../../content/webentwicklung/utils/logger.js";
 
 (() => {
   "use strict";
   if (window.FeatureRotation) return;
 
   const SECTION_ID = "section-features";
+  const log = createLogger('features');
   const TEMPLATE_IDS = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
   const TEMPLATE_URL = "/pages/features/features-templates.html";
 
-  const ANIM_OUT = 200, ANIM_IN = 400, EASE = "cubic-bezier(0.25,0.46,0.45,0.94)";
+  // Default-Animationen (ms) können via data-attribute am Section-Element überschrieben werden
+  const DEFAULT_ANIM_OUT = 200;
+  const DEFAULT_ANIM_IN = 400;
+  const DEFAULT_EASE = "cubic-bezier(0.25,0.46,0.45,0.94)";
   const THRESHOLDS = [0, .1, .25, .35, .5, .75, 1];
   const ENTER = 0.45, EXIT = 0.35, COOLDOWN = 500;
-  const REDUCED = checkReducedMotionFeatures();
+  const REDUCED = prefersReducedMotion();
 
   let order = [], i = 0, anim = false, queued = false;
   let loaded = false, seen = false, cool = false;
-  const timers = new Set();
+  const timerManager = new TimerManager();
   let io = null;
 
   const byId = id => document.getElementById(id);
-  const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; };
-  const clearTimers = () => { for (const t of timers) clearTimeout(t); timers.clear(); };
+  const later = (fn, ms) => timerManager.setTimeout(fn, ms);
+  const clearTimers = () => timerManager.clearAll();
+  const doubleRAF = (cb) => requestAnimationFrame(() => requestAnimationFrame(cb));
 
-  async function ensureTemplates() {
+  async function ensureTemplates(section) {
     if (loaded) return;
-    if (TEMPLATE_IDS.some(id => byId(id))) { loaded = true; document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded")); return; }
+    const srcOverride = section?.dataset.featuresSrc;
+    const url = srcOverride || TEMPLATE_URL;
+    if (TEMPLATE_IDS.some(id => byId(id))) {
+      loaded = true;
+      document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
+      return;
+    }
     try {
-      const res = await fetch(TEMPLATE_URL, { credentials: "same-origin" });
-      if (!res.ok) throw new Error("HTTP "+res.status);
+      const res = await fetch(url, { credentials: "same-origin" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
       const wrap = document.createElement("div");
       wrap.style.display = "none";
       wrap.innerHTML = await res.text();
       document.body.appendChild(wrap);
       loaded = true;
+      log.info('Templates geladen', { url });
       document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
     } catch (error) {
-      document.dispatchEvent(new CustomEvent("featuresTemplatesError", { detail: { error, url: TEMPLATE_URL } }));
+      log.error('Templates laden fehlgeschlagen', url, error);
+      document.dispatchEvent(new CustomEvent("featuresTemplatesError", { detail: { error, url } }));
     }
   }
 
   function mount(templateId, initial=false) {
     const section = byId(SECTION_ID), tpl = byId(templateId);
     if (!section || !tpl) return;
+
+    // Animationsdauer dynamisch vom DOM lesen (erste Nutzung cached implizit im closure via locals)
+    const ANIM_IN = Number(section.dataset.animIn || DEFAULT_ANIM_IN);
+    const ANIM_OUT = Number(section.dataset.animOut || DEFAULT_ANIM_OUT);
+      const EASE = section.dataset.animEase || DEFAULT_EASE;
+      const LIVE_LABEL_PREFIX = section.dataset.liveLabel || "Feature";
 
     if (anim && !initial) { queued = true; return; }
     anim = true;
@@ -77,6 +75,25 @@ const checkReducedMotionFeatures = () => {
     const mountNew = () => {
       const frag = tpl.content ? document.importNode(tpl.content, true) : null;
       section.replaceChildren(frag || tpl.cloneNode(true));
+      // ARIA-Live Region erzeugen / aktualisieren
+      let live = section.querySelector('[data-feature-rotation-live]');
+      if (!live) {
+        live = document.createElement('div');
+        live.setAttribute('data-feature-rotation-live', '');
+        live.setAttribute('aria-live', 'polite');
+        live.setAttribute('aria-atomic', 'true');
+        live.style.position = 'absolute';
+        live.style.width = '1px';
+        live.style.height = '1px';
+        live.style.margin = '-1px';
+        live.style.border = '0';
+        live.style.padding = '0';
+        live.style.clip = 'rect(0 0 0 0)';
+        live.style.overflow = 'hidden';
+        section.appendChild(live);
+      }
+      // Kurz Textinfo zum aktuellen Template liefern (entwicklerfreundlich anpassbar)
+        live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
       section.dataset.currentTemplate = templateId;
 
       if (REDUCED) { section.style.opacity = "1"; section.style.transform = "none"; done(); return; }
@@ -84,10 +101,10 @@ const checkReducedMotionFeatures = () => {
       section.style.opacity = "0";
       section.style.transform = "translateY(10px)";
       section.style.transition = `transform ${ANIM_IN}ms ${EASE}, opacity ${ANIM_IN}ms ${EASE}`;
-      requestAnimationFrame(() => requestAnimationFrame(() => {
+      doubleRAF(() => {
         section.style.opacity = "1";
         section.style.transform = "translateY(0)";
-      }));
+      });
       later(done, ANIM_IN);
     };
 
@@ -100,7 +117,7 @@ const checkReducedMotionFeatures = () => {
   }
 
   function rotateDifferent() {
-    if (!order.length) return;
+  if (!order.length) { log.warn('Keine Templates vorhanden'); return; }
     if (order.length === 1) { mount(order[i]); return; }
     let n; do { n = (Math.random() * order.length) | 0; } while (n === i);
     i = n; mount(order[i]);
@@ -134,21 +151,23 @@ const checkReducedMotionFeatures = () => {
   }
 
   async function init() {
-    order = shuffleArray([...TEMPLATE_IDS]);
+  order = shuffleArray([...TEMPLATE_IDS]);
+  log.debug('Initiale Reihenfolge', order);
     observe();
 
     const section = byId(SECTION_ID);
     if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) mount(order[i], true);
 
-    if (!loaded) { await ensureTemplates(); mountInitialIfNeeded(); }
+  if (!loaded) { await ensureTemplates(section); mountInitialIfNeeded(); }
   }
 
   window.FeatureRotation = {
     next: rotateDifferent,
     current: () => ({ index: i, id: order[i] }),
-    destroy() { io?.disconnect(); io=null; clearTimers(); delete window.FeatureRotation; }
+    destroy() { io?.disconnect(); io=null; clearTimers(); log.info('FeatureRotation zerstört'); delete window.FeatureRotation; }
   };
 
   document.addEventListener("featuresTemplatesLoaded", mountInitialIfNeeded, { once:false });
   (document.readyState === "loading") ? document.addEventListener("DOMContentLoaded", init, { once:true }) : init();
+  log.info('FeatureRotation initialisiert (pending Templates)');
 })();

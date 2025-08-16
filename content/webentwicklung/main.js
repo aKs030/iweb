@@ -356,8 +356,8 @@ const toggleReducedMotion = (force) => {
 
     // Enhanced Scroll Snap Integration (über AnimationSystem)
     window.addEventListener('snapSectionChange', (event) => {
-      const { index, section } = event.detail;
-      console.log(`Aktuelle Section: ${index}`, section);
+  const { index, section } = event.detail;
+  import('./utils/logger.js').then(m=> m.createLogger('main').debug('Aktuelle Section', index, section)).catch(()=>{});
       
       // Back-to-Top Button bei letzter Section anzeigen
       const backToTop = getElement('backToTop');

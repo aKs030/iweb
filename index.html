@@ -22,6 +22,11 @@
   <link rel="stylesheet" href="/content/webentwicklung/index.css">
   <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
   <style>
+  .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;border:0!important;clip:rect(0 0 0 0)!important;overflow:hidden!important;white-space:nowrap!important}
+  .hero-skeleton{--skeleton-fade:.4s;min-height:60dvh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d1117,#141b24);position:relative;overflow:hidden}
+  .hero-skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 35%,rgba(255,255,255,.06) 50%,transparent 65% 100%);animation:heroSkeletonShine 1.3s linear infinite}
+  @keyframes heroSkeletonShine{to{transform:translateX(100%)}}
+  .hero-skeleton.fade-out{opacity:0;transition:opacity var(--skeleton-fade) ease}
     /* Basis Hero-Subtitle Styles global (vollständige Details in hero.html) */
     .hero-subtitle{position:absolute;left:clamp(12px,2vw,20px);bottom:calc(clamp(12px,2vw,20px) + env(safe-area-inset-bottom));z-index:10;margin:0;display:flex;flex-direction:column;align-items:flex-start;text-align:left;font-size:clamp(0.9rem,1.8vw,1.1rem);line-height:1.22;opacity:0;pointer-events:none;max-width:clamp(480px,48vw,720px);height:var(--box-h);gap:var(--gap-px);transform:translateY(6px);transition:opacity .45s ease,transform .45s ease}
     .hero-subtitle--fixed{position:fixed;opacity:.82;transform:translateY(0)}
@@ -56,8 +61,13 @@
   </p>
   
   <!-- Hero wird dynamisch geladen -->
-  <section id="hero" class="section hero" data-hero-src="/pages/home/hero.html"></section>
-  <section class="section features" id="section-features"></section>
+  <section id="hero" class="section hero" data-hero-src="/pages/home/hero.html" aria-labelledby="hero-heading" data-hero-priority>
+    <div class="hero-skeleton" aria-hidden="true"></div>
+    <h1 id="hero-heading" class="visually-hidden">Portfolio Einstieg</h1>
+  </section>
+  <section class="section features" id="section-features" aria-labelledby="features-heading" data-anim-in="500" data-anim-out="250" data-anim-ease="cubic-bezier(0.25,0.46,0.45,0.94)" data-live-label="Feature">
+    <h2 id="features-heading" class="visually-hidden">Haupt-Features</h2>
+  </section>
 
   <!-- Projects Section entfernt -->
 
@@ -197,9 +207,10 @@
     </svg>
   </button>
 
+  <script src="/content/webentwicklung/utils/debug-config.js" defer></script>
   <script src="/content/webentwicklung/animations/animation.js" defer></script>
-  <script src="/pages/features/feature-rotation.js" defer></script>
-  <script src="/pages/home/hero.js" defer></script>
+  <script type="module" src="/pages/features/feature-rotation.js"></script>
+  <script type="module" src="/pages/home/hero.js"></script>
   <!-- Main Script -->
   <script src="/content/webentwicklung/main.js" type="module"></script>
   <script src="/content/webentwicklung/menu/menu.js" defer></script>
