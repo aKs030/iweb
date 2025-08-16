@@ -498,9 +498,23 @@ a:hover { color: var(--primary-light); }
 /* ungenutztes .contact-content Layout entfernt */
 
 @media (max-width: 768px){
-  :root{ font-size: 14px; --header-height: 0; }
+  :root{
+    font-size: 15px;
+    /* Mobile Header realistisch ansetzen, nicht 0, sonst bricht scroll-padding */
+    --header-height: 15px;
+  }
+
+  /* Sicheres, sprungfreies Vollbild auf Mobile */
   .section { min-height: 100svh; height: auto; }
-  .section .container { padding-top: var(--header-height); padding-bottom: 20px; }
+  @supports (min-height: 100dvh){
+    .section { min-height: 100dvh; }
+  }
+
+  .section .container {
+    /* Header + Safe-Area oben/unten berücksichtigen */
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* ========================================
