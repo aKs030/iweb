@@ -61,6 +61,13 @@
 @media (max-width: 680px){
   .features-cards { grid-template-columns: 1fr; }
 }
+
+/* === FeatureRotation (leichtgewichtig) === */
+#section-features { will-change: opacity, transform; }
+.fr-enter   { opacity: 0; transform: translateY(10px); }
+.fr-enter.fr-enter-active { transition: all .4s cubic-bezier(.25,.46,.45,.94); opacity: 1; transform: translateY(0); }
+.fr-exit    { opacity: 1; transform: translateY(0); }
+.fr-exit.fr-exit-active  { transition: all .2s cubic-bezier(.25,.46,.45,.94); opacity: 0; transform: translateY(-5px); }
 </style>
 
 <template id="template-features-1">

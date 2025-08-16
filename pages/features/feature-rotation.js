@@ -1,56 +1,71 @@
-"use strict";
+(() => {
+  "use strict";
+  if (window.FeatureRotation) return; // Doppel-Init verhindern
 
-/**
- * Features: Templates laden + Rotation steuern (ein Modul)
- * - Lädt /pages/features/features-templates.html
- * - Rotiert Templates in #section-features
- * - Sichtbarkeits- & Motion-Respekt, Public-API unter window.FeatureRotation
- */
-(function () {
-  // Config
-  const SECTION_ID = "section-features";
-  const ALL_TEMPLATE_IDS = [
-    "template-features-1",
-    "template-features-2",
-    "template-features-3",
-    "template-features-4",
-    "template-features-5",
-  ];
-  const TEMPLATES_URL = "/pages/features/features-templates.html"; // Auto-Rotation entfernt
+  // ==== Konfiguration ====
+  const SECTION_ID      = "section-features";
+  const TEMPLATE_IDS    = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
+  const TEMPLATE_URL    = "/pages/features/features-templates.html";
 
-  // State
-  let currentIndex = 0;
-  let shuffledTemplates = [];
-  let cycleCount = 0; // wie oft komplette Liste durchlaufen wurde
-  // Tracking für Scroll-Wiedereintritt
-  let wasVisible = false;
+  const ANIM_OUT_MS     = 200;
+  const ANIM_IN_MS      = 400;
+  const EASING          = "cubic-bezier(0.25,0.46,0.45,0.94)";
+
+  // Intersection-Trigger: erst „gesehen“, dann ganz leicht raus -> wechsle
+  const IO_THRESHOLDS   = [0, .1, .25, .35, .5, .75, 1];
+  const IO_ENTER_RATIO  = 0.45; // ab hier „im View“
+  const IO_MIN_RATIO    = 0.35; // unter diesen Wert nach „gesehen“ -> wechseln
+  const IO_COOLDOWN_MS  = 500;
+
+  const PREFERS_REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ==== State ====
+  let order = [];        // gemischte Reihenfolge der TEMPLATE_IDS
+  let idx = 0;           // aktueller Index in order
   let isAnimating = false;
-  let pendingSwitch = false; // gemerkter Wechsel während Animation
+  let switchQueued = false;
+
   let templatesLoaded = false;
-  let bootstrapped = false;
-  let lastAboveThreshold = false; // ob zuletzt deutlich über Schwelle
-  let exitDebounce = false; // verhindert schnellen Mehrfach-Trigger
+  let seenInView = false;
+  let ioCooldown = false;
 
-  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Cleanup
+  const timeouts = new Set();
+  let observer = null;
 
-  // Utils
-  function shuffle(arr) {
+  // ==== Utils ====
+  const setTimeoutTracked = (fn, ms) => {
+    const t = setTimeout(() => { timeouts.delete(t); fn(); }, ms);
+    timeouts.add(t);
+    return t;
+  };
+
+  const clearAllTimeouts = () => {
+    for (const t of timeouts) clearTimeout(t);
+    timeouts.clear();
+  };
+
+  const byId = (id) => document.getElementById(id);
+
+  const shuffle = (arr) => {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  }
+  };
 
-  function hasAnyTemplateInDOM() {
-    return ALL_TEMPLATE_IDS.some((id) => document.getElementById(id));
-  }
-
-  // Loader
-  async function loadTemplatesOnce() {
+  const ensureTemplatesInDOM = async () => {
     if (templatesLoaded) return;
+    // wenn bereits ein Template-Tag existiert, nicht laden
+    const exists = TEMPLATE_IDS.some(id => byId(id));
+    if (exists) {
+      templatesLoaded = true;
+      document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
+      return;
+    }
     try {
-      const res = await fetch(TEMPLATES_URL, { credentials: "same-origin" });
+      const res = await fetch(TEMPLATE_URL, { credentials: "same-origin" });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const html = await res.text();
       const container = document.createElement("div");
@@ -58,182 +73,181 @@
       container.innerHTML = html;
       document.body.appendChild(container);
       templatesLoaded = true;
-  document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
-    } catch (err) {
-  // optionales Logging entfernt
-      document.dispatchEvent(
-        new CustomEvent("featuresTemplatesError", { detail: { error: err, url: TEMPLATES_URL } })
-      );
+      document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
+    } catch (error) {
+      document.dispatchEvent(new CustomEvent("featuresTemplatesError", { detail: { error, url: TEMPLATE_URL } }));
     }
-  }
+  };
 
-  // Rotation
-  function applyTemplate(id, { isInitial = false } = {}) {
-    const sectionEl = document.getElementById(SECTION_ID);
-    const tpl = document.getElementById(id);
-    if (!sectionEl || !tpl) return;
-    if (isAnimating && !isInitial) { pendingSwitch = true; return; }
-    isAnimating = true;
+  const pickNextIndexDifferent = (currentIndex) => {
+    if (order.length <= 1) return currentIndex;
+    // wähle ein anderes Element (gleichmäßiger)
+    let candidate;
+    do {
+      candidate = Math.floor(Math.random() * order.length);
+    } while (candidate === currentIndex);
+    return candidate;
+  };
 
-  const previousId = sectionEl.dataset.currentTemplate || null; // nur intern genutzt für Transition
+  // ==== DOM/Animation ====
+  const applyTemplate = (templateId, { initial = false } = {}) => {
+    const section = byId(SECTION_ID);
+    const tpl = byId(templateId);
+    if (!section || !tpl) return;
 
-    function finalizeEnter() {
-      isAnimating = false;
-      if(pendingSwitch){
-        pendingSwitch = false;
-        nextTemplate();
-      }
-    }
-
-    function doSwap() {
-      const frag = document.importNode(tpl.content, true);
-      sectionEl.innerHTML = "";
-      sectionEl.appendChild(frag);
-      sectionEl.dataset.currentTemplate = id;
-
-      // Enter-Transition
-      sectionEl.style.opacity = "0";
-      sectionEl.style.transform = "translateY(10px)";
-      sectionEl.style.transition =
-        "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          sectionEl.style.opacity = "1";
-          sectionEl.style.transform = "translateY(0)";
-        });
-        setTimeout(finalizeEnter, 400);
-      });
-    }
-
-    if (isInitial || !previousId) { // initialer Render ohne Exit Animation
-      doSwap();
+    if (isAnimating && !initial) { // aktuell animiert -> nächsten Wechsel vormerken
+      switchQueued = true;
       return;
     }
 
-    // Exit-Transition
-    const sectionElRef = document.getElementById(SECTION_ID);
-    if (sectionElRef) {
-      sectionElRef.style.transition =
-        "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-      sectionElRef.style.opacity = "0";
-      sectionElRef.style.transform = "translateY(-5px)";
-    }
-    setTimeout(doSwap, 200);
-  }
+    isAnimating = true;
+    const prevId = section.dataset.currentTemplate || null;
 
-  function reshuffleIfCycleComplete() {
-    if(currentIndex === shuffledTemplates.length - 1){
-      cycleCount++;
-      const currentId = shuffledTemplates[currentIndex];
-      const old = currentId; // letztes im alten Zyklus
-      // neu mischen
-      const fresh = shuffle([...ALL_TEMPLATE_IDS]);
-      // Verhindern dass das letzte Id direkt erneut an erster Stelle ist
-      if(fresh[0] === old && fresh.length > 1){
-        // tausche mit zweitem
-        [fresh[0], fresh[1]] = [fresh[1], fresh[0]];
+    const end = () => {
+      isAnimating = false;
+      if (switchQueued) {
+        switchQueued = false;
+        // Sofort nach Ende zum nächsten springen
+        rotateToRandomDifferent();
       }
-      shuffledTemplates = fresh;
-      currentIndex = 0;
-      return true;
-    }
-    return false;
-  }
+    };
 
-  function nextTemplate() {
-    if (shuffledTemplates.length === 0) return;
-    // Exit-basiert: wähle zufälliges anderes Template
-    const currentId = shuffledTemplates[currentIndex];
-    let candidates = shuffledTemplates.filter(id => id !== currentId);
-    if(candidates.length === 0) return; // nur eins vorhanden
-    const nextId = candidates[Math.floor(Math.random()*candidates.length)];
-    currentIndex = shuffledTemplates.indexOf(nextId);
-    if(!isAnimating){
-      applyTemplate(nextId);
-    } else {
-      pendingSwitch = true;
-    }
-  }
-  // Entfernte: ungenutzte randomTemplate / Interval-Funktionen
+    const mountNew = () => {
+      const fragment = document.importNode(tpl.content, true);
+      section.innerHTML = "";
+      section.appendChild(fragment);
+      section.dataset.currentTemplate = templateId;
 
-  // Observer
-  function setupScrollObserver() {
-    const sectionEl = document.getElementById(SECTION_ID);
-    if (!sectionEl) return;
+      if (PREFERS_REDUCED) {
+        // keine Animation
+        section.style.opacity = "1";
+        section.style.transform = "none";
+        end();
+        return;
+      }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.target !== sectionEl) return;
-          const ratio = entry.intersectionRatio;
-          const nowVisible = entry.isIntersecting && ratio > 0;
-          // Schwellenwerte
-          const EXIT_THRESHOLD = 0.35;
-          const REENTER_THRESHOLD = 0.45; // Hysterese gegen Flackern
-
-          if(ratio >= REENTER_THRESHOLD){
-            lastAboveThreshold = true; // wieder klar im Viewport
-          }
-
-          // Teil-Verlassen Trigger: einmalig wenn wir von oberhalb der Schwelle unter EXIT fallen
-          if(lastAboveThreshold && ratio > 0 && ratio < EXIT_THRESHOLD && !exitDebounce){
-            lastAboveThreshold = false; // zurücksetzen bis erneutes klares Re-Enter
-            exitDebounce = true;
-            nextTemplate();
-            // Debounce Timeout (Animation + kleine Pause)
-            setTimeout(()=>{ exitDebounce = false; }, 500);
-          }
-          // Initialer Render falls noch keiner gesetzt und jetzt erster Eintritt sichtbar
-          if(nowVisible && !sectionEl.dataset.currentTemplate){
-            applyTemplate(shuffledTemplates[currentIndex], { isInitial: true });
-          }
-          wasVisible = nowVisible;
+      // Fade/Slide-In
+      section.style.opacity = "0";
+      section.style.transform = "translateY(10px)";
+      section.style.transition = `all ${ANIM_IN_MS}ms ${EASING}`;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          section.style.opacity = "1";
+          section.style.transform = "translateY(0)";
         });
-      },
-  { threshold: [0, 0.1, 0.25, 0.35, 0.5, 0.75, 1] }
-    );
-    observer.observe(sectionEl);
-  }
+      });
+      setTimeoutTracked(end, ANIM_IN_MS);
+    };
 
-  // Bootstrap
-  function bootstrap() {
-    if (bootstrapped) return;
-    bootstrapped = true;
-
-    // Templates-Reihenfolge vorbereiten
-    shuffledTemplates = shuffle([...ALL_TEMPLATE_IDS]);
-
-    setupScrollObserver();
-
-    // Falls Section leer -> einmal initial setzen (ohne auf Sichtbarkeit zu warten)
-    const sectionEl = document.getElementById(SECTION_ID);
-    if (sectionEl && hasAnyTemplateInDOM() && !sectionEl.dataset.currentTemplate) {
-      // Direkt initial rendern (auch wenn noch nicht sichtbar)
-      applyTemplate(shuffledTemplates[currentIndex], { isInitial: true });
+    if (initial || !prevId) {
+      mountNew();
+      return;
     }
 
-  if (prefersReduced) { /* Rotation bleibt manuell bei Reduced Motion */ }
-  }
-
-  // Public API
-  window.FeatureRotation = {
-    next: () => nextTemplate(),
-    current: () => ({ index: currentIndex, id: shuffledTemplates[currentIndex] }),
+    // Fade/Slide-Out der aktuellen Version
+    if (!PREFERS_REDUCED) {
+      section.style.transition = `all ${ANIM_OUT_MS}ms ${EASING}`;
+      section.style.opacity = "0";
+      section.style.transform = "translateY(-5px)";
+    }
+    setTimeoutTracked(mountNew, PREFERS_REDUCED ? 0 : ANIM_OUT_MS);
   };
 
-  // Global Events
-
-  // Wenn Templates geladen sind -> bootstrap
-  document.addEventListener("featuresTemplatesLoaded", bootstrap);
-
-  // DOM ready: laden (falls nicht inline vorhanden), sonst direkt bootstrap
-  document.addEventListener("DOMContentLoaded", () => {
-    if (hasAnyTemplateInDOM()) {
-      templatesLoaded = true; // inline vorhanden
-      bootstrap();
-    } else {
-      loadTemplatesOnce();
+  const rotateToRandomDifferent = () => {
+    if (!order.length) return;
+    const currentId = order[idx];
+    if (order.length === 1) {
+      applyTemplate(currentId);
+      return;
     }
+    const newIdx = pickNextIndexDifferent(idx);
+    idx = newIdx;
+    applyTemplate(order[idx]);
+  };
+
+  const mountInitialIfNeeded = () => {
+    const section = byId(SECTION_ID);
+    if (!section) return;
+    if (!section.dataset.currentTemplate && order.length) {
+      applyTemplate(order[idx], { initial: true });
+    }
+  };
+
+  // ==== Intersection Observer ====
+  const setupObserver = () => {
+    const section = byId(SECTION_ID);
+    if (!section) return;
+    if (observer) observer.disconnect();
+
+    observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target !== section) continue;
+        const r = entry.intersectionRatio;
+        const isInView = entry.isIntersecting && r > 0;
+
+        if (r >= IO_ENTER_RATIO) seenInView = true;
+
+        // „gesehen“, dann leicht rausfallen -> wechsle; Cooldown verhindert Bouncing
+        if (seenInView && r > 0 && r < IO_MIN_RATIO && !ioCooldown) {
+          seenInView = false;
+          ioCooldown = true;
+          rotateToRandomDifferent();
+          setTimeoutTracked(() => { ioCooldown = false; }, IO_COOLDOWN_MS);
+        }
+
+        if (isInView && !byId(SECTION_ID).dataset.currentTemplate) {
+          // erstes Mount im View
+          mountInitialIfNeeded();
+        }
+      }
+    }, { threshold: IO_THRESHOLDS });
+
+    observer.observe(section);
+  };
+
+  // ==== Init ====
+  const init = async () => {
+    order = shuffle([...TEMPLATE_IDS]);
+    setupObserver();
+    const section = byId(SECTION_ID);
+
+    if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) {
+      // Templates sind schon im DOM
+      applyTemplate(order[idx], { initial: true });
+    }
+
+    if (!templatesLoaded) {
+      await ensureTemplatesInDOM();
+      // falls noch nichts gemountet wurde, jetzt initial mounten
+      mountInitialIfNeeded();
+    }
+  };
+
+  // ==== Public API ====
+  const api = {
+    next() { rotateToRandomDifferent(); },
+    current() { return { index: idx, id: order[idx] }; },
+    destroy() {
+      if (observer) { observer.disconnect(); observer = null; }
+      clearAllTimeouts();
+      // keine weiteren globalen Listener nötig
+      // optional: Section leeren
+      // const s = byId(SECTION_ID); if (s) { s.innerHTML = ""; delete s.dataset.currentTemplate; }
+      delete window.FeatureRotation;
+    }
+  };
+
+  // Exponieren
+  window.FeatureRotation = api;
+
+  // Events
+  document.addEventListener("featuresTemplatesLoaded", () => {
+    // sicherstellen, dass gemountet wird wenn noch nicht
+    mountInitialIfNeeded();
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // sofort loslegen
+    init();
   });
 })();
