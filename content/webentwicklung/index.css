@@ -505,7 +505,11 @@ a:hover { color: var(--primary-light); }
   }
 
   /* Sicheres, sprungfreies Vollbild auf Mobile */
-  .section { min-height: 100svh; height: auto; }
+  .section {
+    min-height: 100svh;
+    height: auto;
+    padding: var(--spacing-xl) 0;
+  }
   @supports (min-height: 100dvh){
     .section { min-height: 100dvh; }
   }
@@ -514,6 +518,10 @@ a:hover { color: var(--primary-light); }
     /* Header + Safe-Area oben/unten berücksichtigen */
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .social-links {
+    justify-content: center;
   }
 }
 
