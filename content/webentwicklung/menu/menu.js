@@ -45,10 +45,19 @@ function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   if (menuToggle && menu) {
-    const toggle = () => {
-      menu.classList.toggle('open');
-      menuToggle.classList.toggle('active');
+    // ARIA Grundattribute
+    menu.setAttribute('role','navigation');
+    menuToggle.setAttribute('aria-controls', menu.id || 'site-menu');
+    menuToggle.setAttribute('aria-expanded','false');
+    menu.setAttribute('aria-hidden','true');
+
+    const setState = (open) => {
+      menu.classList.toggle('open', open);
+      menuToggle.classList.toggle('active', open);
+      menuToggle.setAttribute('aria-expanded', String(!!open));
+      menu.setAttribute('aria-hidden', String(!open));
     };
+    const toggle = () => setState(!menu.classList.contains('open'));
     menuToggle.addEventListener('click', toggle);
     menuToggle.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') toggle();

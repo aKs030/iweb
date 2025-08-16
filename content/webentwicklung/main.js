@@ -1,6 +1,5 @@
-// Fallback-Implementierungen für Kompatibilität
-const debounce = (fn, wait=200) => { let t; const d=function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a),wait); }; d.cancel=()=>clearTimeout(t); return d; };
-const throttle = (fn, limit=250) => { let busy=false, pend=false, ctx, args; const run=()=>{ busy=true; fn.apply(ctx,args); setTimeout(()=>{ busy=false; if(pend){ pend=false; run(); } }, limit); }; return function(...a){ ctx=this; args=a; busy ? (pend=true) : run(); }; };
+// ESM statischer Import zentraler Utilities
+import { debounce, throttle } from '../webentwicklung/utils/common-utils.js';
 const checkReducedMotion = () => {
   try {
     const saved = localStorage.getItem("pref-reduce-motion");
@@ -49,12 +48,46 @@ const toggleReducedMotion = (force) => {
     ];
     for (const [p, h] of mods) { try { h(await import(p)); } catch {} }
   }
+  function initLazyHeroModules(){
+    let loaded = false;
+    const triggerLoad = async () => {
+      if (loaded) return;
+      loaded = true;
+      await loadTyped();
+      window.__initTyping?.();
+      setRandomGreetingHTML();
+    };
+    const heroEl = document.getElementById('hero') || document.querySelector('section#hero');
+    if (!heroEl) { // Fallback falls kein Hero (oder später dynamisch)
+      setTimeout(triggerLoad, 2500);
+      return;
+    }
+    // Falls schon im Viewport
+    const rect = heroEl.getBoundingClientRect();
+    if (rect.top < innerHeight && rect.bottom > 0) {
+      triggerLoad();
+      return;
+    }
+    const obs = new IntersectionObserver(entries => {
+      for (const e of entries){
+        if (e.isIntersecting){
+          obs.disconnect();
+            triggerLoad();
+          break;
+        }
+      }
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.01 });
+    obs.observe(heroEl);
+    // Safety Timeout (langsames Scrollen / nie sichtbar)
+    setTimeout(triggerLoad, 6000);
+  }
 
   // ===== Particles (DPR + Spatial Hash, Map-Reuse) =====
   function initParticles(){
     const canvas = getElement("particleCanvas");
     if(!canvas) return () => {};
-    const ctx = canvas.getContext("2d");
+  canvas.setAttribute('aria-hidden','true');
+  const ctx = canvas.getContext("2d");
     const DPR = Math.max(1, Math.floor(devicePixelRatio || 1));
     const grid = new Map();
     let particles = [], rafId, targetCount = 0, lastTime = performance.now(), fpsSamples = [], hidden = false;
@@ -162,10 +195,17 @@ const toggleReducedMotion = (force) => {
     }
 
     resize(); allocate(); animationLoop();
+    // Offscreen Pause mittels IntersectionObserver
+    const io = new IntersectionObserver(entries => {
+      for (const e of entries){
+        hidden = !e.isIntersecting || document.hidden;
+      }
+    }, { threshold: 0, root: null });
+    io.observe(canvas);
     document.addEventListener("visibilitychange", () => hidden = document.hidden);
     addEventListener("resize", throttle(() => { cancelAnimationFrame(rafId); resize(); allocate(targetCount); animationLoop(); }, 180), { passive:true });
 
-    return () => { cancelAnimationFrame(rafId); particles.length = 0; grid.clear(); };
+  return () => { cancelAnimationFrame(rafId); particles.length = 0; grid.clear(); io.disconnect(); };
   }
 
   // ===== Greetings =====
@@ -268,7 +308,8 @@ const toggleReducedMotion = (force) => {
 
     addEventListener("load", () => { __windowLoaded = true; tryHide(); }, { once:true });
 
-    await loadTyped(); __modulesReady = true; tryHide();
+    // __modulesReady ohne sofortige Hero-Module (Lazy Load)
+    __modulesReady = true; tryHide();
 
     window.__initTyping = () => import("../../pages/home/TypeWriter.js")
       .then(m => (typeof m.initHeroSubtitle === "function")
@@ -277,13 +318,13 @@ const toggleReducedMotion = (force) => {
 
     setTimeout(hideLoading, 5000);   // Hard fallback
 
-    // Typing + Greeting
-    window.__initTyping();
-    setRandomGreetingHTML();
+    // Lazy Loading Hero Module
+    initLazyHeroModules();
 
     // Particles
-    const stopParticles = initParticles();
-    window.__stopParticles = stopParticles;
+  const stopParticles = initParticles();
+  window.__stopParticles = stopParticles;
+  window.initParticles = initParticles; // für hero.js Aufruf (Kompatibilität)
 
     // Project-Filter
     initProjectFilter();
@@ -336,7 +377,7 @@ const toggleReducedMotion = (force) => {
     loadMenuAssets();
   });
 
-  if (typeof module !== "undefined") module.exports = { debounce, throttle };
+  // CommonJS Export entfernt (ESM jetzt aktiv)
 })();
 
 
