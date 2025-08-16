@@ -1,96 +1,282 @@
 <!-- Feature Templates (alle zusammengeführt) -->
 <style>
-    /* -- Features Cards (Snap Section) -- */
-.features { 
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-  background: transparent;
-  scroll-snap-align: center;
-  /* Weniger Leerraum oben: volle dynamische Höhe, kleineres Padding */
-  min-height: 100dvh;
-  padding-block: var(--spacing-lg) var(--spacing-md);
-}
-.features-content { 
-  width: 100%;
-  max-width: 1000px;
-  margin-inline: auto;
-  /* Dynamischer optischer Shift nach oben: min -4vh, bevorzugt Formel, max -8vh */
-  transform: translateY(clamp(-8vh, -6vh + 1vw, -4vh));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-@media (max-width: 680px){
-  /* Mobil etwas weniger aggressiv: min -6vh, prefer -5vh + 1vw, max -3vh */
-  .features-content { transform: translateY(clamp(-6vh, -5vh + 1vw, -3vh)); }
-}
-.features-cards { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); 
-  gap: 1.25rem; 
-  width: 100%; 
-  max-width: 880px; 
-  margin-inline: auto; 
-}
-.features .card { 
-  padding: clamp(1.2rem, 2.5vw, 1.9rem);
-  width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  display: flex; flex-direction: column; gap: 0.85rem; 
-  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
-}
-.features .card:hover { 
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--primary-color);
-}
-.features .card .icon-wrapper i { font-size: clamp(1.8rem, 3.2vw, 2.4rem); }
+        /* Root Variables */
+        :root {
+            --primary-color: #098bff;
+            --primary-light: #00d4ff;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --bg-dark: #0a0a0a;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 2rem;
+            --radius-lg: 16px;
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition-base: 0.3s ease;
+        }
 
-.features .card-title {
-  font-weight: 650;
-  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
-  letter-spacing: -0.015em;
-  line-height: 1.3;
-  color: var(--text-primary);
-}
-.features .card-title[data-eyebrow]::before {
-  content: attr(data-eyebrow);
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.7rem;
-  line-height: 1;
-  font-weight: 650;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--primary-color);
-  opacity: 0.9;
-}
-.features .card-text {
-  font-size: clamp(0.88rem, 1.5vw, 1rem);
-  font-weight: 400;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  opacity: 0.85;
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
 
-@media (max-width: 680px){
-  .features-cards { grid-template-columns: 1fr; }
-  /* Auf sehr kleinen Screens etwas weniger vertikaler Raum, damit nicht zu viel Platz oben entsteht */
+        /* Optimierte Feature Cards */
+        .features { 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            min-height: 100vh;
+            padding: var(--spacing-lg) 0;
+        }
+
+        .features-content { 
+            width: 100%;
+            max-width: 1200px; /* Etwas breiter für bessere Nutzung */
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 clamp(1rem, 4vw, 2rem); /* Bessere Seitenabstände */
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Optimiertes Grid Layout */
+        .features-cards { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: clamp(1rem, 3vw, 1.5rem);
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* Verbesserte Card Proportionen */
+        .features .card { 
+            padding: clamp(1.5rem, 4vw, 2.25rem);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+            min-height: 200px; /* Mindesthöhe für Konsistenz */
+        }
+
+        .features .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            transform: scaleX(0);
+            transition: transform var(--transition-base);
+            transform-origin: left;
+        }
+
+        .features .card:hover { 
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(9, 139, 255, 0.3);
+            background: rgba(255,255,255,0.08);
+        }
+
+        .features .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Icon Wrapper */
+        .icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(50px, 12vw, 65px);
+            height: clamp(50px, 12vw, 65px);
+            background: rgba(9, 139, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            transition: all var(--transition-base);
+        }
+
+        .features .card:hover .icon-wrapper {
+            background: rgba(9, 139, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .features .card .icon-wrapper i { 
+            font-size: clamp(1.75rem, 5vw, 2.25rem);
+            line-height: 1;
+        }
+
+        /* Typography */
+        .features .card-title {
+            font-weight: 600;
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .features .card-title[data-eyebrow]::before {
+            content: attr(data-eyebrow);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            line-height: 1.2;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            opacity: 0.9;
+        }
+
+        .features .card-text {
+            font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+            flex: 1; /* Nimmt verfügbaren Platz ein */
+        }
+
+        /* Responsive Breakpoints */
+@media (max-width: 768px) {
   .features { 
-    min-height: 100dvh;
-    padding-block: var(--spacing-md) var(--spacing-sm);
+    padding: var(--spacing-lg) 0 var(--spacing-lg); 
+  }
+
+  .section-header { 
+    margin-bottom: 2rem; 
+  }
+
+  .features-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;            /* Etwas Luft zwischen Cards für Tap-Ziele */
+    max-width: 100%;         /* volle Breite nutzen */
+  }
+
+  .features .card {
+    min-height: unset;        /* Höhe durch Inhalt bestimmen lassen (Compat) */
+    padding: 0.9rem 1rem 1rem; /* kompakter, aber noch lesbar */
+    gap: 0.65rem;
+  }
+
+  .features .card-title { 
+    font-size: 1.05rem; 
+  }
+
+  .features .card-text { 
+    font-size: 0.9rem; 
+    line-height: 1.5; 
+  }
+
+  .icon-wrapper { 
+    width: 52px; 
+    height: 52px; 
+    margin-bottom: 0.25rem; 
+  }
+
+  .features-content { 
+    padding: 0 0.85rem; 
+  }
+
+  /* Optional: leichte Trennung für Scroll-Kontext bei vielen Sektionen */
+  .full-screen-section { 
+    min-height: auto; 
+    padding-top: 1rem; 
+    padding-bottom: 1.5rem; 
+  }
+
+  /* Engere Typografie im Header */
+  .section-title { 
+    letter-spacing: -0.5px; 
   }
 }
 
-/* === FeatureRotation (leichtgewichtig) === */
-#section-features { will-change: opacity, transform; }
-.fr-enter   { opacity: 0; transform: translateY(10px); }
-.fr-enter.fr-enter-active { transition: all .4s cubic-bezier(.25,.46,.45,.94); opacity: 1; transform: translateY(0); }
-.fr-exit    { opacity: 1; transform: translateY(0); }
-.fr-exit.fr-exit-active  { transition: all .2s cubic-bezier(.25,.46,.45,.94); opacity: 0; transform: translateY(-5px); }
-</style>
+/* Sehr kleine Geräte (≤ 480px) weiter optimieren */
+@media (max-width: 480px) {
+  .features .card { 
+    padding: 0.75rem 0.85rem 0.85rem; 
+  }
+  .icon-wrapper { 
+    width: 46px; 
+    height: 46px; 
+  }
+  .features .card-title { 
+    font-size: 1rem; 
+  }
+  .features .card-text { 
+    font-size: 0.85rem; 
+  }
+}
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .features-cards { 
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .features-cards { 
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.75rem;
+            }
+        }
+
+        /* Improved hover states for touch devices */
+        @media (hover: none) and (pointer: coarse) {
+            .features .card:hover {
+                transform: none;
+            }
+            
+            .features .card:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            .features .card,
+            .features .card::before,
+            .icon-wrapper {
+                transition: none;
+            }
+            
+            .features .card:hover {
+                transform: none;
+            }
+        }
+    </style>
 
 <template id="template-features-1">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
