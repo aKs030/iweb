@@ -205,7 +205,8 @@ html, body {
 /* =======================
    Page Content
    ======================= */
-main { margin-top: 80px; padding: 1rem; }
+/* Margin an tatsächliche Header-Höhe angleichen um doppelten Versatz zu vermeiden */
+main { margin-top: var(--header-height, 72px); padding: 1rem; }
 
 /* =======================
    Mobile Styles
@@ -218,6 +219,8 @@ main { margin-top: 80px; padding: 1rem; }
     min-height: 44px;
     padding: 0.2rem 0.7rem;
   }
+  /* Reduziere zusätzlichen Abstand unter dem kleineren Header */
+  main { margin-top: 56px; }
   .site-menu {
     position: fixed;
     top: 44px;
