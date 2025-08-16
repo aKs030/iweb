@@ -1,7 +1,7 @@
 {
   "name": "iweb",
   "version": "1.0.0",
-  "description": "",
+  "description": "Interaktive persönliche Homepage mit Feature-Rotation, Spielen und Webentwicklungs-Demos.",
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
@@ -9,7 +9,7 @@
     "test:cov": "vitest run --coverage"
   },
   "keywords": [],
-  "author": "",
+  "author": "aKs030",
   "license": "ISC",
   "type": "module",
   "devDependencies": {

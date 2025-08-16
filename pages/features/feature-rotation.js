@@ -1,12 +1,19 @@
-// Fallback-Implementierungen für Kompatibilität
-const shuffleArray = (array) => {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
+// Nutzung der zentralen Shuffle-Utility (Fallback nur falls Import fehlschlägt)
+let shuffleArray;
+try {
+  // relativer Pfad vom Feature-Skript zur gemeinsamen Util-Datei
+  ({ shuffle: shuffleArray } = await import("../../content/webentwicklung/utils/common-utils.js"));
+} catch {
+  // Minimaler Fallback (sollte im Normalfall nicht benutzt werden)
+  shuffleArray = (array) => {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+}
 const checkReducedMotionFeatures = () => {
   try {
     const saved = localStorage.getItem("pref-reduce-motion");
