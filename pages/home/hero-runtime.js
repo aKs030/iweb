@@ -24,14 +24,12 @@ function attachVisibilityObserver(hero){
 }
 
 function createObserver(hero, cfg){
-  const subtitle = () => document.querySelector('.hero-subtitle');
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if(e.target!==hero) return;
       const active = e.intersectionRatio >= cfg.minActiveRatio;
       document.body.classList.toggle('hero-active', active);
-      const st = subtitle();
-      if(st) st.classList.toggle('hero-subtitle--fixed', active);
+      // hero-subtitle bleibt immer fixed; kein Toggle mehr
     });
   }, { threshold: cfg.threshold });
   obs.observe(hero);
