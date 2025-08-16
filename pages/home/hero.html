@@ -35,10 +35,15 @@ body.reduce-motion .anim-soft.animate-element { transform: none !important; opac
 .btn-crt.btn-secondary.animate-element.is-visible:hover { background: var(--primary-color); color:#fff; }
 body.reduce-motion [data-animation="crt"].animate-element { opacity:1 !important; transform:none !important; filter:none !important; animation:none !important; }
 body.reduce-motion [data-animation="crt"].animate-element::before, body.reduce-motion [data-animation="crt"].animate-element::after { display:none !important; }
-/* Background Layer */
-.hero-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-.gradient-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 0%, var(--bg-dark) 100%); }
-.particle-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.5; }
+/* Background Layer (nicht mehr benötigt - jetzt global) */
+.hero-background { 
+  position: relative; 
+  width: 100%; 
+  height: 100%; 
+  z-index: 1; 
+}
+
+/* Gradient Overlay entfernt - jetzt global */
 /* Subtitle (typing area) */
 .hero-subtitle{ position: absolute; left: clamp(12px, 2vw, 20px); bottom: calc(clamp(12px, 2vw, 20px) + env(safe-area-inset-bottom)); z-index: 10; margin: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; text-rendering: optimizeLegibility; font-size: clamp(0.9rem, 1.8vw, 1.1rem); line-height: 1.22; opacity: 0; pointer-events: none; max-width: clamp(480px, 48vw, 720px); height: var(--box-h); gap: var(--gap-px); transform: translateY(6px); transition: opacity .45s ease, transform .45s ease; }
 .hero-subtitle--fixed { position: fixed; left: clamp(12px, 2vw, 20px); bottom: calc(clamp(12px, 2vw, 20px) + env(safe-area-inset-bottom)); opacity: 0.82; transform: translateY(0); }
@@ -130,10 +135,6 @@ body.reduce-motion .particle-canvas { opacity: .6; }
 
 </style>
 <div class="section hero" id="hero">
-  <div class="hero-background">
-    <div class="gradient-overlay"></div>
-    <canvas class="particle-canvas" id="particleCanvas"></canvas>
-  </div>
   <div class="container hero-content">
   <p class="hero-subtitle" data-offset-mode="full">
       <span id="typedAuthor" class="typed-author"></span>

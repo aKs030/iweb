@@ -238,6 +238,25 @@
     // AOS Auto-Delay (nur wenn nicht gesetzt)
     document.querySelectorAll("[data-aos]").forEach((el,i)=> el.hasAttribute("data-aos-delay") || el.setAttribute("data-aos-delay", String(i*50)));
 
+    // Enhanced Scroll Snap Integration (über AnimationSystem)
+    window.addEventListener('snapSectionChange', (event) => {
+      const { index, section } = event.detail;
+      console.log(`Aktuelle Section: ${index}`, section);
+      
+      // Back-to-Top Button bei letzter Section anzeigen
+      const backToTop = document.getElementById('backToTop');
+      if (backToTop) {
+        backToTop.style.display = index > 0 ? 'flex' : 'none';
+      }
+
+      // Optional: Section-spezifische Aktionen
+      section.classList.add('section-active');
+      // Vorherige aktive Section cleanup
+      document.querySelectorAll('.section.section-active').forEach(s => {
+        if (s !== section) s.classList.remove('section-active');
+      });
+    });
+
     // Menü nachladen
     loadMenuAssets();
   });
