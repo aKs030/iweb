@@ -14,7 +14,7 @@
 
 // Re-Init hero-bezogene Features nach Laden
 document.addEventListener('hero:loaded', () => {
-  try { window.__postHeroEnhancements?.(); } catch(e){}
+  // postHeroEnhancements entfernt (hero-runtime.js gelöscht)
   try { window.__initTyping?.(); } catch(e){}
   if(typeof initParticles === 'function') {
     const canvas = document.getElementById('particleCanvas');

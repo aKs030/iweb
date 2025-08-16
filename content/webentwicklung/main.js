@@ -38,10 +38,8 @@ const toggleReducedMotion = (force) => {
     cachedElements = {};
   };
 
-  window.__postHeroEnhancements = async () => {
-    try { await import("../../pages/home/hero-runtime.js"); window.__initHeroRuntime?.(); return true; }
-    catch { return false; }
-  };
+  // Entfernt: hero-runtime.js (Datei gelöscht). Aufrufer prüfen optional auf Existenz.
+  // Kein Stub mehr nötig.
 
   async function loadTyped() {
     const mods = [
@@ -54,68 +52,85 @@ const toggleReducedMotion = (force) => {
 
   // ===== Particles (DPR + Spatial Hash, Map-Reuse) =====
   function initParticles(){
-    const c = getElement("particleCanvas"); if(!c) return () => {};
-    const ctx = c.getContext("2d");
+    const canvas = getElement("particleCanvas");
+    if(!canvas) return () => {};
+    const ctx = canvas.getContext("2d");
     const DPR = Math.max(1, Math.floor(devicePixelRatio || 1));
-    const grid = new Map(); // wiederverwenden
-    let parts=[], raf, target=0, last=performance.now(), fpsQ=[], hidden=false;
+    const grid = new Map();
+    let particles = [], rafId, targetCount = 0, lastTime = performance.now(), fpsSamples = [], hidden = false;
 
     const stats = (window.__particleStats = window.__particleStats || { fps:0, count:0 });
 
     const resize = () => {
       const w = innerWidth|0, h = innerHeight|0;
-      c.width = w*DPR; c.height = h*DPR; c.style.width = w+"px"; c.style.height = h+"px";
+      canvas.width = w * DPR; canvas.height = h * DPR;
+      canvas.style.width = w + "px"; canvas.style.height = h + "px";
       ctx.setTransform(DPR,0,0,DPR,0,0);
     };
 
-    class P{
-      constructor(){ this.x=Math.random()*innerWidth; this.y=Math.random()*innerHeight; this.s=Math.random()*2+1; this.vx=Math.random()*2-1; this.vy=Math.random()*2-1; }
-      u(){ (this.x+=this.vx) && (this.y+=this.vy);
-           if(this.x>innerWidth||this.x<0) this.vx*=-1;
-           if(this.y>innerHeight||this.y<0) this.vy*=-1; }
-      d(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.s,0,Math.PI*2); ctx.fill(); }
+    class Particle {
+      constructor(){
+        this.x = Math.random()*innerWidth;
+        this.y = Math.random()*innerHeight;
+        this.s = Math.random()*2+1;
+        this.vx = Math.random()*2-1;
+        this.vy = Math.random()*2-1;
+      }
+      update(){
+        this.x += this.vx; this.y += this.vy;
+        if(this.x>innerWidth || this.x<0) this.vx *= -1;
+        if(this.y>innerHeight|| this.y<0) this.vy *= -1;
+      }
+      draw(){
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.s,0,Math.PI*2);
+        ctx.fill();
+      }
     }
 
-    const make = n => {
-      target = n ?? Math.min(100, (innerWidth/10)|0);
-      parts = Array.from({length: target}, () => new P());
-      stats.count = target;
-    };
+    function allocate(count){
+      targetCount = count ?? Math.min(100, (innerWidth/10)|0);
+      particles = Array.from({ length: targetCount }, () => new Particle());
+      stats.count = targetCount;
+    }
 
-    const adjust = fps => {
-      if (fps < 45 && target > 25) make(Math.max(20, (target*0.85)|0));
-      else if (fps > 58 && target < 140) make(Math.min(140, ((target*1.12+2)|0)));
-    };
+    function adaptParticleCount(fps){
+      if (fps < 45 && targetCount > 25) allocate(Math.max(20, (targetCount*0.85)|0));
+      else if (fps > 58 && targetCount < 140) allocate(Math.min(140, ((targetCount*1.12+2)|0)));
+    }
 
     const cell = 96, maxD = 110, maxD2 = maxD*maxD;
 
-    const neighbors = (gx, gy) => {
-      const out=[]; for(let y=-1;y<=1;y++) for(let x=-1;x<=1;x++){ const b=grid.get((gx+x)+":"+(gy+y)); if(b) out.push(...b); } return out;
-    };
+    function collectNeighbors(gx, gy){
+      const out = [];
+      for (let yy=-1; yy<=1; yy++) {
+        for (let xx=-1; xx<=1; xx++) {
+          const bucket = grid.get((gx+xx)+":"+(gy+yy));
+          if (bucket) out.push(...bucket);
+        }
+      }
+      return out;
+    }
 
-    const loop = () => {
-      if (hidden) { raf = requestAnimationFrame(loop); return; }
-
-      const now = performance.now(), fps = 1000/((now-last)||1); last = now;
-      fpsQ.push(fps); if (fpsQ.length>20) fpsQ.shift();
-      if (fpsQ.length===20) { const avg = fpsQ.reduce((a,b)=>a+b,0)/20; adjust(avg); stats.fps = avg; }
-
-      ctx.clearRect(0,0,c.width,c.height);
-      ctx.fillStyle = "rgba(9,139,255,.8)";
-      for (let i=0;i<parts.length;i++){ const p=parts[i]; p.u(); p.d(); }
-
+    function fillSpatialGrid(){
       grid.clear();
-      for (let i=0;i<parts.length;i++){ const p=parts[i], gx=(p.x/cell)|0, gy=(p.y/cell)|0, key=gx+":"+gy; (grid.get(key)?.push(p)) || grid.set(key, [p]); }
+      for (const p of particles){
+        const gx = (p.x / cell)|0, gy = (p.y / cell)|0, key = gx+":"+gy;
+        const bucket = grid.get(key);
+        if (bucket) bucket.push(p); else grid.set(key,[p]);
+      }
+    }
 
+    function drawConnections(){
       ctx.lineWidth = 1; ctx.strokeStyle = "rgba(9,139,255,.25)";
-      for (const [k, bucket] of grid) {
-        const [gx,gy] = k.split(":").map(Number);
-        const list = neighbors(gx, gy);
-        for (const p of bucket) {
-          for (const q of list) {
-            if (p===q) continue;
-            const dx=p.x-q.x, dy=p.y-q.y, d2=dx*dx+dy*dy;
-            if (d2 < maxD2) {
+      for (const [key, bucket] of grid){
+        const [gx,gy] = key.split(":").map(Number);
+        const list = collectNeighbors(gx,gy);
+        for (const p of bucket){
+          for (const q of list){
+            if (p === q) continue;
+            const dx = p.x - q.x, dy = p.y - q.y, d2 = dx*dx + dy*dy;
+            if (d2 < maxD2){
               const a = 1 - Math.sqrt(d2)/maxD; ctx.globalAlpha = a*0.35;
               ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
             }
@@ -123,15 +138,34 @@ const toggleReducedMotion = (force) => {
         }
       }
       ctx.globalAlpha = 1;
+    }
 
-      raf = requestAnimationFrame(loop);
-    };
+    function updateAndDrawParticles(){
+      ctx.fillStyle = "rgba(9,139,255,.8)";
+      for (const p of particles){ p.update(); p.draw(); }
+    }
 
-    resize(); make(); loop();
+    function animationLoop(){
+      if (hidden){ rafId = requestAnimationFrame(animationLoop); return; }
+      const now = performance.now();
+      const fps = 1000 / ((now - lastTime) || 1); lastTime = now;
+      fpsSamples.push(fps); if (fpsSamples.length > 20) fpsSamples.shift();
+      if (fpsSamples.length === 20){
+        const avg = fpsSamples.reduce((a,b)=>a+b,0) / 20;
+        adaptParticleCount(avg); stats.fps = avg;
+      }
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      updateAndDrawParticles();
+      fillSpatialGrid();
+      drawConnections();
+      rafId = requestAnimationFrame(animationLoop);
+    }
+
+    resize(); allocate(); animationLoop();
     document.addEventListener("visibilitychange", () => hidden = document.hidden);
-    addEventListener("resize", throttle(() => { cancelAnimationFrame(raf); resize(); make(target); loop(); }, 180), { passive:true });
+    addEventListener("resize", throttle(() => { cancelAnimationFrame(rafId); resize(); allocate(targetCount); animationLoop(); }, 180), { passive:true });
 
-    return () => { cancelAnimationFrame(raf); parts.length=0; grid.clear(); };
+    return () => { cancelAnimationFrame(rafId); particles.length = 0; grid.clear(); };
   }
 
   // ===== Greetings =====
@@ -152,10 +186,33 @@ const toggleReducedMotion = (force) => {
     const buttons=[...document.querySelectorAll(".filter-btn")];
     const cards=[...document.querySelectorAll(".project-card")];
     if(!buttons.length||!cards.length) return;
-    const show=c=>{ c.style.display="block"; requestAnimationFrame(()=>{ c.style.opacity="1"; c.style.transform="scale(1)"; }); };
-    const hide=c=>{ c.style.opacity="0"; c.style.transform="scale(0.97)"; setTimeout(()=>c.style.display="none",280); };
-    buttons.forEach(btn=>btn.addEventListener("click",()=>{ buttons.forEach(b=>b.classList.remove("active")); btn.classList.add("active"); const f=btn.dataset.filter; cards.forEach(card=> (f==="all"||card.dataset.category===f)?show(card):hide(card)); }));
-    (document.querySelector(".filter-btn.active")||buttons[0])?.click();
+
+    function show(card){
+      card.style.display="block";
+      requestAnimationFrame(()=>{
+        card.style.opacity="1";
+        card.style.transform="scale(1)";
+      });
+    }
+    function hide(card){
+      card.style.opacity="0";
+      card.style.transform="scale(0.97)";
+      setTimeout(()=> card.style.display="none", 280);
+    }
+    function applyFilter(filter){
+      for (const btn of buttons){ btn.classList.toggle("active", btn.dataset.filter === filter); }
+      for (const card of cards){
+        if (filter === "all" || card.dataset.category === filter) show(card); else hide(card);
+      }
+    }
+    function handleClick(e){
+      const btn = e.currentTarget;
+      const filter = btn.dataset.filter || "all";
+      applyFilter(filter);
+    }
+    for (const btn of buttons){ btn.addEventListener("click", handleClick); }
+    const initial = (document.querySelector(".filter-btn.active") || buttons[0])?.dataset.filter || "all";
+    applyFilter(initial);
   }
 
   // ===== Smooth Scroll (achtet auf Reduced Motion) =====
@@ -239,8 +296,7 @@ const toggleReducedMotion = (force) => {
     // Smooth Anchor Scroll
     initSmoothScroll();
 
-    // Hero Enhancements
-    window.__postHeroEnhancements();
+  // Hero Enhancements entfernt (hero-runtime.js wurde gelöscht)
 
     // Reduced Motion Setup
     setReducedMotion(checkReducedMotion());
