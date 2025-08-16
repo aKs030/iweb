@@ -5,6 +5,23 @@
   display: flex; flex-direction: column; justify-content: center; align-items: center;
   background: transparent;
   scroll-snap-align: center;
+  /* Weniger Leerraum oben: volle dynamische Höhe, kleineres Padding */
+  min-height: 100dvh;
+  padding-block: var(--spacing-lg) var(--spacing-md);
+}
+.features-content { 
+  width: 100%;
+  max-width: 1000px;
+  margin-inline: auto;
+  /* Dynamischer optischer Shift nach oben: min -4vh, bevorzugt Formel, max -8vh */
+  transform: translateY(clamp(-8vh, -6vh + 1vw, -4vh));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+@media (max-width: 680px){
+  /* Mobil etwas weniger aggressiv: min -6vh, prefer -5vh + 1vw, max -3vh */
+  .features-content { transform: translateY(clamp(-6vh, -5vh + 1vw, -3vh)); }
 }
 .features-cards { 
   display: grid; 
@@ -60,6 +77,11 @@
 
 @media (max-width: 680px){
   .features-cards { grid-template-columns: 1fr; }
+  /* Auf sehr kleinen Screens etwas weniger vertikaler Raum, damit nicht zu viel Platz oben entsteht */
+  .features { 
+    min-height: 100dvh;
+    padding-block: var(--spacing-md) var(--spacing-sm);
+  }
 }
 
 /* === FeatureRotation (leichtgewichtig) === */
@@ -72,12 +94,12 @@
 
 <template id="template-features-1">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="container">
+    <div class="features-content">
       <div class="section-header text-animate" data-animation="fadeInDown">
         <h2 class="section-title">Fokus & Qualität</h2>
         <p class="section-subtitle">Solide Grundlagen für skalierbare Produkte</p>
       </div>
-  <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
   <article class="card" data-animation="fadeInUp" data-delay="100">
           <div class="icon-wrapper"><i>🧱</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Architektur</h3>
@@ -100,12 +122,12 @@
 
 <template id="template-features-4">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="container">
+    <div class="features-content">
       <div class="section-header text-animate" data-animation="fadeInDown">
         <h2 class="section-title">Team & Kollaboration</h2>
         <p class="section-subtitle">Effektive Zusammenarbeit ermöglichen</p>
       </div>
-  <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
   <article class="card" data-animation="fadeInUp" data-delay="100">
           <div class="icon-wrapper"><i>🧩</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Design Handoff</h3>
@@ -128,12 +150,12 @@
 
 <template id="template-features-5">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="container">
+    <div class="features-content">
       <div class="section-header text-animate" data-animation="fadeInDown">
         <h2 class="section-title">Skalierung & Betrieb</h2>
         <p class="section-subtitle">Wachstum ohne Reibungsverluste</p>
       </div>
-  <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
   <article class="card" data-animation="fadeInUp" data-delay="100">
           <div class="icon-wrapper"><i>📦</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Modularisierung</h3>
@@ -156,12 +178,12 @@
 
 <template id="template-features-2">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="container">
+    <div class="features-content">
       <div class="section-header text-animate" data-animation="fadeInDown">
         <h2 class="section-title">Performance & UX</h2>
         <p class="section-subtitle">Geschwindigkeit spürbar machen</p>
       </div>
-  <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
   <article class="card" data-animation="fadeInLeft" data-delay="100">
           <div class="icon-wrapper"><i>⚡</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Ladezeiten</h3>
@@ -184,12 +206,12 @@
 
 <template id="template-features-3">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="container">
+    <div class="features-content">
       <div class="section-header text-animate" data-animation="fadeInDown">
         <h2 class="section-title">Sicherheit & Vertrauen</h2>
         <p class="section-subtitle">Verlässliche und geschützte Anwendungen</p>
       </div>
-  <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
   <article class="card" data-animation="fadeInUp" data-delay="100">
           <div class="icon-wrapper"><i>🔒</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Security</h3>
