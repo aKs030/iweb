@@ -498,7 +498,7 @@ a:hover { color: var(--primary-light); }
 /* ungenutztes .contact-content Layout entfernt */
 
 @media (max-width: 768px){
-  :root{ font-size: 14px; --header-height: 64px; }
+  :root{ font-size: 14px; --header-height: 0; }
   .section { min-height: 100svh; height: auto; }
   .section .container { padding-top: var(--header-height); padding-bottom: 20px; }
 }
