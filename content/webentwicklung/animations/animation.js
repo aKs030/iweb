@@ -1,11 +1,21 @@
 /*! AnimationSystem v2 (light, no thrash) + Enhanced Scroll Snap */
+// Fallback-Implementierung für Kompatibilität
+const checkReducedMotionAnimations = () => {
+  try {
+    const saved = localStorage.getItem("pref-reduce-motion");
+    return saved === "1" || (saved === null && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  } catch {
+    return matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+};
+
 (() => {
   "use strict";
   if (window.AnimationSystem) return;
 
   const ATTR = { anim:"data-animation", delay:"data-delay", dur:"data-duration", ease:"data-easing", once:"data-once" };
   const CLS  = { base:"animate-element", vis:"is-visible", run:"is-animating" };
-  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const REDUCED = checkReducedMotionAnimations();
 
   let lastY = window.scrollY, dir = "down", rafScheduled = false;
 

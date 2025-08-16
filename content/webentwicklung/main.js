@@ -1,11 +1,42 @@
+// Fallback-Implementierungen für Kompatibilität
+const debounce = (fn, wait=200) => { let t; const d=function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a),wait); }; d.cancel=()=>clearTimeout(t); return d; };
+const throttle = (fn, limit=250) => { let busy=false, pend=false, ctx, args; const run=()=>{ busy=true; fn.apply(ctx,args); setTimeout(()=>{ busy=false; if(pend){ pend=false; run(); } }, limit); }; return function(...a){ ctx=this; args=a; busy ? (pend=true) : run(); }; };
+const checkReducedMotion = () => {
+  try {
+    const saved = localStorage.getItem("pref-reduce-motion");
+    return saved === "1" || (saved === null && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  } catch {
+    return matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+};
+const setReducedMotion = (enabled) => {
+  document.body.classList.toggle("reduce-motion", enabled);
+  try { localStorage.setItem("pref-reduce-motion", enabled ? "1" : "0"); } catch {}
+};
+const toggleReducedMotion = (force) => {
+  const v = force !== undefined ? !!force : !document.body.classList.contains("reduce-motion");
+  setReducedMotion(v);
+  return v;
+};
+
 (() => {
   "use strict";
 
-  // ===== Utils =====
-  const debounce = (fn, wait=200) => { let t; const d=function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a),wait); }; d.cancel=()=>clearTimeout(t); return d; };
-  const throttle = (fn, limit=250) => { let busy=false, pend=false, ctx, args; const run=()=>{ busy=true; fn.apply(ctx,args); setTimeout(()=>{ busy=false; if(pend){ pend=false; run(); } }, limit); }; return function(...a){ ctx=this; args=a; busy ? (pend=true) : run(); }; };
-
   let TypeWriter=null, makeLineMeasurer=null, quotes=[], heroData=null;
+  
+  // ===== Gecachte DOM-Elemente =====
+  let cachedElements = {};
+  
+  const getElement = (id) => {
+    if (!cachedElements[id]) {
+      cachedElements[id] = document.getElementById(id);
+    }
+    return cachedElements[id];
+  };
+  
+  const clearElementCache = () => {
+    cachedElements = {};
+  };
 
   window.__postHeroEnhancements = async () => {
     try { await import("../../pages/home/hero-runtime.js"); window.__initHeroRuntime?.(); return true; }
@@ -14,7 +45,6 @@
 
   async function loadTyped() {
     const mods = [
-      ["../../pages/home/timing.js",       m => { if (m.debounce) window.debounce=m.debounce; if (m.throttle) window.throttle=m.throttle; }],
       ["../../pages/home/TypeWriter.js",   m => { TypeWriter = m.default || m.TypeWriter || TypeWriter; }],
       ["../../pages/home/lineMeasurer.js", m => { makeLineMeasurer = m.makeLineMeasurer || makeLineMeasurer; }],
       ["../../pages/home/quotes-de.js",    m => { quotes = m.default || m.quotes || quotes; }],
@@ -24,7 +54,7 @@
 
   // ===== Particles (DPR + Spatial Hash, Map-Reuse) =====
   function initParticles(){
-    const c = document.getElementById("particleCanvas"); if(!c) return () => {};
+    const c = getElement("particleCanvas"); if(!c) return () => {};
     const ctx = c.getContext("2d");
     const DPR = Math.max(1, Math.floor(devicePixelRatio || 1));
     const grid = new Map(); // wiederverwenden
@@ -107,7 +137,7 @@
   // ===== Greetings =====
   const ensureHeroData = async () => heroData || (heroData = await import("../../pages/home/hero-data.js").catch(()=>({})));
   async function setRandomGreetingHTML(animated=false) {
-    const el = document.getElementById("greetingText"); if (!el) return;
+    const el = getElement("greetingText"); if (!el) return;
     const mod = await ensureHeroData();
     const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
     const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : "";
@@ -130,7 +160,7 @@
 
   // ===== Smooth Scroll (achtet auf Reduced Motion) =====
   function initSmoothScroll(){
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = checkReducedMotion();
     document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{
       const href = a.getAttribute("href"); if (!href || href === "#") return;
       const t = document.querySelector(href); if (!t) return;
@@ -142,18 +172,18 @@
 
   // ===== BackToTop & AOS =====
   function handleScrollEvents(){
-    const btn = document.getElementById("backToTop"); if(!btn) return;
+    const btn = getElement("backToTop"); if(!btn) return;
     (scrollY>300) ? btn.classList.add("show") : btn.classList.remove("show");
   }
   function initScrollAnimations(){
-    document.getElementById("backToTop")?.addEventListener("click", ()=> scrollTo({ top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto":"smooth" }));
+    getElement("backToTop")?.addEventListener("click", ()=> scrollTo({ top:0, behavior: checkReducedMotion() ? "auto":"smooth" }));
     const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add("aos-animate"); }), { threshold:0.1, rootMargin:"0px 0px -50px 0px" });
     document.querySelectorAll("[data-aos]").forEach(el => obs.observe(el));
   }
 
   // ===== Menü-Assets on demand =====
   function loadMenuAssets(){
-    if (!document.getElementById("menu-container")) return;
+    if (!getElement("menu-container")) return;
     if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
       const s=document.createElement("script"); s.src="/content/webentwicklung/menu/menu.js"; s.defer=true; document.body.appendChild(s);
     }
@@ -162,7 +192,7 @@
   // ===== Loader robust =====
   let __modulesReady=false, __windowLoaded=false, __start=0; const __MIN=700;
   function hideLoading(){
-    const el=document.getElementById("loadingScreen"); if(!el) return;
+    const el=getElement("loadingScreen"); if(!el) return;
     el.classList.add("hide"); el.setAttribute("aria-hidden","true");
     Object.assign(el.style,{ opacity:"0", pointerEvents:"none", visibility:"hidden" });
     const rm=()=>{ el.style.display="none"; el.removeEventListener("transitionend", rm); };
@@ -212,28 +242,17 @@
     // Hero Enhancements
     window.__postHeroEnhancements();
 
-    // Reduced Motion Toggle & Hero-Button Fallback
-    (function(){
-      const body=document.body;
-      let reduced=false;
+    // Reduced Motion Setup
+    setReducedMotion(checkReducedMotion());
+    window.toggleReducedMotion = toggleReducedMotion;
+    
+    setTimeout(()=> {
       try {
-        const saved=localStorage.getItem("pref-reduce-motion");
-        reduced = saved==="1" || (saved===null && matchMedia("(prefers-reduced-motion: reduce)").matches);
+        const hero=getElement("hero"); if(!hero||!window.AnimationSystem) return;
+        window.AnimationSystem.scan?.();
+        hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add("is-visible"));
       } catch {}
-      if (reduced) body.classList.add("reduce-motion");
-      window.toggleReducedMotion = (force) => {
-        const v = force!==undefined ? !!force : !body.classList.contains("reduce-motion");
-        body.classList.toggle("reduce-motion", v);
-        try { localStorage.setItem("pref-reduce-motion", v ? "1":"0"); } catch {}
-      };
-      setTimeout(()=> {
-        try {
-          const hero=document.getElementById("hero"); if(!hero||!window.AnimationSystem) return;
-          window.AnimationSystem.scan?.();
-          hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add("is-visible"));
-        } catch {}
-      }, 420);
-    })();
+    }, 420);
 
     // AOS Auto-Delay (nur wenn nicht gesetzt)
     document.querySelectorAll("[data-aos]").forEach((el,i)=> el.hasAttribute("data-aos-delay") || el.setAttribute("data-aos-delay", String(i*50)));
@@ -244,7 +263,7 @@
       console.log(`Aktuelle Section: ${index}`, section);
       
       // Back-to-Top Button bei letzter Section anzeigen
-      const backToTop = document.getElementById('backToTop');
+      const backToTop = getElement('backToTop');
       if (backToTop) {
         backToTop.style.display = index > 0 ? 'flex' : 'none';
       }

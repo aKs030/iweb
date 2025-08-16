@@ -1,4 +1,14 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
+// Fallback-Implementierung für Kompatibilität
+const createShuffledIndices = (length) => {
+  const arr = [...Array(length).keys()];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
 export default class TypeWriter {
   constructor({
     textEl,
@@ -31,7 +41,7 @@ export default class TypeWriter {
     this._timer = null;
     this._isDeleting = false;
     this._txt = '';
-    this._queue = this.shuffle ? this._shuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
+    this._queue = this.shuffle ? createShuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
     this._index = this._queue.shift();
     this._current = this.quotes[this._index];
 
@@ -46,40 +56,36 @@ export default class TypeWriter {
     document.body.classList.remove('has-typingjs');
   }
 
-  _shuffledIndices(n) {
-    const arr = [...Array(n).keys()];
-    for (let i = n - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
   _nextQuote() {
     if (this._queue.length === 0) {
       if (!this.loop) return null;
 
-      // Optional: direkten Wiederholer über Zyklus-Grenzen verhindern
-      const last = this._index;
-      if (this.quotes.length <= 1) {
-        this._queue = [0];
-      } else if (this.avoidImmediateRepeat) {
-        // So lange neu mischen, bis das erste Element nicht dem letzten entspricht
-        do {
-          this._queue = this.shuffle
-            ? this._shuffledIndices(this.quotes.length)
-            : [...Array(this.quotes.length).keys()];
-        } while (this._queue[0] === last);
-      } else {
-        this._queue = this.shuffle
-          ? this._shuffledIndices(this.quotes.length)
-          : [...Array(this.quotes.length).keys()];
-      }
+      this._queue = this._generateQueue(this._index);
     }
 
     this._index = this._queue.shift();
     this._current = this.quotes[this._index];
     return this._current;
+  }
+
+  _generateQueue(lastIndex) {
+    if (this.quotes.length <= 1) {
+      return [0];
+    }
+
+    if (this.avoidImmediateRepeat) {
+      let newQueue;
+      do {
+        newQueue = this.shuffle
+          ? createShuffledIndices(this.quotes.length)
+          : [...Array(this.quotes.length).keys()];
+      } while (newQueue[0] === lastIndex);
+      return newQueue;
+    }
+
+    return this.shuffle
+      ? createShuffledIndices(this.quotes.length)
+      : [...Array(this.quotes.length).keys()];
   }
 
   _schedule(ms) { this._timer = setTimeout(() => this._tick(), ms); }

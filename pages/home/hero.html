@@ -115,11 +115,9 @@ body.reduce-motion .particle-canvas { opacity: .6; }
 /* Mobile <=768px */
 @media (max-width: 768px){
   .hero{
-    /* war: height:100svh; min-height:unset; */
     min-height: 100svh;
     height: auto;
     padding: 12px 0;
-    /* Safe-Area ok, zählt dank box-sizing mit */
     padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
   .hero-content { grid-template-columns: 1fr; padding: 0 8px; max-width: 100vw; text-align: center; place-items: center; }

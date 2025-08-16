@@ -1,3 +1,21 @@
+// Fallback-Implementierungen für Kompatibilität
+const shuffleArray = (array) => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+const checkReducedMotionFeatures = () => {
+  try {
+    const saved = localStorage.getItem("pref-reduce-motion");
+    return saved === "1" || (saved === null && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  } catch {
+    return matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+};
+
 (() => {
   "use strict";
   if (window.FeatureRotation) return;
@@ -9,7 +27,7 @@
   const ANIM_OUT = 200, ANIM_IN = 400, EASE = "cubic-bezier(0.25,0.46,0.45,0.94)";
   const THRESHOLDS = [0, .1, .25, .35, .5, .75, 1];
   const ENTER = 0.45, EXIT = 0.35, COOLDOWN = 500;
-  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const REDUCED = checkReducedMotionFeatures();
 
   let order = [], i = 0, anim = false, queued = false;
   let loaded = false, seen = false, cool = false;
@@ -19,7 +37,6 @@
   const byId = id => document.getElementById(id);
   const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; };
   const clearTimers = () => { for (const t of timers) clearTimeout(t); timers.clear(); };
-  const shuffle = a => { for (let k=a.length-1;k>0;k--){ const j=(Math.random()*(k+1))|0; [a[k],a[j]]=[a[j],a[k]]; } return a; };
 
   async function ensureTemplates() {
     if (loaded) return;
@@ -110,7 +127,7 @@
   }
 
   async function init() {
-    order = shuffle([...TEMPLATE_IDS]);
+    order = shuffleArray([...TEMPLATE_IDS]);
     observe();
 
     const section = byId(SECTION_ID);
