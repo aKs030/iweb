@@ -404,6 +404,19 @@ a:hover { color: var(--primary-light); }
   .social-links {
     justify-content: center;
   }
+
+  /* Über-mich auf Mobile kompakter gestalten */
+  .about .section-title {
+    font-size: 1.1rem;
+  }
+
+  .about .section-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .about .about-text p {
+    font-size: 0.9rem;
+  }
 }
 
 /* ========================================
