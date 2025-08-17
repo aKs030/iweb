@@ -43,7 +43,7 @@ body.reduce-motion [data-animation="crt"].animate-element::before, body.reduce-m
   z-index: 1; 
 }
 
-/* Gradient Overlay entfernt - jetzt global */
+/* Gradient Overlay jetzt global gelöst */
 /* Subtitle (typing area) */
 .hero-subtitle{ position: absolute; left: clamp(12px, 2vw, 20px); bottom: calc(clamp(12px, 2vw, 20px) + env(safe-area-inset-bottom)); z-index: 10; margin: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; text-rendering: optimizeLegibility; font-size: clamp(0.9rem, 1.8vw, 1.1rem); line-height: 1.22; opacity: 0; pointer-events: none; max-width: clamp(480px, 48vw, 720px); height: var(--box-h); gap: var(--gap-px); transform: translateY(6px); transition: opacity .45s ease, transform .45s ease; }
 .hero-subtitle--fixed { position: fixed; left: clamp(12px, 2vw, 20px); bottom: calc(clamp(12px, 2vw, 20px) + env(safe-area-inset-bottom)); opacity: 0.82; transform: translateY(0); }
@@ -78,7 +78,6 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{ display:inline-block; white-
 .hero-image-container svg { position: relative; z-index: 1; display: block; margin: 0 auto; }
 body:not(.hero-active) .greeting-text-hero, body.reduce-motion .greeting-text-hero { animation-play-state: paused !important; }
 body:not(.hero-active) .floating-icon, body.reduce-motion .floating-icon { animation-play-state: paused !important; }
-body.reduce-motion .particle-canvas { opacity: .6; }
 .spotlight-bg { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%) rotate(-8deg); width: 120%; height: 60%; background: radial-gradient(ellipse at center, #fff5 0%, #098bff22 55%, transparent 100%); filter: blur(22px); z-index: 1; pointer-events: none; }
 .greeting-text-hero { --greet-fs: clamp(1.6rem, 3.6vw, 2.4rem); --greet-lh: 1.14; --greet-weight: 600; --greet-letter: -0.012em; --greet-max: clamp(16ch, 40vw, 24ch); --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%); --greet-anim-grad-dur: 16.5s; --greet-anim-pulse-dur: 13.2s; position: absolute; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; font-size: var(--greet-fs); line-height: var(--greet-lh); font-weight: var(--greet-weight); letter-spacing: var(--greet-letter); text-align: center; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; margin: 32px 0 0 0; padding: 0 10px; background: var(--greet-grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; opacity: 1; -webkit-user-select: none; user-select: none; white-space: normal; overflow-wrap: anywhere; word-break: normal; -webkit-hyphens: auto; hyphens: auto; max-width: var(--greet-max); min-height: 2.6em; font-variation-settings: "opsz" 18; font-optical-sizing: auto; animation: gradientMove var(--greet-anim-grad-dur) linear infinite, pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite; }
 .greeting-text-hero--alt { --greet-grad: linear-gradient(92deg,#fff,#d2efff 60%); --greet-anim-grad-dur: 9s; --greet-anim-pulse-dur: 4.4s; filter: drop-shadow(0 3px 18px rgba(0,180,255,.35)); }

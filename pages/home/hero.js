@@ -12,7 +12,7 @@ const log = createLogger('hero');
   // Accessibility: Busy Status setzen
   host.setAttribute('aria-busy','true');
 
-  // Fallback Timeout: entfernt Skeleton nach 5s auch bei Fehler
+  // Fallback Timeout: blendet Skeleton nach 5s aus (Fehler-Schutz)
   const fallbackTimer = setTimeout(() => {
     if (done) return;
     if (skeleton) {

@@ -59,9 +59,6 @@
   /* Scroll-Snap-spezifische Variablen */
   --scrollY: 0;
   
-  /* Particle System Variablen */
-  --particle-color: rgba(9,139,255,0.8);
-  --particle-opacity: 0.4;
 }
 
 /* ========================================
@@ -129,71 +126,6 @@ body {
    3) Layout (Container, Section, Headings) + Global Particle Background
 ======================================== */
 
-/* Global Particle Background */
-.global-particle-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -10;
-  pointer-events: none;
-}
-
-.global-particle-background .particle-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: var(--particle-opacity);
-  filter: hue-rotate(0deg);
-  transition: opacity 0.6s ease, filter 0.8s ease;
-}
-
-.global-particle-background .gradient-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at center, transparent 0%, var(--bg-dark) 85%);
-  opacity: 0.8;
-}
-
-/* Particle Background Responsiveness */
-@media (prefers-reduced-motion: reduce) {
-  .global-particle-background .particle-canvas {
-    opacity: 0.2;
-  }
-}
-
-/* Für Benutzer mit reduzierter Bewegung */
-.reduce-motion .global-particle-background .particle-canvas {
-  opacity: 0.3;
-}
-
-/* Section-spezifische Particle-Intensität */
-.snap-section.section-active ~ .global-particle-background .particle-canvas {
-  opacity: 0.5;
-}
-
-/* Section-spezifische Partikel-Anpassungen */
-.snap-section[data-snap-index="0"].section-active ~ .global-particle-background .particle-canvas {
-  --particle-opacity: 0.5;
-  filter: hue-rotate(0deg); /* Hero - Original Blau */
-}
-
-.snap-section[data-snap-index="1"].section-active ~ .global-particle-background .particle-canvas {
-  --particle-opacity: 0.3;
-  filter: hue-rotate(200deg); /* Features - Lila/Pink */
-}
-
-/* Angepasste Indizes nach Entfernung der Sektion */
-.snap-section[data-snap-index="2"].section-active ~ .global-particle-background .particle-canvas {
-  --particle-opacity: 0.2;
-  filter: hue-rotate(45deg); /* ehem. Contact - Gelb/Orange */
-}
 
 .container {
   width: 100%;
@@ -340,7 +272,7 @@ a:hover { color: var(--primary-light); }
 }
 .btn-outline:hover { background: var(--primary-color); color: white; }
 
-/* .btn-block und .tag werden im Projekt nicht verwendet – entfernt */
+/* Nicht genutzte Klassen (.btn-block, .tag) konsolidiert */
 
 .highlight-item {
   display: flex;
@@ -361,7 +293,7 @@ a:hover { color: var(--primary-light); }
    5) Komponenten
 ======================================== */
 
-/* Sektion entfernt */
+/* Platzhalter Sektion */
 
 /* -- About -- */
 .about {
@@ -415,8 +347,7 @@ a:hover { color: var(--primary-light); }
 /* ========================================
    6) Utilities & Effekte
 ======================================== */
-/* Unbenutzte Utility-Klassen entfernt: gradient-text, pulse(+keyframes), skeleton(+keyframes),
-   glass, card-3d, text-reveal(+keyframes), parallax, observe */
+/* Unbenutzte Utility-Klassen konsolidiert (gradient-text, pulse, skeleton, glass, card-3d, text-reveal, parallax, observe) */
 
 
 /* ========================================
@@ -445,7 +376,7 @@ a:hover { color: var(--primary-light); }
 /* ========================================
    8) Responsive
 ======================================== */
-/* ungenutztes .contact-content Layout entfernt */
+/* ehemaliges .contact-content Layout nicht mehr vorhanden */
 
 @media (max-width: 768px){
   :root{

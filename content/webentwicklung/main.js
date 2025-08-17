@@ -1,5 +1,6 @@
 // ESM statischer Import zentraler Utilities
 import { debounce, throttle } from '../webentwicklung/utils/common-utils.js';
+import { initParticles as _initParticles } from './particles/particle-system.js';
 const checkReducedMotion = () => {
   try {
     const saved = localStorage.getItem("pref-reduce-motion");
@@ -33,12 +34,9 @@ const toggleReducedMotion = (force) => {
     return cachedElements[id];
   };
   
-  const clearElementCache = () => {
-    cachedElements = {};
-  };
+  // Cache kann bei Bedarf geleert werden (derzeit nicht benötigt)
 
-  // Entfernt: hero-runtime.js (Datei gelöscht). Aufrufer prüfen optional auf Existenz.
-  // Kein Stub mehr nötig.
+  // Hinweis: hero-runtime.js deprecated (nicht mehr vorhanden)
 
   async function loadTyped() {
     const mods = [
@@ -83,130 +81,7 @@ const toggleReducedMotion = (force) => {
   }
 
   // ===== Particles (DPR + Spatial Hash, Map-Reuse) =====
-  function initParticles(){
-    const canvas = getElement("particleCanvas");
-    if(!canvas) return () => {};
-  canvas.setAttribute('aria-hidden','true');
-  const ctx = canvas.getContext("2d");
-    const DPR = Math.max(1, Math.floor(devicePixelRatio || 1));
-    const grid = new Map();
-    let particles = [], rafId, targetCount = 0, lastTime = performance.now(), fpsSamples = [], hidden = false;
-
-    const stats = (window.__particleStats = window.__particleStats || { fps:0, count:0 });
-
-    const resize = () => {
-      const w = innerWidth|0, h = innerHeight|0;
-      canvas.width = w * DPR; canvas.height = h * DPR;
-      canvas.style.width = w + "px"; canvas.style.height = h + "px";
-      ctx.setTransform(DPR,0,0,DPR,0,0);
-    };
-
-    class Particle {
-      constructor(){
-        this.x = Math.random()*innerWidth;
-        this.y = Math.random()*innerHeight;
-        this.s = Math.random()*2+1;
-        this.vx = Math.random()*2-1;
-        this.vy = Math.random()*2-1;
-      }
-      update(){
-        this.x += this.vx; this.y += this.vy;
-        if(this.x>innerWidth || this.x<0) this.vx *= -1;
-        if(this.y>innerHeight|| this.y<0) this.vy *= -1;
-      }
-      draw(){
-        ctx.beginPath();
-        ctx.arc(this.x,this.y,this.s,0,Math.PI*2);
-        ctx.fill();
-      }
-    }
-
-    function allocate(count){
-      targetCount = count ?? Math.min(100, (innerWidth/10)|0);
-      particles = Array.from({ length: targetCount }, () => new Particle());
-      stats.count = targetCount;
-    }
-
-    function adaptParticleCount(fps){
-      if (fps < 45 && targetCount > 25) allocate(Math.max(20, (targetCount*0.85)|0));
-      else if (fps > 58 && targetCount < 140) allocate(Math.min(140, ((targetCount*1.12+2)|0)));
-    }
-
-    const cell = 96, maxD = 110, maxD2 = maxD*maxD;
-
-    function collectNeighbors(gx, gy){
-      const out = [];
-      for (let yy=-1; yy<=1; yy++) {
-        for (let xx=-1; xx<=1; xx++) {
-          const bucket = grid.get((gx+xx)+":"+(gy+yy));
-          if (bucket) out.push(...bucket);
-        }
-      }
-      return out;
-    }
-
-    function fillSpatialGrid(){
-      grid.clear();
-      for (const p of particles){
-        const gx = (p.x / cell)|0, gy = (p.y / cell)|0, key = gx+":"+gy;
-        const bucket = grid.get(key);
-        if (bucket) bucket.push(p); else grid.set(key,[p]);
-      }
-    }
-
-    function drawConnections(){
-      ctx.lineWidth = 1; ctx.strokeStyle = "rgba(9,139,255,.25)";
-      for (const [key, bucket] of grid){
-        const [gx,gy] = key.split(":").map(Number);
-        const list = collectNeighbors(gx,gy);
-        for (const p of bucket){
-          for (const q of list){
-            if (p === q) continue;
-            const dx = p.x - q.x, dy = p.y - q.y, d2 = dx*dx + dy*dy;
-            if (d2 < maxD2){
-              const a = 1 - Math.sqrt(d2)/maxD; ctx.globalAlpha = a*0.35;
-              ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
-            }
-          }
-        }
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    function updateAndDrawParticles(){
-      ctx.fillStyle = "rgba(9,139,255,.8)";
-      for (const p of particles){ p.update(); p.draw(); }
-    }
-
-    function animationLoop(){
-      if (hidden){ rafId = requestAnimationFrame(animationLoop); return; }
-      const now = performance.now();
-      const fps = 1000 / ((now - lastTime) || 1); lastTime = now;
-      fpsSamples.push(fps); if (fpsSamples.length > 20) fpsSamples.shift();
-      if (fpsSamples.length === 20){
-        const avg = fpsSamples.reduce((a,b)=>a+b,0) / 20;
-        adaptParticleCount(avg); stats.fps = avg;
-      }
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      updateAndDrawParticles();
-      fillSpatialGrid();
-      drawConnections();
-      rafId = requestAnimationFrame(animationLoop);
-    }
-
-    resize(); allocate(); animationLoop();
-    // Offscreen Pause mittels IntersectionObserver
-    const io = new IntersectionObserver(entries => {
-      for (const e of entries){
-        hidden = !e.isIntersecting || document.hidden;
-      }
-    }, { threshold: 0, root: null });
-    io.observe(canvas);
-    document.addEventListener("visibilitychange", () => hidden = document.hidden);
-    addEventListener("resize", throttle(() => { cancelAnimationFrame(rafId); resize(); allocate(targetCount); animationLoop(); }, 180), { passive:true });
-
-  return () => { cancelAnimationFrame(rafId); particles.length = 0; grid.clear(); io.disconnect(); };
-  }
+  const initParticles = () => _initParticles({ getElement, throttle, checkReducedMotion });
 
   // ===== Greetings =====
   const ensureHeroData = async () => heroData || (heroData = await import("../../pages/home/hero-data.js").catch(()=>({})));
@@ -337,7 +212,7 @@ const toggleReducedMotion = (force) => {
     // Smooth Anchor Scroll
     initSmoothScroll();
 
-  // Hero Enhancements entfernt (hero-runtime.js wurde gelöscht)
+  // Hero Enhancements: Integrationen vereinfacht (ohne hero-runtime.js)
 
     // Reduced Motion Setup
     setReducedMotion(checkReducedMotion());
@@ -377,7 +252,7 @@ const toggleReducedMotion = (force) => {
     loadMenuAssets();
   });
 
-  // CommonJS Export entfernt (ESM jetzt aktiv)
+  // ESM aktiv (CommonJS Export entfällt)
 })();
 
 

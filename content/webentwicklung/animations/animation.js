@@ -72,41 +72,7 @@ const checkReducedMotionAnimations = () => {
     window.addEventListener('scroll', updateScrollPos, { passive: true });
 
     // Particle Background Management
-    const particleCanvas = document.getElementById('particleCanvas');
-    const particleBackground = document.querySelector('.global-particle-background');
     
-    if (particleCanvas && particleBackground) {
-      // Partikel-Intensität je nach Section anpassen
-      const updateParticleIntensity = (sectionIndex) => {
-        const intensities = {
-          0: 0.5,  // Hero - hohe Intensität
-          1: 0.3,  // Features - mittlere Intensität
-          2: 0.2,  // nächste Sektion - niedriger
-        };
-        
-        const intensity = intensities[sectionIndex] || 0.3;
-        particleCanvas.style.opacity = intensity;
-        
-        // Optional: Partikel-Farbe je nach Section
-        const colors = {
-          0: 'rgba(9,139,255,0.8)',   // Hero - Blau
-          1: 'rgba(255,107,107,0.6)',  // Features - Rot
-          2: 'rgba(255,217,61,0.6)',   // (ehem. Contact) Gelb
-        };
-        
-        const color = colors[sectionIndex] || 'rgba(9,139,255,0.8)';
-        particleBackground.style.setProperty('--particle-color', color);
-      };
-
-      // Initial setup
-      updateParticleIntensity(0);
-      
-      // Update bei Section-Wechsel
-      window.addEventListener('snapSectionChange', (event) => {
-        updateParticleIntensity(event.detail.index);
-      });
-    }
-
     // Snap Observer
     snapObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
