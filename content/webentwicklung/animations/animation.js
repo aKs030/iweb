@@ -81,8 +81,7 @@ const checkReducedMotionAnimations = () => {
         const intensities = {
           0: 0.5,  // Hero - hohe Intensität
           1: 0.3,  // Features - mittlere Intensität
-          2: 0.4,  // Skills - mittlere Intensität
-          3: 0.2,  // Contact - niedrige Intensität
+          2: 0.2,  // nächste Sektion - niedriger
         };
         
         const intensity = intensities[sectionIndex] || 0.3;
@@ -92,8 +91,7 @@ const checkReducedMotionAnimations = () => {
         const colors = {
           0: 'rgba(9,139,255,0.8)',   // Hero - Blau
           1: 'rgba(255,107,107,0.6)',  // Features - Rot
-          2: 'rgba(81,207,102,0.6)',   // Skills - Grün
-          3: 'rgba(255,217,61,0.6)',   // Contact - Gelb
+          2: 'rgba(255,217,61,0.6)',   // (ehem. Contact) Gelb
         };
         
         const color = colors[sectionIndex] || 'rgba(9,139,255,0.8)';
