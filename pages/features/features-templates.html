@@ -123,19 +123,21 @@
      Responsive
   ======================= */
   @media (max-width:768px){
+    :root{ --card-pad:.75rem; --card-min-width:280px; }
     .features{ padding: 0; }
     .section-header{ margin-bottom:1.75rem; }
     .features-cards{ grid-template-columns:1fr; gap:.65rem; max-width:100%; }
-    .features .card{ padding:.65rem .75rem .75rem; }
+    .features .card{ padding:var(--card-pad); }
     .icon-wrapper{ width:36px; height:36px; }
     .card-title{ font-size:.9rem; }
     .card-text{ font-size:.8rem; line-height:1.45; }
   }
 
   @media (max-width:480px){
-    .features .card{ padding: 0; }
-    .icon-wrapper{ width:32px; height:32px; }
-    .card-title{ font-size:.8rem; }
+    :root{ --card-pad:.5rem; --card-min-width:260px; }
+    .features .card{ padding:var(--card-pad); }
+    .icon-wrapper{ width:28px; height:28px; }
+    .card-title{ font-size:.85rem; }
     .card-text{ font-size:.75rem; line-height:1.4; }
   }
 
