@@ -162,7 +162,6 @@
   --card-min-height: 220px;
 
   /* Layout-Offsets */
-  --header-height: 0px;               /* setze >0, wenn du einen fixed Header hast */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -183,10 +182,10 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:flex-start;
+  justify-content:center;
 
-  min-height:100svh; /* stabil auf iOS/Android */
-  padding-top: calc(var(--safe-top) + var(--header-height) + clamp(16px, 5svh, 80px));
+    min-height:100svh; /* stabil auf iOS/Android */
+  padding-top: calc(var(--safe-top) + clamp(16px, 5svh, 80px));
   padding-bottom: calc(var(--safe-bottom) + clamp(24px, 6svh, 72px));
   background:transparent;
 }
@@ -308,8 +307,8 @@ body{
    Responsive
 ======================= */
 @media (max-width:768px){
-  :root{ --card-pad:.75rem; --card-min-width:280px; }
-  .features{ padding-top: calc(var(--safe-top) + clamp(24px, 7svh, 72px)); }
+  :root{ --card-pad:.75rem; --card-min-width:280px; --safe-top: 0px; }
+  .features{ padding-top: var(--safe-top); }
   .section-header{ margin-bottom: clamp(12px, 3svh, 28px); }
   .features-cards{ grid-template-columns:1fr; gap:.65rem; max-width:100%; }
   .features .card{ padding:var(--card-pad); }
@@ -339,4 +338,7 @@ body{
   .features .card, .features .card::before, .icon-wrapper{ transition:none; }
   .features .card:hover{ transform:none; }
 }
+
+
+
 </style>
