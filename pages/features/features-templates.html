@@ -1,32 +1,143 @@
-<section class="features" id="section-features" aria-labelledby="features-heading">
-  <div class="features-content">
-    <header class="section-header">
-      <h2 id="features-heading" class="section-title">Sicherheit & Vertrauen</h2>
-      <p class="section-subtitle">Verlässliche und geschützte Anwendungen</p>
-    </header>
-
-    <div class="features-cards">
-      <article class="card">
-        <div class="icon-wrapper"><i>🔒</i></div>
-        <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Security</h3>
-        <p class="card-text">OWASP-Praktiken, Input-Härtung, CSP & sichere Auth-Flows.</p>
-      </article>
-
-      <article class="card">
-        <div class="icon-wrapper"><i>🌐</i></div>
-        <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Accessibility</h3>
-        <p class="card-text">Semantik, ARIA, Kontrast & Tastatur-Fokus.</p>
-      </article>
-
-      <article class="card">
-        <div class="icon-wrapper"><i>🧭</i></div>
-        <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Guidelines</h3>
-        <p class="card-text">Design-Systeme & konsistente Patterns.</p>
-      </article>
+<template id="template-features-1">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <div class="section-header text-animate" data-animation="fadeInDown">
+        <h2 class="section-title">Fokus & Qualität</h2>
+        <p class="section-subtitle">Solide Grundlagen für skalierbare Produkte</p>
+      </div>
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+  <article class="card" data-animation="fadeInUp" data-delay="100">
+          <div class="icon-wrapper"><i>🧱</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Architektur</h3>
+          <p class="card-text">Saubere Layer, modulare Komponenten & klare Verantwortlichkeiten für langfristige Wartbarkeit.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="200">
+          <div class="icon-wrapper"><i>🧪</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Testing</h3>
+          <p class="card-text">Strategische Testpyramide: Unit, Integration & UI Tests sichern Stabilität bei hoher Release-Frequenz.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="300">
+          <div class="icon-wrapper"><i>⚙️</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Tooling</h3>
+          <p class="card-text">Automatisierte Pipelines, Linting & Bundling für schnelle Feedback-Loops und verlässliche Builds.</p>
+        </article>
+      </div>
     </div>
   </div>
-</section>
+</template>
 
+<template id="template-features-4">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <div class="section-header text-animate" data-animation="fadeInDown">
+        <h2 class="section-title">Team & Kollaboration</h2>
+        <p class="section-subtitle">Effektive Zusammenarbeit ermöglichen</p>
+      </div>
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+  <article class="card" data-animation="fadeInUp" data-delay="100">
+          <div class="icon-wrapper"><i>🧩</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Design Handoff</h3>
+          <p class="card-text">Saubere Komponenten-Libraries & Token-Sync zwischen Design- und Dev-Tools.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="200">
+          <div class="icon-wrapper"><i>🤝</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Pairing & Reviews</h3>
+          <p class="card-text">Strukturierte Code Reviews & Wissensaustausch steigern Teamqualität nachhaltig.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="300">
+          <div class="icon-wrapper"><i>📊</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Transparenz</h3>
+          <p class="card-text">Metriken, Dashboards & klare Definition of Done für planbare Releases.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="template-features-5">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <div class="section-header text-animate" data-animation="fadeInDown">
+        <h2 class="section-title">Skalierung & Betrieb</h2>
+        <p class="section-subtitle">Wachstum ohne Reibungsverluste</p>
+      </div>
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+  <article class="card" data-animation="fadeInUp" data-delay="100">
+          <div class="icon-wrapper"><i>📦</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Modularisierung</h3>
+          <p class="card-text">Microfrontends / isolierte Bundles für unabhängige Deployment-Streams.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="200">
+          <div class="icon-wrapper"><i>🚀</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Deployment Flow</h3>
+          <p class="card-text">Automatisierte Pipelines, Canary Releases & Feature Flags für risikoarme Rollouts.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="300">
+          <div class="icon-wrapper"><i>🔄</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Observability</h3>
+          <p class="card-text">Tracing, strukturierte Logs & Alerting für rasche Incident-Analyse.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="template-features-2">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <div class="section-header text-animate" data-animation="fadeInDown">
+        <h2 class="section-title">Performance & UX</h2>
+        <p class="section-subtitle">Geschwindigkeit spürbar machen</p>
+      </div>
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+  <article class="card" data-animation="fadeInLeft" data-delay="100">
+          <div class="icon-wrapper"><i>⚡</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Ladezeiten</h3>
+          <p class="card-text">Code-Splitting, HTTP/2, Preloading & Caching für blitzschnelle wahrgenommene Performance.</p>
+        </article>
+  <article class="card" data-animation="zoomIn" data-delay="200">
+          <div class="icon-wrapper"><i>📱</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Responsiv</h3>
+          <p class="card-text">Adaptive Layouts, fluid Typography & Device-optimierte Interaktionen für konsistente Erlebnisse.</p>
+        </article>
+  <article class="card" data-animation="fadeInRight" data-delay="300">
+          <div class="icon-wrapper"><i>🛰️</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Monitoring</h3>
+          <p class="card-text">RUM + Metriken (LCP, INP, CLS) im Blick: kontinuierliche Optimierung statt Einmal-Tuning.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="template-features-3">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <div class="section-header text-animate" data-animation="fadeInDown">
+        <h2 class="section-title">Sicherheit & Vertrauen</h2>
+        <p class="section-subtitle">Verlässliche und geschützte Anwendungen</p>
+      </div>
+      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
+  <article class="card" data-animation="fadeInUp" data-delay="100">
+          <div class="icon-wrapper"><i>🔒</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Security</h3>
+          <p class="card-text">OWASP-Praktiken, Input-Härtung, CSP & sichere Auth-Flows als grundlegende Bausteine.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="200">
+          <div class="icon-wrapper"><i>🌐</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Accessibility</h3>
+          <p class="card-text">Semantik, ARIA, Kontrast & Tastatur-Fokus: Inklusives Design für alle Nutzergruppen.</p>
+        </article>
+  <article class="card" data-animation="fadeInUp" data-delay="300">
+          <div class="icon-wrapper"><i>🧭</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Guidelines</h3>
+          <p class="card-text">Design-Systeme & konsistente Patterns für bessere Skalierung und geringere kognitive Last.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</template>
+      
 <style>
 /* =======================
    Root & Base
