@@ -29,6 +29,21 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
   const clearTimers = () => timerManager.clearAll();
   const doubleRAF = (cb) => requestAnimationFrame(() => requestAnimationFrame(cb));
 
+  const staggerCards = (section) => {
+    const cards = section.querySelectorAll('.features-cards .card');
+    if (!cards.length) return;
+    cards.forEach(card => {
+      card.classList.remove('is-visible', 'is-animating');
+      card.style.transitionDelay = '';
+    });
+    doubleRAF(() => {
+      cards.forEach(card => {
+        const delay = Number(card.dataset.delay || 0);
+        later(() => card.classList.add('is-visible'), delay);
+      });
+    });
+  };
+
   async function ensureTemplates(section) {
     if (loaded) return;
     const srcOverride = section?.dataset.featuresSrc;
@@ -104,6 +119,7 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
       doubleRAF(() => {
         section.style.opacity = "1";
         section.style.transform = "translateY(0)";
+        staggerCards(section);
       });
       later(done, ANIM_IN);
     };
