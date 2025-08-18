@@ -19,6 +19,10 @@
     --pad-x: clamp(1rem,4vw,2rem);
     --gap: clamp(1rem,3vw,1.5rem);
     --card-pad: clamp(1rem,3.5vw,2rem);
+
+    /* Größenvorgaben für Karten */
+    --card-min-width: 320px;
+    --card-min-height: 220px;
   }
 
   body{
@@ -55,7 +59,7 @@
 
   .features-cards{
     display:grid; width:100%; max-width:1000px;
-    grid-template-columns:repeat(auto-fit, minmax(min(100%,280px),1fr));
+    grid-template-columns:repeat(auto-fit, minmax(min(100%,var(--card-min-width)),1fr));
     gap:var(--gap);
   }
 
@@ -140,7 +144,7 @@
   }
   @media (min-width:1025px){
     .features-cards{ grid-template-columns:repeat(3,1fr); gap:1.75rem; }
-    .features .card{ min-height:200px; } /* Nur Desktop: sorgt für harmonische Höhe */
+    .features .card{ min-height:var(--card-min-height); } /* Nur Desktop: sorgt für harmonische Höhe */
   }
 
   /* =======================
