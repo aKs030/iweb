@@ -67,24 +67,9 @@
 
 /* Reduced Motion Respekt */
 @media (prefers-reduced-motion: reduce) {
-  html, body {
-    scroll-behavior: auto !important;
-  }
-  
-  .snap-section {
-    transition: none !important;
-  }
-  
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Für Benutzer mit reduzierter Bewegung */
-.reduce-motion .snap-section {
-  transition: none !important;
+  html, body { scroll-behavior: auto !important; }
+  .snap-section, .reduce-motion .snap-section { transition: none !important; }
+  * { animation: none !important; transition: none !important; }
 }
 
 html, body {
@@ -115,13 +100,11 @@ body {
   /* aus vorherigem Block zusammengeführt */
   scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
   scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
-  scroll-behavior: smooth;
-  scroll-behavior: auto !important;
-  scroll-snap-align: start; scroll-snap-stop: always;
+  scroll-snap-align: start; 
+  scroll-snap-stop: always;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+*, *::before, *::after { box-sizing: border-box; }
 /* ========================================
    3) Layout (Container, Section, Headings) + Global Particle Background
 ======================================== */
@@ -304,6 +287,9 @@ a:hover { color: var(--primary-light); }
   justify-content: center;
   align-items: center;
   background: transparent;
+
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .social-links { display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg); }
@@ -369,10 +355,13 @@ a:hover { color: var(--primary-light); }
 [data-aos].aos-animate  { opacity: 1; transform: translate(0) scale(1); }
 
 /* Accessibility: reduce motion */
+
 @media (prefers-reduced-motion: reduce) {
+  html, body { scroll-behavior: auto !important; }
+  .snap-section, .reduce-motion .snap-section { transition: none !important; }
   * { animation: none !important; transition: none !important; }
-  html, body { scroll-behavior: auto; } /* avoid smooth scroll for reduced motion preference */
 }
+
 /* ========================================
    8) Responsive
 ======================================== */
