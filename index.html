@@ -22,22 +22,6 @@
   <link rel="stylesheet" href="/content/webentwicklung/index.css">
   <link rel="stylesheet" href="/content/webentwicklung/particles/particles.css">
   <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
-  <style>
-  .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;border:0!important;clip:rect(0 0 0 0)!important;overflow:hidden!important;white-space:nowrap!important}
-  .hero-skeleton{--skeleton-fade:.4s;min-height:60dvh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d1117,#141b24);position:relative;overflow:hidden}
-  .hero-skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 35%,rgba(255,255,255,.06) 50%,transparent 65% 100%);animation:heroSkeletonShine 1.3s linear infinite}
-  @keyframes heroSkeletonShine{to{transform:translateX(100%)}}
-  .hero-skeleton.fade-out{opacity:0;transition:opacity var(--skeleton-fade) ease}
-    /* Basis Hero-Subtitle Styles global (vollständige Details in hero.html) */
-    .hero-subtitle{position:absolute;left:clamp(12px,2vw,20px);bottom:calc(clamp(12px,2vw,20px) + env(safe-area-inset-bottom));z-index:10;margin:0;display:flex;flex-direction:column;align-items:flex-start;text-align:left;font-size:clamp(0.9rem,1.8vw,1.1rem);line-height:1.22;opacity:0;pointer-events:none;max-width:clamp(480px,48vw,720px);height:var(--box-h);gap:var(--gap-px);transform:translateY(6px);transition:opacity .45s ease,transform .45s ease}
-    .hero-subtitle--fixed{position:fixed;opacity:.82;transform:translateY(0)}
-    .hero-subtitle .typed-author{color:var(--text-muted,#666);font-weight:400;font-size:clamp(.85rem,1.6vw,.98rem);opacity:.78}
-    .hero-subtitle .typed-text{font-weight:300;font-size:.82em;line-height:1.18;color:var(--text-secondary,#b0b0b0);opacity:.8}
-    .hero-subtitle .typed-text::after{content:'';display:inline-block;width:0;height:.90em;margin-left:.06ch;border-left:2px solid var(--text-primary,#fff);animation:caret-blink .9s steps(1,end) infinite;vertical-align:-.1em}
-    @keyframes caret-blink{50%{opacity:0}}
-    body:not(.has-typingjs) .hero-subtitle .typed-text{display:inline-block;white-space:nowrap;overflow:hidden;border-right:2px solid var(--text-primary,#fff);width:0;--typing-target:28ch;--typing-steps:28;animation:typing 3s steps(var(--typing-steps)) forwards,blink-caret .75s step-end infinite}
-    @keyframes typing{to{width:var(--typing-target)}}@keyframes blink-caret{50%{border-right-color:transparent}}
-  </style>
   <title>Abdulkerim - Digital Portfolio</title>
 </head>
 <body>
