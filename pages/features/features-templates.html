@@ -233,11 +233,18 @@ body{
   justify-content:center;
 
   padding:var(--card-pad);
-  background:rgba(255,255,255,.06);
+  background-color:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.1);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-md);
   transition:transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
+}
+
+@supports ((-webkit-backdrop-filter:none) or (backdrop-filter:none)){
+  .features .card{
+    -webkit-backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
+  }
 }
 
 .features .card::before{
