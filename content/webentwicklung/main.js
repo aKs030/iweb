@@ -1,7 +1,65 @@
 // ESM statischer Import zentraler Utilities
-import { debounce, throttle } from '../webentwicklung/utils/common-utils.js';
+import { throttle } from '../webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from './particles/particle-system.js';
 // --- Snap beim aktiven Scrollen temporär ausschalten
+// SectionLoader: Lädt Sections dynamisch nach
+(() => {
+  if (window.SectionLoader) return; // nichts tun, wenn bereits vorhanden
+
+  const SELECTOR = 'section[data-section-src]';
+  const SEEN = new WeakSet();
+
+  async function loadInto(section){
+    if (SEEN.has(section)) return;
+    SEEN.add(section);
+    const url = section.getAttribute('data-section-src');
+    if (!url){ section.removeAttribute('aria-busy'); return; }
+    section.setAttribute('aria-busy','true');
+    section.dataset.state = 'loading';
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(res.status + ' ' + res.statusText + ' @ ' + url);
+      const html = await res.text();
+      section.insertAdjacentHTML('beforeend', html);
+      const tpl = section.querySelector('template');
+      if (tpl) section.appendChild(tpl.content.cloneNode(true));
+      section.querySelectorAll('.section-skeleton').forEach(n => n.remove());
+      section.dataset.state = 'loaded';
+    } catch (err) {
+      console.error('SectionLoader(fallback):', err);
+      section.dataset.state = 'error';
+    } finally {
+      section.removeAttribute('aria-busy');
+    }
+  }
+
+  function init(){
+    const sections = Array.from(document.querySelectorAll(SELECTOR));
+    const lazy = [];
+    sections.forEach(section => {
+      if (section.hasAttribute('data-eager')) {
+        loadInto(section);
+      } else {
+        lazy.push(section);
+      }
+    });
+    if (lazy.length){
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const s = entry.target;
+            loadInto(s);
+            io.unobserve(s);
+          }
+        });
+      }, );
+      lazy.forEach(s => io.observe(s));
+    }
+  }
+
+  if (document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
 let snapTimer = null;
 const snapContainer = document.querySelector('.snap-container') || document.documentElement;
 
@@ -18,7 +76,7 @@ addEventListener('wheel', onActiveScroll, { passive: true });
 addEventListener('touchmove', onActiveScroll, { passive: true });
 addEventListener('keydown', (e) => {
   if (['PageDown','PageUp','Home','End','ArrowDown','ArrowUp','Space'].includes(e.key)) onActiveScroll();
-}, { passive: true });
+});
 const checkReducedMotion = () => {
   try {
     const saved = localStorage.getItem("pref-reduce-motion");
@@ -79,7 +137,7 @@ const checkReducedMotion = () => {
           break;
         }
       }
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.01 });
+    }, {});
     obs.observe(heroEl);
     // Safety Timeout (langsames Scrollen / nie sichtbar)
     setTimeout(triggerLoad, 6000);
@@ -101,19 +159,17 @@ const checkReducedMotion = () => {
     else el.textContent = next;
   }
 
-  // ===== BackToTop & AOS =====
-  function handleScrollEvents(){
-    const btn = getElement("backToTop"); if(!btn) return;
-    (scrollY>300) ? btn.classList.add("show") : btn.classList.remove("show");
-  }
-
-
   // ===== Menü-Assets on demand =====
   function loadMenuAssets(){
-    if (!getElement("menu-container")) return;
-    if (!document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
-      const s=document.createElement("script"); s.src="/content/webentwicklung/menu/menu.js"; s.defer=true; document.body.appendChild(s);
-    }
+    const c = getElement("menu-container");
+    if (!c) return;
+    if (c.dataset.assetsLoaded === "1") return;
+    if (document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) { c.dataset.assetsLoaded = "1"; return; }
+    const s = document.createElement("script");
+    s.src = "/content/webentwicklung/menu/menu.js";
+    s.defer = true;
+    s.onload = () => { c.dataset.assetsLoaded = "1"; };
+    document.body.appendChild(s);
   }
 
   // ===== Loader robust =====
@@ -152,13 +208,10 @@ const checkReducedMotion = () => {
     initLazyHeroModules();
 
     // Particles
-  const stopParticles = initParticles();
-  window.__stopParticles = stopParticles;
-  window.initParticles = initParticles; // für hero.js Aufruf (Kompatibilität)
+    const stopParticles = initParticles();
+    window.__stopParticles = stopParticles;
+    window.initParticles = initParticles; // für hero.js Aufruf (Kompatibilität)
 
-    // Scroll/AOS/BackToTop
-    addEventListener("scroll", debounce(handleScrollEvents, 75), { passive:true });
-    handleScrollEvents();
     
     
     setTimeout(()=> {
@@ -177,5 +230,3 @@ const checkReducedMotion = () => {
   });
 
 })();
-
-
