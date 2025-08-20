@@ -1,3 +1,14 @@
+/* Native Scroll-Snap Container für zuverlässiges Section-Snapping */
+.snap-container {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+}
+.section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100vh;
+}
 /* ========================================
    1) Root-Variablen & Theme-Overrides
 ======================================== */
@@ -56,8 +67,6 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* Scroll-Snap-spezifische Variablen */
-  --scrollY: 0;
   
 }
 
@@ -101,7 +110,7 @@ body {
   scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
   scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
   scroll-snap-align: start; 
-    /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
+  scroll-snap-stop: always;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -117,15 +126,7 @@ body {
   padding-inline: clamp(1rem, 4vw, 1.5rem);
 }
 
-.section {
-  min-height: 100vh;
-  padding: var(--spacing-2xl) 0;
-  scroll-snap-align: start;
-    /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
-  display: flex;
-  align-items: center;
-  position: relative;
-}
+/* ...entfernt, da am Ende der Datei die Scroll-Snap-Variante steht... */
 
 /* Erweiterte Scroll-Snap-Unterstützung */
 .snap-section {

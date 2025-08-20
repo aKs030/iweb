@@ -16,34 +16,9 @@ const checkReducedMotionAnimations = () => {
   const ATTR = { anim:"data-animation", delay:"data-delay", dur:"data-duration", ease:"data-easing", once:"data-once" };
   const CLS  = { base:"animate-element", vis:"is-visible", run:"is-animating" };
   const REDUCED = checkReducedMotionAnimations();
-
-  let lastY = window.scrollY, dir = "down", rafScheduled = false;
-  let lockScrollHandler = null;
-
   const elements = new Set();
-  const seenOnce = new WeakSet();    // für data-once
+  const seenOnce = new WeakSet();
   const observed = new WeakSet();
-
-  // ===== Enhanced Scroll Snap Integration =====
-  const SNAP_CONFIG = {
-    SCROLL_LOCK_MS: 1200,
-    WHEEL_THRESHOLD: 0.5,
-    TOUCH_THRESHOLD: 1, // Maximal niedrig: jede Bewegung zählt
-    INTERSECTION_THRESHOLD: 0.6,
-    ROOT_MARGIN: '-10% 0px -10% 0px',
-    DEBOUNCE_MS: 150             // Debounce zwischen Section-Wechseln
-  };
-
-  let snapSections = [];
-  let currentSnapIndex = 0;
-  let snapLocked = false;
-  let snapObserver = null;
-  let touchStartY = 0;
-  let touchArmed = false;
-  let lastScrollTime = 0;
-  let touchTimeout = null;
-  let touchMoveCount = 0;
-  let resetTouchState = null;
 
   // ---- helpers ------------------------------------------------------------
   const numAttr = (el, name, fb) => {
@@ -56,85 +31,8 @@ const checkReducedMotionAnimations = () => {
 
   // ===== Enhanced Scroll Snap Functions =====
   const initScrollSnap = () => {
-    snapSections = Array.from(document.querySelectorAll('.section'));
-    if (snapSections.length === 0) return;
-
-    // Sections als snap-section markieren
-    snapSections.forEach((section, index) => {
-      section.classList.add('snap-section');
-      section.dataset.snapIndex = index;
-    });
-
-    // Parallax System
-    const updateScrollPos = () => {
-      document.documentElement.style.setProperty('--scrollY', String(window.scrollY));
-    };
-    updateScrollPos();
-    window.addEventListener('scroll', updateScrollPos, { passive: true });
-
-    // Particle Background Management
-    
-    // Snap Observer
-    snapObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const section = entry.target;
-        const index = parseInt(section.dataset.snapIndex);
-
-        if (entry.isIntersecting) {
-          section.classList.add('in-view');
-          if (entry.intersectionRatio > SNAP_CONFIG.INTERSECTION_THRESHOLD) {
-            currentSnapIndex = index;
-            window.dispatchEvent(new CustomEvent('snapSectionChange', {
-              detail: { index, section }
-            }));
-          }
-        }
-      });
-    }, {
-      threshold: [0, SNAP_CONFIG.INTERSECTION_THRESHOLD, 1],
-      rootMargin: SNAP_CONFIG.ROOT_MARGIN
-    });
-
-    snapSections.forEach(section => snapObserver.observe(section));
-
-    // Event Handlers
-    if (!REDUCED) {
-  window.addEventListener('wheel', handleWheel, { passive: true });
-      window.addEventListener('touchstart', handleTouchStart, { passive: true });
-  window.addEventListener('touchmove', handleTouchMove, { passive: true });
-      window.addEventListener('touchend', handleTouchEnd, { passive: true });
-      window.addEventListener('touchcancel', handleTouchEnd, { passive: true }); // Für abgebrochene Touches
-    }
-    window.addEventListener('keydown', handleKeydown);
-    
-    // Zusätzliche Touch-Reset-Handler für robustere Touch-Behandlung
-    resetTouchState = () => {
-      touchArmed = false;
-      touchMoveCount = 0;
-      if (touchTimeout) {
-        clearTimeout(touchTimeout);
-        touchTimeout = null;
-      }
-    };
-    
-    // Erweiterte Reset-Funktion für bessere Kompatibilität
-    const forceResetTouch = () => {
-      resetTouchState();
-      // Doppelte Sicherheit mit kurzer Verzögerung
-      setTimeout(resetTouchState, 100);
-    };
-    
-    // Touch bei verschiedenen Events zurücksetzen
-    document.addEventListener('visibilitychange', forceResetTouch);
-    window.addEventListener('blur', forceResetTouch);
-    window.addEventListener('focus', forceResetTouch);
-    window.addEventListener('resize', forceResetTouch); // Auch bei Größenänderungen
-    
-    // Touch nach Scroll-Lock-Ende zurücksetzen
-    window.addEventListener('snapSectionChange', () => {
-      setTimeout(resetTouchState, SNAP_CONFIG.SCROLL_LOCK_MS + 100);
-    });
-  };
+  // Nur noch CSS-Snap verwenden, keine JS-Handler mehr
+  // Snap-Logik und Event-Handler entfernt
 
   const scrollToSection = (targetIndex) => {
     let clampedIndex = clamp(targetIndex, 0, snapSections.length - 1);
@@ -196,18 +94,21 @@ const checkReducedMotionAnimations = () => {
 
   const handleWheel = (event) => {
     if (REDUCED || snapLocked) {
+      event.preventDefault();
       return;
     }
+    // Lock sofort setzen, um weitere Events zu blockieren
+    snapLocked = true;
     window.__lastInputType = 'wheel';
 
     // Aggressive Scroll-Erkennung - reagiert auf jede Bewegung
-  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
-    
-    // Anti-Bounce: Mindestens 150ms zwischen Scroll-Events (erhöht für bessere Kontrolle)
+    event.preventDefault(); // natives Scrollen komplett unterdrücken
+
+    // Anti-Bounce: Mindestens 400ms zwischen Scroll-Events (erhöht für Touchpad)
     const now = Date.now();
-    if (now - lastScrollTime < SNAP_CONFIG.DEBOUNCE_MS) return;
+    if (now - lastScrollTime < 400) return;
     lastScrollTime = now;
-    
+
     // Minimaler Threshold - auch winzigste Bewegungen werden erkannt
     const delta = event.deltaY;
     if (Math.abs(delta) > 0.5) { // Extrem niedrige Schwelle
@@ -217,7 +118,14 @@ const checkReducedMotionAnimations = () => {
       } else {
         scrollToSection(currentSnapIndex - 1);
       }
+      // Lock für mindestens 800ms halten
+      setTimeout(() => { snapLocked = false; }, 800);
+    } else {
+      // Falls kein Sprung, Lock sofort wieder freigeben
+      snapLocked = false;
     }
+  // Smooth-Scroll im Body per JS entfernen, damit nur JS-Scroll greift
+  document.body.style.scrollBehavior = 'auto';
   };
 
   const handleTouchStart = (event) => {
@@ -510,33 +418,13 @@ const checkReducedMotionAnimations = () => {
     touchArmed = false;
     touchMoveCount = 0;
     
-    snapSections.forEach(section => {
-      section.classList.remove('snap-section', 'in-view');
-      delete section.dataset.snapIndex;
-    });
-    snapSections = [];
-  }
-
-  (document.readyState === "loading")
-    ? document.addEventListener("DOMContentLoaded", init, { once:true })
-    : init();
-
-  // Erweiterte API mit Scroll Snap Funktionalität
+  // Nur noch Animation-API für CSS-Animationen
   window.AnimationSystem = { 
     scan, 
     animate: animateIn, 
     reset, 
-    destroy,
-    // Enhanced Scroll Snap API
-    scrollSnap: {
-      goToSection: scrollToSection,
-      getCurrentIndex: () => currentSnapIndex,
-      getSectionCount: () => snapSections.length,
-      isLocked: () => snapLocked,
-      getSections: () => snapSections
-    }
+    destroy
   };
-
   // Rückwärtskompatibilität
-  window.EnhancedScrollSnap = window.AnimationSystem.scrollSnap;
+  window.EnhancedScrollSnap = undefined;
 })();
