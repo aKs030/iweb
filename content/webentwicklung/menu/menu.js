@@ -78,7 +78,7 @@ function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
     logoContainer.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
+      // e.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       window.location.href = '/index.html';
     });
   } else {
@@ -93,7 +93,7 @@ function initializeSubmenuLinks() {
   const submenuLinks = document.querySelectorAll('.has-submenu > a');
   submenuLinks.forEach(link => {
     link.addEventListener('click', (event) => {
-      event.preventDefault();
+      // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       const submenu = link.nextElementSibling;
       document.querySelectorAll('.submenu').forEach(sm => {
         if (sm !== submenu) sm.style.display = 'none';

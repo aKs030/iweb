@@ -45,7 +45,7 @@
 
   /* Schatten */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* scroll-behavior: smooth; entfernt, um Ruckeln zu vermeiden */
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.3);
 
@@ -101,7 +101,7 @@ body {
   scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
   scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
   scroll-snap-align: start; 
-  scroll-snap-stop: always;
+    /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -121,7 +121,7 @@ body {
   min-height: 100vh;
   padding: var(--spacing-2xl) 0;
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+    /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
   display: flex;
   align-items: center;
   position: relative;
@@ -130,7 +130,7 @@ body {
 /* Erweiterte Scroll-Snap-Unterstützung */
 .snap-section {
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+    /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
   opacity: 0.8;
   transition: opacity 0.6s ease, transform 0.6s ease;
 }

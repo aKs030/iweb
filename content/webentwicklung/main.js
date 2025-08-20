@@ -1,6 +1,24 @@
 // ESM statischer Import zentraler Utilities
 import { debounce, throttle } from '../webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from './particles/particle-system.js';
+// --- Snap beim aktiven Scrollen temporär ausschalten
+let snapTimer = null;
+const snapContainer = document.querySelector('.snap-container') || document.documentElement;
+
+const disableSnap = () => snapContainer.classList.add('no-snap');
+const enableSnap  = () => snapContainer.classList.remove('no-snap');
+
+const onActiveScroll = () => {
+  disableSnap();
+  clearTimeout(snapTimer);
+  snapTimer = setTimeout(enableSnap, 180); // 120–220ms ist sweet spot
+};
+
+addEventListener('wheel', onActiveScroll, { passive: true });
+addEventListener('touchmove', onActiveScroll, { passive: true });
+addEventListener('keydown', (e) => {
+  if (['PageDown','PageUp','Home','End','ArrowDown','ArrowUp','Space'].includes(e.key)) onActiveScroll();
+}, { passive: true });
 const checkReducedMotion = () => {
   try {
     const saved = localStorage.getItem("pref-reduce-motion");
@@ -8,15 +26,6 @@ const checkReducedMotion = () => {
   } catch {
     return matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
-};
-const setReducedMotion = (enabled) => {
-  document.body.classList.toggle("reduce-motion", enabled);
-  try { localStorage.setItem("pref-reduce-motion", enabled ? "1" : "0"); } catch {}
-};
-const toggleReducedMotion = (force) => {
-  const v = force !== undefined ? !!force : !document.body.classList.contains("reduce-motion");
-  setReducedMotion(v);
-  return v;
 };
 
 (() => {
@@ -33,10 +42,6 @@ const toggleReducedMotion = (force) => {
     }
     return cachedElements[id];
   };
-  
-  // Cache kann bei Bedarf geleert werden (derzeit nicht benötigt)
-
-  // Hinweis: hero-runtime.js deprecated (nicht mehr vorhanden)
 
   async function loadTyped() {
     const mods = [
@@ -96,62 +101,12 @@ const toggleReducedMotion = (force) => {
     else el.textContent = next;
   }
 
-  // ===== Project Filter =====
-  function initProjectFilter(){
-    const buttons=[...document.querySelectorAll(".filter-btn")];
-    const cards=[...document.querySelectorAll(".project-card")];
-    if(!buttons.length||!cards.length) return;
-
-    function show(card){
-      card.style.display="block";
-      requestAnimationFrame(()=>{
-        card.style.opacity="1";
-        card.style.transform="scale(1)";
-      });
-    }
-    function hide(card){
-      card.style.opacity="0";
-      card.style.transform="scale(0.97)";
-      setTimeout(()=> card.style.display="none", 280);
-    }
-    function applyFilter(filter){
-      for (const btn of buttons){ btn.classList.toggle("active", btn.dataset.filter === filter); }
-      for (const card of cards){
-        if (filter === "all" || card.dataset.category === filter) show(card); else hide(card);
-      }
-    }
-    function handleClick(e){
-      const btn = e.currentTarget;
-      const filter = btn.dataset.filter || "all";
-      applyFilter(filter);
-    }
-    for (const btn of buttons){ btn.addEventListener("click", handleClick); }
-    const initial = (document.querySelector(".filter-btn.active") || buttons[0])?.dataset.filter || "all";
-    applyFilter(initial);
-  }
-
-  // ===== Smooth Scroll (achtet auf Reduced Motion) =====
-  function initSmoothScroll(){
-    const reduced = checkReducedMotion();
-    document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{
-      const href = a.getAttribute("href"); if (!href || href === "#") return;
-      const t = document.querySelector(href); if (!t) return;
-      e.preventDefault();
-      const top = t.getBoundingClientRect().top + pageYOffset - 80;
-      reduced ? scrollTo(0, top) : scrollTo({ top, behavior:"smooth" });
-    }));
-  }
-
   // ===== BackToTop & AOS =====
   function handleScrollEvents(){
     const btn = getElement("backToTop"); if(!btn) return;
     (scrollY>300) ? btn.classList.add("show") : btn.classList.remove("show");
   }
-  function initScrollAnimations(){
-    getElement("backToTop")?.addEventListener("click", ()=> scrollTo({ top:0, behavior: checkReducedMotion() ? "auto":"smooth" }));
-    const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add("aos-animate"); }), { threshold:0.1, rootMargin:"0px 0px -50px 0px" });
-    document.querySelectorAll("[data-aos]").forEach(el => obs.observe(el));
-  }
+
 
   // ===== Menü-Assets on demand =====
   function loadMenuAssets(){
@@ -201,22 +156,10 @@ const toggleReducedMotion = (force) => {
   window.__stopParticles = stopParticles;
   window.initParticles = initParticles; // für hero.js Aufruf (Kompatibilität)
 
-    // Project-Filter
-    initProjectFilter();
-
     // Scroll/AOS/BackToTop
-    initScrollAnimations();
     addEventListener("scroll", debounce(handleScrollEvents, 75), { passive:true });
     handleScrollEvents();
-
-    // Smooth Anchor Scroll
-    initSmoothScroll();
-
-  // Hero Enhancements: Integrationen vereinfacht (ohne hero-runtime.js)
-
-    // Reduced Motion Setup
-    setReducedMotion(checkReducedMotion());
-    window.toggleReducedMotion = toggleReducedMotion;
+    
     
     setTimeout(()=> {
       try {
@@ -229,30 +172,10 @@ const toggleReducedMotion = (force) => {
     // AOS Auto-Delay (nur wenn nicht gesetzt)
     document.querySelectorAll("[data-aos]").forEach((el,i)=> el.hasAttribute("data-aos-delay") || el.setAttribute("data-aos-delay", String(i*50)));
 
-    // Enhanced Scroll Snap Integration (über AnimationSystem)
-    window.addEventListener('snapSectionChange', (event) => {
-  const { index, section } = event.detail;
-  import('./utils/logger.js').then(m=> m.createLogger('main').debug('Aktuelle Section', index, section)).catch(()=>{});
-      
-      // Back-to-Top Button bei letzter Section anzeigen
-      const backToTop = getElement('backToTop');
-      if (backToTop) {
-        backToTop.style.display = index > 0 ? 'flex' : 'none';
-      }
-
-      // Optional: Section-spezifische Aktionen
-      section.classList.add('section-active');
-      // Vorherige aktive Section cleanup
-      document.querySelectorAll('.section.section-active').forEach(s => {
-        if (s !== section) s.classList.remove('section-active');
-      });
-    });
-
     // Menü nachladen
     loadMenuAssets();
   });
 
-  // ESM aktiv (CommonJS Export entfällt)
 })();
 
 

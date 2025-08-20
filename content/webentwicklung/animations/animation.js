@@ -98,9 +98,9 @@ const checkReducedMotionAnimations = () => {
 
     // Event Handlers
     if (!REDUCED) {
-      window.addEventListener('wheel', handleWheel, { passive: false });
+  window.addEventListener('wheel', handleWheel, { passive: true });
       window.addEventListener('touchstart', handleTouchStart, { passive: true });
-      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+  window.addEventListener('touchmove', handleTouchMove, { passive: true });
       window.addEventListener('touchend', handleTouchEnd, { passive: true });
       window.addEventListener('touchcancel', handleTouchEnd, { passive: true }); // Für abgebrochene Touches
     }
@@ -164,12 +164,12 @@ const checkReducedMotionAnimations = () => {
 
   const handleWheel = (event) => {
     if (REDUCED || snapLocked) {
-      if (snapLocked) event.preventDefault();
+  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       return;
     }
 
     // Aggressive Scroll-Erkennung - reagiert auf jede Bewegung
-    event.preventDefault();
+  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
     
     // Anti-Bounce: Mindestens 150ms zwischen Scroll-Events (erhöht für bessere Kontrolle)
     const now = Date.now();
@@ -236,7 +236,7 @@ const checkReducedMotionAnimations = () => {
     
     // Ultra-sensitive Touch-Erkennung - reagiert auf kleinste Bewegungen (3px)
     if (Math.abs(deltaY) > SNAP_CONFIG.TOUCH_THRESHOLD) {
-      event.preventDefault();
+  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       
       // Scroll-Aktion ausführen
       if (deltaY < 0) {
@@ -302,19 +302,19 @@ const checkReducedMotionAnimations = () => {
     
     // Sequenzielle Navigation mit Keyboard
     if (['ArrowDown', 'PageDown', ' '].includes(key)) {
-      event.preventDefault();
+  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       scrollToSection(currentSnapIndex + 1); // Nur eine Section weiter
     } else if (['ArrowUp', 'PageUp'].includes(key)) {
-      event.preventDefault();
+  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       scrollToSection(currentSnapIndex - 1); // Nur eine Section zurück
     } else if (key === 'Home') {
-      event.preventDefault();
+  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       // Home erlaubt direkten Sprung zur ersten Section
       if (currentSnapIndex !== 0) {
         scrollToSection(0);
       }
     } else if (key === 'End') {
-      event.preventDefault();
+  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       // End erlaubt direkten Sprung zur letzten Section
       const lastIndex = snapSections.length - 1;
       if (currentSnapIndex !== lastIndex) {
@@ -463,9 +463,9 @@ const checkReducedMotionAnimations = () => {
       snapObserver = null;
     }
     if (!REDUCED) {
-      window.removeEventListener('wheel', handleWheel, { passive: false });
+  window.removeEventListener('wheel', handleWheel, { passive: true });
       window.removeEventListener('touchstart', handleTouchStart, { passive: true });
-      window.removeEventListener('touchmove', handleTouchMove, { passive: false });
+  window.removeEventListener('touchmove', handleTouchMove, { passive: true });
       window.removeEventListener('touchend', handleTouchEnd, { passive: true });
       window.removeEventListener('touchcancel', handleTouchEnd, { passive: true });
     }
