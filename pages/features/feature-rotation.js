@@ -6,7 +6,13 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
   "use strict";
   if (window.FeatureRotation) return;
 
-  const SECTION_ID = "section-features";
+  // Die Features-Sektion wird über ihre ID im DOM referenziert.
+  // Bisher war hier fälschlicherweise "section-features" hinterlegt,
+  // doch im Markup heißt der Abschnitt lediglich "features". Dadurch
+  // wurde die Sektion nicht gefunden und es erfolgte kein Wechsel der
+  // Feature-Karten beim Scrollen. Die ID wurde angepasst, damit die
+  // Rotation korrekt ausgeführt wird.
+  const SECTION_ID = "features";
   const log = createLogger('features');
   const TEMPLATE_IDS = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
   const TEMPLATE_URL = "/pages/features/features-templates.html";
