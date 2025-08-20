@@ -18,6 +18,7 @@ const checkReducedMotionAnimations = () => {
   const REDUCED = checkReducedMotionAnimations();
 
   let lastY = window.scrollY, dir = "down", rafScheduled = false;
+  let lockScrollHandler = null;
 
   const elements = new Set();
   const seenOnce = new WeakSet();    // für data-once
@@ -25,9 +26,9 @@ const checkReducedMotionAnimations = () => {
 
   // ===== Enhanced Scroll Snap Integration =====
   const SNAP_CONFIG = {
-    SCROLL_LOCK_MS: 1200,        // Längere Lock-Zeit für saubere Übergänge
-    WHEEL_THRESHOLD: 0.5,        // Ultra-niedrig für sofortiges Snapping
-    TOUCH_THRESHOLD: 3,          // Ultra-niedrig für kleinste Touch-Bewegungen
+    SCROLL_LOCK_MS: 1200,
+    WHEEL_THRESHOLD: 0.5,
+    TOUCH_THRESHOLD: 1, // Maximal niedrig: jede Bewegung zählt
     INTERSECTION_THRESHOLD: 0.6,
     ROOT_MARGIN: '-10% 0px -10% 0px',
     DEBOUNCE_MS: 150             // Debounce zwischen Section-Wechseln
@@ -154,19 +155,50 @@ const checkReducedMotionAnimations = () => {
     snapLocked = true;
     currentSnapIndex = clampedIndex;
 
+    // Während des Locks: Scroll- und Touch-Events blockieren (auch auf document)
+    if (!lockScrollHandler) {
+      lockScrollHandler = (e) => {
+        if (snapLocked) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return false;
+        }
+      };
+      window.addEventListener('wheel', lockScrollHandler, { passive: false });
+      window.addEventListener('touchmove', lockScrollHandler, { passive: false });
+      window.addEventListener('keydown', lockScrollHandler, { passive: false });
+      document.addEventListener('wheel', lockScrollHandler, { passive: false });
+      document.addEventListener('touchmove', lockScrollHandler, { passive: false });
+      document.addEventListener('keydown', lockScrollHandler, { passive: false });
+    }
+
     const targetSection = snapSections[clampedIndex];
     const scrollBehavior = REDUCED ? 'auto' : 'smooth';
 
     targetSection.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
 
-    setTimeout(() => { snapLocked = false; }, SNAP_CONFIG.SCROLL_LOCK_MS);
+    // Lock-Zeit für Touch-Gesten verlängern (schnelle Swipes abfangen)
+    const lockMs = (window.__lastInputType === 'touch') ? 2000 : SNAP_CONFIG.SCROLL_LOCK_MS;
+    setTimeout(() => {
+      snapLocked = false;
+      // Scroll- und Touch-Blockierung wieder entfernen (auch auf document)
+      if (lockScrollHandler) {
+        window.removeEventListener('wheel', lockScrollHandler, { passive: false });
+        window.removeEventListener('touchmove', lockScrollHandler, { passive: false });
+        window.removeEventListener('keydown', lockScrollHandler, { passive: false });
+        document.removeEventListener('wheel', lockScrollHandler, { passive: false });
+        document.removeEventListener('touchmove', lockScrollHandler, { passive: false });
+        document.removeEventListener('keydown', lockScrollHandler, { passive: false });
+        lockScrollHandler = null;
+      }
+    }, lockMs);
   };
 
   const handleWheel = (event) => {
     if (REDUCED || snapLocked) {
-  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       return;
     }
+    window.__lastInputType = 'wheel';
 
     // Aggressive Scroll-Erkennung - reagiert auf jede Bewegung
   // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
@@ -217,45 +249,37 @@ const checkReducedMotionAnimations = () => {
   };
 
   const handleTouchMove = (event) => {
-    if (REDUCED || snapLocked || !touchArmed) return;
-    
-    const touch = event.changedTouches[0];
-    if (!touch) {
-      // Kein Touch gefunden - komplett zurücksetzen für nächste Geste
-      touchArmed = false;
-      touchMoveCount = 0;
-      if (touchTimeout) {
-        clearTimeout(touchTimeout);
-        touchTimeout = null;
-      }
-      return;
+  if (REDUCED || snapLocked || !touchArmed) return;
+  window.__lastInputType = 'touch';
+  const touch = event.changedTouches[0];
+  if (!touch) {
+    touchArmed = false;
+    touchMoveCount = 0;
+    if (touchTimeout) {
+      clearTimeout(touchTimeout);
+      touchTimeout = null;
     }
-
-    touchMoveCount++;
-    const deltaY = touch.clientY - touchStartY;
-    
-    // Ultra-sensitive Touch-Erkennung - reagiert auf kleinste Bewegungen (3px)
-    if (Math.abs(deltaY) > SNAP_CONFIG.TOUCH_THRESHOLD) {
-  // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
-      
-      // Scroll-Aktion ausführen
-      if (deltaY < 0) {
-        scrollToSection(currentSnapIndex + 1); // Nach unten wischen = nächste Section
-      } else {
-        scrollToSection(currentSnapIndex - 1); // Nach oben wischen = vorherige Section
-      }
-      
-      // Touch-State zurücksetzen NACH der Aktion
-      setTimeout(() => {
-        touchArmed = false;
-        touchMoveCount = 0;
-        if (touchTimeout) {
-          clearTimeout(touchTimeout);
-          touchTimeout = null;
-        }
-      }, 100);
+    return;
+  }
+  touchMoveCount++;
+  const deltaY = touch.clientY - touchStartY;
+  // Maximal-sensitive Touch-Erkennung (1px)
+  if (Math.abs(deltaY) > SNAP_CONFIG.TOUCH_THRESHOLD) {
+    snapLocked = true;
+    if (deltaY < 0) {
+      scrollToSection(currentSnapIndex + 1);
+    } else {
+      scrollToSection(currentSnapIndex - 1);
     }
-  };
+    // Touch-State sofort zurücksetzen
+    touchArmed = false;
+    touchMoveCount = 0;
+    if (touchTimeout) {
+      clearTimeout(touchTimeout);
+      touchTimeout = null;
+    }
+  }
+};
 
   const handleTouchEnd = (event) => { 
     // WICHTIG: Immer einen vollständigen Reset machen für nächste Touch-Geste
