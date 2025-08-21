@@ -9,7 +9,7 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
   const SECTION_ID = "section-features";
   const log = createLogger('features');
   const TEMPLATE_IDS = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
-  const TEMPLATE_URL = "/pages/features/karten.html";
+  const TEMPLATE_URL = "/pages/card/karten.html";
 
   // Default-Animationen (ms) können via data-attribute am Section-Element überschrieben werden
   const DEFAULT_ANIM_OUT = 200;

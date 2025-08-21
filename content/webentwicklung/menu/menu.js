@@ -129,7 +129,7 @@ function setSiteTitle() {
     '/pages/fotogalerie/urban.html': 'Urban Exploration',
     '/pages/spiele/space-defender.html': 'Space Defender',
     '/pages/index-game.html': 'Spiele-Übersicht',
-    '/pages/features/wetter.html': 'Wetter',
+    '/pages/card/wetter.html': 'Wetter',
   };
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Website';
