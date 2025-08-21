@@ -25,6 +25,9 @@ export function throttle(func, limit = 250) {
 
 // ===== Array Utilities =====
 export function shuffle(array) {
+  if (!Array.isArray(array)) {
+    throw new TypeError('Input must be an array');
+  }
   const arr = [...array]; // Kopie erstellen
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
