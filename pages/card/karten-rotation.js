@@ -6,7 +6,7 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
   "use strict";
   if (window.FeatureRotation) return;
 
-  const SECTION_ID = "section-features";
+  const SECTION_ID = "features";
   const log = createLogger('features');
   const TEMPLATE_IDS = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
   const TEMPLATE_URL = "/pages/card/karten.html";
