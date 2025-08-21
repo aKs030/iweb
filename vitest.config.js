@@ -5,10 +5,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './tests/setup.js',
     coverage: {
-      reporter: ['text', 'lcov'],
+      provider: 'c8',
+      reporter: ['text', 'lcov', 'html', 'json'],
       include: ['**/*.{js,ts}'],
       exclude: ['**/*.min.js', 'dist/**']
-    }
+    },
+  // keine Plugins nötig für UI ab Vitest v1
   }
 });
 
