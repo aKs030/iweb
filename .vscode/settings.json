@@ -2,5 +2,15 @@
     "sonarlint.connectedMode.project": {
         "connectionId": "aks030",
         "projectKey": "aKs030_iweb"
-    }
+    },
+    "liveServer.settings.wait": 500,
+    "liveServer.settings.port": 5500,
+    "liveServer.settings.ignoreFiles": [
+        ".vscode/**",
+        "**/*.md",
+        "**/node_modules/**"
+    ],
+    "liveServer.settings.useLocalIp": true,
+    "liveServer.settings.open": true,
+    "liveServer.settings.browser": "default"
 }
