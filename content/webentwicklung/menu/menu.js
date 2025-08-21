@@ -123,12 +123,10 @@ function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
     '/': 'Startseite',
-    '/pages/album.html': 'Album',
+    '/pages/fotogalerie/urban.html': 'Album',
     '/pages/ueber-mich/': 'Über mich',
     '/pages/webentwicklung/project-1.html': 'E‑Commerce Platform',
-    '/pages/fotogalerie/urban.html': 'Urban Exploration',
     '/pages/spiele/space-defender.html': 'Space Defender',
-    '/pages/index-game.html': 'Spiele-Übersicht',
     '/pages/card/wetter.html': 'Wetter',
   };
   const path = window.location.pathname;
