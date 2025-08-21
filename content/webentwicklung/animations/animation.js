@@ -53,6 +53,29 @@ const checkReducedMotionAnimations = () => {
     // Nur noch CSS-Snap verwenden, keine JS-Handler mehr
     // Snap-Logik und Event-Handler entfernt
 
+    // Alle Sections als Snap-Targets registrieren und Observer einrichten
+    snapSections = Array.from(document.querySelectorAll('section'));
+    snapSections.forEach((el, idx) => {
+      el.classList.add('snap-section');
+      if (idx === 0) el.classList.add('section-active');
+    });
+
+    snapObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const newIndex = snapSections.indexOf(entry.target);
+        if (newIndex === -1 || newIndex === currentSnapIndex) continue;
+        snapSections[currentSnapIndex]?.classList.remove('section-active');
+        currentSnapIndex = newIndex;
+        entry.target.classList.add('section-active');
+        window.dispatchEvent(new CustomEvent('snapSectionChange', {
+          detail: { index: currentSnapIndex, id: entry.target.id }
+        }));
+      }
+    }, { threshold: 0.6 });
+
+    snapSections.forEach(s => snapObserver.observe(s));
+
     const scrollToSection = (targetIndex) => {
       let clampedIndex = clamp(targetIndex, 0, snapSections.length - 1);
 
