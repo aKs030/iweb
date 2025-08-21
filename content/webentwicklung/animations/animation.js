@@ -427,10 +427,11 @@ const checkReducedMotionAnimations = () => {
       clearTimeout(touchTimeout);
       touchTimeout = null;
     }
-    touchArmed = false;
-    touchMoveCount = 0;
+      touchArmed = false;
+      touchMoveCount = 0;
+    }
 
-    // Nur noch Animation-API für CSS-Animationen
+    // API global verfügbar machen
     window.AnimationSystem = {
       scan,
       animate: animateIn,
@@ -439,8 +440,7 @@ const checkReducedMotionAnimations = () => {
     };
     // Rückwärtskompatibilität
     window.EnhancedScrollSnap = undefined;
-  }
 
-  // Initialisierung sofort ausführen
-  init();
+    // Initialisierung sofort ausführen
+    init();
 })();
