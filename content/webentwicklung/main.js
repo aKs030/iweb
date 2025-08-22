@@ -1,5 +1,5 @@
 // ESM statischer Import zentraler Utilities
-import { throttle } from '../webentwicklung/utils/common-utils.js';
+import { throttle, clamp } from '../webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from './particles/particle-system.js';
 // --- Snap beim aktiven Scrollen temporär ausschalten
 // SectionLoader: Lädt Sections dynamisch nach
@@ -147,7 +147,7 @@ const checkReducedMotion = () => {
   const initParticles = () => _initParticles({ getElement, throttle, checkReducedMotion });
 
   // ===== Greetings =====
-  const ensureHeroData = async () => heroData || (heroData = await import("../../pages/home/hero-data.js").catch(()=>({})));
+  const ensureHeroData = async () => heroData || (heroData = await import("../../pages/home/hero-data.js").catch(()=>({}))); 
   async function setRandomGreetingHTML(animated=false) {
     const el = getElement("greetingText"); if (!el) return;
     const mod = await ensureHeroData();
@@ -159,11 +159,25 @@ const checkReducedMotion = () => {
     else el.textContent = next;
   }
 
+  // Dynamische Schriftgröße für Begrüßung
+  export function updateGreetingFontSize() {
+    const el = getElement("greetingText");
+    if (!el) return;
+    const vw = window.innerWidth;
+    const size = clamp(vw * 0.05, 22, 40); // 5% der Viewport-Breite, begrenzt
+    el.style.setProperty("--greet-fs", `${size}px`);
+  }
+
+  const onResizeGreeting = throttle(updateGreetingFontSize, 150);
+  window.addEventListener('resize', onResizeGreeting);
+  window.addEventListener('orientationchange', onResizeGreeting);
+
   // Sicherstellen, dass der Gruß nach dem Laden des Hero-Markups gesetzt wird
   document.addEventListener('hero:loaded', () => {
     const el = getElement("greetingText");
-    if (!el || el.textContent) return;
-    setRandomGreetingHTML();
+    if (!el) return;
+    updateGreetingFontSize();
+    if (!el.textContent) setRandomGreetingHTML();
   });
 
   // ===== Menü-Assets on demand =====
