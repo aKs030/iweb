@@ -223,9 +223,31 @@ const checkReducedMotion = () => {
     
     setTimeout(()=> {
       try {
-        const hero=getElement("hero"); if(!hero||!window.AnimationSystem) return;
+        const hero = getElement("hero");
+        if (!hero || !window.AnimationSystem) return;
         window.AnimationSystem.scan?.();
-        hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add("is-visible"));
+
+        const group = hero.querySelector('[data-stagger-group]');
+        if (group) {
+          const step = parseInt(group.getAttribute('data-stagger-step'), 10) || 0;
+          const base = parseInt(group.getAttribute('data-stagger-base'), 10) || 0;
+          const buttons = group.querySelectorAll('[data-animation].animate-element:not(.is-visible)');
+          if (buttons.length) {
+            const observer = new IntersectionObserver((entries, obs) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  buttons.forEach((btn, i) => {
+                    setTimeout(() => btn.classList.add('is-visible'), base + i * step);
+                  });
+                  obs.disconnect();
+                }
+              });
+            }, { threshold: 0.5 });
+            observer.observe(group);
+          }
+        } else {
+          hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add('is-visible'));
+        }
       } catch {}
     }, 420);
 
