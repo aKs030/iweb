@@ -7,6 +7,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage"
+    ,"check:css": "bash ./scripts/check-root.sh"
+    ,"consolidate:css": "bash ./scripts/consolidate-tokens.sh"
   },
   "keywords": [],
   "author": "aKs030",
