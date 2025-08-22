@@ -119,7 +119,12 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
   function rotateDifferent() {
   if (!order.length) { log.warn('Keine Templates vorhanden'); return; }
     if (order.length === 1) { mount(order[i]); return; }
-    let n; do { n = (Math.random() * order.length) | 0; } while (n === i);
+    function getSecureRandomInt(max) {
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      return array[0] % max;
+    }
+    let n; do { n = getSecureRandomInt(order.length); } while (n === i);
     i = n; mount(order[i]);
   }
 
