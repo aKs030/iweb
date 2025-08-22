@@ -221,13 +221,34 @@ const checkReducedMotion = () => {
 
     
     
-    setTimeout(()=> {
-      try {
-        const hero=getElement("hero"); if(!hero||!window.AnimationSystem) return;
-        window.AnimationSystem.scan?.();
-        hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add("is-visible"));
-      } catch {}
-    }, 420);
+    // Hero Button Animation erst nach Scroll-Ende starten
+    try {
+      const hero = getElement("hero");
+      if (hero && window.AnimationSystem) {
+        const showHeroButtons = () => {
+          if (showHeroButtons.done) return;
+          showHeroButtons.done = true;
+          window.AnimationSystem.scan?.();
+          hero
+            .querySelectorAll(
+              '.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)'
+            )
+            ?.forEach((b) => b.classList.add("is-visible"));
+        };
+
+        let scrollTimer;
+        const onScrollEnd = () => {
+          clearTimeout(scrollTimer);
+          scrollTimer = setTimeout(() => {
+            window.removeEventListener("scroll", onScrollEnd);
+            showHeroButtons();
+          }, 150);
+        };
+
+        window.addEventListener("scroll", onScrollEnd, { passive: true });
+        onScrollEnd(); // Fallback falls kein Scroll erfolgt
+      }
+    } catch {}
 
     // AOS Auto-Delay (nur wenn nicht gesetzt)
     document.querySelectorAll("[data-aos]").forEach((el,i)=> el.hasAttribute("data-aos-delay") || el.setAttribute("data-aos-delay", String(i*50)));
