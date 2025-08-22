@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/content/webentwicklung/greeting-text-hero.css">
 <style>
 .hero{
   position: relative;
@@ -76,24 +77,8 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{ display:inline-block; white-
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
 .hero-image-container { position: relative; width: 60vw; max-width: 340px; aspect-ratio: 1/1; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
 .hero-image-container svg { position: relative; z-index: 1; display: block; margin: 0 auto; }
-body:not(.hero-active) .greeting-text-hero, body.reduce-motion .greeting-text-hero { animation-play-state: paused !important; }
 body:not(.hero-active) .floating-icon, body.reduce-motion .floating-icon { animation-play-state: paused !important; }
 .spotlight-bg { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%) rotate(-8deg); width: 120%; height: 60%; background: radial-gradient(ellipse at center, #fff5 0%, #098bff22 55%, transparent 100%); filter: blur(22px); z-index: 1; pointer-events: none; }
-.greeting-text-hero { --greet-fs: clamp(1.6rem, 3.6vw, 2.4rem); --greet-lh: 1.14; --greet-weight: 600; --greet-letter: -0.012em; --greet-max: clamp(16ch, 40vw, 24ch); --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%); --greet-anim-grad-dur: 16.5s; --greet-anim-pulse-dur: 13.2s; position: absolute; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; font-size: var(--greet-fs); line-height: var(--greet-lh); font-weight: var(--greet-weight); letter-spacing: var(--greet-letter); text-align: center; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; margin: 32px 0 0 0; padding: 0 10px; background: var(--greet-grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; opacity: 1; -webkit-user-select: none; user-select: none; white-space: normal; overflow-wrap: anywhere; word-break: normal; -webkit-hyphens: auto; hyphens: auto; max-width: var(--greet-max); min-height: 2.6em; font-variation-settings: "opsz" 18; font-optical-sizing: auto; animation: gradientMove var(--greet-anim-grad-dur) linear infinite, pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite; }
-.greeting-text-hero--alt { --greet-grad: linear-gradient(92deg,#fff,#d2efff 60%); --greet-anim-grad-dur: 9s; --greet-anim-pulse-dur: 4.4s; filter: drop-shadow(0 3px 18px rgba(0,180,255,.35)); }
-.greeting-text-hero[data-animation] { will-change: opacity, transform; }
-.greeting-text-hero[data-animation].animate-element { opacity: 0; animation-play-state: paused; }
-.greeting-text-hero[data-animation].animate-element.is-visible { opacity: 1; animation-play-state: running; }
-.greeting-text-hero[data-animation="greeting"].animate-element { --greet-scale-start: .9; --greet-scale-overshoot: 1.015; --greet-scale-final: 1.0; --greet-scale-dur: 1200ms; transform: scale(var(--greet-scale-start)); opacity: 0; transition: opacity .9s cubic-bezier(.4,0,.2,1); }
-.greeting-text-hero[data-animation="greeting"].animate-element.is-visible { opacity: 1; animation: greeting-scale-in var(--greet-scale-dur) cubic-bezier(.22,.8,.28,1) forwards; }
-@keyframes greeting-scale-in { 0% { transform: scale(var(--greet-scale-start)); } 60% { transform: scale(var(--greet-scale-overshoot)); } 100% { transform: scale(var(--greet-scale-final)); } }
-.greeting-text-hero[data-animation="greeting"].animate-element.is-visible:after { content:''; }
-@media (prefers-reduced-motion: reduce) { .greeting-text-hero { animation: none; } }
-@supports (text-wrap: balance) { .greeting-text-hero { text-wrap: balance; } }
-@keyframes gradientMove { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-@keyframes pulseGlow { 0%,100% { filter: drop-shadow(0 1px 12px #00d4ff88); } 50% { filter: drop-shadow(0 2px 22px #00e6ff99); } }
-.greeting-text-hero.fade { opacity: 0; transform: scale(0.98); }
-.greeting-text-hero:not(.fade) { opacity: 1; transform: scale(1); }
 /* Desktop (>=1025px) */
 @media (min-width: 1025px) {
 	.hero { position: relative; }
@@ -103,7 +88,6 @@ body:not(.hero-active) .floating-icon, body.reduce-motion .floating-icon { anima
 	.hero-subtitle .typed-text{ font-size: 0.80em; line-height: 1.16; letter-spacing: 0.001em; }
 	.hero-subtitle .typed-author{ font-size: clamp(0.82rem, 1.1vw, 0.94rem); }
 	.hero-subtitle .typed-text::after{ height: 0.86em; border-left-width: 2px; margin-left: 0.08ch; }
-	.greeting-text-hero{ --greet-fs: clamp(1.5rem, 2.6vw, 2.2rem); --greet-lh: 1.12; --greet-letter: -0.014em; --greet-max: clamp(18ch, 36vw, 24ch); }
 	.hero-buttons { position: static; display: flex; justify-content: center; gap: var(--spacing-md); margin-top: clamp(1.2rem, 4vh, 2rem); pointer-events: auto; }
 }
 /* Tablet & <=1024px */
@@ -124,7 +108,6 @@ body:not(.hero-active) .floating-icon, body.reduce-motion .floating-icon { anima
 	.hero-subtitle .typed-text{ font-size: 0.82em; line-height: 1.14; letter-spacing: 0.001em; text-shadow: none; opacity: 0.8; }
 	.hero-subtitle .typed-author{ font-size: clamp(0.80rem, 1.8vw, 0.92rem); }
 	.hero-subtitle .typed-text::after{ height: 0.82em; border-left-width: 2px; margin-left: 0.06ch; }
-	.greeting-text-hero{ --greet-fs: clamp(1.35rem, 5.2vw, 1.85rem); --greet-lh: 1.16; --greet-letter: -0.01em; --greet-max: clamp(18ch, 78vw, 26ch); --greet-anim-grad-dur: 7.5s; --greet-anim-pulse-dur: 3.6s; margin-top: 20px; }
 	.floating-icon, .hero-image-decoration { display: none; }
 }
 /* Print: Hero-spezifische Deaktivierungen */
