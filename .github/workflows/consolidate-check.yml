@@ -1,0 +1,35 @@
+name: Consolidate tokens check
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install deps
+        run: npm ci
+      - name: Run consolidate-tokens (report + patch)
+        run: |
+          set -e
+          bash ./scripts/consolidate-tokens.sh --patch || true
+          RC=$?
+          echo "script exit code: $RC"
+          ls -la consolidation* || true
+          exit $RC
+      - name: Upload consolidation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidation-artifacts
+          path: |
+            consolidation-report.txt
+            consolidation-changes.patch
