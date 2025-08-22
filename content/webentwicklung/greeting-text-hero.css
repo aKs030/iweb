@@ -4,7 +4,8 @@ body.reduce-motion .greeting-text-hero {
 }
 
 .greeting-text-hero {
-  --greet-fs: clamp(1.6rem, 3.6vw, 2.4rem);
+  /* Responsive font sizing for mid-sized viewports */
+  --greet-fs: clamp(1.6rem, 4vw, 2.6rem);
   --greet-lh: 1.14;
   --greet-weight: 600;
   --greet-letter: -0.012em;
@@ -123,17 +124,19 @@ body.reduce-motion .greeting-text-hero {
 
 @media (min-width: 1025px) {
   .greeting-text-hero{
-    --greet-fs: clamp(1.5rem, 2.6vw, 2.2rem);
-    --greet-lh: 1.12;
+    /* Larger, more relaxed typography on wide screens */
+    --greet-fs: clamp(1.8rem, 2.5vw, 2.8rem);
+    --greet-lh: 1.15;
     --greet-letter: -0.014em;
-    --greet-max: clamp(18ch, 36vw, 24ch);
+    --greet-max: clamp(18ch, 32vw, 30ch);
   }
 }
 
 @media (max-width: 768px){
   .greeting-text-hero{
-    --greet-fs: clamp(1.35rem, 5.2vw, 1.85rem);
-    --greet-lh: 1.16;
+    /* Tighter scaling on small screens for readability */
+    --greet-fs: clamp(1.4rem, 6vw, 2.2rem);
+    --greet-lh: 1.18;
     --greet-letter: -0.01em;
     --greet-max: clamp(18ch, 78vw, 26ch);
     --greet-anim-grad-dur: 7.5s;
