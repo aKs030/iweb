@@ -40,18 +40,17 @@
     <canvas class="particle-canvas" id="particleCanvas"></canvas>
     <div class="gradient-overlay"></div>
   </div>
-  
+
   <!-- Global Hero Subtitle (jetzt außerhalb des dynamisch geladenen Hero-Inhalts) -->
   <p class="hero-subtitle hero-subtitle--fixed" data-offset-mode="full">
     <span id="typedAuthor" class="typed-author"></span>
     <span id="typedText" class="typed-text"></span>
   </p>
-  
+
   <!-- Sections (dynamisch geladen via SectionLoader) -->
   <section
     id="hero"
     class="section hero"
-    role="region"
     aria-labelledby="hero-heading"
     data-section-src="/pages/home/hero.html"
     data-eager="true"
@@ -65,9 +64,8 @@
 <section
   id="features"
   class="section features"
-  role="region"
   aria-labelledby="features-heading"
-  data-features-src="/pages/card/karten.html"  <!-- optional override für FeatureRotation -->
+  data-features-src="/pages/card/karten.html"
   data-anim-in="500"
   data-anim-out="250"
   data-anim-ease="cubic-bezier(0.25,0.46,0.45,0.94)"
@@ -77,6 +75,7 @@
   data-particle-gradient="radial"
   data-particle-alpha-scale="1.15"
 >
+  <!-- optional override für FeatureRotation -->
   <div class="section-skeleton" aria-hidden="true"></div>
 </section>
 
@@ -84,7 +83,6 @@
   <section
     id="about"
     class="section about"
-    role="region"
     aria-labelledby="about-heading"
     data-section-src="/pages/about/about.html"
     data-particle-color="rgba(255,217,61,0.6)"
