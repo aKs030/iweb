@@ -159,6 +159,13 @@ const checkReducedMotion = () => {
     else el.textContent = next;
   }
 
+  // Sicherstellen, dass der Gruß nach dem Laden des Hero-Markups gesetzt wird
+  document.addEventListener('hero:loaded', () => {
+    const el = getElement("greetingText");
+    if (!el || el.textContent) return;
+    setRandomGreetingHTML();
+  });
+
   // ===== Menü-Assets on demand =====
   function loadMenuAssets(){
     const c = getElement("menu-container");
