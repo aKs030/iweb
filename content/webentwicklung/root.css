@@ -1,4 +1,6 @@
-/* Global CSS variables consolidated from project CSS files */
+/* =======================
+   Global CSS Variables
+======================= */
 :root {
   /* Layout */
   --header-height: 72px;
@@ -18,11 +20,10 @@
   --bg-card: #1a1a1a;
   --bg-hover: #222222;
 
-  /* Text */
+  /* Textfarben */
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --text-muted: #666666;
-
   --border-color: #2a2a2a;
 
   /* Spacing */
@@ -34,22 +35,27 @@
   --spacing-xl: 3rem;
   --spacing-2xl: 5rem;
 
-  /* Font */
+  /* Fonts */
   --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+
+  /* Typography tokens */
+  --font-family-main: var(--font-primary);
+  --font-size-p: 1rem;
+  --font-size-h2: 1.5rem;
 
   /* Animation */
   --transition-fast: 0.2s ease;
   --transition-base: 0.3s ease;
   --transition-slow: 0.5s ease;
 
-  /* Schatten */
+  /* Shadows */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 12px rgba(0,0,0,.15);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.3);
 
-  /* Eckenradius */
+  /* Radius */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 16px;
@@ -59,7 +65,7 @@
   /* Partikel */
   --particle-opacity: 0.4;
 
-  /* Greeting hero defaults (can be overridden locally) */
+  /* Greeting hero */
   --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
 
   /* Link & semantic colors */
@@ -69,17 +75,14 @@
   --color-bg: var(--bg-section);
   --color-bg-secondary: rgba(0,0,0,0.08);
 
-  /* Menu / typography tokens */
-  --font-family-main: var(--font-primary);
-  --font-size-p: 1rem;
-  --font-size-h2: 1.5rem;
-
-  /* Card / features tokens */
+  /* Cards / Features */
   --card-pad: clamp(1rem,3.5vw,2rem);
   --card-min-width: 320px;
   --card-min-height: 220px;
   --pad-x: clamp(1rem,4vw,2rem);
   --gap: clamp(1rem,3vw,1.5rem);
+
+  /* Transition token alias */
   --t: .3s ease;
 
   /* Safe-area */
@@ -87,99 +90,7 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Mobile Anpassungen */
 @media (max-width: 768px){
   :root { --header-height: 15px; }
-}
-/* Global CSS variables consolidated from project CSS files */
-:root {
-  /* Layout */
-  --header-height: 72px;
-
-  /* Farbpalette */
-  --primary-color: #098bff;
-  --primary-dark: #0066cc;
-  --primary-light: #00d4ff;
-  --secondary-color: #ff6b6b;
-  --success-color: #51cf66;
-  --warning-color: #ffd93d;
-  --error-color: #ff6b6b;
-
-  /* Background / Surfaces */
-  --bg-dark: #0a0a0a;
-  --bg-section: #111111;
-  --bg-card: #1a1a1a;
-  --bg-hover: #222222;
-
-  /* Text */
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-muted: #666666;
-
-  --border-color: #2a2a2a;
-
-  /* Spacing */
-  --spacing-xxs: 0.1rem;
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
-  --spacing-2xl: 5rem;
-
-  /* Font */
-  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
-
-  /* Animation */
-  --transition-fast: 0.2s ease;
-  --transition-base: 0.3s ease;
-  --transition-slow: 0.5s ease;
-
-  /* Schatten */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.3);
-
-  /* Eckenradius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
-
-  /* Partikel */
-  --particle-opacity: 0.4;
-
-  /* Greeting hero defaults (can be overridden locally) */
-  --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
-}
-
-@media (max-width: 768px){
-  :root { --header-height: 15px; }
-}
-
-/* Additional tokens discovered across components */
-:root {
-  /* Link & semantic colors */
-  --color-link: var(--primary-color);
-  --color-text-main: var(--text-primary);
-  --color-text-muted: var(--text-muted);
-  --color-bg: var(--bg-section);
-  --color-bg-secondary: rgba(0,0,0,0.08);
-
-  /* Menu / typography tokens */
-  --font-family-main: var(--font-primary);
-  --font-size-p: 1rem;
-  --font-size-h2: 1.5rem;
-
-  /* Card / features tokens */
-  --card-pad: clamp(1rem,3.5vw,2rem);
-  --card-min-width: 320px;
-  --card-min-height: 220px;
-  --pad-x: clamp(1rem,4vw,2rem);
-  --gap: clamp(1rem,3vw,1.5rem);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.15);
-  --t: .3s ease;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
