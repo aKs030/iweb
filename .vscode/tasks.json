@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Vitest Tests",
+			"type": "shell",
+			"command": "npx vitest run",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$vitest"
+			],
+			"group": "test"
+		}
+	]
+}

@@ -1,13 +1,7 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
-// Fallback-Implementierung für Kompatibilität
-const createShuffledIndices = (length) => {
-  const arr = [...Array(length).keys()];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
+// Verwende zentrale shuffle-Implementierung (nutzt sichere Zufallsquelle wenn verfügbar)
+import { shuffle } from '../../content/webentwicklung/utils/common-utils.js';
+const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
 
 export default class TypeWriter {
   constructor({
@@ -123,28 +117,38 @@ export default class TypeWriter {
     this.authorEl.textContent = author.trim() ? author : '';
 
     let delay = this._isDeleting ? this.deleteSpeed : this.typeSpeed;
-    if (!this._isDeleting && this._txt.length > 0) {
-      const ch = this._txt[this._txt.length - 1];
-      const punctPause = { ',': 120, '.': 300, '…': 400, '!': 250, '?': 250, ';': 180, ':': 180, '—': 220, '–': 180 };
-      if (punctPause[ch]) delay += punctPause[ch];
-    }
+    delay = this._applyPunctuationPause(delay);
 
     if (!this._isDeleting && this._txt === full) {
       delay = this.wait;
       this._isDeleting = true;
     } else if (this._isDeleting && this._txt === '') {
-      this._isDeleting = false;
-      if (this.containerEl) this.containerEl.classList.remove('is-locked'); // Lock weg
-
-      const next = this._nextQuote();
-      if (!next) { this.destroy(); return; }
-
-      if (this.onBeforeType) this.onBeforeType(next.text);
-      delay = 600;
+      delay = this._handleQuoteTransition();
+      if (delay === null) return;
     }
 
     this._clearTimer();
     this._schedule(delay);
+  }
+
+  _applyPunctuationPause(delay) {
+    if (!this._isDeleting && this._txt.length > 0) {
+      const ch = this._txt[this._txt.length - 1];
+      const punctPause = { ',': 120, '.': 300, '…': 400, '!': 250, '?': 250, ';': 180, ':': 180, '—': 220, '–': 180 };
+      if (punctPause[ch]) return delay + punctPause[ch];
+    }
+    return delay;
+  }
+
+  _handleQuoteTransition() {
+    this._isDeleting = false;
+    if (this.containerEl) this.containerEl.classList.remove('is-locked'); // Lock weg
+
+    const next = this._nextQuote();
+    if (!next) { this.destroy(); return null; }
+
+    if (this.onBeforeType) this.onBeforeType(next.text);
+    return 600;
   }
 }
 

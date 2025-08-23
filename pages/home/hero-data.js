@@ -34,14 +34,16 @@ export function getGreetingSet(date = new Date()) {
   return greetings.night;
 }
 
+import { randomInt } from '../../content/webentwicklung/utils/common-utils.js';
+
 export function pickGreeting(lastValue = null, set = getGreetingSet()){
   if(!Array.isArray(set) || set.length === 0) return '';
   if(set.length === 1) return set[0];
-  let candidate = set[Math.floor(Math.random()*set.length)];
+  let candidate = set[randomInt(0, set.length - 1)];
   if(lastValue && set.length > 1){
     let guard = 0;
     while(candidate === lastValue && guard < 10){
-      candidate = set[Math.floor(Math.random()*set.length)];
+      candidate = set[randomInt(0, set.length - 1)];
       guard++;
     }
   }

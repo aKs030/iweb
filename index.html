@@ -19,10 +19,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&amp;display=swap">
+  <link rel="stylesheet" href="/content/webentwicklung/root.css">
+  <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css">
     <link rel="stylesheet" href="/content/webentwicklung/index.css">
     <link rel="stylesheet" href="/content/webentwicklung/particles/particles.css">
     <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
-    <link rel="stylesheet" href="/pages/about/about.css">
+  <link rel="stylesheet" href="/pages/about/about.css">
+  <link rel="stylesheet" href="/pages/home/greeting-text-hero.css">
     <title>Abdulkerim - Digital Portfolio</title>
 </head>
 <body>
@@ -39,18 +42,18 @@
     <canvas class="particle-canvas" id="particleCanvas"></canvas>
     <div class="gradient-overlay"></div>
   </div>
-  
+
+
   <!-- Global Hero Subtitle (jetzt außerhalb des dynamisch geladenen Hero-Inhalts) -->
   <p class="hero-subtitle hero-subtitle--fixed" data-offset-mode="full">
     <span id="typedAuthor" class="typed-author"></span>
     <span id="typedText" class="typed-text"></span>
   </p>
-  
+
   <!-- Sections (dynamisch geladen via SectionLoader) -->
   <section
     id="hero"
     class="section hero"
-    role="region"
     aria-labelledby="hero-heading"
     data-section-src="/pages/home/hero.html"
     data-eager="true"
@@ -64,9 +67,8 @@
 <section
   id="features"
   class="section features"
-  role="region"
   aria-labelledby="features-heading"
-  data-features-src="/pages/card/karten.html"  <!-- optional override für FeatureRotation -->
+  data-features-src="/pages/card/karten.html"
   data-anim-in="500"
   data-anim-out="250"
   data-anim-ease="cubic-bezier(0.25,0.46,0.45,0.94)"
@@ -76,6 +78,7 @@
   data-particle-gradient="radial"
   data-particle-alpha-scale="1.15"
 >
+  <!-- optional override für FeatureRotation -->
   <div class="section-skeleton" aria-hidden="true"></div>
 </section>
 
@@ -83,7 +86,6 @@
   <section
     id="about"
     class="section about"
-    role="region"
     aria-labelledby="about-heading"
     data-section-src="/pages/about/about.html"
     data-particle-color="rgba(255,217,61,0.6)"
@@ -101,5 +103,10 @@
     <!-- Main Script -->
     <script src="/content/webentwicklung/main.js" type="module"></script>
     <script type="module" src="/content/webentwicklung/menu/menu.js"></script>
+  <!-- Dynamischer Footer-Container (lädt /content/webentwicklung/footer/footer.html) -->
+  <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
+  <script src="/content/webentwicklung/footer/load-footer.js" defer></script>
+
 </body>
 </html>
+

@@ -1,0 +1,32 @@
+/* Footer styles moved from root.css to keep footer-specific styles together */
+.site-footer {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+  color: var(--color-text-muted);
+  padding: clamp(0.75rem, 2vw, 1.25rem) var(--pad-x);
+  font-size: 0.9rem;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--footer-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+.site-footer__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+.site-footer__text { margin: 0; }
+
+/* Reserve space for fixed footer */
+body { padding-bottom: calc(var(--footer-height) + var(--safe-bottom)); }
+
+@media (max-width: 480px) {
+  .site-footer { font-size: 0.87rem; }
+}

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { shuffle } from '../../content/webentwicklung/utils/common-utils.js';
+import { describe, it, expect } from 'vitest';
+import * as utils from '../../content/webentwicklung/utils/common-utils.js';
+const { shuffle } = utils;
 
 describe('shuffle', () => {
   it('ändert nicht die Länge und enthält alle Elemente', () => {
@@ -9,10 +10,10 @@ describe('shuffle', () => {
     expect(out.sort()).toEqual(input.slice().sort());
   });
 
-  it('ruft Math.random mehrfach auf', () => {
-    const spy = vi.spyOn(Math, 'random').mockReturnValue(0.1);
-    shuffle([1,2,3,4,5]);
-    expect(spy).toHaveBeenCalled();
-    spy.mockRestore();
+  it('erzeugt unterschiedliche Permutationen (zufallsbasiert)', () => {
+    const input = [1,2,3,4,5];
+    const seen = new Set();
+    for (let i = 0; i < 8; i++) seen.add(shuffle(input).join(','));
+    expect(seen.size).toBeGreaterThan(1);
   });
 });

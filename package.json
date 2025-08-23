@@ -4,9 +4,13 @@
   "description": "Interaktive persönliche Homepage mit Feature-Rotation, Spielen und Webentwicklungs-Demos.",
   "main": "index.js",
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:cov": "vitest run --coverage"
+  "test": "vitest run",
+  "test:watch": "vitest",
+  "test:cov": "vitest run --coverage",
+  "lint:html": "npx html-validate $(git ls-files '*.html')",
+  "lint:html:ci": "npx html-validate $(git ls-files '*.html') --reporter=stylish --max-warnings=0",
+  "check:css": "bash ./scripts/check-root.sh",
+  "consolidate:css": "bash ./scripts/consolidate-tokens.sh"
   },
   "keywords": [],
   "author": "aKs030",
