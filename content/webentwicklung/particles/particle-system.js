@@ -1,4 +1,21 @@
+// Helper: load star options from a DOM root (keeps parsing logic out of initParticles)
+function loadStarOptions(bgRoot, defaultOpts){
+  let opts = { ...defaultOpts };
+  let showStars = true;
+  if (!bgRoot) return { opts, showStars };
+  const sa = bgRoot.getAttribute('data-stars-count'); if (sa) opts.count = Math.max(0, parseInt(sa,10) || opts.count);
+  const sp = bgRoot.getAttribute('data-stars-spread'); if (sp) opts.spread = parseFloat(sp) || opts.spread;
+  const sh = bgRoot.getAttribute('data-stars-shape'); if (sh) opts.shape = sh;
+  const sd = bgRoot.getAttribute('data-stars-seed'); if (sd) opts.seed = parseInt(sd,10) || opts.seed;
+  const ss = bgRoot.getAttribute('data-stars-size'); if (ss) opts.size = parseFloat(ss) || opts.size;
+  const so = bgRoot.getAttribute('data-stars-opacity'); if (so) opts.opacity = parseFloat(so) || opts.opacity;
+  if (bgRoot.getAttribute('data-stars') === 'off') showStars = false;
+  return { opts, showStars };
+}
+
 // Export: initParticles({ getElement, throttle, checkReducedMotion }) -> cleanup()
+import { randomFloat } from '../utils/common-utils.js';
+
 export function initParticles({ getElement, throttle, checkReducedMotion }) {
   
   const canvas = getElement("particleCanvas");
@@ -14,16 +31,8 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   let starPositions = null; // Float32Array
   let starOpts = { count: 800, spread: 6, zBias: -1.5, shape: 'cube', seed: 1337, size: 1.0, opacity: 0.75 };
   let showStars = true;
-  // load star options from data-attributes (optional)
-  if (bgRoot) {
-    const sa = bgRoot.getAttribute('data-stars-count'); if (sa) starOpts.count = Math.max(0, parseInt(sa,10) || starOpts.count);
-    const sp = bgRoot.getAttribute('data-stars-spread'); if (sp) starOpts.spread = parseFloat(sp) || starOpts.spread;
-    const sh = bgRoot.getAttribute('data-stars-shape'); if (sh) starOpts.shape = sh;
-    const sd = bgRoot.getAttribute('data-stars-seed'); if (sd) starOpts.seed = parseInt(sd,10) || starOpts.seed;
-    const ss = bgRoot.getAttribute('data-stars-size'); if (ss) starOpts.size = parseFloat(ss) || starOpts.size;
-    const so = bgRoot.getAttribute('data-stars-opacity'); if (so) starOpts.opacity = parseFloat(so) || starOpts.opacity;
-    if (bgRoot.getAttribute('data-stars') === 'off') showStars = false;
-  }
+  // load star options from data-attributes (optional) via helper
+  ({ opts: starOpts, showStars } = loadStarOptions(bgRoot, starOpts));
 
   let starsModulePromise = null;
   function ensureStarsModule(){
@@ -72,11 +81,11 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
 
   // ===== Partikel =====
   class Particle {
-    constructor(x = Math.random()*innerWidth, y = Math.random()*innerHeight) {
+    constructor(x = randomFloat(0, innerWidth), y = randomFloat(0, innerHeight)) {
       this.x = x; this.y = y;
-      this.s = Math.random()*2 + 1;
-      this.vx = (Math.random()*2 - 1) * 0.6;
-      this.vy = (Math.random()*2 - 1) * 0.6;
+      this.s = randomFloat(0, 2) + 1;
+      this.vx = (randomFloat(-1, 1)) * 0.6;
+      this.vy = (randomFloat(-1, 1)) * 0.6;
     }
     update(){
       this.x += this.vx; this.y += this.vy;
@@ -181,7 +190,8 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     if(!str) return null;
     const m = str.trim().match(/^rgba?\(([^)]+)\)/i);
     if(!m) return null;
-    const parts = m[1].split(/\s*,\s*/).map(Number);
+  // avoid regex with backtracking by splitting on comma and trimming spaces
+  const parts = m[1].split(',').map(s => Number(s.trim()));
     if (parts.length < 3) return null;
     const [r,g,b] = parts; const a = parts[3]!=null ? parseFloat(parts[3]) : 1;
     if([r,g,b].some(n => Number.isNaN(n))) return null;
@@ -300,37 +310,40 @@ function drawConnections(){
 
   // Optional sanfter Glow (deaktiviert; aktivieren = FPS-Kosten)
 
+  // Helper: decide quickly if two particle indices form a visible connection
+  function shouldConnect(i, j, p, q){
+    // returns proximity in range 0..1 (0 = no connection)
+    if (j <= i) return 0; // only draw pair once
+    const dx = p.x - q.x, dy = p.y - q.y;
+    const d2 = dx*dx + dy*dy;
+    if (d2 >= maxD2) return 0;
+    const proximity = 1 - (d2 * invMaxD2);
+    return proximity > 0 ? proximity : 0;
+  }
+
+  // Helper: draw a single segment given proximity (0..1)
+  function drawSegment(p, q, proximity){
+    const segAlpha = Math.min(1, baseAlpha * (0.55 + 0.45 * proximity));
+    ctx.globalAlpha = segAlpha;
+    ctx.lineWidth = baseWidth + widthBoost * proximity;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(q.x, q.y);
+    ctx.stroke();
+  }
+
   for (const [k, bucket] of grid){
     const gy = (k >>> 16) & 0xFFFF, gx = k & 0xFFFF;
     const nb = collectNeighborIndices(gx, gy);
 
     for (const i of bucket){
       const p = particles[i];
-
       for (const neighList of nb){
         for (const j of neighList){
-          if (j <= i) continue; // Paar nur einmal zeichnen
-
           const q = particles[j];
-          const dx = p.x - q.x, dy = p.y - q.y;
-          const d2 = dx*dx + dy*dy;
-          if (d2 >= maxD2) continue;
-
-          // Nähe 0..1 (1 = sehr nah)
-          const proximity = 1 - (d2 * invMaxD2);
-          if (proximity <= 0) continue;
-
-          // Alpha skaliert mit Nähe (sichtbarer) und Basisintensität
-          const segAlpha = Math.min(1, baseAlpha * (0.55 + 0.45 * proximity)); // 55–100% von baseAlpha
-          ctx.globalAlpha = segAlpha;
-
-          // Strichstärke skaliert mit Nähe
-          ctx.lineWidth = baseWidth + widthBoost * proximity;
-
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(q.x, q.y);
-          ctx.stroke();
+          const proximity = shouldConnect(i, j, p, q);
+          if (!proximity) continue;
+          drawSegment(p, q, proximity);
         }
       }
     }

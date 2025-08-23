@@ -1,13 +1,7 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
-// Fallback-Implementierung für Kompatibilität
-const createShuffledIndices = (length) => {
-  const arr = [...Array(length).keys()];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
+// Verwende zentrale shuffle-Implementierung (nutzt sichere Zufallsquelle wenn verfügbar)
+import { shuffle } from '../../content/webentwicklung/utils/common-utils.js';
+const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
 
 export default class TypeWriter {
   constructor({
