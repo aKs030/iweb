@@ -10,6 +10,29 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   const DPR = Math.min(2, Math.max(1, Math.ceil(devicePixelRatio || 1)));
   const bgRoot = document.querySelector(".global-particle-background");
 
+  // ===== Stars Layer (optional, using content/webentwicklung/particles/stars-utils.js) =====
+  let starPositions = null; // Float32Array
+  let starOpts = { count: 800, spread: 6, zBias: -1.5, shape: 'cube', seed: 1337, size: 1.0, opacity: 0.75 };
+  let showStars = true;
+  // load star options from data-attributes (optional)
+  if (bgRoot) {
+    const sa = bgRoot.getAttribute('data-stars-count'); if (sa) starOpts.count = Math.max(0, parseInt(sa,10) || starOpts.count);
+    const sp = bgRoot.getAttribute('data-stars-spread'); if (sp) starOpts.spread = parseFloat(sp) || starOpts.spread;
+    const sh = bgRoot.getAttribute('data-stars-shape'); if (sh) starOpts.shape = sh;
+    const sd = bgRoot.getAttribute('data-stars-seed'); if (sd) starOpts.seed = parseInt(sd,10) || starOpts.seed;
+    const ss = bgRoot.getAttribute('data-stars-size'); if (ss) starOpts.size = parseFloat(ss) || starOpts.size;
+    const so = bgRoot.getAttribute('data-stars-opacity'); if (so) starOpts.opacity = parseFloat(so) || starOpts.opacity;
+    if (bgRoot.getAttribute('data-stars') === 'off') showStars = false;
+  }
+
+  let starsModulePromise = null;
+  function ensureStarsModule(){
+    if (!starsModulePromise) {
+      starsModulePromise = import('./stars-utils.js');
+    }
+    return starsModulePromise;
+  }
+
   let particles = [];
   let rafId = 0, hidden = false;
   let lastTime = performance.now();
@@ -24,6 +47,27 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     ctx.setTransform(DPR,0,0,DPR,0,0);
     invalidateGradients();
     updateScrollMax();
+    // regenerate stars positions at new size (for 2D rendering we map 3D positions onto canvas)
+    if (showStars && !checkReducedMotion()) {
+      ensureStarsModule().then(mod => {
+        // create star positions in 3D then project to 2D canvas coordinates
+        const pos = mod.makeStarPositions({ count: starOpts.count, spread: starOpts.spread, zBias: starOpts.zBias, shape: starOpts.shape, seed: starOpts.seed });
+        // map to canvas pixel positions (0..width,0..height) with center origin
+        const w2 = innerWidth / 2, h2 = innerHeight / 2;
+        const mapped = new Float32Array(pos.length);
+        for (let i=0;i<pos.length;i+=3){
+          const x = pos[i], y = pos[i+1], z = pos[i+2];
+          // simple projection: scale by (1 + z * smallFactor) and offset to center
+          const proj = 1 + (z / Math.max(1, starOpts.spread)) * 0.12;
+          mapped[i] = w2 + x * (innerWidth / (starOpts.spread*2)) * proj;
+          mapped[i+1] = h2 + y * (innerHeight / (starOpts.spread*2)) * proj;
+          mapped[i+2] = z;
+        }
+        starPositions = mapped;
+      }).catch(() => { starPositions = null; });
+    } else {
+      starPositions = null;
+    }
   };
 
   // ===== Partikel =====
@@ -80,13 +124,15 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
 
   function fillSpatialGrid(){
     grid.clear();
-    for (let i=0; i<particles.length; i++){
-      const p = particles[i];
+    for (const [idx, p] of particles.entries()){
       const gx = (p.x / cell) | 0, gy = (p.y / cell) | 0;
       const key = keyOf(gx, gy);
       let bucket = grid.get(key);
-      if (!bucket) grid.set(key, bucket = []);
-      bucket.push(i); // speichere Index statt Objekt
+      if (!bucket) {
+        bucket = [];
+        grid.set(key, bucket);
+      }
+      bucket.push(idx); // speichere Index statt Objekt
     }
   }
 
@@ -126,7 +172,11 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   let colorTweenStart = 0;
   const COLOR_TWEEN_MS = 420;
 
-  function clamp(v,min,max){ return v<min?min : v>max?max : v; }
+  function clamp(v,min,max){
+    if (v < min) return min;
+    if (v > max) return max;
+    return v;
+  }
   function parseRGBA(str){
     if(!str) return null;
     const m = str.trim().match(/^rgba?\(([^)]+)\)/i);
@@ -147,8 +197,8 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     invalidateGradients();
   }
   function applyTween(now){
-    if (reduceMotion) return;
-    const t = clamp((now - colorTweenStart)/COLOR_TWEEN_MS,0,1);
+  if (reduceMotion) return;
+  const t = clamp((now - colorTweenStart)/COLOR_TWEEN_MS,0,1);
     if (t >= 1) { colorCurrent = { ...colorTarget }; return; }
     const lerp = (a,b)=> a + (b-a)*t;
     colorCurrent = {
@@ -215,7 +265,25 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     ensureGradients(dynA);
     ctx.fillStyle = (gradMode === 'radial') ? gradRadial : gradLinear;
 
-    for (let i=0; i<particles.length; i++){ const p = particles[i]; p.update(); p.draw(); }
+    // Draw stars behind particles (faint points)
+    if (starPositions && showStars) {
+      const starAlpha = Math.min(1, (starOpts.opacity || 0.7) * (0.6 + 0.4 * scrollFactor));
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = `rgba(${colorCurrent.r|0},${colorCurrent.g|0},${colorCurrent.b|0},${starAlpha.toFixed(3)})`;
+      const s = Math.max(0.4, (starOpts.size || 1.0));
+      for (let i=0;i<starPositions.length;i+=3){
+        const sx = starPositions[i], sy = starPositions[i+1];
+        // skip off-canvas
+        if (sx < -10 || sy < -10 || sx > innerWidth+10 || sy > innerHeight+10) continue;
+        ctx.beginPath();
+        ctx.arc(sx, sy, s, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+  for (const p of particles) { p.update(); p.draw(); }
   }
 
 function drawConnections(){
@@ -231,21 +299,16 @@ function drawConnections(){
   ctx.lineJoin = "round";
 
   // Optional sanfter Glow (deaktiviert; aktivieren = FPS-Kosten)
-  // const USE_GLOW = false;
-  // if (USE_GLOW) { ctx.shadowColor = `rgba(${sr},${sg},${sb},${Math.min(1, baseAlpha).toFixed(3)})`; ctx.shadowBlur = 3; }
 
   for (const [k, bucket] of grid){
     const gy = (k >>> 16) & 0xFFFF, gx = k & 0xFFFF;
     const nb = collectNeighborIndices(gx, gy);
 
-    for (let bi = 0; bi < bucket.length; bi++){
-      const i = bucket[bi];
+    for (const i of bucket){
       const p = particles[i];
 
-      for (let nbi = 0; nbi < nb.length; nbi++){
-        const neighList = nb[nbi];
-        for (let bj = 0; bj < neighList.length; bj++){
-          const j = neighList[bj];
+      for (const neighList of nb){
+        for (const j of neighList){
           if (j <= i) continue; // Paar nur einmal zeichnen
 
           const q = particles[j];
@@ -275,7 +338,6 @@ function drawConnections(){
 
   // Reset
   ctx.globalAlpha = 1;
-  // if (USE_GLOW) { ctx.shadowBlur = 0; }
 }
 
   // ===== Loop =====
