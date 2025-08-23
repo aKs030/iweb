@@ -88,9 +88,9 @@
   /* Safe-area */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* Footer sizing (kann per JS überschrieben werden) */
+  --footer-height: 64px;
 }
-
-/* Mobile Anpassungen */
 @media (max-width: 768px){
   :root { --header-height: 15px; }
 }
