@@ -11,6 +11,17 @@
 				"$vitest"
 			],
 			"group": "test"
+		},
+		{
+			"label": "Run Vitest Tests",
+			"type": "shell",
+			"command": "npx vitest run",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$vitest"
+			],
+			"group": "test"
 		}
 	]
 }
