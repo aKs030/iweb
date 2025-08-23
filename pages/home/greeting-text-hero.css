@@ -9,11 +9,11 @@ body.reduce-motion .greeting-text-hero {
   --greet-lh: 1.14;
   --greet-weight: 600;
   --greet-letter: -0.012em;
-  --greet-max: clamp(16ch, 40vw, 24ch);
+  --greet-max: clamp(20ch, 44vw, 34ch);
   --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
   --greet-anim-grad-dur: 16.5s;
   --greet-anim-pulse-dur: 13.2s;
-  position: absolute;
+  position: relative;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   font-size: var(--greet-fs);
   line-height: var(--greet-lh);
@@ -22,8 +22,9 @@ body.reduce-motion .greeting-text-hero {
   text-align: center;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  margin: 32px 0 0 0;
-  padding: 0 10px;
+  margin: 0;
+  padding: 8px 12px;
+  z-index: 2;
   background: var(--greet-grad);
   -webkit-background-clip: text;
   background-clip: text;
@@ -38,17 +39,12 @@ body.reduce-motion .greeting-text-hero {
   -webkit-hyphens: auto;
   hyphens: auto;
   max-width: var(--greet-max);
+  /* ensure a reasonable minimum line length to avoid many short wrapped columns */
+  min-inline-size: clamp(28ch, 36vw, 60ch);
   min-height: 2.6em;
   font-variation-settings: "opsz" 18;
   font-optical-sizing: auto;
   animation: gradientMove var(--greet-anim-grad-dur) linear infinite, pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite;
-}
-
-.greeting-text-hero--alt {
-  --greet-grad: linear-gradient(92deg,#fff,#d2efff 60%);
-  --greet-anim-grad-dur: 9s;
-  --greet-anim-pulse-dur: 4.4s;
-  filter: drop-shadow(0 3px 18px rgba(0,180,255,.35));
 }
 
 .greeting-text-hero[data-animation] {
@@ -173,22 +169,105 @@ body.reduce-motion .greeting-text-hero {
 .anim-soft.animate-element.is-visible { transform: translateY(0); opacity: 1; }
 body.reduce-motion .anim-soft.animate-element { transform: none !important; opacity: 1 !important; }
 /* CRT Power-On Effekt */
-@keyframes crt-power-on { 0% { filter: brightness(0) contrast(400%); transform: scaleY(0.05) scaleX(1.3); opacity:0; } 8% { filter: brightness(2.2) contrast(250%); transform: scaleY(0.12) scaleX(1.05); opacity:1; } 18% { filter: brightness(0.3) contrast(300%); transform: scaleY(0.04) scaleX(1.25); } 28% { filter: brightness(2.4) contrast(180%); transform: scaleY(1.08) scaleX(0.96); } 40% { filter: brightness(1) contrast(110%); transform: scale(1); } 60% { filter: brightness(1.05) contrast(105%); } 100% { filter: brightness(1) contrast(100%); transform: scale(1); opacity:1; } }
-@keyframes crt-flicker { 0%, 100% { opacity:1; } 45% { opacity:0.98; } 46% { opacity:0.82; } 47% { opacity:1; } 70% { opacity:0.96; } 71% { opacity:0.88; } 72% { opacity:1; } }
-@keyframes crt-scanlines { 0% { background-position:0 0; } 100% { background-position:0 4px; } }
-@keyframes crt-glow-pulse { 0%,100% { box-shadow:0 0 0 rgba(9,139,255,0.0),0 0 0 rgba(255,255,255,0); } 50% { box-shadow:0 0 6px rgba(9,139,255,0.35),0 0 14px rgba(255,255,255,0.12); } }
-.btn-crt { position: relative; isolation: isolate; --crt-bg: linear-gradient(135deg,var(--bg-card),#141414 60%); background: var(--primary-color); }
+@keyframes crt-power-on {
+  0%   { filter: brightness(0) contrast(400%); transform: scaleY(0.05) scaleX(1.3); opacity:0; }
+  8%   { filter: brightness(2.2) contrast(250%); transform: scaleY(0.12) scaleX(1.05); opacity:1; }
+  18%  { filter: brightness(0.3) contrast(300%); transform: scaleY(0.04) scaleX(1.25); }
+  28%  { filter: brightness(2.4) contrast(180%); transform: scaleY(1.08) scaleX(0.96); }
+  40%  { filter: brightness(1) contrast(110%); transform: scale(1); }
+  60%  { filter: brightness(1.05) contrast(105%); }
+  100% { filter: brightness(1) contrast(100%); transform: scale(1); opacity:1; }
+}
+@keyframes crt-flicker {
+  0%,100% { opacity:1; }
+  45% { opacity:0.98; }
+  46% { opacity:0.82; }
+  47% { opacity:1; }
+  70% { opacity:0.96; }
+  71% { opacity:0.88; }
+  72% { opacity:1; }
+}
+@keyframes crt-scanlines {
+  0%   { background-position:0 0; }
+  100% { background-position:0 4px; }
+}
+@keyframes crt-glow-pulse {
+  0%,100% { box-shadow:0 0 0 rgba(9,139,255,0.0),0 0 0 rgba(255,255,255,0); }
+  50%     { box-shadow:0 0 6px rgba(9,139,255,0.35),0 0 14px rgba(255,255,255,0.12); }
+}
+
+.btn-crt {
+  position: relative;
+  isolation: isolate;
+  --crt-bg: linear-gradient(135deg,var(--bg-card),#141414 60%);
+  background: var(--primary-color);
+}
 .btn-crt.btn-secondary { background: transparent; }
-[data-animation="crt"].animate-element { opacity:0; transform: translateY(20px); filter: brightness(0.4) contrast(120%); }
-[data-animation="crt"].animate-element.is-visible { animation: crt-power-on 900ms cubic-bezier(.22,.61,.36,1) forwards, crt-flicker 4.5s steps(60) 900ms 2; position: relative; }
-[data-animation="crt"].animate-element.is-visible::before { content: ""; position:absolute; inset:0; pointer-events:none; z-index:1; background: repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0 1px, rgba(0,0,0,0) 1px 3px); mix-blend-mode: overlay; animation: crt-scanlines 120ms linear infinite; opacity:0.55; }
-[data-animation="crt"].animate-element.is-visible::after { content:""; position:absolute; inset:0; pointer-events:none; z-index:2; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%); opacity:0; animation: crt-glow-pulse 3.2s ease-in-out 400ms infinite; }
+
+[data-animation="crt"].animate-element {
+  opacity:0;
+  transform: translateY(20px);
+  filter: brightness(0.4) contrast(120%);
+}
+
+[data-animation="crt"].animate-element.is-visible {
+  animation: 
+    crt-power-on 1600ms cubic-bezier(.22,.61,.36,1) forwards,
+    crt-flicker 4.5s steps(60) 500ms 2;
+  animation-delay: 800ms, 900ms; /* beide gleichzeitig verzögert */
+  position: relative;
+}
+
+[data-animation="crt"].animate-element.is-visible::before {
+  content: "";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.06) 0 1px,
+    rgba(0,0,0,0) 1px 3px
+  );
+  mix-blend-mode: overlay;
+  animation: crt-scanlines 120ms linear 800ms infinite; /* Delay 0.8s */
+  opacity:0.55;
+}
+
+[data-animation="crt"].animate-element.is-visible::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%);
+  opacity:0;
+  animation: crt-glow-pulse 3.2s ease-in-out 800ms infinite; /* Delay 0.8s */
+}
+
 .btn-crt:hover::after { opacity:0.4; }
-.btn-crt.btn-secondary.animate-element.is-visible { background: var(--bg-card); border:2px solid var(--primary-color); color: var(--primary-color); }
-.btn-crt.btn-secondary.animate-element.is-visible:hover { background: var(--primary-color); color:#fff; }
-body.reduce-motion [data-animation="crt"].animate-element { opacity:1 !important; transform:none !important; filter:none !important; animation:none !important; }
-body.reduce-motion [data-animation="crt"].animate-element::before, body.reduce-motion [data-animation="crt"].animate-element::after { display:none !important; }
-/* Background Layer (nicht mehr benötigt - jetzt global) */
+
+.btn-crt.btn-secondary.animate-element.is-visible {
+  background: var(--bg-card);
+  border:2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+.btn-crt.btn-secondary.animate-element.is-visible:hover {
+  background: var(--primary-color);
+  color:#fff;
+}
+
+body.reduce-motion [data-animation="crt"].animate-element {
+  opacity:1 !important;
+  transform:none !important;
+  filter:none !important;
+  animation:none !important;
+}
+body.reduce-motion [data-animation="crt"].animate-element::before,
+body.reduce-motion [data-animation="crt"].animate-element::after {
+  display:none !important;
+}
+
 .hero-background { 
   position: relative; 
   width: 100%; 
@@ -197,7 +276,7 @@ body.reduce-motion [data-animation="crt"].animate-element::before, body.reduce-m
 }
 
 /* Gradient Overlay jetzt global gelöst */
-/* Subtitle (typing area) */
+/* (typing area) */
 .hero-subtitle{
   position: absolute;
   left: clamp(12px, 2vw, 20px);
@@ -261,7 +340,110 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{ display:inline-block; white-
 .hero-image-container { position: relative; width: 60vw; max-width: 340px; aspect-ratio: 1/1; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
 .hero-image-container svg { position: relative; z-index: 1; display: block; margin: 0 auto; }
 body:not(.hero-active) .floating-icon, body.reduce-motion .floating-icon { animation-play-state: paused !important; }
-.spotlight-bg { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%) rotate(-8deg); width: 120%; height: 60%; background: radial-gradient(ellipse at center, #fff5 0%, #098bff22 55%, transparent 100%); filter: blur(22px); z-index: 1; pointer-events: none; }
+.spotlight-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* size to content so it hugs the greeting text */
+  width: fit-content; /* hug the content width */
+  height: auto;
+  /* allow the pill to size to the text; avoid forcing a large minimum */
+  min-width: 0;
+  z-index: 1;
+  pointer-events: none;
+  display: inline-flex; /* inline-flex lets the pill shrink/grow with content */
+  align-items: center;
+  justify-content: center;
+  /* responsive pill padding around text (generous to preserve halo) */
+  /* increase horizontal padding so short texts get more breathing room */
+  padding-block: clamp(10px, 1.6vw, 18px);
+  padding-inline: clamp(18px, 4vw, 36px);
+  box-sizing: border-box;
+  border-radius: 999px; /* pill shape */
+  white-space: normal; /* allow wrapping if needed */
+  max-width: 88vw; /* allow pill to grow with text but never exceed viewport comfortably */
+}
+
+.spotlight-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit; /* match pill shape */
+  /* blurred radial background lives in pseudo so children stay sharp */
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.94) 0%, rgba(9,139,255,0.16) 48%, rgba(9,139,255,0.07) 66%, transparent 100%);
+  /* stronger, softer halo (desktop) */
+  filter: blur(48px) saturate(1.04) contrast(1.02);
+  transform-origin: center center;
+  /* rotate and scale so spotlight comfortably extends beyond text */
+  transform: rotate(-8deg) scale(1.22);
+  /* sit behind the text */
+  z-index: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  /* make spotlight relative in flow on small screens so it centers with the content */
+  .spotlight-bg {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 0 auto;
+  /* let the pill follow the text width but cap at 88vw; give more horizontal padding */
+  width: fit-content;
+  max-width: 88vw;
+  min-width: 0;
+  padding-block: clamp(10px, 3.4vw, 14px);
+  padding-inline: clamp(16px, 6vw, 28px);
+  }
+  .spotlight-bg::before { transform: rotate(-6deg) scale(1.08); filter: blur(26px) saturate(0.98); }
+
+  /* ensure greeting text is centered inside the pill */
+  .spotlight-bg > .greeting-text-hero {
+    display: inline-block;
+    line-height: 1.18;
+    text-align: center;
+    margin: 0 auto;
+    z-index: 3;
+  }
+
+  /* Allow the image container to expand a bit on small screens so the spotlight can be wider */
+  .hero-image-container {
+    width: 100%;
+  max-width: 88vw;
+    overflow: visible; /* ensure halo can extend beyond container */
+  }
+}
+
+@media (max-width: 480px) {
+  .spotlight-bg {
+    /* pill follows text width on very small phones but never exceed viewport; more horizontal padding */
+    width: fit-content;
+    max-width: 88vw;
+    min-width: 0;
+    padding-block: clamp(10px, 4vw, 12px);
+    padding-inline: clamp(14px, 8vw, 18px);
+  }
+  .spotlight-bg::before { transform: rotate(-4deg) scale(1.06); filter: blur(20px) saturate(0.96); }
+  .spotlight-bg > .greeting-text-hero {
+  font-size: clamp(1.1rem, 5.6vw, 1.6rem);
+  min-inline-size: clamp(18ch, 60vw, 40ch);
+  line-height: 1.20;
+  letter-spacing: -0.015em;
+  transform: translateY(0.8px); /* slightly stronger nudge for optical centering */
+  z-index: 3;
+  }
+}
+
+.spotlight-bg > .greeting-text-hero {
+  z-index: 2;
+  position: relative;
+  display: inline-block; /* avoid baseline/flow issues inside flex */
+  max-width: 100%;
+  text-align: center;
+  line-height: 1.12; /* keep text vertically balanced */
+}
 /* Desktop (>=1025px) */
 @media (min-width: 1025px) {
   .hero { position: relative; }

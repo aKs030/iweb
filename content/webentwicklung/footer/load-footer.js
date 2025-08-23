@@ -16,16 +16,29 @@
       // Nach dem Einfügen die echte Footer-Höhe messen und CSS-Variable setzen
       const footerEl = container.querySelector('.site-footer') || container.firstElementChild;
       if (footerEl) {
+        // Debounced setter with change guard to avoid layout churn
+        let rafId = null;
+        let lastHeight = null;
         const setFooterHeight = () => {
           const h = Math.ceil(footerEl.getBoundingClientRect().height);
+          if (h === lastHeight) return; // nothing changed
+          lastHeight = h;
           document.documentElement.style.setProperty('--footer-height', h + 'px');
+        };
+        const scheduleSetFooterHeight = () => {
+          if (rafId != null) return;
+          rafId = requestAnimationFrame(() => {
+            rafId = null;
+            setFooterHeight();
+          });
         };
         // Initial setzen
         setFooterHeight();
-        // ResizeObserver für dynamische Änderung
+        // ResizeObserver für dynamische Änderung (debounced)
         if (window.ResizeObserver) {
           const ro = new ResizeObserver(entries => {
-            for (const e of entries) setFooterHeight();
+            // schedule once per frame
+            scheduleSetFooterHeight();
           });
           ro.observe(footerEl);
         }
