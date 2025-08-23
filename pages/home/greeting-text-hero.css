@@ -13,7 +13,8 @@ body.reduce-motion .greeting-text-hero {
   --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
   --greet-anim-grad-dur: 16.5s;
   --greet-anim-pulse-dur: 13.2s;
-  position: absolute;
+  position: relative;
+  z-index: 2;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   font-size: var(--greet-fs);
   line-height: var(--greet-lh);
@@ -22,7 +23,7 @@ body.reduce-motion .greeting-text-hero {
   text-align: center;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  margin: 32px 0 0 0;
+  margin: 0;
   padding: 0 10px;
   background: var(--greet-grad);
   -webkit-background-clip: text;
