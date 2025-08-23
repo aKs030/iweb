@@ -2,7 +2,7 @@
    Global CSS Variables
 ======================= */
 :root {
-  /* Layout */
+  --footer-height: 72px;
   --header-height: 72px;
 
   /* Farbpalette */

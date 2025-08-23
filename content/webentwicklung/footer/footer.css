@@ -28,6 +28,5 @@
 body { padding-bottom: calc(var(--footer-height) + var(--safe-bottom)); }
 
 @media (max-width: 480px) {
-  :root { --footer-height: 72px; }
   .site-footer { font-size: 0.87rem; }
 }
