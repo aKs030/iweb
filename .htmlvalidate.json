@@ -1,0 +1,15 @@
+{
+  "root": true,
+  "rules": {
+    "no-trailing-whitespace": "error",
+    "void-style": "error",
+    "doctype-style": "error", 
+    "attr-quotes": "error",
+    "no-deprecated-attr": "warn",
+    "element-permitted-content": "error",
+    "prefer-tbody": "warn",
+    "long-title": "warn",
+    "no-inline-style": "off"
+  },
+  "extends": ["html-validate:recommended"]
+}

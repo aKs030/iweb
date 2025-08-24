@@ -9,8 +9,8 @@
     "test:cov": "vitest run --coverage",
     "lint:js": "eslint .",
     "lint:js:fix": "eslint . --fix",
-    "lint:html": "npx html-validate $(git ls-files '*.html' | grep -v node_modules)",
-    "lint:html:ci": "npx html-validate $(git ls-files '*.html' | grep -v node_modules) --reporter=stylish --max-warnings=0",
+    "lint:html": "npx html-validate $(git ls-files '*.html' | grep -v node_modules | grep -v coverage)",
+    "lint:html:ci": "npx html-validate $(git ls-files '*.html' | grep -v node_modules | grep -v coverage) --max-warnings=0",
     "lint:all": "npm run lint:js && npm run lint:html",
     "check:css": "bash ./scripts/check-root.sh",
     "consolidate:css": "bash ./scripts/consolidate-tokens.sh"
