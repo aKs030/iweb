@@ -27,7 +27,7 @@ export function throttle(func, limit = 250) {
 export function shuffle(array) {
   const arr = [...array]; // Kopie erstellen
   for (let i = arr.length - 1; i > 0; i--) {
-  const j = Math.floor(randomFloat(0, i + 1));
+    const j = Math.floor(randomFloat(0, i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -83,11 +83,11 @@ let reducedMotionCache = null;
 export function prefersReducedMotion() {
   if (reducedMotionCache === null) {
     try {
-      const saved = localStorage.getItem("pref-reduce-motion");
-      reducedMotionCache = saved === "1" || 
-        (saved === null && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      const saved = localStorage.getItem('pref-reduce-motion');
+      reducedMotionCache = saved === '1' || 
+        (saved === null && matchMedia('(prefers-reduced-motion: reduce)').matches);
     } catch {
-      reducedMotionCache = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      reducedMotionCache = matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
   }
   return reducedMotionCache;
@@ -95,9 +95,9 @@ export function prefersReducedMotion() {
 
 export function setReducedMotion(enabled) {
   reducedMotionCache = enabled;
-  document.body.classList.toggle("reduce-motion", enabled);
+  document.body.classList.toggle('reduce-motion', enabled);
   try {
-    localStorage.setItem("pref-reduce-motion", enabled ? "1" : "0");
+    localStorage.setItem('pref-reduce-motion', enabled ? '1' : '0');
   } catch {}
 }
 
@@ -111,7 +111,7 @@ export function toggleReducedMotion(force) {
 export function createAnimationObserver(callback, options = {}) {
   const defaultOptions = {
     threshold: 0.1,
-    rootMargin: "0px 0px -50px 0px"
+    rootMargin: '0px 0px -50px 0px'
   };
   
   return new IntersectionObserver(entries => {
@@ -215,7 +215,7 @@ export function smoothScrollTo(target, offset = 80) {
   if (!element) return;
   
   const top = element.getBoundingClientRect().top + window.pageYOffset - offset;
-  const behavior = prefersReducedMotion() ? "auto" : "smooth";
+  const behavior = prefersReducedMotion() ? 'auto' : 'smooth';
   
   window.scrollTo({ top, behavior });
 }

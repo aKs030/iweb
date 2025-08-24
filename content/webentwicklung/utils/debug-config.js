@@ -6,13 +6,13 @@
     const params = new URLSearchParams(window.location.search);
     const ls = window.localStorage;
 
-  // Produktions-Erkennung (Hostname Heuristik anpassbar)
-  const host = window.location.hostname;
-  const isLocal = /localhost|127\.0\.0\.1/.test(host);
-  const isProd = !isLocal && !/\b(dev|test|staging)\b/i.test(host);
+    // Produktions-Erkennung (Hostname Heuristik anpassbar)
+    const host = window.location.hostname;
+    const isLocal = /localhost|127\.0\.0\.1/.test(host);
+    const isProd = !isLocal && !/\b(dev|test|staging)\b/i.test(host);
 
-    let debugParam = params.get('debug');
-    let levelParam = params.get('log') ?? params.get('logLevel');
+    const debugParam = params.get('debug');
+    const levelParam = params.get('log') ?? params.get('logLevel');
 
     if (debugParam != null) {
       const val = /^(1|true|on)$/i.test(debugParam);
@@ -35,7 +35,7 @@
 
     // Overlay nur bei aktivem DEBUG laden
     if (window.DEBUG) {
-      import('./debug-overlay.js').catch(()=>{});
+      import('./debug-overlay.js').catch(() => {});
     }
   } catch (e) {
     console.warn('[debug-config] Initialisierung übersprungen:', e);

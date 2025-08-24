@@ -1,6 +1,6 @@
 // Helper: load star options from a DOM root (keeps parsing logic out of initParticles)
 function loadStarOptions(bgRoot, defaultOpts){
-  let opts = { ...defaultOpts };
+  const opts = { ...defaultOpts };
   let showStars = true;
   if (!bgRoot) return { opts, showStars };
   const sa = bgRoot.getAttribute('data-stars-count'); if (sa) opts.count = Math.max(0, parseInt(sa,10) || opts.count);
@@ -18,14 +18,14 @@ import { randomFloat } from '../utils/common-utils.js';
 
 export function initParticles({ getElement, throttle, checkReducedMotion }) {
   
-  const canvas = getElement("particleCanvas");
+  const canvas = getElement('particleCanvas');
   if (!canvas) return () => {};
-  canvas.setAttribute("aria-hidden","true");
-  const ctx = canvas.getContext("2d", { alpha: true });
+  canvas.setAttribute('aria-hidden','true');
+  const ctx = canvas.getContext('2d', { alpha: true });
 
   // ===== Perf-Grundlagen =====
   const DPR = Math.min(2, Math.max(1, Math.ceil(devicePixelRatio || 1)));
-  const bgRoot = document.querySelector(".global-particle-background");
+  const bgRoot = document.querySelector('.global-particle-background');
 
   // ===== Stars Layer (optional, using content/webentwicklung/particles/stars-utils.js) =====
   let starPositions = null; // Float32Array
@@ -42,7 +42,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     return starsModulePromise;
   }
 
-  let particles = [];
+  const particles = [];
   let rafId = 0, hidden = false;
   let lastTime = performance.now();
   const fpsSamples = [];
@@ -52,7 +52,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   const resize = () => {
     const w = innerWidth|0, h = innerHeight|0;
     canvas.width = w * DPR; canvas.height = h * DPR;
-    canvas.style.width = w + "px"; canvas.style.height = h + "px";
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
     invalidateGradients();
     updateScrollMax();
@@ -190,8 +190,8 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     if(!str) return null;
     const m = str.trim().match(/^rgba?\(([^)]+)\)/i);
     if(!m) return null;
-  // avoid regex with backtracking by splitting on comma and trimming spaces
-  const parts = m[1].split(',').map(s => Number(s.trim()));
+    // avoid regex with backtracking by splitting on comma and trimming spaces
+    const parts = m[1].split(',').map(s => Number(s.trim()));
     if (parts.length < 3) return null;
     const [r,g,b] = parts; const a = parts[3]!=null ? parseFloat(parts[3]) : 1;
     if([r,g,b].some(n => Number.isNaN(n))) return null;
@@ -207,10 +207,10 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     invalidateGradients();
   }
   function applyTween(now){
-  if (reduceMotion) return;
-  const t = clamp((now - colorTweenStart)/COLOR_TWEEN_MS,0,1);
+    if (reduceMotion) return;
+    const t = clamp((now - colorTweenStart)/COLOR_TWEEN_MS,0,1);
     if (t >= 1) { colorCurrent = { ...colorTarget }; return; }
-    const lerp = (a,b)=> a + (b-a)*t;
+    const lerp = (a,b) => a + (b-a)*t;
     colorCurrent = {
       r: lerp(colorCurrent.r, colorTarget.r),
       g: lerp(colorCurrent.g, colorTarget.g),
@@ -230,7 +230,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   window.addEventListener('snapSectionChange', updateTargetColor, { passive:true });
 
   // ===== Verbindungen + Partikel zeichnen =====
-  let gradLinear = null, gradRadial = null, gradMode = "linear";
+  let gradLinear = null, gradRadial = null, gradMode = 'linear';
   let gradBaseW = 0, gradBaseH = 0, gradBaseR = -1, gradBaseG = -1, gradBaseB = -1;
   function invalidateGradients(){ gradLinear = gradRadial = null; }
 
@@ -244,7 +244,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     gradBaseW = W; gradBaseH = H;
     gradBaseR = colorCurrent.r|0; gradBaseG = colorCurrent.g|0; gradBaseB = colorCurrent.b|0;
 
-    const lighten = (r,g,b,p)=>[
+    const lighten = (r,g,b,p) => [
       Math.min(255,(r+(255-r)*p))|0,
       Math.min(255,(g+(255-g)*p))|0,
       Math.min(255,(b+(255-b)*p))|0
@@ -293,65 +293,65 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       ctx.restore();
     }
 
-  for (const p of particles) { p.update(); p.draw(); }
+    for (const p of particles) { p.update(); p.draw(); }
   }
 
-function drawConnections(){
+  function drawConnections(){
   // Baseline-Intensität (etwas kräftiger als vorher)
-  const baseAlpha = (colorCurrent.aStroke * (0.8 + 0.2 * densityFactor) * scrollFactor);
-  const baseWidth = 1.1;   // Grunddicke
-  const widthBoost = 1.3;  // Zusatzdicke bei sehr kurzer Distanz
+    const baseAlpha = (colorCurrent.aStroke * (0.8 + 0.2 * densityFactor) * scrollFactor);
+    const baseWidth = 1.1;   // Grunddicke
+    const widthBoost = 1.3;  // Zusatzdicke bei sehr kurzer Distanz
 
-  // Einmalige Stroke-Farbe ohne Alpha (Alpha wird pro Segment via globalAlpha gesetzt)
-  const sr = colorCurrent.r | 0, sg = colorCurrent.g | 0, sb = colorCurrent.b | 0;
-  ctx.strokeStyle = `rgb(${sr},${sg},${sb})`;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
+    // Einmalige Stroke-Farbe ohne Alpha (Alpha wird pro Segment via globalAlpha gesetzt)
+    const sr = colorCurrent.r | 0, sg = colorCurrent.g | 0, sb = colorCurrent.b | 0;
+    ctx.strokeStyle = `rgb(${sr},${sg},${sb})`;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-  // Optional sanfter Glow (deaktiviert; aktivieren = FPS-Kosten)
+    // Optional sanfter Glow (deaktiviert; aktivieren = FPS-Kosten)
 
-  // Helper: decide quickly if two particle indices form a visible connection
-  function shouldConnect(i, j, p, q){
+    // Helper: decide quickly if two particle indices form a visible connection
+    function shouldConnect(i, j, p, q){
     // returns proximity in range 0..1 (0 = no connection)
-    if (j <= i) return 0; // only draw pair once
-    const dx = p.x - q.x, dy = p.y - q.y;
-    const d2 = dx*dx + dy*dy;
-    if (d2 >= maxD2) return 0;
-    const proximity = 1 - (d2 * invMaxD2);
-    return proximity > 0 ? proximity : 0;
-  }
+      if (j <= i) return 0; // only draw pair once
+      const dx = p.x - q.x, dy = p.y - q.y;
+      const d2 = dx*dx + dy*dy;
+      if (d2 >= maxD2) return 0;
+      const proximity = 1 - (d2 * invMaxD2);
+      return proximity > 0 ? proximity : 0;
+    }
 
-  // Helper: draw a single segment given proximity (0..1)
-  function drawSegment(p, q, proximity){
-    const segAlpha = Math.min(1, baseAlpha * (0.55 + 0.45 * proximity));
-    ctx.globalAlpha = segAlpha;
-    ctx.lineWidth = baseWidth + widthBoost * proximity;
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-    ctx.lineTo(q.x, q.y);
-    ctx.stroke();
-  }
+    // Helper: draw a single segment given proximity (0..1)
+    function drawSegment(p, q, proximity){
+      const segAlpha = Math.min(1, baseAlpha * (0.55 + 0.45 * proximity));
+      ctx.globalAlpha = segAlpha;
+      ctx.lineWidth = baseWidth + widthBoost * proximity;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(q.x, q.y);
+      ctx.stroke();
+    }
 
-  for (const [k, bucket] of grid){
-    const gy = (k >>> 16) & 0xFFFF, gx = k & 0xFFFF;
-    const nb = collectNeighborIndices(gx, gy);
+    for (const [k, bucket] of grid){
+      const gy = (k >>> 16) & 0xFFFF, gx = k & 0xFFFF;
+      const nb = collectNeighborIndices(gx, gy);
 
-    for (const i of bucket){
-      const p = particles[i];
-      for (const neighList of nb){
-        for (const j of neighList){
-          const q = particles[j];
-          const proximity = shouldConnect(i, j, p, q);
-          if (!proximity) continue;
-          drawSegment(p, q, proximity);
+      for (const i of bucket){
+        const p = particles[i];
+        for (const neighList of nb){
+          for (const j of neighList){
+            const q = particles[j];
+            const proximity = shouldConnect(i, j, p, q);
+            if (!proximity) continue;
+            drawSegment(p, q, proximity);
+          }
         }
       }
     }
-  }
 
-  // Reset
-  ctx.globalAlpha = 1;
-}
+    // Reset
+    ctx.globalAlpha = 1;
+  }
 
   // ===== Loop =====
   function animationLoop(){
@@ -362,7 +362,7 @@ function drawConnections(){
     const fps = 1000 / dt;
     fpsSamples.push(fps); if (fpsSamples.length > 20) fpsSamples.shift();
     if (fpsSamples.length === 20){
-      const avg = fpsSamples.reduce((a,b)=>a+b,0)/20;
+      const avg = fpsSamples.reduce((a,b) => a+b,0)/20;
       adaptParticleCount(avg);
       stats.fps = avg;
     }
@@ -386,8 +386,8 @@ function drawConnections(){
   }, { threshold: 0 });
   io.observe(canvas);
 
-  document.addEventListener("visibilitychange", () => { hidden = document.hidden; }, { passive:true });
-  addEventListener("resize", throttle(() => { cancelAnimationFrame(rafId); resize(); ensureParticleCount(targetCount); animationLoop(); }, 180), { passive:true });
+  document.addEventListener('visibilitychange', () => { hidden = document.hidden; }, { passive:true });
+  addEventListener('resize', throttle(() => { cancelAnimationFrame(rafId); resize(); ensureParticleCount(targetCount); animationLoop(); }, 180), { passive:true });
 
   // Start
   resize(); ensureParticleCount(); updateTargetColor(); updateScrollMax(); animationLoop();

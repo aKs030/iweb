@@ -178,8 +178,8 @@ export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer,
     const typedAuthor = document.getElementById('typedAuthor');
     if (!subtitleEl || !typedText || !typedAuthor || !TypeWriterClass || !makeLineMeasurer || !quotes?.length) return false;
     let twCfg = {};
-  try { const mod = await ensureHeroDataModule(); twCfg = mod?.typewriterConfig || {}; }
-  catch(e){ logTW.warn('typewriterConfig load failed', e); }
+    try { const mod = await ensureHeroDataModule(); twCfg = mod?.typewriterConfig || {}; }
+    catch(e){ logTW.warn('typewriterConfig load failed', e); }
     const measurer = makeLineMeasurer(subtitleEl);
     const startTypewriter = () => {
       const _typeWriter = new TypeWriterClass({

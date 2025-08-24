@@ -4,21 +4,26 @@
   "description": "Interaktive persönliche Homepage mit Feature-Rotation, Spielen und Webentwicklungs-Demos.",
   "main": "index.js",
   "scripts": {
-  "test": "vitest run",
-  "test:watch": "vitest",
-  "test:cov": "vitest run --coverage",
-  "lint:html": "npx html-validate $(git ls-files '*.html')",
-  "lint:html:ci": "npx html-validate $(git ls-files '*.html') --reporter=stylish --max-warnings=0",
-  "check:css": "bash ./scripts/check-root.sh",
-  "consolidate:css": "bash ./scripts/consolidate-tokens.sh"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "lint:js": "eslint .",
+    "lint:js:fix": "eslint . --fix",
+    "lint:html": "npx html-validate $(git ls-files '*.html' | grep -v node_modules)",
+    "lint:html:ci": "npx html-validate $(git ls-files '*.html' | grep -v node_modules) --reporter=stylish --max-warnings=0",
+    "lint:all": "npm run lint:js && npm run lint:html",
+    "check:css": "bash ./scripts/check-root.sh",
+    "consolidate:css": "bash ./scripts/consolidate-tokens.sh"
   },
   "keywords": [],
   "author": "aKs030",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@eslint/js": "^9.34.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
+    "eslint": "^9.34.0",
     "jsdom": "^26.1.0",
     "vitest": "^3.2.4"
   }

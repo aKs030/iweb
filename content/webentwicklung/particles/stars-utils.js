@@ -22,7 +22,7 @@ export function makeStarPositions({
   count = 800,
   spread = 6,
   zBias = -1.5,
-  shape = "cube",
+  shape = 'cube',
   seed = 1337,
 } = {}) {
   const rng = mulberry32(seed >>> 0);
@@ -30,7 +30,7 @@ export function makeStarPositions({
 
   for (let i = 0; i < count; i++) {
     let x, y, z;
-    if (shape === "sphere") {
+    if (shape === 'sphere') {
       // gleichmäßige Verteilung im Volumen (nicht nur Oberfläche)
       const u = rng();
       const v = rng();
@@ -40,7 +40,7 @@ export function makeStarPositions({
       x = r * Math.sin(phi) * Math.cos(theta);
       y = r * Math.sin(phi) * Math.sin(theta);
       z = r * Math.cos(phi) + zBias;
-    } else if (shape === "disk") {
+    } else if (shape === 'disk') {
       // dünne Scheibe (Galaxy-Style)
       const theta = 2 * Math.PI * rng();
       const r = spread * Math.sqrt(rng());
@@ -71,7 +71,7 @@ export function createStarPoints(
     count = 800,
     spread = 6,
     zBias = -1.5,
-    shape = "cube",
+    shape = 'cube',
     seed = 1337,
     size = 0.01,
     color = 0x88ccff,
@@ -80,7 +80,7 @@ export function createStarPoints(
 ) {
   const positions = makeStarPositions({ count, spread, zBias, shape, seed });
   const geom = new THREE.BufferGeometry();
-  geom.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   const mat = new THREE.PointsMaterial({
     size,
     color,
@@ -94,11 +94,11 @@ export function createStarPoints(
 /**
  * Optional: Positionen als JSON exportieren (für Wiederverwendung ohne Generator).
  */
-export function downloadStarJSON(positions, filename = "stars.json") {
+export function downloadStarJSON(positions, filename = 'stars.json') {
   const blob = new Blob([JSON.stringify(Array.from(positions))], {
-    type: "application/json",
+    type: 'application/json',
   });
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   document.body.appendChild(a);

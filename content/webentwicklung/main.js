@@ -2,6 +2,13 @@
 import { throttle } from '../webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from './particles/particle-system.js';
 
+// Conditional Performance Monitoring (nur bei DEBUG)
+if (window.DEBUG || localStorage.getItem('debug-performance') === 'true') {
+  import('./utils/performance-monitor.js').catch(e => 
+    console.warn('[main] Performance monitor load failed:', e)
+  );
+}
+
 // Globale Live-Region Ankündigungs-Hilfsfunktion (wird von mehreren Modulen / IIFEs genutzt)
 function announce(message, { assertive = false } = {}) {
   try {
@@ -104,20 +111,20 @@ addEventListener('keydown', (e) => {
 });
 const checkReducedMotion = () => {
   try {
-    const saved = localStorage.getItem("pref-reduce-motion");
-    return saved === "1" || (saved === null && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const saved = localStorage.getItem('pref-reduce-motion');
+    return saved === '1' || (saved === null && matchMedia('(prefers-reduced-motion: reduce)').matches);
   } catch {
-    return matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 };
 
 (() => {
-  "use strict";
+  'use strict';
 
   let TypeWriter=null, makeLineMeasurer=null, quotes=[], heroData=null;
   
   // ===== Gecachte DOM-Elemente =====
-  let cachedElements = {};
+  const cachedElements = {};
   
   const getElement = (id) => {
     if (!cachedElements[id]) {
@@ -128,9 +135,9 @@ const checkReducedMotion = () => {
 
   async function loadTyped() {
     const mods = [
-      ["../../pages/home/TypeWriter.js",   m => { TypeWriter = m.default || m.TypeWriter || TypeWriter; }],
-      ["../../pages/home/lineMeasurer.js", m => { makeLineMeasurer = m.makeLineMeasurer || makeLineMeasurer; }],
-      ["../../pages/home/quotes-de.js",    m => { quotes = m.default || m.quotes || quotes; }],
+      ['../../pages/home/TypeWriter.js',   m => { TypeWriter = m.default || m.TypeWriter || TypeWriter; }],
+      ['../../pages/home/lineMeasurer.js', m => { makeLineMeasurer = m.makeLineMeasurer || makeLineMeasurer; }],
+      ['../../pages/home/quotes-de.js',    m => { quotes = m.default || m.quotes || quotes; }],
     ];
     for (const [p, h] of mods) { try { h(await import(p)); } catch {} }
   }
@@ -158,7 +165,7 @@ const checkReducedMotion = () => {
       for (const e of entries){
         if (e.isIntersecting){
           obs.disconnect();
-            triggerLoad();
+          triggerLoad();
           break;
         }
       }
@@ -172,21 +179,21 @@ const checkReducedMotion = () => {
   const initParticles = () => _initParticles({ getElement, throttle, checkReducedMotion });
 
   // ===== Greetings =====
-  const ensureHeroData = async () => heroData || (heroData = await import("../../pages/home/hero-data.js").catch(()=>({})));
+  const ensureHeroData = async () => heroData || (heroData = await import('../../pages/home/hero-data.js').catch(() => ({})));
   async function setRandomGreetingHTML(animated=false) {
-    const el = getElement("greetingText"); if (!el) return;
+    const el = getElement('greetingText'); if (!el) return;
     const mod = await ensureHeroData();
     const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
-    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : "";
+    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
     if (!next) return;
     el.dataset.last = next;
-    if (animated) { el.classList.add("fade"); setTimeout(() => { el.textContent = next; el.classList.remove("fade"); }, 360); }
+    if (animated) { el.classList.add('fade'); setTimeout(() => { el.textContent = next; el.classList.remove('fade'); }, 360); }
     else el.textContent = next;
   }
 
   // Sicherstellen, dass der Gruß nach dem Laden des Hero-Markups gesetzt wird
   document.addEventListener('hero:loaded', () => {
-    const el = getElement("greetingText");
+    const el = getElement('greetingText');
     if (!el || el.textContent) return;
     setRandomGreetingHTML();
     announce('Hero Bereich bereit.');
@@ -208,45 +215,45 @@ const checkReducedMotion = () => {
 
   // ===== Menü-Assets on demand =====
   function loadMenuAssets(){
-    const c = getElement("menu-container");
+    const c = getElement('menu-container');
     if (!c) return;
-    if (c.dataset.assetsLoaded === "1") return;
-    if (document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) { c.dataset.assetsLoaded = "1"; return; }
-    const s = document.createElement("script");
-    s.src = "/content/webentwicklung/menu/menu.js";
+    if (c.dataset.assetsLoaded === '1') return;
+    if (document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) { c.dataset.assetsLoaded = '1'; return; }
+    const s = document.createElement('script');
+    s.src = '/content/webentwicklung/menu/menu.js';
     s.defer = true;
-    s.onload = () => { c.dataset.assetsLoaded = "1"; };
+    s.onload = () => { c.dataset.assetsLoaded = '1'; };
     document.body.appendChild(s);
   }
 
   // ===== Loader robust =====
   let __modulesReady=false, __windowLoaded=false, __start=0; const __MIN=700;
   function hideLoading(){
-    const el=getElement("loadingScreen"); if(!el) return;
-    el.classList.add("hide"); el.setAttribute("aria-hidden","true");
-    Object.assign(el.style,{ opacity:"0", pointerEvents:"none", visibility:"hidden" });
-    const rm=()=>{ el.style.display="none"; el.removeEventListener("transitionend", rm); };
-    el.addEventListener("transitionend", rm); setTimeout(rm, 700);
+    const el=getElement('loadingScreen'); if(!el) return;
+    el.classList.add('hide'); el.setAttribute('aria-hidden','true');
+    Object.assign(el.style,{ opacity:'0', pointerEvents:'none', visibility:'hidden' });
+    const rm=() => { el.style.display='none'; el.removeEventListener('transitionend', rm); };
+    el.addEventListener('transitionend', rm); setTimeout(rm, 700);
     announce('Initiales Laden abgeschlossen.');
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     __start = performance.now();
 
     const tryHide = () => {
       if (!__modulesReady) return;
-      if (!__windowLoaded && document.readyState !== "complete") return;
+      if (!__windowLoaded && document.readyState !== 'complete') return;
       const elapsed = performance.now() - __start;
       setTimeout(hideLoading, Math.max(0, __MIN - elapsed));
     };
 
-    addEventListener("load", () => { __windowLoaded = true; tryHide(); }, { once:true });
+    addEventListener('load', () => { __windowLoaded = true; tryHide(); }, { once:true });
 
     // __modulesReady ohne sofortige Hero-Module (Lazy Load)
     __modulesReady = true; tryHide();
 
-    window.__initTyping = () => import("../../pages/home/TypeWriter.js")
-      .then(m => (typeof m.initHeroSubtitle === "function")
+    window.__initTyping = () => import('../../pages/home/TypeWriter.js')
+      .then(m => (typeof m.initHeroSubtitle === 'function')
         ? m.initHeroSubtitle({ ensureHeroDataModule: ensureHeroData, makeLineMeasurer, quotes, TypeWriterClass: TypeWriter })
         : false);
 
@@ -262,16 +269,16 @@ const checkReducedMotion = () => {
 
     
     
-    setTimeout(()=> {
+    setTimeout(() => {
       try {
-        const hero=getElement("hero"); if(!hero||!window.AnimationSystem) return;
+        const hero=getElement('hero'); if(!hero||!window.AnimationSystem) return;
         window.AnimationSystem.scan?.();
-        hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add("is-visible"));
+        hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add('is-visible'));
       } catch {}
     }, 420);
 
     // AOS Auto-Delay (nur wenn nicht gesetzt)
-    document.querySelectorAll("[data-aos]").forEach((el,i)=> el.hasAttribute("data-aos-delay") || el.setAttribute("data-aos-delay", String(i*50)));
+    document.querySelectorAll('[data-aos]').forEach((el,i) => el.hasAttribute('data-aos-delay') || el.setAttribute('data-aos-delay', String(i*50)));
 
     // Menü nachladen
     loadMenuAssets();

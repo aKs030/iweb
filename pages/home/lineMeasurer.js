@@ -9,8 +9,8 @@ export function makeLineMeasurer(subtitleEl) {
 
   const cs = getComputedStyle(subtitleEl);
   ['font-size','line-height','font-family','font-weight','letter-spacing','word-spacing',
-   'font-kerning','font-variant-ligatures','text-transform','text-rendering',
-   'word-break','overflow-wrap','hyphens']
+    'font-kerning','font-variant-ligatures','text-transform','text-rendering',
+    'word-break','overflow-wrap','hyphens']
     .forEach(p => measurer.style.setProperty(p, cs.getPropertyValue(p)));
 
   function getLineHeightPx(){

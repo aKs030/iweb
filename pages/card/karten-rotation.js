@@ -1,20 +1,20 @@
 // Zentrale Utilities nutzen
-import { shuffle as shuffleArray, prefersReducedMotion, TimerManager } from "../../content/webentwicklung/utils/common-utils.js";
-import { createLogger } from "../../content/webentwicklung/utils/logger.js";
+import { shuffle as shuffleArray, prefersReducedMotion, TimerManager } from '../../content/webentwicklung/utils/common-utils.js';
+import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
 (() => {
-  "use strict";
+  'use strict';
   if (window.FeatureRotation) return;
 
-  const SECTION_ID = "features";
+  const SECTION_ID = 'features';
   const log = createLogger('features');
-  const TEMPLATE_IDS = ["template-features-1","template-features-2","template-features-3","template-features-4","template-features-5"];
-  const TEMPLATE_URL = "/pages/card/karten.html";
+  const TEMPLATE_IDS = ['template-features-1','template-features-2','template-features-3','template-features-4','template-features-5'];
+  const TEMPLATE_URL = '/pages/card/karten.html';
 
   // Default-Animationen (ms) können via data-attribute am Section-Element überschrieben werden
   const DEFAULT_ANIM_OUT = 200;
   const DEFAULT_ANIM_IN = 400;
-  const DEFAULT_EASE = "cubic-bezier(0.25,0.46,0.45,0.94)";
+  const DEFAULT_EASE = 'cubic-bezier(0.25,0.46,0.45,0.94)';
   const THRESHOLDS = [0, .1, .25, .35, .5, .75, 1];
   const ENTER = 0.45, EXIT = 0.35, COOLDOWN = 500;
   const REDUCED = prefersReducedMotion();
@@ -35,22 +35,22 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
     const url = srcOverride || TEMPLATE_URL;
     if (TEMPLATE_IDS.some(id => byId(id))) {
       loaded = true;
-      document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
+      document.dispatchEvent(new CustomEvent('featuresTemplatesLoaded'));
       return;
     }
     try {
-      const res = await fetch(url, { credentials: "same-origin" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const wrap = document.createElement("div");
-      wrap.style.display = "none";
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const wrap = document.createElement('div');
+      wrap.style.display = 'none';
       wrap.innerHTML = await res.text();
       document.body.appendChild(wrap);
       loaded = true;
       log.info('Templates geladen', { url });
-      document.dispatchEvent(new CustomEvent("featuresTemplatesLoaded"));
+      document.dispatchEvent(new CustomEvent('featuresTemplatesLoaded'));
     } catch (error) {
       log.error('Templates laden fehlgeschlagen', url, error);
-      document.dispatchEvent(new CustomEvent("featuresTemplatesError", { detail: { error, url } }));
+      document.dispatchEvent(new CustomEvent('featuresTemplatesError', { detail: { error, url } }));
     }
   }
 
@@ -61,8 +61,8 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
     // Animationsdauer dynamisch vom DOM lesen (erste Nutzung cached implizit im closure via locals)
     const ANIM_IN = Number(section.dataset.animIn || DEFAULT_ANIM_IN);
     const ANIM_OUT = Number(section.dataset.animOut || DEFAULT_ANIM_OUT);
-      const EASE = section.dataset.animEase || DEFAULT_EASE;
-      const LIVE_LABEL_PREFIX = section.dataset.liveLabel || "Feature";
+    const EASE = section.dataset.animEase || DEFAULT_EASE;
+    const LIVE_LABEL_PREFIX = section.dataset.liveLabel || 'Feature';
 
     if (anim && !initial) { queued = true; return; }
     anim = true;
@@ -93,7 +93,7 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
         section.appendChild(live);
       }
       // Kurz Textinfo zum aktuellen Template liefern (entwicklerfreundlich anpassbar)
-        live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
+      live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
       section.dataset.currentTemplate = templateId;
       try {
         const currentIndex = order.indexOf(templateId);
@@ -101,14 +101,14 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
         document.dispatchEvent(new CustomEvent('features:change', { detail: { index: currentIndex, total, id: templateId } }));
       } catch {}
 
-      if (REDUCED) { section.style.opacity = "1"; section.style.transform = "none"; done(); return; }
+      if (REDUCED) { section.style.opacity = '1'; section.style.transform = 'none'; done(); return; }
 
-      section.style.opacity = "0";
-      section.style.transform = "translateY(10px)";
+      section.style.opacity = '0';
+      section.style.transform = 'translateY(10px)';
       section.style.transition = `transform ${ANIM_IN}ms ${EASE}, opacity ${ANIM_IN}ms ${EASE}`;
       doubleRAF(() => {
-        section.style.opacity = "1";
-        section.style.transform = "translateY(0)";
+        section.style.opacity = '1';
+        section.style.transform = 'translateY(0)';
       });
       later(done, ANIM_IN);
     };
@@ -116,13 +116,13 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
     if (initial || !section.dataset.currentTemplate || REDUCED) { mountNew(); return; }
 
     section.style.transition = `transform ${ANIM_OUT}ms ${EASE}, opacity ${ANIM_OUT}ms ${EASE}`;
-    section.style.opacity = "0";
-    section.style.transform = "translateY(-5px)";
+    section.style.opacity = '0';
+    section.style.transform = 'translateY(-5px)';
     later(mountNew, ANIM_OUT);
   }
 
   function rotateDifferent() {
-  if (!order.length) { log.warn('Keine Templates vorhanden'); return; }
+    if (!order.length) { log.warn('Keine Templates vorhanden'); return; }
     if (order.length === 1) { mount(order[i]); return; }
     function getSecureRandomInt(max) {
       const array = new Uint32Array(1);
@@ -161,14 +161,14 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
   }
 
   async function init() {
-  order = shuffleArray([...TEMPLATE_IDS]);
-  log.debug('Initiale Reihenfolge', order);
+    order = shuffleArray([...TEMPLATE_IDS]);
+    log.debug('Initiale Reihenfolge', order);
     observe();
 
     const section = byId(SECTION_ID);
     if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) mount(order[i], true);
 
-  if (!loaded) { await ensureTemplates(section); mountInitialIfNeeded(); }
+    if (!loaded) { await ensureTemplates(section); mountInitialIfNeeded(); }
   }
 
   window.FeatureRotation = {
@@ -177,7 +177,7 @@ import { createLogger } from "../../content/webentwicklung/utils/logger.js";
     destroy() { io?.disconnect(); io=null; clearTimers(); log.info('FeatureRotation zerstört'); delete window.FeatureRotation; }
   };
 
-  document.addEventListener("featuresTemplatesLoaded", mountInitialIfNeeded, { once:false });
-  (document.readyState === "loading") ? document.addEventListener("DOMContentLoaded", init, { once:true }) : init();
+  document.addEventListener('featuresTemplatesLoaded', mountInitialIfNeeded, { once:false });
+  (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init, { once:true }) : init();
   log.info('FeatureRotation initialisiert (pending Templates)');
 })();

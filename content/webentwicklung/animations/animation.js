@@ -2,26 +2,26 @@
 // Fallback-Implementierung für Kompatibilität
 const checkReducedMotionAnimations = () => {
   try {
-    const saved = localStorage.getItem("pref-reduce-motion");
-    return saved === "1" || (saved === null && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const saved = localStorage.getItem('pref-reduce-motion');
+    return saved === '1' || (saved === null && matchMedia('(prefers-reduced-motion: reduce)').matches);
   } catch {
-    return matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 };
 
 (() => {
-  "use strict";
+  'use strict';
   if (window.AnimationSystem) return;
 
-  const ATTR = { anim: "data-animation", delay: "data-delay", dur: "data-duration", ease: "data-easing", once: "data-once" };
-  const CLS  = { base: "animate-element", vis: "is-visible", run: "is-animating" };
+  const ATTR = { anim: 'data-animation', delay: 'data-delay', dur: 'data-duration', ease: 'data-easing', once: 'data-once' };
+  const CLS  = { base: 'animate-element', vis: 'is-visible', run: 'is-animating' };
   const REDUCED = checkReducedMotionAnimations();
   const elements = new Set();
   const seenOnce = new WeakSet();
   const observed = new WeakSet();
 
   // Enhanced Scroll Snap state – fehlende Variablen sauber deklarieren
-  let snapSections = [];
+  const snapSections = [];
   let currentSnapIndex = 0;
   let snapLocked = false;
   let lockScrollHandler = null;
@@ -30,7 +30,7 @@ const checkReducedMotionAnimations = () => {
   let touchArmed = false;
   let touchMoveCount = 0;
   let snapObserver = null;
-  let resetTouchState = null;
+  const resetTouchState = null;
   let dir = 'down';
   let lastY = 0;
   let rafScheduled = false;
@@ -42,7 +42,7 @@ const checkReducedMotionAnimations = () => {
   // ---- helpers ------------------------------------------------------------
   const numAttr = (el, name, fb) => {
     const v = el.getAttribute(name);
-    if (v == null || v === "") return fb;
+    if (v == null || v === '') return fb;
     const n = parseInt(v, 10); return Number.isNaN(n) ? fb : n;
   };
 
@@ -246,9 +246,9 @@ const checkReducedMotionAnimations = () => {
 
     // CSS nur einmal injizieren, eindeutig namespacen
     (function ensureCSS(){
-      if (document.getElementById("anim-css-v2")) return;
-      const s = document.createElement("style");
-      s.id = "anim-css-v2";
+      if (document.getElementById('anim-css-v2')) return;
+      const s = document.createElement('style');
+      s.id = 'anim-css-v2';
       s.textContent = `
         .${CLS.base}{opacity:0;transform:translateY(24px);transition-property:opacity,transform;transition-duration:.6s;transition-timing-function:cubic-bezier(.25,.46,.45,.94);will-change:opacity,transform}
         .${CLS.base}.${CLS.vis}{opacity:1;transform:none}
@@ -269,8 +269,8 @@ const checkReducedMotionAnimations = () => {
   const setup = (el) => {
     const type = el.getAttribute(ATTR.anim);
     if (!type) return;
-    el.classList.add(CLS.base, "animate-" + type);
-    el.style.transitionDuration = (numAttr(el, ATTR.dur, 600)) + "ms";
+    el.classList.add(CLS.base, 'animate-' + type);
+    el.style.transitionDuration = (numAttr(el, ATTR.dur, 600)) + 'ms';
     const ease = el.getAttribute(ATTR.ease);
     if (ease) el.style.transitionTimingFunction = ease;
     if (REDUCED) el.classList.add(CLS.vis);
@@ -281,12 +281,12 @@ const checkReducedMotionAnimations = () => {
     const delay = numAttr(el, ATTR.delay, 0);
     const dur   = numAttr(el, ATTR.dur, 600);
     el.classList.add(CLS.run);
-    if (delay) el.style.transitionDelay = delay + "ms";
+    if (delay) el.style.transitionDelay = delay + 'ms';
     el.classList.add(CLS.vis);
     const total = delay + dur;
     window.setTimeout(() => {
       el.classList.remove(CLS.run);
-      if (delay) el.style.transitionDelay = "";
+      if (delay) el.style.transitionDelay = '';
       if (el.hasAttribute(ATTR.once)) seenOnce.add(el);
     }, total);
   };
@@ -295,14 +295,14 @@ const checkReducedMotionAnimations = () => {
     if (!el || REDUCED) return;
     if (seenOnce.has(el)) return;
     el.classList.remove(CLS.vis, CLS.run);
-    el.style.transitionDelay = "";
+    el.style.transitionDelay = '';
   };
 
   const io = !REDUCED && new IntersectionObserver((entries) => {
     for (const entry of entries) {
       const el = entry.target;
       if (entry.isIntersecting) {
-        if (dir === "up" && !seenOnce.has(el)) { 
+        if (dir === 'up' && !seenOnce.has(el)) { 
           reset(el); 
           requestAnimationFrame(() => animateIn(el)); 
         } else {
@@ -314,13 +314,13 @@ const checkReducedMotionAnimations = () => {
     }
   }, {
     root: null,
-    rootMargin: "0px 0px -10% 0px",
+    rootMargin: '0px 0px -10% 0px',
     threshold: 0.1
   });
 
   const onScroll = () => {
-    const y = window.scrollY; dir = y < lastY ? "up" : "down"; lastY = y;
-    if (REDUCED || dir !== "up" || rafScheduled) return;
+    const y = window.scrollY; dir = y < lastY ? 'up' : 'down'; lastY = y;
+    if (REDUCED || dir !== 'up' || rafScheduled) return;
 
     rafScheduled = true;
     requestAnimationFrame(() => {
@@ -348,14 +348,14 @@ const checkReducedMotionAnimations = () => {
 
   const mo = new MutationObserver((ms) => {
     for (const m of ms) {
-      if (m.type === "childList") {
+      if (m.type === 'childList') {
         m.addedNodes.forEach(n => {
           if (n.nodeType !== 1) return;
           const el = /** @type {Element} */ (n);
           if (el.hasAttribute?.(ATTR.anim)) register(el);
           el.querySelectorAll?.(`[${ATTR.anim}]`).forEach(register);
         });
-      } else if (m.type === "attributes" && m.attributeName === ATTR.anim) {
+      } else if (m.type === 'attributes' && m.attributeName === ATTR.anim) {
         register(m.target);
       }
     }
@@ -365,7 +365,7 @@ const checkReducedMotionAnimations = () => {
     scan();
     initScrollSnap(); // Enhanced Scroll Snap initialisieren (falls benötigt)
     mo.observe(document.documentElement, { subtree:true, childList:true, attributes:true, attributeFilter:[ATTR.anim] });
-    if (!REDUCED) window.addEventListener("scroll", onScroll, { passive:true });
+    if (!REDUCED) window.addEventListener('scroll', onScroll, { passive:true });
   }
 
   function destroy() {
@@ -375,7 +375,7 @@ const checkReducedMotionAnimations = () => {
       io.disconnect();
     }
     mo.disconnect();
-    if (!REDUCED) window.removeEventListener("scroll", onScroll, { passive:true });
+    if (!REDUCED) window.removeEventListener('scroll', onScroll, { passive:true });
     elements.clear();
 
     // Scroll Snap cleanup

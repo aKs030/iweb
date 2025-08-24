@@ -35,7 +35,7 @@ export function flushLogs({ transport, clear = false } = {}) {
 
 // Ermittelt global konfigurierten Level (window.LOG_LEVEL oder Fallback); akzeptiert Name oder Zahl
 function resolveGlobalLevel() {
-  let gl = (typeof window !== 'undefined') ? (window.LOG_LEVEL ?? window.LOGLEVEL ?? window.logLevel) : undefined;
+  const gl = (typeof window !== 'undefined') ? (window.LOG_LEVEL ?? window.LOGLEVEL ?? window.logLevel) : undefined;
   if (gl == null) {
     // DEBUG true erzwingt debug-Level
     if (typeof window !== 'undefined' && typeof window.DEBUG !== 'undefined') {
@@ -114,7 +114,7 @@ if (typeof window !== 'undefined' && !window.__logLevelPatched) {
   } catch (_err) {
     // Fallback: direkte Zuweisung ohne Getter/Setter + einfache Warnung
     window.LOG_LEVEL = _lv;
-  console.warn('[logger] Konnte window.LOG_LEVEL Property nicht definieren:', _err);
+    console.warn('[logger] Konnte window.LOG_LEVEL Property nicht definieren:', _err);
   }
   window.__logLevelPatched = true;
 }

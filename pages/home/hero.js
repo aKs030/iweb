@@ -1,5 +1,5 @@
 // Dynamisches Laden der Hero Section (ES Modul)
-import { createLogger, safeCall } from "../../content/webentwicklung/utils/logger.js";
+import { createLogger, safeCall } from '../../content/webentwicklung/utils/logger.js';
 const log = createLogger('hero');
 
 (async function(){
@@ -36,17 +36,17 @@ const log = createLogger('hero');
         sk.addEventListener('transitionend', () => sk.remove(), { once:true });
       });
     }
-  host.removeAttribute('aria-busy');
-  document.dispatchEvent(new CustomEvent('hero:loaded'));
+    host.removeAttribute('aria-busy');
+    document.dispatchEvent(new CustomEvent('hero:loaded'));
   } catch(err){
     log.error('Laden fehlgeschlagen:', err);
     done = true;
     clearTimeout(fallbackTimer);
-  if (skeleton) {
+    if (skeleton) {
       skeleton.classList.add('fade-out');
       skeleton.addEventListener('transitionend', () => skeleton.remove(), { once:true });
     }
-  host.removeAttribute('aria-busy');
+    host.removeAttribute('aria-busy');
   }
 })();
 

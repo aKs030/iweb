@@ -1,4 +1,4 @@
-import { createLogger } from "../../content/webentwicklung/utils/logger.js";
+import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
 const log = createLogger('about');
 

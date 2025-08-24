@@ -66,7 +66,7 @@ function initializeMenu(container) {
       if (event.key === 'Enter') toggle();
     });
   } else {
-  logMenu.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
+    logMenu.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
   }
 }
 
@@ -82,7 +82,7 @@ function initializeLogo(container) {
       window.location.href = '/index.html';
     });
   } else {
-  logMenu.warn('Logo-Container konnte nicht gefunden werden.');
+    logMenu.warn('Logo-Container konnte nicht gefunden werden.');
   }
 }
 
