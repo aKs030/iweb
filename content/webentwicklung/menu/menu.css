@@ -156,9 +156,10 @@ html, body {
   border-radius: 2px;
   transition: 0.3s;
 }
-.site-menu__toggle:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-link);
+.site-menu__toggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
 }
 .site-menu__toggle.active .site-menu__hamburger { background: transparent; }
 .site-menu__toggle.active .site-menu__hamburger::before {
@@ -280,10 +281,13 @@ main { margin-top: var(--header-height, 72px); padding: 1rem; }
 
 /* ===== Fokus Styles & Accessibility ===== */
 .site-menu__list li a:focus-visible,
-.site-menu__list .submenu li a:focus-visible {
-  outline: 2px solid var(--color-link);
-  outline-offset: 2px;
-  background: rgba(0, 119, 255, 0.08);
+.site-menu__list .submenu li a:focus-visible,
+.submenu-toggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  background: rgba(0, 119, 255, 0.12);
+  border-radius: 6px;
 }
 
 /* ===== Aktiver Link ===== */
@@ -298,7 +302,7 @@ main { margin-top: var(--header-height, 72px); padding: 1rem; }
 }
 
 /* ===== Submenu-Pfeil ===== */
-.has-submenu > a::after {
+.has-submenu > a::after, .has-submenu > .submenu-toggle::after {
   content: "▼";
   display: inline-block;
   margin-left: 6px;
@@ -307,7 +311,9 @@ main { margin-top: var(--header-height, 72px); padding: 1rem; }
   transition: transform 0.18s;
 }
 .has-submenu:hover > a::after,
-.has-submenu:focus-within > a::after {
+.has-submenu:focus-within > a::after,
+.has-submenu:hover > .submenu-toggle::after,
+.has-submenu:focus-within > .submenu-toggle::after {
   transform: rotate(-180deg);
 }
 

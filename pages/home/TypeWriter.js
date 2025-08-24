@@ -120,6 +120,11 @@ export default class TypeWriter {
     delay = this._applyPunctuationPause(delay);
 
     if (!this._isDeleting && this._txt === full) {
+      // Vollständiger Text getippt -> Event feuern (einmal pro Quote)
+      try {
+        const ev = new CustomEvent('hero:typingEnd', { detail: { text: full, author } });
+        document.dispatchEvent(ev);
+      } catch {}
       delay = this.wait;
       this._isDeleting = true;
     } else if (this._isDeleting && this._txt === '') {

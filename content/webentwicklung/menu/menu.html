@@ -9,16 +9,14 @@
 
     <header class="site-header">
       <!-- Logo -->
-      <a href="/index.html" aria-label="Zur Startseite" title="Zur Startseite">
+      <a href="/index.html" class="site-logo-link">
         <span class="site-logo__container">
-          <span class="site-logo elegant-logo" id="site-title">
-            <!-- Seitentitel wird per JS eingefügt -->
-          </span>
+          <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
         </span>
       </a>
 
   <!-- Hamburger-Button -->
-  <button type="button" class="site-menu__toggle" aria-label="Menü umschalten">
+  <button type="button" class="site-menu__toggle" aria-label="Menü" aria-controls="site-menu" aria-expanded="false">
         <span class="site-menu__hamburger"></span>
       </button>
 
@@ -41,9 +39,9 @@
             </a>
           </li>
           <li class="has-submenu">
-            <a href="#" aria-haspopup="true">
+            <button type="button" class="submenu-toggle" aria-haspopup="true" aria-expanded="false">
               <i class="fa-solid fa-gamepad" aria-hidden="true"></i> Spiele
-            </a>
+            </button>
             <ul class="submenu">
               <li>
                 <a href="/pages/spiele/space-defender.html">

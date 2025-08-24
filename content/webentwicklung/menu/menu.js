@@ -90,15 +90,17 @@ function initializeLogo(container) {
  * Initialisiert die Submenu-Links
  */
 function initializeSubmenuLinks() {
-  const submenuLinks = document.querySelectorAll('.has-submenu > a');
-  submenuLinks.forEach(link => {
-    link.addEventListener('click', (event) => {
-      // event.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
-      const submenu = link.nextElementSibling;
+  const submenuButtons = document.querySelectorAll('.has-submenu > .submenu-toggle');
+  submenuButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const submenu = btn.nextElementSibling;
+      const open = submenu.style.display === 'block';
+      // Close others
       document.querySelectorAll('.submenu').forEach(sm => {
         if (sm !== submenu) sm.style.display = 'none';
       });
-      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+      submenu.style.display = open ? 'none' : 'block';
+      btn.setAttribute('aria-expanded', String(!open));
     });
   });
 }

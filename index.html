@@ -29,6 +29,7 @@
     <title>Abdulkerim - Digital Portfolio</title>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
   <!-- Menü (dynamisch geladen) -->
   <div id="menu-container"></div>
 
@@ -43,6 +44,10 @@
     <div class="gradient-overlay"></div>
   </div>
 
+  <!-- ARIA Live Regions -->
+  <div id="live-region-status" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  <div id="live-region-assertive" class="visually-hidden" aria-live="assertive" aria-atomic="true"></div>
+
 
   <!-- Global Hero Subtitle (jetzt außerhalb des dynamisch geladenen Hero-Inhalts) -->
   <p class="hero-subtitle hero-subtitle--fixed" data-offset-mode="full">
@@ -50,6 +55,7 @@
     <span id="typedText" class="typed-text"></span>
   </p>
 
+  <main id="main-content" tabindex="-1">
   <!-- Sections (dynamisch geladen via SectionLoader) -->
   <section
     id="hero"
@@ -64,7 +70,7 @@
   </section>
 
   <!-- Card Section -->
-<section
+  <section
   id="features"
   class="section features"
   aria-labelledby="features-heading"
@@ -93,6 +99,7 @@
   >
     <div class="section-skeleton" aria-hidden="true"></div>
   </section>
+  </main>
 
 
   <script src="/content/webentwicklung/utils/debug-config.js" defer></script>

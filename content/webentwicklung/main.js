@@ -1,6 +1,22 @@
 // ESM statischer Import zentraler Utilities
 import { throttle } from '../webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from './particles/particle-system.js';
+
+// Globale Live-Region Ankündigungs-Hilfsfunktion (wird von mehreren Modulen / IIFEs genutzt)
+function announce(message, { assertive = false } = {}) {
+  try {
+    const id = assertive ? 'live-region-assertive' : 'live-region-status';
+    const region = document.getElementById(id);
+    if (!region) return;
+    // Reset für Screenreader Re-Announcement
+    region.textContent = '';
+    requestAnimationFrame(() => { region.textContent = message; });
+  } catch {
+    // Fail silently – niemals Fehler werfen wegen A11y Hilfsfunktion
+  }
+}
+// Optional im globalen Namespace verfügbar machen (für Debugging / andere Skripte)
+window.announce = window.announce || announce;
 // --- Snap beim aktiven Scrollen temporär ausschalten
 // SectionLoader: Lädt Sections dynamisch nach
 (() => {
@@ -9,6 +25,8 @@ import { initParticles as _initParticles } from './particles/particle-system.js'
   const SELECTOR = 'section[data-section-src]';
   const SEEN = new WeakSet();
 
+  // (announce wird jetzt global definiert; lokale Definition entfernt)
+
   async function loadInto(section){
     if (SEEN.has(section)) return;
     SEEN.add(section);
@@ -16,6 +34,11 @@ import { initParticles as _initParticles } from './particles/particle-system.js'
     if (!url){ section.removeAttribute('aria-busy'); return; }
     section.setAttribute('aria-busy','true');
     section.dataset.state = 'loading';
+    const labelId = section.getAttribute('aria-labelledby');
+    let sectionName='';
+    if (labelId){ const lbl=document.getElementById(labelId); sectionName = lbl? lbl.textContent.trim():''; }
+    if (!sectionName) sectionName = section.id || 'Abschnitt';
+    announce(`Lade Abschnitt ${sectionName}…`);
     try {
       const res = await fetch(url, { credentials: 'same-origin' });
       if (!res.ok) throw new Error(res.status + ' ' + res.statusText + ' @ ' + url);
@@ -25,9 +48,11 @@ import { initParticles as _initParticles } from './particles/particle-system.js'
       if (tpl) section.appendChild(tpl.content.cloneNode(true));
       section.querySelectorAll('.section-skeleton').forEach(n => n.remove());
       section.dataset.state = 'loaded';
+      announce(`Abschnitt ${sectionName} geladen.`);
     } catch (err) {
       console.error('SectionLoader(fallback):', err);
       section.dataset.state = 'error';
+      announce(`Fehler beim Laden von Abschnitt ${sectionName}.`, { assertive:true });
     } finally {
       section.removeAttribute('aria-busy');
     }
@@ -164,6 +189,21 @@ const checkReducedMotion = () => {
     const el = getElement("greetingText");
     if (!el || el.textContent) return;
     setRandomGreetingHTML();
+    announce('Hero Bereich bereit.');
+  });
+
+  // Hero Typing Ende Ansage
+  document.addEventListener('hero:typingEnd', (e) => {
+    const text = e.detail?.text || 'Text';
+    announce(`Zitat vollständig: ${text}`);
+  });
+
+  // Feature Rotation Live Ansage
+  document.addEventListener('features:change', (e) => {
+    const d = e.detail || {};
+    if (typeof d.index === 'number' && typeof d.total === 'number') {
+      announce(`Feature ${d.index + 1} von ${d.total}`);
+    }
   });
 
   // ===== Menü-Assets on demand =====
@@ -187,6 +227,7 @@ const checkReducedMotion = () => {
     Object.assign(el.style,{ opacity:"0", pointerEvents:"none", visibility:"hidden" });
     const rm=()=>{ el.style.display="none"; el.removeEventListener("transitionend", rm); };
     el.addEventListener("transitionend", rm); setTimeout(rm, 700);
+    announce('Initiales Laden abgeschlossen.');
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
