@@ -126,11 +126,25 @@ const checkReducedMotion = () => {
   // ===== Gecachte DOM-Elemente =====
   const cachedElements = {};
   
+  /**
+   * Sicherer DOM-Cache: speichert Elemente nach id, prüft ob die gespeicherte
+   * Referenz noch mit dem DOM verbunden ist (isConnected). Falls nicht, wird
+   * das Element neu via document.getElementById geholt und der Cache aktualisiert.
+   * Das verhindert stale/detached Node-Referenzen nach dynamischem Nachladen
+   * von Sections (SectionLoader/innerHTML) und beseitigt Race-Conditions beim
+   * erneuten Zugriff (z.B. beim Setzen des Begrüßungstextes nach Reload).
+   */
   const getElement = (id) => {
-    if (!cachedElements[id]) {
-      cachedElements[id] = document.getElementById(id);
+    try {
+      const cached = cachedElements[id];
+      if (cached?.isConnected) return cached;
+      const fresh = document.getElementById(id) || null;
+      cachedElements[id] = fresh;
+      return fresh;
+    } catch {
+      // Defensive: im Fehlerfall null zurückgeben
+      return null;
     }
-    return cachedElements[id];
   };
 
   async function loadTyped() {
@@ -187,11 +201,26 @@ const checkReducedMotion = () => {
   // ===== Greetings =====
   const ensureHeroData = async () => heroData || (heroData = await import('../../pages/home/hero-data.js').catch(() => ({})));
   async function setRandomGreetingHTML(animated=false) {
-    const el = getElement('greetingText'); if (!el) return;
+    // Wenn das Element kurzzeitig noch nicht im DOM ist (race), retry kurz mehrfach.
+    const delays = [0, 50, 120, 240, 480];
+    let el = null;
+    for (const d of delays) {
+      if (d) await new Promise(r => setTimeout(r, d));
+      el = getElement('greetingText');
+      if (el) break;
+    }
+    if (!el) {
+      if (window.DEBUG) console.warn('[greeting] greetingText not found after retries');
+      return; // immer noch kein Element -> aufgeben
+    }
+
     const mod = await ensureHeroData();
     const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
     const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
-    if (!next) return;
+    if (!next) {
+      if (window.DEBUG) console.warn('[greeting] no greeting selected (empty set?)');
+      return;
+    }
     el.dataset.last = next;
     if (animated) { el.classList.add('fade'); setTimeout(() => { el.textContent = next; el.classList.remove('fade'); }, 360); }
     else el.textContent = next;
@@ -200,10 +229,29 @@ const checkReducedMotion = () => {
   // Sicherstellen, dass der Gruß nach dem Laden des Hero-Markups gesetzt wird
   document.addEventListener('hero:loaded', () => {
     const el = getElement('greetingText');
-    if (!el || el.textContent) return;
+    if (window.DEBUG) {
+      console.warn('[greeting] hero:loaded - element?', !!el, 'text:', el?.textContent);
+    }
+    if (!el || el.textContent) {
+      return;
+    }
     setRandomGreetingHTML();
     announce('Hero Bereich bereit.');
   });
+
+  // Fallback: falls hero bereits vorhanden vor hero:loaded, versuchen wir beim DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.DEBUG) {
+      console.warn('[greeting] DOMContentLoaded fallback check');
+    }
+    const el = getElement('greetingText');
+    if (!el) {
+      return;
+    }
+    if (!el.textContent) {
+      setRandomGreetingHTML();
+    }
+  }, { once: true });
 
   // Hero Typing Ende Ansage
   document.addEventListener('hero:typingEnd', (e) => {
