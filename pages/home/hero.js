@@ -53,8 +53,8 @@ const log = createLogger('hero');
 // Re-Init hero-bezogene Features nach Laden
 document.addEventListener('hero:loaded', () => {
   safeCall(() => window.__initTyping?.(), { logger: log, label: '__initTyping' });
-  if(typeof initParticles === 'function') {
+  if(typeof window.initParticles === 'function') {
     const canvas = document.getElementById('particleCanvas');
-    if(canvas && !canvas.__initialized){ safeCall(() => initParticles(), { logger: log, label: 'initParticles' }); canvas.__initialized = true; }
+    if(canvas && !canvas.__initialized){ safeCall(() => window.initParticles(), { logger: log, label: 'initParticles' }); canvas.__initialized = true; }
   }
 });

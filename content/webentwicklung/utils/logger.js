@@ -14,9 +14,15 @@ function pushToBuffer(entry) {
   // Event dispatch für UI / Tools
   try {
     window.dispatchEvent(new CustomEvent('logEvent', { detail: entry }));
-  } catch {}
+  } catch {
+    // Ignore event dispatch errors in case window is not available
+  }
   if (entry.level === 'error' && autoFlushHandler) {
-    try { autoFlushHandler(getBufferedLogs()); } catch {}
+    try { 
+      autoFlushHandler(getBufferedLogs()); 
+    } catch (error) {
+      console.warn('[logger] auto flush failed:', error);
+    }
   }
 }
 
@@ -36,7 +42,7 @@ export function flushLogs({ transport, clear = false } = {}) {
 // Ermittelt global konfigurierten Level (window.LOG_LEVEL oder Fallback); akzeptiert Name oder Zahl
 function resolveGlobalLevel() {
   const gl = (typeof window !== 'undefined') ? (window.LOG_LEVEL ?? window.LOGLEVEL ?? window.logLevel) : undefined;
-  if (gl == null) {
+  if (gl === null || gl === undefined) {
     // DEBUG true erzwingt debug-Level
     if (typeof window !== 'undefined' && typeof window.DEBUG !== 'undefined') {
       return window.DEBUG ? LEVELS.debug : LEVELS.info;
@@ -79,8 +85,8 @@ export function createLogger(namespace = 'app') {
   return {
     error: (...args) => base('error', console.error, args),
     warn:  (...args) => base('warn', console.warn, args),
-    info:  (...args) => base('info', console.info, args),
-    debug: (...args) => base('debug', console.debug, args),
+    info:  (...args) => base('info', (...logArgs) => console.warn('INFO:', ...logArgs), args),
+    debug: (...args) => base('debug', (...logArgs) => console.warn('DEBUG:', ...logArgs), args),
     setLevel: (l) => setGlobalLogLevel(l),
     getLevel: () => GLOBAL_LEVEL,
     levels: { ...LEVELS },

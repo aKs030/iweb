@@ -193,7 +193,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     // avoid regex with backtracking by splitting on comma and trimming spaces
     const parts = m[1].split(',').map(s => Number(s.trim()));
     if (parts.length < 3) return null;
-    const [r,g,b] = parts; const a = parts[3]!=null ? parseFloat(parts[3]) : 1;
+    const [r,g,b] = parts; const a = parts[3] !== null && parts[3] !== undefined ? parseFloat(parts[3]) : 1;
     if([r,g,b].some(n => Number.isNaN(n))) return null;
     return { r:clamp(r,0,255), g:clamp(g,0,255), b:clamp(b,0,255), a:clamp(a,0,1) };
   }

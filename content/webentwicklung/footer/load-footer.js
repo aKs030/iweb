@@ -26,7 +26,7 @@
           document.documentElement.style.setProperty('--footer-height', h + 'px');
         };
         const scheduleSetFooterHeight = () => {
-          if (rafId != null) return;
+          if (rafId !== null) return;
           rafId = requestAnimationFrame(() => {
             rafId = null;
             setFooterHeight();
@@ -36,7 +36,7 @@
         setFooterHeight();
         // ResizeObserver für dynamische Änderung (debounced)
         if (window.ResizeObserver) {
-          const ro = new ResizeObserver(entries => {
+          const ro = new ResizeObserver(_entries => {
             // schedule once per frame
             scheduleSetFooterHeight();
           });

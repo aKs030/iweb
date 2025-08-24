@@ -50,6 +50,13 @@ export function pickGreeting(lastValue = null, set = getGreetingSet()){
   return candidate;
 }
 
+// TypeWriter Konfiguration
+export const typewriterConfig = {
+  speed: 100,
+  wait: 2000,
+  punctuationPause: 300
+};
+
 // Hero Visibility / Observer Einstellungen
 export const heroObserverConfig = {
   threshold: [0, 0.25, 0.5, 0.75, 1],

@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/63</span>
+                <span class='fraction'>0/71</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/63</span>
+                <span class='fraction'>0/71</span>
             </div>
         
             
@@ -132,9 +132,25 @@
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
 <a name='L69'></a><a href='#L69'>69</a>
-<a name='L70'></a><a href='#L70'>70</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -217,15 +233,23 @@
 <span class="cstat-no" title="statement not covered" >  header.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:4px;font-weight:600;font-size:11px';</span>
 <span class="cstat-no" title="statement not covered" >  header.innerHTML = '&lt;span&gt;Debug Overlay&lt;/span&gt;';</span>
 <span class="cstat-no" title="statement not covered" >  const levelSel = document.createElement('select');</span>
-<span class="cstat-no" title="statement not covered" >  ['error','warn','info','debug'].forEach(l =&gt; { const o=document.createElement('option'); o.value=l; o.textContent=l; levelSel.appendChild(o); });</span>
-<span class="cstat-no" title="statement not covered" >  const setSel = () =&gt; { const cur = Object.entries(window.__logger.levels).find(([k,v]) =&gt; v===getGlobalLogLevel()); if (cur) levelSel.value=cur[0]; };</span>
+<span class="cstat-no" title="statement not covered" >  ['error','warn','info','debug'].forEach(l =&gt; { </span>
+<span class="cstat-no" title="statement not covered" >    const o=document.createElement('option'); </span>
+<span class="cstat-no" title="statement not covered" >    o.value=l; </span>
+<span class="cstat-no" title="statement not covered" >    o.textContent=l; </span>
+<span class="cstat-no" title="statement not covered" >    levelSel.appendChild(o); </span>
+<span class="cstat-no" title="statement not covered" >  });</span>
+<span class="cstat-no" title="statement not covered" >  const setSel = () =&gt; { </span>
+<span class="cstat-no" title="statement not covered" >    const cur = Object.entries(window.__logger.levels).find(([_k,v]) =&gt; v===getGlobalLogLevel()); </span>
+<span class="cstat-no" title="statement not covered" >    if (cur) levelSel.value=cur[0]; </span>
+<span class="cstat-no" title="statement not covered" >  };</span>
 <span class="cstat-no" title="statement not covered" >  setSel();</span>
 <span class="cstat-no" title="statement not covered" >  levelSel.addEventListener('change', () =&gt; setGlobalLogLevel(levelSel.value));</span>
 <span class="cstat-no" title="statement not covered" >  const btnClear = document.createElement('button'); btnClear.textContent='CLR'; btnClear.style.cssText='font:inherit;background:#333;color:#ddd;border:1px solid #555;border-radius:3px;padding:2px 6px;cursor:pointer';</span>
 <span class="cstat-no" title="statement not covered" >  btnClear.onclick = () =&gt; { window.__logger.buffer.clear(); list.innerHTML=''; };</span>
 <span class="cstat-no" title="statement not covered" >  const btnFlush = document.createElement('button'); btnFlush.textContent='FLUSH'; btnFlush.style.cssText=btnClear.style.cssText; btnFlush.onclick = () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    const data = flushLogs({});</span>
-<span class="cstat-no" title="statement not covered" >    console.log('[overlay flush]', data);</span>
+<span class="cstat-no" title="statement not covered" >    console.warn('[overlay flush]', data);</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
 <span class="cstat-no" title="statement not covered" >  const btnClose = document.createElement('button'); btnClose.textContent='×'; btnClose.style.cssText='margin-left:auto;font:inherit;background:#600;color:#fff;border:1px solid #933;border-radius:3px;padding:2px 6px;cursor:pointer'; btnClose.onclick=() =&gt; root.remove();</span>
 <span class="cstat-no" title="statement not covered" >  header.append(levelSel, btnClear, btnFlush, btnClose);</span>
@@ -256,7 +280,7 @@
 <span class="cstat-no" title="statement not covered" >    listWrap.scrollTop = listWrap.scrollHeight;</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" >  function formatArg(a){</span>
-<span class="cstat-no" title="statement not covered" >    if (a == null) return String(a);</span>
+<span class="cstat-no" title="statement not covered" >    if (a === null || a === undefined) return String(a);</span>
 <span class="cstat-no" title="statement not covered" >    if (typeof a === 'object') { try { return `&lt;code&gt;${escapeHtml(JSON.stringify(a))}&lt;/code&gt;`; } catch { return '&lt;code&gt;[object]&lt;/code&gt;'; } }</span>
 <span class="cstat-no" title="statement not covered" >    if (typeof a === 'string') return escapeHtml(a);</span>
 <span class="cstat-no" title="statement not covered" >    return String(a);</span>
@@ -277,7 +301,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T14:45:56.096Z
+                at 2025-08-24T15:04:00.786Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

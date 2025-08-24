@@ -14,11 +14,11 @@
     const debugParam = params.get('debug');
     const levelParam = params.get('log') ?? params.get('logLevel');
 
-    if (debugParam != null) {
+    if (debugParam !== null && debugParam !== undefined) {
       const val = /^(1|true|on)$/i.test(debugParam);
       ls.setItem('app_debug', val ? '1' : '0');
     }
-    if (levelParam != null) {
+    if (levelParam !== null && levelParam !== undefined) {
       ls.setItem('app_log_level', levelParam);
     }
 

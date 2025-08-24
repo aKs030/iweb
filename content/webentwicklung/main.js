@@ -139,7 +139,13 @@ const checkReducedMotion = () => {
       ['../../pages/home/lineMeasurer.js', m => { makeLineMeasurer = m.makeLineMeasurer || makeLineMeasurer; }],
       ['../../pages/home/quotes-de.js',    m => { quotes = m.default || m.quotes || quotes; }],
     ];
-    for (const [p, h] of mods) { try { h(await import(p)); } catch {} }
+    for (const [p, h] of mods) { 
+      try { 
+        h(await import(p)); 
+      } catch (error) {
+        console.warn(`Failed to load module ${p}:`, error);
+      }
+    }
   }
   function initLazyHeroModules(){
     let loaded = false;
@@ -274,7 +280,9 @@ const checkReducedMotion = () => {
         const hero=getElement('hero'); if(!hero||!window.AnimationSystem) return;
         window.AnimationSystem.scan?.();
         hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add('is-visible'));
-      } catch {}
+      } catch (error) {
+        console.warn('Failed to initialize hero animations:', error);
+      }
     }, 420);
 
     // AOS Auto-Delay (nur wenn nicht gesetzt)

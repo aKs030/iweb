@@ -98,7 +98,9 @@ export function setReducedMotion(enabled) {
   document.body.classList.toggle('reduce-motion', enabled);
   try {
     localStorage.setItem('pref-reduce-motion', enabled ? '1' : '0');
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to save motion preference:', error);
+  }
 }
 
 export function toggleReducedMotion(force) {

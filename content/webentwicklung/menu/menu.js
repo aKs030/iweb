@@ -77,7 +77,7 @@ function initializeMenu(container) {
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
-    logoContainer.addEventListener('contextmenu', (e) => {
+    logoContainer.addEventListener('contextmenu', (_e) => {
       // e.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       window.location.href = '/index.html';
     });
@@ -149,7 +149,9 @@ function setActiveMenuLink() {
       if (norm === path) a.classList.add('active');
       else a.classList.remove('active');
     });
-  } catch {}
+  } catch (error) {
+    logMenu.warn('Error setting active menu link:', error);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

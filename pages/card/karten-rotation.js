@@ -99,7 +99,9 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
         const currentIndex = order.indexOf(templateId);
         const total = order.length;
         document.dispatchEvent(new CustomEvent('features:change', { detail: { index: currentIndex, total, id: templateId } }));
-      } catch {}
+      } catch (error) {
+        console.warn('Failed to dispatch features:change event:', error);
+      }
 
       if (REDUCED) { section.style.opacity = '1'; section.style.transform = 'none'; done(); return; }
 

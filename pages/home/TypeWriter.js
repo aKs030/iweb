@@ -124,7 +124,9 @@ export default class TypeWriter {
       try {
         const ev = new CustomEvent('hero:typingEnd', { detail: { text: full, author } });
         document.dispatchEvent(ev);
-      } catch {}
+      } catch (error) {
+        console.warn('Failed to dispatch hero:typingEnd event:', error);
+      }
       delay = this.wait;
       this._isDeleting = true;
     } else if (this._isDeleting && this._txt === '') {

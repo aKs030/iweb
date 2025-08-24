@@ -178,5 +178,5 @@
     }
   });
 
-  console.log('[PerformanceMonitor] Initialized. Press Ctrl+Shift+P to toggle debug overlay.');
+  console.warn('[PerformanceMonitor] Initialized. Press Ctrl+Shift+P to toggle debug overlay.');
 })();

@@ -14,15 +14,23 @@ import { getBufferedLogs, flushLogs, setGlobalLogLevel, getGlobalLogLevel } from
   header.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:4px;font-weight:600;font-size:11px';
   header.innerHTML = '<span>Debug Overlay</span>';
   const levelSel = document.createElement('select');
-  ['error','warn','info','debug'].forEach(l => { const o=document.createElement('option'); o.value=l; o.textContent=l; levelSel.appendChild(o); });
-  const setSel = () => { const cur = Object.entries(window.__logger.levels).find(([k,v]) => v===getGlobalLogLevel()); if (cur) levelSel.value=cur[0]; };
+  ['error','warn','info','debug'].forEach(l => { 
+    const o=document.createElement('option'); 
+    o.value=l; 
+    o.textContent=l; 
+    levelSel.appendChild(o); 
+  });
+  const setSel = () => { 
+    const cur = Object.entries(window.__logger.levels).find(([_k,v]) => v===getGlobalLogLevel()); 
+    if (cur) levelSel.value=cur[0]; 
+  };
   setSel();
   levelSel.addEventListener('change', () => setGlobalLogLevel(levelSel.value));
   const btnClear = document.createElement('button'); btnClear.textContent='CLR'; btnClear.style.cssText='font:inherit;background:#333;color:#ddd;border:1px solid #555;border-radius:3px;padding:2px 6px;cursor:pointer';
   btnClear.onclick = () => { window.__logger.buffer.clear(); list.innerHTML=''; };
   const btnFlush = document.createElement('button'); btnFlush.textContent='FLUSH'; btnFlush.style.cssText=btnClear.style.cssText; btnFlush.onclick = () => {
     const data = flushLogs({});
-    console.log('[overlay flush]', data);
+    console.warn('[overlay flush]', data);
   };
   const btnClose = document.createElement('button'); btnClose.textContent='×'; btnClose.style.cssText='margin-left:auto;font:inherit;background:#600;color:#fff;border:1px solid #933;border-radius:3px;padding:2px 6px;cursor:pointer'; btnClose.onclick=() => root.remove();
   header.append(levelSel, btnClear, btnFlush, btnClose);
@@ -53,7 +61,7 @@ import { getBufferedLogs, flushLogs, setGlobalLogLevel, getGlobalLogLevel } from
     listWrap.scrollTop = listWrap.scrollHeight;
   }
   function formatArg(a){
-    if (a == null) return String(a);
+    if (a === null || a === undefined) return String(a);
     if (typeof a === 'object') { try { return `<code>${escapeHtml(JSON.stringify(a))}</code>`; } catch { return '<code>[object]</code>'; } }
     if (typeof a === 'string') return escapeHtml(a);
     return String(a);

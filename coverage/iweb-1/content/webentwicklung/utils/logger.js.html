@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">52.58% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>61/116</span>
+                <span class='fraction'>61/122</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">52.58% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>61/116</span>
+                <span class='fraction'>61/122</span>
             </div>
         
             
@@ -191,7 +191,13 @@
 <a name='L126'></a><a href='#L126'>126</a>
 <a name='L127'></a><a href='#L127'>127</a>
 <a name='L128'></a><a href='#L128'>128</a>
-<a name='L129'></a><a href='#L129'>129</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -201,6 +207,12 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -335,9 +347,15 @@ let autoFlushHandler = null; // optionaler Callback
 <span class="cstat-no" title="statement not covered" >  // Event dispatch für UI / Tools</span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
 <span class="cstat-no" title="statement not covered" >    window.dispatchEvent(new CustomEvent('logEvent', { detail: entry }));</span>
-<span class="cstat-no" title="statement not covered" >  } catch {}</span>
+<span class="cstat-no" title="statement not covered" >  } catch {</span>
+<span class="cstat-no" title="statement not covered" >    // Ignore event dispatch errors in case window is not available</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" >  if (entry.level === 'error' &amp;&amp; autoFlushHandler) {</span>
-<span class="cstat-no" title="statement not covered" >    try { autoFlushHandler(getBufferedLogs()); } catch {}</span>
+<span class="cstat-no" title="statement not covered" >    try { </span>
+<span class="cstat-no" title="statement not covered" >      autoFlushHandler(getBufferedLogs()); </span>
+<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >      console.warn('[logger] auto flush failed:', error);</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
@@ -357,7 +375,7 @@ export <span class="fstat-no" title="function not covered" >function flushLogs({
 // Ermittelt global konfigurierten Level (window.LOG_LEVEL oder Fallback); akzeptiert Name oder Zahl
 function resolveGlobalLevel() {
   const gl = (typeof window !== 'undefined') ? (window.LOG_LEVEL ?? window.LOGLEVEL ?? window.logLevel) <span class="branch-0 cbranch-no" title="branch not covered" >: undefined;</span>
-  if (gl == null) {
+  if (gl === null || gl === undefined) {
     // DEBUG true erzwingt debug-Level
     if (typeof window !== 'undefined' &amp;&amp; typeof window.DEBUG !== 'undefined') <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >      return window.DEBUG ? LEVELS.debug : LEVELS.info;</span>
@@ -400,8 +418,8 @@ export function createLogger(namespace = 'app') {
   return {
     error: <span class="fstat-no" title="function not covered" >(...args) =&gt; base('error', console.error, args),</span>
     warn:  <span class="fstat-no" title="function not covered" >(...args) =&gt; base('warn', console.warn, args),</span>
-    info:  <span class="fstat-no" title="function not covered" >(...args) =&gt; base('info', console.info, args),</span>
-    debug: <span class="fstat-no" title="function not covered" >(...args) =&gt; base('debug', console.debug, args),</span>
+    info:  <span class="fstat-no" title="function not covered" >(...args) =&gt; base('info', (...logArgs) =&gt; console.warn('INFO:', ...logArgs), args),</span>
+    debug: <span class="fstat-no" title="function not covered" >(...args) =&gt; base('debug', (...logArgs) =&gt; console.warn('DEBUG:', ...logArgs), args),</span>
     setLevel: <span class="fstat-no" title="function not covered" >(l) =&gt; setGlobalLogLevel(l),</span>
     getLevel: <span class="fstat-no" title="function not covered" >() =&gt; GLOBAL_LEVEL,</span>
     levels: { ...LEVELS },
@@ -454,7 +472,7 @@ window.addEventListener('error', (e) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-24T14:45:56.096Z
+                at 2025-08-24T15:04:00.786Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
