@@ -1,5 +1,8 @@
 name: HTML Validation
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main, master ]
@@ -8,6 +11,9 @@ on:
 
 jobs:
   html-validation:
+    permissions:
+      contents: read
+      issues: write
     runs-on: ubuntu-latest
     
     steps:
