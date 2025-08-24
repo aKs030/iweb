@@ -1,6 +1,15 @@
 /* eslint-disable */
 var addSorting = (function() {
     'use strict';
+    // Escape HTML meta-characters
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
     var cols,
         currentSort = {
             index: 0,
@@ -88,6 +97,8 @@ var addSorting = (function() {
             val = colNode.getAttribute('data-value');
             if (col.type === 'number') {
                 val = Number(val);
+            } else if (val != null) {
+                val = escapeHtml(val);
             }
             data[col.key] = val;
         }
