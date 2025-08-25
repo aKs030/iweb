@@ -1,101 +1,207 @@
-/*
-==============================================
-  HERO BUTTONS - VERBESSERTE VERSION
-==============================================
-*/
+/* Standard Button Base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  min-width: 160px; /* gleiche Breite für Konsistenz */
+  text-align: center;
+}
 
-/*
-  1. Container für die Buttons
-  Positionierung bleibt gleich, aber wir geben ihm etwas mehr Raum.
-*/
+/* Button Variants */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 0 12px rgba(9,139,255,0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 18px rgba(9,139,255,0.55);
+  transform: translateY(-2px);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0; 
+  left: -100%;
+  width: 100%; 
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left var(--transition-slow);
+}
+
+.btn-primary:hover::before { 
+  left: 100%; 
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover { 
+  border-color: var(--primary-color); 
+  color: var(--primary-color); 
+}
+
+.btn-outline {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(9,139,255,0.4);
+  transform: translateY(-2px);
+}
+
+/* Hero Button Container */
 .hero-buttons { 
   display: flex;
-  flex-wrap: wrap; /* Besser für mobile Ansichten */
-  gap: 1.5rem; /* Etwas mehr Abstand */
+  flex-wrap: nowrap;
+  gap: 1rem;
   justify-content: center;
   align-items: center;
+  /* Positionierung unten mittig */
   position: absolute;
-  bottom: 10rem; /* Leicht angepasst für größere Buttons */
+  bottom: 13rem;
   left: 50%;
   transform: translateX(-50%);
   width: fit-content;
   pointer-events: auto;
-  z-index: 10;
 }
 
-/*
-  2. Neue Basis-Styles für die Hero Buttons
-  Wir überschreiben die globalen .btn-Styles gezielt hier.
-*/
-.hero-buttons .btn {
-  /* GRÖSSE & ABMESSUNGEN */
-  padding: 0.9rem 2.25rem; /* Deutlich mehr Padding für mehr "Gewicht" */
-  min-width: 200px; /* Mehr Mindestbreite */
-  font-size: 1.05rem; /* Größere Schrift */
-  font-weight: 600; /* Etwas fetter für bessere Lesbarkeit */
-  letter-spacing: 0.05em; /* Mehr Buchstabenabstand */
-  text-transform: uppercase; /* Verstärkt den Call-to-Action-Charakter */
-  
-  /* ALLGEMEINES STYLING */
-  border-radius: var(--radius-md);
-  border: 2px solid transparent; /* Platzhalter für den Border, vermeidet Springen */
-  cursor: pointer;
-  text-decoration: none;
-  text-align: center;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
-  /* Wichtig für die CRT-Animation */
+.hero-buttons .btn { 
+  padding: 0.5rem 1rem; 
+  font-size: 0.875rem; 
+}
+
+/* CRT Button Styles */
+.btn-crt {
   position: relative;
   isolation: isolate;
-  overflow: visible; /* Ändern von hidden zu visible für den Glow-Effekt */
-}
-
-/*
-  3. Verbesserter Primary Button
-*/
-.hero-buttons .btn-primary {
   background: var(--primary-color);
   color: #fff;
-  /* Ein subtiler, moderner Schatten für mehr Tiefe */
-  box-shadow: 0 4px 15px rgba(9, 139, 255, 0.2), 
-              0 0 2px rgba(9, 139, 255, 0.5) inset;
 }
 
-.hero-buttons .btn-primary:hover {
-  transform: translateY(-4px) scale(1.03); /* Stärkere Interaktion */
-  box-shadow: 0 8px 25px rgba(9, 139, 255, 0.35); /* Schatten hebt sich mehr ab */
+.btn-crt.btn-secondary { 
+  background: transparent; 
 }
 
-/*
-  4. Verbesserter Secondary Button (Glassmorphism-Effekt)
-*/
-.hero-buttons .btn-secondary {
-  /* Frosted-Glass-Effekt */
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px); /* Für Safari-Support */
-  
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  color: var(--text-primary);
+.btn-crt:hover::after { 
+  opacity: 0.4; 
 }
 
-.hero-buttons .btn-secondary:hover {
-  transform: translateY(-4px) scale(1.03);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--primary-color);
+.btn-crt.btn-secondary.animate-element.is-visible {
+  background: var(--bg-card);
+  border: 2px solid var(--primary-color);
   color: var(--primary-color);
 }
-
-/*
-  5. Integration mit der CRT-Animation
-  Die bestehenden CRT-Styles können größtenteils beibehalten werden.
-  Wir stellen nur sicher, dass die Hover-Effekte gut zusammenspielen.
-*/
-
-/* Behalte deine originalen .btn-crt und Keyframe-Animationen bei. */
-/* Die folgenden Regeln sind optional, um die Kompatibilität sicherzustellen */
 
 .btn-crt.btn-secondary.animate-element.is-visible:hover {
   background: var(--primary-color);
   color: #fff;
+}
+
+/* CRT Animation Effects */
+[data-animation="crt"].animate-element {
+  opacity: 0;
+  transform: translateY(20px);
+  filter: brightness(0.4) contrast(120%);
+}
+
+[data-animation="crt"].animate-element.is-visible {
+  animation: 
+    crt-power-on 1600ms cubic-bezier(.22,.61,.36,1) forwards,
+    crt-flicker 4.5s steps(60) 500ms 2;
+  animation-delay: 800ms, 900ms;
+  position: relative;
+  /* Button bleibt unsichtbar bis crt-power-on startet */
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+[data-animation="crt"].animate-element.is-visible::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.06) 0 1px,
+    rgba(0,0,0,0) 1px 3px
+  );
+  mix-blend-mode: overlay;
+  animation: crt-scanlines 120ms linear 800ms infinite;
+  opacity: 0.55;
+}
+
+[data-animation="crt"].animate-element.is-visible::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%);
+  opacity: 0;
+  animation: crt-glow-pulse 3.2s ease-in-out 800ms infinite;
+}
+
+/* CRT Keyframes */
+@keyframes crt-power-on {
+  0%   { filter: brightness(0) contrast(400%); transform: scaleY(0.05) scaleX(1.3); opacity: 0; }
+  8%   { filter: brightness(2.2) contrast(250%); transform: scaleY(0.12) scaleX(1.05); opacity: 1; }
+  18%  { filter: brightness(0.3) contrast(300%); transform: scaleY(0.04) scaleX(1.25); }
+  28%  { filter: brightness(2.4) contrast(180%); transform: scaleY(1.08) scaleX(0.96); }
+  40%  { filter: brightness(1) contrast(110%); transform: scale(1); }
+  60%  { filter: brightness(1.05) contrast(105%); }
+  100% { filter: brightness(1) contrast(100%); transform: scale(1); opacity: 1; }
+}
+
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 0.98; }
+  46% { opacity: 0.82; }
+  47% { opacity: 1; }
+  70% { opacity: 0.96; }
+  71% { opacity: 0.88; }
+  72% { opacity: 1; }
+}
+
+@keyframes crt-scanlines {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+
+@keyframes crt-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(9,139,255,0.0), 0 0 0 rgba(255,255,255,0); }
+  50%      { box-shadow: 0 0 6px rgba(9,139,255,0.35), 0 0 14px rgba(255,255,255,0.12); }
+}
+
+/* Reduced Motion Support */
+body.reduce-motion [data-animation="crt"].animate-element {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+body.reduce-motion [data-animation="crt"].animate-element::before,
+body.reduce-motion [data-animation="crt"].animate-element::after {
+  display: none !important;
 }
