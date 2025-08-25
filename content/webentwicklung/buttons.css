@@ -1,145 +1,167 @@
-/* ========================================
-   Button Styles - Ausgelagert
-   ======================================== */
+/* Globale Variablen für Konsistenz */
+:root {
+  --primary-color: #098bff;
+  --primary-dark: #005cbf;
+  --text-primary: #333;
+  --bg-card: #f8f9fa;
+  --border-color: #ddd;
+  --radius-md: 8px;
+  --spacing-sm: 0.5rem;
+  
+  /* Übergänge */
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
 
-/* Standard Button Base */
+  /* CRT Animations-Variablen */
+  --crt-power-on-duration: 1600ms;
+  --crt-flicker-duration: 4.5s;
+  --crt-glow-pulse-duration: 3.2s;
+  --crt-animation-delay: 800ms;
+}
+
+/* Visually Hidden für Screenreader-optimierte Überschriften */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Hero Sektion Layout (Optimiert) */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Zentriert den Inhalt vertikal */
+  min-height: 100vh; /* Nimmt die volle Bildschirmhöhe ein */
+  padding: 2rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.hero-content {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-visual {
+    /* Stellt sicher, dass der visuelle Teil Platz einnimmt */
+    margin-bottom: 2rem;
+}
+
+.hero-image-container {
+    width: 200px;
+    height: 200px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+}
+
+/* Hero Button Container (Optimiert) */
+.hero-buttons { 
+  display: flex;
+  flex-wrap: wrap; /* Erlaubt Umbruch auf kleinen Bildschirmen */
+  gap: 1rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px; /* Begrenzt die maximale Breite */
+  margin-top: auto; /* Schiebt die Buttons nach unten, wenn Platz ist */
+  padding-top: 2rem; /* Abstand zum oberen Inhalt */
+}
+
+
+/* --- Button Styles --- */
+
+/* Standard Button Basis */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center; /* Zentriert den Text */
   gap: var(--spacing-sm);
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
-  border: none;
+  border: 2px solid transparent; /* Platz für den Rand reservieren */
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-base);
   text-decoration: none;
   position: relative;
   overflow: hidden;
-  min-width: 160px; /* gleiche Breite für Konsistenz */
-  text-align: center;
+  min-width: 180px;
 }
 
-/* Button Variants */
+/* Primärer Button */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: #fff;
-  box-shadow: 0 0 12px rgba(9,139,255,0.3);
+  box-shadow: 0 4px 12px rgba(9, 139, 255, 0.3);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 0 18px rgba(9,139,255,0.55);
+  box-shadow: 0 6px 18px rgba(9, 139, 255, 0.5);
   transform: translateY(-2px);
 }
 
+/* Performance-optimierter Hover-Effekt */
 .btn-primary::before {
   content: '';
   position: absolute;
   top: 0; 
-  left: -100%;
+  left: 0;
   width: 100%; 
   height: 100%;
   background: rgba(255, 255, 255, 0.2);
-  transition: left var(--transition-slow);
+  transform: translateX(-100%);
+  transition: transform var(--transition-slow);
 }
 
 .btn-primary:hover::before { 
-  left: 100%; 
+  transform: translateX(100%);
 }
 
+/* Sekundärer Button */
 .btn-secondary {
   background: transparent;
   color: var(--text-primary);
-  border: 2px solid var(--border-color);
+  border-color: var(--border-color);
 }
 
 .btn-secondary:hover { 
   border-color: var(--primary-color); 
   color: var(--primary-color); 
+  background-color: rgba(9, 139, 255, 0.05);
 }
 
-.btn-outline {
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-  background: transparent;
-  transition: all 0.3s ease;
-}
 
-.btn-outline:hover {
-  background: var(--primary-color);
-  color: #fff;
-  box-shadow: 0 0 12px rgba(9,139,255,0.4);
-  transform: translateY(-2px);
-}
+/* --- CRT (Cathode Ray Tube) Effekt --- */
 
-/* Hero Button Container */
-.hero-buttons { 
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 1rem;
-  justify-content: center;
-  align-items: center;
-  /* Positionierung unten mittig */
-  position: absolute;
-  bottom: 13rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: fit-content;
-  pointer-events: auto;
-}
-
-.hero-buttons .btn { 
-  padding: 0.5rem 1rem; 
-  font-size: 0.875rem; 
-}
-
-/* CRT Button Styles */
 .btn-crt {
-  position: relative;
-  isolation: isolate;
-  background: var(--primary-color);
-  color: #fff;
+  isolation: isolate; /* Erstellt einen neuen Stapelkontext für Pseudo-Elemente */
 }
 
-.btn-crt.btn-secondary { 
-  background: transparent; 
-}
-
-.btn-crt:hover::after { 
-  opacity: 0.4; 
-}
-
-.btn-crt.btn-secondary.animate-element.is-visible {
-  background: var(--bg-card);
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-}
-
-.btn-crt.btn-secondary.animate-element.is-visible:hover {
-  background: var(--primary-color);
-  color: #fff;
-}
-
-/* CRT Animation Effects */
-[data-animation="crt"].animate-element {
+/* Initialer Zustand für die Animation */
+[data-animation="crt"] {
   opacity: 0;
-  transform: translateY(20px);
-  filter: brightness(0.4) contrast(120%);
+  /* Hinweis an den Browser, dass sich diese Eigenschaften ändern werden */
+  will-change: transform, filter, opacity;
 }
 
-[data-animation="crt"].animate-element.is-visible {
+/* Zustand, wenn das Element sichtbar wird und die Animation startet */
+[data-animation="crt"].is-visible {
   animation: 
-    crt-power-on 1600ms cubic-bezier(.22,.61,.36,1) forwards,
-    crt-flicker 4.5s steps(60) 500ms 2;
-  animation-delay: 800ms, 900ms;
-  position: relative;
-  /* Button bleibt unsichtbar bis crt-power-on startet */
-  opacity: 0;
-  animation-fill-mode: forwards;
+    crt-power-on var(--crt-power-on-duration) cubic-bezier(.22,.61,.36,1) var(--crt-animation-delay) forwards,
+    crt-flicker var(--crt-flicker-duration) steps(60) var(--crt-animation-delay) 2;
 }
 
-[data-animation="crt"].animate-element.is-visible::before {
+/* Scanlines-Effekt (horizontale Linien) */
+[data-animation="crt"].is-visible::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -148,25 +170,41 @@
   background: repeating-linear-gradient(
     0deg,
     rgba(255,255,255,0.06) 0 1px,
-    rgba(0,0,0,0) 1px 3px
+    transparent 1px 3px
   );
   mix-blend-mode: overlay;
-  animation: crt-scanlines 120ms linear 800ms infinite;
+  animation: crt-scanlines 120ms linear var(--crt-animation-delay) infinite;
   opacity: 0.55;
 }
 
-[data-animation="crt"].animate-element.is-visible::after {
+/* Glow-Effekt (pulsierendes Leuchten) */
+[data-animation="crt"].is-visible::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 2;
-  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%);
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.45), transparent 60%);
   opacity: 0;
-  animation: crt-glow-pulse 3.2s ease-in-out 800ms infinite;
+  animation: crt-glow-pulse var(--crt-glow-pulse-duration) ease-in-out var(--crt-animation-delay) infinite;
 }
 
-/* CRT Keyframes */
+/* Spezifische Hover-Anpassungen für den sekundären CRT-Button */
+.btn-crt.btn-secondary.is-visible {
+  background: var(--bg-card);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-crt.btn-secondary.is-visible:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+
+/* --- CRT Keyframes --- */
+
+/* Simuliert das "Einschalten" eines alten Röhrenbildschirms */
 @keyframes crt-power-on {
   0%   { filter: brightness(0) contrast(400%); transform: scaleY(0.05) scaleX(1.3); opacity: 0; }
   8%   { filter: brightness(2.2) contrast(250%); transform: scaleY(0.12) scaleX(1.05); opacity: 1; }
@@ -177,6 +215,7 @@
   100% { filter: brightness(1) contrast(100%); transform: scale(1); opacity: 1; }
 }
 
+/* Simuliert ein leichtes Flackern des Bildschirms */
 @keyframes crt-flicker {
   0%, 100% { opacity: 1; }
   45% { opacity: 0.98; }
@@ -187,25 +226,37 @@
   72% { opacity: 1; }
 }
 
+/* Bewegt die Scanlines, um einen dynamischen Effekt zu erzeugen */
 @keyframes crt-scanlines {
-  0%   { background-position: 0 0; }
-  100% { background-position: 0 4px; }
+  to { background-position: 0 4px; }
 }
 
+/* Lässt den Button leicht pulsieren */
 @keyframes crt-glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 rgba(9,139,255,0.0), 0 0 0 rgba(255,255,255,0); }
-  50%      { box-shadow: 0 0 6px rgba(9,139,255,0.35), 0 0 14px rgba(255,255,255,0.12); }
+  50% { box-shadow: 0 0 6px rgba(9,139,255,0.35), 0 0 14px rgba(255,255,255,0.12); }
 }
 
-/* Reduced Motion Support */
-body.reduce-motion [data-animation="crt"].animate-element {
-  opacity: 1 !important;
-  transform: none !important;
-  filter: none !important;
-  animation: none !important;
-}
 
-body.reduce-motion [data-animation="crt"].animate-element::before,
-body.reduce-motion [data-animation="crt"].animate-element::after {
-  display: none !important;
+/* --- Barrierefreiheit --- */
+
+/* Reduziert die Animation für Nutzer, die dies wünschen */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn::before,
+  .btn::after,
+  [data-animation="crt"] {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  [data-animation="crt"] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  
+  [data-animation="crt"]::before,
+  [data-animation="crt"]::after {
+    display: none !important;
+  }
 }
