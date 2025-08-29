@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>3D Particle Animation Demo</title>
+  <link rel="stylesheet" href="content/webentwicklung/root.css">
+  <link rel="stylesheet" href="content/webentwicklung/particles/particles.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+    
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .demo-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .demo-header h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #09F, #FF6B6B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .control-button {
+      padding: 12px 20px;
+      border: 2px solid #09F;
+      background: rgba(9, 139, 255, 0.1);
+      color: #09F;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .control-button:hover {
+      background: rgba(9, 139, 255, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .control-button.active {
+      background: #09F;
+      color: white;
+      box-shadow: 0 0 20px rgba(9, 139, 255, 0.5);
+    }
+    
+    .info-panel {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 40px;
+    }
+    
+    .effect-description {
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #09F;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+    
+    .instructions {
+      background: rgba(255, 217, 61, 0.1);
+      border: 1px solid rgba(255, 217, 61, 0.3);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .instructions h3 {
+      color: #FFD93D;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Global Particle Background with default 3D effect -->
+  <div class="global-particle-background" data-3d-effect="rotate">
+    <canvas class="particle-canvas" id="particleCanvas"></canvas>
+    <div class="gradient-overlay"></div>
+  </div>
+
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1>3D Particle Animation</h1>
+      <p>Experience enhanced particle effects with 3D transformations, GPU acceleration, and adaptive performance.</p>
+    </div>
+
+    <div class="controls">
+      <button class="control-button" data-effect="none">Disable 3D</button>
+      <button class="control-button active" data-effect="rotate">Rotate</button>
+      <button class="control-button" data-effect="float">Float</button>
+      <button class="control-button" data-effect="pulse">Pulse</button>
+      <button class="control-button" data-effect="parallax">Parallax</button>
+      <button class="control-button" data-effect="spiral">Spiral</button>
+    </div>
+
+    <div class="info-panel">
+      <div class="effect-description" id="effectDescription">
+        <strong>Rotate Effect:</strong> Particles continuously rotate around multiple axes in 3D space, creating a dynamic swirling motion with depth-based perspective projection.
+      </div>
+      
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="fpsValue">60</div>
+          <div class="stat-label">FPS</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="particleCount">0</div>
+          <div class="stat-label">Particles</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="qualityValue">100%</div>
+          <div class="stat-label">Quality</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="effectValue">Rotate</div>
+          <div class="stat-label">Effect</div>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <h3>🎮 Interactive Controls</h3>
+        <p><strong>Buttons:</strong> Click the effect buttons above to switch between different 3D animations.</p>
+        <p><strong>JavaScript Console:</strong> Use <code>window.particle3DControls.setGlobalEffect("effect")</code> to control effects programmatically.</p>
+        <p><strong>Performance:</strong> The system automatically adjusts particle count and quality based on your device's performance.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { throttle } from './content/webentwicklung/utils/common-utils.js';
+    import { initParticles } from './content/webentwicklung/particles/particle-system.js';
+
+    // Initialize particles
+    const getElement = (id) => document.getElementById(id);
+    const checkReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    const stopParticles = initParticles({ getElement, throttle, checkReducedMotion });
+
+    // Effect descriptions
+    const effectDescriptions = {
+      none: "3D effects are disabled. Particles move in simple 2D patterns for maximum performance and compatibility.",
+      rotate: "Particles continuously rotate around multiple axes in 3D space, creating a dynamic swirling motion with depth-based perspective projection.",
+      float: "Particles gently float up and down in 3D space with varying frequencies and amplitudes, creating a serene floating effect with depth-based fading.",
+      pulse: "Particles pulse in size and opacity with different frequencies, creating a breathing effect that synchronizes across the 3D space.",
+      parallax: "Particles move at different speeds based on their depth, creating a parallax scrolling effect that responds to mouse movement.",
+      spiral: "Particles follow a complex spiral pattern around a central axis, with radius and height variations creating mesmerizing 3D trajectories."
+    };
+
+    // Control buttons
+    const buttons = document.querySelectorAll('.control-button');
+    const bgRoot = document.querySelector('.global-particle-background');
+    const effectDescription = document.getElementById('effectDescription');
+    const fpsValue = document.getElementById('fpsValue');
+    const particleCount = document.getElementById('particleCount');
+    const qualityValue = document.getElementById('qualityValue');
+    const effectValue = document.getElementById('effectValue');
+
+    // Button click handlers
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const effect = button.dataset.effect;
+        
+        // Update button states
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Set 3D effect
+        if (window.particle3DControls) {
+          window.particle3DControls.setGlobalEffect(effect);
+        }
+        
+        // Update description
+        effectDescription.innerHTML = `<strong>${effect.charAt(0).toUpperCase() + effect.slice(1)} Effect:</strong> ${effectDescriptions[effect]}`;
+        effectValue.textContent = effect.charAt(0).toUpperCase() + effect.slice(1);
+      });
+    });
+
+    // Stats update
+    function updateStats() {
+      if (window.__particleStats) {
+        const stats = window.__particleStats;
+        fpsValue.textContent = Math.round(stats.fps || 0);
+        particleCount.textContent = stats.count || 0;
+        
+        // Get quality from 3D controller if available
+        const controllers = window.particle3DControls?.getControllers() || [];
+        if (controllers.length > 0) {
+          const quality = Math.round((controllers[0].quality?.currentQuality || 1) * 100);
+          qualityValue.textContent = quality + '%';
+        }
+      }
+    }
+
+    // Update stats every second
+    setInterval(updateStats, 1000);
+    
+    // Initial stats update
+    setTimeout(updateStats, 500);
+
+    // Console helpers
+    console.log('🎮 3D Particle Demo Loaded!');
+    console.log('Try these commands:');
+    console.log('  window.particle3DControls.setGlobalEffect("spiral")');
+    console.log('  window.particle3DControls.getControllers()');
+    
+    // Add to global scope for easy access
+    window.demo = {
+      setEffect: (effect) => window.particle3DControls?.setGlobalEffect(effect),
+      getStats: () => window.__particleStats,
+      getControllers: () => window.particle3DControls?.getControllers() || []
+    };
+  </script>
+</body>
+</html>

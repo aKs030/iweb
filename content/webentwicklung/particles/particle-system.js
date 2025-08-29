@@ -15,6 +15,7 @@ function loadStarOptions(bgRoot, defaultOpts){
 
 // Export: initParticles({ getElement, throttle, checkReducedMotion }) -> cleanup()
 import { randomFloat } from '../utils/common-utils.js';
+import { init3DController } from './particle-3d-controller.js';
 
 export function initParticles({ getElement, throttle, checkReducedMotion }) {
   
@@ -26,6 +27,21 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   // ===== Perf-Grundlagen =====
   const DPR = Math.min(2, Math.max(1, Math.ceil(devicePixelRatio || 1)));
   const bgRoot = document.querySelector('.global-particle-background');
+
+  // ===== 3D Controller Setup =====
+  let particle3DController = null;
+  
+  function init3DEffects() {
+    if (!bgRoot) return;
+    
+    // Initialize 3D controller
+    particle3DController = init3DController(bgRoot, canvas, particles);
+    
+    if (particle3DController) {
+      // Update canvas center when resized
+      particle3DController.updateCenter();
+    }
+  }
 
   // ===== Stars Layer (optional, using content/webentwicklung/particles/stars-utils.js) =====
   let starPositions = null; // Float32Array
@@ -56,6 +72,11 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     ctx.setTransform(DPR,0,0,DPR,0,0);
     invalidateGradients();
     updateScrollMax();
+    
+    // Update 3D controller center
+    if (particle3DController) {
+      particle3DController.updateCenter();
+    }
     // regenerate stars positions at new size (for 2D rendering we map 3D positions onto canvas)
     if (showStars && !checkReducedMotion()) {
       ensureStarsModule().then(mod => {
@@ -86,19 +107,47 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       this.s = randomFloat(0, 2) + 1;
       this.vx = (randomFloat(-1, 1)) * 0.6;
       this.vy = (randomFloat(-1, 1)) * 0.6;
+      // 3D properties (initialized by 3D controller when needed)
+      this.z = 0;
+      this._3d = null; // Will store 3D transformation data
     }
     update(){
-      this.x += this.vx; this.y += this.vy;
-      // weich wrapen statt bouncen -> weniger Richtungs-Flackern
-      if (this.x > innerWidth) this.x -= innerWidth;
-      else if (this.x < 0) this.x += innerWidth;
-      if (this.y > innerHeight) this.y -= innerHeight;
-      else if (this.y < 0) this.y += innerHeight;
+      // Only update position if not controlled by 3D effects
+      if (!this._3d || !particle3DController?.enabled) {
+        this.x += this.vx; this.y += this.vy;
+        // weich wrapen statt bouncen -> weniger Richtungs-Flackern
+        if (this.x > innerWidth) this.x -= innerWidth;
+        else if (this.x < 0) this.x += innerWidth;
+        if (this.y > innerHeight) this.y -= innerHeight;
+        else if (this.y < 0) this.y += innerHeight;
+      }
     }
     draw(){
+      ctx.save();
+      
+      // Apply 3D transformations if available
+      if (this._3d) {
+        const scale = this._3d.scale || 1;
+        const alpha = this._3d.alpha || 1;
+        
+        // Apply scale transformation
+        if (scale !== 1) {
+          ctx.translate(this.x, this.y);
+          ctx.scale(scale, scale);
+          ctx.translate(-this.x, -this.y);
+        }
+        
+        // Apply alpha
+        if (alpha !== 1) {
+          ctx.globalAlpha = alpha;
+        }
+      }
+      
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.s, 0, Math.PI*2);
       ctx.fill();
+      
+      ctx.restore();
     }
   }
 
@@ -373,6 +422,11 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     fillSpatialGrid();
     computeDynamicFactors();
 
+    // Update 3D effects
+    if (particle3DController) {
+      particle3DController.update(dt, stats.fps);
+    }
+
     const dynFillA = colorCurrent.aFill * (0.65 + 0.35*scrollFactor) * (0.7 + 0.3*densityFactor);
     updateAndDrawParticles(dynFillA);
     drawConnections();
@@ -390,17 +444,28 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   addEventListener('resize', throttle(() => { cancelAnimationFrame(rafId); resize(); ensureParticleCount(targetCount); animationLoop(); }, 180), { passive:true });
 
   // Start
-  resize(); ensureParticleCount(); updateTargetColor(); updateScrollMax(); animationLoop();
+  resize(); ensureParticleCount(); updateTargetColor(); updateScrollMax(); 
+  
+  // Initialize 3D effects after everything is set up
+  init3DEffects();
+  
+  animationLoop();
 
   // ===== API / Cleanup =====
   const api = {
     setColor(rgba){ if(bgRoot){ bgRoot.style.setProperty('--particle-color', rgba); updateTargetColor(); } },
     setGradientMode(mode){ if(bgRoot) bgRoot.setAttribute('data-particle-gradient', mode === 'radial' ? 'radial' : 'linear'); },
     setAlphaScale(f){ if(bgRoot) bgRoot.setAttribute('data-particle-alpha-scale', String(Math.min(2, Math.max(0.2, parseFloat(f))))); },
+    set3DEffect(effect){ if(particle3DController) particle3DController.setEffect(effect); },
+    get3DController(){ return particle3DController; },
     stop(){
       cancelAnimationFrame(rafId);
       particles.length = 0; grid.clear();
       io.disconnect(); observer.disconnect();
+      // Reset 3D controller
+      if (particle3DController) {
+        particle3DController.reset();
+      }
       // Canvas leeren
       ctx.clearRect(0,0,canvas.width,canvas.height);
     }
