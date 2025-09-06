@@ -99,7 +99,14 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       
       for (const [type, weight] of Object.entries(typeWeights)) {
         random -= weight;
-        if (random <= 0) return type;
+        if (random <= 0) {
+          // Erweiterte Star-Varianten
+          if (type === 'star') {
+            const starVariants = ['star', 'star6', 'star8', 'sparkle'];
+            return starVariants[Math.floor(randomFloat(0, starVariants.length))];
+          }
+          return type;
+        }
       }
       return 'circle'; // fallback
     }
@@ -172,6 +179,15 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
         case 'star':
           this.drawStar(baseSize);
           break;
+        case 'star6':
+          this.drawStar6(baseSize);
+          break;
+        case 'star8':
+          this.drawStar8(baseSize);
+          break;
+        case 'sparkle':
+          this.drawSparkle(baseSize);
+          break;
         case 'pulse':
           this.drawPulse(baseSize);
           break;
@@ -203,14 +219,62 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     }
     
     drawStar(size) {
+      ctx.save();
       ctx.rotate(this.rotation);
-      ctx.beginPath();
-      const spikes = 5;
-      const outerRadius = size * 1.3;
-      const innerRadius = size * 0.6;
       
+      // Erweiterte Stern-Konfiguration
+      const spikes = 5;
+      const outerRadius = size * 1.4; // Größerer äußerer Radius
+      const innerRadius = size * 0.5; // Kleinerer innerer Radius für schärfere Spitzen
+      
+      // Gradient für besseren visuellen Effekt
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, outerRadius);
+      gradient.addColorStop(0, `rgba(${colorCurrent.r}, ${colorCurrent.g}, ${colorCurrent.b}, ${colorCurrent.aFill})`);
+      gradient.addColorStop(0.7, `rgba(${colorCurrent.r}, ${colorCurrent.g}, ${colorCurrent.b}, ${colorCurrent.aFill * 0.8})`);
+      gradient.addColorStop(1, `rgba(${colorCurrent.r}, ${colorCurrent.g}, ${colorCurrent.b}, ${colorCurrent.aFill * 0.3})`);
+      
+      // Stern-Pfad erstellen mit besserer Geometrie
+      ctx.beginPath();
       for (let i = 0; i < spikes * 2; i++) {
-        const angle = (i * Math.PI) / spikes;
+        // Verbesserter Winkel für symmetrischere Sterne
+        const angle = (i * Math.PI) / spikes - Math.PI / 2; // Start am oberen Punkt
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        
+        // Leichte Rundung der Spitzen für organischeren Look
+        const roundingFactor = i % 2 === 0 ? 0.95 : 1.0;
+        const x = Math.cos(angle) * radius * roundingFactor;
+        const y = Math.sin(angle) * radius * roundingFactor;
+        
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      
+      // Gradient-Fill anwenden
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Optionaler Outline für bessere Definition
+      if (colorCurrent.aStroke > 0.1) {
+        ctx.strokeStyle = `rgba(${colorCurrent.r}, ${colorCurrent.g}, ${colorCurrent.b}, ${colorCurrent.aStroke})`;
+        ctx.lineWidth = size * 0.1;
+        ctx.stroke();
+      }
+      
+      ctx.restore();
+    }
+    
+    drawStar6(size) {
+      ctx.save();
+      ctx.rotate(this.rotation);
+      
+      // 6-zackiger Stern (David-Stern)
+      const outerRadius = size * 1.3;
+      const innerRadius = size * 0.65;
+      
+      ctx.beginPath();
+      for (let i = 0; i < 12; i++) {
+        const angle = (i * Math.PI) / 6 - Math.PI / 2;
         const radius = i % 2 === 0 ? outerRadius : innerRadius;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
@@ -220,6 +284,58 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       }
       ctx.closePath();
       ctx.fill();
+      ctx.restore();
+    }
+    
+    drawStar8(size) {
+      ctx.save();
+      ctx.rotate(this.rotation);
+      
+      // 8-zackiger Stern
+      const outerRadius = size * 1.2;
+      const innerRadius = size * 0.7;
+      
+      ctx.beginPath();
+      for (let i = 0; i < 16; i++) {
+        const angle = (i * Math.PI) / 8 - Math.PI / 2;
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    
+    drawSparkle(size) {
+      ctx.save();
+      ctx.rotate(this.rotation);
+      
+      // Funkelnder Stern mit 4 Hauptstrahlen
+      const mainLength = size * 1.8;
+      const secondaryLength = size * 1.0;
+      const width = size * 0.15;
+      
+      // Gradienteffekt für Glitzer
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, mainLength);
+      gradient.addColorStop(0, `rgba(${colorCurrent.r}, ${colorCurrent.g}, ${colorCurrent.b}, ${colorCurrent.aFill})`);
+      gradient.addColorStop(0.3, `rgba(255, 255, 255, ${colorCurrent.aFill * 0.8})`);
+      gradient.addColorStop(1, `rgba(${colorCurrent.r}, ${colorCurrent.g}, ${colorCurrent.b}, 0)`);
+      ctx.fillStyle = gradient;
+      
+      // Hauptkreuz
+      ctx.fillRect(-width/2, -mainLength, width, mainLength * 2);
+      ctx.fillRect(-mainLength, -width/2, mainLength * 2, width);
+      
+      // Diagonales Kreuz (kleiner)
+      ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-width/3, -secondaryLength, width * 2/3, secondaryLength * 2);
+      ctx.fillRect(-secondaryLength, -width/3, secondaryLength * 2, width * 2/3);
+      
+      ctx.restore();
     }
     
     drawPulse(size) {

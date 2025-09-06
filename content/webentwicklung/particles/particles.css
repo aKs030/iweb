@@ -1,7 +1,11 @@
-.global-particle-background{
-  position:fixed; inset:0; z-index:-10; pointer-events:none;
-  isolation:isolate; /* verhindert Blend-Effekte mit fremden Stacking-Contexts */
-  contain:layout paint; /* Canvas ist komplett eigenständig */
+/* ===== Global Particle Background System ===== */
+.global-particle-background {
+  position: fixed; 
+  inset: 0; 
+  z-index: -10; 
+  pointer-events: none;
+  isolation: isolate; /* verhindert Blend-Effekte mit fremden Stacking-Contexts */
+  contain: layout paint; /* Canvas ist komplett eigenständig */
   
   /* Erweiterte Konfiguration via CSS-Variablen */
   --particle-color: rgba(9, 139, 255, 0.8);
@@ -9,51 +13,138 @@
   --particle-alpha-scale: 1;
   --particle-connection-opacity: 1;
   --particle-opacity-scale: 1;
+  --star-twinkle-speed: 2s;
+  --star-brightness: 1.2;
 }
 
-.global-particle-background .particle-canvas{
-  position:absolute; inset:0; width:100%; height:100%;
-  opacity:var(--particle-opacity, 0.4);
-  transition:opacity .6s ease, filter .8s ease, background-color .8s ease;
+.global-particle-background .particle-canvas {
+  position: absolute; 
+  inset: 0; 
+  width: 100%; 
+  height: 100%;
+  opacity: var(--particle-opacity, 0.4);
+  transition: opacity 0.6s ease, filter 0.8s ease, background-color 0.8s ease;
   will-change: opacity, filter;
   cursor: none;
+  /* Performance-Optimierungen */
+  transform: translateZ(0); /* Hardware-Beschleunigung */
+  backface-visibility: hidden;
+  /* Stern-Effekte */
+  filter: brightness(var(--star-brightness, 1.2)) contrast(1.1);
 }
 
-.global-particle-background .gradient-overlay{
-  position:absolute; inset:0;
+.global-particle-background .gradient-overlay {
+  position: absolute; 
+  inset: 0;
   background: radial-gradient(ellipse at center, transparent 0%, var(--bg-dark, #0a0a0a) 85%);
-  opacity:.8;
+  opacity: 0.8;
+  pointer-events: none;
 }
 
-/* Physik-Modi visuelle Indikatoren */
+/* ===== Section-spezifische Star-Konfigurationen ===== */
+.global-particle-background[data-section="hero"] {
+  --star-brightness: 1.3;
+  --star-twinkle-speed: 1.5s;
+}
+
+.global-particle-background[data-section="features"] {
+  --star-brightness: 1.4;
+  --star-twinkle-speed: 2.5s;
+}
+
+.global-particle-background[data-section="about"] {
+  --star-brightness: 1.1;
+  --star-twinkle-speed: 3s;
+}
+
+/* ===== Star-Enhanced Modes ===== */
+.global-particle-background[data-star-mode="magical"] .particle-canvas {
+  filter: brightness(1.5) contrast(1.2) saturate(1.3);
+  animation: starTwinkle var(--star-twinkle-speed, 2s) ease-in-out infinite alternate;
+}
+
+.global-particle-background[data-star-mode="cosmic"] .particle-canvas {
+  filter: brightness(1.3) contrast(1.1) hue-rotate(15deg);
+}
+
+@keyframes starTwinkle {
+  0% { 
+    filter: brightness(1.2) contrast(1.1); 
+    opacity: var(--particle-opacity, 0.4);
+  }
+  50% { 
+    filter: brightness(1.6) contrast(1.3); 
+    opacity: calc(var(--particle-opacity, 0.4) * 1.2);
+  }
+  100% { 
+    filter: brightness(1.2) contrast(1.1); 
+    opacity: var(--particle-opacity, 0.4);
+  }
+}
 .global-particle-background[data-particle-collisions="true"] { 
   filter: brightness(1.1); 
 }
+
 .global-particle-background[data-particle-bounce="true"] { 
   border: 1px solid rgba(255, 255, 255, 0.1); 
 }
 
-/* Debug-Modus */
+/* ===== Debug-Modus ===== */
 .global-particle-background[data-particle-debug="true"] .particle-canvas {
   border: 2px dashed rgba(255, 255, 0, 0.3);
+  position: relative;
 }
 
-@media (prefers-reduced-motion: reduce){
-  .global-particle-background .particle-canvas{ 
-    opacity:.2; 
+.global-particle-background[data-particle-debug="true"]::after {
+  content: "DEBUG MODE ACTIVE";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 0, 0.9);
+  color: black;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* ===== Accessibility & Motion Preferences ===== */
+@media (prefers-reduced-motion: reduce) {
+  .global-particle-background .particle-canvas { 
+    opacity: 0.2; 
     filter: blur(0.5px);
+    animation: none !important;
+    transition: none !important;
   }
+  
   .global-particle-background[data-particle-collisions="true"],
   .global-particle-background[data-particle-bounce="true"] {
     opacity: 0.5;
+    filter: none;
   }
 }
 
-.reduce-motion .global-particle-background .particle-canvas{ 
-  opacity:.3; 
+/* ===== Fallback für reduce-motion Klasse ===== */
+.reduce-motion .global-particle-background .particle-canvas { 
+  opacity: 0.3; 
   animation: none;
+  transition: none;
 }
 
-.snap-section.section-active ~ .global-particle-background .particle-canvas{ 
-  opacity:.5; 
+/* ===== Section State Integration ===== */
+.snap-section.section-active ~ .global-particle-background .particle-canvas { 
+  opacity: 0.5; 
+}
+
+/* ===== High Contrast Support ===== */
+@media (prefers-contrast: high) {
+  .global-particle-background {
+    --particle-opacity: 0.8;
+  }
+  
+  .global-particle-background .gradient-overlay {
+    opacity: 0.9;
+  }
 }
