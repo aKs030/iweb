@@ -184,7 +184,16 @@ const checkReducedMotion = () => {
   }
 
   // ===== Particles (DPR + Spatial Hash, Map-Reuse) =====
-  const initParticles = () => _initParticles({ getElement, throttle, checkReducedMotion });
+  const initParticles = () => {
+    // Überprüfung ob Canvas-Element verfügbar ist
+    const canvas = getElement('particleCanvas');
+    if (!canvas) {
+      console.warn('Particle canvas not found, skipping initialization');
+      return () => {}; // Return empty cleanup function
+    }
+    
+    return _initParticles({ getElement, throttle, checkReducedMotion });
+  };
 
   // ===== Greetings =====
   const ensureHeroData = async () => heroData || (heroData = await import('../../pages/home/hero-data.js').catch(() => ({})));
@@ -284,10 +293,16 @@ const checkReducedMotion = () => {
     // Lazy Loading Hero Module
     initLazyHeroModules();
 
-    // Particles
-    const stopParticles = initParticles();
-    window.__stopParticles = stopParticles;
-    window.initParticles = initParticles; // für hero.js Aufruf (Kompatibilität)
+    // Particles - mit Verzögerung für DOM-Bereitschaft
+    setTimeout(() => {
+      try {
+        const stopParticles = initParticles();
+        window.__stopParticles = stopParticles;
+        window.initParticles = initParticles; // für hero.js Aufruf (Kompatibilität)
+      } catch (error) {
+        console.warn('Particle system initialization failed:', error);
+      }
+    }, 100); // Kurze Verzögerung um sicherzustellen, dass Canvas bereit ist
 
     setTimeout(() => {
       try {

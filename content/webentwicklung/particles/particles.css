@@ -2,21 +2,58 @@
   position:fixed; inset:0; z-index:-10; pointer-events:none;
   isolation:isolate; /* verhindert Blend-Effekte mit fremden Stacking-Contexts */
   contain:layout paint; /* Canvas ist komplett eigenständig */
+  
+  /* Erweiterte Konfiguration via CSS-Variablen */
+  --particle-color: rgba(9, 139, 255, 0.8);
+  --particle-opacity: 0.4;
+  --particle-alpha-scale: 1;
+  --particle-connection-opacity: 1;
+  --particle-opacity-scale: 1;
 }
+
 .global-particle-background .particle-canvas{
   position:absolute; inset:0; width:100%; height:100%;
-  opacity:var(--particle-opacity,0.4);
+  opacity:var(--particle-opacity, 0.4);
   transition:opacity .6s ease, filter .8s ease, background-color .8s ease;
   will-change: opacity, filter;
+  cursor: none;
 }
+
 .global-particle-background .gradient-overlay{
   position:absolute; inset:0;
   background: radial-gradient(ellipse at center, transparent 0%, var(--bg-dark, #0a0a0a) 85%);
   opacity:.8;
 }
 
-@media (prefers-reduced-motion: reduce){
-  .global-particle-background .particle-canvas{ opacity:.2; }
+/* Physik-Modi visuelle Indikatoren */
+.global-particle-background[data-particle-collisions="true"] { 
+  filter: brightness(1.1); 
 }
-.reduce-motion .global-particle-background .particle-canvas{ opacity:.3; }
-.snap-section.section-active ~ .global-particle-background .particle-canvas{ opacity:.5; }
+.global-particle-background[data-particle-bounce="true"] { 
+  border: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+/* Debug-Modus */
+.global-particle-background[data-particle-debug="true"] .particle-canvas {
+  border: 2px dashed rgba(255, 255, 0, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .global-particle-background .particle-canvas{ 
+    opacity:.2; 
+    filter: blur(0.5px);
+  }
+  .global-particle-background[data-particle-collisions="true"],
+  .global-particle-background[data-particle-bounce="true"] {
+    opacity: 0.5;
+  }
+}
+
+.reduce-motion .global-particle-background .particle-canvas{ 
+  opacity:.3; 
+  animation: none;
+}
+
+.snap-section.section-active ~ .global-particle-background .particle-canvas{ 
+  opacity:.5; 
+}
