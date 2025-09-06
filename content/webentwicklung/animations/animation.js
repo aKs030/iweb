@@ -1,4 +1,4 @@
-/*! AnimationSystem v2 (light, no thrash) + Enhanced Scroll Snap */
+/*! AnimationSystem v2 - CSS-basierte Animationen mit Intersection Observer */
 // Fallback-Implementierung für Kompatibilität
 const checkReducedMotionAnimations = () => {
   try {
@@ -20,7 +20,7 @@ const checkReducedMotionAnimations = () => {
   const seenOnce = new WeakSet();
   const observed = new WeakSet();
 
-  // Enhanced Scroll Snap state – reduzierte Variablen (nur für zukünftige Erweiterungen)
+  // Animation state
   let dir = 'down';
   let lastY = 0;
   let rafScheduled = false;
@@ -32,13 +32,9 @@ const checkReducedMotionAnimations = () => {
     const n = parseInt(v, 10); return Number.isNaN(n) ? fb : n;
   };
 
-  // ===== Enhanced Scroll Snap Functions =====
-  const initScrollSnap = () => {
-    // Placeholder für Enhanced Scroll Snap - Event-Handler entfernt
-    // um ESLint-Fehler zu vermeiden
-  };
 
-  // CSS nur einmal injizieren, eindeutig namespacen
+
+  // CSS einmalig injizieren
   (function ensureCSS(){
     if (document.getElementById('anim-css-v2')) return;
     const s = document.createElement('style');
@@ -153,7 +149,6 @@ const checkReducedMotionAnimations = () => {
 
   function init() {
     scan();
-    initScrollSnap(); // Enhanced Scroll Snap initialisieren (falls benötigt)
     mo.observe(document.documentElement, { subtree:true, childList:true, attributes:true, attributeFilter:[ATTR.anim] });
     if (!REDUCED) window.addEventListener('scroll', onScroll, { passive:true });
   }
@@ -175,17 +170,13 @@ const checkReducedMotionAnimations = () => {
     if (!REDUCED) window.removeEventListener('scroll', onScroll, { passive:true });
     elements.clear();
 
-    // Touch-State cleanup (placeholder für zukünftige Implementierung)
-    
-    // Nur noch Animation-API für CSS-Animationen
+    // API bereitstellen
     window.AnimationSystem = {
       scan,
       animate: animateIn,
       reset,
       destroy: _destroy
     };
-    // Rückwärtskompatibilität
-    window.EnhancedScrollSnap = undefined;
   }
 
   // Initialisierung sofort ausführen

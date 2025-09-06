@@ -1,38 +1,26 @@
-// ESM statischer Import zentraler Utilities
+// ESM Imports
 import { throttle } from '../webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from './particles/particle-system.js';
 
-// Conditional Performance Monitoring (nur bei DEBUG)
-if (window.DEBUG || localStorage.getItem('debug-performance') === 'true') {
-  import('./utils/performance-monitor.js').catch(e => 
-    console.warn('[main] Performance monitor load failed:', e)
-  );
-}
-
-// Globale Live-Region Ankündigungs-Hilfsfunktion (wird von mehreren Modulen / IIFEs genutzt)
+// Globale Live-Region für Accessibility
 function announce(message, { assertive = false } = {}) {
   try {
     const id = assertive ? 'live-region-assertive' : 'live-region-status';
     const region = document.getElementById(id);
     if (!region) return;
-    // Reset für Screenreader Re-Announcement
     region.textContent = '';
     requestAnimationFrame(() => { region.textContent = message; });
   } catch {
-    // Fail silently – niemals Fehler werfen wegen A11y Hilfsfunktion
+    // Fail silently für A11y Hilfsfunktion
   }
 }
-// Optional im globalen Namespace verfügbar machen (für Debugging / andere Skripte)
 window.announce = window.announce || announce;
-// --- Snap beim aktiven Scrollen temporär ausschalten
-// SectionLoader: Lädt Sections dynamisch nach
+// SectionLoader: Lädt HTML-Sections dynamisch
 (() => {
-  if (window.SectionLoader) return; // nichts tun, wenn bereits vorhanden
+  if (window.SectionLoader) return;
 
   const SELECTOR = 'section[data-section-src]';
   const SEEN = new WeakSet();
-
-  // (announce wird jetzt global definiert; lokale Definition entfernt)
 
   async function loadInto(section){
     if (SEEN.has(section)) return;
@@ -209,48 +197,28 @@ const checkReducedMotion = () => {
       el = getElement('greetingText');
       if (el) break;
     }
-    if (!el) {
-      if (window.DEBUG) console.warn('[greeting] greetingText not found after retries');
-      return; // immer noch kein Element -> aufgeben
-    }
+    if (!el) return;
 
     const mod = await ensureHeroData();
     const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
     const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
-    if (!next) {
-      if (window.DEBUG) console.warn('[greeting] no greeting selected (empty set?)');
-      return;
-    }
+    if (!next) return;
     el.dataset.last = next;
     if (animated) { el.classList.add('fade'); setTimeout(() => { el.textContent = next; el.classList.remove('fade'); }, 360); }
     else el.textContent = next;
   }
 
-  // Sicherstellen, dass der Gruß nach dem Laden des Hero-Markups gesetzt wird
   document.addEventListener('hero:loaded', () => {
     const el = getElement('greetingText');
-    if (window.DEBUG) {
-      console.warn('[greeting] hero:loaded - element?', !!el, 'text:', el?.textContent);
-    }
-    if (!el || el.textContent) {
-      return;
-    }
+    if (!el || el.textContent) return;
     setRandomGreetingHTML();
     announce('Hero Bereich bereit.');
   });
 
-  // Fallback: falls hero bereits vorhanden vor hero:loaded, versuchen wir beim DOMContentLoaded
   document.addEventListener('DOMContentLoaded', () => {
-    if (window.DEBUG) {
-      console.warn('[greeting] DOMContentLoaded fallback check');
-    }
     const el = getElement('greetingText');
-    if (!el) {
-      return;
-    }
-    if (!el.textContent) {
-      setRandomGreetingHTML();
-    }
+    if (!el || el.textContent) return;
+    setRandomGreetingHTML();
   }, { once: true });
 
   // Hero Typing Ende Ansage
@@ -321,15 +289,14 @@ const checkReducedMotion = () => {
     window.__stopParticles = stopParticles;
     window.initParticles = initParticles; // für hero.js Aufruf (Kompatibilität)
 
-    
-    
     setTimeout(() => {
       try {
-        const hero=getElement('hero'); if(!hero||!window.AnimationSystem) return;
+        const hero = getElement('hero');
+        if (!hero || !window.AnimationSystem) return;
         window.AnimationSystem.scan?.();
         hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')?.forEach(b => b.classList.add('is-visible'));
       } catch (error) {
-        console.warn('Failed to initialize hero animations:', error);
+        console.warn('Hero animations failed:', error);
       }
     }, 420);
 

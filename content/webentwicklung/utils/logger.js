@@ -1,42 +1,20 @@
-// Erweiterte Logger-Utility mit Namensraum, Level-Filter, Buffer und Safe-Call
+// Erweiterte Logger-Utility mit Namensraum, Level-Filter und Safe-Call
 // Level-Hierarchie: error(0) < warn(1) < info(2) < debug(3)
 const LEVELS = { error:0, warn:1, info:2, debug:3 };
 
-// Ring-Buffer für letzte Logs (konfigurierbar)
-const DEFAULT_BUFFER_SIZE = 200;
+// Ring-Buffer für letzte Logs (für window.logEvent dispatch)
 const logBuffer = [];
-let bufferSize = DEFAULT_BUFFER_SIZE;
-let autoFlushHandler = null; // optionaler Callback
+const BUFFER_SIZE = 200;
 
 function pushToBuffer(entry) {
   logBuffer.push(entry);
-  if (logBuffer.length > bufferSize) logBuffer.shift();
+  if (logBuffer.length > BUFFER_SIZE) logBuffer.shift();
   // Event dispatch für UI / Tools
   try {
     window.dispatchEvent(new CustomEvent('logEvent', { detail: entry }));
   } catch {
     // Ignore event dispatch errors in case window is not available
   }
-  if (entry.level === 'error' && autoFlushHandler) {
-    try { 
-      autoFlushHandler(getBufferedLogs()); 
-    } catch (error) {
-      console.warn('[logger] auto flush failed:', error);
-    }
-  }
-}
-
-export function getBufferedLogs() { return [...logBuffer]; }
-export function setLogBufferSize(size) { bufferSize = Math.max(10, Number(size)||DEFAULT_BUFFER_SIZE); }
-export function onAutoFlush(handler) { autoFlushHandler = typeof handler === 'function' ? handler : null; }
-export function clearLogBuffer() { logBuffer.length = 0; }
-export function flushLogs({ transport, clear = false } = {}) {
-  const data = getBufferedLogs();
-  if (typeof transport === 'function') {
-    try { transport(data); } catch (e) { console.warn('[logger] flush transport failed', e); }
-  }
-  if (clear) clearLogBuffer();
-  return data;
 }
 
 // Ermittelt global konfigurierten Level (window.LOG_LEVEL oder Fallback); akzeptiert Name oder Zahl
@@ -90,7 +68,6 @@ export function createLogger(namespace = 'app') {
     setLevel: (l) => setGlobalLogLevel(l),
     getLevel: () => GLOBAL_LEVEL,
     levels: { ...LEVELS },
-    buffer: { get: getBufferedLogs, clear: clearLogBuffer, flush: flushLogs },
   };
 }
 
