@@ -60,16 +60,10 @@
   <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
   <link rel="stylesheet" href="/content/webentwicklung/animations/advanced-animations.css">
   
-  <!-- Nicht-kritisches CSS verzögert laden -->
-  <link rel="preload" href="/content/webentwicklung/footer/footer.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="/pages/about/about.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="/pages/home/greeting-text-hero.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  
-  <noscript>
-    <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css">
-    <link rel="stylesheet" href="/pages/about/about.css">
-    <link rel="stylesheet" href="/pages/home/greeting-text-hero.css">
-  </noscript>
+  <!-- CSS direkt laden für bessere Performance -->
+  <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css">
+  <link rel="stylesheet" href="/pages/about/about.css">
+  <link rel="stylesheet" href="/pages/home/greeting-text-hero.css">
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json" data-cfasync="false">
