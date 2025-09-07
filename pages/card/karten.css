@@ -1,0 +1,136 @@
+/* ========================================
+   Karten-spezifische Styles
+======================================== */
+
+/* Features Grid Layout */
+.features-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+  padding: 0;
+  list-style: none;
+}
+
+/* Card Interactive States */
+.card-interactive {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.card-interactive:active {
+  transform: translateY(-6px) scale(1.01);
+}
+
+/* Tilt Interaction */
+.tilt-interaction {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.tilt-interaction:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(4deg) translateY(-8px) scale(1.02);
+}
+
+/* Ripple Effect */
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.ripple-effect:hover::after {
+  width: 200%;
+  height: 200%;
+}
+
+/* Focus Ring Enhancement */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+  box-shadow: 
+    0 0 0 5px rgba(7, 161, 255, 0.2),
+    0 12px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* Text Animation Container */
+.text-reveal-container {
+  overflow: hidden;
+}
+
+.text-animate {
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Card Stagger Animation */
+.features-cards[data-stagger] .card {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.features-cards[data-stagger] .card.animate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .features-cards {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+  
+  .tilt-interaction:hover {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+@media (max-width: 480px) {
+  .features-cards {
+    gap: var(--spacing-sm);
+  }
+  
+  .card {
+    padding: var(--spacing-md);
+  }
+  
+  .card .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .features-cards {
+    display: block;
+  }
+  
+  .card {
+    break-inside: avoid;
+    margin-bottom: var(--spacing-md);
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  
+  .card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}

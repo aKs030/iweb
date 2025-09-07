@@ -54,6 +54,38 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     }
   }
 
+  function triggerAnimationEngineRescan() {
+    if (window.enhancedAnimationEngine?.scan) {
+      window.enhancedAnimationEngine.scan();
+    }
+  }
+
+  function createLiveRegion(section, templateId, LIVE_LABEL_PREFIX) {
+    let live = section.querySelector('[data-feature-rotation-live]');
+    if (!live) {
+      live = document.createElement('div');
+      live.setAttribute('data-feature-rotation-live', '');
+      live.setAttribute('aria-live', 'polite');
+      live.setAttribute('aria-atomic', 'true');
+      live.style.cssText = 'position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;';
+      section.appendChild(live);
+    }
+    live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
+    return live;
+  }
+
+  function applyInAnimation(section, ANIM_IN, EASE, done) {
+    section.style.opacity = '0';
+    section.style.transform = 'translateY(10px)';
+    section.style.transition = `transform ${ANIM_IN}ms ${EASE}, opacity ${ANIM_IN}ms ${EASE}`;
+    doubleRAF(() => {
+      section.style.opacity = '1';
+      section.style.transform = 'translateY(0)';
+      later(() => triggerAnimationEngineRescan(), 50);
+    });
+    later(done, ANIM_IN);
+  }
+
   function mount(templateId, initial=false) {
     const section = byId(SECTION_ID), tpl = byId(templateId);
     if (!section || !tpl) {
@@ -84,48 +116,26 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     const mountNew = () => {
       const frag = tpl.content ? document.importNode(tpl.content, true) : null;
       section.replaceChildren(frag || tpl.cloneNode(true));
+      
       // ARIA-Live Region erzeugen / aktualisieren
-      let live = section.querySelector('[data-feature-rotation-live]');
-      if (!live) {
-        live = document.createElement('div');
-        live.setAttribute('data-feature-rotation-live', '');
-        live.setAttribute('aria-live', 'polite');
-        live.setAttribute('aria-atomic', 'true');
-        live.style.position = 'absolute';
-        live.style.width = '1px';
-        live.style.height = '1px';
-        live.style.margin = '-1px';
-        live.style.border = '0';
-        live.style.padding = '0';
-        live.style.clip = 'rect(0 0 0 0)';
-        live.style.overflow = 'hidden';
-        section.appendChild(live);
-      }
-      // Kurz Textinfo zum aktuellen Template liefern (entwicklerfreundlich anpassbar)
-      live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
+      createLiveRegion(section, templateId, LIVE_LABEL_PREFIX);
       section.dataset.currentTemplate = templateId;
+      
       try {
         const ev = new CustomEvent('features:change', { detail: { index: this.currentIndex, total: this.order.length } });
         document.dispatchEvent(ev);
       } catch {
         // Event dispatch failed
-      }      if (REDUCED) { section.style.opacity = '1'; section.style.transform = 'none'; done(); return; }
+      }
+      
+      if (REDUCED) { 
+        section.style.opacity = '1'; 
+        section.style.transform = 'none'; 
+        done(); 
+        return; 
+      }
 
-      section.style.opacity = '0';
-      section.style.transform = 'translateY(10px)';
-      section.style.transition = `transform ${ANIM_IN}ms ${EASE}, opacity ${ANIM_IN}ms ${EASE}`;
-      doubleRAF(() => {
-        section.style.opacity = '1';
-        section.style.transform = 'translateY(0)';
-        
-        // Trigger Animation Engine re-scan for new template content
-        setTimeout(() => {
-          if (window.enhancedAnimationEngine?.scan) {
-            window.enhancedAnimationEngine.scan();
-          }
-        }, 50);
-      });
-      later(done, ANIM_IN);
+      applyInAnimation(section, ANIM_IN, EASE, done);
     };
 
     if (initial || !section.dataset.currentTemplate || REDUCED) { mountNew(); return; }
@@ -196,7 +206,7 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     mountInitialIfNeeded();
     // Trigger Animation Engine re-scan for new templates
     if (window.enhancedAnimationEngine?.scan) {
-      setTimeout(() => window.enhancedAnimationEngine.scan(), 100);
+      later(() => triggerAnimationEngineRescan(), 100);
     }
   }, { once:false });
   (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init, { once:true }) : init();
