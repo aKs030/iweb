@@ -11,6 +11,7 @@ class EnhancedAnimationEngine {
       threshold: 0.15, // Leicht erhöht für weniger false triggers
       rootMargin: '50px',
       maxAnimations: 20, // Limit für gleichzeitige Animationen
+      repeatOnScroll: false, // Elemente bei Verlassen zurücksetzen, um erneut zu animieren
       ...options
     };
     
@@ -77,7 +78,7 @@ class EnhancedAnimationEngine {
     // Reset für hidden Elemente nur wenn nötig
     hiddenEntries.forEach(entry => {
       const animationData = this.getAnimationData(entry.target);
-      if (animationData?.reset) {
+      if (this.options.repeatOnScroll || animationData?.reset) {
         this.resetAnimation(entry.target);
       }
     });
@@ -183,6 +184,22 @@ class EnhancedAnimationEngine {
     animatedElements.forEach(element => this.scanElement(element));
   }
 
+  /**
+   * Selektiert animierbare Elemente innerhalb eines Containers
+   */
+  selectAnimatedElements(container = document) {
+    return container.querySelectorAll([
+      '[data-animate]',
+      '[data-animation]',
+      '.animate-on-scroll',
+      '.slide-in-left',
+      '.slide-in-right',
+      '.slide-in-up',
+      '.fade-in',
+      '.scale-in'
+    ].join(','));
+  }
+
   scanElement(element) {
     if (element.nodeType !== 1) return;
 
@@ -208,13 +225,16 @@ class EnhancedAnimationEngine {
     for (const className of classList) {
       const config = this.animationTypes.get(className);
       if (config) {
+        // Reset-Strategie: data-reset überschreibt, sonst global repeatOnScroll oder config.reset
+        const hasResetAttr = Object.hasOwn(element.dataset, 'reset');
+        const reset = hasResetAttr ? (element.dataset.reset === 'true') : (this.options.repeatOnScroll || config.reset);
         return {
           type: config.type,
           duration: parseFloat(element.dataset.duration) || config.duration,
           delay: parseFloat(element.dataset.delay) || config.delay,
           easing: element.dataset.easing || config.easing,
           threshold: parseFloat(element.dataset.threshold) || config.threshold,
-          reset: element.dataset.reset === 'true' || config.reset
+          reset
         };
       }
     }
@@ -254,16 +274,66 @@ class EnhancedAnimationEngine {
       ['morphheight', 'scaleIn'],
       ['scaleincenter', 'scaleIn'],
     ]);
+
     const key = raw.toString().replace(/\s+/g, '').toLowerCase();
     const normalized = aliasMap.get(key) || raw;
+
+    // Reset-Strategie: data-reset überschreibt, sonst global repeatOnScroll
+    const hasResetAttr = Object.hasOwn(element.dataset, 'reset');
+    const reset = hasResetAttr ? (element.dataset.reset === 'true') : this.options.repeatOnScroll;
+
     return {
       type: normalized,
       duration: parseFloat(element.dataset.duration) || 0.6,
       delay: parseFloat(element.dataset.delay) || 0,
       easing: element.dataset.easing || 'ease-out',
       threshold: parseFloat(element.dataset.threshold) || 0.15,
-      reset: element.dataset.reset === 'true' || false
+      reset
     };
+  }
+
+  /**
+   * Öffentliche API: Animationen einer Section/Container sofort auslösen
+   */
+  animateElementsIn(container, { force = true } = {}) {
+    try {
+      const elements = this.selectAnimatedElements(container);
+      elements.forEach(el => {
+        const data = this.getAnimationData(el) || { type: 'fadeIn', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false };
+        if (force) {
+          // Sofort animieren, unabhängig vom Observer
+          this.triggerAnimation(el, data);
+        } else {
+          this.intersectionObserver?.observe(el);
+        }
+      });
+    } catch {
+      /* noop */
+    }
+  }
+
+  /**
+   * Öffentliche API: Animationen in Container zurücksetzen (für Re-Entry Effekte)
+   */
+  resetElementsIn(container) {
+    try {
+      const elements = this.selectAnimatedElements(container);
+      elements.forEach(el => {
+        const data = this.getAnimationData(el) || this.activeAnimations.get(el);
+        if (data) {
+          const base = data.type || 'fadeIn';
+          const cls = base.startsWith('animate-') ? base : `animate-${base}`;
+          el.classList.remove(cls, 'animated');
+          this.activeAnimations.delete(el);
+        }
+        // Kompatibilität: Pattern mit is-visible unterstützen
+        if (el.classList.contains('animate-element')) {
+          el.classList.remove('is-visible');
+        }
+      });
+    } catch {
+      /* noop */
+    }
   }
 
   /**
@@ -328,14 +398,28 @@ class EnhancedAnimationEngine {
    */
   resetAnimation(element) {
     const animationData = this.activeAnimations.get(element);
-    if (!animationData) return;
+    if (!animationData) {
+      // Fallback: trotzdem Klassen entfernen, falls vorhanden
+      const classes = Array.from(element.classList).filter(c => c.startsWith('animate-'));
+      if (classes.length) element.classList.remove(...classes);
+      element.classList.remove('animated');
+      return;
+    }
 
-    const animationClass = `animate-${animationData.type}`;
+    const base = animationData.type || 'fadeIn';
+    const animationClass = base.startsWith('animate-') ? base : `animate-${base}`;
     element.classList.remove(animationClass, 'animated');
     this.activeAnimations.delete(element);
     
     // Queue verarbeiten
     this.processAnimationQueue();
+  }
+
+  /**
+   * Globale Wiederholungsstrategie umschalten
+   */
+  setRepeatOnScroll(enabled) {
+    this.options.repeatOnScroll = !!enabled;
   }
 
   /**

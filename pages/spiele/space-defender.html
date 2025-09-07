@@ -138,18 +138,18 @@
       .game-title {
         font-size: 2rem;
       }
-      
+
       .game-stats {
         flex-direction: column;
         gap: 10px;
         align-items: center;
       }
-      
+
       .control-btn {
         padding: 10px 20px;
         font-size: 0.9rem;
       }
-      
+
       .game-canvas {
         max-width: 100%;
         height: auto;
@@ -173,11 +173,18 @@
       );
       pointer-events: none;
     }
+
+    .pos-relative {
+      position: relative;
+    }
+
+    .is-hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div id="menu-container"></div>
-  
   <div class="game-container">
     <div class="game-header">
       <h1 class="game-title">SPACE DEFENDER</h1>
@@ -189,21 +196,20 @@
       </div>
     </div>
 
-    <div style="position: relative;">
-      <canvas id="gameCanvas" class="game-canvas" width="800" height="600"></canvas>
-      
+  <div class="pos-relative">
+  <canvas id="gameCanvas" class="game-canvas" width="800" height="600"></canvas>
       <div id="gameOverScreen" class="game-over-screen">
         <div>GAME OVER</div>
         <div class="high-score">Final Score: <span id="finalScore">0</span></div>
-        <div class="high-score" id="newHighScore" style="display: none;">NEW HIGH SCORE!</div>
-        <button class="control-btn" onclick="game.restart()">Play Again</button>
+  <div class="high-score is-hidden" id="newHighScore">NEW HIGH SCORE!</div>
+  <button class="control-btn" type="button" onclick="game.restart()">Play Again</button>
       </div>
     </div>
 
     <div class="game-controls">
-      <button class="control-btn" onclick="game.togglePause()">Pause/Resume</button>
-      <button class="control-btn" onclick="game.restart()">Restart</button>
-      <button class="control-btn" onclick="game.toggleSound()">Sound On/Off</button>
+  <button class="control-btn" type="button" onclick="game.togglePause()">Pause/Resume</button>
+  <button class="control-btn" type="button" onclick="game.restart()">Restart</button>
+  <button class="control-btn" type="button" onclick="game.toggleSound()">Sound On/Off</button>
     </div>
 
     <div class="instructions">
@@ -224,7 +230,7 @@
         this.level = 1;
         this.lives = 3;
         this.highScore = localStorage.getItem('spaceDefenderHighScore') || 0;
-        
+
         // Game objects
         this.player = null;
         this.bullets = [];
@@ -232,14 +238,14 @@
         this.powerUps = [];
         this.particles = [];
         this.stars = [];
-        
+
         // Game settings
         this.keys = {};
         this.lastTime = 0;
         this.enemySpawnTimer = 0;
         this.powerUpSpawnTimer = 0;
         this.soundEnabled = true;
-        
+
         this.init();
       }
 
@@ -313,7 +319,7 @@
           this.update(deltaTime);
         }
         this.render();
-        
+
         requestAnimationFrame(() => this.gameLoop());
       }
 
@@ -410,13 +416,13 @@
       spawnEnemies(deltaTime) {
         this.enemySpawnTimer += deltaTime;
         const spawnRate = Math.max(500 - this.level * 50, 100);
-        
+
         if (this.enemySpawnTimer > spawnRate) {
           this.enemySpawnTimer = 0;
-          
+
           const enemyTypes = ['basic', 'fast', 'tank'];
           const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-          
+
           let enemy = {
             x: Math.random() * (this.canvas.width - 30),
             y: -30,
@@ -435,7 +441,7 @@
               enemy = { ...enemy, width: 35, height: 25, speed: 1, health: 3, color: '#ff8800' };
               break;
           }
-          
+
           this.enemies.push(enemy);
         }
       }
@@ -443,7 +449,7 @@
       updateEnemies(deltaTime) {
         this.enemies = this.enemies.filter(enemy => {
           enemy.y += enemy.speed;
-          
+
           // Enemy shooting
           enemy.shootTimer += deltaTime;
           if (enemy.shootTimer > 1000) {
@@ -457,20 +463,20 @@
               type: 'enemy'
             });
           }
-          
+
           return enemy.y < this.canvas.height + enemy.height;
         });
       }
 
       spawnPowerUps(deltaTime) {
         this.powerUpSpawnTimer += deltaTime;
-        
+
         if (this.powerUpSpawnTimer > 5000) {
           this.powerUpSpawnTimer = 0;
-          
+
           const types = ['health', 'rapid', 'spread', 'shield'];
           const type = types[Math.floor(Math.random() * types.length)];
-          
+
           this.powerUps.push({
             x: Math.random() * (this.canvas.width - 20),
             y: -20,
@@ -515,7 +521,7 @@
         // Player bullets vs enemies
         this.bullets.forEach((bullet, bulletIndex) => {
           if (bullet.type !== 'player') return;
-          
+
           this.enemies.forEach((enemy, enemyIndex) => {
             if (this.isColliding(bullet, enemy)) {
               this.createExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
@@ -534,13 +540,13 @@
         // Enemy bullets vs player
         this.bullets.forEach((bullet, bulletIndex) => {
           if (bullet.type !== 'enemy') return;
-          
+
           if (this.isColliding(bullet, this.player)) {
             this.createExplosion(this.player.x + this.player.width / 2, this.player.y + this.player.height / 2);
             this.bullets.splice(bulletIndex, 1);
             this.lives--;
             this.updateUI();
-            
+
             if (this.lives <= 0) {
               this.gameOver();
             }
@@ -644,7 +650,7 @@
         this.enemies.forEach(enemy => {
           this.ctx.fillStyle = enemy.color;
           this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-          
+
           // Health bar for tanks
           if (enemy.type === 'tank') {
             this.ctx.fillStyle = '#ff0000';
@@ -659,7 +665,7 @@
           this.ctx.save();
           this.ctx.translate(powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2);
           this.ctx.rotate(powerUp.rotation);
-          
+
           switch (powerUp.type) {
             case 'health':
               this.ctx.fillStyle = '#ff0055';
@@ -704,7 +710,7 @@
         document.getElementById('level').textContent = this.level;
         document.getElementById('lives').textContent = this.lives;
         document.getElementById('highScore').textContent = this.highScore;
-        
+
         // Level progression
         if (this.score > this.level * 500) {
           this.level++;
@@ -721,13 +727,13 @@
 
       gameOver() {
         this.gameState = 'gameOver';
-        
+
         if (this.score > this.highScore) {
           this.highScore = this.score;
           localStorage.setItem('spaceDefenderHighScore', this.highScore);
           document.getElementById('newHighScore').style.display = 'block';
         }
-        
+
         document.getElementById('finalScore').textContent = this.score;
         document.getElementById('gameOverScreen').style.display = 'block';
         this.updateUI();
@@ -742,10 +748,10 @@
         this.enemies = [];
         this.powerUps = [];
         this.particles = [];
-        
+
         this.createPlayer();
         this.createStars();
-        
+
         document.getElementById('gameOverScreen').style.display = 'none';
         document.getElementById('newHighScore').style.display = 'none';
         this.updateUI();
@@ -760,7 +766,7 @@
         if (!this.audioContext) {
           this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
-        
+
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
         

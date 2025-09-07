@@ -398,7 +398,12 @@ function loadMenuAssets() {
 
         if (!window.enhancedAnimationEngine) {
           window.enhancedAnimationEngine = new EnhancedAnimationEngine();
+          // Bei jedem Re-Entry neu animieren
+          window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
           console.warn('✅ Enhanced Animation Engine initialized');
+        } else {
+          // Falls bereits vorhanden, ebenfalls sicherstellen
+          window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
         }
 
         // Animation-Scans
@@ -419,6 +424,25 @@ function loadMenuAssets() {
         // Hero-Button-Animationen aktivieren
         hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')
           ?.forEach(b => b.classList.add('is-visible'));
+
+        // Snap Scroll Sync: Beim Section-Wechsel Animationen steuern
+        window.addEventListener('snapSectionChange', (e) => {
+          const id = e.detail?.id;
+          if (!id) return;
+          const active = document.getElementById(id);
+          if (!active) return;
+          // Optional: Vorherige Section sanft zurücksetzen
+          try {
+            const allSections = Array.from(document.querySelectorAll('main .section, .section'));
+            for (const s of allSections) {
+              if (s !== active) {
+                window.enhancedAnimationEngine?.resetElementsIn?.(s);
+              }
+            }
+          } catch { /* noop */ }
+          // Aktive Section gezielt animieren
+          window.enhancedAnimationEngine?.animateElementsIn?.(active, { force: true });
+        });
       } catch (error) {
         log.warn('Hero animations failed:', error);
       }
