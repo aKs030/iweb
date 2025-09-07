@@ -308,7 +308,17 @@
   </div>
 
   <!-- Global Particle Background -->
-  <div class="global-particle-background">
+  <div
+    class="global-particle-background"
+    data-particle-gradient="radial"
+    data-particle-alpha-scale="1.15"
+    data-particle-trails="true"
+    data-particle-trail-fade="0.08"
+    data-particle-glow="true"
+    data-particle-blend="lighter"
+    data-particle-conn-skip="2"
+    data-particle-conn-cap="8"
+  >
     <canvas class="particle-canvas" id="particleCanvas"></canvas>
     <div class="gradient-overlay"></div>
   </div>
@@ -332,8 +342,6 @@
     aria-labelledby="hero-heading"
     data-section-src="/pages/home/hero.html"
     data-eager="true"
-    data-particle-color="rgba(9,139,255,0.8)"
-    data-particle-opacity="0.5"
   >
     <div class="section-skeleton" aria-hidden="true"></div>
   </section>
@@ -348,10 +356,6 @@
   data-anim-out="250"
   data-anim-ease="cubic-bezier(0.25,0.46,0.45,0.94)"
   data-live-label="Feature"
-  data-particle-color="rgba(255,107,107,0.6)"
-  data-particle-opacity="0.3"
-  data-particle-gradient="radial"
-  data-particle-alpha-scale="1.15"
 >
   <!-- optional override für FeatureRotation -->
   <div class="section-skeleton" aria-hidden="true"></div>
@@ -363,8 +367,6 @@
     class="section about"
     aria-labelledby="about-heading"
     data-section-src="/pages/about/about.html"
-    data-particle-color="rgba(255,217,61,0.6)"
-    data-particle-opacity="0.2"
   >
     <div class="section-skeleton" aria-hidden="true"></div>
   </section>

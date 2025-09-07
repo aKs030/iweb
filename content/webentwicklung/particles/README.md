@@ -85,6 +85,45 @@ data-particle-connection-opacity="0.8"        <!-- 0.0-1.0 -->
 data-particle-opacity-scale="1.5"             <!-- 0.0-2.0 -->
 ```
 
+### Parallax, Trails, Glow & Blend
+```html
+<!-- Maus-/Touch-Parallax (0.0 - 0.3; 0 = aus) -->
+data-particle-parallax="0.15"
+
+<!-- Weiche Bewegungs-Trails via destination-out -->
+data-particle-trails="true"                    <!-- true|false -->
+data-particle-trail-fade="0.08"                <!-- 0.005 - 0.5 (höher = stärkere Trails) -->
+
+<!-- Glow/Leuchten über Blend-Mode (empf. lighter/screen) -->
+data-particle-glow="true"                      <!-- true|false; schaltet automatisch auf 'lighter' wenn source-over -->
+data-particle-blend="lighter"                  <!-- source-over|lighter|screen -->
+
+<!-- Verbindungslinien Taktung & Begrenzung -->
+data-particle-conn-skip="2"                    <!-- nur jede n-te Frame Verbindungen rendern (1 = jedes Frame) -->
+data-particle-conn-cap="8"                     <!-- max. Verbindungen pro Partikel (>=1) -->
+```
+
+### Per-Section Kamera & Dolly-Zoom
+Setze die folgenden Attribute auf deinen Section-Elementen (z. B. `<section class="section" data-camera-...>`). Fehlt ein Wert, wird ein sinnvoller Default pro Abschnitt verwendet.
+
+```html
+<section class="section"
+  data-camera-zoom="1.25"          <!-- Zoom-Faktor, Default je Abschnitt; typ. 1.0 - 1.6 -->
+  data-camera-tilt="0.05"          <!-- Rotation in Rad, klein halten: -0.2 .. 0.2 -->
+  data-camera-pan-x="-10"          <!-- Horizontaler Versatz in px -->
+  data-camera-pan-y="12"           <!-- Vertikaler Versatz in px -->
+  data-camera-focal="680"          <!-- Brennweite für Pseudo-3D (z) -->
+  data-camera-shake="0.02"         <!-- Kamerawackeln (0..~0.2), wird im Laufe gedämpft -->
+  data-camera-dolly-dur="900"      <!-- Dauer des Dolly-Zooms in ms (>=200) -->
+  data-camera-dolly-lock-depth="-80"> <!-- Tiefe, die während Dolly visuell konstant bleibt -->
+</section>
+```
+
+Hinweise:
+- Dolly-Zoom koppelt Focal und Zoom gegenläufig, um eine Ebene in konstanter Tiefe zu „fixieren“.
+- Wird `data-camera-dolly-dur` gesetzt, startet beim Section-Wechsel ein filmischer Dolly-Zoom; Zielzoom wird automatisch angepasst, um Rücksprünge zu vermeiden.
+- `data-camera-shake` erzeugt kurzzeitig ein dynamisches Wackeln, das automatisch ausfadet.
+
 ## 🎛️ JavaScript API
 
 ### Basis-Funktionen

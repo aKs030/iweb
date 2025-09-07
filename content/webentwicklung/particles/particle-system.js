@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 // Export: initParticles({ getElement, throttle, checkReducedMotion }) -> cleanup()
 import { randomFloat } from '../utils/common-utils.js';
 
@@ -46,6 +47,277 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   let lastTime = performance.now();
   const fpsSamples = [];
   const stats = (window.__particleStats = window.__particleStats || { fps:0, count:0 });
+  // Parallax Stärke (Mausverfolgung entfernt; Offsets bleiben 0)
+  let parallaxStrength = 0; // 0..0.3 via data-attribute (ohne Effekt auf Kamera)
+
+  // ===== Kamera / 3D-Zoom (per Section) =====
+  // Pro Section unterschiedliche Kamera-Ansicht (Zoom/Tilt/Pan/Focal)
+  const sections = Array.from(document.querySelectorAll('main .section, .section'));
+  function toNumber(val, fallback){ const n = parseFloat(val); return Number.isFinite(n) ? n : fallback; }
+  function buildCameraProfiles(){
+    return sections.map((el, idx) => {
+      const ds = el?.dataset || {};
+      // Dramatischere Kamera-Ansichten je Abschnitt
+      const base = [
+        { zoom: 1.00, tilt: 0.00, panX: 0, panY: 0, focal: 600, shake: 0 }, // hero
+        { zoom: 1.25, tilt: 0.08, panX: -15, panY: 5, focal: 680, shake: 0.02 }, // features - dramatischer zoom
+        { zoom: 1.45, tilt: -0.06, panX: 20, panY: -8, focal: 750, shake: 0.015 }, // about - starker zoom + pan
+        { zoom: 1.18, tilt: 0.04, panX: -10, panY: 12, focal: 640, shake: 0.01 }, // weitere
+      ][idx] || { zoom: 1.15 + (idx * 0.08), tilt: 0.03 * ((idx%2)?1:-1), panX: (idx%2?-12:12), panY: (idx%3-1)*8, focal: 620 + idx*20, shake: 0.01 };
+      return {
+        id: el?.id || `section-${idx}`,
+        zoom: toNumber(ds.cameraZoom, base.zoom),
+        tilt: toNumber(ds.cameraTilt, base.tilt),
+        panX: toNumber(ds.cameraPanX, base.panX),
+        panY: toNumber(ds.cameraPanY, base.panY),
+        focal: toNumber(ds.cameraFocal, base.focal),
+        shake: toNumber(ds.cameraShake, base.shake),
+        // Neue Dolly-Parameter pro Section (optional)
+        dollyDur: toNumber(ds.cameraDollyDur, NaN),
+        dollyLockDepth: toNumber(ds.cameraDollyLockDepth, NaN),
+      };
+    });
+  }
+  const cameraProfiles = buildCameraProfiles();
+  const cameraState = {
+    currentZoom: 1,
+    targetZoom: 1,
+    currentTilt: 0,
+    targetTilt: 0,
+    panX: 0,
+    panY: 0,
+    currentFocal: 600,
+    targetFocal: 600,
+    zoomPulse: 0,
+    shake: 0,
+    shakeX: 0,
+    shakeY: 0,
+    rotationMomentum: 0,
+    depthPerspective: 1,
+    parallaxX: 0,
+    parallaxY: 0,
+    dolly: {
+      active: false,
+      start: 0,
+      dur: 800,
+      f0: 600,
+      f1: 800,
+      z0: 1.0,
+      z1: 1.35,
+      lockDepth: -80 // angenommene Tiefe, die visuell "konstant" wirken soll
+    }
+  };
+  let lastSectionIdx = -1;
+  let lastSectionCheck = 0;
+
+  function getActiveSectionIndex(){
+    if (!sections.length) return -1;
+    const vc = innerHeight * 0.5;
+    let best = -1, bestDist = 1e9;
+    for (let i=0;i<sections.length;i++){
+      const r = sections[i].getBoundingClientRect();
+      const center = r.top + r.height * 0.5;
+      const dist = Math.abs(center - vc);
+      if (dist < bestDist){ bestDist = dist; best = i; }
+    }
+    return best;
+  }
+
+  function dispatchSnapChange(idx){
+    try {
+      const el = sections[idx];
+      const detail = { index: idx, id: el?.id || `section-${idx}` };
+      window.dispatchEvent(new CustomEvent('snapSectionChange', { detail }));
+    } catch { 
+      /* noop */ 
+    }
+  }
+
+  // Initial aktive Section setzen: Kamera sofort auf Profil setzen und CSS [data-section] aktivieren
+  function setInitialSection(){
+    const idx = getActiveSectionIndex();
+    if (idx < 0) return;
+    lastSectionIdx = idx;
+    setCameraTargetsFromProfile(idx);
+    // Aktuellen Zustand direkt übernehmen (kein Dolly/Burst auf Start)
+    cameraState.currentZoom = cameraState.targetZoom;
+    cameraState.currentTilt = cameraState.targetTilt;
+    cameraState.currentFocal = cameraState.targetFocal;
+    cameraState.dolly.active = false;
+    cameraState.zoomPulse = 0;
+    cameraState.rotationMomentum = 0;
+    cameraState.shake = 0;
+    cameraState.shakeX = 0;
+    cameraState.shakeY = 0;
+    // CSS Section-Attribut am Container setzen
+    try {
+      const el = sections[idx];
+      const id = el?.id || `section-${idx}`;
+      if (bgRoot && id) bgRoot.setAttribute('data-section', id);
+    } catch { /* noop */ }
+  }
+
+  function setCameraTargetsFromProfile(idx){
+    const p = cameraProfiles[idx]; if (!p) return;
+    cameraState.targetZoom = p.zoom;
+    cameraState.targetTilt = p.tilt;
+    cameraState.panX = p.panX;
+    cameraState.panY = p.panY;
+    cameraState.targetFocal = p.focal;
+    cameraState.shake = p.shake || 0;
+  }
+
+  function onSectionChanged(newIdx){ // NOSONAR: orchestrates multiple effects; acceptable complexity
+    if (newIdx < 0) return;
+    lastSectionIdx = newIdx;
+    setCameraTargetsFromProfile(newIdx);
+    // Dolly-Zoom: Focal hoch, Zoom runter (oder umgekehrt) für filmischen Effekt
+    if (!reduceMotion) {
+      const now = performance.now();
+      const base = cameraState.dolly;
+      base.active = true;
+      base.start = now;
+      // Section-spezifische Dolly-Dauer (Fallback 0.9s)
+      const prof = cameraProfiles[newIdx];
+      base.dur = Number.isFinite(prof?.dollyDur) ? Math.max(200, prof.dollyDur) : 900;
+      base.f0 = cameraState.currentFocal;
+      base.f1 = cameraState.targetFocal;
+      base.z0 = cameraState.currentZoom;
+      // Dolly-Zoom: berechne End-Zoom so, dass Ebene bei lockDepth visuell konstant bleibt
+      const D = Number.isFinite(prof?.dollyLockDepth) ? prof.dollyLockDepth : base.lockDepth;
+      const f0 = Math.max(1, base.f0), f1 = Math.max(1, base.f1);
+      const s0 = Math.max(0.2, base.z0);
+      const zEnd = s0 * (f0 / (f0 + D)) * ((f1 + D) / f1);
+      base.z1 = Math.max(0.75, Math.min(1.75, zEnd));
+      cameraState.targetZoom = base.z1; // Ziel an z1 anpassen, damit kein Rücksprung entsteht
+    } else {
+      cameraState.currentZoom = cameraState.targetZoom;
+      cameraState.currentFocal = cameraState.targetFocal;
+    }
+    // Leichte Motion-Details
+    cameraState.zoomPulse = reduceMotion ? 0 : 0.08;
+    cameraState.rotationMomentum = reduceMotion ? 0 : (Math.random() - 0.5) * 0.12;
+    cameraState.shake = Math.max(cameraState.shake, reduceMotion ? 0 : 0.08);
+    
+    // Moderater Partikel-Burst-Effekt (reduziert für Klarheit)
+    if (!reduceMotion) triggerParticleBurst();
+    
+    dispatchSnapChange(newIdx);
+  }
+
+  function triggerParticleBurst(){
+    for (const p of particles) {
+      if (Math.random() < 0.18) {
+        const cx = innerWidth * 0.5, cy = innerHeight * 0.5;
+        const dx = p.x - cx, dy = p.y - cy;
+        const dist = Math.max(1, Math.sqrt(dx*dx + dy*dy));
+        const force = Math.max(0.06, 1 - (dist / 520));
+        const burstSpeed = 1.1 * force;
+        p.vx += (dx / dist) * burstSpeed;
+        p.vy += (dy / dist) * burstSpeed;
+        p.vz += (Math.random() - 0.5) * 0.5;
+        p.rotationSpeed += (Math.random() - 0.5) * 0.03;
+      }
+    }
+  }
+
+  // --- Camera Update Helpers (reduce complexity) ---
+  function checkSectionUpdate(now){
+    if (now - lastSectionCheck > 120){
+      lastSectionCheck = now;
+      const idx = getActiveSectionIndex();
+      if (idx !== -1 && idx !== lastSectionIdx) onSectionChanged(idx);
+    }
+  }
+
+  function updateDollyProgress(now){
+    if (!cameraState.dolly.active) return false;
+    const t = Math.min(1, Math.max(0, (now - cameraState.dolly.start) / cameraState.dolly.dur));
+    // EaseInOutCubic
+    const te = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+    const f = cameraState.dolly.f0 + (cameraState.dolly.f1 - cameraState.dolly.f0) * te;
+    const z = cameraState.dolly.z0 + (cameraState.dolly.z1 - cameraState.dolly.z0) * (1 - te); // gegenläufig
+    cameraState.currentFocal = f;
+    cameraState.currentZoom = z;
+    if (t >= 1) {
+      cameraState.dolly.active = false;
+      cameraState.currentFocal = cameraState.targetFocal;
+      cameraState.currentZoom = cameraState.targetZoom;
+      // Nachlauf vollständig eliminieren
+      cameraState.zoomPulse = 0;
+      cameraState.rotationMomentum = 0;
+      cameraState.shake = 0;
+      cameraState.shakeX = 0;
+      cameraState.shakeY = 0;
+    }
+    return true;
+  }
+
+  function lerpCameraStep(){
+    const baseK = reduceMotion ? 1 : 0.12;
+    const zoomK = baseK * (cameraState.zoomPulse > 0.05 ? 0.6 : 1.2);
+    const tiltK = baseK * 0.8;
+    if (!cameraState.dolly.active) {
+      cameraState.currentZoom += (cameraState.targetZoom - cameraState.currentZoom) * zoomK;
+      cameraState.currentFocal += (cameraState.targetFocal - cameraState.currentFocal) * baseK;
+    }
+    cameraState.currentTilt += (cameraState.targetTilt - cameraState.currentTilt) * tiltK;
+    if (Math.abs(cameraState.currentZoom - cameraState.targetZoom) < 0.002) cameraState.currentZoom = cameraState.targetZoom;
+    if (Math.abs(cameraState.currentTilt - cameraState.targetTilt) < 0.001) cameraState.currentTilt = cameraState.targetTilt;
+    if (!cameraState.dolly.active && Math.abs(cameraState.currentFocal - cameraState.targetFocal) < 0.5) cameraState.currentFocal = cameraState.targetFocal;
+  }
+
+  function updateShakeAndPulse(now){
+    cameraState.zoomPulse *= 0.86;
+    cameraState.rotationMomentum *= 0.93;
+    cameraState.shake *= 0.88;
+    if (cameraState.shake > 0.003) {
+      const t = now * 0.012;
+      cameraState.shakeX = Math.sin(t * 1.7) * cameraState.shake * 25;
+      cameraState.shakeY = Math.cos(t * 1.3) * cameraState.shake * 20;
+    } else {
+      cameraState.shakeX *= 0.9;
+      cameraState.shakeY *= 0.9;
+    }
+    if (cameraState.zoomPulse < 0.004) cameraState.zoomPulse = 0;
+    if (cameraState.shake < 0.003) cameraState.shake = 0;
+    if (Math.abs(cameraState.rotationMomentum) < 0.002) cameraState.rotationMomentum = 0;
+  }
+
+  function updateParallaxOffsets(){
+    // Maus-Parallax deaktiviert: Offsets immer 0
+    cameraState.parallaxX = 0;
+    cameraState.parallaxY = 0;
+  }
+
+  function updateCameraAndActiveSection(now){
+    // Abschnitt prüfen ~8x pro Sekunde
+    checkSectionUpdate(now);
+    // Dolly-Zoom Fortschritt (falls aktiv)
+    updateDollyProgress(now);
+    // Lerp & Snaps
+    lerpCameraStep();
+    // Pulse, Shake
+    updateShakeAndPulse(now);
+    // Parallax
+    updateParallaxOffsets();
+  }
+
+  function applyCameraTransform(){
+    const cx = innerWidth * 0.5, cy = innerHeight * 0.5;
+    const z = cameraState.currentZoom + cameraState.zoomPulse;
+    const totalTilt = cameraState.currentTilt + cameraState.rotationMomentum;
+    
+    ctx.save();
+    ctx.translate(cx + cameraState.shakeX, cy + cameraState.shakeY);
+    ctx.rotate(totalTilt);
+    ctx.scale(z, z);
+    ctx.translate(-cx + cameraState.panX + cameraState.parallaxX, -cy + cameraState.panY + cameraState.parallaxY);
+    
+    // Erweiterte Depth-of-Field Simulation
+    cameraState.depthPerspective = 0.8 + (z - 1) * 0.4; // Stärkerer Depth-Effekt bei Zoom
+  }
+  function restoreCameraTransform(){ ctx.restore(); }
 
   // ===== Physik-Eigenschaften =====
   const gravity = { x: 0, y: 0 };
@@ -82,6 +354,10 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       this.s = randomFloat(0, 2) + 1;
       this.vx = (randomFloat(-1, 1)) * 0.6;
       this.vy = (randomFloat(-1, 1)) * 0.6;
+      // 3D-Erweiterungen
+      this.z = randomFloat(-200, 200); // Tiefe im 3D-Raum
+      this.originalZ = this.z;
+      this.vz = randomFloat(-0.3, 0.3);
       // Partikeltyp und erweiterte Eigenschaften
       this.type = this.assignParticleType();
       this.rotation = randomFloat(0, Math.PI * 2);
@@ -90,6 +366,10 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       this.pulseSpeed = randomFloat(0.01, 0.03);
       this.life = 1;
       this.maxLife = 1;
+      // 3D-Rendering-Eigenschaften
+      this.scale3D = 1;
+      this.alpha3D = 1;
+      this.depthBlur = 0;
     }
     
     assignParticleType() {
@@ -127,12 +407,36 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     }
     
     update(){
+      // 3D-Tiefe updaten
+      this.z += this.vz;
+      
+      // Z-Wrapping für endlose Tiefe
+      if (this.z > 300) {
+        this.z = -300;
+        this.x = randomFloat(0, innerWidth);
+        this.y = randomFloat(0, innerHeight);
+      } else if (this.z < -300) {
+        this.z = 300;
+        this.x = randomFloat(0, innerWidth);
+        this.y = randomFloat(0, innerHeight);
+      }
+      
+      // 3D-Perspektive berechnen
+      const focal = cameraState.currentFocal;
+      const perspective = focal / (focal + this.z);
+      this.scale3D = Math.max(0.1, perspective * cameraState.depthPerspective);
+      
+      // Depth-basierte Alpha und Blur
+      const normalizedZ = Math.abs(this.z) / 300;
+      this.alpha3D = Math.max(0.1, 1 - normalizedZ * 0.7);
+      this.depthBlur = normalizedZ * 2;
+      
       // Schwerkraft anwenden
       this.vx += gravity.x;
       this.vy += gravity.y;
       
       // Typ-spezifische Updates
-      this.rotation += this.rotationSpeed;
+      this.rotation += this.rotationSpeed * this.scale3D; // Langsamere Rotation in der Ferne
       this.pulsePhase += this.pulseSpeed;
       
       // Geschwindigkeit normalisieren
@@ -167,38 +471,63 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     }
     
     draw(){
-      const baseSize = this.s;
+      const baseSize = this.s * this.scale3D;
+      const finalAlpha = this.alpha3D;
+      // Kleines Early-Culling für sehr kleine/weit entfernte Partikel
+      if (finalAlpha < 0.08 && baseSize < 0.4) return;
+      
+      // Depth-of-Field Blur-Effekt
+      if (enableDepthOfField && this.depthBlur > 0.3) {
+        // Quantisierte Blur-Stufen (0.5er Schritte) für weniger State-Wechsel
+        const q = Math.min(3, Math.round(this.depthBlur * 2) / 2);
+        if (q > 0.25) ctx.filter = `blur(${q}px)`;
+      }
+      
+      // Globale Alpha für Tiefe
+      ctx.globalAlpha *= finalAlpha;
       
       ctx.save();
       ctx.translate(this.x, this.y);
       
+      // Z-basierte Größenvariation für verschiedene Typen
+      let sizeMultiplier = 1.0;
+      if (this.type === 'sparkle') sizeMultiplier = 1.3;
+      else if (this.type === 'pulse') sizeMultiplier = 1.2;
+      else if (this.type === 'star') sizeMultiplier = 1.15;
+      
+      const finalSize = baseSize * sizeMultiplier;
+      
       switch (this.type) {
         case 'triangle':
-          this.drawTriangle(baseSize);
+          this.drawTriangle(finalSize);
           break;
         case 'star':
-          this.drawStar(baseSize);
+          this.drawStar(finalSize);
           break;
         case 'star6':
-          this.drawStar6(baseSize);
+          this.drawStar6(finalSize);
           break;
         case 'star8':
-          this.drawStar8(baseSize);
+          this.drawStar8(finalSize);
           break;
         case 'sparkle':
-          this.drawSparkle(baseSize);
+          this.drawSparkle(finalSize);
           break;
         case 'pulse':
-          this.drawPulse(baseSize);
+          this.drawPulse(finalSize);
           break;
         case 'square':
-          this.drawSquare(baseSize);
+          this.drawSquare(finalSize);
           break;
         default: // circle
-          this.drawCircle(baseSize);
+          this.drawCircle(finalSize);
       }
       
       ctx.restore();
+      
+      // Filter und Alpha zurücksetzen
+      ctx.filter = 'none';
+      ctx.globalAlpha = 1;
     }
     
     drawCircle(size) {
@@ -409,55 +738,49 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
 
   function processCollisions() {
     if (!enableCollisions) return;
-    
-    if (useQuadTree) {
-      // Quad-Tree basierte Kollisionserkennung
-      if (!quadTree) {
-        quadTree = new QuadTree({x: 0, y: 0, width: innerWidth, height: innerHeight});
+    if (useQuadTree) processCollisionsQuadTree();
+    else processCollisionsGrid();
+  }
+
+  function processCollisionsQuadTree(){
+    if (!quadTree) {
+      quadTree = new QuadTree({x: 0, y: 0, width: innerWidth, height: innerHeight});
+    }
+    quadTree.clear();
+    for (const particle of particles) quadTree.insert(particle);
+    const returnObjects = [];
+    for (const particle of particles) {
+      returnObjects.length = 0;
+      const possible = quadTree.retrieve(returnObjects, particle);
+      for (const other of possible) {
+        if (particle !== other) checkParticleCollision(particle, other);
       }
-      
-      quadTree.clear();
-      for (const particle of particles) {
-        quadTree.insert(particle);
+    }
+  }
+
+  function processCollisionsGrid(){
+    for (const [k, bucket] of grid) {
+      const gy = (k >>> 16) & 0xFFFF, gx = k & 0xFFFF;
+      const nb = collectNeighborIndices(gx, gy);
+      for (const i of bucket) {
+        const p1 = particles[i];
+        handleSelfBucketCollisions(bucket, i, p1);
+        handleNeighborBucketCollisions(i, p1, nb, bucket);
       }
-      
-      const returnObjects = [];
-      for (const particle of particles) {
-        returnObjects.length = 0;
-        const possibleCollisions = quadTree.retrieve(returnObjects, particle);
-        
-        for (const other of possibleCollisions) {
-          if (particle !== other) {
-            checkParticleCollision(particle, other);
-          }
-        }
-      }
-    } else {
-      // Original Grid-basierte Kollisionserkennung
-      for (const [k, bucket] of grid) {
-        const gy = (k >>> 16) & 0xFFFF, gx = k & 0xFFFF;
-        const nb = collectNeighborIndices(gx, gy);
-        
-        for (const i of bucket) {
-          const p1 = particles[i];
-          
-          // Selbst-Bucket
-          for (const j of bucket) {
-            if (i < j) { // Doppelte Checks vermeiden
-              checkParticleCollision(p1, particles[j]);
-            }
-          }
-          
-          // Nachbar-Buckets
-          for (const neighList of nb) {
-            if (neighList === bucket) continue; // Schon bearbeitet
-            for (const j of neighList) {
-              if (i < j) {
-                checkParticleCollision(p1, particles[j]);
-              }
-            }
-          }
-        }
+    }
+  }
+
+  function handleSelfBucketCollisions(bucket, i, p1){
+    for (const j of bucket) {
+      if (i < j) checkParticleCollision(p1, particles[j]);
+    }
+  }
+
+  function handleNeighborBucketCollisions(i, p1, nb, bucket){
+    for (const neighList of nb) {
+      if (neighList === bucket) continue;
+      for (const j of neighList) {
+        if (i < j) checkParticleCollision(p1, particles[j]);
       }
     }
   }
@@ -590,6 +913,26 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   let particleOpacity = 1;
   let quadTree = null;
   let useQuadTree = false;
+  // Visual-/Performance-Settings
+  let enableTrails = false;
+  let trailFade = 0.08; // 0.005 .. 0.5
+  let enableGlow = false;
+  let blendModeParticles = 'source-over';
+  let connectionFrameSkip = 1;
+  let connectionMaxPerParticle = 8;
+  let frameCounter = 0;
+  let edgeCounts = new Uint8Array(0);
+  // DoF & Auto-Quality & Depth-Sort Basisschalter
+  let enableDepthOfField = true;
+  let autoQuality = true;
+  let sortByDepth = true;
+  let sortEveryNFrames = 8;
+  // Basiswerte für Auto-Quality
+  let baseParallaxStrength = 0;
+  let baseConnectionFrameSkip = 1;
+  let baseConnectionMaxPerParticle = 8;
+  let baseEnableGlow = false;
+  let baseTrailFade = trailFade;
   
   const updateAdvancedSettings = () => {
     debugMode = bgRoot?.getAttribute('data-particle-debug') === 'true';
@@ -598,10 +941,67 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     
     const connOpacity = bgRoot?.getAttribute('data-particle-connection-opacity');
     connectionOpacity = connOpacity ? Math.max(0, Math.min(1, parseFloat(connOpacity))) : 1;
-    
+
     const partOpacity = bgRoot?.getAttribute('data-particle-opacity-scale');
     particleOpacity = partOpacity ? Math.max(0, Math.min(2, parseFloat(partOpacity))) : 1;
+
+    // Erweiterte Optik/Steuerung
+    const par = bgRoot?.getAttribute('data-particle-parallax');
+    parallaxStrength = par ? Math.max(0, Math.min(0.3, parseFloat(par))) : 0;
+    baseParallaxStrength = parallaxStrength;
+    enableTrails = bgRoot?.getAttribute('data-particle-trails') === 'true';
+    const tf = bgRoot?.getAttribute('data-particle-trail-fade');
+    trailFade = tf ? Math.max(0.005, Math.min(0.5, parseFloat(tf))) : 0.08;
+    baseTrailFade = trailFade;
+    enableGlow = bgRoot?.getAttribute('data-particle-glow') === 'true';
+    baseEnableGlow = enableGlow;
+    const bm = bgRoot?.getAttribute('data-particle-blend');
+    blendModeParticles = (bm === 'lighter' || bm === 'screen' || bm === 'source-over') ? bm : 'source-over';
+    const cfs = bgRoot?.getAttribute('data-particle-conn-skip');
+    connectionFrameSkip = cfs ? Math.max(1, parseInt(cfs)) : 1;
+    baseConnectionFrameSkip = connectionFrameSkip;
+    const ccap = bgRoot?.getAttribute('data-particle-conn-cap');
+    connectionMaxPerParticle = ccap ? Math.max(1, parseInt(ccap)) : 8;
+    baseConnectionMaxPerParticle = connectionMaxPerParticle;
+
+    // DoF & Auto-Quality & Depth-Sort
+    enableDepthOfField = bgRoot?.getAttribute('data-particle-dof') !== 'false';
+    autoQuality = bgRoot?.getAttribute('data-particle-auto-quality') !== 'false';
+    sortByDepth = bgRoot?.getAttribute('data-particle-sort-depth') !== 'false';
+    const sortInt = bgRoot?.getAttribute('data-particle-sort-interval');
+    sortEveryNFrames = sortInt ? Math.max(2, Math.min(60, parseInt(sortInt))) : 8;
   };
+
+  
+
+  function adjustQualityByFPS(avgFps){
+    if (!autoQuality) return;
+    if (avgFps >= 55) {
+      parallaxStrength = baseParallaxStrength;
+      enableGlow = baseEnableGlow;
+      trailFade = baseTrailFade;
+      connectionFrameSkip = baseConnectionFrameSkip;
+      connectionMaxPerParticle = baseConnectionMaxPerParticle;
+    } else if (avgFps >= 40) {
+      parallaxStrength = baseParallaxStrength * 0.7;
+      enableGlow = baseEnableGlow;
+      trailFade = Math.min(0.25, baseTrailFade * 1.1);
+      connectionFrameSkip = Math.max(baseConnectionFrameSkip, 2);
+      connectionMaxPerParticle = Math.min(baseConnectionMaxPerParticle, 6);
+    } else if (avgFps >= 28) {
+      parallaxStrength = baseParallaxStrength * 0.4;
+      enableGlow = false;
+      trailFade = Math.min(0.35, baseTrailFade * 1.3);
+      connectionFrameSkip = Math.max(baseConnectionFrameSkip, 3);
+      connectionMaxPerParticle = Math.min(baseConnectionMaxPerParticle, 4);
+    } else {
+      parallaxStrength = 0;
+      enableGlow = false;
+      trailFade = Math.min(0.45, 0.12);
+      connectionFrameSkip = Math.max(baseConnectionFrameSkip, 4);
+      connectionMaxPerParticle = Math.min(baseConnectionMaxPerParticle, 2);
+    }
+  }
 
   const drawDebugOverlay = () => {
     if (!debugMode) return;
@@ -750,6 +1150,15 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   if (bgRoot) observer.observe(bgRoot,{ attributes:true });
 
   window.addEventListener('snapSectionChange', updateTargetColor, { passive:true });
+  // Section-spezifische CSS-Varianten aktivieren (particles.css nutzt [data-section])
+  window.addEventListener('snapSectionChange', (e) => {
+    try {
+      const id = e?.detail?.id;
+      if (id && bgRoot) bgRoot.setAttribute('data-section', id);
+    } catch {
+      /* noop */
+    }
+  }, { passive:true });
 
   // ===== Verbindungen + Partikel zeichnen =====
   let gradLinear = null, gradRadial = null, gradMode = 'linear';
@@ -799,6 +1208,10 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
 
     // Nur 2D Partikel zeichnen wenn aktiviert
     if (showParticles) {
+      // Optional: Tiefensortierung (ferne zuerst)
+      if (sortByDepth && (frameCounter % sortEveryNFrames === 0)) {
+        try { particles.sort((a, b) => a.z - b.z); } catch { /* noop */ }
+      }
       for (const p of particles) { p.update(); p.draw(); }
     } else {
       for (const p of particles) { p.update(); } // Nur update, kein draw
@@ -806,69 +1219,93 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   }
 
   function drawConnections(){
-  // Baseline-Intensität (etwas kräftiger als vorher)
-    if (!showConnections) return; // Verbindungen optional deaktivieren
-    
-    const baseAlpha = (colorCurrent.aStroke * (0.8 + 0.2 * densityFactor) * scrollFactor * connectionOpacity);
-    const baseWidth = 1.1;   // Grunddicke
-    const widthBoost = 1.3;  // Zusatzdicke bei sehr kurzer Distanz
+    if (!showConnections) return;
+    setupConnectionStyle();
+    prepareEdgeCounts();
+    drawConnectionSegments();
+    ctx.globalAlpha = 1;
+  }
 
+  function setupConnectionStyle(){
+    // Baseline-Intensität
     // Einmalige Stroke-Farbe ohne Alpha (Alpha wird pro Segment via globalAlpha gesetzt)
     const sr = colorCurrent.r | 0, sg = colorCurrent.g | 0, sb = colorCurrent.b | 0;
     ctx.strokeStyle = `rgb(${sr},${sg},${sb})`;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+  }
 
-    // Optional sanfter Glow (deaktiviert; aktivieren = FPS-Kosten)
+  function prepareEdgeCounts(){
+    if (edgeCounts.length !== particles.length) edgeCounts = new Uint8Array(particles.length);
+    else edgeCounts.fill(0);
+  }
 
-    // Helper: decide quickly if two particle indices form a visible connection
-    function shouldConnect(i, j, p, q){
-    // returns proximity in range 0..1 (0 = no connection)
-      if (j <= i) return 0; // only draw pair once
+  function drawConnectionSegments(){
+    const baseAlpha = (colorCurrent.aStroke * (0.8 + 0.2 * densityFactor) * scrollFactor * connectionOpacity);
+    const baseWidth = 1.1;
+    const widthBoost = 1.3;
+
+    const shouldConnect = (i, j, p, q) => {
+      if (j <= i) return 0;
       const dx = p.x - q.x, dy = p.y - q.y;
       const d2 = dx*dx + dy*dy;
       if (d2 >= maxD2) return 0;
-      const proximity = 1 - (d2 * invMaxD2);
+      const dz = Math.abs(p.z - q.z);
+      const zFactor = Math.max(0.2, 1 - (dz / 150));
+      const proximity = (1 - (d2 * invMaxD2)) * zFactor;
       return proximity > 0 ? proximity : 0;
-    }
+    };
 
-    // Helper: draw a single segment given proximity (0..1)
-    function drawSegment(p, q, proximity){
-      const segAlpha = Math.min(1, baseAlpha * (0.55 + 0.45 * proximity));
+    const drawSegment = (p, q, proximity) => {
+      const avgAlpha3D = (p.alpha3D + q.alpha3D) * 0.5;
+      const segAlpha = Math.min(1, baseAlpha * (0.55 + 0.45 * proximity) * avgAlpha3D);
+      const avgScale3D = (p.scale3D + q.scale3D) * 0.5;
+      const lineWidth = (baseWidth + widthBoost * proximity) * Math.max(0.3, avgScale3D);
       ctx.globalAlpha = segAlpha;
-      ctx.lineWidth = baseWidth + widthBoost * proximity;
+      ctx.lineWidth = lineWidth;
       ctx.beginPath();
       ctx.moveTo(p.x, p.y);
       ctx.lineTo(q.x, q.y);
       ctx.stroke();
-    }
+    };
 
     for (const [k, bucket] of grid){
       const gy = (k >>> 16) & 0xFFFF, gx = k & 0xFFFF;
       const nb = collectNeighborIndices(gx, gy);
-
       for (const i of bucket){
         const p = particles[i];
-        for (const neighList of nb){
-          for (const j of neighList){
-            const q = particles[j];
-            const proximity = shouldConnect(i, j, p, q);
-            if (!proximity) continue;
-            drawSegment(p, q, proximity);
-          }
-        }
+        processIndexConnections(i, p, nb, bucket, shouldConnect, drawSegment);
       }
     }
+  }
 
-    // Reset
-    ctx.globalAlpha = 1;
+  function processIndexConnections(i, p, nb, bucket, shouldConnect, drawSegment){
+    for (const neighList of nb){
+      handleNeighborListConnections(i, p, neighList, shouldConnect, drawSegment);
+    }
+  }
+
+  function handleNeighborListConnections(i, p, neighList, shouldConnect, drawSegment){
+    for (const j of neighList){
+      const q = particles[j];
+      const proximity = shouldConnect(i, j, p, q);
+      if (!proximity) continue;
+      if (connectionMaxPerParticle > 0) {
+        if (edgeCounts[i] >= connectionMaxPerParticle || edgeCounts[j] >= connectionMaxPerParticle) return;
+      }
+      drawSegment(p, q, proximity);
+      if (connectionMaxPerParticle > 0) {
+        edgeCounts[i]++;
+        edgeCounts[j]++;
+      }
+    }
   }
 
   // ===== Loop =====
   function animationLoop(){
     if (hidden) { rafId = requestAnimationFrame(animationLoop); return; }
-
-    const now = performance.now();
+  const now = performance.now();
+  frameCounter++;
     const dt = (now - lastTime) || 16.7; lastTime = now;
     const fps = 1000 / dt;
     fpsSamples.push(fps); if (fpsSamples.length > 20) fpsSamples.shift();
@@ -876,20 +1313,41 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       const avg = fpsSamples.reduce((a,b) => a+b,0)/20;
       adaptParticleCount(avg);
       stats.fps = avg;
+  if (autoQuality) adjustQualityByFPS(avg);
     }
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if (enableTrails) {
+      // leichte Trails via Alpha-Clear
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = `rgba(0,0,0,${Math.min(0.5, Math.max(0.005, trailFade))})`;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.restore();
+    } else {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
 
     applyTween(now);
     fillSpatialGrid();
     computeDynamicFactors();
+    updateCameraAndActiveSection(now);
     
     // Kollisionen verarbeiten (falls aktiviert)
     processCollisions();
 
     const dynFillA = colorCurrent.aFill * (0.65 + 0.35*scrollFactor) * (0.7 + 0.3*densityFactor);
+    applyCameraTransform();
+    // Blend-Mode für Partikel
+    let mode = blendModeParticles;
+    if (enableGlow && mode === 'source-over') mode = 'lighter';
+    ctx.globalCompositeOperation = mode;
     updateAndDrawParticles(dynFillA);
-    drawConnections();
+    // Verbindungen weniger oft zeichnen
+    ctx.globalCompositeOperation = 'source-over';
+    if (frameCounter % connectionFrameSkip === 0) {
+      drawConnections();
+    }
+    restoreCameraTransform();
     
     // Debug-Overlay zeichnen
     drawDebugOverlay();
@@ -903,6 +1361,8 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   }, { threshold: 0 });
   io.observe(canvas);
 
+  // Maus-Parallax entfernt – keine Pointer-Listener mehr
+
   document.addEventListener('visibilitychange', () => { hidden = document.hidden; }, { passive:true });
   addEventListener('resize', throttle(() => { cancelAnimationFrame(rafId); resize(); ensureParticleCount(targetCount); animationLoop(); }, 180), { passive:true });
 
@@ -910,7 +1370,11 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   try {
     resize(); 
     ensureParticleCount(); 
-    updateTargetColor(); 
+  updateTargetColor(); 
+  updatePhysicsSettings();
+  updateAdvancedSettings();
+  // Initiale Section/Kamera ohne Animation übernehmen
+  setInitialSection();
     updateScrollMax(); 
     animationLoop();
   } catch (error) {
@@ -948,6 +1412,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       particles.length = 0; grid.clear();
       if (quadTree) quadTree.clear();
       io.disconnect(); observer.disconnect();
+  // keine Pointer-Listener zu entfernen
       // Canvas leeren
       ctx.clearRect(0,0,canvas.width,canvas.height);
     }
