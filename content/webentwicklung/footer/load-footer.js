@@ -2,6 +2,10 @@
   if (window.FooterLoader) return;
   window.FooterLoader = true;
 
+  // Logger Import (direkt ohne ES Module da IIFE)
+  const { createLogger } = window.Logger || {};
+  const log = createLogger ? createLogger('footer') : { error: console.error.bind(console) };
+
   async function loadFooter(){
     const container = document.getElementById('footer-container');
     if (!container) return;
@@ -48,7 +52,7 @@
       }
       container.dataset.loaded = '1';
     } catch (err) {
-      console.error('FooterLoader:', err);
+      log.error('FooterLoader:', err);
       container.dataset.loaded = 'error';
     } finally {
       container.removeAttribute('aria-busy');

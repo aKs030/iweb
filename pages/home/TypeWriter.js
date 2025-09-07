@@ -124,8 +124,8 @@ export default class TypeWriter {
       try {
         const ev = new CustomEvent('hero:typingEnd', { detail: { text: full, author } });
         document.dispatchEvent(ev);
-      } catch (error) {
-        console.warn('Failed to dispatch hero:typingEnd event:', error);
+      } catch {
+        // Event dispatch failed, continue silently
       }
       delay = this.wait;
       this._isDeleting = true;
@@ -169,19 +169,25 @@ export const typewriterConfig = {
   smartBreaks: true
 };
 
-// Neue Initialisierungsfunktion (aus main.js extrahiert)
-import { createLogger } from '../../content/webentwicklung/utils/logger.js';
-const logTW = createLogger('typewriter');
-
+// Initialisierungsfunktion
 export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer, quotes, TypeWriterClass }) {
   try {
     const subtitleEl  = document.querySelector('.hero-subtitle');
     const typedText   = document.getElementById('typedText');
     const typedAuthor = document.getElementById('typedAuthor');
-    if (!subtitleEl || !typedText || !typedAuthor || !TypeWriterClass || !makeLineMeasurer || !quotes?.length) return false;
+    
+    if (!subtitleEl || !typedText || !typedAuthor || !TypeWriterClass || !makeLineMeasurer || !quotes?.length) {
+      return false;
+    }
+    
     let twCfg = {};
-    try { const mod = await ensureHeroDataModule(); twCfg = mod?.typewriterConfig || {}; }
-    catch(e){ logTW.warn('typewriterConfig load failed', e); }
+    try { 
+      const mod = await ensureHeroDataModule(); 
+      twCfg = mod?.typewriterConfig || {}; 
+    } catch {
+      /* Fallback */ 
+    }
+    
     const measurer = makeLineMeasurer(subtitleEl);
     const startTypewriter = () => {
       const _typeWriter = new TypeWriterClass({
@@ -197,9 +203,7 @@ export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer,
         ...twCfg,
         containerEl: subtitleEl,
         onBeforeType: (fullText) => {
-          // Lock EIN, damit die Boxhöhe nicht springt
           subtitleEl.classList.add('is-locked');
-
           const lines = measurer.reserveFor(fullText, true);
           const cs  = getComputedStyle(subtitleEl);
           const lh  = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
@@ -210,8 +214,11 @@ export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer,
       });
       window.__typeWriter = _typeWriter;
     };
+    
     const fontsReady = document.fonts?.ready;
     (fontsReady ?? Promise.resolve()).then(startTypewriter);
     return true;
-  } catch(err){ logTW.warn('initHeroSubtitle error', err); return false; }
+  } catch { 
+    return false; 
+  }
 }

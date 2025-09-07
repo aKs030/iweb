@@ -5,7 +5,7 @@
   z-index: -10; 
   pointer-events: none;
   isolation: isolate; /* verhindert Blend-Effekte mit fremden Stacking-Contexts */
-  contain: layout paint; /* Canvas ist komplett eigenständig */
+  contain: layout style paint; /* Erweiterte Containment für bessere Performance */
   
   /* Erweiterte Konfiguration via CSS-Variablen */
   --particle-color: rgba(9, 139, 255, 0.8);
@@ -122,6 +122,35 @@
   .global-particle-background[data-particle-collisions="true"],
   .global-particle-background[data-particle-bounce="true"] {
     opacity: 0.5;
+    filter: none;
+  }
+}
+
+/* ===== Mobile & Touch Optimizations ===== */
+@media (max-width: 768px) {
+  .global-particle-background {
+    --particle-opacity: 0.25;
+    --star-brightness: 1.0;
+  }
+  
+  .global-particle-background .particle-canvas {
+    filter: brightness(1.0) contrast(1.0);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .global-particle-background {
+    --particle-opacity: 0.2;
+  }
+}
+
+/* ===== High Performance Mode für Low-End Devices ===== */
+@media (max-width: 480px) {
+  .global-particle-background[data-particle-trails="true"] {
+    --particle-opacity: 0.15;
+  }
+  
+  .global-particle-background[data-particle-glow="true"] .particle-canvas {
     filter: none;
   }
 }

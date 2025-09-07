@@ -7,6 +7,8 @@
   <meta name="keywords" content="Abdul Berlin, Abdul Tegel, Abdulkerim Sesli, Abdul Webentwickler Berlin, Abdul Fotograf Tegel, Portfolio, Webentwicklung Berlin, Frontend Developer Tegel, Fotografie Berlin, Abdul aus Berlin, Abdul aus Tegel">
   <meta name="author" content="Abdulkerim Sesli - Abdul aus Berlin">
   <meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs">
+  <meta name="theme-color" content="#07a1ff">
+  <meta name="color-scheme" content="dark light">
 
   <!-- AI Crawler friendly meta tags -->
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -35,22 +37,39 @@
   <link rel="apple-touch-icon" sizes="192x192" href="/content/img/icons/icon-192.png">
   <link rel="mask-icon" href="/content/img/icons/favicon.svg" color="#07a1ff">
   <link rel="manifest" href="/manifest.json">
+  
+  <!-- DNS Prefetch für bessere Performance -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  
+  <!-- Preconnect für kritische Ressourcen -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&amp;display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&amp;display=swap"></noscript>
+  
+  <!-- Font Loading mit direkter Aktivierung -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap">
 
-  <!-- Critical CSS Preload -->
+  <!-- Critical CSS Preload mit optimierter Ladereihenfolge -->
   <link rel="preload" href="/content/webentwicklung/root.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="/content/webentwicklung/root.css"></noscript>
 
+  <!-- CSS mit Priorität laden -->
   <link rel="stylesheet" href="/content/webentwicklung/root.css">
-  <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css">
-    <link rel="stylesheet" href="/content/webentwicklung/index.css">
-    <link rel="stylesheet" href="/content/webentwicklung/particles/particles.css">
-    <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
-  <link rel="stylesheet" href="/pages/about/about.css">
-  <link rel="stylesheet" href="/pages/home/greeting-text-hero.css">
+  <link rel="stylesheet" href="/content/webentwicklung/index.css">
+  <link rel="stylesheet" href="/content/webentwicklung/particles/particles.css">
+  <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
+  <link rel="stylesheet" href="/content/webentwicklung/animations/advanced-animations.css">
+  
+  <!-- Nicht-kritisches CSS verzögert laden -->
+  <link rel="preload" href="/content/webentwicklung/footer/footer.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="/pages/about/about.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="/pages/home/greeting-text-hero.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  
+  <noscript>
+    <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css">
+    <link rel="stylesheet" href="/pages/about/about.css">
+    <link rel="stylesheet" href="/pages/home/greeting-text-hero.css">
+  </noscript>
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json" data-cfasync="false">
@@ -318,6 +337,10 @@
     data-particle-blend="lighter"
     data-particle-conn-skip="2"
     data-particle-conn-cap="8"
+    data-particle-quadtree="true"
+    data-particle-auto-quality="true"
+    data-particle-sort-depth="true"
+    data-particle-dof="true"
   >
     <canvas class="particle-canvas" id="particleCanvas"></canvas>
     <div class="gradient-overlay"></div>
@@ -373,13 +396,19 @@
   </main>
 
 
-  <script src="/content/webentwicklung/animations/animation.js" defer></script>
-    <script type="module" src="/pages/card/karten-rotation.js"></script>
-    <script type="module" src="/pages/home/hero.js"></script>
-    <script type="module" src="/pages/about/about.js"></script>
-    <!-- Main Script -->
-    <script src="/content/webentwicklung/main.js" type="module"></script>
-    <script type="module" src="/content/webentwicklung/menu/menu.js"></script>
+  <!-- Optimierte Script-Ladereihenfolge -->
+  <!-- Modulare Komponenten -->
+  <link rel="modulepreload" href="/content/webentwicklung/main.js">
+  <link rel="modulepreload" href="/content/webentwicklung/particles/particle-system.js">
+  <link rel="modulepreload" href="/content/webentwicklung/utils/common-utils.js">
+  
+  <script type="module" src="/pages/card/karten-rotation.js"></script>
+  <script type="module" src="/pages/home/hero.js"></script>
+  <script type="module" src="/pages/about/about.js"></script>
+  
+  <!-- Haupt-Entry Point -->
+  <script src="/content/webentwicklung/main.js" type="module"></script>
+  <script type="module" src="/content/webentwicklung/menu/menu.js"></script>
   <!-- Dynamischer Footer-Container (lädt /content/webentwicklung/footer/footer.html) -->
   <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
   <script src="/content/webentwicklung/footer/load-footer.js" defer></script>

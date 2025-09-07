@@ -1,22 +1,37 @@
 <template id="template-features-1">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
     <div class="features-content">
-      <div class="section-header text-animate" data-animation="fadeInDown">
-  <h2 class="section-title">Fokus &amp; Qualität</h2>
+      <div class="section-header text-animate text-reveal-container" 
+           data-animation="slideInFromTop" 
+           data-threshold="0.2">
+        <h2 id="features-heading" class="section-title">Fokus &amp; Qualität</h2>
         <p class="section-subtitle">Solide Grundlagen für skalierbare Produkte</p>
       </div>
-      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
-  <article class="card" data-animation="fadeInUp" data-delay="100">
+      <div class="features-cards" 
+           data-stagger="200" 
+           data-animation="scaleInCenter" 
+           data-delay="300" 
+           data-threshold="0.3">
+        <article class="card tilt-interaction ripple-effect focus-ring" 
+                 data-animation="flipInX" 
+                 data-delay="400" 
+                 data-threshold="0.2">
           <div class="icon-wrapper"><i>🧱</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Architektur</h3>
           <p class="card-text">Saubere Layer, modulare Komponenten &amp; klare Verantwortlichkeiten für langfristige Wartbarkeit.</p>
         </article>
-  <article class="card" data-animation="fadeInUp" data-delay="200">
+        <article class="card tilt-interaction ripple-effect focus-ring" 
+                 data-animation="flipInX" 
+                 data-delay="500" 
+                 data-threshold="0.2">
           <div class="icon-wrapper"><i>🧪</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Testing</h3>
           <p class="card-text">Strategische Testpyramide: Unit, Integration &amp; UI Tests sichern Stabilität bei hoher Release-Frequenz.</p>
         </article>
-  <article class="card" data-animation="fadeInUp" data-delay="300">
+        <article class="card tilt-interaction ripple-effect focus-ring" 
+                 data-animation="flipInX" 
+                 data-delay="600" 
+                 data-threshold="0.2">
           <div class="icon-wrapper"><i>⚙️</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Tooling</h3>
           <p class="card-text">Automatisierte Pipelines, Linting &amp; Bundling für schnelle Feedback-Loops und verlässliche Builds.</p>
@@ -26,25 +41,39 @@
   </div>
 </template>
 
-<template id="template-features-4">
+<template id="template-features-2">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
     <div class="features-content">
-      <div class="section-header text-animate" data-animation="fadeInDown">
-  <h2 class="section-title">Team &amp; Kollaboration</h2>
+      <div class="section-header text-animate" 
+           data-animation="rotateInDownLeft" 
+           data-threshold="0.2">
+        <h2 class="section-title">Team &amp; Kollaboration</h2>
         <p class="section-subtitle">Effektive Zusammenarbeit ermöglichen</p>
       </div>
-      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
-  <article class="card" data-animation="fadeInUp" data-delay="100">
+      <div class="features-cards" 
+           data-animation="morphHeight" 
+           data-delay="200" 
+           data-threshold="0.3">
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="slideInFromLeft" 
+                 data-delay="300" 
+                 data-threshold="0.2">
           <div class="icon-wrapper"><i>🧩</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Design Handoff</h3>
           <p class="card-text">Saubere Komponenten-Libraries &amp; Token-Sync zwischen Design- und Dev-Tools.</p>
         </article>
-  <article class="card" data-animation="fadeInUp" data-delay="200">
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="scaleInElastic" 
+                 data-delay="400" 
+                 data-threshold="0.2">
           <div class="icon-wrapper"><i>🤝</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Pairing &amp; Reviews</h3>
           <p class="card-text">Strukturierte Code Reviews &amp; Wissensaustausch steigern Teamqualität nachhaltig.</p>
         </article>
-  <article class="card" data-animation="fadeInUp" data-delay="300">
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="slideInFromRight" 
+                 data-delay="500" 
+                 data-threshold="0.2">
           <div class="icon-wrapper"><i>📊</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Transparenz</h3>
           <p class="card-text">Metriken, Dashboards &amp; klare Definition of Done für planbare Releases.</p>
@@ -54,274 +83,130 @@
   </div>
 </template>
 
-<template id="template-features-5">
-  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="features-content">
-      <div class="section-header text-animate" data-animation="fadeInDown">
-  <h2 class="section-title">Skalierung &amp; Betrieb</h2>
-        <p class="section-subtitle">Wachstum ohne Reibungsverluste</p>
-      </div>
-      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
-  <article class="card" data-animation="fadeInUp" data-delay="100">
-          <div class="icon-wrapper"><i>📦</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Modularisierung</h3>
-          <p class="card-text">Microfrontends / isolierte Bundles für unabhängige Deployment-Streams.</p>
-        </article>
-  <article class="card" data-animation="fadeInUp" data-delay="200">
-          <div class="icon-wrapper"><i>🚀</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Deployment Flow</h3>
-          <p class="card-text">Automatisierte Pipelines, Canary Releases &amp; Feature Flags für risikoarme Rollouts.</p>
-        </article>
-  <article class="card" data-animation="fadeInUp" data-delay="300">
-          <div class="icon-wrapper"><i>🔄</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Observability</h3>
-          <p class="card-text">Tracing, strukturierte Logs &amp; Alerting für rasche Incident-Analyse.</p>
-        </article>
-      </div>
-    </div>
-  </div>
-</template>
-
-<template id="template-features-2">
-  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="features-content">
-      <div class="section-header text-animate" data-animation="fadeInDown">
-  <h2 class="section-title">Performance &amp; UX</h2>
-        <p class="section-subtitle">Geschwindigkeit spürbar machen</p>
-      </div>
-      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
-  <article class="card" data-animation="fadeInLeft" data-delay="100">
-          <div class="icon-wrapper"><i>⚡</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Ladezeiten</h3>
-          <p class="card-text">Code-Splitting, HTTP/2, Preloading &amp; Caching für blitzschnelle wahrgenommene Performance.</p>
-        </article>
-  <article class="card" data-animation="zoomIn" data-delay="200">
-          <div class="icon-wrapper"><i>📱</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Responsiv</h3>
-          <p class="card-text">Adaptive Layouts, fluid Typography &amp; Device-optimierte Interaktionen für konsistente Erlebnisse.</p>
-        </article>
-  <article class="card" data-animation="fadeInRight" data-delay="300">
-          <div class="icon-wrapper"><i>🛰️</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Monitoring</h3>
-          <p class="card-text">RUM + Metriken (LCP, INP, CLS) im Blick: kontinuierliche Optimierung statt Einmal-Tuning.</p>
-        </article>
-      </div>
-    </div>
-  </div>
-</template>
-
 <template id="template-features-3">
   <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
     <div class="features-content">
-      <div class="section-header text-animate" data-animation="fadeInDown">
-  <h2 class="section-title">Sicherheit &amp; Vertrauen</h2>
-        <p class="section-subtitle">Verlässliche und geschützte Anwendungen</p>
+      <div class="section-header text-animate" 
+           data-animation="bounceInUp" 
+           data-threshold="0.2">
+        <h2 class="section-title">Performance &amp; UX</h2>
+        <p class="section-subtitle">Benutzerfreundlichkeit in den Fokus</p>
       </div>
-      <div class="features-cards" data-animation="fadeInUp" data-delay="50">
-  <article class="card" data-animation="fadeInUp" data-delay="100">
-          <div class="icon-wrapper"><i>🔒</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Security</h3>
-          <p class="card-text">OWASP-Praktiken, Input-Härtung, CSP &amp; sichere Auth-Flows als grundlegende Bausteine.</p>
+      <div class="features-cards" 
+           data-animation="scaleInCenter" 
+           data-delay="200" 
+           data-threshold="0.3">
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="rotateInUpRight" 
+                 data-delay="300" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>⚡</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Speed Optimization</h3>
+          <p class="card-text">Core Web Vitals, Bundle-Splitting &amp; strategisches Caching für sub-second Load Times.</p>
         </article>
-  <article class="card" data-animation="fadeInUp" data-delay="200">
-          <div class="icon-wrapper"><i>🌐</i></div>
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="flipInY" 
+                 data-delay="400" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>♿</i></div>
           <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Accessibility</h3>
-          <p class="card-text">Semantik, ARIA, Kontrast &amp; Tastatur-Fokus: Inklusives Design für alle Nutzergruppen.</p>
+          <p class="card-text">WCAG 2.1 AA konforme Implementierung mit Screen Reader Support &amp; Keyboard Navigation.</p>
         </article>
-  <article class="card" data-animation="fadeInUp" data-delay="300">
-          <div class="icon-wrapper"><i>🧭</i></div>
-          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Guidelines</h3>
-          <p class="card-text">Design-Systeme &amp; konsistente Patterns für bessere Skalierung und geringere kognitive Last.</p>
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="morphHeight" 
+                 data-delay="500" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>📱</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Mobile First</h3>
+          <p class="card-text">Progressive Web App Features, Offline-Fähigkeit &amp; Touch-optimierte Interfaces.</p>
         </article>
       </div>
     </div>
   </div>
 </template>
 
-      <style>
-/* Root & Base moved to content/webentwicklung/root.css */
+<template id="template-features-4">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <div class="section-header text-animate" 
+           data-animation="slideInFromBottom" 
+           data-threshold="0.2">
+        <h2 class="section-title">Innovation &amp; Zukunft</h2>
+        <p class="section-subtitle">Technologie als Enabler verstehen</p>
+      </div>
+      <div class="features-cards" 
+           data-animation="scaleInElastic" 
+           data-delay="200" 
+           data-threshold="0.3">
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-stagger="100"
+                 data-animation="slideInFromLeft"
+                 data-delay="300" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>🤖</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">AI Integration</h3>
+          <p class="card-text">Machine Learning APIs, ChatBot-Integration &amp; automatisierte Content-Personalisierung.</p>
+        </article>
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="slideInFromLeft"
+                 data-delay="400" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>🔗</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Web3 Ready</h3>
+          <p class="card-text">Blockchain-Integration, Wallet-Connect &amp; dezentrale Storage-Lösungen für moderne Apps.</p>
+        </article>
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="slideInFromLeft"
+                 data-delay="500" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>🌐</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Edge Computing</h3>
+          <p class="card-text">CDN-Optimierung, serverless Functions &amp; geografisch verteilte Architekturen.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</template>
 
-html,body{ height:100%; }
-body{
-  margin:0;
-  background:var(--bg-dark);
-  color:var(--text-primary);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,system-ui,sans-serif;
-  line-height:1.6;
-}
-
-/* =======================
-   Section & Layout
-======================= */
-.features{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-
-    min-height:100svh; /* stabil auf iOS/Android */
-  padding-top: calc(var(--safe-top) + clamp(16px, 5svh, 80px));
-  padding-bottom: calc(var(--safe-bottom) + clamp(24px, 6svh, 72px));
-  background:transparent;
-}
-
-/* Basis-Box-Modell für Sektionen */
-.section-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  background: transparent;
-  width: 100%;
-  margin: 0 auto;
-  padding-inline: var(--pad-x);
-  max-width: 1200px;
-}
-
-/* Blur-Effekt hinzufügen */
-.features-content {
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-}
-
-.section-header{ text-align:center; margin-bottom: clamp(16px, 3svh, 40px); }
-.section-title{
-  font-size:clamp(2rem,4vw,3rem);
-  margin:0 0 .4rem;
-  font-weight:700;
-  letter-spacing:-.015em;
-}
-.section-subtitle{
-  font-size:clamp(1rem,2vw,1.25rem);
-  color:var(--text-secondary);
-  margin:0;
-}
-
-.features-cards{
-  display:grid;
-  width:100%;
-  max-width:1000px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--card-min-width)), 1fr));
-  gap:var(--gap);
-}
-
-/* =======================
-   Card
-======================= */
-.features .card{
-  position:relative;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  gap:.75rem;
-  justify-content:center;
-
-  padding:var(--card-pad);
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-md);
-  transition:transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
-}
-
-.features .card::before{
-  content:"";
-  position:absolute;
-  inset:0 0 auto 0;
-  height:3px;
-  background:linear-gradient(90deg,var(--primary-color),var(--primary-light));
-  transform:scaleX(0);
-  transform-origin:left;
-  transition:transform var(--t);
-}
-
-.features .card:hover{
-  transform:translateY(-6px);
-  box-shadow:var(--shadow-lg);
-  border-color:rgba(9,139,255,.3);
-  background:rgba(255,255,255,.08);
-}
-.features .card:hover::before{ transform:scaleX(1); }
-
-.icon-wrapper{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:clamp(46px,10vw,65px);
-  height:clamp(46px,10vw,65px);
-  background:rgba(9,139,255,.1);
-  border-radius:12px;
-  transition:transform var(--t), background var(--t);
-}
-.features .card:hover .icon-wrapper{
-  background:rgba(9,139,255,.2);
-  transform:scale(1.05);
-}
-.features .card .icon-wrapper i{ font-size:clamp(1.6rem,5vw,2.25rem); line-height:1; }
-
-.card-title{
-  margin:0;
-  font-weight:600;
-  letter-spacing:-.01em;
-  line-height:1.3;
-  font-size:clamp(1.05rem,3vw,1.35rem);
-  color:var(--text-primary);
-}
-.card-title[data-eyebrow]::before{
-  content:attr(data-eyebrow);
-  display:block;
-  margin-bottom:.45rem;
-  font-size:clamp(.7rem,1.8vw,.8rem);
-  line-height:1.2;
-  font-weight:600;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--primary-color);
-  opacity:.9;
-}
-
-.card-text{
-  margin:0;
-  color:var(--text-secondary);
-  font-size:clamp(.9rem,2.2vw,1.02rem);
-  line-height:1.55;
-}
-
-/* =======================
-   Responsive
-======================= */
-@media (max-width:768px){
-  .features{ padding-top: var(--safe-top); }
-  .section-header{ margin-bottom: clamp(12px, 3svh, 28px); }
-  .features-cards{ grid-template-columns:1fr; gap:.65rem; max-width:100%; }
-  .features .card{ padding:var(--card-pad); }
-  .icon-wrapper{ width:36px; height:36px; }
-  .card-title{ font-size:.95rem; }
-  .card-text{ font-size:.82rem; line-height:1.45; }
-}
-
-@media (max-width:480px){
-  .icon-wrapper{ width:30px; height:30px; }
-  .card-title{ font-size:.9rem; }
-  .card-text{ font-size:.78rem; line-height:1.42; }
-}
-
-@media (min-width:1025px){
-  .features-cards{ grid-template-columns:repeat(3,1fr); gap:1.75rem; }
-  .features .card{ min-height:var(--card-min-height); }
-}
-
-/* Touch & Motion */
-@media (hover:none) and (pointer:coarse){
-  .features .card:hover{ transform:none; }
-  .features .card:active{ transform:scale(.98); transition:transform .1s ease; }
-}
-@media (prefers-reduced-motion:reduce){
-  .features .card, .features .card::before, .icon-wrapper{ transition:none; }
-  .features .card:hover{ transform:none; }
-}
-
-
-
-</style>
+<template id="template-features-5">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <div class="section-header text-animate" 
+           data-animation="slideInFromBottom" 
+           data-threshold="0.2">
+        <h2 class="section-title">Sicherheit &amp; Compliance</h2>
+        <p class="section-subtitle">Vertrauen durch Transparenz schaffen</p>
+      </div>
+      <div class="features-cards" 
+           data-animation="scaleInElastic" 
+           data-delay="200" 
+           data-threshold="0.3">
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-stagger="100"
+                 data-animation="slideInFromLeft"
+                 data-delay="300" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>🔒</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Security First</h3>
+          <p class="card-text">OWASP Top 10, CSP Headers, automated Vulnerability Scanning &amp; Penetration Tests.</p>
+        </article>
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="slideInFromLeft"
+                 data-delay="400" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>🛡️</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">DSGVO Compliance</h3>
+          <p class="card-text">Privacy by Design, Cookie-Management &amp; transparente Datenverarbeitung nach EU-Recht.</p>
+        </article>
+        <article class="card tilt-interaction ripple-effect focus-ring card-interactive" 
+                 data-animation="slideInFromLeft"
+                 data-delay="500" 
+                 data-threshold="0.2">
+          <div class="icon-wrapper"><i>📋</i></div>
+          <h3 class="card-title" data-eyebrow="WEBENTWICKLUNG">Monitoring</h3>
+          <p class="card-text">Real-time Error Tracking, Performance Monitoring &amp; proaktive Security Alerts.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</template>

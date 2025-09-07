@@ -1,18 +1,21 @@
 /* eslint-disable indent */
 // Export: initParticles({ getElement, throttle, checkReducedMotion }) -> cleanup()
 import { randomFloat } from '../utils/common-utils.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('particles');
 
 export function initParticles({ getElement, throttle, checkReducedMotion }) {
   
   const canvas = getElement('particleCanvas');
   if (!canvas) {
-    console.warn('Particle canvas element not found');
+    log.warn('Particle canvas element not found');
     return () => {};
   }
   
   // Canvas-Bereitschaft prüfen
   if (!canvas.getContext) {
-    console.warn('Canvas context not supported');
+    log.warn('Canvas context not supported');
     return () => {};
   }
   
@@ -25,7 +28,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   try {
     ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) {
-      console.warn('Failed to get 2D context');
+      log.warn('Failed to get 2D context');
       return () => {};
     }
     // OffscreenCanvas ist temporär deaktiviert - würde WebWorker erfordern
@@ -33,7 +36,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     //   // Vollständige OffscreenCanvas-Implementation würde WebWorker erfordern
     // }
   } catch (error) {
-    console.warn('Canvas context creation failed:', error);
+    log.warn('Canvas context creation failed:', error);
     return () => {};
   }
 
@@ -337,12 +340,12 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       invalidateGradients();
       updateScrollMax();
     } catch (error) {
-      console.warn('Canvas resize failed:', error);
+      log.warn('Canvas resize failed:', error);
       // Fallback für robuste Behandlung
       try {
         ctx.setTransform(1,0,0,1,0,0);
       } catch (e) {
-        console.error('Critical canvas error:', e);
+        log.error('Critical canvas error:', e);
       }
     }
   };
@@ -1378,7 +1381,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     updateScrollMax(); 
     animationLoop();
   } catch (error) {
-    console.error('Particle system initialization failed:', error);
+    log.error('Particle system initialization failed:', error);
     return () => {}; // Return empty cleanup function
   }
 
@@ -1419,6 +1422,3 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   };
   return api.stop;
 }
-
-// Legacy-Fallback
-if (!window.initParticles) window.initParticles = (deps) => initParticles(deps);

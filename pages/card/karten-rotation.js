@@ -46,7 +46,7 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       wrap.innerHTML = await res.text();
       document.body.appendChild(wrap);
       loaded = true;
-      log.info('Templates geladen', { url });
+      log.debug('Templates geladen', { url });  // DEBUG statt INFO
       document.dispatchEvent(new CustomEvent('featuresTemplatesLoaded'));
     } catch (error) {
       log.error('Templates laden fehlgeschlagen', url, error);
@@ -56,7 +56,16 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
   function mount(templateId, initial=false) {
     const section = byId(SECTION_ID), tpl = byId(templateId);
-    if (!section || !tpl) return;
+    if (!section || !tpl) {
+      log.warn('Mount failed: section or template not found', { sectionId: SECTION_ID, templateId, hasSection: !!section, hasTemplate: !!tpl });
+      return;
+    }
+
+    // Sicherheitsprüfung: Nur in Features-Sektion mounten
+    if (section.id !== 'features') {
+      log.warn('Mount blocked: wrong section', { actualId: section.id, expectedId: 'features' });
+      return;
+    }
 
     // Animationsdauer dynamisch vom DOM lesen (erste Nutzung cached implizit im closure via locals)
     const ANIM_IN = Number(section.dataset.animIn || DEFAULT_ANIM_IN);
@@ -95,15 +104,12 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       // Kurz Textinfo zum aktuellen Template liefern (entwicklerfreundlich anpassbar)
       live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
       section.dataset.currentTemplate = templateId;
-      try {
-        const currentIndex = order.indexOf(templateId);
-        const total = order.length;
-        document.dispatchEvent(new CustomEvent('features:change', { detail: { index: currentIndex, total, id: templateId } }));
-      } catch (error) {
-        console.warn('Failed to dispatch features:change event:', error);
-      }
-
-      if (REDUCED) { section.style.opacity = '1'; section.style.transform = 'none'; done(); return; }
+        try {
+          const ev = new CustomEvent('features:change', { detail: { index: this.currentIndex, total: this.order.length } });
+          document.dispatchEvent(ev);
+        } catch {
+          // Event dispatch failed
+        }      if (REDUCED) { section.style.opacity = '1'; section.style.transform = 'none'; done(); return; }
 
       section.style.opacity = '0';
       section.style.transform = 'translateY(10px)';
@@ -111,6 +117,13 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       doubleRAF(() => {
         section.style.opacity = '1';
         section.style.transform = 'translateY(0)';
+        
+        // Trigger Animation Engine re-scan for new template content
+        setTimeout(() => {
+          if (window.enhancedAnimationEngine?.scan) {
+            window.enhancedAnimationEngine.scan();
+          }
+        }, 50);
       });
       later(done, ANIM_IN);
     };
@@ -176,10 +189,16 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
   window.FeatureRotation = {
     next: rotateDifferent,
     current: () => ({ index: i, id: order[i] }),
-    destroy() { io?.disconnect(); io=null; clearTimers(); log.info('FeatureRotation zerstört'); delete window.FeatureRotation; }
+    destroy() { io?.disconnect(); io=null; clearTimers(); log.debug('FeatureRotation zerstört'); delete window.FeatureRotation; }
   };
 
-  document.addEventListener('featuresTemplatesLoaded', mountInitialIfNeeded, { once:false });
+  document.addEventListener('featuresTemplatesLoaded', () => {
+    mountInitialIfNeeded();
+    // Trigger Animation Engine re-scan for new templates
+    if (window.enhancedAnimationEngine?.scan) {
+      setTimeout(() => window.enhancedAnimationEngine.scan(), 100);
+    }
+  }, { once:false });
   (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init, { once:true }) : init();
-  log.info('FeatureRotation initialisiert (pending Templates)');
+  log.debug('FeatureRotation initialisiert (pending Templates)');  // DEBUG statt INFO
 })();

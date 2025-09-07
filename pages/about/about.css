@@ -52,3 +52,56 @@
     font-size: 0.9rem;
   }
 }
+
+/* Large screen optimizations for animation performance */
+@media (min-width: 1200px) {
+  .about {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .about-content {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  .about-text {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  .highlight-item {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  /* Reduce animation intensity on very large screens */
+  .about [data-animation] {
+    animation-duration: 0.6s !important;
+  }
+  
+  .about [data-parallax-speed] {
+    transform: translateZ(0);
+  }
+}
+
+/* Extra large screens - further optimization */
+@media (min-width: 1600px) {
+  .about {
+    max-width: 1400px;
+  }
+  
+  .about [data-animation] {
+    animation-duration: 0.4s !important;
+    transition-duration: 0.3s !important;
+  }
+  
+  .about-text {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  
+  .highlight-item {
+    contain: layout style paint;
+  }
+}

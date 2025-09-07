@@ -37,7 +37,7 @@ function resolveGlobalLevel() {
   if (typeof gl === 'number') {
     return Math.max(0, Math.min(LEVELS.debug, gl));
   }
-  return LEVELS.info;
+  return LEVELS.warn;  // Standard auf warn statt info setzen
 }
 
 let GLOBAL_LEVEL = resolveGlobalLevel();
@@ -45,7 +45,7 @@ let GLOBAL_LEVEL = resolveGlobalLevel();
 export function setGlobalLogLevel(lvl) {
   if (typeof lvl === 'string' && lvl.toLowerCase() in LEVELS) GLOBAL_LEVEL = LEVELS[lvl.toLowerCase()];
   else if (typeof lvl === 'number') GLOBAL_LEVEL = Math.max(0, Math.min(LEVELS.debug, lvl));
-  if (typeof window !== 'undefined') window.LOG_LEVEL = GLOBAL_LEVEL;
+  // Entferne die direkte window.LOG_LEVEL Zuweisung um Rekursion zu vermeiden
   return GLOBAL_LEVEL;
 }
 
@@ -63,8 +63,8 @@ export function createLogger(namespace = 'app') {
   return {
     error: (...args) => base('error', console.error, args),
     warn:  (...args) => base('warn', console.warn, args),
-    info:  (...args) => base('info', (...logArgs) => console.warn('INFO:', ...logArgs), args),
-    debug: (...args) => base('debug', (...logArgs) => console.warn('DEBUG:', ...logArgs), args),
+    info:  (...args) => base('info', (...logArgs) => console.warn('[INFO]', ...logArgs), args),
+    debug: (...args) => base('debug', (...logArgs) => console.warn('[DEBUG]', ...logArgs), args),
     setLevel: (l) => setGlobalLogLevel(l),
     getLevel: () => GLOBAL_LEVEL,
     levels: { ...LEVELS },
@@ -92,7 +92,11 @@ if (typeof window !== 'undefined' && !window.__logLevelPatched) {
     Object.defineProperty(window, 'LOG_LEVEL', {
       configurable: true,
       get() { return _lv; },
-      set(v) { setGlobalLogLevel(v); _lv = GLOBAL_LEVEL; }
+      set(v) { 
+        if (typeof v === 'string' && v.toLowerCase() in LEVELS) _lv = LEVELS[v.toLowerCase()];
+        else if (typeof v === 'number') _lv = Math.max(0, Math.min(LEVELS.debug, v));
+        GLOBAL_LEVEL = _lv;  // Direkte Zuweisung ohne Rekursion
+      }
     });
   } catch (_err) {
     // Fallback: direkte Zuweisung ohne Getter/Setter + einfache Warnung
