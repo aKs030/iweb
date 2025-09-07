@@ -257,38 +257,42 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   }
 
   function lerpCameraStep(){
-    const baseK = reduceMotion ? 1 : 0.12;
-    const zoomK = baseK * (cameraState.zoomPulse > 0.05 ? 0.6 : 1.2);
-    const tiltK = baseK * 0.8;
+    const baseK = reduceMotion ? 1 : 0.15; // Etwas schneller für bessere Responsivität
     if (!cameraState.dolly.active) {
-      cameraState.currentZoom += (cameraState.targetZoom - cameraState.currentZoom) * zoomK;
+      cameraState.currentZoom += (cameraState.targetZoom - cameraState.currentZoom) * baseK;
       cameraState.currentFocal += (cameraState.targetFocal - cameraState.currentFocal) * baseK;
     }
-    cameraState.currentTilt += (cameraState.targetTilt - cameraState.currentTilt) * tiltK;
-    if (Math.abs(cameraState.currentZoom - cameraState.targetZoom) < 0.002) cameraState.currentZoom = cameraState.targetZoom;
-    if (Math.abs(cameraState.currentTilt - cameraState.targetTilt) < 0.001) cameraState.currentTilt = cameraState.targetTilt;
-    if (!cameraState.dolly.active && Math.abs(cameraState.currentFocal - cameraState.targetFocal) < 0.5) cameraState.currentFocal = cameraState.targetFocal;
+    cameraState.currentTilt += (cameraState.targetTilt - cameraState.currentTilt) * baseK;
+    
+    // Vereinfachte Schwellenwerte
+    if (Math.abs(cameraState.currentZoom - cameraState.targetZoom) < 0.005) cameraState.currentZoom = cameraState.targetZoom;
+    if (Math.abs(cameraState.currentTilt - cameraState.targetTilt) < 0.002) cameraState.currentTilt = cameraState.targetTilt;
+    if (!cameraState.dolly.active && Math.abs(cameraState.currentFocal - cameraState.targetFocal) < 1) cameraState.currentFocal = cameraState.targetFocal;
   }
 
   function updateShakeAndPulse(now){
-    cameraState.zoomPulse *= 0.86;
-    cameraState.rotationMomentum *= 0.93;
-    cameraState.shake *= 0.88;
-    if (cameraState.shake > 0.003) {
-      const t = now * 0.012;
-      cameraState.shakeX = Math.sin(t * 1.7) * cameraState.shake * 25;
-      cameraState.shakeY = Math.cos(t * 1.3) * cameraState.shake * 20;
+    // Vereinfachte Shake-Logik - weniger komplex
+    if (!reduceMotion && cameraState.shake > 0.001) {
+      cameraState.shake *= 0.9;
+      const t = now * 0.01;
+      cameraState.shakeX = Math.sin(t * 1.5) * cameraState.shake * 20;
+      cameraState.shakeY = Math.cos(t * 1.2) * cameraState.shake * 15;
     } else {
-      cameraState.shakeX *= 0.9;
-      cameraState.shakeY *= 0.9;
+      cameraState.shake = 0;
+      cameraState.shakeX = 0;
+      cameraState.shakeY = 0;
     }
-    if (cameraState.zoomPulse < 0.004) cameraState.zoomPulse = 0;
-    if (cameraState.shake < 0.003) cameraState.shake = 0;
-    if (Math.abs(cameraState.rotationMomentum) < 0.002) cameraState.rotationMomentum = 0;
+    
+    // Vereinfachtes Zoom-Pulse
+    if (cameraState.zoomPulse > 0.01) {
+      cameraState.zoomPulse *= 0.85;
+    } else {
+      cameraState.zoomPulse = 0;
+    }
   }
 
   function updateParallaxOffsets(){
-    // Maus-Parallax deaktiviert: Offsets immer 0
+    // Parallax deaktiviert für bessere Performance
     cameraState.parallaxX = 0;
     cameraState.parallaxY = 0;
   }
@@ -1304,23 +1308,33 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     }
   }
 
-  // ===== Loop =====
+  // ===== Performance-Optimierte Loop =====
   function animationLoop(){
-    if (hidden) { rafId = requestAnimationFrame(animationLoop); return; }
-  const now = performance.now();
-  frameCounter++;
-    const dt = (now - lastTime) || 16.7; lastTime = now;
+    if (hidden) { 
+      rafId = requestAnimationFrame(animationLoop); 
+      return; 
+    }
+    
+    const now = performance.now();
+    frameCounter++;
+    const dt = Math.min(33.33, now - lastTime) || 16.7; // Cap für sehr lange Frames
+    lastTime = now;
+    
+    // FPS-Tracking optimiert - weniger Samples
     const fps = 1000 / dt;
-    fpsSamples.push(fps); if (fpsSamples.length > 20) fpsSamples.shift();
-    if (fpsSamples.length === 20){
-      const avg = fpsSamples.reduce((a,b) => a+b,0)/20;
+    fpsSamples.push(fps); 
+    if (fpsSamples.length > 10) fpsSamples.shift(); // Reduziert von 20 auf 10
+    
+    // Performance-Anpassung nur alle 2 Sekunden statt kontinuierlich
+    if (fpsSamples.length === 10 && frameCounter % 120 === 0){
+      const avg = fpsSamples.reduce((a,b) => a+b,0)/10;
       adaptParticleCount(avg);
       stats.fps = avg;
-  if (autoQuality) adjustQualityByFPS(avg);
+      if (autoQuality) adjustQualityByFPS(avg);
     }
 
+    // Optimierter Canvas-Clear
     if (enableTrails) {
-      // leichte Trails via Alpha-Clear
       ctx.save();
       ctx.globalCompositeOperation = 'destination-out';
       ctx.fillStyle = `rgba(0,0,0,${Math.min(0.5, Math.max(0.005, trailFade))})`;
@@ -1330,30 +1344,37 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       ctx.clearRect(0,0,canvas.width,canvas.height);
     }
 
+    // Batch-Updates für bessere Performance
     applyTween(now);
     fillSpatialGrid();
     computeDynamicFactors();
     updateCameraAndActiveSection(now);
     
-    // Kollisionen verarbeiten (falls aktiviert)
-    processCollisions();
+    // Kollisionen nur alle 2-3 Frames verarbeiten für bessere Performance
+    if (frameCounter % 2 === 0) {
+      processCollisions();
+    }
 
     const dynFillA = colorCurrent.aFill * (0.65 + 0.35*scrollFactor) * (0.7 + 0.3*densityFactor);
     applyCameraTransform();
+    
     // Blend-Mode für Partikel
     let mode = blendModeParticles;
     if (enableGlow && mode === 'source-over') mode = 'lighter';
     ctx.globalCompositeOperation = mode;
     updateAndDrawParticles(dynFillA);
-    // Verbindungen weniger oft zeichnen
+    
+    // Verbindungen noch weniger oft zeichnen für bessere Performance
     ctx.globalCompositeOperation = 'source-over';
-    if (frameCounter % connectionFrameSkip === 0) {
+    if (frameCounter % (connectionFrameSkip * 2) === 0) {
       drawConnections();
     }
     restoreCameraTransform();
     
-    // Debug-Overlay zeichnen
-    drawDebugOverlay();
+    // Debug-Overlay nur wenn nötig
+    if (window.DEBUG) {
+      drawDebugOverlay();
+    }
 
     rafId = requestAnimationFrame(animationLoop);
   }

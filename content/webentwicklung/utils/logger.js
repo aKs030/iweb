@@ -1,43 +1,43 @@
-// Erweiterte Logger-Utility mit Namensraum, Level-Filter und Safe-Call
+// Erweiterte Logger-Utility - Performance Optimized
 // Level-Hierarchie: error(0) < warn(1) < info(2) < debug(3)
 const LEVELS = { error:0, warn:1, info:2, debug:3 };
 
-// Ring-Buffer für letzte Logs (für window.logEvent dispatch)
+// Ring-Buffer für letzte Logs - reduziert für bessere Performance
 const logBuffer = [];
-const BUFFER_SIZE = 200;
+const BUFFER_SIZE = 50; // Reduziert von 200 auf 50
 
 function pushToBuffer(entry) {
   logBuffer.push(entry);
   if (logBuffer.length > BUFFER_SIZE) logBuffer.shift();
-  // Event dispatch für UI / Tools
-  try {
-    window.dispatchEvent(new CustomEvent('logEvent', { detail: entry }));
-  } catch {
-    // Ignore event dispatch errors in case window is not available
+  // Event dispatch nur bei Bedarf
+  if (window.__logEventListeners > 0) {
+    try {
+      window.dispatchEvent(new CustomEvent('logEvent', { detail: entry }));
+    } catch {
+      // Ignore event dispatch errors
+    }
   }
 }
 
-// Ermittelt global konfigurierten Level (window.LOG_LEVEL oder Fallback); akzeptiert Name oder Zahl
+// Optimierte Level-Auflösung
 function resolveGlobalLevel() {
-  const gl = (typeof window !== 'undefined') ? (window.LOG_LEVEL ?? window.LOGLEVEL ?? window.logLevel) : undefined;
+  if (typeof window === 'undefined') return LEVELS.warn;
+  
+  const gl = window.LOG_LEVEL ?? window.LOGLEVEL ?? window.logLevel;
   if (gl === null || gl === undefined) {
-    // DEBUG true erzwingt debug-Level
-    if (typeof window !== 'undefined' && typeof window.DEBUG !== 'undefined') {
-      return window.DEBUG ? LEVELS.debug : LEVELS.info;
-    }
-    return LEVELS.info; // Standard
+    return window.DEBUG ? LEVELS.debug : LEVELS.warn; // Standard auf warn
   }
+  
   if (typeof gl === 'string') {
     const lower = gl.toLowerCase();
-    if (lower in LEVELS) return LEVELS[lower];
-    const asNum = Number(gl);
-    if (!Number.isNaN(asNum)) return Math.max(0, Math.min(LEVELS.debug, asNum));
-    return LEVELS.info;
+    return LEVELS[lower] ?? LEVELS.warn;
   }
+  
   if (typeof gl === 'number') {
     return Math.max(0, Math.min(LEVELS.debug, gl));
   }
-  return LEVELS.warn;  // Standard auf warn statt info setzen
+  
+  return LEVELS.warn;
 }
 
 let GLOBAL_LEVEL = resolveGlobalLevel();
@@ -53,13 +53,20 @@ export function getGlobalLogLevel() { return GLOBAL_LEVEL; }
 
 export function createLogger(namespace = 'app') {
   const prefix = `[${namespace}]`;
-  function enabled(levelName) { return LEVELS[levelName] <= GLOBAL_LEVEL; }
+  
+  function enabled(levelName) { 
+    return LEVELS[levelName] <= GLOBAL_LEVEL; 
+  }
+  
   function base(level, consoleFn, args) {
+    if (!enabled(level)) return; // Frühe Rückkehr für bessere Performance
+    
     const ts = Date.now();
     const entry = { ts, level, namespace, args };
     pushToBuffer(entry);
-    if (enabled(level)) consoleFn(prefix, ...args);
+    consoleFn(prefix, ...args);
   }
+  
   return {
     error: (...args) => base('error', console.error, args),
     warn:  (...args) => base('warn', console.warn, args),
@@ -80,36 +87,32 @@ export function safeCall(fn, { logger, label = 'safeCall' } = {}) {
   }
 }
 
-// Globaler Fallback
+// Globaler Fallback - nur einmal erstellen
 if (!window.__logger) {
   window.__logger = createLogger('global');
 }
 
-// Reagiere dynamisch auf nachträgliche Änderung von window.LOG_LEVEL (Polling vermeiden: defineProperty Hook)
+// Event-Listener-Counter für Performance
+window.__logEventListeners = 0;
+
+// Optimierte LOG_LEVEL Property Definition
 if (typeof window !== 'undefined' && !window.__logLevelPatched) {
+  window.__logLevelPatched = true;
   let _lv = GLOBAL_LEVEL;
   try {
     Object.defineProperty(window, 'LOG_LEVEL', {
       configurable: true,
       get() { return _lv; },
       set(v) { 
-        if (typeof v === 'string' && v.toLowerCase() in LEVELS) _lv = LEVELS[v.toLowerCase()];
-        else if (typeof v === 'number') _lv = Math.max(0, Math.min(LEVELS.debug, v));
-        GLOBAL_LEVEL = _lv;  // Direkte Zuweisung ohne Rekursion
+        if (typeof v === 'string' && v.toLowerCase() in LEVELS) {
+          _lv = LEVELS[v.toLowerCase()];
+        } else if (typeof v === 'number') {
+          _lv = Math.max(0, Math.min(LEVELS.debug, v));
+        }
+        GLOBAL_LEVEL = _lv;
       }
     });
-  } catch (_err) {
-    // Fallback: direkte Zuweisung ohne Getter/Setter + einfache Warnung
-    window.LOG_LEVEL = _lv;
-    console.warn('[logger] Konnte window.LOG_LEVEL Property nicht definieren:', _err);
+  } catch (error) {
+    console.warn('Failed to setup LOG_LEVEL property:', error);
   }
-  window.__logLevelPatched = true;
 }
-
-// Automatischer Flush bei unhandledrejection / error (optional nutzbar)
-window.addEventListener('unhandledrejection', (e) => {
-  if (e?.reason) pushToBuffer({ ts: Date.now(), level:'error', namespace:'unhandledrejection', args:[e.reason] });
-});
-window.addEventListener('error', (e) => {
-  if (e?.error) pushToBuffer({ ts: Date.now(), level:'error', namespace:'error', args:[e.error] });
-});

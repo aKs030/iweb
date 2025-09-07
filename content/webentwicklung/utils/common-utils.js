@@ -37,8 +37,9 @@ export function shuffleIndices(length) {
   return shuffle([...Array(length).keys()]);
 }
 
-// ===== DOM Utilities =====
+// ===== DOM Utilities - Optimiert =====
 const elementCache = new Map();
+const CACHE_MAX_SIZE = 50; // Limit für Cache-Größe
 
 export function getElementById(id, useCache = true) {
   if (useCache && elementCache.has(id)) {
@@ -52,6 +53,12 @@ export function getElementById(id, useCache = true) {
   
   const element = document.getElementById(id);
   if (useCache && element) {
+    // Cache-Limit prüfen
+    if (elementCache.size >= CACHE_MAX_SIZE) {
+      // Ältestes Element entfernen (LRU-artig)
+      const firstKey = elementCache.keys().next().value;
+      elementCache.delete(firstKey);
+    }
     elementCache.set(id, element);
   }
   return element;
@@ -68,6 +75,10 @@ export function querySelector(selector, useCache = false) {
   
   const element = document.querySelector(selector);
   if (useCache && element) {
+    if (elementCache.size >= CACHE_MAX_SIZE) {
+      const firstKey = elementCache.keys().next().value;
+      elementCache.delete(firstKey);
+    }
     elementCache.set(selector, element);
   }
   return element;
@@ -153,65 +164,20 @@ export class TimerManager {
   }
 }
 
-// ===== Math Utilities =====
+// ===== Math Utilities - Vereinfacht =====
 export function clamp(value, min, max) {
   return Math.max(min, Math.min(value, max));
 }
 
 export function randomInt(min, max) {
-  return Math.floor(randomFloat(min, max + 1)) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export function randomFloat(min, max) {
-  // Prefer secure randomness when available, fall back to Math.random
-  return secureRandomFloat() * (max - min) + min;
+  return Math.random() * (max - min) + min;
 }
 
-// Prefer Web Crypto API where available. This isn't used for cryptographic secrets
-// here, but improves unpredictability for any code that might need it.
-export function secureRandomFloat() {
-  try {
-    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-      const arr = new Uint32Array(1);
-      crypto.getRandomValues(arr);
-      // divide by 2^32 to get [0,1)
-      return (arr[0] >>> 0) / 4294967296;
-    }
-  } catch {
-    // ignore and fall through to Math.random
-  }
-  return Math.random();
-}
-
-// ===== Cryptographic helpers (CSPRNG) =====
-// Returns a Uint8Array filled with secure random bytes when possible.
-export function secureRandomBytes(length) {
-  const len = Math.max(0, Number(length) | 0);
-  const out = new Uint8Array(len);
-  try {
-    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-      crypto.getRandomValues(out);
-      return out;
-    }
-  } catch {
-    // fall back to insecure generation below
-  }
-  // Fallback: best-effort using Math.random (NOT cryptographically secure)
-  for (let i = 0; i < len; i++) out[i] = Math.floor(Math.random() * 256);
-  return out;
-}
-
-// Convenience: returns a hex string of secure random bytes (2 chars per byte)
-export function randomHex(bytes = 16) {
-  const b = secureRandomBytes(bytes);
-  let s = '';
-  for (const byte of b) {
-    s += (byte < 16 ? '0' : '') + byte.toString(16);
-  }
-  return s;
-}
-
-// ===== Scroll Utilities =====
+// ===== Scroll Utilities - Vereinfacht =====
 export function smoothScrollTo(target, offset = 80) {
   const element = typeof target === 'string' ? querySelector(target) : target;
   if (!element) return;
