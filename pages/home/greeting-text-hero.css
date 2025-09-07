@@ -70,30 +70,7 @@ body.reduce-motion .greeting-text-hero {
   animation-play-state: running;
 }
 
-.greeting-text-hero[data-animation="greeting"].animate-element {
-  --greet-scale-start: .9;
-  --greet-scale-overshoot: 1.015;
-  --greet-scale-final: 1.0;
-  --greet-scale-dur: 1200ms;
-  transform: scale(var(--greet-scale-start));
-  opacity: 0;
-  transition: opacity .9s cubic-bezier(.4,0,.2,1);
-}
 
-.greeting-text-hero[data-animation="greeting"].animate-element.is-visible {
-  opacity: 1;
-  animation: greeting-scale-in var(--greet-scale-dur) cubic-bezier(.22,.8,.28,1) forwards;
-}
-
-@keyframes greeting-scale-in {
-  0% { transform: scale(var(--greet-scale-start)); }
-  60% { transform: scale(var(--greet-scale-overshoot)); }
-  100% { transform: scale(var(--greet-scale-final)); }
-}
-
-.greeting-text-hero[data-animation="greeting"].animate-element.is-visible:after {
-  content:'';
-}
 
 @media (prefers-reduced-motion: reduce) {
   .greeting-text-hero {

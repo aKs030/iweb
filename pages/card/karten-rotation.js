@@ -104,12 +104,12 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       // Kurz Textinfo zum aktuellen Template liefern (entwicklerfreundlich anpassbar)
       live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
       section.dataset.currentTemplate = templateId;
-        try {
-          const ev = new CustomEvent('features:change', { detail: { index: this.currentIndex, total: this.order.length } });
-          document.dispatchEvent(ev);
-        } catch {
-          // Event dispatch failed
-        }      if (REDUCED) { section.style.opacity = '1'; section.style.transform = 'none'; done(); return; }
+      try {
+        const ev = new CustomEvent('features:change', { detail: { index: this.currentIndex, total: this.order.length } });
+        document.dispatchEvent(ev);
+      } catch {
+        // Event dispatch failed
+      }      if (REDUCED) { section.style.opacity = '1'; section.style.transform = 'none'; done(); return; }
 
       section.style.opacity = '0';
       section.style.transform = 'translateY(10px)';

@@ -223,9 +223,41 @@ class EnhancedAnimationEngine {
   }
 
   parseDataAttribute(element, attribute) {
-    const animationType = element.dataset[attribute];
+    const raw = element.dataset[attribute] || '';
+    // Normalisierung: camelCase/Varianten -> unsere Utility-Klassen
+    const aliasMap = new Map([
+      // slide variants
+      ['slideinfromtop', 'slideInDown'],
+      ['slideinfrombottom', 'slideInUp'],
+      ['slideinfromleft', 'slideInLeft'],
+      ['slideinfromright', 'slideInRight'],
+      ['slide-in-from-top', 'slideInDown'],
+      ['slide-in-from-bottom', 'slideInUp'],
+      ['slide-in-from-left', 'slideInLeft'],
+      ['slide-in-from-right', 'slideInRight'],
+      // simple names
+      ['fadein', 'fadeIn'],
+      ['fade-in', 'fadeIn'],
+      ['scalein', 'scaleIn'],
+      ['scale-in', 'scaleIn'],
+      ['flipinx', 'flipInX'],
+      ['flipiny', 'flipInY'],
+      ['rotateindownleft', 'rotateIn'],
+      ['rotatein', 'rotateIn'],
+      ['bounceinup', 'bounceIn'],
+      ['elasticin', 'elasticIn'],
+      ['zoomin', 'zoomIn'],
+      ['blurin', 'blurIn'],
+      ['glowin', 'glowIn'],
+      // project-specific
+      ['greeting', 'fadeInUp'],
+      ['morphheight', 'scaleIn'],
+      ['scaleincenter', 'scaleIn'],
+    ]);
+    const key = raw.toString().replace(/\s+/g, '').toLowerCase();
+    const normalized = aliasMap.get(key) || raw;
     return {
-      type: animationType,
+      type: normalized,
       duration: parseFloat(element.dataset.duration) || 0.6,
       delay: parseFloat(element.dataset.delay) || 0,
       easing: element.dataset.easing || 'ease-out',
@@ -251,7 +283,9 @@ class EnhancedAnimationEngine {
     element.style.transform = 'translateZ(0)';
 
     // Animation-Klasse hinzufügen
-    const animationClass = `animate-${animationData.type}`;
+    // Erlaube bereits vollqualifizierte Klassen (beginnt mit animate-)
+    const base = animationData.type || 'fadeIn';
+    const animationClass = base.startsWith('animate-') ? base : `animate-${base}`;
     
     const triggerFn = () => {
       element.classList.add(animationClass, 'animated');
