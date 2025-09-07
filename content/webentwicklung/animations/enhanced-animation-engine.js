@@ -273,6 +273,11 @@ class EnhancedAnimationEngine {
       ['greeting', 'fadeInUp'],
       ['morphheight', 'scaleIn'],
       ['scaleincenter', 'scaleIn'],
+      // karten-specific animations
+      ['slideindown', 'slideInDown'],
+      ['slideinup', 'slideInUp'],
+      ['slideinleft', 'slideInLeft'],
+      ['slideinright', 'slideInRight'],
     ]);
 
     const key = raw.toString().replace(/\s+/g, '').toLowerCase();
@@ -298,21 +303,44 @@ class EnhancedAnimationEngine {
   animateElementsIn(container, { force = true } = {}) {
     try {
       const elements = this.selectAnimatedElements(container);
-      elements.forEach(el => {
-        const data = this.getAnimationData(el) || { type: 'fadeIn', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false };
-        if (force) {
-          // Sofort animieren, unabhängig vom Observer
-          this.triggerAnimation(el, data);
-        } else {
-          this.intersectionObserver?.observe(el);
+      elements.forEach(element => {
+        const animationData = this.getAnimationData(element);
+        if (animationData) {
+          if (force || !this.activeAnimations.has(element)) {
+            this.resetAnimation(element); // Reset erst falls nötig
+            this.triggerAnimation(element, animationData);
+          }
         }
       });
-    } catch {
-      /* noop */
+    } catch (error) {
+      console.warn('animateElementsIn failed:', error);
     }
   }
 
   /**
+   * Section-spezifisches Reset für Template-Wechsel
+   */
+  resetSection(section) {
+    try {
+      const elements = section.querySelectorAll('[data-animation], .animate, .animated');
+      elements.forEach(element => {
+        this.resetAnimation(element);
+        this.intersectionObserver?.unobserve(element);
+      });
+      
+      // Re-scan nach Reset
+      setTimeout(() => {
+        this.scanElement(section);
+        elements.forEach(element => {
+          if (this.getAnimationData(element)) {
+            this.intersectionObserver?.observe(element);
+          }
+        });
+      }, 10);
+    } catch (error) {
+      console.warn('resetSection failed:', error);
+    }
+  }  /**
    * Öffentliche API: Animationen in Container zurücksetzen (für Re-Entry Effekte)
    */
   resetElementsIn(container) {
@@ -445,6 +473,21 @@ class EnhancedAnimationEngine {
    */
   scan() {
     this.scanForAnimations();
+  }
+
+  /**
+   * Template-spezifische Animation Integration
+   */
+  handleTemplateChange(templateElement) {
+    if (!templateElement) return;
+    
+    // Reset bestehende Animationen
+    this.resetSection(templateElement);
+    
+    // Neue Animationen scannen und direkt starten
+    setTimeout(() => {
+      this.animateElementsIn(templateElement, { force: true });
+    }, 100);
   }
 
   /**

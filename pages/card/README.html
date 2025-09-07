@@ -68,7 +68,32 @@
 ├── karten-animations.css    # Animation Definitions
 └── README.html             # Diese Dokumentation</code></pre>
     
-    <h2>🚀 Verwendung</h2>
+    <h2>� Integration mit Animation Engine</h2>
+    
+    <h3>Automatische Integration:</h3>
+    <pre><code>// Animation Engine wird automatisch integriert
+document.addEventListener('template:mounted', (e) => {
+  if (e.target.id === 'features') {
+    window.enhancedAnimationEngine?.handleTemplateChange(e.target);
+  }
+});</code></pre>
+    
+    <h3>Verfügbare Animation Engine Methoden:</h3>
+    <ul>
+        <li><code>scan()</code> - Neue Animationen scannen</li>
+        <li><code>resetSection(section)</code> - Section-spezifisches Reset</li>
+        <li><code>handleTemplateChange(element)</code> - Template-Wechsel verarbeiten</li>
+        <li><code>animateElementsIn(container)</code> - Sofortige Animation auslösen</li>
+    </ul>
+    
+    <h3>Events für Integration:</h3>
+    <ul>
+        <li><code>template:mounted</code> - Template wurde gemountet</li>
+        <li><code>features:change</code> - Template wurde gewechselt</li>
+        <li><code>featuresTemplatesLoaded</code> - Templates sind geladen</li>
+    </ul>
+
+    <h2>�🚀 Verwendung</h2>
     
     <h3>HTML Setup:</h3>
     <pre><code>&lt;section id="features" class="section"&gt;

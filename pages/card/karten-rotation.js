@@ -54,9 +54,28 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     }
   }
 
+  // Enhanced Animation Engine Integration
   function triggerAnimationEngineRescan() {
     if (window.enhancedAnimationEngine?.scan) {
       window.enhancedAnimationEngine.scan();
+      log.debug('Animation Engine re-scan triggered');
+    } else {
+      log.debug('Animation Engine not available for re-scan');
+    }
+  }
+
+  function prepareAnimationReset(section) {
+    // Reset alle aktiven Animationen in der Section vor dem Template-Wechsel
+    if (window.enhancedAnimationEngine?.resetSection) {
+      window.enhancedAnimationEngine.resetSection(section);
+    } else {
+      // Fallback: Manual reset
+      const animatedElements = section.querySelectorAll('[data-animation], .animate, .animated');
+      animatedElements.forEach(el => {
+        el.classList.remove('animate', 'animated');
+        el.style.opacity = '';
+        el.style.transform = '';
+      });
     }
   }
 
@@ -81,7 +100,17 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     doubleRAF(() => {
       section.style.opacity = '1';
       section.style.transform = 'translateY(0)';
-      later(() => triggerAnimationEngineRescan(), 50);
+      
+      // Enhanced Animation Engine Integration mit verbessertem Timing
+      later(() => {
+        triggerAnimationEngineRescan();
+        
+        // Event für externe Animation-Systeme
+        section.dispatchEvent(new CustomEvent('template:mounted', {
+          detail: { templateId: section.dataset.currentTemplate },
+          bubbles: true
+        }));
+      }, 50);
     });
     later(done, ANIM_IN);
   }
@@ -115,6 +144,10 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
     const mountNew = () => {
       const frag = tpl.content ? document.importNode(tpl.content, true) : null;
+      
+      // Animation reset vor Template-Wechsel
+      prepareAnimationReset(section);
+      
       section.replaceChildren(frag || tpl.cloneNode(true));
       
       // ARIA-Live Region erzeugen / aktualisieren
@@ -204,11 +237,19 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
   document.addEventListener('featuresTemplatesLoaded', () => {
     mountInitialIfNeeded();
-    // Trigger Animation Engine re-scan for new templates
+    // Enhanced Animation Engine Integration
     if (window.enhancedAnimationEngine?.scan) {
       later(() => triggerAnimationEngineRescan(), 100);
     }
   }, { once:false });
+
+  // Template-Change Event Listener für Animation Engine
+  document.addEventListener('template:mounted', (e) => {
+    if (e.target.id === SECTION_ID && window.enhancedAnimationEngine?.handleTemplateChange) {
+      window.enhancedAnimationEngine.handleTemplateChange(e.target);
+    }
+  });
+
   (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init, { once:true }) : init();
-  log.debug('FeatureRotation initialisiert (pending Templates)');  // DEBUG statt INFO
+  log.debug('FeatureRotation initialisiert (pending Templates)');
 })();
