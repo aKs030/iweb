@@ -3,7 +3,6 @@
 
 /* Card Components Import */
 @import '../../pages/card/karten.css';
-@import '../../pages/card/karten-animations.css';
 
 /* Native Scroll-Snap Container für zuverlässiges Section-Snapping */
 .snap-container {
@@ -523,6 +522,9 @@ a:hover { color: var(--primary-light); }
 
 /* Firefox */
 html {
-  scrollbar-width: none;
+  /* Nur setzen, wenn vom Browser unterstützt */
+  @supports (scrollbar-width: none) {
+    scrollbar-width: none;
+  }
   -ms-overflow-style: none; /* IE und Edge Fallback */
 }

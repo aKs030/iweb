@@ -10,6 +10,8 @@
 
 [data-animation].animate {
   opacity: 1;
+  /* will-change Reset hier konsolidiert, um Duplikate zu vermeiden */
+  will-change: auto;
 }
 
 /* Slide Animations */
@@ -171,10 +173,6 @@
   will-change: transform, opacity;
 }
 
-[data-animation].animate {
-  will-change: auto;
-}
-
 /* Hover State Animationen */
 .card[data-animation]:hover {
   transform: translateY(-8px) scale(1.02);
@@ -185,4 +183,22 @@
   .card[data-animation]:hover {
     transform: none;
   }
+}
+
+/* === Features-Section (Engine-only) Overrides ===
+   Die Karten-Sektion (#features) verwendet die Enhanced Animation Engine.
+   Um doppelte Animationen zu vermeiden, neutralisieren wir hier die
+   data-animation-Transitions und Hover-Transforms zugunsten der Tilt-Interaktion. */
+
+/* Neutralisiere Basiszustände & Transitions aus data-animation im Features-Bereich */
+#features [data-animation] {
+  opacity: initial !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Verhindere Hover-Transform-Konflikt; Tilt-Interaktion behält die Kontrolle */
+#features .card[data-animation]:hover {
+  transform: none !important;
+  transition: none !important;
 }

@@ -64,8 +64,7 @@
     <pre><code>pages/card/
 ├── karten.html             # Templates (5 Feature-Sets)
 ├── karten-rotation.js       # Rotation Logic & Intersection Observer
-├── karten.css              # Card Layouts & Interactive States  
-├── karten-animations.css    # Animation Definitions
+├── karten.css              # Card Layouts & Interactive States  (Engine-only Overrides enthalten)
 └── README.html             # Diese Dokumentation</code></pre>
     
     <h2>� Integration mit Animation Engine</h2>
@@ -110,8 +109,7 @@ window.FeatureRotation.current();        // Aktueller Status
 window.FeatureRotation.destroy();        // Cleanup</code></pre>
     
     <h3>CSS Import:</h3>
-    <pre><code>@import 'pages/card/karten.css';
-@import 'pages/card/karten-animations.css';</code></pre>
+        <pre><code>@import 'pages/card/karten.css';</code></pre>
     
     <h2>⚙️ Konfiguration</h2>
     
@@ -178,7 +176,7 @@ window.FeatureRotation.destroy();        // Cleanup</code></pre>
         <li><strong>Secure Random:</strong> Crypto API für echte Zufälligkeit</li>
     </ul>
     
-    <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #eee; color: #666; font-size: 0.9em;">
+    <footer class="readme-footer">
         <p>📅 Letzte Aktualisierung: September 2025</p>
     </footer>
 </body>
