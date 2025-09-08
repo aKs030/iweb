@@ -3,6 +3,16 @@
  * Hochperformantes Animation-System mit GPU-Beschleunigung
  * @author Abdulkerim Sesli
  * @version 3.2 - Performance Optimized
+ *
+ * Unterstützte Attribute/Klassen:
+ * - data-animation | data-animate: Name/Typ der Animation (Alias werden normalisiert, z.B. slideInLeft, fadeInUp, scaleIn)
+ * - data-delay: Startverzögerung in Millisekunden (z.B. 300)
+ * - data-duration: Dauer in Sekunden oder Millisekunden (z.B. 0.6 oder 600 bzw. "600ms"/"0.6s")
+ * - data-easing: CSS Easing-String (z.B. ease-out, cubic-bezier(...))
+ * - data-threshold: Sichtbarkeits-Schwelle (0..1) für IntersectionObserver
+ * - data-reset: true/false überschreibt die globale repeatOnScroll-Strategie
+ * - data-once: ohne Wert oder true = nur einmal animieren, false = mehrfach möglich
+ * Zusätzlich werden folgende Klassen erkannt: .animate-on-scroll, .slide-in-left, .slide-in-right, .slide-in-up, .fade-in, .scale-in
  */
 
 class EnhancedAnimationEngine {
@@ -20,6 +30,18 @@ class EnhancedAnimationEngine {
     this.mutationObserver = null;
     this.performanceMode = this.detectPerformanceMode();
     this.animationQueue = new Set(); // Queue für verzögerte Animationen
+    this.observed = new WeakSet(); // Beobachtete Elemente
+    this.animatedOnce = new WeakSet(); // Elemente, die bereits einmal animiert wurden (data-once)
+    this.engineSelector = [
+      '[data-animate]',
+      '[data-animation]',
+      '.animate-on-scroll',
+      '.slide-in-left',
+      '.slide-in-right', 
+      '.slide-in-up',
+      '.fade-in',
+      '.scale-in'
+    ].join(',');
     
     // Optimierte Animation Types - nur die wirklich verwendeten
     this.animationTypes = new Map([
@@ -32,6 +54,15 @@ class EnhancedAnimationEngine {
     ]);
     
     this.init();
+  }
+
+  /**
+   * Prüft, ob ein Element innerhalb eines Bereichs liegt, der Animationen deaktiviert
+   */
+  isOptedOut(element) {
+    const hasClosest = element && typeof element.closest === 'function';
+    if (!hasClosest) return false;
+    return !!element.closest('[data-animations="off"]');
   }
 
   /**
@@ -66,20 +97,22 @@ class EnhancedAnimationEngine {
    * Intersection Handler - Performance optimiert
    */
   handleIntersection(entries) {
-    // Batch-Verarbeitung für bessere Performance
+  // Batch-Verarbeitung für bessere Performance
     const visibleEntries = entries.filter(entry => entry.isIntersecting);
-    const hiddenEntries = entries.filter(entry => !entry.isIntersecting);
 
     // Sichtbare Elemente animieren
     if (visibleEntries.length > 0) {
       this.batchTriggerAnimations(visibleEntries);
     }
 
-    // Reset für hidden Elemente nur wenn nötig
+    // Reset für hidden Elemente nur wenn nötig (nicht bei once)
+    const hiddenEntries = entries.filter(entry => !entry.isIntersecting);
     hiddenEntries.forEach(entry => {
-      const animationData = this.getAnimationData(entry.target);
-      if (this.options.repeatOnScroll || animationData?.reset) {
-        this.resetAnimation(entry.target);
+      const el = entry.target;
+      const animationData = this.getAnimationData(el);
+      const isOnce = !!animationData?.once;
+      if (!isOnce && (this.options.repeatOnScroll || animationData?.reset)) {
+        this.resetAnimation(el);
       }
     });
   }
@@ -98,7 +131,10 @@ class EnhancedAnimationEngine {
     entries.forEach(entry => {
       const element = entry.target;
       const animationData = this.getAnimationData(element);
-      if (animationData) {
+      if (!animationData) return;
+      const ratio = typeof entry.intersectionRatio === 'number' ? entry.intersectionRatio : 0;
+      const needed = typeof animationData.threshold === 'number' ? animationData.threshold : this.options.threshold;
+      if (ratio >= needed) {
         this.triggerAnimation(element, animationData);
       }
     });
@@ -126,24 +162,81 @@ class EnhancedAnimationEngine {
 
     // Throttle für Mutation Observer um Performance zu verbessern
     let mutationTimeout;
+    const pendingAdded = new Set();
+    const pendingAttrTargets = new Set();
+    const engineSelector = this.engineSelector;
+    const scheduleIdle = (cb) => (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function')
+      ? window.requestIdleCallback(cb, { timeout: 120 })
+      : setTimeout(cb, 0);
+
+    const isElementNode = (n) => n && n.nodeType === 1;
+    const processAdded = (element) => {
+      if (!isElementNode(element) || this.isOptedOut(element)) return;
+      this.scanElement(element);
+      const descendants = element.querySelectorAll?.(engineSelector);
+      if (descendants?.length) {
+        for (const child of Array.from(descendants)) {
+          if (!this.isOptedOut(child)) this.scanElement(child);
+        }
+      }
+    };
+    const processAttrTarget = (el) => {
+      if (!isElementNode(el)) return;
+      if (this.isOptedOut(el)) {
+        this.resetAnimation(el);
+        this.unobserveElement(el);
+        return;
+      }
+      const matches = el.matches?.(engineSelector) === true;
+      if (matches) {
+        this.scanElement(el);
+      } else {
+        this.resetAnimation(el);
+        this.unobserveElement(el);
+      }
+    };
+
     this.mutationObserver = new MutationObserver((mutations) => {
       clearTimeout(mutationTimeout);
-      mutationTimeout = setTimeout(() => {
-        const addedElements = new Set();
-        mutations.forEach(mutation => {
-          mutation.addedNodes.forEach(node => {
-            if (node.nodeType === 1) {
-              addedElements.add(node);
-            }
-          });
-        });
-        addedElements.forEach(element => this.scanElement(element));
-      }, 100); // Debounce um Batch-Verarbeitung zu ermöglichen
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.addedNodes?.length) {
+          for (const node of mutation.addedNodes) {
+            if (isElementNode(node)) pendingAdded.add(node);
+          }
+        }
+        if (mutation.type === 'attributes' && isElementNode(mutation.target)) {
+          pendingAttrTargets.add(mutation.target);
+        }
+      }
+      mutationTimeout = setTimeout(() => scheduleIdle(() => {
+        const added = Array.from(pendingAdded);
+        const attrTargets = Array.from(pendingAttrTargets);
+        pendingAdded.clear();
+        pendingAttrTargets.clear();
+
+        // Neue Elemente und deren Nachfahren scannen
+        for (const element of added) processAdded(element);
+
+        // Attribute-Änderungen verarbeiten
+        for (const el of attrTargets) processAttrTarget(el);
+      }), 100); // Debounce um Batch-Verarbeitung zu ermöglichen
     });
 
     this.mutationObserver.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: [
+        'data-animate',
+        'data-animation',
+        'data-delay',
+        'data-duration',
+        'data-easing',
+        'data-threshold',
+        'data-once',
+        'data-reset',
+        'class'
+      ]
     });
   }
 
@@ -170,47 +263,49 @@ class EnhancedAnimationEngine {
    * Alle Animationen scannen - Optimierte Selektoren
    */
   scanForAnimations() {
-    const animatedElements = document.querySelectorAll([
-      '[data-animate]',
-      '[data-animation]',
-      '.animate-on-scroll',
-      '.slide-in-left',
-      '.slide-in-right', 
-      '.slide-in-up',
-      '.fade-in',
-      '.scale-in'
-    ].join(','));
+    const animatedElements = document.querySelectorAll(this.engineSelector);
 
-    animatedElements.forEach(element => this.scanElement(element));
+    Array.from(animatedElements)
+      .filter(el => !this.isOptedOut(el))
+      .forEach(element => this.scanElement(element));
   }
 
   /**
    * Selektiert animierbare Elemente innerhalb eines Containers
    */
   selectAnimatedElements(container = document) {
-    return container.querySelectorAll([
-      '[data-animate]',
-      '[data-animation]',
-      '.animate-on-scroll',
-      '.slide-in-left',
-      '.slide-in-right',
-      '.slide-in-up',
-      '.fade-in',
-      '.scale-in'
-    ].join(','));
+    const list = container.querySelectorAll(this.engineSelector);
+    return Array.from(list).filter(el => !this.isOptedOut(el));
+  }
+
+  // Beobachtung kapseln, doppelte Beobachtung vermeiden
+  observeElement(element) {
+    if (!element || this.observed.has(element)) return;
+    this.intersectionObserver?.observe(element);
+    this.observed.add(element);
+  }
+
+  unobserveElement(element) {
+    if (!element) return;
+    this.intersectionObserver?.unobserve(element);
+    this.observed.delete(element);
   }
 
   scanElement(element) {
     if (element.nodeType !== 1) return;
+    if (this.isOptedOut(element)) return;
 
     const animationData = this.getAnimationData(element);
     if (!animationData) return;
 
     // Element zur Beobachtung hinzufügen
-    this.intersectionObserver?.observe(element);
+    this.observeElement(element);
   }
 
   getAnimationData(element) {
+    if (this.isOptedOut(element)) {
+      return null;
+    }
     // Data-Attribute prüfen
     if (element.dataset.animate) {
       return this.parseDataAttribute(element, 'animate');
@@ -225,16 +320,17 @@ class EnhancedAnimationEngine {
     for (const className of classList) {
       const config = this.animationTypes.get(className);
       if (config) {
-        // Reset-Strategie: data-reset überschreibt, sonst global repeatOnScroll oder config.reset
         const hasResetAttr = Object.hasOwn(element.dataset, 'reset');
         const reset = hasResetAttr ? (element.dataset.reset === 'true') : (this.options.repeatOnScroll || config.reset);
+        const once = Object.hasOwn(element.dataset, 'once') ? (element.dataset.once !== 'false') : false;
         return {
           type: config.type,
           duration: parseFloat(element.dataset.duration) || config.duration,
           delay: parseFloat(element.dataset.delay) || config.delay,
           easing: element.dataset.easing || config.easing,
           threshold: parseFloat(element.dataset.threshold) || config.threshold,
-          reset
+          reset,
+          once
         };
       }
     }
@@ -286,15 +382,40 @@ class EnhancedAnimationEngine {
     // Reset-Strategie: data-reset überschreibt, sonst global repeatOnScroll
     const hasResetAttr = Object.hasOwn(element.dataset, 'reset');
     const reset = hasResetAttr ? (element.dataset.reset === 'true') : this.options.repeatOnScroll;
-
+    const once = Object.hasOwn(element.dataset, 'once') ? (element.dataset.once !== 'false') : false;
     return {
       type: normalized,
       duration: parseFloat(element.dataset.duration) || 0.6,
       delay: parseFloat(element.dataset.delay) || 0,
       easing: element.dataset.easing || 'ease-out',
       threshold: parseFloat(element.dataset.threshold) || 0.15,
-      reset
+      reset,
+      once
     };
+  }
+
+  /**
+   * Hilfsfunktion: Dauer in Millisekunden konvertieren
+   * Akzeptiert Zahlen (Sekunden oder Millisekunden) und Strings ("600ms", "0.6s")
+   */
+  toMs(value) {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'string') {
+      const v = value.trim().toLowerCase();
+      if (v.endsWith('ms')) {
+        return parseFloat(v);
+      }
+      if (v.endsWith('s')) {
+        return parseFloat(v) * 1000;
+      }
+      const n = parseFloat(v);
+      if (!Number.isFinite(n)) return 0;
+      return n > 10 ? n : n * 1000;
+    }
+    if (typeof value === 'number') {
+      return value > 10 ? value : value * 1000;
+    }
+    return 0;
   }
 
   /**
@@ -325,7 +446,7 @@ class EnhancedAnimationEngine {
       const elements = section.querySelectorAll('[data-animation], .animate, .animated');
       elements.forEach(element => {
         this.resetAnimation(element);
-        this.intersectionObserver?.unobserve(element);
+        this.unobserveElement(element);
       });
       
       // Re-scan nach Reset
@@ -333,7 +454,7 @@ class EnhancedAnimationEngine {
         this.scanElement(section);
         elements.forEach(element => {
           if (this.getAnimationData(element)) {
-            this.intersectionObserver?.observe(element);
+            this.observeElement(element);
           }
         });
       }, 10);
@@ -384,11 +505,25 @@ class EnhancedAnimationEngine {
     // Erlaube bereits vollqualifizierte Klassen (beginnt mit animate-)
     const base = animationData.type || 'fadeIn';
     const animationClass = base.startsWith('animate-') ? base : `animate-${base}`;
+    const durationMs = this.toMs(animationData.duration);
     
     const triggerFn = () => {
+      // Dauer/Easing optional als Inline-Styles setzen (nicht zwingend in CSS vorhanden)
+      if (durationMs > 0) {
+        element.style.animationDuration = `${durationMs}ms`;
+        element.style.transitionDuration = `${durationMs}ms`;
+      }
+      if (animationData.easing) {
+        element.style.animationTimingFunction = animationData.easing;
+        element.style.transitionTimingFunction = animationData.easing;
+      }
       element.classList.add(animationClass, 'animated');
       this.activeAnimations.set(element, animationData);
-      
+      if (animationData.once) {
+        this.animatedOnce.add(element);
+        element.dataset.animatedOnce = 'true';
+        this.unobserveElement(element);
+      }
       // Queue verarbeiten wenn Platz frei wird
       this.processAnimationQueue();
     };
@@ -402,7 +537,7 @@ class EnhancedAnimationEngine {
     // Cleanup nach Animation
     setTimeout(() => {
       element.style.willChange = 'auto';
-    }, animationData.delay + (animationData.duration * 1000));
+    }, animationData.delay + durationMs);
   }
 
   /**

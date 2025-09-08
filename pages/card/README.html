@@ -5,32 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cards/Features Komponente - Dokumentation</title>
     <style>
-        body { 
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 800px; 
-            margin: 2rem auto; 
-            padding: 0 2rem; 
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
             line-height: 1.6;
             color: #333;
         }
         h1, h2, h3 { color: #2c3e50; }
-        code { 
-            background: #f4f4f4; 
-            padding: 0.2em 0.4em; 
-            border-radius: 3px; 
+        code {
+            background: #f4f4f4;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
             font-family: 'Monaco', 'Consolas', monospace;
         }
-        pre { 
-            background: #f8f8f8; 
-            padding: 1rem; 
+        pre {
+            background: #f8f8f8;
+            padding: 1rem;
             border-radius: 5px; 
             overflow-x: auto;
             border-left: 3px solid #3498db;
         }
-        .feature-list { 
-            background: #f9f9f9; 
-            padding: 1rem; 
-            border-radius: 5px; 
+        .feature-list {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 5px;
             margin: 1rem 0;
         }
         .warning {
@@ -44,10 +44,10 @@
 </head>
 <body>
     <h1>📋 Cards/Features Komponente</h1>
-    
+
     <h2>📂 Übersicht</h2>
     <p>Diese Komponente stellt ein interaktives Feature-Karussell bereit, das zwischen verschiedenen Templates rotiert und dabei moderne Animationen und Accessibility-Features nutzt.</p>
-    
+
     <div class="feature-list">
         <h3>✨ Features:</h3>
         <ul>
@@ -59,24 +59,24 @@
             <li><strong>Responsive:</strong> Mobile-first Grid Layout</li>
         </ul>
     </div>
-    
+
     <h2>🗂️ Datei-Struktur</h2>
     <pre><code>pages/card/
 ├── karten.html             # Templates (5 Feature-Sets)
-├── karten-rotation.js       # Rotation Logic & Intersection Observer
-├── karten.css              # Card Layouts & Interactive States  (Engine-only Overrides enthalten)
+├── karten-rotation.js       # Rotation Logic &amp; Intersection Observer
+├── karten.css              # Card Layouts &amp; Interactive States  (Engine-only Overrides enthalten)
 └── README.html             # Diese Dokumentation</code></pre>
-    
-    <h2>� Integration mit Animation Engine</h2>
-    
+
+    <h2>🔌 Integration mit Animation Engine</h2>
+
     <h3>Automatische Integration:</h3>
     <pre><code>// Animation Engine wird automatisch integriert
-document.addEventListener('template:mounted', (e) => {
+document.addEventListener('template:mounted', (e) =&gt; {
   if (e.target.id === 'features') {
     window.enhancedAnimationEngine?.handleTemplateChange(e.target);
   }
 });</code></pre>
-    
+
     <h3>Verfügbare Animation Engine Methoden:</h3>
     <ul>
         <li><code>scan()</code> - Neue Animationen scannen</li>
@@ -84,7 +84,7 @@ document.addEventListener('template:mounted', (e) => {
         <li><code>handleTemplateChange(element)</code> - Template-Wechsel verarbeiten</li>
         <li><code>animateElementsIn(container)</code> - Sofortige Animation auslösen</li>
     </ul>
-    
+
     <h3>Events für Integration:</h3>
     <ul>
         <li><code>template:mounted</code> - Template wurde gemountet</li>
@@ -92,13 +92,13 @@ document.addEventListener('template:mounted', (e) => {
         <li><code>featuresTemplatesLoaded</code> - Templates sind geladen</li>
     </ul>
 
-    <h2>�🚀 Verwendung</h2>
-    
+    <h2>🚀 Verwendung</h2>
+
     <h3>HTML Setup:</h3>
     <pre><code>&lt;section id="features" class="section"&gt;
     &lt;!-- Content wird dynamisch geladen --&gt;
 &lt;/section&gt;</code></pre>
-    
+
     <h3>JavaScript Integration:</h3>
     <pre><code>// Automatische Initialisierung beim DOM-Load
 import './pages/card/karten-rotation.js';
@@ -107,12 +107,12 @@ import './pages/card/karten-rotation.js';
 window.FeatureRotation.next();           // Nächstes Template
 window.FeatureRotation.current();        // Aktueller Status
 window.FeatureRotation.destroy();        // Cleanup</code></pre>
-    
+
     <h3>CSS Import:</h3>
         <pre><code>@import 'pages/card/karten.css';</code></pre>
-    
+
     <h2>⚙️ Konfiguration</h2>
-    
+
     <h3>Data-Attribute am Section-Element:</h3>
     <ul>
         <li><code>data-anim-in="400"</code> - Einblend-Dauer (ms)</li>
@@ -121,7 +121,7 @@ window.FeatureRotation.destroy();        // Cleanup</code></pre>
         <li><code>data-features-src="/custom/path.html"</code> - Alternative Template-Quelle</li>
         <li><code>data-live-label="Feature"</code> - ARIA-Live Text-Prefix</li>
     </ul>
-    
+
     <h3>Animation Data-Attribute:</h3>
     <ul>
         <li><code>data-animation="slideInUp"</code> - Animation Type</li>
@@ -129,7 +129,7 @@ window.FeatureRotation.destroy();        // Cleanup</code></pre>
         <li><code>data-threshold="0.2"</code> - Intersection Schwellwert</li>
         <li><code>data-stagger="200"</code> - Staggered Animation Delay</li>
     </ul>
-    
+
     <h2>🎨 Verfügbare Animationen</h2>
     <div class="feature-list">
         <ul>
@@ -141,7 +141,7 @@ window.FeatureRotation.destroy();        // Cleanup</code></pre>
             <li><strong>Fade:</strong> fadeIn</li>
         </ul>
     </div>
-    
+
     <div class="warning">
         <h3>⚠️ Wichtige Hinweise:</h3>
         <ul>
@@ -151,23 +151,23 @@ window.FeatureRotation.destroy();        // Cleanup</code></pre>
             <li>Timer werden bei Destroy automatisch gecleart</li>
         </ul>
     </div>
-    
+
     <h2>🔧 Fehlerbehebung</h2>
-    
+
     <h3>Template wird nicht geladen:</h3>
     <ul>
         <li>Prüfen Sie die Netzwerk-Registerkarte auf 404-Fehler</li>
         <li>Überprüfen Sie den Pfad in <code>data-features-src</code></li>
         <li>Console-Logs aktivieren: <code>window.FeatureRotation.debug = true</code></li>
     </ul>
-    
+
     <h3>Animationen funktionieren nicht:</h3>
     <ul>
         <li>CSS-Dateien korrekt importiert?</li>
         <li>Enhanced Animation Engine geladen?</li>
         <li>Reduced Motion aktiviert? (Check: <code>prefers-reduced-motion</code>)</li>
     </ul>
-    
+
     <h2>📊 Performance</h2>
     <ul>
         <li><strong>Will-Change:</strong> Automatische GPU-Beschleunigung für animierte Elemente</li>
@@ -175,7 +175,7 @@ window.FeatureRotation.destroy();        // Cleanup</code></pre>
         <li><strong>Timer Management:</strong> Zentrale Timer-Verwaltung verhindert Memory Leaks</li>
         <li><strong>Secure Random:</strong> Crypto API für echte Zufälligkeit</li>
     </ul>
-    
+
     <footer class="readme-footer">
         <p>📅 Letzte Aktualisierung: September 2025</p>
     </footer>
