@@ -478,7 +478,7 @@ a:hover { color: var(--primary-light); }
    9) Print
 ======================================== */
 @media print {
-  .loading-screen, .main-header, .hero-background, .back-to-top { display: none !important; }
+  .loading-screen, .main-header, .back-to-top { display: none !important; }
   body { color: black; background: white; font-size: 12pt; }
   .container { max-width: 900px; margin: 0 auto; width: 100%; }
   a { color: black; text-decoration: underline; }

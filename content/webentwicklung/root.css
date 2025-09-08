@@ -67,8 +67,7 @@
   /* Partikel */
   --particle-opacity: 0.4;
 
-  /* Greeting hero */
-  --greet-grad: linear-gradient(90deg, #07a1ff, #35e0ff 78%);
+  /* Greeting hero: moved to pages/home/greeting-text-hero.css */
 
   /* Link & semantic colors */
   --color-link: var(--primary-color);
