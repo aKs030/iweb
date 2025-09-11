@@ -528,3 +528,35 @@ html {
   }
   -ms-overflow-style: none; /* IE und Edge Fallback */
 }
+
+/* ========================================
+   Hauptseite: Section-Header unsichtbar
+======================================== */
+/* Alle section-header und section-subtitle in Hero-, Features- und About-Sektion ausblenden */
+#hero .section-header,
+#hero .section-subtitle,
+.hero .section-header,
+.hero .section-subtitle,
+.section.hero .section-header,
+.section.hero .section-subtitle,
+/* Features-Sektion */
+#features .section-header,
+#features .section-subtitle,
+.features .section-header,
+.features .section-subtitle,
+.section.features .section-header,
+.section.features .section-subtitle,
+/* About-Sektion */
+#about .section-header,
+#about .section-subtitle,
+.about .section-header,
+.about .section-subtitle,
+.section.about .section-header,
+.section.about .section-subtitle {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}

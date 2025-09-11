@@ -1,5 +1,5 @@
 @import url('https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css');
-@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;600&display=swap');
 
 *, *::before, *::after {
   margin: 0;
@@ -12,13 +12,18 @@ html, body {
 }
 
 /* =======================
-   Typography
+   Typography Base
    ======================= */
+:root {
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-script: 'Lobster', 'Dancing Script', cursive, serif;
+}
+
 .site-menu__list li,
 .site-menu__list li a,
 .site-menu__list .submenu li,
 .site-menu__list .submenu li a {
-  font-family: var(--font-family-main);
+  font-family: var(--font-inter);
   font-size: var(--font-size-p);
   line-height: 1.6;
 }
@@ -58,23 +63,112 @@ html, body {
   opacity: 0;
   transform: translateY(15px);
   touch-action: pan-y;
+  font-family: var(--font-inter);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.site-logo__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 
 .site-logo {
-  font-size: var(--font-size-h2);
-  color: var(--color-text-main);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
   animation: fadeInOpacity 1s ease-out, fadeInTransform 1s ease-out;
-  transition: transform 0.3s, text-shadow 0.3s, color 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
-  padding: clamp(6px, 1vw, 14px);
+  padding: clamp(6px, 0.8vw, 10px);
   position: relative;
+  margin: 0;
+  margin-bottom: -0.2rem;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+  font-variant: normal;
+  text-transform: capitalize;
 }
-.site-logo.elegant-logo { font-family: 'Lobster', cursive, Arial, sans-serif; }
+.site-logo.elegant-logo { 
+  font-family: var(--font-script) !important; 
+  font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+  color: #ffffff !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px rgba(9, 139, 255, 0.2), 0 1px 4px rgba(0,0,0,0.15);
+  font-variant: normal;
+  font-style: normal;
+}
+
+/* Zusätzliche spezifische Regel für bessere Durchsetzung */
+.site-header .site-logo__container .site-logo {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+}
+
 .site-logo:hover {
-  transform: scale(1.15);
+  transform: scale(1.08) translateY(-1px);
+  opacity: 0.95;
+}
+
+.site-subtitle {
+  font-family: var(--font-inter);
+  font-size: clamp(0.55rem, 0.9vw, 0.7rem);
+  color: var(--text-secondary);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  line-height: 1.1;
+  margin-top: -0.3rem;
+  font-variant: small-caps;
+  text-transform: lowercase;
+}
+
+.site-subtitle.show {
+  opacity: 0.85;
+  transform: translateY(0);
+}
+
+.site-logo__container:hover .site-subtitle.show {
+  opacity: 1;
+  color: var(--text-primary);
+}
+
+/* Mobile Anpassungen */
+@media (max-width: 768px) {
+  .site-logo__container {
+    gap: 0;
+  }
+  
+  .site-subtitle {
+    font-size: clamp(0.5rem, 1.5vw, 0.6rem);
+    letter-spacing: 0.02em;
+  }
+  
+  .site-logo {
+    padding: clamp(6px, 1vw, 12px);
+  }
+  
+  .site-logo.elegant-logo {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+  }
+}
+
+/* Sehr kleine Bildschirme - Untertitel ausblenden */
+@media (max-width: 480px) {
+  .site-subtitle {
+    display: none;
+  }
 }
 
 /* Keyframes */
@@ -100,7 +194,8 @@ html, body {
 .site-menu__list li a {
   text-decoration: none;
   color: var(--color-text-main);
-  font-weight: 500;
+  font-family: var(--font-inter);
+  font-weight: 600;
   position: relative;
   display: flex;
   align-items: center;
@@ -108,6 +203,7 @@ html, body {
   padding: clamp(0.2rem, 0.7vw, 0.45rem) clamp(0.6rem, 1vw, 1.1rem);
   min-height: 36px;
   font-size: clamp(0.93rem, 2vw, 1.09rem);
+  letter-spacing: -0.01em;
 }
 .site-menu__list li a::after {
   content: "";
