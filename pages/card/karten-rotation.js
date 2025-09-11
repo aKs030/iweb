@@ -24,9 +24,6 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
   const timerManager = new TimerManager();
   let io = null;
 
-  // Sector Layout Management - integriert
-  let resizeTimeout;
-
   const byId = id => document.getElementById(id);
   const later = (fn, ms) => timerManager.setTimeout(fn, ms);
   const clearTimers = () => timerManager.clearAll();
@@ -96,18 +93,6 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     return live;
   }
 
-  // Sector Layout Management - integriert von sector-layout-manager.js
-  function setupSectorLayout() {
-    const featuresCards = document.querySelectorAll('.features-cards');
-    
-    featuresCards.forEach(container => {
-      // Layout-Mode-Attribut setzen
-      if (!container.hasAttribute('data-layout-mode')) {
-        container.setAttribute('data-layout-mode', 'sector');
-      }
-    });
-  }
-
   function applyInAnimation(section, ANIM_IN, EASE, done) {
     section.style.opacity = '0';
     section.style.transform = 'translateY(10px)';
@@ -168,9 +153,6 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       // ARIA-Live Region erzeugen / aktualisieren
       createLiveRegion(section, templateId, LIVE_LABEL_PREFIX);
       section.dataset.currentTemplate = templateId;
-      
-      // Sector Layout nach Template-Mount aktualisieren
-      setupSectorLayout();
       
       try {
         const ev = new CustomEvent('features:change', { detail: { index: this.currentIndex, total: this.order.length } });
@@ -245,32 +227,12 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) mount(order[i], true);
 
     if (!loaded) { await ensureTemplates(section); mountInitialIfNeeded(); }
-    
-    // Sector Layout initial setup
-    setupSectorLayout();
-    
-    // Debounced resize handler für Sector Layout
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        setupSectorLayout();
-      }, 150);
-    });
   }
 
   window.FeatureRotation = {
     next: rotateDifferent,
     current: () => ({ index: i, id: order[i] }),
-    destroy() { 
-      io?.disconnect(); 
-      io=null; 
-      clearTimers(); 
-      clearTimeout(resizeTimeout);
-      log.debug('FeatureRotation zerstört'); 
-      delete window.FeatureRotation; 
-    },
-    // Integrierte Sector Layout API
-    setupSectorLayout: setupSectorLayout
+    destroy() { io?.disconnect(); io=null; clearTimers(); log.debug('FeatureRotation zerstört'); delete window.FeatureRotation; }
   };
 
   document.addEventListener('featuresTemplatesLoaded', () => {

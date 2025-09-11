@@ -9,30 +9,16 @@
   height: 100vh;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
-  scroll-padding-top: var(--header-height, 0px);
 }
 .section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Spezifische Features-Sektion Zentrierung */
-.section.features {
-  padding: 0;
-  margin: 0;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
 }
 /* Root-Variablen wurden in content/webentwicklung/root.css ausgelagert */
 
 /* ========================================
-   2) Layout & Reduced Motion
+   2) Scroll-Snap-Verbesserungen & Reduced Motion
 ======================================== */
 
 /* Reduced Motion Respekt */
@@ -47,11 +33,15 @@ html, body {
   overflow-x: hidden;
   touch-action: pan-y;
   -webkit-font-smoothing: antialiased;
-  font-kerning: normal;
-  font-variant-ligatures: common-ligatures contextual;
-  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+font-kerning: normal;
+font-variant-ligatures: common-ligatures contextual;
+font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  /* aus vorherigem Block zusammengeführt */
+  scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
+  scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
   scroll-behavior: smooth;
 }
+
 
 body {
   font-family: var(--font-primary);
@@ -59,18 +49,36 @@ body {
   color: var(--text-primary);
   margin: 0;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  /* aus vorherigem Block zusammengeführt */
+  scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
+  scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
+  scroll-snap-align: start; 
+  scroll-snap-stop: always;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-
 /* ========================================
-   3) Layout (Container, Section, Headings)
+   3) Layout (Container, Section, Headings) + Global Particle Background
 ======================================== */
+
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 1.5rem);
+}
+
+/* ...entfernt, da am Ende der Datei die Scroll-Snap-Variante steht... */
 
 /* Erweiterte Scroll-Snap-Unterstützung */
 .snap-section {
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+    /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
   opacity: 0.8;
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
@@ -84,30 +92,20 @@ body {
   z-index: 2;
 }
 
-.container {
-  width: 100%;
-  max-width: 900px;
-  margin-inline: auto;
-  padding-inline: clamp(1rem, 4vw, 1.5rem);
-}
-
 
 
 .section-header {
   text-align: center;
-  margin: 0;
+  margin-bottom: 1.5rem;
+  margin-top: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
 .section-title {
   position: relative;
   display: inline-block;
   font-size: clamp(1.3rem, 4vw, 2.2rem);
-  margin: 0 0 0.5rem 0;
+  margin-bottom: 0.8rem;
   padding: 0;
 }
 
@@ -226,8 +224,7 @@ a:hover { color: var(--primary-light); }
   justify-content: center !important;
   align-items: center !important;
   text-align: center !important;
-  padding: 0;
-  margin: 0;
+  padding: var(--spacing-xl) 0;
 }
 
 /* Base Card Styling */
@@ -377,13 +374,12 @@ a:hover { color: var(--primary-light); }
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--spacing-lg);
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 100vh;
-  gap: var(--spacing-md);
 }
 
 .features-content::before {
