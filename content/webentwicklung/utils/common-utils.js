@@ -2,16 +2,6 @@
 // Zentrale Sammlung aller wiederverwendbaren Funktionen
 
 // ===== Timing Utilities =====
-export function debounce(func, wait = 200) {
-  let timeout;
-  function debounced(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  }
-  debounced.cancel = () => clearTimeout(timeout);
-  return debounced;
-}
-
 export function throttle(func, limit = 250) {
   let inThrottle;
   return function (...args) {
@@ -31,10 +21,6 @@ export function shuffle(array) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
-}
-
-export function shuffleIndices(length) {
-  return shuffle([...Array(length).keys()]);
 }
 
 // ===== DOM Utilities - Optimiert =====
@@ -64,30 +50,6 @@ export function getElementById(id, useCache = true) {
   return element;
 }
 
-export function querySelector(selector, useCache = false) {
-  if (useCache && elementCache.has(selector)) {
-    const cached = elementCache.get(selector);
-    if (cached && document.contains(cached)) {
-      return cached;
-    }
-    elementCache.delete(selector);
-  }
-  
-  const element = document.querySelector(selector);
-  if (useCache && element) {
-    if (elementCache.size >= CACHE_MAX_SIZE) {
-      const firstKey = elementCache.keys().next().value;
-      elementCache.delete(firstKey);
-    }
-    elementCache.set(selector, element);
-  }
-  return element;
-}
-
-export function clearElementCache() {
-  elementCache.clear();
-}
-
 // ===== Accessibility & UX Utilities =====
 let reducedMotionCache = null;
 
@@ -102,38 +64,6 @@ export function prefersReducedMotion() {
     }
   }
   return reducedMotionCache;
-}
-
-export function setReducedMotion(enabled) {
-  reducedMotionCache = enabled;
-  document.body.classList.toggle('reduce-motion', enabled);
-  try {
-    localStorage.setItem('pref-reduce-motion', enabled ? '1' : '0');
-  } catch (error) {
-    console.warn('Failed to save motion preference:', error);
-  }
-}
-
-export function toggleReducedMotion(force) {
-  const newValue = force !== undefined ? !!force : !prefersReducedMotion();
-  setReducedMotion(newValue);
-  return newValue;
-}
-
-// ===== Animation Utilities =====
-export function createAnimationObserver(callback, options = {}) {
-  const defaultOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  };
-  
-  return new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        callback(entry.target, entry);
-      }
-    });
-  }, { ...defaultOptions, ...options });
 }
 
 // ===== Timer Utilities =====
@@ -177,41 +107,14 @@ export function randomFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-// ===== Scroll Utilities - Vereinfacht =====
-export function smoothScrollTo(target, offset = 80) {
-  const element = typeof target === 'string' ? querySelector(target) : target;
-  if (!element) return;
-  
-  const top = element.getBoundingClientRect().top + window.pageYOffset - offset;
-  const behavior = prefersReducedMotion() ? 'auto' : 'smooth';
-  
-  window.scrollTo({ top, behavior });
-}
-
-export function getScrollPosition() {
-  return {
-    x: window.pageXOffset || document.documentElement.scrollLeft,
-    y: window.pageYOffset || document.documentElement.scrollTop
-  };
-}
-
 // ===== Export für Legacy-Kompatibilität =====
 export default {
-  debounce,
   throttle,
   shuffle,
-  shuffleIndices,
   getElementById,
-  querySelector,
-  clearElementCache,
   prefersReducedMotion,
-  setReducedMotion,
-  toggleReducedMotion,
-  createAnimationObserver,
   TimerManager,
   clamp,
   randomInt,
-  randomFloat,
-  smoothScrollTo,
-  getScrollPosition
+  randomFloat
 };

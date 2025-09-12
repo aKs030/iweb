@@ -1,64 +1,153 @@
-(function(){
-  if (window.FooterLoader) return;
-  window.FooterLoader = true;
+/**
+ * Footer Loading System - Basis Footer-Laden
+ * 
+ * Features:
+ * - Dynamisches Laden des Footer-Inhalts
+ * - Automatische Jahr-Aktualisierung
+ * - Error Handling mit Fallback
+ * - Performance-optimiert
+ * - Accessibility-Support
+ * 
+ * @author Abdulkerim Sesli
+ * @version 2.5.0
+ */
 
-  // Logger Import (direkt ohne ES Module da IIFE)
-  const { createLogger } = window.Logger || {};
-  const log = createLogger ? createLogger('footer') : { error: console.error.bind(console) };
+import { createLogger } from '../utils/logger.js';
 
-  async function loadFooter(){
-    const container = document.getElementById('footer-container');
-    if (!container) return;
-    if (container.dataset.loaded === '1') return;
-    const url = container.dataset.footerSrc || container.getAttribute('data-footer-src') || '/content/webentwicklung/footer/footer.html';
-    container.setAttribute('aria-busy','true');
-    try {
-      const res = await fetch(url, { credentials: 'same-origin' });
-      if (!res.ok) throw new Error(res.status + ' ' + res.statusText + ' @ ' + url);
-      const html = await res.text();
-      container.insertAdjacentHTML('beforeend', html);
-      // Nach dem Einfügen die echte Footer-Höhe messen und CSS-Variable setzen
-      const footerEl = container.querySelector('.site-footer') || container.firstElementChild;
-      if (footerEl) {
-        // Debounced setter with change guard to avoid layout churn
-        let rafId = null;
-        let lastHeight = null;
-        const setFooterHeight = () => {
-          const h = Math.ceil(footerEl.getBoundingClientRect().height);
-          if (h === lastHeight) return; // nothing changed
-          lastHeight = h;
-          document.documentElement.style.setProperty('--footer-height', h + 'px');
-        };
-        const scheduleSetFooterHeight = () => {
-          if (rafId !== null) return;
-          rafId = requestAnimationFrame(() => {
-            rafId = null;
-            setFooterHeight();
-          });
-        };
-        // Initial setzen
-        setFooterHeight();
-        // ResizeObserver für dynamische Änderung (debounced)
-        if (window.ResizeObserver) {
-          const ro = new ResizeObserver(_entries => {
-            // schedule once per frame
-            scheduleSetFooterHeight();
-          });
-          ro.observe(footerEl);
-        }
-        // MutationObserver für DOM-Änderungen innerhalb des Footers
-        const mo = new MutationObserver(() => setFooterHeight());
-        mo.observe(footerEl, { childList: true, subtree: true, characterData: true });
-      }
-      container.dataset.loaded = '1';
-    } catch (err) {
-      log.error('FooterLoader:', err);
-      container.dataset.loaded = 'error';
-    } finally {
-      container.removeAttribute('aria-busy');
-    }
+// Logger für Footer-spezifische Meldungen
+const log = createLogger ? createLogger('footer') : { 
+  error: console.error.bind(console),
+  warn: console.warn.bind(console),
+  info: (..._args) => {} // Silent in production
+};
+
+/**
+ * Initialisiert das Footer-System
+ */
+async function initializeFooter() {
+  const footerContainer = document.getElementById('footer-container');
+  
+  if (!footerContainer) {
+    log.warn('Footer container nicht gefunden');
+    return;
   }
 
-  if (document.readyState !== 'loading') loadFooter();
-  else document.addEventListener('DOMContentLoaded', loadFooter);
-})();
+  try {
+    await loadFooterContent(footerContainer);
+    updateCurrentYear();
+    setupFooterInteractions();
+    log.info('Footer erfolgreich geladen');
+  } catch (error) {
+    log.error('Footer-Initialisierung fehlgeschlagen:', error);
+    showFallbackFooter(footerContainer);
+  }
+}
+
+/**
+ * Lädt den Footer-Inhalt dynamisch
+ */
+async function loadFooterContent(container) {
+  const footerSrc = container.dataset.footerSrc || 
+                   container.getAttribute('data-footer-src') || 
+                   '/content/webentwicklung/footer/footer.html';
+
+  try {
+    const response = await fetch(footerSrc);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const footerHTML = await response.text();
+    container.innerHTML = footerHTML;
+    
+    // ARIA-Label für bessere Accessibility
+    const footer = container.querySelector('#site-footer');
+    if (footer && !footer.getAttribute('aria-label')) {
+      footer.setAttribute('aria-label', 'Website Footer mit Kontaktinformationen und Links');
+    }
+
+  } catch (error) {
+    log.error('Footer-Inhalt konnte nicht geladen werden:', error);
+    throw error;
+  }
+}
+
+/**
+ * Aktualisiert das aktuelle Jahr automatisch
+ */
+function updateCurrentYear() {
+  const yearElements = document.querySelectorAll('#current-year, #current-year-full');
+  const currentYear = new Date().getFullYear();
+  
+  yearElements.forEach(element => {
+    if (element && element.textContent !== String(currentYear)) {
+      element.textContent = currentYear;
+    }
+  });
+}
+
+/**
+ * Richtet Footer-Interaktionen ein
+ */
+function setupFooterInteractions() {
+  // Smooth Scrolling für interne Links im Footer
+  const footerLinks = document.querySelectorAll('#site-footer a[href^="#"]');
+  
+  footerLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const targetId = link.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+      
+      if (targetElement) {
+        e.preventDefault();
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+}
+
+/**
+ * Zeigt einen Fallback-Footer bei Fehlern
+ */
+function showFallbackFooter(container) {
+  const currentYear = new Date().getFullYear();
+  
+  const fallbackHTML = `
+    <footer id="site-footer" class="site-footer-fixed" role="contentinfo">
+      <div class="footer-minimized">
+        <p class="footer-copyright-minimal">
+          &copy; ${currentYear} 
+          <a href="https://abdulkerimsesli.de">Abdulkerim Sesli</a>. 
+          Alle Rechte vorbehalten.
+        </p>
+      </div>
+    </footer>
+  `;
+  
+  container.innerHTML = fallbackHTML;
+  log.info('Fallback-Footer angezeigt');
+}
+
+/**
+ * Öffentliche API für manuelle Aktualisierungen
+ */
+window.footerAPI = {
+  updateYear: updateCurrentYear,
+  reload: initializeFooter
+};
+
+// Footer automatisch initialisieren wenn DOM bereit ist
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeFooter);
+} else {
+  initializeFooter();
+}
+
+// Jahr jährlich automatisch aktualisieren (für Single Page Apps)
+setInterval(updateCurrentYear, 60000); // Jede Minute prüfen
+
+export { initializeFooter, updateCurrentYear };

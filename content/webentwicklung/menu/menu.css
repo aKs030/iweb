@@ -1,3 +1,18 @@
+/**
+ * Navigations-Menü Styles
+ * 
+ * Features:
+ * - Responsive Hamburger-Menü
+ * - FontAwesome Icons Integration
+ * - Google Fonts (Inter, Lobster, Dancing Script)
+ * - Submenu-Funktionalität
+ * - Elegante Typografie für Site-Logo
+ * - Mobile-optimiert
+ * 
+ * @author Abdulkerim Sesli
+ * @version 1.0.0
+ */
+
 @import url('https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Lobster&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;600&display=swap');
 

@@ -390,6 +390,9 @@
   >
     <div class="section-skeleton" aria-hidden="true"></div>
   </section>
+
+  <!-- Footer Trigger Zone - unsichtbare Zone für Footer-Expansion -->
+  <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
   </main>
 
 
@@ -406,9 +409,11 @@
   <!-- Haupt-Entry Point -->
   <script src="/content/webentwicklung/main.js" type="module"></script>
   <script type="module" src="/content/webentwicklung/menu/menu.js"></script>
-  <!-- Dynamischer Footer-Container (lädt /content/webentwicklung/footer/footer.html) -->
+  
+  <!-- Footer System -->
   <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
-  <script src="/content/webentwicklung/footer/load-footer.js" defer></script>
+  <script src="/content/webentwicklung/footer/load-footer.js" type="module"></script>
+  <script src="/content/webentwicklung/footer/footer-scroll-handler.js" type="module"></script>
 
 </body>
 </html>

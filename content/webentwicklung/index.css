@@ -1,3 +1,18 @@
+/**
+ * Hauptstyles für die Portfolio-Website
+ * 
+ * Features:
+ * - Responsive Design mit CSS Grid/Flexbox
+ * - Scroll-Snap Navigation zwischen Sektionen
+ * - Moderne Typografie mit Inter Font
+ * - Card-Komponenten mit Hover-Effekten
+ * - Dark Theme optimiert
+ * - Accessibility & Print-Styles
+ * 
+ * @author Abdulkerim Sesli
+ * @version 1.0.0
+ */
+
 /* Button Styles Import */
 @import 'buttons.css';
 
@@ -40,6 +55,43 @@ font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
   scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
   scroll-behavior: smooth;
+  padding-bottom: 60px; /* Platz für fixen Footer */
+  transition: padding-bottom 0.4s ease;
+}
+
+/* Footer-Expansion Zustand */
+body.footer-expanded {
+  padding-bottom: 350px; /* Mehr Platz für erweiterten Footer */
+}
+
+/* Footer Trigger Zone */
+.footer-trigger-zone {
+  height: 100vh; /* Eine Viewport-Höhe für ausreichend Scroll-Raum */
+  width: 100%;
+  pointer-events: none;
+  background: transparent;
+  scroll-snap-align: start; /* Ermöglicht Scroll zu dieser Zone */
+}
+
+/* Responsive Design für Footer-Padding */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 50px;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-bottom: 70px;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 280px;
+  }
 }
 
 
@@ -530,29 +582,15 @@ html {
 }
 
 /* ========================================
-   Hauptseite: Section-Header unsichtbar
+   Section-Header ausblenden für Hauptseite
 ======================================== */
-/* Alle section-header und section-subtitle in Hero-, Features- und About-Sektion ausblenden */
+/* Section-Header und Section-Subtitle für Hero, Features und About ausblenden */
 #hero .section-header,
 #hero .section-subtitle,
-.hero .section-header,
-.hero .section-subtitle,
-.section.hero .section-header,
-.section.hero .section-subtitle,
-/* Features-Sektion */
 #features .section-header,
 #features .section-subtitle,
-.features .section-header,
-.features .section-subtitle,
-.section.features .section-header,
-.section.features .section-subtitle,
-/* About-Sektion */
 #about .section-header,
-#about .section-subtitle,
-.about .section-header,
-.about .section-subtitle,
-.section.about .section-header,
-.section.about .section-subtitle {
+#about .section-subtitle {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

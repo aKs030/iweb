@@ -131,7 +131,6 @@ function initHeroAnimations() {
     if (!window.enhancedAnimationEngine) {
       window.enhancedAnimationEngine = new EnhancedAnimationEngine();
       window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
-      console.warn('✅ Enhanced Animation Engine initialized (hero)');
     } else {
       window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
     }

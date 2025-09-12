@@ -1,3 +1,17 @@
+/**
+ * Menü-System mit dynamischen Titeln
+ * 
+ * Features:
+ * - Dynamische Navigation mit Scroll-Detection
+ * - Section-header Elemente werden auf Hauptseite ausgeblendet
+ * - Responsive Hamburger-Menü
+ * - FontAwesome Icons und Google Fonts Integration
+ * - Accessibility-optimiert mit ARIA-Attributen
+ * 
+ * @author Abdulkerim Sesli
+ * @version 1.0.0
+ */
+
 import { createLogger } from '../utils/logger.js';
 const logMenu = createLogger('menu');
 
@@ -5,13 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuContainer = document.getElementById('menu-container');
   const yearEl = document.getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-  // Footer: kein Remote-Fetch, um 404s zu vermeiden; optional minimaler Fallback
-  const footerPlaceholder = document.getElementById('footer-placeholder');
-  if (footerPlaceholder) {
-    // Wenn du eine Footer-Datei hast, bitte Pfad hier eintragen und Fetch reaktivieren.
-    // footerPlaceholder.innerHTML = '<footer class="footer">&copy; <span id="current-year"></span> Abdulkerim Sesli</footer>';
-  }
 
   // Menü laden
   if (!menuContainer) {
@@ -139,74 +146,13 @@ function setSiteTitle() {
   // Initialisiere Scroll-Detection nur auf der Hauptseite
   if (path === '/' || path === '/index.html') {
     initializeScrollDetection();
-    
-    // Temporäre Debug-Funktion für Scroll Snap mit section-header (können Sie später entfernen)
-    window.debugScrollDetection = function() {
-      const sections = document.querySelectorAll('#hero.section, #features.section, #about.section');
-      const allSections = Array.from(document.querySelectorAll('main .section, .section'));
-      const activeSectionEl = document.querySelector('.section.section-active');
-      const siteTitleEl = document.getElementById('site-title');
-      const siteSubtitleEl = document.getElementById('site-subtitle');
-      
-      console.warn('=== SCROLL SNAP + SECTION HEADER DEBUG INFO ===');
-      console.warn('Current title:', siteTitleEl?.textContent);
-      console.warn('Current subtitle:', siteSubtitleEl?.textContent);
-      console.warn('Subtitle visible:', siteSubtitleEl?.classList.contains('show'));
-      console.warn('Active section element:', activeSectionEl?.id || 'none');
-      console.warn('Target sections found:', sections.length);
-      console.warn('All sections found:', allSections.length);
-      console.warn('Current scroll position:', window.scrollY);
-      console.warn('Viewport height:', window.innerHeight);
-      console.warn('Viewport center:', window.innerHeight * 0.5);
-      
-      // Zeige alle Sektionen mit ihrer Position und extrahierten Inhalten
-      allSections.forEach((section, index) => {
-        const rect = section.getBoundingClientRect();
-        const sectionCenter = rect.top + rect.height * 0.5;
-        const distanceFromCenter = Math.abs(sectionCenter - (window.innerHeight * 0.5));
-        const hasActiveClass = section.classList.contains('section-active');
-        const hasInViewClass = section.classList.contains('in-view');
-        
-        // Extrahiere section-header Informationen
-        const header = section.querySelector('.section-header');
-        const titleEl = header?.querySelector('.section-title, h1, h2, h3');
-        const subtitleEl = header?.querySelector('.section-subtitle');
-        const extractedTitle = titleEl?.textContent?.trim() || 'Nicht gefunden';
-        const extractedSubtitle = subtitleEl?.textContent?.trim() || 'Nicht gefunden';
-        
-        console.warn(`Section ${index} - ID: ${section.id}:`);
-        console.warn(`  - State: ${section.getAttribute('data-state')}`);
-        console.warn(`  - Height: ${section.offsetHeight}px`);
-        console.warn(`  - Top: ${rect.top}px (relative to viewport)`);
-        console.warn(`  - Center: ${sectionCenter}px (relative to viewport)`);
-        console.warn(`  - Distance from viewport center: ${distanceFromCenter}px`);
-        console.warn(`  - Has section-active: ${hasActiveClass}`);
-        console.warn(`  - Has in-view: ${hasInViewClass}`);
-        console.warn(`  - Has section-header: ${!!header}`);
-        console.warn(`  - Extracted title: "${extractedTitle}"`);
-        console.warn(`  - Extracted subtitle: "${extractedSubtitle}"`);
-        console.warn(`  - Classes: ${section.className}`);
-      });
-      
-      // Test snapSectionChange Event mit section-header
-      window.testSnapEvent = function(index) {
-        const section = allSections[index];
-        const detail = { index, id: section?.id || `section-${index}` };
-        window.dispatchEvent(new CustomEvent('snapSectionChange', { detail }));
-        
-        if (section) {
-          const { title, subtitle } = extractSectionInfo(section.id);
-          console.warn('Dispatched snapSectionChange event:', detail);
-          console.warn('Extracted info:', { title, subtitle });
-        }
-      };
-      console.warn('Use testSnapEvent(index) to manually trigger snap events with section-header extraction');
-    };
   }
 }
 
 /**
- * Extrahiert Titel und Untertitel aus einer Sektion
+ * Extrahiert Titel und Untertitel aus einer Sektion und versteckt section-header Elemente
+ * @param {string} sectionId - Die ID der Sektion
+ * @returns {Object} - Objekt mit title und subtitle
  */
 function extractSectionInfo(sectionId) {
   const fallbackTitleMap = {
@@ -218,47 +164,20 @@ function extractSectionInfo(sectionId) {
   const section = document.querySelector(`#${sectionId}`);
   if (!section) return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   
-  // Spezielle Behandlung für Hero-Sektion - immer nur "Startseite"
-  if (sectionId === 'hero') {
-    // Stelle sicher, dass keine section-header Elemente in der Hero-Sektion angezeigt werden
-    const heroSection = document.querySelector('#hero');
-    if (heroSection) {
-      const headers = heroSection.querySelectorAll('.section-header, .section-subtitle');
+  // Spezielle Behandlung für Hauptseiten-Sektionen - section-header ausblenden
+  if (['hero', 'features', 'about'].includes(sectionId)) {
+    const sectionElement = document.querySelector(`#${sectionId}`);
+    if (sectionElement) {
+      const headers = sectionElement.querySelectorAll('.section-header, .section-subtitle');
       headers.forEach(header => {
         header.style.display = 'none';
         header.style.visibility = 'hidden';
       });
     }
-    return { title: 'Startseite', subtitle: '' };
-  }
-
-  // Spezielle Behandlung für Features-Sektion - section-header ausblenden
-  if (sectionId === 'features') {
-    const featuresSection = document.querySelector('#features');
-    if (featuresSection) {
-      const headers = featuresSection.querySelectorAll('.section-header, .section-subtitle');
-      headers.forEach(header => {
-        header.style.display = 'none';
-        header.style.visibility = 'hidden';
-      });
-    }
-    return fallbackTitleMap[sectionId] || { title: 'Projekte', subtitle: '' };
-  }
-
-  // Spezielle Behandlung für About-Sektion - section-header ausblenden
-  if (sectionId === 'about') {
-    const aboutSection = document.querySelector('#about');
-    if (aboutSection) {
-      const headers = aboutSection.querySelectorAll('.section-header, .section-subtitle');
-      headers.forEach(header => {
-        header.style.display = 'none';
-        header.style.visibility = 'hidden';
-      });
-    }
-    return fallbackTitleMap[sectionId] || { title: 'Über mich', subtitle: '' };
+    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
   
-  // Suche nach section-header in der Sektion
+  // Für andere Sektionen: normale Extraktion aus section-header
   const header = section.querySelector('.section-header');
   if (!header) return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   

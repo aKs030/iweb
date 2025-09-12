@@ -19,7 +19,7 @@ document.addEventListener('hero:loaded', async () => {
       });
     }
   } catch (error) {
-    console.error('Failed to initialize TypeWriter:', error);
+    log.error('Failed to initialize TypeWriter:', error);
   }
   
   // Particles
