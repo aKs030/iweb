@@ -40,6 +40,8 @@
   /* Fonts */
   --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-script: 'Lobster', 'Dancing Script', cursive, serif;
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);

@@ -29,10 +29,6 @@ html, body {
 /* =======================
    Typography Base
    ======================= */
-:root {
-  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-script: 'Lobster', 'Dancing Script', cursive, serif;
-}
 
 .site-menu__list li,
 .site-menu__list li a,
