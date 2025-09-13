@@ -59,396 +59,49 @@
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  /* Simplified transition to prevent flash */
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  will-change: transform, opacity, box-shadow;
   
-  /* Stable base state - JS animation engine is excluded for cards */
+  /* Standard-Zustand: Sichtbar */
   opacity: 1;
   transform: translateY(0) scale(1);
   visibility: visible;
-  will-change: transform, opacity, box-shadow;
 }
 
-/* Snap-scroll animation initial states */
-.features-cards .card:not(.scroll-animated) {
-  transform: translateY(30px) scale(0.9);
+/* Versteckte Karten (vor Animation) */
+.features-cards .card.card-hidden {
   opacity: 0;
+  transform: translateY(20px) scale(0.95);
   transition: none;
+}
+
+/* Sichtbare Karten (nach Animation) */
+.features-cards .card.card-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* Smooth CSS fallback for reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .features-cards .card {
+  .features-cards .card,
+  .features-cards .card.card-hidden,
+  .features-cards .card.card-visible {
     transform: translateY(0) scale(1) !important;
     opacity: 1 !important;
     transition: none !important;
   }
 }
 
-/* Cards maintain consistent visibility since JS engine skips them */
-
-/* Shimmer effect for default cards (simplified) */
-.features-cards .card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
 /* Default card hover effects (simplified) */
 .features-cards .card:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(7, 161, 255, 0.4);
-  -webkit-backdrop-filter: blur(25px) saturate(1.4);
-  backdrop-filter: blur(25px) saturate(1.4);
   box-shadow: 
     0 16px 48px rgba(0, 0, 0, 0.4),
     0 0 40px rgba(7, 161, 255, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transform: translateY(-6px) scale(1.025);
-}
-
-.features-cards .card:hover::before {
-  left: 100%;
-}
-
-/* ========================================
-   Modern Card Variants - Einheitliche Animationen
-======================================== */
-
-/* Glass Morphism Card - Elegante Hover-Animation */
-.card-variant-glass {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  backdrop-filter: blur(20px) saturate(1.2);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all var(--transition-smooth), box-shadow var(--transition-elastic);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-variant-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left var(--transition-slow);
-}
-
-.card-variant-glass:hover::before {
-  left: 100%;
-}
-
-.card-variant-glass:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(7, 161, 255, 0.4);
-  -webkit-backdrop-filter: blur(25px) saturate(1.4);
-  backdrop-filter: blur(25px) saturate(1.4);
-  box-shadow: 
-    0 16px 48px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(7, 161, 255, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: var(--transform-hover-card-smooth);
-}
-
-/* Neomorphism Card - Sanfte Rotation */
-.card-variant-neomorphism {
-  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
-  border: none;
-  box-shadow: 
-    8px 8px 16px rgba(0, 0, 0, 0.8),
-    -8px -8px 16px rgba(30, 30, 30, 0.2);
-  transition: all var(--transition-smooth), transform var(--transition-elastic);
-  transform-origin: center;
-}
-
-.card-variant-neomorphism:hover {
-  background: linear-gradient(145deg, #1f1f1f, #141414);
-  box-shadow: 
-    12px 12px 24px rgba(0, 0, 0, 0.9),
-    -12px -12px 24px rgba(35, 35, 35, 0.3),
-    inset 2px 2px 6px rgba(0, 0, 0, 0.3);
-  transform: var(--transform-rotate-hover);
-}
-
-/* Gradient Border Card - Pulsing Glow */
-.card-variant-gradient {
-  position: relative;
-  background: var(--bg-card);
-  border: none;
-  transition: all var(--transition-smooth), box-shadow var(--transition-base);
-  animation: gradientGlow 4s ease-in-out infinite;
-}
-
-@keyframes gradientGlow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(7, 161, 255, 0.1);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(7, 161, 255, 0.2);
-  }
-}
-
-.card-variant-gradient::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 2px;
-  background: linear-gradient(135deg, 
-    var(--primary-color) 0%, 
-    rgba(7, 161, 255, 0.3) 50%, 
-    transparent 100%);
-  border-radius: inherit;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  transition: background var(--transition-base);
-}
-
-.card-variant-gradient:hover {
-  transform: var(--transform-hover-card-subtle);
-  animation: gradientGlowIntense 2s ease-in-out infinite;
-}
-
-@keyframes gradientGlowIntense {
-  0%, 100% {
-    box-shadow: 0 0 30px rgba(7, 161, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 50px rgba(7, 161, 255, 0.5);
-  }
-}
-
-.card-variant-gradient:hover::before {
-  background: linear-gradient(135deg, 
-    var(--primary-color) 0%, 
-    rgba(7, 161, 255, 0.8) 50%, 
-    var(--primary-light) 100%);
-}
-
-/* Minimal Clean Card - Floating Effect */
-.card-variant-minimal {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-xl);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  transition: all var(--transition-elastic);
-  position: relative;
-}
-
-.card-variant-minimal::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-  opacity: 0;
-  transition: opacity var(--transition-base);
-}
-
-.card-variant-minimal:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(7, 161, 255, 0.3);
-  transform: var(--transform-hover-card-smooth);
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(7, 161, 255, 0.2);
-}
-
-.card-variant-minimal:hover::after {
-  opacity: 1;
-}
-
-/* ========================================
-   Interactive Card Animations - Fixed Selectors
-======================================== */
-
-/* Focus states for accessibility */
-.features-cards .card:focus-visible {
-  outline: 2px solid #07a1ff;
-  outline-offset: 4px;
-  transform: translateY(-3px) scale(1.015);
-}
-
-/* Active state animations */
-.features-cards .card:active { 
-  transform: scale(0.98) translateY(2px); 
-}
-
-/* Responsive Layout */
-@media (max-width: 768px) {
-  .features-cards {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
-    align-items: stretch;
-  }
-  
-  .card {
-    padding: var(--spacing-md);
-  }
-  
-  .card-variant-glass,
-  .card-variant-neomorphism,
-  .card-variant-gradient,
-  .card-variant-minimal {
-    -webkit-backdrop-filter: blur(15px);
-    backdrop-filter: blur(15px);
-  }
-  
-  /* Reduced hover effects on mobile */
-  .features-cards .card:hover {
-    transform: translateY(-3px) scale(1.015);
-    animation: none;
-  }
-  
-  /* Disable shimmer effects on mobile for performance */
-  .features-cards .card:hover::before {
-    display: none;
-  }
-  
-  .card-variant-neomorphism {
-    box-shadow: 
-      4px 4px 8px rgba(0, 0, 0, 0.6),
-      -4px -4px 8px rgba(30, 30, 30, 0.1);
-  }
-}
-
-@media (max-width: 480px) {
-  .features-cards {
-    gap: var(--spacing-sm);
-    align-items: stretch;
-    max-height: 100vh;
-    overflow-y: auto;
-    box-sizing: border-box;
-  }
-  
-  .card {
-    padding: var(--spacing-sm);
-    height: auto;
-    min-height: 0;
-    max-height: 80vh;
-    overflow: auto;
-    flex-shrink: 1;
-    box-sizing: border-box;
-  }
-  
-  .card .icon-wrapper {
-    width: 45px;
-    height: 45px;
-    font-size: 1.8rem;
-  }
-  
-  .card-title {
-    font-size: 1.1rem;
-    margin-bottom: var(--spacing-xs);
-  }
-  
-  .card-text {
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-}
-
-@media (max-width: 320px) {
-  .card {
-    padding: calc(var(--spacing-sm) * 0.8);
-    max-height: 75vh;
-    overflow: auto;
-    flex-shrink: 1;
-    box-sizing: border-box;
-  }
-  
-  .card .icon-wrapper {
-    width: 40px;
-    height: 40px;
-    font-size: 1.6rem;
-  }
-  
-  .card-title {
-    font-size: 1rem;
-  }
-  
-  .card-text {
-    font-size: 0.85rem;
-  }
-}
-
-/* Dark Mode Optimizations */
-@media (prefers-color-scheme: dark) {
-  .card-variant-glass {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-  
-  .card-variant-minimal {
-    background: rgba(255, 255, 255, 0.01);
-    border-color: rgba(255, 255, 255, 0.05);
-  }
-}
-
-/* Performance & Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  /* Disable hover transforms and animations */
-  .features-cards .card {
-    transition: opacity 0.2s ease only;
-  }
-  
-  /* Simplified hover states */
-  .features-cards .card:hover {
-    transform: none;
-    opacity: 0.9;
-  }
-  
-  /* Disable shimmer effects */
-  .features-cards .card::before {
-    display: none;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .features-cards {
-    display: block;
-  }
-  
-  .card {
-    break-inside: avoid;
-    margin-bottom: var(--spacing-md);
-    box-shadow: none;
-    border: 1px solid #ccc;
-  }
-  
-  .card:hover {
-    transform: none;
-    box-shadow: none;
-  }
-}
-
-/* Mobile Animation Optimierung: weniger intensive, schnellere Animationen */
-@media (max-width: 600px) {
-  .features-cards .card,
-  .features-cards .card:not(.scroll-animated) {
-    transition-duration: 0.3s !important;
-    transition-property: opacity, transform !important;
-    will-change: opacity, transform;
-    transform: translateY(10px) scale(0.98);
-  }
-  .features-cards .card {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
 }

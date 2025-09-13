@@ -508,7 +508,7 @@ class EnhancedAnimationEngine {
         this.unobserveElement(element);
       });
       
-      // Re-scan nach Reset
+      // Re-scan nach Reset mit längerem Delay um Race Conditions zu vermeiden
       setTimeout(() => {
         this.scanElement(section);
         elements.forEach(element => {
@@ -516,7 +516,7 @@ class EnhancedAnimationEngine {
             this.observeElement(element);
           }
         });
-      }, 10);
+      }, 50); // Erhöht von 10ms auf 50ms
     } catch (error) {
       console.warn('resetSection failed:', error);
     }

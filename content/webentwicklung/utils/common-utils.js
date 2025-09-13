@@ -43,8 +43,6 @@ export function getElementById(id, useCache = true) {
   return element;
 }
 
-// prefersReducedMotion entfernt – bitte isReducedMotion() aus animation-utils.js verwenden!
-
 // --- Timer Utilities ---
 export class TimerManager {
   constructor() { this.timers = new Set(); }

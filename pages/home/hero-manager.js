@@ -119,7 +119,7 @@ const ParticlesManager = (() => {
       log.warn('Particle canvas not found');
       return () => {};
     }
-  return _initParticles({ getElement, throttle, checkReducedMotion: isReducedMotion });
+    return _initParticles({ getElement, throttle, checkReducedMotion: isReducedMotion });
   };
   return { initParticles };
 })();

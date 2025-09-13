@@ -64,10 +64,15 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   }
 
   function prepareAnimationReset(section) {
+    // SnapScroll WeakSet für diese Section clearen
+    if (window.snapScrollInstance && typeof window.snapScrollInstance.clearSectionFromAnimated === 'function') {
+      window.snapScrollInstance.clearSectionFromAnimated(section);
+    }
+    
     if (window.enhancedAnimationEngine?.resetSection) {
       window.enhancedAnimationEngine.resetSection(section);
     } else {
-      // Nutze WeakSet für Performance, falls viele Elemente
+      // Fallback: manuell reset
       const animatedElements = section.querySelectorAll('[data-animation], .animate, .animated');
       animatedElements.forEach(el => {
         el.classList.remove('animate', 'animated');
@@ -92,6 +97,18 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     return live;
   }
 
+  function performPostAnimationActions(section) {
+    triggerAnimationEngineRescan();
+    section.dispatchEvent(new CustomEvent('template:mounted', {
+      detail: { templateId: section.dataset.currentTemplate },
+      bubbles: true
+    }));
+    // SnapScroll rescan nach Animation Engine
+    if (window.snapScrollInstance?.rescan) {
+      later(() => window.snapScrollInstance.rescan(), 10);
+    }
+  }
+
   function applyInAnimation(section, ANIM_IN, EASE, done) {
     section.style.opacity = '0';
     section.style.transform = 'translateY(10px)';
@@ -99,13 +116,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     doubleRAF(() => {
       section.style.opacity = '1';
       section.style.transform = 'translateY(0)';
-      later(() => {
-        triggerAnimationEngineRescan();
-        section.dispatchEvent(new CustomEvent('template:mounted', {
-          detail: { templateId: section.dataset.currentTemplate },
-          bubbles: true
-        }));
-      }, 50);
+      later(() => performPostAnimationActions(section), 50);
     });
     later(done, ANIM_IN);
   }

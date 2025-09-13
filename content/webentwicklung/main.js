@@ -3,7 +3,6 @@ import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
 import { createLogger, setGlobalLogLevel } from './utils/logger.js';
 import { EVENTS, fire } from './utils/events.js';
 import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
-import getSnapScrollInstance from './animations/snap-scroll-animations.js';
 
 // ===== Globale Konfiguration =====
 // Dynamisches Log-Level: URL Param ?log=debug oder localStorage LOG_LEVEL
@@ -21,16 +20,6 @@ import getSnapScrollInstance from './animations/snap-scroll-animations.js';
 
 const log = createLogger('main');
 
-// === Mobile Performance Optimierung ===
-const isMobile = window.matchMedia('(max-width: 600px), (pointer: coarse)').matches;
-if (isMobile && window.enhancedAnimationEngine) {
-  try {
-    window.enhancedAnimationEngine.options.maxAnimations = 3;
-    window.enhancedAnimationEngine.setRepeatOnScroll(false);
-    log.info('Mobile Performance Mode: Animationen limitiert');
-  } catch { /* ignore if engine not ready */ }
-}
-
 // Hinweis: Für responsive Bilder sollten <img> immer loading="lazy" und srcset/sizes nutzen!
 
 // ===== Accessibility Utilities =====
@@ -45,8 +34,6 @@ function announce(message, { assertive = false } = {}) {
     /* Fail silently */
   }
 }
-// Snap Scroll Animations jetzt ausgelagert -> ./animations/snap-scroll-animations.js
-const _SnapScrollAnimations = getSnapScrollInstance();
 
 window.announce = window.announce || announce;
 // ===== Section Loader Module =====
@@ -295,15 +282,32 @@ function loadMenuAssets() {
       log.debug('Enhanced Animation Engine initialized');
     }
 
+    // === Mobile Performance Optimierung (nach Engine-Init) ===
+    const isMobile = window.matchMedia('(max-width: 600px), (pointer: coarse)').matches;
+    if (isMobile && window.enhancedAnimationEngine) {
+      try {
+        window.enhancedAnimationEngine.options.maxAnimations = 3;
+        window.enhancedAnimationEngine.options.threshold = 0.1; // Niedrigerer Threshold für Mobile
+        window.enhancedAnimationEngine.setRepeatOnScroll(false);
+        log.info('Mobile Performance Mode: Animationen optimiert', { threshold: 0.1, maxAnimations: 3 });
+      } catch (error) {
+        log.warn('Mobile Optimization failed:', error);
+      }
+    }
+
     // Home/Hero Feature-Bundle initialisieren
     initHeroFeatureBundle();
 
-    // Snap-Scroll Animationen initialisieren (aus ausgelagertem Modul)
-    _SnapScrollAnimations.init();
+    // EINFACHE Snap-Scroll Animationen initialisieren
+    const { default: SnapScrollAnimations } = await import('./animations/snap-scroll-animations.js');
+    window.snapScrollAnimations = new SnapScrollAnimations();
 
     // Re-scan nach Template-Loading
     document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
-      setTimeout(() => _SnapScrollAnimations.rescan(), 120);
+      // Bei der einfachen Version: neue Karten beobachten
+      if (window.snapScrollAnimations?.observeCards) {
+        setTimeout(() => window.snapScrollAnimations.observeCards(), 120);
+      }
     });
 
     // Menü-Assets laden
