@@ -18,7 +18,20 @@ import getSnapScrollInstance from './animations/snap-scroll-animations.js';
     setGlobalLogLevel('warn');
   }
 })();
+
 const log = createLogger('main');
+
+// === Mobile Performance Optimierung ===
+const isMobile = window.matchMedia('(max-width: 600px), (pointer: coarse)').matches;
+if (isMobile && window.enhancedAnimationEngine) {
+  try {
+    window.enhancedAnimationEngine.options.maxAnimations = 3;
+    window.enhancedAnimationEngine.setRepeatOnScroll(false);
+    log.info('Mobile Performance Mode: Animationen limitiert');
+  } catch { /* ignore if engine not ready */ }
+}
+
+// Hinweis: Für responsive Bilder sollten <img> immer loading="lazy" und srcset/sizes nutzen!
 
 // ===== Accessibility Utilities =====
 function announce(message, { assertive = false } = {}) {

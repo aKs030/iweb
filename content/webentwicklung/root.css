@@ -45,7 +45,25 @@
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);
-  --font-size-p: 1rem;
+  --font-size-p: 1.08rem; /* Größer für mobile Lesbarkeit */
+  --line-height-base: 1.7;
+/* Mobile Accessibility: Grundschrift und Zeilenhöhe auf kleinen Geräten erhöhen */
+@media (max-width: 480px) {
+  :root {
+    --font-size-p: 1.13rem;
+    --line-height-base: 1.85;
+  }
+}
+/* Fokus-Indikator für alle interaktiven Elemente */
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  background: rgba(0, 119, 255, 0.12);
+  border-radius: 6px;
+  transition: box-shadow .15s, outline-color .15s;
+}
+/* Hinweis: Für Buttons, Menüs und interaktive Komponenten sollten passende ARIA-Attribute (z.B. aria-label, aria-expanded, aria-controls) in HTML/JS gesetzt werden! */
   --font-size-h2: 1.5rem;
 
   /* Animation & Transitions - Optimiert */

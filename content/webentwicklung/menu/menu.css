@@ -1,3 +1,5 @@
+  user-select: none;
+  -webkit-user-select: none;
 /**
  * Navigations-Menü Styles
  * 
@@ -209,11 +211,21 @@ html, body {
   position: relative;
   display: flex;
   align-items: center;
-  transition: color 0.3s;
-  padding: clamp(0.2rem, 0.7vw, 0.45rem) clamp(0.6rem, 1vw, 1.1rem);
-  min-height: 36px;
+  transition: color 0.3s, background 0.2s;
+  padding: clamp(0.4rem, 1vw, 0.7rem) clamp(0.9rem, 2vw, 1.3rem);
+  min-height: 44px;
   font-size: clamp(0.93rem, 2vw, 1.09rem);
   letter-spacing: -0.01em;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(9,139,255,0.13);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Touch-optimierte :active-Styles */
+.site-menu__list li a:active {
+  background: rgba(9,139,255,0.10);
+  color: var(--color-link);
 }
 .site-menu__list li a::after {
   content: "";
@@ -356,9 +368,10 @@ main { margin-top: var(--header-height, 72px); padding: 1rem; }
     padding: 1.3rem 1.4rem;
   }
   .site-menu__list li a {
-    min-height: 34px;
+    min-height: 42px;
     font-size: 1rem;
-    padding: 0.3rem 0.4rem;
+    padding: 0.5rem 0.7rem;
+    touch-action: manipulation;
   }
   .site-menu__list .submenu {
     display: none;

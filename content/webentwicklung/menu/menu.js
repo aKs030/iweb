@@ -112,6 +112,36 @@ function initializeSubmenuLinks() {
       btn.setAttribute('aria-expanded', String(!open));
     });
   });
+
+  // Touch-optimiertes Submenü: Erster Tap öffnet, zweiter Tap folgt Link
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (isTouch) {
+    document.querySelectorAll('.has-submenu > a').forEach(link => {
+      let tapped = false;
+      link.addEventListener('touchend', function(e) {
+        const parent = link.parentElement;
+        if (!parent.classList.contains('open')) {
+          e.preventDefault();
+          // Schließe andere offene Submenüs
+          document.querySelectorAll('.has-submenu.open').forEach(el => {
+            if (el !== parent) el.classList.remove('open');
+          });
+          parent.classList.add('open');
+          tapped = true;
+          setTimeout(() => { tapped = false; }, 600);
+        } else if (!tapped) {
+          // Zweiter Tap: Link folgen
+          tapped = false;
+        }
+      }, { passive: false });
+    });
+    // Schließe Submenüs beim Klick außerhalb
+    document.addEventListener('touchstart', function(e) {
+      if (!e.target.closest('.site-menu')) {
+        document.querySelectorAll('.has-submenu.open').forEach(el => el.classList.remove('open'));
+      }
+    });
+  }
 }
 
 /**

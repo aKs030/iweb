@@ -118,11 +118,34 @@ body {
 ======================================== */
 
 
+
+/* Mobile-first Container: Maximale Flexibilität und Safe-Area Support */
 .container {
   width: 100%;
   max-width: 900px;
   margin-inline: auto;
-  padding-inline: clamp(1rem, 4vw, 1.5rem);
+  padding-inline: max(clamp(0.5rem, 4vw, 1.5rem), env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .container {
+    max-width: 100vw;
+    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
+  }
+}
+/* Zusätzlicher Breakpoint für sehr kleine Geräte */
+@media (max-width: 375px) {
+  html { font-size: 14px; }
+  .container { padding-inline: max(0.25rem, env(safe-area-inset-left, 0px)); }
+  .section { padding: var(--spacing-lg) 0; }
+}
+/* Extra: Footer und Header Safe-Area auf Mobile */
+@media (max-width: 480px) {
+  body {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+  }
 }
 
 /* ...entfernt, da am Ende der Datei die Scroll-Snap-Variante steht... */
