@@ -131,23 +131,141 @@
   display: flex;
   gap: var(--spacing-md, 1rem);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .footer-social-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.5rem);
   color: var(--text-muted, #888888);
   text-decoration: none;
   font-size: 0.9rem;
+  font-weight: 500;
   transition: all var(--transition-fast, 0.2s ease);
-  padding: max(var(--spacing-sm, 0.75rem), 0.9rem);
-  border-radius: 4px;
+  padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
+  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-social-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left var(--transition-base, 0.3s ease);
+}
+
+.footer-social-link:hover::before,
+.footer-social-link:focus::before {
+  left: 100%;
 }
 
 .footer-social-link:hover,
 .footer-social-link:focus {
   color: var(--primary-color, #007AFF);
   border-color: var(--primary-color, #007AFF);
-  transform: var(--transform-lift-sm);
+  background: rgba(0, 122, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+/* GitHub spezifische Hover-Farbe */
+.footer-social-link[href*="github"]:hover,
+.footer-social-link[href*="github"]:focus {
+  color: #f0f6fc;
+  border-color: #30363d;
+  background: rgba(48, 54, 61, 0.8);
+  box-shadow: 0 4px 12px rgba(48, 54, 61, 0.3);
+}
+
+/* LinkedIn spezifische Hover-Farbe */
+.footer-social-link[href*="linkedin"]:hover,
+.footer-social-link[href*="linkedin"]:focus {
+  color: #0077b5;
+  border-color: #0077b5;
+  background: rgba(0, 119, 181, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 119, 181, 0.2);
+}
+
+/* Instagram spezifische Hover-Farbe */
+.footer-social-link[href*="instagram"]:hover,
+.footer-social-link[href*="instagram"]:focus {
+  color: #e4405f;
+  border-color: #e4405f;
+  background: linear-gradient(45deg, rgba(228, 64, 95, 0.1), rgba(253, 29, 29, 0.1));
+  box-shadow: 0 4px 12px rgba(228, 64, 95, 0.2);
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: all var(--transition-fast, 0.2s ease);
+  opacity: 0.9;
+}
+
+.footer-social-link:hover .social-icon,
+.footer-social-link:focus .social-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.social-text {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all var(--transition-fast, 0.2s ease);
+}
+
+/* Accessibility und Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .footer-social-link,
+  .footer-social-link::before,
+  .social-icon,
+  .social-text {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .footer-social-link:hover,
+  .footer-social-link:focus {
+    transform: none;
+  }
+  
+  .footer-social-link:hover .social-icon,
+  .footer-social-link:focus .social-icon {
+    transform: none;
+  }
+}
+
+/* Focus-Styles für bessere Accessibility */
+.footer-social-link:focus-visible {
+  outline: 2px solid var(--primary-color, #007AFF);
+  outline-offset: 2px;
+}
+
+/* Dark Theme Anpassungen */
+@media (prefers-color-scheme: dark) {
+  .footer-social-link {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .footer-social-link:hover,
+  .footer-social-link:focus {
+    background: rgba(255, 255, 255, 0.08);
+  }
 }
 
 .footer-copyright-full {
@@ -460,6 +578,25 @@
     flex-direction: column;
     gap: var(--spacing-xs, 0.5rem);
   }
+
+  /* Social Icons auf mobilen Geräten anpassen */
+  .footer-social-links {
+    gap: var(--spacing-xs, 0.5rem);
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .footer-social-link {
+    padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem);
+    font-size: 0.85rem;
+    min-width: 44px; /* Touch-Target Größe */
+    justify-content: center;
+  }
+  
+  .social-icon {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 /* Responsive Design */
@@ -540,8 +677,40 @@
   .footer-main-grid {
     gap: var(--spacing-md, 1rem);
   }
+  
+  /* Social Icons auf sehr kleinen Bildschirmen optimieren */
   .footer-social-links {
     justify-content: center;
+    gap: var(--spacing-xs, 0.25rem);
+    flex-wrap: wrap;
+  }
+  
+  .footer-social-link {
+    padding: var(--spacing-xs, 0.5rem);
+    font-size: 0.8rem;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--spacing-xs, 0.25rem);
+  }
+  
+  .social-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .social-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  
+  /* Hover-Effekte für Touch-Geräte anpassen */
+  .footer-social-link:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
   }
   
   /* Maximierter Footer bei kleinen Bildschirmen */
