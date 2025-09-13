@@ -64,7 +64,5 @@ export const heroObserverConfig = {
 };
 
 // Hilfsfunktion um modulare Zusammenstellung zu erleichtern (optional)
-export function getHeroConfig(){
-  return { greetings, typewriterConfig, heroObserverConfig };
-}
+// getHeroConfig entfernt (wurde nicht verwendet; direkte Exporte reichen)
 

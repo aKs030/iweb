@@ -159,15 +159,7 @@ export default class TypeWriter {
   }
 }
 
-// TypeWriter Optionen 
-export const typewriterConfig = {
-  wait: 2400,
-  typeSpeed: 85,
-  deleteSpeed: 40,
-  shuffle: true,
-  loop: true,
-  smartBreaks: true
-};
+// Ehemalige exportierte typewriterConfig entfernt (Konfiguration stammt zentral aus hero-data.js)
 
 // Initialisierungsfunktion
 export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer, quotes, TypeWriterClass }) {

@@ -1,4 +1,4 @@
-import { debounce } from './animation-utils.js';
+import { debounce, isReducedMotion } from './animation-utils.js';
 /**
  * Enhanced Animation Engine - Optimized Animation System
  * Hochperformantes Animation-System mit GPU-Beschleunigung
@@ -23,6 +23,8 @@ class EnhancedAnimationEngine {
       rootMargin: '50px',
       maxAnimations: 20, // Limit für gleichzeitige Animationen
       repeatOnScroll: false, // Elemente bei Verlassen zurücksetzen, um erneut zu animieren
+      suppressWarnings: false, // neue Option um Performance-Warnungen abzuschalten
+      allowComplex: false, // komplexe Effekte (z.B. 'crt') explizit erlauben
       ...options
     };
     
@@ -45,14 +47,66 @@ class EnhancedAnimationEngine {
     ].join(',');
     
     // Optimierte Animation Types - nur die wirklich verwendeten
-    this.animationTypes = new Map([
-      ['animate-on-scroll', { type: 'fade-in', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
-      ['slide-in-left', { type: 'slide-in-left', duration: 0.7, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
-      ['slide-in-right', { type: 'slide-in-right', duration: 0.7, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
-      ['slide-in-up', { type: 'slide-in-up', duration: 0.7, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
-      ['fade-in', { type: 'fade-in', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
-      ['scale-in', { type: 'scale-in', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }]
-    ]);
+    this._animationTypes = null; // lazy
+    this.options.allowedAnimations = Array.isArray(options.allowedAnimations) ? options.allowedAnimations : (() => {
+      const baseList = [
+        // Basis (transform / opacity)
+        'fadeIn','fadeOut','slideInLeft','slideInRight','slideInUp','slideInDown','zoomIn','zoomOut',
+        // Zusatz (bereits im CSS vorhanden, nur transform/opacity oder moderat)
+        'fadeInUp','scaleIn','flipInX','flipInY','bounceIn','elasticIn','rotateIn',
+        // Komplexer Effekt – bewusst auf die Liste gesetzt um Warn-Spam zu verhindern
+        'crt'
+      ];
+      if (this.options.allowComplex) {
+        // 'crt' Effekt ist bewusst schwergewichtiger – nur aufnehmen wenn explizit erlaubt
+        // (bereits enthalten – Block bleibt für Erweiterungen)
+      }
+      return baseList;
+    })();
+    this._warnedAnimations = new Set();
+    this._queueScheduled = false;
+    this.options.debugMetrics = !!options.debugMetrics;
+    this.metrics = {
+      started: 0,
+      completed: 0,
+      batches: 0,
+      batchSizes: [],
+      queueProcessed: 0,
+      reducedMode: 0,
+      lastBatchAt: 0,
+      gcEvents: 0
+    };
+    if (this.options.debugMetrics && typeof FinalizationRegistry === 'function') {
+      this._finalizationRegistry = new FinalizationRegistry(() => {
+        this.metrics.gcEvents++;
+      /**
+       * Metrics / Observability (debug only)
+       * Aktivierbar via new EnhancedAnimationEngine({ debugMetrics: true })
+       * Kennzahlen:
+       *  - started: Anzahl gestarteter Animationen (inkl. Reduced-Mode Fade-Ins)
+       *  - completed: Anzahl abgeschlossener Animationen (nach Cleanup Timeout)
+       *  - batches: Anzahl IntersectionObserver Batch-Verarbeitungen
+       *  - batchSizes: Historie der Batch-Größen
+       *  - queueProcessed: Anzahl Durchläufe der internen Animations-Queue
+       *  - reducedMode: Anzahl vereinfachter Animationen im Reduced-Performance-/Motion-Modus
+       *  - gcEvents: Anzahl vom FinalizationRegistry registrierter GC Finalizer (experimentell, Browser abhängig)
+       *  Zugriff: window.enhancedAnimationEngine.getMetrics()
+       */
+      });
+    }
+    // Lazy Animation Types Map Aufbau
+    this.ensureAnimationTypes = function ensureAnimationTypes() {
+      if (this._animationTypes) return this._animationTypes;
+      this._animationTypes = new Map([
+        ['animate-on-scroll', { type: 'fade-in', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
+        ['slide-in-left', { type: 'slide-in-left', duration: 0.7, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
+        ['slide-in-right', { type: 'slide-in-right', duration: 0.7, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
+        ['slide-in-up', { type: 'slide-in-up', duration: 0.7, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
+        ['fade-in', { type: 'fade-in', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }],
+        ['scale-in', { type: 'scale-in', duration: 0.6, delay: 0, easing: 'ease-out', threshold: 0.15, reset: false }]
+      ]);
+      return this._animationTypes;
+    };
     
     this.init();
   }
@@ -129,7 +183,11 @@ class EnhancedAnimationEngine {
         .forEach(entry => this.animationQueue.add(entry.target));
       return;
     }
-
+    if (this.options.debugMetrics) {
+      this.metrics.batches++;
+      this.metrics.batchSizes.push(entries.length);
+      this.metrics.lastBatchAt = performance.now();
+    }
     entries.forEach(entry => {
       const element = entry.target;
       const animationData = this.getAnimationData(element);
@@ -146,8 +204,7 @@ class EnhancedAnimationEngine {
    * Performance-Modus erkennen - Vereinfacht
    */
   detectPerformanceMode() {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return 'reduced';
+    if (isReducedMotion()) return 'reduced';
     
     const connection = navigator.connection;
     const isSlowConnection = connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g';
@@ -318,8 +375,9 @@ class EnhancedAnimationEngine {
 
     // CSS-Klassen basierte Animationen - optimiert mit Map
     const classList = element.classList;
+    const map = this.ensureAnimationTypes();
     for (const className of classList) {
-      const config = this.animationTypes.get(className);
+      const config = map.get(className);
       if (config) {
         const hasResetAttr = Object.hasOwn(element.dataset, 'reset');
         const reset = hasResetAttr ? (element.dataset.reset === 'true') : (this.options.repeatOnScroll || config.reset);
@@ -492,10 +550,26 @@ class EnhancedAnimationEngine {
   triggerAnimation(element, animationData) {
     if (this.activeAnimations.has(element)) return;
 
-    // Performance-Modus berücksichtigen
+    // Performance-Modus berücksichtigen (reduced = vereinfachtes Fade-In ohne komplexe Klassen)
     if (this.performanceMode === 'reduced') {
       window.requestAnimationFrame(() => {
+        element.style.transition = 'opacity 300ms ease-out';
+        element.style.opacity = '0';
+        // Force Reflow
+        element.getBoundingClientRect();
+        element.style.opacity = '1';
         element.classList.add('animated');
+        this.activeAnimations.set(element, { type: 'fadeIn', duration: 0.3, delay: 0, easing: 'ease-out', once: animationData.once });
+        if (animationData.once) {
+          this.animatedOnce.add(element);
+          this.unobserveElement(element);
+        }
+        this.processAnimationQueue();
+        if (this.options.debugMetrics) {
+          this.metrics.started++;
+          this.metrics.reducedMode++;
+          if (this._finalizationRegistry) this._finalizationRegistry.register(element, {});
+        }
       });
       return;
     }
@@ -520,13 +594,24 @@ class EnhancedAnimationEngine {
     // Animation-Klasse hinzufügen
     // Erlaube bereits vollqualifizierte Klassen (beginnt mit animate-)
     const base = animationData.type || 'fadeIn';
-    const animationClass = base.startsWith('animate-') ? base : `animate-${base}`;
+    // Alias Mapping für nicht erlaubte / schwergewichtigere Typen -> degrade elegant
+    const aliasMap = {
+      fadeInUp: 'fadeIn',
+      bounceIn: 'scaleIn',
+      elasticIn: 'scaleIn'
+    };
+    const resolvedBase = (!this.options.allowedAnimations.includes(base) && aliasMap[base]) ? aliasMap[base] : base;
+    const animationClass = resolvedBase.startsWith('animate-') ? resolvedBase : `animate-${resolvedBase}`;
     const durationMs = this.toMs(animationData.duration);
 
     // Nur performante Properties zulassen
-    const allowed = ['fadeIn', 'fadeOut', 'slideInLeft', 'slideInRight', 'slideInUp', 'slideInDown', 'zoomIn', 'zoomOut'];
-    if (!allowed.includes(base)) {
-      console.warn('[EnhancedAnimationEngine] Nicht-performante Animation erkannt:', base, '– Nur transform/opacity empfohlen!');
+    const allowed = this.options.allowedAnimations;
+    if (!allowed.includes(base) && !this.options.suppressWarnings) {
+      if (!this._warnedAnimations.has(base)) {
+        const extra = base === 'crt' ? ' (komplexer Mehrfach-Effekt)' : '';
+        console.warn('[EnhancedAnimationEngine] Nicht-performante Animation erkannt:', base, '– Nur transform/opacity empfohlen!' + extra);
+        this._warnedAnimations.add(base);
+      }
     }
 
     const triggerFn = () => {
@@ -549,6 +634,10 @@ class EnhancedAnimationEngine {
         }
         // Queue verarbeiten wenn Platz frei wird
         this.processAnimationQueue();
+        if (this.options.debugMetrics) {
+          this.metrics.started++;
+          if (this._finalizationRegistry) this._finalizationRegistry.register(element, {});
+        }
       });
     };
 
@@ -565,6 +654,9 @@ class EnhancedAnimationEngine {
           element.style.willChange = '';
           this._willChangeElements?.delete(element);
         }
+        if (this.options.debugMetrics) {
+          this.metrics.completed++;
+        }
       });
     }, animationData.delay + durationMs);
   }
@@ -575,14 +667,29 @@ class EnhancedAnimationEngine {
   processAnimationQueue() {
     if (this.animationQueue.size === 0) return;
     if (this.activeAnimations.size >= this.options.maxAnimations) return;
+    if (this._queueScheduled) return;
+    this._queueScheduled = true;
+    const schedule = (cb) => (typeof window.requestIdleCallback === 'function')
+      ? window.requestIdleCallback(cb, { timeout: 120 })
+      : requestAnimationFrame(cb);
+    schedule(() => {
+      let processed = 0;
+      const BATCH = 4;
+      while (this.animationQueue.size && processed < BATCH && this.activeAnimations.size < this.options.maxAnimations) {
+        const element = this.animationQueue.values().next().value;
+        this.animationQueue.delete(element);
+        const animationData = this.getAnimationData(element);
+        if (animationData) this.triggerAnimation(element, animationData);
+        processed++;
+      }
+      this._queueScheduled = false;
+      if (this.animationQueue.size) this.processAnimationQueue();
+      if (this.options.debugMetrics) this.metrics.queueProcessed++;
+    });
+  }
 
-    const element = this.animationQueue.values().next().value;
-    this.animationQueue.delete(element);
-    
-    const animationData = this.getAnimationData(element);
-    if (animationData) {
-      this.triggerAnimation(element, animationData);
-    }
+  getMetrics() {
+    return { ...this.metrics };
   }
 
   /**

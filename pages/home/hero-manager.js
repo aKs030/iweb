@@ -246,4 +246,3 @@ export function initHeroFeatureBundle() {
   setTimeout(initHeroAnimations, 420);
 }
 
-export const HeroAPI = HeroManager;

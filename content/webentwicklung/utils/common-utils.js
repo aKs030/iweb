@@ -108,13 +108,4 @@ export function randomFloat(min, max) {
 }
 
 // ===== Export für Legacy-Kompatibilität =====
-export default {
-  throttle,
-  shuffle,
-  getElementById,
-  prefersReducedMotion,
-  TimerManager,
-  clamp,
-  randomInt,
-  randomFloat
-};
+// Kein Default-Export mehr nötig (wurde im Projekt nicht genutzt)

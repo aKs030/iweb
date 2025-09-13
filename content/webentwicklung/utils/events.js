@@ -64,5 +64,3 @@ export function on(type, handler, options, target = document) {
   realTarget.addEventListener(type, handler, opts);
   return () => realTarget.removeEventListener(type, handler, opts);
 }
-
-export default EVENTS;

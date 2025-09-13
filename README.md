@@ -161,3 +161,27 @@ fonts.gstatic.com
 © 2025 Abdulkerim Sesli. Alle Rechte vorbehalten.
 
 **Built with ❤️ in Berlin-Tegel**
+
+---
+
+## ♻️ Änderungen & Wartung (Cleanup Log)
+
+### Entfernte / Konsolidierte Module
+- `particle-config.js` wurde entfernt (Datei ist nun leer) – frühere konfigurierbare Partikelparameter waren ungenutzt und führten zu totem Code. Das Partikelsystem nutzt aktuell feste Logik in `particle-system.js`. Bei künftigem Bedarf kann eine neue, fokussierte Config-Lösung reintroduziert werden.
+- Doppelter `typewriterConfig` Export eliminiert – einzig gültige Konfiguration liegt jetzt in `pages/home/hero-data.js` und wird dynamisch von `TypeWriter.js` geladen.
+- Unbenutzte Exporte (`HeroAPI`, `getHeroConfig`, Default-Exports einiger Utility-Module) entfernt um Tree-Shaking-/Lesbarkeitspotenzial zu erhöhen.
+
+### Motion / Accessibility Vereinheitlichung
+- Redundante Abfrage von *prefers-reduced-motion* konsolidiert: Alle Animationen (inkl. EnhancedAnimationEngine & Card-Stagger) verwenden jetzt zentral `prefersReducedMotion()` → einheitliches Caching & konsistente Entscheidungen.
+- `isReducedMotion()` in `animation-utils.js` ist jetzt nur ein Wrapper für das zentrale Utility (Backward-Kompatibilität bei internem Refactoring).
+
+### Reduced Performance Mode
+- Im Performance-Modus "reduced" werden komplexere Sequenzen vereinfacht. Weitere Optimierungsidee (optional): direkte Ersetzung nicht-essentieller Slide-/Scale-Animationen durch reine Fade-Ins (noch nicht aktiv, kann bei Bedarf ergänzt werden).
+
+### Rationale
+Diese Bereinigungen reduzieren:
+- kognitiven Overhead (weniger unklare Exporte)
+- potentiellen Wartungsaufwand bei späteren Refactors
+- Risiko verwaister APIs nach zukünftigen Feature-Änderungen.
+
+Wenn du historische Implementierungen rekonstruieren willst, kannst du frühere Commits vor dem Cleanup durchsuchen (Git Log nach *particle-config*).
