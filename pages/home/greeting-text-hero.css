@@ -46,14 +46,14 @@ body.reduce-motion .greeting-text-hero {
   font-optical-sizing: auto;
   text-shadow: 0 0 18px rgba(37,99,235,0.35), 0 0 32px rgba(37,99,235,0.22);
   animation: gradientMove var(--greet-anim-grad-dur) linear infinite, pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite;
-  transition: text-shadow 0.4s ease, filter 0.4s ease;
+  transition: text-shadow var(--transition-base), filter var(--transition-base);
 }
 
 .greeting-text-hero:hover {
   text-shadow: 0 0 26px rgba(37,99,235,0.45), 0 0 52px rgba(37,99,235,0.32);
   animation: gradientMove var(--greet-anim-grad-dur) linear infinite,
              pulseGlowHover var(--greet-anim-pulse-dur) ease-in-out infinite;
-  transition: text-shadow 0.4s ease, filter 0.4s ease;
+  transition: text-shadow var(--transition-base), filter var(--transition-base);
 }
 
 .greeting-text-hero[data-animation] {
@@ -107,12 +107,12 @@ body.reduce-motion .greeting-text-hero {
 
 .greeting-text-hero.fade {
   opacity: 0;
-  transform: scale(0.98);
+  transform: var(--transform-scale-fade);
 }
 
 .greeting-text-hero:not(.fade) {
   opacity: 1;
-  transform: scale(1);
+  transform: var(--transform-scale-none);
 }
 
 @media (min-width: 1025px) {
@@ -163,8 +163,8 @@ body.reduce-motion .greeting-text-hero {
 .hero.section{ justify-content: center; padding-bottom: 0; }
 .hero-content { display: flex;flex-direction: column;align-items: center;gap: 1.5rem;max-width: 800px;width: 100%; }
 /* Animations (soft) */
-.anim-soft.animate-element { transform: translateY(18px); opacity: 0; transition-timing-function: cubic-bezier(0.4,0,0.3,1); }
-.anim-soft.animate-element.is-visible { transform: translateY(0); opacity: 1; }
+.anim-soft.animate-element { transform: var(--transform-down-sm); opacity: 0; transition-timing-function: var(--ease-out); }
+.anim-soft.animate-element.is-visible { transform: var(--transform-none); opacity: 1; }
 body.reduce-motion .anim-soft.animate-element { transform: none !important; opacity: 1 !important; }
 /* CRT Power-On Effekt */
 @keyframes crt-power-on {

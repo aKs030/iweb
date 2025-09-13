@@ -1,6 +1,6 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
 // Verwende zentrale shuffle-Implementierung (nutzt sichere Zufallsquelle wenn verfügbar)
-import { shuffle } from '../../content/webentwicklung/utils/common-utils.js';
+import { shuffle, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
 const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
 
 export default class TypeWriter {
@@ -173,8 +173,8 @@ export const typewriterConfig = {
 export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer, quotes, TypeWriterClass }) {
   try {
     const subtitleEl  = document.querySelector('.hero-subtitle');
-    const typedText   = document.getElementById('typedText');
-    const typedAuthor = document.getElementById('typedAuthor');
+    const typedText   = getElementById('typedText');
+    const typedAuthor = getElementById('typedAuthor');
     
     if (!subtitleEl || !typedText || !typedAuthor || !TypeWriterClass || !makeLineMeasurer || !quotes?.length) {
       return false;

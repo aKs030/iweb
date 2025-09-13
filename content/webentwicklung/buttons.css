@@ -26,7 +26,7 @@
 
 .btn-primary:hover {
   box-shadow: 0 0 18px rgba(9,139,255,0.55);
-  transform: translateY(-2px);
+  transform: var(--transform-lift-sm);
 }
 
 .btn-primary::before {
@@ -59,14 +59,14 @@
   border: 2px solid var(--primary-color);
   color: var(--primary-color);
   background: transparent;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .btn-outline:hover {
   background: var(--primary-color);
   color: #fff;
   box-shadow: 0 0 12px rgba(9,139,255,0.4);
-  transform: translateY(-2px);
+  transform: var(--transform-lift-sm);
 }
 
 /* Hero-spezifische Button-Positionierung wurde nach pages/home/greeting-text-hero.css verschoben */

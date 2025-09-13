@@ -1,6 +1,5 @@
 import { throttle, prefersReducedMotion, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from '../../content/webentwicklung/particles/particle-system.js';
-import { EnhancedAnimationEngine } from '../../content/webentwicklung/animations/enhanced-animation-engine.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
 const log = createLogger('hero-manager');
@@ -129,7 +128,23 @@ function initHeroAnimations() {
     const hero = getElementById('hero');
     if (!hero) return;
     if (!window.enhancedAnimationEngine) {
-      window.enhancedAnimationEngine = new EnhancedAnimationEngine();
+      // Simple Animation Engine initialisieren
+      window.enhancedAnimationEngine = {
+        scan() { return true; },
+        setRepeatOnScroll() { return true; },
+        resetElementsIn(container) {
+          if (!container) return;
+          const elements = container.querySelectorAll('[data-animation]');
+          elements.forEach(el => el.classList.remove('animate-in', 'is-visible'));
+        },
+        animateElementsIn(container) {
+          if (!container) return;
+          const elements = container.querySelectorAll('[data-animation]');
+          elements.forEach((el, index) => {
+            setTimeout(() => el.classList.add('animate-in', 'is-visible'), index * 100);
+          });
+        }
+      };
       window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
     } else {
       window.enhancedAnimationEngine.setRepeatOnScroll?.(true);

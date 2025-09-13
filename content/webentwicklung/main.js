@@ -1,6 +1,7 @@
-import { getElementById } from '../webentwicklung/utils/common-utils.js';
+import { getElementById, prefersReducedMotion } from '../webentwicklung/utils/common-utils.js';
 import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
 import { createLogger, setGlobalLogLevel } from './utils/logger.js';
+import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
 
 // ===== Globale Konfiguration =====
 setGlobalLogLevel('warn');
@@ -10,7 +11,7 @@ const log = createLogger('main');
 function announce(message, { assertive = false } = {}) {
   try {
     const id = assertive ? 'live-region-assertive' : 'live-region-status';
-    const region = document.getElementById(id);
+    const region = getElementById(id);
     if (!region) return;
     region.textContent = '';
     requestAnimationFrame(() => { region.textContent = message; });
@@ -18,6 +19,132 @@ function announce(message, { assertive = false } = {}) {
     /* Fail silently */
   }
 }
+// ===== Snap-Scroll Karten-Animationen =====
+const _SnapScrollAnimations = (() => {
+  let observer = null;
+  const animatedSections = new WeakSet();
+  const REDUCED_MOTION = prefersReducedMotion();
+  
+  const CONFIG = {
+    threshold: 0.3,
+    rootMargin: '-10% 0px -10% 0px',
+    staggerDelay: 150,
+    cardDuration: 600,
+  };
+
+  function animateCard(card, delay) {
+    if (REDUCED_MOTION) {
+      card.classList.add('scroll-animated');
+      return;
+    }
+    
+    card.style.transform = 'translateY(30px) scale(0.9)';
+    card.style.opacity = '0';
+    card.style.transition = '';
+    
+    setTimeout(() => {
+      card.style.transition = `transform ${CONFIG.cardDuration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity ${CONFIG.cardDuration}ms ease-out`;
+      card.style.transform = 'translateY(0) scale(1)';
+      card.style.opacity = '1';
+      
+      setTimeout(() => {
+        card.classList.add('scroll-animated');
+      }, CONFIG.cardDuration);
+    }, delay);
+  }
+
+  function animateCards(container) {
+    const cards = container.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+      animateCard(card, index * CONFIG.staggerDelay);
+    });
+    
+    if (!REDUCED_MOTION) {
+      const totalDuration = cards.length * CONFIG.staggerDelay + CONFIG.cardDuration;
+      setTimeout(() => {
+        container.classList.add('animations-complete');
+      }, totalDuration);
+    } else {
+      container.classList.add('animations-complete');
+    }
+  }
+
+  function animateHeader(header) {
+    if (REDUCED_MOTION) return;
+    
+    header.style.transform = 'translateY(-20px)';
+    header.style.opacity = '0';
+    header.style.transition = '';
+    
+    requestAnimationFrame(() => {
+      header.style.transition = 'transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 500ms ease-out';
+      header.style.transform = 'translateY(0)';
+      header.style.opacity = '1';
+    });
+  }
+
+  function handleIntersection(entries) {
+    entries.forEach(entry => {
+      const section = entry.target;
+      
+      if (entry.isIntersecting && entry.intersectionRatio >= CONFIG.threshold) {
+        if (animatedSections.has(section)) return;
+        animatedSections.add(section);
+        
+        log.debug('Snap-scroll animation triggered', { id: section.id });
+        
+        const header = section.querySelector('.section-header');
+        if (header) {
+          animateHeader(header);
+        }
+        
+        const cardsContainer = section.querySelector('.features-cards');
+        if (cardsContainer) {
+          setTimeout(() => animateCards(cardsContainer), 200);
+        }
+        
+        const title = section.querySelector('.section-title')?.textContent || 'Section';
+        announce(`${title} Abschnitt animiert`);
+      }
+    });
+  }
+
+  function init() {
+    if (observer) return;
+    
+    log.debug('Initializing snap-scroll card animations');
+    
+    observer = new IntersectionObserver(handleIntersection, {
+      threshold: [0, CONFIG.threshold, 0.5, 1],
+      rootMargin: CONFIG.rootMargin
+    });
+    
+    const sections = document.querySelectorAll('.full-screen-section, [data-scroll-animate]');
+    sections.forEach(section => {
+      const hasCards = section.querySelector('.features-cards');
+      if (hasCards) {
+        observer.observe(section);
+        log.debug('Observing section for snap-scroll animations', { id: section.id || 'unnamed' });
+      }
+    });
+  }
+
+  function rescan() {
+    if (!observer) return;
+    
+    const sections = document.querySelectorAll('.full-screen-section, [data-scroll-animate]');
+    sections.forEach(section => {
+      const hasCards = section.querySelector('.features-cards');
+      if (hasCards && !animatedSections.has(section)) {
+        observer.observe(section);
+        log.debug('Added new section to snap-scroll observer', { id: section.id || 'unnamed' });
+      }
+    });
+  }
+
+  return { init, rescan };
+})();
+
 window.announce = window.announce || announce;
 // ===== Section Loader Module =====
 const SectionLoader = (() => {
@@ -209,8 +336,22 @@ function loadMenuAssets() {
     __modulesReady = true;
     tryHide();
 
+    // Enhanced Animation Engine initialisieren
+    if (!window.enhancedAnimationEngine) {
+      window.enhancedAnimationEngine = new EnhancedAnimationEngine();
+      log.debug('Enhanced Animation Engine initialized');
+    }
+
     // Home/Hero Feature-Bundle initialisieren
     initHeroFeatureBundle();
+
+    // Snap-Scroll Animationen initialisieren
+    _SnapScrollAnimations.init();
+
+    // Re-scan nach Template-Loading
+    document.addEventListener('featuresTemplatesLoaded', () => {
+      setTimeout(() => _SnapScrollAnimations.rescan(), 100);
+    });
 
     // Menü-Assets laden
     loadMenuAssets();

@@ -14,7 +14,7 @@
  */
 
 @import url('https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css');
-@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;600&display=swap');
+/* Font-Import entfernt - wird bereits im HTML geladen */
 
 *, *::before, *::after {
   margin: 0;
@@ -43,7 +43,7 @@ html, body {
 .site-menu__list .submenu li a {
   color: var(--color-text-muted);
   display: block;
-  transition: background 0.3s, color 0.3s;
+  transition: background var(--transition-base), color var(--transition-base);
   padding: 0.55rem 1.2rem;
   min-width: 140px;
   font-size: 1em;
@@ -72,7 +72,7 @@ html, body {
   align-items: center;
   animation: fadeInDownOpacity 1s ease forwards, fadeInDownTransform 1s ease forwards;
   opacity: 0;
-  transform: translateY(15px);
+  transform: var(--transform-down-menu);
   touch-action: pan-y;
   font-family: var(--font-inter);
   font-weight: 500;
@@ -92,7 +92,7 @@ html, body {
   color: #ffffff !important;
   text-shadow: 0 1px 3px rgba(0,0,0,0.3);
   animation: fadeInOpacity 1s ease-out, fadeInTransform 1s ease-out;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-base);
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
@@ -124,7 +124,7 @@ html, body {
 }
 
 .site-logo:hover {
-  transform: scale(1.08) translateY(-1px);
+  transform: var(--transform-hover-logo);
   opacity: 0.95;
 }
 
@@ -187,7 +187,6 @@ html, body {
 @keyframes fadeInDownTransform { to { transform: translateY(0);} }
 @keyframes fadeInOpacity { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes fadeInTransform { 0% { transform: translateY(15px);} 100% { transform: translateY(0);} }
-@keyframes fadeIn { 0% { opacity: 0; transform: translateY(15px);} 100% { opacity: 1; transform: translateY(0);} }
 
 /* =======================
    Menu (Desktop)

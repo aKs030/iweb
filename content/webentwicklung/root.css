@@ -48,10 +48,44 @@
   --font-size-p: 1rem;
   --font-size-h2: 1.5rem;
 
-  /* Animation */
-  --transition-fast: 0.2s ease;
-  --transition-base: 0.3s ease;
-  --transition-slow: 0.5s ease;
+  /* Animation & Transitions - Optimiert */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-elastic: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* Transform Standards */
+  --transform-none: translateY(0);
+  --transform-lift-sm: translateY(-2px);
+  --transform-lift-md: translateY(-4px);
+  --transform-lift-lg: translateY(-8px);
+  --transform-lift-xl: translateY(-20px);
+  --transform-down-sm: translateY(18px);
+  --transform-down-menu: translateY(15px);
+  --transform-down-full: translateY(100%);
+  --transform-scale-sm: scale(1.02);
+  --transform-scale-md: scale(1.05);
+  --transform-scale-lg: scale(1.08);
+  --transform-scale-none: scale(1);
+  --transform-scale-fade: scale(0.98);
+  
+  /* Complex Transform Combinations */
+  --transform-hover-logo: scale(1.08) translateY(-1px);
+  --transform-hover-card: translateY(-8px) scale(1.02);
+  --transform-hover-card-smooth: translateY(-6px) scale(1.025);
+  --transform-hover-card-subtle: translateY(-3px) scale(1.015);
+  --transform-rotate-slight: rotate(2deg);
+  --transform-rotate-hover: rotate(-1deg) translateY(-4px);
+  
+  /* Animation Easings */
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);
+  --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Deprecated - Use specific tokens above */
+  --t: var(--transition-base);
 
   /* Shadows */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -79,14 +113,13 @@
   --color-bg-secondary: rgba(0,0,0,0.08);
 
   /* Cards / Features */
-  --card-pad: clamp(1rem,3.5vw,2rem);
-  --card-min-width: 320px;
-  --card-min-height: 220px;
+  --card-pad: clamp(0.75rem,3vw,2rem); /* Kleineres Minimum für Mobile */
+  --card-min-width: 260px; /* Reduziert von 320px */
+  --card-min-height: 180px; /* Reduziert von 220px */
   --pad-x: clamp(1rem,4vw,2rem);
-  --gap: clamp(1rem,3vw,1.5rem);
+  --gap: clamp(0.75rem,3vw,1.5rem); /* Kleineres Gap auf Mobile */
 
-  /* Transition token alias */
-  --t: .3s ease;
+  /* Transition token alias - Deprecated */
 
   /* Safe-area */
   --safe-top: env(safe-area-inset-top, 0px);

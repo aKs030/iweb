@@ -13,12 +13,7 @@
 
 import { createLogger } from '../utils/logger.js';
 
-// Logger für Footer-Scroll-Meldungen
-const log = createLogger ? createLogger('footer-scroll') : { 
-  error: console.error.bind(console),
-  warn: console.warn.bind(console),
-  info: (..._args) => {} // Silent in production
-};
+const log = createLogger('footer-scroll');
 
 // Footer-Zustand
 let footerExpanded = false;

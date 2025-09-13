@@ -14,12 +14,7 @@
 
 import { createLogger } from '../utils/logger.js';
 
-// Logger für Footer-spezifische Meldungen
-const log = createLogger ? createLogger('footer') : { 
-  error: console.error.bind(console),
-  warn: console.warn.bind(console),
-  info: (..._args) => {} // Silent in production
-};
+const log = createLogger('footer');
 
 /**
  * Initialisiert das Footer-System

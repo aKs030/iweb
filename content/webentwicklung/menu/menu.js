@@ -13,16 +13,18 @@
  */
 
 import { createLogger } from '../utils/logger.js';
-const logMenu = createLogger('menu');
+import { getElementById } from '../utils/common-utils.js';
+
+const log = createLogger('menu');
 
 document.addEventListener('DOMContentLoaded', () => {
-  const menuContainer = document.getElementById('menu-container');
-  const yearEl = document.getElementById('current-year');
+  const menuContainer = getElementById('menu-container');
+  const yearEl = getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   // Menü laden
   if (!menuContainer) {
-    logMenu.error('Fehler: menuContainer wurde nicht gefunden.');
+    log.error('Fehler: menuContainer wurde nicht gefunden.');
     return;
   }
   fetch('/content/webentwicklung/menu/menu.html')
@@ -43,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     })
     .catch(err => {
-      logMenu.error('Fehler beim Laden des Menüs:', err.message);
+      log.error('Fehler beim Laden des Menüs:', err.message);
     });
 });
 
@@ -73,7 +75,7 @@ function initializeMenu(container) {
       if (event.key === 'Enter') toggle();
     });
   } else {
-    logMenu.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
+    log.warn('Menu-Toggle-Elemente fehlen oder konnten nicht gefunden werden.');
   }
 }
 
@@ -89,7 +91,7 @@ function initializeLogo(container) {
       window.location.href = '/index.html';
     });
   } else {
-    logMenu.warn('Logo-Container konnte nicht gefunden werden.');
+    log.warn('Logo-Container konnte nicht gefunden werden.');
   }
 }
 
@@ -140,7 +142,7 @@ function setSiteTitle() {
   };
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Website';
-  const siteTitleEl = document.getElementById('site-title');
+  const siteTitleEl = getElementById('site-title');
   if (siteTitleEl) siteTitleEl.textContent = pageTitle;
   
   // Initialisiere Scroll-Detection nur auf der Hauptseite
@@ -201,8 +203,8 @@ function initializeScrollDetection() {
   
   // Hilfsfunktion für Titel und Untertitel-Update  
   function updateTitleAndSubtitle(newTitle, newSubtitle = '') {
-    const siteTitleEl = document.getElementById('site-title');
-    const siteSubtitleEl = document.getElementById('site-subtitle');
+    const siteTitleEl = getElementById('site-title');
+    const siteSubtitleEl = getElementById('site-subtitle');
     
     if (!siteTitleEl) return;
     
@@ -413,7 +415,7 @@ function setActiveMenuLink() {
       else a.classList.remove('active');
     });
   } catch (error) {
-    logMenu.warn('Error setting active menu link:', error);
+    log.warn('Error setting active menu link:', error);
   }
 }
 

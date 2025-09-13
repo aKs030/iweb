@@ -26,7 +26,7 @@
   -webkit-backdrop-filter: blur(10px) saturate(1.2);
   backdrop-filter: blur(10px) saturate(1.2);
   box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all var(--transition-slow);
   will-change: transform, opacity;
 }
 
@@ -39,8 +39,8 @@
   justify-content: center;
   align-items: center;
   opacity: 1;
-  transform: translateY(0);
-  transition: all 0.3s ease;
+  transform: var(--transform-none);
+  transition: all var(--transition-base);
 }
 
 .footer-copyright-minimal {
@@ -56,15 +56,15 @@
 /* ===== MAXIMIERTER MODUS ===== */
 .footer-maximized {
   opacity: 1;
-  transform: translateY(0);
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: var(--transform-none);
+  transition: all var(--transition-slow);
   max-height: 400px;
   overflow: hidden;
 }
 
 .footer-hidden {
   opacity: 0;
-  transform: translateY(100%);
+  transform: var(--transform-down-full);
   max-height: 0;
   pointer-events: none;
 }
@@ -134,7 +134,7 @@
 .footer-social-link:focus {
   color: var(--primary-color, #07a1ff);
   border-color: var(--primary-color, #07a1ff);
-  transform: translateY(-2px);
+  transform: var(--transform-lift-sm);
 }
 
 .footer-copyright-bar {
@@ -180,20 +180,20 @@
 /* Footer-Zustand Klassen */
 .footer-expanded .footer-minimized {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: var(--transform-lift-xl);
   pointer-events: none;
 }
 
 .footer-expanded .footer-maximized {
   opacity: 1;
-  transform: translateY(0);
+  transform: var(--transform-none);
   max-height: 400px;
   pointer-events: auto;
 }
 
 .footer-expanded .footer-hidden {
   opacity: 1;
-  transform: translateY(0);
+  transform: var(--transform-none);
   max-height: 400px;
   pointer-events: auto;
 }

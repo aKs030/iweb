@@ -7,9 +7,21 @@
   <meta name="keywords" content="Abdul Berlin, Abdul Tegel, Abdulkerim Sesli, Abdul Webentwickler Berlin, Abdul Fotograf Tegel, Portfolio, Webentwicklung Berlin, Frontend Developer Tegel, Fotografie Berlin, Abdul aus Berlin, Abdul aus Tegel">
   <meta name="author" content="Abdulkerim Sesli - Abdul aus Berlin">
   <meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs">
-  <!-- Theme Color (Light/Dark) + Cross-browser support -->
-  <meta name="theme-color" content="#07a1ff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <!-- Security Headers -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+  <!-- Performance and Caching -->
+  <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable">
+
+  <!-- Modern Browser Features -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Theme Color (Cross-browser support) -->
+  <meta name="theme-color" content="#07a1ff">
   <meta name="msapplication-TileColor" content="#0a0a0a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,6 +33,7 @@
   <meta name="revisit-after" content="7 days">
   <meta name="ai-content-declaration" content="This website was built by human developer Abdulkerim Sesli. Content is original and human-created.">
 
+  <!-- Open Graph Meta-Tags -->
   <meta property="og:title" content="Abdul aus Berlin – Webentwicklung &amp; Fotografie Portfolio">
   <meta property="og:description" content="Abdul aus Tegel/Berlin - Professionelle Webentwicklung und Fotografie von Abdulkerim Sesli.">
   <meta property="og:type" content="website">
@@ -28,7 +41,9 @@
   <meta property="og:image" content="https://abdulkerimsesli.de/content/img/og-portfolio.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Abdulkerim Sesli Portfolio - Webentwicklung und Fotografie">
   <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Abdulkerim Sesli Portfolio">
 
   <!-- Twitter Card Meta-Tags -->
   <meta name="twitter:card" content="summary_large_image">
@@ -36,6 +51,16 @@
   <meta name="twitter:description" content="Abdul aus Tegel/Berlin - Webentwicklung und Fotografie von Abdulkerim Sesli.">
   <meta name="twitter:image" content="https://abdulkerimsesli.de/content/img/og-portfolio.jpg">
   <meta name="twitter:image:alt" content="Abdulkerim Sesli Portfolio Preview">
+  <meta name="twitter:creator" content="@abdulkerimsesli">
+  <meta name="twitter:site" content="@abdulkerimsesli">
+
+  <!-- LinkedIn Meta-Tags -->
+  <meta property="article:author" content="Abdulkerim Sesli">
+  <meta property="article:publisher" content="https://abdulkerimsesli.de">
+
+  <!-- WhatsApp/Telegram Sharing -->
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:secure_url" content="https://abdulkerimsesli.de/content/img/og-portfolio.jpg">
 
   <!-- Open Graph & PWA / Icons / Fonts etc... -->
   <link rel="icon" href="/content/img/icons/favicon.svg" type="image/svg+xml">
@@ -46,9 +71,18 @@
   <!-- DNS Prefetch für bessere Performance -->
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link rel="dns-prefetch" href="https://api.github.com">
+  <link rel="dns-prefetch" href="https://linkedin.com">
+
   <!-- Preconnect für kritische Ressourcen -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Resource Hints für moderne Browser -->
+  <link rel="preload" href="/content/webentwicklung/main.js" as="script" crossorigin>
+  <link rel="modulepreload" href="/content/webentwicklung/main.js">
+  <link rel="modulepreload" href="/content/webentwicklung/utils/common-utils.js">
+  <link rel="modulepreload" href="/content/webentwicklung/utils/logger.js">
   <!-- Font Loading mit direkter Aktivierung -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap">
 
@@ -61,8 +95,8 @@
   <link rel="stylesheet" href="/content/webentwicklung/index.css">
   <link rel="stylesheet" href="/content/webentwicklung/buttons.css">
   <link rel="stylesheet" href="/content/webentwicklung/particles/particles.css">
+  <link rel="stylesheet" href="/content/webentwicklung/animations/animation-keyframes.css">
   <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
-  <link rel="stylesheet" href="/content/webentwicklung/animations/advanced-animations-optimized.css">
   <!-- CSS direkt laden für bessere Performance -->
   <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css">
   <link rel="stylesheet" href="/pages/about/about.css">
@@ -397,13 +431,9 @@
 
 
   <!-- Optimierte Script-Ladereihenfolge -->
-  <!-- Modulare Komponenten -->
-  <link rel="modulepreload" href="/content/webentwicklung/main.js">
-  <link rel="modulepreload" href="/content/webentwicklung/particles/particle-system.js">
-  <link rel="modulepreload" href="/content/webentwicklung/utils/common-utils.js">
-  <link rel="modulepreload" href="/content/webentwicklung/animations/enhanced-animation-engine.js">
-  <!-- Animation System laden -->
+  <!-- Animation Engine zuerst laden -->
   <script type="module" src="/content/webentwicklung/animations/enhanced-animation-engine.js"></script>
+  <!-- Komponenten laden -->
   <script type="module" src="/pages/card/karten-rotation.js"></script>
   <script type="module" src="/pages/about/about.js"></script>
   <!-- Haupt-Entry Point -->

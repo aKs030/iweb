@@ -46,7 +46,7 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       wrap.innerHTML = await res.text();
       document.body.appendChild(wrap);
       loaded = true;
-      log.debug('Templates geladen', { url });  // DEBUG statt INFO
+      log.debug('Templates geladen', { url });
       document.dispatchEvent(new CustomEvent('featuresTemplatesLoaded'));
     } catch (error) {
       log.error('Templates laden fehlgeschlagen', url, error);
@@ -58,18 +58,13 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
   function triggerAnimationEngineRescan() {
     if (window.enhancedAnimationEngine?.scan) {
       window.enhancedAnimationEngine.scan();
-      log.debug('Animation Engine re-scan triggered');
-    } else {
-      log.debug('Animation Engine not available for re-scan');
     }
   }
 
   function prepareAnimationReset(section) {
-    // Reset alle aktiven Animationen in der Section vor dem Template-Wechsel
     if (window.enhancedAnimationEngine?.resetSection) {
       window.enhancedAnimationEngine.resetSection(section);
     } else {
-      // Fallback: Manual reset
       const animatedElements = section.querySelectorAll('[data-animation], .animate, .animated');
       animatedElements.forEach(el => {
         el.classList.remove('animate', 'animated');
@@ -101,11 +96,8 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       section.style.opacity = '1';
       section.style.transform = 'translateY(0)';
       
-      // Enhanced Animation Engine Integration mit verbessertem Timing
       later(() => {
         triggerAnimationEngineRescan();
-        
-        // Event für externe Animation-Systeme
         section.dispatchEvent(new CustomEvent('template:mounted', {
           detail: { templateId: section.dataset.currentTemplate },
           bubbles: true
@@ -118,17 +110,15 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
   function mount(templateId, initial=false) {
     const section = byId(SECTION_ID), tpl = byId(templateId);
     if (!section || !tpl) {
-      log.warn('Mount failed: section or template not found', { sectionId: SECTION_ID, templateId, hasSection: !!section, hasTemplate: !!tpl });
+      log.warn('Mount failed: section or template not found', { sectionId: SECTION_ID, templateId });
       return;
     }
 
-    // Sicherheitsprüfung: Nur in Features-Sektion mounten
     if (section.id !== 'features') {
-      log.warn('Mount blocked: wrong section', { actualId: section.id, expectedId: 'features' });
+      log.warn('Mount blocked: wrong section', { actualId: section.id });
       return;
     }
 
-    // Animationsdauer dynamisch vom DOM lesen (erste Nutzung cached implizit im closure via locals)
     const ANIM_IN = Number(section.dataset.animIn || DEFAULT_ANIM_IN);
     const ANIM_OUT = Number(section.dataset.animOut || DEFAULT_ANIM_OUT);
     const EASE = section.dataset.animEase || DEFAULT_EASE;
@@ -144,19 +134,16 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
     const mountNew = () => {
       const frag = tpl.content ? document.importNode(tpl.content, true) : null;
-      
-      // Animation reset vor Template-Wechsel
       prepareAnimationReset(section);
       
       section.replaceChildren(frag || tpl.cloneNode(true));
-      
-      // ARIA-Live Region erzeugen / aktualisieren
       createLiveRegion(section, templateId, LIVE_LABEL_PREFIX);
       section.dataset.currentTemplate = templateId;
       
       try {
-        const ev = new CustomEvent('features:change', { detail: { index: this.currentIndex, total: this.order.length } });
-        document.dispatchEvent(ev);
+        document.dispatchEvent(new CustomEvent('features:change', { 
+          detail: { index: this.currentIndex, total: this.order.length } 
+        }));
       } catch {
         // Event dispatch failed
       }
@@ -220,36 +207,44 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 
   async function init() {
     order = shuffleArray([...TEMPLATE_IDS]);
-    log.debug('Initiale Reihenfolge', order);
     observe();
 
     const section = byId(SECTION_ID);
-    if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) mount(order[i], true);
+    if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) {
+      mount(order[i], true);
+    }
 
-    if (!loaded) { await ensureTemplates(section); mountInitialIfNeeded(); }
+    if (!loaded) { 
+      await ensureTemplates(section); 
+      mountInitialIfNeeded(); 
+    }
   }
 
   window.FeatureRotation = {
     next: rotateDifferent,
     current: () => ({ index: i, id: order[i] }),
-    destroy() { io?.disconnect(); io=null; clearTimers(); log.debug('FeatureRotation zerstört'); delete window.FeatureRotation; }
+    destroy() { 
+      io?.disconnect(); 
+      io = null; 
+      clearTimers(); 
+      delete window.FeatureRotation; 
+    }
   };
 
   document.addEventListener('featuresTemplatesLoaded', () => {
     mountInitialIfNeeded();
-    // Enhanced Animation Engine Integration
     if (window.enhancedAnimationEngine?.scan) {
       later(() => triggerAnimationEngineRescan(), 100);
     }
-  }, { once:false });
+  }, { once: false });
 
-  // Template-Change Event Listener für Animation Engine
   document.addEventListener('template:mounted', (e) => {
     if (e.target.id === SECTION_ID && window.enhancedAnimationEngine?.handleTemplateChange) {
       window.enhancedAnimationEngine.handleTemplateChange(e.target);
     }
   });
 
-  (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init, { once:true }) : init();
-  log.debug('FeatureRotation initialisiert (pending Templates)');
+  (document.readyState === 'loading') ? 
+    document.addEventListener('DOMContentLoaded', init, { once: true }) : 
+    init();
 })();
