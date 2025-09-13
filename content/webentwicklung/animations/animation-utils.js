@@ -26,28 +26,9 @@ export function isReducedMotion() {
 /**
  * TimerManager für Animation-Cleanup
  */
-export class TimerManager {
-  constructor() {
-    this.timers = new Set();
-  }
-  set(fn, delay) {
-    const id = setTimeout(fn, delay);
-    this.timers.add(id);
-    return id;
-  }
-  clear(id) {
-    clearTimeout(id);
-    this.timers.delete(id);
-  }
-  clearAll() {
-    this.timers.forEach(clearTimeout);
-    this.timers.clear();
-  }
-}
+
 
 /**
  * Erstellt und verwaltet ein WeakSet für bereits animierte Elemente
  */
-export function createAnimatedSet() {
-  return new WeakSet();
-}
+
