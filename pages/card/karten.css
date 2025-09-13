@@ -23,6 +23,40 @@
   transition: opacity 0.3s ease;
 }
 
+/* ========================================
+   Responsive Design - Mobile Optimierungen
+======================================== */
+
+/* Tablet und kleine Desktops */
+@media (max-width: 768px) {
+  .features-cards {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+    min-height: 350px;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+  .features-cards {
+    grid-template-columns: 1fr; /* Single column auf sehr kleinen Bildschirmen */
+    gap: 1rem;
+    margin-top: 0.75rem;
+    min-height: 300px;
+    padding: 0 0.5rem; /* Kleine seitliche Polsterung */
+  }
+}
+
+/* Sehr kleine Bildschirme - Ultra mobile */
+@media (max-width: 320px) {
+  .features-cards {
+    gap: 0.75rem;
+    padding: 0 0.25rem;
+    min-height: 250px;
+  }
+}
+
 /* Loading state to prevent flash */
 .features-cards:empty::before {
   content: '';
@@ -59,29 +93,88 @@
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  will-change: transform, opacity, box-shadow;
+  
+  /* Performance optimiert - GPU-Layer forcieren */
+  transform: translateY(0) scale(1) translateZ(0);
+  backface-visibility: hidden; /* Rendering-Optimierung */
   
   /* Standard-Zustand: Sichtbar */
   opacity: 1;
-  transform: translateY(0) scale(1);
   visibility: visible;
+  
+  /* Optimierte Transition - nur relevante Properties */
+  transition: 
+    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 0.3s ease;
+}
+
+/* ========================================
+   Mobile Card Optimierungen
+======================================== */
+
+/* Tablet Optimierungen */
+@media (max-width: 768px) {
+  .features-cards .card {
+    /* Reduzierte Shadow für bessere Performance */
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    
+    /* Weniger aggressive Backdrop-Filter */
+    -webkit-backdrop-filter: blur(15px) saturate(1.1);
+    backdrop-filter: blur(15px) saturate(1.1);
+  }
+}
+
+/* Mobile Phone Optimierungen */
+@media (max-width: 480px) {
+  .features-cards .card {
+    /* Minimale Shadow für beste Performance */
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    
+    /* Reduzierte Backdrop-Filter für bessere Performance */
+    -webkit-backdrop-filter: blur(10px) saturate(1.05);
+    backdrop-filter: blur(10px) saturate(1.05);
+    
+    /* Einfachere Transitionen */
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
 }
 
 /* Versteckte Karten (vor Animation) */
 .features-cards .card.card-hidden {
   opacity: 0;
-  transform: translateY(20px) scale(0.95);
+  transform: translateY(20px) scale(0.95) translateZ(0);
+  will-change: transform, opacity; /* GPU-Beschleunigung nur bei Animation */
   transition: none;
 }
 
 /* Sichtbare Karten (nach Animation) */
 .features-cards .card.card-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1) translateZ(0);
+  will-change: transform, opacity; /* GPU-Beschleunigung während Animation */
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ========================================
+   Mobile Animation Optimierungen
+======================================== */
+
+/* Mobile: Weniger aggressive Animationen */
+@media (max-width: 480px) {
+  .features-cards .card.card-hidden {
+    transform: translateY(10px) scale(0.98) translateZ(0); /* Weniger Movement */
+  }
+  
+  .features-cards .card.card-visible {
+    transition: all 0.3s ease-out; /* Kürzere, einfachere Animation */
+  }
 }
 
 /* Smooth CSS fallback for reduced motion */
@@ -89,19 +182,105 @@
   .features-cards .card,
   .features-cards .card.card-hidden,
   .features-cards .card.card-visible {
-    transform: translateY(0) scale(1) !important;
+    transform: translateY(0) scale(1) translateZ(0) !important;
     opacity: 1 !important;
     transition: none !important;
+    will-change: auto !important;
   }
 }
 
-/* Default card hover effects (simplified) */
-.features-cards .card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(7, 161, 255, 0.4);
-  box-shadow: 
-    0 16px 48px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(7, 161, 255, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: translateY(-6px) scale(1.025);
+/* ========================================
+   Performance & Accessibility Optimierungen
+======================================== */
+
+/* Performance-optimierte Basis für alle Browser */
+.features-cards .card * {
+  /* Subpixel-Rendering für Text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Very Small Screens - Ultra Mobile Optimization */
+@media (max-width: 320px) {
+  .features-cards .card {
+    /* Minimale Effects für sehr kleine Bildschirme */
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    
+    /* Deaktiviere komplexe Transforms */
+    transform: translateZ(0) !important;
+    transition: opacity 0.2s ease !important;
+  }
+  
+  .features-cards .card.card-visible {
+    transition: opacity 0.2s ease !important;
+  }
+}
+
+/* High DPI Displays - Optimierung für Retina */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .features-cards .card {
+    /* Reduzierte Blur für bessere Performance auf Retina */
+    -webkit-backdrop-filter: blur(15px) saturate(1.1);
+    backdrop-filter: blur(15px) saturate(1.1);
+  }
+}
+
+/* ========================================
+   Hover Effects - Device Optimized
+======================================== */
+
+/* Desktop Hover Effects (nur bei echtem Hover) */
+@media (hover: hover) and (pointer: fine) {
+  .features-cards .card {
+    /* Nur bei Geräten mit echtem Hover */
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .features-cards .card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(7, 161, 255, 0.4);
+    box-shadow: 
+      0 16px 48px rgba(0, 0, 0, 0.4),
+      0 0 40px rgba(7, 161, 255, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-6px) scale(1.025) translateZ(0);
+    will-change: transform, box-shadow; /* GPU-Beschleunigung bei Hover */
+  }
+}
+
+/* Touch Devices - Alternative zu Hover */
+@media (hover: none) or (pointer: coarse) {
+  .features-cards .card:active {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(0.98) translateZ(0); /* Subtle Press-Effekt */
+    transition: all 0.1s ease;
+  }
+}
+
+/* Tablet - Reduzierte Hover Effects */
+@media (hover: hover) and (max-width: 768px) {
+  .features-cards .card:hover {
+    /* Weniger aggressive Hover für Tablets */
+    transform: translateY(-3px) scale(1.01) translateZ(0);
+    box-shadow: 
+      0 8px 24px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(7, 161, 255, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Mobile - Keine Hover, nur Focus */
+@media (max-width: 480px) {
+  .features-cards .card:focus-visible {
+    outline: 2px solid rgba(7, 161, 255, 0.6);
+    outline-offset: 2px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* will-change cleanup nach Animationen */
+.features-cards .card:not(:hover):not(.card-hidden):not(.card-visible) {
+  will-change: auto; /* GPU-Layer freigeben wenn nicht benötigt */
 }

@@ -2,8 +2,6 @@
  * SUPER EINFACHE Scroll-Animation für Karten
  */
 
-import { animateCardEntrance } from './card-animation-utils.js';
-
 class SnapScrollAnimations {
   constructor() {
     this.processedCards = new WeakSet();
@@ -40,8 +38,20 @@ class SnapScrollAnimations {
   }
 
   animateCard(card) {
+    if (!card || window.prefersReducedMotion?.()) return;
+    
     const delay = Math.random() * 200; // Zufälliger Delay
-    animateCardEntrance(card, delay);
+    
+    // Starte mit versteckter Karte
+    card.classList.add('card-hidden');
+    card.classList.remove('card-visible');
+    
+    setTimeout(() => {
+      // Nach delay: zeige Karte
+      card.classList.remove('card-hidden');
+      card.classList.add('card-visible');
+    }, delay);
+    
     this.observer.unobserve(card); // Nur einmal animieren
   }
 

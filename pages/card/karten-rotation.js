@@ -1,5 +1,5 @@
 // Zentrale Utilities nutzen
-import { shuffle as shuffleArray, TimerManager } from '../../content/webentwicklung/utils/common-utils.js';
+import { shuffle as shuffleArray, TimerManager, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
 import { isReducedMotion } from '../../content/webentwicklung/animations/animation-utils.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
@@ -26,16 +26,14 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   const timerManager = new TimerManager();
   let io = null;
 
-  const byId = id => document.getElementById(id);
   const later = (fn, ms) => timerManager.setTimeout(fn, ms);
   const clearTimers = () => timerManager.clearAll();
-  const doubleRAF = (cb) => requestAnimationFrame(() => requestAnimationFrame(cb));
 
   async function ensureTemplates(section) {
     if (loaded) return;
     const srcOverride = section?.dataset.featuresSrc;
     const url = srcOverride || TEMPLATE_URL;
-    if (TEMPLATE_IDS.some(id => byId(id))) {
+    if (TEMPLATE_IDS.some(id => getElementById(id))) {
       loaded = true;
       fire(EVENTS.FEATURES_TEMPLATES_LOADED);
       return;
@@ -98,31 +96,45 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   }
 
   function performPostAnimationActions(section) {
-    triggerAnimationEngineRescan();
-    section.dispatchEvent(new CustomEvent('template:mounted', {
-      detail: { templateId: section.dataset.currentTemplate },
-      bubbles: true
-    }));
-    // SnapScroll rescan nach Animation Engine
-    if (window.snapScrollInstance?.rescan) {
-      later(() => window.snapScrollInstance.rescan(), 10);
-    }
+    // Batch DOM operations
+    requestAnimationFrame(() => {
+      triggerAnimationEngineRescan();
+      section.dispatchEvent(new CustomEvent('template:mounted', {
+        detail: { templateId: section.dataset.currentTemplate },
+        bubbles: true
+      }));
+      
+      // SnapScroll rescan nach Animation Engine - nur einmal
+      if (window.snapScrollInstance?.rescan) {
+        window.snapScrollInstance.rescan();
+      }
+    });
   }
 
   function applyInAnimation(section, ANIM_IN, EASE, done) {
+    // Performance-optimiert: will-change vor Animation setzen
+    section.style.willChange = 'transform, opacity';
     section.style.opacity = '0';
-    section.style.transform = 'translateY(10px)';
+    section.style.transform = 'translateY(10px) translateZ(0)';
     section.style.transition = `transform ${ANIM_IN}ms ${EASE}, opacity ${ANIM_IN}ms ${EASE}`;
-    doubleRAF(() => {
+    
+    // Optimized timing - single RAF mit batch processing
+    requestAnimationFrame(() => {
       section.style.opacity = '1';
-      section.style.transform = 'translateY(0)';
-      later(() => performPostAnimationActions(section), 50);
+      section.style.transform = 'translateY(0) translateZ(0)';
+      
+      // will-change cleanup nach Animation
+      later(() => {
+        section.style.willChange = 'auto';
+        performPostAnimationActions(section);
+      }, ANIM_IN + 50);
     });
+    
     later(done, ANIM_IN);
   }
 
   function mount(templateId, initial=false) {
-    const section = byId(SECTION_ID), tpl = byId(templateId);
+    const section = getElementById(SECTION_ID), tpl = getElementById(templateId);
     if (!section || !tpl) {
       log.warn('Mount failed: section or template not found', { sectionId: SECTION_ID, templateId });
       return;
@@ -168,10 +180,16 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
     if (initial || !section.dataset.currentTemplate || REDUCED) { mountNew(); return; }
 
+    // Performance-optimiert: will-change vor Animation
+    section.style.willChange = 'transform, opacity';
     section.style.transition = `transform ${ANIM_OUT}ms ${EASE}, opacity ${ANIM_OUT}ms ${EASE}`;
     section.style.opacity = '0';
-    section.style.transform = 'translateY(-5px)';
-    later(mountNew, ANIM_OUT);
+    section.style.transform = 'translateY(-5px) translateZ(0)';
+    
+    later(() => {
+      section.style.willChange = 'auto'; // Cleanup vor dem Mount
+      mountNew();
+    }, ANIM_OUT);
   }
 
   function rotateDifferent() {
@@ -187,18 +205,20 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   }
 
   function mountInitialIfNeeded() {
-    const section = byId(SECTION_ID);
+    const section = getElementById(SECTION_ID);
     if (section && !section.dataset.currentTemplate && order.length) {
       mount(order[i], true);
-      // Nach dem ersten Mount: Animation-Scan garantiert nach DOM-Update
-      doubleRAF(() => {
-        if (window.enhancedAnimationEngine?.scan) window.enhancedAnimationEngine.scan();
+      // Nach dem ersten Mount: Animation-Scan optimized
+      requestAnimationFrame(() => {
+        if (window.enhancedAnimationEngine?.scan) {
+          window.enhancedAnimationEngine.scan();
+        }
       });
     }
   }
 
   function observe() {
-    const section = byId(SECTION_ID);
+    const section = getElementById(SECTION_ID);
     if (!section) return;
     if (io) io.disconnect();
 
@@ -223,8 +243,8 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     order = shuffleArray([...TEMPLATE_IDS]);
     observe();
 
-    const section = byId(SECTION_ID);
-    if (section && TEMPLATE_IDS.some(id => byId(id)) && !section.dataset.currentTemplate) {
+    const section = getElementById(SECTION_ID);
+    if (section && TEMPLATE_IDS.some(id => getElementById(id)) && !section.dataset.currentTemplate) {
       mount(order[i], true);
     }
 
@@ -247,9 +267,11 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
   on(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
     mountInitialIfNeeded();
-    // Animation-Scan nach Template-Load garantiert nach DOM-Update
-    doubleRAF(() => {
-      if (window.enhancedAnimationEngine?.scan) window.enhancedAnimationEngine.scan();
+    // Animation-Scan nach Template-Load - optimized timing
+    requestAnimationFrame(() => {
+      if (window.enhancedAnimationEngine?.scan) {
+        window.enhancedAnimationEngine.scan();
+      }
     });
   });
 

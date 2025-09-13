@@ -9,7 +9,6 @@ const log = createLogger('hero-manager');
 // ===== Hero Management Module =====
 const HeroManager = (() => {
   let TypeWriter = null, makeLineMeasurer = null, quotes = [], heroData = null;
-  const getElement = getElementById;
 
   async function loadTyped() {
     const modules = [
@@ -36,7 +35,7 @@ const HeroManager = (() => {
       setRandomGreetingHTML();
     };
 
-    const heroEl = getElement('hero') || document.querySelector('section#hero');
+    const heroEl = getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
       setTimeout(triggerLoad, 2500);
       return;
@@ -69,7 +68,7 @@ const HeroManager = (() => {
     let el = null;
     for (const d of delays) {
       if (d) await new Promise(r => setTimeout(r, d));
-      el = getElement('greetingText');
+      el = getElementById('greetingText');
       if (el) break;
     }
     if (!el) return;
@@ -112,14 +111,13 @@ const HeroManager = (() => {
 
 // ===== Particles Module =====
 const ParticlesManager = (() => {
-  const getElement = getElementById;
   const initParticles = () => {
-    const canvas = getElement('particleCanvas');
+    const canvas = getElementById('particleCanvas');
     if (!canvas) {
       log.warn('Particle canvas not found');
       return () => {};
     }
-    return _initParticles({ getElement, throttle, checkReducedMotion: isReducedMotion });
+    return _initParticles({ getElement: getElementById, throttle, checkReducedMotion: isReducedMotion });
   };
   return { initParticles };
 })();
