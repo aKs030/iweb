@@ -1,11 +1,16 @@
 /* =======================
-   Global CSS Variables
+   Global CSS Variables - Dark & Light Mode System
 ======================= */
+
+/* Default: Dark Mode (Primärer Modus) */
 :root {
   --footer-height: 72px;
   --header-height: 72px;
 
-  /* Farbpalette */
+  /* Theme Mode Variable */
+  --theme-mode: 'dark';
+
+  /* Farbpalette - Dark Mode */
   /* Safari UI Blautöne für moderne, vertraute Benutzeroberfläche */
   --primary-brand: #007AFF; /* Safari UI Blau für dekorative Verläufe / Akzente */
   --primary-color: #007AFF; /* Safari UI Blau - modernes, vertrautes Interface-Blau */
@@ -16,17 +21,23 @@
   --warning-color: #b28900; /* dunkler Gelbton für Text auf warning-Elementen */
   --error-color: #cc2f2f;
 
-  /* Background / Surfaces */
+  /* Background / Surfaces - Dark Mode */
   --bg-dark: #0a0a0a;
   --bg-section: #111111;
   --bg-card: #1a1a1a;
   --bg-hover: #222222;
+  --bg-primary: var(--bg-dark);
+  --bg-secondary: var(--bg-section);
+  --bg-elevated: var(--bg-card);
 
-  /* Textfarben */
+  /* Textfarben - Dark Mode */
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --text-muted: #7a7a7a; /* ~5.8:1 auf #0a0a0a */
+  --text-inverse: #000000;
   --border-color: #2a2a2a;
+  --border-light: #333333;
+  --border-subtle: #1a1a1a;
 
   /* Spacing */
   --spacing-xxs: 0.1rem;
@@ -128,6 +139,100 @@
   /* Safe-area */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* =======================
+   Light Mode Theme
+======================= */
+:root[data-theme="light"] {
+  --theme-mode: 'light';
+
+  /* Background / Surfaces - Light Mode */
+  --bg-dark: #ffffff00;
+  --bg-section: #fff200;
+  --bg-card: #2764de;
+  --bg-hover: #000000;
+  --bg-primary: #41fc02;
+  --bg-secondary: #ffffff;
+  --bg-elevated: #f3df03;
+
+  /* Textfarben - Light Mode */
+  --text-primary: #f6f6f6;
+  --text-secondary: #ffffff;
+  --text-muted: #ffffff;
+  --text-inverse: #ffffff;
+  --border-color: #f60808;
+  --border-light: #f60000;
+  --border-subtle: #f1f3f5;
+
+  /* Angepasste Farben für Light Mode */
+  --success-color: #198754;
+  --warning-color: #fd7e14;
+  --error-color: #dc3545;
+
+  /* Schatten für Light Mode */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
+
+  /* Background Farben für Light Mode */
+  --color-bg: var(--bg-dark);
+  --color-bg-secondary: rgba(0, 0, 0, 0.04);
+
+  /* Partikel Opazität für Light Mode */
+  --particle-opacity: 0.2;
+
+  /* Greeting Gradient für Light Mode */
+  --greet-grad: linear-gradient(90deg, #1e40af, #0891b2, #059669, #4f46e5);
+}
+
+/* =======================
+   Automatic Theme Detection (Media Query)
+======================= */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --theme-mode: 'light';
+
+    /* Background / Surfaces - Auto Light Mode */
+    --bg-dark: #ffffff;
+    --bg-section: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-hover: #f1f3f5;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-elevated: #ffffff;
+
+    /* Textfarben - Auto Light Mode */
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --text-muted: #6c757d;
+    --text-inverse: #ffffff;
+    --border-color: #e9ecef;
+    --border-light: #dee2e6;
+    --border-subtle: #f1f3f5;
+
+    /* Angepasste Farben für Auto Light Mode */
+    --success-color: #198754;
+    --warning-color: #fd7e14;
+    --error-color: #dc3545;
+
+    /* Schatten für Auto Light Mode */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
+
+    /* Background Farben für Auto Light Mode */
+    --color-bg: var(--bg-section);
+    --color-bg-secondary: rgba(0, 0, 0, 0.04);
+
+    /* Partikel Opazität für Auto Light Mode */
+    --particle-opacity: 0.2;
+
+    /* Greeting Gradient für Auto Light Mode */
+    --greet-grad: linear-gradient(90deg, #1e40af, #0891b2, #059669, #4f46e5);
+  }
 }
 
 /* Mobile Accessibility: Grundschrift und Zeilenhöhe auf kleinen Geräten erhöhen */

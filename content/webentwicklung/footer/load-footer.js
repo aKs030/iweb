@@ -13,6 +13,7 @@
  */
 
 import { createLogger } from '../utils/logger.js';
+import { integrateFooterTheme } from './theme-integration.js';
 
 const log = createLogger('footer');
 
@@ -30,7 +31,35 @@ async function initializeFooter() {
   try {
     await loadFooterContent(footerContainer);
     updateCurrentYear();
-    setupFooterInteractions();
+    
+    // Footer-Interaktionen direkt einrichten
+    setupNewsletterForm();
+    integrateFooterTheme(); // Verwende globales Theme-System
+    setupReducedMotionToggle();
+    setupCookieSettings();
+    
+    // Globale Footer API bereitstellen
+    window.footerAPI = {
+      showNotification
+    };
+    
+    // Smooth Scrolling für interne Links im Footer
+    const footerLinks = document.querySelectorAll('#site-footer a[href^="#"]');
+    footerLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        const targetId = link.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        
+        if (targetElement) {
+          e.preventDefault();
+          targetElement.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+    
     log.info('Footer erfolgreich geladen');
   } catch (error) {
     log.error('Footer-Initialisierung fehlgeschlagen:', error);
@@ -83,26 +112,175 @@ function updateCurrentYear() {
 }
 
 /**
- * Richtet Footer-Interaktionen ein
+ * Richtet Newsletter-Anmeldung ein
  */
-function setupFooterInteractions() {
-  // Smooth Scrolling für interne Links im Footer
-  const footerLinks = document.querySelectorAll('#site-footer a[href^="#"]');
+function setupNewsletterForm() {
+  const newsletterForm = document.querySelector('.newsletter-form');
   
-  footerLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      const targetId = link.getAttribute('href').substring(1);
-      const targetElement = document.getElementById(targetId);
+  if (!newsletterForm) return;
+  
+  newsletterForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const emailInput = newsletterForm.querySelector('.newsletter-input');
+    const submitBtn = newsletterForm.querySelector('.newsletter-submit');
+    const email = emailInput.value.trim();
+    
+    if (!email?.includes?.('@')) {
+      showNotification('Bitte geben Sie eine gültige E-Mail-Adresse ein', 'error');
+      return;
+    }
+    
+    // UI-Feedback
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Wird gesendet...';
+    submitBtn.disabled = true;
+    
+    try {
+      // Hier würde die Newsletter-API-Anfrage stehen
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulation
       
-      if (targetElement) {
-        e.preventDefault();
-        targetElement.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
+      emailInput.value = '';
+      submitBtn.textContent = '✓ Angemeldet';
+      showNotification('Erfolgreich für Newsletter angemeldet!', 'success');
+      
+      setTimeout(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }, 2000);
+      
+    } catch (error) {
+      log.error('Newsletter-Anmeldung fehlgeschlagen:', error);
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+      showNotification('Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.', 'error');
+    }
+  });
+}
+
+/**
+ * Richtet Reduced Motion Toggle ein
+ */
+function setupReducedMotionToggle() {
+  const motionToggle = document.getElementById('reduced-motion-toggle');
+  
+  if (!motionToggle) return;
+  
+  // Aktuelle Einstellung laden
+  const reducedMotion = localStorage.getItem('reducedMotion') === 'true' || 
+                       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  motionToggle.checked = reducedMotion;
+  applyMotionSetting(reducedMotion);
+  
+  motionToggle.addEventListener('change', () => {
+    const enabled = motionToggle.checked;
+    localStorage.setItem('reducedMotion', enabled);
+    applyMotionSetting(enabled);
+    
+    showNotification(
+      enabled ? 'Animationen reduziert' : 'Animationen aktiviert', 
+      'info'
+    );
+  });
+}
+
+/**
+ * Wendet Motion-Einstellung an
+ */
+function applyMotionSetting(reducedMotion) {
+  if (reducedMotion) {
+    document.documentElement.style.setProperty('--transition-base', '0s');
+    document.documentElement.style.setProperty('--transition-slow', '0s');
+    document.documentElement.style.setProperty('--transition-fast', '0s');
+  } else {
+    document.documentElement.style.removeProperty('--transition-base');
+    document.documentElement.style.removeProperty('--transition-slow');
+    document.documentElement.style.removeProperty('--transition-fast');
+  }
+}
+
+/**
+ * Richtet Cookie-Einstellungen ein
+ */
+function setupCookieSettings() {
+  const cookieBtn = document.querySelector('.cookie-settings-btn');
+  
+  if (!cookieBtn) return;
+  
+  cookieBtn.addEventListener('click', () => {
+    // Hier würde ein Cookie-Banner oder Modal geöffnet werden
+    showNotification('Cookie-Einstellungen werden geladen...', 'info');
+    log.info('Cookie-Einstellungen angefordert');
+  });
+}
+
+/**
+ * Zeigt Benachrichtigungen an (Performance-optimiert)
+ */
+function showNotification(message, type = 'info') {
+  // Prevent notification spam
+  if (showNotification._timeout) {
+    clearTimeout(showNotification._timeout);
+    const existing = document.querySelector('.footer-notification');
+    if (existing) existing.remove();
+  }
+  
+  // Einfache Notification-Implementierung
+  const notification = document.createElement('div');
+  notification.className = `footer-notification footer-notification--${type}`;
+  notification.textContent = message;
+  notification.setAttribute('role', 'alert');
+  notification.setAttribute('aria-live', 'polite');
+  
+  // Hintergrundfarbe basierend auf Typ bestimmen
+  let backgroundColor;
+  if (type === 'error') {
+    backgroundColor = '#ff4444';
+  } else if (type === 'success') {
+    backgroundColor = '#44ff44';
+  } else {
+    backgroundColor = '#007AFF';
+  }
+  
+  // Performance: CSS in einem Block setzen
+  Object.assign(notification.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    background: backgroundColor,
+    color: 'white',
+    padding: '1rem 1.5rem',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    zIndex: '10000',
+    opacity: '0',
+    transform: 'translateX(100%)',
+    transition: 'all 0.3s ease',
+    maxWidth: '300px',
+    wordWrap: 'break-word'
+  });
+  
+  document.body.appendChild(notification);
+  
+  // Animation einblenden mit RAF für Performance
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      notification.style.opacity = '1';
+      notification.style.transform = 'translateX(0)';
     });
   });
+  
+  // Nach 3 Sekunden ausblenden
+  showNotification._timeout = setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 300);
+  }, 3000);
 }
 
 /**
@@ -132,7 +310,16 @@ function showFallbackFooter(container) {
  */
 window.footerAPI = {
   updateYear: updateCurrentYear,
-  reload: initializeFooter
+  reload: initializeFooter,
+  showNotification,
+  toggleTheme: () => {
+    const themeToggle = document.querySelector('.theme-toggle-btn');
+    if (themeToggle) themeToggle.click();
+  },
+  toggleReducedMotion: () => {
+    const motionToggle = document.getElementById('reduced-motion-toggle');
+    if (motionToggle) motionToggle.click();
+  }
 };
 
 // Footer automatisch initialisieren wenn DOM bereit ist
@@ -145,4 +332,10 @@ if (document.readyState === 'loading') {
 // Jahr jährlich automatisch aktualisieren (für Single Page Apps)
 setInterval(updateCurrentYear, 60000); // Jede Minute prüfen
 
-export { initializeFooter, updateCurrentYear };
+export { 
+  initializeFooter, 
+  updateCurrentYear, 
+  setupNewsletterForm,
+  setupReducedMotionToggle,
+  showNotification
+};
