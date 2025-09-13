@@ -1,5 +1,3 @@
-  user-select: none;
-  -webkit-user-select: none;
 /**
  * Navigations-Menü Styles
  * 
@@ -64,7 +62,7 @@ html, body {
   min-height: 48px;
   padding: clamp(0.25rem, 1vw, 0.7rem) clamp(0.5rem, 3vw, 2rem);
   position: fixed;
-  background: transparent;
+  background: #2c2c2e;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.36);
