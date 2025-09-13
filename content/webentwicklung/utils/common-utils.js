@@ -43,20 +43,7 @@ export function getElementById(id, useCache = true) {
   return element;
 }
 
-// --- Accessibility & UX Utilities ---
-let reducedMotionCache = null;
-export function prefersReducedMotion() {
-  if (reducedMotionCache === null) {
-    try {
-      const saved = localStorage.getItem('pref-reduce-motion');
-      reducedMotionCache = saved === '1' ||
-        (saved === null && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    } catch {
-      reducedMotionCache = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    }
-  }
-  return reducedMotionCache;
-}
+// prefersReducedMotion entfernt – bitte isReducedMotion() aus animation-utils.js verwenden!
 
 // --- Timer Utilities ---
 export class TimerManager {
