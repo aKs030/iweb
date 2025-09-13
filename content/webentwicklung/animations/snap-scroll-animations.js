@@ -26,13 +26,7 @@ const CONFIG = {
   rescanDebounce: 120
 };
 
-/**
- * Einfache Debounce Implementierung (Timeout basiert)
- * @param {Function} fn - Funktion die verzögert ausgeführt werden soll
- * @param {number} [wait=100] - Wartezeit in ms
- * @returns {Function}
- */
-// Entfernt: debounce, wird jetzt aus animation-utils.js importiert
+
 
 /**
  * Animiert alle Karten in einem Container mittels Utility Stagger Funktion

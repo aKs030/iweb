@@ -23,13 +23,3 @@ import { prefersReducedMotion } from '../utils/common-utils.js';
 export function isReducedMotion() {
   return prefersReducedMotion();
 }
-
-/**
- * TimerManager für Animation-Cleanup
- */
-
-
-/**
- * Erstellt und verwaltet ein WeakSet für bereits animierte Elemente
- */
-
