@@ -332,12 +332,19 @@
   .features-cards {
     gap: var(--spacing-sm);
     align-items: stretch;
+    max-height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
   }
   
   .card {
     padding: var(--spacing-sm);
     height: auto;
     min-height: 0;
+    max-height: 80vh;
+    overflow: auto;
+    flex-shrink: 1;
+    box-sizing: border-box;
   }
   
   .card .icon-wrapper {
@@ -360,6 +367,10 @@
 @media (max-width: 320px) {
   .card {
     padding: calc(var(--spacing-sm) * 0.8);
+    max-height: 75vh;
+    overflow: auto;
+    flex-shrink: 1;
+    box-sizing: border-box;
   }
   
   .card .icon-wrapper {
@@ -425,5 +436,19 @@
   .card:hover {
     transform: none;
     box-shadow: none;
+  }
+}
+
+/* Mobile Animation Optimierung: weniger intensive, schnellere Animationen */
+@media (max-width: 600px) {
+  .features-cards .card,
+  .features-cards .card:not(.scroll-animated) {
+    transition-duration: 0.3s !important;
+    transition-property: opacity, transform !important;
+    will-change: opacity, transform;
+    transform: translateY(10px) scale(0.98);
+  }
+  .features-cards .card {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
 }

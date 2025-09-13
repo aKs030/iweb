@@ -158,6 +158,13 @@ body {
   transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
+@media (max-width: 600px) {
+  .snap-section,
+  .section {
+    scroll-snap-align: center;
+  }
+}
+
 .snap-section.in-view {
   opacity: 1;
   transform: var(--transform-none);
