@@ -28,6 +28,9 @@ class EnhancedAnimationEngine {
       repeatOnScroll: false, // Elemente bei Verlassen zurücksetzen, um erneut zu animieren
       suppressWarnings: false, // neue Option um Performance-Warnungen abzuschalten
       allowComplex: false, // komplexe Effekte (z.B. 'crt') explizit erlauben
+      snapScrollSync: true, // Snap Scroll Synchronisation aktivieren
+      snapScrollDebounce: 150, // Debounce für Snap Scroll Events
+      snapSectionSelector: '.snap-section, .section', // Selektoren für Snap Sections
       ...options
     };
     
@@ -38,6 +41,9 @@ class EnhancedAnimationEngine {
     this.animationQueue = new Set(); // Queue für verzögerte Animationen
     this.observed = new WeakSet(); // Beobachtete Elemente
     this.animatedOnce = new WeakSet(); // Elemente, die bereits einmal animiert wurden (data-once)
+    this.snapScrollObserver = null; // Observer für Snap Scroll Sections
+    this.currentSnapSection = null; // Aktuell aktive Snap Section
+    this.snapScrollHandler = null; // Throttled Scroll Handler
     this.engineSelector = [
       '[data-animate]',
       '[data-animation]',
@@ -130,6 +136,9 @@ class EnhancedAnimationEngine {
     this.setupIntersectionObserver();
     this.setupMutationObserver();
     this.setupAnimationCleanup();
+    if (this.options.snapScrollSync) {
+      this.setupSnapScrollSync();
+    }
     this.scanForAnimations();
   }
 
@@ -149,6 +158,109 @@ class EnhancedAnimationEngine {
         rootMargin: this.options.rootMargin
       }
     );
+  }
+
+  /**
+   * Snap Scroll Synchronisation Setup
+   * Optimiert Animationen für Snap Scroll Verhalten
+   */
+  setupSnapScrollSync() {
+    if (!window.IntersectionObserver) return;
+
+    // Observer für Snap Sections mit höherer Threshold für bessere Snap-Detection
+    this.snapScrollObserver = new IntersectionObserver(
+      (entries) => this.handleSnapScrollIntersection(entries),
+      {
+        threshold: [0.5, 0.75, 1.0], // Mehrere Thresholds für präzise Snap-Detection
+        rootMargin: '0px'
+      }
+    );
+
+    // Alle Snap Sections beobachten
+    const snapSections = document.querySelectorAll(this.options.snapSectionSelector);
+    snapSections.forEach(section => {
+      this.snapScrollObserver.observe(section);
+    });
+
+    // Throttled Scroll Handler für zusätzliche Snap-Logik
+    this.snapScrollHandler = debounce(() => {
+      this.handleSnapScrollComplete();
+    }, this.options.snapScrollDebounce);
+
+    window.addEventListener('scroll', this.snapScrollHandler, { passive: true });
+  }
+
+  /**
+   * Snap Scroll Intersection Handler
+   * Erkennt aktive Snap Section und triggert gezielte Animationen
+   */
+  handleSnapScrollIntersection(entries) {
+    let mostVisibleSection = null;
+    let maxVisibility = 0;
+
+    entries.forEach(entry => {
+      if (entry.intersectionRatio > maxVisibility) {
+        maxVisibility = entry.intersectionRatio;
+        mostVisibleSection = entry.target;
+      }
+    });
+
+    // Wenn eine neue Section die meiste Sichtbarkeit hat
+    if (mostVisibleSection && mostVisibleSection !== this.currentSnapSection) {
+      this.currentSnapSection = mostVisibleSection;
+      
+      // Animationen in der neuen Section mit höherer Priorität triggern
+      const animatableElements = mostVisibleSection.querySelectorAll(this.engineSelector);
+      animatableElements.forEach(element => {
+        if (this.observed.has(element)) {
+          // Element ist bereits beobachtet, prüfe ob Animation getriggert werden soll
+          const animationData = this.getAnimationData(element);
+          if (animationData && !this.activeAnimations.has(element)) {
+            // Forciere Animation mit reduziertem Threshold für Snap Sections
+            const boundingRect = element.getBoundingClientRect();
+            const isVisible = boundingRect.top < window.innerHeight && boundingRect.bottom > 0;
+            if (isVisible) {
+              this.triggerAnimation(element, animationData, true); // true = snap priority
+            }
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Callback wenn Snap Scroll abgeschlossen ist
+   */
+  handleSnapScrollComplete() {
+    // Zusätzliche Validierung und Cleanup nach Snap Scroll
+    if (this.currentSnapSection) {
+      // Stelle sicher, dass alle Animationen in der aktuellen Section getriggert wurden
+      this.ensureSectionAnimationsComplete(this.currentSnapSection);
+    }
+  }
+
+  /**
+   * Stellt sicher, dass alle Animationen in einer Section abgeschlossen sind
+   */
+  ensureSectionAnimationsComplete(section) {
+    const animatableElements = section.querySelectorAll(this.engineSelector);
+    animatableElements.forEach(element => {
+      const isVisible = this.isElementVisible(element);
+      if (isVisible && !this.activeAnimations.has(element) && !this.animatedOnce.has(element)) {
+        const animationData = this.getAnimationData(element);
+        if (animationData) {
+          this.triggerAnimation(element, animationData, true);
+        }
+      }
+    });
+  }
+
+  /**
+   * Prüft ob ein Element sichtbar ist
+   */
+  isElementVisible(element) {
+    const rect = element.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
   }
 
   /**
@@ -235,10 +347,27 @@ class EnhancedAnimationEngine {
     const processAdded = (element) => {
       if (!isElementNode(element) || this.isOptedOut(element)) return;
       this.scanElement(element);
+      
+      // Prüfe ob neues Element eine Snap Section ist
+      if (this.options.snapScrollSync && this.snapScrollObserver && 
+          element.matches && element.matches(this.options.snapSectionSelector)) {
+        this.snapScrollObserver.observe(element);
+      }
+      
       const descendants = element.querySelectorAll?.(engineSelector);
       if (descendants?.length) {
         for (const child of Array.from(descendants)) {
           if (!this.isOptedOut(child)) this.scanElement(child);
+        }
+      }
+      
+      // Prüfe auf neue Snap Sections in descendants
+      if (this.options.snapScrollSync && this.snapScrollObserver) {
+        const newSnapSections = element.querySelectorAll?.(this.options.snapSectionSelector);
+        if (newSnapSections?.length) {
+          for (const section of Array.from(newSnapSections)) {
+            this.snapScrollObserver.observe(section);
+          }
         }
       }
     };
@@ -550,8 +679,11 @@ class EnhancedAnimationEngine {
   /**
    * Animation triggern - Performance optimiert
    */
-  triggerAnimation(element, animationData) {
+  triggerAnimation(element, animationData, snapPriority = false) {
     if (this.activeAnimations.has(element)) return;
+
+    // Bei Snap Priority: reduzierte Delay für sofortigere Animationen
+    const effectiveDelay = snapPriority ? Math.min(animationData.delay || 0, 100) : (animationData.delay || 0);
 
     // Performance-Modus berücksichtigen (reduced = vereinfachtes Fade-In ohne komplexe Klassen)
     if (this.performanceMode === 'reduced') {
@@ -562,7 +694,14 @@ class EnhancedAnimationEngine {
         element.getBoundingClientRect();
         element.style.opacity = '1';
         element.classList.add('animated');
-        this.activeAnimations.set(element, { type: 'fadeIn', duration: 0.3, delay: 0, easing: 'ease-out', once: animationData.once });
+        this.activeAnimations.set(element, { 
+          type: 'fadeIn', 
+          duration: 0.3, 
+          delay: effectiveDelay, 
+          easing: 'ease-out', 
+          once: animationData.once,
+          snapPriority 
+        });
         if (animationData.once) {
           this.animatedOnce.add(element);
           this.unobserveElement(element);
@@ -644,10 +783,10 @@ class EnhancedAnimationEngine {
       });
     };
 
-    if (animationData.delay > 0) {
+    if (effectiveDelay > 0) {
       // Delay per AnimationFrame-Kette für gleichmäßigere Starts
       const start = performance.now();
-      const delayMs = animationData.delay;
+      const delayMs = effectiveDelay;
       const rafDelay = (now) => {
         if (now - start >= delayMs) {
           triggerFn();
@@ -671,7 +810,7 @@ class EnhancedAnimationEngine {
           this.metrics.completed++;
         }
       });
-    }, animationData.delay + durationMs);
+    }, effectiveDelay + durationMs);
   }
 
   /**
@@ -780,8 +919,50 @@ class EnhancedAnimationEngine {
   cleanup() {
     this.intersectionObserver?.disconnect();
     this.mutationObserver?.disconnect();
+    this.snapScrollObserver?.disconnect();
+    
+    // Scroll Handler entfernen
+    if (this.snapScrollHandler) {
+      window.removeEventListener('scroll', this.snapScrollHandler);
+      this.snapScrollHandler = null;
+    }
+    
     this.activeAnimations.clear();
     this.animationQueue.clear();
+    this.currentSnapSection = null;
+    
+    // Will-change cleanup
+    if (this._willChangeElements) {
+      this._willChangeElements.forEach(element => {
+        if (element.style) {
+          element.style.willChange = '';
+        }
+      });
+      this._willChangeElements.clear();
+    }
+  }
+
+  /**
+   * Debug-Utility: Gibt Snap Scroll Status aus
+   */
+  getSnapScrollStatus() {
+    return {
+      enabled: this.options.snapScrollSync,
+      currentSection: this.currentSnapSection?.tagName || null,
+      observedSections: this.snapScrollObserver ? 'active' : 'inactive',
+      sectionSelector: this.options.snapSectionSelector
+    };
+  }
+
+  /**
+   * Debug-Utility: Forciert Animation aller Elemente in aktueller Snap Section
+   */
+  forceCurrentSectionAnimations() {
+    if (this.currentSnapSection) {
+      this.ensureSectionAnimationsComplete(this.currentSnapSection);
+      return `Forced animations for ${this.currentSnapSection.tagName}`;
+    }
+    return 'No current snap section';
   }
 }
 

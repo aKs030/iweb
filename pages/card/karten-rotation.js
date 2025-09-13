@@ -61,6 +61,23 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     }
   }
 
+  // Spezielle Integration für Snap Scroll Events
+  function handleSnapScrollEvent() {
+    const section = getElementById(SECTION_ID);
+    if (!section) return;
+    
+    // Forciere Re-Animation der Karten-Section bei Snap Events
+    if (window.enhancedAnimationEngine?.forceCurrentSectionAnimations) {
+      window.enhancedAnimationEngine.forceCurrentSectionAnimations();
+    }
+    
+    // Stelle sicher, dass die aktuelle Karte sichtbar ist
+    if (section.dataset.currentTemplate) {
+      section.style.opacity = '1';
+      section.style.transform = 'none';
+    }
+  }
+
   function prepareAnimationReset(section) {
     if (window.enhancedAnimationEngine?.resetSection) {
       window.enhancedAnimationEngine.resetSection(section);
@@ -69,10 +86,19 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
       const animatedElements = section.querySelectorAll('[data-animation], .animate, .animated');
       animatedElements.forEach(el => {
         el.classList.remove('animate', 'animated');
+        el.removeAttribute('data-animation');
         el.style.opacity = '';
         el.style.transform = '';
+        el.style.transition = '';
+        el.style.willChange = '';
       });
     }
+    
+    // Section selbst auch zurücksetzen
+    section.classList.remove('animate', 'animated');
+    section.removeAttribute('data-animation');
+    section.style.opacity = '1'; // Sicherstellen dass Section sichtbar bleibt
+    section.style.transform = 'none';
   }
 
   function createLiveRegion(section, templateId, LIVE_LABEL_PREFIX) {
@@ -91,19 +117,32 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   }
 
   function applyInAnimation(section, ANIM_IN, EASE, done) {
-    // Verwende Enhanced Animation Engine für konsistente Animationen
-    section.setAttribute('data-animation', 'fadeInUp');
-    section.setAttribute('data-duration', ANIM_IN + 'ms');
+    // Erst alle vorherigen Animation-States zurücksetzen
+    section.classList.remove('animate', 'animated');
+    section.removeAttribute('data-animation');
+    section.style.opacity = '';
+    section.style.transform = '';
     
-    // Trigger Animation Engine rescan für neue Attribute
-    triggerAnimationEngineRescan();
-    
-    // Dispatch template mounted event
+    // Kurz warten für DOM Cleanup
     requestAnimationFrame(() => {
-      section.dispatchEvent(new CustomEvent('template:mounted', {
-        detail: { templateId: section.dataset.currentTemplate },
-        bubbles: true
-      }));
+      // Verwende Enhanced Animation Engine für konsistente Animationen
+      section.setAttribute('data-animation', 'fadeInUp');
+      section.setAttribute('data-duration', ANIM_IN + 'ms');
+      
+      // Sicherstellen dass Section sichtbar ist
+      section.style.opacity = '1';
+      section.style.transform = 'none';
+      
+      // Trigger Animation Engine rescan für neue Attribute
+      triggerAnimationEngineRescan();
+      
+      // Dispatch template mounted event
+      requestAnimationFrame(() => {
+        section.dispatchEvent(new CustomEvent('template:mounted', {
+          detail: { templateId: section.dataset.currentTemplate },
+          bubbles: true
+        }));
+      });
     });
     
     later(done, ANIM_IN);
@@ -140,14 +179,18 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
       section.replaceChildren(frag || tpl.cloneNode(true));
       createLiveRegion(section, templateId, LIVE_LABEL_PREFIX);
       section.dataset.currentTemplate = templateId;
+      
+      // Stelle sicher, dass Section immer sichtbar ist
+      section.style.opacity = '1';
+      section.style.transform = 'none';
+      section.style.willChange = '';
+      
       try {
         fire(EVENTS.FEATURES_CHANGE, { index: i, total: order.length });
       } catch (err) {
         log.warn('Event dispatch failed', err);
       }
       if (REDUCED) { 
-        section.style.opacity = '1'; 
-        section.style.transform = 'none'; 
         done(); 
         return; 
       }
@@ -163,7 +206,9 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     section.style.transform = 'translateY(-5px) translateZ(0)';
     
     later(() => {
-      section.style.willChange = 'auto'; // Cleanup vor dem Mount
+      // Vor dem neuen Mount: Transition zurücksetzen für sauberen Start
+      section.style.transition = '';
+      section.style.willChange = '';
       mountNew();
     }, ANIM_OUT);
   }
@@ -202,13 +247,28 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
       for (const e of ents) {
         if (e.target !== section) continue;
         const r = e.intersectionRatio;
-        if (r >= ENTER) seen = true;
+        
+        // Bessere Sichtbarkeits-Logik: seen wird bei ausreichender Sichtbarkeit gesetzt
+        if (r >= ENTER) {
+          seen = true;
+        }
+        
+        // Reset seen beim vollständigen Verlassen der Section
+        if (r === 0) {
+          seen = false;
+        }
 
+        // Rotation triggern wenn Section verlassen wird (aber noch teilweise sichtbar)
         if (seen && r > 0 && r < EXIT && !cool) {
-          seen = false; cool = true; rotateDifferent();
+          cool = true; 
+          rotateDifferent();
           later(() => { cool = false; }, COOLDOWN);
         }
-        if ((e.isIntersecting && r > 0) && !section.dataset.currentTemplate) mountInitialIfNeeded();
+        
+        // Initial mount wenn Section sichtbar wird
+        if ((e.isIntersecting && r > 0) && !section.dataset.currentTemplate) {
+          mountInitialIfNeeded();
+        }
       }
     }, { threshold: THRESHOLDS });
 
@@ -256,6 +316,13 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
       window.enhancedAnimationEngine.handleTemplateChange(e.target);
     }
   });
+
+  // Snap Scroll Integration - horche auf Scroll Events
+  let snapScrollTimeout;
+  window.addEventListener('scroll', () => {
+    clearTimeout(snapScrollTimeout);
+    snapScrollTimeout = setTimeout(handleSnapScrollEvent, 100);
+  }, { passive: true });
 
   (document.readyState === 'loading') ? 
     document.addEventListener('DOMContentLoaded', init, { once: true }) : 
