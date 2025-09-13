@@ -19,7 +19,6 @@ export function debounce(fn, wait = 100) {
  * Prüft, ob der Nutzer reduzierte Bewegungen bevorzugt.
  * @returns {boolean}
  */
-import { prefersReducedMotion } from '../utils/common-utils.js';
 export function isReducedMotion() {
-  return prefersReducedMotion();
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
