@@ -121,9 +121,10 @@ class EnhancedAnimationEngine {
    * Batch-Animation Trigger für bessere Performance
    */
   batchTriggerAnimations(entries) {
-    // Limit für gleichzeitige Animationen prüfen
-    if (this.activeAnimations.size >= this.options.maxAnimations) {
-      entries.slice(this.options.maxAnimations - this.activeAnimations.size)
+    // Limit für gleichzeitige Animationen prüfen (hart auf 6 begrenzt)
+    const MAX_ANIM = 6;
+    if (this.activeAnimations.size >= MAX_ANIM) {
+      entries.slice(MAX_ANIM - this.activeAnimations.size)
         .forEach(entry => this.animationQueue.add(entry.target));
       return;
     }
@@ -493,39 +494,62 @@ class EnhancedAnimationEngine {
 
     // Performance-Modus berücksichtigen
     if (this.performanceMode === 'reduced') {
-      element.classList.add('animated');
+      window.requestAnimationFrame(() => {
+        element.classList.add('animated');
+      });
       return;
     }
 
-    // GPU-Acceleration aktivieren
-    element.style.willChange = 'transform, opacity';
-    element.style.transform = 'translateZ(0)';
+    // GPU-Acceleration aktivieren mit Throttling für will-change
+    if (!this._willChangeElements) {
+      this._willChangeElements = new Set();
+    }
+    const MAX_WILLCHANGE = 8;
+    const setWillChange = () => {
+      if (this._willChangeElements.size < MAX_WILLCHANGE) {
+        element.style.willChange = 'transform, opacity';
+        element.style.transform = 'translateZ(0)';
+        this._willChangeElements.add(element);
+      } else {
+        // Wenn zu viele, später erneut versuchen
+        setTimeout(setWillChange, 32);
+      }
+    };
+    window.requestAnimationFrame(setWillChange);
 
     // Animation-Klasse hinzufügen
     // Erlaube bereits vollqualifizierte Klassen (beginnt mit animate-)
     const base = animationData.type || 'fadeIn';
     const animationClass = base.startsWith('animate-') ? base : `animate-${base}`;
     const durationMs = this.toMs(animationData.duration);
-    
+
+    // Nur performante Properties zulassen
+    const allowed = ['fadeIn', 'fadeOut', 'slideInLeft', 'slideInRight', 'slideInUp', 'slideInDown', 'zoomIn', 'zoomOut'];
+    if (!allowed.includes(base)) {
+      console.warn('[EnhancedAnimationEngine] Nicht-performante Animation erkannt:', base, '– Nur transform/opacity empfohlen!');
+    }
+
     const triggerFn = () => {
-      // Dauer/Easing optional als Inline-Styles setzen (nicht zwingend in CSS vorhanden)
-      if (durationMs > 0) {
-        element.style.animationDuration = `${durationMs}ms`;
-        element.style.transitionDuration = `${durationMs}ms`;
-      }
-      if (animationData.easing) {
-        element.style.animationTimingFunction = animationData.easing;
-        element.style.transitionTimingFunction = animationData.easing;
-      }
-      element.classList.add(animationClass, 'animated');
-      this.activeAnimations.set(element, animationData);
-      if (animationData.once) {
-        this.animatedOnce.add(element);
-        element.dataset.animatedOnce = 'true';
-        this.unobserveElement(element);
-      }
-      // Queue verarbeiten wenn Platz frei wird
-      this.processAnimationQueue();
+      window.requestAnimationFrame(() => {
+        // Dauer/Easing optional als Inline-Styles setzen (nicht zwingend in CSS vorhanden)
+        if (durationMs > 0) {
+          element.style.animationDuration = `${durationMs}ms`;
+          element.style.transitionDuration = `${durationMs}ms`;
+        }
+        if (animationData.easing) {
+          element.style.animationTimingFunction = animationData.easing;
+          element.style.transitionTimingFunction = animationData.easing;
+        }
+        element.classList.add(animationClass, 'animated');
+        this.activeAnimations.set(element, animationData);
+        if (animationData.once) {
+          this.animatedOnce.add(element);
+          element.dataset.animatedOnce = 'true';
+          this.unobserveElement(element);
+        }
+        // Queue verarbeiten wenn Platz frei wird
+        this.processAnimationQueue();
+      });
     };
 
     if (animationData.delay > 0) {
@@ -536,7 +560,12 @@ class EnhancedAnimationEngine {
 
     // Cleanup nach Animation
     setTimeout(() => {
-      element.style.willChange = 'auto';
+      window.requestAnimationFrame(() => {
+        if (element.style.willChange) {
+          element.style.willChange = '';
+          this._willChangeElements?.delete(element);
+        }
+      });
     }, animationData.delay + durationMs);
   }
 

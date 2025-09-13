@@ -179,7 +179,13 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
   function mountInitialIfNeeded() {
     const section = byId(SECTION_ID);
-    if (section && !section.dataset.currentTemplate && order.length) mount(order[i], true);
+    if (section && !section.dataset.currentTemplate && order.length) {
+      mount(order[i], true);
+      // Nach dem ersten Mount: Animation-Scan garantiert nach DOM-Update
+      doubleRAF(() => {
+        if (window.enhancedAnimationEngine?.scan) window.enhancedAnimationEngine.scan();
+      });
+    }
   }
 
   function observe() {
@@ -232,9 +238,10 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
   on(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
     mountInitialIfNeeded();
-    if (window.enhancedAnimationEngine?.scan) {
-      later(() => triggerAnimationEngineRescan(), 100);
-    }
+    // Animation-Scan nach Template-Load garantiert nach DOM-Update
+    doubleRAF(() => {
+      if (window.enhancedAnimationEngine?.scan) window.enhancedAnimationEngine.scan();
+    });
   });
 
   on(EVENTS.TEMPLATE_MOUNTED, (e) => {
