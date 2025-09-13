@@ -57,8 +57,9 @@
   opacity: 1;
   transform: var(--transform-none);
   transition: all var(--transition-slow);
-  max-height: 400px;
+  max-height: 450px; /* Mehr Höhe für bessere Darstellung */
   overflow: hidden;
+  padding-bottom: 20px; /* Zusätzlicher Platz nach unten */
 }
 
 .footer-hidden {
@@ -71,7 +72,8 @@
 .footer-full-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--spacing-xl, 2rem) var(--spacing-lg, 1.5rem);
+  padding: var(--spacing-xl, 2rem) var(--spacing-lg, 1.5rem) var(--spacing-xxl, 2.5rem) var(--spacing-lg, 1.5rem);
+  /* Erweiterte Padding: oben | rechts | unten | links */
 }
 
 .footer-main-grid {
@@ -192,14 +194,14 @@
 .footer-expanded .footer-maximized {
   opacity: 1;
   transform: var(--transform-none);
-  max-height: 400px;
+  max-height: 450px; /* Entspricht der neuen Höhe */
   pointer-events: auto;
 }
 
 .footer-expanded .footer-hidden {
   opacity: 1;
   transform: var(--transform-none);
-  max-height: 400px;
+  max-height: 450px; /* Erhöhte maximale Höhe */
   pointer-events: auto;
 }
 
@@ -230,9 +232,16 @@
 }
 
 @media (max-width: 480px) {
+  .site-footer-fixed {
+    /* Footer ganz unten bei kleinen Bildschirmen fixieren */
+    bottom: 0;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+    /* Zusätzlicher Padding für bessere Sichtbarkeit */
+  }
+  
   .footer-minimized {
-    padding: 0.4rem 0.2rem 0.4rem 0.2rem;
-    min-height: 48px;
+    padding: 0.6rem 0.2rem 0.8rem 0.2rem;
+    min-height: 52px;
     border-radius: 12px 12px 0 0;
     box-shadow: 0 -2px 12px rgba(0,0,0,0.13);
     background: #2c2c2e;
@@ -276,6 +285,16 @@
   }
   .footer-social-links {
     justify-content: center;
+  }
+  
+  /* Maximierter Footer bei kleinen Bildschirmen */
+  .footer-maximized {
+    padding-bottom: 30px; /* Mehr Platz nach unten auf mobilen Geräten */
+  }
+  
+  .footer-full-content {
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-md, 1rem) var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
+    /* Mehr Platz nach unten: oben | rechts | unten | links */
   }
 }
 
