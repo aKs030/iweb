@@ -13,6 +13,14 @@ export function throttle(func, limit = 250) {
   };
 }
 
+export function debounce(fn, wait = 100) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
 // --- Array Utilities ---
 export function shuffle(array) {
   const arr = [...array];

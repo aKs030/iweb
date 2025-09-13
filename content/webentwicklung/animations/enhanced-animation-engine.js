@@ -1,4 +1,5 @@
-import { debounce, isReducedMotion } from './animation-utils.js';
+import { debounce } from '../utils/common-utils.js';
+import { isReducedMotion } from './animation-utils.js';
 /**
  * Enhanced Animation Engine - Optimized Animation System
  * Hochperformantes Animation-System mit GPU-Beschleunigung

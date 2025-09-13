@@ -62,11 +62,6 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   }
 
   function prepareAnimationReset(section) {
-    // SnapScroll WeakSet für diese Section clearen
-    if (window.snapScrollInstance && typeof window.snapScrollInstance.clearSectionFromAnimated === 'function') {
-      window.snapScrollInstance.clearSectionFromAnimated(section);
-    }
-    
     if (window.enhancedAnimationEngine?.resetSection) {
       window.enhancedAnimationEngine.resetSection(section);
     } else {
@@ -95,39 +90,20 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     return live;
   }
 
-  function performPostAnimationActions(section) {
-    // Batch DOM operations
+  function applyInAnimation(section, ANIM_IN, EASE, done) {
+    // Verwende Enhanced Animation Engine für konsistente Animationen
+    section.setAttribute('data-animation', 'fadeInUp');
+    section.setAttribute('data-duration', ANIM_IN + 'ms');
+    
+    // Trigger Animation Engine rescan für neue Attribute
+    triggerAnimationEngineRescan();
+    
+    // Dispatch template mounted event
     requestAnimationFrame(() => {
-      triggerAnimationEngineRescan();
       section.dispatchEvent(new CustomEvent('template:mounted', {
         detail: { templateId: section.dataset.currentTemplate },
         bubbles: true
       }));
-      
-      // SnapScroll rescan nach Animation Engine - nur einmal
-      if (window.snapScrollInstance?.rescan) {
-        window.snapScrollInstance.rescan();
-      }
-    });
-  }
-
-  function applyInAnimation(section, ANIM_IN, EASE, done) {
-    // Performance-optimiert: will-change vor Animation setzen
-    section.style.willChange = 'transform, opacity';
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(10px) translateZ(0)';
-    section.style.transition = `transform ${ANIM_IN}ms ${EASE}, opacity ${ANIM_IN}ms ${EASE}`;
-    
-    // Optimized timing - single RAF mit batch processing
-    requestAnimationFrame(() => {
-      section.style.opacity = '1';
-      section.style.transform = 'translateY(0) translateZ(0)';
-      
-      // will-change cleanup nach Animation
-      later(() => {
-        section.style.willChange = 'auto';
-        performPostAnimationActions(section);
-      }, ANIM_IN + 50);
     });
     
     later(done, ANIM_IN);

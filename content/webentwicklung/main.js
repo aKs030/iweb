@@ -298,15 +298,11 @@ function loadMenuAssets() {
     // Home/Hero Feature-Bundle initialisieren
     initHeroFeatureBundle();
 
-    // EINFACHE Snap-Scroll Animationen initialisieren
-    const { default: SnapScrollAnimations } = await import('./animations/snap-scroll-animations.js');
-    window.snapScrollAnimations = new SnapScrollAnimations();
-
-    // Re-scan nach Template-Loading
+    // Re-scan nach Template-Loading für Enhanced Animation Engine
     document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
-      // Bei der einfachen Version: neue Karten beobachten
-      if (window.snapScrollAnimations?.observeCards) {
-        setTimeout(() => window.snapScrollAnimations.observeCards(), 120);
+      // Animation Engine rescan für neue Templates
+      if (window.enhancedAnimationEngine?.scan) {
+        setTimeout(() => window.enhancedAnimationEngine.scan(), 120);
       }
     });
 
