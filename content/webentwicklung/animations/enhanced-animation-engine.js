@@ -19,9 +19,11 @@ import { isReducedMotion } from './animation-utils.js';
 
 class EnhancedAnimationEngine {
   constructor(options = {}) {
+    // Für Desktop: spätere Animation (fast ganz sichtbar), weniger rootMargin
+    const isDesktop = window.matchMedia && window.matchMedia('(min-width: 900px)').matches;
     this.options = {
-      threshold: 0.15, // Leicht erhöht für weniger false triggers
-      rootMargin: '50px',
+      threshold: isDesktop ? 0.35 : 0.15,
+      rootMargin: isDesktop ? '10px' : '50px',
       maxAnimations: 20, // Limit für gleichzeitige Animationen
       repeatOnScroll: false, // Elemente bei Verlassen zurücksetzen, um erneut zu animieren
       suppressWarnings: false, // neue Option um Performance-Warnungen abzuschalten
@@ -177,8 +179,8 @@ class EnhancedAnimationEngine {
    * Batch-Animation Trigger für bessere Performance
    */
   batchTriggerAnimations(entries) {
-    // Limit für gleichzeitige Animationen prüfen (hart auf 6 begrenzt)
-    const MAX_ANIM = 6;
+    // Limit für gleichzeitige Animationen dynamisch aus Optionen
+    const MAX_ANIM = this.options.maxAnimations;
     if (this.activeAnimations.size >= MAX_ANIM) {
       entries.slice(MAX_ANIM - this.activeAnimations.size)
         .forEach(entry => this.animationQueue.add(entry.target));
@@ -643,7 +645,17 @@ class EnhancedAnimationEngine {
     };
 
     if (animationData.delay > 0) {
-      setTimeout(triggerFn, animationData.delay);
+      // Delay per AnimationFrame-Kette für gleichmäßigere Starts
+      const start = performance.now();
+      const delayMs = animationData.delay;
+      const rafDelay = (now) => {
+        if (now - start >= delayMs) {
+          triggerFn();
+        } else {
+          requestAnimationFrame(rafDelay);
+        }
+      };
+      requestAnimationFrame(rafDelay);
     } else {
       triggerFn();
     }
