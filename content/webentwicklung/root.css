@@ -6,11 +6,11 @@
   --header-height: 72px;
 
   /* Farbpalette */
-  /* Brand vs. Accessible UI Farben */
-  --primary-brand: #098bff; /* nur für dekorative Verläufe / Akzente */
-  --primary-color: #0564b3; /* AA normal text on white (white text on this ~5:1) */
-  --primary-dark: #034a85;
-  --primary-light: #0b7dd8; /* dunkler als ursprüngliches Light für besseren Verlaufskontrast */
+  /* Safari UI Blautöne für moderne, vertraute Benutzeroberfläche */
+  --primary-brand: #007AFF; /* Safari UI Blau für dekorative Verläufe / Akzente */
+  --primary-color: #007AFF; /* Safari UI Blau - modernes, vertrautes Interface-Blau */
+  --primary-dark: #0051D5; /* Dunkleres Blau für pressed states und Hover-Effekte */
+  --primary-light: #34AADC; /* Helleres Blau für disabled states und subtile Akzente */
   --secondary-color: #cc2f2f; /* statt #ff6b6b für Kontrast mit Weiß >5:1 */
   --success-color: #2d9e47; /* dunkler für ausreichenden Kontrast */
   --warning-color: #b28900; /* dunkler Gelbton für Text auf warning-Elementen */
