@@ -1,3 +1,4 @@
+import { debounce } from './animation-utils.js';
 /**
  * Enhanced Animation Engine - Optimized Animation System
  * Hochperformantes Animation-System mit GPU-Beschleunigung
@@ -209,18 +210,17 @@ class EnhancedAnimationEngine {
           pendingAttrTargets.add(mutation.target);
         }
       }
-      mutationTimeout = setTimeout(() => scheduleIdle(() => {
-        const added = Array.from(pendingAdded);
-        const attrTargets = Array.from(pendingAttrTargets);
-        pendingAdded.clear();
-        pendingAttrTargets.clear();
-
-        // Neue Elemente und deren Nachfahren scannen
-        for (const element of added) processAdded(element);
-
-        // Attribute-Änderungen verarbeiten
-        for (const el of attrTargets) processAttrTarget(el);
-      }), 100); // Debounce um Batch-Verarbeitung zu ermöglichen
+      if (!this._debouncedMutation) {
+        this._debouncedMutation = debounce(() => scheduleIdle(() => {
+          const added = Array.from(pendingAdded);
+          const attrTargets = Array.from(pendingAttrTargets);
+          pendingAdded.clear();
+          pendingAttrTargets.clear();
+          for (const element of added) processAdded(element);
+          for (const el of attrTargets) processAttrTarget(el);
+        }), 100);
+      }
+      this._debouncedMutation();
     });
 
     this.mutationObserver.observe(document.body, {

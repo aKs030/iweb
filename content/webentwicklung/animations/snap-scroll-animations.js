@@ -1,3 +1,4 @@
+import { debounce, isReducedMotion } from './animation-utils.js';
 /**
  * Snap Scroll Card & Header Animations
  * Ausgelagert aus main.js für bessere Wartbarkeit & geringere kognitive Komplexität.
@@ -11,13 +12,11 @@
  *  - prefers-reduced-motion Respekt
  *  - Optional Singleton Zugriff via getSnapScrollInstance()
  */
-import { prefersReducedMotion } from '../utils/common-utils.js';
 import { createLogger } from '../utils/logger.js';
 import { animateContainerStagger } from './card-animation-utils.js';
 
 const log = createLogger('snap-scroll');
 
-const REDUCED_MOTION = prefersReducedMotion();
 
 const CONFIG = {
   threshold: 0.3,
@@ -33,9 +32,7 @@ const CONFIG = {
  * @param {number} [wait=100] - Wartezeit in ms
  * @returns {Function}
  */
-function debounce(fn, wait = 100) {
-  let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
-}
+// Entfernt: debounce, wird jetzt aus animation-utils.js importiert
 
 /**
  * Animiert alle Karten in einem Container mittels Utility Stagger Funktion
@@ -55,8 +52,9 @@ function animateCards(container) {
  * Simpler Translate/Fade Header Effekt
  * @param {HTMLElement} header
  */
+
 function animateHeader(header) {
-  if (REDUCED_MOTION) return;
+  if (isReducedMotion()) return;
   header.style.transform = 'translateY(-20px)';
   header.style.opacity = '0';
   header.style.transition = '';

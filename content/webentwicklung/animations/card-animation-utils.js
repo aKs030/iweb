@@ -1,3 +1,4 @@
+import { isReducedMotion } from './animation-utils.js';
 /**
  * Gemeinsame Utility-Funktionen für Karten-Einblend-Animationen.
  * Ziel: zentrales, wiederverwendbares Stagger & Entrance Verhalten für Kartensammlungen.
@@ -8,9 +9,7 @@
  *  - Fügt am Ende die Klasse 'scroll-animated' hinzu um erneutes Triggern zu vermeiden
  */
 
-import { prefersReducedMotion } from '../utils/common-utils.js';
-
-const REDUCED = prefersReducedMotion();
+// prefersReducedMotion entfernt, stattdessen zentrale isReducedMotion()-Funktion
 
 /**
  * Führt eine einzelne Karten-Einblendung (Translate + Scale + Fade) aus.
@@ -31,7 +30,7 @@ export function animateCardEntrance(card, {
   easing = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
   delay = 0
 } = {}) {
-  if (REDUCED) {
+  if (isReducedMotion()) {
     card.classList.add('scroll-animated');
     return;
   }
@@ -79,7 +78,7 @@ export function animateContainerStagger(container, {
       delay: index * stagger
     });
   });
-  if (REDUCED) {
+  if (isReducedMotion()) {
     container.classList.add('animations-complete');
     onComplete?.();
     return;
@@ -91,8 +90,3 @@ export function animateContainerStagger(container, {
   }, total);
 }
 
-/**
- * Liefert gecachten prefers-reduced-motion Zustand (einmalig beim Modul-Load ermittelt).
- * @returns {boolean}
- */
-export function isReducedMotion() { return REDUCED; }
