@@ -1,6 +1,7 @@
 import { throttle, prefersReducedMotion, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
 import { initParticles as _initParticles } from '../../content/webentwicklung/particles/particle-system.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
+import { EVENTS } from '../../content/webentwicklung/utils/events.js';
 
 const log = createLogger('hero-manager');
 
@@ -128,7 +129,10 @@ function initHeroAnimations() {
     const hero = getElementById('hero');
     if (!hero) return;
     if (!window.enhancedAnimationEngine) {
-      // Simple Animation Engine initialisieren
+      // Fallback: Wenn die eigentliche EnhancedAnimationEngine noch nicht geladen wurde
+      // (Race Condition bei sehr schneller Hero-Initialisierung oder deferred Laden),
+      // stellen wir eine minimale API bereit, damit nachfolgende Aufrufe nicht fehlschlagen.
+      // Diese wird später still von der echten Engine ersetzt.
       window.enhancedAnimationEngine = {
         scan() { return true; },
         setRepeatOnScroll() { return true; },
@@ -186,7 +190,7 @@ function initHeroAnimations() {
 // ===== Public API =====
 export function initHeroFeatureBundle() {
   // Events für Hero
-  document.addEventListener('hero:loaded', () => {
+  document.addEventListener(EVENTS.HERO_LOADED, () => {
     const el = getElementById('greetingText');
     if (!el) return;
     if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
@@ -224,7 +228,7 @@ export function initHeroFeatureBundle() {
     } catch { /* noop */ }
   }, { once: true });
 
-  document.addEventListener('hero:typingEnd', (e) => {
+  document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
     const text = e.detail?.text || 'Text';
     (window.announce || (() => {}))(`Zitat vollständig: ${text}`);
   });

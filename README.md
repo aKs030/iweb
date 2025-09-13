@@ -29,7 +29,11 @@ Ein modernes, performantes Portfolio von **Abdulkerim Sesli** - Webentwickler un
 ```
 iweb-1/
 ├── content/webentwicklung/     # Core Web Components  
-│   ├── main.js                 # App Entry Point + Snap-Scroll Animations
+│   ├── main.js                 # App Entry Point + Section Loader + Global Init
+│   ├── animations/
+│   │   ├── enhanced-animation-engine.js  # Data-Attribut gesteuerte Engine
+│   │   ├── snap-scroll-animations.js     # Karten + Header Scroll Animations (IO)
+│   │   └── card-animation-utils.js       # Gemeinsame Karten Stagger Utilities
 │   ├── root.css               # Design System Tokens
 │   ├── utils/                 # Shared Utilities (Logger, Common Utils)
 │   ├── menu/                  # Navigation System
@@ -50,11 +54,12 @@ iweb-1/
 <section data-section-src="/pages/about/about.html">
 ```
 
-#### **Snap-Scroll Animations** (`main.js`)  
+#### **Snap-Scroll Animations** (`animations/snap-scroll-animations.js`)  
 ```javascript
-// Intersection Observer für 30% Sichtbarkeit
-// Staggered Card Entrance mit 150ms Delay
-// Reduced Motion Support integriert
+// Intersection Observer (threshold 0.3)
+// Staggered Card Entrance (Utility: animateContainerStagger)
+// Debounced rescan() (120ms) bei dynamisch hinzugefügten Sektionen
+// Reduced Motion Short-Circuit
 ```
 
 #### **Feature Rotation System** (`karten-rotation.js`)
@@ -63,6 +68,34 @@ iweb-1/
 // 5 Feature Templates mit smooth Transitions
 // Animation Engine Integration
 ```
+
+#### **Card Animation Utilities** (`card-animation-utils.js`)
+```javascript
+animateContainerStagger(container, {
+	selector: '.card', stagger: 150, duration: 600,
+	initialTranslate: 30, scaleFrom: 0.9
+});
+```
+
+#### **Section Loader Retry**
+Einmaliger Retry bei transienten Fetch-Fehlern (5xx oder offline) mit kleinem Backoff.
+
+#### **Custom Events Übersicht**
+Alle Eventnamen sind zentral in `utils/events.js` (Konstante `EVENTS`) definiert:
+```javascript
+import { EVENTS, fire, on } from './utils/events.js';
+
+fire(EVENTS.HERO_LOADED);
+const unsubscribe = on(EVENTS.HERO_TYPING_END, e => console.log(e.detail));
+```
+
+Aktuell definierte Events (Auszug):
+`hero:loaded`, `hero:typingEnd`, `featuresTemplatesLoaded`, `featuresTemplatesError`, `template:mounted`, `features:change`, `snapSectionChange`, `cards:animated`, `section:loaded`
+
+Damit werden Tippfehler vermieden und Autocomplete verbessert.
+
+#### **Dynamisches Logging**
+Log-Level via URL Parameter `?log=debug` oder `localStorage.LOG_LEVEL` steuerbar (`error|warn|info|debug`). Erlaubt gezieltes Debugging ohne Codeänderung.
 
 ## 🛠️ **Development**
 

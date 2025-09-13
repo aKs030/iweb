@@ -1,6 +1,7 @@
 // Zentrale Utilities nutzen
 import { shuffle as shuffleArray, prefersReducedMotion, TimerManager } from '../../content/webentwicklung/utils/common-utils.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
+import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
 (() => {
   'use strict';
@@ -35,7 +36,7 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     const url = srcOverride || TEMPLATE_URL;
     if (TEMPLATE_IDS.some(id => byId(id))) {
       loaded = true;
-      document.dispatchEvent(new CustomEvent('featuresTemplatesLoaded'));
+      fire(EVENTS.FEATURES_TEMPLATES_LOADED);
       return;
     }
     try {
@@ -47,10 +48,10 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       document.body.appendChild(wrap);
       loaded = true;
       log.debug('Templates geladen', { url });
-      document.dispatchEvent(new CustomEvent('featuresTemplatesLoaded'));
+      fire(EVENTS.FEATURES_TEMPLATES_LOADED);
     } catch (error) {
       log.error('Templates laden fehlgeschlagen', url, error);
-      document.dispatchEvent(new CustomEvent('featuresTemplatesError', { detail: { error, url } }));
+      fire(EVENTS.FEATURES_TEMPLATES_ERROR, { error, url });
     }
   }
 
@@ -141,9 +142,7 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
       section.dataset.currentTemplate = templateId;
       
       try {
-        document.dispatchEvent(new CustomEvent('features:change', { 
-          detail: { index: this.currentIndex, total: this.order.length } 
-        }));
+        fire(EVENTS.FEATURES_CHANGE, { index: this.currentIndex, total: this.order.length });
       } catch {
         // Event dispatch failed
       }
@@ -231,14 +230,14 @@ import { createLogger } from '../../content/webentwicklung/utils/logger.js';
     }
   };
 
-  document.addEventListener('featuresTemplatesLoaded', () => {
+  on(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
     mountInitialIfNeeded();
     if (window.enhancedAnimationEngine?.scan) {
       later(() => triggerAnimationEngineRescan(), 100);
     }
-  }, { once: false });
+  });
 
-  document.addEventListener('template:mounted', (e) => {
+  on(EVENTS.TEMPLATE_MOUNTED, (e) => {
     if (e.target.id === SECTION_ID && window.enhancedAnimationEngine?.handleTemplateChange) {
       window.enhancedAnimationEngine.handleTemplateChange(e.target);
     }

@@ -1,10 +1,23 @@
-import { getElementById, prefersReducedMotion } from '../webentwicklung/utils/common-utils.js';
+import { getElementById } from '../webentwicklung/utils/common-utils.js';
 import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
 import { createLogger, setGlobalLogLevel } from './utils/logger.js';
+import { EVENTS, fire } from './utils/events.js';
 import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
+import getSnapScrollInstance from './animations/snap-scroll-animations.js';
 
 // ===== Globale Konfiguration =====
-setGlobalLogLevel('warn');
+// Dynamisches Log-Level: URL Param ?log=debug oder localStorage LOG_LEVEL
+(() => {
+  try {
+    const params = new URLSearchParams(location.search);
+    const urlLevel = params.get('log');
+    const stored = localStorage.getItem('LOG_LEVEL');
+    const lvl = urlLevel || stored || 'warn';
+    setGlobalLogLevel(lvl);
+  } catch {
+    setGlobalLogLevel('warn');
+  }
+})();
 const log = createLogger('main');
 
 // ===== Accessibility Utilities =====
@@ -19,131 +32,8 @@ function announce(message, { assertive = false } = {}) {
     /* Fail silently */
   }
 }
-// ===== Snap-Scroll Karten-Animationen =====
-const _SnapScrollAnimations = (() => {
-  let observer = null;
-  const animatedSections = new WeakSet();
-  const REDUCED_MOTION = prefersReducedMotion();
-  
-  const CONFIG = {
-    threshold: 0.3,
-    rootMargin: '-10% 0px -10% 0px',
-    staggerDelay: 150,
-    cardDuration: 600,
-  };
-
-  function animateCard(card, delay) {
-    if (REDUCED_MOTION) {
-      card.classList.add('scroll-animated');
-      return;
-    }
-    
-    card.style.transform = 'translateY(30px) scale(0.9)';
-    card.style.opacity = '0';
-    card.style.transition = '';
-    
-    setTimeout(() => {
-      card.style.transition = `transform ${CONFIG.cardDuration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity ${CONFIG.cardDuration}ms ease-out`;
-      card.style.transform = 'translateY(0) scale(1)';
-      card.style.opacity = '1';
-      
-      setTimeout(() => {
-        card.classList.add('scroll-animated');
-      }, CONFIG.cardDuration);
-    }, delay);
-  }
-
-  function animateCards(container) {
-    const cards = container.querySelectorAll('.card');
-    cards.forEach((card, index) => {
-      animateCard(card, index * CONFIG.staggerDelay);
-    });
-    
-    if (!REDUCED_MOTION) {
-      const totalDuration = cards.length * CONFIG.staggerDelay + CONFIG.cardDuration;
-      setTimeout(() => {
-        container.classList.add('animations-complete');
-      }, totalDuration);
-    } else {
-      container.classList.add('animations-complete');
-    }
-  }
-
-  function animateHeader(header) {
-    if (REDUCED_MOTION) return;
-    
-    header.style.transform = 'translateY(-20px)';
-    header.style.opacity = '0';
-    header.style.transition = '';
-    
-    requestAnimationFrame(() => {
-      header.style.transition = 'transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 500ms ease-out';
-      header.style.transform = 'translateY(0)';
-      header.style.opacity = '1';
-    });
-  }
-
-  function handleIntersection(entries) {
-    entries.forEach(entry => {
-      const section = entry.target;
-      
-      if (entry.isIntersecting && entry.intersectionRatio >= CONFIG.threshold) {
-        if (animatedSections.has(section)) return;
-        animatedSections.add(section);
-        
-        log.debug('Snap-scroll animation triggered', { id: section.id });
-        
-        const header = section.querySelector('.section-header');
-        if (header) {
-          animateHeader(header);
-        }
-        
-        const cardsContainer = section.querySelector('.features-cards');
-        if (cardsContainer) {
-          setTimeout(() => animateCards(cardsContainer), 200);
-        }
-        
-        const title = section.querySelector('.section-title')?.textContent || 'Section';
-        announce(`${title} Abschnitt animiert`);
-      }
-    });
-  }
-
-  function init() {
-    if (observer) return;
-    
-    log.debug('Initializing snap-scroll card animations');
-    
-    observer = new IntersectionObserver(handleIntersection, {
-      threshold: [0, CONFIG.threshold, 0.5, 1],
-      rootMargin: CONFIG.rootMargin
-    });
-    
-    const sections = document.querySelectorAll('.full-screen-section, [data-scroll-animate]');
-    sections.forEach(section => {
-      const hasCards = section.querySelector('.features-cards');
-      if (hasCards) {
-        observer.observe(section);
-        log.debug('Observing section for snap-scroll animations', { id: section.id || 'unnamed' });
-      }
-    });
-  }
-
-  function rescan() {
-    if (!observer) return;
-    
-    const sections = document.querySelectorAll('.full-screen-section, [data-scroll-animate]');
-    sections.forEach(section => {
-      const hasCards = section.querySelector('.features-cards');
-      if (hasCards && !animatedSections.has(section)) {
-        observer.observe(section);
-        log.debug('Added new section to snap-scroll observer', { id: section.id || 'unnamed' });
-      }
-    });
-  }
-
-  return { init, rescan };
-})();
+// Snap Scroll Animations jetzt ausgelagert -> ./animations/snap-scroll-animations.js
+const _SnapScrollAnimations = getSnapScrollInstance();
 
 window.announce = window.announce || announce;
 // ===== Section Loader Module =====
@@ -153,53 +43,103 @@ const SectionLoader = (() => {
   const SELECTOR = 'section[data-section-src]';
   const SEEN = new WeakSet();
 
+  /**
+   * Lädt dynamisch den HTML-Inhalt einer Section per data-section-src.
+   * Retry (1 zusätzlicher Versuch) bei transienten Fehlern (5xx / offline) + Timeout (8s) mit AbortController.
+   * Reduzierte Komplexität durch Helper-Funktionen.
+   * @param {HTMLElement} section
+   */
   async function loadInto(section) {
     if (SEEN.has(section)) return;
     SEEN.add(section);
-    
     const url = section.getAttribute('data-section-src');
-    if (!url) { 
-      section.removeAttribute('aria-busy'); 
-      return; 
-    }
+    if (!url) { section.removeAttribute('aria-busy'); return; }
 
+    prepSectionForLoad(section);
+    const sectionName = resolveSectionName(section);
+    announce(`Lade Abschnitt ${sectionName}…`);
+
+    const maxAttempts = 2;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const result = await attemptFetchInsert(url, section);
+      if (result.ok) {
+        finalizeSuccess(section, sectionName);
+        return;
+      }
+      const { error, transient } = result;
+      log.warn('SectionLoader Versuch fehlgeschlagen', { attempt: attempt + 1, transient, error });
+      if (error?.name === 'AbortError') log.warn('SectionLoader Timeout', { url });
+      const last = attempt === maxAttempts - 1;
+      if (last || !transient) {
+        finalizeError(section, sectionName);
+        return;
+      }
+      await backoff(attempt);
+    }
+    section.removeAttribute('aria-busy');
+  }
+
+  /** Bereitet Section DOM-State für Ladevorgang vor (ARIA + Status) */
+  function prepSectionForLoad(section) {
     section.setAttribute('aria-busy', 'true');
     section.dataset.state = 'loading';
-    
+  }
+
+  /** Ermittelt sprechbaren Section-Namen (für Announce) */
+  function resolveSectionName(section) {
     const labelId = section.getAttribute('aria-labelledby');
-    let sectionName = '';
-    if (labelId) { 
-      const lbl = document.getElementById(labelId); 
-      sectionName = lbl ? lbl.textContent.trim() : ''; 
+    if (labelId) {
+      const lbl = document.getElementById(labelId);
+      const txt = lbl?.textContent?.trim();
+      if (txt) return txt;
     }
-    if (!sectionName) sectionName = section.id || 'Abschnitt';
-    
-    announce(`Lade Abschnitt ${sectionName}…`);
-    
+    return section.id || 'Abschnitt';
+  }
+
+  /**
+   * Einzelner Fetch-Versuch mit optionalem Timeout + DOM Insertion.
+   * @returns {Promise<{ok:true}|{ok:false,error:any,transient:boolean}>}
+   */
+  async function attemptFetchInsert(url, section) {
+    const AC = globalThis.AbortController;
+    let controller, timeout;
     try {
-      const res = await fetch(url, { credentials: 'same-origin' });
+      if (AC) { controller = new AC(); timeout = setTimeout(() => controller.abort(), 8000); }
+      const res = await fetch(url, { credentials: 'same-origin', signal: controller?.signal });
+      if (timeout) clearTimeout(timeout);
       if (!res.ok) throw new Error(`${res.status} ${res.statusText} @ ${url}`);
-      
       const html = await res.text();
       section.insertAdjacentHTML('beforeend', html);
-      
       const tpl = section.querySelector('template');
       if (tpl) section.appendChild(tpl.content.cloneNode(true));
-      
       section.querySelectorAll('.section-skeleton').forEach(n => n.remove());
       section.dataset.state = 'loaded';
-      announce(`Abschnitt ${sectionName} geladen.`);
-      
-      if (section.id === 'hero') {
-        document.dispatchEvent(new CustomEvent('hero:loaded'));
-      }
-    } catch (err) {
-      log.error('SectionLoader:', err);
-      section.dataset.state = 'error';
-      announce(`Fehler beim Laden von Abschnitt ${sectionName}.`, { assertive: true });
+      if (section.id === 'hero') fire(EVENTS.HERO_LOADED);
+      return { ok: true };
+    } catch (error) {
+      const transient = (error && /5\d\d/.test(String(error))) || (error && navigator.onLine === false);
+      if (timeout) clearTimeout(timeout);
+      return { ok: false, error, transient };
     } finally {
-      section.removeAttribute('aria-busy');
+      if (section.dataset.state === 'loaded') section.removeAttribute('aria-busy');
     }
+  }
+
+  /** Abschluss bei Erfolg (Announce) */
+  function finalizeSuccess(section, sectionName) {
+    announce(`Abschnitt ${sectionName} geladen.`);
+  }
+
+  /** Abschluss bei Fehler (Announce + Status) */
+  function finalizeError(section, sectionName) {
+    section.dataset.state = 'error';
+    section.removeAttribute('aria-busy');
+    announce(`Fehler beim Laden von Abschnitt ${sectionName}.`, { assertive: true });
+  }
+
+  /** Exponentiell leicht wachsender Backoff */
+  function backoff(attempt) {
+    return new Promise(r => setTimeout(r, 300 + (attempt + 1) * 200));
   }
 
   function init() {
@@ -345,12 +285,12 @@ function loadMenuAssets() {
     // Home/Hero Feature-Bundle initialisieren
     initHeroFeatureBundle();
 
-    // Snap-Scroll Animationen initialisieren
+    // Snap-Scroll Animationen initialisieren (aus ausgelagertem Modul)
     _SnapScrollAnimations.init();
 
     // Re-scan nach Template-Loading
-    document.addEventListener('featuresTemplatesLoaded', () => {
-      setTimeout(() => _SnapScrollAnimations.rescan(), 100);
+    document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
+      setTimeout(() => _SnapScrollAnimations.rescan(), 120);
     });
 
     // Menü-Assets laden
@@ -360,3 +300,12 @@ function loadMenuAssets() {
     setTimeout(hideLoading, 5000);
   });
 })();
+
+// ===== Custom Event Übersicht =====
+// hero:loaded             -> Hero Section HTML fertig geladen (SectionLoader)
+// hero:typingEnd          -> Typing Effekt beendet (Hero Typing Modul)
+// featuresTemplatesLoaded -> Feature Karten Templates (Rotation) sind verfügbar
+// template:mounted        -> Neues Feature Template wurde in Section eingesetzt
+// features:change         -> Feature Rotation hat ein anderes Template aktiviert
+// (intern) snapSectionChange -> Snap Scroll / Navigation hat sichtbare Sektion geändert
+// Diese Events ermöglichen lose Kopplung zwischen Lazy-Loaded Sektionen, Animation Engine und UI.
