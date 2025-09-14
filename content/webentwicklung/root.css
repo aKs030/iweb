@@ -10,32 +10,21 @@
 
   /* Farbpalette - Dark Mode */
   /* Safari UI Blautöne für moderne, vertraute Benutzeroberfläche */
-  --primary-brand: #007AFF; /* Safari UI Blau für dekorative Verläufe / Akzente */
   --primary-color: #007AFF; /* Safari UI Blau - modernes, vertrautes Interface-Blau */
   --primary-dark: #0051D5; /* Dunkleres Blau für pressed states und Hover-Effekte */
   --primary-light: #34AADC; /* Helleres Blau für disabled states und subtile Akzente */
-  --secondary-color: #cc2f2f; /* statt #ff6b6b für Kontrast mit Weiß >5:1 */
   --success-color: #2d9e47; /* dunkler für ausreichenden Kontrast */
-  --warning-color: #b28900; /* dunkler Gelbton für Text auf warning-Elementen */
-  --error-color: #cc2f2f;
 
   /* Background / Surfaces - Dark Mode */
   --bg-dark: #0a0a0a;
   --bg-section: #111111;
   --bg-card: #1a1a1a;
-  --bg-hover: #222222;
-  --bg-primary: var(--bg-dark);
-  --bg-secondary: var(--bg-section);
-  --bg-elevated: var(--bg-card);
 
   /* Textfarben - Dark Mode */
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --text-muted: #7a7a7a; /* ~5.8:1 auf #0a0a0a */
-  --text-inverse: #000000;
   --border-color: #2a2a2a;
-  --border-light: #333333;
-  --border-subtle: #1a1a1a;
 
   /* Spacing */
   --spacing-xxs: 0.1rem;
@@ -149,24 +138,15 @@
   --bg-dark: #ffffff00;
   --bg-section: #fff200;
   --bg-card: #2764de;
-  --bg-hover: #000000;
-  --bg-primary: #41fc02;
-  --bg-secondary: #ffffff;
-  --bg-elevated: #f3df03;
 
   /* Textfarben - Light Mode */
   --text-primary: #f6f6f6;
   --text-secondary: #ffffff;
   --text-muted: #ffffff;
-  --text-inverse: #ffffff;
   --border-color: #f60808;
-  --border-light: #f60000;
-  --border-subtle: #f1f3f5;
 
   /* Angepasste Farben für Light Mode */
   --success-color: #198754;
-  --warning-color: #fd7e14;
-  --error-color: #dc3545;
 
   /* Schatten für Light Mode */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
@@ -196,24 +176,15 @@
     --bg-dark: #ffffff;
     --bg-section: #f8f9fa;
     --bg-card: #ffffff;
-    --bg-hover: #f1f3f5;
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-elevated: #ffffff;
 
     /* Textfarben - Auto Light Mode */
     --text-primary: #1a1a1a;
     --text-secondary: #4a4a4a;
     --text-muted: #6c757d;
-    --text-inverse: #ffffff;
     --border-color: #e9ecef;
-    --border-light: #dee2e6;
-    --border-subtle: #f1f3f5;
 
     /* Angepasste Farben für Auto Light Mode */
     --success-color: #198754;
-    --warning-color: #fd7e14;
-    --error-color: #dc3545;
 
     /* Schatten für Auto Light Mode */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
