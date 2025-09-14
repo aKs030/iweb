@@ -12,6 +12,11 @@
  * @version 3.0.0
  */
 
+/* ===== FOOTER CSS VARIABLES ===== */
+:root {
+  --footer-height: 72px;
+}
+
 .site-footer-fixed {
   position: fixed;
   bottom: 0;
@@ -744,6 +749,73 @@
   body {
     padding-bottom: 0 !important;
   }
+}
+
+/* ===== BODY & LAYOUT ANPASSUNGEN FÜR FOOTER ===== */
+
+/* Body padding für fixen Footer - aus index.css verschoben */
+body {
+  padding-bottom: 60px; /* Platz für fixen Footer */
+  transition: padding-bottom var(--transition-base);
+}
+
+/* Footer-Expansion Zustand */
+body.footer-expanded {
+  padding-bottom: 350px; /* Mehr Platz für erweiterten Footer */
+}
+
+/* Footer Trigger Zone */
+.footer-trigger-zone {
+  height: 100vh; /* Eine Viewport-Höhe für ausreichend Scroll-Raum */
+  width: 100%;
+  pointer-events: none;
+  background: transparent;
+  scroll-snap-align: start; /* Ermöglicht Scroll zu dieser Zone */
+}
+
+/* Responsive Design für Footer-Padding */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 50px;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 280px;
+  }
+}
+
+/* ===== HERO SECTION FOOTER ANPASSUNGEN ===== */
+
+/* Hero section Footer-height Berechnungen - aus greeting-text-hero.css verschoben */
+@media (max-width: 768px) {
+  .hero {
+    min-height: calc(100dvh - var(--footer-height));
+  }
+  
+  .greeting-text-hero {
+    margin-bottom: calc(var(--footer-height) + 12px);
+  }
+}
+
+/* Hero-subtitle Footer positioning */
+.hero-subtitle {
+  /* ensure subtitle stays above a fixed footer by offsetting from footer height */
+  bottom: calc(var(--footer-height, 64px) + clamp(8px, 1.5vw, 20px) + env(safe-area-inset-bottom));
+  z-index: 70; /* above footer (footer z-index: 60) */
+}
+
+.hero-subtitle--fixed {
+  bottom: calc(var(--footer-height, 64px) + clamp(8px, 1.5vw, 20px) + env(safe-area-inset-bottom));
 }
 
 /* High Contrast Mode */

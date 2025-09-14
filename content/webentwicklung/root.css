@@ -4,7 +4,6 @@
 
 /* Default: Dark Mode (Primärer Modus) */
 :root {
-  --footer-height: 72px;
   --header-height: 72px;
 
   /* Theme Mode Variable */

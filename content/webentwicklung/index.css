@@ -55,45 +55,8 @@ font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
   scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
   scroll-behavior: smooth;
-  padding-bottom: 60px; /* Platz für fixen Footer */
   transition: padding-bottom var(--transition-base);
 }
-
-/* Footer-Expansion Zustand */
-body.footer-expanded {
-  padding-bottom: 350px; /* Mehr Platz für erweiterten Footer */
-}
-
-/* Footer Trigger Zone */
-.footer-trigger-zone {
-  height: 100vh; /* Eine Viewport-Höhe für ausreichend Scroll-Raum */
-  width: 100%;
-  pointer-events: none;
-  background: transparent;
-  scroll-snap-align: start; /* Ermöglicht Scroll zu dieser Zone */
-}
-
-/* Responsive Design für Footer-Padding */
-@media (max-width: 768px) {
-  body {
-    padding-bottom: 50px;
-  }
-  
-  body.footer-expanded {
-    padding-bottom: 300px;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    padding-bottom: 70px;
-  }
-  
-  body.footer-expanded {
-    padding-bottom: 280px;
-  }
-}
-
 
 body {
   font-family: var(--font-primary);
@@ -140,10 +103,9 @@ body {
   .container { padding-inline: max(0.25rem, env(safe-area-inset-left, 0px)); }
   .section { padding: var(--spacing-lg) 0; }
 }
-/* Extra: Footer und Header Safe-Area auf Mobile */
+/* Extra: Header Safe-Area auf Mobile */
 @media (max-width: 480px) {
   body {
-    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
   }
 }

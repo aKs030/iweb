@@ -121,12 +121,6 @@ body.reduce-motion .greeting-text-hero {
 }
 
 @media (max-width: 768px){
-  .hero {
-    min-height: calc(100dvh - var(--footer-height));
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
   .greeting-text-hero {
     /* Tighter scaling on small screens for readability */
   /* Anpassung der Hero-Variablen für kleine Screens */
@@ -137,7 +131,6 @@ body.reduce-motion .greeting-text-hero {
   --greet-anim-grad-dur: 7.5s;
   --greet-anim-pulse-dur: 3.6s;
     margin-top: 20px;
-    margin-bottom: calc(var(--footer-height) + 12px);
     text-shadow: 0 0 12px rgba(37,99,235,0.32), 0 0 22px rgba(37,99,235,0.22);
   }
 }
@@ -183,9 +176,6 @@ body.reduce-motion .anim-soft.animate-element { transform: none !important; opac
 .hero-subtitle{
   position: absolute;
   left: clamp(12px, 2vw, 20px);
-  /* ensure subtitle stays above a fixed footer by offsetting from footer height */
-  bottom: calc(var(--footer-height, 64px) + clamp(8px, 1.5vw, 20px) + env(safe-area-inset-bottom));
-  z-index: 70; /* above footer (footer z-index: 60) */
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -207,7 +197,6 @@ body.reduce-motion .anim-soft.animate-element { transform: none !important; opac
 .hero-subtitle--fixed {
   position: fixed;
   left: clamp(12px, 2vw, 20px);
-  bottom: calc(var(--footer-height, 64px) + clamp(8px, 1.5vw, 20px) + env(safe-area-inset-bottom));
   z-index: 70;
   opacity: 0.92;
   transform: translateY(0);
