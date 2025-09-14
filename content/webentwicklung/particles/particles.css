@@ -36,7 +36,7 @@
 .global-particle-background .gradient-overlay {
   position: absolute; 
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 0%, var(--bg-dark, #0a0a0a) 85%);
+  background: radial-gradient(ellipse at center, transparent 0%, var(--bg-primary, #0a0a0a) 85%);
   opacity: 0.8;
   pointer-events: none;
 }

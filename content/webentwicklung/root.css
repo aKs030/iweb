@@ -1,30 +1,66 @@
 /* =======================
    Global CSS Variables - Dark & Light Mode System
+   
+   FARBÜBERSICHT:
+   ==============
+   
+   📊 DARK MODE (Standard):
+   • App BG:      #0a0a0a (sehr dunkel)
+   • Section BG:  #111111 (dunkel)  
+   • Card BG:     #1a1a1a (weniger dunkel)
+   • Text:        #ffffff → #b0b0b0 → #7a7a7a (hell → grau)
+   • Border:      #2a2a2a (dunkelgrau)
+   
+   � LIGHT MODE (Blauer Hintergrund):
+   • App BG:      #1e3a8a (tiefes Blau)
+   • Section BG:  #1e40af (mittleres Blau)
+   • Card BG:     #2563eb (helles Blau)
+   • Text:        #ffffff → #e2e8f0 → #cbd5e1 (weiß → hellgrau)
+   • Border:      #3b82f6 (helles Blau)
+   
+   🎨 BRAND COLORS (beide Modi):
+   • Primary:     #007AFF (Safari Blau)
+   • Primary Dark: #0051D5 (dunkler)
+   • Primary Light: #34AADC (heller)
+   • Success:     #2d9e47 (Dark) / #10b981 (Light)
 ======================= */
 
 /* Default: Dark Mode (Primärer Modus) */
 :root {
   
-  /* Theme Mode Variable */
   --theme-mode: 'dark';
+  
+  /* Brand Colors - Safari UI inspiriert */
+  --primary-color: #007AFF;    /* Safari UI Blau - Haupt-Akzentfarbe */
+  --primary-dark: #0051D5;     /* Dunkleres Blau für Hover-Effekte */
+  --primary-light: #34AADC;    /* Helleres Blau für disabled States */
+  
+  /* Semantic Colors */
+  --success-color: #2d9e47;    /* Grün für Erfolg/Bestätigung */
 
-  /* Farbpalette - Dark Mode */
-  /* Safari UI Blautöne für moderne, vertraute Benutzeroberfläche */
-  --primary-color: #007AFF; /* Safari UI Blau - modernes, vertrautes Interface-Blau */
-  --primary-dark: #0051D5; /* Dunkleres Blau für pressed states und Hover-Effekte */
-  --primary-light: #34AADC; /* Helleres Blau für disabled states und subtile Akzente */
-  --success-color: #2d9e47; /* dunkler für ausreichenden Kontrast */
+  /* ===== DARK MODE (Standard) ===== */
+  /* Optimierte Dark Mode Farben für bessere Readability */
+  --bg-primary: #0a0a0a;      /* 🌑 Tiefes Schwarz - Haupthintergrund */
+  --bg-secondary: #161616;    /* 🌑 Dunkles Grau - Cards und Panels */
+  --bg-tertiary: #262626;     /* 🌑 Mittleres Grau - Hover und Sections */
+  --bg-interactive: #404040;  /* 🌑 Interaktive Elemente */
+  --bg-menu: rgba(10, 10, 10, 0.95); /* 🌑 Semi-transparentes Menu */
+  
+  /* Text Farben - Optimiert für Dark Mode */
+  --text-primary: #f5f5f5;    /* 🌑 Haupttext - Hoher Kontrast */
+  --text-secondary: #d4d4d4;  /* 🌑 Sekundärtext */
+  --text-muted: #a3a3a3;      /* 🌑 Gedämpfter Text */
+  --text-faded: #737373;      /* 🌑 Sehr schwacher Text */
+  
+  /* Particle System - Dark Mode */
+  --particle-color: rgba(9, 139, 255, 0.8);  /* 🌑 Safari Blau mit Alpha */
+  
+  /* Borders */
+  --border-color: #2a2a2a;     /* Standard Border Color */
 
-  /* Background / Surfaces - Dark Mode */
-  --bg-dark: #0a0a0a;
-  --bg-section: #111111;
-  --bg-card: #1a1a1a;
-
-  /* Textfarben - Dark Mode */
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-muted: #7a7a7a; /* ~5.8:1 auf #0a0a0a */
-  --border-color: #2a2a2a;
+  /* ======================= */
+  /* LAYOUT & DESIGN TOKENS  */
+  /* ======================= */
 
   /* Spacing */
   --spacing-xxs: 0.1rem;
@@ -113,8 +149,8 @@
   --color-link: var(--primary-color);
   --color-text-main: var(--text-primary);
   --color-text-muted: var(--text-muted);
-  --color-bg: var(--bg-section);
-  --color-bg-secondary: rgba(0,0,0,0.08);
+  --color-bg: var(--bg-secondary);
+  --color-bg-secondary: var(--bg-tertiary);
 
   /* Cards / Features */
   --card-pad: clamp(0.75rem,3vw,2rem); /* Kleineres Minimum für Mobile */
@@ -129,78 +165,95 @@
 }
 
 /* =======================
-   Light Mode Theme
+   LIGHT MODE OVERRIDE (Blauer Stil)
 ======================= */
+/* ===== LIGHT MODE (Blue Theme) ===== */
 :root[data-theme="light"] {
   --theme-mode: 'light';
-
-  /* Background / Surfaces - Light Mode */
-  --bg-dark: #ffffff00;
-  --bg-section: #fff200;
-  --bg-card: #2764de;
-
-  /* Textfarben - Light Mode */
-  --text-primary: #f6f6f6;
-  --text-secondary: #ffffff;
-  --text-muted: #ffffff;
-  --border-color: #f60808;
-
-  /* Angepasste Farben für Light Mode */
-  --success-color: #198754;
-
-  /* Schatten für Light Mode */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
-
-  /* Background Farben für Light Mode */
-  --color-bg: var(--bg-dark);
-  --color-bg-secondary: rgba(0, 0, 0, 0.04);
-
-  /* Partikel Opazität für Light Mode */
-  --particle-opacity: 0.2;
-
-  /* Greeting Gradient für Light Mode */
-  --greet-grad: linear-gradient(90deg, #1e40af, #0891b2, #059669, #4f46e5);
+  
+  /* Realistische Light Mode mit blauem Hintergrund */
+  --bg-primary: #1e3a8a;       /* 🔷 Tiefes Blau - Haupthintergrund */
+  --bg-secondary: #1e40af;     /* 🔷 Mittleres Blau - Cards und Panels */
+  --bg-tertiary: #2563eb;      /* 🔷 Helleres Blau - Hover und Sections */
+  --bg-interactive: #3b82f6;   /* 🔷 Interaktive Elemente */
+  --bg-menu: rgba(30, 58, 138, 0.95); /* 🔷 Semi-transparentes Menu */
+  
+  /* Text Farben - Optimiert für blauen Hintergrund */
+  --text-primary: #f8fafc;     /* 🔷 Sehr heller Text */
+  --text-secondary: #e2e8f0;   /* 🔷 Heller Sekundärtext */
+  --text-muted: #cbd5e1;       /* 🔷 Gedämpfter Text */
+  --text-faded: #94a3b8;       /* 🔷 Schwacher Text */
+  
+  /* Particle System - Light Mode */
+  --particle-color: rgba(248, 250, 252, 0.8);  /* 🔷 Helle Partikel auf blauem Hintergrund */
+  
+  /* Angepasste Brand-Farben für Light Mode */
+  --primary-color: #60a5fa;    /* 🔷 Hellerer Blue für Kontrast */
+  --primary-hover: #93c5fd;    /* 🔷 Noch heller bei Hover */
+  --accent-color: #34d399;     /* 🔷 Grüner Accent */
+  --accent-secondary: #f87171; /* 🔷 Roter Accent */
+  
+  /* Status Farben für Light Mode */
+  --success-color: #10b981;    /* 🔷 Helleres Grün für Kontrast */
+  --warning-color: #f59e0b;    /* 🔷 Warnung Orange */
+  --error-color: #ef4444;      /* 🔷 Error Red */
+  --info-color: #3b82f6;       /* 🔷 Info Blue */
+  
+  /* Borders und UI-Elemente */
+  --border-color: #3b82f6;     /* 🔷 Helles Blau für Borders */
+  --border-subtle: #1e40af;    /* 🔷 Subtile Borders */
+  
+  /* Schatten für Light Mode - angepasst für blauen Hintergrund */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 /* =======================
-   Automatic Theme Detection (Media Query)
+   AUTO LIGHT MODE (Browser Preference - Blauer Stil)
 ======================= */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     --theme-mode: 'light';
-
-    /* Background / Surfaces - Auto Light Mode */
-    --bg-dark: #ffffff;
-    --bg-section: #f8f9fa;
-    --bg-card: #ffffff;
-
-    /* Textfarben - Auto Light Mode */
-    --text-primary: #1a1a1a;
-    --text-secondary: #4a4a4a;
-    --text-muted: #6c757d;
-    --border-color: #e9ecef;
-
-    /* Angepasste Farben für Auto Light Mode */
-    --success-color: #198754;
-
+    
+    /* Gleiche Struktur wie manueller Light Mode */
+    --bg-primary: #1e3a8a;       /* 🔷 Tiefes Blau - Haupthintergrund */
+    --bg-secondary: #1e40af;     /* 🔷 Mittleres Blau - Cards und Panels */
+    --bg-tertiary: #2563eb;      /* 🔷 Helleres Blau - Hover und Sections */
+    --bg-interactive: #3b82f6;   /* 🔷 Interaktive Elemente */
+    --bg-menu: rgba(30, 58, 138, 0.95); /* 🔷 Semi-transparentes Menu */
+    
+    /* Text Farben - Optimiert für blauen Hintergrund */
+    --text-primary: #f8fafc;     /* 🔷 Sehr heller Text */
+    --text-secondary: #e2e8f0;   /* 🔷 Heller Sekundärtext */
+    --text-muted: #cbd5e1;       /* 🔷 Gedämpfter Text */
+    --text-faded: #94a3b8;       /* 🔷 Schwacher Text */
+    
+    /* Particle System - Auto Light Mode */
+    --particle-color: rgba(248, 250, 252, 0.8);  /* 🔷 Helle Partikel auf blauem Hintergrund */
+    
+    /* Angepasste Brand-Farben für Auto Light Mode */
+    --primary-color: #60a5fa;    /* 🔷 Hellerer Blue für Kontrast */
+    --primary-hover: #93c5fd;    /* 🔷 Noch heller bei Hover */
+    --accent-color: #34d399;     /* 🔷 Grüner Accent */
+    --accent-secondary: #f87171; /* 🔷 Roter Accent */
+    
+    /* Status Farben für Auto Light Mode */
+    --success-color: #10b981;    /* 🔷 Helleres Grün für Kontrast */
+    --warning-color: #f59e0b;    /* 🔷 Warnung Orange */
+    --error-color: #ef4444;      /* 🔷 Error Red */
+    --info-color: #3b82f6;       /* 🔷 Info Blue */
+    
+    /* Borders und UI-Elemente */
+    --border-color: #3b82f6;     /* 🔷 Helles Blau für Borders */
+    --border-subtle: #1e40af;    /* 🔷 Subtile Borders */
+    
     /* Schatten für Auto Light Mode */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
-
-    /* Background Farben für Auto Light Mode */
-    --color-bg: var(--bg-section);
-    --color-bg-secondary: rgba(0, 0, 0, 0.04);
-
-    /* Partikel Opazität für Auto Light Mode */
-    --particle-opacity: 0.2;
-
-    /* Greeting Gradient für Auto Light Mode */
-    --greet-grad: linear-gradient(90deg, #1e40af, #0891b2, #059669, #4f46e5);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35);
   }
 }
 

@@ -1150,12 +1150,14 @@ export function initParticles({ getElement, throttle }) {
   });
   if (bgRoot) observer.observe(bgRoot,{ attributes:true });
 
-  window.addEventListener('snapSectionChange', updateTargetColor, { passive:true });
-  // Section-spezifische CSS-Varianten aktivieren (particles.css nutzt [data-section])
   window.addEventListener('snapSectionChange', (e) => {
     try {
       const id = e?.detail?.id;
-      if (id && bgRoot) bgRoot.setAttribute('data-section', id);
+      if (id && bgRoot) {
+        bgRoot.setAttribute('data-section', id);
+        // Theme-Farben respektieren - keine automatische Überschreibung
+        // updateTargetColor();
+      }
     } catch {
       /* noop */
     }
@@ -1402,7 +1404,8 @@ export function initParticles({ getElement, throttle }) {
 
   // ===== API / Cleanup =====
   const api = {
-    setColor(rgba){ if(bgRoot){ bgRoot.style.setProperty('--particle-color', rgba); updateTargetColor(); } },
+    // setColor entfernt - respektiert Theme-System
+    // setColor(rgba){ if(bgRoot){ bgRoot.style.setProperty('--particle-color', rgba); updateTargetColor(); } },
     setGradientMode(mode){ if(bgRoot) bgRoot.setAttribute('data-particle-gradient', mode === 'radial' ? 'radial' : 'linear'); },
     setAlphaScale(f){ if(bgRoot) bgRoot.setAttribute('data-particle-alpha-scale', String(Math.min(2, Math.max(0.2, parseFloat(f))))); },
     setParticleTypes(types){ if(bgRoot) bgRoot.setAttribute('data-particle-types', JSON.stringify(types)); },

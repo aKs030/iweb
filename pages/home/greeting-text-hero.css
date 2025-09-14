@@ -402,7 +402,7 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
 }
 
 .btn-crt.btn-secondary.animate-element.is-visible {
-  background: var(--bg-card);
+  background: var(--bg-secondary);
   border: 2px solid var(--primary-color);
   color: var(--primary-color);
 }
