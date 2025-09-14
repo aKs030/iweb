@@ -80,12 +80,12 @@ export function makeLineMeasurer(subtitleEl) {
       subtitleEl.style.setProperty('--lines', String(lines));
       subtitleEl.setAttribute('data-lines', String(lines));
       
-      // Dynamische Bottom-Position basierend auf Zeilenzahl
-      if (lines > 3) {
+      // Dynamische Bottom-Position für mehrzeilige Texte (>3 Zeilen)
+      if (lines > 3 && lh > 0) {
         const isFixed = subtitleEl.classList.contains('hero-subtitle--fixed');
         const isExpanded = document.body.classList.contains('footer-expanded');
         
-        // Basis-Abstand je nach Modus
+        // Basis-Abstand je nach Modus bestimmen
         let baseOffset;
         if (isExpanded) {
           baseOffset = 'clamp(8px, 1.5vw, 16px)';
@@ -95,11 +95,11 @@ export function makeLineMeasurer(subtitleEl) {
           baseOffset = 'clamp(12px, 2vw, 24px)';
         }
         
-        // Zusätzliche Höhe für Mehrzeiler (nur wenig)
-        const extraHeight = (lines - 3) * lh * 0.3;
-        const dynamicBottom = `calc(${baseOffset} + ${extraHeight}px)`;
+        // Minimale zusätzliche Höhe für Mehrzeiler berechnen
+        const extraHeight = Math.round((lines - 3) * lh * 0.3);
         
-        subtitleEl.style.setProperty('bottom', dynamicBottom);
+        // Neue Bottom-Position setzen
+        subtitleEl.style.setProperty('bottom', `calc(${baseOffset} + ${extraHeight}px)`);
       }
       
       return lines;
