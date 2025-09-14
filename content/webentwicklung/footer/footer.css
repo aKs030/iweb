@@ -771,13 +771,21 @@ body.footer-expanded {
 
 /* Hero-subtitle Footer positioning */
 .hero-subtitle {
-  /* ensure subtitle stays above a fixed footer by offsetting from footer height */
-  bottom: calc(var(--footer-height, 64px) + clamp(8px, 1.5vw, 20px) + env(safe-area-inset-bottom));
+  /* Position direkt über dem Footer mit kleinem Abstand */
+  bottom: clamp(12px, 2vw, 24px);
   z-index: 70; /* above footer (footer z-index: 60) */
 }
 
 .hero-subtitle--fixed {
-  bottom: calc(var(--footer-height, 64px) + clamp(8px, 1.5vw, 20px) + env(safe-area-inset-bottom));
+  /* Bei fixiertem Modus: direkt über dem Footer mit kleinerem Abstand */
+  bottom: clamp(16px, 2.5vw, 32px);
+}
+
+/* Responsive Anpassung für erweiterten Footer */
+body.footer-expanded .hero-subtitle,
+body.footer-expanded .hero-subtitle--fixed {
+  /* Im erweiterten Footer-Modus: noch dichter am Footer */
+  bottom: clamp(8px, 1.5vw, 16px);
 }
 
 /* High Contrast Mode */
