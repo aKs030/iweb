@@ -80,7 +80,6 @@ class EnhancedAnimationEngine {
       batches: 0,
       batchSizes: [],
       queueProcessed: 0,
-      reducedMode: 0,
       lastBatchAt: 0,
       gcEvents: 0
     };
@@ -91,7 +90,7 @@ class EnhancedAnimationEngine {
        * Metrics / Observability (debug only)
        * Aktivierbar via new EnhancedAnimationEngine({ debugMetrics: true })
        * Kennzahlen:
-       *  - started: Anzahl gestarteter Animationen (inkl. Reduced-Mode Fade-Ins)
+       *  - started: Anzahl gestarteter Animationen
        *  - completed: Anzahl abgeschlossener Animationen (nach Cleanup Timeout)
        *  - batches: Anzahl IntersectionObserver Batch-Verarbeitungen
        *  - batchSizes: Historie der Batch-Größen
@@ -317,11 +316,7 @@ class EnhancedAnimationEngine {
    * Performance-Modus erkennen - Vereinfacht
    */
   detectPerformanceMode() {
-    const connection = navigator.connection;
-    const isSlowConnection = connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g';
-    const isLowMemory = navigator.deviceMemory && navigator.deviceMemory < 4;
-    
-    return (isSlowConnection || isLowMemory) ? 'reduced' : 'standard';
+    return 'standard';
   }
 
   /**
@@ -680,37 +675,6 @@ class EnhancedAnimationEngine {
 
     // Bei Snap Priority: reduzierte Delay für sofortigere Animationen
     const effectiveDelay = snapPriority ? Math.min(animationData.delay || 0, 100) : (animationData.delay || 0);
-
-    // Performance-Modus berücksichtigen (reduced = vereinfachtes Fade-In ohne komplexe Klassen)
-    if (this.performanceMode === 'reduced') {
-      window.requestAnimationFrame(() => {
-        element.style.transition = 'opacity 300ms ease-out';
-        element.style.opacity = '0';
-        // Force Reflow
-        element.getBoundingClientRect();
-        element.style.opacity = '1';
-        element.classList.add('animated');
-        this.activeAnimations.set(element, { 
-          type: 'fadeIn', 
-          duration: 0.3, 
-          delay: effectiveDelay, 
-          easing: 'ease-out', 
-          once: animationData.once,
-          snapPriority 
-        });
-        if (animationData.once) {
-          this.animatedOnce.add(element);
-          this.unobserveElement(element);
-        }
-        this.processAnimationQueue();
-        if (this.options.debugMetrics) {
-          this.metrics.started++;
-          this.metrics.reducedMode++;
-          if (this._finalizationRegistry) this._finalizationRegistry.register(element, {});
-        }
-      });
-      return;
-    }
 
     // GPU-Acceleration aktivieren mit Throttling für will-change
     if (!this._willChangeElements) {

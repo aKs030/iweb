@@ -7,7 +7,7 @@ Ein modernes, performantes Portfolio von **Abdulkerim Sesli** - Webentwickler un
 ### 🎨 **Design & Animationen**
 - **Glassmorphism Card Design** - Moderne Karten mit Backdrop-Filter und Shimmer-Effekten  
 - **Snap-Scroll Animationen** - Smooth staggered entrance beim Scrollen
-- **Reduced Motion Support** - Respektiert Benutzer-Präferenzen für Animationen
+- **Performance Optimierung** - GPU-beschleunigte Animationen mit automatischer Qualitätsanpassung
 - **Responsive Design** - Optimiert für alle Bildschirmgrößen
 
 ### ⚡ **Performance & Technologie** 
@@ -59,7 +59,6 @@ iweb-1/
 // Intersection Observer (threshold 0.3)
 // Staggered Card Entrance (Utility: animateContainerStagger)
 // Debounced rescan() (120ms) bei dynamisch hinzugefügten Sektionen
-// Reduced Motion Short-Circuit
 ```
 
 #### **Feature Rotation System** (`karten-rotation.js`)
@@ -172,11 +171,12 @@ fonts.gstatic.com
 - Unbenutzte Exporte (`HeroAPI`, `getHeroConfig`, Default-Exports einiger Utility-Module) entfernt um Tree-Shaking-/Lesbarkeitspotenzial zu erhöhen.
 
 ### Motion / Accessibility Vereinheitlichung
-- Redundante Abfrage von *prefers-reduced-motion* konsolidiert: Alle Animationen (inkl. EnhancedAnimationEngine & Card-Stagger) verwenden jetzt zentral `prefersReducedMotion()` → einheitliches Caching & konsistente Entscheidungen.
-- `isReducedMotion()` in `animation-utils.js` ist jetzt nur ein Wrapper für das zentrale Utility (Backward-Kompatibilität bei internem Refactoring).
+- Animation-System vereinfacht: Alle Animationen verwenden jetzt standardisierte Performance-Modi ohne komplexe Motion-Preference-Abfragen
+- Einheitliche Animation-Verarbeitung durch das Enhanced Animation Engine System ohne separate Motion-Detection
 
-### Reduced Performance Mode
-- Im Performance-Modus "reduced" werden komplexere Sequenzen vereinfacht. Weitere Optimierungsidee (optional): direkte Ersetzung nicht-essentieller Slide-/Scale-Animationen durch reine Fade-Ins (noch nicht aktiv, kann bei Bedarf ergänzt werden).
+### Standard Performance Mode
+- Alle Animationen verwenden jetzt den Standard-Performance-Modus für konsistente Benutzerfreundlichkeit
+- Vereinfachte Animation-Pipeline ohne separate reduced-motion Pfade
 
 ### Rationale
 Diese Bereinigungen reduzieren:

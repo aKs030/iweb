@@ -31,7 +31,7 @@ Diese ist eine modulare, performante deutsche Portfolio-Website mit dynamischem 
 ### 4. Particle System (`/content/webentwicklung/particles/`)
 - **Pattern**: Canvas-basierte Partikel mit data-attribute Konfiguration
 - **Config**: `data-particle-*` Attribute am `.global-particle-background` Element
-- **Performance**: Automatische Qualitätsanpassung und reduced-motion Support
+- **Performance**: Automatische Qualitätsanpassung
 
 ## Code-Konventionen
 
@@ -48,7 +48,6 @@ const log = createLogger('moduleName');
 ### Error Handling & Accessibility
 - **Fail-safe Pattern**: `try/catch` mit graceful degradation
 - **Accessibility**: ARIA live regions für Announcements via `window.announce()`
-- **Reduced Motion**: `prefersReducedMotion()` check in allen Animationen
 
 ### DOM Manipulation
 - **Caching**: `getElementById()` mit integriertem Caching nutzen

@@ -96,8 +96,8 @@
 /* Erweiterte Sektion für Newsletter/Einstellungen */
 .footer-section-wide {
   grid-column: span 2;
-  min-width: 100%;
-  max-width: 100%; /* Vollständige Breite ausnutzen */
+  width: 100%; /* Statt min-width und max-width für bessere Kontrolle */
+  box-sizing: border-box; /* Stellt sicher, dass Padding/Border eingerechnet werden */
 }
 
 @media (max-width: 1024px) {
@@ -114,7 +114,8 @@
   
   .footer-section-wide {
     grid-column: span 1;
-    min-width: auto;
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -122,6 +123,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md, 1rem);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0; /* Ermöglicht Flexbox-Schrumpfung */
 }
 
 .footer-section-title {
@@ -131,7 +135,10 @@
   margin: 0;
   padding-bottom: var(--spacing-xs, 0.5rem);
   border-bottom: 2px solid var(--primary-color, #007AFF);
-  display: inline-block;
+  display: block;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .footer-contact-info p {
@@ -377,11 +384,13 @@
   display: flex;
   gap: var(--spacing-xs, 0.5rem);
   flex-wrap: wrap;
+  max-width: 400px; /* Begrenzt die maximale Breite der Input-Gruppe */
 }
 
 .newsletter-input {
   flex: 1;
   min-width: 200px;
+  max-width: 280px; /* Begrenzt die maximale Breite des Input-Feldes */
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
