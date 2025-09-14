@@ -12,11 +12,6 @@
  * @version 3.0.0
  */
 
-/* ===== FOOTER CSS VARIABLES ===== */
-:root {
-  --footer-height: 72px;
-}
-
 .site-footer-fixed {
   position: fixed;
   bottom: 0;
@@ -444,30 +439,6 @@
 .footer-setting-group {
   display: flex;
   align-items: center;
-}
-
-.theme-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs, 0.5rem);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted, #888888);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all var(--transition-base);
-}
-
-.theme-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary, #ffffff);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.theme-icon {
-  font-size: 1rem;
 }
 
 /* Erweiterte Copyright-Bar */

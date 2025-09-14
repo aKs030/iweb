@@ -13,7 +13,7 @@
  */
 
 import { createLogger } from '../utils/logger.js';
-import { integrateFooterTheme } from './theme-integration.js';
+import { initializeUltraThemeToggle } from './ultra-theme-toggle.js';
 
 const log = createLogger('footer');
 
@@ -34,8 +34,15 @@ async function initializeFooter() {
     
     // Footer-Interaktionen direkt einrichten
     setupNewsletterForm();
-    integrateFooterTheme(); // Verwende globales Theme-System
     setupCookieSettings();
+    
+    // Ultra 3D Theme Toggle initialisieren (ersetzt integrateFooterTheme)
+    try {
+      await initializeUltraThemeToggle();
+      log.debug('Ultra Theme Toggle erfolgreich initialisiert');
+    } catch (error) {
+      log.warn('Ultra Theme Toggle konnte nicht initialisiert werden:', error);
+    }
     
     // Globale Footer API bereitstellen
     window.footerAPI = {
@@ -281,9 +288,6 @@ if (document.readyState === 'loading') {
 } else {
   initializeFooter();
 }
-
-// Jahr jährlich automatisch aktualisieren (für Single Page Apps)
-setInterval(updateCurrentYear, 60000); // Jede Minute prüfen
 
 export { 
   initializeFooter, 
