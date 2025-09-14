@@ -59,18 +59,22 @@
 
 /* ===== MAXIMIERTER MODUS ===== */
 .footer-maximized {
-  opacity: 1;
-  transform: var(--transform-none);
+  opacity: 0; /* Standardmäßig versteckt */
+  transform: var(--transform-down-full);
   transition: all var(--transition-slow);
-  max-height: 600px; /* Erhöhte Höhe für erweiterten Footer */
-  overflow: hidden;
-  padding-bottom: 20px; /* Zusätzlicher Platz nach unten */
+  max-height: 0; /* Versteckt im Standardzustand */
+  overflow: hidden; /* Versteckt Inhalte im minimierten Modus */
+  padding-bottom: 0; /* Kein Padding wenn versteckt */
+  pointer-events: none; /* Keine Interaktion wenn versteckt */
 }
 
-.footer-hidden {
+/* Explizit versteckter Zustand */
+.footer-maximized.footer-hidden {
   opacity: 0;
   transform: var(--transform-down-full);
   max-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
   pointer-events: none;
 }
 
@@ -83,20 +87,34 @@
 
 .footer-main-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-xl, 2rem);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Größere Mindestbreite */
+  gap: var(--spacing-xl, 2rem) var(--spacing-lg, 1.5rem); /* Verschiedene Gaps für row/column */
   margin-bottom: var(--spacing-lg, 1.5rem);
+  align-items: start; /* Bessere Ausrichtung der Sektionen */
 }
 
 /* Erweiterte Sektion für Newsletter/Einstellungen */
 .footer-section-wide {
   grid-column: span 2;
   min-width: 100%;
+  max-width: 100%; /* Vollständige Breite ausnutzen */
+}
+
+@media (max-width: 1024px) {
+  .footer-section-wide {
+    grid-column: span 1;
+  }
 }
 
 @media (max-width: 768px) {
+  .footer-main-grid {
+    grid-template-columns: 1fr; /* Einspaltiges Layout auf Mobile */
+    gap: var(--spacing-lg, 1.5rem);
+  }
+  
   .footer-section-wide {
     grid-column: span 1;
+    min-width: auto;
   }
 }
 
@@ -317,14 +335,20 @@
 .footer-expanded .footer-maximized {
   opacity: 1;
   transform: var(--transform-none);
-  max-height: 450px; /* Entspricht der neuen Höhe */
+  max-height: none; /* Keine Höhenbeschränkung im erweiterten Modus */
+  min-height: 450px; /* Mindesthöhe beibehalten */
+  overflow: visible; /* Vollständige Inhalte anzeigen */
+  padding-bottom: 20px; /* Padding im erweiterten Modus */
   pointer-events: auto;
 }
 
 .footer-expanded .footer-hidden {
   opacity: 1;
   transform: var(--transform-none);
-  max-height: 600px; /* Erhöhte maximale Höhe für erweiterten Footer */
+  max-height: none; /* Keine Höhenbeschränkung für erweiterten Footer */
+  min-height: 600px; /* Mindesthöhe für erweiterten Footer */
+  overflow: visible; /* Vollständige Inhalte anzeigen */
+  padding-bottom: 20px; /* Padding im erweiterten Modus */
   pointer-events: auto;
 }
 
