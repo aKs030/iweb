@@ -37,9 +37,9 @@
   align-items: center;
   padding: 3px;
   box-shadow: 
-    0 4px 16px rgba(0,0,0,0.2),
+    var(--shadow-md),
     inset 0 1px 3px rgba(255,255,255,0.6),
-    inset 0 -1px 3px rgba(0,0,0,0.2);
+    inset 0 -1px 3px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
   overflow: visible;
 }
@@ -55,9 +55,9 @@
     rgba(20,20,40,0.9), 
     rgba(40,40,80,0.9));
   box-shadow: 
-    0 8px 40px rgba(0,0,0,0.6),
-    inset 0 2px 5px rgba(100,100,200,0.3),
-    inset 0 -2px 5px rgba(0,0,0,0.4);
+    var(--shadow-lg),
+    inset 0 2px 5px rgba(100,100,200,0.2),
+    inset 0 -2px 5px rgba(0,0,0,0.2);
 }
 
 /* Celestial Orb (Slider) - kompakt */
@@ -73,9 +73,9 @@
   border-radius: 50%;
   transition: all 0.3s ease;
   box-shadow: 
-    0 0 15px #ff9800,
-    0 0 30px #ff5722,
-    inset -3px -3px 8px rgba(0,0,0,0.2);
+    0 0 8px rgba(255, 152, 0, 0.3),
+    0 0 16px rgba(255, 87, 34, 0.2),
+    inset -2px -2px 4px rgba(0,0,0,0.1);
   z-index: 10;
   left: 3px;
   pointer-events: none;
@@ -88,10 +88,10 @@
     #b0b0b0,
     #808080);
   box-shadow: 
-    0 0 15px rgba(200,200,255,0.6),
-    0 0 30px rgba(150,150,255,0.4),
-    inset -4px -4px 10px rgba(0,0,0,0.4),
-    inset 4px 4px 10px rgba(255,255,255,0.2);
+    0 0 8px rgba(200,200,255,0.3),
+    0 0 16px rgba(150,150,255,0.2),
+    inset -2px -2px 4px rgba(0,0,0,0.2),
+    inset 2px 2px 4px rgba(255,255,255,0.1);
 }
 
 /* Moon Craters */
@@ -174,9 +174,9 @@
 .sacred-toggle:hover {
   transform: scale(1.05);
   box-shadow: 
-    0 6px 20px rgba(0,0,0,0.3),
+    var(--shadow-lg),
     inset 0 1px 3px rgba(255,255,255,0.8),
-    inset 0 -1px 3px rgba(0,0,0,0.3);
+    inset 0 -1px 3px rgba(0,0,0,0.15);
 }
 
 .sacred-toggle:active {
