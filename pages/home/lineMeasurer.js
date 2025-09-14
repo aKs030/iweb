@@ -67,7 +67,7 @@ export function makeLineMeasurer(subtitleEl) {
     const lh = getLineHeightPx();
     const h  = span.getBoundingClientRect().height;
     if (!lh || !h) return 1;
-    const clampMax = parseInt(cs.getPropertyValue('--reserve-lines')) || 3;
+    const clampMax = parseInt(cs.getPropertyValue('--reserve-lines')) || 6; // Erhöht auf 6 Zeilen
     return Math.max(1, Math.min(clampMax, Math.round(h / lh))); // clamp 1..clampMax
   }
 
@@ -79,6 +79,29 @@ export function makeLineMeasurer(subtitleEl) {
       const lines = measure(text, smartBreaks);
       subtitleEl.style.setProperty('--lines', String(lines));
       subtitleEl.setAttribute('data-lines', String(lines));
+      
+      // Dynamische Bottom-Position basierend auf Zeilenzahl
+      if (lines > 3) {
+        const isFixed = subtitleEl.classList.contains('hero-subtitle--fixed');
+        const isExpanded = document.body.classList.contains('footer-expanded');
+        
+        // Basis-Abstand je nach Modus
+        let baseOffset;
+        if (isExpanded) {
+          baseOffset = 'clamp(8px, 1.5vw, 16px)';
+        } else if (isFixed) {
+          baseOffset = 'clamp(16px, 2.5vw, 32px)';
+        } else {
+          baseOffset = 'clamp(12px, 2vw, 24px)';
+        }
+        
+        // Zusätzliche Höhe für Mehrzeiler (nur wenig)
+        const extraHeight = (lines - 3) * lh * 0.3;
+        const dynamicBottom = `calc(${baseOffset} + ${extraHeight}px)`;
+        
+        subtitleEl.style.setProperty('bottom', dynamicBottom);
+      }
+      
       return lines;
     }
   };

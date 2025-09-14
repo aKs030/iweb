@@ -166,7 +166,7 @@ body:not(.hero-active) .greeting-text-hero {
 .hero-subtitle{
   position: absolute;
   left: clamp(12px, 2vw, 20px);
-  /* Bedingte Bottom-Position: bei mehr Zeilen höher anfangen */
+  /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
   bottom: clamp(12px, 2vw, 24px);
   margin: 0;
   display: flex;
@@ -188,33 +188,15 @@ body:not(.hero-active) .greeting-text-hero {
   z-index: 70; /* above footer */
 }
 
-/* Anpassungen für mehrzeilige Texte */
-.hero-subtitle[data-lines="4"] {
-  bottom: calc(clamp(12px, 2vw, 24px) + var(--lh-px, 0px) * 1);
-}
-
-.hero-subtitle[data-lines="5"] {
-  bottom: calc(clamp(12px, 2vw, 24px) + var(--lh-px, 0px) * 2);
-}
-
 .hero-subtitle--fixed {
   position: fixed;
   left: clamp(12px, 2vw, 20px);
-  /* Bedingte Bottom-Position für Fixed-Modus */
+  /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
   bottom: clamp(16px, 2.5vw, 32px);
   z-index: 70;
   opacity: 0.92;
   transform: translateY(0);
-  pointer-events: auto; /* allow interactions if needed when fixed */
-}
-
-/* Fixed-Modus Anpassungen für mehrzeilige Texte */
-.hero-subtitle--fixed[data-lines="4"] {
-  bottom: calc(clamp(16px, 2.5vw, 32px) + var(--lh-px, 0px) * 1);
-}
-
-.hero-subtitle--fixed[data-lines="5"] {
-  bottom: calc(clamp(16px, 2.5vw, 32px) + var(--lh-px, 0px) * 2);
+  pointer-events: auto;
 }
 .hero-subtitle .typed-author{ color: var(--text-muted, #666666); font-weight: 400; font-size: clamp(0.85rem, 1.6vw, 0.98rem); letter-spacing: 0.006em; text-shadow: none; opacity: 0.78; }
 .hero-subtitle .typed-quote { font-weight: 400; font-size: 0.92em; }
@@ -373,7 +355,7 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
   .hero-content { grid-template-columns: 1fr; padding: 0 8px; max-width: 100vw; text-align: center; place-items: center; }
-  .hero-subtitle{ left: clamp(8px, 3.5vw, 14px); font-size: clamp(0.84rem, 3vw, 0.98rem); line-height: 1.18; max-width: clamp(480px, 48vw, 720px); height: var(--box-h); gap: var(--gap-px); transform: translateY(6px); transition: opacity .45s ease, transform .45s ease; }
+  .hero-subtitle { font-size: clamp(0.84rem, 3vw, 0.98rem); line-height: 1.18; max-width: clamp(480px, 48vw, 720px); }
   .hero-subtitle .typed-text{ font-size: 0.82em; line-height: 1.14; letter-spacing: 0.001em; text-shadow: none; opacity: 0.8; }
   .hero-subtitle .typed-author{ font-size: clamp(0.80rem, 1.8vw, 0.92rem); }
   .hero-subtitle .typed-text::after{ height: 0.82em; border-left-width: 2px; margin-left: 0.06ch; }
