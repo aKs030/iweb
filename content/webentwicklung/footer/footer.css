@@ -769,23 +769,22 @@ body.footer-expanded {
   }
 }
 
-/* Hero-subtitle Footer positioning */
-.hero-subtitle {
-  /* Position direkt über dem Footer mit kleinem Abstand */
-  bottom: clamp(12px, 2vw, 24px);
-  z-index: 70; /* above footer (footer z-index: 60) */
-}
-
-.hero-subtitle--fixed {
-  /* Bei fixiertem Modus: direkt über dem Footer mit kleinerem Abstand */
-  bottom: clamp(16px, 2.5vw, 32px);
-}
-
 /* Responsive Anpassung für erweiterten Footer */
 body.footer-expanded .hero-subtitle,
 body.footer-expanded .hero-subtitle--fixed {
   /* Im erweiterten Footer-Modus: noch dichter am Footer */
   bottom: clamp(8px, 1.5vw, 16px);
+}
+
+/* Erweiteter Footer: Anpassungen für mehrzeilige Texte */
+body.footer-expanded .hero-subtitle[data-lines="4"],
+body.footer-expanded .hero-subtitle--fixed[data-lines="4"] {
+  bottom: calc(clamp(8px, 1.5vw, 16px) + var(--lh-px, 0px) * 1);
+}
+
+body.footer-expanded .hero-subtitle[data-lines="5"],
+body.footer-expanded .hero-subtitle--fixed[data-lines="5"] {
+  bottom: calc(clamp(8px, 1.5vw, 16px) + var(--lh-px, 0px) * 2);
 }
 
 /* High Contrast Mode */

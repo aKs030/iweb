@@ -166,6 +166,8 @@ body:not(.hero-active) .greeting-text-hero {
 .hero-subtitle{
   position: absolute;
   left: clamp(12px, 2vw, 20px);
+  /* Bedingte Bottom-Position: bei mehr Zeilen höher anfangen */
+  bottom: clamp(12px, 2vw, 24px);
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -183,14 +185,36 @@ body:not(.hero-active) .greeting-text-hero {
   gap: var(--gap-px);
   transform: translateY(6px);
   transition: opacity .45s ease, transform .45s ease;
+  z-index: 70; /* above footer */
 }
+
+/* Anpassungen für mehrzeilige Texte */
+.hero-subtitle[data-lines="4"] {
+  bottom: calc(clamp(12px, 2vw, 24px) + var(--lh-px, 0px) * 1);
+}
+
+.hero-subtitle[data-lines="5"] {
+  bottom: calc(clamp(12px, 2vw, 24px) + var(--lh-px, 0px) * 2);
+}
+
 .hero-subtitle--fixed {
   position: fixed;
   left: clamp(12px, 2vw, 20px);
+  /* Bedingte Bottom-Position für Fixed-Modus */
+  bottom: clamp(16px, 2.5vw, 32px);
   z-index: 70;
   opacity: 0.92;
   transform: translateY(0);
   pointer-events: auto; /* allow interactions if needed when fixed */
+}
+
+/* Fixed-Modus Anpassungen für mehrzeilige Texte */
+.hero-subtitle--fixed[data-lines="4"] {
+  bottom: calc(clamp(16px, 2.5vw, 32px) + var(--lh-px, 0px) * 1);
+}
+
+.hero-subtitle--fixed[data-lines="5"] {
+  bottom: calc(clamp(16px, 2.5vw, 32px) + var(--lh-px, 0px) * 2);
 }
 .hero-subtitle .typed-author{ color: var(--text-muted, #666666); font-weight: 400; font-size: clamp(0.85rem, 1.6vw, 0.98rem); letter-spacing: 0.006em; text-shadow: none; opacity: 0.78; }
 .hero-subtitle .typed-quote { font-weight: 400; font-size: 0.92em; }
