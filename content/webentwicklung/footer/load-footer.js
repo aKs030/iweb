@@ -35,7 +35,6 @@ async function initializeFooter() {
     // Footer-Interaktionen direkt einrichten
     setupNewsletterForm();
     integrateFooterTheme(); // Verwende globales Theme-System
-    setupReducedMotionToggle();
     setupCookieSettings();
     
     // Globale Footer API bereitstellen
@@ -159,48 +158,6 @@ function setupNewsletterForm() {
 }
 
 /**
- * Richtet Reduced Motion Toggle ein
- */
-function setupReducedMotionToggle() {
-  const motionToggle = document.getElementById('reduced-motion-toggle');
-  
-  if (!motionToggle) return;
-  
-  // Aktuelle Einstellung laden
-  const reducedMotion = localStorage.getItem('reducedMotion') === 'true' || 
-                       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  
-  motionToggle.checked = reducedMotion;
-  applyMotionSetting(reducedMotion);
-  
-  motionToggle.addEventListener('change', () => {
-    const enabled = motionToggle.checked;
-    localStorage.setItem('reducedMotion', enabled);
-    applyMotionSetting(enabled);
-    
-    showNotification(
-      enabled ? 'Animationen reduziert' : 'Animationen aktiviert', 
-      'info'
-    );
-  });
-}
-
-/**
- * Wendet Motion-Einstellung an
- */
-function applyMotionSetting(reducedMotion) {
-  if (reducedMotion) {
-    document.documentElement.style.setProperty('--transition-base', '0s');
-    document.documentElement.style.setProperty('--transition-slow', '0s');
-    document.documentElement.style.setProperty('--transition-fast', '0s');
-  } else {
-    document.documentElement.style.removeProperty('--transition-base');
-    document.documentElement.style.removeProperty('--transition-slow');
-    document.documentElement.style.removeProperty('--transition-fast');
-  }
-}
-
-/**
  * Richtet Cookie-Einstellungen ein
  */
 function setupCookieSettings() {
@@ -315,10 +272,6 @@ window.footerAPI = {
   toggleTheme: () => {
     const themeToggle = document.querySelector('.theme-toggle-btn');
     if (themeToggle) themeToggle.click();
-  },
-  toggleReducedMotion: () => {
-    const motionToggle = document.getElementById('reduced-motion-toggle');
-    if (motionToggle) motionToggle.click();
   }
 };
 
@@ -336,6 +289,5 @@ export {
   initializeFooter, 
   updateCurrentYear, 
   setupNewsletterForm,
-  setupReducedMotionToggle,
   showNotification
 };

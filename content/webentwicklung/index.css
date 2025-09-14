@@ -33,15 +33,8 @@
 /* Root-Variablen wurden in content/webentwicklung/root.css ausgelagert */
 
 /* ========================================
-   2) Scroll-Snap-Verbesserungen & Reduced Motion
+   2) Scroll-Snap-Verbesserungen
 ======================================== */
-
-/* Reduced Motion Respekt */
-@media (prefers-reduced-motion: reduce) {
-  html, body { scroll-behavior: auto !important; }
-  .snap-section, .reduce-motion .snap-section { transition: none !important; }
-  * { animation: none !important; transition: none !important; }
-}
 
 html, body {
   height: 100%;
@@ -511,14 +504,6 @@ a:hover { color: var(--primary-light); }
    7) Keyframes & Performance-optimierte Animationen
 ======================================== */
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* Accessibility: reduce motion */
-
-@media (prefers-reduced-motion: reduce) {
-  html, body { scroll-behavior: auto !important; }
-  .snap-section, .reduce-motion .snap-section { transition: none !important; }
-  * { animation: none !important; transition: none !important; }
-}
 
 /* ========================================
    8) Responsive

@@ -1,5 +1,4 @@
-body:not(.hero-active) .greeting-text-hero,
-body.reduce-motion .greeting-text-hero {
+body:not(.hero-active) .greeting-text-hero {
   animation-play-state: paused !important;
 }
 
@@ -60,14 +59,6 @@ body.reduce-motion .greeting-text-hero {
 .greeting-text-hero[data-animation].animate-element.is-visible {
   opacity: 1;
   animation-play-state: running;
-}
-
-
-
-@media (prefers-reduced-motion: reduce) {
-  .greeting-text-hero {
-    animation: none;
-  }
 }
 
 @supports (text-wrap: balance) {
@@ -152,7 +143,6 @@ body.reduce-motion .greeting-text-hero {
 /* Animations (soft) */
 .anim-soft.animate-element { transform: var(--transform-down-sm); opacity: 0; transition-timing-function: var(--ease-out); }
 .anim-soft.animate-element.is-visible { transform: var(--transform-none); opacity: 1; }
-body.reduce-motion .anim-soft.animate-element { transform: none !important; opacity: 1 !important; }
 /* CRT Power-On Effekt */
 @keyframes crt-power-on {
   0%   { filter: brightness(0) contrast(400%); transform: scaleY(0.05) scaleX(1.3); opacity:0; }
@@ -202,7 +192,6 @@ body.reduce-motion .anim-soft.animate-element { transform: none !important; opac
   transform: translateY(0);
   pointer-events: auto; /* allow interactions if needed when fixed */
 }
-body.reduce-motion .hero-subtitle { transition: none; }
 .hero-subtitle .typed-author{ color: var(--text-muted, #666666); font-weight: 400; font-size: clamp(0.85rem, 1.6vw, 0.98rem); letter-spacing: 0.006em; text-shadow: none; opacity: 0.78; }
 .hero-subtitle .typed-quote { font-weight: 400; font-size: 0.92em; }
 .typed-text{ font-weight: 300; font-size: 0.82em; line-height: 1.18; display: inline; color: var(--text-secondary, #b0b0b0); text-shadow: none; white-space: normal; letter-spacing: 0em; overflow-wrap: anywhere; word-break: normal; -webkit-hyphens: auto; hyphens: auto; opacity: 0.8; }
@@ -231,7 +220,7 @@ body:not(.has-typingjs) .hero-subtitle .typed-text{ display:inline-block; white-
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
 .hero-image-container { position: relative; width: 60vw; max-width: 340px; aspect-ratio: 1/1; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
 .hero-image-container svg { position: relative; z-index: 1; display: block; margin: 0 auto; }
-body:not(.hero-active) .floating-icon, body.reduce-motion .floating-icon { animation-play-state: paused !important; }
+body:not(.hero-active) .floating-icon { animation-play-state: paused !important; }
 .spotlight-bg {
   position: absolute;
   top: 50%;
@@ -478,16 +467,4 @@ body:not(.hero-active) .floating-icon, body.reduce-motion .floating-icon { anima
 @keyframes crt-glow-pulse {
   0%, 100% { box-shadow: 0 0 0 rgba(9,139,255,0.0), 0 0 0 rgba(255,255,255,0); }
   50%      { box-shadow: 0 0 6px rgba(9,139,255,0.35), 0 0 14px rgba(255,255,255,0.12); }
-}
-
-body.reduce-motion [data-animation="crt"].animate-element {
-  opacity: 1 !important;
-  transform: none !important;
-  filter: none !important;
-  animation: none !important;
-}
-
-body.reduce-motion [data-animation="crt"].animate-element::before,
-body.reduce-motion [data-animation="crt"].animate-element::after {
-  display: none !important;
 }

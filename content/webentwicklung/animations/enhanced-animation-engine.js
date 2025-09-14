@@ -1,5 +1,4 @@
 import { debounce } from '../utils/common-utils.js';
-import { isReducedMotion } from './animation-utils.js';
 /**
  * Enhanced Animation Engine - Optimized Animation System
  * Hochperformantes Animation-System mit GPU-Beschleunigung
@@ -97,7 +96,6 @@ class EnhancedAnimationEngine {
        *  - batches: Anzahl IntersectionObserver Batch-Verarbeitungen
        *  - batchSizes: Historie der Batch-Größen
        *  - queueProcessed: Anzahl Durchläufe der internen Animations-Queue
-       *  - reducedMode: Anzahl vereinfachter Animationen im Reduced-Performance-/Motion-Modus
        *  - gcEvents: Anzahl vom FinalizationRegistry registrierter GC Finalizer (experimentell, Browser abhängig)
        *  Zugriff: window.enhancedAnimationEngine.getMetrics()
        */
@@ -319,8 +317,6 @@ class EnhancedAnimationEngine {
    * Performance-Modus erkennen - Vereinfacht
    */
   detectPerformanceMode() {
-    if (isReducedMotion()) return 'reduced';
-    
     const connection = navigator.connection;
     const isSlowConnection = connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g';
     const isLowMemory = navigator.deviceMemory && navigator.deviceMemory < 4;

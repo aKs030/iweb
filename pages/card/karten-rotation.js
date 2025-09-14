@@ -1,6 +1,5 @@
 // Zentrale Utilities nutzen
 import { shuffle as shuffleArray, TimerManager, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
-import { isReducedMotion } from '../../content/webentwicklung/animations/animation-utils.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
@@ -19,7 +18,6 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   const DEFAULT_EASE = 'cubic-bezier(0.25,0.46,0.45,0.94)';
   const THRESHOLDS = [0, .1, .25, .35, .5, .75, 1];
   const ENTER = 0.45, EXIT = 0.35, COOLDOWN = 500;
-  const REDUCED = isReducedMotion();
 
   let order = [], i = 0, anim = false, queued = false;
   let loaded = false, seen = false, cool = false;
@@ -190,14 +188,10 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
       } catch (err) {
         log.warn('Event dispatch failed', err);
       }
-      if (REDUCED) { 
-        done(); 
-        return; 
-      }
       applyInAnimation(section, ANIM_IN, EASE, done);
     };
 
-    if (initial || !section.dataset.currentTemplate || REDUCED) { mountNew(); return; }
+    if (initial || !section.dataset.currentTemplate) { mountNew(); return; }
 
     // Performance-optimiert: will-change vor Animation
     section.style.willChange = 'transform, opacity';

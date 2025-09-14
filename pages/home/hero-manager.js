@@ -1,5 +1,4 @@
 import { throttle, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
-import { isReducedMotion } from '../../content/webentwicklung/animations/animation-utils.js';
 import { initParticles as _initParticles } from '../../content/webentwicklung/particles/particle-system.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 import { EVENTS } from '../../content/webentwicklung/utils/events.js';
@@ -117,7 +116,7 @@ const ParticlesManager = (() => {
       log.warn('Particle canvas not found');
       return () => {};
     }
-    return _initParticles({ getElement: getElementById, throttle, checkReducedMotion: isReducedMotion });
+    return _initParticles({ getElement: getElementById, throttle });
   };
   return { initParticles };
 })();

@@ -38,16 +38,6 @@ function initializeGlobalTheme() {
     .theme-transition-disabled * {
       transition: none !important;
     }
-    
-    /* Reduced motion support */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-      }
-    }
   `;
   
   // CSS in den Head einfügen

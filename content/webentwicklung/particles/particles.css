@@ -110,22 +110,6 @@
   pointer-events: none;
 }
 
-/* ===== Accessibility & Motion Preferences ===== */
-@media (prefers-reduced-motion: reduce) {
-  .global-particle-background .particle-canvas { 
-    opacity: 0.2; 
-    filter: blur(0.5px);
-    animation: none !important;
-    transition: none !important;
-  }
-  
-  .global-particle-background[data-particle-collisions="true"],
-  .global-particle-background[data-particle-bounce="true"] {
-    opacity: 0.5;
-    filter: none;
-  }
-}
-
 /* ===== Mobile & Touch Optimizations ===== */
 @media (max-width: 768px) {
   .global-particle-background {
@@ -153,13 +137,6 @@
   .global-particle-background[data-particle-glow="true"] .particle-canvas {
     filter: none;
   }
-}
-
-/* ===== Fallback für reduce-motion Klasse ===== */
-.reduce-motion .global-particle-background .particle-canvas { 
-  opacity: 0.3; 
-  animation: none;
-  transition: none;
 }
 
 /* ===== Section State Integration ===== */

@@ -177,18 +177,6 @@
   }
 }
 
-/* Smooth CSS fallback for reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .features-cards .card,
-  .features-cards .card.card-hidden,
-  .features-cards .card.card-visible {
-    transform: translateY(0) scale(1) translateZ(0) !important;
-    opacity: 1 !important;
-    transition: none !important;
-    will-change: auto !important;
-  }
-}
-
 /* ========================================
    Performance & Accessibility Optimierungen
 ======================================== */

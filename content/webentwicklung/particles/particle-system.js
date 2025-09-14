@@ -1,11 +1,11 @@
 /* eslint-disable indent */
-// Export: initParticles({ getElement, throttle, checkReducedMotion }) -> cleanup()
+// Export: initParticles({ getElement, throttle }) -> cleanup()
 import { randomFloat } from '../utils/common-utils.js';
 import { createLogger } from '../utils/logger.js';
 
 const log = createLogger('particles');
 
-export function initParticles({ getElement, throttle, checkReducedMotion }) {
+export function initParticles({ getElement, throttle }) {
   
   const canvas = getElement('particleCanvas');
   if (!canvas) {
@@ -175,7 +175,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     lastSectionIdx = newIdx;
     setCameraTargetsFromProfile(newIdx);
     // Dolly-Zoom: Focal hoch, Zoom runter (oder umgekehrt) für filmischen Effekt
-    if (!reduceMotion) {
+    {
       const now = performance.now();
       const base = cameraState.dolly;
       base.active = true;
@@ -193,17 +193,14 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
       const zEnd = s0 * (f0 / (f0 + D)) * ((f1 + D) / f1);
       base.z1 = Math.max(0.75, Math.min(1.75, zEnd));
       cameraState.targetZoom = base.z1; // Ziel an z1 anpassen, damit kein Rücksprung entsteht
-    } else {
-      cameraState.currentZoom = cameraState.targetZoom;
-      cameraState.currentFocal = cameraState.targetFocal;
     }
     // Leichte Motion-Details
-    cameraState.zoomPulse = reduceMotion ? 0 : 0.08;
-    cameraState.rotationMomentum = reduceMotion ? 0 : (Math.random() - 0.5) * 0.12;
-    cameraState.shake = Math.max(cameraState.shake, reduceMotion ? 0 : 0.08);
+    cameraState.zoomPulse = 0.08;
+    cameraState.rotationMomentum = (Math.random() - 0.5) * 0.12;
+    cameraState.shake = Math.max(cameraState.shake, 0.08);
     
     // Moderater Partikel-Burst-Effekt (reduziert für Klarheit)
-    if (!reduceMotion) triggerParticleBurst();
+    triggerParticleBurst();
     
     dispatchSnapChange(newIdx);
   }
@@ -257,7 +254,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   }
 
   function lerpCameraStep(){
-    const baseK = reduceMotion ? 1 : 0.15; // Etwas schneller für bessere Responsivität
+    const baseK = 0.15; // Etwas schneller für bessere Responsivität
     if (!cameraState.dolly.active) {
       cameraState.currentZoom += (cameraState.targetZoom - cameraState.currentZoom) * baseK;
       cameraState.currentFocal += (cameraState.targetFocal - cameraState.currentFocal) * baseK;
@@ -272,7 +269,7 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
 
   function updateShakeAndPulse(now){
     // Vereinfachte Shake-Logik - weniger komplex
-    if (!reduceMotion && cameraState.shake > 0.001) {
+    if (cameraState.shake > 0.001) {
       cameraState.shake *= 0.9;
       const t = now * 0.01;
       cameraState.shakeX = Math.sin(t * 1.5) * cameraState.shake * 20;
@@ -1101,7 +1098,6 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
   // ===== Farblogik (gecached) =====
   let colorCurrent = { r:9, g:139, b:255, aFill:0.8, aStroke:0.25 };
   let colorTarget  = { ...colorCurrent };
-  const reduceMotion = checkReducedMotion();
   let colorTweenStart = 0;
   const COLOR_TWEEN_MS = 420;
 
@@ -1126,12 +1122,10 @@ export function initParticles({ getElement, throttle, checkReducedMotion }) {
     const css = getComputedStyle(bgRoot).getPropertyValue('--particle-color') || 'rgba(9,139,255,0.8)';
     const p = parseRGBA(css); if (!p) return;
     colorTarget = { r:p.r, g:p.g, b:p.b, aFill:p.a, aStroke: p.a * 0.32 };
-    if (reduceMotion) colorCurrent = { ...colorTarget };
-    else colorTweenStart = performance.now();
+    colorTweenStart = performance.now();
     invalidateGradients();
   }
   function applyTween(now){
-    if (reduceMotion) return;
     const t = clamp((now - colorTweenStart)/COLOR_TWEEN_MS,0,1);
     if (t >= 1) { colorCurrent = { ...colorTarget }; return; }
     const lerp = (a,b) => a + (b-a)*t;

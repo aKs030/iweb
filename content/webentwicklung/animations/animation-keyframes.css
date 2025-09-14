@@ -243,15 +243,6 @@
   transform: translateZ(0);
 }
 
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  [data-animation],
-  [class*="animate-"] {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
 /* === Kompatibilität mit bestehenden fadeIn Animationen === */
 
 .animate-fadeIn {

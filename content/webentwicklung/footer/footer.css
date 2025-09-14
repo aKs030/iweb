@@ -251,27 +251,6 @@
   transition: all var(--transition-fast, 0.2s ease);
 }
 
-/* Accessibility und Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  .footer-social-link,
-  .footer-social-link::before,
-  .social-icon,
-  .social-text {
-    transition: none !important;
-    animation: none !important;
-  }
-  
-  .footer-social-link:hover,
-  .footer-social-link:focus {
-    transform: none;
-  }
-  
-  .footer-social-link:hover .social-icon,
-  .footer-social-link:focus .social-icon {
-    transform: none;
-  }
-}
-
 /* Focus-Styles für bessere Accessibility */
 .footer-social-link:focus-visible {
   outline: 2px solid var(--primary-color, #007AFF);
@@ -456,27 +435,6 @@
 .footer-setting-group {
   display: flex;
   align-items: center;
-}
-
-.setting-label {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs, 0.5rem);
-  cursor: pointer;
-  color: var(--text-muted, #888888);
-  font-size: 0.9rem;
-  transition: color var(--transition-base);
-}
-
-.setting-label:hover {
-  color: var(--text-primary, #ffffff);
-}
-
-.setting-checkbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary-color, #007AFF);
-  cursor: pointer;
 }
 
 .theme-toggle-btn {
@@ -852,15 +810,6 @@ body.footer-expanded {
   .footer-copyright-minimal,
   .footer-copyright-full {
     color: #fff !important;
-  }
-}
-
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  .footer-link,
-  .footer-copyright-minimal a,
-  .footer-copyright-full a {
-    transition: none;
   }
 }
 
