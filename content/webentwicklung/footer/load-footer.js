@@ -13,7 +13,7 @@
  */
 
 import { createLogger } from '../utils/logger.js';
-import { initializeUltraThemeToggle } from './ultra-theme-toggle.js';
+import { initializeDayNightArtwork } from './day-night-artwork.js';
 
 const log = createLogger('footer');
 
@@ -36,12 +36,12 @@ async function initializeFooter() {
     setupNewsletterForm();
     setupCookieSettings();
     
-    // Ultra 3D Theme Toggle initialisieren (ersetzt integrateFooterTheme)
+    // Day/Night Artwork Theme Toggle initialisieren
     try {
-      await initializeUltraThemeToggle();
-      log.debug('Ultra Theme Toggle erfolgreich initialisiert');
+      await initializeDayNightArtwork();
+      log.debug('Day/Night Artwork erfolgreich initialisiert');
     } catch (error) {
-      log.warn('Ultra Theme Toggle konnte nicht initialisiert werden:', error);
+      log.warn('Day/Night Artwork konnte nicht initialisiert werden:', error);
     }
     
     // Globale Footer API bereitstellen
