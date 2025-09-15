@@ -120,6 +120,56 @@ body {
   }
 }
 
+/* ========================================
+   Section Loader Error UI
+   (Automatisch eingefügt bei Ladefehlern)
+======================================== */
+.section-error-box {
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  background: linear-gradient(145deg, rgba(255,0,0,0.08), rgba(255,0,0,0.03));
+  border-radius: var(--radius-md);
+  font-size: .9rem;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-retry {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.9rem;
+  font: inherit;
+  border-radius: var(--radius-sm);
+  background: var(--primary-color);
+  color: #fff;
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.section-retry:hover {
+  background: var(--primary-dark, #0051D5);
+}
+
+.section-retry:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-retry:focus-visible {
+  outline: 2px solid var(--primary-light, #34AADC);
+  outline-offset: 2px;
+}
+
 .snap-section.in-view {
   opacity: 1;
   transform: var(--transform-none);

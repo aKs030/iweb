@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>SectionLoader Smoke Test</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/content/webentwicklung/root.css" />
+  <link rel="stylesheet" href="/content/webentwicklung/index.css" />
+  <style>
+    body { font-family: var(--font-inter, sans-serif); padding: 1rem; }
+    section { border: 1px dashed var(--border-color); min-height: 40vh; margin: 2rem 0; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>SectionLoader Smoke Test</h1>
+  <p>Scroll nach unten um Lazy Sections & Prefetch-Events zu beobachten (Konsole öffnen).</p>
+  <section id="hero" aria-labelledby="hero-heading" data-section-src="/pages/home/hero.html" data-eager="true">
+    <div class="section-skeleton" aria-hidden="true">Hero lädt…</div>
+  </section>
+  <section id="about" aria-labelledby="about-heading" data-section-src="/pages/about/about.html">
+    <div class="section-skeleton" aria-hidden="true">About wartet…</div>
+  </section>
+  <section id="fail" aria-labelledby="fail-heading" data-section-src="/does-not-exist.html">
+    <div class="section-skeleton" aria-hidden="true">Fehler-Test wartet…</div>
+  </section>
+
+  <div id="live-region-status" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  <div id="live-region-assertive" class="visually-hidden" aria-live="assertive" aria-atomic="true"></div>
+
+  <script type="module" src="/content/webentwicklung/main.js"></script>
+  <script src="/scripts/sectionloader-smoke-test.js"></script>
+</body>
+</html>

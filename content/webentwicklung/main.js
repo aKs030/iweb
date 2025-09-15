@@ -50,6 +50,15 @@ const SectionLoader = (() => {
 
   const SELECTOR = 'section[data-section-src]';
   const SEEN = new WeakSet();
+  const PREFETCH_CACHE = new Map(); // url -> { html, ts }
+
+  // Dispatch Helper für konsistente CustomEvents
+  function dispatchSectionEvent(type, section, detail = {}) {
+    try {
+      const ev = new CustomEvent(type, { detail: { id: section?.id, section, ...detail } });
+      document.dispatchEvent(ev);
+    } catch { /* ignore */ }
+  }
 
   /**
    * Lädt dynamisch den HTML-Inhalt einer Section per data-section-src.
@@ -66,6 +75,7 @@ const SectionLoader = (() => {
     prepSectionForLoad(section);
     const sectionName = resolveSectionName(section);
     announce(`Lade Abschnitt ${sectionName}…`);
+    dispatchSectionEvent('section:will-load', section, { url });
 
     const maxAttempts = 2;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -113,10 +123,15 @@ const SectionLoader = (() => {
     let controller, timeout;
     try {
       if (AC) { controller = new AC(); timeout = setTimeout(() => controller.abort(), 8000); }
-      const res = await fetch(url, { credentials: 'same-origin', signal: controller?.signal });
+      let html;
+      if (PREFETCH_CACHE.has(url)) {
+        html = PREFETCH_CACHE.get(url).html;
+      } else {
+        const res = await fetch(url, { credentials: 'same-origin', signal: controller?.signal });
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText} @ ${url}`);
+        html = await res.text();
+      }
       if (timeout) clearTimeout(timeout);
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText} @ ${url}`);
-      const html = await res.text();
       section.insertAdjacentHTML('beforeend', html);
       const tpl = section.querySelector('template');
       if (tpl) section.appendChild(tpl.content.cloneNode(true));
@@ -136,6 +151,7 @@ const SectionLoader = (() => {
   /** Abschluss bei Erfolg (Announce) */
   function finalizeSuccess(section, sectionName) {
     announce(`Abschnitt ${sectionName} geladen.`);
+    dispatchSectionEvent('section:loaded', section, { state: 'loaded' });
   }
 
   /** Abschluss bei Fehler (Announce + Status) */
@@ -143,6 +159,8 @@ const SectionLoader = (() => {
     section.dataset.state = 'error';
     section.removeAttribute('aria-busy');
     announce(`Fehler beim Laden von Abschnitt ${sectionName}.`, { assertive: true });
+    dispatchSectionEvent('section:error', section, { state: 'error' });
+    injectRetryUI(section);
   }
 
   /** Exponentiell leicht wachsender Backoff */
@@ -174,9 +192,59 @@ const SectionLoader = (() => {
       });
       lazy.forEach(s => io.observe(s));
     }
+
+    // Prefetch Observer: nähert sich Section dem Viewport, versuchen Prefetch
+    const prefetchable = sections.filter(s => !s.hasAttribute('data-eager'));
+    if (prefetchable.length) {
+      const preIO = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const s = entry.target;
+            const url = s.getAttribute('data-section-src');
+            if (url && !PREFETCH_CACHE.has(url) && !SEEN.has(s)) {
+              prefetch(url, s);
+            }
+            preIO.unobserve(s);
+          }
+        });
+      }, { rootMargin: '600px 0px' }); // ~ frühzeitig vorladen
+      prefetchable.forEach(s => preIO.observe(s));
+    }
   }
 
-  const api = { init, loadInto };
+  async function prefetch(url, section) {
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const html = await res.text();
+      PREFETCH_CACHE.set(url, { html, ts: performance.now() });
+      dispatchSectionEvent('section:prefetched', section, { url });
+    } catch {/* ignore */}
+  }
+
+  function injectRetryUI(section) {
+    if (section.querySelector('.section-retry')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'section-retry';
+    btn.textContent = 'Erneut laden';
+    btn.addEventListener('click', () => retry(section), { once: true });
+    const wrapper = document.createElement('div');
+    wrapper.className = 'section-error-box';
+    wrapper.append(btn);
+    section.append(wrapper);
+  }
+
+  async function retry(section) {
+    // Cleanup previous error UI
+    section.querySelectorAll('.section-error-box').forEach(n => n.remove());
+    section.dataset.state = '';
+    section.setAttribute('aria-busy', 'true');
+    SEEN.delete(section); // allow reprocessing
+    await loadInto(section);
+  }
+
+  const api = { init, loadInto, retry };
   window.SectionLoader = api;
   return api;
 })();

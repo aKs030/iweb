@@ -93,6 +93,48 @@ iweb-1/
 <section data-section-src="/pages/about/about.html">
 ```
 
+##### Section Loader Advanced Features (Prefetch, CustomEvents, Retry)
+
+Seit Erweiterung (2025-09) verfügt der Section Loader über:
+
+1. Prefetching: Ein zweiter IntersectionObserver mit `rootMargin: 600px` lädt den HTML-Inhalt vor, bevor die Section sichtbar wird. Der Inhalt landet im internen `PREFETCH_CACHE` (kein doppelter Netzwerktrafik beim späteren Rendern).
+2. Einheitliche CustomEvents: Erlauben lose Kopplung zwischen Modulen.
+3. User-Retry bei Fehlern: Automatisch eingefügter Button (Klasse `.section-retry`) ermöglicht erneutes Laden ohne Seitenreload.
+
+Events (alle via `document.addEventListener` abonnierbar):
+```
+section:will-load   detail: { id, section, url }
+section:prefetched  detail: { id, section, url }
+section:loaded      detail: { id, section, state: 'loaded' }
+section:error       detail: { id, section, state: 'error' }
+```
+Beispiel:
+```js
+document.addEventListener('section:prefetched', e => {
+	console.debug('[Prefetched]', e.detail.id, e.detail.url);
+});
+
+document.addEventListener('section:loaded', e => {
+	if (e.detail.id === 'about') {
+		import('/pages/about/about.js').catch(console.warn);
+	}
+});
+```
+
+Retry API (optional manuell nutzbar):
+```js
+const s = document.getElementById('about');
+window.SectionLoader.retry(s);
+```
+
+Fehler-UI Styling Klassen (falls überschreiben gewünscht):
+```
+.section-error-box {}
+.section-retry {}
+```
+
+Hinweis: Prefetch greift nur für nicht mit `data-eager` markierte Sections.
+
 #### **Snap-Scroll Animations** (`animations/snap-scroll-animations.js`)  
 ```javascript
 // Intersection Observer (threshold 0.3)
