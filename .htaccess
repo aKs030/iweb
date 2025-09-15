@@ -1,0 +1,24 @@
+# Security Headers für Apache Server
+# Diese Datei überschreibt die Meta-Tag CSP mit Server-Headern für bessere Sicherheit
+
+# Content Security Policy
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://fonts.googleapis.com https://fonts.gstatic.com https://static.cloudflareinsights.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+
+# Weitere Security Headers
+Header always set X-Frame-Options "DENY"
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+# HSTS (HTTP Strict Transport Security)
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+# Cache Control für statische Ressourcen
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+
+# HTML-Dateien mit kürzerer Cache-Zeit
+<FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "public, max-age=3600"
+</FilesMatch>
