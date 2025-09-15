@@ -202,14 +202,14 @@
         <div>GAME OVER</div>
         <div class="high-score">Final Score: <span id="finalScore">0</span></div>
   <div class="high-score is-hidden" id="newHighScore">NEW HIGH SCORE!</div>
-  <button class="control-btn" type="button" onclick="game.restart()">Play Again</button>
+  <button class="control-btn" type="button" data-action="restart">Play Again</button>
       </div>
     </div>
 
     <div class="game-controls">
-  <button class="control-btn" type="button" onclick="game.togglePause()">Pause/Resume</button>
-  <button class="control-btn" type="button" onclick="game.restart()">Restart</button>
-  <button class="control-btn" type="button" onclick="game.toggleSound()">Sound On/Off</button>
+  <button class="control-btn" type="button" data-action="toggle-pause">Pause/Resume</button>
+  <button class="control-btn" type="button" data-action="restart">Restart</button>
+  <button class="control-btn" type="button" data-action="toggle-sound">Sound On/Off</button>
     </div>
 
     <div class="instructions">
@@ -796,6 +796,25 @@
 
     // Initialize game
     const game = new SpaceDefender();
+
+    // Button Event Delegation (entfernt frühere inline onclick Handler)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('button.control-btn[data-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+      switch(action) {
+        case 'restart':
+          game.restart();
+          break;
+        case 'toggle-pause':
+          game.togglePause();
+          break;
+        case 'toggle-sound':
+          game.toggleSound();
+          btn.textContent = game.soundEnabled ? 'Sound On/Off' : 'Sound Off';
+          break;
+      }
+    });
   </script>
 
   <script src="/content/webentwicklung/main.js" defer></script>

@@ -36,6 +36,14 @@ function announce(message, { assertive = false } = {}) {
 }
 
 window.announce = window.announce || announce;
+// ===== Service Worker Registrierung =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      log.warn('SW registration failed', { err });
+    });
+  });
+}
 // ===== Section Loader Module =====
 const SectionLoader = (() => {
   if (window.SectionLoader) return window.SectionLoader;

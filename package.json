@@ -10,7 +10,9 @@
     "lint:html:ci": "npx html-validate $(git ls-files '*.html' | grep -v node_modules | grep -v coverage) --max-warnings=0",
     "lint:all": "npm run lint:js && npm run lint:html",
     "check:css": "bash ./scripts/check-root.sh",
-    "consolidate:css": "bash ./scripts/consolidate-tokens.sh"
+    "consolidate:css": "bash ./scripts/consolidate-tokens.sh",
+    "security:scan": "node ./scripts/security-scan.js"
+    ,"fonts:inter": "node ./scripts/fetch-inter.js"
   },
   "keywords": [],
   "author": "aKs030",

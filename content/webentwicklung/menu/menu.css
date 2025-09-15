@@ -3,8 +3,8 @@
  * 
  * Features:
  * - Responsive Hamburger-Menü
- * - FontAwesome Icons Integration
- * - Google Fonts (Inter, Lobster, Dancing Script)
+ * - Lokales SVG Icon Sprite (icons.svg)
+ * - Google Fonts (Inter, Lobster, Dancing Script) optional
  * - Submenu-Funktionalität
  * - Elegante Typografie für Site-Logo
  * - Mobile-optimiert
@@ -13,8 +13,26 @@
  * @version 1.0.0
  */
 
-@import url('https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css');
-/* Font-Import entfernt - wird bereits im HTML geladen */
+/* Icons: Lokal gehostetes SVG Sprite (icons.svg). Entfernt externe Abhängigkeiten. */
+.nav-icon {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  flex-shrink: 0;
+  margin-right: 0.45em;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+  transition: fill var(--transition-base), transform var(--transition-base);
+}
+
+button.submenu-toggle .nav-icon { margin-right: 0.55em; }
+
+.site-menu__list a:hover .nav-icon,
+.site-menu__list a:focus .nav-icon,
+button.submenu-toggle:hover .nav-icon,
+button.submenu-toggle:focus .nav-icon {
+  transform: translateY(-1px);
+}
 
 *, *::before, *::after {
   margin: 0;

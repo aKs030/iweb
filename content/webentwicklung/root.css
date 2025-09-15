@@ -1,3 +1,33 @@
+/* =============================================
+   Self-Hosted Fonts (Inter) - ersetzt externes Google Fonts Stylesheet
+   Hinweis: WOFF2 Dateien in content/webentwicklung/fonts/ ablegen.
+   Unbenutzte Gewichte entfernen für Performance. Subset (latin) empfohlen.
+============================================= */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900; /* Variable Font Range */
+  font-display: swap;
+  src: url('/content/webentwicklung/fonts/InterVariable.woff2') format('woff2-variations');
+}
+/* Optional statischer Fallback (Regular) für sehr alte Browser */
+@font-face {
+  font-family: 'InterFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/content/webentwicklung/fonts/Inter-Regular.woff2') format('woff2');
+}
+
+/* Utility: Verstecktes Inline SVG Sprite */
+.svg-sprite-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 /* =======================
    Global CSS Variables - Dark & Light Mode System
    
