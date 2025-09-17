@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://api.github.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com sha256-K9WmLnXZNonKm1ZThJXtTdZa01o72qlCk4TRxkUq1xw= sha256-3/tZpFDa7mZ0bMj3Z/vnn9t7rm57FDcbV1P+mqgRjJc= sha256-5quy27/OlecHHnU7BVxn3EAwEiSxslEPcPWRsGTms8c= sha256-2T1B6WHceR3weWPsi+cTt0B9SaXiaT85uMNHQD8YHtA= sha256-bxyjtbqvaCRoPbsWM9cB1EZSl6UoxpKFelUYImysCZU=; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://api.github.com https://static.cloudflareinsights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
