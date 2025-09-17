@@ -54,7 +54,7 @@ const assetCheck = true; // aktiviert Basis Asset-Existenzprüfung
 // Inline Events: generische Erkennung (vereinfacht für Lint-Rules)
 const inlineEventAttr = / on[a-z]+=/gi;
 const metaSecurity = /<meta[^>]+http-equiv\s*=\s*"(?:Content-Security-Policy|X-Frame-Options|X-Content-Type-Options|X-XSS-Protection)"/gi;
-const externalFontCdn = /(fonts.googleapis.com|use\.fontawesome\.com|cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|unpkg\.com)/gi;
+const externalFontCdn = /(fonts\.googleapis\.com|use\.fontawesome\.com|cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|unpkg\.com)/gi;
 const cssImport = /@import\s+url\(/gi;
 const inlineStyleAttr = / style="[^"]+"/gi;
 
