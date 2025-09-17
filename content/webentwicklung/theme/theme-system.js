@@ -20,30 +20,16 @@ const log = createLogger('theme-system');
  * Muss so früh wie möglich geladen werden um FOUC zu vermeiden
  */
 function initializeGlobalTheme() {
-  // Theme-Transition CSS hinzufügen für smooth Übergänge
-  const transitionCSS = `
-    *, *::before, *::after {
-      transition: 
-        background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        fill 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        stroke 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    /* Specific theme transition overrides */
-    .theme-transition-disabled * {
-      transition: none !important;
-    }
-  `;
+  // Transition styles are provided by the external stylesheet
   
-  // CSS in den Head einfügen
-  const style = document.createElement('style');
-  style.textContent = transitionCSS;
-  document.head.appendChild(style);
+  // Ensure external transition CSS is loaded to avoid runtime-injected <style>
+  const TRANSITION_CSS_HREF = '/content/webentwicklung/animations/theme-transitions.css';
+  if (!document.querySelector(`link[href="${TRANSITION_CSS_HREF}"]`)) {
+    const link = document.createElement('link');
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('href', TRANSITION_CSS_HREF);
+    document.head.appendChild(link);
+  }
   
   // Theme basierend auf localStorage oder System-Präferenz setzen
   const savedTheme = localStorage.getItem('theme');
