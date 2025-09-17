@@ -181,18 +181,13 @@ class DayNightArtworkManager {
     this.skyCanvas.appendChild(ripple);
 
     // CSS für Ripple-Animation einfügen falls nicht vorhanden
-    if (!document.querySelector('#artwork-ripple-style')) {
-      const style = document.createElement('style');
-      style.id = 'artwork-ripple-style';
-      style.textContent = `
-        @keyframes artworkRipple {
-          to {
-            transform: translate(-50%, -50%) scale(20);
-            opacity: 0;
-          }
-        }
-      `;
-      document.head.appendChild(style);
+    // Ensure external CSS for ripple is loaded
+    const RIPPLE_CSS_HREF = '/content/webentwicklung/footer/day-night-artwork.css';
+    if (!document.querySelector(`link[href="${RIPPLE_CSS_HREF}"]`)) {
+      const link = document.createElement('link');
+      link.setAttribute('rel', 'stylesheet');
+      link.setAttribute('href', RIPPLE_CSS_HREF);
+      document.head.appendChild(link);
     }
 
     // Cleanup nach Animation
