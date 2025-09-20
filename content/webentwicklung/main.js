@@ -3,6 +3,7 @@ import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
 import { EVENTS, fire } from './utils/events.js';
 import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
 import { schedulePersistentStorageRequest } from './utils/persistent-storage.js';
+import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
 
 // ===== Accessibility Utilities =====
 function announce(message, { assertive = false } = {}) {
@@ -350,6 +351,12 @@ function loadMenuAssets() {
     if (!window.enhancedAnimationEngine) {
       window.enhancedAnimationEngine = new EnhancedAnimationEngine();
     }
+    
+    // TypeWriter Registry global verfügbar machen
+    if (!window.TypeWriterRegistry) {
+      window.TypeWriterRegistry = TypeWriterRegistry;
+    }
+    
     fire(EVENTS.CORE_INITIALIZED);
 
     // === Mobile Performance Optimierung (nach Engine-Init) ===

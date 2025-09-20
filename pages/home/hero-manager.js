@@ -1,26 +1,153 @@
-import { throttle, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
-import { initParticles as _initParticles } from '../../content/webentwicklung/particles/particle-system.js';
+import { getElementById } from '../../content/webentwicklung/utils/common-utils.js';
+import { ParticlesManager } from '../../content/webentwicklung/particles/particle-system.js';
 import { EVENTS } from '../../content/webentwicklung/utils/events.js';
-import { initHeroAnimations } from './hero-animations.js';
+import { createLogger } from '../../content/webentwicklung/utils/logger.js';
+
+const log = createLogger('hero-manager');
+
+// ===== Hero-spezifische Animation Engine Erweiterungen =====
+
+/**
+ * Hero-spezifische Animation-Aliases
+ * Diese Aliases waren ursprünglich in der enhanced-animation-engine.js
+ */
+export const HERO_ANIMATION_ALIASES = new Map([
+  // Hero-spezifische Grußtext-Animation
+  ['greeting', 'fadeInUp'],
+  // Weitere Hero-spezifische Animationen können hier hinzugefügt werden
+]);
+
+/**
+ * Hero-spezifische Animation-Konfiguration
+ */
+export const HERO_ANIMATION_CONFIG = {
+  // Optimierte Performance-Einstellungen für Hero-Bereich
+  threshold: 0.1,
+  rootMargin: '50px',
+  repeatOnScroll: true,
+  
+  // Hero-spezifische Animation-Durationen
+  durations: {
+    greeting: 0.8,      // Längere Dauer für Grußtext
+    heroButtons: 0.6,   // Standard für Hero-Buttons
+    heroSubtitle: 0.7   // Subtitle-Animationen
+  }
+};
+
+/**
+ * Erweitert die globale Animation Engine um Hero-spezifische Aliases
+ * @param {Object} animationEngine - Die Enhanced Animation Engine Instanz
+ */
+export function extendAnimationEngineForHero(animationEngine) {
+  if (!animationEngine || typeof animationEngine.parseDataAttribute !== 'function') {
+    log.warn('Animation Engine nicht verfügbar oder inkompatibel');
+    return;
+  }
+
+  // Backup der ursprünglichen parseDataAttribute Methode
+  const originalParseDataAttribute = animationEngine.parseDataAttribute.bind(animationEngine);
+  
+  // Erweiterte parseDataAttribute Methode mit Hero-Aliases
+  animationEngine.parseDataAttribute = function(element, attribute) {
+    const result = originalParseDataAttribute(element, attribute);
+    
+    if (!result) return null;
+    
+    // Hero-spezifische Alias-Behandlung
+    const heroAlias = HERO_ANIMATION_ALIASES.get(result.type?.toLowerCase());
+    if (heroAlias) {
+      result.type = heroAlias;
+    }
+    
+    return result;
+  };
+}
+
+/**
+ * Helper: Animiert Hero-Grußtext mit spezifischen Einstellungen
+ * @param {HTMLElement} greetingElement - Das Grußtext-Element
+ */
+export function animateGreeting(greetingElement) {
+  if (!greetingElement) return;
+  
+  // Setze Hero-spezifische Attribute für Grußtext-Animation
+  if (!greetingElement.hasAttribute('data-animation')) {
+    greetingElement.setAttribute('data-animation', 'greeting');
+    greetingElement.setAttribute('data-duration', HERO_ANIMATION_CONFIG.durations.greeting);
+    greetingElement.setAttribute('data-delay', '200');
+  }
+  
+  // Trigger Animation über globale Engine
+  if (window.enhancedAnimationEngine) {
+    window.enhancedAnimationEngine.scan?.();
+  }
+}
+
+/**
+ * Helper: Animiert Hero-Buttons mit spezifischen Einstellungen
+ * @param {HTMLElement} containerElement - Container mit Hero-Buttons
+ */
+export function animateHeroButtons(containerElement) {
+  if (!containerElement) return;
+  
+  const buttons = containerElement.querySelectorAll('.hero-buttons [data-animation]');
+  buttons.forEach((button, index) => {
+    // Gestaffelte Animation für mehrere Buttons
+    const delay = 300 + (index * 150);
+    button.setAttribute('data-delay', delay.toString());
+    
+    if (!button.hasAttribute('data-duration')) {
+      button.setAttribute('data-duration', HERO_ANIMATION_CONFIG.durations.heroButtons);
+    }
+  });
+  
+  // Trigger Animation über globale Engine
+  if (window.enhancedAnimationEngine) {
+    window.enhancedAnimationEngine.animateElementsIn?.(containerElement, { force: true });
+  }
+}
+
+/**
+ * Initialisiert Hero-spezifische Animationen
+ * Sollte nach dem Laden der main Animation Engine aufgerufen werden
+ */
+function initHeroAnimations() {
+  // Warten bis die globale Animation Engine verfügbar ist
+  const waitForEngine = () => {
+    if (window.enhancedAnimationEngine) {
+      extendAnimationEngineForHero(window.enhancedAnimationEngine);
+      
+      // Hero-spezifische Konfiguration anwenden
+      window.enhancedAnimationEngine.setRepeatOnScroll?.(HERO_ANIMATION_CONFIG.repeatOnScroll);
+      
+      // Initial scan für Hero-Elemente
+      window.enhancedAnimationEngine.scan?.();
+      
+      log.debug('Hero-spezifische Animationen initialisiert');
+    } else {
+      // Retry nach kurzer Verzögerung
+      setTimeout(waitForEngine, 100);
+    }
+  };
+  
+  waitForEngine();
+}
 
 // ===== Hero Management Module =====
 const HeroManager = (() => {
-  let TypeWriter = null, makeLineMeasurer = null, quotes = [], heroData = null;
+  let heroData = null;
 
   async function loadTyped() {
-    const modules = [
-      ['./TypeWriter.js', m => { TypeWriter = m.default; }],
-      ['./lineMeasurer.js', m => { makeLineMeasurer = m.makeLineMeasurer; }],
-      ['./quotes-de.js', m => { quotes = m.default || m.quotes; }],
-    ];
-    for (const [path, handler] of modules) {
+    // Nutze globale TypeWriter Registry
+    if (window.TypeWriterRegistry) {
       try {
-        const module = await import(path);
-        handler(module);
-      } catch (_error) {
-        // Silent fail
+        await window.TypeWriterRegistry.loadModules();
+        return window.TypeWriterRegistry.isReady();
+      } catch {
+        return false;
       }
     }
+    return false;
   }
 
   function initLazyHeroModules() {
@@ -58,7 +185,10 @@ const HeroManager = (() => {
     setTimeout(triggerLoad, 6000);
   }
 
-  const ensureHeroData = async () => heroData || (heroData = await import('./hero-data.js').catch(() => ({})));
+  const ensureHeroData = async () => heroData || (heroData = await import('./GrussText.js').catch(() => ({})));
+
+  // Hero Data Module für externe Verwendung (z.B. TypeWriter) bereitstellen
+  window.__heroEnsureData = ensureHeroData;
 
   async function setRandomGreetingHTML(animated = false) {
     const delays = [0, 50, 120, 240, 480];
@@ -87,35 +217,7 @@ const HeroManager = (() => {
     }
   }
 
-  // Typing-Initialisierung für externe Verwendung
-  window.__initTyping = async () => {
-    if (!TypeWriter || !makeLineMeasurer || !quotes.length) {
-      await loadTyped();
-    }
-    const module = await import('./TypeWriter.js');
-    return (typeof module.initHeroSubtitle === 'function')
-      ? module.initHeroSubtitle({
-        ensureHeroDataModule: ensureHeroData,
-        makeLineMeasurer,
-        quotes,
-        TypeWriterClass: TypeWriter
-      })
-      : false;
-  };
-
   return { initLazyHeroModules, setRandomGreetingHTML, ensureHeroData };
-})();
-
-// ===== Particles Module =====
-const ParticlesManager = (() => {
-  const initParticles = () => {
-    const canvas = getElementById('particleCanvas');
-    if (!canvas) {
-      return () => {};
-    }
-    return _initParticles({ getElement: getElementById, throttle });
-  };
-  return { initParticles };
 })();
 
 // ===== Animation Engine Bootstrap (nur für Hero-bezogene Trigger) =====
@@ -169,7 +271,7 @@ function initHeroAnimationBootstrap() {
       } catch { /* noop */ }
       window.enhancedAnimationEngine?.animateElementsIn?.(active, { force: true });
 
-      // Wenn zurck zum Hero gescrollt wurde, CRT-Buttons wieder sichtbar machen
+      // Wenn zurück zum Hero gescrollt wurde, CRT-Buttons wieder sichtbar machen
       if (id === 'hero') {
         try {
           active.querySelectorAll('.hero-buttons [data-animation="crt"]').forEach(btn => {
@@ -178,7 +280,7 @@ function initHeroAnimationBootstrap() {
         } catch { /* noop */ }
       }
     });
-  } catch (_error) {
+  } catch {
     // Silent fail
   }
 }
@@ -236,7 +338,7 @@ export function initHeroFeatureBundle() {
     try {
       const stopParticles = ParticlesManager.initParticles();
       window.__stopParticles = stopParticles;
-    } catch (_error) {
+    } catch {
       // Silent fail
     }
   }, 100);

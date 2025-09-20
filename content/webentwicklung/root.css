@@ -179,7 +179,7 @@
   /* Partikel */
   --particle-opacity: 0.4;
 
-  /* Greeting Hero (aus pages/home/greeting-text-hero.css) */
+  /* Greeting Hero (aus pages/home/hero.css) */
   --greet-fs: clamp(1.6rem, 4vw, 2.6rem);
   --greet-lh: 1.14;
   --greet-weight: 600;
@@ -211,7 +211,19 @@
   --particle-connection-opacity: 1;
   --particle-opacity-scale: 1;
   --star-twinkle-speed: 2s;
-  --star-brightness: 1.2;}
+  --star-brightness: 1.2;
+
+  /* ===== TypeWriter Custom Properties ===== */
+  /* CSS-Only Fallback für TypeWriter */
+  --typing-target: 28ch;
+  --typing-steps: 28;
+  
+  /* Animation Delays für Hero Floating Icons */
+  --delay-0: 0s;
+  --delay-1: 1s;
+  --delay-2: 2s; 
+  --delay-3: 3s;
+}
 
 /* =======================
    LIGHT MODE OVERRIDE (Blauer Stil)
@@ -368,3 +380,4 @@ textarea:focus-visible {
   transform: translateY(0);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
 }
+

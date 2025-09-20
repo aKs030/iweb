@@ -1,9 +1,20 @@
 /* eslint-disable indent */
 // Export: initParticles({ getElement, throttle }) -> cleanup()
-import { randomFloat } from '../utils/common-utils.js';
+import { randomFloat, getElementById, throttle } from '../utils/common-utils.js';
 
+// ===== Particles Module Manager =====
+const ParticlesManager = (() => {
+  const initParticles = () => {
+    const canvas = getElementById('particleCanvas');
+    if (!canvas) {
+      return () => {};
+    }
+    return initParticlesImpl({ getElement: getElementById, throttle });
+  };
+  return { initParticles };
+})();
 
-export function initParticles({ getElement, throttle }) {
+function initParticlesImpl({ getElement, throttle }) {
   
   const canvas = getElement('particleCanvas');
   if (!canvas) {
@@ -30,12 +41,12 @@ export function initParticles({ getElement, throttle }) {
     // if (typeof OffscreenCanvas !== 'undefined' && 'transferControlToOffscreen' in canvas) {
     //   // Vollständige OffscreenCanvas-Implementation würde WebWorker erfordern
     // }
-  } catch (error) {
+  } catch (_error) {
     return () => {};
   }
 
   // ===== Perf-Grundlagen =====
-  const DPR = Math.min(2, Math.max(1, Math.ceil(devicePixelRatio || 1)));
+  const DPR = Math.min(2, Math.max(1, Math.ceil(window.devicePixelRatio || 1)));
   const bgRoot = document.querySelector('.global-particle-background');
 
   // ===== Nur 2D Partikel - optimiertes System =====
@@ -1414,3 +1425,7 @@ export function initParticles({ getElement, throttle }) {
   };
   return api.stop;
 }
+
+// Exports
+export { initParticlesImpl as initParticles };
+export { ParticlesManager };

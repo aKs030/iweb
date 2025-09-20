@@ -451,7 +451,7 @@ Ziel: Garantie, dass CSP ohne `'unsafe-inline'` oder externe Domains dauerhaft s
 
 ### Entfernte / Konsolidierte Module
 - `particle-config.js` wurde entfernt (Datei ist nun leer) – frühere konfigurierbare Partikelparameter waren ungenutzt und führten zu totem Code. Das Partikelsystem nutzt aktuell feste Logik in `particle-system.js`. Bei künftigem Bedarf kann eine neue, fokussierte Config-Lösung reintroduziert werden.
-- Doppelter `typewriterConfig` Export eliminiert – einzig gültige Konfiguration liegt jetzt in `pages/home/hero-data.js` und wird dynamisch von `TypeWriter.js` geladen.
+- Doppelter `typewriterConfig` Export eliminiert – einzig gültige Konfiguration liegt jetzt in `pages/home/GrussText.js` und wird dynamisch von `TypeWriter.js` geladen.
 - Unbenutzte Exporte (`HeroAPI`, `getHeroConfig`, Default-Exports einiger Utility-Module) entfernt um Tree-Shaking-/Lesbarkeitspotenzial zu erhöhen.
 
 ### Motion / Accessibility Vereinheitlichung

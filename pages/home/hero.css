@@ -1,8 +1,8 @@
-body:not(.hero-active) .greeting-text-hero {
+body:not(.hero-active) .hero-title {
   animation-play-state: paused !important;
 }
 
-.greeting-text-hero {
+.hero-title {
   /* Responsive font sizing for mid-sized viewports */
   position: relative;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
@@ -40,29 +40,29 @@ body:not(.hero-active) .greeting-text-hero {
   transition: text-shadow var(--transition-base), filter var(--transition-base);
 }
 
-.greeting-text-hero:hover {
+.hero-title:hover {
   text-shadow: 0 0 26px rgba(37,99,235,0.45), 0 0 52px rgba(37,99,235,0.32);
   animation: gradientMove var(--greet-anim-grad-dur) linear infinite,
              pulseGlowHover var(--greet-anim-pulse-dur) ease-in-out infinite;
   transition: text-shadow var(--transition-base), filter var(--transition-base);
 }
 
-.greeting-text-hero[data-animation] {
+.hero-title[data-animation] {
   will-change: opacity, transform;
 }
 
-.greeting-text-hero[data-animation].animate-element {
+.hero-title[data-animation].animate-element {
   opacity: 0;
   animation-play-state: paused;
 }
 
-.greeting-text-hero[data-animation].animate-element.is-visible {
+.hero-title[data-animation].animate-element.is-visible {
   opacity: 1;
   animation-play-state: running;
 }
 
 @supports (text-wrap: balance) {
-  .greeting-text-hero {
+  .hero-title {
     text-wrap: balance;
   }
 }
@@ -88,39 +88,29 @@ body:not(.hero-active) .greeting-text-hero {
   100% { filter: drop-shadow(0 1px 14px rgba(37,99,235,0.7)); }
 }
 
-.greeting-text-hero.fade {
+.hero-title.fade {
   opacity: 0;
   transform: var(--transform-scale-fade);
 }
 
-.greeting-text-hero:not(.fade) {
+.hero-title:not(.fade) {
   opacity: 1;
   transform: var(--transform-scale-none);
 }
 
 @media (min-width: 1025px) {
-  .greeting-text-hero{
+  .hero-title{
     /* Larger, more relaxed typography on wide screens */
   /* Anpassung der Hero-Variablen für große Screens */
-
-
-
-
     text-shadow: 0 0 22px rgba(37,99,235,0.38), 0 0 44px rgba(37,99,235,0.28);
     letter-spacing: -0.018em;
   }
 }
 
 @media (max-width: 768px){
-  .greeting-text-hero {
+  .hero-title {
     /* Tighter scaling on small screens for readability */
   /* Anpassung der Hero-Variablen für kleine Screens */
-
-
-
-
-
-
     margin-top: 20px;
     text-shadow: 0 0 12px rgba(37,99,235,0.32), 0 0 22px rgba(37,99,235,0.22);
   }
@@ -162,63 +152,17 @@ body:not(.hero-active) .greeting-text-hero {
 }
 
 /* Gradient Overlay jetzt global gelöst */
-/* (typing area) */
-.hero-subtitle{
-  position: absolute;
-  left: clamp(12px, 2vw, 20px);
-  /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
-  bottom: clamp(12px, 2vw, 24px);
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  -webkit-font-smoothing: auto;
-  -moz-osx-font-smoothing: auto;
-  text-rendering: optimizeLegibility;
-  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
-  line-height: 1.22;
-  opacity: 0;
-  pointer-events: none;
-  max-width: clamp(480px, 48vw, 720px);
-  height: var(--box-h);
-  gap: var(--gap-px);
-  transform: translateY(6px);
-  transition: opacity .45s ease, transform .45s ease;
-  z-index: 70; /* above footer */
-}
-
-.hero-subtitle--fixed {
-  position: fixed;
-  left: clamp(12px, 2vw, 20px);
-  /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
-  bottom: clamp(16px, 2.5vw, 32px);
-  z-index: 70;
-  opacity: 0.92;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-.hero-subtitle .typed-author{ color: var(--text-muted, #666666); font-weight: 400; font-size: clamp(0.85rem, 1.6vw, 0.98rem); letter-spacing: 0.006em; text-shadow: none; opacity: 0.78; }
-.hero-subtitle .typed-quote { font-weight: 400; font-size: 0.92em; }
-.typed-text{ font-weight: 300; font-size: 0.82em; line-height: 1.18; display: inline; color: var(--text-secondary, #b0b0b0); text-shadow: none; white-space: normal; letter-spacing: 0em; overflow-wrap: anywhere; word-break: normal; -webkit-hyphens: auto; hyphens: auto; opacity: 0.8; }
-@supports (text-wrap: balance) { .hero-subtitle .typed-text { text-wrap: balance; } }
-.hero-subtitle .typed-text::after{ content: ''; display: inline-block; width: 0; height: 0.90em; margin-left: 0.06ch; border-left: 2px solid var(--text-primary, #fff); animation: caret-blink 0.9s steps(1,end) infinite; vertical-align: -0.1em; opacity: 1; }
-.hero-subtitle .cursor{ display: none !important; }
-@keyframes caret-blink{50%{opacity:0}}
-body:not(.has-typingjs) .hero-subtitle .cursor{ display: none; }
-body:not(.has-typingjs) .hero-subtitle .typed-text{ display:inline-block; white-space:nowrap; overflow:hidden; border-right:2px solid var(--text-primary,#fff); width:0; --typing-target:28ch; --typing-steps:28; animation: typing 3s steps(var(--typing-steps)) forwards, blink-caret .75s step-end infinite; }
-@keyframes typing { to { width: var(--typing-target); } }
-@keyframes blink-caret { 50% { border-right-color: transparent; } }
+/* (typing area - moved to content/webentwicklung/TypeWriter/typewriter.css) */
 /* Visual / Greeting */
 .hero-visual { position: relative; animation: fadeInUp 1s ease-out 0.3s both; }
 .hero-image { width: 100%; max-width: 500px; height: auto; display: block; border-radius: var(--radius-lg); }
 .hero-image-decoration { position: absolute; top: -20px; right: -20px; width: 100%; height: 100%; border: 3px solid var(--primary-color); border-radius: var(--radius-lg); z-index: -1; opacity: 0.3; }
 .floating-icons { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
-.floating-icon { position: absolute; font-size: 2rem; animation: float 6s ease-in-out infinite; animation-delay: var(--delay); }
-.floating-icon.delay-0 { --delay: 0s; }
-.floating-icon.delay-1 { --delay: 1s; }
-.floating-icon.delay-2 { --delay: 2s; }
-.floating-icon.delay-3 { --delay: 3s; }
+.floating-icon { position: absolute; font-size: 2rem; animation: float 6s ease-in-out infinite; }
+.floating-icon.delay-0 { animation-delay: var(--delay-0); }
+.floating-icon.delay-1 { animation-delay: var(--delay-1); }
+.floating-icon.delay-2 { animation-delay: var(--delay-2); }
+.floating-icon.delay-3 { animation-delay: var(--delay-3); }
 .floating-icon:nth-child(1) { top: 10%; right: -50px; }
 .floating-icon:nth-child(2) { top: 70%; right: -40px; }
 .floating-icon:nth-child(3) { bottom: 20%; left: -50px; }
@@ -232,18 +176,14 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* size to content so it hugs the greeting text */
   width: fit-content; /* hug the content width */
   height: auto;
-  /* allow the pill to size to the text; avoid forcing a large minimum */
   min-width: 0;
   z-index: 1;
   pointer-events: none;
   display: inline-flex; /* inline-flex lets the pill shrink/grow with content */
   align-items: center;
   justify-content: center;
-  /* responsive pill padding around text (generous to preserve halo) */
-  /* increase horizontal padding so short texts get more breathing room */
   padding-block: clamp(10px, 1.6vw, 18px);
   padding-inline: clamp(18px, 4vw, 36px);
   box-sizing: border-box;
@@ -257,27 +197,21 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
   position: absolute;
   inset: 0;
   border-radius: inherit; /* match pill shape */
-  /* blurred radial background lives in pseudo so children stay sharp */
   background: radial-gradient(ellipse at center, rgba(248,250,252,0.96) 0%, rgba(37,99,235,0.18) 48%, rgba(37,99,235,0.08) 66%, transparent 100%);
-  /* stronger, softer halo (desktop) */
   filter: blur(48px) saturate(1.04) contrast(1.02);
   transform-origin: center center;
-  /* rotate and scale so spotlight comfortably extends beyond text */
   transform: rotate(-8deg) scale(1.22);
-  /* sit behind the text */
   z-index: 0;
   pointer-events: none;
 }
 
 @media (max-width: 768px) {
-  /* make spotlight relative in flow on small screens so it centers with the content */
   .spotlight-bg {
     position: relative;
     top: auto;
     left: auto;
     transform: none;
     margin: 0 auto;
-  /* let the pill follow the text width but cap at 88vw; give more horizontal padding */
   width: fit-content;
   max-width: 88vw;
   min-width: 0;
@@ -286,8 +220,7 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
   }
   .spotlight-bg::before { transform: rotate(-6deg) scale(1.08); filter: blur(26px) saturate(0.98); }
 
-  /* ensure greeting text is centered inside the pill */
-  .spotlight-bg > .greeting-text-hero {
+  .spotlight-bg > .hero-title {
     display: inline-block;
     line-height: 1.18;
     text-align: center;
@@ -295,17 +228,15 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
     z-index: 3;
   }
 
-  /* Allow the image container to expand a bit on small screens so the spotlight can be wider */
   .hero-image-container {
     width: 100%;
-  max-width: 88vw;
+    max-width: 88vw;
     overflow: visible; /* ensure halo can extend beyond container */
   }
 }
 
 @media (max-width: 480px) {
   .spotlight-bg {
-    /* pill follows text width on very small phones but never exceed viewport; more horizontal padding */
     width: fit-content;
     max-width: 88vw;
     min-width: 0;
@@ -313,7 +244,7 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
     padding-inline: clamp(14px, 8vw, 18px);
   }
   .spotlight-bg::before { transform: rotate(-4deg) scale(1.06); filter: blur(20px) saturate(0.96); }
-  .spotlight-bg > .greeting-text-hero {
+  .spotlight-bg > .hero-title {
   font-size: clamp(1.1rem, 5.6vw, 1.6rem);
   min-inline-size: clamp(18ch, 60vw, 40ch);
   line-height: 1.20;
@@ -323,7 +254,7 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
   }
 }
 
-.spotlight-bg > .greeting-text-hero {
+.spotlight-bg > .hero-title {
   z-index: 2;
   position: relative;
   display: inline-block; /* avoid baseline/flow issues inside flex */
@@ -336,10 +267,6 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
   .hero { position: relative; }
   .hero-content { display: grid; grid-template-columns: 1fr; }
   .hero-visual { grid-row: 1; grid-column: 1; justify-self: center; align-self: center; }
-  .hero-subtitle{ font-size: clamp(0.86rem, 1.4vw, 1.02rem); line-height: 1.18; max-width: clamp(420px, 38vw, 640px); }
-  .hero-subtitle .typed-text{ font-size: 0.80em; line-height: 1.16; letter-spacing: 0.001em; }
-  .hero-subtitle .typed-author{ font-size: clamp(0.82rem, 1.1vw, 0.94rem); }
-  .hero-subtitle .typed-text::after{ height: 0.86em; border-left-width: 2px; margin-left: 0.08ch; }
 }
 /* Tablet & <=1024px */
 @media (max-width: 1024px) {
@@ -355,10 +282,6 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
   .hero-content { grid-template-columns: 1fr; padding: 0 8px; max-width: 100vw; text-align: center; place-items: center; }
-  .hero-subtitle { font-size: clamp(0.84rem, 3vw, 0.98rem); line-height: 1.18; max-width: clamp(480px, 48vw, 720px); }
-  .hero-subtitle .typed-text{ font-size: 0.82em; line-height: 1.14; letter-spacing: 0.001em; text-shadow: none; opacity: 0.8; }
-  .hero-subtitle .typed-author{ font-size: clamp(0.80rem, 1.8vw, 0.92rem); }
-  .hero-subtitle .typed-text::after{ height: 0.82em; border-left-width: 2px; margin-left: 0.06ch; }
   .floating-icon, .hero-image-decoration { display: none; }
 }
 /* Print: Hero-spezifische Deaktivierungen */

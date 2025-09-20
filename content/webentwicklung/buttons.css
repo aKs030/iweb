@@ -69,11 +69,11 @@
   transform: var(--transform-lift-sm);
 }
 
-/* Hero-spezifische Button-Positionierung wurde nach pages/home/greeting-text-hero.css verschoben */
+/* Hero-spezifische Button-Positionierung wurde nach pages/home/hero.css verschoben */
 
 /* CRT Button Styles */
 /*
   Hero-/Home-spezifische Button- und CRT-Animationen wurden nach
-  /pages/home/greeting-text-hero.css verschoben, damit Home/Hero-Assets
+  /pages/home/hero.css verschoben, damit Home/Hero-Assets
   unter pages/home gebündelt sind.
 */

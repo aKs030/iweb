@@ -758,20 +758,20 @@ body.footer-expanded {
 
 /* ===== HERO SECTION FOOTER ANPASSUNGEN ===== */
 
-/* Hero section Footer-height Berechnungen - aus greeting-text-hero.css verschoben */
+/* Hero section Footer-height Berechnungen - aus hero.css verschoben */
 @media (max-width: 768px) {
   .hero {
     min-height: calc(100dvh - var(--footer-height));
   }
   
-  .greeting-text-hero {
+  .hero-title {
     margin-bottom: calc(var(--footer-height) + 12px);
   }
 }
 
 /* Responsive Anpassung für erweiterten Footer */
-body.footer-expanded .hero-subtitle,
-body.footer-expanded .hero-subtitle--fixed {
+body.footer-expanded .typewriter-title,
+body.footer-expanded .typewriter-title--fixed {
   /* Im erweiterten Footer-Modus: noch dichter am Footer */
   bottom: clamp(8px, 1.5vw, 16px);
 }

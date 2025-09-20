@@ -82,7 +82,7 @@ export function makeLineMeasurer(subtitleEl) {
       
       // Dynamische Bottom-Position für mehrzeilige Texte (>3 Zeilen)
       if (lines > 3 && lh > 0) {
-        const isFixed = subtitleEl.classList.contains('hero-subtitle--fixed');
+        const isFixed = subtitleEl.classList.contains('typewriter-title--fixed');
         const isExpanded = document.body.classList.contains('footer-expanded');
         
         // Basis-Abstand je nach Modus bestimmen

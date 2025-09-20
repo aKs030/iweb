@@ -1,9 +1,14 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
 // Verwende zentrale shuffle-Implementierung (nutzt sichere Zufallsquelle wenn verfügbar)
-import { shuffle, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
-const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
+import { shuffle, getElementById } from '../utils/common-utils.js';
+import { createLogger } from '../utils/logger.js';
 
-export default class TypeWriter {
+const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
+const log = createLogger('TypeWriter');
+
+// ===== TypeWriter-Klasse =====
+
+class TypeWriter {
   constructor({
     textEl,
     authorEl,
@@ -15,7 +20,7 @@ export default class TypeWriter {
     loop = true,
     smartBreaks = true,
     avoidImmediateRepeat = true,
-    containerEl = null,          // .hero-subtitle zum Locken
+    containerEl = null,          // .typewriter-title zum Locken
     onBeforeType = null          // Hook: vor dem Tippen reservieren + locken
   }) {
     if (!textEl || !authorEl || !Array.isArray(quotes) || quotes.length === 0) return;
@@ -159,12 +164,153 @@ export default class TypeWriter {
   }
 }
 
-// Ehemalige exportierte typewriterConfig entfernt (Konfiguration stammt zentral aus hero-data.js)
+// ===== Globale TypeWriter Registry =====
 
-// Initialisierungsfunktion
-export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer, quotes, TypeWriterClass }) {
+// Globale Registry für TypeWriter-Module
+const TypeWriterRegistry = (() => {
+  let makeLineMeasurer = null;
+  let quotes = [];
+  let loadPromise = null;
+  let isLoaded = false;
+
+  /**
+   * Lädt alle TypeWriter-Module asynchron
+   * @returns {Promise<boolean>} True wenn erfolgreich geladen
+   */
+  async function loadModules() {
+    if (loadPromise) return loadPromise;
+    
+    loadPromise = (async () => {
+      try {
+        log.debug('Lade TypeWriter-Module...');
+        
+        // TypeWriter-Klasse ist bereits lokal verfügbar, keine weitere Aktionen nötig
+        
+        const modules = [
+          ['./TypeWriterZeilen.js', m => { makeLineMeasurer = m.makeLineMeasurer; }],
+          ['./TypeWriterText.js', m => { quotes = m.default || m.quotes || []; }],
+        ];
+
+        for (const [path, handler] of modules) {
+          try {
+            const module = await import(path);
+            handler(module);
+            log.debug(`Modul geladen: ${path}`);
+          } catch (error) {
+            log.error(`Fehler beim Laden von ${path}:`, error);
+            return false;
+          }
+        }
+
+        isLoaded = true;
+        log.debug('Alle TypeWriter-Module erfolgreich geladen');
+        
+        // Event für andere Module
+        document.dispatchEvent(new CustomEvent('typewriter:modules-loaded', {
+          detail: { TypeWriter, makeLineMeasurer, quotes }
+        }));
+        
+        return true;
+      } catch (error) {
+        log.error('Fehler beim Laden der TypeWriter-Module:', error);
+        isLoaded = false;
+        return false;
+      }
+    })();
+
+    return loadPromise;
+  }
+
+  /**
+   * Gibt die TypeWriter-Klasse zurück (lädt Module falls nötig)
+   * @returns {Promise<Class|null>}
+   */
+  async function getTypeWriter() {
+    if (!isLoaded) await loadModules();
+    return TypeWriter;
+  }
+
+  /**
+   * Gibt die makeLineMeasurer-Funktion zurück (lädt Module falls nötig)
+   * @returns {Promise<Function|null>}
+   */
+  async function getLineMeasurer() {
+    if (!isLoaded) await loadModules();
+    return makeLineMeasurer;
+  }
+
+  /**
+   * Gibt die Zitate-Array zurück (lädt Module falls nötig)
+   * @returns {Promise<Array>}
+   */
+  async function getQuotes() {
+    if (!isLoaded) await loadModules();
+    return quotes || [];
+  }
+
+  /**
+   * Gibt alle Module gleichzeitig zurück
+   * @returns {Promise<{TypeWriter, makeLineMeasurer, quotes}>}
+   */
+  async function getAllModules() {
+    if (!isLoaded) await loadModules();
+    return { TypeWriter, makeLineMeasurer, quotes };
+  }
+
+  /**
+   * Prüft ob die Module bereits geladen sind
+   * @returns {boolean}
+   */
+  function isReady() {
+    return isLoaded && TypeWriter && makeLineMeasurer && quotes.length > 0;
+  }
+
+  /**
+   * Initialisiert TypeWriter für Hero-Bereich (Convenience-Funktion)
+   * @param {Object} options - Optionen für die Initialisierung
+   * @returns {Promise<boolean>}
+   */
+  async function initHeroSubtitle(options = {}) {
+    try {
+      const modules = await getAllModules();
+      if (!modules.TypeWriter || !modules.makeLineMeasurer || !modules.quotes.length) {
+        log.warn('TypeWriter-Module nicht vollständig geladen');
+        return false;
+      }
+
+      // Verwende die lokale initHeroSubtitle Funktion
+      return initHeroSubtitleImpl({
+        ensureHeroDataModule: options.ensureHeroDataModule,
+        makeLineMeasurer: modules.makeLineMeasurer,
+        quotes: modules.quotes,
+        TypeWriterClass: modules.TypeWriter,
+        ...options
+      });
+    } catch (error) {
+      log.error('Fehler bei TypeWriter-Title-Initialisierung:', error);
+      return false;
+    }
+  }
+
+  // Public API
+  return {
+    loadModules,
+    getTypeWriter,
+    getLineMeasurer,
+    getQuotes,
+    getAllModules,
+    isReady,
+    initHeroSubtitle
+  };
+})();
+
+// Globale Verfügbarkeit
+window.TypeWriterRegistry = TypeWriterRegistry;
+
+// Initialisierungsfunktion (intern)
+async function initHeroSubtitleImpl({ ensureHeroDataModule, makeLineMeasurer, quotes, TypeWriterClass }) {
   try {
-    const subtitleEl  = document.querySelector('.hero-subtitle');
+    const subtitleEl  = document.querySelector('.typewriter-title');
     const typedText   = getElementById('typedText');
     const typedAuthor = getElementById('typedAuthor');
     
@@ -214,3 +360,39 @@ export async function initHeroSubtitle({ ensureHeroDataModule, makeLineMeasurer,
     return false; 
   }
 }
+
+// ===== Externe Typing-Initialisierung =====
+
+// Typing-Initialisierung für externe Verwendung
+window.__initTyping = async () => {
+  try {
+    // Nutze globale TypeWriter Registry
+    if (!window.TypeWriterRegistry) {
+      return false;
+    }
+    
+    const registry = window.TypeWriterRegistry;
+    const isReady = await registry.loadModules();
+    
+    if (!isReady || !registry.isReady()) {
+      return false;
+    }
+
+    // Nutze die initHeroSubtitle Funktion aus der Registry
+    // ensureHeroDataModule wird vom Hero-Manager bereitgestellt
+    const ensureHeroDataModule = window.__heroEnsureData || (() => Promise.resolve({}));
+    return await registry.initHeroSubtitle({
+      ensureHeroDataModule
+    });
+  } catch {
+    // Silent fail
+    return false;
+  }
+};
+
+// Exports
+export { TypeWriter };
+export { initHeroSubtitleImpl as initHeroSubtitle };
+export { TypeWriterRegistry };
+export default TypeWriterRegistry;
+

@@ -83,18 +83,9 @@
 
 /* Default styling for all cards (stable during JS manipulation) */
 .features-cards .card {
-  /* Apply glass morphism as default style */
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  backdrop-filter: blur(20px) saturate(1.2);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
+  /* Erweitere die allgemeinen Card-Styles statt sie zu überschreiben */
   
-  /* Optimierte GPU-Beschleunigung */
+  /* Optimierte GPU-Beschleunigung für Animationen */
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   perspective: 1000px;
@@ -250,21 +241,19 @@
   }
   
   .features-cards .card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(7, 161, 255, 0.4);
+    /* Erweiterte Animation für Features-Karten */
+    transform: translateY(-6px) scale(1.025) translateZ(0);
     box-shadow: 
       0 16px 48px rgba(0, 0, 0, 0.4),
       0 0 40px rgba(7, 161, 255, 0.25),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transform: translateY(-6px) scale(1.025) translateZ(0);
-    will-change: transform, box-shadow; /* GPU-Beschleunigung bei Hover */
+    will-change: transform, box-shadow;
   }
 }
 
 /* Touch Devices - Alternative zu Hover */
 @media (hover: none) or (pointer: coarse) {
   .features-cards .card:active {
-    background: rgba(255, 255, 255, 0.08);
     transform: scale(0.98) translateZ(0); /* Subtle Press-Effekt */
     transition: all 0.1s ease;
   }
@@ -282,12 +271,11 @@
   }
 }
 
-/* Mobile - Keine Hover, nur Focus */
+/* Mobile - Spezifische Anpassungen für Touch-Devices */
 @media (max-width: 480px) {
-  .features-cards .card:focus-visible {
-    outline: 2px solid rgba(7, 161, 255, 0.6);
-    outline-offset: 2px;
-    background: rgba(255, 255, 255, 0.08);
+  .features-cards .card {
+    /* Mobile-spezifische Anpassungen ohne focus-visible Override */
+    padding: var(--card-pad);
   }
 }
 
