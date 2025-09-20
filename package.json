@@ -1,0 +1,60 @@
+{
+  "name": "iweb",
+  "version": "1.0.0",
+  "description": "Interaktive persönliche Homepage mit Feature-Rotation, Spielen und Webentwicklungs-Demos.",
+  "main": "index.js",
+  "scripts": {
+    "lint:js": "eslint content/**/*.js pages/**/*.js --fix",
+    "lint:html": "node scripts/validate-html.js",
+    "check:css": "node scripts/check-css-consolidation.js",
+    "consolidate:css": "node scripts/consolidate-css.js"
+  },
+  "keywords": [
+    "portfolio",
+    "javascript",
+    "animations",
+    "es6-modules",
+    "web-components"
+  ],
+  "author": "aKs030",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9.11.1",
+    "eslint": "^9.11.1",
+    "html-validate": "^8.22.0",
+    "glob": "^11.0.0"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2022": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "no-console": "warn",
+      "indent": [
+        "error",
+        2
+      ],
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "semi": [
+        "error",
+        "always"
+      ]
+    }
+  }
+}

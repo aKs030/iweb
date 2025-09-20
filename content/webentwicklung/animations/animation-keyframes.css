@@ -1,0 +1,259 @@
+/* Animation Keyframes für Enhanced Animation Engine */
+/* Optimiert für Performance mit transform3d und GPU-Acceleration */
+
+/* === Basis Fade-In Animationen === */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* === Slide-In Animationen === */
+
+@keyframes slideInDown {
+  from {
+    transform: translate3d(0, -100%, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translate3d(0, 100%, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translate3d(-100%, 0, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translate3d(100%, 0, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+/* === Bounce-In Animation === */
+
+@keyframes bounceIn {
+  0% {
+    transform: scale3d(0.3, 0.3, 0.3);
+    opacity: 0;
+  }
+  20% {
+    transform: scale3d(1.1, 1.1, 1.1);
+    opacity: 1;
+  }
+  40% {
+    transform: scale3d(0.9, 0.9, 0.9);
+  }
+  60% {
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+  }
+}
+
+/* === Elastic-In Animation === */
+
+@keyframes elasticIn {
+  0% {
+    transform: scale3d(0, 0, 0);
+    opacity: 0;
+  }
+  55% {
+    transform: scale3d(1.05, 1.05, 1.05);
+    opacity: 1;
+  }
+  75% {
+    transform: scale3d(0.95, 0.95, 0.95);
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+  }
+}
+
+/* === Flip-In Animationen === */
+
+@keyframes flipInX {
+  from {
+    transform: perspective(400px) rotateX(90deg);
+    animation-timing-function: ease-in;
+    opacity: 0;
+  }
+  40% {
+    transform: perspective(400px) rotateX(-20deg);
+    animation-timing-function: ease-in;
+  }
+  60% {
+    transform: perspective(400px) rotateX(10deg);
+    opacity: 1;
+  }
+  80% {
+    transform: perspective(400px) rotateX(-5deg);
+  }
+  100% {
+    transform: perspective(400px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes flipInY {
+  from {
+    transform: perspective(400px) rotateY(90deg);
+    animation-timing-function: ease-in;
+    opacity: 0;
+  }
+  40% {
+    transform: perspective(400px) rotateY(-20deg);
+    animation-timing-function: ease-in;
+  }
+  60% {
+    transform: perspective(400px) rotateY(10deg);
+    opacity: 1;
+  }
+  80% {
+    transform: perspective(400px) rotateY(-5deg);
+  }
+  100% {
+    transform: perspective(400px) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+/* === Rotate-In Animation === */
+
+@keyframes rotateIn {
+  from {
+    transform: rotate3d(0, 0, 1, -200deg);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate3d(0, 0, 1, 0deg);
+    opacity: 1;
+  }
+}
+
+/* === Scale-In Animation === */
+
+@keyframes scaleIn {
+  from {
+    transform: scale3d(0, 0, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+  }
+}
+
+/* === Animation-Klassen für Enhanced Animation Engine === */
+
+.animate-slideInDown {
+  animation: slideInDown 0.6s ease-out both;
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.6s ease-out both;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.6s ease-out both;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.6s ease-out both;
+}
+
+.animate-bounceIn {
+  animation: bounceIn 0.75s ease-out both;
+}
+
+.animate-elasticIn {
+  animation: elasticIn 0.6s ease-out both;
+}
+
+.animate-flipInX {
+  animation: flipInX 0.6s ease-out both;
+  backface-visibility: visible;
+}
+
+.animate-flipInY {
+  animation: flipInY 0.6s ease-out both;
+  backface-visibility: visible;
+}
+
+.animate-rotateIn {
+  animation: rotateIn 0.6s ease-out both;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.6s ease-out both;
+}
+
+/* === Performance Optimierungen === */
+
+/* GPU-Acceleration für alle animierten Elemente */
+[data-animation],
+[class*="animate-"] {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* === Kompatibilität mit bestehenden fadeIn Animationen === */
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out both;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+/* Initial state für nicht animierte Elemente */
+.animated {
+  animation-fill-mode: both;
+}

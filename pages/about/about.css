@@ -1,0 +1,22 @@
+.about {
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: center;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.about-cta {
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+

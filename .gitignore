@@ -1,0 +1,21 @@
+node_modules/
+.DS_Store
+.vscode/
+.env
+dist/
+coverage/
+.cache/
+.parcel-cache/
+.turbo/
+.vite/
+.vite-temp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.idea/
+
+# Local backup and generated artifacts
+*.bak
+*~
+.python-version

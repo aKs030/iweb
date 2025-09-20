@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://abdulkerimsesli.de/</loc>
+    <lastmod>2025-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://abdulkerimsesli.de/content/img/og-portfolio.jpg</image:loc>
+      <image:title>Abdulkerim Sesli Portfolio</image:title>
+      <image:caption>Web Developer and Photographer Portfolio</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://abdulkerimsesli.de/content/img/profile.jpg</image:loc>
+      <image:title>Abdulkerim Sesli Profile</image:title>
+      <image:caption>Professional profile photo</image:caption>
+    </image:image>
+  </url>
+</urlset>

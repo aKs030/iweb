@@ -1,0 +1,799 @@
+/**
+ * Footer Styles - Dynamischer Footer mit Minimiert/Maximiert Modi
+ * 
+ * Features:
+ * - Fixed Position am unteren Bildschirmrand
+ * - Dynamisches Erweitern bei letzter Sektion
+ * - Smooth Transitions zwischen Modi
+ * - Dark Theme optimiert
+ * - Responsive und Accessibility-freundlich
+ * 
+ * @author Abdulkerim Sesli
+ * @version 3.0.0
+ */
+
+.site-footer-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+  background: #2c2c2e;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
+  transition: all var(--transition-slow);
+  will-change: transform, opacity;
+}
+
+/* ===== MINIMIERTER MODUS (Standard) ===== */
+.footer-minimized {
+  padding: var(--spacing-sm, 0.75rem) 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transform: var(--transform-none);
+  transition: all var(--transition-base);
+}
+
+.footer-copyright-minimal {
+  color: var(--text-muted, #888888);
+  font-size: 0.875rem;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+  font-weight: 400;
+  padding: 0 var(--spacing-lg, 1.5rem);
+}
+
+/* ===== MAXIMIERTER MODUS ===== */
+.footer-maximized {
+  opacity: 0; /* Standardmäßig versteckt */
+  transform: var(--transform-down-full);
+  transition: all var(--transition-slow);
+  max-height: 0; /* Versteckt im Standardzustand */
+  overflow: hidden; /* Versteckt Inhalte im minimierten Modus */
+  padding-bottom: 0; /* Kein Padding wenn versteckt */
+  pointer-events: none; /* Keine Interaktion wenn versteckt */
+}
+
+/* Explizit versteckter Zustand */
+.footer-maximized.footer-hidden {
+  opacity: 0;
+  transform: var(--transform-down-full);
+  max-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+.footer-full-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-xl, 2rem) var(--spacing-lg, 1.5rem) var(--spacing-xxl, 2.5rem) var(--spacing-lg, 1.5rem);
+  /* Erweiterte Padding: oben | rechts | unten | links */
+}
+
+.footer-main-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Größere Mindestbreite */
+  gap: var(--spacing-xl, 2rem) var(--spacing-lg, 1.5rem); /* Verschiedene Gaps für row/column */
+  margin-bottom: var(--spacing-lg, 1.5rem);
+  align-items: start; /* Bessere Ausrichtung der Sektionen */
+}
+
+/* Erweiterte Sektion für Newsletter/Einstellungen */
+.footer-section-wide {
+  grid-column: span 2;
+  width: 100%; /* Statt min-width und max-width für bessere Kontrolle */
+  box-sizing: border-box; /* Stellt sicher, dass Padding/Border eingerechnet werden */
+}
+
+@media (max-width: 1024px) {
+  .footer-section-wide {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-main-grid {
+    grid-template-columns: 1fr; /* Einspaltiges Layout auf Mobile */
+    gap: var(--spacing-lg, 1.5rem);
+  }
+  
+  .footer-section-wide {
+    grid-column: span 1;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0; /* Ermöglicht Flexbox-Schrumpfung */
+}
+
+.footer-section-title {
+  color: var(--text-primary, #ffffff);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: var(--spacing-xs, 0.5rem);
+  border-bottom: 2px solid var(--primary-color, #007AFF);
+  display: block;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.footer-contact-info p {
+  color: var(--text-muted, #888888);
+  margin: var(--spacing-xs, 0.5rem) 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.footer-service-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.5rem);
+}
+
+.footer-social-links {
+  display: flex;
+  gap: var(--spacing-md, 1rem);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.footer-social-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.5rem);
+  color: var(--text-muted, #888888);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all var(--transition-fast, 0.2s ease);
+  padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-social-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left var(--transition-base, 0.3s ease);
+}
+
+.footer-social-link:hover::before,
+.footer-social-link:focus::before {
+  left: 100%;
+}
+
+.footer-social-link:hover,
+.footer-social-link:focus {
+  color: var(--primary-color, #007AFF);
+  border-color: var(--primary-color, #007AFF);
+  background: rgba(0, 122, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+/* GitHub spezifische Hover-Farbe */
+.footer-social-link[href*="github"]:hover,
+.footer-social-link[href*="github"]:focus {
+  color: #f0f6fc;
+  border-color: #30363d;
+  background: rgba(48, 54, 61, 0.8);
+  box-shadow: 0 4px 12px rgba(48, 54, 61, 0.3);
+}
+
+/* LinkedIn spezifische Hover-Farbe */
+.footer-social-link[href*="linkedin"]:hover,
+.footer-social-link[href*="linkedin"]:focus {
+  color: #0077b5;
+  border-color: #0077b5;
+  background: rgba(0, 119, 181, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 119, 181, 0.2);
+}
+
+/* Instagram spezifische Hover-Farbe */
+.footer-social-link[href*="instagram"]:hover,
+.footer-social-link[href*="instagram"]:focus {
+  color: #e4405f;
+  border-color: #e4405f;
+  background: linear-gradient(45deg, rgba(228, 64, 95, 0.1), rgba(253, 29, 29, 0.1));
+  box-shadow: 0 4px 12px rgba(228, 64, 95, 0.2);
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: all var(--transition-fast, 0.2s ease);
+  opacity: 0.9;
+}
+
+.footer-social-link:hover .social-icon,
+.footer-social-link:focus .social-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.social-text {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all var(--transition-fast, 0.2s ease);
+}
+
+/* Focus-Styles für bessere Accessibility */
+.footer-social-link:focus-visible {
+  outline: 2px solid var(--primary-color, #007AFF);
+  outline-offset: 2px;
+}
+
+/* Dark Theme Anpassungen */
+@media (prefers-color-scheme: dark) {
+  .footer-social-link {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .footer-social-link:hover,
+  .footer-social-link:focus {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.footer-copyright-full {
+  color: var(--text-muted, #888888);
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* Gemeinsame Link-Styles */
+.footer-link,
+.footer-copyright-minimal a,
+.footer-copyright-full a {
+  color: var(--primary-color, #007AFF);
+  text-decoration: none;
+  transition: color var(--transition-fast, 0.2s ease);
+  font-weight: 500;
+}
+
+.footer-link:hover,
+.footer-link:focus,
+.footer-copyright-minimal a:hover,
+.footer-copyright-minimal a:focus,
+.footer-copyright-full a:hover,
+.footer-copyright-full a:focus {
+  color: var(--primary-light, #34AADC);
+  text-decoration: underline;
+}
+
+.footer-separator {
+  margin: 0 var(--spacing-xs, 0.5rem);
+  opacity: 0.5;
+  font-weight: 300;
+}
+
+/* Footer-Zustand Klassen */
+.footer-expanded .footer-minimized {
+  opacity: 0;
+  transform: var(--transform-lift-xl);
+  pointer-events: none;
+}
+
+.footer-expanded .footer-maximized {
+  opacity: 1;
+  transform: var(--transform-none);
+  max-height: none; /* Keine Höhenbeschränkung im erweiterten Modus */
+  min-height: 450px; /* Mindesthöhe beibehalten */
+  overflow: visible; /* Vollständige Inhalte anzeigen */
+  padding-bottom: 20px; /* Padding im erweiterten Modus */
+  pointer-events: auto;
+}
+
+.footer-expanded .footer-hidden {
+  opacity: 1;
+  transform: var(--transform-none);
+  max-height: none; /* Keine Höhenbeschränkung für erweiterten Footer */
+  min-height: 600px; /* Mindesthöhe für erweiterten Footer */
+  overflow: visible; /* Vollständige Inhalte anzeigen */
+  padding-bottom: 20px; /* Padding im erweiterten Modus */
+  pointer-events: auto;
+}
+
+/* ===== NEUE FOOTER-KOMPONENTEN ===== */
+
+/* Technologie-Badges */
+.footer-tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 0.5rem);
+}
+
+.tech-badge {
+  background: rgba(0, 122, 255, 0.1);
+  border: 1px solid rgba(0, 122, 255, 0.3);
+  color: var(--primary-color, #007AFF);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.tech-badge:hover {
+  background: rgba(0, 122, 255, 0.2);
+  border-color: rgba(0, 122, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Newsletter Sektion */
+.footer-newsletter {
+  margin-bottom: var(--spacing-lg, 1.5rem);
+}
+
+.newsletter-text {
+  color: var(--text-muted, #888888);
+  font-size: 0.9rem;
+  margin: 0 0 var(--spacing-md, 1rem) 0;
+  line-height: 1.4;
+}
+
+.newsletter-form {
+  width: 100%;
+}
+
+.newsletter-input-group {
+  display: flex;
+  gap: var(--spacing-xs, 0.5rem);
+  flex-wrap: wrap;
+  max-width: 400px; /* Begrenzt die maximale Breite der Input-Gruppe */
+}
+
+.newsletter-input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px; /* Begrenzt die maximale Breite des Input-Feldes */
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary, #ffffff);
+  font-size: 0.9rem;
+  transition: all var(--transition-base);
+}
+
+.newsletter-input::placeholder {
+  color: var(--text-muted, #888888);
+}
+
+.newsletter-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #007AFF);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+.newsletter-submit {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color, #007AFF);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+}
+
+.newsletter-submit:hover {
+  background: #0056CC;
+  transform: translateY(-1px);
+}
+
+.newsletter-submit:active {
+  transform: translateY(0);
+}
+
+/* Footer-Einstellungen */
+.footer-settings {
+  display: flex;
+  gap: var(--spacing-lg, 1.5rem);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.footer-setting-group {
+  display: flex;
+  align-items: center;
+}
+
+/* Erweiterte Copyright-Bar */
+.footer-copyright-bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: var(--spacing-lg, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+.footer-copyright-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 1rem);
+}
+
+.footer-legal-links {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.75rem);
+  flex-wrap: wrap;
+}
+
+.footer-legal-link {
+  color: var(--text-muted, #888888);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color var(--transition-base);
+}
+
+.footer-legal-link:hover {
+  color: var(--primary-color, #007AFF);
+}
+
+.cookie-settings-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888888);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+.cookie-settings-btn:hover {
+  color: var(--primary-color, #007AFF);
+}
+
+.footer-website-info {
+  text-align: center;
+}
+
+.footer-build-info {
+  color: var(--text-muted, #888888);
+  font-size: 0.8rem;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-sm, 0.75rem);
+  flex-wrap: wrap;
+}
+
+.build-text,
+.eco-info,
+.version-info {
+  white-space: nowrap;
+}
+
+.eco-info {
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+/* Responsive Anpassungen für erweiterte Komponenten */
+@media (max-width: 768px) {
+  .newsletter-input-group {
+    flex-direction: column;
+  }
+  
+  .newsletter-input {
+    min-width: 100%;
+  }
+  
+  .footer-settings {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md, 1rem);
+  }
+  
+  .footer-copyright-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .footer-legal-links {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .footer-build-info {
+    flex-direction: column;
+    gap: var(--spacing-xs, 0.5rem);
+  }
+
+  /* Social Icons auf mobilen Geräten anpassen */
+  .footer-social-links {
+    gap: var(--spacing-xs, 0.5rem);
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .footer-social-link {
+    padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem);
+    font-size: 0.85rem;
+    min-width: 44px; /* Touch-Target Größe */
+    justify-content: center;
+  }
+  
+  .social-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer-minimized {
+    padding: var(--spacing-xs, 0.5rem) 0;
+  }
+  
+  .footer-copyright-minimal {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    padding: 0 var(--spacing-md, 1rem);
+  }
+  
+  .footer-main-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg, 1.5rem);
+  }
+  
+  .footer-full-content {
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-md, 1rem);
+  }
+  
+  .footer-separator {
+    margin: 0 var(--spacing-xs, 0.25rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer-fixed {
+    /* Footer ganz unten bei kleinen Bildschirmen fixieren */
+    bottom: 0;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+    /* Zusätzlicher Padding für bessere Sichtbarkeit */
+  }
+  
+  .footer-minimized {
+    padding: 0.6rem 0.2rem 0.8rem 0.2rem;
+    min-height: 52px;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.13);
+    background: #2c2c2e;
+    margin: 0 auto;
+    max-width: 100vw;
+  }
+  .footer-copyright-minimal {
+    font-size: 0.92rem;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    padding: 0 0.5rem;
+    width: 100%;
+    white-space: normal;
+  }
+  .footer-separator {
+    margin: 0 0.2rem;
+    font-size: 1.1em;
+    opacity: 0.4;
+  }
+  .footer-copyright-minimal a {
+    font-size: 1em;
+    padding: 0.2em 0.3em;
+    border-radius: 6px;
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+  }
+  .footer-copyright-minimal a:active {
+    background: rgba(0,122,255,0.08);
+  }
+  .footer-main-grid {
+    gap: var(--spacing-md, 1rem);
+  }
+  
+  /* Social Icons auf sehr kleinen Bildschirmen optimieren */
+  .footer-social-links {
+    justify-content: center;
+    gap: var(--spacing-xs, 0.25rem);
+    flex-wrap: wrap;
+  }
+  
+  .footer-social-link {
+    padding: var(--spacing-xs, 0.5rem);
+    font-size: 0.8rem;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--spacing-xs, 0.25rem);
+  }
+  
+  .social-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .social-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  
+  /* Hover-Effekte für Touch-Geräte anpassen */
+  .footer-social-link:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Maximierter Footer bei kleinen Bildschirmen */
+  .footer-maximized {
+    padding-bottom: 30px; /* Mehr Platz nach unten auf mobilen Geräten */
+  }
+  
+  .footer-full-content {
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-md, 1rem) var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
+    /* Mehr Platz nach unten: oben | rechts | unten | links */
+  }
+}
+
+/* Print Styles */
+@media print {
+  .site-footer-fixed {
+    position: static !important;
+    background: none !important;
+    border-top: 1px solid #000;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+  
+  .footer-copyright-minimal,
+  .footer-copyright-full {
+    color: #000 !important;
+  }
+  
+  body {
+    padding-bottom: 0 !important;
+  }
+}
+
+/* ===== BODY & LAYOUT ANPASSUNGEN FÜR FOOTER ===== */
+
+/* Body padding für fixen Footer - aus index.css verschoben */
+body {
+  padding-bottom: 60px; /* Platz für fixen Footer */
+  transition: padding-bottom var(--transition-base);
+}
+
+/* Footer-Expansion Zustand */
+body.footer-expanded {
+  padding-bottom: 350px; /* Mehr Platz für erweiterten Footer */
+}
+
+/* Footer Trigger Zone */
+.footer-trigger-zone {
+  height: 100vh; /* Eine Viewport-Höhe für ausreichend Scroll-Raum */
+  width: 100%;
+  pointer-events: none;
+  background: transparent;
+  scroll-snap-align: start; /* Ermöglicht Scroll zu dieser Zone */
+}
+
+/* Responsive Design für Footer-Padding */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 50px;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 280px;
+  }
+}
+
+/* ===== HERO SECTION FOOTER ANPASSUNGEN ===== */
+
+/* Hero section Footer-height Berechnungen - aus greeting-text-hero.css verschoben */
+@media (max-width: 768px) {
+  .hero {
+    min-height: calc(100dvh - var(--footer-height));
+  }
+  
+  .greeting-text-hero {
+    margin-bottom: calc(var(--footer-height) + 12px);
+  }
+}
+
+/* Responsive Anpassung für erweiterten Footer */
+body.footer-expanded .hero-subtitle,
+body.footer-expanded .hero-subtitle--fixed {
+  /* Im erweiterten Footer-Modus: noch dichter am Footer */
+  bottom: clamp(8px, 1.5vw, 16px);
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .site-footer-fixed {
+    background: #000 !important;
+    border-top: 2px solid #fff;
+  }
+  
+  .footer-copyright-minimal,
+  .footer-copyright-full {
+    color: #fff !important;
+  }
+}
+
+/* Focus Management für Accessibility */
+.footer-link:focus-visible,
+.footer-copyright-minimal a:focus-visible,
+.footer-copyright-full a:focus-visible {
+  outline: 2px solid var(--primary-color, #007AFF);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

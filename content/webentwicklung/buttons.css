@@ -1,0 +1,79 @@
+/* Standard Button Base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  min-width: 160px; /* gleiche Breite für Konsistenz */
+  text-align: center;
+}
+
+/* Button Variants */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 0 12px rgba(9,139,255,0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 18px rgba(9,139,255,0.55);
+  transform: var(--transform-lift-sm);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0; 
+  left: -100%;
+  width: 100%; 
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left var(--transition-slow);
+}
+
+.btn-primary:hover::before { 
+  left: 100%; 
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover { 
+  border-color: var(--primary-color); 
+  color: var(--primary-color); 
+}
+
+.btn-outline {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+  transition: all var(--transition-base);
+}
+
+.btn-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(9,139,255,0.4);
+  transform: var(--transform-lift-sm);
+}
+
+/* Hero-spezifische Button-Positionierung wurde nach pages/home/greeting-text-hero.css verschoben */
+
+/* CRT Button Styles */
+/*
+  Hero-/Home-spezifische Button- und CRT-Animationen wurden nach
+  /pages/home/greeting-text-hero.css verschoben, damit Home/Hero-Assets
+  unter pages/home gebündelt sind.
+*/

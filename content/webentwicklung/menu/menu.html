@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
+
+
+
+    <header class="site-header">
+      <!-- Logo -->
+      <a href="/index.html" class="site-logo-link">
+        <span class="site-logo__container">
+          <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
+          <span class="site-subtitle" id="site-subtitle"></span>
+        </span>
+      </a>
+
+  <!-- Hamburger-Button -->
+  <button type="button" class="site-menu__toggle" aria-label="Menü" aria-controls="site-menu" aria-expanded="false">
+        <span class="site-menu__hamburger"></span>
+      </button>
+
+      <!-- Navigation mit Rolle und aria-label -->
+  <nav id="site-menu" class="site-menu" aria-label="Hauptnavigation">
+        <ul class="site-menu__list">
+          <li>
+            <a href="/index.html">
+              <svg class="nav-icon" aria-hidden="true"><use href="#icon-house"></use></svg> <span>Startseite</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/fotogalerie/urban.html">
+              <svg class="nav-icon" aria-hidden="true"><use href="#icon-images"></use></svg> <span>Fotogalerie</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/ueber-mich/">
+              <svg class="nav-icon" aria-hidden="true"><use href="#icon-user"></use></svg> <span>Über mich</span>
+            </a>
+          </li>
+          <li class="has-submenu">
+            <button type="button" class="submenu-toggle" aria-haspopup="true" aria-expanded="false">
+              <svg class="nav-icon" aria-hidden="true"><use href="#icon-gamepad"></use></svg> <span>Spiele</span>
+            </button>
+            <ul class="submenu">
+              <li>
+                <a href="/pages/spiele/space-defender.html">
+                  <svg class="nav-icon" aria-hidden="true"><use href="#icon-joystick"></use></svg> <span>Spiele-Übersicht</span>
+                </a>
+              </li>
+              <li>
+                <a href="/pages/card/wetter.html">
+                  <svg class="nav-icon" aria-hidden="true"><use href="#icon-cloud-sun"></use></svg> <span>Wetter</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </header>
