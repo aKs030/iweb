@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
       });
     })
-    .catch(err => {
+    .catch(_err => {
+      // Menü-Laden fehlgeschlagen - graceful fallback
     });
 });
 
@@ -70,7 +71,6 @@ function initializeMenu(container) {
     menuToggle.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') toggle();
     });
-  } else {
   }
 }
 
@@ -85,7 +85,6 @@ function initializeLogo(container) {
       // e.preventDefault(); entfernt, um Scroll-Blockaden zu vermeiden
       window.location.href = '/index.html';
     });
-  } else {
   }
 }
 
@@ -220,7 +219,6 @@ function extractSectionInfo(sectionId) {
  * Initialisiert die Scroll-Detection für dynamische Titel-Updates mit Scroll Snap
  */
 function initializeScrollDetection() {
-  let isScrolling = false;
   let scrollListener = null;
   let snapEventListener = null;
   
@@ -290,45 +288,6 @@ function initializeScrollDetection() {
     window.addEventListener('snapSectionChange', snapEventListener);
   }
   
-  // Alternative Fallback: Scroll-basierte Detection
-  function updateTitleBasedOnSection() {
-    if (isScrolling) return;
-    isScrolling = true;
-    
-    requestAnimationFrame(() => {
-      let activeSection = 'hero'; // Default
-      
-      // Verwende die gleiche Logik wie das Particle-System
-      const sections = Array.from(document.querySelectorAll('main .section, .section'));
-      if (sections.length > 0) {
-        const viewportCenter = window.innerHeight * 0.5;
-        let bestDistance = Infinity;
-        let bestIndex = 0;
-        
-        sections.forEach((section, index) => {
-          const rect = section.getBoundingClientRect();
-          const sectionCenter = rect.top + rect.height * 0.5;
-          const distance = Math.abs(sectionCenter - viewportCenter);
-          
-          if (distance < bestDistance) {
-            bestDistance = distance;
-            bestIndex = index;
-          }
-        });
-        
-        const activeEl = sections[bestIndex];
-        if (activeEl?.id) {
-          activeSection = activeEl.id;
-        }
-      }
-      
-      const { title, subtitle } = extractSectionInfo(activeSection);
-      updateTitleAndSubtitle(title, subtitle);
-      
-      isScrolling = false;
-    });
-  }
-  
   // Warte auf alle Sektionen und initialisiere
   function waitForSnapSections() {
     const checkAndStart = () => {
@@ -342,20 +301,13 @@ function initializeScrollDetection() {
           window.removeEventListener('scroll', scrollListener);
         }
         
-        // Primär: Snap Event Listener (wenn verfügbar)
+        // Initialisiere Snap Event Listener
         initSnapEventListener();
         
-        // Fallback: Nur einen vereinfachten Scroll-Listener
-        let scrollTimeout;
-        scrollListener = () => {
-          if (scrollTimeout) clearTimeout(scrollTimeout);
-          scrollTimeout = setTimeout(updateTitleBasedOnSection, 200);
-        };
-        
-        window.addEventListener('scroll', scrollListener, { passive: true });
-        
         // Initial call
-        setTimeout(updateTitleBasedOnSection, 300);
+        const { title, subtitle } = extractSectionInfo('hero');
+        updateTitleAndSubtitle(title, subtitle);
+        
         return true;
       }
       return false;
@@ -376,18 +328,15 @@ function initializeScrollDetection() {
 
 // Aktiven Link im Menü markieren
 function setActiveMenuLink() {
-  try {
-    const path = window.location.pathname.replace(/index\.html$/, '');
-    document.querySelectorAll('.site-menu a[href]').forEach(a => {
-      const href = a.getAttribute('href');
-      if (!href) return;
-      // Normalisieren (index.html entfernen)
-      const norm = href.replace(/index\.html$/, '');
-      if (norm === path) a.classList.add('active');
-      else a.classList.remove('active');
-    });
-  } catch (error) {
-  }
+  const path = window.location.pathname.replace(/index\.html$/, '');
+  document.querySelectorAll('.site-menu a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!href) return;
+    // Normalisieren (index.html entfernen)
+    const norm = href.replace(/index\.html$/, '');
+    if (norm === path) a.classList.add('active');
+    else a.classList.remove('active');
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -88,10 +88,14 @@ iweb-1/
 │   ├── main.js                 # App Entry Point + Section Loader + Global Init
 │   ├── animations/
 │   │   ├── enhanced-animation-engine.js  # Data-Attribut gesteuerte Engine
-│   │   ├── snap-scroll-animations.js     # Karten + Header Scroll Animations (IO)
-│   │   └── card-animation-utils.js       # Gemeinsame Karten Stagger Utilities
+│   │   ├── theme-system.js               # Theme System mit Transition-Unterstützung
+│   │   └── animation-keyframes.css       # CSS Animation Definitionen
 │   ├── root.css               # Design System Tokens
-│   ├── utils/                 # Shared Utilities (Logger, Common Utils)
+│   ├── utils/                 # Shared Utilities
+│   │   ├── animation-utils.js             # Zentrale Animation Engine Utilities
+│   │   ├── section-tracker.js            # Section Detection für Snap-Scroll
+│   │   ├── logger.js                     # Logging System
+│   │   └── common-utils.js               # Gemeinsame Helper-Funktionen
 │   ├── menu/                  # Navigation System
 │   ├── footer/                # Footer Components  
 │   └── particles/             # Canvas Particle System
@@ -166,12 +170,16 @@ Hinweis: Prefetch greift nur für nicht mit `data-eager` markierte Sections.
 // Animation Engine Integration
 ```
 
-#### **Card Animation Utilities** (`card-animation-utils.js`)
+#### **Animation Utilities** (`animation-utils.js`)
+Zentrale Utilities für Animation Engine Integration:
 ```javascript
-animateContainerStagger(container, {
-	selector: '.card', stagger: 150, duration: 600,
-	initialTranslate: 30, scaleFrom: 0.9
-});
+import { triggerAnimationScan, animateElementsIn } from './utils/animation-utils.js';
+
+// Animation Engine Scan
+triggerAnimationScan('context-name');
+
+// Element-Animation mit Optionen
+animateElementsIn(containerElement, { force: true }, 'context');
 ```
 
 #### **Section Loader Retry**

@@ -25,6 +25,10 @@ class EnhancedAnimationEngine {
     const isDesktop = window.matchMedia?.('(min-width: 900px)').matches;
     const isMobile = window.matchMedia?.('(max-width: 768px)').matches;
     
+    // Cache device detection für Performance
+    this._isMobile = isMobile;
+    this._isDesktop = isDesktop;
+    
     // Adaptive Performance-Einstellungen
     let threshold = 0.15;
     let rootMargin = '50px';
@@ -98,7 +102,7 @@ class EnhancedAnimationEngine {
   ensureAnimationTypes() {
     if (this._animationTypes) return this._animationTypes;
     
-    const isMobile = window.matchMedia?.('(max-width: 768px)').matches;
+    const isMobile = this._isMobile; // Verwende gecachte Device-Detection
     const baseDuration = isMobile ? 0.4 : 0.6;
     const slidesDuration = isMobile ? 0.5 : 0.7;
     const complexDuration = isMobile ? 0.4 : 0.6;

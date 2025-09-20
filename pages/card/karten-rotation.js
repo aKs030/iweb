@@ -1,6 +1,7 @@
 // Zentrale Utilities nutzen
 import { shuffle as shuffleArray, TimerManager, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
 import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
+import { triggerAnimationScan } from '../../content/webentwicklung/utils/animation-utils.js';
 
 (() => {
   'use strict';
@@ -55,9 +56,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
   // Enhanced Animation Engine Integration
   function triggerAnimationEngineRescan() {
-    if (window.enhancedAnimationEngine?.scan) {
-      window.enhancedAnimationEngine.scan();
-    }
+    triggerAnimationScan('karten-rotation');
   }
 
   // Snap Scroll Integration

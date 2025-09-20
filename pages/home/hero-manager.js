@@ -2,6 +2,7 @@ import { getElementById } from '../../content/webentwicklung/utils/common-utils.
 import { ParticlesManager } from '../../content/webentwicklung/particles/particle-system.js';
 import { EVENTS } from '../../content/webentwicklung/utils/events.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
+import { triggerAnimationScan, animateElementsIn } from '../../content/webentwicklung/utils/animation-utils.js';
 
 const log = createLogger('hero-manager');
 
@@ -78,33 +79,17 @@ export function animateGreeting(greetingElement) {
   }
   
   // Trigger Animation über globale Engine
-  if (window.enhancedAnimationEngine) {
-    window.enhancedAnimationEngine.scan?.();
-  }
+  triggerAnimationScan('animateGreeting');
 }
 
 /**
  * Helper: Animiert Hero-Buttons mit spezifischen Einstellungen
  * @param {HTMLElement} containerElement - Container mit Hero-Buttons
  */
-export function animateHeroButtons(containerElement) {
+export function animateHeroButton(containerElement) {
   if (!containerElement) return;
   
-  const buttons = containerElement.querySelectorAll('.hero-buttons [data-animation]');
-  buttons.forEach((button, index) => {
-    // Gestaffelte Animation für mehrere Buttons
-    const delay = 300 + (index * 150);
-    button.setAttribute('data-delay', delay.toString());
-    
-    if (!button.hasAttribute('data-duration')) {
-      button.setAttribute('data-duration', HERO_ANIMATION_CONFIG.durations.heroButtons);
-    }
-  });
-  
-  // Trigger Animation über globale Engine
-  if (window.enhancedAnimationEngine) {
-    window.enhancedAnimationEngine.animateElementsIn?.(containerElement, { force: true });
-  }
+  animateElementsIn(containerElement, { force: true }, 'animateHeroButton');
 }
 
 /**
@@ -121,7 +106,7 @@ function initHeroAnimations() {
       window.enhancedAnimationEngine.setRepeatOnScroll?.(HERO_ANIMATION_CONFIG.repeatOnScroll);
       
       // Initial scan für Hero-Elemente
-      window.enhancedAnimationEngine.scan?.();
+      triggerAnimationScan('hero-init');
       
       log.debug('Hero-spezifische Animationen initialisiert');
     } else {

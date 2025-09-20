@@ -4,6 +4,7 @@ import { EVENTS, fire } from './utils/events.js';
 import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
 import { schedulePersistentStorageRequest } from './utils/persistent-storage.js';
 import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
+import './utils/section-tracker.js'; // Section Detection für snapSectionChange Events
 
 // ===== Accessibility Utilities =====
 function announce(message, { assertive = false } = {}) {

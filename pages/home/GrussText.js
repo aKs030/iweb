@@ -57,12 +57,6 @@ export const typewriterConfig = {
   punctuationPause: 300
 };
 
-// Hero Visibility / Observer Einstellungen
-export const heroObserverConfig = {
-  threshold: [0, 0.25, 0.5, 0.75, 1],
-  minActiveRatio: 0.5
-};
-
 // Hilfsfunktion um modulare Zusammenstellung zu erleichtern (optional)
 // getHeroConfig entfernt (wurde nicht verwendet; direkte Exporte reichen)
 
