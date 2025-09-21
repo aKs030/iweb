@@ -91,7 +91,7 @@
   <link rel="stylesheet" href="/content/webentwicklung/root.css">
   <link rel="stylesheet" href="/content/webentwicklung/index.css">
   <link rel="stylesheet" href="/content/webentwicklung/buttons.css">
-  <link rel="stylesheet" href="/content/webentwicklung/particles/particles.css">
+  <link rel="stylesheet" href="/content/webentwicklung/particles/atmospheric-sky.css">
   <link rel="stylesheet" href="/content/webentwicklung/animations/animation-keyframes.css">
   <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
   <!-- CSS direkt laden für bessere Performance -->
@@ -368,24 +368,40 @@
     <div class="loader"></div>
   </div>
 
-  <!-- Global Particle Background -->
-  <div
-    class="global-particle-background"
-    data-particle-gradient="radial"
-    data-particle-alpha-scale="1.15"
-    data-particle-trails="true"
-    data-particle-trail-fade="0.08"
-    data-particle-glow="true"
-    data-particle-blend="lighter"
-    data-particle-conn-skip="2"
-    data-particle-conn-cap="8"
-    data-particle-quadtree="true"
-    data-particle-auto-quality="true"
-    data-particle-sort-depth="true"
-    data-particle-dof="true"
-  >
-    <canvas class="particle-canvas" id="particleCanvas"></canvas>
-    <div class="gradient-overlay"></div>
+  <!-- Atmosphärisches Himmelssystem -->
+  <div class="global-particle-background" id="atmosphericBackground" 
+       data-section="dynamic"
+       data-atmosphere-intensity="auto"
+       data-stars-density="adaptive"
+       data-moon-progression="scroll"
+       data-landscape-reveal="gradual">
+    <!-- Atmosphärische Effekte -->
+    <div class="atmosphere">
+      <div class="atmospheric-glow"></div>
+      <div class="aurora"></div>
+      <div class="clouds"></div>
+    </div>
+    
+    <!-- Sterne-Container -->
+    <div class="stars-container"></div>
+    
+    <!-- Mond mit detaillierter Oberfläche -->
+    <div class="moon">
+      <div class="moon-surface"></div>
+      <div class="moon-shadow"></div>
+    </div>
+    
+    <!-- Landschafts-Silhouetten mit mehreren Ebenen -->
+    <div class="landscape">
+      <div class="mountains-far"></div>
+      <div class="mountains"></div>
+      <div class="fog"></div>
+      <div class="trees"></div>
+      <div class="ground"></div>
+    </div>
+  </div>
+
+
   </div>
 
   <!-- ARIA Live Regions -->

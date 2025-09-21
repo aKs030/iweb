@@ -1,5 +1,4 @@
 import { getElementById } from '../../content/webentwicklung/utils/common-utils.js';
-import { ParticlesManager } from '../../content/webentwicklung/particles/particle-system.js';
 import { EVENTS } from '../../content/webentwicklung/utils/events.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
 import { triggerAnimationScan, animateElementsIn } from '../../content/webentwicklung/utils/animation-utils.js';
@@ -317,16 +316,8 @@ export function initHeroFeatureBundle() {
     (window.announce || (() => {}))(`Zitat vollständig: ${text}`);
   });
 
-  // Lazy Hero Module + Particles + Animations
+  // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
-  setTimeout(() => {
-    try {
-      const stopParticles = ParticlesManager.initParticles();
-      window.__stopParticles = stopParticles;
-    } catch {
-      // Silent fail
-    }
-  }, 100);
   setTimeout(initHeroAnimationBootstrap, 420);
   
   // Initialisiere Hero-spezifische Animationen

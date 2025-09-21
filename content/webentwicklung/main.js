@@ -4,7 +4,11 @@ import { EVENTS, fire } from './utils/events.js';
 import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
 import { schedulePersistentStorageRequest } from './utils/persistent-storage.js';
 import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
+import { initAtmosphericSky } from './particles/atmospheric-sky-system.js';
+import { createLogger } from './utils/logger.js';
 import './utils/section-tracker.js'; // Section Detection für snapSectionChange Events
+
+const log = createLogger('main');
 
 // ===== Accessibility Utilities =====
 function announce(message, { assertive = false } = {}) {
@@ -356,6 +360,18 @@ function loadMenuAssets() {
     // TypeWriter Registry global verfügbar machen
     if (!window.TypeWriterRegistry) {
       window.TypeWriterRegistry = TypeWriterRegistry;
+    }
+    
+    // Atmosphärisches Himmelssystem initialisieren
+    let atmosphericCleanup = null;
+    try {
+      atmosphericCleanup = initAtmosphericSky();
+      // Cleanup-Funktion global verfügbar machen für Debug-Zwecke
+      if (atmosphericCleanup && typeof atmosphericCleanup === 'function') {
+        window.__atmosphericCleanup = atmosphericCleanup;
+      }
+    } catch (error) {
+      log.error('Failed to initialize atmospheric sky system:', error);
     }
     
     fire(EVENTS.CORE_INITIALIZED);

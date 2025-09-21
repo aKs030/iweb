@@ -16,6 +16,63 @@
     #2c3e50 85%, 
     #34495e 100%
   );
+  
+  /* CSS Custom Properties für sektionsspezifische Anpassungen */
+  --star-opacity: 1; /* Standardmäßig sichtbar für Hero */
+  --atmosphere-intensity: 0.8;
+  --moon-visibility: 0.3;
+  --landscape-height: 0;
+  --cloud-frequency: 0.5;
+}
+
+/* ===== Sektionsspezifische Variationen ===== */
+.global-particle-background[data-section="hero"] {
+  /* Hero: Vollständiger Himmel mit allen Effekten */
+  --star-opacity: 1;
+  --atmosphere-intensity: 1.2;
+  --moon-visibility: 1;
+  --cloud-frequency: 1.2;
+}
+
+.global-particle-background[data-section="features"] {
+  /* Features: Reduzierte Atmosphäre, fokussiert auf Sterne */
+  --star-opacity: 0.8;
+  --atmosphere-intensity: 0.7;
+  --moon-visibility: 0.9;
+  --cloud-frequency: 0.8;
+}
+
+.global-particle-background[data-section="about"] {
+  /* About: Warme, einladende Atmosphäre */
+  --star-opacity: 0.9;
+  --atmosphere-intensity: 0.8;
+  --moon-visibility: 1.1;
+  --cloud-frequency: 0.6;
+  
+  /* Wärmere Farbtonverschiebung für About-Sektion */
+  background: linear-gradient(180deg, 
+    #1a1a2e 0%, 
+    #2a2a3e 30%, 
+    #3a3a4e 60%, 
+    #4a4a5e 85%, 
+    #5a5a6e 100%
+  );
+}
+
+.global-particle-background[data-section="contact"] {
+  /* Contact: Minimalistisch, weniger ablenkend */
+  --star-opacity: 0.6;
+  --atmosphere-intensity: 0.5;
+  --moon-visibility: 0.8;
+  --cloud-frequency: 0.4;
+}
+
+.global-particle-background[data-section="dynamic"] {
+  /* Dynamic: Ändert sich basierend auf Scroll-Position */
+  --star-opacity: var(--dynamic-star-opacity, 0);
+  --atmosphere-intensity: var(--dynamic-atmosphere-intensity, 0);
+  --moon-visibility: var(--dynamic-moon-visibility, 0);
+  --cloud-frequency: var(--dynamic-cloud-frequency, 0);
 }
 
 /* Atmosphärische Effekte Container */
@@ -27,6 +84,8 @@
   height: 100vh;
   z-index: 0;
   pointer-events: none;
+  opacity: var(--atmosphere-intensity);
+  transition: opacity 1s ease-out;
 }
 
 /* Wolken-System */
@@ -36,6 +95,7 @@
   height: 100%;
   top: 0;
   left: 0;
+  opacity: var(--cloud-frequency, 1);
 }
 
 .cloud {
@@ -125,7 +185,7 @@
     rgba(255, 255, 255, 0.02) 30%,
     transparent 60%
   );
-  opacity: 0;
+  opacity: calc(0.3 * var(--atmosphere-intensity, 0.8));
   transition: opacity 2s ease-out;
 }
 
@@ -136,6 +196,8 @@
   height: 100%;
   top: 0;
   left: 0;
+  opacity: var(--star-opacity);
+  transition: opacity 1s ease-out;
 }
 
 .star {
@@ -236,15 +298,16 @@
 /* Realistischer Mond (startet als Stern) */
 .moon {
   position: absolute;
-  top: 10%;
-  right: 15%;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%) scale(var(--moon-visibility, 0.3));
   width: 3px;
   height: 3px;
   background: white;
   border-radius: 50%;
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
   transition: all 0.6s ease-out;
-  opacity: 0.8;
+  opacity: calc(0.8 * var(--moon-visibility, 0.3));
   overflow: hidden;
 }
 
@@ -311,9 +374,10 @@
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 0;
-  transition: height 0.6s ease-out;
+  height: var(--landscape-height, 0px);
+  transition: height 0.6s ease-out, opacity 0.6s ease-out;
   z-index: 1;
+  opacity: var(--moon-visibility, 0); /* Landschaft erscheint mit dem Mond */
 }
 
 /* Mehrschichtige Bergketten für Tiefeneffekt */
@@ -424,111 +488,133 @@
   );
 }
 
-/* Section-spezifische Konfigurationen */
-.global-particle-background[data-section="hero"] {
+/* ===== Section-spezifische Anpassungen ===== */
 
-
+/* Hero Section: Mond als kleiner Stern, Sterne sichtbar */
+.section.hero ~ .global-particle-background {
+  --star-opacity: 1;
+  --atmosphere-intensity: 0.8;
+  --moon-visibility: 0.3;
 }
 
-.global-particle-background[data-section="about"] {
-
-
+.section.hero ~ .global-particle-background .moon {
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.3);
+  width: 3px;
+  height: 3px;
+  background: white;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
 }
 
-/* ===== Star-Enhanced Modes ===== */
-.global-particle-background[data-star-mode="magical"] .particle-canvas {
-  filter: brightness(1.5) contrast(1.2) saturate(1.3);
-  animation: starTwinkle var(--star-twinkle-speed, 2s) ease-in-out infinite alternate;
+/* Features Section: Mond etwas größer, rechts von der Mitte, höher */
+.section.features ~ .global-particle-background {
+  --star-opacity: 0.7;
+  --atmosphere-intensity: 0.9;
+  --moon-visibility: 0.6;
 }
 
-.global-particle-background[data-star-mode="cosmic"] .particle-canvas {
-  filter: brightness(1.3) contrast(1.1) hue-rotate(15deg);
+.section.features ~ .global-particle-background .moon {
+  top: 12%;
+  left: 65%;
+  transform: translateX(-50%) scale(0.6);
+  width: 20px;
+  height: 20px;
 }
 
-@keyframes starTwinkle {
-  0% { 
-    filter: brightness(1.2) contrast(1.1); 
-    opacity: var(--particle-opacity, 0.4);
-  }
-  50% { 
-    filter: brightness(1.6) contrast(1.3); 
-    opacity: calc(var(--particle-opacity, 0.4) * 1.2);
-  }
-  100% { 
-    filter: brightness(1.2) contrast(1.1); 
-    opacity: var(--particle-opacity, 0.4);
-  }
-}
-.global-particle-background[data-particle-collisions="true"] { 
-  filter: brightness(1.1); 
+/* About Section: Vollmond */
+.section.about ~ .global-particle-background {
+  --star-opacity: 0.4;
+  --atmosphere-intensity: 1;
+  --moon-visibility: 1;
 }
 
-.global-particle-background[data-particle-bounce="true"] { 
-  border: 1px solid rgba(255, 255, 255, 0.1); 
+.section.about ~ .global-particle-background .moon {
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  width: 80px;
+  height: 80px;
 }
 
-/* ===== Debug-Modus ===== */
-.global-particle-background[data-particle-debug="true"] .particle-canvas {
-  border: 2px dashed rgba(255, 255, 0, 0.3);
-  position: relative;
+/* ===== Sektionsspezifische Animationsgeschwindigkeiten ===== */
+.global-particle-background[data-section="hero"] .cloud {
+  animation-duration: 60s;
 }
 
-.global-particle-background[data-particle-debug="true"]::after {
-  content: "DEBUG MODE ACTIVE";
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 0, 0.9);
-  color: black;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 4px;
-  z-index: 1000;
-  pointer-events: none;
+.global-particle-background[data-section="hero"] .star {
+  animation-duration: 4s;
 }
 
-/* ===== Mobile & Touch Optimizations ===== */
+.global-particle-background[data-section="features"] .cloud {
+  animation-duration: 80s; /* Langsamere Wolken für Features */
+}
+
+.global-particle-background[data-section="features"] .star {
+  animation-duration: 5s; /* Langsameres Funkeln */
+}
+
+.global-particle-background[data-section="about"] .cloud {
+  animation-duration: 100s; /* Sehr langsame, beruhigende Bewegung */
+}
+
+.global-particle-background[data-section="about"] .star {
+  animation-duration: 6s; /* Sanftes Funkeln */
+}
+
+.global-particle-background[data-section="contact"] .cloud {
+  animation-duration: 120s; /* Minimale Bewegung */
+}
+
+.global-particle-background[data-section="contact"] .star {
+  animation-duration: 8s; /* Sehr sanftes Funkeln */
+}
+
+/* ===== Sektionsspezifische Farbvariationen ===== */
+.global-particle-background[data-section="about"] .star-yellow {
+  background: rgba(255, 220, 160, 0.9); /* Wärmeres Gelb für About */
+  box-shadow: 0 0 3px rgba(255, 220, 160, 0.6);
+}
+
+.global-particle-background[data-section="features"] .aurora {
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(0, 255, 200, 0.04) 25%, /* Mehr Grün für Features */
+    rgba(0, 200, 255, 0.03) 50%,
+    rgba(100, 0, 255, 0.04) 75%,
+    transparent 100%
+  );
+}
+
+/* Responsives Design */
 @media (max-width: 768px) {
-  .global-particle-background {
-
-
+  .moon {
+    top: 15%;
+    right: 10%;
   }
   
-  .global-particle-background .particle-canvas {
-    filter: brightness(1.0) contrast(1.0);
-  }
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .global-particle-background {
-
-  }
-}
-
-/* ===== High Performance Mode für Low-End Devices ===== */
-@media (max-width: 480px) {
-  .global-particle-background[data-particle-trails="true"] {
-
+  .cloud {
+    animation-duration: 40s;
   }
   
-  .global-particle-background[data-particle-glow="true"] .particle-canvas {
-    filter: none;
+  .star-medium,
+  .star-large {
+    animation-duration: 5s;
   }
 }
 
-/* ===== Section State Integration ===== */
-.snap-section.section-active ~ .global-particle-background .particle-canvas { 
-  opacity: 0.5; 
-}
-
-/* ===== High Contrast Support ===== */
-@media (prefers-contrast: high) {
-  .global-particle-background {
-
+@media (prefers-reduced-motion: reduce) {
+  .star,
+  .cloud,
+  .aurora,
+  .fog {
+    animation: none;
   }
   
-  .global-particle-background .gradient-overlay {
-    opacity: 0.9;
+  .atmospheric-glow,
+  .moon,
+  .landscape {
+    transition: none;
   }
 }
