@@ -13,13 +13,14 @@
  */
 
 import { initializeDayNightArtwork } from './day-night-artwork.js';
+import { getElementById } from '../utils/common-utils.js';
 
 
 /**
  * Initialisiert das Footer-System
  */
 async function initializeFooter() {
-  const footerContainer = document.getElementById('footer-container');
+  const footerContainer = getElementById('footer-container');
   
   if (!footerContainer) {
     return;
@@ -49,7 +50,7 @@ async function initializeFooter() {
     footerLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         const targetId = link.getAttribute('href').substring(1);
-        const targetElement = document.getElementById(targetId);
+        const targetElement = getElementById(targetId);
         
         if (targetElement) {
           e.preventDefault();

@@ -1,5 +1,7 @@
 // Simple Section Tracker - Ersatz für Particle-System Section Detection
 
+import { getElementById } from './common-utils.js';
+
 class SectionTracker {
   constructor() {
     this.sections = [];
@@ -111,7 +113,7 @@ class SectionTracker {
       const detail = { 
         id: sectionId, 
         index: sectionIndex,
-        section: document.getElementById(sectionId)
+        section: getElementById(sectionId)
       };
       
       const event = new CustomEvent('snapSectionChange', { detail });

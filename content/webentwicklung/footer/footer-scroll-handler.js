@@ -11,7 +11,7 @@
  * @version 1.0.0
  */
 
-
+import { getElementById } from '../utils/common-utils.js';
 
 // Footer-Zustand
 let footerExpanded = false;
@@ -23,7 +23,7 @@ let lastSectionObserver = null;
 function initializeFooterScrollHandler() {
   // Warten bis Footer geladen ist
   const checkFooterReady = () => {
-    const footer = document.getElementById('site-footer');
+    const footer = getElementById('site-footer');
     if (footer) {
       setupLastSectionObserver();
     } else {
@@ -40,8 +40,8 @@ function initializeFooterScrollHandler() {
  * Footer expandiert wenn die Trigger-Zone erreicht wird
  */
 function setupLastSectionObserver() {
-  const triggerZone = document.getElementById('footer-trigger-zone');
-  const footer = document.getElementById('site-footer');
+  const triggerZone = getElementById('footer-trigger-zone');
+  const footer = getElementById('site-footer');
   
   if (!triggerZone || !footer) {
     return;
@@ -71,7 +71,7 @@ function setupLastSectionObserver() {
  * Expandiert oder kollabiert den Footer
  */
 function toggleFooterExpansion(shouldExpand) {
-  const footer = document.getElementById('site-footer');
+  const footer = getElementById('site-footer');
   const body = document.body;
   const footerMinimized = footer?.querySelector('.footer-minimized');
   const footerMaximized = footer?.querySelector('.footer-maximized');

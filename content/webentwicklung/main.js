@@ -57,13 +57,13 @@ const _lazyModules = (() => {
     const id = ev.detail?.id;
     const candidate = MAP.find(m => m.id === id);
     if (candidate && !candidate.loaded) {
-      const el = document.getElementById(id);
+      const el = getElementById(id);
       if (el) io.observe(el);
     }
   });
   // Falls Features/About bereits im DOM (eager oder schnell geladen)
   ['features','about'].forEach(id => {
-    const el = document.getElementById(id);
+    const el = getElementById(id);
     if (el) io.observe(el);
   });
   return { observer: io };
@@ -126,7 +126,7 @@ const SectionLoader = (() => {
   function resolveSectionName(section) {
     const labelId = section.getAttribute('aria-labelledby');
     if (labelId) {
-      const lbl = document.getElementById(labelId);
+      const lbl = getElementById(labelId);
       const txt = lbl?.textContent?.trim();
       if (txt) return txt;
     }

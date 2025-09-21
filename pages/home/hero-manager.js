@@ -244,7 +244,7 @@ function initHeroAnimationBootstrap() {
     window.addEventListener('snapSectionChange', (e) => {
       const id = e.detail?.id;
       if (!id) return;
-      const active = document.getElementById(id);
+      const active = getElementById(id);
       if (!active) return;
       try {
         const allSections = Array.from(document.querySelectorAll('main .section, .section'));

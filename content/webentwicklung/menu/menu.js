@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initializeLogo(menuContainer);
       initializeSubmenuLinks();
       setSiteTitle();
+      setActiveMenuLink(); // Direkt hier aufrufen statt separater Event Listener
       document.addEventListener('click', (event) => {
         const isClickInside = menuContainer.contains(event.target);
         const isMenuToggle = event.target.closest('.site-menu__toggle');
@@ -339,6 +340,3 @@ function setActiveMenuLink() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  setActiveMenuLink();
-});
