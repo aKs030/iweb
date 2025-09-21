@@ -23,6 +23,15 @@
   --moon-visibility: 0.3;
   --landscape-height: 0;
   --cloud-frequency: 0.5;
+  
+  /* Erweiterte atmosphärische Effekte */
+  --particle-alpha-scale: 1;
+  --particle-connection-opacity: 1;
+  --particle-opacity-scale: 1;
+  --star-twinkle-speed: 2s;
+  --star-brightness: 1.2;
+  --earth-size: 200px;
+  --earth-visibility: 0.9;
 }
 
 /* ===== Sektionsspezifische Variationen ===== */
