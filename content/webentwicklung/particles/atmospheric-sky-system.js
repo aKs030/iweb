@@ -35,6 +35,10 @@ const AtmosphericSkyManager = (() => {
       const starsContainer = createStarsContainer(background);
       const cloudsContainer = createCloudsContainer(background);
       
+      // Landschafts- und Mond-Container sicherstellen
+      createLandscapeContainer(background);
+      createMoonContainer(background);
+      
       // Sterne generieren
       createStars(starsContainer);
       
@@ -119,6 +123,39 @@ function createCloudsContainer(background) {
   }
 
   return cloudsContainer;
+}
+
+// ===== Landschafts-Container erstellen =====
+function createLandscapeContainer(background) {
+  let landscape = background.querySelector('.landscape');
+  if (!landscape) {
+    landscape = document.createElement('div');
+    landscape.className = 'landscape';
+    landscape.innerHTML = `
+      <div class="mountains-far"></div>
+      <div class="mountains"></div>
+      <div class="fog"></div>
+      <div class="trees"></div>
+      <div class="ground"></div>
+    `;
+    background.appendChild(landscape);
+  }
+  return landscape;
+}
+
+// ===== Mond-Container erstellen =====
+function createMoonContainer(background) {
+  let moon = background.querySelector('.moon');
+  if (!moon) {
+    moon = document.createElement('div');
+    moon.className = 'moon';
+    moon.innerHTML = `
+      <div class="moon-surface"></div>
+      <div class="moon-shadow"></div>
+    `;
+    background.appendChild(moon);
+  }
+  return moon;
 }
 
 // ===== Realistische Sterne generieren =====
@@ -368,21 +405,24 @@ function updateSectionAtmosphere(background, sectionName) {
       atmosphereIntensity: 0.8,
       moonVisibility: 0.3,
       cloudFrequency: 0.5,
-      landscapeHeight: '0px'
+      landscapeHeight: '0px',
+      landscapeOpacity: 0
     },
     features: {
       starOpacity: 0.7,
       atmosphereIntensity: 0.9,
       moonVisibility: 0.6,
       cloudFrequency: 0.8,
-      landscapeHeight: '50px'
+      landscapeHeight: '50px',
+      landscapeOpacity: 0.3
     },
     about: {
       starOpacity: 0.4,
       atmosphereIntensity: 1,
       moonVisibility: 1,
       cloudFrequency: 0.6,
-      landscapeHeight: '150px'
+      landscapeHeight: '150px',
+      landscapeOpacity: 1
     }
   };
   
@@ -394,6 +434,7 @@ function updateSectionAtmosphere(background, sectionName) {
   background.style.setProperty('--moon-visibility', config.moonVisibility);
   background.style.setProperty('--cloud-frequency', config.cloudFrequency);
   background.style.setProperty('--landscape-height', config.landscapeHeight);
+  background.style.setProperty('--landscape-opacity', config.landscapeOpacity || 0);
   
   // Data-Attribute für CSS-Selektoren aktualisieren
   background.setAttribute('data-section', sectionName);

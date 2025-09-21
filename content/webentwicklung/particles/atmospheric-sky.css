@@ -22,6 +22,7 @@
   --atmosphere-intensity: 0.8;
   --moon-visibility: 0.3;
   --landscape-height: 0;
+  --landscape-opacity: 0; /* Neue CSS Custom Property für Landschafts-Sichtbarkeit */
   --cloud-frequency: 0.5;
   
   /* Erweiterte atmosphärische Effekte */
@@ -56,6 +57,7 @@
   --star-opacity: 0.9;
   --atmosphere-intensity: 0.8;
   --moon-visibility: 1.1;
+  --landscape-opacity: 1; /* Landschaft vollständig sichtbar */
   --cloud-frequency: 0.6;
   
   /* Wärmere Farbtonverschiebung für About-Sektion */
@@ -66,6 +68,12 @@
     #4a4a5e 85%, 
     #5a5a6e 100%
   );
+}
+
+/* Explizite Sichtbarkeit für About-Sektion Landschafts-Elemente */
+.global-particle-background[data-section="about"] .fog,
+.global-particle-background[data-section="about"] .ground {
+  opacity: 1;
 }
 
 .global-particle-background[data-section="contact"] {
@@ -94,7 +102,7 @@
   z-index: 0;
   pointer-events: none;
   opacity: var(--atmosphere-intensity);
-  transition: opacity 1s ease-out;
+  transition: opacity 0.6s ease-out; /* Einheitliche 0.6s Transition */
 }
 
 /* Wolken-System */
@@ -195,7 +203,7 @@
     transparent 60%
   );
   opacity: calc(0.3 * var(--atmosphere-intensity, 0.8));
-  transition: opacity 2s ease-out;
+  transition: opacity 0.6s ease-out; /* Einheitliche 0.6s Transition */
 }
 
 /* Sterne Container */
@@ -206,7 +214,7 @@
   top: 0;
   left: 0;
   opacity: var(--star-opacity);
-  transition: opacity 1s ease-out;
+  transition: opacity 0.6s ease-out; /* Einheitliche 0.6s Transition */
 }
 
 .star {
@@ -315,7 +323,7 @@
   background: white;
   border-radius: 50%;
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-  transition: all 0.6s ease-out;
+  transition: all 0.6s ease-out; /* Einheitliche 0.6s Transition */
   opacity: calc(0.8 * var(--moon-visibility, 0.3));
   overflow: hidden;
 }
@@ -386,7 +394,7 @@
   height: var(--landscape-height, 0px);
   transition: height 0.6s ease-out, opacity 0.6s ease-out;
   z-index: 1;
-  opacity: var(--moon-visibility, 0); /* Landschaft erscheint mit dem Mond */
+  opacity: var(--landscape-opacity, 0); /* Verwende landscape-opacity statt moon-visibility */
 }
 
 /* Mehrschichtige Bergketten für Tiefeneffekt */
@@ -460,8 +468,8 @@
     rgba(255, 255, 255, 0.1) 60%, 
     rgba(255, 255, 255, 0.15) 100%
   );
-  opacity: 0;
-  transition: opacity 1s ease-out;
+  opacity: calc(0.3 * var(--landscape-opacity, 0)); /* Basierend auf landscape-opacity */
+  transition: opacity 0.6s ease-out; /* Einheitliche 0.6s Transition */
   animation: fogMovement 20s infinite ease-in-out;
 }
 
@@ -477,8 +485,8 @@
   width: 100%;
   height: 15%;
   background: linear-gradient(180deg, #2d3436 0%, #000 100%);
-  opacity: 0;
-  transition: opacity 0.8s ease-out;
+  opacity: calc(0.8 * var(--landscape-opacity, 0)); /* Basierend auf landscape-opacity */
+  transition: opacity 0.6s ease-out; /* Einheitliche 0.6s Transition */
 }
 
 .ground::before {
@@ -499,52 +507,7 @@
 
 /* ===== Section-spezifische Anpassungen ===== */
 
-/* Hero Section: Mond als kleiner Stern, Sterne sichtbar */
-.section.hero ~ .global-particle-background {
-  --star-opacity: 1;
-  --atmosphere-intensity: 0.8;
-  --moon-visibility: 0.3;
-}
-
-.section.hero ~ .global-particle-background .moon {
-  top: 15%;
-  left: 50%;
-  transform: translateX(-50%) scale(0.3);
-  width: 3px;
-  height: 3px;
-  background: white;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-}
-
-/* Features Section: Mond etwas größer, rechts von der Mitte, höher */
-.section.features ~ .global-particle-background {
-  --star-opacity: 0.7;
-  --atmosphere-intensity: 0.9;
-  --moon-visibility: 0.6;
-}
-
-.section.features ~ .global-particle-background .moon {
-  top: 12%;
-  left: 65%;
-  transform: translateX(-50%) scale(0.6);
-  width: 20px;
-  height: 20px;
-}
-
-/* About Section: Vollmond */
-.section.about ~ .global-particle-background {
-  --star-opacity: 0.4;
-  --atmosphere-intensity: 1;
-  --moon-visibility: 1;
-}
-
-.section.about ~ .global-particle-background .moon {
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%) scale(1);
-  width: 80px;
-  height: 80px;
-}
+/* Alle Selektoren verwenden jetzt ausschließlich [data-section] für Konsistenz */
 
 /* ===== Sektionsspezifische Animationsgeschwindigkeiten ===== */
 .global-particle-background[data-section="hero"] .cloud {
