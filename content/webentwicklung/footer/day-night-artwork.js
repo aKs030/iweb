@@ -4,6 +4,9 @@
  */
 
 import { getElementById, throttle } from '../utils/common-utils.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('dayNightArtwork');
 
 
 /**
@@ -54,6 +57,7 @@ class DayNightArtworkManager {
       return true;
 
     } catch (error) {
+      log.error('Initialisierung fehlgeschlagen:', error);
       return false;
     }
   }
@@ -105,10 +109,7 @@ class DayNightArtworkManager {
       await this.createTransitionEffect(event);
 
       // Toggle Theme über das globale System
-      const newTheme = window.themeSystem?.toggleTheme?.();
-      if (newTheme) {
-      } else {
-      }
+      window.themeSystem?.toggleTheme?.();
 
       // Haptic-Feedback
       this.simulateHapticFeedback();
@@ -119,6 +120,7 @@ class DayNightArtworkManager {
       }, 1000);
 
     } catch (error) {
+      log.error('Theme-Toggle fehlgeschlagen:', error);
       this.isTransitioning = false;
     }
   }
