@@ -431,28 +431,30 @@
   transition: opacity 0.6s ease-out;
 }
 
-/* Earth Globe System - Mit Section-basierten Transformationen */
+/* ===== EARTH GLOBE SYSTEM =====
+ * Section-basierte Transformationen: Stern ↔ Earth-Globe
+ */
+
+/* Earth Globe - Standard (startet als Stern) */
 .earth-globe {
   position: absolute;
-  bottom: 0; /* Direkt am unteren Bildschirmrand */
+  bottom: 0;
   left: 50%;
-  transition: all 0.8s ease-out; /* Längere Transition für sanfte Transformation */
+  transition: all 0.8s ease-out;
   z-index: 5;
   opacity: var(--earth-visibility, 1);
   
-  /* Scroll-basierte Skalierung - Synchron mit Mond */
+  /* Scroll-basierte Skalierung (synchron mit Mond) */
   --earth-scale: calc(1 - var(--scroll-progress, 0) * 0.7);
   transform: translateX(-50%) translateY(50%) scale(var(--earth-scale)) !important;
   
-  /* Standard: Stern-Modus (startet als kleiner Stern, wie Mond) */
+  /* Standard: Stern-Modus */
   width: 4px;
   height: 4px;
   background: radial-gradient(circle, rgba(135, 206, 235, 1) 0%, rgba(70, 130, 180, 0.8) 70%, transparent 100%);
   border-radius: 50%;
   box-shadow: 0 0 8px rgba(135, 206, 235, 0.8);
   animation: earthStarTwinkle 3s ease-in-out infinite alternate;
-  
-  /* Stern-Modus: Horizont-Effekt deaktiviert */
   overflow: visible;
   clip-path: none;
 }
@@ -543,78 +545,58 @@
   filter: blur(1px);
 }
 
-/* Sektionsspezifische Earth-Transformationen */
+/* ===== SECTION-BASIERTE TRANSFORMATIONEN =====
+ * Hero: Stern → Riesige Earth (Horizont-Effekt)
+ * Features: Vollständige Earth-Globe  
+ * About: Earth → Stern
+ */
 
-/* Hero-Section: Stern transformiert sich zu riesiger Earth-Globe */
+/* HERO SECTION */
 .global-particle-background[data-section="hero"] .earth-globe {
-  --earth-size: 100vw; /* Ganze Viewport-Breite */
+  --earth-size: 100vw;
   --earth-visibility: 1;
   width: 100vw;
-  height: 80vh; /* Höhe bis ca. zu den Buttons */
+  height: 80vh;
   bottom: 0;
   
-  /* Earth-Globe Styling aktivieren */
-  background: none; /* Stern-Hintergrund entfernen */
-  box-shadow: none; /* Stern-Glow entfernen */
-  animation: none; /* Stern-Twinkle entfernen */
-  border-radius: 50%; /* WICHTIG: Rund für natürlichen Schatten! (auch in Hero) */
-  
-  /* Horizont-Effekt für große Earth - ABER mit Verzögerung */
+  background: none;
+  box-shadow: none;
+  animation: none;
+  border-radius: 50%;
   overflow: hidden;
   clip-path: inset(0 0 50% 0);
-  transition: all 1.2s ease-out; /* Längere Transition für sanfteren Übergang */
-  
-  /* Anpassung für große Größe */
+  transition: all 1.2s ease-out;
   transform: translateX(-50%) translateY(60%) scale(var(--earth-scale)) !important;
 }
 
-/* Verzögerter Horizont-Effekt - nur wenn wirklich in Hero-Section */
-.global-particle-background[data-section="hero"]:not([data-transitioning]) .earth-globe {
-  /* Clip-Path wird nur angewendet wenn nicht im Übergang */
-  clip-path: inset(0 0 50% 0);
-}
-
-/* Während Übergangs: Vollständige Erde zeigen */
-.global-particle-background[data-transitioning="true"] .earth-globe {
-  clip-path: none !important;
-  overflow: visible !important;
-}
-
-/* Hero-Section: Earth-Surface und Details anzeigen */
 .global-particle-background[data-section="hero"] .earth-globe .earth-sphere,
 .global-particle-background[data-section="hero"] .earth-globe .earth-surface,
 .global-particle-background[data-section="hero"] .earth-globe .earth-atmosphere,
 .global-particle-background[data-section="hero"] .earth-globe .earth-shadow {
-  display: block; /* Earth-Details anzeigen */
+  display: block;
 }
 
-/* Hero-Section: Earth-Rotation deaktivieren */
 .global-particle-background[data-section="hero"] .earth-globe .earth-surface {
-  animation: none; /* Keine Rotation in Hero-Section */
+  animation: none; /* Keine Rotation in Hero */
 }
 
-/* Features-Section: Vollständige, mittelgroße Earth-Globe */
+/* FEATURES SECTION */
 .global-particle-background[data-section="features"] .earth-globe {
   --earth-size: 300px;
   --earth-visibility: 0.9;
   width: 300px;
   height: 300px;
-  bottom: 10%; /* Etwas über dem unteren Rand */
+  bottom: 10%;
   
-  /* Earth-Globe Styling aktivieren */
   background: none;
   box-shadow: none;
   animation: none;
-  border-radius: 50%; /* WICHTIG: Rund für natürlichen Schatten! */
-  
-  /* Ganz sichtbar - kein Horizont-Effekt */
+  border-radius: 50%;
   overflow: visible;
   clip-path: none;
-  
-  transform: translateX(-50%) scale(var(--earth-scale)) !important; /* Kein translateY - ganz sichtbar */
+  transform: translateX(-50%) scale(var(--earth-scale)) !important;
 }
 
-/* Features-Section: Earth-Surface und Details anzeigen */
 .global-particle-background[data-section="features"] .earth-globe .earth-sphere,
 .global-particle-background[data-section="features"] .earth-globe .earth-surface,
 .global-particle-background[data-section="features"] .earth-globe .earth-atmosphere,
@@ -622,35 +604,38 @@
   display: block;
 }
 
-/* About-Section: Earth transformiert sich zurück zu Stern */
+/* ABOUT SECTION */
 .global-particle-background[data-section="about"] .earth-globe {
   --earth-size: 4px;
   --earth-visibility: 0.8;
   width: 4px;
   height: 4px;
-  bottom: 20%; /* Etwas höher positioniert */
+  bottom: 20%;
   
-  /* Stern-Styling aktivieren */
   background: radial-gradient(circle, rgba(135, 206, 235, 1) 0%, rgba(70, 130, 180, 0.8) 70%, transparent 100%);
   border-radius: 50%;
-  box-shadow: 
-    0 0 10px rgba(135, 206, 235, 0.8),
-    0 0 20px rgba(70, 130, 180, 0.6);
+  box-shadow: 0 0 10px rgba(135, 206, 235, 0.8), 0 0 20px rgba(70, 130, 180, 0.6);
   animation: earthStarTwinkle 3s ease-in-out infinite alternate;
-  
-  /* Kein Horizont-Effekt für Stern */
   overflow: visible;
   clip-path: none;
-  
   transform: translateX(-50%) scale(var(--earth-scale)) !important;
 }
 
-/* About-Section: Earth-Details ausblenden - zurück zu Stern */
 .global-particle-background[data-section="about"] .earth-globe .earth-sphere,
 .global-particle-background[data-section="about"] .earth-globe .earth-surface,
 .global-particle-background[data-section="about"] .earth-globe .earth-atmosphere,
 .global-particle-background[data-section="about"] .earth-globe .earth-shadow {
   display: none;
+}
+
+/* TRANSITION HELPERS */
+.global-particle-background[data-section="hero"]:not([data-transitioning]) .earth-globe {
+  clip-path: inset(0 0 50% 0);
+}
+
+.global-particle-background[data-transitioning="true"] .earth-globe {
+  clip-path: none !important;
+  overflow: visible !important;
 }
 
 /* Earth-Stern Twinkle-Animation */
