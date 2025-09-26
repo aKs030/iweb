@@ -1,10 +1,10 @@
-// Atmosphärisches Himmelssystem - Ersetzt das Canvas-basierte Partikelsystem
+// Atmosphärisches Himmelssystem - Optimierte Version
 import { getElementById, throttle } from '../utils/common-utils.js';
 import { createLogger } from '../utils/logger.js';
 
 const log = createLogger('atmosphericSky');
 
-// ===== Section-Aware Atmospheric Sky System =====
+// ===== Globale Variablen =====
 let isInitialized = false;
 let cleanupFunctions = [];
 let animationFrameId = null;
@@ -12,6 +12,10 @@ let isScrollListenerActive = false;
 let handleParallax = null;
 let currentSection = 'hero';
 let sectionObserver = null;
+let cloudTimeout = null;
+let shootingStarTimeout = null;
+let activeTimeouts = [];
+let cloudFrequencyMultiplier = 1;
 
 // ===== Atmospheric Sky System Manager =====
 const AtmosphericSkyManager = (() => {
@@ -31,22 +35,27 @@ const AtmosphericSkyManager = (() => {
     try {
       log.info('Initializing atmospheric sky system');
       
-      // System initialisieren
-      const starsContainer = createStarsContainer(background);
-      const cloudsContainer = createCloudsContainer(background);
+      // HTML-Struktur erstellen falls nicht vorhanden
+      createAtmosphericHTML(background);
       
-      // Earth-Globe- und Mond-Container sicherstellen
-      createEarthGlobeContainer(background);
-      createMoonContainer(background);
+      // Container initialisieren
+      const starsContainer = background.querySelector('.stars-container');
+      const cloudsContainer = background.querySelector('.clouds');
       
       // Sterne generieren
-      createStars(starsContainer);
+      if (starsContainer) {
+        createStars(starsContainer, background);
+      }
       
       // Sternschnuppen-System starten
-      startShootingStars(starsContainer);
+      if (starsContainer) {
+        startShootingStars(starsContainer);
+      }
       
       // Wolken-System starten
-      startClouds(cloudsContainer);
+      if (cloudsContainer) {
+        startClouds(cloudsContainer);
+      }
       
       // Parallax-Effekt aktivieren
       setupParallaxEffect(background);
@@ -82,54 +91,78 @@ const AtmosphericSkyManager = (() => {
       animationFrameId = null;
     }
     
+    // Timeouts löschen
+    if (cloudTimeout) {
+      clearTimeout(cloudTimeout);
+      cloudTimeout = null;
+    }
+    
+    if (shootingStarTimeout) {
+      clearTimeout(shootingStarTimeout);
+      shootingStarTimeout = null;
+    }
+    
+    activeTimeouts.forEach(timeout => clearTimeout(timeout));
+    activeTimeouts = [];
+    
     // Scroll Listener entfernen
     if (isScrollListenerActive && handleParallax) {
       window.removeEventListener('scroll', handleParallax);
       isScrollListenerActive = false;
     }
     
+    // Observer disconnecten
+    if (sectionObserver) {
+      sectionObserver.disconnect();
+      sectionObserver = null;
+    }
+    
     cleanupFunctions = [];
     isInitialized = false;
+    currentSection = 'hero';
+    cloudFrequencyMultiplier = 1;
   };
 
   return { initAtmosphericSky, cleanup };
 })();
 
-// ===== Sterne-Container erstellen =====
-function createStarsContainer(background) {
-  let starsContainer = background.querySelector('.stars-container');
-  if (!starsContainer) {
-    starsContainer = document.createElement('div');
+// ===== HTML-Struktur erstellen =====
+function createAtmosphericHTML(background) {
+  log.debug('Creating atmospheric HTML elements');
+  
+  // Atmosphäre erstellen falls nicht vorhanden
+  if (!background.querySelector('.atmosphere')) {
+    const atmosphere = document.createElement('div');
+    atmosphere.className = 'atmosphere';
+    atmosphere.innerHTML = `
+      <div class="atmospheric-glow"></div>
+      <div class="aurora"></div>
+      <div class="clouds"></div>
+    `;
+    background.appendChild(atmosphere);
+  }
+  
+  // Sterne-Container erstellen falls nicht vorhanden
+  if (!background.querySelector('.stars-container')) {
+    const starsContainer = document.createElement('div');
     starsContainer.className = 'stars-container';
     background.appendChild(starsContainer);
   }
-  return starsContainer;
-}
-
-// ===== Wolken-Container erstellen =====
-function createCloudsContainer(background) {
-  let atmosphere = background.querySelector('.atmosphere');
-  if (!atmosphere) {
-    atmosphere = document.createElement('div');
-    atmosphere.className = 'atmosphere';
-    background.appendChild(atmosphere);
+  
+  // Mond erstellen falls nicht vorhanden
+  if (!background.querySelector('.moon')) {
+    const moon = document.createElement('div');
+    moon.className = 'moon';
+    moon.innerHTML = `
+      <div class="moon-surface"></div>
+      <div class="moon-shadow"></div>
+    `;
+    background.appendChild(moon);
   }
-
-  let cloudsContainer = atmosphere.querySelector('.clouds');
-  if (!cloudsContainer) {
-    cloudsContainer = document.createElement('div');
-    cloudsContainer.className = 'clouds';
-    atmosphere.appendChild(cloudsContainer);
-  }
-
-  return cloudsContainer;
-}
-
-// ===== Earth-Globe Container erstellen =====
-function createEarthGlobeContainer(background) {
-  let earthGlobe = background.querySelector('.earth-globe');
-  if (!earthGlobe) {
-    earthGlobe = document.createElement('div');
+  
+  // Earth-Globe erstellen falls nicht vorhanden
+  if (!background.querySelector('.earth-globe')) {
+    const earthGlobe = document.createElement('div');
     earthGlobe.className = 'earth-globe';
     earthGlobe.innerHTML = `
       <div class="earth-sphere">
@@ -140,38 +173,20 @@ function createEarthGlobeContainer(background) {
     `;
     background.appendChild(earthGlobe);
   }
-  return earthGlobe;
 }
 
-// ===== Mond-Container erstellen =====
-function createMoonContainer(background) {
-  let moon = background.querySelector('.moon');
-  if (!moon) {
-    moon = document.createElement('div');
-    moon.className = 'moon';
-    moon.innerHTML = `
-      <div class="moon-surface"></div>
-      <div class="moon-shadow"></div>
-    `;
-    background.appendChild(moon);
-  }
-  return moon;
-}
-
-// ===== Realistische Sterne generieren =====
-function createStars(starsContainer) {
+// ===== Sterne generieren =====
+function createStars(starsContainer, background) {
   log.debug('Creating stars');
   
-  // Basis-Stern-Konfiguration (kann durch data-attributes überschrieben werden)
-  const background = document.getElementById('atmosphericBackground');
+  // Basis-Stern-Konfiguration
   const density = background?.getAttribute('data-stars-density') || 'normal';
   
-  // Verschiedene Stern-Typen mit anpassbaren Verteilungen
   const densityMultipliers = {
     low: 0.5,
     normal: 1,
     high: 1.5,
-    adaptive: 1 // wird dynamisch angepasst
+    adaptive: 1
   };
   
   const multiplier = densityMultipliers[density] || 1;
@@ -181,6 +196,9 @@ function createStars(starsContainer) {
     { className: 'star-medium', count: Math.floor(50 * multiplier), colors: ['', 'star-yellow', 'star-blue'] },
     { className: 'star-large', count: Math.floor(20 * multiplier), colors: ['', 'star-yellow', 'star-red'] }
   ];
+  
+  // DocumentFragment für bessere Performance
+  const fragment = document.createDocumentFragment();
   
   starTypes.forEach(type => {
     for (let i = 0; i < type.count; i++) {
@@ -193,10 +211,10 @@ function createStars(starsContainer) {
         if (colorClass) star.classList.add(colorClass);
       }
       
-      // Realistische Verteilung (mehr Sterne in der Milchstraße-Region)
+      // Realistische Verteilung
       let x, y;
       if (Math.random() < 0.4) {
-        // Milchstraße-Band (diagonal)
+        // Milchstraße-Band
         x = Math.random() * 100;
         y = (x * 0.3 + Math.random() * 30) % 100;
       } else {
@@ -209,10 +227,11 @@ function createStars(starsContainer) {
       star.style.top = y + '%';
       star.style.animationDelay = Math.random() * 4 + 's';
       
-      starsContainer.appendChild(star);
+      fragment.appendChild(star);
     }
   });
   
+  starsContainer.appendChild(fragment);
   log.debug(`Created ${starTypes.reduce((sum, type) => sum + type.count, 0)} stars with ${density} density`);
 }
 
@@ -220,13 +239,10 @@ function createStars(starsContainer) {
 function startShootingStars(starsContainer) {
   log.debug('Starting shooting stars system');
   
-  let shootingStarTimeout;
-  
   function addShootingStar() {
     const shootingStar = document.createElement('div');
     shootingStar.className = 'shooting-star';
     
-    // Zufällige Startposition am Rand
     const startX = Math.random() * 50;
     const startY = Math.random() * 50;
     
@@ -237,11 +253,13 @@ function startShootingStars(starsContainer) {
     starsContainer.appendChild(shootingStar);
     
     // Sternschnuppe nach Animation entfernen
-    setTimeout(() => {
+    const removeTimeout = setTimeout(() => {
       if (shootingStar.parentNode) {
-        shootingStar.parentNode.removeChild(shootingStar);
+        shootingStar.remove();
       }
     }, 2000);
+    
+    activeTimeouts.push(removeTimeout);
   }
   
   function scheduleNextShootingStar() {
@@ -262,15 +280,12 @@ function startShootingStars(starsContainer) {
   cleanupFunctions.push(() => {
     if (shootingStarTimeout) {
       clearTimeout(shootingStarTimeout);
+      shootingStarTimeout = null;
     }
   });
 }
 
 // ===== Wolken-System =====
-let cloudTimeout;
-let activeCloudTimeouts = [];
-let cloudFrequencyMultiplier = 1;
-
 function startClouds(cloudsContainer) {
   log.debug('Starting clouds system');
   
@@ -278,18 +293,15 @@ function startClouds(cloudsContainer) {
     const cloud = document.createElement('div');
     cloud.className = 'cloud';
     
-    // Zufällige Cloud-Eigenschaften
     const width = Math.random() * 150 + 100;
     const height = width * 0.6;
-    const top = Math.random() * 40 + 10; // Obere 50% des Himmels
+    const top = Math.random() * 40 + 10;
+    const duration = Math.random() * 40 + 60; // 60-100 Sekunden
     
     cloud.style.width = width + 'px';
     cloud.style.height = height + 'px';
     cloud.style.top = top + '%';
     cloud.style.left = '-200px';
-    
-    // Zufällige Animationsdauer
-    const duration = Math.random() * 40 + 60; // 60-100 Sekunden
     cloud.style.animationDuration = duration + 's';
     cloud.style.animationDelay = Math.random() * 10 + 's';
     
@@ -298,15 +310,14 @@ function startClouds(cloudsContainer) {
     // Cloud nach Animation entfernen
     const removeTimeout = setTimeout(() => {
       if (cloud.parentNode) {
-        cloud.parentNode.removeChild(cloud);
+        cloud.remove();
       }
     }, (duration + 10) * 1000);
     
-    activeCloudTimeouts.push(removeTimeout);
+    activeTimeouts.push(removeTimeout);
   }
   
   function scheduleNextCloud() {
-    // Frequenz basierend auf cloudFrequencyMultiplier anpassen
     const baseDelay = Math.random() * 15000 + 10000; // 10-25 Sekunden
     const adjustedDelay = baseDelay / cloudFrequencyMultiplier;
     
@@ -319,7 +330,7 @@ function startClouds(cloudsContainer) {
   // Erste Wolken mit gestaffelten Zeiten
   for (let i = 0; i < 3; i++) {
     const initialTimeout = setTimeout(() => addCloud(), i * 5000);
-    activeCloudTimeouts.push(initialTimeout);
+    activeTimeouts.push(initialTimeout);
   }
   
   scheduleNextCloud();
@@ -328,16 +339,9 @@ function startClouds(cloudsContainer) {
   cleanupFunctions.push(() => {
     if (cloudTimeout) {
       clearTimeout(cloudTimeout);
+      cloudTimeout = null;
     }
-    activeCloudTimeouts.forEach(timeout => clearTimeout(timeout));
-    activeCloudTimeouts = [];
   });
-}
-
-// ===== Cloud-Frequency Update =====
-function updateCloudFrequency(frequency) {
-  cloudFrequencyMultiplier = Math.max(0.1, Math.min(2, frequency));
-  log.debug(`Updated cloud frequency multiplier to: ${cloudFrequencyMultiplier}`);
 }
 
 // ===== Section Detection für adaptive Atmosphäre =====
@@ -373,9 +377,7 @@ function setupSectionDetection(background) {
     sectionObserver.observe(section);
   });
   
-  // Initiale Section-Detection für Seitenladung
-  // Prüfe welche Section gerade sichtbar ist (normalerweise Hero) 
-  // Mit kleinem Delay, damit alle Elemente geladen sind
+  // Initiale Section-Detection
   setTimeout(() => {
     const initialSection = document.querySelector('#hero') || sections[0];
     if (initialSection) {
@@ -398,7 +400,6 @@ function setupSectionDetection(background) {
 function updateSectionAtmosphere(background, sectionName) {
   log.debug(`Updating atmosphere for section: ${sectionName}`);
   
-  // Spezifische Konfigurationen für die drei Hauptsektionen
   const sectionConfigs = {
     hero: {
       starOpacity: 1,
@@ -428,7 +429,7 @@ function updateSectionAtmosphere(background, sectionName) {
   
   const config = sectionConfigs[sectionName] || sectionConfigs.hero;
   
-  // CSS Custom Properties aktualisieren mit sanften Übergängen
+  // CSS Custom Properties aktualisieren
   background.style.setProperty('--star-opacity', config.starOpacity);
   background.style.setProperty('--atmosphere-intensity', config.atmosphereIntensity);
   background.style.setProperty('--moon-visibility', config.moonVisibility);
@@ -438,8 +439,6 @@ function updateSectionAtmosphere(background, sectionName) {
   
   // Data-Attribute für CSS-Selektoren aktualisieren
   background.setAttribute('data-section', sectionName);
-  
-  // Übergangs-Flag für sanftere Earth-Globe Transformationen
   background.setAttribute('data-transitioning', 'true');
   
   // Übergang-Flag nach Verzögerung entfernen
@@ -447,13 +446,13 @@ function updateSectionAtmosphere(background, sectionName) {
     if (background.getAttribute('data-section') === sectionName) {
       background.setAttribute('data-transitioning', 'false');
     }
-  }, 800); // 800ms Verzögerung für sanftere Übergänge
+  }, 800);
   
   // Mond-Größe basierend auf Sektion anpassen
   updateMoonForSection(background, sectionName);
   
   // Wolken-Frequenz anpassen
-  updateCloudFrequency(config.cloudFrequency);
+  cloudFrequencyMultiplier = config.cloudFrequency;
 }
 
 // ===== Mond-Update für Sektionen =====
@@ -461,7 +460,6 @@ function updateMoonForSection(background, sectionName) {
   const moon = background.querySelector('.moon');
   if (!moon) return;
   
-  // Spezifische Konfigurationen für die drei Hauptsektionen
   const moonConfigs = {
     hero: { 
       size: 3, 
@@ -489,8 +487,6 @@ function updateMoonForSection(background, sectionName) {
   moon.style.top = moonConfig.position.top;
   moon.style.left = moonConfig.position.left;
   moon.style.transform = moonConfig.transform;
-  
-  // Mond-Größe anpassen
   moon.style.width = moonConfig.size + 'px';
   moon.style.height = moonConfig.size + 'px';
   
@@ -504,7 +500,7 @@ function updateMoonForSection(background, sectionName) {
     moon.style.setProperty('--after-opacity', '0');
   } else {
     // Als detaillierter Mond
-    const progress = (moonConfig.size - 3) / 97; // Normalisiert 0-1
+    const progress = (moonConfig.size - 3) / 97;
     const moonHue = 45 + progress * 10;
     const moonSaturation = progress * 40;
     const moonLightness = 85 - progress * 10;
@@ -515,7 +511,6 @@ function updateMoonForSection(background, sectionName) {
     moon.style.boxShadow = `0 0 ${15 + progress * 50}px hsla(${moonHue}, ${moonSaturation}%, ${moonLightness}%, ${0.4 + progress * 0.4}),
                             inset 0 0 ${5 + progress * 15}px rgba(0, 0, 0, 0.1)`;
     
-    // Krater und Oberflächendetails
     const surfaceOpacity = Math.min(1, Math.max(0, (progress - 0.25) * 4));
     const shadowOpacity = Math.min(0.8, Math.max(0, (progress - 0.3) * 3));
     
@@ -525,31 +520,23 @@ function updateMoonForSection(background, sectionName) {
     moon.style.setProperty('--after-opacity', Math.min(1, Math.max(0, (progress - 0.5) * 3)));
   }
 }
-// ===== Parallax-Effekt beim Scrollen (erweitert für Mond-Erde Synchronisation) =====
+
+// ===== Parallax-Effekt beim Scrollen =====
 function setupParallaxEffect(background) {
   log.debug('Setting up parallax effect');
   
   handleParallax = throttle(() => {
     try {
-      // Scroll-Position für synchrone Skalierung
       const scrollY = window.pageYOffset;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollProgress = Math.min(1, Math.max(0, scrollY / Math.max(1, documentHeight - windowHeight)));
       
-      // Debug - nur bei signifikanten Änderungen loggen
-      if (scrollProgress > 0.1 && Math.floor(scrollProgress * 10) !== Math.floor((window._lastScrollProgress || 0) * 10)) {
-        log.debug(`Scroll progress: ${Math.round(scrollProgress * 100)}%`);
-        window._lastScrollProgress = scrollProgress;
-      }
-      
-      // Scroll-Progress als root CSS Variable setzen (für bessere Performance)
+      // CSS Variables setzen
       document.documentElement.style.setProperty('--global-scroll-progress', scrollProgress);
-      
-      // Auch auf background setzen für Earth-Globe Skalierung
       background.style.setProperty('--scroll-progress', scrollProgress);
       
-      // Earth-Globe Skalierung direkt setzen für maximale Kompatibilität
+      // Earth-Globe Skalierung
       const earthGlobes = document.querySelectorAll('.earth-globe');
       earthGlobes.forEach((earthGlobe) => {
         const scaleValue = 1 - scrollProgress * 0.7;
@@ -560,7 +547,7 @@ function setupParallaxEffect(background) {
       // Sanfte Parallax-Bewegung für Wolken
       const clouds = background.querySelectorAll('.cloud');
       clouds.forEach((cloud, index) => {
-        const speed = 0.5 + (index % 3) * 0.2; // Verschiedene Geschwindigkeiten
+        const speed = 0.5 + (index % 3) * 0.2;
         const yOffset = scrollY * speed * 0.1;
         cloud.style.transform = `translateY(${yOffset}px)`;
       });
@@ -578,7 +565,7 @@ function setupParallaxEffect(background) {
     }
   }, 16); // ~60fps
   
-  window.addEventListener('scroll', handleParallax);
+  window.addEventListener('scroll', handleParallax, { passive: true });
   isScrollListenerActive = true;
   
   // Initiale Berechnung
@@ -593,47 +580,7 @@ function setupParallaxEffect(background) {
   });
 }
 
-// ===== HTML-Struktur erstellen =====
-function createAtmosphericHTML(background) {
-  log.debug('Creating missing atmospheric HTML elements');
-  
-  // Nur fehlende Elemente hinzufügen, nicht das gesamte innerHTML überschreiben
-  
-  // Atmosphäre erstellen falls nicht vorhanden
-  if (!background.querySelector('.atmosphere')) {
-    const atmosphere = document.createElement('div');
-    atmosphere.className = 'atmosphere';
-    atmosphere.innerHTML = `
-      <div class="atmospheric-glow"></div>
-      <div class="aurora"></div>
-      <div class="clouds"></div>
-    `;
-    background.appendChild(atmosphere);
-  }
-  
-  // Sterne-Container erstellen falls nicht vorhanden
-  if (!background.querySelector('.stars-container')) {
-    const starsContainer = document.createElement('div');
-    starsContainer.className = 'stars-container';
-    background.appendChild(starsContainer);
-  }
-  
-  // Mond erstellen falls nicht vorhanden
-  if (!background.querySelector('.moon')) {
-    const moon = document.createElement('div');
-    moon.className = 'moon';
-    moon.innerHTML = `
-      <div class="moon-surface"></div>
-      <div class="moon-shadow"></div>
-    `;
-    background.appendChild(moon);
-  }
-  
-  // Earth-Globe wird bereits in createEarthGlobeContainer() erstellt
-  // Doppelte Erstellung entfernt um Duplikate zu vermeiden
-}
-
-// ===== Public API =====
+// ===== Public API & Module Export =====
 export function initAtmosphericSky() {
   log.debug('Initializing atmospheric sky system');
   
@@ -643,16 +590,13 @@ export function initAtmosphericSky() {
     return () => {};
   }
   
-  // HTML-Struktur erstellen falls nicht vorhanden
-  if (!background.querySelector('.atmosphere')) {
-    createAtmosphericHTML(background);
-  }
-  
   return AtmosphericSkyManager.initAtmosphericSky();
 }
 
-// ===== Export für Module-System =====
+export const cleanup = AtmosphericSkyManager.cleanup;
+
+// Default Export für Kompatibilität
 export default {
   initAtmosphericSky,
-  cleanup: AtmosphericSkyManager.cleanup
+  cleanup
 };

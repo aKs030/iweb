@@ -17,26 +17,18 @@
     #34495e 100%
   );
   
-  /* CSS Custom Properties für sektionsspezifische Anpassungen */
-  --star-opacity: 1; /* Standardmäßig sichtbar für Hero */
+  /* Kern CSS Custom Properties */
+  --star-opacity: 1;
   --atmosphere-intensity: 0.8;
   --moon-visibility: 0.3;
-  --earth-size: 200px;
   --earth-visibility: 1;
   --cloud-frequency: 0.5;
   --scroll-progress: 0;
-  
-  /* Erweiterte atmosphärische Effekte */
-  --particle-alpha-scale: 1;
-  --particle-connection-opacity: 1;
-  --particle-opacity-scale: 1;
-  --star-twinkle-speed: 2s;
-  --star-brightness: 1.2;
+  --earth-scale: calc(1 - var(--scroll-progress, 0) * 0.7);
 }
 
 /* ===== Sektionsspezifische Variationen ===== */
 .global-particle-background[data-section="hero"] {
-  /* Hero: Vollständiger Himmel mit allen Effekten */
   --star-opacity: 1;
   --atmosphere-intensity: 1.2;
   --moon-visibility: 1;
@@ -44,7 +36,6 @@
 }
 
 .global-particle-background[data-section="features"] {
-  /* Features: Reduzierte Atmosphäre, fokussiert auf Sterne */
   --star-opacity: 0.8;
   --atmosphere-intensity: 0.7;
   --moon-visibility: 0.9;
@@ -52,15 +43,13 @@
 }
 
 .global-particle-background[data-section="about"] {
-  /* About: Warme, einladende Atmosphäre */
   --star-opacity: 0.9;
   --atmosphere-intensity: 0.8;
   --moon-visibility: 1.1;
-  --earth-size: 220px; /* Größere Erde für About-Sektion */
-  --earth-visibility: 1; /* Erde vollständig sichtbar */
+  --earth-visibility: 1;
   --cloud-frequency: 0.6;
   
-  /* Wärmere Farbtonverschiebung für About-Sektion */
+  /* Wärmere Farbtonverschiebung für About */
   background: linear-gradient(180deg, 
     #1a1a2e 0%, 
     #2a2a3e 30%, 
@@ -71,19 +60,10 @@
 }
 
 .global-particle-background[data-section="contact"] {
-  /* Contact: Minimalistisch, weniger ablenkend */
   --star-opacity: 0.6;
   --atmosphere-intensity: 0.5;
   --moon-visibility: 0.8;
   --cloud-frequency: 0.4;
-}
-
-.global-particle-background[data-section="dynamic"] {
-  /* Dynamic: Ändert sich basierend auf Scroll-Position */
-  --star-opacity: var(--dynamic-star-opacity, 0);
-  --atmosphere-intensity: var(--dynamic-atmosphere-intensity, 0);
-  --moon-visibility: var(--dynamic-moon-visibility, 0);
-  --cloud-frequency: var(--dynamic-cloud-frequency, 0);
 }
 
 /* Atmosphärische Effekte Container */
@@ -307,61 +287,33 @@
 }
 
 /* Realistischer Mond - Mit Section-basierten Transformationen (umgekehrt zur Earth) */
+/* ===== Mond System ===== */
 .moon {
   position: absolute;
   top: 15%;
   left: 50%;
-  transition: all 0.8s ease-out; /* Längere Transition für sanfte Transformation */
-  overflow: hidden;
-  
-  /* Scroll-basierte Skalierung (synchron mit Erde) */
-  --moon-scroll-scale: calc(var(--moon-visibility, 0.3) * (1 - var(--global-scroll-progress, var(--scroll-progress, 0)) * 0.7));
-  transform: translateX(-50%) scale(var(--moon-scroll-scale));
-  opacity: calc(0.8 * var(--moon-scroll-scale));
-  
-  /* Standard: Detaillierter Mond (umgekehrt zur Earth) */
-  width: var(--moon-size, 120px);
-  height: var(--moon-size, 120px);
-  background: radial-gradient(circle at 30% 30%, #f5f5f5, #e0e0e0 70%, #c0c0c0);
+  transition: all 0.8s ease-out;
   border-radius: 50%;
+  transform: translateX(-50%) scale(calc(var(--moon-visibility, 0.3) * (1 - var(--scroll-progress, 0) * 0.7)));
+  
+  /* Standard: Detaillierter Mond */
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle at 30% 30%, #f5f5f5, #e0e0e0 70%, #c0c0c0);
   box-shadow: 
     inset -10px -10px 20px rgba(0,0,0,0.3),
     0 0 20px rgba(255,255,255,0.4);
 }
 
-/* Section-spezifische Mond-Transformationen */
-
-/* Hero-Section: Mond transformiert sich zu kleinem Stern */
+/* Hero: Mond als Stern */
 .global-particle-background[data-section="hero"] .moon {
-  --moon-size: 4px;
-  --moon-visibility: 0.8;
   width: 4px;
   height: 4px;
-  
-  /* Stern-Styling */
   background: white;
-  border-radius: 50%;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
   animation: moonStarTwinkle 2s ease-in-out infinite alternate;
 }
 
-/* Features & About: Mond als detaillierter Mond */
-.global-particle-background[data-section="features"] .moon,
-.global-particle-background[data-section="about"] .moon {
-  --moon-size: 120px;
-  --moon-visibility: 0.6;
-  width: 120px;
-  height: 120px;
-  
-  /* Detaillierter Mond-Hintergrund */
-  background: radial-gradient(circle at 30% 30%, #f5f5f5, #e0e0e0 70%, #c0c0c0);
-  box-shadow: 
-    inset -10px -10px 20px rgba(0,0,0,0.3),
-    0 0 20px rgba(255,255,255,0.4);
-  animation: none;
-}
-
-/* Mond-Stern Twinkle-Animation */
 @keyframes moonStarTwinkle {
   0% {
     opacity: 0.6;
@@ -431,11 +383,7 @@
   transition: opacity 0.6s ease-out;
 }
 
-/* ===== EARTH GLOBE SYSTEM =====
- * Section-basierte Transformationen: Stern ↔ Earth-Globe
- */
-
-/* Earth Globe - Standard (startet als Stern) */
+/* ===== Earth Globe System ===== */
 .earth-globe {
   position: absolute;
   bottom: 0;
@@ -443,10 +391,6 @@
   transition: all 0.8s ease-out;
   z-index: 5;
   opacity: var(--earth-visibility, 1);
-  
-  /* Scroll-basierte Skalierung (synchron mit Mond) */
-  --earth-scale: calc(1 - var(--scroll-progress, 0) * 0.7);
-  transform: translateX(-50%) translateY(50%) scale(var(--earth-scale)) !important;
   
   /* Standard: Stern-Modus */
   width: 4px;
@@ -456,7 +400,9 @@
   box-shadow: 0 0 8px rgba(135, 206, 235, 0.8);
   animation: earthStarTwinkle 3s ease-in-out infinite alternate;
   overflow: visible;
-  clip-path: none;
+  
+  /* Standard Transform */
+  transform: translateX(-50%) translateY(50%) scale(var(--earth-scale));
 }
 
 .earth-sphere {
@@ -551,22 +497,18 @@
  * About: Earth → Stern
  */
 
-/* HERO SECTION */
+/* Hero: Earth als breite, tiefere Horizontkugel */
 .global-particle-background[data-section="hero"] .earth-globe {
-  --earth-size: 100vw;
-  --earth-visibility: 1;
-  width: 100vw;
-  height: 80vh;
-  bottom: 0;
-  
+  width: 120vw; /* Breiter für horizontale Ausdehnung */
+  height: 120vw; /* Bleibt quadratisch für perfekten Kreis */
+  bottom: -100vw; /* Noch tiefer für dünneren Horizont-Bogen */
   background: none;
   box-shadow: none;
   animation: none;
-  border-radius: 50%;
-  overflow: hidden;
-  clip-path: inset(0 0 50% 0);
-  transition: all 1.2s ease-out;
-  transform: translateX(-50%) translateY(60%) scale(var(--earth-scale)) !important;
+  transform: translateX(-50%) scale(var(--earth-scale));
+  z-index: 1;
+  /* Sicherstellen dass Container sichtbar bleibt */
+  overflow: visible;
 }
 
 .global-particle-background[data-section="hero"] .earth-globe .earth-sphere,
@@ -576,25 +518,31 @@
   display: block;
 }
 
+.global-particle-background[data-section="hero"] .earth-globe .earth-sphere {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 
+    0 -40px 80px rgba(0, 150, 255, 0.5), /* Noch stärkeres oberes Licht für tiefere Position */
+    inset 0 0 50px rgba(0, 0, 0, 0.3),
+    inset 0 40px 60px rgba(0, 0, 0, 0.2); /* Verstärkter Schatten */
+}
+
 .global-particle-background[data-section="hero"] .earth-globe .earth-surface {
   animation: none; /* Keine Rotation in Hero */
 }
 
-/* FEATURES SECTION */
+/* Features: Earth als vollständige Kugel */
 .global-particle-background[data-section="features"] .earth-globe {
-  --earth-size: 300px;
-  --earth-visibility: 0.9;
   width: 300px;
   height: 300px;
   bottom: 10%;
-  
   background: none;
   box-shadow: none;
   animation: none;
-  border-radius: 50%;
   overflow: visible;
-  clip-path: none;
-  transform: translateX(-50%) scale(var(--earth-scale)) !important;
 }
 
 .global-particle-background[data-section="features"] .earth-globe .earth-sphere,
@@ -604,21 +552,15 @@
   display: block;
 }
 
-/* ABOUT SECTION */
+/* About: Earth als Stern */
 .global-particle-background[data-section="about"] .earth-globe {
-  --earth-size: 4px;
-  --earth-visibility: 0.8;
   width: 4px;
   height: 4px;
   bottom: 20%;
-  
   background: radial-gradient(circle, rgba(135, 206, 235, 1) 0%, rgba(70, 130, 180, 0.8) 70%, transparent 100%);
-  border-radius: 50%;
   box-shadow: 0 0 10px rgba(135, 206, 235, 0.8), 0 0 20px rgba(70, 130, 180, 0.6);
   animation: earthStarTwinkle 3s ease-in-out infinite alternate;
   overflow: visible;
-  clip-path: none;
-  transform: translateX(-50%) scale(var(--earth-scale)) !important;
 }
 
 .global-particle-background[data-section="about"] .earth-globe .earth-sphere,
@@ -628,15 +570,13 @@
   display: none;
 }
 
-/* TRANSITION HELPERS */
-.global-particle-background[data-section="hero"]:not([data-transitioning]) .earth-globe {
-  clip-path: inset(0 0 50% 0);
+/* Contact: Kleinere Earth-Kugel */
+.global-particle-background[data-section="contact"] .earth-globe {
+  width: 180px;
+  height: 180px;
 }
 
-.global-particle-background[data-transitioning="true"] .earth-globe {
-  clip-path: none !important;
-  overflow: visible !important;
-}
+/* ===== Animationen ===== */
 
 /* Earth-Stern Twinkle-Animation */
 @keyframes earthStarTwinkle {
@@ -646,53 +586,26 @@
   }
   100% {
     opacity: 1;
-    transform: translateX(-50%) scale(calc(var(--earth-scale, 1) * 1.2));
+    transform: translateX(-50%) scale(calc(var(--earth-scale, 1) * 1.1));
   }
 }
 
-.global-particle-background[data-section="contact"] .earth-globe {
-  --earth-size: 180px;
-  --earth-visibility: 0.7;
-}
+/* ===== Sektionsspezifische Anpassungen ===== */
 
-/* ===== Section-spezifische Anpassungen ===== */
+/* Animationsgeschwindigkeiten pro Sektion */
+.global-particle-background[data-section="hero"] .cloud { animation-duration: 60s; }
+.global-particle-background[data-section="hero"] .star { animation-duration: 4s; }
 
-/* Alle Selektoren verwenden jetzt ausschließlich [data-section] für Konsistenz */
+.global-particle-background[data-section="features"] .cloud { animation-duration: 80s; }
+.global-particle-background[data-section="features"] .star { animation-duration: 5s; }
 
-/* ===== Sektionsspezifische Animationsgeschwindigkeiten ===== */
-.global-particle-background[data-section="hero"] .cloud {
-  animation-duration: 60s;
-}
+.global-particle-background[data-section="about"] .cloud { animation-duration: 100s; }
+.global-particle-background[data-section="about"] .star { animation-duration: 6s; }
 
-.global-particle-background[data-section="hero"] .star {
-  animation-duration: 4s;
-}
+.global-particle-background[data-section="contact"] .cloud { animation-duration: 120s; }
+.global-particle-background[data-section="contact"] .star { animation-duration: 8s; }
 
-.global-particle-background[data-section="features"] .cloud {
-  animation-duration: 80s; /* Langsamere Wolken für Features */
-}
-
-.global-particle-background[data-section="features"] .star {
-  animation-duration: 5s; /* Langsameres Funkeln */
-}
-
-.global-particle-background[data-section="about"] .cloud {
-  animation-duration: 100s; /* Sehr langsame, beruhigende Bewegung */
-}
-
-.global-particle-background[data-section="about"] .star {
-  animation-duration: 6s; /* Sanftes Funkeln */
-}
-
-.global-particle-background[data-section="contact"] .cloud {
-  animation-duration: 120s; /* Minimale Bewegung */
-}
-
-.global-particle-background[data-section="contact"] .star {
-  animation-duration: 8s; /* Sehr sanftes Funkeln */
-}
-
-/* ===== Sektionsspezifische Farbvariationen ===== */
+/* Farbvariationen */
 .global-particle-background[data-section="about"] .star-yellow {
   background: rgba(255, 220, 160, 0.9); /* Wärmeres Gelb für About */
   box-shadow: 0 0 3px rgba(255, 220, 160, 0.6);
@@ -719,6 +632,13 @@
   .earth-globe {
     --earth-size: 150px; /* Kleinere Erde auf mobilen Geräten */
     bottom: 5%;
+  }
+  
+  /* Hero Earth Globe für Mobile anpassen - breiter und tiefer */
+  .global-particle-background[data-section="hero"] .earth-globe {
+    width: 120vw; /* Breiter auch auf Mobile */
+    height: 120vw;
+    bottom: -100vw; /* Noch tiefer auch auf Mobile für dünneren Bogen */
   }
   
   .cloud {
