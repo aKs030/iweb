@@ -5,6 +5,7 @@ import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.
 import { schedulePersistentStorageRequest } from './utils/persistent-storage.js';
 import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
 import { initAtmosphericSky } from './particles/atmospheric-sky-system.js';
+import { initThreeEarth } from './particles/three-earth-system.js';
 import { createLogger } from './utils/logger.js';
 import './utils/section-tracker.js'; // Section Detection für snapSectionChange Events
 
@@ -372,6 +373,19 @@ function loadMenuAssets() {
       }
     } catch (error) {
       log.error('Failed to initialize atmospheric sky system:', error);
+    }
+    
+    // Advanced Three.js Earth System initialisieren (direkte Integration)
+    let threeEarthCleanup = null;
+    try {
+      threeEarthCleanup = await initThreeEarth();
+      // Cleanup-Funktion global verfügbar machen für Debug-Zwecke
+      if (threeEarthCleanup && typeof threeEarthCleanup === 'function') {
+        window.__threeEarthCleanup = threeEarthCleanup;
+        log.info('Advanced Three.js Earth system initialized successfully');
+      }
+    } catch (error) {
+      log.warn('Three.js Earth system not available, using CSS fallback:', error);
     }
     
     fire(EVENTS.CORE_INITIALIZED);

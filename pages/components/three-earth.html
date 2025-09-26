@@ -1,0 +1,29 @@
+<!-- Three.js Earth System Container -->
+<div id="threeEarthContainer" class="three-earth-container" aria-label="Interaktive 3D Erdkugel" aria-describedby="earth-description">
+  <!-- Hidden description for screen readers -->
+  <div id="earth-description" class="visually-hidden">
+    Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. 
+    Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
+  </div>
+  
+  <!-- Performance Debug Overlay (nur in Entwicklung sichtbar) -->
+  <div class="three-earth-performance-overlay" id="threeEarthPerformance">
+    <div>FPS: <span id="fps">--</span></div>
+    <div>LOD: <span id="lod">--</span></div>
+    <div>Mode: <span id="mode">--</span></div>
+  </div>
+  
+  <!-- Loading State -->
+  <div class="three-earth-loading hidden">
+    <div class="loading-spinner"></div>
+    <p>Lade 3D Erdkugel...</p>
+  </div>
+  
+  <!-- Error Fallback -->
+  <div class="three-earth-error hidden">
+    <p>WebGL wird nicht unterstützt. CSS-Fallback aktiv.</p>
+  </div>
+</div>
+
+<!-- Three.js Earth Controls (werden dynamisch eingefügt) -->
+<!-- Die Zoom- und Kamera-Controls werden automatisch via JavaScript erstellt -->

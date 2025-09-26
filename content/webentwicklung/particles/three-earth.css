@@ -1,0 +1,391 @@
+/* ===== Three.js Earth System Styles ===== */
+
+/* Three.js Container */
+.three-earth-container {
+  position: fixed;
+  inset: 0;
+  z-index: -5; /* Über atmospheric sky, aber unter content */
+  pointer-events: none;
+  overflow: hidden;
+  
+  /* WebGL Canvas Optimierungen */
+  contain: layout style paint;
+  isolation: isolate;
+}
+
+.three-earth-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  
+  /* Performance Optimierungen */
+  transform: translateZ(0); /* Hardware acceleration */
+  will-change: transform;
+  
+  /* Anti-Aliasing für bessere Textqualität */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+}
+
+/* Controls Overlay */
+.three-earth-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 100;
+  pointer-events: auto; /* Controls sind interaktiv */
+}
+
+.zoom-btn, 
+.camera-mode-btn {
+  width: 44px; /* Touch-friendly size */
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  
+  /* Glass effect */
+  box-shadow: 
+    0 2px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  /* Focus states */
+  outline: none;
+  position: relative;
+}
+
+.zoom-btn::before,
+.camera-mode-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.zoom-btn:hover,
+.camera-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.zoom-btn:hover::before,
+.camera-mode-btn:hover::before {
+  opacity: 1;
+}
+
+.zoom-btn:active,
+.camera-mode-btn:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.zoom-btn:focus,
+.camera-mode-btn:focus {
+  border-color: rgba(135, 206, 235, 0.8);
+  box-shadow: 
+    0 2px 12px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(135, 206, 235, 0.3);
+}
+
+/* Camera Mode Button States */
+.camera-mode-btn.scroll-mode {
+  background: rgba(0, 150, 255, 0.6);
+  border-color: rgba(0, 150, 255, 0.4);
+  color: white;
+}
+
+.camera-mode-btn.scroll-mode:hover {
+  background: rgba(0, 150, 255, 0.8);
+  border-color: rgba(0, 150, 255, 0.6);
+}
+
+.camera-mode-btn.free-mode {
+  background: rgba(255, 150, 0, 0.6);
+  border-color: rgba(255, 150, 0, 0.4);
+  color: white;
+}
+
+.camera-mode-btn.free-mode:hover {
+  background: rgba(255, 150, 0, 0.8);
+  border-color: rgba(255, 150, 0, 0.6);
+}
+
+/* Loading State für Three.js */
+.three-earth-container.loading {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(20, 40, 80, 0.8) 0%,
+    rgba(10, 20, 40, 0.9) 50%,
+    rgba(0, 0, 0, 1) 100%
+  );
+}
+
+.three-earth-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.three-earth-loading.hidden {
+  display: none;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid rgba(135, 206, 235, 0.8);
+  border-radius: 50%;
+  animation: threeEarthSpin 1s linear infinite;
+}
+
+@keyframes threeEarthSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.three-earth-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  padding: 20px;
+  background: rgba(40, 20, 20, 0.8);
+  border-radius: 8px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.three-earth-error.hidden {
+  display: none;
+}
+
+.three-earth-container.error {
+  background: rgba(40, 20, 20, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Performance Mode Indicators */
+.three-earth-container[data-performance="low"] {
+  /* Reduzierte visuelle Komplexität für schwache Geräte */
+  filter: contrast(0.9) brightness(0.95);
+}
+
+.three-earth-container[data-performance="medium"] {
+  /* Mittlere Qualität */
+  filter: contrast(1.05);
+}
+
+.three-earth-container[data-performance="high"] {
+  /* Volle Qualität */
+  filter: contrast(1.1) brightness(1.05);
+}
+
+/* Section-basierte Kamera-Animationen */
+.three-earth-container[data-section="hero"] {
+  /* Hero-spezifische Anpassungen */
+  opacity: 1;
+}
+
+.three-earth-container[data-section="features"] {
+  /* Features-spezifische Anpassungen */
+  opacity: 0.95;
+}
+
+.three-earth-container[data-section="about"] {
+  /* About-spezifische Anpassungen */
+  opacity: 0.9;
+}
+
+/* Mobile Optimierungen */
+@media (max-width: 768px) {
+  .three-earth-controls {
+    top: 15px;
+    right: 15px;
+    gap: 8px;
+  }
+  
+  .zoom-btn, 
+  .camera-mode-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  /* Reduzierte Backdrop-Filter für bessere Performance */
+  .mobile-three-earth-controls .zoom-btn, 
+  .mobile-three-earth-controls .camera-mode-btn {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  
+  /* Touch-optimierte Hover-States */
+  .mobile-zoom-btn:active,
+  .mobile-camera-mode-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.9);
+  }
+}
+
+@media (max-width: 480px) {
+  .three-earth-controls {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .zoom-btn, 
+  .camera-mode-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+}
+
+/* Tablet Landscape */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .three-earth-controls {
+    top: 25px;
+    right: 25px;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  .three-earth-container canvas {
+    /* Optimierungen für Retina-Displays */
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .zoom-btn, 
+  .camera-mode-btn {
+    transition: none;
+  }
+  
+  .zoom-btn:hover,
+  .camera-mode-btn:hover {
+    transform: none;
+  }
+  
+  @keyframes threeEarthSpin {
+    0%, 100% { transform: rotate(0deg); }
+  }
+}
+
+/* Dark Mode Compatibility */
+@media (prefers-color-scheme: dark) {
+  .three-earth-controls {
+    /* Controls bereits für dunklen Modus optimiert */
+    opacity: 1;
+  }
+}
+
+/* Light Mode (falls gewünscht) */
+@media (prefers-color-scheme: light) {
+  .zoom-btn, 
+  .camera-mode-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: rgba(0, 0, 0, 0.8);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .zoom-btn:hover,
+  .camera-mode-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+  
+  .camera-mode-btn.scroll-mode {
+    background: rgba(0, 150, 255, 0.9);
+    color: white;
+  }
+}
+
+/* Accessibility Enhancements */
+.zoom-btn:focus-visible,
+.camera-mode-btn:focus-visible {
+  border-color: rgba(135, 206, 235, 1);
+  box-shadow: 
+    0 2px 12px rgba(0, 0, 0, 0.3),
+    0 0 0 3px rgba(135, 206, 235, 0.4);
+  outline: 2px solid transparent; /* Für Screen Reader */
+}
+
+/* Keyboard Navigation */
+.three-earth-container .zoom-btn:focus,
+.three-earth-container .camera-mode-btn:focus {
+  z-index: 101; /* Über anderen Controls */
+}
+
+/* Container Interaction States */
+.three-earth-container.interactive {
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.three-earth-container.interactive:active {
+  cursor: grabbing;
+}
+
+/* Performance Overlay (Debug) */
+.three-earth-performance-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.three-earth-container:hover .three-earth-performance-overlay {
+  opacity: 1;
+}
+
+.three-earth-performance-overlay.visible {
+  opacity: 1;
+}

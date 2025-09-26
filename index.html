@@ -92,6 +92,7 @@
   <link rel="stylesheet" href="/content/webentwicklung/index.css">
   <link rel="stylesheet" href="/content/webentwicklung/buttons.css">
   <link rel="stylesheet" href="/content/webentwicklung/particles/atmospheric-sky.css">
+  <link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css">
   <link rel="stylesheet" href="/content/webentwicklung/animations/animation-keyframes.css">
   <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
   <!-- CSS direkt laden für bessere Performance -->
@@ -389,6 +390,34 @@
     <div class="moon">
       <div class="moon-surface"></div>
       <div class="moon-shadow"></div>
+    </div>
+  </div>
+
+  <!-- Advanced Three.js Earth System -->
+  <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
+    <div class="three-earth-loading">
+      <div class="loading-spinner"></div>
+      <p>3D Earth wird geladen...</p>
+    </div>
+    <div class="three-earth-error hidden">
+      <div class="error-icon">🌍</div>
+      <p>WebGL nicht verfügbar. CSS-Fallback aktiv.</p>
+    </div>
+    
+    <!-- Three.js Performance Controls -->
+    <div class="three-earth-controls">
+      <button class="control-button" data-action="toggleAnimation" aria-label="Animation pausieren/fortsetzen">
+        <span class="icon">⏸️</span>
+        <span class="label">Pause</span>
+      </button>
+      <div class="quality-indicator" title="Automatische Qualitätsanpassung">
+        <span class="quality-level">Auto</span>
+        <div class="quality-dots">
+          <span class="dot active"></span>
+          <span class="dot active"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
     </div>
   </div>
 

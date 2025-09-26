@@ -1,7 +1,7 @@
 import { getElementById } from '../../content/webentwicklung/utils/common-utils.js';
 import { EVENTS } from '../../content/webentwicklung/utils/events.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
-import { triggerAnimationScan, animateElementsIn } from '../../content/webentwicklung/utils/animation-utils.js';
+import { triggerAnimationScan } from '../../content/webentwicklung/utils/animation-utils.js';
 
 const log = createLogger('hero-manager');
 
@@ -63,33 +63,9 @@ export function extendAnimationEngineForHero(animationEngine) {
   };
 }
 
-/**
- * Helper: Animiert Hero-Grußtext mit spezifischen Einstellungen
- * @param {HTMLElement} greetingElement - Das Grußtext-Element
- */
-export function animateGreeting(greetingElement) {
-  if (!greetingElement) return;
-  
-  // Setze Hero-spezifische Attribute für Grußtext-Animation
-  if (!greetingElement.hasAttribute('data-animation')) {
-    greetingElement.setAttribute('data-animation', 'greeting');
-    greetingElement.setAttribute('data-duration', HERO_ANIMATION_CONFIG.durations.greeting);
-    greetingElement.setAttribute('data-delay', '200');
-  }
-  
-  // Trigger Animation über globale Engine
-  triggerAnimationScan('animateGreeting');
-}
 
-/**
- * Helper: Animiert Hero-Buttons mit spezifischen Einstellungen
- * @param {HTMLElement} containerElement - Container mit Hero-Buttons
- */
-export function animateHeroButton(containerElement) {
-  if (!containerElement) return;
-  
-  animateElementsIn(containerElement, { force: true }, 'animateHeroButton');
-}
+
+
 
 /**
  * Initialisiert Hero-spezifische Animationen

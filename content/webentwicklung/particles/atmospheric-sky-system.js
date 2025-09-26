@@ -159,20 +159,6 @@ function createAtmosphericHTML(background) {
     `;
     background.appendChild(moon);
   }
-  
-  // Earth-Globe erstellen falls nicht vorhanden
-  if (!background.querySelector('.earth-globe')) {
-    const earthGlobe = document.createElement('div');
-    earthGlobe.className = 'earth-globe';
-    earthGlobe.innerHTML = `
-      <div class="earth-sphere">
-        <div class="earth-surface"></div>
-        <div class="earth-atmosphere"></div>
-        <div class="earth-shadow"></div>
-      </div>
-    `;
-    background.appendChild(earthGlobe);
-  }
 }
 
 // ===== Sterne generieren =====
@@ -535,14 +521,6 @@ function setupParallaxEffect(background) {
       // CSS Variables setzen
       document.documentElement.style.setProperty('--global-scroll-progress', scrollProgress);
       background.style.setProperty('--scroll-progress', scrollProgress);
-      
-      // Earth-Globe Skalierung
-      const earthGlobes = document.querySelectorAll('.earth-globe');
-      earthGlobes.forEach((earthGlobe) => {
-        const scaleValue = 1 - scrollProgress * 0.7;
-        earthGlobe.style.setProperty('--earth-scale', scaleValue);
-        earthGlobe.style.transform = `translateX(-50%) scale(${scaleValue})`;
-      });
       
       // Sanfte Parallax-Bewegung für Wolken
       const clouds = background.querySelectorAll('.cloud');
