@@ -10,24 +10,25 @@
      - unicode-range auf Basic Latin für kleinere CSSOM (erweiterbar bei Bedarf)
      - font-synthesis: none verhindert unsaubere künstliche Fette/Kursive
   */
-  font-family: 'Inter';
+  font-family: "Inter";
   font-style: normal;
   font-weight: 100 900; /* Variable Font Range */
   font-display: swap;
   font-synthesis: none;
-  src: local('Inter Variable'), local('Inter'),
-       url('/content/webentwicklung/fonts/InterVariable.woff2') format('woff2-variations');
+  src: local("Inter Variable"), local("Inter"),
+    url("/content/webentwicklung/fonts/InterVariable.woff2")
+      format("woff2-variations");
   unicode-range: U+0000-00FF; /* Basic Latin (kann erweitert werden) */
 }
 /* Optional statischer Fallback (Regular) für sehr alte Browser */
 @font-face {
-  font-family: 'InterFallback';
+  font-family: "InterFallback";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
   font-synthesis: none;
-  src: local('Inter'), local('Inter Regular'),
-       url('/content/webentwicklung/fonts/Inter-Regular.woff2') format('woff2');
+  src: local("Inter"), local("Inter Regular"),
+    url("/content/webentwicklung/fonts/Inter-Regular.woff2") format("woff2");
   unicode-range: U+0000-00FF;
 }
 
@@ -69,36 +70,35 @@
 
 /* Default: Dark Mode (Primärer Modus) */
 :root {
-  
-  --theme-mode: 'dark';
-  
+  --theme-mode: "dark";
+
   /* Brand Colors - Safari UI inspiriert */
-  --primary-color: #007AFF;    /* Safari UI Blau - Haupt-Akzentfarbe */
-  --primary-dark: #0051D5;     /* Dunkleres Blau für Hover-Effekte */
-  --primary-light: #34AADC;    /* Helleres Blau für disabled States */
-  
+  --primary-color: #007aff; /* Safari UI Blau - Haupt-Akzentfarbe */
+  --primary-dark: #0051d5; /* Dunkleres Blau für Hover-Effekte */
+  --primary-light: #34aadc; /* Helleres Blau für disabled States */
+
   /* Semantic Colors */
-  --success-color: #2d9e47;    /* Grün für Erfolg/Bestätigung */
+  --success-color: #2d9e47; /* Grün für Erfolg/Bestätigung */
 
   /* ===== DARK MODE (Standard) ===== */
   /* Optimierte Dark Mode Farben für bessere Readability */
-  --bg-primary: #0a0a0a;      /* 🌑 Tiefes Schwarz - Haupthintergrund */
-  --bg-secondary: #161616;    /* 🌑 Dunkles Grau - Cards und Panels */
-  --bg-tertiary: #262626;     /* 🌑 Mittleres Grau - Hover und Sections */
-  --bg-interactive: #404040;  /* 🌑 Interaktive Elemente */
+  --bg-primary: #0a0a0a; /* 🌑 Tiefes Schwarz - Haupthintergrund */
+  --bg-secondary: #161616; /* 🌑 Dunkles Grau - Cards und Panels */
+  --bg-tertiary: #262626; /* 🌑 Mittleres Grau - Hover und Sections */
+  --bg-interactive: #404040; /* 🌑 Interaktive Elemente */
   --bg-menu: rgba(10, 10, 10, 0.95); /* 🌑 Semi-transparentes Menu */
-  
+
   /* Text Farben - Optimiert für Dark Mode */
-  --text-primary: #f5f5f5;    /* 🌑 Haupttext - Hoher Kontrast */
-  --text-secondary: #d4d4d4;  /* 🌑 Sekundärtext */
-  --text-muted: #a3a3a3;      /* 🌑 Gedämpfter Text */
-  --text-faded: #737373;      /* 🌑 Sehr schwacher Text */
-  
+  --text-primary: #f5f5f5; /* 🌑 Haupttext - Hoher Kontrast */
+  --text-secondary: #d4d4d4; /* 🌑 Sekundärtext */
+  --text-muted: #a3a3a3; /* 🌑 Gedämpfter Text */
+  --text-faded: #737373; /* 🌑 Sehr schwacher Text */
+
   /* Particle System - Dark Mode */
-  --particle-color: rgba(9, 139, 255, 0.8);  /* 🌑 Safari Blau mit Alpha */
-  
+  --particle-color: rgba(9, 139, 255, 0.8); /* 🌑 Safari Blau mit Alpha */
+
   /* Borders */
-  --border-color: #2a2a2a;     /* Standard Border Color */
+  --border-color: #2a2a2a; /* Standard Border Color */
 
   /* ======================= */
   /* LAYOUT & DESIGN TOKENS  */
@@ -114,12 +114,15 @@
   --spacing-2xl: 5rem;
 
   /* Fonts */
-  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
-  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", monospace;
+  --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
   /* Critical font stack used by the minimal critical CSS (moved here to satisfy check-root.sh) */
-  --critical-font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-script: 'Lobster', 'Dancing Script', cursive, serif;
+  --critical-font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-script: "Lobster", "Dancing Script", cursive, serif;
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);
@@ -134,7 +137,7 @@
   --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --transition-elastic: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
+
   /* Transform Standards */
   --transform-none: translateY(0);
   --transform-lift-sm: translateY(-2px);
@@ -149,7 +152,7 @@
   --transform-scale-lg: scale(1.08);
   --transform-scale-none: scale(1);
   --transform-scale-fade: scale(0.98);
-  
+
   /* Complex Transform Combinations */
   --transform-hover-logo: scale(1.08) translateY(-1px);
   --transform-hover-card: translateY(-8px) scale(1.02);
@@ -157,7 +160,7 @@
   --transform-hover-card-subtle: translateY(-3px) scale(1.015);
   --transform-rotate-slight: rotate(2deg);
   --transform-rotate-hover: rotate(-1deg) translateY(-4px);
-  
+
   /* Animation Easings */
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);
@@ -165,7 +168,7 @@
 
   /* Shadows */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.15);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.3);
 
@@ -197,11 +200,11 @@
   --color-bg-secondary: var(--bg-tertiary);
 
   /* Cards / Features */
-  --card-pad: clamp(0.75rem,3vw,2rem); /* Kleineres Minimum für Mobile */
+  --card-pad: clamp(0.75rem, 3vw, 2rem); /* Kleineres Minimum für Mobile */
   --card-min-width: 260px; /* Reduziert von 320px */
   --card-min-height: 180px; /* Reduziert von 220px */
-  --pad-x: clamp(1rem,4vw,2rem);
-  --gap: clamp(0.75rem,3vw,1.5rem); /* Kleineres Gap auf Mobile */
+  --pad-x: clamp(1rem, 4vw, 2rem);
+  --gap: clamp(0.75rem, 3vw, 1.5rem); /* Kleineres Gap auf Mobile */
 
   /* Safe-area */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -211,11 +214,11 @@
   /* CSS-Only Fallback für TypeWriter */
   --typing-target: 28ch;
   --typing-steps: 28;
-  
+
   /* Animation Delays für Hero Floating Icons */
   --delay-0: 0s;
   --delay-1: 1s;
-  --delay-2: 2s; 
+  --delay-2: 2s;
   --delay-3: 3s;
   --star-opacity: 1;
   --atmosphere-intensity: 0.8;
@@ -229,40 +232,45 @@
 ======================= */
 /* ===== LIGHT MODE (Blue Theme) ===== */
 :root[data-theme="light"] {
-  --theme-mode: 'light';
-  
+  --theme-mode: "light";
+
   /* Realistische Light Mode mit blauem Hintergrund */
-  --bg-primary: #1e3a8a;       /* 🔷 Tiefes Blau - Haupthintergrund */
-  --bg-secondary: #1e40af;     /* 🔷 Mittleres Blau - Cards und Panels */
-  --bg-tertiary: #2563eb;      /* 🔷 Helleres Blau - Hover und Sections */
-  --bg-interactive: #3b82f6;   /* 🔷 Interaktive Elemente */
+  --bg-primary: #1e3a8a; /* 🔷 Tiefes Blau - Haupthintergrund */
+  --bg-secondary: #1e40af; /* 🔷 Mittleres Blau - Cards und Panels */
+  --bg-tertiary: #2563eb; /* 🔷 Helleres Blau - Hover und Sections */
+  --bg-interactive: #3b82f6; /* 🔷 Interaktive Elemente */
   --bg-menu: rgba(30, 58, 138, 0.95); /* 🔷 Semi-transparentes Menu */
-  
+
   /* Text Farben - Optimiert für blauen Hintergrund */
-  --text-primary: #f8fafc;     /* 🔷 Sehr heller Text */
-  --text-secondary: #e2e8f0;   /* 🔷 Heller Sekundärtext */
-  --text-muted: #cbd5e1;       /* 🔷 Gedämpfter Text */
-  --text-faded: #94a3b8;       /* 🔷 Schwacher Text */
-  
+  --text-primary: #f8fafc; /* 🔷 Sehr heller Text */
+  --text-secondary: #e2e8f0; /* 🔷 Heller Sekundärtext */
+  --text-muted: #cbd5e1; /* 🔷 Gedämpfter Text */
+  --text-faded: #94a3b8; /* 🔷 Schwacher Text */
+
   /* Particle System - Light Mode */
-  --particle-color: rgba(248, 250, 252, 0.8);  /* 🔷 Helle Partikel auf blauem Hintergrund */
-  
+  --particle-color: rgba(
+    248,
+    250,
+    252,
+    0.8
+  ); /* 🔷 Helle Partikel auf blauem Hintergrund */
+
   /* Angepasste Brand-Farben für Light Mode */
-  --primary-color: #60a5fa;    /* 🔷 Hellerer Blue für Kontrast */
-  --primary-hover: #93c5fd;    /* 🔷 Noch heller bei Hover */
-  --accent-color: #34d399;     /* 🔷 Grüner Accent */
+  --primary-color: #60a5fa; /* 🔷 Hellerer Blue für Kontrast */
+  --primary-hover: #93c5fd; /* 🔷 Noch heller bei Hover */
+  --accent-color: #34d399; /* 🔷 Grüner Accent */
   --accent-secondary: #f87171; /* 🔷 Roter Accent */
-  
+
   /* Status Farben für Light Mode */
-  --success-color: #10b981;    /* 🔷 Helleres Grün für Kontrast */
-  --warning-color: #f59e0b;    /* 🔷 Warnung Orange */
-  --error-color: #ef4444;      /* 🔷 Error Red */
-  --info-color: #3b82f6;       /* 🔷 Info Blue */
-  
+  --success-color: #10b981; /* 🔷 Helleres Grün für Kontrast */
+  --warning-color: #f59e0b; /* 🔷 Warnung Orange */
+  --error-color: #ef4444; /* 🔷 Error Red */
+  --info-color: #3b82f6; /* 🔷 Info Blue */
+
   /* Borders und UI-Elemente */
-  --border-color: #3b82f6;     /* 🔷 Helles Blau für Borders */
-  --border-subtle: #1e40af;    /* 🔷 Subtile Borders */
-  
+  --border-color: #3b82f6; /* 🔷 Helles Blau für Borders */
+  --border-subtle: #1e40af; /* 🔷 Subtile Borders */
+
   /* Schatten für Light Mode - angepasst für blauen Hintergrund */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -275,40 +283,45 @@
 ======================= */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --theme-mode: 'light';
-    
+    --theme-mode: "light";
+
     /* Gleiche Struktur wie manueller Light Mode */
-    --bg-primary: #1e3a8a;       /* 🔷 Tiefes Blau - Haupthintergrund */
-    --bg-secondary: #1e40af;     /* 🔷 Mittleres Blau - Cards und Panels */
-    --bg-tertiary: #2563eb;      /* 🔷 Helleres Blau - Hover und Sections */
-    --bg-interactive: #3b82f6;   /* 🔷 Interaktive Elemente */
+    --bg-primary: #1e3a8a; /* 🔷 Tiefes Blau - Haupthintergrund */
+    --bg-secondary: #1e40af; /* 🔷 Mittleres Blau - Cards und Panels */
+    --bg-tertiary: #2563eb; /* 🔷 Helleres Blau - Hover und Sections */
+    --bg-interactive: #3b82f6; /* 🔷 Interaktive Elemente */
     --bg-menu: rgba(30, 58, 138, 0.95); /* 🔷 Semi-transparentes Menu */
-    
+
     /* Text Farben - Optimiert für blauen Hintergrund */
-    --text-primary: #f8fafc;     /* 🔷 Sehr heller Text */
-    --text-secondary: #e2e8f0;   /* 🔷 Heller Sekundärtext */
-    --text-muted: #cbd5e1;       /* 🔷 Gedämpfter Text */
-    --text-faded: #94a3b8;       /* 🔷 Schwacher Text */
-    
+    --text-primary: #f8fafc; /* 🔷 Sehr heller Text */
+    --text-secondary: #e2e8f0; /* 🔷 Heller Sekundärtext */
+    --text-muted: #cbd5e1; /* 🔷 Gedämpfter Text */
+    --text-faded: #94a3b8; /* 🔷 Schwacher Text */
+
     /* Particle System - Auto Light Mode */
-    --particle-color: rgba(248, 250, 252, 0.8);  /* 🔷 Helle Partikel auf blauem Hintergrund */
-    
+    --particle-color: rgba(
+      248,
+      250,
+      252,
+      0.8
+    ); /* 🔷 Helle Partikel auf blauem Hintergrund */
+
     /* Angepasste Brand-Farben für Auto Light Mode */
-    --primary-color: #60a5fa;    /* 🔷 Hellerer Blue für Kontrast */
-    --primary-hover: #93c5fd;    /* 🔷 Noch heller bei Hover */
-    --accent-color: #34d399;     /* 🔷 Grüner Accent */
+    --primary-color: #60a5fa; /* 🔷 Hellerer Blue für Kontrast */
+    --primary-hover: #93c5fd; /* 🔷 Noch heller bei Hover */
+    --accent-color: #34d399; /* 🔷 Grüner Accent */
     --accent-secondary: #f87171; /* 🔷 Roter Accent */
-    
+
     /* Status Farben für Auto Light Mode */
-    --success-color: #10b981;    /* 🔷 Helleres Grün für Kontrast */
-    --warning-color: #f59e0b;    /* 🔷 Warnung Orange */
-    --error-color: #ef4444;      /* 🔷 Error Red */
-    --info-color: #3b82f6;       /* 🔷 Info Blue */
-    
+    --success-color: #10b981; /* 🔷 Helleres Grün für Kontrast */
+    --warning-color: #f59e0b; /* 🔷 Warnung Orange */
+    --error-color: #ef4444; /* 🔷 Error Red */
+    --info-color: #3b82f6; /* 🔷 Info Blue */
+
     /* Borders und UI-Elemente */
-    --border-color: #3b82f6;     /* 🔷 Helles Blau für Borders */
-    --border-subtle: #1e40af;    /* 🔷 Subtile Borders */
-    
+    --border-color: #3b82f6; /* 🔷 Helles Blau für Borders */
+    --border-subtle: #1e40af; /* 🔷 Subtile Borders */
+
     /* Schatten für Auto Light Mode */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -326,24 +339,25 @@
 }
 
 @media (max-width: 768px) {
-  :root { 
-    --header-height: 15px; 
+  :root {
+    --header-height: 15px;
   }
 }
 
 /* Fokus-Indikator für alle interaktiven Elemente */
-button:focus-visible, 
-a:focus-visible, 
-[tabindex]:focus-visible, 
-input:focus-visible, 
-select:focus-visible, 
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--primary-color) 55%, transparent);
   background: rgba(0, 119, 255, 0.12);
   border-radius: 6px;
-  transition: box-shadow .15s, outline-color .15s;
+  transition: box-shadow 0.15s, outline-color 0.15s;
 }
 
 /* Hinweis: Für Buttons, Menüs und interaktive Komponenten sollten passende ARIA-Attribute (z.B. aria-label, aria-expanded, aria-controls) in HTML/JS gesetzt werden! */
@@ -379,4 +393,3 @@ textarea:focus-visible {
   transform: translateY(0);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
 }
-

@@ -14,7 +14,7 @@
  */
 
 /* Button Styles Import */
-@import 'buttons.css';
+@import "buttons.css";
 
 /* Native Scroll-Snap Container für zuverlässiges Section-Snapping */
 .snap-container {
@@ -33,17 +33,20 @@
    2) Scroll-Snap-Verbesserungen
 ======================================== */
 
-html, body {
+html,
+body {
   height: 100%;
   overflow-x: hidden;
   touch-action: pan-y;
   -webkit-font-smoothing: antialiased;
-font-kerning: normal;
-font-variant-ligatures: common-ligatures contextual;
-font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   /* aus vorherigem Block zusammengeführt */
   scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
-  scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
+  scroll-padding-top: var(
+    --header-height
+  ); /* avoid header overlap when snapping */
   scroll-behavior: smooth;
   transition: padding-bottom var(--transition-base);
 }
@@ -60,24 +63,31 @@ body {
   font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   /* aus vorherigem Block zusammengeführt */
   scroll-snap-type: y mandatory; /* starkes Snapping zwischen Sektionen */
-  scroll-padding-top: var(--header-height); /* avoid header overlap when snapping */
-  scroll-snap-align: start; 
+  scroll-padding-top: var(
+    --header-height
+  ); /* avoid header overlap when snapping */
+  scroll-snap-align: start;
   scroll-snap-stop: always;
 }
 
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 /* ========================================
    3) Layout (Container, Section, Headings) + Global Particle Background
 ======================================== */
-
-
 
 /* Mobile-first Container: Maximale Flexibilität und Safe-Area Support */
 .container {
   width: 100%;
   max-width: 900px;
   margin-inline: auto;
-  padding-inline: max(clamp(0.5rem, 4vw, 1.5rem), env(safe-area-inset-left, 0px));
+  padding-inline: max(
+    clamp(0.5rem, 4vw, 1.5rem),
+    env(safe-area-inset-left, 0px)
+  );
   box-sizing: border-box;
 }
 
@@ -89,9 +99,15 @@ body {
 }
 /* Zusätzlicher Breakpoint für sehr kleine Geräte */
 @media (max-width: 375px) {
-  html { font-size: 14px; }
-  .container { padding-inline: max(0.25rem, env(safe-area-inset-left, 0px)); }
-  .section { padding: var(--spacing-lg) 0; }
+  html {
+    font-size: 14px;
+  }
+  .container {
+    padding-inline: max(0.25rem, env(safe-area-inset-left, 0px));
+  }
+  .section {
+    padding: var(--spacing-lg) 0;
+  }
 }
 /* Extra: Header Safe-Area auf Mobile */
 @media (max-width: 480px) {
@@ -105,7 +121,7 @@ body {
 /* Erweiterte Scroll-Snap-Unterstützung */
 .snap-section {
   scroll-snap-align: start;
-    /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
+  /* scroll-snap-stop: always; entfernt, um Scroll-Snap zu entspannen */
   opacity: 0.8;
   transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
@@ -125,9 +141,13 @@ body {
   margin: var(--spacing-md) 0;
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--border-color);
-  background: linear-gradient(145deg, rgba(255,0,0,0.08), rgba(255,0,0,0.03));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 0, 0, 0.08),
+    rgba(255, 0, 0, 0.03)
+  );
   border-radius: var(--radius-md);
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -147,14 +167,15 @@ body {
   line-height: 1.1;
   display: inline-flex;
   align-items: center;
-  gap: .35rem;
+  gap: 0.35rem;
   font-weight: 500;
   box-shadow: var(--shadow-sm);
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background var(--transition-fast),
+    transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .section-retry:hover {
-  background: var(--primary-dark, #0051D5);
+  background: var(--primary-dark, #0051d5);
 }
 
 .section-retry:active {
@@ -163,7 +184,7 @@ body {
 }
 
 .section-retry:focus-visible {
-  outline: 2px solid var(--primary-light, #34AADC);
+  outline: 2px solid var(--primary-light, #34aadc);
   outline-offset: 2px;
 }
 
@@ -175,8 +196,6 @@ body {
 .snap-section.section-active {
   z-index: 2;
 }
-
-
 
 .section-header {
   text-align: center;
@@ -194,14 +213,18 @@ body {
 }
 
 .section-title::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -7px;
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--primary-light)
+  );
   border-radius: var(--radius-full);
 }
 
@@ -211,29 +234,65 @@ body {
   margin-bottom: 1.4rem;
 }
 
-
 /* ========================================
    4) Typografie, Links, Buttons, Tags
 ======================================== */
-h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; margin-bottom: var(--spacing-md); }
-/* Headline-Tracking */
-h1, h2, h3 { letter-spacing: -0.012em; }
-h4, h5, h6 { letter-spacing: -0.006em; }
-@supports (text-wrap: balance){
-  h1, h2, h3, h4, h5, h6, .section-title { text-wrap: balance; }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--spacing-md);
 }
-h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
-h2 { font-size: clamp(2rem, 4vw, 3rem); }
-h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
-h4 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
-h5 { font-size: 1.125rem; }
-h6 { font-size: 1rem; }
+/* Headline-Tracking */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.012em;
+}
+h4,
+h5,
+h6 {
+  letter-spacing: -0.006em;
+}
+@supports (text-wrap: balance) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .section-title {
+    text-wrap: balance;
+  }
+}
+h1 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+}
+h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+h4 {
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+}
+h5 {
+  font-size: 1.125rem;
+}
+h6 {
+  font-size: 1rem;
+}
 
-p{
+p {
   margin-bottom: var(--spacing-md);
   color: var(--text-secondary);
-  line-height: 1.6;          /* bessere Lesbarkeit */
-  letter-spacing: 0.003em;   /* minimal mehr Luft */
+  line-height: 1.6; /* bessere Lesbarkeit */
+  letter-spacing: 0.003em; /* minimal mehr Luft */
 }
 
 a {
@@ -241,7 +300,9 @@ a {
   text-decoration: none;
   transition: color var(--transition-fast);
 }
-a:hover { color: var(--primary-light); }
+a:hover {
+  color: var(--primary-light);
+}
 
 /* Nicht genutzte Klassen (.btn-block, .tag) konsolidiert */
 
@@ -259,25 +320,36 @@ a:hover { color: var(--primary-light); }
   flex-shrink: 0;
 }
 
-
 /* ========================================
    5) Komponenten
 ======================================== */
 
 /* -- Loader -- */
 .loading-screen {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: var(--bg-primary);
-  display: flex; justify-content: center; align-items: center;
-  z-index: 9999; transition: opacity var(--transition-slow);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity var(--transition-slow);
 }
-.loading-screen.hide { opacity: 0; pointer-events: none; }
+.loading-screen.hide {
+  opacity: 0;
+  pointer-events: none;
+}
 .loader {
-  width: 60px; height: 60px; border: 3px solid rgba(255,255,255,0.1);
-  border-top-color: var(--primary-color); border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
   animation: spin 1s linear infinite;
 }
-
 
 /* ========================================
    6) Cards & Features Styling
@@ -297,9 +369,11 @@ a:hover { color: var(--primary-light); }
 
 /* Base Card Styling - Modern Glassmorphism */
 .card {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.05) 0%, 
-    rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-xl);
   padding: var(--card-pad);
@@ -314,21 +388,22 @@ a:hover { color: var(--primary-light); }
   flex-direction: column;
   justify-content: flex-start; /* Inhalt oben ausrichten */
   height: 100%; /* Karten füllen verfügbare Höhe */
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(7, 161, 255, 0.08) 0%, 
-    transparent 50%);
+  background: linear-gradient(
+    135deg,
+    rgba(7, 161, 255, 0.08) 0%,
+    transparent 50%
+  );
   opacity: 0;
   transition: opacity var(--transition-base);
   pointer-events: none;
@@ -340,15 +415,15 @@ a:hover { color: var(--primary-light); }
 }
 
 .card:hover {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.08) 0%, 
-    rgba(255, 255, 255, 0.04) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
   border-color: rgba(7, 161, 255, 0.3);
   -webkit-backdrop-filter: blur(25px) saturate(1.4);
   backdrop-filter: blur(25px) saturate(1.4);
-  box-shadow: 
-    0 12px 48px rgba(0, 0, 0, 0.3),
-    0 0 30px rgba(7, 161, 255, 0.15),
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3), 0 0 30px rgba(7, 161, 255, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: var(--transform-hover-card);
 }
@@ -366,9 +441,11 @@ a:hover { color: var(--primary-light); }
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, 
-    rgba(7, 161, 255, 0.15) 0%, 
-    rgba(7, 161, 255, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(7, 161, 255, 0.15) 0%,
+    rgba(7, 161, 255, 0.05) 100%
+  );
   border: 1px solid rgba(7, 161, 255, 0.2);
   border-radius: 18px;
   margin: 0 auto;
@@ -378,19 +455,23 @@ a:hover { color: var(--primary-light); }
   transition: all var(--transition-base);
   -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.2),
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .card .icon-wrapper::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   transform: rotate(45deg);
   transition: transform var(--transition-slow);
   opacity: 0;
@@ -402,15 +483,15 @@ a:hover { color: var(--primary-light); }
 }
 
 .card:hover .icon-wrapper {
-  background: linear-gradient(135deg, 
-    rgba(7, 161, 255, 0.4) 0%, 
+  background: linear-gradient(
+    135deg,
+    rgba(7, 161, 255, 0.4) 0%,
     rgba(7, 161, 255, 0.2) 50%,
-    rgba(7, 161, 255, 0.1) 100%);
+    rgba(7, 161, 255, 0.1) 100%
+  );
   border-color: rgba(7, 161, 255, 0.5);
   transform: scale(1.1) rotate(5deg);
-  box-shadow: 
-    0 0 30px rgba(7, 161, 255, 0.3),
-    0 0 60px rgba(7, 161, 255, 0.15),
+  box-shadow: 0 0 30px rgba(7, 161, 255, 0.3), 0 0 60px rgba(7, 161, 255, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -425,9 +506,7 @@ a:hover { color: var(--primary-light); }
 
 .card:hover .card-title {
   color: #ffffff;
-  text-shadow: 
-    0 0 15px rgba(7, 161, 255, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0 15px rgba(7, 161, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
 }
 
@@ -478,13 +557,17 @@ a:hover { color: var(--primary-light); }
 }
 
 .features-content::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(7, 161, 255, 0.1) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(7, 161, 255, 0.1) 0%,
+    transparent 70%
+  );
   transform: translate(-50%, -50%);
   opacity: 0.5;
   pointer-events: none;
@@ -498,33 +581,33 @@ a:hover { color: var(--primary-light); }
     gap: var(--spacing-md);
     margin-top: var(--spacing-sm); /* Noch weniger Platz auf Mobile */
   }
-  
+
   .features-content {
     min-height: 70vh; /* Weniger Höhe auf Mobile */
     padding: 0 var(--spacing-md);
   }
-  
+
   #features.section {
     padding: var(--spacing-sm) 0 !important; /* Minimales Padding auf Mobile */
   }
-  
+
   .card {
     min-width: 0;
     min-height: 0;
     height: auto; /* Automatische Höhe auf Mobile */
     padding: var(--spacing-sm); /* Reduziertes Padding */
   }
-  
+
   .card .icon-wrapper {
     width: 50px;
     height: 50px;
     font-size: 2rem;
   }
-  
+
   .card-title {
     font-size: 1.1rem; /* Kleinere Schrift */
   }
-  
+
   .card-text {
     font-size: 0.9rem; /* Kleinerer Text */
     line-height: 1.4;
@@ -535,11 +618,11 @@ a:hover { color: var(--primary-light); }
   .features-content {
     padding: 0 var(--spacing-sm); /* Weniger horizontales Padding */
   }
-  
+
   .card {
     padding: calc(var(--spacing-sm) * 0.9); /* Noch kompakter */
   }
-  
+
   .card .icon-wrapper {
     width: 45px;
     height: 45px;
@@ -550,15 +633,21 @@ a:hover { color: var(--primary-light); }
 /* ========================================
    7) Keyframes & Performance-optimierte Animationen
 ======================================== */
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ========================================
    8) Responsive
 ======================================== */
 /* ehemaliges .contact-content Layout nicht mehr vorhanden */
 
-@media (max-width: 768px){
-  html { font-size: 15px; }
+@media (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
 
   /* Sicheres, sprungfreies Vollbild auf Mobile */
   .section {
@@ -566,8 +655,10 @@ a:hover { color: var(--primary-light); }
     height: auto;
     padding: var(--spacing-xl) 0;
   }
-  @supports (min-height: 100dvh){
-    .section { min-height: 100dvh; }
+  @supports (min-height: 100dvh) {
+    .section {
+      min-height: 100dvh;
+    }
   }
 
   .section .container {
@@ -575,21 +666,40 @@ a:hover { color: var(--primary-light); }
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   }
-
 }
 
 /* ========================================
    9) Print
 ======================================== */
 @media print {
-  .loading-screen, .main-header { display: none !important; }
-  body { color: black; background: white; font-size: 12pt; }
-  .container { max-width: 900px; margin: 0 auto; width: 100%; }
-  a { color: black; text-decoration: underline; }
-  button, .btn, .section-cta { display: none !important; }
-  * { animation: none !important; transition: none !important; }
+  .loading-screen,
+  .main-header {
+    display: none !important;
+  }
+  body {
+    color: black;
+    background: white;
+    font-size: 12pt;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  a {
+    color: black;
+    text-decoration: underline;
+  }
+  button,
+  .btn,
+  .section-cta {
+    display: none !important;
+  }
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
-
 
 /* ========================================
    10) Accessibility & Scrollbar
@@ -598,8 +708,9 @@ a:hover { color: var(--primary-light); }
 *:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
-  transition: box-shadow .15s ease, outline-color .15s ease;
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--primary-color) 55%, transparent);
+  transition: box-shadow 0.15s ease, outline-color 0.15s ease;
 }
 @media (prefers-contrast: more) {
   *:focus-visible {
@@ -615,14 +726,17 @@ a:hover { color: var(--primary-light); }
     box-shadow: none; /* System übernimmt Kontrast */
   }
 }
-::selection { background: var(--primary-color); color: white; }
+::selection {
+  background: var(--primary-color);
+  color: white;
+}
 
 /* Scrollbar vollständig ausblenden */
 /* Webkit-basierte Browser (Chrome, Safari, Edge) */
-::-webkit-scrollbar { 
-  width: 0px; 
-  height: 0px; 
-  background: transparent; 
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 /* Firefox */

@@ -15,7 +15,7 @@
  */
 
 /* ===== Import Dynamic Menu Design Tokens ===== */
-@import url('./dynamic-menu-tokens.css');
+@import url("./dynamic-menu-tokens.css");
 
 /* ===== Dynamic Menu Icons System ===== */
 .nav-icon {
@@ -27,7 +27,7 @@
   fill: currentColor;
   flex-shrink: 0;
   margin-right: 8px; /* Einheitlicher Abstand */
-  filter: drop-shadow(0 0.5px 1px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.15));
   transition: all 0.2s var(--dynamic-menu-spring-quick);
   opacity: 0.85;
   display: inline-block;
@@ -57,7 +57,7 @@
 
 /* Spezielle Abstände für Buttons */
 button.submenu-toggle .nav-icon,
-button.submenu-toggle .icon-fallback { 
+button.submenu-toggle .icon-fallback {
   margin-right: 6px; /* Etwas enger bei Buttons */
 }
 
@@ -71,17 +71,20 @@ button.submenu-toggle:hover .icon-fallback,
 button.submenu-toggle:focus .icon-fallback {
   transform: translateY(-1px) scale(1.1);
   opacity: 1;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
 }
 
 /* ===== Dynamic Menu Base Styles ===== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden;
 }
 
@@ -90,8 +93,9 @@ html, body {
 .site-menu__list li a,
 .site-menu__list .submenu li,
 .site-menu__list .submenu li a {
-  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
-  font-feature-settings: 'kern' 1, 'liga' 1;
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", system-ui,
+    sans-serif;
+  font-feature-settings: "kern" 1, "liga" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 17px; /* Dynamic Menu Standard Body Size */
@@ -147,34 +151,35 @@ html, body {
   min-width: 1000px; /* Ensure minimum width for all 4 menu items */
   height: 52px;
   padding: 0 24px;
-  
+
   /* Dynamic Menu Glassmorphismus */
   background: var(--dynamic-menu-header-bg);
   backdrop-filter: blur(var(--dynamic-menu-blur-radius));
   -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-  
+
   /* Dynamic Island Shape */
   border-radius: var(--dynamic-menu-pill-radius);
   border: 1px solid var(--dynamic-menu-separator);
-  
+
   /* Dynamic Menu Shadow System */
   box-shadow: var(--dynamic-menu-shadow-depth-2);
-  
+
   /* Layout - Improved spacing */
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 9999;
   gap: 20px; /* Add gap between logo and menu */
-  
+
   /* Animation */
-  animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce) forwards;
+  animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce)
+    forwards;
   opacity: 0;
   transform: translateX(-50%) translateY(-20px) scale(0.95);
-  
+
   /* Touch Optimization */
   touch-action: pan-y;
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
@@ -210,12 +215,12 @@ html, body {
 }
 
 .site-logo {
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif !important;
+  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif !important;
   font-size: clamp(18px, 2vw, 22px);
   font-weight: 650 !important; /* Dynamic Menu Semibold */
   color: var(--dynamic-menu-label-primary) !important;
   text-shadow: none;
-  
+
   /* Dynamic Menu Micro-Animation */
   transition: all 0.3s var(--dynamic-menu-spring-quick);
   cursor: pointer;
@@ -228,8 +233,8 @@ html, body {
   text-transform: none;
 }
 
-.site-logo.elegant-logo { 
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif !important;
+.site-logo.elegant-logo {
+  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif !important;
   font-size: clamp(20px, 2.2vw, 24px);
   font-weight: 700 !important; /* Dynamic Menu Bold */
   color: var(--dynamic-menu-label-primary) !important;
@@ -239,7 +244,7 @@ html, body {
 
 /* Enhanced Specificity für Dynamic Menu */
 .site-header .site-logo__container .site-logo {
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif !important;
+  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif !important;
   font-weight: 650 !important;
   color: var(--dynamic-menu-label-primary) !important;
 }
@@ -251,7 +256,7 @@ html, body {
 
 /* ===== Dynamic Menu Subtitle System ===== */
 .site-subtitle {
-  font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+  font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
   font-size: clamp(11px, 1vw, 13px);
   font-weight: 450; /* Dynamic Menu Regular+ */
   color: var(--dynamic-menu-label-secondary);
@@ -281,16 +286,16 @@ html, body {
   .site-logo__container {
     gap: 0;
   }
-  
+
   .site-subtitle {
     font-size: clamp(10px, 1.5vw, 12px);
     letter-spacing: 0.005em;
   }
-  
+
   .site-logo {
     padding: 2px 0;
   }
-  
+
   .site-logo.elegant-logo {
     font-size: clamp(16px, 2.5vw, 20px);
   }
@@ -312,17 +317,17 @@ html, body {
     position: static !important;
     transform: none !important;
   }
-  
+
   .site-menu__toggle {
     display: none !important;
   }
-  
+
   .site-menu__list {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
   }
-  
+
   .site-menu__list li {
     display: flex !important;
     visibility: visible !important;
@@ -361,13 +366,13 @@ html, body {
 .site-menu__list li .submenu-toggle {
   text-decoration: none;
   color: var(--dynamic-menu-label-primary);
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif;
   font-weight: 510; /* Dynamic Menu Medium */
   position: relative;
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  
+
   /* Dynamic Menu Interactive Button */
   padding: 8px 16px; /* Größeres Padding für bessere Sichtbarkeit */
   min-height: 36px; /* Leicht höher */
@@ -375,11 +380,11 @@ html, body {
   border-radius: 18px; /* Angepasst an neue Höhe */
   background: transparent;
   border: 1px solid transparent;
-  
+
   /* Typography */
   font-size: clamp(14px, 1.3vw, 16px);
   letter-spacing: -0.01em;
-  
+
   /* Touch & Animation */
   touch-action: manipulation;
   transition: all 0.2s var(--dynamic-menu-spring-quick);
@@ -459,43 +464,47 @@ html, body {
   box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
 }
 
-.site-menu__toggle.active .site-menu__hamburger { 
-  background: transparent; 
+.site-menu__toggle.active .site-menu__hamburger {
+  background: transparent;
 }
 
 .site-menu__toggle.active .site-menu__hamburger::before {
-  transform: translateY(6px) rotate(45deg); 
+  transform: translateY(6px) rotate(45deg);
   background: var(--dynamic-menu-label-primary);
 }
 
 .site-menu__toggle.active .site-menu__hamburger::after {
-  transform: translateY(-6px) rotate(-45deg); 
+  transform: translateY(-6px) rotate(-45deg);
   background: var(--dynamic-menu-label-primary);
 }
 
 /* ===== Dynamic Menu Submenu System ===== */
-.has-submenu > a { cursor: pointer; }
-.site-menu__list .has-submenu { position: relative; }
+.has-submenu > a {
+  cursor: pointer;
+}
+.site-menu__list .has-submenu {
+  position: relative;
+}
 
 .site-menu__list .submenu {
   display: none;
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  
+
   /* Dynamic Menu Card Design */
   background: var(--dynamic-menu-header-bg);
   backdrop-filter: blur(var(--dynamic-menu-blur-radius));
   -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-  
+
   min-width: 200px;
   border-radius: var(--dynamic-menu-card-radius);
   border: 1px solid var(--dynamic-menu-separator);
   box-shadow: var(--dynamic-menu-shadow-depth-3);
-  
+
   padding: 8px;
   font-size: 15px;
-  
+
   /* Intelligente Positionierung - verhindert Überlauf */
   transform-origin: top left;
   transition: all 0.2s var(--dynamic-menu-spring-quick);
@@ -535,7 +544,7 @@ html, body {
     pointer-events: auto;
     transform: translateY(0) scale(1);
   }
-  
+
   .site-menu__list .submenu {
     opacity: 0;
     pointer-events: none;
@@ -546,17 +555,18 @@ html, body {
 }
 
 /* ===== Dynamic Menu Page Content Layout ===== */
-main { 
+main {
   margin-top: 88px; /* Account for Dynamic Menu floating header */
-  padding: 1rem; 
+  padding: 1rem;
 }
 
 /* ===== Dynamic Menu Mobile Experience ===== */
-@media (max-width: 1000px) {  /* Angepasst von 900px auf 1000px für mehr Desktop-Platz */
+@media (max-width: 1000px) {
+  /* Angepasst von 900px auf 1000px für mehr Desktop-Platz */
   .site-menu__toggle {
     display: block;
   }
-  
+
   .site-header {
     top: 8px;
     width: calc(100% - 16px);
@@ -565,12 +575,12 @@ main {
     border-radius: 20px;
     min-width: auto; /* Remove min-width constraint on mobile */
   }
-  
+
   /* Adjust page content for smaller floating header */
-  main { 
-    margin-top: 72px; 
+  main {
+    margin-top: 72px;
   }
-  
+
   /* Dynamic Menu Card-based Mobile Menu */
   .site-menu {
     position: fixed;
@@ -578,7 +588,7 @@ main {
     right: 8px;
     width: min(90vw, 320px);
     padding: 0;
-    
+
     /* Dynamic Menu Card Design */
     background: var(--dynamic-menu-header-bg);
     backdrop-filter: blur(var(--dynamic-menu-blur-radius));
@@ -586,7 +596,7 @@ main {
     border: 1px solid var(--dynamic-menu-separator);
     border-radius: var(--dynamic-menu-card-radius);
     box-shadow: var(--dynamic-menu-shadow-depth-3);
-    
+
     /* Animation */
     transform: translateX(110%) scale(0.95);
     transition: all 0.4s var(--dynamic-menu-spring-bounce);
@@ -595,12 +605,12 @@ main {
     z-index: 9998;
     opacity: 0;
   }
-  
+
   .site-menu.open {
     transform: translateX(0) scale(1);
     opacity: 1;
   }
-  
+
   .site-menu__list {
     flex-direction: column;
     align-items: stretch;
@@ -608,7 +618,7 @@ main {
     padding: 12px;
     gap: 4px;
   }
-  
+
   .site-menu__list li a {
     min-height: 44px;
     font-size: 17px;
@@ -621,13 +631,13 @@ main {
     touch-action: manipulation;
     transition: all 0.2s var(--dynamic-menu-spring-quick);
   }
-  
+
   .site-menu__list li a:hover,
   .site-menu__list li a:active {
     background: var(--dynamic-menu-fill-primary);
     transform: none;
   }
-  
+
   /* Dynamic Menu Mobile Submenu */
   .site-menu__list .submenu {
     display: none;
@@ -644,13 +654,13 @@ main {
     transform: none !important;
     transition: none;
   }
-  
+
   .site-menu__list .has-submenu.open .submenu {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  
+
   .site-menu__list .submenu li a {
     font-size: 15px;
     font-weight: 450;
@@ -658,7 +668,7 @@ main {
     min-height: 40px;
     color: var(--dynamic-menu-label-secondary);
   }
-  
+
   /* Dynamic Menu Mobile Overlay */
   .site-menu__overlay {
     position: fixed;
@@ -692,7 +702,7 @@ main {
 }
 
 /* ===== Dynamic Menu Submenu Indicators ===== */
-.has-submenu > a::after, 
+.has-submenu > a::after,
 .has-submenu > .submenu-toggle::after {
   content: "›";
   display: inline-block;
@@ -714,12 +724,12 @@ main {
 
 /* Mobile submenu indicator */
 @media (max-width: 768px) {
-  .has-submenu > a::after, 
+  .has-submenu > a::after,
   .has-submenu > .submenu-toggle::after {
     content: "⌄";
     transform: rotate(-90deg);
   }
-  
+
   .has-submenu.open > a::after,
   .has-submenu.open > .submenu-toggle::after {
     transform: rotate(0deg);
