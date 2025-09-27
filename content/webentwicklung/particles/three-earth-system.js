@@ -8,6 +8,7 @@ const log = createLogger('threeEarthSystem');
 let isInitialized = false;
 let cleanupFunctions = [];
 let scene, camera, renderer, earthMesh, cloudMesh, composer;
+let starField, nebulae; // Sterne-System
 let animationFrameId = null;
 let currentSection = 'hero';
 let sectionObserver = null;
@@ -386,57 +387,255 @@ function setupLighting(THREE) {
   }
 }
 
-// ===== Sternenfeld erstellen =====
+// ===== Erweitertes Sternenfeld-System =====
 function createStarField(THREE) {
-  const starsGeometry = new THREE.BufferGeometry();
-  const starCount = isLowPerformanceMode ? 500 : 2000;
+  // Verschiedene Stern-Schichten für Tiefe
+  const starLayers = [
+    { name: 'distant', count: isLowPerformanceMode ? 800 : 3000, distance: 80, size: 0.15 },
+    { name: 'medium', count: isLowPerformanceMode ? 300 : 1200, distance: 60, size: 0.3 },
+    { name: 'close', count: isLowPerformanceMode ? 200 : 800, distance: 40, size: 0.6 }
+  ];
   
-  const positions = new Float32Array(starCount * 3);
-  const colors = new Float32Array(starCount * 3);
+  starField = new THREE.Group();
   
-  for (let i = 0; i < starCount; i++) {
-    const i3 = i * 3;
+  starLayers.forEach((layer, layerIndex) => {
+    const starsGeometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(layer.count * 3);
+    const colors = new Float32Array(layer.count * 3);
+    const sizes = new Float32Array(layer.count);
+    const twinkle = new Float32Array(layer.count);
     
-    // Zufällige Position auf Kugel
-    const radius = 50 + Math.random() * 50;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    
-    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-    positions[i3 + 2] = radius * Math.cos(phi);
-    
-    // Stern-Farben (verschiedene Spektralklassen)
-    const color = new THREE.Color();
-    const rand = Math.random();
-    if (rand < 0.7) {
-      color.setHSL(0.6, 0.3, 0.9); // Weiß-bläulich
-    } else if (rand < 0.85) {
-      color.setHSL(0.1, 0.8, 0.8); // Gelblich
-    } else {
-      color.setHSL(0.03, 0.9, 0.7); // Rötlich
+    for (let i = 0; i < layer.count; i++) {
+      const i3 = i * 3;
+      
+      // Realistische Stern-Verteilung (mehr Sterne in der Milchstraßen-Ebene)
+      let phi, theta;
+      if (Math.random() < 0.6) {
+        // Milchstraßen-Band (60% der Sterne)
+        phi = (Math.random() - 0.5) * 0.5 + Math.PI / 2; // Schmales Band
+        theta = Math.random() * Math.PI * 2;
+      } else {
+        // Gleichmäßige Verteilung (40% der Sterne)
+        phi = Math.acos(2 * Math.random() - 1);
+        theta = Math.random() * Math.PI * 2;
+      }
+      
+      const radius = layer.distance + Math.random() * 20;
+      
+      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i3 + 2] = radius * Math.cos(phi);
+      
+      // Realistische Stern-Spektralklassen
+      const color = new THREE.Color();
+      const stellarClass = Math.random();
+      
+      if (stellarClass < 0.6) {
+        // Normale Sterne (meist weiß-gelblich) - Subtile Farben
+        const hue = 0.08 + Math.random() * 0.05; // Sehr leicht gelblich
+        const saturation = 0.1 + Math.random() * 0.15; // Sehr geringe Sättigung
+        const lightness = 0.8 + Math.random() * 0.15; // Helle, aber nicht überstrahlende Sterne
+        color.setHSL(hue, saturation, lightness);
+      } else if (stellarClass < 0.8) {
+        // Leicht bläuliche Sterne - Sehr subtil
+        const hue = 0.55 + Math.random() * 0.05; // Leicht bläulich
+        const saturation = 0.08 + Math.random() * 0.12; // Minimale Sättigung
+        const lightness = 0.85 + Math.random() * 0.1;
+        color.setHSL(hue, saturation, lightness);
+      } else if (stellarClass < 0.95) {
+        // Leicht rötliche Sterne - Sehr subtil
+        const hue = 0.02 + Math.random() * 0.02; // Minimal rötlich
+        const saturation = 0.15 + Math.random() * 0.15; // Geringe Sättigung
+        const lightness = 0.7 + Math.random() * 0.2;
+        color.setHSL(hue, saturation, lightness);
+      } else {
+        // Seltene helle Sterne - Immer noch subtil
+        const hue = 0.58 + Math.random() * 0.03; // Leicht bläulich
+        const saturation = 0.2 + Math.random() * 0.15; // Mäßige Sättigung
+        const lightness = 0.9 + Math.random() * 0.05;
+        color.setHSL(hue, saturation, lightness);
+      }
+      
+      colors[i3] = color.r;
+      colors[i3 + 1] = color.g;
+      colors[i3 + 2] = color.b;
+      
+      // Größenvariationen basierend auf Helligkeitsklasse
+      const magnitude = Math.random();
+      if (magnitude < 0.05) {
+        sizes[i] = layer.size * (3.5 + Math.random() * 2.5); // Seltene helle Riesen
+      } else if (magnitude < 0.15) {
+        sizes[i] = layer.size * (2.2 + Math.random() * 0.8); // Mittelhelle Sterne
+      } else {
+        sizes[i] = layer.size * (1.2 + Math.random() * 1.3); // Normale Hauptreihensterne
+      }
+      
+      // Twinkle-Parameter für Animation
+      twinkle[i] = Math.random() * Math.PI * 2;
     }
     
-    colors[i3] = color.r;
-    colors[i3 + 1] = color.g;
-    colors[i3 + 2] = color.b;
-  }
-  
-  starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  starsGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  
-  const starsMaterial = new THREE.PointsMaterial({
-    vertexColors: true,
-    size: 0.5,
-    sizeAttenuation: true,
-    transparent: true,
-    opacity: 0.8
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starsGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    starsGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    starsGeometry.setAttribute('twinkle', new THREE.BufferAttribute(twinkle, 1));
+    
+    // Erweiterte Shader für realistische Sterne
+    const starsMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        pixelRatio: { value: window.devicePixelRatio },
+        twinkleIntensity: { value: layerIndex === 0 ? 0.15 : 0.25 }, // Sehr subtiles Twinkle
+        brightnessVariation: { value: 0.2 } // Reduzierte Helligkeitsvariation
+      },
+      vertexShader: `
+        uniform float time;
+        uniform float pixelRatio;
+        uniform float twinkleIntensity;
+        
+        attribute float size;
+        attribute float twinkle;
+        attribute vec3 color;
+        
+        varying vec3 vColor;
+        varying float vTwinkle;
+        
+        void main() {
+          vColor = color;
+          
+          // Twinkle-Animation mit verschiedenen Frequenzen
+          float twinklePhase = twinkle + time * (0.5 + sin(twinkle) * 0.3);
+          vTwinkle = 0.7 + sin(twinklePhase) * twinkleIntensity;
+          
+          // Dynamische Größenberechnung
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          
+          // Größe basierend auf Entfernung und Twinkle
+          float finalSize = size * vTwinkle * pixelRatio;
+          finalSize *= (300.0 / -mvPosition.z); // Entfernungsbasierte Skalierung
+          
+          gl_PointSize = finalSize;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        uniform float brightnessVariation;
+        
+        varying vec3 vColor;
+        varying float vTwinkle;
+        
+        void main() {
+          // Weicher Kreis mit Glow-Effekt
+          vec2 center = gl_PointCoord - 0.5;
+          float distance = length(center);
+          
+          // Stern-Form mit dezenten Cross-Spikes für sehr helle Sterne
+          float alpha = 1.0 - smoothstep(0.2, 0.6, distance);
+          
+          // Sehr subtile Kreuz-Spikes nur für hellste Sterne
+          if (vTwinkle > 0.95) {
+            float spike1 = 1.0 - smoothstep(0.0, 0.03, abs(center.x));
+            float spike2 = 1.0 - smoothstep(0.0, 0.03, abs(center.y));
+            alpha += (spike1 + spike2) * 0.1 * smoothstep(0.3, 0.6, distance);
+          }
+          
+          // Sanfte Helligkeitsvariation über Zeit
+          float brightness = vTwinkle * (0.9 + sin(time * 1.5 + gl_PointCoord.x * 8.0) * brightnessVariation * 0.5);
+          
+          vec3 finalColor = vColor * brightness;
+          
+          gl_FragColor = vec4(finalColor, alpha * vTwinkle * 0.8);
+        }
+      `,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    stars.name = `starLayer_${layer.name}`;
+    starField.add(stars);
   });
   
-  const stars = new THREE.Points(starsGeometry, starsMaterial);
-  scene.add(stars);
+  // Schwache Nebel-Effekte hinzufügen
+  createNebulae(THREE);
   
-  log.debug(`Created star field with ${starCount} stars`);
+  scene.add(starField);
+  
+  const totalStars = starLayers.reduce((sum, layer) => sum + layer.count, 0);
+  log.debug(`Created enhanced star field with ${totalStars} stars in ${starLayers.length} layers`);
+}
+
+// ===== Nebel-Effekte erstellen =====
+function createNebulae(THREE) {
+  if (isLowPerformanceMode) return; // Keine Nebel bei niedriger Performance
+  
+  nebulae = new THREE.Group();
+  
+  // Verschiedene Nebel-Typen
+  const nebulaTypes = [
+    { color: new THREE.Color(0.8, 0.3, 0.9), size: 15, opacity: 0.08 }, // Violett
+    { color: new THREE.Color(0.3, 0.8, 0.9), size: 18, opacity: 0.06 }, // Cyan
+    { color: new THREE.Color(0.9, 0.6, 0.3), size: 12, opacity: 0.04 }, // Orange
+    { color: new THREE.Color(0.4, 0.9, 0.5), size: 20, opacity: 0.05 }  // Grün
+  ];
+  
+  nebulaTypes.forEach((type, index) => {
+    const geometry = new THREE.SphereGeometry(type.size, 16, 16);
+    
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        color: { value: type.color },
+        opacity: { value: type.opacity }
+      },
+      vertexShader: `
+        varying vec3 vPosition;
+        void main() {
+          vPosition = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        uniform vec3 color;
+        uniform float opacity;
+        varying vec3 vPosition;
+        
+        // Simple noise function
+        float noise(vec3 pos) {
+          return fract(sin(dot(pos.xyz, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+        }
+        
+        void main() {
+          vec3 pos = vPosition + time * 0.1;
+          float n = noise(pos * 0.5) * noise(pos * 1.2) * noise(pos * 2.0);
+          
+          float alpha = n * opacity * (1.0 - length(vPosition) / 20.0);
+          gl_FragColor = vec4(color, alpha);
+        }
+      `,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    
+    const nebula = new THREE.Mesh(geometry, material);
+    
+    // Positioniere Nebel in verschiedenen Bereichen des Himmels
+    const angle = (index / nebulaTypes.length) * Math.PI * 2;
+    nebula.position.set(
+      Math.cos(angle) * 70,
+      (Math.random() - 0.5) * 30,
+      Math.sin(angle) * 70
+    );
+    
+    nebulae.add(nebula);
+  });
+  
+  starField.add(nebulae);
+  log.debug(`Created ${nebulaTypes.length} nebulae effects`);
 }
 
 // ===== Earth-System erstellen =====
@@ -1217,10 +1416,34 @@ function updateEarthForSection(sectionName) {
   if (!earthMesh) return;
   
   const sectionConfigs = {
-    hero: { scale: 1.0, rotationSpeed: 0.002 },
-    features: { scale: 1.2, rotationSpeed: 0.001 },
-    about: { scale: 0.8, rotationSpeed: 0.003 },
-    contact: { scale: 1.5, rotationSpeed: 0.0005 }
+    hero: { 
+      scale: 1.0, 
+      rotationSpeed: 0.002,
+      starTwinkle: 0.2,
+      starBrightness: 0.9,
+      nebulaOpacity: 0.4
+    },
+    features: { 
+      scale: 1.2, 
+      rotationSpeed: 0.001,
+      starTwinkle: 0.15,
+      starBrightness: 0.8,
+      nebulaOpacity: 0.3
+    },
+    about: { 
+      scale: 0.8, 
+      rotationSpeed: 0.003,
+      starTwinkle: 0.25,
+      starBrightness: 1.0,
+      nebulaOpacity: 0.5
+    },
+    contact: { 
+      scale: 1.5, 
+      rotationSpeed: 0.0005,
+      starTwinkle: 0.1,
+      starBrightness: 0.7,
+      nebulaOpacity: 0.2
+    }
   };
   
   const config = sectionConfigs[sectionName] || sectionConfigs.hero;
@@ -1229,7 +1452,31 @@ function updateEarthForSection(sectionName) {
   earthMesh.userData.targetScale = config.scale;
   earthMesh.userData.rotationSpeed = config.rotationSpeed;
   
-  log.debug(`Earth updated for section: ${sectionName}`, config);
+  // Sterne-Konfiguration anpassen
+  if (starField) {
+    starField.children.forEach(starLayer => {
+      if (starLayer.material?.uniforms) {
+        if (starLayer.material.uniforms.twinkleIntensity) {
+          starLayer.material.uniforms.twinkleIntensity.value = config.starTwinkle;
+        }
+        if (starLayer.material.uniforms.brightnessVariation) {
+          starLayer.material.uniforms.brightnessVariation.value = config.starBrightness;
+        }
+      }
+    });
+  }
+  
+  // Nebel-Opacity anpassen
+  if (nebulae) {
+    nebulae.children.forEach(nebula => {
+      if (nebula.material?.uniforms?.opacity) {
+        const baseOpacity = nebula.material.uniforms.opacity.value;
+        nebula.material.uniforms.opacity.value = baseOpacity * config.nebulaOpacity;
+      }
+    });
+  }
+  
+  log.debug(`Earth and stars updated for section: ${sectionName}`, config);
 }
 
 // ===== Animation Loop =====
@@ -1250,11 +1497,16 @@ function startAnimationLoop(THREE) {
       checkPerformance();
     }
     
-    // Earth Updates
+    // Earth Updates mit Scale-Animation
     updateEarthRotation();
+    updateEarthScale(deltaTime);
     
     // Cloud Updates
     updateClouds(elapsedTime);
+    
+    // Sterne Updates mit verbesserter Performance
+    updateStars(elapsedTime);
+    updateStarsForSection();
     
     // Atmosphäre Updates (weniger häufig für Performance)
     atmosphereUpdateCounter++;
@@ -1367,6 +1619,55 @@ function startAnimationLoop(THREE) {
     }
   }
   
+  function updateEarthScale(deltaTime) {
+    if (!earthMesh) return;
+    
+    // Erweiterte Scale-Animation mit verbessertem Easing
+    const targetScale = earthMesh.userData.targetScale || 1.0;
+    const currentScale = earthMesh.scale.x;
+    const scaleDiff = targetScale - currentScale;
+    
+    if (Math.abs(scaleDiff) > 0.001) {
+      // Exponential easing für natürlichere Animation
+      const lerpFactor = Math.min(deltaTime * 4.0, 1.0);
+      const easedFactor = 1 - Math.pow(1 - lerpFactor, 3); // Ease out cubic
+      const newScale = currentScale + scaleDiff * easedFactor;
+      earthMesh.scale.set(newScale, newScale, newScale);
+    }
+  }
+  
+  function updateStarsForSection() {
+    // Dynamische Sterne-Updates basierend auf aktueller Sektion
+    if (!starField || !window.currentSection) return;
+    
+    const sectionName = window.currentSection;
+    const sectionConfigs = {
+      hero: { twinkleSpeed: 0.8, brightness: 0.9 },
+      features: { twinkleSpeed: 0.6, brightness: 0.8 },
+      about: { twinkleSpeed: 1.0, brightness: 1.0 },
+      contact: { twinkleSpeed: 0.4, brightness: 0.7 }
+    };
+    
+    const config = sectionConfigs[sectionName] || sectionConfigs.hero;
+    
+    starField.children.forEach((starLayer, layerIndex) => {
+      if (starLayer.material?.uniforms) {
+        // Twinkle-Speed basierend auf Layer-Distanz
+        const layerMultiplier = (layerIndex + 1) * 0.3;
+        if (starLayer.material.uniforms.time) {
+          starLayer.material.uniforms.twinkleSpeed = {
+            value: config.twinkleSpeed * layerMultiplier
+          };
+        }
+        
+        // Brightness-Anpassung
+        if (starLayer.material.uniforms.brightnessVariation) {
+          starLayer.material.uniforms.brightnessVariation.value = config.brightness;
+        }
+      }
+    });
+  }
+  
   function updateClouds(elapsedTime) {
     if (!cloudMesh) return;
     
@@ -1375,6 +1676,38 @@ function startAnimationLoop(THREE) {
     // Wolken-Material Zeit-Update
     if (cloudMesh.material.uniforms?.time) {
       cloudMesh.material.uniforms.time.value = elapsedTime;
+    }
+  }
+
+  // ===== Sterne Updates =====
+  function updateStars(elapsedTime) {
+    if (!starField) return;
+    
+    // Sterne-Material Uniforms aktualisieren
+    starField.children.forEach(child => {
+      if (child.material?.uniforms?.time) {
+        child.material.uniforms.time.value = elapsedTime;
+      }
+    });
+    
+    // Nebel animieren (falls vorhanden)
+    if (nebulae) {
+      nebulae.children.forEach((nebula, index) => {
+        if (nebula.material?.uniforms?.time) {
+          nebula.material.uniforms.time.value = elapsedTime;
+        }
+        
+        // Sanfte Rotation der Nebel
+        nebula.rotation.y += 0.001 * (index + 1);
+        nebula.rotation.z += 0.0005 * (index + 1);
+      });
+    }
+    
+    // Parallax-Effekt für Sterne basierend auf Kamera-Bewegung
+    if (camera) {
+      const parallaxStrength = 0.02;
+      starField.rotation.x = camera.rotation.x * parallaxStrength;
+      starField.rotation.y = camera.rotation.y * parallaxStrength;
     }
   }
   
