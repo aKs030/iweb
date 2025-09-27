@@ -17,7 +17,7 @@ let cameraTarget = { x: 0, y: 0, z: 5 };
 let cameraPosition = { x: 0, y: 0, z: 5 };
 let cameraRotation = { x: 0, y: 0 };
 let scrollProgress = 0;
-let isScrollBased = true; // true = scroll-basiert, false = free camera
+let isScrollBased = true;
 
 // Performance States
 let isLowPerformanceMode = false;
@@ -710,25 +710,38 @@ function getEarthFragmentShader() {
 
 // ===== Wolken-System erstellen =====
 async function createCloudSystem(THREE, earthRadius) {
-  const cloudRadius = earthRadius + 0.05;
-  const segments = lodLevel === 1 ? 64 : 32;
+  const cloudRadius = earthRadius + 0.08; // Leicht erhöht für besseren Effekt
+  
+  // Verbesserte LOD-basierte Segmente
+  let segments;
+  switch (lodLevel) {
+  case 1: segments = 96; break;
+  case 2: segments = 64; break;
+  default: segments = 32; break;
+  }
   
   const cloudGeometry = new THREE.SphereGeometry(cloudRadius, segments, segments);
   
-  // Prozedurales Wolken-Material
+  // Optimiertes prozedurales Wolken-Material
   const cloudMaterial = new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
-      opacity: { value: 0.6 },
-      cloudSpeed: { value: 0.5 }
+      opacity: { value: 0.7 },
+      cloudSpeed: { value: 0.3 },
+      cloudDensity: { value: 0.8 },
+      windDirection: { value: new THREE.Vector2(1.0, 0.2) },
+      atmosphereColor: { value: new THREE.Color(0.9, 0.95, 1.0) }
     },
     vertexShader: `
       varying vec2 vUv;
       varying vec3 vNormal;
+      varying vec3 vWorldPosition;
       
       void main() {
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        vWorldPosition = worldPos.xyz;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
@@ -736,45 +749,85 @@ async function createCloudSystem(THREE, earthRadius) {
       uniform float time;
       uniform float opacity;
       uniform float cloudSpeed;
+      uniform float cloudDensity;
+      uniform vec2 windDirection;
+      uniform vec3 atmosphereColor;
       
       varying vec2 vUv;
       varying vec3 vNormal;
+      varying vec3 vWorldPosition;
       
-      float noise(vec2 co) {
-        return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+      // Verbesserte Noise-Funktionen
+      vec2 hash22(vec2 p) {
+        p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+        return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
       }
       
-      float fbm(vec2 uv) {
+      float noise(vec2 p) {
+        const float K1 = 0.366025404; // (sqrt(3)-1)/2
+        const float K2 = 0.211324865; // (3-sqrt(3))/6
+        
+        vec2 i = floor(p + (p.x + p.y) * K1);
+        vec2 a = p - i + (i.x + i.y) * K2;
+        vec2 o = step(a.yx, a.xy);
+        vec2 b = a - o + K2;
+        vec2 c = a - 1.0 + 2.0 * K2;
+        
+        vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
+        vec3 n = h * h * h * h * vec3(dot(a, hash22(i + 0.0)), dot(b, hash22(i + o)), dot(c, hash22(i + 1.0)));
+        
+        return dot(n, vec3(70.0));
+      }
+      
+      float fbm(vec2 uv, int octaves) {
         float value = 0.0;
         float amplitude = 0.5;
         float frequency = 1.0;
         
-        for (int i = 0; i < 4; i++) {
-          value += amplitude * noise(uv * frequency + time * cloudSpeed);
+        for (int i = 0; i < octaves; i++) {
+          value += amplitude * noise(uv * frequency);
           amplitude *= 0.5;
-          frequency *= 2.0;
+          frequency *= 1.9;
         }
         
         return value;
       }
       
       void main() {
-        vec2 uv = vUv + time * cloudSpeed * 0.1;
+        // Dynamische UV-Koordinaten mit Windrichtung
+        vec2 windUV = vUv + time * cloudSpeed * 0.08 * windDirection;
+        vec2 detailUV = vUv + time * cloudSpeed * 0.15 * windDirection.yx;
         
-        float clouds = fbm(uv * 8.0);
-        clouds = smoothstep(0.4, 0.8, clouds);
+        // Multi-Layer-Wolken mit verschiedenen Frequenzen
+        float baseClouds = fbm(windUV * 4.0, 3);
+        float detailClouds = fbm(detailUV * 12.0, 2) * 0.3;
+        float microDetails = fbm(windUV * 24.0, 1) * 0.1;
         
+        float clouds = baseClouds + detailClouds + microDetails;
+        clouds = smoothstep(0.35, 0.85, clouds * cloudDensity);
+        
+        // Höhenbasierte Dichte-Variation
+        float heightFactor = smoothstep(-0.5, 0.5, vWorldPosition.y);
+        clouds *= heightFactor;
+        
+        // Fresnel-Effekt für Atmosphäre
+        float fresnel = 1.0 - dot(normalize(vNormal), vec3(0, 0, 1));
+        fresnel = pow(fresnel, 1.5);
+        
+        // Alpha-Berechnung mit Atmosphäre-Integration
         float alpha = clouds * opacity;
+        alpha *= (1.0 - fresnel * 0.4); // Reduzierter Fresnel-Effekt
         
-        // Fresnel für Atmosphäreneffekt
-        float fresnel = 1.0 - dot(vNormal, vec3(0, 0, 1));
-        alpha *= (1.0 - fresnel * 0.5);
+        // Atmosphärische Farbanpassung
+        vec3 cloudColor = mix(vec3(1.0), atmosphereColor, fresnel * 0.3);
         
-        gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
+        gl_FragColor = vec4(cloudColor, alpha);
       }
     `,
     transparent: true,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
+    depthWrite: false, // Performance-Optimierung für Transparenz
+    blending: THREE.NormalBlending
   });
   
   cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
@@ -785,54 +838,9 @@ async function createCloudSystem(THREE, earthRadius) {
 }
 
 // ===== Atmosphäre erstellen =====
-function createAtmosphere(THREE, earthRadius) {
-  const atmosphereRadius = earthRadius + 0.3;
-  const segments = lodLevel === 1 ? 64 : 32;
-  
-  const atmosphereGeometry = new THREE.SphereGeometry(atmosphereRadius, segments, segments);
-  
-  const atmosphereMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      time: { value: 0 },
-      intensity: { value: 1.0 }
-    },
-    vertexShader: `
-      varying vec3 vNormal;
-      varying vec3 vPosition;
-      
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vPosition = position;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float time;
-      uniform float intensity;
-      
-      varying vec3 vNormal;
-      varying vec3 vPosition;
-      
-      void main() {
-        float fresnel = 1.0 - dot(vNormal, vec3(0, 0, 1));
-        fresnel = pow(fresnel, 3.0);
-        
-        vec3 atmosphereColor = vec3(0.3, 0.6, 1.0);
-        float alpha = fresnel * intensity * 0.6;
-        
-        gl_FragColor = vec4(atmosphereColor, alpha);
-      }
-    `,
-    transparent: true,
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending
-  });
-  
-  const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-  atmosphere.position.y = -2.8; // Gleiche Y-Position wie die Erde
-  scene.add(atmosphere);
-  
-  log.debug('Atmosphere created');
+function createAtmosphere(_THREE, _earthRadius) {
+  // Atmosphäre komplett deaktiviert - Early Return
+  log.debug('Atmosphere creation disabled - no blue atmosphere around Earth');
 }
 
 // ===== Kamera-System Setup =====
@@ -1204,30 +1212,15 @@ function setupSectionDetection(_container) {
 }
 
 // ===== Earth für Section anpassen =====
+// ===== Earth für Section anpassen =====
 function updateEarthForSection(sectionName) {
   if (!earthMesh) return;
   
   const sectionConfigs = {
-    hero: {
-      scale: 1.0,
-      rotationSpeed: 0.002,
-      atmosphereIntensity: 1.0
-    },
-    features: {
-      scale: 1.2,
-      rotationSpeed: 0.001,
-      atmosphereIntensity: 0.8
-    },
-    about: {
-      scale: 0.8,
-      rotationSpeed: 0.003,
-      atmosphereIntensity: 1.2
-    },
-    contact: {
-      scale: 1.5,
-      rotationSpeed: 0.0005,
-      atmosphereIntensity: 0.6
-    }
+    hero: { scale: 1.0, rotationSpeed: 0.002 },
+    features: { scale: 1.2, rotationSpeed: 0.001 },
+    about: { scale: 0.8, rotationSpeed: 0.003 },
+    contact: { scale: 1.5, rotationSpeed: 0.0005 }
   };
   
   const config = sectionConfigs[sectionName] || sectionConfigs.hero;
@@ -1236,13 +1229,6 @@ function updateEarthForSection(sectionName) {
   earthMesh.userData.targetScale = config.scale;
   earthMesh.userData.rotationSpeed = config.rotationSpeed;
   
-  // Atmosphäre anpassen
-  scene.traverse(child => {
-    if (child.material?.uniforms?.intensity) {
-      child.material.uniforms.intensity.value = config.atmosphereIntensity;
-    }
-  });
-  
   log.debug(`Earth updated for section: ${sectionName}`, config);
 }
 
@@ -1250,11 +1236,12 @@ function updateEarthForSection(sectionName) {
 function startAnimationLoop(THREE) {
   const clock = new THREE.Clock();
   let frameCount = 0;
+  let atmosphereUpdateCounter = 0;
   
   function animate() {
     animationFrameId = requestAnimationFrame(animate);
     
-    clock.getDelta(); // Consume delta time
+    const deltaTime = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
     
     // Performance Monitoring
@@ -1268,6 +1255,12 @@ function startAnimationLoop(THREE) {
     
     // Cloud Updates
     updateClouds(elapsedTime);
+    
+    // Atmosphäre Updates (weniger häufig für Performance)
+    atmosphereUpdateCounter++;
+    if (atmosphereUpdateCounter % 2 === 0) { // Jeder 2. Frame
+      updateAtmosphereEffects(elapsedTime, deltaTime);
+    }
     
     // Kamera-Position Update (LERP)
     if (window.updateCameraPosition) {
@@ -1286,19 +1279,76 @@ function startAnimationLoop(THREE) {
     }
   }
   
+  // Spezialisierte Update-Funktionen für Atmosphäre
+  function updateAtmosphereEffects(elapsedTime, _deltaTime) {
+    scene.traverse(child => {
+      // Atmosphäre-Material Updates
+      if (child.material?.uniforms?.time) {
+        child.material.uniforms.time.value = elapsedTime;
+        
+        // Sonnenposition über Zeit animieren
+        if (child.material.uniforms.sunPosition) {
+          const sunAngle = elapsedTime * 0.02;
+          child.material.uniforms.sunPosition.value.set(
+            Math.cos(sunAngle) * 5,
+            Math.sin(sunAngle * 0.5) * 3 + 2,
+            Math.sin(sunAngle) * 5
+          );
+        }
+        
+        // Turbidität basierend auf Tageszeit
+        if (child.material.uniforms.turbidity) {
+          const timeOfDay = (Math.sin(elapsedTime * 0.01) + 1) * 0.5;
+          child.material.uniforms.turbidity.value = 1.8 + timeOfDay * 0.8;
+        }
+        
+        // Atmosphärische Intensität pulsieren lassen
+        if (child.material.uniforms.intensity) {
+          const baseIntensity = 1.4; // Basis-Wert
+          const pulse = Math.sin(elapsedTime * 0.3) * 0.1 + 1;
+          child.material.uniforms.intensity.value = baseIntensity * pulse;
+        }
+      }
+    });
+  }
+  
+  function renderFrame() {
+    try {
+      if (composer && !isLowPerformanceMode) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
+    } catch (error) {
+      log.error('Render error:', error);
+      // Fallback zu standard rendering
+      renderer.render(scene, camera);
+    }
+  }
+  
   function checkPerformance() {
-    const currentFrameTime = performance.now();
-    const frameDuration = currentFrameTime - lastFrameTime;
-    
-    if (frameDuration > 33.33) { // < 30fps
-      // Automatische LOD-Reduktion bei schlechter Performance
-      if (!isLowPerformanceMode) {
-        isLowPerformanceMode = true;
-        log.info('Switched to low performance mode due to poor framerate');
+    const currentTime = performance.now();
+    if (lastFrameTime > 0) {
+      const frameDuration = currentTime - lastFrameTime;
+      const fps = 1000 / frameDuration;
+      
+      // Automatische Qualitätsanpassung
+      if (fps < 25 && lodLevel > 2) {
+        lodLevel = 3;
+        log.warn('Performance low, reducing quality to LOD 3');
+        // Shader-Komplexität reduzieren
+        scene.traverse(child => {
+          if (child.material?.defines) {
+            child.material.defines.LOW_QUALITY = true;
+            child.material.needsUpdate = true;
+          }
+        });
+      } else if (fps > 50 && lodLevel < 2) {
+        lodLevel = Math.max(1, lodLevel - 1);
+        log.info('Performance good, increasing quality to LOD', lodLevel);
       }
     }
-    
-    lastFrameTime = currentFrameTime;
+    lastFrameTime = currentTime;
   }
   
   function updateEarthRotation() {
@@ -1336,13 +1386,7 @@ function startAnimationLoop(THREE) {
     });
   }
   
-  function renderFrame() {
-    if (composer) {
-      composer.render();
-    } else {
-      renderer.render(scene, camera);
-    }
-  }
+  // Rendering wird in der vorherigen renderFrame() Funktion durchgeführt
   
   animate();
   log.debug('Animation loop started');

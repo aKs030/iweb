@@ -275,28 +275,59 @@ function startShootingStars(starsContainer) {
 function startClouds(cloudsContainer) {
   log.debug('Starting clouds system');
   
-  function addCloud() {
+  // Wolken-Pool für bessere Performance
+  const cloudPool = [];
+  const maxClouds = 8;
+  let activeClouds = 0;
+  
+  function getCloudFromPool() {
+    if (cloudPool.length > 0) {
+      return cloudPool.pop();
+    }
+    
     const cloud = document.createElement('div');
     cloud.className = 'cloud';
+    return cloud;
+  }
+  
+  function returnCloudToPool(cloud) {
+    if (cloudPool.length < maxClouds) {
+      cloud.style.transform = '';
+      cloud.style.opacity = '';
+      cloud.removeAttribute('data-active');
+      cloudPool.push(cloud);
+    }
+  }
+  
+  function addCloud() {
+    if (activeClouds >= maxClouds) return;
     
-    const width = Math.random() * 150 + 100;
+    const cloud = getCloudFromPool();
+    const width = Math.random() * 120 + 80; // Reduzierte Größenvarianz
     const height = width * 0.6;
-    const top = Math.random() * 40 + 10;
-    const duration = Math.random() * 40 + 60; // 60-100 Sekunden
+    const top = Math.random() * 35 + 15; // Engerer Bereich
+    const duration = Math.random() * 30 + 50; // Optimierte Dauer: 50-80s
+    const opacity = Math.random() * 0.4 + 0.2; // Variable Transparenz
     
-    cloud.style.width = width + 'px';
-    cloud.style.height = height + 'px';
+    // CSS Custom Properties für bessere Performance
+    cloud.style.setProperty('--cloud-width', width + 'px');
+    cloud.style.setProperty('--cloud-height', height + 'px');
+    cloud.style.setProperty('--cloud-opacity', opacity);
     cloud.style.top = top + '%';
     cloud.style.left = '-200px';
     cloud.style.animationDuration = duration + 's';
-    cloud.style.animationDelay = Math.random() * 10 + 's';
+    cloud.style.animationDelay = Math.random() * 5 + 's';
+    cloud.setAttribute('data-active', 'true');
     
     cloudsContainer.appendChild(cloud);
+    activeClouds++;
     
     // Cloud nach Animation entfernen
     const removeTimeout = setTimeout(() => {
-      if (cloud.parentNode) {
+      if (cloud.parentNode && cloud.getAttribute('data-active')) {
         cloud.remove();
+        returnCloudToPool(cloud);
+        activeClouds--;
       }
     }, (duration + 10) * 1000);
     
@@ -304,7 +335,7 @@ function startClouds(cloudsContainer) {
   }
   
   function scheduleNextCloud() {
-    const baseDelay = Math.random() * 15000 + 10000; // 10-25 Sekunden
+    const baseDelay = Math.random() * 12000 + 8000; // 8-20 Sekunden, optimiert
     const adjustedDelay = baseDelay / cloudFrequencyMultiplier;
     
     cloudTimeout = setTimeout(() => {
@@ -313,9 +344,9 @@ function startClouds(cloudsContainer) {
     }, adjustedDelay);
   }
   
-  // Erste Wolken mit gestaffelten Zeiten
-  for (let i = 0; i < 3; i++) {
-    const initialTimeout = setTimeout(() => addCloud(), i * 5000);
+  // Erste Wolken mit gestaffelten Zeiten (reduziert)
+  for (let i = 0; i < 2; i++) {
+    const initialTimeout = setTimeout(() => addCloud(), i * 3000);
     activeTimeouts.push(initialTimeout);
   }
   
@@ -327,6 +358,9 @@ function startClouds(cloudsContainer) {
       clearTimeout(cloudTimeout);
       cloudTimeout = null;
     }
+    // Pool aufräumen
+    cloudPool.length = 0;
+    activeClouds = 0;
   });
 }
 

@@ -18,35 +18,38 @@
   );
   
   /* Kern CSS Custom Properties */
-  --star-opacity: 1;
-  --atmosphere-intensity: 0.8;
-  --moon-visibility: 0.3;
-  --cloud-frequency: 0.5;
-  --scroll-progress: 0;
+
+ /* Deaktiviert */
+
+
+
+}
+
+/* Alle atmosphärischen Effekte deaktiviert */
+.global-particle-background .atmospheric-glow,
+.global-particle-background .aurora {
+  display: none;
 }
 
 /* ===== Sektionsspezifische Variationen ===== */
 .global-particle-background[data-section="hero"] {
-  --star-opacity: 1;
-  --atmosphere-intensity: 1.2;
-  --moon-visibility: 1;
-  --cloud-frequency: 1.2;
+
+
+
 }
 
 .global-particle-background[data-section="features"] {
-  --star-opacity: 0.8;
-  --atmosphere-intensity: 0.7;
-  --moon-visibility: 0.9;
-  --cloud-frequency: 0.8;
+
+
+
 }
 
 .global-particle-background[data-section="about"] {
-  --star-opacity: 0.9;
-  --atmosphere-intensity: 0.8;
-  --moon-visibility: 1.1;
-  --cloud-frequency: 0.6;
+
+
+
   
-  /* Wärmere Farbtonverschiebung für About */
+  /* Wärmere Hintergrundfarbe für About */
   background: linear-gradient(180deg, 
     #1a1a2e 0%, 
     #2a2a3e 30%, 
@@ -57,23 +60,24 @@
 }
 
 .global-particle-background[data-section="contact"] {
-  --star-opacity: 0.6;
-  --atmosphere-intensity: 0.5;
-  --moon-visibility: 0.8;
-  --cloud-frequency: 0.4;
+
+
+
 }
 
-/* Atmosphärische Effekte Container */
-.atmosphere {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  opacity: var(--atmosphere-intensity);
-  transition: opacity 0.6s ease-out; /* Einheitliche 0.6s Transition */
+.global-particle-background[data-section="about"] .aurora {
+  animation-duration: 50s;
+  opacity: 0.9;
+}
+
+.global-particle-background[data-section="about"] .atmospheric-glow::after {
+  background: radial-gradient(
+    ellipse at 50% 30%,
+    rgba(200, 160, 180, 0.04) 0%, /* Weniger intensiv */
+    rgba(160, 120, 160, 0.03) 30%,
+    rgba(120, 100, 140, 0.02) 50%,
+    transparent 80%
+  );
 }
 
 /* Wolken-System */
@@ -84,97 +88,235 @@
   top: 0;
   left: 0;
   opacity: var(--cloud-frequency, 1);
+  contain: layout style; /* Performance-Optimierung */
 }
 
 .cloud {
   position: absolute;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 50px;
   opacity: 0;
   animation: cloudMove 60s infinite linear;
+  
+  /* CSS Custom Properties für dynamische Größen */
+  width: var(--cloud-width, 120px);
+  height: var(--cloud-height, 72px);
+  
+  /* Performance-Optimierungen */
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Hardware-Beschleunigung */
+  backface-visibility: hidden;
 }
 
 .cloud::before {
   content: '';
   position: absolute;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.09);
   border-radius: 50px;
-  top: -50%;
-  left: 20%;
-  width: 70%;
-  height: 80%;
+  top: -45%;
+  left: 25%;
+  width: 65%;
+  height: 75%;
+  opacity: var(--cloud-opacity, 0.8);
 }
 
 .cloud::after {
   content: '';
   position: absolute;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 50px;
-  top: -30%;
-  right: 20%;
-  width: 60%;
-  height: 60%;
+  top: -25%;
+  right: 25%;
+  width: 55%;
+  height: 55%;
+  opacity: var(--cloud-opacity, 0.6);
 }
 
 @keyframes cloudMove {
   from {
-    transform: translateX(-200px);
+    transform: translateX(-200px) translateZ(0);
     opacity: 0;
   }
-  10%, 90% {
-    opacity: 0.3;
+  5% {
+    opacity: var(--cloud-opacity, 0.3);
+  }
+  15%, 85% {
+    opacity: var(--cloud-opacity, 0.4);
+  }
+  95% {
+    opacity: 0;
   }
   to {
-    transform: translateX(calc(100vw + 200px));
+    transform: translateX(calc(100vw + 200px)) translateZ(0);
     opacity: 0;
   }
 }
 
-/* Aurora Borealis Effekt */
+/* Aurora Borealis Effekt - Erweitert */
 .aurora {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 60%;
+  opacity: 0;
+  animation: auroraFlow 45s infinite ease-in-out;
+  contain: layout style paint;
+}
+
+/* Multi-Layer Aurora für mehr Realismus */
+.aurora::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(
-    45deg,
+    60deg,
     transparent 0%,
-    rgba(0, 255, 150, 0.03) 25%,
-    rgba(0, 150, 255, 0.02) 50%,
-    rgba(150, 0, 255, 0.03) 75%,
+    rgba(0, 255, 180, 0.04) 20%,
+    rgba(0, 200, 255, 0.03) 40%,
+    rgba(100, 150, 255, 0.04) 60%,
+    rgba(180, 0, 255, 0.03) 80%,
     transparent 100%
   );
-  opacity: 0;
-  animation: auroraFlow 30s infinite ease-in-out;
+  transform-origin: center bottom;
+  animation: auroraLayer1 35s infinite ease-in-out;
+}
+
+.aurora::after {
+  content: '';
+  position: absolute;
+  top: 5%;
+  left: 0;
+  width: 100%;
+  height: 90%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 100, 150, 0.02) 25%,
+    rgba(150, 255, 100, 0.03) 50%,
+    rgba(100, 150, 255, 0.02) 75%,
+    transparent 100%
+  );
+  transform-origin: center bottom;
+  animation: auroraLayer2 40s infinite ease-in-out reverse;
 }
 
 @keyframes auroraFlow {
   0%, 100% { 
-    opacity: 0; 
-    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+    transform: translateY(15px) scale(0.95) skewX(0deg);
+    filter: blur(1px);
+  }
+  25% {
+    opacity: 0.4;
+    transform: translateY(-5px) scale(1.02) skewX(2deg);
+    filter: blur(0.5px);
   }
   50% { 
-    opacity: 0.6; 
-    transform: translateY(-10px) scale(1.1);
+    opacity: 0.7;
+    transform: translateY(-12px) scale(1.05) skewX(-1deg);
+    filter: blur(0px);
+  }
+  75% {
+    opacity: 0.5;
+    transform: translateY(-8px) scale(1.01) skewX(1.5deg);
+    filter: blur(0.3px);
   }
 }
 
-/* Atmosphärisches Licht */
+@keyframes auroraLayer1 {
+  0%, 100% {
+    transform: translateY(10px) scaleY(0.8) skewX(-2deg);
+    opacity: 0.6;
+  }
+  33% {
+    transform: translateY(-8px) scaleY(1.1) skewX(3deg);
+    opacity: 0.9;
+  }
+  66% {
+    transform: translateY(-15px) scaleY(1.2) skewX(-1deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes auroraLayer2 {
+  0%, 100% {
+    transform: translateY(8px) scaleY(0.9) skewX(1deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-10px) scaleY(1.15) skewX(-2.5deg);
+    opacity: 0.8;
+  }
+}
+
+/* Atmosphärisches Licht - Erweitert */
 .atmospheric-glow {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  opacity: calc(0.4 * var(--atmosphere-intensity, 0.8));
+  transition: opacity 0.8s ease-out;
+  contain: layout style paint;
+}
+
+/* Multi-Layer Atmosph√§risches Glühen */
+.atmospheric-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: radial-gradient(
-    ellipse at 50% 20%,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 30%,
-    transparent 60%
+    ellipse at 50% 15%,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(200, 220, 255, 0.05) 20%,
+    rgba(150, 200, 255, 0.03) 40%,
+    transparent 70%
   );
-  opacity: calc(0.3 * var(--atmosphere-intensity, 0.8));
-  transition: opacity 0.6s ease-out; /* Einheitliche 0.6s Transition */
+  animation: atmosphericPulse 20s infinite ease-in-out;
+}
+
+.atmospheric-glow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at 50% 25%,
+    rgba(180, 220, 255, 0.04) 0%,
+    rgba(120, 180, 255, 0.02) 30%,
+    rgba(100, 150, 255, 0.01) 50%,
+    transparent 80%
+  );
+  animation: atmosphericPulse 25s infinite ease-in-out reverse;
+}
+
+@keyframes atmosphericPulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1) translateY(0px);
+  }
+  25% {
+    opacity: 0.9;
+    transform: scale(1.02) translateY(-3px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-5px);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(1.01) translateY(-2px);
+  }
 }
 
 /* Sterne Container */
@@ -403,18 +545,7 @@
   box-shadow: 0 0 3px rgba(255, 220, 160, 0.6);
 }
 
-.global-particle-background[data-section="features"] .aurora {
-  background: linear-gradient(
-    45deg,
-    transparent 0%,
-    rgba(0, 255, 200, 0.04) 25%, /* Mehr Grün für Features */
-    rgba(0, 200, 255, 0.03) 50%,
-    rgba(100, 0, 255, 0.04) 75%,
-    transparent 100%
-  );
-}
-
-/* Responsives Design */
+/* Responsive Design */
 @media (max-width: 768px) {
   .moon {
     top: 15%;
@@ -423,16 +554,44 @@
   
   /* Aurora weniger sichtbar auf kleinen Bildschirmen */
   .aurora {
-    opacity: 0.4;
+    opacity: 0.3;
+    animation-duration: 40s; /* Schnellere Animation für mobile */
   }
   
   .cloud {
-    animation-duration: 40s;
+    animation-duration: 35s; /* Schnellere Wolken für mobile */
+    max-width: 100px; /* Kleinere Wolken */
   }
   
   .star-medium,
   .star-large {
-    animation-duration: 5s;
+    animation-duration: 4s;
+  }
+  
+  /* Reduzierte Partikel-Dichte für bessere Performance */
+  .global-particle-background[data-section="hero"] .cloud {
+    animation-duration: 30s;
+  }
+  
+  /* Atmosphärische Effekte reduzieren */
+  .atmospheric-glow {
+    opacity: calc(0.2 * var(--atmosphere-intensity, 0.8));
+  }
+}
+
+@media (max-width: 480px) {
+  /* Sehr kleine Bildschirme - minimale Effekte */
+  .aurora {
+    display: none; /* Aurora deaktivieren für sehr kleine Bildschirme */
+  }
+  
+  .cloud {
+    animation-duration: 25s;
+    max-width: 80px;
+  }
+  
+  .moon {
+    transform: translateX(-50%) scale(calc(var(--moon-visibility, 0.3) * 0.8));
   }
 }
 
@@ -446,5 +605,15 @@
   .atmospheric-glow,
   .moon {
     transition: none;
+  }
+  
+  /* Statische Zustände für reduced motion */
+  .cloud {
+    opacity: 0.2;
+    transform: translateX(20vw) translateZ(0);
+  }
+  
+  .star {
+    opacity: 0.6;
   }
 }
