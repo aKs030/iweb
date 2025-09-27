@@ -13,13 +13,14 @@ async function checkCssConsolidation() {
   try {
     console.log('🔍 Prüfe CSS Custom Properties Konsolidierung...\n');
 
-    // Find all CSS files except root.css
+    // Find all CSS files except root.css and dynamic-menu-tokens.css
     const cssFiles = await glob('**/*.css', {
       cwd: projectRoot,
       ignore: [
         'node_modules/**', 
         '.git/**', 
-        'content/webentwicklung/root.css'
+        'content/webentwicklung/root.css',
+        'content/webentwicklung/menu/dynamic-menu-tokens.css'
       ]
     });
 

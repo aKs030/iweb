@@ -24,6 +24,8 @@ let isScrollBased = true;
 let isLowPerformanceMode = false;
 let lodLevel = 1; // 1 = hoch, 2 = medium, 3 = niedrig
 let lastFrameTime = 0;
+let performanceWarningCount = 0; // Verhindert Spam-Warnings
+let lastPerformanceCheck = 0;
 
 // ===== Three.js Earth System Manager =====
 const ThreeEarthManager = (() => {
@@ -697,6 +699,14 @@ async function createEarthMaterial(THREE) {
       result.status === 'fulfilled' ? result.value : null
     );
     
+    // Debug: Texture-Status loggen
+    log.debug('Texture loading results:', {
+      dayTexture: !!dayTexture,
+      nightTexture: !!nightTexture,
+      normalTexture: !!normalTexture,
+      bumpTexture: !!bumpTexture
+    });
+    
     // Prüfen ob mindestens eine Textur geladen wurde
     const loadedTextures = textures.filter(result => result.status === 'fulfilled').length;
     
@@ -725,15 +735,23 @@ async function createEarthMaterial(THREE) {
         fragmentShader: getEarthFragmentShader()
       });
     } else if (dayTexture) {
-      // Standard Material mit Day Texture
-      material = new THREE.MeshPhongMaterial({
+      // Standard Material mit Day Texture - nur definierte Texturen verwenden
+      const materialConfig = {
         map: dayTexture,
-        normalMap: normalTexture,
-        bumpMap: bumpTexture,
         bumpScale: 0.1,
         shininess: 0.3,
         specular: 0x222222
-      });
+      };
+      
+      // Nur hinzufügen wenn Texturen definiert sind
+      if (normalTexture) {
+        materialConfig.normalMap = normalTexture;
+      }
+      if (bumpTexture) {
+        materialConfig.bumpMap = bumpTexture;
+      }
+      
+      material = new THREE.MeshPhongMaterial(materialConfig);
     } else {
       // Fallback zu prozeduralem Material
       material = createProceduralEarthMaterial(THREE);
@@ -1584,10 +1602,20 @@ function startAnimationLoop(THREE) {
       const frameDuration = currentTime - lastFrameTime;
       const fps = 1000 / frameDuration;
       
-      // Automatische Qualitätsanpassung
+      // Performance-Checks nur alle 2 Sekunden zur Spam-Vermeidung
+      if (currentTime - lastPerformanceCheck < 2000) {
+        lastFrameTime = currentTime;
+        return;
+      }
+      lastPerformanceCheck = currentTime;
+      
+      // Automatische Qualitätsanpassung mit begrenzten Warnings
       if (fps < 25 && lodLevel > 2) {
         lodLevel = 3;
-        log.warn('Performance low, reducing quality to LOD 3');
+        if (performanceWarningCount < 3) { // Max 3 Warnings zur Console-Spam-Vermeidung
+          log.warn('Performance niedrig, Qualität auf LOD 3 reduziert');
+          performanceWarningCount++;
+        }
         // Shader-Komplexität reduzieren
         scene.traverse(child => {
           if (child.material?.defines) {
@@ -1597,7 +1625,7 @@ function startAnimationLoop(THREE) {
         });
       } else if (fps > 50 && lodLevel < 2) {
         lodLevel = Math.max(1, lodLevel - 1);
-        log.info('Performance good, increasing quality to LOD', lodLevel);
+        log.info('Performance verbessert, Qualität auf LOD', lodLevel, 'erhöht');
       }
     }
     lastFrameTime = currentTime;

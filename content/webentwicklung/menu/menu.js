@@ -13,6 +13,9 @@
  */
 
 import { getElementById } from '../utils/common-utils.js';
+import { createLogger } from '../utils/logger.js';
+
+const log = createLogger('menu');
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,11 +23,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const yearEl = getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // Menü laden
+  // Menü laden mit Live Server Detection
   if (!menuContainer) {
     return;
   }
-  fetch('/content/webentwicklung/menu/menu.html')
+  
+  // Live Server Auto-Detection - Enhanced
+  const isLiveServer = window.location.port === '5500' || 
+                      (window.location.hostname === '127.0.0.1' && window.location.port === '5500') ||
+                      navigator.userAgent.includes('VS Code') ||
+                      document.querySelector('script[src*="__vscode_browser"]') !== null;
+  
+  const menuFile = isLiveServer ? 'menu-liveserver-fix.html' : 'menu.html';
+  
+  log.info('Server Detection:', isLiveServer ? 'Live Server' : 'Standard Server', '- Loading', menuFile);
+  
+  fetch(`/content/webentwicklung/menu/${menuFile}`)
     .then(response => {
       if (!response.ok) throw new Error(`HTTP-Error! Status: ${response.status}`);
       return response.text();

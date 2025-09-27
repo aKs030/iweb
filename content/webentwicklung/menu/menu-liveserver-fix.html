@@ -1,0 +1,126 @@
+<!-- Live Server Compatible Menu Version -->
+<style>
+  /* Inline critical menu CSS für Live Server - Enhanced */
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+    display: none !important; /* Force-verstecke SVG für Live Server */
+  }
+  .icon-fallback {
+    display: inline-block !important; /* Force-zeige Emoji bei Live Server */
+    font-size: 14px;
+    margin-right: 8px;
+    opacity: 0.85;
+    line-height: 1;
+    vertical-align: -1px;
+    flex-shrink: 0;
+    transition: all 0.2s var(--dynamic-menu-spring-quick, ease);
+  }
+  /* Hover-Effekte für Emoji-Icons */
+  .site-menu__list a:hover .icon-fallback,
+  .site-menu__list a:focus .icon-fallback,
+  button.submenu-toggle:hover .icon-fallback,
+  button.submenu-toggle:focus .icon-fallback {
+    transform: translateY(-1px) scale(1.1);
+    opacity: 1;
+  }
+</style>
+
+<link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
+
+    <header class="site-header">
+      <!-- Logo -->
+      <a href="/index.html" class="site-logo-link">
+        <span class="site-logo__container">
+          <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
+          <span class="site-subtitle" id="site-subtitle"></span>
+        </span>
+      </a>
+
+  <!-- Hamburger-Button -->
+  <button type="button" class="site-menu__toggle" aria-label="Menü" aria-controls="site-menu" aria-expanded="false">
+        <span class="site-menu__hamburger"></span>
+      </button>
+
+      <!-- Navigation mit Live Server Emoji-Icons -->
+  <nav id="site-menu" class="site-menu" aria-label="Hauptnavigation">
+        <ul class="site-menu__list">
+          <li>
+            <a href="/index.html">
+              <span class="icon-fallback">🏠</span>
+              <span>Startseite</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/card/karten.html">
+              <span class="icon-fallback">🖼️</span>
+              <span>Projekte</span>
+            </a>
+          </li>
+          <li>
+            <a href="/pages/ueber-mich/">
+              <span class="icon-fallback">👤</span>
+              <span>Über mich</span>
+            </a>
+          </li>
+          <li class="has-submenu">
+            <button type="button" class="submenu-toggle" aria-haspopup="true" aria-expanded="false">
+              <span class="icon-fallback">🎮</span>
+              <span>Spiele</span>
+            </button>
+            <ul class="submenu">
+              <li>
+                <a href="/pages/spiele/space-defender.html">
+                  <span class="icon-fallback">🕹️</span>
+                  <span>Spiele-Übersicht</span>
+                </a>
+              </li>
+              <li>
+                <a href="/pages/card/wetter.html">
+                  <span class="icon-fallback">⛅</span>
+                  <span>Wetter</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+<script>
+// Live Server Fallback - Production Ready
+document.addEventListener('DOMContentLoaded', function() {
+  // Setup Positionierungs-Logik
+  const setupSubmenuPositioning = () => {
+    const hasSubmenuItems = document.querySelectorAll('.has-submenu');
+    
+    hasSubmenuItems.forEach(item => {
+      const submenu = item.querySelector('.submenu');
+      if (!submenu) return;
+      
+      const checkPosition = () => {
+        const rect = item.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        
+        if (rect.left + 220 > viewportWidth) {
+          submenu.classList.add('position-right');
+        } else {
+          submenu.classList.remove('position-right');
+        }
+      };
+      
+      if (window.innerWidth > 768) {
+        item.addEventListener('mouseenter', () => {
+          setTimeout(checkPosition, 5);
+        });
+        window.addEventListener('resize', checkPosition);
+      }
+    });
+  };
+  
+  setupSubmenuPositioning();
+  
+  // Fallback für langsame Verbindungen
+  setTimeout(setupSubmenuPositioning, 100);
+});
+</script>

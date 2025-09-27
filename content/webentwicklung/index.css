@@ -16,9 +16,6 @@
 /* Button Styles Import */
 @import 'buttons.css';
 
-/* Card Components Import */
-@import '../../pages/card/karten.css';
-
 /* Native Scroll-Snap Container für zuverlässiges Section-Snapping */
 .snap-container {
   height: 100vh;

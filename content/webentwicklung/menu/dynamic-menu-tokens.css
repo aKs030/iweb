@@ -1,0 +1,54 @@
+/**
+ * Dynamic Menu Design Tokens
+ * 
+ * Zentrale Definition aller CSS Custom Properties für das Dynamic Menu System.
+ * Diese Datei enthält alle design-bezogenen Variablen wie Farben, Schatten,
+ * Animationen und Dimensionen für das moderne Navigations-Interface.
+ * 
+ * @author Abdulkerim Sesli
+ * @version 2.0.0 - Dynamic Menu Design
+ */
+
+/* ===== Dynamic Menu Design Tokens ===== */
+:root {
+  /* === Backgrounds & Glassmorphismus === */
+  --dynamic-menu-header-bg: rgba(28, 28, 30, 0.72);
+  --dynamic-menu-blur-radius: 20px;
+  
+  /* === Border Radius System === */
+  --dynamic-menu-pill-radius: 24px;        /* Dynamic Island Header */
+  --dynamic-menu-card-radius: 16px;        /* Mobile Cards & Submenus */
+  --dynamic-menu-micro-radius: 8px;        /* Small Elements */
+  
+  /* === Shadow Depth System === */
+  --dynamic-menu-shadow-depth-2: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+  --dynamic-menu-shadow-depth-3: 0 8px 32px rgba(0, 0, 0, 0.18), 0 4px 8px rgba(0, 0, 0, 0.15);
+  
+  /* === Animation Spring System === */
+  --dynamic-menu-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);    /* Bouncy Animations */
+  --dynamic-menu-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);       /* Smooth Transitions */
+  --dynamic-menu-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);                /* Quick Interactions */
+  
+  /* === Accent Colors === */
+  --dynamic-menu-accent-blue: #007AFF;           /* Primary Blue */
+  --dynamic-menu-accent-blue-hover: #0056CC;     /* Hover State */
+  
+  /* === Label Colors (Dark Mode) === */
+  --dynamic-menu-label-primary: rgba(255, 255, 255, 0.95);      /* High Emphasis Text */
+  --dynamic-menu-label-secondary: rgba(255, 255, 255, 0.7);     /* Medium Emphasis Text */
+  
+  /* === UI Element Colors === */
+  --dynamic-menu-separator: rgba(255, 255, 255, 0.15);          /* Borders & Dividers */
+  --dynamic-menu-fill-primary: rgba(255, 255, 255, 0.1);        /* Hover Backgrounds */
+  --dynamic-menu-fill-secondary: rgba(255, 255, 255, 0.05);     /* Subtle Backgrounds */
+}
+
+/* ===== Light Mode Overrides ===== */
+:root[data-theme="light"] {
+  /* Light mode color adjustments */
+  --dynamic-menu-label-primary: rgba(0, 0, 0, 0.9);
+  --dynamic-menu-label-secondary: rgba(0, 0, 0, 0.7);
+  --dynamic-menu-separator: rgba(0, 0, 0, 0.15);
+  --dynamic-menu-fill-primary: rgba(0, 0, 0, 0.08);
+  --dynamic-menu-fill-secondary: rgba(0, 0, 0, 0.04);
+}

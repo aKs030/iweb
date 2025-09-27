@@ -221,7 +221,8 @@
   --atmosphere-intensity: 0.8;
   --moon-visibility: 0.3;
   --cloud-frequency: 0.5;
-  --scroll-progress: 0;}
+  --scroll-progress: 0;
+}
 
 /* =======================
    LIGHT MODE OVERRIDE (Blauer Stil)
