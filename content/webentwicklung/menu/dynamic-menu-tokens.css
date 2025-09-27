@@ -78,6 +78,7 @@
 /* ===== Light Mode Overrides ===== */
 :root[data-theme="light"] {
   /* Light mode color adjustments */
+  --dynamic-menu-header-bg: rgba(255, 255, 255, 0.72);
   --dynamic-menu-label-primary: rgba(0, 0, 0, 0.9);
   --dynamic-menu-label-secondary: rgba(0, 0, 0, 0.7);
   --dynamic-menu-separator: rgba(0, 0, 0, 0.15);

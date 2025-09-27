@@ -1,72 +1,97 @@
 /**
- * Footer Styles - Dynamischer Footer mit Minimiert/Maximiert Modi
+ * Dynamic Footer System - Menu-inspired Design
  * 
  * Features:
- * - Fixed Position am unteren Bildschirmrand
- * - Dynamisches Erweitern bei letzter Sektion
- * - Smooth Transitions zwischen Modi
- * - Dark Theme optimiert
- * - Responsive und Accessibility-freundlich
+ * - Dynamic Island-inspirierte Footer-Navigation
+ * - Glassmorphismus 2.0 mit dynamischen Unschärfe-Effekten
+ * - SF Pro Typography System
+ * - Spring-basierte Micro-Animationen
+ * - Dynamic Colors mit verbessertem Kontrast
+ * - Touch-optimierte Interactions
  * 
  * @author Abdulkerim Sesli
- * @version 3.0.0
+ * @version 4.0.0 - Dynamic Footer Design (Menu-inspired)
  */
 
+/* ===== Import Dynamic Footer Design Tokens ===== */
+@import url("./dynamic-footer-tokens.css");
+
+/* ===== Dynamic Footer Base Styles ===== */
 .site-footer-fixed {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
-  background: #2c2c2e;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 1400px;
+  min-width: 320px;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+  
+  /* Dynamic Footer Glassmorphismus */
+  background: var(--dynamic-footer-header-bg);
+  backdrop-filter: blur(var(--dynamic-footer-blur-radius));
+  -webkit-backdrop-filter: blur(var(--dynamic-footer-blur-radius));
+  
+  /* Dynamic Island Shape */
+  border-radius: var(--dynamic-footer-pill-radius);
+  border: 1px solid var(--dynamic-footer-separator);
+  
+  /* Dynamic Footer Shadow System */
+  box-shadow: var(--dynamic-footer-shadow-depth-2);
+  
   z-index: 1000;
-  -webkit-backdrop-filter: blur(10px) saturate(1.2);
-  backdrop-filter: blur(10px) saturate(1.2);
-  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
-  transition: all var(--transition-slow);
+  transition: all 0.3s var(--dynamic-footer-spring-smooth);
   will-change: transform, opacity;
+  
+  /* Typography Base */
+  font-family: var(--dynamic-footer-font-family);
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Touch Optimization */
+  touch-action: pan-y;
 }
 
-/* ===== MINIMIERTER MODUS (Standard) ===== */
+/* ===== Dynamic Footer Typography System ===== */
 .footer-minimized {
-  padding: var(--spacing-sm, 0.75rem) 0;
+  padding: 16px 24px;
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 1;
-  transform: var(--transform-none);
-  transition: all var(--transition-base);
+  transform: translateY(0);
+  transition: all 0.3s var(--dynamic-footer-spring-smooth);
 }
 
 .footer-copyright-minimal {
-  color: var(--text-muted, #888888);
-  font-size: 0.875rem;
+  color: var(--dynamic-footer-label-secondary);
+  font-size: var(--dynamic-footer-text-secondary);
+  font-weight: var(--dynamic-footer-font-weight-regular);
   margin: 0;
   text-align: center;
   line-height: 1.4;
-  font-weight: 400;
-  padding: 0 var(--spacing-lg, 1.5rem);
+  padding: 0 20px;
+  letter-spacing: -0.01em;
 }
 
-/* ===== MAXIMIERTER MODUS ===== */
+/* ===== Dynamic Footer Maximized Mode ===== */
 .footer-maximized {
-  opacity: 0; /* Standardmäßig versteckt */
-  transform: var(--transform-down-full);
-  transition: all var(--transition-slow);
-  max-height: 0; /* Versteckt im Standardzustand */
-  overflow: hidden; /* Versteckt Inhalte im minimierten Modus */
-  padding-bottom: 0; /* Kein Padding wenn versteckt */
-  pointer-events: none; /* Keine Interaktion wenn versteckt */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s var(--dynamic-footer-spring-smooth);
+  max-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  pointer-events: none;
 }
 
-/* Explizit versteckter Zustand */
+/* Footer Hidden State */
 .footer-maximized.footer-hidden {
   opacity: 0;
-  transform: var(--transform-down-full);
+  transform: translateY(20px);
   max-height: 0;
   overflow: hidden;
   padding-bottom: 0;
@@ -76,23 +101,30 @@
 .footer-full-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--spacing-xl, 2rem) var(--spacing-lg, 1.5rem) var(--spacing-xxl, 2.5rem) var(--spacing-lg, 1.5rem);
-  /* Erweiterte Padding: oben | rechts | unten | links */
+  padding: 32px 24px 40px 24px;
 }
 
 .footer-main-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Größere Mindestbreite */
-  gap: var(--spacing-xl, 2rem) var(--spacing-lg, 1.5rem); /* Verschiedene Gaps für row/column */
-  margin-bottom: var(--spacing-lg, 1.5rem);
-  align-items: start; /* Bessere Ausrichtung der Sektionen */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px 24px;
+  margin-bottom: 24px;
+  align-items: start;
 }
 
 /* Erweiterte Sektion für Newsletter/Einstellungen */
 .footer-section-wide {
   grid-column: span 2;
-  width: 100%; /* Statt min-width und max-width für bessere Kontrolle */
-  box-sizing: border-box; /* Stellt sicher, dass Padding/Border eingerechnet werden */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== Responsive Footer Layout ===== */
+@media (max-width: 1200px) {
+  .site-footer-fixed {
+    max-width: calc(100% - 16px);
+    min-width: 320px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -102,9 +134,19 @@
 }
 
 @media (max-width: 768px) {
+  .site-footer-fixed {
+    bottom: 8px;
+    width: calc(100% - 16px);
+    border-radius: var(--dynamic-footer-card-radius);
+  }
+  
   .footer-main-grid {
-    grid-template-columns: 1fr; /* Einspaltiges Layout auf Mobile */
-    gap: var(--spacing-lg, 1.5rem);
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .footer-full-content {
+    padding: 24px 20px 32px 20px;
   }
   
   .footer-section-wide {
@@ -123,24 +165,29 @@
   min-width: 0; /* Ermöglicht Flexbox-Schrumpfung */
 }
 
+/* ===== Footer Section Typography ===== */
 .footer-section-title {
-  color: var(--text-primary, #ffffff);
-  font-size: 1.1rem;
-  font-weight: 600;
+  color: var(--dynamic-footer-label-primary);
+  font-size: var(--dynamic-footer-text-primary);
+  font-weight: var(--dynamic-footer-font-weight-medium);
   margin: 0;
-  padding-bottom: var(--spacing-xs, 0.5rem);
-  border-bottom: 2px solid var(--primary-color, #007AFF);
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--dynamic-footer-accent-blue);
   display: block;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  letter-spacing: -0.02em;
+  font-family: var(--dynamic-footer-font-family);
 }
 
 .footer-contact-info p {
-  color: var(--text-muted, #888888);
-  margin: var(--spacing-xs, 0.5rem) 0;
-  font-size: 0.9rem;
+  color: var(--dynamic-footer-label-secondary);
+  margin: 8px 0;
+  font-size: var(--dynamic-footer-text-secondary);
+  font-weight: var(--dynamic-footer-font-weight-regular);
   line-height: 1.5;
+  font-family: var(--dynamic-footer-font-family);
 }
 
 .footer-service-list {
@@ -159,23 +206,27 @@
   align-items: center;
 }
 
+/* ===== Dynamic Footer Social Links ===== */
 .footer-social-link {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs, 0.5rem);
-  color: var(--text-muted, #888888);
+  gap: 8px;
+  color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all var(--transition-fast, 0.2s ease);
-  padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  font-size: var(--dynamic-footer-text-secondary);
+  font-weight: var(--dynamic-footer-font-weight-regular);
+  font-family: var(--dynamic-footer-font-family);
+  transition: all 0.2s var(--dynamic-footer-spring-quick);
+  padding: 12px 16px;
+  border-radius: var(--dynamic-footer-micro-radius);
+  border: 1px solid var(--dynamic-footer-separator);
+  background: var(--dynamic-footer-fill-secondary);
   position: relative;
   overflow: hidden;
+  letter-spacing: -0.01em;
 }
 
+/* ===== Dynamic Footer Animations & Micro-Interactions ===== */
 .footer-social-link::before {
   content: '';
   position: absolute;
@@ -186,10 +237,10 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.1),
+    var(--dynamic-footer-fill-primary),
     transparent
   );
-  transition: left var(--transition-base, 0.3s ease);
+  transition: left 0.3s var(--dynamic-footer-spring-smooth);
 }
 
 .footer-social-link:hover::before,
@@ -199,37 +250,36 @@
 
 .footer-social-link:hover,
 .footer-social-link:focus {
-  color: var(--primary-color, #007AFF);
-  border-color: var(--primary-color, #007AFF);
-  background: rgba(0, 122, 255, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+  color: var(--dynamic-footer-accent-blue);
+  border-color: var(--dynamic-footer-accent-blue);
+  background: var(--dynamic-footer-fill-primary);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--dynamic-footer-shadow-depth-2);
+  text-decoration: none;
 }
 
-/* GitHub spezifische Hover-Farbe */
+/* Platform-specific hover colors with Dynamic Footer tokens */
 .footer-social-link[href*="github"]:hover,
 .footer-social-link[href*="github"]:focus {
-  color: #f0f6fc;
+  color: var(--dynamic-footer-label-primary);
   border-color: #30363d;
-  background: rgba(48, 54, 61, 0.8);
+  background: rgba(48, 54, 61, 0.2);
   box-shadow: 0 4px 12px rgba(48, 54, 61, 0.3);
 }
 
-/* LinkedIn spezifische Hover-Farbe */
 .footer-social-link[href*="linkedin"]:hover,
 .footer-social-link[href*="linkedin"]:focus {
   color: #0077b5;
   border-color: #0077b5;
-  background: rgba(0, 119, 181, 0.1);
+  background: rgba(0, 119, 181, 0.15);
   box-shadow: 0 4px 12px rgba(0, 119, 181, 0.2);
 }
 
-/* Instagram spezifische Hover-Farbe */
 .footer-social-link[href*="instagram"]:hover,
 .footer-social-link[href*="instagram"]:focus {
   color: #e4405f;
   border-color: #e4405f;
-  background: linear-gradient(45deg, rgba(228, 64, 95, 0.1), rgba(253, 29, 29, 0.1));
+  background: linear-gradient(45deg, rgba(228, 64, 95, 0.15), rgba(253, 29, 29, 0.1));
   box-shadow: 0 4px 12px rgba(228, 64, 95, 0.2);
 }
 
@@ -237,14 +287,16 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  transition: all var(--transition-fast, 0.2s ease);
-  opacity: 0.9;
+  transition: all 0.2s var(--dynamic-footer-spring-quick);
+  opacity: 0.85;
+  filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.15));
 }
 
 .footer-social-link:hover .social-icon,
 .footer-social-link:focus .social-icon {
   opacity: 1;
-  transform: scale(1.1);
+  transform: translateY(-1px) scale(1.1);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
 }
 
 .social-text {
@@ -313,24 +365,53 @@
   pointer-events: none;
 }
 
+/* ===== Dynamic Footer Entrance Animation ===== */
+@keyframes dynamicFooterAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.site-footer-fixed {
+  /* Add entrance animation similar to menu */
+  animation: dynamicFooterAppear 0.8s var(--dynamic-footer-spring-bounce) forwards;
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px) scale(0.95);
+}
+
+/* ===== Footer Mode Transitions ===== */
+.footer-expanded .footer-minimized {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.3s var(--dynamic-footer-spring-smooth);
+}
+
 .footer-expanded .footer-maximized {
   opacity: 1;
-  transform: var(--transform-none);
-  max-height: none; /* Keine Höhenbeschränkung im erweiterten Modus */
-  min-height: 450px; /* Mindesthöhe beibehalten */
-  overflow: visible; /* Vollständige Inhalte anzeigen */
-  padding-bottom: 20px; /* Padding im erweiterten Modus */
+  transform: translateY(0);
+  max-height: none;
+  min-height: 450px;
+  overflow: visible;
+  padding-bottom: 20px;
   pointer-events: auto;
+  transition: all 0.3s var(--dynamic-footer-spring-smooth);
 }
 
 .footer-expanded .footer-hidden {
   opacity: 1;
-  transform: var(--transform-none);
-  max-height: none; /* Keine Höhenbeschränkung für erweiterten Footer */
-  min-height: 600px; /* Mindesthöhe für erweiterten Footer */
-  overflow: visible; /* Vollständige Inhalte anzeigen */
-  padding-bottom: 20px; /* Padding im erweiterten Modus */
+  transform: translateY(0);
+  max-height: none;
+  min-height: 600px;
+  overflow: visible;
+  padding-bottom: 20px;
   pointer-events: auto;
+  transition: all 0.3s var(--dynamic-footer-spring-smooth);
 }
 
 /* ===== NEUE FOOTER-KOMPONENTEN ===== */
