@@ -71,8 +71,18 @@
   ); /* Low Emphasis Text */
 
   /* === Footer UI Element Colors === */
-  --dynamic-footer-separator: rgba(255, 255, 255, 0.15); /* Borders & Dividers */
-  --dynamic-footer-fill-primary: rgba(255, 255, 255, 0.1); /* Hover Backgrounds */
+  --dynamic-footer-separator: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ); /* Borders & Dividers */
+  --dynamic-footer-fill-primary: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Hover Backgrounds */
   --dynamic-footer-fill-secondary: rgba(
     255,
     255,
@@ -81,7 +91,8 @@
   ); /* Subtle Backgrounds */
 
   /* === Footer Typography === */
-  --dynamic-footer-font-family: -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  --dynamic-footer-font-family: -apple-system, "SF Pro Display", "SF Pro Text",
+    system-ui, sans-serif;
   --dynamic-footer-text-primary: 17px; /* Standard Body Size */
   --dynamic-footer-text-secondary: 15px; /* Secondary Text */
   --dynamic-footer-text-small: 13px; /* Small Text & Labels */
