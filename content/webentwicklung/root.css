@@ -447,20 +447,6 @@
   }
 }
 
-/* Mobile Accessibility: Grundschrift und Zeilenhöhe auf kleinen Geräten erhöhen */
-@media (max-width: 480px) {
-  :root {
-    --font-size-p: 1.13rem;
-    --line-height-base: 1.85;
-  }
-}
-
-@media (max-width: 768px) {
-  :root {
-    --header-height: 15px;
-  }
-}
-
 /* Fokus-Indikator für alle interaktiven Elemente */
 button:focus-visible,
 a:focus-visible,

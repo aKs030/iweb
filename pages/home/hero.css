@@ -98,24 +98,6 @@ body:not(.hero-active) .hero-title {
   transform: var(--transform-scale-none);
 }
 
-@media (min-width: 1025px) {
-  .hero-title{
-    /* Larger, more relaxed typography on wide screens */
-  /* Anpassung der Hero-Variablen für große Screens */
-    text-shadow: 0 0 22px rgba(37,99,235,0.38), 0 0 44px rgba(37,99,235,0.28);
-    letter-spacing: -0.018em;
-  }
-}
-
-@media (max-width: 768px){
-  .hero-title {
-    /* Tighter scaling on small screens for readability */
-  /* Anpassung der Hero-Variablen für kleine Screens */
-    margin-top: 20px;
-    text-shadow: 0 0 12px rgba(37,99,235,0.32), 0 0 22px rgba(37,99,235,0.22);
-  }
-}
-
 .hero{
   position: relative;
   display: flex;
@@ -205,55 +187,6 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
   pointer-events: none;
 }
 
-@media (max-width: 768px) {
-  .spotlight-bg {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
-    margin: 0 auto;
-  width: fit-content;
-  max-width: 88vw;
-  min-width: 0;
-  padding-block: clamp(10px, 3.4vw, 14px);
-  padding-inline: clamp(16px, 6vw, 28px);
-  }
-  .spotlight-bg::before { transform: rotate(-6deg) scale(1.08); filter: blur(26px) saturate(0.98); }
-
-  .spotlight-bg > .hero-title {
-    display: inline-block;
-    line-height: 1.18;
-    text-align: center;
-    margin: 0 auto;
-    z-index: 3;
-  }
-
-  .hero-image-container {
-    width: 100%;
-    max-width: 88vw;
-    overflow: visible; /* ensure halo can extend beyond container */
-  }
-}
-
-@media (max-width: 480px) {
-  .spotlight-bg {
-    width: fit-content;
-    max-width: 88vw;
-    min-width: 0;
-    padding-block: clamp(10px, 4vw, 12px);
-    padding-inline: clamp(14px, 8vw, 18px);
-  }
-  .spotlight-bg::before { transform: rotate(-4deg) scale(1.06); filter: blur(20px) saturate(0.96); }
-  .spotlight-bg > .hero-title {
-  font-size: clamp(1.1rem, 5.6vw, 1.6rem);
-  min-inline-size: clamp(18ch, 60vw, 40ch);
-  line-height: 1.20;
-  letter-spacing: -0.015em;
-  transform: translateY(0.8px); /* slightly stronger nudge for optical centering */
-  z-index: 3;
-  }
-}
-
 .spotlight-bg > .hero-title {
   z-index: 2;
   position: relative;
@@ -262,30 +195,6 @@ body:not(.hero-active) .floating-icon { animation-play-state: paused !important;
   text-align: center;
   line-height: 1.12; /* keep text vertically balanced */
 }
-/* Desktop (>=1025px) */
-@media (min-width: 1025px) {
-  .hero { position: relative; }
-  .hero-content { display: grid; grid-template-columns: 1fr; }
-  .hero-visual { grid-row: 1; grid-column: 1; justify-self: center; align-self: center; }
-}
-/* Tablet & <=1024px */
-@media (max-width: 1024px) {
-        .hero-content { grid-template-columns: 1fr; text-align: center; }
-        .hero-visual { margin-bottom: var(--spacing-xl); }
-}
-/* Mobile <=768px */
-@media (max-width: 768px){
-  .hero{
-    min-height: 100svh;
-    height: auto;
-    padding: 12px 0;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-  }
-  .hero-content { grid-template-columns: 1fr; padding: 0 8px; max-width: 100vw; text-align: center; place-items: center; }
-  .floating-icon, .hero-image-decoration { display: none; }
-}
-/* Print: Hero-spezifische Deaktivierungen */
-@media print { .hero-background { display: none !important; } }
 
 /* ===== Hero Buttons (aus content/webentwicklung/buttons.css verschoben) ===== */
 .hero-buttons { 

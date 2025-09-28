@@ -15,49 +15,11 @@
  */
 
 /* ===== Dynamic Menu Design Tokens ===== */
-:root {
-  /* === Backgrounds & Glassmorphismus === */
-
-
-
-  /* === Border Radius System === */
- /* Dynamic Island Header */
- /* Mobile Cards & Submenus */
- /* Small Elements */
-
-  /* === Shadow Depth System === */
-
-
-
-  /* === Animation Spring System === */
- /* Bouncy Animations */
- /* Smooth Transitions */
- /* Quick Interactions */
-
-  /* === Accent Colors === */
- /* Primary Blue */
- /* Hover State */
-
-  /* === Label Colors (Dark Mode) === */
- /* High Emphasis Text */
- /* Medium Emphasis Text */
-
-  /* === UI Element Colors === */
- /* Borders & Dividers */
- /* Hover Backgrounds */
- /* Subtle Backgrounds */
-}
+/* CSS Custom Properties werden aus root.css geladen */
+/* Alle Design Tokens sind in /content/webentwicklung/root.css definiert */
 
 /* ===== Light Mode Overrides ===== */
-:root[data-theme="light"] {
-  /* Light mode color adjustments */
-
-
-
-
-
-
-}
+/* Light Mode Anpassungen werden aus root.css geladen */
 
 /* ===== Dynamic Menu Icons System ===== */
 .nav-icon {
@@ -187,7 +149,6 @@ body {
   position: fixed;
   top: 12px;
   left: 50%;
-  transform: translateX(-50%);
   width: calc(100% - 32px);
   max-width: 1400px; /* Increased for more menu space */
   min-width: 1000px; /* Ensure minimum width for all 4 menu items */
@@ -213,7 +174,7 @@ body {
   z-index: 9999;
   gap: 20px; /* Add gap between logo and menu */
 
-  /* Animation */
+  /* Animation - kombinierte Transform-Definition */
   animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce)
     forwards;
   opacity: 0;
@@ -224,20 +185,6 @@ body {
   font-family: -apple-system, "SF Pro Display", system-ui, sans-serif;
   font-weight: 500;
   letter-spacing: -0.02em;
-}
-
-/* Responsive header adjustments */
-@media (max-width: 1200px) {
-  .site-header {
-    max-width: calc(100% - 16px);
-    min-width: 900px; /* Noch kleinere min-width für bessere Responsiveness */
-  }
-}
-
-@media (max-width: 1000px) {
-  .site-header {
-    min-width: auto; /* Entferne min-width bei kleineren Bildschirmen */
-  }
 }
 
 @keyframes dynamicMenuHeaderAppear {
@@ -323,59 +270,6 @@ body {
   color: var(--dynamic-menu-label-primary);
 }
 
-/* Mobile Responsive Adjustments */
-@media (max-width: 768px) {
-  .site-logo__container {
-    gap: 0;
-  }
-
-  .site-subtitle {
-    font-size: clamp(10px, 1.5vw, 12px);
-    letter-spacing: 0.005em;
-  }
-
-  .site-logo {
-    padding: 2px 0;
-  }
-
-  .site-logo.elegant-logo {
-    font-size: clamp(16px, 2.5vw, 20px);
-  }
-}
-
-/* Very Small Screens */
-@media (max-width: 480px) {
-  .site-subtitle {
-    display: none;
-  }
-}
-
-/* ===== Dynamic Menu Desktop Navigation - Ensure all items visible ===== */
-@media (min-width: 1001px) {
-  .site-menu {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: static !important;
-    transform: none !important;
-  }
-
-  .site-menu__toggle {
-    display: none !important;
-  }
-
-  .site-menu__list {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .site-menu__list li {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-}
 /* ===== Dynamic Menu Desktop Navigation ===== */
 .site-menu {
   display: flex;
@@ -722,6 +616,18 @@ main {
     opacity: 0;
     transition: opacity 0.3s ease;
   }
+
+  /* Mobile submenu indicator - integriert von 768px Media Query */
+  .has-submenu > a::after,
+  .has-submenu > .submenu-toggle::after {
+    content: "⌄";
+    transform: rotate(-90deg);
+  }
+
+  .has-submenu.open > a::after,
+  .has-submenu.open > .submenu-toggle::after {
+    transform: rotate(0deg);
+  }
 }
 
 /* ===== Dynamic Menu Accessibility & Focus States ===== */
@@ -764,20 +670,6 @@ main {
   opacity: 1;
 }
 
-/* Mobile submenu indicator */
-@media (max-width: 768px) {
-  .has-submenu > a::after,
-  .has-submenu > .submenu-toggle::after {
-    content: "⌄";
-    transform: rotate(-90deg);
-  }
-
-  .has-submenu.open > a::after,
-  .has-submenu.open > .submenu-toggle::after {
-    transform: rotate(0deg);
-  }
-}
-
 /* ===== Dynamic Menu Overlay States ===== */
 .site-menu__overlay {
   display: none;
@@ -788,25 +680,6 @@ main {
   opacity: 1;
 }
 
-/* ===== Dynamic Menu Reduced Motion Support ===== */
-@media (prefers-reduced-motion: reduce) {
-  .site-header,
-  .site-menu,
-  .site-menu__list li a,
-  .nav-icon,
-  .site-logo,
-  .site-subtitle {
-    animation: none;
-    transition: opacity 0.2s ease, color 0.2s ease, background-color 0.2s ease;
-  }
-}
+/* ===== Dynamic Menu Accessibility & Focus States ===== */
 
-/* ===== Dynamic Menu High Contrast Support ===== */
-@media (prefers-contrast: high) {
-  /* High contrast overrides would go here if needed */
-}
 
-/* ===== Dynamic Menu Light Mode Enhancements ===== */
-@media (prefers-color-scheme: light) {
-  /* Additional light mode overrides would go here if needed */
-}
