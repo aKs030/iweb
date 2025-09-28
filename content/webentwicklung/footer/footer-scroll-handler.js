@@ -72,7 +72,7 @@ function setupLastSectionObserver() {
  */
 function toggleFooterExpansion(shouldExpand) {
   const footer = getElementById('site-footer');
-  const body = document.body;
+  const {body} = document;
   const footerMinimized = footer?.querySelector('.footer-minimized');
   const footerMaximized = footer?.querySelector('.footer-maximized');
   

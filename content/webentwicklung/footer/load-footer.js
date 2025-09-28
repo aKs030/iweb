@@ -121,8 +121,8 @@ function setupNewsletterForm() {
   newsletterForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const emailInput = newsletterForm.querySelector('.newsletter-input-enhanced');
-    const submitBtn = newsletterForm.querySelector('.newsletter-submit-enhanced');
+    const emailInput = newsletterForm.querySelector('.newsletter-input');
+    const submitBtn = newsletterForm.querySelector('.newsletter-submit');
     const email = emailInput.value.trim();
 
     if (!email?.includes?.('@')) {
