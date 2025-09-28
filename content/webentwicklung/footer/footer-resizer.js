@@ -6,7 +6,7 @@
 
 import { throttle } from '../utils/common-utils.js';
 
-const STATE = { inited: false };
+const STATE = { inited: false, observers: [] };
 
 function setCSSVar(name, value) {
   document.documentElement.style.setProperty(name, value);
@@ -14,7 +14,8 @@ function setCSSVar(name, value) {
 
 function measureViewport() {
   // Echte Viewport-Höhe ermitteln (iOS Safari berücksichtigt)
-  const h = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 0);
+  const vv = window.visualViewport;
+  const h = Math.max(1, (vv?.height ?? window.innerHeight ?? document.documentElement.clientHeight ?? 0));
   const safeBottom = Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-bottom)').replace('px','')) || 0;
   const usable = Math.max(1, h - safeBottom);
   return { h, usable };
@@ -71,9 +72,35 @@ export function initFooterResizer() {
   apply();
   window.addEventListener('resize', onResize, { passive: true });
   window.addEventListener('orientationchange', onResize, { passive: true });
+  // visualViewport-Events (iOS Safari: Adressleisten-Animationen)
+  if (window.visualViewport) {
+    const vv = window.visualViewport;
+    vv.addEventListener('resize', onResize, { passive: true });
+    vv.addEventListener('scroll', onResize, { passive: true });
+  }
+  // DOM-Änderungen im Footer beobachten (Lazy-Load/Interaktionen)
+  try {
+    const content = document.querySelector('#site-footer .footer-enhanced-content');
+    if (content && 'ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => apply());
+      ro.observe(content);
+      STATE.observers.push(ro);
+    }
+    const footer = document.getElementById('site-footer');
+    if (footer && 'MutationObserver' in window) {
+      const mo = new MutationObserver(() => apply());
+      mo.observe(footer, { subtree: true, childList: true, attributes: true, characterData: false });
+      STATE.observers.push(mo);
+    }
+  } catch { /* no-op */ }
   // Sicherheits-Refresh nach UI-Änderungen auf iOS (Adressleiste ein/aus)
   setTimeout(apply, 250);
   setTimeout(apply, 1200);
+  // pageshow (bfcache) und fonts (Layout kann sich nachträglich ändern)
+  window.addEventListener('pageshow', () => setTimeout(apply, 60), { once: true });
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => setTimeout(apply, 30)).catch(() => {});
+  }
 }
 
 // Auto-Init
