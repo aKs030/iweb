@@ -40,7 +40,7 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
     
     try {
       const res = await fetch(url, { credentials: 'same-origin' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw new Error(`HTTP ${  res.status}`);
       
       const wrap = document.createElement('div');
       wrap.style.display = 'none';

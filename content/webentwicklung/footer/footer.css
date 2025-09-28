@@ -1,120 +1,29 @@
 /**
- * Dynamic Footer System - Menu-inspired Design
+ * Dynamic Footer System - Karten-basiertes Design
  * 
  * Features:
  * - Dynamic Island-inspirierte Footer-Navigation
- * - Glassmorphismus 2.0 mit dynamischen Unschärfe-Effekten
- * - SF Pro Typography System
+ * - Modulares Karten-System mit separater Theme Control
+ * - Glassmorphismus mit optimaler Performance
  * - Spring-basierte Micro-Animationen
- * - Dynamic Colors mit verbessertem Kontrast
- * - Touch-optimierte Interactions
+ * - Vollständig responsive Grid-Layout
+ * - Touch-optimierte Interaktionen
+ * 
+ * Struktur:
+ * - Profile Card: Persönliche Informationen
+ * - Work Card: Portfolio-Navigation
+ * - Connect Card: Social Media Links  
+ * - Tech Card: Technologie-Stack
+ * - Newsletter Card: "Join the Journey" - reine Newsletter-Anmeldung
+ * - Theme Control Card: Separate Day-Night-Theme-Umschaltung
  * 
  * @author Abdulkerim Sesli
- * @version 4.0.0 - Dynamic Footer Design (Menu-inspired)
+ * @version 4.1.0 - Separate Theme Control Card Implementation
+ * @updated 2025-09-28 - Theme Control Refactoring & CSS Consolidation
  */
 
 /* ===== Dynamic Footer Design Tokens ===== */
-:root {
-  /* === Footer Backgrounds & Glassmorphismus === */
-  --dynamic-footer-header-bg: rgba(28, 28, 30, 0.72);
-  --dynamic-footer-blur-radius: 20px;
-
-  /* === Footer Border Radius System === */
-  --dynamic-footer-pill-radius: 24px; /* Dynamic Island Style */
-  --dynamic-footer-card-radius: 16px; /* Cards & Sections */
-  --dynamic-footer-micro-radius: 8px; /* Small Elements */
-
-  /* === Footer Shadow Depth System === */
-  --dynamic-footer-shadow-depth-2: 0 4px 12px rgba(0, 0, 0, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.12);
-  --dynamic-footer-shadow-depth-3: 0 8px 32px rgba(0, 0, 0, 0.18),
-    0 4px 8px rgba(0, 0, 0, 0.15);
-
-  /* === Footer Animation Spring System === */
-  --dynamic-footer-spring-bounce: cubic-bezier(
-    0.175,
-    0.885,
-    0.32,
-    1.275
-  ); /* Bouncy Animations */
-  --dynamic-footer-spring-smooth: cubic-bezier(
-    0.25,
-    0.46,
-    0.45,
-    0.94
-  ); /* Smooth Transitions */
-  --dynamic-footer-spring-quick: cubic-bezier(
-    0.4,
-    0,
-    0.2,
-    1
-  ); /* Quick Interactions */
-
-  /* === Footer Accent Colors === */
-  --dynamic-footer-accent-blue: #007aff; /* Primary Blue */
-  --dynamic-footer-accent-blue-hover: #0056cc; /* Hover State */
-
-  /* === Footer Label Colors (Dark Mode) === */
-  --dynamic-footer-label-primary: rgba(
-    255,
-    255,
-    255,
-    0.95
-  ); /* High Emphasis Text */
-  --dynamic-footer-label-secondary: rgba(
-    255,
-    255,
-    255,
-    0.7
-  ); /* Medium Emphasis Text */
-  --dynamic-footer-label-tertiary: rgba(
-    255,
-    255,
-    255,
-    0.5
-  ); /* Low Emphasis Text */
-
-  /* === Footer UI Element Colors === */
-  --dynamic-footer-separator: rgba(
-    255,
-    255,
-    255,
-    0.15
-  ); /* Borders & Dividers */
-  --dynamic-footer-fill-primary: rgba(
-    255,
-    255,
-    255,
-    0.1
-  ); /* Hover Backgrounds */
-  --dynamic-footer-fill-secondary: rgba(
-    255,
-    255,
-    255,
-    0.05
-  ); /* Subtle Backgrounds */
-
-  /* === Footer Typography === */
-  --dynamic-footer-font-family: -apple-system, "SF Pro Display", "SF Pro Text",
-    system-ui, sans-serif;
-  --dynamic-footer-text-primary: 17px; /* Standard Body Size */
-  --dynamic-footer-text-secondary: 15px; /* Secondary Text */
-  --dynamic-footer-text-small: 13px; /* Small Text & Labels */
-  --dynamic-footer-font-weight-medium: 510; /* Medium Weight */
-  --dynamic-footer-font-weight-regular: 450; /* Regular Weight */
-}
-
-/* ===== Light Mode Overrides ===== */
-:root[data-theme="light"] {
-  /* Light mode color adjustments */
-  --dynamic-footer-header-bg: rgba(255, 255, 255, 0.72);
-  --dynamic-footer-label-primary: rgba(0, 0, 0, 0.9);
-  --dynamic-footer-label-secondary: rgba(0, 0, 0, 0.7);
-  --dynamic-footer-label-tertiary: rgba(0, 0, 0, 0.5);
-  --dynamic-footer-separator: rgba(0, 0, 0, 0.15);
-  --dynamic-footer-fill-primary: rgba(0, 0, 0, 0.08);
-  --dynamic-footer-fill-secondary: rgba(0, 0, 0, 0.04);
-}
+/* CSS Custom Properties sind in content/webentwicklung/root.css konsolidiert */
 
 /* ===== Dynamic Footer Base Styles ===== */
 .site-footer-fixed {
@@ -981,6 +890,7 @@ body.footer-expanded .typewriter-title--fixed {
   grid-column: span 2;
 }
 
+/* Newsletter Card - "Join the Journey" - Reine Newsletter-Anmeldung seit Sept 2025 */
 .footer-newsletter-enhanced {
   margin-bottom: 24px;
 }
@@ -1057,6 +967,7 @@ body.footer-expanded .typewriter-title--fixed {
 }
 
 /* ===== Theme Control Card ===== */
+/* Separate Karte für Day-Night-Theme Umschaltung - Refactored Sept 2025 */
 .footer-theme-control {
   display: flex;
   flex-direction: column;

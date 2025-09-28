@@ -147,10 +147,9 @@ const SectionLoader = (() => {
     let controller, timeout;
     try {
       if (AC) { controller = new AC(); timeout = setTimeout(() => controller.abort(), 8000); }
-      let html;
       const res = await fetch(url, { credentials: 'same-origin', signal: controller?.signal });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText} @ ${url}`);
-      html = await res.text();
+      const html = await res.text();
       if (timeout) clearTimeout(timeout);
       section.insertAdjacentHTML('beforeend', html);
       const tpl = section.querySelector('template');

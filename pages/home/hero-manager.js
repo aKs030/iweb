@@ -13,7 +13,7 @@ const log = createLogger('hero-manager');
  */
 export const HERO_ANIMATION_ALIASES = new Map([
   // Hero-spezifische Grußtext-Animation
-  ['greeting', 'fadeInUp'],
+  ['greeting', 'fadeInUp']
   // Weitere Hero-spezifische Animationen können hier hinzugefügt werden
 ]);
 
@@ -62,9 +62,6 @@ export function extendAnimationEngineForHero(animationEngine) {
     return result;
   };
 }
-
-
-
 
 
 /**
