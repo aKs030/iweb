@@ -42,7 +42,7 @@ body {
   scroll-snap-type: y mandatory;
   scroll-padding-top: var(--header-height);
   transition: padding-bottom var(--transition-base);
-  
+
   /* Typography & Rendering */
   -webkit-font-smoothing: antialiased;
   font-kerning: normal;
