@@ -1,9 +1,10 @@
 /**
- * Dynamic Footer System - Karten-basiertes Design
+ * Dynamic Footer System - Karten-basiertes Design mit Mobile Optimierung
  * 
  * Features:
  * - Dynamic Island-inspirierte Footer-Navigation
  * - Modulares Karten-System mit separater Theme Control
+ * - Mobile-optimiertes Layout (Newsletter + Theme Control nebeneinander)
  * - Glassmorphismus mit optimaler Performance
  * - Spring-basierte Micro-Animationen
  * - Vollständig responsive Grid-Layout
@@ -17,9 +18,14 @@
  * - Newsletter Card: "Join the Journey" - reine Newsletter-Anmeldung
  * - Theme Control Card: Separate Day-Night-Theme-Umschaltung
  * 
+ * Mobile Responsive:
+ * - >768px: Standard Grid Layout
+ * - ≤768px: Newsletter & Theme Control nebeneinander 
+ * - ≤480px: Alle Karten vollständig gestapelt
+ * 
  * @author Abdulkerim Sesli
- * @version 4.1.0 - Separate Theme Control Card Implementation
- * @updated 2025-09-28 - Theme Control Refactoring & CSS Consolidation
+ * @version 4.2.0 - Mobile Layout Optimization & Code Cleanup
+ * @updated 2025-09-28 - Theme Control Mobile Layout & CSS Consolidation
  */
 
 /* ===== Dynamic Footer Design Tokens ===== */
@@ -743,5 +749,103 @@ body.footer-expanded .typewriter-title--fixed {
 
 .cookie-icon {
   font-size: 14px;
+}
+
+/* ===== Mobile Responsive Design ===== */
+
+/* Container für Newsletter und Theme Control */
+.footer-cards-mobile-container {
+  display: contents; /* Standard: Inhalt wird normal in Grid eingefügt */
+}
+
+/* Mobile Layout: Theme Control rechts neben Join the Journey */
+@media (max-width: 768px) {
+  .footer-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  /* Mobile Container wird zu 2-spaltiges Grid */
+  .footer-cards-mobile-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    grid-column: span 2;
+  }
+
+  /* Newsletter & Theme Control Cards: normale Breite in mobile */
+  .footer-card-newsletter,
+  .footer-card-theme {
+    grid-column: span 1;
+  }
+
+  /* Mobile Optimierungen */
+  .footer-card {
+    padding: 20px;
+  }
+
+  .footer-card-header {
+    margin-bottom: 16px;
+  }
+
+  .footer-card-title {
+    font-size: 16px;
+  }
+
+  /* Newsletter Form: vertikal gestapelt */
+  .newsletter-input-wrapper {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .newsletter-submit-enhanced {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Theme Control: kompakte Darstellung */
+  .day-night-artwork {
+    width: 70px;
+    height: 70px;
+  }
+
+  .theme-description {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+}
+
+/* Sehr kleine Displays: Vollständig gestapeltes Layout */
+@media (max-width: 480px) {
+  .footer-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Container zurück zu contents für gestapeltes Layout */
+  .footer-cards-mobile-container {
+    display: contents;
+  }
+
+  /* Alle Karten einzeln gestapelt */
+  .footer-card-newsletter,
+  .footer-card-theme {
+    grid-column: span 1;
+  }
+
+  /* Kompaktere Abstände */
+  .footer-card {
+    padding: 16px;
+  }
+
+  .footer-enhanced-content {
+    padding: 20px 16px 16px 16px;
+  }
+
+  /* Extra kompakte Theme Control */
+  .day-night-artwork {
+    width: 60px;
+    height: 60px;
+  }
 }
 

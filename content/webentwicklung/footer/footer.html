@@ -176,143 +176,146 @@
           </div>
         </article>
 
-        <!-- Newsletter Card - "Join the Journey" (Theme Control seit Sept 2025 in separate Karte ausgelagert) -->
-        <article class="footer-card footer-card-wide footer-card-newsletter">
-          <div class="footer-card-header">
-            <h3 class="footer-card-title">Join the Journey</h3>
-            <div class="footer-card-accent"></div>
-          </div>
-          <div class="footer-card-content">
-            <div class="footer-newsletter-enhanced">
-              <p class="newsletter-description">
-                Get insights into creative coding, visual experiments, and
-                digital craftsmanship
-              </p>
-              <form
-                class="newsletter-form-enhanced"
-                aria-label="Newsletter subscription"
-              >
-                <div class="newsletter-input-wrapper">
-                  <input
-                    type="email"
-                    class="newsletter-input-enhanced"
-                    placeholder="your@email.com"
-                    aria-label="Email for creative updates"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    class="newsletter-submit-enhanced"
-                    aria-label="Subscribe to updates"
-                  >
-                    <span class="submit-icon">✨</span>
-                    <span class="submit-text">Subscribe</span>
-                  </button>
-                </div>
-              </form>
+        <!-- Newsletter & Theme Control Container für Mobile Layout -->
+        <div class="footer-cards-mobile-container">
+          <!-- Newsletter Card - "Join the Journey" (Theme Control seit Sept 2025 in separate Karte ausgelagert) -->
+          <article class="footer-card footer-card-wide footer-card-newsletter">
+            <div class="footer-card-header">
+              <h3 class="footer-card-title">Join the Journey</h3>
+              <div class="footer-card-accent"></div>
             </div>
-          </div>
-        </article>
-
-        <!-- Theme Control Card - Separate Karte seit Sept 2025 Refactoring -->
-        <article class="footer-card footer-card-theme">
-          <div class="footer-card-header">
-            <h3 class="footer-card-title">Theme Control</h3>
-            <div class="footer-card-accent"></div>
-          </div>
-          <div class="footer-card-content">
-            <div class="footer-theme-control">
-              <p class="theme-description">
-                Switch between light and dark themes with our interactive day-night artwork
-              </p>
-              <div class="day-night-artwork-wrapper">
-                <button
-                  type="button"
-                  class="day-night-artwork"
-                  id="dayNightToggle"
-                  aria-label="Switch between light and dark themes"
+            <div class="footer-card-content">
+              <div class="footer-newsletter-enhanced">
+                <p class="newsletter-description">
+                  Get insights into creative coding, visual experiments, and
+                  digital craftsmanship
+                </p>
+                <form
+                  class="newsletter-form-enhanced"
+                  aria-label="Newsletter subscription"
                 >
-                  <!-- Sky Background -->
-                  <span class="sky-canvas" aria-hidden="true">
-                    <!-- Sun -->
-                    <span class="sun">
-                      <span class="sun-rays">
-                        <span class="ray ray-1"></span>
-                        <span class="ray ray-2"></span>
-                        <span class="ray ray-3"></span>
-                        <span class="ray ray-4"></span>
-                        <span class="ray ray-5"></span>
-                        <span class="ray ray-6"></span>
-                        <span class="ray ray-7"></span>
-                        <span class="ray ray-8"></span>
-                      </span>
-                    </span>
-
-                    <!-- Moon -->
-                    <span class="moon">
-                      <span class="moon-craters">
-                        <span class="crater crater-1"></span>
-                        <span class="crater crater-2"></span>
-                        <span class="crater crater-3"></span>
-                        <span class="crater crater-4"></span>
-                      </span>
-                    </span>
-
-                    <!-- Stars -->
-                    <span class="stars">
-                      <span class="star star-1"></span>
-                      <span class="star star-2"></span>
-                      <span class="star star-3"></span>
-                      <span class="star star-4"></span>
-                      <span class="star star-5"></span>
-                      <span class="star star-6"></span>
-                      <span class="star star-7"></span>
-                      <span class="star star-8"></span>
-                    </span>
-
-                    <!-- Clouds -->
-                    <span class="clouds">
-                      <span class="cloud cloud-1">
-                        <span class="cloud-part part-1"></span>
-                        <span class="cloud-part part-2"></span>
-                        <span class="cloud-part part-3"></span>
-                      </span>
-                      <span class="cloud cloud-2">
-                        <span class="cloud-part part-1"></span>
-                        <span class="cloud-part part-2"></span>
-                      </span>
-                    </span>
-
-                    <!-- Landscape -->
-                    <span class="landscape">
-                      <span class="mountains">
-                        <span class="mountain mountain-1"></span>
-                        <span class="mountain mountain-2"></span>
-                        <span class="mountain mountain-3"></span>
-                      </span>
-                      <span class="trees">
-                        <span class="tree tree-1">
-                          <span class="trunk"></span>
-                          <span class="leaves"></span>
-                        </span>
-                        <span class="tree tree-2">
-                          <span class="trunk"></span>
-                          <span class="leaves"></span>
-                        </span>
-                      </span>
-                    </span>
-                  </span>
-
-                  <!-- Atmospheric Effects -->
-                  <span class="atmosphere" aria-hidden="true">
-                    <span class="mist"></span>
-                    <span class="light-rays"></span>
-                  </span>
-                </button>
+                  <div class="newsletter-input-wrapper">
+                    <input
+                      type="email"
+                      class="newsletter-input-enhanced"
+                      placeholder="your@email.com"
+                      aria-label="Email for creative updates"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      class="newsletter-submit-enhanced"
+                      aria-label="Subscribe to updates"
+                    >
+                      <span class="submit-icon">✨</span>
+                      <span class="submit-text">Subscribe</span>
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-          </div>
-        </article>
+          </article>
+
+          <!-- Theme Control Card - Separate Karte seit Sept 2025 Refactoring -->
+          <article class="footer-card footer-card-theme">
+            <div class="footer-card-header">
+              <h3 class="footer-card-title">Theme Control</h3>
+              <div class="footer-card-accent"></div>
+            </div>
+            <div class="footer-card-content">
+              <div class="footer-theme-control">
+                <p class="theme-description">
+                  Switch between light and dark themes with our interactive day-night artwork
+                </p>
+                <div class="day-night-artwork-wrapper">
+                  <button
+                    type="button"
+                    class="day-night-artwork"
+                    id="dayNightToggle"
+                    aria-label="Switch between light and dark themes"
+                  >
+                    <!-- Sky Background -->
+                    <span class="sky-canvas" aria-hidden="true">
+                      <!-- Sun -->
+                      <span class="sun">
+                        <span class="sun-rays">
+                          <span class="ray ray-1"></span>
+                          <span class="ray ray-2"></span>
+                          <span class="ray ray-3"></span>
+                          <span class="ray ray-4"></span>
+                          <span class="ray ray-5"></span>
+                          <span class="ray ray-6"></span>
+                          <span class="ray ray-7"></span>
+                          <span class="ray ray-8"></span>
+                        </span>
+                      </span>
+
+                      <!-- Moon -->
+                      <span class="moon">
+                        <span class="moon-craters">
+                          <span class="crater crater-1"></span>
+                          <span class="crater crater-2"></span>
+                          <span class="crater crater-3"></span>
+                          <span class="crater crater-4"></span>
+                        </span>
+                      </span>
+
+                      <!-- Stars -->
+                      <span class="stars">
+                        <span class="star star-1"></span>
+                        <span class="star star-2"></span>
+                        <span class="star star-3"></span>
+                        <span class="star star-4"></span>
+                        <span class="star star-5"></span>
+                        <span class="star star-6"></span>
+                        <span class="star star-7"></span>
+                        <span class="star star-8"></span>
+                      </span>
+
+                      <!-- Clouds -->
+                      <span class="clouds">
+                        <span class="cloud cloud-1">
+                          <span class="cloud-part part-1"></span>
+                          <span class="cloud-part part-2"></span>
+                          <span class="cloud-part part-3"></span>
+                        </span>
+                        <span class="cloud cloud-2">
+                          <span class="cloud-part part-1"></span>
+                          <span class="cloud-part part-2"></span>
+                        </span>
+                      </span>
+
+                      <!-- Landscape -->
+                      <span class="landscape">
+                        <span class="mountains">
+                          <span class="mountain mountain-1"></span>
+                          <span class="mountain mountain-2"></span>
+                          <span class="mountain mountain-3"></span>
+                        </span>
+                        <span class="trees">
+                          <span class="tree tree-1">
+                            <span class="trunk"></span>
+                            <span class="leaves"></span>
+                          </span>
+                          <span class="tree tree-2">
+                            <span class="trunk"></span>
+                            <span class="leaves"></span>
+                          </span>
+                        </span>
+                      </span>
+                    </span>
+
+                    <!-- Atmospheric Effects -->
+                    <span class="atmosphere" aria-hidden="true">
+                      <span class="mist"></span>
+                      <span class="light-rays"></span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
 
       <!-- Enhanced Status Bar -->
