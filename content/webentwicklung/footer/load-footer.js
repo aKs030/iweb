@@ -42,7 +42,7 @@ async function initializeFooter() {
 
     // Globale Footer API bereitstellen
     window.footerAPI = {
-      showNotification,
+      showNotification
     };
 
     // Smooth Scrolling für interne Links im Footer
@@ -56,7 +56,7 @@ async function initializeFooter() {
           e.preventDefault();
           targetElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'start',
+            block: 'start'
           });
         }
       });
@@ -121,8 +121,8 @@ function setupNewsletterForm() {
   newsletterForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const emailInput = newsletterForm.querySelector('.newsletter-input');
-    const submitBtn = newsletterForm.querySelector('.newsletter-submit');
+    const emailInput = newsletterForm.querySelector('.newsletter-input-enhanced');
+    const submitBtn = newsletterForm.querySelector('.newsletter-submit-enhanced');
     const email = emailInput.value.trim();
 
     if (!email?.includes?.('@')) {
@@ -218,7 +218,7 @@ function showNotification(message, type = 'info') {
     transform: 'translateX(100%)',
     transition: 'all 0.3s ease',
     maxWidth: '300px',
-    wordWrap: 'break-word',
+    wordWrap: 'break-word'
   });
 
   document.body.appendChild(notification);
@@ -274,7 +274,7 @@ window.footerAPI = {
   toggleTheme: () => {
     const themeToggle = document.querySelector('.theme-toggle-btn');
     if (themeToggle) themeToggle.click();
-  },
+  }
 };
 
 // Footer automatisch initialisieren wenn DOM bereit ist
@@ -288,5 +288,5 @@ export {
   initializeFooter,
   setupNewsletterForm,
   showNotification,
-  updateCurrentYear,
+  updateCurrentYear
 };

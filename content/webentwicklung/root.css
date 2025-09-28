@@ -223,7 +223,128 @@
   --moon-visibility: 0.3;
   --cloud-frequency: 0.5;
   --scroll-progress: 0;
-}
+
+  --dynamic-menu-header-bg: rgba(28, 28, 30, 0.72);
+  --dynamic-menu-blur-radius: 20px;
+  --dynamic-menu-pill-radius: 24px;
+  --dynamic-menu-card-radius: 16px;
+  --dynamic-menu-micro-radius: 8px;
+  --dynamic-menu-shadow-depth-2: 0 4px 12px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.12);
+  --dynamic-menu-shadow-depth-3: 0 8px 32px rgba(0, 0, 0, 0.18),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  --dynamic-menu-spring-bounce: cubic-bezier(
+    0.175,
+    0.885,
+    0.32,
+    1.275
+  );
+  --dynamic-menu-spring-smooth: cubic-bezier(
+    0.25,
+    0.46,
+    0.45,
+    0.94
+  );
+  --dynamic-menu-spring-quick: cubic-bezier(
+    0.4,
+    0,
+    0.2,
+    1
+  );
+  --dynamic-menu-accent-blue: #007aff;
+  --dynamic-menu-accent-blue-hover: #0056cc;
+  --dynamic-menu-label-primary: rgba(
+    255,
+    255,
+    255,
+    0.95
+  );
+  --dynamic-menu-label-secondary: rgba(
+    255,
+    255,
+    255,
+    0.7
+  );
+  --dynamic-menu-separator: rgba(255, 255, 255, 0.15);
+  --dynamic-menu-fill-primary: rgba(255, 255, 255, 0.1);
+  --dynamic-menu-fill-secondary: rgba(
+    255,
+    255,
+    255,
+    0.05
+  );
+  --dynamic-footer-header-bg: rgba(28, 28, 30, 0.72);
+  --dynamic-footer-blur-radius: 20px;
+  --dynamic-footer-pill-radius: 24px;
+  --dynamic-footer-card-radius: 16px;
+  --dynamic-footer-micro-radius: 8px;
+  --dynamic-footer-shadow-depth-2: 0 4px 12px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.12);
+  --dynamic-footer-shadow-depth-3: 0 8px 32px rgba(0, 0, 0, 0.18),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  --dynamic-footer-spring-bounce: cubic-bezier(
+    0.175,
+    0.885,
+    0.32,
+    1.275
+  );
+  --dynamic-footer-spring-smooth: cubic-bezier(
+    0.25,
+    0.46,
+    0.45,
+    0.94
+  );
+  --dynamic-footer-spring-quick: cubic-bezier(
+    0.4,
+    0,
+    0.2,
+    1
+  );
+  --dynamic-footer-accent-blue: #007aff;
+  --dynamic-footer-accent-blue-hover: #0056cc;
+  --dynamic-footer-label-primary: rgba(
+    255,
+    255,
+    255,
+    0.95
+  );
+  --dynamic-footer-label-secondary: rgba(
+    255,
+    255,
+    255,
+    0.7
+  );
+  --dynamic-footer-label-tertiary: rgba(
+    255,
+    255,
+    255,
+    0.5
+  );
+  --dynamic-footer-separator: rgba(
+    255,
+    255,
+    255,
+    0.15
+  );
+  --dynamic-footer-fill-primary: rgba(
+    255,
+    255,
+    255,
+    0.1
+  );
+  --dynamic-footer-fill-secondary: rgba(
+    255,
+    255,
+    255,
+    0.05
+  );
+  --dynamic-footer-font-family: -apple-system, "SF Pro Display", "SF Pro Text",
+    system-ui, sans-serif;
+  --dynamic-footer-text-primary: 17px;
+  --dynamic-footer-text-secondary: 15px;
+  --dynamic-footer-text-small: 13px;
+  --dynamic-footer-font-weight-medium: 510;
+  --dynamic-footer-font-weight-regular: 450;}
 
 /* =======================
    LIGHT MODE OVERRIDE (Blauer Stil)
