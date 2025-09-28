@@ -191,10 +191,20 @@
   pointer-events: none;
 }
 
+.footer-maximized-viewport {
+  /* Hülle, die die Höhe gegenüber dem echten Viewport begrenzt */
+  /* Dynamische Variable aus JS (footer-resizer) + Fallback auf svh/lvh/vh */
+  height: var(--footer-actual-height, auto);
+  max-height: var(--footer-max-height, min(60svh, 60lvh, 60vh));
+  overflow: clip; /* kein internes Scrollen */
+  width: 100%;
+}
+
 .footer-enhanced-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px 24px 20px 24px;
+  box-sizing: border-box;
 }
 
 /* ===== Card-Based Layout System ===== */
@@ -459,8 +469,7 @@
 .footer-expanded .footer-maximized {
   opacity: 1;
   transform: translateY(0);
-  max-height: none;
-  min-height: 450px;
+  max-height: var(--footer-max-height, min(60svh, 60lvh, 60vh));
   overflow: visible;
   padding-bottom: 20px;
   pointer-events: auto;
@@ -470,8 +479,7 @@
 .footer-expanded .footer-hidden {
   opacity: 1;
   transform: translateY(0);
-  max-height: none;
-  min-height: 600px;
+  max-height: var(--footer-max-height, min(60svh, 60lvh, 60vh));
   overflow: visible;
   padding-bottom: 20px;
   pointer-events: auto;
@@ -508,9 +516,32 @@ body {
 }
 
 /* Footer-Expansion Zustand */
+/* Im erweiterten Zustand den Body-Padding dynamisch begrenzen, 
+   sodass niemals mehr als 60vh beansprucht wird */
 body.footer-expanded {
-  padding-bottom: 350px; /* Mehr Platz für erweiterten Footer */
+  padding-bottom: var(--footer-actual-height, var(--footer-max-height, min(60svh, 60lvh, 60vh)));
 }
+
+/* Interner Scrollbereich wenn Inhalt höher als Hülle ist */
+/* Kein internes Scrollen nötig, Inhalt wird proportional skaliert */
+.footer-maximized-viewport { overflow: clip; }
+
+/* Proportionale Skalierung der Inhalte auf sehr kleinen Viewports 
+   ohne Media Queries via clamp + viewport-bezogene Variable */
+:root {
+  --footer-scale: clamp(0.85, 0.9 + 0.0025vw, 1);
+}
+
+.footer-enhanced-content {
+  transform-origin: top center;
+  transform: scale(var(--footer-scale));
+}
+
+/* Feintuning: Abstände skalieren mit, um interne Überläufe zu vermeiden */
+.footer-card { padding: calc(24px * var(--footer-scale)); }
+.footer-card-header { margin-bottom: calc(20px * var(--footer-scale)); }
+.footer-card-title { font-size: calc(var(--dynamic-footer-text-primary) * var(--footer-scale)); }
+.footer-status-bar { margin-top: calc(32px * var(--footer-scale)); padding-top: calc(24px * var(--footer-scale)); }
 
 /* Footer Trigger Zone */
 .footer-trigger-zone {
