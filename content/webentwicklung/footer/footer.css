@@ -28,13 +28,13 @@
 /* ===== Dynamic Footer Base Styles ===== */
 .site-footer-fixed {
   position: fixed;
-  bottom: clamp(4px, 1.5vw, 12px);
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  width: clamp(calc(100% - 8px), calc(100% - 2vw), calc(100% - 32px));
-  max-width: min(1400px, 95vw);
-  min-width: min(320px, 100vw);
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), clamp(4px, 1.5vw, 12px));
+  width: calc(100% - 32px);
+  max-width: 1400px;
+  min-width: 320px;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
 
   /* Dynamic Footer Glassmorphismus */
   background: var(--dynamic-footer-header-bg);
@@ -186,36 +186,27 @@
 }
 
 .footer-enhanced-content {
-  max-width: min(1400px, 95vw);
+  max-width: 1400px;
   margin: 0 auto;
-  padding: clamp(16px, 4vw, 40px) clamp(12px, 3vw, 24px) clamp(12px, 2.5vw, 20px) clamp(12px, 3vw, 24px);
+  padding: 40px 24px 20px 24px;
 }
 
 /* ===== Card-Based Layout System ===== */
 .footer-cards-grid {
   display: grid;
-  /* Viewport-responsive columns */
-  grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 45vw, 320px), 1fr));
-  gap: clamp(12px, 3vw, 24px);
-  margin-bottom: clamp(16px, 4vw, 32px);
-}
-
-/* Desktop and larger screens */
-@media screen and (min-width: 1025px) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .footer-card {
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-card-radius);
-  padding: clamp(12px, 3vw, 24px);
+  padding: 24px;
   transition: all 0.25s var(--dynamic-footer-spring-quick);
   position: relative;
   overflow: hidden;
-  min-height: clamp(120px, 25vh, 200px);
 }
 
 .footer-card:hover {
@@ -230,13 +221,13 @@
 }
 
 .footer-card-header {
-  margin-bottom: clamp(10px, 2.5vw, 20px);
+  margin-bottom: 20px;
   position: relative;
 }
 
 .footer-card-title {
   color: var(--dynamic-footer-label-primary);
-  font-size: clamp(14px, 2.5vw, var(--dynamic-footer-text-primary));
+  font-size: var(--dynamic-footer-text-primary);
   font-weight: var(--dynamic-footer-font-weight-medium);
   font-family: var(--dynamic-footer-font-family);
   margin: 0;
@@ -259,26 +250,26 @@
 /* ===== Profile Card Styles ===== */
 .footer-profile-name {
   color: var(--dynamic-footer-label-primary);
-  font-size: clamp(16px, 3vw, var(--dynamic-footer-text-primary));
+  font-size: var(--dynamic-footer-text-primary);
   font-weight: var(--dynamic-footer-font-weight-medium);
-  margin: 0 0 clamp(4px, 1vw, 8px) 0;
+  margin: 0 0 8px 0;
   font-family: var(--dynamic-footer-font-family);
 }
 
 .footer-profile-role {
   color: var(--dynamic-footer-label-secondary);
-  font-size: clamp(12px, 2.2vw, var(--dynamic-footer-text-secondary));
-  margin: 0 0 clamp(6px, 1.5vw, 12px) 0;
+  font-size: var(--dynamic-footer-text-secondary);
+  margin: 0 0 12px 0;
   font-weight: var(--dynamic-footer-font-weight-regular);
 }
 
 .footer-profile-location {
   color: var(--dynamic-footer-label-secondary);
-  font-size: clamp(11px, 2vw, var(--dynamic-footer-text-secondary));
-  margin: 0 0 clamp(8px, 2vw, 16px) 0;
+  font-size: var(--dynamic-footer-text-secondary);
+  margin: 0 0 16px 0;
   display: flex;
   align-items: center;
-  gap: clamp(3px, 0.8vw, 6px);
+  gap: 6px;
 }
 
 .location-icon {
@@ -288,12 +279,12 @@
 .footer-contact-cta {
   display: inline-flex;
   align-items: center;
-  gap: clamp(4px, 1vw, 8px);
+  gap: 8px;
   color: var(--dynamic-footer-accent-blue);
   text-decoration: none;
-  font-size: clamp(11px, 2vw, var(--dynamic-footer-text-secondary));
+  font-size: var(--dynamic-footer-text-secondary);
   font-weight: var(--dynamic-footer-font-weight-medium);
-  padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
+  padding: 8px 12px;
   background: var(--dynamic-footer-fill-secondary);
   border-radius: var(--dynamic-footer-micro-radius);
   border: 1px solid transparent;
@@ -309,26 +300,26 @@
 }
 
 .contact-icon {
-  font-size: clamp(14px, 2.5vw, 16px);
+  font-size: 16px;
 }
 
 /* ===== Work Navigation Styles ===== */
 .footer-work-nav {
   display: flex;
   flex-direction: column;
-  gap: clamp(4px, 1vw, 8px);
+  gap: 8px;
 }
 
 .footer-work-link {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 2vw, 12px);
+  gap: 12px;
   color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
-  padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
+  padding: 10px 12px;
   border-radius: var(--dynamic-footer-micro-radius);
   transition: all 0.2s var(--dynamic-footer-spring-quick);
-  font-size: clamp(11px, 2vw, var(--dynamic-footer-text-secondary));
+  font-size: var(--dynamic-footer-text-secondary);
   font-weight: var(--dynamic-footer-font-weight-regular);
 }
 
@@ -347,25 +338,24 @@
 /* ===== Social Grid Styles ===== */
 .footer-social-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(clamp(80px, 15vw, 100px), 1fr));
-  gap: clamp(6px, 1.5vw, 12px);
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
 }
 
 .footer-social-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(4px, 1vw, 8px);
-  padding: clamp(8px, 2vw, 16px) clamp(6px, 1.5vw, 12px);
+  gap: 8px;
+  padding: 16px 12px;
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-micro-radius);
   color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
   transition: all 0.2s var(--dynamic-footer-spring-quick);
-  font-size: clamp(9px, 1.8vw, var(--dynamic-footer-text-small));
+  font-size: var(--dynamic-footer-text-small);
   font-weight: var(--dynamic-footer-font-weight-regular);
-  min-height: clamp(60px, 12vw, 80px);
 }
 
 .footer-social-card:hover {
@@ -393,17 +383,16 @@
 .footer-tech-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(4px, 1vw, 8px);
+  gap: 8px;
 }
 
 .tech-pill {
-  padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px);
-  border-radius: clamp(10px, 3vw, 20px);
-  font-size: clamp(10px, 1.8vw, 12px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: var(--dynamic-footer-font-weight-medium);
   transition: all 0.2s var(--dynamic-footer-spring-quick);
   cursor: default;
-  white-space: nowrap;
 }
 
 .tech-primary {
@@ -559,32 +548,30 @@ body.footer-expanded .typewriter-title--fixed {
 
 .newsletter-description {
   color: var(--dynamic-footer-label-secondary);
-  font-size: clamp(11px, 2vw, var(--dynamic-footer-text-secondary));
-  margin: 0 0 clamp(8px, 2vw, 16px) 0;
+  font-size: var(--dynamic-footer-text-secondary);
+  margin: 0 0 16px 0;
   line-height: 1.5;
 }
 
 .newsletter-form-enhanced {
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1.5vw, 12px);
+  gap: 12px;
 }
 
 .newsletter-input-wrapper {
   display: flex;
-  gap: clamp(4px, 1vw, 8px);
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .newsletter-input-enhanced {
   flex: 1;
-  min-width: clamp(120px, 30vw, 200px);
-  padding: clamp(8px, 2vw, 12px) clamp(10px, 2.5vw, 16px);
+  padding: 12px 16px;
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-micro-radius);
   background: var(--dynamic-footer-fill-secondary);
   color: var(--dynamic-footer-label-primary);
-  font-size: clamp(11px, 2vw, var(--dynamic-footer-text-secondary));
+  font-size: var(--dynamic-footer-text-secondary);
   font-family: var(--dynamic-footer-font-family);
   transition: all 0.2s var(--dynamic-footer-spring-quick);
 }
@@ -756,263 +743,5 @@ body.footer-expanded .typewriter-title--fixed {
 
 .cookie-icon {
   font-size: 14px;
-}
-
-/* ===== ENHANCED RESPONSIVE MEDIA QUERIES ===== */
-/* Ergänzt die viewport-responsiven clamp() Werte mit kontextuellen Anpassungen */
-
-/* Extra small devices (max-width: 360px) - Sehr kleine Handys */
-@media screen and (max-width: 360px) {
-  .site-footer-fixed {
-    width: calc(100% - 8px);
-    bottom: 4px;
-  }
-  
-  .footer-cards-grid {
-    /* Force single column für sehr kleine Screens */
-    grid-template-columns: 1fr !important;
-    gap: clamp(8px, 2vw, 12px);
-  }
-  
-  .footer-card {
-    padding: clamp(8px, 2vw, 12px);
-    min-height: clamp(80px, 20vh, 120px);
-  }
-  
-  /* Ultra-kompakte Typography */
-  .footer-card-title {
-    font-size: clamp(12px, 3vw, 14px) !important;
-  }
-  
-  .footer-profile-name {
-    font-size: clamp(14px, 4vw, 16px) !important;
-  }
-  
-  /* Kompakte Social Cards */
-  .footer-social-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .footer-social-card {
-    min-height: clamp(50px, 10vw, 60px);
-    padding: clamp(6px, 1.5vw, 8px);
-    font-size: clamp(8px, 1.5vw, 9px);
-  }
-  
-  /* Newsletter Input stacking */
-  .newsletter-input-wrapper {
-    flex-direction: column;
-  }
-  
-  .newsletter-input-enhanced {
-    min-width: 100%;
-  }
-}
-
-/* Small mobile devices (361px - 480px) */
-@media screen and (min-width: 361px) and (max-width: 480px) {
-  .footer-cards-grid {
-    grid-template-columns: 1fr;
-    gap: clamp(10px, 2.5vw, 16px);
-  }
-  
-  .footer-social-grid {
-    grid-template-columns: repeat(auto-fit, minmax(clamp(70px, 18vw, 90px), 1fr));
-  }
-  
-  /* Verbesserte Newsletter Form */
-  .newsletter-input-wrapper {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  
-  .newsletter-input-enhanced {
-    min-width: clamp(140px, 35vw, 180px);
-  }
-}
-
-/* Medium mobile devices (481px - 768px) */
-@media screen and (min-width: 481px) and (max-width: 768px) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 40vw, 280px), 1fr));
-  }
-  
-  .footer-card-wide {
-    /* Allow wide cards on medium screens if space permits */
-    grid-column: span min(2, var(--grid-columns, 1));
-  }
-  
-  .footer-social-grid {
-    grid-template-columns: repeat(auto-fit, minmax(clamp(85px, 16vw, 100px), 1fr));
-  }
-}
-
-/* Tablet devices (769px - 1024px) */
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(clamp(260px, 42vw, 320px), 1fr));
-  }
-  
-  .footer-card-wide {
-    grid-column: span 2;
-  }
-}
-
-/* Large screens - optimize for desktop */
-@media screen and (min-width: 1025px) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-  
-  /* Ensure optimal spacing on large screens */
-  .footer-card {
-    max-width: 400px; /* Prevent cards from becoming too wide */
-  }
-}
-
-/* Ultra-wide screens (>1600px) */
-@media screen and (min-width: 1600px) {
-  .site-footer-fixed {
-    max-width: 1600px; /* Prevent footer from becoming too wide */
-  }
-  
-  .footer-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-}
-
-/* Viewport height considerations */
-@media screen and (max-height: 600px) {
-  .footer-card {
-    min-height: clamp(60px, 15vh, 100px);
-    padding: clamp(8px, 2vh, 16px);
-  }
-  
-  .footer-enhanced-content {
-    padding: clamp(10px, 2vh, 20px) clamp(12px, 3vw, 24px);
-  }
-  
-  body.footer-expanded {
-    padding-bottom: clamp(180px, 35vh, 250px);
-  }
-}
-
-/* Landscape mobile optimization */
-@media screen and (max-height: 500px) and (orientation: landscape) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 30vw, 240px), 1fr));
-    gap: clamp(8px, 2vw, 16px);
-  }
-  
-  .footer-card {
-    padding: clamp(6px, 1.5vw, 12px);
-    min-height: clamp(50px, 12vh, 80px);
-  }
-  
-  .footer-card-header {
-    margin-bottom: clamp(6px, 1.5vw, 10px);
-  }
-}
-
-/* ===== DYNAMIC VIEWPORT UNITS (Modern Browsers) ===== */
-/* Nutzt dvh, svh, lvh für bessere mobile Browser-Unterstützung */
-@supports (height: 1dvh) {
-  /* Dynamic Viewport Height - passt sich an Browser-UI an */
-  .footer-card {
-    min-height: clamp(80px, 15dvh, 200px);
-  }
-  
-  @media screen and (max-height: 600px) {
-    .footer-card {
-      min-height: clamp(60px, 12dvh, 100px);
-    }
-    
-    body.footer-expanded {
-      padding-bottom: clamp(180px, 30dvh, 280px);
-    }
-  }
-  
-  /* Small Viewport Height - nutzt svh für minimale Größe */
-  @supports (height: 1svh) {
-    @media screen and (max-height: 500px) {
-      .footer-expanded .footer-maximized,
-      .footer-expanded .footer-hidden {
-        min-height: clamp(200px, 40svh, 300px);
-      }
-    }
-  }
-}
-
-/* ===== CONTAINER QUERIES (Future-Proof) ===== */
-@supports (container-type: inline-size) {
-  .footer-enhanced-content {
-    container-type: inline-size;
-    container-name: footer-content;
-  }
-  
-  /* Anpassungen basierend auf Container-Größe statt Viewport */
-  @container footer-content (max-width: 400px) {
-    .footer-cards-grid {
-      grid-template-columns: 1fr !important;
-      gap: 12px;
-    }
-    
-    .footer-card {
-      padding: 12px;
-    }
-    
-    .footer-card-title {
-      font-size: 13px;
-    }
-  }
-  
-  @container footer-content (min-width: 401px) and (max-width: 800px) {
-    .footer-cards-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  
-  @container footer-content (min-width: 801px) {
-    .footer-cards-grid {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-  }
-}
-
-/* ===== PROGRESSIVE ENHANCEMENT ===== */
-/* Verbesserte Animationen für leistungsstarke Geräte */
-@media (hover: hover) and (pointer: fine) {
-  .footer-card:hover {
-    transform: translateY(-2px) scale(1.02);
-  }
-  
-  .tech-pill:hover {
-    transform: translateY(-1px) scale(1.08);
-  }
-}
-
-/* Touch-optimierte Interaktionen */
-@media (hover: none) and (pointer: coarse) {
-  .footer-card,
-  .footer-social-card,
-  .footer-contact-cta,
-  .newsletter-submit-enhanced {
-    /* Größere Touch-Targets für Touch-Geräte */
-    min-height: clamp(44px, 8vw, 60px);
-    touch-action: manipulation;
-  }
-  
-  .footer-social-card {
-    padding: clamp(12px, 3vw, 18px) clamp(8px, 2vw, 12px);
-  }
-  
-  .tech-pill {
-    padding: clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px);
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-  }
 }
 
