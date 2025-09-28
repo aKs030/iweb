@@ -1056,22 +1056,18 @@ body.footer-expanded .typewriter-title--fixed {
   font-size: 16px;
 }
 
-.footer-theme-settings {
-  padding-top: 20px;
-  border-top: 1px solid var(--dynamic-footer-separator);
-}
-
-.theme-toggle-wrapper {
+/* ===== Theme Control Card ===== */
+.footer-theme-control {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
-.theme-toggle-label {
+.theme-description {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--dynamic-footer-text-secondary);
-  font-weight: var(--dynamic-footer-font-weight-medium);
   margin: 0;
+  text-align: center;
 }
 
 .day-night-artwork-wrapper {
@@ -1082,7 +1078,6 @@ body.footer-expanded .typewriter-title--fixed {
 .day-night-artwork {
   width: 80px;
   height: 40px;
-  border: none;
   border-radius: 20px;
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);

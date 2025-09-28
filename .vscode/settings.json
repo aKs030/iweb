@@ -152,5 +152,6 @@
   // === Sonstiges ===
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
-  "chat.editing.confirmEditRequestRemoval": false
+  "chat.editing.confirmEditRequestRemoval": false,
+  "chat.agent.maxRequests": 100
 }
