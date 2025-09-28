@@ -4,32 +4,19 @@
  * Technik: Dynamische Viewport-Messung (inkl. iOS Safe-Area), CSS-Variablen, ResizeObserver/Events.
  */
 
-import { throttle } from "../utils/common-utils.js";
+import { throttle } from '../utils/common-utils.js';
 
-const STATE = { inited: false, observers: [] };
+const STATE = { inited: false, observers: [], t1: null, t2: null };
 
-function setCSSVar(name, value) {
-  document.documentElement.style.setProperty(name, value);
-}
+function setCSSVar(name, value) { document.documentElement.style.setProperty(name, value); }
+function getCSSVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
+function ensureCSSVar(name, value) { if (getCSSVar(name) !== value) setCSSVar(name, value); }
 
 function measureViewport() {
-  // Echte Viewport-Höhe ermitteln (iOS Safari berücksichtigt)
+  // visualViewport.height bildet iOS Safari Adressleisten-Animationen zuverlässig ab
   const vv = window.visualViewport;
-  const h = Math.max(
-    1,
-    vv?.height ??
-      window.innerHeight ??
-      document.documentElement.clientHeight ??
-      0
-  );
-  const safeBottom =
-    Number.parseInt(
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("env(safe-area-inset-bottom)")
-        .replace("px", "")
-    ) || 0;
-  const usable = Math.max(1, h - safeBottom);
-  return { h, usable };
+  const h = Math.max(1, vv?.height ?? window.innerHeight ?? document.documentElement.clientHeight ?? 0);
+  return { h, usable: h };
 }
 
 function computeScale() {
@@ -40,40 +27,41 @@ function computeScale() {
 }
 
 function apply() {
+  const siteFooter = document.getElementById('site-footer');
+  if (!siteFooter) return; // Footer noch nicht geladen
   const { usable } = measureViewport();
   // Dynamische 1vh-Variable: 1vh = 1% des aktuellen Viewports (Workaround für Mobile)
-  setCSSVar("--vh", `${usable * 0.01}px`);
+  ensureCSSVar('--vh', `${usable * 0.01}px`);
   // Maximal erlaubte Footer-Höhe = 60% des nutzbaren Viewports
   const maxFooter = Math.round(usable * 0.6);
-  setCSSVar("--footer-max-height", `${maxFooter}px`);
+  ensureCSSVar('--footer-max-height', `${maxFooter}px`);
   // Proportionale Inhalts-Skalierung basierend auf tatsächlicher Inhaltshöhe
   const content = document.querySelector(
-    "#site-footer .footer-enhanced-content"
+    '#site-footer .footer-enhanced-content'
   );
   if (content) {
     // Temporär auf Scale 1 messen
-    const prev = getComputedStyle(document.documentElement).getPropertyValue(
-      "--footer-scale"
-    );
-    setCSSVar("--footer-scale", "1");
+    const prev = getCSSVar('--footer-scale');
+    setCSSVar('--footer-scale', '1');
     // Force reflow, dann messen
     void content.offsetHeight;
     const naturalHeight = content.scrollHeight; // unskaliert
     // Benötigte Skalierung berechnen, um in 60% zu passen
-    let scale = Math.min(1, maxFooter / Math.max(1, naturalHeight));
+    const base = Math.max(1, naturalHeight || 0);
+    let scale = base > 0 ? Math.min(1, maxFooter / base) : computeScale();
     // Sicherheitsminimum, um extreme Fälle zu vermeiden
     scale = Math.max(0.5, Number(scale.toFixed(3)));
-    setCSSVar("--footer-scale", String(scale));
+    ensureCSSVar('--footer-scale', String(scale));
     // Exakte tatsächliche Footer-Höhe nach Skalierung setzen
-    const actual = Math.round(naturalHeight * scale);
-    setCSSVar("--footer-actual-height", `${actual}px`);
+    const actual = Math.round(base * scale);
+    ensureCSSVar('--footer-actual-height', `${actual}px`);
     // Falls kein prev gesetzt war, ist ok; andernfalls ignorieren
     void prev; // linter appease
   } else {
     // Fallback: leichte Breiten-basierte Skalierung
-    setCSSVar("--footer-scale", String(computeScale()));
+    ensureCSSVar('--footer-scale', String(computeScale()));
     // Keine Content-Referenz: nutze maxFooter als Annäherung
-    setCSSVar("--footer-actual-height", `${maxFooter}px`);
+    ensureCSSVar('--footer-actual-height', `${maxFooter}px`);
   }
 }
 
@@ -85,32 +73,32 @@ export function initFooterResizer() {
   if (STATE.inited) return;
   STATE.inited = true;
   apply();
-  window.addEventListener("resize", onResize, { passive: true });
-  window.addEventListener("orientationchange", onResize, { passive: true });
+  window.addEventListener('resize', onResize, { passive: true });
+  window.addEventListener('orientationchange', onResize, { passive: true });
   // visualViewport-Events (iOS Safari: Adressleisten-Animationen)
   if (window.visualViewport) {
     const vv = window.visualViewport;
-    vv.addEventListener("resize", onResize, { passive: true });
-    vv.addEventListener("scroll", onResize, { passive: true });
+    vv.addEventListener('resize', onResize, { passive: true });
+    vv.addEventListener('scroll', onResize, { passive: true });
   }
   // DOM-Änderungen im Footer beobachten (Lazy-Load/Interaktionen)
   try {
     const content = document.querySelector(
-      "#site-footer .footer-enhanced-content"
+      '#site-footer .footer-enhanced-content'
     );
-    if (content && "ResizeObserver" in window) {
+    if (content && 'ResizeObserver' in window) {
       const ro = new ResizeObserver(() => apply());
       ro.observe(content);
       STATE.observers.push(ro);
     }
-    const footer = document.getElementById("site-footer");
-    if (footer && "MutationObserver" in window) {
+    const footer = document.getElementById('site-footer');
+    if (footer && 'MutationObserver' in window) {
       const mo = new MutationObserver(() => apply());
       mo.observe(footer, {
         subtree: true,
         childList: true,
         attributes: true,
-        characterData: false,
+        characterData: false
       });
       STATE.observers.push(mo);
     }
@@ -118,21 +106,37 @@ export function initFooterResizer() {
     /* no-op */
   }
   // Sicherheits-Refresh nach UI-Änderungen auf iOS (Adressleiste ein/aus)
-  setTimeout(apply, 250);
-  setTimeout(apply, 1200);
+  STATE.t1 = setTimeout(apply, 250);
+  STATE.t2 = setTimeout(apply, 1200);
   // pageshow (bfcache) und fonts (Layout kann sich nachträglich ändern)
-  window.addEventListener("pageshow", () => setTimeout(apply, 60), {
-    once: true,
+  window.addEventListener('pageshow', () => setTimeout(apply, 60), {
+    once: true
   });
   if (document.fonts?.ready) {
     document.fonts.ready.then(() => setTimeout(apply, 30)).catch(() => {});
   }
 }
 
+export function destroyFooterResizer() {
+  if (!STATE.inited) return;
+  STATE.inited = false;
+  window.removeEventListener('resize', onResize);
+  window.removeEventListener('orientationchange', onResize);
+  if (window.visualViewport) {
+    const vv = window.visualViewport;
+    vv.removeEventListener('resize', onResize);
+    vv.removeEventListener('scroll', onResize);
+  }
+  STATE.observers.forEach(o => o?.disconnect?.());
+  STATE.observers = [];
+  if (STATE.t1) { clearTimeout(STATE.t1); STATE.t1 = null; }
+  if (STATE.t2) { clearTimeout(STATE.t2); STATE.t2 = null; }
+}
+
 // Auto-Init
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initFooterResizer, {
-    once: true,
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initFooterResizer, {
+    once: true
   });
 } else {
   initFooterResizer();
