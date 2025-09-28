@@ -13,8 +13,108 @@
  * @version 4.0.0 - Dynamic Footer Design (Menu-inspired)
  */
 
-/* ===== Import Dynamic Footer Design Tokens ===== */
-@import url("./dynamic-footer-tokens.css");
+/* ===== Dynamic Footer Design Tokens ===== */
+:root {
+  /* === Footer Backgrounds & Glassmorphismus === */
+  --dynamic-footer-header-bg: rgba(28, 28, 30, 0.72);
+  --dynamic-footer-blur-radius: 20px;
+
+  /* === Footer Border Radius System === */
+  --dynamic-footer-pill-radius: 24px; /* Dynamic Island Style */
+  --dynamic-footer-card-radius: 16px; /* Cards & Sections */
+  --dynamic-footer-micro-radius: 8px; /* Small Elements */
+
+  /* === Footer Shadow Depth System === */
+  --dynamic-footer-shadow-depth-2: 0 4px 12px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.12);
+  --dynamic-footer-shadow-depth-3: 0 8px 32px rgba(0, 0, 0, 0.18),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+
+  /* === Footer Animation Spring System === */
+  --dynamic-footer-spring-bounce: cubic-bezier(
+    0.175,
+    0.885,
+    0.32,
+    1.275
+  ); /* Bouncy Animations */
+  --dynamic-footer-spring-smooth: cubic-bezier(
+    0.25,
+    0.46,
+    0.45,
+    0.94
+  ); /* Smooth Transitions */
+  --dynamic-footer-spring-quick: cubic-bezier(
+    0.4,
+    0,
+    0.2,
+    1
+  ); /* Quick Interactions */
+
+  /* === Footer Accent Colors === */
+  --dynamic-footer-accent-blue: #007aff; /* Primary Blue */
+  --dynamic-footer-accent-blue-hover: #0056cc; /* Hover State */
+
+  /* === Footer Label Colors (Dark Mode) === */
+  --dynamic-footer-label-primary: rgba(
+    255,
+    255,
+    255,
+    0.95
+  ); /* High Emphasis Text */
+  --dynamic-footer-label-secondary: rgba(
+    255,
+    255,
+    255,
+    0.7
+  ); /* Medium Emphasis Text */
+  --dynamic-footer-label-tertiary: rgba(
+    255,
+    255,
+    255,
+    0.5
+  ); /* Low Emphasis Text */
+
+  /* === Footer UI Element Colors === */
+  --dynamic-footer-separator: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ); /* Borders & Dividers */
+  --dynamic-footer-fill-primary: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Hover Backgrounds */
+  --dynamic-footer-fill-secondary: rgba(
+    255,
+    255,
+    255,
+    0.05
+  ); /* Subtle Backgrounds */
+
+  /* === Footer Typography === */
+  --dynamic-footer-font-family: -apple-system, "SF Pro Display", "SF Pro Text",
+    system-ui, sans-serif;
+  --dynamic-footer-text-primary: 17px; /* Standard Body Size */
+  --dynamic-footer-text-secondary: 15px; /* Secondary Text */
+  --dynamic-footer-text-small: 13px; /* Small Text & Labels */
+  --dynamic-footer-font-weight-medium: 510; /* Medium Weight */
+  --dynamic-footer-font-weight-regular: 450; /* Regular Weight */
+}
+
+/* ===== Light Mode Overrides ===== */
+:root[data-theme="light"] {
+  /* Light mode color adjustments */
+  --dynamic-footer-header-bg: rgba(255, 255, 255, 0.72);
+  --dynamic-footer-label-primary: rgba(0, 0, 0, 0.9);
+  --dynamic-footer-label-secondary: rgba(0, 0, 0, 0.7);
+  --dynamic-footer-label-tertiary: rgba(0, 0, 0, 0.5);
+  --dynamic-footer-separator: rgba(0, 0, 0, 0.15);
+  --dynamic-footer-fill-primary: rgba(0, 0, 0, 0.08);
+  --dynamic-footer-fill-secondary: rgba(0, 0, 0, 0.04);
+}
 
 /* ===== Dynamic Footer Base Styles ===== */
 .site-footer-fixed {

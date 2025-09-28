@@ -86,7 +86,6 @@
   --bg-secondary: #161616; /* 🌑 Dunkles Grau - Cards und Panels */
   --bg-tertiary: #262626; /* 🌑 Mittleres Grau - Hover und Sections */
   --bg-interactive: #404040; /* 🌑 Interaktive Elemente */
-  --bg-menu: rgba(10, 10, 10, 0.95); /* 🌑 Semi-transparentes Menu */
 
   /* Text Farben - Optimiert für Dark Mode */
   --text-primary: #f5f5f5; /* 🌑 Haupttext - Hoher Kontrast */
@@ -145,7 +144,6 @@
   --transform-lift-lg: translateY(-8px);
   --transform-lift-xl: translateY(-20px);
   --transform-down-sm: translateY(18px);
-  --transform-down-menu: translateY(15px);
   --transform-down-full: translateY(100%);
   --transform-scale-sm: scale(1.02);
   --transform-scale-md: scale(1.05);
@@ -239,7 +237,6 @@
   --bg-secondary: #1e40af; /* 🔷 Mittleres Blau - Cards und Panels */
   --bg-tertiary: #2563eb; /* 🔷 Helleres Blau - Hover und Sections */
   --bg-interactive: #3b82f6; /* 🔷 Interaktive Elemente */
-  --bg-menu: rgba(30, 58, 138, 0.95); /* 🔷 Semi-transparentes Menu */
 
   /* Text Farben - Optimiert für blauen Hintergrund */
   --text-primary: #f8fafc; /* 🔷 Sehr heller Text */
@@ -290,7 +287,6 @@
     --bg-secondary: #1e40af; /* 🔷 Mittleres Blau - Cards und Panels */
     --bg-tertiary: #2563eb; /* 🔷 Helleres Blau - Hover und Sections */
     --bg-interactive: #3b82f6; /* 🔷 Interaktive Elemente */
-    --bg-menu: rgba(30, 58, 138, 0.95); /* 🔷 Semi-transparentes Menu */
 
     /* Text Farben - Optimiert für blauen Hintergrund */
     --text-primary: #f8fafc; /* 🔷 Sehr heller Text */
