@@ -1595,19 +1595,19 @@ function startAnimationLoop(THREE) {
       const frameDuration = currentTime - lastFrameTime;
       const fps = 1000 / frameDuration;
 
-      // Performance-Checks nur alle 2 Sekunden zur Spam-Vermeidung
-      if (currentTime - lastPerformanceCheck < 2000) {
+      // Performance-Checks nur alle 3 Sekunden zur Spam-Vermeidung
+      if (currentTime - lastPerformanceCheck < 3000) {
         lastFrameTime = currentTime;
         return;
       }
       lastPerformanceCheck = currentTime;
 
       // Automatische Qualitätsanpassung mit begrenzten Warnings
-      if (fps < 25 && lodLevel > 2) {
-        lodLevel = 3;
-        if (performanceWarningCount < 3) {
-          // Max 3 Warnings zur Console-Spam-Vermeidung
-          log.warn('Performance niedrig, Qualität auf LOD 3 reduziert');
+      if (fps < 20 && lodLevel < 3) {
+        lodLevel = Math.min(3, lodLevel + 1); // Erhöhe LOD Level (reduziere Qualität)
+        if (performanceWarningCount < 2) {
+          // Max 2 Warnings zur Console-Spam-Vermeidung
+          log.warn(`Performance niedrig (${Math.round(fps)} FPS), Qualität auf LOD ${lodLevel} reduziert`);
           performanceWarningCount++;
         }
         // Shader-Komplexität reduzieren
@@ -1617,13 +1617,21 @@ function startAnimationLoop(THREE) {
             child.material.needsUpdate = true;
           }
         });
-      } else if (fps > 50 && lodLevel < 2) {
-        lodLevel = Math.max(1, lodLevel - 1);
+      } else if (fps > 55 && lodLevel > 1) {
+        lodLevel = Math.max(1, lodLevel - 1); // Reduziere LOD Level (erhöhe Qualität)
+        if (performanceWarningCount > 0) {
+          performanceWarningCount--; // Reset warning counter bei Verbesserung
+        }
         log.info(
-          'Performance verbessert, Qualität auf LOD',
-          lodLevel,
-          'erhöht'
+          `Performance verbessert (${Math.round(fps)} FPS), Qualität auf LOD ${lodLevel} erhöht`
         );
+        // Low quality flags entfernen
+        scene.traverse((child) => {
+          if (child.material?.defines?.LOW_QUALITY) {
+            delete child.material.defines.LOW_QUALITY;
+            child.material.needsUpdate = true;
+          }
+        });
       }
     }
     lastFrameTime = currentTime;

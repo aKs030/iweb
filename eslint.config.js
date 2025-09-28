@@ -34,6 +34,8 @@ export default [
         Element: "readonly",
         HTMLElement: "readonly",
         NodeList: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
         // Portfolio-spezifische Globals
         THREE: "readonly", // Three.js für das Earth System
         announce: "readonly", // window.announce für Accessibility

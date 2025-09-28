@@ -127,20 +127,6 @@
   opacity: 0.9;
 }
 
-/* Mobile Optimierungen */
-@media (max-width: 768px) {
-  /* Mobile-spezifische Anpassungen für Three.js Container */
-}
-
-@media (max-width: 480px) {
-  /* Kleine Displays Anpassungen */
-}
-
-/* Tablet Landscape */
-@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
-  /* Tablet-spezifische Anpassungen */
-}
-
 /* High DPI Displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
   .three-earth-container canvas {
@@ -155,21 +141,6 @@
     0%, 100% { transform: rotate(0deg); }
   }
 }
-
-/* Dark Mode Compatibility */
-@media (prefers-color-scheme: dark) {
-  /* Dark Mode bereits optimiert */
-}
-
-/* Light Mode (falls gewünscht) */
-@media (prefers-color-scheme: light) {
-  /* Light Mode Anpassungen */
-}
-
-/* Accessibility Enhancements */
-/* Accessibility für Three.js Container */
-
-/* Container Interaction States */
 
 /* Performance Overlay (Debug) */
 .three-earth-performance-overlay {
@@ -190,10 +161,7 @@
   backdrop-filter: blur(8px);
 }
 
-.three-earth-container:hover .three-earth-performance-overlay {
-  opacity: 1;
-}
-
+.three-earth-container:hover .three-earth-performance-overlay,
 .three-earth-performance-overlay.visible {
   opacity: 1;
 }
