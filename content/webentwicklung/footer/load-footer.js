@@ -114,15 +114,15 @@ function updateCurrentYear() {
  * Richtet Newsletter-Anmeldung ein
  */
 function setupNewsletterForm() {
-  const newsletterForm = document.querySelector('.newsletter-form');
+  const newsletterForm = document.querySelector('.newsletter-form-enhanced');
 
   if (!newsletterForm) return;
 
   newsletterForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const emailInput = newsletterForm.querySelector('.newsletter-input');
-    const submitBtn = newsletterForm.querySelector('.newsletter-submit');
+    const emailInput = newsletterForm.querySelector('.newsletter-input-enhanced');
+    const submitBtn = newsletterForm.querySelector('.newsletter-submit-enhanced');
     const email = emailInput.value.trim();
 
     if (!email?.includes?.('@')) {
