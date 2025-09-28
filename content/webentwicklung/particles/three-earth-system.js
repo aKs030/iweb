@@ -1310,9 +1310,6 @@ function setupUserControls(container) {
   container.addEventListener('touchmove', handlePointerMove, { passive: true });
   container.addEventListener('touchend', handlePointerUp);
 
-  // Zoom Controls (Buttons)
-  createZoomControls(container);
-
   // Cleanup
   cleanupFunctions.push(() => {
     window.removeEventListener('scroll', handleScroll);
@@ -1336,105 +1333,6 @@ function setupUserControls(container) {
 }
 
 // ===== Zoom Controls erstellen =====
-function createZoomControls(container) {
-  const controlsContainer = document.createElement('div');
-  controlsContainer.className = 'three-earth-controls';
-  controlsContainer.innerHTML = `
-    <button class="zoom-btn zoom-in" aria-label="Heranzoomen">+</button>
-    <button class="zoom-btn zoom-out" aria-label="Herauszoomen">−</button>
-    <button class="camera-mode-btn" aria-label="Kamera-Modus wechseln">📷</button>
-  `;
-
-  // Styles direkt hinzufügen
-  const style = document.createElement('style');
-  style.textContent = `
-    .three-earth-controls {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 100;
-    }
-    
-    .zoom-btn, .camera-mode-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-      backdrop-filter: blur(10px);
-    }
-    
-    .zoom-btn:hover, .camera-mode-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.5);
-      transform: scale(1.1);
-    }
-    
-    .camera-mode-btn.scroll-mode {
-      background: rgba(0, 150, 255, 0.5);
-    }
-    
-    @media (max-width: 768px) {
-      .three-earth-controls {
-        top: 10px;
-        right: 10px;
-      }
-      
-      .zoom-btn, .camera-mode-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-      }
-    }
-  `;
-
-  document.head.appendChild(style);
-  container.appendChild(controlsContainer);
-
-  // Event Handlers
-  const zoomInBtn = controlsContainer.querySelector('.zoom-in');
-  const zoomOutBtn = controlsContainer.querySelector('.zoom-out');
-  const cameraModeBtn = controlsContainer.querySelector('.camera-mode-btn');
-
-  zoomInBtn.addEventListener('click', () => {
-    cameraTarget.z = Math.max(2, cameraTarget.z - 1);
-    log.debug('Zoom in', cameraTarget.z);
-  });
-
-  zoomOutBtn.addEventListener('click', () => {
-    cameraTarget.z = Math.min(20, cameraTarget.z + 1);
-    log.debug('Zoom out', cameraTarget.z);
-  });
-
-  cameraModeBtn.addEventListener('click', () => {
-    if (isScrollBased) {
-      window.ThreeEarthControls.enableFreeCamera();
-      cameraModeBtn.classList.remove('scroll-mode');
-      cameraModeBtn.setAttribute('aria-label', 'Zu Scroll-Modus wechseln');
-    } else {
-      window.ThreeEarthControls.enableScrollCamera();
-      cameraModeBtn.classList.add('scroll-mode');
-      cameraModeBtn.setAttribute('aria-label', 'Zu freier Kamera wechseln');
-    }
-  });
-
-  // Initial state
-  cameraModeBtn.classList.add('scroll-mode');
-
-  log.debug('Zoom controls created');
-}
-
 // ===== Postprocessing Setup =====
 async function setupPostprocessing(THREE) {
   if (isLowPerformanceMode) {
