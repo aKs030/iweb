@@ -194,9 +194,17 @@
 /* ===== Card-Based Layout System ===== */
 .footer-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* Mobile-first: Start with single column, expand with media queries */
+  grid-template-columns: 1fr;
   gap: 24px;
   margin-bottom: 32px;
+}
+
+/* Desktop and larger screens */
+@media screen and (min-width: 1025px) {
+  .footer-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
 }
 
 .footer-card {
@@ -743,5 +751,229 @@ body.footer-expanded .typewriter-title--fixed {
 
 .cookie-icon {
   font-size: 14px;
+}
+
+/* ===== RESPONSIVE MEDIA QUERIES ===== */
+/* Mobile-First Responsive Design für Footer */
+
+/* Small mobile devices (max-width: 480px) */
+@media screen and (max-width: 480px) {
+  .site-footer-fixed {
+    width: calc(100% - 16px);
+    bottom: 8px;
+  }
+  
+  .footer-enhanced-content {
+    padding: 20px 16px 16px 16px;
+  }
+  
+  .footer-cards-grid {
+    /* Single column layout for very small screens */
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .footer-card {
+    padding: 16px;
+    min-height: auto;
+  }
+  
+  .footer-card-wide {
+    grid-column: span 1; /* Override wide cards */
+  }
+  
+  /* Compact card headers */
+  .footer-card-header {
+    margin-bottom: 12px;
+  }
+  
+  .footer-card-title {
+    font-size: 14px;
+  }
+  
+  /* Compact social grid */
+  .footer-social-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .footer-social-card {
+    padding: 12px 8px;
+    font-size: 11px;
+  }
+  
+  /* Compact tech pills */
+  .tech-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  /* Compact newsletter form */
+  .newsletter-form-enhanced {
+    gap: 8px;
+  }
+  
+  .newsletter-input-wrapper {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .newsletter-input-enhanced,
+  .newsletter-submit-enhanced {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  /* Compact footer status */
+  .footer-status-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .footer-legal-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  
+  /* Adjust body padding for mobile */
+  body {
+    padding-bottom: 50px;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 280px;
+  }
+  
+  .footer-expanded .footer-maximized,
+  .footer-expanded .footer-hidden {
+    min-height: 320px;
+  }
+}
+
+/* Mobile devices (481px - 768px) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .footer-cards-grid {
+    /* Two column layout for medium mobile */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .footer-card {
+    padding: 20px;
+  }
+  
+  .footer-card-wide {
+    grid-column: span 2;
+  }
+  
+  .footer-enhanced-content {
+    padding: 32px 20px 18px 20px;
+  }
+  
+  /* Responsive social grid */
+  .footer-social-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  /* Newsletter form stays in row for medium screens */
+  .newsletter-input-wrapper {
+    flex-direction: row;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 320px;
+  }
+  
+  .footer-expanded .footer-maximized,
+  .footer-expanded .footer-hidden {
+    min-height: 380px;
+  }
+}
+
+/* Tablet devices (769px - 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .footer-cards-grid {
+    /* Three column layout for tablets */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  
+  .footer-card-wide {
+    grid-column: span 3;
+  }
+  
+  .footer-enhanced-content {
+    padding: 36px 22px 18px 22px;
+  }
+}
+
+/* Landscape mobile orientation */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .footer-enhanced-content {
+    padding: 16px 20px 12px 20px;
+  }
+  
+  .footer-cards-grid {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .footer-card {
+    padding: 12px;
+  }
+  
+  .footer-status-bar {
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: 200px;
+  }
+  
+  .footer-expanded .footer-maximized,
+  .footer-expanded .footer-hidden {
+    min-height: 240px;
+  }
+}
+
+/* High DPI mobile displays */
+@media screen and (max-width: 480px) and (-webkit-min-device-pixel-ratio: 2) {
+  .footer-card-accent {
+    height: 1px; /* Thinner accent line for high DPI */
+  }
+  
+  .social-card-icon {
+    transform: scale(0.9); /* Slightly smaller icons */
+  }
+}
+
+/* Accessibility: Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .footer-card:hover {
+    transform: none;
+  }
+  
+  .tech-pill:hover {
+    transform: none;
+  }
+  
+  .newsletter-submit-enhanced:hover {
+    transform: none;
+  }
+  
+  .footer-contact-cta:hover {
+    transform: none;
+  }
+}
+
+/* Dark mode optimizations for mobile */
+@media screen and (max-width: 768px) and (prefers-color-scheme: dark) {
+  .footer-card {
+    backdrop-filter: blur(8px);
+  }
 }
 
