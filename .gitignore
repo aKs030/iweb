@@ -1,6 +1,6 @@
 node_modules/
 .DS_Store
-.vscode/
+# .vscode/ - Auskommentiert: Optimierte Settings werden geteilt
 .env
 dist/
 coverage/
@@ -15,7 +15,42 @@ yarn-error.log*
 pnpm-debug.log*
 .idea/
 
+# Portfolio-spezifische Build-Artefakte
+*.webp.bak           # Bild-Optimierung Backups
+*.avif.bak           # AVIF Conversion Backups
+validation-*.txt     # Lokale Validation Reports
+eslint-report.json   # ESLint Output
+lighthouse-reports/  # Performance Testing
+
+# AI/Copilot temporäre Dateien
+.copilot/
+.cline/
+*.copilot-temp
+
+# VS Code Workspace spezifisch (temporäre Dateien)
+.vscode/settings.json.bak
+.vscode/launch.json
+.vscode/*.tmp
+
+# Performance & Testing
+.nyc_output/
+test-results/
+coverage-reports/
+benchmark-results/
+
+# Git temporäre Dateien
+*.orig
+*.rej
+*.patch
+
+# Deployment
+.netlify/
+.vercel/
+.github/artifacts/
+
 # Local backup and generated artifacts
 *.bak
 *~
+*.tmp
+*.temp
 .python-version

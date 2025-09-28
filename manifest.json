@@ -11,6 +11,11 @@
   "categories": ["portfolio", "photography", "development"],
   "lang": "de",
   "dir": "ltr",
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "shortcuts": [
     {
       "name": "Portfolio",
@@ -35,9 +40,33 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "Kontakt",
+      "short_name": "Contact",
+      "description": "Kontaktiere Abdulkerim",
+      "url": "/#contact",
+      "icons": [
+        {
+          "src": "/content/img/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "icons": [
+    {
+      "src": "/content/img/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/content/img/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/content/img/icons/icon-192.png",
       "sizes": "192x192",
@@ -55,6 +84,22 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/content/img/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Portfolio Hauptseite auf Mobile"
+    },
+    {
+      "src": "/content/img/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Portfolio Dashboard auf Desktop"
     }
   ]
 }

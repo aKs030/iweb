@@ -1,0 +1,156 @@
+{
+  "cline.anthropicApiKey": "accca8a2-8e7b-4a42-8bce-e7bf3df941c7",
+  "cline.model": "claude-3-5-sonnet-20241022",
+  "cline.enableAutoSave": true,
+  "cline.alwaysAllowWriteOnly": false,
+  "cline.alwaysAllowBrowser": false,
+  "cline.maxRequestsPerTask": 50,
+  "cline.customInstructions": "Du arbeitest an einem modernen deutschen Portfolio-Projekt (iweb) mit ES6-Modulen, modernen Web-APIs und einem modularen Komponentensystem. Beachte die deutsche Lokalisierung und die bestehende Architektur mit SectionLoader, Enhanced Animation Engine und Particle System. Verwende die Logger-Utils und folge den etablierten Konventionen.",
+  "cline.enabledModels": [
+    "claude-3-5-sonnet-20241022",
+    "claude-3-opus-20240229"
+  ],
+
+  // === GitHub Copilot ===
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true
+  },
+  "github.copilot.inlineSuggest.enable": true,
+  "github.copilot.chat.enabled": true,
+  "editor.inlineSuggest.enabled": true,
+  "github.copilot.nextEditSuggestions.enabled": true,
+
+  // Automatische Zustimmung für Copilot
+  "github.copilot.chat.welcomeMessage": "never",
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.editor.iterativeEditing": true,
+  "github.copilot.conversation.acceptedDisclaimer": "2024-01-01",
+
+  // Mehrere Inline-Vorschläge durchsteppen
+  "github.copilot.advanced": {
+    "inlineSuggestCount": 3
+  },
+
+  // === GitLens AI ===
+  "gitlens.ai.model": "vscode",
+  "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+  "gitlens.hovers.currentLine.over": "line",
+  "gitlens.hovers.annotations.enabled": true,
+
+  // === Live Server ===
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.donotVerifyTags": true,
+  "liveServer.settings.wait": 200,
+
+  // === Editor / Formatierung ===
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "typescript.locale": "de",
+
+  // === HTML/CSS Spezifische Einstellungen ===
+  "html.format.wrapAttributes": "force-expand-multiline",
+  "css.validate": true,
+  "css.lint.unknownProperties": "warning",
+  "css.lint.duplicateProperties": "warning",
+  "html.validate.scripts": true,
+  "html.validate.styles": true,
+
+  // === Dateispezifische Formatierung ===
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // === Explorer ===
+  "explorer.confirmDelete": false,
+
+  // === Terminal ===
+  "terminal.integrated.sendKeybindingsToShell": true,
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.fontSize": 14,
+
+  // === Git Integration ===
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.autofetchPeriod": 180,
+  "chat.tools.terminal.autoApprove": {
+    "npm install": true,
+    "npm run dev": true,
+    "npm run build": true,
+    "npm test": true,
+    "rm": true,
+    "git": true,
+    "ls": true,
+    "python3": true,
+    "sed": true,
+    "cp": true,
+    "npm run lint:js": true,
+    "/dev/null": true,
+    "npm run lint:html": true,
+    "npm run check:css": true,
+    "npm run consolidate:css": true,
+    "uniq": true,
+    "awk": true,
+    "p++": true,
+    "if(p": true,
+    "2)": true,
+    "p=0": true,
+    "print}'": true,
+    "\"": true,
+    "for": true,
+    "do": true,
+    "done": true,
+    "while": true,
+    "then": true,
+    "fi": true,
+    "echo \"=== Genutzte Properties ===\" && grep -o \"var(--dynamic-menu-[^)]*)\" content/webentwicklung/menu/menu.css | sort | uniq -c | sort -nr": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "echo \"=== Dynamic Menu Modul Statistik ===\" && echo \"Dateien:\" && ls -la content/webentwicklung/menu/ && echo && echo \"CSS Properties (Tokens):\" && grep -c \"var(--dynamic-menu\" content/webentwicklung/menu/dynamic-menu-tokens.css && echo \"CSS Properties (verwendet):\" && grep -o \"var(--dynamic-menu-[^)]*)\" content/webentwicklung/menu/menu.css | sort | uniq | wc -l && echo \"CSS Zeilen (menu.css):\" && wc -l content/webentwicklung/menu/menu.css": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "echo \"CSS Properties definiert:\" && grep -c \"\\-\\-dynamic-menu-\" content/webentwicklung/menu/dynamic-menu-tokens.css && echo \"CSS Properties verwendet:\" && grep -o \"var(--dynamic-menu-[^)]*)\" content/webentwicklung/menu/menu.css | sort | uniq | wc -l": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  },
+
+  // === Portfolio-spezifische Einstellungen ===
+  "emmet.includeLanguages": {
+    "javascript": "html"
+  },
+  "emmet.triggerExpansionOnTab": true,
+  "html.completion.attributeDefaultValue": "doublequotes",
+
+  // === Workspace Optimierungen ===
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/*.min.js": true,
+    "**/*.map": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true
+  },
+
+  // === Sonstiges ===
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "chat.editing.confirmEditRequestRemoval": false
+}

@@ -32,9 +32,13 @@
 <meta name="color-scheme" content="dark light">
 
   <!-- AI Crawler friendly meta tags -->
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="robots" content="index, follow, max-image-preview:standard, max-snippet:-1, max-video-preview:30">
   <meta name="revisit-after" content="7 days">
   <meta name="ai-content-declaration" content="This website was built by human developer Abdulkerim Sesli. Content is original and human-created.">
+  
+  <!-- Performance Hints -->
+  <meta name="web-vitals-extension" content="enabled">
+  <link rel="preconnect" href="https://abdulkerimsesli.de">
 
   <!-- Open Graph Meta-Tags -->
   <meta property="og:title" content="Abdul aus Berlin – Webentwicklung &amp; Fotografie Portfolio">
@@ -67,13 +71,20 @@
 
   <!-- Open Graph & PWA / Icons / Fonts etc... -->
   <link rel="icon" href="/content/img/icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" sizes="96x96" href="/content/img/icons/icon-96.png" type="image/png">
+  <link rel="icon" sizes="144x144" href="/content/img/icons/icon-144.png" type="image/png">
   <link rel="icon" sizes="192x192" href="/content/img/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" sizes="192x192" href="/content/img/icons/icon-192.png">
   <link rel="mask-icon" href="/content/img/icons/favicon.svg" color="#07a1ff">
   <link rel="manifest" href="/manifest.json">
+  
+  <!-- Windows Tiles (PWA) -->
+  <meta name="msapplication-TileColor" content="#07a1ff">
+  <meta name="msapplication-TileImage" content="/content/img/icons/icon-144.png">
   <!-- (Entfernt) DNS Prefetch für Google Fonts: jetzt self-hosted Inter -->
   <link rel="dns-prefetch" href="https://api.github.com">
   <link rel="dns-prefetch" href="https://linkedin.com">
+  <link rel="preconnect" href="https://github.com" crossorigin>
 
   <!-- (Entfernt) Preconnect Google Fonts -->
 
