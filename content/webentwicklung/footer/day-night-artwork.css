@@ -18,19 +18,6 @@
   pointer-events: none;
   z-index: 100;
 }
-/* Day/Night Artwork Theme Toggle - Rundes Mini-Kunstwerk */
-
-/* Wrapper für das Kunstwerk */
-.day-night-artwork-wrapper {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto;
-}
-
 /* Hauptbutton - Rundes Kunstwerk */
 .day-night-artwork {
   position: relative;
