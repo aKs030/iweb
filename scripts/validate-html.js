@@ -31,8 +31,6 @@ async function validateSingleFile(file, filePath) {
       console.log(`✅ ${file} - Valide`);
       return { errors: 0, warnings: 0 };
     } else {
-      console.log(`❌ ${file} - Fehler gefunden:`);
-      
       let fileErrors = 0;
       let fileWarnings = 0;
       
@@ -45,8 +43,6 @@ async function validateSingleFile(file, filePath) {
           const severity = message.severity === 2 ? 'ERROR' : 'WARNING';
           const icon = message.severity === 2 ? '🚨' : '⚠️';
           
-          console.log(`   ${icon} [${severity}] Zeile ${message.line}:${message.column} - ${message.message} (${message.ruleId})`);
-          
           if (message.severity === 2) {
             fileErrors++;
           } else {
@@ -54,7 +50,26 @@ async function validateSingleFile(file, filePath) {
           }
         }
       }
-      console.log();
+      
+      // Only show the header if there are actual errors or warnings to display
+      if (fileErrors > 0 || fileWarnings > 0) {
+        console.log(`❌ ${file} - ${fileErrors > 0 ? 'Fehler' : 'Warnungen'} gefunden:`);
+        
+        // Re-iterate to display the messages
+        for (const result of results) {
+          const messages = result.messages || [];
+          for (const message of messages) {
+            const severity = message.severity === 2 ? 'ERROR' : 'WARNING';
+            const icon = message.severity === 2 ? '🚨' : '⚠️';
+            console.log(`   ${icon} [${severity}] Zeile ${message.line}:${message.column} - ${message.message} (${message.ruleId})`);
+          }
+        }
+        console.log();
+      } else {
+        // Report as valid if no actual errors or warnings
+        console.log(`✅ ${file} - Valide (keine relevanten Probleme)`);
+      }
+      
       return { errors: fileErrors, warnings: fileWarnings };
     }
   } catch (error) {

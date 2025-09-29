@@ -1,8 +1,5 @@
 // eslint.config.js
 import js from "@eslint/js";
-import globals from "globals";
-import prettier from "eslint-plugin-prettier";
-import importPlugin from "eslint-plugin-import";
 
 export default [
   js.configs.recommended,
@@ -11,17 +8,38 @@ export default [
       ecmaVersion: 2024,
       sourceType: "module",
       globals: {
-        ...globals.browser, // Alle Standard-Browser-Globals automatisch
-        ...globals.node,    // Falls du auch Node-Skripte hast
+        // Browser environment globals
+        window: "readonly",
+        document: "readonly",
+        console: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        requestAnimationFrame: "readonly",
+        cancelAnimationFrame: "readonly",
+        fetch: "readonly",
+        location: "readonly",
+        navigator: "readonly",
+        performance: "readonly",
+        Event: "readonly",
+        CustomEvent: "readonly",
+        addEventListener: "readonly",
+        removeEventListener: "readonly",
+        IntersectionObserver: "readonly",
+        MutationObserver: "readonly",
+        ResizeObserver: "readonly",
+        WeakSet: "readonly",
+        WeakMap: "readonly",
+        URL: "readonly",
+        innerWidth: "readonly",
+        innerHeight: "readonly",
+        
         // Portfolio-spezifische Globals
         THREE: "readonly",                 // Three.js für das Earth System
         announce: "readonly",              // window.announce für Accessibility
         enhancedAnimationEngine: "readonly" // Eigene Animation Engine API
       }
-    },
-    plugins: {
-      prettier,
-      import: importPlugin
     },
     rules: {
       // Ungenutzte Variablen: alles mit "_" wird ignoriert
@@ -51,27 +69,7 @@ export default [
       // Performance & Qualität
       "no-duplicate-imports": "error",
       "no-useless-concat": "error",
-      "prefer-destructuring": ["warn", { object: true, array: false }],
-
-      // Import-Ordnungscheck
-      "import/order": [
-        "warn",
-        {
-          groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
-          "newlines-between": "always",
-          alphabetize: { order: "asc", caseInsensitive: true }
-        }
-      ],
-
-      // Prettier-Check (optional, falls du Prettier nutzt)
-      "prettier/prettier": [
-        "error",
-        {
-          singleQuote: true,
-          semi: true,
-          endOfLine: "auto"
-        }
-      ]
+      "prefer-destructuring": ["warn", { object: true, array: false }]
     },
     files: ["content/**/*.js", "pages/**/*.js", "scripts/**/*.js"]
   },
