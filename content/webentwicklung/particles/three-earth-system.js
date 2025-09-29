@@ -215,20 +215,16 @@ const ThreeEarthManager = (() => {
   // Helper function für Material Disposal
   function disposeMaterial(material, name = 'unknown') {
     try {
-      // Texturen in Material disposal
-      if (material.map) material.map.dispose();
-      if (material.normalMap) material.normalMap.dispose();
-      if (material.bumpMap) material.bumpMap.dispose();
-      if (material.specularMap) material.specularMap.dispose();
-      if (material.emissiveMap) material.emissiveMap.dispose();
-      if (material.alphaMap) material.alphaMap.dispose();
-      if (material.roughnessMap) material.roughnessMap.dispose();
-      if (material.metalnessMap) material.metalnessMap.dispose();
+      // Standard Texturen
+      const textureMaps = ['map', 'normalMap', 'bumpMap', 'specularMap', 'emissiveMap', 'alphaMap', 'roughnessMap', 'metalnessMap'];
+      textureMaps.forEach(mapName => {
+        if (material[mapName]) material[mapName].dispose();
+      });
       
       // Shader-spezifische Texturen
       if (material.uniforms) {
         Object.values(material.uniforms).forEach(uniform => {
-          if (uniform.value && uniform.value.isTexture) {
+          if (uniform.value?.isTexture) {
             uniform.value.dispose();
           }
         });
@@ -315,20 +311,6 @@ function loadFromSource(src) {
     const script = document.createElement('script');
     script.src = src;
     script.crossOrigin = 'anonymous';
-
-    script.onload = () => {
-      if (window.THREE) {
-        resolve(window.THREE);
-      } else {
-        reject(new Error('THREE not available after loading'));
-      }
-    };
-
-    script.onerror = (error) => {
-      reject(
-        new Error(`Script loading failed: ${error.message || 'Unknown error'}`)
-      );
-    };
 
     // Timeout nach 8 Sekunden pro Quelle
     const timeout = setTimeout(() => {
@@ -1799,7 +1781,7 @@ function startAnimationLoop(THREE) {
           performanceWarningCount++;
         }
         
-        // Shader-Komplexität reduzieren
+        // Shader-Komplexität reduzieren und Performance-Optimierungen anwenden
         scene.traverse((child) => {
           if (child.material?.defines) {
             child.material.defines.LOW_QUALITY = true;
@@ -1807,8 +1789,18 @@ function startAnimationLoop(THREE) {
           }
         });
         
-        // Zusätzliche Performance-Optimierungen anwenden
-        applyPerformanceOptimizations();
+        // Simple optimizations only
+        if (starField) {
+          starField.children.forEach(starLayer => {
+            if (starLayer.material.uniforms?.density) {
+              starLayer.material.uniforms.density.value *= 0.8;
+            }
+          });
+        }
+        
+        if (nebulae && lodLevel >= 3) {
+          nebulae.visible = false;
+        }
         
       } else if (fps > 55 && lodLevel > 1) {
         lodLevel = Math.max(1, lodLevel - 1);
@@ -1882,36 +1874,18 @@ function startAnimationLoop(THREE) {
   }
   
 
-  function applyPerformanceOptimizations() {
-    log.info('Applying performance optimizations...');
-    
-    // Simple optimizations only
-    if (starField) {
-      starField.children.forEach(starLayer => {
-        if (starLayer.material.uniforms?.density) {
-          starLayer.material.uniforms.density.value *= 0.8;
-        }
-      });
-    }
-    
-    if (nebulae && lodLevel >= 3) {
-      nebulae.visible = false;
-    }
-  }
-  
+
   function updatePerformanceOverlay(fps) {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      const overlay = getElementById('threeEarthPerformance');
-      if (overlay) {
-        const fpsEl = overlay.querySelector('#fps');
-        const lodEl = overlay.querySelector('#lod');
-        const modeEl = overlay.querySelector('#mode');
-        
-        if (fpsEl) fpsEl.textContent = fps.toFixed(1);
-        if (lodEl) lodEl.textContent = lodLevel;
-        if (modeEl) modeEl.textContent = isLowPerformanceMode ? 'Low' : 'High';
-      }
-    }
+    const overlay = getElementById('threeEarthPerformance');
+    if (!overlay) return;
+    
+    const fpsEl = overlay.querySelector('#fps');
+    const lodEl = overlay.querySelector('#lod');
+    const modeEl = overlay.querySelector('#mode');
+    
+    if (fpsEl) fpsEl.textContent = fps.toFixed(1);
+    if (lodEl) lodEl.textContent = lodLevel;
+    if (modeEl) modeEl.textContent = isLowPerformanceMode ? 'Low' : 'High';
   }
 
   function updateEarthRotation() {
@@ -2024,14 +1998,6 @@ function startAnimationLoop(THREE) {
       starField.rotation.x = camera.rotation.x * parallaxStrength;
       starField.rotation.y = camera.rotation.y * parallaxStrength;
     }
-  }
-
-  function updateShaderUniforms(elapsedTime) {
-    scene.traverse((child) => {
-      if (child.material?.uniforms?.time) {
-        child.material.uniforms.time.value = elapsedTime;
-      }
-    });
   }
 
   // Rendering wird in der vorherigen renderFrame() Funktion durchgeführt

@@ -16,13 +16,6 @@
     #2c3e50 85%, 
     #34495e 100%
   );
-  
-  /* Kern CSS Custom Properties */
-
- /* Deaktiviert */
-
-
-
 }
 
 /* Alle atmosphärischen Effekte deaktiviert */
@@ -32,23 +25,7 @@
 }
 
 /* ===== Sektionsspezifische Variationen ===== */
-.global-particle-background[data-section="hero"] {
-
-
-
-}
-
-.global-particle-background[data-section="features"] {
-
-
-
-}
-
 .global-particle-background[data-section="about"] {
-
-
-
-  
   /* Wärmere Hintergrundfarbe für About */
   background: linear-gradient(180deg, 
     #1a1a2e 0%, 
@@ -57,12 +34,6 @@
     #4a4a5e 85%, 
     #5a5a6e 100%
   );
-}
-
-.global-particle-background[data-section="contact"] {
-
-
-
 }
 
 .global-particle-background[data-section="about"] .aurora {
@@ -521,8 +492,6 @@
   opacity: var(--shadow-opacity, 0);
   transition: opacity 0.6s ease-out;
 }
-
-/* ===== Animationen ===== */
 
 /* ===== Sektionsspezifische Anpassungen ===== */
 
