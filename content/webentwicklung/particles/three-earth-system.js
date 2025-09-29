@@ -73,7 +73,7 @@ const ThreeEarthManager = (() => {
       await setupPostprocessing(THREE);
 
       // Section-Detection aktivieren
-      setupSectionDetection(container);
+  setupSectionDetection();
 
       // Animation Loop starten
       startAnimationLoop(THREE);
@@ -798,7 +798,7 @@ async function createEarthSystem(THREE) {
   }
 
   // Atmosphäre
-  createAtmosphere(THREE, earthRadius);
+  createAtmosphere();
 
   log.debug("Earth system created", { segments, lodLevel });
 }
@@ -1286,7 +1286,7 @@ async function createCloudSystem(THREE, earthRadius) {
 }
 
 // ===== Atmosphäre erstellen =====
-function createAtmosphere(_THREE, _earthRadius) {
+function createAtmosphere() {
   // Atmosphäre komplett deaktiviert - Early Return
   log.debug("Atmosphere creation disabled - no blue atmosphere around Earth");
 }
@@ -1521,7 +1521,7 @@ async function setupPostprocessing(THREE) {
 }
 
 // ===== Section Detection Setup =====
-function setupSectionDetection(_container) {
+function setupSectionDetection() {
   const sections = document.querySelectorAll("section[id]");
   if (sections.length === 0) {
     log.warn("No sections found for detection");
@@ -1704,17 +1704,12 @@ function startAnimationLoop(THREE) {
       atmosphereUpdateCounter % (performanceMetrics.averageFPS < 30 ? 4 : 2) ===
       0
     ) {
-      updateAtmosphereEffects(elapsedTime, deltaTime);
+      updateAtmosphereEffects(elapsedTime);
     }
 
     // Kamera-Position Update (LERP)
     if (window.updateCameraPosition) {
       window.updateCameraPosition();
-    }
-
-    // Shader-Uniforms aktualisieren
-    if (frameCount % (performanceMetrics.averageFPS < 30 ? 2 : 1) === 0) {
-      updateShaderUniforms(elapsedTime);
     }
 
     // Rendern
@@ -1733,7 +1728,7 @@ function startAnimationLoop(THREE) {
   }
 
   // Spezialisierte Update-Funktionen für Atmosphäre
-  function updateAtmosphereEffects(elapsedTime, _deltaTime) {
+  function updateAtmosphereEffects(elapsedTime) {
     scene.traverse((child) => {
       // Atmosphäre-Material Updates
       if (child.material?.uniforms?.time) {
@@ -1792,7 +1787,7 @@ function startAnimationLoop(THREE) {
     }
   }
 
-  function checkPerformance(metrics, _frameCount) {
+  function checkPerformance(metrics) {
     const currentTime = performance.now();
     if (lastFrameTime > 0) {
       const frameDuration = currentTime - lastFrameTime;

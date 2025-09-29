@@ -38,7 +38,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===== Lazy Load nicht-kritischer Module =====
-const _lazyModules = (() => {
+(() => {
   const MAP = [
     {
       id: 'features',
@@ -56,7 +56,7 @@ const _lazyModules = (() => {
   if (!('IntersectionObserver' in window)) {
     // Fallback: direkt laden
     MAP.forEach((entry) => import(entry.module).catch(() => {}));
-    return { observer: null };
+  return;
   }
   const options = { root: null, threshold: 0.15, rootMargin: '120px 0px' };
   const io = new IntersectionObserver((entries) => {
@@ -85,7 +85,6 @@ const _lazyModules = (() => {
     const el = getElementById(id);
     if (el) io.observe(el);
   });
-  return { observer: io };
 })();
 // ===== Section Loader Module =====
 const SectionLoader = (() => {

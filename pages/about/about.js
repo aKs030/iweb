@@ -8,7 +8,7 @@
     const html = await resp.text();
     host.innerHTML = html;
     document.dispatchEvent(new CustomEvent('about:loaded'));
-  } catch (_err) {
+  } catch {
     // Silent fail
   }
 })();

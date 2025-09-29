@@ -14,33 +14,33 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: HTML Validation
-        run: npm run lint:html
+        run: |
+          set -o pipefail
+          npm run lint:html | tee validation-html.txt
 
       - name: CSS Consolidation Check
-        run: npm run check:css
+        run: |
+          set -o pipefail
+          npm run check:css | tee validation-css.txt
 
       - name: JavaScript Linting
-        run: npm run lint:js
+        run: |
+          set -o pipefail
+          npm run lint:js | tee validation-eslint.txt
 
       - name: Upload validation results
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: validation-results-${{ github.run_number }}
           path: |
-            ./**/validation-*.txt
-            ./**/eslint-report.json
+            validation-html.txt
+            validation-css.txt
+            validation-eslint.txt
           retention-days: 7

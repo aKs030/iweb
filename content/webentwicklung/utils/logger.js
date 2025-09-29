@@ -37,28 +37,24 @@ export function createLogger(moduleName) {
   return {
     error: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.error) {
-        // eslint-disable-next-line no-console
         console.error(prefix, message, ...args);
       }
     },
     
     warn: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.warn) {
-        // eslint-disable-next-line no-console
         console.warn(prefix, message, ...args);
       }
     },
     
     info: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.info) {
-        // eslint-disable-next-line no-console
         console.info(prefix, message, ...args);
       }
     },
     
     debug: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.debug) {
-        // eslint-disable-next-line no-console
         console.log(prefix, message, ...args);
       }
     }

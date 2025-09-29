@@ -36,7 +36,7 @@ async function initializeFooter() {
     // Day/Night Artwork Theme Toggle initialisieren
     try {
       await initializeDayNightArtwork();
-    } catch (_) {
+  } catch {
       // Artwork-Initialisierung ist optional - bei Fehler still ignorieren
     }
 
@@ -61,7 +61,7 @@ async function initializeFooter() {
         }
       });
     });
-  } catch (_) {
+  } catch {
     showFallbackFooter(footerContainer);
   }
 }
@@ -150,7 +150,7 @@ function setupNewsletterForm() {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
       }, 2000);
-    } catch (_) {
+  } catch {
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
       showNotification(

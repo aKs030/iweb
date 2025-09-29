@@ -118,7 +118,7 @@ class SectionTracker {
       
       const event = new CustomEvent('snapSectionChange', { detail });
       window.dispatchEvent(event);
-    } catch (_error) {
+    } catch {
       // Fail silently
     }
   }

@@ -32,7 +32,7 @@ export async function ensurePersistentStorage() {
         }
       }
       return { supported: true, persisted, quota };
-    } catch (error) {
+    } catch {
       return { supported: false, persisted: false };
     }
   })();
