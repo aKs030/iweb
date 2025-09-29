@@ -1,87 +1,90 @@
+// eslint.config.js
 import js from "@eslint/js";
+import globals from "globals";
+import prettier from "eslint-plugin-prettier";
+import importPlugin from "eslint-plugin-import";
 
 export default [
   js.configs.recommended,
   {
     languageOptions: {
-      ecmaVersion: 2024, // Modernste JavaScript-Version
+      ecmaVersion: 2024,
       sourceType: "module",
       globals: {
-        window: "readonly",
-        document: "readonly",
-        console: "readonly",
-        fetch: "readonly",
-        URLSearchParams: "readonly",
-        IntersectionObserver: "readonly",
-        MutationObserver: "readonly",
-        ResizeObserver: "readonly",
-        requestAnimationFrame: "readonly",
-        cancelAnimationFrame: "readonly",
-        setTimeout: "readonly",
-        setInterval: "readonly",
-        clearTimeout: "readonly",
-        clearInterval: "readonly",
-        performance: "readonly",
-        navigator: "readonly",
-        CSS: "readonly",
-        CustomEvent: "readonly",
-        addEventListener: "readonly",
-        removeEventListener: "readonly",
-        getComputedStyle: "readonly",
-        innerHeight: "readonly",
-        innerWidth: "readonly",
-        Event: "readonly",
-        Element: "readonly",
-        HTMLElement: "readonly",
-        NodeList: "readonly",
-        localStorage: "readonly",
-        sessionStorage: "readonly",
+        ...globals.browser, // Alle Standard-Browser-Globals automatisch
+        ...globals.node,    // Falls du auch Node-Skripte hast
         // Portfolio-spezifische Globals
-        THREE: "readonly", // Three.js für das Earth System
-        announce: "readonly", // window.announce für Accessibility
-        enhancedAnimationEngine: "readonly", // Animation Engine API
-      },
+        THREE: "readonly",                 // Three.js für das Earth System
+        announce: "readonly",              // window.announce für Accessibility
+        enhancedAnimationEngine: "readonly" // Eigene Animation Engine API
+      }
+    },
+    plugins: {
+      prettier,
+      import: importPlugin
     },
     rules: {
-      // Ungenutzte Variablen mit Underscore-Pattern
+      // Ungenutzte Variablen: alles mit "_" wird ignoriert
       "no-unused-vars": [
         "error",
         {
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
+          caughtErrorsIgnorePattern: "^_"
+        }
       ],
+
       // Moderne JavaScript Best Practices
       "prefer-const": "error",
       "no-var": "error",
       "prefer-template": "warn",
       "prefer-arrow-callback": "warn",
+
       // Code Style
-      "no-console": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
       indent: ["error", 2],
       quotes: ["error", "single"],
       semi: ["error", "always"],
       "no-multiple-empty-lines": ["error", { max: 2 }],
       "comma-dangle": ["error", "never"],
+
       // Performance & Qualität
       "no-duplicate-imports": "error",
       "no-useless-concat": "error",
       "prefer-destructuring": ["warn", { object: true, array: false }],
+
+      // Import-Ordnungscheck
+      "import/order": [
+        "warn",
+        {
+          groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true }
+        }
+      ],
+
+      // Prettier-Check (optional, falls du Prettier nutzt)
+      "prettier/prettier": [
+        "error",
+        {
+          singleQuote: true,
+          semi: true,
+          endOfLine: "auto"
+        }
+      ]
     },
-    files: ["content/**/*.js", "pages/**/*.js", "scripts/**/*.js"],
+    files: ["content/**/*.js", "pages/**/*.js", "scripts/**/*.js"]
   },
   {
-    // Performance-optimierte Ignore Patterns
     ignores: [
       "node_modules/**",
       ".git/**",
-      "**/three.module.js", // Three.js Library
-      "**/*.min.js", // Minifizierte Dateien
-      "coverage/**", // Test Coverage
-      ".vscode/**", // VS Code Settings
-      "dist/**", // Build Output
-      "**/*.bundle.js", // Bundle Files
-    ],
-  },
+      "**/three.module.js",  // Three.js Library
+      "**/*.min.js",         // Minifizierte Dateien
+      "coverage/**",         // Test Coverage
+      ".vscode/**",          // VS Code Settings
+      "dist/**",             // Build Output
+      "**/*.bundle.js"       // Bundle Files
+    ]
+  }
 ];

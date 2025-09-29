@@ -349,7 +349,20 @@
   </div>
 
   <!-- Advanced Three.js Earth System -->
-  <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
+  <div id="threeEarthContainer" class="three-earth-container" data-section="hero" aria-label="Interaktive 3D Erdkugel" aria-describedby="earth-description">
+    <!-- Hidden description for screen readers -->
+    <div id="earth-description" class="visually-hidden">
+      Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. 
+      Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
+    </div>
+    
+    <!-- Performance Debug Overlay (nur in Entwicklung sichtbar) -->
+    <div class="three-earth-performance-overlay" id="threeEarthPerformance">
+      <div>FPS: <span id="fps">--</span></div>
+      <div>LOD: <span id="lod">--</span></div>
+      <div>Mode: <span id="mode">--</span></div>
+    </div>
+    
     <div class="three-earth-loading">
       <div class="loading-spinner"></div>
       <p>3D Earth wird geladen...</p>
