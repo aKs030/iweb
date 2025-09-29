@@ -25,5 +25,5 @@ export function animateElementsIn(container, options = { force: true }) {
     window.enhancedAnimationEngine.animateElementsIn(container, options);
   }
   
-  log.debug('Container-Elemente animiert', { container: container?.tagName, options, context });
+  log.debug('Container-Elemente animiert', { container: container?.tagName, options });
 }

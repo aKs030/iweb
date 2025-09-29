@@ -1,7 +1,14 @@
 /**
  * Footer Resizer
- * Ziel: Footer nie höher als 60% des Bildschirms; Inhalte passen sich ohne Media Queries proportional an.
- * Technik: Dynamische Viewport-Messung (inkl. iOS Safe-Area), CSS-Variablen, ResizeObserver/Events.
+ * Ziel: Footer nie höher als 60% des Bildschirms; Inhalte passen sich ohne Media Queries proportfunction destroyFooterResizer() {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+  
+  window.removeEventListener('resize', handleWindowResize);
+  cleanup = null;
+}chnik: Dynamische Viewport-Messung (inkl. iOS Safe-Area), CSS-Variablen, ResizeObserver/Events.
  */
 
 import { throttle } from '../utils/common-utils.js';
