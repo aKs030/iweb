@@ -1,7 +1,7 @@
+import { triggerAnimationScan } from '../../content/webentwicklung/utils/animation-utils.js';
 import { getElementById } from '../../content/webentwicklung/utils/common-utils.js';
 import { EVENTS } from '../../content/webentwicklung/utils/events.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
-import { triggerAnimationScan } from '../../content/webentwicklung/utils/animation-utils.js';
 
 const log = createLogger('hero-manager');
 
@@ -25,12 +25,12 @@ export const HERO_ANIMATION_CONFIG = {
   threshold: 0.1,
   rootMargin: '50px',
   repeatOnScroll: true,
-  
+
   // Hero-spezifische Animation-Durationen
   durations: {
-    greeting: 0.8,      // Längere Dauer für Grußtext
-    heroButtons: 0.6,   // Standard für Hero-Buttons
-    heroSubtitle: 0.7   // Subtitle-Animationen
+    greeting: 0.8, // Längere Dauer für Grußtext
+    heroButtons: 0.6, // Standard für Hero-Buttons
+    heroSubtitle: 0.7 // Subtitle-Animationen
   }
 };
 
@@ -39,30 +39,33 @@ export const HERO_ANIMATION_CONFIG = {
  * @param {Object} animationEngine - Die Enhanced Animation Engine Instanz
  */
 export function extendAnimationEngineForHero(animationEngine) {
-  if (!animationEngine || typeof animationEngine.parseDataAttribute !== 'function') {
+  if (
+    !animationEngine ||
+    typeof animationEngine.parseDataAttribute !== 'function'
+  ) {
     log.warn('Animation Engine nicht verfügbar oder inkompatibel');
     return;
   }
 
   // Backup der ursprünglichen parseDataAttribute Methode
-  const originalParseDataAttribute = animationEngine.parseDataAttribute.bind(animationEngine);
-  
+  const originalParseDataAttribute =
+    animationEngine.parseDataAttribute.bind(animationEngine);
+
   // Erweiterte parseDataAttribute Methode mit Hero-Aliases
-  animationEngine.parseDataAttribute = function(element, attribute) {
+  animationEngine.parseDataAttribute = function (element, attribute) {
     const result = originalParseDataAttribute(element, attribute);
-    
+
     if (!result) return null;
-    
+
     // Hero-spezifische Alias-Behandlung
     const heroAlias = HERO_ANIMATION_ALIASES.get(result.type?.toLowerCase());
     if (heroAlias) {
       result.type = heroAlias;
     }
-    
+
     return result;
   };
 }
-
 
 /**
  * Initialisiert Hero-spezifische Animationen
@@ -73,20 +76,22 @@ function initHeroAnimations() {
   const waitForEngine = () => {
     if (window.enhancedAnimationEngine) {
       extendAnimationEngineForHero(window.enhancedAnimationEngine);
-      
+
       // Hero-spezifische Konfiguration anwenden
-      window.enhancedAnimationEngine.setRepeatOnScroll?.(HERO_ANIMATION_CONFIG.repeatOnScroll);
-      
+      window.enhancedAnimationEngine.setRepeatOnScroll?.(
+        HERO_ANIMATION_CONFIG.repeatOnScroll
+      );
+
       // Initial scan für Hero-Elemente
       triggerAnimationScan('hero-init');
-      
+
       log.debug('Hero-spezifische Animationen initialisiert');
     } else {
       // Retry nach kurzer Verzögerung
       setTimeout(waitForEngine, 100);
     }
   };
-  
+
   waitForEngine();
 }
 
@@ -116,7 +121,8 @@ const HeroManager = (() => {
       setRandomGreetingHTML();
     };
 
-    const heroEl = getElementById('hero') || document.querySelector('section#hero');
+    const heroEl =
+      getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
       setTimeout(triggerLoad, 2500);
       return;
@@ -128,7 +134,7 @@ const HeroManager = (() => {
       return;
     }
 
-    const obs = new IntersectionObserver(entries => {
+    const obs = new IntersectionObserver((entries) => {
       for (const e of entries) {
         if (e.isIntersecting) {
           obs.disconnect();
@@ -142,7 +148,8 @@ const HeroManager = (() => {
     setTimeout(triggerLoad, 6000);
   }
 
-  const ensureHeroData = async () => heroData || (heroData = await import('./GrussText.js').catch(() => ({})));
+  const ensureHeroData = async () =>
+    heroData || (heroData = await import('./GrussText.js').catch(() => ({})));
 
   // Hero Data Module für externe Verwendung (z.B. TypeWriter) bereitstellen
   window.__heroEnsureData = ensureHeroData;
@@ -151,7 +158,7 @@ const HeroManager = (() => {
     const delays = [0, 50, 120, 240, 480];
     let el = null;
     for (const d of delays) {
-      if (d) await new Promise(r => setTimeout(r, d));
+      if (d) await new Promise((r) => setTimeout(r, d));
       el = getElementById('greetingText');
       if (el) break;
     }
@@ -165,9 +172,9 @@ const HeroManager = (() => {
     el.dataset.last = next;
     if (animated) {
       el.classList.add('fade');
-      setTimeout(() => { 
-        el.textContent = next; 
-        el.classList.remove('fade'); 
+      setTimeout(() => {
+        el.textContent = next;
+        el.classList.remove('fade');
       }, 360);
     } else {
       el.textContent = next;
@@ -182,59 +189,81 @@ function initHeroAnimationBootstrap() {
   try {
     const hero = getElementById('hero');
     if (!hero) return;
-    
+
     // Prüfen ob echte Animation Engine bereits existiert
     if (!window.enhancedAnimationEngine) {
       // Fallback: Nur setzen wenn noch nicht vorhanden
       // Diese wird später von der echten Engine ersetzt, ohne sie zu überschreiben
       const fallbackEngine = {
-        scan() { return true; },
-        setRepeatOnScroll() { return true; },
+        scan() {
+          return true;
+        },
+        setRepeatOnScroll() {
+          return true;
+        },
         resetElementsIn(container) {
           if (!container) return;
           const elements = container.querySelectorAll('[data-animation]');
-          elements.forEach(el => el.classList.remove('animate-in', 'is-visible'));
+          elements.forEach((el) =>
+            el.classList.remove('animate-in', 'is-visible')
+          );
         },
         animateElementsIn(container) {
           if (!container) return;
           const elements = container.querySelectorAll('[data-animation]');
           elements.forEach((el, index) => {
-            setTimeout(() => el.classList.add('animate-in', 'is-visible'), index * 100);
+            setTimeout(
+              () => el.classList.add('animate-in', 'is-visible'),
+              index * 100
+            );
           });
         }
       };
       window.enhancedAnimationEngine = fallbackEngine;
     }
-    
+
     // Animation Engine konfigurieren (sowohl Fallback als auch echte Engine)
     window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
     const scan = () => window.enhancedAnimationEngine.scan?.();
     scan();
     setTimeout(scan, 1000);
-    hero.querySelectorAll('.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)')
-      ?.forEach(b => b.classList.add('is-visible'));
+    hero
+      .querySelectorAll(
+        '.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)'
+      )
+      ?.forEach((b) => b.classList.add('is-visible'));
     window.addEventListener('snapSectionChange', (e) => {
       const id = e.detail?.id;
       if (!id) return;
       const active = getElementById(id);
       if (!active) return;
       try {
-        const allSections = Array.from(document.querySelectorAll('main .section, .section'));
+        const allSections = Array.from(
+          document.querySelectorAll('main .section, .section')
+        );
         for (const s of allSections) {
           if (s !== active) {
             window.enhancedAnimationEngine?.resetElementsIn?.(s);
           }
         }
-      } catch { /* noop */ }
-      window.enhancedAnimationEngine?.animateElementsIn?.(active, { force: true });
+      } catch {
+        /* noop */
+      }
+      window.enhancedAnimationEngine?.animateElementsIn?.(active, {
+        force: true
+      });
 
       // Wenn zurück zum Hero gescrollt wurde, CRT-Buttons wieder sichtbar machen
       if (id === 'hero') {
         try {
-          active.querySelectorAll('.hero-buttons [data-animation="crt"]').forEach(btn => {
-            btn.classList.add('animate-element', 'is-visible');
-          });
-        } catch { /* noop */ }
+          active
+            .querySelectorAll('.hero-buttons [data-animation="crt"]')
+            .forEach((btn) => {
+              btn.classList.add('animate-element', 'is-visible');
+            });
+        } catch {
+          /* noop */
+        }
       }
     });
   } catch {
@@ -256,33 +285,49 @@ export function initHeroFeatureBundle() {
     try {
       if (!window.__typingStarted) {
         window.__typingStarted = true;
-        Promise.resolve(window.__initTyping?.()).catch(() => { window.__typingStarted = false; });
+        Promise.resolve(window.__initTyping?.()).catch(() => {
+          window.__typingStarted = false;
+        });
       }
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
 
     // Force-Visible: CRT Buttons sofort sichtbar machen, falls Animation-Scan später kommt
     try {
-      document.querySelectorAll('.hero-buttons [data-animation="crt"]').forEach(btn => {
-        btn.classList.add('animate-element', 'is-visible');
-      });
-    } catch { /* noop */ }
+      document
+        .querySelectorAll('.hero-buttons [data-animation="crt"]')
+        .forEach((btn) => {
+          btn.classList.add('animate-element', 'is-visible');
+        });
+    } catch {
+      /* noop */
+    }
   });
 
   // Verwende koordinierte Events statt separaten DOMContentLoaded Handler
-  document.addEventListener(EVENTS.HERO_INIT_READY, () => {
-    const el = getElementById('greetingText');
-    if (!el) return;
-    if (!el.textContent.trim()) {
-      HeroManager.setRandomGreetingHTML();
-    }
-    // Fallback: Typing starten, falls hero:loaded noch nicht gefeuert hat
-    try {
-      if (!window.__typingStarted) {
-        window.__typingStarted = true;
-        Promise.resolve(window.__initTyping?.()).catch(() => { window.__typingStarted = false; });
+  document.addEventListener(
+    EVENTS.HERO_INIT_READY,
+    () => {
+      const el = getElementById('greetingText');
+      if (!el) return;
+      if (!el.textContent.trim()) {
+        HeroManager.setRandomGreetingHTML();
       }
-    } catch { /* noop */ }
-  }, { once: true });
+      // Fallback: Typing starten, falls hero:loaded noch nicht gefeuert hat
+      try {
+        if (!window.__typingStarted) {
+          window.__typingStarted = true;
+          Promise.resolve(window.__initTyping?.()).catch(() => {
+            window.__typingStarted = false;
+          });
+        }
+      } catch {
+        /* noop */
+      }
+    },
+    { once: true }
+  );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
     const text = e.detail?.text || 'Text';
@@ -292,8 +337,7 @@ export function initHeroFeatureBundle() {
   // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
   setTimeout(initHeroAnimationBootstrap, 420);
-  
+
   // Initialisiere Hero-spezifische Animationen
   initHeroAnimations();
 }
-

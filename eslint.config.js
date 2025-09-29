@@ -59,6 +59,19 @@ export default [
         {
           groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
           "newlines-between": "always",
+          pathGroups: [
+            {
+              pattern: "./utils/**",
+              group: "internal",
+              position: "before"
+            },
+            {
+              pattern: "./utils",
+              group: "internal",
+              position: "before"
+            }
+          ],
+          pathGroupsExcludedImportTypes: ["builtin"],
           alphabetize: { order: "asc", caseInsensitive: true }
         }
       ],
@@ -69,7 +82,8 @@ export default [
         {
           singleQuote: true,
           semi: true,
-          endOfLine: "auto"
+          endOfLine: "auto",
+          trailingComma: "none"
         }
       ]
     },

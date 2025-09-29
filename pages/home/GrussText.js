@@ -1,4 +1,3 @@
-
 export const greetings = {
   morning: [
     'Guten Morgen und willkommen auf meiner Website!',
@@ -28,7 +27,7 @@ export const greetings = {
 
 export function getGreetingSet(date = new Date()) {
   const hour = date.getHours();
-  if (hour >= 5 && hour < 11)  return greetings.morning;
+  if (hour >= 5 && hour < 11) return greetings.morning;
   if (hour >= 11 && hour < 17) return greetings.day;
   if (hour >= 17 && hour < 22) return greetings.evening;
   return greetings.night;
@@ -36,13 +35,13 @@ export function getGreetingSet(date = new Date()) {
 
 import { randomInt } from '../../content/webentwicklung/utils/common-utils.js';
 
-export function pickGreeting(lastValue = null, set = getGreetingSet()){
-  if(!Array.isArray(set) || set.length === 0) return '';
-  if(set.length === 1) return set[0];
+export function pickGreeting(lastValue = null, set = getGreetingSet()) {
+  if (!Array.isArray(set) || set.length === 0) return '';
+  if (set.length === 1) return set[0];
   let candidate = set[randomInt(0, set.length - 1)];
-  if(lastValue && set.length > 1){
+  if (lastValue && set.length > 1) {
     let guard = 0;
-    while(candidate === lastValue && guard < 10){
+    while (candidate === lastValue && guard < 10) {
       candidate = set[randomInt(0, set.length - 1)];
       guard++;
     }
@@ -59,4 +58,3 @@ export const typewriterConfig = {
 
 // Hilfsfunktion um modulare Zusammenstellung zu erleichtern (optional)
 // getHeroConfig entfernt (wurde nicht verwendet; direkte Exporte reichen)
-

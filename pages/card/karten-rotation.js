@@ -1,25 +1,42 @@
 // Zentrale Utilities nutzen
-import { shuffle as shuffleArray, TimerManager, getElementById } from '../../content/webentwicklung/utils/common-utils.js';
-import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 import { triggerAnimationScan } from '../../content/webentwicklung/utils/animation-utils.js';
+import {
+  shuffle as shuffleArray,
+  TimerManager,
+  getElementById
+} from '../../content/webentwicklung/utils/common-utils.js';
+import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
 (() => {
   'use strict';
   if (window.FeatureRotation) return;
 
   const SECTION_ID = 'features';
-  const TEMPLATE_IDS = ['template-features-1','template-features-2','template-features-3','template-features-4','template-features-5'];
+  const TEMPLATE_IDS = [
+    'template-features-1',
+    'template-features-2',
+    'template-features-3',
+    'template-features-4',
+    'template-features-5'
+  ];
   const TEMPLATE_URL = '/pages/card/karten.html';
 
   // Default-Animationen (ms) können via data-attribute am Section-Element überschrieben werden
   const DEFAULT_ANIM_OUT = 200;
   const DEFAULT_ANIM_IN = 400;
   const DEFAULT_EASE = 'cubic-bezier(0.25,0.46,0.45,0.94)';
-  const THRESHOLDS = [0, .1, .25, .35, .5, .75, 1];
-  const ENTER = 0.45, EXIT = 0.35, COOLDOWN = 500;
+  const THRESHOLDS = [0, 0.1, 0.25, 0.35, 0.5, 0.75, 1];
+  const ENTER = 0.45,
+    EXIT = 0.35,
+    COOLDOWN = 500;
 
-  let order = [], i = 0, anim = false, queued = false;
-  let loaded = false, seen = false, cool = false;
+  let order = [],
+    i = 0,
+    anim = false,
+    queued = false;
+  let loaded = false,
+    seen = false,
+    cool = false;
   const timerManager = new TimerManager();
   let io = null;
 
@@ -28,25 +45,25 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
 
   async function ensureTemplates(section) {
     if (loaded) return;
-    
+
     const url = section?.dataset.featuresSrc || TEMPLATE_URL;
-    
+
     // Check if templates already exist
-    if (TEMPLATE_IDS.some(id => getElementById(id))) {
+    if (TEMPLATE_IDS.some((id) => getElementById(id))) {
       loaded = true;
       fire(EVENTS.FEATURES_TEMPLATES_LOADED);
       return;
     }
-    
+
     try {
       const res = await fetch(url, { credentials: 'same-origin' });
-      if (!res.ok) throw new Error(`HTTP ${  res.status}`);
-      
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
       const wrap = document.createElement('div');
       wrap.style.display = 'none';
       wrap.innerHTML = await res.text();
       document.body.appendChild(wrap);
-      
+
       loaded = true;
       fire(EVENTS.FEATURES_TEMPLATES_LOADED);
     } catch (error) {
@@ -63,7 +80,7 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
   function handleSnapScrollEvent() {
     const section = getElementById(SECTION_ID);
     if (!section) return;
-    
+
     // Force re-animation und sichtbarkeit sicherstellen
     window.enhancedAnimationEngine?.forceCurrentSectionAnimations?.();
     if (section.dataset.currentTemplate) {
@@ -87,7 +104,8 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
       live.setAttribute('data-feature-rotation-live', '');
       live.setAttribute('aria-live', 'polite');
       live.setAttribute('aria-atomic', 'true');
-      live.style.cssText = 'position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;';
+      live.style.cssText =
+        'position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;';
       section.appendChild(live);
     }
     // Accessibility: Klarer Text für Screenreader
@@ -101,21 +119,24 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
     section.removeAttribute('data-animation');
     section.style.opacity = '1';
     section.style.transform = 'none';
-    
+
     // Triggere Animation Engine für bestehende Kinder-Elemente
     triggerAnimationEngineRescan();
-    
+
     // Dispatch event nach setup
-    section.dispatchEvent(new CustomEvent(EVENTS.TEMPLATE_MOUNTED, {
-      detail: { templateId: section.dataset.currentTemplate },
-      bubbles: true
-    }));
-    
+    section.dispatchEvent(
+      new CustomEvent(EVENTS.TEMPLATE_MOUNTED, {
+        detail: { templateId: section.dataset.currentTemplate },
+        bubbles: true
+      })
+    );
+
     later(done, ANIM_IN);
   }
 
-  function mount(templateId, initial=false) {
-    const section = getElementById(SECTION_ID), tpl = getElementById(templateId);
+  function mount(templateId, initial = false) {
+    const section = getElementById(SECTION_ID),
+      tpl = getElementById(templateId);
     if (!section || !tpl) {
       return;
     }
@@ -125,12 +146,18 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
     const EASE = section.dataset.animEase || DEFAULT_EASE;
     const LIVE_LABEL_PREFIX = section.dataset.liveLabel || 'Feature';
 
-    if (anim && !initial) { queued = true; return; }
+    if (anim && !initial) {
+      queued = true;
+      return;
+    }
     anim = true;
 
     const done = () => {
       anim = false;
-      if (queued) { queued = false; rotateDifferent(); }
+      if (queued) {
+        queued = false;
+        rotateDifferent();
+      }
     };
 
     const mountNew = () => {
@@ -139,26 +166,29 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
       section.replaceChildren(frag || tpl.cloneNode(true));
       createLiveRegion(section, templateId, LIVE_LABEL_PREFIX);
       section.dataset.currentTemplate = templateId;
-      
+
       // Koordinierte Sichtbarkeit: erst nach Animation Engine Reset
       requestAnimationFrame(() => {
         section.style.opacity = '1';
         section.style.transform = 'none';
         section.style.willChange = '';
       });
-      
+
       fire(EVENTS.FEATURES_CHANGE, { index: i, total: order.length });
       applyInAnimation(section, ANIM_IN, EASE, done);
     };
 
-    if (initial || !section.dataset.currentTemplate) { mountNew(); return; }
+    if (initial || !section.dataset.currentTemplate) {
+      mountNew();
+      return;
+    }
 
     // Performance-optimiert: will-change vor Animation
     section.style.willChange = 'transform, opacity';
     section.style.transition = `transform ${ANIM_OUT}ms ${EASE}, opacity ${ANIM_OUT}ms ${EASE}`;
     section.style.opacity = '0';
     section.style.transform = 'translateY(-5px) translateZ(0)';
-    
+
     later(() => {
       // Vor dem neuen Mount: Transition zurücksetzen für sauberen Start
       section.style.transition = '';
@@ -168,14 +198,21 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
   }
 
   function rotateDifferent() {
-    if (order.length === 1) { mount(order[i]); return; }
+    if (order.length === 1) {
+      mount(order[i]);
+      return;
+    }
     function getSecureRandomInt(max) {
       const array = new Uint32Array(1);
       window.crypto.getRandomValues(array);
       return array[0] % max;
     }
-    let n; do { n = getSecureRandomInt(order.length); } while (n === i);
-    i = n; mount(order[i]);
+    let n;
+    do {
+      n = getSecureRandomInt(order.length);
+    } while (n === i);
+    i = n;
+    mount(order[i]);
   }
 
   function mountInitialIfNeeded() {
@@ -191,34 +228,39 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
     if (!section) return;
     if (io) io.disconnect();
 
-    io = new IntersectionObserver((ents) => {
-      for (const e of ents) {
-        if (e.target !== section) continue;
-        const r = e.intersectionRatio;
-        
-        // Bessere Sichtbarkeits-Logik: seen wird bei ausreichender Sichtbarkeit gesetzt
-        if (r >= ENTER) {
-          seen = true;
-        }
-        
-        // Reset seen beim vollständigen Verlassen der Section
-        if (r === 0) {
-          seen = false;
-        }
+    io = new IntersectionObserver(
+      (ents) => {
+        for (const e of ents) {
+          if (e.target !== section) continue;
+          const r = e.intersectionRatio;
 
-        // Rotation triggern wenn Section verlassen wird (aber noch teilweise sichtbar)
-        if (seen && r > 0 && r < EXIT && !cool) {
-          cool = true; 
-          rotateDifferent();
-          later(() => { cool = false; }, COOLDOWN);
+          // Bessere Sichtbarkeits-Logik: seen wird bei ausreichender Sichtbarkeit gesetzt
+          if (r >= ENTER) {
+            seen = true;
+          }
+
+          // Reset seen beim vollständigen Verlassen der Section
+          if (r === 0) {
+            seen = false;
+          }
+
+          // Rotation triggern wenn Section verlassen wird (aber noch teilweise sichtbar)
+          if (seen && r > 0 && r < EXIT && !cool) {
+            cool = true;
+            rotateDifferent();
+            later(() => {
+              cool = false;
+            }, COOLDOWN);
+          }
+
+          // Initial mount wenn Section sichtbar wird
+          if (e.isIntersecting && r > 0 && !section.dataset.currentTemplate) {
+            mountInitialIfNeeded();
+          }
         }
-        
-        // Initial mount wenn Section sichtbar wird
-        if ((e.isIntersecting && r > 0) && !section.dataset.currentTemplate) {
-          mountInitialIfNeeded();
-        }
-      }
-    }, { threshold: THRESHOLDS });
+      },
+      { threshold: THRESHOLDS }
+    );
 
     io.observe(section);
   }
@@ -228,24 +270,28 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
     observe();
 
     const section = getElementById(SECTION_ID);
-    if (section && TEMPLATE_IDS.some(id => getElementById(id)) && !section.dataset.currentTemplate) {
+    if (
+      section &&
+      TEMPLATE_IDS.some((id) => getElementById(id)) &&
+      !section.dataset.currentTemplate
+    ) {
       mount(order[i], true);
     }
 
-    if (!loaded) { 
-      await ensureTemplates(section); 
-      mountInitialIfNeeded(); 
+    if (!loaded) {
+      await ensureTemplates(section);
+      mountInitialIfNeeded();
     }
   }
 
   window.FeatureRotation = {
     next: rotateDifferent,
     current: () => ({ index: i, id: order[i] }),
-    destroy() { 
-      io?.disconnect(); 
-      io = null; 
-      clearTimers(); 
-      delete window.FeatureRotation; 
+    destroy() {
+      io?.disconnect();
+      io = null;
+      clearTimers();
+      delete window.FeatureRotation;
     }
   };
 
@@ -260,12 +306,16 @@ import { triggerAnimationScan } from '../../content/webentwicklung/utils/animati
 
   // Snap Scroll Integration - horche auf Scroll Events
   let snapScrollTimeout;
-  window.addEventListener('scroll', () => {
-    clearTimeout(snapScrollTimeout);
-    snapScrollTimeout = setTimeout(handleSnapScrollEvent, 100);
-  }, { passive: true });
+  window.addEventListener(
+    'scroll',
+    () => {
+      clearTimeout(snapScrollTimeout);
+      snapScrollTimeout = setTimeout(handleSnapScrollEvent, 100);
+    },
+    { passive: true }
+  );
 
-  (document.readyState === 'loading') ? 
-    document.addEventListener('DOMContentLoaded', init, { once: true }) : 
-    init();
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', init, { once: true })
+    : init();
 })();

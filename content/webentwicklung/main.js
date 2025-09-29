@@ -1,13 +1,15 @@
 import { getElementById } from './utils/common-utils.js';
-import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
 import { EVENTS, fire } from './utils/events.js';
-import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
+import { createLogger } from './utils/logger.js';
 import { schedulePersistentStorageRequest } from './utils/persistent-storage.js';
-import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
+import './utils/section-tracker.js'; // Section Detection für snapSectionChange Events
+
+import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
+
+import { EnhancedAnimationEngine } from './animations/enhanced-animation-engine.js';
 import { initAtmosphericSky } from './particles/atmospheric-sky-system.js';
 import { initThreeEarth } from './particles/three-earth-system.js';
-import { createLogger } from './utils/logger.js';
-import './utils/section-tracker.js'; // Section Detection für snapSectionChange Events
+import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
 
 const log = createLogger('main');
 
@@ -18,7 +20,9 @@ function announce(message, { assertive = false } = {}) {
     const region = getElementById(id);
     if (!region) return;
     region.textContent = '';
-    requestAnimationFrame(() => { region.textContent = message; });
+    requestAnimationFrame(() => {
+      region.textContent = message;
+    });
   } catch {
     /* Fail silently */
   }
@@ -36,19 +40,29 @@ if ('serviceWorker' in navigator) {
 // ===== Lazy Load nicht-kritischer Module =====
 const _lazyModules = (() => {
   const MAP = [
-    { id: 'features', module: '/pages/card/karten-rotation.js', loaded: false, type: 'feature-rotation' },
-    { id: 'about', module: '/pages/about/about.js', loaded: false, type: 'about-section' }
+    {
+      id: 'features',
+      module: '/pages/card/karten-rotation.js',
+      loaded: false,
+      type: 'feature-rotation'
+    },
+    {
+      id: 'about',
+      module: '/pages/about/about.js',
+      loaded: false,
+      type: 'about-section'
+    }
   ];
   if (!('IntersectionObserver' in window)) {
     // Fallback: direkt laden
-    MAP.forEach(entry => import(entry.module).catch(() => {}));
+    MAP.forEach((entry) => import(entry.module).catch(() => {}));
     return { observer: null };
   }
   const options = { root: null, threshold: 0.15, rootMargin: '120px 0px' };
-  const io = new IntersectionObserver(entries => {
+  const io = new IntersectionObserver((entries) => {
     for (const e of entries) {
       if (e.isIntersecting) {
-        const match = MAP.find(m => m.id === e.target.id);
+        const match = MAP.find((m) => m.id === e.target.id);
         if (match && !match.loaded) {
           match.loaded = true;
           import(match.module).catch(() => {});
@@ -58,16 +72,16 @@ const _lazyModules = (() => {
     }
   }, options);
   // Delay Setup bis DOMContentLoaded, Sections existieren initial (hero eager) andere werden dynamisch geladen.
-  document.addEventListener('section:loaded', ev => {
+  document.addEventListener('section:loaded', (ev) => {
     const id = ev.detail?.id;
-    const candidate = MAP.find(m => m.id === id);
+    const candidate = MAP.find((m) => m.id === id);
     if (candidate && !candidate.loaded) {
       const el = getElementById(id);
       if (el) io.observe(el);
     }
   });
   // Falls Features/About bereits im DOM (eager oder schnell geladen)
-  ['features','about'].forEach(id => {
+  ['features', 'about'].forEach((id) => {
     const el = getElementById(id);
     if (el) io.observe(el);
   });
@@ -83,9 +97,13 @@ const SectionLoader = (() => {
   // Dispatch Helper für konsistente CustomEvents
   function dispatchSectionEvent(type, section, detail = {}) {
     try {
-      const ev = new CustomEvent(type, { detail: { id: section?.id, section, ...detail } });
+      const ev = new CustomEvent(type, {
+        detail: { id: section?.id, section, ...detail }
+      });
       document.dispatchEvent(ev);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   /**
@@ -96,7 +114,10 @@ const SectionLoader = (() => {
     if (SEEN.has(section)) return;
     SEEN.add(section);
     const url = section.getAttribute('data-section-src');
-    if (!url) { section.removeAttribute('aria-busy'); return; }
+    if (!url) {
+      section.removeAttribute('aria-busy');
+      return;
+    }
 
     prepSectionForLoad(section);
     const sectionName = resolveSectionName(section);
@@ -146,24 +167,33 @@ const SectionLoader = (() => {
     const AC = globalThis.AbortController;
     let controller, timeout;
     try {
-      if (AC) { controller = new AC(); timeout = setTimeout(() => controller.abort(), 8000); }
-      const res = await fetch(url, { credentials: 'same-origin', signal: controller?.signal });
+      if (AC) {
+        controller = new AC();
+        timeout = setTimeout(() => controller.abort(), 8000);
+      }
+      const res = await fetch(url, {
+        credentials: 'same-origin',
+        signal: controller?.signal
+      });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText} @ ${url}`);
       const html = await res.text();
       if (timeout) clearTimeout(timeout);
       section.insertAdjacentHTML('beforeend', html);
       const tpl = section.querySelector('template');
       if (tpl) section.appendChild(tpl.content.cloneNode(true));
-      section.querySelectorAll('.section-skeleton').forEach(n => n.remove());
+      section.querySelectorAll('.section-skeleton').forEach((n) => n.remove());
       section.dataset.state = 'loaded';
       if (section.id === 'hero') fire(EVENTS.HERO_LOADED);
       return { ok: true };
     } catch (error) {
-      const transient = (error && /5\d\d/.test(String(error))) || (error && navigator.onLine === false);
+      const transient =
+        (error && /5\d\d/.test(String(error))) ||
+        (error && navigator.onLine === false);
       if (timeout) clearTimeout(timeout);
       return { ok: false, error, transient };
     } finally {
-      if (section.dataset.state === 'loaded') section.removeAttribute('aria-busy');
+      if (section.dataset.state === 'loaded')
+        section.removeAttribute('aria-busy');
     }
   }
 
@@ -177,14 +207,16 @@ const SectionLoader = (() => {
   function finalizeError(section, sectionName) {
     section.dataset.state = 'error';
     section.removeAttribute('aria-busy');
-    announce(`Fehler beim Laden von Abschnitt ${sectionName}.`, { assertive: true });
+    announce(`Fehler beim Laden von Abschnitt ${sectionName}.`, {
+      assertive: true
+    });
     dispatchSectionEvent('section:error', section, { state: 'error' });
     injectRetryUI(section);
   }
 
   /** Exponentiell leicht wachsender Backoff */
   function backoff(attempt) {
-    return new Promise(r => setTimeout(r, 300 + (attempt + 1) * 200));
+    return new Promise((r) => setTimeout(r, 300 + (attempt + 1) * 200));
   }
 
   function init() {
@@ -192,18 +224,18 @@ const SectionLoader = (() => {
     init._initialized = true;
     const sections = Array.from(document.querySelectorAll(SELECTOR));
     const lazy = [];
-    
-    sections.forEach(section => {
+
+    sections.forEach((section) => {
       if (section.hasAttribute('data-eager')) {
         loadInto(section);
       } else {
         lazy.push(section);
       }
     });
-    
+
     if (lazy.length) {
       const io = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const s = entry.target;
             loadInto(s);
@@ -211,7 +243,7 @@ const SectionLoader = (() => {
           }
         });
       });
-      lazy.forEach(s => io.observe(s));
+      lazy.forEach((s) => io.observe(s));
     }
   }
 
@@ -230,7 +262,7 @@ const SectionLoader = (() => {
 
   async function retry(section) {
     // Cleanup previous error UI
-    section.querySelectorAll('.section-error-box').forEach(n => n.remove());
+    section.querySelectorAll('.section-error-box').forEach((n) => n.remove());
     section.dataset.state = '';
     section.setAttribute('aria-busy', 'true');
     SEEN.delete(section); // allow reprocessing
@@ -259,11 +291,12 @@ if (document.readyState !== 'loading') {
 // ===== Scroll Snapping Module =====
 const ScrollSnapping = (() => {
   let snapTimer = null;
-  const snapContainer = document.querySelector('.snap-container') || document.documentElement;
-  
+  const snapContainer =
+    document.querySelector('.snap-container') || document.documentElement;
+
   const disableSnap = () => snapContainer.classList.add('no-snap');
   const enableSnap = () => snapContainer.classList.remove('no-snap');
-  
+
   const onActiveScroll = () => {
     disableSnap();
     clearTimeout(snapTimer);
@@ -274,7 +307,17 @@ const ScrollSnapping = (() => {
     addEventListener('wheel', onActiveScroll, { passive: true });
     addEventListener('touchmove', onActiveScroll, { passive: true });
     addEventListener('keydown', (e) => {
-      if (['PageDown', 'PageUp', 'Home', 'End', 'ArrowDown', 'ArrowUp', 'Space'].includes(e.key)) {
+      if (
+        [
+          'PageDown',
+          'PageUp',
+          'Home',
+          'End',
+          'ArrowDown',
+          'ArrowUp',
+          'Space'
+        ].includes(e.key)
+      ) {
         onActiveScroll();
       }
     });
@@ -286,20 +329,23 @@ const ScrollSnapping = (() => {
 // Scroll Snapping initialisieren
 ScrollSnapping.init();
 
-
 // ===== Menu Loading =====
 function loadMenuAssets() {
   const c = getElementById('menu-container');
   if (!c) return;
   if (c.dataset.assetsLoaded === '1') return;
-  if (document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')) {
+  if (
+    document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')
+  ) {
     c.dataset.assetsLoaded = '1';
     return;
   }
   const s = document.createElement('script');
   s.src = '/content/webentwicklung/menu/menu.js';
   s.defer = true;
-  s.onload = () => { c.dataset.assetsLoaded = '1'; };
+  s.onload = () => {
+    c.dataset.assetsLoaded = '1';
+  };
   document.body.appendChild(s);
 }
 
@@ -308,21 +354,23 @@ function loadMenuAssets() {
   'use strict';
 
   // Loading State Management
-  let __modulesReady = false, __windowLoaded = false, __start = 0;
+  let __modulesReady = false,
+    __windowLoaded = false,
+    __start = 0;
   const __MIN = 600; // Mindestzeit für Loading Screen
 
   function hideLoading() {
     const el = getElementById('loadingScreen');
     if (!el) return;
-    
+
     el.classList.add('hide');
     el.setAttribute('aria-hidden', 'true');
-    Object.assign(el.style, { 
-      opacity: '0', 
-      pointerEvents: 'none', 
-      visibility: 'hidden' 
+    Object.assign(el.style, {
+      opacity: '0',
+      pointerEvents: 'none',
+      visibility: 'hidden'
     });
-    
+
     const rm = () => {
       el.style.display = 'none';
       el.removeEventListener('transitionend', rm);
@@ -333,94 +381,107 @@ function loadMenuAssets() {
   }
 
   // Zentraler DOMContentLoaded Handler - koordiniert alle Module
-  document.addEventListener('DOMContentLoaded', async () => {
-    __start = performance.now();
+  document.addEventListener(
+    'DOMContentLoaded',
+    async () => {
+      __start = performance.now();
 
-    // 1. DOM Ready Event für andere Module
-    fire(EVENTS.DOM_READY);
+      // 1. DOM Ready Event für andere Module
+      fire(EVENTS.DOM_READY);
 
-    const tryHide = () => {
-      if (!__modulesReady) return;
-      if (!__windowLoaded && document.readyState !== 'complete') return;
-      const elapsed = performance.now() - __start;
-      setTimeout(hideLoading, Math.max(0, __MIN - elapsed));
-    };
+      const tryHide = () => {
+        if (!__modulesReady) return;
+        if (!__windowLoaded && document.readyState !== 'complete') return;
+        const elapsed = performance.now() - __start;
+        setTimeout(hideLoading, Math.max(0, __MIN - elapsed));
+      };
 
-    addEventListener('load', () => { 
-      __windowLoaded = true; 
-      tryHide(); 
-    }, { once: true });
+      addEventListener(
+        'load',
+        () => {
+          __windowLoaded = true;
+          tryHide();
+        },
+        { once: true }
+      );
 
-    // 2. Kern-Module initialisieren
-    // Enhanced Animation Engine initialisieren
-    if (!window.enhancedAnimationEngine) {
-      window.enhancedAnimationEngine = new EnhancedAnimationEngine();
-    }
-    
-    // TypeWriter Registry global verfügbar machen
-    if (!window.TypeWriterRegistry) {
-      window.TypeWriterRegistry = TypeWriterRegistry;
-    }
-    
-    // Atmosphärisches Himmelssystem initialisieren
-    let atmosphericCleanup = null;
-    try {
-      atmosphericCleanup = initAtmosphericSky();
-      // Cleanup-Funktion global verfügbar machen für Debug-Zwecke
-      if (atmosphericCleanup && typeof atmosphericCleanup === 'function') {
-        window.__atmosphericCleanup = atmosphericCleanup;
+      // 2. Kern-Module initialisieren
+      // Enhanced Animation Engine initialisieren
+      if (!window.enhancedAnimationEngine) {
+        window.enhancedAnimationEngine = new EnhancedAnimationEngine();
       }
-    } catch (error) {
-      log.error('Failed to initialize atmospheric sky system:', error);
-    }
-    
-    // Advanced Three.js Earth System initialisieren (direkte Integration)
-    let threeEarthCleanup = null;
-    try {
-      threeEarthCleanup = await initThreeEarth();
-      // Cleanup-Funktion global verfügbar machen für Debug-Zwecke
-      if (threeEarthCleanup && typeof threeEarthCleanup === 'function') {
-        window.__threeEarthCleanup = threeEarthCleanup;
-        log.info('Advanced Three.js Earth system initialized successfully');
+
+      // TypeWriter Registry global verfügbar machen
+      if (!window.TypeWriterRegistry) {
+        window.TypeWriterRegistry = TypeWriterRegistry;
       }
-    } catch (error) {
-      log.warn('Three.js Earth system not available, using CSS fallback:', error);
-    }
-    
-    fire(EVENTS.CORE_INITIALIZED);
 
-    // === Mobile Performance Optimierung (nach Engine-Init) ===
-    const isMobile = window.matchMedia('(max-width: 600px), (pointer: coarse)').matches;
-    if (isMobile && window.enhancedAnimationEngine) {
-      window.enhancedAnimationEngine.options.maxAnimations = 3;
-      window.enhancedAnimationEngine.options.threshold = 0.1;
-      window.enhancedAnimationEngine.setRepeatOnScroll(false);
-    }
-
-    // 3. Hero Feature-Bundle initialisieren
-    fire(EVENTS.HERO_INIT_READY);
-    initHeroFeatureBundle();
-
-    // 4. Module als ready markieren
-    __modulesReady = true;
-    fire(EVENTS.MODULES_READY);
-    tryHide();
-
-    // Re-scan nach Template-Loading für Enhanced Animation Engine
-    document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
-      // Animation Engine rescan für neue Templates
-      if (window.enhancedAnimationEngine?.scan) {
-        setTimeout(() => window.enhancedAnimationEngine.scan(), 120);
+      // Atmosphärisches Himmelssystem initialisieren
+      let atmosphericCleanup = null;
+      try {
+        atmosphericCleanup = initAtmosphericSky();
+        // Cleanup-Funktion global verfügbar machen für Debug-Zwecke
+        if (atmosphericCleanup && typeof atmosphericCleanup === 'function') {
+          window.__atmosphericCleanup = atmosphericCleanup;
+        }
+      } catch (error) {
+        log.error('Failed to initialize atmospheric sky system:', error);
       }
-    });
 
-    // Menü-Assets laden
-    loadMenuAssets();
+      // Advanced Three.js Earth System initialisieren (direkte Integration)
+      let threeEarthCleanup = null;
+      try {
+        threeEarthCleanup = await initThreeEarth();
+        // Cleanup-Funktion global verfügbar machen für Debug-Zwecke
+        if (threeEarthCleanup && typeof threeEarthCleanup === 'function') {
+          window.__threeEarthCleanup = threeEarthCleanup;
+          log.info('Advanced Three.js Earth system initialized successfully');
+        }
+      } catch (error) {
+        log.warn(
+          'Three.js Earth system not available, using CSS fallback:',
+          error
+        );
+      }
 
-    // Hard fallback für Loading
-    setTimeout(hideLoading, 5000);
+      fire(EVENTS.CORE_INITIALIZED);
 
-    // Persistenten Storage anfragen (best effort, verzögert um Initial Load nicht zu blockieren)
-    schedulePersistentStorageRequest(2200);
-  }, { once: true });
+      // === Mobile Performance Optimierung (nach Engine-Init) ===
+      const isMobile = window.matchMedia(
+        '(max-width: 600px), (pointer: coarse)'
+      ).matches;
+      if (isMobile && window.enhancedAnimationEngine) {
+        window.enhancedAnimationEngine.options.maxAnimations = 3;
+        window.enhancedAnimationEngine.options.threshold = 0.1;
+        window.enhancedAnimationEngine.setRepeatOnScroll(false);
+      }
+
+      // 3. Hero Feature-Bundle initialisieren
+      fire(EVENTS.HERO_INIT_READY);
+      initHeroFeatureBundle();
+
+      // 4. Module als ready markieren
+      __modulesReady = true;
+      fire(EVENTS.MODULES_READY);
+      tryHide();
+
+      // Re-scan nach Template-Loading für Enhanced Animation Engine
+      document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
+        // Animation Engine rescan für neue Templates
+        if (window.enhancedAnimationEngine?.scan) {
+          setTimeout(() => window.enhancedAnimationEngine.scan(), 120);
+        }
+      });
+
+      // Menü-Assets laden
+      loadMenuAssets();
+
+      // Hard fallback für Loading
+      setTimeout(hideLoading, 5000);
+
+      // Persistenten Storage anfragen (best effort, verzögert um Initial Load nicht zu blockieren)
+      schedulePersistentStorageRequest(2200);
+    },
+    { once: true }
+  );
 })();
