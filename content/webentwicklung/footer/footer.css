@@ -654,7 +654,82 @@ body.footer-expanded .typewriter-title--fixed {
   font-size: 16px;
 }
 
-/* ===== Theme Control Card ===== */
+/* ===== Floating Theme Control ===== */
+/* Theme Control als floating Element rechts oben ohne Card-Hintergrund */
+.theme-control-floating {
+  position: absolute;
+  top: -30px;
+  right: 15px;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.theme-control-floating .day-night-artwork {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(180deg, 
+    #87CEEB 0%,    /* Himmelblau oben */
+    #FFE4B5 45%,   /* Sonnenuntergangsorange */
+    #98FB98 100%   /* Sanftes Grün unten */
+  );
+  transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 
+    0 4px 20px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  transform-style: preserve-3d;
+}
+
+.theme-control-floating .day-night-artwork:hover {
+  transform: scale(1.05) rotateX(5deg);
+  box-shadow: 
+    0 6px 25px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.theme-control-floating .day-night-artwork:active {
+  transform: scale(0.98);
+}
+
+/* Night Mode Background für floating element */
+[data-theme="dark"] .theme-control-floating .day-night-artwork {
+  background: linear-gradient(180deg, 
+    #191970 0%,    /* Mitternachtsblau oben */
+    #483D8B 30%,   /* Dunkles Slate Blau */
+    #2F4F4F 70%,   /* Dunkles Schiefer Grau */
+    #228B22 100%   /* Waldgrün unten */
+  );
+}
+
+/* Mobile responsive für floating theme control */
+@media (max-width: 768px) {
+  .theme-control-floating {
+    top: -30px;
+    right: 15px;
+  }
+  
+  .theme-control-floating .day-night-artwork {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .theme-control-floating {
+    top: -30px;
+    right: 15px;
+  }
+  
+  .theme-control-floating .day-night-artwork {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* ===== Theme Control Card (alte Version - kann entfernt werden) ===== */
 /* Separate Karte für Day-Night-Theme Umschaltung - Refactored Sept 2025 */
 .footer-theme-control {
   display: flex;
