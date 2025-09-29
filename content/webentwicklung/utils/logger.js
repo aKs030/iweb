@@ -10,7 +10,7 @@ const LOG_LEVELS = {
   error: 0,
   warn: 1,
   info: 2,
-  debug: 3
+  debug: 3,
 };
 
 // Globales Log-Level (kann zur Laufzeit geändert werden)
@@ -33,46 +33,46 @@ export function setGlobalLogLevel(level) {
  */
 export function createLogger(moduleName) {
   const prefix = `[${moduleName}]`;
-  
+
   return {
     error: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.error) {
         console.error(prefix, message, ...args);
       }
     },
-    
+
     warn: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.warn) {
         console.warn(prefix, message, ...args);
       }
     },
-    
+
     info: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.info) {
         console.info(prefix, message, ...args);
       }
     },
-    
+
     debug: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.debug) {
         console.log(prefix, message, ...args);
       }
-    }
+    },
   };
 }
 
 /**
  * Standard-Logger für schnelle Verwendung
  */
-export const log = createLogger('app');
+export const log = createLogger("app");
 
 // Debug-Modus basierend auf URL-Parameter oder localStorage
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   const urlParams = new URLSearchParams(window.location.search);
-  const debugParam = urlParams.get('debug');
-  const debugStorage = window.localStorage?.getItem('iweb-debug');
-  
-  if (debugParam === 'true' || debugStorage === 'true') {
-    setGlobalLogLevel('debug');
+  const debugParam = urlParams.get("debug");
+  const debugStorage = window.localStorage?.getItem("iweb-debug");
+
+  if (debugParam === "true" || debugStorage === "true") {
+    setGlobalLogLevel("debug");
   }
 }

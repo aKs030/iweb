@@ -73,7 +73,7 @@ const ThreeEarthManager = (() => {
       await setupPostprocessing(THREE);
 
       // Section-Detection aktivieren
-  setupSectionDetection();
+      setupSectionDetection();
 
       // Animation Loop starten
       startAnimationLoop(THREE);

@@ -8,26 +8,26 @@ let _persistPromise = null;
 export async function ensurePersistentStorage() {
   if (_persistPromise) return _persistPromise;
   _persistPromise = (async () => {
-    if (!('storage' in navigator)) {
+    if (!("storage" in navigator)) {
       return { supported: false, persisted: false };
     }
     const storage = navigator.storage;
     let persisted = false;
     try {
-      if ('persisted' in storage) {
+      if ("persisted" in storage) {
         persisted = await storage.persisted().catch(() => false);
       }
-      if (!persisted && 'persist' in storage) {
+      if (!persisted && "persist" in storage) {
         persisted = await storage.persist().catch(() => false);
       }
       let quota = null;
-      if ('estimate' in storage) {
+      if ("estimate" in storage) {
         const est = await storage.estimate().catch(() => null);
         if (est) {
           quota = {
             quota: est.quota,
             usage: est.usage,
-            usageDetails: est.usageDetails || undefined
+            usageDetails: est.usageDetails || undefined,
           };
         }
       }
@@ -42,6 +42,10 @@ export async function ensurePersistentStorage() {
 // Optional: Auto-Aufruf nach kurzer Verzögerung (nicht-blockierend)
 export function schedulePersistentStorageRequest(delay = 2500) {
   try {
-    setTimeout(() => { ensurePersistentStorage().catch(() => {}); }, delay);
-  } catch { /* ignore */ }
+    setTimeout(() => {
+      ensurePersistentStorage().catch(() => {});
+    }, delay);
+  } catch {
+    /* ignore */
+  }
 }

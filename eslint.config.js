@@ -8,7 +8,7 @@ const projectGlobals = {
   ...globals.node,
   THREE: "readonly",
   announce: "readonly",
-  enhancedAnimationEngine: "readonly"
+  enhancedAnimationEngine: "readonly",
 };
 
 export default [
@@ -19,8 +19,8 @@ export default [
       ...(baseConfig.languageOptions ?? {}),
       ecmaVersion: 2024,
       sourceType: "module",
-      globals: projectGlobals
-    }
+      globals: projectGlobals,
+    },
   },
   {
     ignores: [
@@ -31,7 +31,7 @@ export default [
       "coverage/**",
       ".vscode/**",
       "dist/**",
-      "**/*.bundle.js"
-    ]
-  }
+      "**/*.bundle.js",
+    ],
+  },
 ];
