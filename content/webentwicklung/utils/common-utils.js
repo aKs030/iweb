@@ -1,14 +1,13 @@
-
 /**
  * Common Utilities - Geteilte Funktionen für das gesamte Projekt
- * 
+ *
  * Zentrale Sammlung allgemeiner Hilfsfunktionen:
  * - Timing: throttle, debounce
  * - Array: shuffle
  * - DOM: getElementById mit Caching
  * - Timer: TimerManager für systematisches Cleanup
  * - Math: randomInt, randomFloat
- * 
+ *
  * @author Portfolio System
  * @version 1.0.0
  * @created 2025-10-02
@@ -41,7 +40,7 @@ export function throttle(func, limit = 250) {
  */
 export function debounce(fn, wait = 100) {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => fn.apply(this, args), wait);
   };
@@ -86,11 +85,11 @@ export function getElementById(id, useCache = true) {
 
 // --- Timer Utilities ---
 export class TimerManager {
-  constructor() { 
-    this.timers = new Set(); 
+  constructor() {
+    this.timers = new Set();
     this.intervals = new Set();
   }
-  
+
   setTimeout(callback, delay) {
     const timer = setTimeout(() => {
       this.timers.delete(timer);
@@ -99,30 +98,30 @@ export class TimerManager {
     this.timers.add(timer);
     return timer;
   }
-  
+
   clearTimeout(timer) {
     clearTimeout(timer);
     this.timers.delete(timer);
   }
-  
+
   setInterval(callback, delay) {
     const interval = setInterval(callback, delay);
     this.intervals.add(interval);
     return interval;
   }
-  
+
   clearInterval(interval) {
     clearInterval(interval);
     this.intervals.delete(interval);
   }
-  
+
   clearAll() {
     for (const timer of this.timers) clearTimeout(timer);
     for (const interval of this.intervals) clearInterval(interval);
     this.timers.clear();
     this.intervals.clear();
   }
-  
+
   /**
    * Promise-basierter sleep mit automatischem Cleanup
    * @param {number} ms - Millisekunden zu warten
@@ -133,7 +132,7 @@ export class TimerManager {
       this.setTimeout(resolve, ms);
     });
   }
-  
+
   /**
    * Timeout Promise mit automatischem Cleanup
    * @param {Function} callback - Callback Funktion
@@ -152,7 +151,7 @@ export class TimerManager {
       }, delay);
     });
   }
-  
+
   /**
    * Gibt die Anzahl aktiver Timer zurück
    */

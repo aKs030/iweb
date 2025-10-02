@@ -1,10 +1,19 @@
-import { triggerAnimationScan, waitForAnimationEngine, resetElementsIn, animateElementsIn, ensureFallbackAnimationEngine } from '../../content/webentwicklung/utils/animation-utils.js';
-import { getElementById, TimerManager } from '../../content/webentwicklung/utils/common-utils.js';
-import { EVENTS } from '../../content/webentwicklung/utils/events.js';
-import { createLogger } from '../../content/webentwicklung/utils/logger.js';
-import { createTriggerOnceObserver } from '../../content/webentwicklung/utils/intersection-utils.js';
+import {
+  animateElementsIn,
+  ensureFallbackAnimationEngine,
+  resetElementsIn,
+  triggerAnimationScan,
+  waitForAnimationEngine,
+} from "../../content/webentwicklung/utils/animation-utils.js";
+import {
+  getElementById,
+  TimerManager,
+} from "../../content/webentwicklung/utils/common-utils.js";
+import { EVENTS } from "../../content/webentwicklung/utils/events.js";
+import { createTriggerOnceObserver } from "../../content/webentwicklung/utils/intersection-utils.js";
+import { createLogger } from "../../content/webentwicklung/utils/logger.js";
 
-const log = createLogger('hero-manager');
+const log = createLogger("hero-manager");
 
 // Timer Manager für Hero-spezifische Timeouts
 const heroTimers = new TimerManager();
@@ -17,7 +26,7 @@ const heroTimers = new TimerManager();
  */
 export const HERO_ANIMATION_ALIASES = new Map([
   // Hero-spezifische Grußtext-Animation
-  ['greeting', 'fadeInUp']
+  ["greeting", "fadeInUp"],
   // Weitere Hero-spezifische Animationen können hier hinzugefügt werden
 ]);
 
@@ -27,15 +36,15 @@ export const HERO_ANIMATION_ALIASES = new Map([
 export const HERO_ANIMATION_CONFIG = {
   // Optimierte Performance-Einstellungen für Hero-Bereich
   threshold: 0.1,
-  rootMargin: '50px',
+  rootMargin: "50px",
   repeatOnScroll: true,
 
   // Hero-spezifische Animation-Durationen
   durations: {
     greeting: 0.8, // Längere Dauer für Grußtext
     heroButtons: 0.6, // Standard für Hero-Buttons
-    heroSubtitle: 0.7 // Subtitle-Animationen
-  }
+    heroSubtitle: 0.7, // Subtitle-Animationen
+  },
 };
 
 /**
@@ -45,9 +54,9 @@ export const HERO_ANIMATION_CONFIG = {
 export function extendAnimationEngineForHero(animationEngine) {
   if (
     !animationEngine ||
-    typeof animationEngine.parseDataAttribute !== 'function'
+    typeof animationEngine.parseDataAttribute !== "function"
   ) {
-    log.warn('Animation Engine nicht verfügbar oder inkompatibel');
+    log.warn("Animation Engine nicht verfügbar oder inkompatibel");
     return;
   }
 
@@ -86,9 +95,9 @@ function initHeroAnimations() {
     );
 
     // Initial scan für Hero-Elemente
-    triggerAnimationScan('hero-init');
+    triggerAnimationScan("hero-init");
 
-    log.debug('Hero-spezifische Animationen initialisiert');
+    log.debug("Hero-spezifische Animationen initialisiert");
   });
 }
 
@@ -119,7 +128,7 @@ const HeroManager = (() => {
     };
 
     const heroEl =
-      getElementById('hero') || document.querySelector('section#hero');
+      getElementById("hero") || document.querySelector("section#hero");
     if (!heroEl) {
       heroTimers.setTimeout(triggerLoad, 2500);
       return;
@@ -138,7 +147,7 @@ const HeroManager = (() => {
   }
 
   const ensureHeroData = async () =>
-    heroData || (heroData = await import('./GrussText.js').catch(() => ({})));
+    heroData || (heroData = await import("./GrussText.js").catch(() => ({})));
 
   // Hero Data Module für externe Verwendung (z.B. TypeWriter) bereitstellen
   window.__heroEnsureData = ensureHeroData;
@@ -148,22 +157,22 @@ const HeroManager = (() => {
     let el = null;
     for (const d of delays) {
       if (d) await heroTimers.sleep(d);
-      el = getElementById('greetingText');
+      el = getElementById("greetingText");
       if (el) break;
     }
     if (!el) return;
 
     const mod = await ensureHeroData();
     const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
-    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
+    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : "";
     if (!next) return;
 
     el.dataset.last = next;
     if (animated) {
-      el.classList.add('fade');
+      el.classList.add("fade");
       heroTimers.setTimeout(() => {
         el.textContent = next;
-        el.classList.remove('fade');
+        el.classList.remove("fade");
       }, 360);
     } else {
       el.textContent = next;
@@ -176,7 +185,7 @@ const HeroManager = (() => {
 // ===== Animation Engine Bootstrap (nur für Hero-bezogene Trigger) =====
 function initHeroAnimationBootstrap() {
   try {
-    const hero = getElementById('hero');
+    const hero = getElementById("hero");
     if (!hero) return;
 
     // Fallback Engine falls keine echte verfügbar
@@ -191,15 +200,15 @@ function initHeroAnimationBootstrap() {
       .querySelectorAll(
         '.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)'
       )
-      ?.forEach((b) => b.classList.add('is-visible'));
-    window.addEventListener('snapSectionChange', (e) => {
+      ?.forEach((b) => b.classList.add("is-visible"));
+    window.addEventListener("snapSectionChange", (e) => {
       const id = e.detail?.id;
       if (!id) return;
       const active = getElementById(id);
       if (!active) return;
       try {
         const allSections = Array.from(
-          document.querySelectorAll('main .section, .section')
+          document.querySelectorAll("main .section, .section")
         );
         for (const s of allSections) {
           if (s !== active) {
@@ -212,12 +221,12 @@ function initHeroAnimationBootstrap() {
       animateElementsIn(active, { force: true });
 
       // Wenn zurück zum Hero gescrollt wurde, CRT-Buttons wieder sichtbar machen
-      if (id === 'hero') {
+      if (id === "hero") {
         try {
           active
             .querySelectorAll('.hero-buttons [data-animation="crt"]')
             .forEach((btn) => {
-              btn.classList.add('animate-element', 'is-visible');
+              btn.classList.add("animate-element", "is-visible");
             });
         } catch {
           /* noop */
@@ -233,11 +242,11 @@ function initHeroAnimationBootstrap() {
 export function initHeroFeatureBundle() {
   // Events für Hero
   document.addEventListener(EVENTS.HERO_LOADED, () => {
-    const el = getElementById('greetingText');
+    const el = getElementById("greetingText");
     if (!el) return;
-    if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
+    if (!el.textContent.trim() || el.textContent.trim() === "Willkommen") {
       HeroManager.setRandomGreetingHTML();
-      (window.announce || (() => {}))('Hero Bereich bereit.');
+      (window.announce || (() => {}))("Hero Bereich bereit.");
     }
     // Einmalige Typing-Initialisierung starten
     try {
@@ -256,7 +265,7 @@ export function initHeroFeatureBundle() {
       document
         .querySelectorAll('.hero-buttons [data-animation="crt"]')
         .forEach((btn) => {
-          btn.classList.add('animate-element', 'is-visible');
+          btn.classList.add("animate-element", "is-visible");
         });
     } catch {
       /* noop */
@@ -267,7 +276,7 @@ export function initHeroFeatureBundle() {
   document.addEventListener(
     EVENTS.HERO_INIT_READY,
     () => {
-      const el = getElementById('greetingText');
+      const el = getElementById("greetingText");
       if (!el) return;
       if (!el.textContent.trim()) {
         HeroManager.setRandomGreetingHTML();
@@ -288,7 +297,7 @@ export function initHeroFeatureBundle() {
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
-    const text = e.detail?.text || 'Text';
+    const text = e.detail?.text || "Text";
     (window.announce || (() => {}))(`Zitat vollständig: ${text}`);
   });
 

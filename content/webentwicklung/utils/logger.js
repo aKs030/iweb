@@ -1,13 +1,13 @@
 /**
  * Logger System - Zentrales Logging mit Log-Level Management
- * 
+ *
  * Features:
  * - Kategorisierte Logger per Modul (createLogger)
  * - Konfigurierbare Log-Level (error, warn, info, debug)
  * - Globale und individuelle Log-Level-Kontrolle
  * - Performance-optimiert (minimaler Overhead bei deaktivierten Leveln)
  * - Debug-freundlich mit aussagekräftigen Prefixes
- * 
+ *
  * @author Portfolio System
  * @version 1.0.0
  * @created 2025-10-02

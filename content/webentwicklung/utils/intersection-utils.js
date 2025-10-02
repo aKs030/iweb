@@ -1,9 +1,9 @@
 /**
  * IntersectionObserver Utilities - Shared Patterns & Configurations
- * 
+ *
  * Bietet wiederverwendbare IntersectionObserver Patterns und Konfigurationen
  * für verschiedene Use Cases wie Lazy Loading, Animation Triggering, etc.
- * 
+ *
  * @author Portfolio System
  * @version 1.0.0
  * @created 2025-10-02
@@ -22,26 +22,26 @@ export const OBSERVER_CONFIGS = {
   // Lazy Loading für Module/Sections - großzügiger Vorlauf
   lazyLoading: {
     threshold: 0.15,
-    rootMargin: "120px 0px"
+    rootMargin: "120px 0px",
   },
-  
+
   // Hero Loading - sofortige Reaktion
   heroLoading: {
     threshold: 0,
-    rootMargin: "0px"
+    rootMargin: "0px",
   },
-  
+
   // Animation Triggering - flexible Konfiguration
   animationTrigger: {
     threshold: 0.1,
-    rootMargin: "50px 0px"
+    rootMargin: "50px 0px",
   },
-  
+
   // Feature Rotation - detaillierte Ratio-Überwachung
   featureRotation: {
     threshold: [0, 0.1, 0.25, 0.35, 0.5, 0.75, 1],
-    rootMargin: "0px"
-  }
+    rootMargin: "0px",
+  },
 };
 
 // ===== Observer Factory Functions =====
@@ -52,18 +52,21 @@ export const OBSERVER_CONFIGS = {
  * @param {Object} options - Observer options (optional)
  * @returns {Object} { observer, observe, disconnect }
  */
-export function createLazyLoadObserver(callback, options = OBSERVER_CONFIGS.lazyLoading) {
+export function createLazyLoadObserver(
+  callback,
+  options = OBSERVER_CONFIGS.lazyLoading
+) {
   if (!window.IntersectionObserver) {
     log.warn("IntersectionObserver nicht verfügbar - Fallback aktiv");
     return {
       observer: null,
       observe: (element) => callback(element),
-      disconnect: () => {}
+      disconnect: () => {},
     };
   }
 
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
         observer.unobserve(entry.target);
         callback(entry.target);
@@ -74,7 +77,7 @@ export function createLazyLoadObserver(callback, options = OBSERVER_CONFIGS.lazy
   return {
     observer,
     observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect()
+    disconnect: () => observer.disconnect(),
   };
 }
 
@@ -84,14 +87,17 @@ export function createLazyLoadObserver(callback, options = OBSERVER_CONFIGS.lazy
  * @param {Object} options - Observer options (optional)
  * @returns {Object} { observer, observe, disconnect }
  */
-export function createTriggerOnceObserver(callback, options = OBSERVER_CONFIGS.heroLoading) {
+export function createTriggerOnceObserver(
+  callback,
+  options = OBSERVER_CONFIGS.heroLoading
+) {
   if (!window.IntersectionObserver) {
     log.warn("IntersectionObserver nicht verfügbar - sofortiger Trigger");
     setTimeout(callback, 0);
     return {
       observer: null,
       observe: () => {},
-      disconnect: () => {}
+      disconnect: () => {},
     };
   }
 
@@ -108,7 +114,7 @@ export function createTriggerOnceObserver(callback, options = OBSERVER_CONFIGS.h
   return {
     observer,
     observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect()
+    disconnect: () => observer.disconnect(),
   };
 }
 
@@ -118,19 +124,24 @@ export function createTriggerOnceObserver(callback, options = OBSERVER_CONFIGS.h
  * @param {Object} options - Observer options (optional)
  * @returns {Object} { observer, observe, unobserve, disconnect }
  */
-export function createRatioObserver(callback, options = OBSERVER_CONFIGS.featureRotation) {
+export function createRatioObserver(
+  callback,
+  options = OBSERVER_CONFIGS.featureRotation
+) {
   if (!window.IntersectionObserver) {
-    log.warn("IntersectionObserver nicht verfügbar - Ratio Observer deaktiviert");
+    log.warn(
+      "IntersectionObserver nicht verfügbar - Ratio Observer deaktiviert"
+    );
     return {
       observer: null,
       observe: () => {},
       unobserve: () => {},
-      disconnect: () => {}
+      disconnect: () => {},
     };
   }
 
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       callback(entry, entry.intersectionRatio);
     });
   }, options);
@@ -139,7 +150,7 @@ export function createRatioObserver(callback, options = OBSERVER_CONFIGS.feature
     observer,
     observe: (element) => observer.observe(element),
     unobserve: (element) => observer.unobserve(element),
-    disconnect: () => observer.disconnect()
+    disconnect: () => observer.disconnect(),
   };
 }
 
@@ -151,11 +162,15 @@ export function createRatioObserver(callback, options = OBSERVER_CONFIGS.feature
  * @param {Function} visibleCallback - Callback für sichtbare Elemente (element) => void
  * @param {Function} hiddenCallback - Callback für versteckte Elemente (element) => void (optional)
  */
-export function batchProcessEntries(entries, visibleCallback, hiddenCallback = null) {
+export function batchProcessEntries(
+  entries,
+  visibleCallback,
+  hiddenCallback = null
+) {
   const visible = [];
   const hidden = [];
 
-  entries.forEach(entry => {
+  entries.forEach((entry) => {
     if (entry.isIntersecting) {
       visible.push(entry.target);
     } else if (hiddenCallback) {
@@ -219,7 +234,7 @@ export function logObserverConfig(name, options) {
   if (log.isDebugEnabled()) {
     log.debug(`${name} Observer Config:`, {
       threshold: options.threshold,
-      rootMargin: options.rootMargin || "0px"
+      rootMargin: options.rootMargin || "0px",
     });
   }
 }

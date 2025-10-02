@@ -1,9 +1,9 @@
+import { scheduleAnimationScan } from "./utils/animation-utils.js";
 import { getElementById } from "./utils/common-utils.js";
 import { EVENTS, fire } from "./utils/events.js";
+import { createLazyLoadObserver } from "./utils/intersection-utils.js";
 import { createLogger } from "./utils/logger.js";
 import { schedulePersistentStorageRequest } from "./utils/persistent-storage.js";
-import { createLazyLoadObserver } from "./utils/intersection-utils.js";
-import { scheduleAnimationScan } from "./utils/animation-utils.js";
 import "./utils/section-tracker.js"; // Section Detection für snapSectionChange Events
 
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
@@ -55,7 +55,7 @@ if ("serviceWorker" in navigator) {
       type: "about-section",
     },
   ];
-  
+
   // Lazy loading mit shared utilities
   const lazyLoader = createLazyLoadObserver((element) => {
     const match = MAP.find((m) => m.id === element.id);
@@ -64,13 +64,13 @@ if ("serviceWorker" in navigator) {
       import(match.module).catch(() => {});
     }
   });
-  
+
   if (!lazyLoader.observer) {
     // Fallback: direkt laden wenn IntersectionObserver nicht verfügbar
     MAP.forEach((entry) => import(entry.module).catch(() => {}));
     return;
   }
-  
+
   // Delay Setup bis DOMContentLoaded, Sections existieren initial (hero eager) andere werden dynamisch geladen.
   document.addEventListener("section:loaded", (ev) => {
     const id = ev.detail?.id;
@@ -461,7 +461,7 @@ function loadMenuAssets() {
       // Re-scan nach Template-Loading für Enhanced Animation Engine
       document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
         // Animation Engine rescan für neue Templates
-        scheduleAnimationScan(120, 'template-loaded');
+        scheduleAnimationScan(120, "template-loaded");
       });
 
       // Menü-Assets laden

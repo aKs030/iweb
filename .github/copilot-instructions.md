@@ -43,11 +43,25 @@ Diese ist eine modulare, performante deutsche Portfolio-Website mit dynamischem 
 
 ```javascript
 // Immer zuerst utilities, dann spezifische Module
-import { getElementById, throttle, TimerManager } from "../utils/common-utils.js";
+import {
+  getElementById,
+  throttle,
+  TimerManager,
+} from "../utils/common-utils.js";
 import { createLogger } from "../utils/logger.js";
-import { createLazyLoadObserver, createTriggerOnceObserver } from "../utils/intersection-utils.js";
-import { setupPointerEvents, onResize, onScroll } from "../utils/event-management.js";
-import { scheduleAnimationScan, waitForAnimationEngine } from "../utils/animation-utils.js";
+import {
+  createLazyLoadObserver,
+  createTriggerOnceObserver,
+} from "../utils/intersection-utils.js";
+import {
+  setupPointerEvents,
+  onResize,
+  onScroll,
+} from "../utils/event-management.js";
+import {
+  scheduleAnimationScan,
+  waitForAnimationEngine,
+} from "../utils/animation-utils.js";
 
 // Logger pro Modul mit eindeutigem Namen
 const log = createLogger("moduleName");
@@ -56,28 +70,38 @@ const log = createLogger("moduleName");
 ### Shared Infrastructure Modules (NEW - Oktober 2025)
 
 #### **intersection-utils.js** - IntersectionObserver Patterns
+
 ```javascript
 // Factory für verschiedene Observer-Typen
-import { createLazyLoadObserver, createTriggerOnceObserver, createRatioObserver } from "./utils/intersection-utils.js";
+import {
+  createLazyLoadObserver,
+  createTriggerOnceObserver,
+  createRatioObserver,
+} from "./utils/intersection-utils.js";
 
 // Lazy Loading für Sections
 const lazyObserver = createLazyLoadObserver((entries) => {
-  entries.forEach(entry => loadSection(entry.target));
+  entries.forEach((entry) => loadSection(entry.target));
 });
 
 // Einmalige Trigger für Animationen
 const triggerObserver = createTriggerOnceObserver((entries) => {
-  entries.forEach(entry => triggerAnimation(entry.target));
+  entries.forEach((entry) => triggerAnimation(entry.target));
 });
 ```
 
 #### **event-management.js** - Systematisches Event Management
+
 ```javascript
 // Event Manager mit automatischem Cleanup
-import { createEventManager, setupPointerEvents, onResize } from "./utils/event-management.js";
+import {
+  createEventManager,
+  setupPointerEvents,
+  onResize,
+} from "./utils/event-management.js";
 
 const eventManager = createEventManager();
-eventManager.addListener(element, 'click', handler);
+eventManager.addListener(element, "click", handler);
 // Automatisches cleanup beim Modul-Unload
 
 // Standardisierte Event-Patterns
@@ -86,12 +110,17 @@ onResize(() => recalculateLayout());
 ```
 
 #### **animation-utils.js** - Animation Engine Integration
+
 ```javascript
 // Zentrale Animation-Utilities
-import { scheduleAnimationScan, waitForAnimationEngine, resetElementsIn } from "./utils/animation-utils.js";
+import {
+  scheduleAnimationScan,
+  waitForAnimationEngine,
+  resetElementsIn,
+} from "./utils/animation-utils.js";
 
 // Animation Engine Scan planen
-scheduleAnimationScan('contextName');
+scheduleAnimationScan("contextName");
 
 // Warten bis Animation Engine bereit
 await waitForAnimationEngine();
@@ -101,6 +130,7 @@ animateElementsIn(container, { force: true });
 ```
 
 #### **TimerManager** - Erweiterte Timer-Verwaltung
+
 ```javascript
 // Promise-basierte Timer mit automatischem Cleanup
 import { TimerManager } from "./utils/common-utils.js";

@@ -7,23 +7,23 @@
  * Konvention: lowercase mit Doppelpunkten für Namespacing (hero:loaded)
  */
 
-import { createLogger } from './logger.js';
+import { createLogger } from "./logger.js";
 
-const log = createLogger('events');
+const log = createLogger("events");
 
 export const EVENTS = Object.freeze({
-  HERO_LOADED: 'hero:loaded',
-  HERO_TYPING_END: 'hero:typingEnd',
-  FEATURES_TEMPLATES_LOADED: 'featuresTemplatesLoaded',
-  FEATURES_TEMPLATES_ERROR: 'featuresTemplatesError',
-  TEMPLATE_MOUNTED: 'template:mounted',
-  FEATURES_CHANGE: 'features:change',
-  
+  HERO_LOADED: "hero:loaded",
+  HERO_TYPING_END: "hero:typingEnd",
+  FEATURES_TEMPLATES_LOADED: "featuresTemplatesLoaded",
+  FEATURES_TEMPLATES_ERROR: "featuresTemplatesError",
+  TEMPLATE_MOUNTED: "template:mounted",
+  FEATURES_CHANGE: "features:change",
+
   // Neue Events für koordinierte Initialisierung
-  DOM_READY: 'app:domReady',
-  CORE_INITIALIZED: 'app:coreInitialized',
-  MODULES_READY: 'app:modulesReady',
-  HERO_INIT_READY: 'app:heroInitReady'
+  DOM_READY: "app:domReady",
+  CORE_INITIALIZED: "app:coreInitialized",
+  MODULES_READY: "app:modulesReady",
+  HERO_INIT_READY: "app:heroInitReady",
 });
 
 /**
@@ -34,14 +34,14 @@ export const EVENTS = Object.freeze({
  */
 export function fire(type, detail, target = document) {
   try {
-    if (!target || typeof target.dispatchEvent !== 'function') {
-      log.warn('fire(): target ist kein EventTarget', target);
+    if (!target || typeof target.dispatchEvent !== "function") {
+      log.warn("fire(): target ist kein EventTarget", target);
       return;
     }
     target.dispatchEvent(new CustomEvent(type, { detail }));
   } catch (e) {
     // Fail-Safe: kein Throw ins UI
-    log.warn('fire event error', type, e);
+    log.warn("fire event error", type, e);
   }
 }
 
@@ -56,18 +56,23 @@ export function fire(type, detail, target = document) {
  */
 export function on(type, handler, options, target = document) {
   // Options-Objekt erkennen (3. oder 4. Parameter)
-  let realTarget = target, opts = options;
-  if (options && typeof options.addEventListener !== 'function' && typeof target.addEventListener !== 'function') {
+  let realTarget = target,
+    opts = options;
+  if (
+    options &&
+    typeof options.addEventListener !== "function" &&
+    typeof target.addEventListener !== "function"
+  ) {
     // options ist vermutlich das Options-Objekt, target fehlt
     opts = options;
     realTarget = document;
-  } else if (options && typeof options.addEventListener === 'function') {
+  } else if (options && typeof options.addEventListener === "function") {
     // options ist tatsächlich das Target, target fehlt
     realTarget = options;
     opts = undefined;
   }
-  if (!realTarget || typeof realTarget.addEventListener !== 'function') {
-    log.warn('on(): target ist kein EventTarget', realTarget);
+  if (!realTarget || typeof realTarget.addEventListener !== "function") {
+    log.warn("on(): target ist kein EventTarget", realTarget);
     return () => {};
   }
   realTarget.addEventListener(type, handler, opts);

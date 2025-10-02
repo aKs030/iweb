@@ -1,12 +1,12 @@
 /**
  * Section Tracker - Einfache Section Detection für Navigation
- * 
+ *
  * Leichtgewichtige Alternative zur Particle-System Section Detection:
  * - IntersectionObserver-basierte Section-Erkennung
  * - snapSectionChange Events für UI-Updates
  * - Minimaler Memory Footprint
  * - Global verfügbar für Legacy-Code-Kompatibilität
- * 
+ *
  * @author Portfolio System
  * @version 1.0.0
  * @created 2025-10-02

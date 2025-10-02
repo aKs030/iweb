@@ -1,15 +1,15 @@
 /**
  * Atmospheric Sky System - CSS-basierte Himmel-Effekte
- * 
+ *
  * Erstellt atmosphärische Hintergrund-Effekte mit:
  * - Statische Sterne in verschiedenen Größen
  * - Animierte Sternschnuppen-Effekte
  * - Parallax-Scrolling für Tiefenwirkung
  * - Section-responsive Atmosphären-Übergänge
- * 
+ *
  * Nutzt shared-particle-system für Performance und Synchronisation.
- * 
- * @author Portfolio System  
+ *
+ * @author Portfolio System
  * @version 2.0.0 (migriert auf shared system)
  * @created 2025-10-02
  */
@@ -18,14 +18,14 @@
 import { getElementById } from "../utils/common-utils.js";
 import { createLogger } from "../utils/logger.js";
 import {
-  sharedParallaxManager,
-  sharedSectionDetector,
-  sharedCleanupManager,
+  addTimeout,
   getSharedState,
   registerParticleSystem,
+  SHARED_CONFIG,
+  sharedCleanupManager,
+  sharedParallaxManager,
+  sharedSectionDetector,
   unregisterParticleSystem,
-  addTimeout,
-  SHARED_CONFIG
 } from "./shared-particle-system.js";
 
 const log = createLogger("atmosphericSky");
@@ -68,7 +68,10 @@ class AtmosphericSkyManager {
 
   async init() {
     const sharedState = getSharedState();
-    if (sharedState.isInitialized && sharedState.systems.has('atmospheric-sky')) {
+    if (
+      sharedState.isInitialized &&
+      sharedState.systems.has("atmospheric-sky")
+    ) {
       log.debug("System already initialized");
       return this.cleanup.bind(this);
     }
@@ -83,7 +86,7 @@ class AtmosphericSkyManager {
       log.info("Initializing atmospheric sky system");
 
       // System registrieren
-      registerParticleSystem('atmospheric-sky', this);
+      registerParticleSystem("atmospheric-sky", this);
 
       this.createHTMLStructure(background);
 
@@ -111,7 +114,7 @@ class AtmosphericSkyManager {
     log.info("Starting cleanup");
 
     // Shared cleanup ausführen
-    sharedCleanupManager.cleanupSystem('atmospheric-sky');
+    sharedCleanupManager.cleanupSystem("atmospheric-sky");
 
     // Lokale cleanup-Funktionen ausführen
     state.cleanupFunctions.forEach((fn) => {
@@ -133,7 +136,7 @@ class AtmosphericSkyManager {
     state.timeouts.active.forEach((timeout) => clearTimeout(timeout));
 
     // System deregistrieren
-    unregisterParticleSystem('atmospheric-sky');
+    unregisterParticleSystem("atmospheric-sky");
 
     this.resetState();
     log.info("Cleanup completed");
@@ -261,14 +264,15 @@ class AtmosphericSkyManager {
     const scheduleNext = () => {
       const delay =
         Math.random() *
-          (LOCAL_CONFIG.SHOOTING_STARS.MAX_DELAY - LOCAL_CONFIG.SHOOTING_STARS.MIN_DELAY) +
+          (LOCAL_CONFIG.SHOOTING_STARS.MAX_DELAY -
+            LOCAL_CONFIG.SHOOTING_STARS.MIN_DELAY) +
         LOCAL_CONFIG.SHOOTING_STARS.MIN_DELAY;
 
       const timeoutId = setTimeout(() => {
         addShootingStar();
         scheduleNext();
       }, delay);
-      
+
       addTimeout(timeoutId);
     };
 
@@ -277,7 +281,7 @@ class AtmosphericSkyManager {
       addShootingStar();
       scheduleNext();
     }, 5000);
-    
+
     addTimeout(initialTimeoutId);
   }
 
@@ -287,7 +291,7 @@ class AtmosphericSkyManager {
       this.updateAtmosphere(background, sectionName);
     };
 
-    sharedSectionDetector.addCallback(sectionCallback, 'atmospheric-sky');
+    sharedSectionDetector.addCallback(sectionCallback, "atmospheric-sky");
 
     // Initial section setup
     setTimeout(() => {
@@ -299,9 +303,9 @@ class AtmosphericSkyManager {
     }, 100);
 
     sharedCleanupManager.addCleanupFunction(
-      'atmospheric-sky',
+      "atmospheric-sky",
       () => sharedSectionDetector.removeCallback(sectionCallback),
-      'section detection'
+      "section detection"
     );
   }
 
@@ -412,12 +416,12 @@ class AtmosphericSkyManager {
       }
     };
 
-    sharedParallaxManager.addHandler(parallaxHandler, 'atmospheric-sky');
+    sharedParallaxManager.addHandler(parallaxHandler, "atmospheric-sky");
 
     sharedCleanupManager.addCleanupFunction(
-      'atmospheric-sky',
+      "atmospheric-sky",
       () => sharedParallaxManager.removeHandler(parallaxHandler),
-      'parallax handler'
+      "parallax handler"
     );
   }
 }

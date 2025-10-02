@@ -1,12 +1,12 @@
 /**
  * Shared Particle System - Gemeinsame Infrastruktur
- * 
+ *
  * Zentralisiert gemeinsame Funktionalitäten der Particle-Systeme:
  * - Parallax-Scroll-Management mit synchronen Effekten
- * - Section-Detection für responsive Animationsübergänge  
+ * - Section-Detection für responsive Animationsübergänge
  * - Resource-Cleanup-Management
  * - Performance-optimiertes State-Management
- * 
+ *
  * @author Portfolio System
  * @version 1.0.0
  * @created 2025-10-02
@@ -39,17 +39,17 @@ class SharedParticleState {
     this.isScrollListenerActive = false;
     this.cleanupFunctions = [];
     this.systems = new Map(); // Registrierte Systeme
-    
+
     // Scroll & Parallax
     this.scrollProgress = 0;
     this.parallaxHandler = null;
-    
+
     // Section Detection
     this.sectionObserver = null;
-    
+
     // Animation
     this.animationFrameId = null;
-    
+
     // Timeouts
     this.timeouts = {
       active: [],
@@ -96,13 +96,10 @@ export function calculateScrollProgress() {
   const scrollY = window.pageYOffset;
   const windowHeight = window.innerHeight;
   const documentHeight = document.documentElement.scrollHeight;
-  
+
   return Math.min(
     1,
-    Math.max(
-      0,
-      scrollY / Math.max(1, documentHeight - windowHeight)
-    )
+    Math.max(0, scrollY / Math.max(1, documentHeight - windowHeight))
   );
 }
 
@@ -116,22 +113,24 @@ export class SharedParallaxManager {
     this.handlers = new Set();
   }
 
-  addHandler(handler, name = 'anonymous') {
+  addHandler(handler, name = "anonymous") {
     this.handlers.add({ handler, name });
     log.debug(`Parallax handler added: ${name}`);
-    
+
     if (!this.isActive) {
       this.activate();
     }
   }
 
   removeHandler(handler) {
-    const handlerObj = Array.from(this.handlers).find(h => h.handler === handler);
+    const handlerObj = Array.from(this.handlers).find(
+      (h) => h.handler === handler
+    );
     if (handlerObj) {
       this.handlers.delete(handlerObj);
       log.debug(`Parallax handler removed: ${handlerObj.name}`);
     }
-    
+
     if (this.handlers.size === 0) {
       this.deactivate();
     }
@@ -144,7 +143,7 @@ export class SharedParallaxManager {
       try {
         const progress = calculateScrollProgress();
         sharedState.scrollProgress = progress;
-        
+
         // CSS Custom Properties setzen
         document.documentElement.style.setProperty(
           `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
@@ -167,7 +166,6 @@ export class SharedParallaxManager {
             log.error(`Parallax handler error (${name}):`, error);
           }
         });
-
       } catch (error) {
         log.error("Shared parallax error:", error);
       }
@@ -191,7 +189,7 @@ export class SharedParallaxManager {
       window.removeEventListener("scroll", sharedState.parallaxHandler);
       sharedState.parallaxHandler = null;
     }
-    
+
     sharedState.isScrollListenerActive = false;
     this.isActive = false;
     this.handlers.clear();
@@ -207,22 +205,24 @@ export class SharedSectionDetector {
     this.callbacks = new Set();
   }
 
-  addCallback(callback, name = 'anonymous') {
+  addCallback(callback, name = "anonymous") {
     this.callbacks.add({ callback, name });
     log.debug(`Section detection callback added: ${name}`);
-    
+
     if (this.observers.size === 0) {
       this.setupObserver();
     }
   }
 
   removeCallback(callback) {
-    const callbackObj = Array.from(this.callbacks).find(c => c.callback === callback);
+    const callbackObj = Array.from(this.callbacks).find(
+      (c) => c.callback === callback
+    );
     if (callbackObj) {
       this.callbacks.delete(callbackObj);
       log.debug(`Section detection callback removed: ${callbackObj.name}`);
     }
-    
+
     if (this.callbacks.size === 0) {
       this.cleanup();
     }
@@ -235,14 +235,15 @@ export class SharedSectionDetector {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const sectionName = entry.target.dataset.section || entry.target.id || "unknown";
-            
+            const sectionName =
+              entry.target.dataset.section || entry.target.id || "unknown";
+
             if (sectionName !== sharedState.currentSection) {
               sharedState.currentSection = sectionName;
-              
+
               // CSS Custom Property setzen
               document.documentElement.style.setProperty(
-                "--current-section", 
+                "--current-section",
                 sectionName
               );
 
@@ -251,7 +252,10 @@ export class SharedSectionDetector {
                 try {
                   callback(sectionName, entry.target);
                 } catch (error) {
-                  log.error(`Section detection callback error (${name}):`, error);
+                  log.error(
+                    `Section detection callback error (${name}):`,
+                    error
+                  );
                 }
               });
 
@@ -267,12 +271,16 @@ export class SharedSectionDetector {
     );
 
     // Alle Sections beobachten
-    const sections = document.querySelectorAll('section[data-section], section[id]');
+    const sections = document.querySelectorAll(
+      "section[data-section], section[id]"
+    );
     sections.forEach((section) => {
       sharedState.sectionObserver.observe(section);
     });
 
-    log.debug(`Section observer setup completed, watching ${sections.length} sections`);
+    log.debug(
+      `Section observer setup completed, watching ${sections.length} sections`
+    );
   }
 
   cleanup() {
@@ -292,11 +300,11 @@ export class SharedCleanupManager {
     this.cleanupFunctions = new Map(); // system name -> cleanup functions
   }
 
-  addCleanupFunction(systemName, cleanupFn, description = 'anonymous') {
+  addCleanupFunction(systemName, cleanupFn, description = "anonymous") {
     if (!this.cleanupFunctions.has(systemName)) {
       this.cleanupFunctions.set(systemName, []);
     }
-    
+
     this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
     log.debug(`Cleanup function added for ${systemName}: ${description}`);
   }
@@ -331,7 +339,7 @@ export class SharedCleanupManager {
     if (sharedState.timeouts.shootingStar) {
       clearTimeout(sharedState.timeouts.shootingStar);
     }
-    sharedState.timeouts.active.forEach(timeout => clearTimeout(timeout));
+    sharedState.timeouts.active.forEach((timeout) => clearTimeout(timeout));
 
     // System-spezifische Cleanups
     this.cleanupFunctions.forEach((cleanups, systemName) => {

@@ -1,13 +1,13 @@
 /**
  * Persistent Storage - Browser Storage Persistence Management
- * 
+ *
  * Moderne Storage API Integration:
  * - navigator.storage.persist() für dauerhaften Storage
  * - Feature Detection mit graceful degradation
  * - Quota-Informationen und Status-Reporting
  * - Idempotente Promise-basierte API
  * - Optional: Auto-Aktivierung mit konfigurierbarer Verzögerung
- * 
+ *
  * @author Portfolio System
  * @version 1.0.0
  * @created 2025-10-02

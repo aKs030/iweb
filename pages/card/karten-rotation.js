@@ -1,30 +1,30 @@
 // Zentrale Utilities nutzen
-import { triggerAnimationScan } from '../../content/webentwicklung/utils/animation-utils.js';
+import { triggerAnimationScan } from "../../content/webentwicklung/utils/animation-utils.js";
 import {
+  getElementById,
   shuffle as shuffleArray,
   TimerManager,
-  getElementById
-} from '../../content/webentwicklung/utils/common-utils.js';
-import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
+} from "../../content/webentwicklung/utils/common-utils.js";
+import { EVENTS, fire, on } from "../../content/webentwicklung/utils/events.js";
 
 (() => {
-  'use strict';
+  "use strict";
   if (window.FeatureRotation) return;
 
-  const SECTION_ID = 'features';
+  const SECTION_ID = "features";
   const TEMPLATE_IDS = [
-    'template-features-1',
-    'template-features-2',
-    'template-features-3',
-    'template-features-4',
-    'template-features-5'
+    "template-features-1",
+    "template-features-2",
+    "template-features-3",
+    "template-features-4",
+    "template-features-5",
   ];
-  const TEMPLATE_URL = '/pages/card/karten.html';
+  const TEMPLATE_URL = "/pages/card/karten.html";
 
   // Default-Animationen (ms) können via data-attribute am Section-Element überschrieben werden
   const DEFAULT_ANIM_OUT = 200;
   const DEFAULT_ANIM_IN = 400;
-  const DEFAULT_EASE = 'cubic-bezier(0.25,0.46,0.45,0.94)';
+  const DEFAULT_EASE = "cubic-bezier(0.25,0.46,0.45,0.94)";
   const THRESHOLDS = [0, 0.1, 0.25, 0.35, 0.5, 0.75, 1];
   const ENTER = 0.45,
     EXIT = 0.35,
@@ -56,11 +56,11 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     }
 
     try {
-      const res = await fetch(url, { credentials: 'same-origin' });
+      const res = await fetch(url, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const wrap = document.createElement('div');
-      wrap.style.display = 'none';
+      const wrap = document.createElement("div");
+      wrap.style.display = "none";
       wrap.innerHTML = await res.text();
       document.body.appendChild(wrap);
 
@@ -79,28 +79,28 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     // Force re-animation und sichtbarkeit sicherstellen
     window.enhancedAnimationEngine?.forceCurrentSectionAnimations?.();
     if (section.dataset.currentTemplate) {
-      section.style.opacity = '1';
-      section.style.transform = 'none';
+      section.style.opacity = "1";
+      section.style.transform = "none";
     }
   }
 
   function prepareAnimationReset(section) {
     // Section-Level Styles setzen
     requestAnimationFrame(() => {
-      section.style.opacity = '1';
-      section.style.transform = 'none';
+      section.style.opacity = "1";
+      section.style.transform = "none";
     });
   }
 
   function createLiveRegion(section, templateId, LIVE_LABEL_PREFIX) {
-    let live = section.querySelector('[data-feature-rotation-live]');
+    let live = section.querySelector("[data-feature-rotation-live]");
     if (!live) {
-      live = document.createElement('div');
-      live.setAttribute('data-feature-rotation-live', '');
-      live.setAttribute('aria-live', 'polite');
-      live.setAttribute('aria-atomic', 'true');
+      live = document.createElement("div");
+      live.setAttribute("data-feature-rotation-live", "");
+      live.setAttribute("aria-live", "polite");
+      live.setAttribute("aria-atomic", "true");
       live.style.cssText =
-        'position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;';
+        "position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;";
       section.appendChild(live);
     }
     // Accessibility: Klarer Text für Screenreader
@@ -110,19 +110,19 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
   function applyInAnimation(section, ANIM_IN, EASE, done) {
     // Reset vorherige States - aber keine eigenen Animation-Attribute setzen
-    section.classList.remove('animate', 'animated');
-    section.removeAttribute('data-animation');
-    section.style.opacity = '1';
-    section.style.transform = 'none';
+    section.classList.remove("animate", "animated");
+    section.removeAttribute("data-animation");
+    section.style.opacity = "1";
+    section.style.transform = "none";
 
     // Triggere Animation Engine für bestehende Kinder-Elemente
-    triggerAnimationScan('karten-rotation-mount');
+    triggerAnimationScan("karten-rotation-mount");
 
     // Dispatch event nach setup
     section.dispatchEvent(
       new CustomEvent(EVENTS.TEMPLATE_MOUNTED, {
         detail: { templateId: section.dataset.currentTemplate },
-        bubbles: true
+        bubbles: true,
       })
     );
 
@@ -139,7 +139,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     const ANIM_IN = Number(section.dataset.animIn || DEFAULT_ANIM_IN);
     const ANIM_OUT = Number(section.dataset.animOut || DEFAULT_ANIM_OUT);
     const EASE = section.dataset.animEase || DEFAULT_EASE;
-    const LIVE_LABEL_PREFIX = section.dataset.liveLabel || 'Feature';
+    const LIVE_LABEL_PREFIX = section.dataset.liveLabel || "Feature";
 
     if (anim && !initial) {
       queued = true;
@@ -164,9 +164,9 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
       // Koordinierte Sichtbarkeit: erst nach Animation Engine Reset
       requestAnimationFrame(() => {
-        section.style.opacity = '1';
-        section.style.transform = 'none';
-        section.style.willChange = '';
+        section.style.opacity = "1";
+        section.style.transform = "none";
+        section.style.willChange = "";
       });
 
       fire(EVENTS.FEATURES_CHANGE, { index: i, total: order.length });
@@ -179,15 +179,15 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     }
 
     // Performance-optimiert: will-change vor Animation
-    section.style.willChange = 'transform, opacity';
+    section.style.willChange = "transform, opacity";
     section.style.transition = `transform ${ANIM_OUT}ms ${EASE}, opacity ${ANIM_OUT}ms ${EASE}`;
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(-5px) translateZ(0)';
+    section.style.opacity = "0";
+    section.style.transform = "translateY(-5px) translateZ(0)";
 
     later(() => {
       // Vor dem neuen Mount: Transition zurücksetzen für sauberen Start
-      section.style.transition = '';
-      section.style.willChange = '';
+      section.style.transition = "";
+      section.style.willChange = "";
       mountNew();
     }, ANIM_OUT);
   }
@@ -214,7 +214,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     const section = getElementById(SECTION_ID);
     if (section && !section.dataset.currentTemplate && order.length) {
       mount(order[i], true);
-      triggerAnimationScan('karten-rotation-clean');
+      triggerAnimationScan("karten-rotation-clean");
     }
   }
 
@@ -287,12 +287,12 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
       io = null;
       clearTimers();
       delete window.FeatureRotation;
-    }
+    },
   };
 
   on(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
     mountInitialIfNeeded();
-    triggerAnimationScan('karten-rotation-templates-loaded');
+    triggerAnimationScan("karten-rotation-templates-loaded");
   });
 
   on(EVENTS.TEMPLATE_MOUNTED, () => {
@@ -302,7 +302,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
   // Snap Scroll Integration - horche auf Scroll Events
   let snapScrollTimeout;
   window.addEventListener(
-    'scroll',
+    "scroll",
     () => {
       clearTimeout(snapScrollTimeout);
       snapScrollTimeout = setTimeout(handleSnapScrollEvent, 100);
@@ -310,7 +310,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     { passive: true }
   );
 
-  document.readyState === 'loading'
-    ? document.addEventListener('DOMContentLoaded', init, { once: true })
+  document.readyState === "loading"
+    ? document.addEventListener("DOMContentLoaded", init, { once: true })
     : init();
 })();

@@ -1,30 +1,38 @@
 /**
  * Three.js Earth System - 3D WebGL Erde mit Sternen
- * 
+ *
  * High-Quality 3D-Erdvisualisierung mit:
  * - Realistische Erdtexturen (Day/Night/Bump/Normal Maps)
- * - Prozedurales Sternfeld mit custom Texturen  
+ * - Prozedurales Sternfeld mit custom Texturen
  * - Scroll-basierte Kamera-Controls
  * - Section-responsive Animationsübergänge
  * - Performance-optimiertes Rendering
- * 
+ *
  * Verwendet shared-particle-system für Parallax-Synchronisation.
- * 
+ *
  * @author Portfolio System
- * @version 2.0.0 (teilweise migriert auf shared system)  
+ * @version 2.0.0 (teilweise migriert auf shared system)
  * @created 2025-10-02
  */
 
 // Three.js Earth System - High Quality Version
-import { getElementById, TimerManager, throttle } from "../utils/common-utils.js";
-import { createLogger } from "../utils/logger.js";
-import { setupPointerEvents, onScroll, onResize } from "../utils/event-management.js";
 import {
-  sharedParallaxManager,
-  sharedCleanupManager,
+  getElementById,
+  throttle,
+  TimerManager,
+} from "../utils/common-utils.js";
+import {
+  onResize,
+  onScroll,
+  setupPointerEvents,
+} from "../utils/event-management.js";
+import { createLogger } from "../utils/logger.js";
+import {
   getSharedState,
   registerParticleSystem,
-  unregisterParticleSystem
+  sharedCleanupManager,
+  sharedParallaxManager,
+  unregisterParticleSystem,
 } from "./shared-particle-system.js";
 
 const log = createLogger("threeEarthSystem");
@@ -49,7 +57,7 @@ let isScrollBased = true;
 const ThreeEarthManager = (() => {
   const initThreeEarth = async () => {
     const sharedState = getSharedState();
-    if (sharedState.isInitialized && sharedState.systems.has('three-earth')) {
+    if (sharedState.isInitialized && sharedState.systems.has("three-earth")) {
       log.debug("Three.js Earth system already initialized");
       return cleanup;
     }
@@ -65,7 +73,7 @@ const ThreeEarthManager = (() => {
       log.info("Initializing Three.js Earth system");
 
       // System registrieren
-      registerParticleSystem('three-earth', { type: 'three-earth' });
+      registerParticleSystem("three-earth", { type: "three-earth" });
 
       // Loading State aktivieren
       showLoadingState(container);
@@ -122,7 +130,7 @@ const ThreeEarthManager = (() => {
           camera = null;
         }
         // Shared cleanup ausführen
-        sharedCleanupManager.cleanupSystem('three-earth');
+        sharedCleanupManager.cleanupSystem("three-earth");
       } catch (emergencyError) {
         log.error("Emergency cleanup failed:", emergencyError);
       }
@@ -144,7 +152,7 @@ const ThreeEarthManager = (() => {
     }
 
     // Shared cleanup ausführen
-    sharedCleanupManager.cleanupSystem('three-earth');
+    sharedCleanupManager.cleanupSystem("three-earth");
 
     // Erweiterte Three.js Memory Cleanup
     if (scene) {
@@ -222,7 +230,7 @@ const ThreeEarthManager = (() => {
     }
 
     // System aus shared state entfernen
-    unregisterParticleSystem('three-earth');
+    unregisterParticleSystem("three-earth");
 
     log.info("Three.js Earth system cleanup completed");
   };
@@ -426,52 +434,69 @@ async function setupScene(THREE, container) {
 
 // ===== Runde Stern-Textur erstellen =====
 function createStarTexture(THREE) {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   const size = 64; // Textur-Größe
   canvas.width = size;
   canvas.height = size;
-  
-  const context = canvas.getContext('2d');
+
+  const context = canvas.getContext("2d");
   const center = size / 2;
-  
+
   // Hintergrund transparent
   context.clearRect(0, 0, size, size);
-  
+
   // Haupt-Stern (radialer Gradient mit höherer Intensität)
-  const mainGradient = context.createRadialGradient(center, center, 0, center, center, center * 0.7);
-  mainGradient.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)'); // Helles Zentrum
-  mainGradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)'); // Stärkerer Übergang
-  mainGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); // Sichtbarerer Rand
-  mainGradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.1)'); // Erweiterte Sichtbarkeit
-  mainGradient.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)'); // Transparenter Rand
-  
+  const mainGradient = context.createRadialGradient(
+    center,
+    center,
+    0,
+    center,
+    center,
+    center * 0.7
+  );
+  mainGradient.addColorStop(0.0, "rgba(255, 255, 255, 1.0)"); // Helles Zentrum
+  mainGradient.addColorStop(0.2, "rgba(255, 255, 255, 0.9)"); // Stärkerer Übergang
+  mainGradient.addColorStop(0.5, "rgba(255, 255, 255, 0.4)"); // Sichtbarerer Rand
+  mainGradient.addColorStop(0.7, "rgba(255, 255, 255, 0.1)"); // Erweiterte Sichtbarkeit
+  mainGradient.addColorStop(1.0, "rgba(255, 255, 255, 0.0)"); // Transparenter Rand
+
   context.fillStyle = mainGradient;
   context.beginPath();
   context.arc(center, center, center * 0.7, 0, Math.PI * 2); // Größerer Stern-Kern
   context.fill();
-  
+
   // Stern-Strahlen (heller und länger)
-  context.fillStyle = 'rgba(255, 255, 255, 0.6)'; // Hellere Strahlen
+  context.fillStyle = "rgba(255, 255, 255, 0.6)"; // Hellere Strahlen
   const rayWidth = 1.5; // Breitere Strahlen
   const rayLength = center * 0.9; // Längere Strahlen
-  
+
   // Vertikaler Strahl
-  context.fillRect(center - rayWidth/2, center - rayLength, rayWidth, rayLength * 2);
-  // Horizontaler Strahl  
-  context.fillRect(center - rayLength, center - rayWidth/2, rayLength * 2, rayWidth);
-  
+  context.fillRect(
+    center - rayWidth / 2,
+    center - rayLength,
+    rayWidth,
+    rayLength * 2
+  );
+  // Horizontaler Strahl
+  context.fillRect(
+    center - rayLength,
+    center - rayWidth / 2,
+    rayLength * 2,
+    rayWidth
+  );
+
   // Zusätzliche diagonale Strahlen für realistischeren Effekt
   context.save();
   context.translate(center, center);
   context.rotate(Math.PI / 4);
-  context.fillRect(-rayWidth/2, -rayLength * 0.6, rayWidth, rayLength * 1.2);
-  context.fillRect(-rayLength * 0.6, -rayWidth/2, rayLength * 1.2, rayWidth);
+  context.fillRect(-rayWidth / 2, -rayLength * 0.6, rayWidth, rayLength * 1.2);
+  context.fillRect(-rayLength * 0.6, -rayWidth / 2, rayLength * 1.2, rayWidth);
   context.restore();
-  
+
   // Three.js Textur erstellen
   const texture = new THREE.CanvasTexture(canvas);
   texture.needsUpdate = true;
-  
+
   return texture;
 }
 
@@ -479,42 +504,48 @@ function createStarTexture(THREE) {
 function createStarField(THREE) {
   const starGeometry = new THREE.BufferGeometry();
   const starCount = 1500; // Dezente Anzahl von Sternen
-  
+
   // Positionen für Sterne generieren
   const positions = new Float32Array(starCount * 3);
   const colors = new Float32Array(starCount * 3);
   const sizes = new Float32Array(starCount);
-  
+
   // Sterne in Kugel um die Szene verteilen
   for (let i = 0; i < starCount; i++) {
     const i3 = i * 3;
-    
+
     // Zufällige Position auf Kugel-Oberfläche
     const radius = 100 + Math.random() * 200; // Verschiedene Entfernungen
     const theta = Math.random() * Math.PI * 2; // Azimuth
     const phi = Math.acos(2 * Math.random() - 1); // Polar
-    
+
     positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
     positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i3 + 2] = radius * Math.cos(phi);
-    
+
     // Stern-Farben (heller für bessere Sichtbarkeit)
     const colorVariation = 0.9 + Math.random() * 0.1;
     colors[i3] = colorVariation; // R
     colors[i3 + 1] = colorVariation * (0.95 + Math.random() * 0.05); // G
     colors[i3 + 2] = colorVariation * (0.9 + Math.random() * 0.1); // B
-    
+
     // Stern-Größen (deutlich größer für bessere Sichtbarkeit)
-    sizes[i] = Math.random() < 0.15 ? 4.0 + Math.random() * 6.0 : 2.0 + Math.random() * 3.0;
+    sizes[i] =
+      Math.random() < 0.15
+        ? 4.0 + Math.random() * 6.0
+        : 2.0 + Math.random() * 3.0;
   }
-  
-  starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-  
+
+  starGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(positions, 3)
+  );
+  starGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  starGeometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+
   // Runde Stern-Textur erstellen
   const starTexture = createStarTexture(THREE);
-  
+
   // Stern-Material mit runder Textur (optimiert für Sichtbarkeit)
   const starMaterial = new THREE.PointsMaterial({
     size: 3.0, // Größerer Basis-Size
@@ -524,19 +555,19 @@ function createStarField(THREE) {
     opacity: 0.9, // Höhere Opacity
     blending: THREE.AdditiveBlending,
     map: starTexture,
-    alphaTest: 0.05 // Niedrigerer alphaTest für mehr Sichtbarkeit
+    alphaTest: 0.05, // Niedrigerer alphaTest für mehr Sichtbarkeit
   });
-  
+
   // Stern-Mesh erstellen und zur Szene hinzufügen
   const starField = new THREE.Points(starGeometry, starMaterial);
-  starField.name = 'starField';
+  starField.name = "starField";
   scene.add(starField);
-  
+
   log.debug(`Created subtle star field with ${starCount} stars`);
-  
+
   // Cleanup-Funktion hinzufügen
   sharedCleanupManager.addCleanupFunction(
-    'three-earth',
+    "three-earth",
     () => {
       if (starField) {
         scene.remove(starField);
@@ -545,10 +576,10 @@ function createStarField(THREE) {
         if (starTexture) {
           starTexture.dispose();
         }
-        log.debug('Star field disposed');
+        log.debug("Star field disposed");
       }
     },
-    'star field cleanup'
+    "star field cleanup"
   );
 }
 
@@ -557,13 +588,14 @@ function setupStarParallax() {
   // Parallax-Handler zum shared system hinzufügen
   const parallaxHandler = (progress, scrollY) => {
     try {
-      const starField = scene?.getObjectByName('starField');
+      const starField = scene?.getObjectByName("starField");
       if (!starField) return;
 
       // Parallax-Bewegung für Sternfeld (harmonisch mit atmospheric-sky-system)
       // Subtile Y-Rotation basierend auf Scroll-Position
       const parallaxRotationY = progress * Math.PI * 0.3; // Reduzierte Rotation für natürlicheren Effekt
-      starField.rotation.y = (starField.userData.baseRotationY || 0) + parallaxRotationY;
+      starField.rotation.y =
+        (starField.userData.baseRotationY || 0) + parallaxRotationY;
 
       // Zusätzliche X-Rotation für 3D-Effekt
       const parallaxRotationX = Math.sin(progress * Math.PI * 2) * 0.1; // Subtile Neigung
@@ -580,28 +612,31 @@ function setupStarParallax() {
       // Opacity-Variation basierend auf Scroll-Position
       if (starField.material) {
         const baseOpacity = starField.userData.baseOpacity || 0.9;
-        const scrollOpacity = baseOpacity * (0.7 + Math.sin(progress * Math.PI) * 0.3);
-        starField.material.opacity = Math.max(0.4, Math.min(1.0, scrollOpacity));
+        const scrollOpacity =
+          baseOpacity * (0.7 + Math.sin(progress * Math.PI) * 0.3);
+        starField.material.opacity = Math.max(
+          0.4,
+          Math.min(1.0, scrollOpacity)
+        );
       }
-
     } catch (error) {
       log.error("Star parallax error:", error);
     }
   };
 
   // Initial setup
-  const starField = scene?.getObjectByName('starField');
+  const starField = scene?.getObjectByName("starField");
   if (starField) {
     starField.userData.baseRotationY = starField.rotation.y;
     starField.userData.baseOpacity = starField.material?.opacity || 0.9;
   }
 
-  sharedParallaxManager.addHandler(parallaxHandler, 'three-earth-stars');
+  sharedParallaxManager.addHandler(parallaxHandler, "three-earth-stars");
 
   sharedCleanupManager.addCleanupFunction(
-    'three-earth',
+    "three-earth",
     () => sharedParallaxManager.removeHandler(parallaxHandler),
-    'star parallax handler'
+    "star parallax handler"
   );
 
   log.debug("Star parallax setup completed");
@@ -610,10 +645,7 @@ function setupStarParallax() {
 // ===== Beleuchtung Setup =====
 function setupLighting(THREE) {
   // Hauptlichtquelle (Sonne)
-  const sunLight = new THREE.DirectionalLight(
-    0xffffff,
-    2.0
-  );
+  const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
   sunLight.position.set(5, 3, 5);
   sunLight.castShadow = true;
 
@@ -638,7 +670,7 @@ function setupLighting(THREE) {
 
 // ===== Earth-System erstellen =====
 async function createEarthSystem(THREE) {
-    // Hohe Qualität - feste Werte
+  // Hohe Qualität - feste Werte
   const earthRadius = 3.5; // Vergrößert für Horizont-Effekt
   const segments = 128;
 
@@ -749,7 +781,6 @@ async function createEarthMaterial(THREE) {
       normalTexture: !!normalTexture,
       bumpTexture: !!bumpTexture,
       totalLoaded: loadedCount,
-
     });
 
     // Material basierend auf verfügbaren Texturen
@@ -1031,11 +1062,11 @@ function setupCameraSystem(THREE) {
 
   // In Animation Loop integrieren
   sharedCleanupManager.addCleanupFunction(
-    'three-earth',
+    "three-earth",
     () => {
       // Cleanup für Kamera-System (falls nötig)
     },
-    'camera system cleanup'
+    "camera system cleanup"
   );
 
   window.updateCameraPosition = updateCameraPosition; // Für Animation Loop
@@ -1153,23 +1184,27 @@ function setupUserControls(container) {
   };
 
   // Pointer Events Setup mit shared utilities
-  const pointerCleanup = setupPointerEvents(container, {
-    onStart: handlePointerDown,
-    onMove: handlePointerMove,
-    onEnd: handlePointerUp
-  }, { passive: false }); // Nicht-passive für preventDefault
+  const pointerCleanup = setupPointerEvents(
+    container,
+    {
+      onStart: handlePointerDown,
+      onMove: handlePointerMove,
+      onEnd: handlePointerUp,
+    },
+    { passive: false }
+  ); // Nicht-passive für preventDefault
 
   // Scroll Events Setup
   const scrollCleanup = onScroll(handleScroll);
 
   // Cleanup
   sharedCleanupManager.addCleanupFunction(
-    'three-earth',
+    "three-earth",
     () => {
       scrollCleanup();
       pointerCleanup();
     },
-    'user controls cleanup'
+    "user controls cleanup"
   );
 
   // Public API für Kontrolle
@@ -1309,14 +1344,14 @@ function updateEarthForSection(sectionName) {
 }
 
 function updateStarFieldForSection(config) {
-  const starField = scene?.getObjectByName('starField');
+  const starField = scene?.getObjectByName("starField");
   if (!starField || !starField.material) return;
-  
+
   // Stern-Parameter für Section setzen
   starField.userData.twinkleIntensity = config.starTwinkle;
   starField.userData.brightness = config.starBrightness;
   starField.userData.rotationSpeed = config.starRotation;
-  
+
   // Basis-Helligkeit setzen
   starField.material.opacity = config.starBrightness * 0.8;
 }
@@ -1409,7 +1444,7 @@ function startAnimationLoop(THREE) {
   }
 
   function updateStarField(elapsedTime) {
-    const starField = scene?.getObjectByName('starField');
+    const starField = scene?.getObjectByName("starField");
     if (!starField) return;
 
     // Section-spezifische Parameter verwenden
@@ -1424,7 +1459,8 @@ function startAnimationLoop(THREE) {
     if (starField.material) {
       // Kombiniertes Funkeln mit verschiedenen Frequenzen für natürlicheren Effekt
       const mainTwinkle = Math.sin(elapsedTime * 0.5) * twinkleIntensity;
-      const fastTwinkle = Math.sin(elapsedTime * 2.0) * (twinkleIntensity * 0.3);
+      const fastTwinkle =
+        Math.sin(elapsedTime * 2.0) * (twinkleIntensity * 0.3);
       const combined = brightness * (0.7 + mainTwinkle + fastTwinkle);
       starField.material.opacity = Math.max(0.4, Math.min(1.0, combined));
     }
@@ -1461,9 +1497,9 @@ function setupResizeHandler() {
   const resizeCleanup = onResize(handleResize, 100);
 
   sharedCleanupManager.addCleanupFunction(
-    'three-earth',
+    "three-earth",
     resizeCleanup,
-    'resize handler cleanup'
+    "resize handler cleanup"
   );
 }
 
