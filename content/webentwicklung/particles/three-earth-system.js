@@ -405,9 +405,15 @@ async function setupScene(THREE, container) {
       scene,
       camera,
       renderer,
-      get earthMesh() { return earthMesh; },
-      get animationFrameId() { return animationFrameId; },
-      get currentSection() { return currentSection; },
+      get earthMesh() {
+        return earthMesh;
+      },
+      get animationFrameId() {
+        return animationFrameId;
+      },
+      get currentSection() {
+        return currentSection;
+      },
     };
     log.debug("Debug-Objekt unter window.threeEarthDebug verfügbar");
   }
@@ -550,11 +556,11 @@ function createStarField(THREE) {
     new THREE.BufferAttribute(positions, 3).setUsage(THREE.StaticDrawUsage)
   );
   starGeometry.setAttribute(
-    "color", 
+    "color",
     new THREE.BufferAttribute(colors, 3).setUsage(THREE.StaticDrawUsage)
   );
   starGeometry.setAttribute(
-    "size", 
+    "size",
     new THREE.BufferAttribute(sizes, 1).setUsage(THREE.StaticDrawUsage)
   );
 
@@ -875,10 +881,10 @@ async function loadTextureWithFallback(
 ) {
   // ===== OPTIMIERUNG: WebP-Support mit automatischem JPG-Fallback =====
   // Versuche zuerst WebP zu laden (58.9% kleiner), dann JPG als Fallback
-  const webpUrl = url.replace(/\.jpg$/, '.webp');
+  const webpUrl = url.replace(/\.jpg$/, ".webp");
   const formats = [
-    { url: webpUrl, format: 'WebP', description: 'modern compressed format' },
-    { url: url, format: 'JPG', description: 'legacy format' }
+    { url: webpUrl, format: "WebP", description: "modern compressed format" },
+    { url: url, format: "JPG", description: "legacy format" },
   ];
 
   // Format-basierter Retry-Loop
@@ -889,8 +895,14 @@ async function loadTextureWithFallback(
     while (attempts < maxRetries) {
       try {
         log.debug(`Attempting to load ${format} texture: ${formatUrl}`);
-        const texture = await loadTextureWithTimeout(loader, formatUrl, timeout);
-        log.info(`✅ Successfully loaded ${format} texture (${description}): ${formatUrl}`);
+        const texture = await loadTextureWithTimeout(
+          loader,
+          formatUrl,
+          timeout
+        );
+        log.info(
+          `✅ Successfully loaded ${format} texture (${description}): ${formatUrl}`
+        );
         return texture;
       } catch (error) {
         attempts++;
@@ -900,13 +912,17 @@ async function loadTextureWithFallback(
         );
 
         if (attempts >= maxRetries) {
-          log.warn(`All attempts failed for ${format}: ${formatUrl}, trying next format...`);
+          log.warn(
+            `All attempts failed for ${format}: ${formatUrl}, trying next format...`
+          );
           break; // Try next format
         }
 
         // Exponential backoff: 1s, 2s, 4s
         const delay = baseDelay * Math.pow(2, attempts - 1);
-        log.debug(`Retrying ${format} texture load in ${delay}ms: ${formatUrl}`);
+        log.debug(
+          `Retrying ${format} texture load in ${delay}ms: ${formatUrl}`
+        );
         await sleep(delay);
       }
     }
@@ -1158,13 +1174,13 @@ function setupUserControls(container) {
   let isUserInteracting = false;
   const mouseStart = { x: 0, y: 0 };
   const cameraStart = { x: 0, y: 0 };
-  
+
   // ===== NEUE FEATURE: Touch-Gesten State =====
   let touchStartDistance = 0;
   let initialZoom = 5;
   let currentZoom = 5;
   let targetZoom = 5;
-  
+
   // ===== NEUE FEATURE: Velocity für Inertia =====
   let velocity = { x: 0, y: 0 };
   const dampingFactor = 0.95; // Smooth dampening
@@ -1204,7 +1220,7 @@ function setupUserControls(container) {
   // ===== NEUE FEATURE: Pinch-to-Zoom für Touch =====
   const handleTouchStart = (event) => {
     if (isScrollBased) return;
-    
+
     if (event.touches.length === 2) {
       // Two-finger gestures
       const dx = event.touches[0].clientX - event.touches[1].clientX;
@@ -1229,7 +1245,7 @@ function setupUserControls(container) {
       const dx = event.touches[0].clientX - event.touches[1].clientX;
       const dy = event.touches[0].clientY - event.touches[1].clientY;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      
+
       const scale = touchStartDistance / distance;
       targetZoom = Math.max(2, Math.min(15, initialZoom * scale));
       event.preventDefault();
@@ -1244,13 +1260,13 @@ function setupUserControls(container) {
       // Update velocity for inertia
       velocity.x = deltaX * 0.005;
       velocity.y = -deltaY * 0.005;
-      
+
       cameraRotation.y = cameraStart.y + deltaX * 0.005;
       cameraRotation.x = Math.max(
         -Math.PI / 3,
         Math.min(Math.PI / 3, cameraStart.x - deltaY * 0.005)
       );
-      
+
       event.preventDefault();
     }
   };
@@ -1299,11 +1315,11 @@ function setupUserControls(container) {
     isUserInteracting = false;
     container.style.cursor = "grab";
   };
-  
+
   // ===== NEUE FEATURE: Mouse Wheel Zoom =====
   const handleWheel = (event) => {
     if (isScrollBased) return;
-    
+
     event.preventDefault();
     const delta = event.deltaY * 0.01;
     targetZoom = Math.max(2, Math.min(15, targetZoom + delta));
@@ -1316,19 +1332,22 @@ function setupUserControls(container) {
       if (Math.abs(velocity.x) > 0.001 || Math.abs(velocity.y) > 0.001) {
         cameraRotation.y += velocity.x;
         cameraRotation.x += velocity.y;
-        
+
         // Clamp rotation
-        cameraRotation.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cameraRotation.x));
-        
+        cameraRotation.x = Math.max(
+          -Math.PI / 3,
+          Math.min(Math.PI / 3, cameraRotation.x)
+        );
+
         // Apply dampening
         velocity.x *= dampingFactor;
         velocity.y *= dampingFactor;
-        
+
         // Clamp velocity
         velocity.x = Math.max(-maxVelocity, Math.min(maxVelocity, velocity.x));
         velocity.y = Math.max(-maxVelocity, Math.min(maxVelocity, velocity.y));
       }
-      
+
       // Smooth zoom interpolation
       if (Math.abs(currentZoom - targetZoom) > 0.01) {
         currentZoom += (targetZoom - currentZoom) * 0.1;
@@ -1338,10 +1357,12 @@ function setupUserControls(container) {
   }
 
   // Touch Events (separate für bessere Kontrolle)
-  container.addEventListener('touchstart', handleTouchStart, { passive: false });
-  container.addEventListener('touchmove', handleTouchMove, { passive: false });
-  container.addEventListener('touchend', handleTouchEnd, { passive: false });
-  container.addEventListener('wheel', handleWheel, { passive: false });
+  container.addEventListener("touchstart", handleTouchStart, {
+    passive: false,
+  });
+  container.addEventListener("touchmove", handleTouchMove, { passive: false });
+  container.addEventListener("touchend", handleTouchEnd, { passive: false });
+  container.addEventListener("wheel", handleWheel, { passive: false });
 
   // Pointer Events Setup mit shared utilities (nur für Maus)
   const pointerCleanup = setupPointerEvents(
@@ -1363,10 +1384,10 @@ function setupUserControls(container) {
     () => {
       scrollCleanup();
       pointerCleanup();
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('touchend', handleTouchEnd);
-      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
+      container.removeEventListener("wheel", handleWheel);
     },
     "user controls cleanup"
   );
@@ -1378,10 +1399,14 @@ function setupUserControls(container) {
     isScrollBased: () => isScrollBased,
     updateInertia, // Export für Animation-Loop
     getZoom: () => currentZoom,
-    setZoom: (zoom) => { targetZoom = zoom; },
+    setZoom: (zoom) => {
+      targetZoom = zoom;
+    },
   };
 
-  log.debug("Enhanced user controls setup completed (Touch gestures, Inertia, Zoom)");
+  log.debug(
+    "Enhanced user controls setup completed (Touch gestures, Inertia, Zoom)"
+  );
 }
 
 // ===== Postprocessing Setup =====
@@ -1647,25 +1672,25 @@ function startAnimationLoop(THREE) {
       log.debug("updateCloudLayer: earthMesh not available");
       return;
     }
-    
+
     const cloudMesh = earthMesh.getObjectByName("earthClouds");
     if (!cloudMesh) {
       log.debug("updateCloudLayer: cloudMesh not found in earthMesh children");
       return;
     }
-    
+
     if (!cloudMesh.material) {
       log.warn("updateCloudLayer: cloudMesh has no material");
       return;
     }
-    
+
     // Update shader-uniform für Wolken-Bewegung
     if (cloudMesh.material.uniforms && cloudMesh.material.uniforms.time) {
       cloudMesh.material.uniforms.time.value = elapsedTime;
     } else {
       log.debug("updateCloudLayer: No time uniform in cloud material");
     }
-    
+
     // Langsame Independent-Rotation der Wolken (etwas schneller als Erde)
     cloudMesh.rotation.y += 0.0003;
   }
