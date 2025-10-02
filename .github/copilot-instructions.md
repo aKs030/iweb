@@ -1,71 +1,68 @@
 # Copilot Instructions für iweb Portfolio
 
-## Projekt-Architektur
+Deutsches Portfolio-Projekt mit ES6 Modulen, Zero-Build-Tooling und modernen Web APIs.
 
-Diese ist eine modulare, performante deutsche Portfolio-Website mit dynamischem Komponentensystem. Die Architektur basiert auf ES6 Modulen ohne Build-Tools und nutzt moderne Web APIs für Animationen und Interaktionen.
+## Architektur-Prinzipien
 
-## Kernkomponenten & Datenflussmuster
+**No Build Tools**: Native ES6 Modules, keine Transpiler/Bundler. Import-Pfade müssen `.js` Extension haben.
 
-### 1. Section Loader System (`/content/webentwicklung/main.js`)
+**German First**: Code-Kommentare, UI-Texte und Commit-Messages auf Deutsch. Variable/Funktion-Namen auf Englisch.
 
-- **Pattern**: Lazy-loading von HTML-Abschnitten via `data-section-src` Attribut
-- **Integration**: Sections werden automatisch geladen wenn `SectionLoader.scan()` aufgerufen wird
-- **Beispiel**: `<section data-section-src="/pages/home/hero.html" data-eager="true">`
+**Shared Utilities Pattern**: Alle Module importieren von `/content/webentwicklung/shared-utilities.js` statt eigener Utils (Oktober 2025 Refactoring eliminierte separates `/utils` Verzeichnis).
 
-### 2. Enhanced Animation Engine (`/content/webentwicklung/animations/`)
+## Kritische Datenflüsse
 
-- **Pattern**: Data-attribute-gesteuerte Animationen mit IntersectionObserver
-- **Konfiguration**:
-  - `data-animation="slideInLeft"` - Animationstyp
-  - `data-delay="300"` - Verzögerung in ms
-  - `data-duration="0.6"` - Dauer in s oder ms
-  - `data-once` - Einmalige Animation
-  - `data-reset="false"` - Überschreibt globales repeatOnScroll
-- **Deaktivierung**: `data-animations="off"` am Vorfahren-Element
-- **API**: `window.enhancedAnimationEngine.scan()` nach DOM-Änderungen
+### Section Loading Lifecycle (`main.js`)
 
-### 3. Feature Rotation System (`/pages/card/karten-rotation.js`)
+```javascript
+<section data-section-src="/pages/about/about.html" data-eager="true">
+// → SectionLoader lädt HTML via fetch
+// → Prefetch-Observer (rootMargin: 600px) cached Inhalt vorher
+// → Events: section:will-load → section:prefetched → section:loaded
+// → Bei Fehler: Automatischer Retry-Button via .section-retry
+// → Nach load: Lazy-loaded Module via createLazyLoadObserver()
+```
 
-- **Pattern**: Template-basierte Inhalts-Rotation mit Intersection-Observer
-- **Templates**: Werden aus `/pages/card/karten.html` geladen und im DOM gecacht
-- **Konfiguration**: `data-features-src`, `data-anim-in`, `data-anim-out` am Section-Element
-- **Event**: `featuresTemplatesLoaded` wenn Templates verfügbar sind
+**Warum wichtig**: Sections laden asynchron. Komponenten-JavaScript muss auf `section:loaded` Event warten oder im `MAP` Array in `main.js` registriert werden.
 
-### 4. Particle System (`/content/webentwicklung/particles/`)
+### Animation System (`animations/enhanced-animation-engine.js`)
 
-- **Pattern**: Canvas-basierte Partikel mit data-attribute Konfiguration
-- **Config**: `data-particle-*` Attribute am `.global-particle-background` Element
-- **Performance**: Automatische Qualitätsanpassung
+```javascript
+// Data-Attribute API (declarative):
+<div data-animation="slideInLeft" data-delay="300" data-duration="0.6" data-once>
+
+// Nach DOM-Updates IMMER rescan triggern:
+window.enhancedAnimationEngine.scan();
+// oder via shared utility:
+scheduleAnimationScan();
+```
+
+**Performance**: System nutzt IntersectionObserver mit device-spezifischen Thresholds (Mobile: 0.1, Desktop: 0.25). Animationen mit `data-once` werden via `WeakSet` getrackt.
+
+### Three.js Earth System (`particles/three-earth-system.js`)
+
+```javascript
+// LOD-basiertes Textur-Loading:
+// - LOD 1: Alle 4 Texturen (day/night/bump/normal)
+// - LOD 2: Nur day + normal
+// - LOD 3: Nur day
+// - Fallback: Prozedurales Material
+
+// Texturen in /content/img/earth/textures/
+// earth_day.jpg (463KB), earth_night.jpg (255KB)
+```
+
+**Cleanup-Pattern**: Nutzt `shared-particle-system.js` für Cross-System Koordination. `TimerManager` für automatisches Cleanup bei unmount.
+
+### Feature Rotation (`pages/card/karten-rotation.js`)
+
+Templates aus `/pages/card/karten.html` werden fetch'd und DOM-gecacht. Intersection Observer mit cooldown (500ms) verhindert Animation-Spam. Templates rotieren via `shuffle()` aus shared-utilities.
 
 ## Code-Konventionen
 
-### Module-Struktur (Updated - Oktober 2025)
-
-Nach dem Utils-Refactoring (Oktober 2025) nutzen Module jetzt ein shared-utilities.js System:
+### Shared Utilities Import (ZWINGEND)
 
 ```javascript
-// Shared utilities für häufig verwendete Funktionen
-import {
-  createLogger,
-  getElementById,
-  TimerManager,
-  EVENTS,
-  fire,
-  on,
-  throttle,
-  shuffle,
-} from "./shared-utilities.js";
-
-// Module-spezifische Funktionen direkt in der Datei
-const log = createLogger("moduleName");
-```
-
-### Shared Utilities System (Updated - Dezember 2025)
-
-#### **shared-utilities.js** - Zentrale oft-verwendete Funktionen
-
-```javascript
-// Reduziert Code-Duplikation für die häufigsten Utilities (Stand: Dezember 2025)
 import {
   createLogger,
   getElementById,
@@ -75,196 +72,180 @@ import {
   on,
   throttle,
   debounce,
-  shuffle,
-  randomInt,
 } from "./shared-utilities.js";
+
+const log = createLogger("moduleName"); // Einheitliches Logging
 ```
 
-**Wichtige Funktionen:**
+**Warum**: 95% Reduktion von duplizierten Utils (Dez 2025). Alte `utils/` Directory wurde komplett entfernt.
 
-- **createLogger**: Einheitliches Logging-System
-- **getElementById**: DOM-Zugriff mit Caching
-- **TimerManager**: Promise-basierte Timer mit automatischem Cleanup
-- **EVENTS**: Zentrale Event-Konstanten
-- **throttle/debounce**: Performance-Optimierung für Event-Handler
-- **shuffle/randomInt**: Array- und Math-Utilities
-
-### Error Handling & Accessibility
-
-- **Fail-safe Pattern**: `try/catch` mit graceful degradation
-- **Accessibility**: ARIA live regions für Announcements via `window.announce()`
-
-### DOM Manipulation
-
-- **Caching**: `getElementById()` mit integriertem Caching nutzen
-- **Performance**: `WeakSet` für bereits verarbeitete Elemente
-- **Batch Updates**: `requestAnimationFrame` für DOM-Änderungen
-
-## Build & Deployment
-
-### npm Scripts
-
-- `npm run lint:js` - ESLint für JavaScript
-- `npm run lint:html` - HTML-Validation aller Git-tracked HTML-Dateien
-- `npm run check:css` - CSS Custom Properties Konsolidierung prüfen
-- `npm run consolidate:css` - CSS Tokens nach root.css verschieben
-
-### GitHub Workflows
-
-- **Quality Checks**: Erweiterte Pipeline mit HTML/CSS/JS Validation in einem Workflow
-- **Artifact Upload**: Automatische Fehlerberichte bei Build-Fehlern mit 7-Tage Retention
-- **Performance Caching**: Node Modules & npm Cache Optimierung für schnellere Builds
-- **HTML Validation**: Automatische Validierung bei PR/Push
-- **CSS Consolidation**: Prüft ob CSS Custom Properties außerhalb von `root.css` existieren
-- **ESLint**: Code Quality checks mit automatischen Fixes
-
-### Critical Patterns
-
-#### Performance Optimierung
-
-- Module verwenden `TimerManager` für cleanup
-- Canvas-Operationen mit `DPR` (Device Pixel Ratio) skalieren
-- Intersection Observer mit optimierten Thresholds
-
-#### CSS Custom Properties
-
-- **Zentral**: Alle Custom Properties in `/content/webentwicklung/root.css`
-- **Validation**: Script überprüft ausgelagerte Properties automatisch
-
-#### Template Loading
+### Event System
 
 ```javascript
-// Standard Pattern für dynamische Inhalte
-async function loadTemplate(url) {
-  const res = await fetch(url, { credentials: "same-origin" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.text();
+// Zentrale Events via shared-utilities EVENTS Konstante:
+fire(EVENTS.SECTION_LOADED, { id: "about" });
+on(EVENTS.FEATURES_TEMPLATES_LOADED, handler);
+
+// Custom Events für loose coupling:
+document.addEventListener("section:loaded", (e) => {
+  if (e.detail.id === "hero") initHero();
+});
+```
+
+### Timer & Cleanup Pattern
+
+```javascript
+const timers = new TimerManager();
+timers.setTimeout(() => {}, 500);
+timers.setInterval(() => {}, 1000);
+
+// Auto-cleanup bei Component unmount:
+function cleanup() {
+  timers.clearAll();
+  observer?.disconnect();
 }
 ```
 
-## Development Environment
-
-### VS Code Optimierungen (.vscode/settings.json)
-
-- **GitHub Copilot**: Auto-Approval aktiviert für nahtlose AI-Integration
-- **Multi-AI Setup**: Cline (Claude 3.5), Copilot (GPT-4), GitLens AI integriert
-- **HTML/CSS Validierung**: Automatische Syntax-Prüfung und Formatierung
-- **Portfolio-spezifische Settings**: Emmet in JS, optimierte Search-Excludes
-- **Git Integration**: Auto-fetch (3min), Smart Commits, weniger Bestätigungen
-- **Terminal Auto-Approval**: Projekt-spezifische Befehle vorkonfiguriert
-
-### Dateispezifische Formatierung
-
-```json
-"[html]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-"[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-"[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
-```
-
-## Performance Optimierungen (Stand Sept 2025)
-
-### CSS Consolidation (Automatisiert)
-
-- **Befehl**: `npm run consolidate:css` verschiebt alle Custom Properties nach root.css
-- **Validierung**: `npm run check:css` prüft auf ausgelagerte Properties
-- **Erfolg**: 41 Properties erfolgreich konsolidiert (Sept 2025)
-
-### Bild-Optimierung (Empfohlen)
-
-```bash
-# WebP Konvertierung (70% Einsparung möglich)
-cwebp -q 85 content/img/profile.jpg -o content/img/profile.webp
-cwebp -q 85 content/img/og-portfolio.jpg -o content/img/og-portfolio.webp
-
-# Responsive Images HTML Pattern
-<picture>
-  <source srcset="content/img/profile.avif" type="image/avif">
-  <source srcset="content/img/profile.webp" type="image/webp">
-  <img src="content/img/profile.jpg" alt="Profile">
-</picture>
-```
-
-### Bundle-Analyse
-
-- **Three.js**: 1.2MB (bereits LOD-optimiert)
-- **Bilder**: 3.1MB → Ziel: ~900KB durch WebP/AVIF
-- **JavaScript**: Optimal mit Lazy Loading und Performance Detection
-
-## Wichtige Dateipfade
-
-- **Root CSS**: `/content/webentwicklung/root.css` - Alle CSS Custom Properties
-- **Main Entry**: `/content/webentwicklung/main.js` - App-Initialisierung
-- **Shared Utilities**: `/content/webentwicklung/shared-utilities.js` - Zentrale Utilities
-- **Components**: `/content/webentwicklung/[component]/` - Komponentenlogik
-- **Pages**: `/pages/[section]/` - Section-spezifische Assets
-
-## Architektur nach Oktober 2025 Refactoring (Updated - Dezember 2025)
-
-### Vor dem Refactoring
-
-```
-content/webentwicklung/
-├── utils/               # ❌ Komplett entfernt (Dezember 2025)
-│   ├── common-utils.js
-│   ├── logger.js
-│   ├── events.js
-│   └── ...
-├── main.js              # Viele Utils-Imports
-└── ...
-```
-
-### Nach dem Refactoring
-
-```
-content/webentwicklung/
-├── shared-utilities.js  # ✅ Zentrale oft-verwendete Funktionen
-├── main.js              # Clean Import von shared-utilities
-├── particles/
-├── TypeWriter/
-├── footer/
-└── ...
-```
-
-### Vorteile der neuen Architektur
-
-- **Reduzierte Code-Duplikation**: 95% weniger duplizierte Utility-Funktionen (Dezember 2025)
-- **Bessere Performance**: Viel weniger Module zu laden
-- **Einfachere Wartung**: Eine zentrale Datei für häufige Utilities
-- **Saubere Imports**: Statt 8 verschiedener Utils-Imports nur noch einen
-- **Konsistente API**: Alle Module nutzen dieselben getesteten Utility-Funktionen
-- **Zero ESLint Errors**: Komplette Code-Qualität ohne Duplikate
-
-## Debugging
-
-### Logger System
+### DOM Access mit Caching
 
 ```javascript
-import { createLogger, setGlobalLogLevel } from "./shared-utilities.js";
-setGlobalLogLevel("debug"); // 'error', 'warn', 'info', 'debug'
-const log = createLogger("componentName");
-log.debug("Debug message", { data });
+// getElementById() aus shared-utilities cached automatisch (Map mit 20 Slots):
+const hero = getElementById("hero");
+// NICHT: document.getElementById() direkt verwenden
 ```
 
-### Animation Debug
+### CSS Custom Properties
 
-- `data-animations="off"` zum Deaktivieren von Animationen
-- Browser DevTools Animation Panel für CSS-Animation debugging
-- `window.enhancedAnimationEngine` API für programmatische Kontrolle
+**ALLE** Custom Properties MÜSSEN in `/content/webentwicklung/root.css` definiert sein:
 
-### VS Code Debug Features
+```bash
+npm run check:css  # Validierung (CI-Check)
+npm run consolidate:css  # Auto-Migration zu root.css
+```
 
-- **Terminal Auto-Approval**: Komplexe CSS-Analyse-Befehle vorkonfiguriert
-- **Git Integration**: Auto-fetch für aktuelle Repository-States
-- **Multi-AI Support**: Cline, Copilot, GitLens für verschiedene Debugging-Ansätze
+**Ausnahme**: `/content/webentwicklung/menu/dynamic-menu-tokens.css` (Menu-System-spezifische Tokens).
 
-### GitHub Actions Debug
+## Development Workflows
 
-- **Artifact Upload**: Validation-Reports bei Fehlern verfügbar
-- **Erweiterte Logs**: Separate Steps für HTML/CSS/JS Validierung
-- **Cache Debugging**: Node Modules Cache für Performance-Analyse
+### Testing & Validation
 
-## Browser Support
+```bash
+npm run lint:js        # ESLint mit Auto-Fix
+npm run lint:html      # HTML-Validate auf Git-tracked Files
+npm run check:css      # CSS Consolidation Check
+```
 
-- **ES6 Modules**: Native ES Module Support erforderlich
-- **Modern APIs**: IntersectionObserver, MutationObserver, Canvas 2D
-- **Fallbacks**: Graceful degradation bei fehlender API-Unterstützung
+**CI Pipeline** (`.github/workflows/html-validation.yml`): Alle 3 Checks + Artifact Upload bei Failure (7-Tage Retention).
+
+### Debugging
+
+```javascript
+// Logger Level via URL oder localStorage:
+?debug=true
+localStorage.setItem("iweb-debug", "true");
+setGlobalLogLevel("debug");
+```
+
+**Animation Debug**: `data-animations="off"` am Parent deaktiviert alle Child-Animationen. `window.enhancedAnimationEngine` API für programmatische Kontrolle.
+
+### Performance Profiling
+
+Three.js LOD-System loggt Texture-Loading. Performance-Detection via:
+
+```javascript
+const isMobile = window.matchMedia("(max-width: 768px)").matches;
+// System passt Thresholds/Quality automatisch an
+```
+
+## Häufige Patterns
+
+### Neues Module erstellen
+
+```javascript
+import {
+  createLogger,
+  getElementById,
+  TimerManager,
+} from "./shared-utilities.js";
+
+const log = createLogger("myModule");
+const timers = new TimerManager();
+
+export function init() {
+  log.info("Initializing module");
+  const container = getElementById("myContainer");
+  if (!container) {
+    log.warn("Container not found");
+    return cleanup;
+  }
+  // ... module logic
+  return cleanup;
+}
+
+function cleanup() {
+  timers.clearAll();
+  log.debug("Cleanup complete");
+}
+```
+
+### Dynamic Content mit Animation
+
+```javascript
+async function loadContent(url) {
+  const res = await fetch(url, { credentials: "same-origin" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+
+  container.innerHTML = html;
+  scheduleAnimationScan(); // WICHTIG: Rescan nach DOM-Änderung
+}
+```
+
+### IntersectionObserver Setup
+
+```javascript
+import { createLazyLoadObserver } from "./shared-utilities.js";
+
+const observer = createLazyLoadObserver(
+  (element) => {
+    log.debug("Element visible:", element.id);
+    // lazy load logic
+  },
+  { threshold: 0.25, rootMargin: "50px" }
+);
+
+observer.observe(targetElement);
+```
+
+## Projektstruktur
+
+```
+content/webentwicklung/     # Core Components & Systems
+  main.js                   # Entry Point + SectionLoader + Global Init
+  shared-utilities.js       # ZENTRALE Utils (createLogger, TimerManager, Events)
+  root.css                  # ALLE CSS Custom Properties
+  animations/               # Enhanced Animation Engine + Theme System
+  particles/                # Three.js Earth + Shared Particle System
+  TypeWriter/               # TypeWriter Component
+  footer/, menu/            # Layout Components
+
+pages/                      # Section-spezifische Components
+  home/, card/, about/      # Section HTML + JS + CSS
+  components/               # Wiederverwendbare Section-Komponenten
+
+scripts/                    # Build/Validation Scripts
+  check-css-consolidation.js
+  validate-html.js
+```
+
+## Browser Support & Fallbacks
+
+**Minimum**: ES6 Modules, IntersectionObserver, MutationObserver, Canvas 2D
+
+**Graceful Degradation**: Try/Catch um alle Feature-Detections. Bei fehlenden APIs: Direkt laden statt lazy loading.
+
+**Three.js**: Automatischer Fallback zu prozeduralem Material wenn Texturen nicht laden (2s Timeout pro Texture).
+
+## VSCode Integration
+
+Terminal auto-approval für npm Scripts aktiviert (`.vscode/settings.json`). Multi-AI Support (Cline/Claude, Copilot/GPT-4, GitLens). Format-on-Save mit Prettier für HTML/CSS/JSON.
