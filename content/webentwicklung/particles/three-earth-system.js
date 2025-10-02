@@ -761,17 +761,17 @@ async function createCloudLayer(THREE, earthRadius) {
           // Bewegende UV-Koordinaten für Wolken-Drift
           vec2 uv = vUv + vec2(time * cloudSpeed, 0.0);
           
-          // Wolken-Pattern mit FBM
-          float clouds = fbm(uv * 8.0);
-          clouds = smoothstep(0.4, 0.7, clouds);
+          // Wolken-Pattern mit FBM (verbesserte Sichtbarkeit)
+          float clouds = fbm(uv * 6.0); // Weniger Frequenz = größere Wolken
+          clouds = smoothstep(0.3, 0.65, clouds); // Mehr Wolken sichtbar
           
           // Edge Fade-out (weniger Wolken an Polen)
-          float latitudeFade = smoothstep(0.1, 0.3, vUv.y) * smoothstep(0.9, 0.7, vUv.y);
+          float latitudeFade = smoothstep(0.05, 0.25, vUv.y) * smoothstep(0.95, 0.75, vUv.y);
           clouds *= latitudeFade;
           
-          // Weiße Wolken mit variabler Opacity
-          vec3 cloudColor = vec3(1.0);
-          float alpha = clouds * 0.6; // Semi-transparent
+          // Weiße Wolken mit variabler Opacity (erhöhte Sichtbarkeit)
+          vec3 cloudColor = vec3(1.0, 1.0, 1.0);
+          float alpha = clouds * 0.9; // Noch höhere Opacity für maximale Sichtbarkeit
           
           gl_FragColor = vec4(cloudColor, alpha);
         }
@@ -783,9 +783,16 @@ async function createCloudLayer(THREE, earthRadius) {
 
     const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
     cloudMesh.name = "earthClouds";
-    earthMesh.add(cloudMesh); // Als Child der Erde für synchrone Rotation
     
-    log.debug("Cloud layer created successfully");
+    // Als Child der Erde für automatische Rotation
+    if (earthMesh) {
+      earthMesh.add(cloudMesh);
+      log.debug("Cloud layer created and attached to Earth");
+    } else {
+      log.warn("earthMesh not available, adding clouds to scene");
+      scene.add(cloudMesh);
+      cloudMesh.position.copy(earthMesh?.position || { x: 0, y: -2.8, z: 0 });
+    }
   } catch (error) {
     log.warn("Cloud layer creation failed:", error);
   }
@@ -829,9 +836,9 @@ function createAtmosphereGlow(THREE, earthRadius) {
           float fresnel = dot(viewDirection, vNormal);
           fresnel = pow(1.0 - fresnel, 3.0); // Starker Fresnel am Rand
           
-          // Glow-Farbe mit Fresnel-Intensität
+          // Glow-Farbe mit Fresnel-Intensität (erhöhte Sichtbarkeit)
           vec3 glow = glowColor * fresnel * glowIntensity;
-          float alpha = fresnel * 0.6;
+          float alpha = fresnel * 0.85; // Höhere Alpha für bessere Sichtbarkeit
           
           gl_FragColor = vec4(glow, alpha);
         }
@@ -844,10 +851,15 @@ function createAtmosphereGlow(THREE, earthRadius) {
 
     const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
     atmosphereMesh.name = "earthAtmosphere";
-    scene.add(atmosphereMesh);
-    atmosphereMesh.position.copy(earthMesh.position);
     
-    log.debug("Atmosphere glow created successfully");
+    // Positioniere Atmosphäre an gleicher Stelle wie Erde
+    if (earthMesh) {
+      atmosphereMesh.position.copy(earthMesh.position);
+      scene.add(atmosphereMesh);
+      log.debug("Atmosphere glow created at position:", earthMesh.position);
+    } else {
+      log.error("earthMesh not available for atmosphere positioning");
+    }
   } catch (error) {
     log.warn("Atmosphere glow creation failed:", error);
   }
@@ -1784,14 +1796,27 @@ function startAnimationLoop(THREE) {
 
   // ===== NEUE FEATURE: Wolken-Layer Animation =====
   function updateCloudLayer(elapsedTime) {
-    if (!earthMesh) return;
+    if (!earthMesh) {
+      log.debug("updateCloudLayer: earthMesh not available");
+      return;
+    }
     
     const cloudMesh = earthMesh.getObjectByName("earthClouds");
-    if (!cloudMesh || !cloudMesh.material) return;
+    if (!cloudMesh) {
+      log.debug("updateCloudLayer: cloudMesh not found in earthMesh children");
+      return;
+    }
+    
+    if (!cloudMesh.material) {
+      log.warn("updateCloudLayer: cloudMesh has no material");
+      return;
+    }
     
     // Update shader-uniform für Wolken-Bewegung
     if (cloudMesh.material.uniforms && cloudMesh.material.uniforms.time) {
       cloudMesh.material.uniforms.time.value = elapsedTime;
+    } else {
+      log.debug("updateCloudLayer: No time uniform in cloud material");
     }
     
     // Langsame Independent-Rotation der Wolken (etwas schneller als Erde)
