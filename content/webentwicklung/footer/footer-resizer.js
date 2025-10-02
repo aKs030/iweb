@@ -4,7 +4,7 @@
  * Technik: Dynamische Viewport-Messung (inkl. iOS Safe-Area), CSS-Variablen, ResizeObserver/Events.
  */
 
-import { throttle } from '../utils/common-utils.js';
+import { throttle } from '../shared-utilities.js';
 
 const STATE = { inited: false, observers: [], t1: null, t2: null };
 

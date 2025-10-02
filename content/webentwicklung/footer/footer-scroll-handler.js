@@ -11,7 +11,7 @@
  * @version 1.0.0
  */
 
-import { getElementById } from '../utils/common-utils.js';
+import { getElementById } from '../shared-utilities.js';
 
 // Footer-Zustand
 let footerExpanded = false;

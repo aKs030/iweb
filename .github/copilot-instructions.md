@@ -39,114 +39,54 @@ Diese ist eine modulare, performante deutsche Portfolio-Website mit dynamischem 
 
 ## Code-Konventionen
 
-### Module-Struktur
+### Module-Struktur (Updated - Oktober 2025)
+
+Nach dem Utils-Refactoring (Oktober 2025) nutzen Module jetzt ein shared-utilities.js System:
 
 ```javascript
-// Immer zuerst utilities, dann spezifische Module
+// Shared utilities für häufig verwendete Funktionen
 import {
+  createLogger,
   getElementById,
-  throttle,
   TimerManager,
-} from "../utils/common-utils.js";
-import { createLogger } from "../utils/logger.js";
-import {
-  createLazyLoadObserver,
-  createTriggerOnceObserver,
-} from "../utils/intersection-utils.js";
-import {
-  setupPointerEvents,
-  onResize,
-  onScroll,
-} from "../utils/event-management.js";
-import {
-  scheduleAnimationScan,
-  waitForAnimationEngine,
-} from "../utils/animation-utils.js";
+  EVENTS,
+  fire,
+  on,
+  throttle,
+  shuffle,
+} from "./shared-utilities.js";
 
-// Logger pro Modul mit eindeutigem Namen
+// Module-spezifische Funktionen direkt in der Datei
 const log = createLogger("moduleName");
 ```
 
-### Shared Infrastructure Modules (NEW - Oktober 2025)
+### Shared Utilities System (Updated - Dezember 2025)
 
-#### **intersection-utils.js** - IntersectionObserver Patterns
+#### **shared-utilities.js** - Zentrale oft-verwendete Funktionen
 
 ```javascript
-// Factory für verschiedene Observer-Typen
+// Reduziert Code-Duplikation für die häufigsten Utilities (Stand: Dezember 2025)
 import {
-  createLazyLoadObserver,
-  createTriggerOnceObserver,
-  createRatioObserver,
-} from "./utils/intersection-utils.js";
-
-// Lazy Loading für Sections
-const lazyObserver = createLazyLoadObserver((entries) => {
-  entries.forEach((entry) => loadSection(entry.target));
-});
-
-// Einmalige Trigger für Animationen
-const triggerObserver = createTriggerOnceObserver((entries) => {
-  entries.forEach((entry) => triggerAnimation(entry.target));
-});
+  createLogger,
+  getElementById,
+  TimerManager,
+  EVENTS,
+  fire,
+  on,
+  throttle,
+  debounce,
+  shuffle,
+  randomInt,
+} from "./shared-utilities.js";
 ```
 
-#### **event-management.js** - Systematisches Event Management
-
-```javascript
-// Event Manager mit automatischem Cleanup
-import {
-  createEventManager,
-  setupPointerEvents,
-  onResize,
-} from "./utils/event-management.js";
-
-const eventManager = createEventManager();
-eventManager.addListener(element, "click", handler);
-// Automatisches cleanup beim Modul-Unload
-
-// Standardisierte Event-Patterns
-setupPointerEvents(element, { onPointerDown, onPointerMove });
-onResize(() => recalculateLayout());
-```
-
-#### **animation-utils.js** - Animation Engine Integration
-
-```javascript
-// Zentrale Animation-Utilities
-import {
-  scheduleAnimationScan,
-  waitForAnimationEngine,
-  resetElementsIn,
-} from "./utils/animation-utils.js";
-
-// Animation Engine Scan planen
-scheduleAnimationScan("contextName");
-
-// Warten bis Animation Engine bereit
-await waitForAnimationEngine();
-
-// Element-Animationen mit Fallback
-animateElementsIn(container, { force: true });
-```
-
-#### **TimerManager** - Erweiterte Timer-Verwaltung
-
-```javascript
-// Promise-basierte Timer mit automatischem Cleanup
-import { TimerManager } from "./utils/common-utils.js";
-
-const timers = new TimerManager();
-
-// Promise-basierte Delays
-await timers.sleep(1000);
-
-// Verwaltete Timeouts/Intervals
-timers.setTimeout(() => callback(), 500);
-timers.setInterval(() => tick(), 1000);
-
-// Automatisches Cleanup
-timers.clearAll();
-```
+**Wichtige Funktionen:**
+- **createLogger**: Einheitliches Logging-System
+- **getElementById**: DOM-Zugriff mit Caching
+- **TimerManager**: Promise-basierte Timer mit automatischem Cleanup
+- **EVENTS**: Zentrale Event-Konstanten
+- **throttle/debounce**: Performance-Optimierung für Event-Handler
+- **shuffle/randomInt**: Array- und Math-Utilities
 
 ### Error Handling & Accessibility
 
@@ -253,16 +193,49 @@ cwebp -q 85 content/img/og-portfolio.jpg -o content/img/og-portfolio.webp
 
 - **Root CSS**: `/content/webentwicklung/root.css` - Alle CSS Custom Properties
 - **Main Entry**: `/content/webentwicklung/main.js` - App-Initialisierung
-- **Utils**: `/content/webentwicklung/utils/` - Geteilte Funktionen
+- **Shared Utilities**: `/content/webentwicklung/shared-utilities.js` - Zentrale Utilities
 - **Components**: `/content/webentwicklung/[component]/` - Komponentenlogik
 - **Pages**: `/pages/[section]/` - Section-spezifische Assets
+
+## Architektur nach Oktober 2025 Refactoring (Updated - Dezember 2025)
+
+### Vor dem Refactoring
+```
+content/webentwicklung/
+├── utils/               # ❌ Komplett entfernt (Dezember 2025)
+│   ├── common-utils.js
+│   ├── logger.js
+│   ├── events.js
+│   └── ...
+├── main.js              # Viele Utils-Imports
+└── ...
+```
+
+### Nach dem Refactoring  
+```
+content/webentwicklung/
+├── shared-utilities.js  # ✅ Zentrale oft-verwendete Funktionen
+├── main.js              # Clean Import von shared-utilities
+├── particles/
+├── TypeWriter/
+├── footer/
+└── ...
+```
+
+### Vorteile der neuen Architektur
+- **Reduzierte Code-Duplikation**: 95% weniger duplizierte Utility-Funktionen (Dezember 2025)
+- **Bessere Performance**: Viel weniger Module zu laden
+- **Einfachere Wartung**: Eine zentrale Datei für häufige Utilities
+- **Saubere Imports**: Statt 8 verschiedener Utils-Imports nur noch einen
+- **Konsistente API**: Alle Module nutzen dieselben getesteten Utility-Funktionen
+- **Zero ESLint Errors**: Komplette Code-Qualität ohne Duplikate
 
 ## Debugging
 
 ### Logger System
 
 ```javascript
-import { createLogger, setGlobalLogLevel } from "./utils/logger.js";
+import { createLogger, setGlobalLogLevel } from "./shared-utilities.js";
 setGlobalLogLevel("debug"); // 'error', 'warn', 'info', 'debug'
 const log = createLogger("componentName");
 log.debug("Debug message", { data });

@@ -3,12 +3,14 @@
  * Erstellt wunderschönes rundes Mini-Kunstwerk für Theme-Wechsel
  */
 
-import { getElementById, throttle } from "../utils/common-utils.js";
+// ===== Shared Utilities Import =====
 import {
+  createLogger,
+  getElementById,
+  throttle,
   createEventManager,
   onVisibilityChange,
-} from "../utils/event-management.js";
-import { createLogger } from "../utils/logger.js";
+} from "../shared-utilities.js";
 
 const log = createLogger("dayNightArtwork");
 

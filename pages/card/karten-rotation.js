@@ -1,11 +1,21 @@
-// Zentrale Utilities nutzen
-import { triggerAnimationScan } from "../../content/webentwicklung/utils/animation-utils.js";
+// ===== Shared Utilities Import =====
 import {
   getElementById,
   shuffle as shuffleArray,
   TimerManager,
-} from "../../content/webentwicklung/utils/common-utils.js";
-import { EVENTS, fire, on } from "../../content/webentwicklung/utils/events.js";
+  EVENTS,
+  fire,
+  on,
+} from "../../content/webentwicklung/shared-utilities.js";
+
+// ===== Module-specific Utilities =====
+
+// Animation Utils
+function triggerAnimationScan() {
+  if (window.enhancedAnimationEngine?.scan) {
+    window.enhancedAnimationEngine.scan();
+  }
+}
 
 (() => {
   "use strict";

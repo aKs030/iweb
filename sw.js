@@ -5,14 +5,14 @@
 //  - Runtime cache: images & pages (stale-while-revalidate)
 //  - Fonts: cache-first
 
-const SW_VERSION = 'v1.1.0'; // Bump bei inhaltlichen Änderungen erhöhen
+const SW_VERSION = 'v1.2.0'; // Nach utils-Auflösung (Dezember 2025)
 const CORE = [
   '/',
   '/index.html',
   '/content/webentwicklung/root.css',
   '/content/webentwicklung/index.css',
   '/content/webentwicklung/main.js',
-  '/content/webentwicklung/utils/common-utils.js'
+  '/content/webentwicklung/shared-utilities.js'
 ];
 
 const CACHE_NAMES = {

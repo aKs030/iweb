@@ -1,18 +1,29 @@
-import { scheduleAnimationScan } from "./utils/animation-utils.js";
-import { getElementById } from "./utils/common-utils.js";
-import { EVENTS, fire } from "./utils/events.js";
-import { createLazyLoadObserver } from "./utils/intersection-utils.js";
-import { createLogger } from "./utils/logger.js";
-import { schedulePersistentStorageRequest } from "./utils/persistent-storage.js";
-import "./utils/section-tracker.js"; // Section Detection für snapSectionChange Events
-
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 
 import { EnhancedAnimationEngine } from "./animations/enhanced-animation-engine.js";
 import { initThreeEarth } from "./particles/three-earth-system.js";
 import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
 
+// ===== Shared Utilities Import =====
+import {
+  createLogger,
+  getElementById,
+  EVENTS,
+  fire,
+  SectionTracker,
+  createLazyLoadObserver,
+  scheduleAnimationScan,
+  schedulePersistentStorageRequest,
+} from "./shared-utilities.js";
+
+// ===== Module-specific Utilities =====
+
 const log = createLogger("main");
+
+// ===== Section Tracker Instance =====
+const sectionTracker = new SectionTracker();
+sectionTracker.init();
+window.sectionTracker = sectionTracker;
 
 // ===== Accessibility Utilities =====
 function announce(message, { assertive = false } = {}) {
@@ -448,7 +459,7 @@ function loadMenuAssets() {
       // Re-scan nach Template-Loading für Enhanced Animation Engine
       document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
         // Animation Engine rescan für neue Templates
-        scheduleAnimationScan(120, "template-loaded");
+        scheduleAnimationScan(120);
       });
 
       // Menü-Assets laden

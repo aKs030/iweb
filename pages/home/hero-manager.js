@@ -1,17 +1,16 @@
+// ===== Shared Utilities Import =====
 import {
-  animateElementsIn,
-  ensureFallbackAnimationEngine,
-  resetElementsIn,
-  triggerAnimationScan,
-  waitForAnimationEngine,
-} from "../../content/webentwicklung/utils/animation-utils.js";
-import {
+  createLogger,
   getElementById,
   TimerManager,
-} from "../../content/webentwicklung/utils/common-utils.js";
-import { EVENTS } from "../../content/webentwicklung/utils/events.js";
-import { createTriggerOnceObserver } from "../../content/webentwicklung/utils/intersection-utils.js";
-import { createLogger } from "../../content/webentwicklung/utils/logger.js";
+  EVENTS,
+  triggerAnimationScan,
+  animateElementsIn,
+  resetElementsIn,
+  waitForAnimationEngine,
+  ensureFallbackAnimationEngine,
+  createTriggerOnceObserver,
+} from "../../content/webentwicklung/shared-utilities.js";
 
 const log = createLogger("hero-manager");
 

@@ -1,4 +1,4 @@
-import { debounce } from '../utils/common-utils.js';
+import { debounce } from '../shared-utilities.js';
 
 /**
  * Enhanced Animation Engine - Optimized Animation System

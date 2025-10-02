@@ -1,11 +1,12 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
-// Verwende zentrale shuffle-Implementierung (nutzt sichere Zufallsquelle wenn verfügbar)
+
+// ===== Shared Utilities Import =====
 import {
+  createLogger,
   getElementById,
   shuffle,
   TimerManager,
-} from "../utils/common-utils.js";
-import { createLogger } from "../utils/logger.js";
+} from "../shared-utilities.js";
 
 const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
 const log = createLogger("TypeWriter");

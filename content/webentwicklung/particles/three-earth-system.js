@@ -17,17 +17,6 @@
 
 // Three.js Earth System - High Quality Version
 import {
-  getElementById,
-  throttle,
-  TimerManager,
-} from "../utils/common-utils.js";
-import {
-  onResize,
-  onScroll,
-  setupPointerEvents,
-} from "../utils/event-management.js";
-import { createLogger } from "../utils/logger.js";
-import {
   getSharedState,
   registerParticleSystem,
   sharedCleanupManager,
@@ -35,16 +24,33 @@ import {
   unregisterParticleSystem,
 } from "./shared-particle-system.js";
 
+// ===== Shared Utilities Import =====
+import {
+  createLogger,
+  getElementById,
+  throttle,
+  TimerManager,
+  onResize,
+  onScroll,
+  setupPointerEvents,
+} from "../shared-utilities.js";
+
 const log = createLogger("threeEarthSystem");
 
 // Timer Manager für Three.js Earth System
 const earthTimers = new TimerManager();
+// The following code block is misplaced and causes syntax errors.
+// It should be part of the addListener function implementation in shared-utilities.js,
+// not at the top level of this module. Remove it here to fix the parsing error.
+
+// (Removed duplicate definitions of onResize, onScroll, and setupPointerEvents; use the imported versions from shared-utilities.js)
+
 
 // ===== Globale Variablen =====
 let scene, camera, renderer, earthMesh, composer;
-let currentSection = "hero";
 let sectionObserver = null;
 let animationFrameId = null;
+let currentSection = "hero";
 
 // Kamera und Animation States
 let cameraTarget = { x: 0, y: 0, z: 5 };

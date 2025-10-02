@@ -12,8 +12,9 @@
  */
 
 // Shared Particle System - Gemeinsame Infrastruktur für Three.js Earth System
-import { throttle } from "../utils/common-utils.js";
-import { createLogger } from "../utils/logger.js";
+
+// ===== Shared Utilities Import =====
+import { createLogger, throttle } from "../shared-utilities.js";
 
 const log = createLogger("sharedParticleSystem");
 

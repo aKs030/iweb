@@ -12,8 +12,11 @@
  * @version 1.0.0
  */
 
-import { getElementById } from "../utils/common-utils.js";
-import { createLogger } from "../utils/logger.js";
+// ===== Shared Utilities Import =====
+import {
+  createLogger,
+  getElementById,
+} from "../shared-utilities.js";
 
 const log = createLogger("menu");
 

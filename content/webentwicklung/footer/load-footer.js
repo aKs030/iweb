@@ -12,7 +12,9 @@
  * @version 2.5.0
  */
 
-import { getElementById } from "../utils/common-utils.js";
+// ===== Shared Utilities Import =====
+import { getElementById } from "../shared-utilities.js";
+
 import { initializeDayNightArtwork } from "./day-night-artwork.js";
 
 /**
