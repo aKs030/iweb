@@ -1565,7 +1565,6 @@ function setupSectionDetection() {
 }
 
 // ===== Earth für Section anpassen =====
-// ===== Earth für Section anpassen =====
 function updateEarthForSection(sectionName) {
   if (!earthMesh) return;
 
