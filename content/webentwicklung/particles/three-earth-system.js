@@ -7,11 +7,12 @@
  * - Scroll-basierte Kamera-Controls
  * - Section-responsive Animationsübergänge
  * - Performance-optimiertes Rendering
+ * - Touch-Gesten und Inertia-basierte Controls
  *
  * Verwendet shared-particle-system für Parallax-Synchronisation.
  *
  * @author Portfolio System
- * @version 2.0.0 (teilweise migriert auf shared system)
+ * @version 2.1.0
  * @created 2025-10-02
  */
 
@@ -399,25 +400,6 @@ async function setupScene(THREE, container) {
     renderer.outputEncoding = THREE.sRGBEncoding;
   }
 
-  // ===== DEBUG: Globale Variablen für Debugging verfügbar machen =====
-  if (typeof window !== "undefined") {
-    window.threeEarthDebug = {
-      scene,
-      camera,
-      renderer,
-      get earthMesh() {
-        return earthMesh;
-      },
-      get animationFrameId() {
-        return animationFrameId;
-      },
-      get currentSection() {
-        return currentSection;
-      },
-    };
-    log.debug("Debug-Objekt unter window.threeEarthDebug verfügbar");
-  }
-
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.2;
 
@@ -694,7 +676,7 @@ function setupLighting(THREE) {
   scene.add(rimLight);
 }
 
-// ===== Earth-System mit Wolken & Atmosphäre erstellen =====
+// ===== Earth-System erstellen =====
 async function createEarthSystem(THREE) {
   // Hohe Qualität - feste Werte
   const earthRadius = 3.5; // Vergrößert für Horizont-Effekt
@@ -820,7 +802,6 @@ async function createEarthMaterial(THREE) {
           nightTexture: { value: nightTexture },
           normalTexture: { value: normalTexture },
           sunPosition: { value: new THREE.Vector3(5, 3, 5) },
-          atmosphereThickness: { value: 0.1 },
           time: { value: 0 },
         },
         vertexShader: getEarthVertexShader(),
@@ -1175,13 +1156,13 @@ function setupUserControls(container) {
   const mouseStart = { x: 0, y: 0 };
   const cameraStart = { x: 0, y: 0 };
 
-  // ===== NEUE FEATURE: Touch-Gesten State =====
+  // Touch-Gesten State
   let touchStartDistance = 0;
   let initialZoom = 5;
   let currentZoom = 5;
   let targetZoom = 5;
 
-  // ===== NEUE FEATURE: Velocity für Inertia =====
+  // Velocity für Inertia
   let velocity = { x: 0, y: 0 };
   const dampingFactor = 0.95; // Smooth dampening
   const maxVelocity = 0.1;
@@ -1217,7 +1198,7 @@ function setupUserControls(container) {
     log.debug("Scroll-based camera mode enabled");
   }
 
-  // ===== NEUE FEATURE: Pinch-to-Zoom für Touch =====
+  // Pinch-to-Zoom für Touch
   const handleTouchStart = (event) => {
     if (isScrollBased) return;
 
@@ -1316,7 +1297,7 @@ function setupUserControls(container) {
     container.style.cursor = "grab";
   };
 
-  // ===== NEUE FEATURE: Mouse Wheel Zoom =====
+  // Mouse Wheel Zoom
   const handleWheel = (event) => {
     if (isScrollBased) return;
 
@@ -1325,7 +1306,7 @@ function setupUserControls(container) {
     targetZoom = Math.max(2, Math.min(15, targetZoom + delta));
   };
 
-  // ===== NEUE FEATURE: Inertia & Smooth Dampening Animation =====
+  // Inertia & Smooth Dampening Animation
   function updateInertia() {
     if (!isUserInteracting && !isScrollBased) {
       // Apply velocity with dampening
@@ -1426,7 +1407,7 @@ async function setupPostprocessing(THREE) {
         composer.addPass(filmPass);
       }
 
-      // Bloom Pass (für Atmosphäre)
+      // Bloom Pass (cinematic effect)
       if (window.THREE.UnrealBloomPass) {
         const bloomPass = new THREE.UnrealBloomPass(
           new THREE.Vector2(window.innerWidth, window.innerHeight),
@@ -1556,7 +1537,7 @@ function startAnimationLoop(THREE) {
 
     const deltaTime = clock.getDelta();
 
-    // ===== NEUE FEATURE: Inertia & Smooth Controls Update =====
+    // Inertia & Smooth Controls Update
     if (window.ThreeEarthControls?.updateInertia) {
       window.ThreeEarthControls.updateInertia();
     }
@@ -1564,9 +1545,6 @@ function startAnimationLoop(THREE) {
     // Earth Updates mit Scale-Animation
     updateEarthRotation();
     updateEarthScale(deltaTime);
-
-    // ===== NEUE FEATURE: Wolken-Animation =====
-    updateCloudLayer(clock.getElapsedTime());
 
     // Subtile Stern-Animation
     updateStarField(clock.getElapsedTime());
@@ -1666,35 +1644,6 @@ function startAnimationLoop(THREE) {
     }
   }
 
-  // ===== NEUE FEATURE: Wolken-Layer Animation =====
-  function updateCloudLayer(elapsedTime) {
-    if (!earthMesh) {
-      log.debug("updateCloudLayer: earthMesh not available");
-      return;
-    }
-
-    const cloudMesh = earthMesh.getObjectByName("earthClouds");
-    if (!cloudMesh) {
-      log.debug("updateCloudLayer: cloudMesh not found in earthMesh children");
-      return;
-    }
-
-    if (!cloudMesh.material) {
-      log.warn("updateCloudLayer: cloudMesh has no material");
-      return;
-    }
-
-    // Update shader-uniform für Wolken-Bewegung
-    if (cloudMesh.material.uniforms && cloudMesh.material.uniforms.time) {
-      cloudMesh.material.uniforms.time.value = elapsedTime;
-    } else {
-      log.debug("updateCloudLayer: No time uniform in cloud material");
-    }
-
-    // Langsame Independent-Rotation der Wolken (etwas schneller als Erde)
-    cloudMesh.rotation.y += 0.0003;
-  }
-
   // Rendering wird in der vorherigen renderFrame() Funktion durchgeführt
 
   animate();
@@ -1730,23 +1679,6 @@ function setupResizeHandler() {
     resizeCleanup,
     "resize handler cleanup"
   );
-}
-
-// ===== Public API & Module Export =====
-/**
- * Initialisiert das Three.js Earth System mit 3D-Erde und Sternen
- * @returns {Promise<Function>} Cleanup-Funktion für das System
- */
-export async function initThreeEarth() {
-  log.debug("Initializing Three.js Earth system");
-
-  const container = getElementById("threeEarthContainer");
-  if (!container) {
-    log.warn("Three.js Earth container element not found");
-    return () => {}; // Konsistenter Return: immer eine Cleanup-Funktion
-  }
-
-  return await ThreeEarthManager.initThreeEarth();
 }
 
 // ===== UI State Management =====
@@ -1802,10 +1734,7 @@ function showErrorState(container, error) {
   }
 }
 
-export const { cleanup } = ThreeEarthManager;
+export const { initThreeEarth, cleanup } = ThreeEarthManager;
 
 // Default Export für Kompatibilität
-export default {
-  initThreeEarth,
-  cleanup,
-};
+export default ThreeEarthManager;
