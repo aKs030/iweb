@@ -692,7 +692,8 @@ async function createEarthSystem(THREE) {
   const earthMaterial = await createEarthMaterial(THREE);
 
   earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
-  earthMesh.position.y = -2.8; // Entsprechend der Größe nach unten für Horizont-Effekt
+  // Position wird dynamisch durch Section-Configs gesetzt (siehe updateEarthForSection)
+  earthMesh.position.set(0, -4.5, 0); // Initial Hero-Position
   earthMesh.castShadow = true;
   earthMesh.receiveShadow = true;
   scene.add(earthMesh);
@@ -1113,24 +1114,24 @@ function setupCameraSystem(THREE) {
 function updateCameraForSection(sectionName) {
   const cameraConfigs = {
     hero: {
-      position: { x: 0, y: -1.5, z: 6 }, // Y nach unten für Horizont-Effekt
-      rotation: { x: 0.15, y: 0 }, // Leicht nach unten blicken
-      fov: 45, // Weiterer FOV für dramatischen Effekt
+      position: { x: 0, y: -2, z: 5.5 }, // Tief unten, nah dran - dramatischer Horizont-Effekt
+      rotation: { x: 0.25, y: 0 }, // Deutlich nach unten blicken für Horizont-Gefühl
+      fov: 50, // Weiter FOV für immersiven Weitwinkel-Effekt
     },
     features: {
-      position: { x: 2, y: 1, z: 6 },
-      rotation: { x: -0.1, y: 0 },
-      fov: 40,
+      position: { x: -3, y: 2.5, z: 6.5 }, // Von links oben - elegante Diagonale
+      rotation: { x: -0.3, y: 0.4 }, // Nach unten und leicht nach rechts gedreht
+      fov: 42, // Ausgewogener FOV für natürliche Perspektive
     },
     about: {
-      position: { x: -1, y: 2, z: 7 },
-      rotation: { x: -0.2, y: 0.1 },
-      fov: 45,
+      position: { x: 0, y: 1, z: 30 }, // Maximale Distanz für extrem kleine Erde
+      rotation: { x: -0.15, y: 0 }, // Leicht nach unten für Überblick
+      fov: 25, // Sehr enger FOV für maximalen Verkleinerungs-Effekt
     },
     contact: {
-      position: { x: 0, y: -1, z: 10 },
-      rotation: { x: 0.1, y: 0 },
-      fov: 30,
+      position: { x: 0, y: 3, z: 8 }, // Von oben, weiter weg - "Gott-Perspektive"
+      rotation: { x: -0.35, y: 0 }, // Nach unten blicken auf die Erde
+      fov: 38, // Engerer FOV für fokussierten, meditativen Blick
     },
   };
 
@@ -1475,36 +1476,45 @@ function updateEarthForSection(sectionName) {
 
   const sectionConfigs = {
     hero: {
-      scale: 1.0,
+      position: { x: 0, y: -4.5, z: 0 }, // Tief unten für Horizont-Effekt
+      scale: 1.3, // Größer für dramatischen Horizont
       rotationSpeed: 0.002,
       starTwinkle: 0.3,
-      starBrightness: 1.0, // Hellere Sterne
+      starBrightness: 1.0,
       starRotation: 0.0001,
     },
     features: {
-      scale: 1.2,
-      rotationSpeed: 0.001,
+      position: { x: 1, y: -1, z: -0.5 }, // Leicht rechts und unten, etwas zurück
+      scale: 1.0, // Normal-Größe
+      rotationSpeed: 0.0015,
       starTwinkle: 0.25,
-      starBrightness: 0.9, // Heller als vorher
+      starBrightness: 0.9,
       starRotation: 0.00008,
     },
     about: {
-      scale: 0.8,
-      rotationSpeed: 0.003,
-      starTwinkle: 0.35,
-      starBrightness: 1.0,
-      starRotation: 0.00012,
+      position: { x: 0, y: 0, z: -2 }, // Zentriert, leicht zurück
+      scale: 0.35, // Extrem klein für maximalen "Pale Blue Dot"-Effekt
+      rotationSpeed: 0.0008, // Noch langsamere Rotation
+      starTwinkle: 0.5, // Maximales Sternen-Funkeln
+      starBrightness: 1.2, // Maximale Sternenhelligkeit
+      starRotation: 0.00008,
     },
     contact: {
-      scale: 1.5,
-      rotationSpeed: 0.0005,
+      position: { x: 0, y: 0.5, z: -1 }, // Leicht oben, weiter hinten
+      scale: 0.85, // Kleiner für "von oben"-Perspektive
+      rotationSpeed: 0.0008,
       starTwinkle: 0.2,
-      starBrightness: 0.85, // Heller als vorher
+      starBrightness: 0.85,
       starRotation: 0.00006,
     },
   };
 
   const config = sectionConfigs[sectionName] || sectionConfigs.hero;
+
+  // Position Animation mit LERP (Ziel setzen)
+  if (config.position) {
+    earthMesh.userData.targetPosition = { ...config.position };
+  }
 
   // Scale Animation mit LERP
   earthMesh.userData.targetScale = config.scale;
@@ -1600,6 +1610,15 @@ function startAnimationLoop(THREE) {
       earthMesh.scale.lerp(
         new THREE.Vector3(targetScale, targetScale, targetScale),
         0.02
+      );
+    }
+
+    // Position LERP - smooth transition zwischen Sections
+    if (earthMesh.userData.targetPosition) {
+      const { targetPosition } = earthMesh.userData;
+      earthMesh.position.lerp(
+        new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z),
+        0.03 // Etwas schneller als Scale für dynamischeren Effekt
       );
     }
   }
