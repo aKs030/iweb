@@ -495,12 +495,12 @@ function createStarTexture(THREE) {
   return texture;
 }
 
-// ===== Dezentes Sternsystem =====
+// ===== Dezentes Sternsystem mit Performance-Optimierungen =====
 function createStarField(THREE) {
   const starGeometry = new THREE.BufferGeometry();
   const starCount = 1500; // Dezente Anzahl von Sternen
 
-  // Positionen für Sterne generieren
+  // ===== PERFORMANCE: Optimierte Buffer-Geometrie =====
   const positions = new Float32Array(starCount * 3);
   const colors = new Float32Array(starCount * 3);
   const sizes = new Float32Array(starCount);
@@ -531,17 +531,27 @@ function createStarField(THREE) {
         : 2.0 + Math.random() * 3.0;
   }
 
+  // ===== PERFORMANCE: Static Draw für unveränderliche Geometrie =====
   starGeometry.setAttribute(
     "position",
-    new THREE.BufferAttribute(positions, 3)
+    new THREE.BufferAttribute(positions, 3).setUsage(THREE.StaticDrawUsage)
   );
-  starGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-  starGeometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+  starGeometry.setAttribute(
+    "color", 
+    new THREE.BufferAttribute(colors, 3).setUsage(THREE.StaticDrawUsage)
+  );
+  starGeometry.setAttribute(
+    "size", 
+    new THREE.BufferAttribute(sizes, 1).setUsage(THREE.StaticDrawUsage)
+  );
+
+  // Bounding Sphere für Frustum Culling
+  starGeometry.computeBoundingSphere();
 
   // Runde Stern-Textur erstellen
   const starTexture = createStarTexture(THREE);
 
-  // Stern-Material mit runder Textur (optimiert für Sichtbarkeit)
+  // ===== PERFORMANCE: Optimiertes Material mit Blending =====
   const starMaterial = new THREE.PointsMaterial({
     size: 3.0, // Größerer Basis-Size
     sizeAttenuation: true,
@@ -549,6 +559,7 @@ function createStarField(THREE) {
     transparent: true,
     opacity: 0.9, // Höhere Opacity
     blending: THREE.AdditiveBlending,
+    depthWrite: false, // Performance: Kein Depth Writing bei transparenten Partikeln
     map: starTexture,
     alphaTest: 0.05, // Niedrigerer alphaTest für mehr Sichtbarkeit
   });
@@ -556,6 +567,7 @@ function createStarField(THREE) {
   // Stern-Mesh erstellen und zur Szene hinzufügen
   const starField = new THREE.Points(starGeometry, starMaterial);
   starField.name = "starField";
+  starField.frustumCulled = true; // Enable frustum culling für Performance
   scene.add(starField);
 
   log.debug(`Created subtle star field with ${starCount} stars`);
@@ -663,7 +675,7 @@ function setupLighting(THREE) {
   scene.add(rimLight);
 }
 
-// ===== Earth-System erstellen =====
+// ===== Earth-System mit Wolken & Atmosphäre erstellen =====
 async function createEarthSystem(THREE) {
   // Hohe Qualität - feste Werte
   const earthRadius = 3.5; // Vergrößert für Horizont-Effekt
@@ -684,7 +696,161 @@ async function createEarthSystem(THREE) {
   earthMesh.receiveShadow = true;
   scene.add(earthMesh);
 
-  log.debug("Earth system created", { segments });
+  // ===== NEUE FEATURE: Wolken-Layer =====
+  await createCloudLayer(THREE, earthRadius);
+  
+  // ===== NEUE FEATURE: Atmosphären-Glow =====
+  createAtmosphereGlow(THREE, earthRadius);
+
+  log.debug("Earth system created with clouds and atmosphere", { segments });
+}
+
+// ===== Wolken-Layer mit Transparenz =====
+async function createCloudLayer(THREE, earthRadius) {
+  try {
+    // Wolken-Geometrie (leicht größer als Erde)
+    const cloudGeometry = new THREE.SphereGeometry(
+      earthRadius * 1.015, // 1.5% größer
+      64,
+      64
+    );
+
+    // Prozedurales Wolken-Material mit Noise
+    const cloudMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        cloudSpeed: { value: 0.0002 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        
+        void main() {
+          vUv = uv;
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        uniform float cloudSpeed;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        
+        // Simple noise function
+        float noise(vec2 p) {
+          return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+        }
+        
+        // Fractal Brownian Motion für realistische Wolken
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          float frequency = 1.0;
+          
+          for(int i = 0; i < 4; i++) {
+            value += amplitude * noise(p * frequency);
+            frequency *= 2.0;
+            amplitude *= 0.5;
+          }
+          
+          return value;
+        }
+        
+        void main() {
+          // Bewegende UV-Koordinaten für Wolken-Drift
+          vec2 uv = vUv + vec2(time * cloudSpeed, 0.0);
+          
+          // Wolken-Pattern mit FBM
+          float clouds = fbm(uv * 8.0);
+          clouds = smoothstep(0.4, 0.7, clouds);
+          
+          // Edge Fade-out (weniger Wolken an Polen)
+          float latitudeFade = smoothstep(0.1, 0.3, vUv.y) * smoothstep(0.9, 0.7, vUv.y);
+          clouds *= latitudeFade;
+          
+          // Weiße Wolken mit variabler Opacity
+          vec3 cloudColor = vec3(1.0);
+          float alpha = clouds * 0.6; // Semi-transparent
+          
+          gl_FragColor = vec4(cloudColor, alpha);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+    });
+
+    const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+    cloudMesh.name = "earthClouds";
+    earthMesh.add(cloudMesh); // Als Child der Erde für synchrone Rotation
+    
+    log.debug("Cloud layer created successfully");
+  } catch (error) {
+    log.warn("Cloud layer creation failed:", error);
+  }
+}
+
+// ===== Atmosphären-Glow-Effekt =====
+function createAtmosphereGlow(THREE, earthRadius) {
+  try {
+    // Atmosphären-Geometrie (deutlich größer als Erde)
+    const atmosphereGeometry = new THREE.SphereGeometry(
+      earthRadius * 1.12, // 12% größer
+      64,
+      64
+    );
+
+    // Atmosphären-Shader mit Fresnel-Effekt
+    const atmosphereMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        glowColor: { value: new THREE.Color(0x4488ff) }, // Blauer Glow
+        glowIntensity: { value: 0.8 },
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        uniform float glowIntensity;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        
+        void main() {
+          // Fresnel-Effekt für Atmosphären-Glow
+          vec3 viewDirection = normalize(-vPosition);
+          float fresnel = dot(viewDirection, vNormal);
+          fresnel = pow(1.0 - fresnel, 3.0); // Starker Fresnel am Rand
+          
+          // Glow-Farbe mit Fresnel-Intensität
+          vec3 glow = glowColor * fresnel * glowIntensity;
+          float alpha = fresnel * 0.6;
+          
+          gl_FragColor = vec4(glow, alpha);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending, // Additives Blending für Glow-Effekt
+      side: THREE.BackSide, // Nur Rückseite rendern
+    });
+
+    const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    atmosphereMesh.name = "earthAtmosphere";
+    scene.add(atmosphereMesh);
+    atmosphereMesh.position.copy(earthMesh.position);
+    
+    log.debug("Atmosphere glow created successfully");
+  } catch (error) {
+    log.warn("Atmosphere glow creation failed:", error);
+  }
 }
 
 // ===== Earth-Material erstellen =====
@@ -848,30 +1014,48 @@ async function loadTextureWithFallback(
   timeout = 5000,
   maxRetries = 3
 ) {
-  let attempts = 0;
-  const baseDelay = 1000; // 1 Sekunde Basis-Verzögerung
+  // ===== OPTIMIERUNG: WebP-Support mit automatischem JPG-Fallback =====
+  // Versuche zuerst WebP zu laden (58.9% kleiner), dann JPG als Fallback
+  const webpUrl = url.replace(/\.jpg$/, '.webp');
+  const formats = [
+    { url: webpUrl, format: 'WebP', description: 'modern compressed format' },
+    { url: url, format: 'JPG', description: 'legacy format' }
+  ];
 
-  while (attempts < maxRetries) {
-    try {
-      return await loadTextureWithTimeout(loader, url, timeout);
-    } catch (error) {
-      attempts++;
-      log.warn(
-        `Texture loading attempt ${attempts}/${maxRetries} failed: ${url}`,
-        error
-      );
+  // Format-basierter Retry-Loop
+  for (const { url: formatUrl, format, description } of formats) {
+    let attempts = 0;
+    const baseDelay = 1000; // 1 Sekunde Basis-Verzögerung
 
-      if (attempts >= maxRetries) {
-        log.error(`All texture loading attempts failed: ${url}`);
-        throw error;
+    while (attempts < maxRetries) {
+      try {
+        log.debug(`Attempting to load ${format} texture: ${formatUrl}`);
+        const texture = await loadTextureWithTimeout(loader, formatUrl, timeout);
+        log.info(`✅ Successfully loaded ${format} texture (${description}): ${formatUrl}`);
+        return texture;
+      } catch (error) {
+        attempts++;
+        log.warn(
+          `Texture loading attempt ${attempts}/${maxRetries} failed for ${format}: ${formatUrl}`,
+          error
+        );
+
+        if (attempts >= maxRetries) {
+          log.warn(`All attempts failed for ${format}: ${formatUrl}, trying next format...`);
+          break; // Try next format
+        }
+
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = baseDelay * Math.pow(2, attempts - 1);
+        log.debug(`Retrying ${format} texture load in ${delay}ms: ${formatUrl}`);
+        await sleep(delay);
       }
-
-      // Exponential backoff: 1s, 2s, 4s
-      const delay = baseDelay * Math.pow(2, attempts - 1);
-      log.info(`Retrying texture load in ${delay}ms: ${url}`);
-      await sleep(delay);
     }
   }
+
+  // Alle Formate fehlgeschlagen
+  log.error(`All texture formats failed for: ${url}`);
+  throw new Error(`Failed to load texture in any format: ${url}`);
 }
 
 // Helper function für einzelnen Load-Versuch mit TimerManager
@@ -1110,10 +1294,22 @@ function updateCameraForSection(sectionName) {
 }
 
 // ===== User Controls Setup =====
+// ===== Erweiterte User Controls mit Touch-Gesten & Smooth Dampening =====
 function setupUserControls(container) {
   let isUserInteracting = false;
   const mouseStart = { x: 0, y: 0 };
   const cameraStart = { x: 0, y: 0 };
+  
+  // ===== NEUE FEATURE: Touch-Gesten State =====
+  let touchStartDistance = 0;
+  let initialZoom = 5;
+  let currentZoom = 5;
+  let targetZoom = 5;
+  
+  // ===== NEUE FEATURE: Velocity für Inertia =====
+  let velocity = { x: 0, y: 0 };
+  const dampingFactor = 0.95; // Smooth dampening
+  const maxVelocity = 0.1;
 
   // Scroll-basierte Controls (Standard)
   const handleScroll = throttle(() => {
@@ -1136,35 +1332,102 @@ function setupUserControls(container) {
   // Mouse Controls für freie Kamera (optional)
   function enableFreeCamera() {
     isScrollBased = false;
+    container.style.cursor = "grab";
     log.debug("Free camera mode enabled");
   }
 
   function enableScrollCamera() {
     isScrollBased = true;
+    container.style.cursor = "";
     log.debug("Scroll-based camera mode enabled");
   }
 
+  // ===== NEUE FEATURE: Pinch-to-Zoom für Touch =====
+  const handleTouchStart = (event) => {
+    if (isScrollBased) return;
+    
+    if (event.touches.length === 2) {
+      // Two-finger gestures
+      const dx = event.touches[0].clientX - event.touches[1].clientX;
+      const dy = event.touches[0].clientY - event.touches[1].clientY;
+      touchStartDistance = Math.sqrt(dx * dx + dy * dy);
+      initialZoom = currentZoom;
+      event.preventDefault();
+    } else if (event.touches.length === 1) {
+      // Single touch drag
+      isUserInteracting = true;
+      mouseStart.x = event.touches[0].clientX;
+      mouseStart.y = event.touches[0].clientY;
+      cameraStart.x = cameraRotation.x;
+      cameraStart.y = cameraRotation.y;
+      velocity = { x: 0, y: 0 }; // Reset velocity
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    if (!isScrollBased && event.touches.length === 2) {
+      // Pinch-to-Zoom
+      const dx = event.touches[0].clientX - event.touches[1].clientX;
+      const dy = event.touches[0].clientY - event.touches[1].clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      const scale = touchStartDistance / distance;
+      targetZoom = Math.max(2, Math.min(15, initialZoom * scale));
+      event.preventDefault();
+    } else if (isUserInteracting && event.touches.length === 1) {
+      // Single touch drag with velocity tracking
+      const clientX = event.touches[0].clientX;
+      const clientY = event.touches[0].clientY;
+
+      const deltaX = clientX - mouseStart.x;
+      const deltaY = clientY - mouseStart.y;
+
+      // Update velocity for inertia
+      velocity.x = deltaX * 0.005;
+      velocity.y = -deltaY * 0.005;
+      
+      cameraRotation.y = cameraStart.y + deltaX * 0.005;
+      cameraRotation.x = Math.max(
+        -Math.PI / 3,
+        Math.min(Math.PI / 3, cameraStart.x - deltaY * 0.005)
+      );
+      
+      event.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = (event) => {
+    if (event.touches.length === 0) {
+      isUserInteracting = false;
+    }
+  };
+
   // Touch/Mouse Interaction
   const handlePointerDown = (event) => {
-    if (isScrollBased) return;
+    if (isScrollBased || event.touches) return; // Touch wird separat behandelt
 
     isUserInteracting = true;
-    mouseStart.x = event.clientX || event.touches[0].clientX;
-    mouseStart.y = event.clientY || event.touches[0].clientY;
+    mouseStart.x = event.clientX;
+    mouseStart.y = event.clientY;
     cameraStart.x = cameraRotation.x;
     cameraStart.y = cameraRotation.y;
+    velocity = { x: 0, y: 0 }; // Reset velocity
 
     container.style.cursor = "grabbing";
   };
 
   const handlePointerMove = (event) => {
-    if (!isUserInteracting || isScrollBased) return;
+    if (!isUserInteracting || isScrollBased || event.touches) return;
 
-    const clientX = event.clientX || event.touches[0].clientX;
-    const clientY = event.clientY || event.touches[0].clientY;
+    const clientX = event.clientX;
+    const clientY = event.clientY;
 
     const deltaX = clientX - mouseStart.x;
     const deltaY = clientY - mouseStart.y;
+
+    // Update velocity for inertia
+    velocity.x = deltaX * 0.005;
+    velocity.y = -deltaY * 0.005;
 
     cameraRotation.y = cameraStart.y + deltaX * 0.005;
     cameraRotation.x = Math.max(
@@ -1177,8 +1440,51 @@ function setupUserControls(container) {
     isUserInteracting = false;
     container.style.cursor = "grab";
   };
+  
+  // ===== NEUE FEATURE: Mouse Wheel Zoom =====
+  const handleWheel = (event) => {
+    if (isScrollBased) return;
+    
+    event.preventDefault();
+    const delta = event.deltaY * 0.01;
+    targetZoom = Math.max(2, Math.min(15, targetZoom + delta));
+  };
 
-  // Pointer Events Setup mit shared utilities
+  // ===== NEUE FEATURE: Inertia & Smooth Dampening Animation =====
+  function updateInertia() {
+    if (!isUserInteracting && !isScrollBased) {
+      // Apply velocity with dampening
+      if (Math.abs(velocity.x) > 0.001 || Math.abs(velocity.y) > 0.001) {
+        cameraRotation.y += velocity.x;
+        cameraRotation.x += velocity.y;
+        
+        // Clamp rotation
+        cameraRotation.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cameraRotation.x));
+        
+        // Apply dampening
+        velocity.x *= dampingFactor;
+        velocity.y *= dampingFactor;
+        
+        // Clamp velocity
+        velocity.x = Math.max(-maxVelocity, Math.min(maxVelocity, velocity.x));
+        velocity.y = Math.max(-maxVelocity, Math.min(maxVelocity, velocity.y));
+      }
+      
+      // Smooth zoom interpolation
+      if (Math.abs(currentZoom - targetZoom) > 0.01) {
+        currentZoom += (targetZoom - currentZoom) * 0.1;
+        cameraTarget.z = currentZoom;
+      }
+    }
+  }
+
+  // Touch Events (separate für bessere Kontrolle)
+  container.addEventListener('touchstart', handleTouchStart, { passive: false });
+  container.addEventListener('touchmove', handleTouchMove, { passive: false });
+  container.addEventListener('touchend', handleTouchEnd, { passive: false });
+  container.addEventListener('wheel', handleWheel, { passive: false });
+
+  // Pointer Events Setup mit shared utilities (nur für Maus)
   const pointerCleanup = setupPointerEvents(
     container,
     {
@@ -1187,7 +1493,7 @@ function setupUserControls(container) {
       onEnd: handlePointerUp,
     },
     { passive: false }
-  ); // Nicht-passive für preventDefault
+  );
 
   // Scroll Events Setup
   const scrollCleanup = onScroll(handleScroll);
@@ -1198,6 +1504,10 @@ function setupUserControls(container) {
     () => {
       scrollCleanup();
       pointerCleanup();
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+      container.removeEventListener('wheel', handleWheel);
     },
     "user controls cleanup"
   );
@@ -1207,9 +1517,12 @@ function setupUserControls(container) {
     enableFreeCamera,
     enableScrollCamera,
     isScrollBased: () => isScrollBased,
+    updateInertia, // Export für Animation-Loop
+    getZoom: () => currentZoom,
+    setZoom: (zoom) => { targetZoom = zoom; },
   };
 
-  log.debug("User controls setup completed");
+  log.debug("Enhanced user controls setup completed (Touch gestures, Inertia, Zoom)");
 }
 
 // ===== Postprocessing Setup =====
@@ -1351,7 +1664,7 @@ function updateStarFieldForSection(config) {
   starField.material.opacity = config.starBrightness * 0.8;
 }
 
-// ===== Animation Loop =====
+// ===== Animation Loop mit Inertia-Updates =====
 function startAnimationLoop(THREE) {
   const clock = new THREE.Clock();
   function animate() {
@@ -1359,9 +1672,17 @@ function startAnimationLoop(THREE) {
 
     const deltaTime = clock.getDelta();
 
+    // ===== NEUE FEATURE: Inertia & Smooth Controls Update =====
+    if (window.ThreeEarthControls?.updateInertia) {
+      window.ThreeEarthControls.updateInertia();
+    }
+
     // Earth Updates mit Scale-Animation
     updateEarthRotation();
     updateEarthScale(deltaTime);
+
+    // ===== NEUE FEATURE: Wolken-Animation =====
+    updateCloudLayer(clock.getElapsedTime());
 
     // Subtile Stern-Animation
     updateStarField(clock.getElapsedTime());
@@ -1459,6 +1780,22 @@ function startAnimationLoop(THREE) {
       const combined = brightness * (0.7 + mainTwinkle + fastTwinkle);
       starField.material.opacity = Math.max(0.4, Math.min(1.0, combined));
     }
+  }
+
+  // ===== NEUE FEATURE: Wolken-Layer Animation =====
+  function updateCloudLayer(elapsedTime) {
+    if (!earthMesh) return;
+    
+    const cloudMesh = earthMesh.getObjectByName("earthClouds");
+    if (!cloudMesh || !cloudMesh.material) return;
+    
+    // Update shader-uniform für Wolken-Bewegung
+    if (cloudMesh.material.uniforms && cloudMesh.material.uniforms.time) {
+      cloudMesh.material.uniforms.time.value = elapsedTime;
+    }
+    
+    // Langsame Independent-Rotation der Wolken (etwas schneller als Erde)
+    cloudMesh.rotation.y += 0.0003;
   }
 
   // Rendering wird in der vorherigen renderFrame() Funktion durchgeführt
