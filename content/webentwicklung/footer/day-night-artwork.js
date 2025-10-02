@@ -5,11 +5,11 @@
 
 // ===== Shared Utilities Import =====
 import {
+  createEventManager,
   createLogger,
   getElementById,
-  throttle,
-  createEventManager,
   onVisibilityChange,
+  throttle,
 } from "../shared-utilities.js";
 
 const log = createLogger("dayNightArtwork");

@@ -13,10 +13,7 @@
  */
 
 // ===== Shared Utilities Import =====
-import {
-  createLogger,
-  getElementById,
-} from "../shared-utilities.js";
+import { createLogger, getElementById } from "../shared-utilities.js";
 
 const log = createLogger("menu");
 

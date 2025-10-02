@@ -28,11 +28,11 @@ import {
 import {
   createLogger,
   getElementById,
-  throttle,
-  TimerManager,
   onResize,
   onScroll,
   setupPointerEvents,
+  throttle,
+  TimerManager,
 } from "../shared-utilities.js";
 
 const log = createLogger("threeEarthSystem");
@@ -44,7 +44,6 @@ const earthTimers = new TimerManager();
 // not at the top level of this module. Remove it here to fix the parsing error.
 
 // (Removed duplicate definitions of onResize, onScroll, and setupPointerEvents; use the imported versions from shared-utilities.js)
-
 
 // ===== Globale Variablen =====
 let scene, camera, renderer, earthMesh, composer;

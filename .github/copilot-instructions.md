@@ -81,6 +81,7 @@ import {
 ```
 
 **Wichtige Funktionen:**
+
 - **createLogger**: Einheitliches Logging-System
 - **getElementById**: DOM-Zugriff mit Caching
 - **TimerManager**: Promise-basierte Timer mit automatischem Cleanup
@@ -200,6 +201,7 @@ cwebp -q 85 content/img/og-portfolio.jpg -o content/img/og-portfolio.webp
 ## Architektur nach Oktober 2025 Refactoring (Updated - Dezember 2025)
 
 ### Vor dem Refactoring
+
 ```
 content/webentwicklung/
 ├── utils/               # ❌ Komplett entfernt (Dezember 2025)
@@ -211,7 +213,8 @@ content/webentwicklung/
 └── ...
 ```
 
-### Nach dem Refactoring  
+### Nach dem Refactoring
+
 ```
 content/webentwicklung/
 ├── shared-utilities.js  # ✅ Zentrale oft-verwendete Funktionen
@@ -223,6 +226,7 @@ content/webentwicklung/
 ```
 
 ### Vorteile der neuen Architektur
+
 - **Reduzierte Code-Duplikation**: 95% weniger duplizierte Utility-Funktionen (Dezember 2025)
 - **Bessere Performance**: Viel weniger Module zu laden
 - **Einfachere Wartung**: Eine zentrale Datei für häufige Utilities

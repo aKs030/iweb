@@ -6,14 +6,14 @@ import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
 
 // ===== Shared Utilities Import =====
 import {
+  createLazyLoadObserver,
   createLogger,
-  getElementById,
   EVENTS,
   fire,
-  SectionTracker,
-  createLazyLoadObserver,
+  getElementById,
   scheduleAnimationScan,
   schedulePersistentStorageRequest,
+  SectionTracker,
 } from "./shared-utilities.js";
 
 // ===== Module-specific Utilities =====

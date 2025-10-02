@@ -1,11 +1,11 @@
 // ===== Shared Utilities Import =====
 import {
-  getElementById,
-  shuffle as shuffleArray,
-  TimerManager,
   EVENTS,
   fire,
+  getElementById,
   on,
+  shuffle as shuffleArray,
+  TimerManager,
 } from "../../content/webentwicklung/shared-utilities.js";
 
 // ===== Module-specific Utilities =====

@@ -538,12 +538,12 @@ Ziel: Garantie, dass CSP ohne `'unsafe-inline'` oder externe Domains dauerhaft s
 
 #### **Das komplette `content/webentwicklung/utils/` Verzeichnis wurde aufgelöst** und durch ein **shared-utilities.js** System ersetzt:
 
-| **Status**               | **Vorher**                                              | **Nachher** | **Resultat** |
-| ------------------------ | ------------------------------------------------------ | ----------- | ------------ |
-| � **Utils Directory**  | 8+ separate Utility-Dateien mit Code-Duplikation      | ❌ Entfernt  | 95% weniger Duplikation |
-| � **shared-utilities**  | Embedded utilities in jedem Modul                     | ✅ Zentral   | Konsistente API |
-| 🔧 **Imports**          | 8+ verschiedene utils-Imports pro Datei               | 1 Import     | Saubere Architektur |
-| 🚫 **ESLint Errors**    | Duplikate und unused functions                         | 0 Fehler     | Code Quality |
+| **Status**             | **Vorher**                                       | **Nachher** | **Resultat**            |
+| ---------------------- | ------------------------------------------------ | ----------- | ----------------------- |
+| � **Utils Directory**  | 8+ separate Utility-Dateien mit Code-Duplikation | ❌ Entfernt | 95% weniger Duplikation |
+| � **shared-utilities** | Embedded utilities in jedem Modul                | ✅ Zentral  | Konsistente API         |
+| 🔧 **Imports**         | 8+ verschiedene utils-Imports pro Datei          | 1 Import    | Saubere Architektur     |
+| 🚫 **ESLint Errors**   | Duplikate und unused functions                   | 0 Fehler    | Code Quality            |
 
 #### **Neue Shared Infrastructure:**
 
@@ -551,14 +551,14 @@ Ziel: Garantie, dass CSP ohne `'unsafe-inline'` oder externe Domains dauerhaft s
 
 #### **Refactored Files (6 Major Files):**
 
-| **Datei** | **Vorher** | **Nachher** | **Einsparung** |
-| --------- | ---------- | ----------- | -------------- |
-| `hero-manager.js` | 150+ Zeilen embedded utilities | Shared imports | ~140 Zeilen |
-| `TypeWriter.js` | 90+ Zeilen utilities | Shared imports | ~85 Zeilen |
-| `day-night-artwork.js` | 80+ Zeilen utilities | Shared imports | ~75 Zeilen |
-| `menu.js` | 60+ Zeilen utilities | Shared imports | ~55 Zeilen |
-| `enhanced-animation-engine.js` | Utils imports | Shared imports | Import cleanup |
-| Footer-Module | Separate utils imports | Shared imports | Import cleanup |
+| **Datei**                      | **Vorher**                     | **Nachher**    | **Einsparung** |
+| ------------------------------ | ------------------------------ | -------------- | -------------- |
+| `hero-manager.js`              | 150+ Zeilen embedded utilities | Shared imports | ~140 Zeilen    |
+| `TypeWriter.js`                | 90+ Zeilen utilities           | Shared imports | ~85 Zeilen     |
+| `day-night-artwork.js`         | 80+ Zeilen utilities           | Shared imports | ~75 Zeilen     |
+| `menu.js`                      | 60+ Zeilen utilities           | Shared imports | ~55 Zeilen     |
+| `enhanced-animation-engine.js` | Utils imports                  | Shared imports | Import cleanup |
+| Footer-Module                  | Separate utils imports         | Shared imports | Import cleanup |
 
 #### **Migration-Erfolge:**
 

@@ -1,17 +1,17 @@
 /**
  * Footer Scroll Handler - Dynamische Footer-Expansion bei letzter Sektion
- * 
+ *
  * Features:
  * - Scroll-Detection für letzte Sektion ('about')
  * - Smooth Footer-Expansion/Kollaps
  * - Performance-optimiert mit Intersection Observer
  * - Accessibility-Support
- * 
+ *
  * @author Abdulkerim Sesli
  * @version 1.0.0
  */
 
-import { getElementById } from '../shared-utilities.js';
+import { getElementById } from "../shared-utilities.js";
 
 // Footer-Zustand
 let footerExpanded = false;
@@ -23,7 +23,7 @@ let lastSectionObserver = null;
 function initializeFooterScrollHandler() {
   // Warten bis Footer geladen ist
   const checkFooterReady = () => {
-    const footer = getElementById('site-footer');
+    const footer = getElementById("site-footer");
     if (footer) {
       setupLastSectionObserver();
     } else {
@@ -31,7 +31,7 @@ function initializeFooterScrollHandler() {
       setTimeout(checkFooterReady, 100);
     }
   };
-  
+
   checkFooterReady();
 }
 
@@ -40,9 +40,9 @@ function initializeFooterScrollHandler() {
  * Footer expandiert wenn die Trigger-Zone erreicht wird
  */
 function setupLastSectionObserver() {
-  const triggerZone = getElementById('footer-trigger-zone');
-  const footer = getElementById('site-footer');
-  
+  const triggerZone = getElementById("footer-trigger-zone");
+  const footer = getElementById("site-footer");
+
   if (!triggerZone || !footer) {
     return;
   }
@@ -50,15 +50,16 @@ function setupLastSectionObserver() {
   // Observer-Optionen - Trigger wenn Zone sichtbar wird
   const observerOptions = {
     root: null,
-    rootMargin: '0px 0px -50% 0px', // Trigger wenn Zone zur Hälfte sichtbar ist
-    threshold: [0.1, 0.5]
+    rootMargin: "0px 0px -50% 0px", // Trigger wenn Zone zur Hälfte sichtbar ist
+    threshold: [0.1, 0.5],
   };
 
   lastSectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.target.id === 'footer-trigger-zone') {
+    entries.forEach((entry) => {
+      if (entry.target.id === "footer-trigger-zone") {
         // Footer expandiert wenn Trigger-Zone sichtbar wird
-        const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= 0.1;
+        const shouldExpand =
+          entry.isIntersecting && entry.intersectionRatio >= 0.1;
         toggleFooterExpansion(shouldExpand);
       }
     });
@@ -71,34 +72,32 @@ function setupLastSectionObserver() {
  * Expandiert oder kollabiert den Footer
  */
 function toggleFooterExpansion(shouldExpand) {
-  const footer = getElementById('site-footer');
-  const {body} = document;
-  const footerMinimized = footer?.querySelector('.footer-minimized');
-  const footerMaximized = footer?.querySelector('.footer-maximized');
-  
+  const footer = getElementById("site-footer");
+  const { body } = document;
+  const footerMinimized = footer?.querySelector(".footer-minimized");
+  const footerMaximized = footer?.querySelector(".footer-maximized");
+
   if (!footer || !footerMinimized || !footerMaximized) {
     return;
   }
 
   if (shouldExpand && !footerExpanded) {
     // Footer expandieren
-    footer.classList.add('footer-expanded');
-    body.classList.add('footer-expanded');
-    footerMaximized.classList.remove('footer-hidden');
+    footer.classList.add("footer-expanded");
+    body.classList.add("footer-expanded");
+    footerMaximized.classList.remove("footer-hidden");
     footerExpanded = true;
-    
+
     // Jahr in erweiterten Footer aktualisieren - nutze globale API
     if (window.footerAPI?.updateYear) {
       window.footerAPI.updateYear();
     }
-    
   } else if (!shouldExpand && footerExpanded) {
     // Footer kollabieren
-    footer.classList.remove('footer-expanded');
-    body.classList.remove('footer-expanded');
-    footerMaximized.classList.add('footer-hidden');
+    footer.classList.remove("footer-expanded");
+    body.classList.remove("footer-expanded");
+    footerMaximized.classList.add("footer-hidden");
     footerExpanded = false;
-    
   }
 }
 
@@ -120,12 +119,12 @@ window.footerScrollAPI = {
   collapse: () => toggleFooterExpansion(false),
   toggle: () => toggleFooterExpansion(!footerExpanded),
   isExpanded: () => footerExpanded,
-  cleanup
+  cleanup,
 };
 
 // System automatisch initialisieren
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
     setTimeout(initializeFooterScrollHandler, 500); // Nach Footer-Load warten
   });
 } else {
@@ -133,10 +132,6 @@ if (document.readyState === 'loading') {
 }
 
 // Cleanup bei Page Unload
-window.addEventListener('beforeunload', cleanup);
+window.addEventListener("beforeunload", cleanup);
 
-export { 
-  initializeFooterScrollHandler, 
-  toggleFooterExpansion, 
-  cleanup 
-};
+export { cleanup, initializeFooterScrollHandler, toggleFooterExpansion };

@@ -1,15 +1,15 @@
 // ===== Shared Utilities Import =====
 import {
-  createLogger,
-  getElementById,
-  TimerManager,
-  EVENTS,
-  triggerAnimationScan,
   animateElementsIn,
-  resetElementsIn,
-  waitForAnimationEngine,
-  ensureFallbackAnimationEngine,
+  createLogger,
   createTriggerOnceObserver,
+  ensureFallbackAnimationEngine,
+  EVENTS,
+  getElementById,
+  resetElementsIn,
+  TimerManager,
+  triggerAnimationScan,
+  waitForAnimationEngine,
 } from "../../content/webentwicklung/shared-utilities.js";
 
 const log = createLogger("hero-manager");

@@ -1,9 +1,9 @@
 /**
  * Shared Utilities - Zentrale, oft verwendete Funktionen
- * 
+ *
  * Diese Datei enthält die am häufigsten duplizierten Utility-Funktionen
  * um Code-Duplikation zu reduzieren ohne ein ganzes utils-Verzeichnis zu haben.
- * 
+ *
  * @author Portfolio System
  * @version 1.0.0
  * @created 2025-10-02
@@ -242,7 +242,10 @@ export class EventListenerManager {
     }
 
     if (!target || typeof target.addEventListener !== "function") {
-      console.warn(`${this.name}: Ungültiges Event Target für ${event}`, target);
+      console.warn(
+        `${this.name}: Ungültiges Event Target für ${event}`,
+        target
+      );
       return () => {};
     }
 
@@ -340,10 +343,13 @@ export function onVisibilityChange(callback) {
 }
 
 // ===== Intersection Observer Utilities =====
-export function createLazyLoadObserver(callback, options = {
-  threshold: 0.15,
-  rootMargin: "120px 0px",
-}) {
+export function createLazyLoadObserver(
+  callback,
+  options = {
+    threshold: 0.15,
+    rootMargin: "120px 0px",
+  }
+) {
   if (!window.IntersectionObserver) {
     console.warn("IntersectionObserver nicht verfügbar - Fallback aktiv");
     return {
@@ -449,14 +455,20 @@ export function resetElementsIn(container) {
     window.enhancedAnimationEngine.resetElementsIn(container);
   } else {
     // Fallback
-    const elements = container.querySelectorAll("[data-animation], [data-animate]");
+    const elements = container.querySelectorAll(
+      "[data-animation], [data-animate]"
+    );
     elements.forEach((el) => {
       el.classList.remove("animate-in", "is-visible");
     });
   }
 }
 
-export function waitForAnimationEngine(callback, maxAttempts = 50, delay = 100) {
+export function waitForAnimationEngine(
+  callback,
+  maxAttempts = 50,
+  delay = 100
+) {
   let attempts = 0;
   const timer = new TimerManager();
 
@@ -480,7 +492,7 @@ export function waitForAnimationEngine(callback, maxAttempts = 50, delay = 100) 
 
 export function createFallbackAnimationEngine() {
   const timer = new TimerManager();
-  
+
   return {
     scan() {
       return true;
@@ -492,7 +504,9 @@ export function createFallbackAnimationEngine() {
 
     resetElementsIn(container) {
       if (!container) return;
-      const elements = container.querySelectorAll("[data-animation], [data-animate]");
+      const elements = container.querySelectorAll(
+        "[data-animation], [data-animate]"
+      );
       elements.forEach((el) => {
         el.classList.remove("animate-in", "is-visible");
       });
@@ -500,7 +514,9 @@ export function createFallbackAnimationEngine() {
 
     animateElementsIn(container) {
       if (!container) return;
-      const elements = container.querySelectorAll("[data-animation], [data-animate]");
+      const elements = container.querySelectorAll(
+        "[data-animation], [data-animate]"
+      );
       elements.forEach((el, index) => {
         timer.setTimeout(
           () => el.classList.add("animate-in", "is-visible"),
@@ -566,7 +582,11 @@ export function onScroll(callback, target = window, throttleMs = 16) {
   return addListener(target, "scroll", throttledHandler, { passive: true });
 }
 
-export function setupPointerEvents(element, { onStart, onMove, onEnd }, options = {}) {
+export function setupPointerEvents(
+  element,
+  { onStart, onMove, onEnd },
+  options = {}
+) {
   const listeners = new Set();
 
   const handlePointerDown = (e) => {
@@ -607,7 +627,7 @@ export function setupPointerEvents(element, { onStart, onMove, onEnd }, options 
     })
   );
 
-  // Touch Events  
+  // Touch Events
   listeners.add(
     addListener(element, "touchstart", handlePointerDown, {
       passive: false,
