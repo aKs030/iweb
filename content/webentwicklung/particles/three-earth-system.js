@@ -39,11 +39,6 @@ const log = createLogger("threeEarthSystem");
 
 // Timer Manager für Three.js Earth System
 const earthTimers = new TimerManager();
-// The following code block is misplaced and causes syntax errors.
-// It should be part of the addListener function implementation in shared-utilities.js,
-// not at the top level of this module. Remove it here to fix the parsing error.
-
-// (Removed duplicate definitions of onResize, onScroll, and setupPointerEvents; use the imported versions from shared-utilities.js)
 
 // ===== Globale Variablen =====
 let scene, camera, renderer, earthMesh, composer;
@@ -162,10 +157,7 @@ const ThreeEarthManager = (() => {
     // Erweiterte Three.js Memory Cleanup
     if (scene) {
       // Tiefe Bereinigung aller Scene-Objekte
-      const objectsToDispose = [];
       scene.traverse((child) => {
-        objectsToDispose.push(child);
-
         // Geometry disposal
         if (child.geometry) {
           child.geometry.dispose();
@@ -215,6 +207,12 @@ const ThreeEarthManager = (() => {
       sectionObserver = null;
     }
 
+    // Animation Frame cleanup
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+
     // Timer cleanup
     earthTimers.clearAll();
 
@@ -225,14 +223,6 @@ const ThreeEarthManager = (() => {
     earthMesh = null;
     composer = null;
     currentSection = "hero";
-    if (sectionObserver) {
-      sectionObserver.disconnect();
-      sectionObserver = null;
-    }
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-    }
 
     // System aus shared state entfernen
     unregisterParticleSystem("three-earth");

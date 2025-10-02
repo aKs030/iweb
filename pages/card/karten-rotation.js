@@ -6,16 +6,8 @@ import {
   on,
   shuffle as shuffleArray,
   TimerManager,
+  triggerAnimationScan,
 } from "../../content/webentwicklung/shared-utilities.js";
-
-// ===== Module-specific Utilities =====
-
-// Animation Utils
-function triggerAnimationScan() {
-  if (window.enhancedAnimationEngine?.scan) {
-    window.enhancedAnimationEngine.scan();
-  }
-}
 
 (() => {
   "use strict";
