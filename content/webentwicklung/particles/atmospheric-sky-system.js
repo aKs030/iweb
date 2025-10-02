@@ -1,37 +1,37 @@
 // Atmosphärisches Himmelssystem
-import { getElementById, throttle } from '../utils/common-utils.js';
-import { createLogger } from '../utils/logger.js';
+import { getElementById, throttle } from "../utils/common-utils.js";
+import { createLogger } from "../utils/logger.js";
 
-const log = createLogger('atmosphericSky');
+const log = createLogger("atmosphericSky");
 const CONFIG = {
   STARS: {
     LOW: { small: 40, medium: 25, large: 10 },
     NORMAL: { small: 80, medium: 50, large: 20 },
-    HIGH: { small: 120, medium: 75, large: 30 }
+    HIGH: { small: 120, medium: 75, large: 30 },
   },
   SHOOTING_STARS: {
     MIN_DELAY: 8000,
     MAX_DELAY: 15000,
-    DURATION: 2000
+    DURATION: 2000,
   },
   PERFORMANCE: {
     THROTTLE_MS: 16,
-    SECTION_TRANSITION_MS: 800
-  }
+    SECTION_TRANSITION_MS: 800,
+  },
 };
 
 const state = {
   isInitialized: false,
-  currentSection: 'hero',
+  currentSection: "hero",
   isScrollListenerActive: false,
   cleanupFunctions: [],
   timeouts: {
     shootingStar: null,
-    active: []
+    active: [],
   },
   sectionObserver: null,
   animationFrameId: null,
-  parallaxHandler: null
+  parallaxHandler: null,
 };
 
 class AtmosphericSkyManager {
@@ -44,104 +44,104 @@ class AtmosphericSkyManager {
 
   async init() {
     if (state.isInitialized) {
-      log.debug('System already initialized');
+      log.debug("System already initialized");
       return this.cleanup.bind(this);
     }
 
-    const background = getElementById('atmosphericBackground');
+    const background = getElementById("atmosphericBackground");
     if (!background) {
-      log.warn('Background container not found');
+      log.warn("Background container not found");
       return () => {};
     }
 
     try {
-      log.info('Initializing atmospheric sky system');
-      
+      log.info("Initializing atmospheric sky system");
+
       this.createHTMLStructure(background);
-      
-      const starsContainer = background.querySelector('.stars-container');
-      
+
+      const starsContainer = background.querySelector(".stars-container");
+
       if (starsContainer) {
         this.createStarSystem(starsContainer, background);
         this.initShootingStars(starsContainer);
       }
-      
+
       this.setupParallax(background);
       this.setupSectionDetection(background);
-      
+
       state.isInitialized = true;
-      log.info('System initialized successfully');
-      
+      log.info("System initialized successfully");
+
       return this.cleanup.bind(this);
     } catch (error) {
-      log.error('Initialization failed:', error);
+      log.error("Initialization failed:", error);
       this.cleanup();
       return () => {};
     }
   }
 
   cleanup() {
-    log.info('Starting cleanup');
-    
-    state.cleanupFunctions.forEach(fn => {
+    log.info("Starting cleanup");
+
+    state.cleanupFunctions.forEach((fn) => {
       try {
         fn();
       } catch (error) {
-        log.error('Cleanup function error:', error);
+        log.error("Cleanup function error:", error);
       }
     });
-    
+
     if (state.animationFrameId) {
       cancelAnimationFrame(state.animationFrameId);
       state.animationFrameId = null;
     }
-    
+
     if (state.timeouts.shootingStar) {
       clearTimeout(state.timeouts.shootingStar);
     }
-    state.timeouts.active.forEach(timeout => clearTimeout(timeout));
-    
+    state.timeouts.active.forEach((timeout) => clearTimeout(timeout));
+
     if (state.isScrollListenerActive && state.parallaxHandler) {
-      window.removeEventListener('scroll', state.parallaxHandler);
+      window.removeEventListener("scroll", state.parallaxHandler);
       state.isScrollListenerActive = false;
     }
-    
+
     if (state.sectionObserver) {
       state.sectionObserver.disconnect();
       state.sectionObserver = null;
     }
-    
+
     this.resetState();
-    log.info('Cleanup completed');
+    log.info("Cleanup completed");
   }
 
   resetState() {
     state.cleanupFunctions = [];
     state.timeouts = { shootingStar: null, active: [] };
     state.isInitialized = false;
-    state.currentSection = 'hero';
+    state.currentSection = "hero";
   }
 
   createHTMLStructure(background) {
-    if (!background.querySelector('.atmosphere')) {
-      const atmosphere = document.createElement('div');
-      atmosphere.className = 'atmosphere';
+    if (!background.querySelector(".atmosphere")) {
+      const atmosphere = document.createElement("div");
+      atmosphere.className = "atmosphere";
       atmosphere.innerHTML = `
         <div class="atmospheric-glow"></div>
         <div class="aurora"></div>
       `;
       background.appendChild(atmosphere);
     }
-    
-    if (!background.querySelector('.stars-container')) {
-      const starsContainer = document.createElement('div');
-      starsContainer.className = 'stars-container';
+
+    if (!background.querySelector(".stars-container")) {
+      const starsContainer = document.createElement("div");
+      starsContainer.className = "stars-container";
       background.appendChild(starsContainer);
     }
-    
-    if (!background.querySelector('.moon')) {
-      const moon = document.createElement('div');
-      moon.className = 'moon';
+
+    if (!background.querySelector(".moon")) {
+      const moon = document.createElement("div");
+      moon.className = "moon";
       moon.innerHTML = `
         <div class="moon-surface"></div>
         <div class="moon-shadow"></div>
@@ -151,40 +151,54 @@ class AtmosphericSkyManager {
   }
 
   createStarSystem(container, background) {
-    const density = background?.getAttribute('data-stars-density') || 'normal';
-    const starCounts = CONFIG.STARS[density.toUpperCase()] || CONFIG.STARS.NORMAL;
-    
+    const density = background?.getAttribute("data-stars-density") || "normal";
+    const starCounts =
+      CONFIG.STARS[density.toUpperCase()] || CONFIG.STARS.NORMAL;
+
     const starTypes = [
-      { className: 'star-small', count: starCounts.small, colors: ['', 'star-blue', 'star-red'] },
-      { className: 'star-medium', count: starCounts.medium, colors: ['', 'star-yellow', 'star-blue'] },
-      { className: 'star-large', count: starCounts.large, colors: ['', 'star-yellow', 'star-red'] }
+      {
+        className: "star-small",
+        count: starCounts.small,
+        colors: ["", "star-blue", "star-red"],
+      },
+      {
+        className: "star-medium",
+        count: starCounts.medium,
+        colors: ["", "star-yellow", "star-blue"],
+      },
+      {
+        className: "star-large",
+        count: starCounts.large,
+        colors: ["", "star-yellow", "star-red"],
+      },
     ];
-    
+
     const fragment = document.createDocumentFragment();
     let totalStars = 0;
-    
-    starTypes.forEach(type => {
+
+    starTypes.forEach((type) => {
       for (let i = 0; i < type.count; i++) {
         const star = this.createStar(type);
         fragment.appendChild(star);
         totalStars++;
       }
     });
-    
+
     container.appendChild(fragment);
     log.debug(`Created ${totalStars} stars with ${density} density`);
   }
 
   createStar(type) {
-    const star = document.createElement('div');
+    const star = document.createElement("div");
     star.className = `star ${type.className}`;
-    
+
     // Farbe hinzufügen (30% Chance)
     if (Math.random() < 0.3 && type.colors.length > 1) {
-      const colorClass = type.colors[Math.floor(Math.random() * type.colors.length)];
+      const colorClass =
+        type.colors[Math.floor(Math.random() * type.colors.length)];
       if (colorClass) star.classList.add(colorClass);
     }
-    
+
     // Position berechnen (Milchstraßen-Band oder gleichmäßig)
     let x, y;
     if (Math.random() < 0.4) {
@@ -194,49 +208,50 @@ class AtmosphericSkyManager {
       x = Math.random() * 100;
       y = Math.random() * 100;
     }
-    
+
     star.style.left = `${x}%`;
     star.style.top = `${y}%`;
     star.style.animationDelay = `${Math.random() * 4}s`;
-    
+
     return star;
   }
 
   initShootingStars(container) {
     const addShootingStar = () => {
-      const shootingStar = document.createElement('div');
-      shootingStar.className = 'shooting-star';
-      
+      const shootingStar = document.createElement("div");
+      shootingStar.className = "shooting-star";
+
       shootingStar.style.left = `${Math.random() * 50}%`;
       shootingStar.style.top = `${Math.random() * 50}%`;
-      shootingStar.style.animation = 'shooting 2s linear forwards';
-      
+      shootingStar.style.animation = "shooting 2s linear forwards";
+
       container.appendChild(shootingStar);
-      
+
       const timeout = setTimeout(() => {
         shootingStar.remove();
       }, CONFIG.SHOOTING_STARS.DURATION);
-      
+
       state.timeouts.active.push(timeout);
     };
-    
+
     const scheduleNext = () => {
-      const delay = Math.random() * 
-        (CONFIG.SHOOTING_STARS.MAX_DELAY - CONFIG.SHOOTING_STARS.MIN_DELAY) + 
+      const delay =
+        Math.random() *
+          (CONFIG.SHOOTING_STARS.MAX_DELAY - CONFIG.SHOOTING_STARS.MIN_DELAY) +
         CONFIG.SHOOTING_STARS.MIN_DELAY;
-      
+
       state.timeouts.shootingStar = setTimeout(() => {
         addShootingStar();
         scheduleNext();
       }, delay);
     };
-    
+
     // Erste Sternschnuppe nach kurzer Verzögerung
     state.timeouts.shootingStar = setTimeout(() => {
       addShootingStar();
       scheduleNext();
     }, 5000);
-    
+
     state.cleanupFunctions.push(() => {
       if (state.timeouts.shootingStar) {
         clearTimeout(state.timeouts.shootingStar);
@@ -246,20 +261,20 @@ class AtmosphericSkyManager {
   }
 
   setupSectionDetection(background) {
-    const sections = document.querySelectorAll('section[id]');
+    const sections = document.querySelectorAll("section[id]");
     if (!sections.length) {
-      log.warn('No sections found');
+      log.warn("No sections found");
       return;
     }
-    
+
     const options = {
       root: null,
-      rootMargin: '-20% 0px -20% 0px',
-      threshold: 0.3
+      rootMargin: "-20% 0px -20% 0px",
+      threshold: 0.3,
     };
-    
+
     state.sectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const newSection = entry.target.id;
           if (newSection !== state.currentSection) {
@@ -269,9 +284,9 @@ class AtmosphericSkyManager {
         }
       });
     }, options);
-    
-    sections.forEach(section => state.sectionObserver.observe(section));
-    
+
+    sections.forEach((section) => state.sectionObserver.observe(section));
+
     setTimeout(() => {
       const initial = sections[0];
       if (initial) {
@@ -279,7 +294,7 @@ class AtmosphericSkyManager {
         this.updateAtmosphere(background, state.currentSection);
       }
     }, 100);
-    
+
     state.cleanupFunctions.push(() => {
       if (state.sectionObserver) {
         state.sectionObserver.disconnect();
@@ -291,67 +306,92 @@ class AtmosphericSkyManager {
   updateAtmosphere(background, section) {
     const configs = {
       hero: { starOpacity: 1, atmosphereIntensity: 0.8, moonVisibility: 0.3 },
-      features: { starOpacity: 0.7, atmosphereIntensity: 0.9, moonVisibility: 0.6 },
-      about: { starOpacity: 0.4, atmosphereIntensity: 1, moonVisibility: 1 }
+      features: {
+        starOpacity: 0.7,
+        atmosphereIntensity: 0.9,
+        moonVisibility: 0.6,
+      },
+      about: { starOpacity: 0.4, atmosphereIntensity: 1, moonVisibility: 1 },
     };
-    
+
     const config = configs[section] || configs.hero;
-    
+
     Object.entries(config).forEach(([key, value]) => {
-      const cssVar = key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
+      const cssVar = key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
       background.style.setProperty(`--${cssVar}`, value);
     });
-    
-    background.setAttribute('data-section', section);
-    background.setAttribute('data-transitioning', 'true');
-    
+
+    background.setAttribute("data-section", section);
+    background.setAttribute("data-transitioning", "true");
+
     setTimeout(() => {
-      if (background.getAttribute('data-section') === section) {
-        background.setAttribute('data-transitioning', 'false');
+      if (background.getAttribute("data-section") === section) {
+        background.setAttribute("data-transitioning", "false");
       }
     }, CONFIG.PERFORMANCE.SECTION_TRANSITION_MS);
-    
+
     this.updateMoon(background, section);
   }
 
   updateMoon(background, section) {
-    const moon = background.querySelector('.moon');
+    const moon = background.querySelector(".moon");
     if (!moon) return;
-    
+
     const configs = {
-      hero: { size: 3, position: { top: '15%', left: '50%' }, transform: 'translateX(-50%) scale(0.3)', isBasicStar: true },
-      features: { size: 20, position: { top: '12%', left: '65%' }, transform: 'translateX(-50%) scale(0.6)', isBasicStar: false },
-      about: { size: 80, position: { top: '10%', left: '50%' }, transform: 'translateX(-50%) scale(1)', isBasicStar: false }
+      hero: {
+        size: 3,
+        position: { top: "15%", left: "50%" },
+        transform: "translateX(-50%) scale(0.3)",
+        isBasicStar: true,
+      },
+      features: {
+        size: 20,
+        position: { top: "12%", left: "65%" },
+        transform: "translateX(-50%) scale(0.6)",
+        isBasicStar: false,
+      },
+      about: {
+        size: 80,
+        position: { top: "10%", left: "50%" },
+        transform: "translateX(-50%) scale(1)",
+        isBasicStar: false,
+      },
     };
-    
+
     const config = configs[section] || configs.hero;
-    
+
     Object.assign(moon.style, {
       ...config.position,
       transform: config.transform,
       width: `${config.size}px`,
-      height: `${config.size}px`
+      height: `${config.size}px`,
     });
-    
+
     if (config.isBasicStar) {
-      moon.style.background = 'white';
-      moon.style.boxShadow = '0 0 5px rgba(255, 255, 255, 0.8)';
-      ['surface', 'shadow', 'before', 'after'].forEach(prop => {
-        moon.style.setProperty(`--${prop}-opacity`, '0');
+      moon.style.background = "white";
+      moon.style.boxShadow = "0 0 5px rgba(255, 255, 255, 0.8)";
+      ["surface", "shadow", "before", "after"].forEach((prop) => {
+        moon.style.setProperty(`--${prop}-opacity`, "0");
       });
     } else {
       const progress = (config.size - 3) / 97;
       const hue = 45 + progress * 10;
       const sat = progress * 40;
       const light = 85 - progress * 10;
-      
+
       moon.style.background = `radial-gradient(circle at 30% 30%, 
         hsl(${hue}, ${sat}%, ${light}%), 
         hsl(${hue - 5}, ${sat - 10}%, ${light - 15}%))`;
       moon.style.boxShadow = `0 0 ${15 + progress * 50}px hsla(${hue}, ${sat}%, ${light}%, ${0.4 + progress * 0.4})`;
-      
-      moon.style.setProperty('--surface-opacity', Math.min(1, Math.max(0, (progress - 0.25) * 4)));
-      moon.style.setProperty('--shadow-opacity', Math.min(0.8, Math.max(0, (progress - 0.3) * 3)));
+
+      moon.style.setProperty(
+        "--surface-opacity",
+        Math.min(1, Math.max(0, (progress - 0.25) * 4))
+      );
+      moon.style.setProperty(
+        "--shadow-opacity",
+        Math.min(0.8, Math.max(0, (progress - 0.3) * 3))
+      );
     }
   }
 
@@ -359,29 +399,40 @@ class AtmosphericSkyManager {
     state.parallaxHandler = throttle(() => {
       try {
         const scrollY = window.pageYOffset;
-        const progress = Math.min(1, Math.max(0, 
-          scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
-        ));
-        
-        document.documentElement.style.setProperty('--global-scroll-progress', progress);
-        background.style.setProperty('--scroll-progress', progress);
-        
-        background.querySelectorAll('.star').forEach((star, i) => {
+        const progress = Math.min(
+          1,
+          Math.max(
+            0,
+            scrollY /
+              Math.max(
+                1,
+                document.documentElement.scrollHeight - window.innerHeight
+              )
+          )
+        );
+
+        document.documentElement.style.setProperty(
+          "--global-scroll-progress",
+          progress
+        );
+        background.style.setProperty("--scroll-progress", progress);
+
+        background.querySelectorAll(".star").forEach((star, i) => {
           const speed = 0.1 + (i % 5) * 0.05;
           star.style.transform = `translateY(${scrollY * speed * 0.05}px)`;
         });
       } catch (error) {
-        log.error('Parallax error:', error);
+        log.error("Parallax error:", error);
       }
     }, CONFIG.PERFORMANCE.THROTTLE_MS);
-    
-    window.addEventListener('scroll', state.parallaxHandler, { passive: true });
+
+    window.addEventListener("scroll", state.parallaxHandler, { passive: true });
     state.isScrollListenerActive = true;
     state.parallaxHandler();
-    
+
     state.cleanupFunctions.push(() => {
       if (state.parallaxHandler) {
-        window.removeEventListener('scroll', state.parallaxHandler);
+        window.removeEventListener("scroll", state.parallaxHandler);
         state.isScrollListenerActive = false;
       }
     });
