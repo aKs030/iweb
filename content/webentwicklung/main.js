@@ -2,6 +2,8 @@ import { getElementById } from "./utils/common-utils.js";
 import { EVENTS, fire } from "./utils/events.js";
 import { createLogger } from "./utils/logger.js";
 import { schedulePersistentStorageRequest } from "./utils/persistent-storage.js";
+import { createLazyLoadObserver } from "./utils/intersection-utils.js";
+import { scheduleAnimationScan } from "./utils/animation-utils.js";
 import "./utils/section-tracker.js"; // Section Detection für snapSectionChange Events
 
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
@@ -53,37 +55,35 @@ if ("serviceWorker" in navigator) {
       type: "about-section",
     },
   ];
-  if (!("IntersectionObserver" in window)) {
-    // Fallback: direkt laden
+  
+  // Lazy loading mit shared utilities
+  const lazyLoader = createLazyLoadObserver((element) => {
+    const match = MAP.find((m) => m.id === element.id);
+    if (match && !match.loaded) {
+      match.loaded = true;
+      import(match.module).catch(() => {});
+    }
+  });
+  
+  if (!lazyLoader.observer) {
+    // Fallback: direkt laden wenn IntersectionObserver nicht verfügbar
     MAP.forEach((entry) => import(entry.module).catch(() => {}));
     return;
   }
-  const options = { root: null, threshold: 0.15, rootMargin: "120px 0px" };
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        const match = MAP.find((m) => m.id === e.target.id);
-        if (match && !match.loaded) {
-          match.loaded = true;
-          import(match.module).catch(() => {});
-          io.unobserve(e.target);
-        }
-      }
-    }
-  }, options);
+  
   // Delay Setup bis DOMContentLoaded, Sections existieren initial (hero eager) andere werden dynamisch geladen.
   document.addEventListener("section:loaded", (ev) => {
     const id = ev.detail?.id;
     const candidate = MAP.find((m) => m.id === id);
     if (candidate && !candidate.loaded) {
       const el = getElementById(id);
-      if (el) io.observe(el);
+      if (el) lazyLoader.observe(el);
     }
   });
   // Falls Features/About bereits im DOM (eager oder schnell geladen)
   ["features", "about"].forEach((id) => {
     const el = getElementById(id);
-    if (el) io.observe(el);
+    if (el) lazyLoader.observe(el);
   });
 })();
 // ===== Section Loader Module =====
@@ -233,16 +233,10 @@ const SectionLoader = (() => {
     });
 
     if (lazy.length) {
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const s = entry.target;
-            loadInto(s);
-            io.unobserve(s);
-          }
-        });
+      const sectionLoader = createLazyLoadObserver((section) => {
+        loadInto(section);
       });
-      lazy.forEach((s) => io.observe(s));
+      lazy.forEach((s) => sectionLoader.observe(s));
     }
   }
 
@@ -467,9 +461,7 @@ function loadMenuAssets() {
       // Re-scan nach Template-Loading für Enhanced Animation Engine
       document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
         // Animation Engine rescan für neue Templates
-        if (window.enhancedAnimationEngine?.scan) {
-          setTimeout(() => window.enhancedAnimationEngine.scan(), 120);
-        }
+        scheduleAnimationScan(120, 'template-loaded');
       });
 
       // Menü-Assets laden

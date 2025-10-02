@@ -1,9 +1,13 @@
-import { triggerAnimationScan } from '../../content/webentwicklung/utils/animation-utils.js';
-import { getElementById } from '../../content/webentwicklung/utils/common-utils.js';
+import { triggerAnimationScan, waitForAnimationEngine, resetElementsIn, animateElementsIn, ensureFallbackAnimationEngine } from '../../content/webentwicklung/utils/animation-utils.js';
+import { getElementById, TimerManager } from '../../content/webentwicklung/utils/common-utils.js';
 import { EVENTS } from '../../content/webentwicklung/utils/events.js';
 import { createLogger } from '../../content/webentwicklung/utils/logger.js';
+import { createTriggerOnceObserver } from '../../content/webentwicklung/utils/intersection-utils.js';
 
 const log = createLogger('hero-manager');
+
+// Timer Manager für Hero-spezifische Timeouts
+const heroTimers = new TimerManager();
 
 // ===== Hero-spezifische Animation Engine Erweiterungen =====
 
@@ -73,26 +77,19 @@ export function extendAnimationEngineForHero(animationEngine) {
  */
 function initHeroAnimations() {
   // Warten bis die globale Animation Engine verfügbar ist
-  const waitForEngine = () => {
-    if (window.enhancedAnimationEngine) {
-      extendAnimationEngineForHero(window.enhancedAnimationEngine);
+  waitForAnimationEngine(() => {
+    extendAnimationEngineForHero(window.enhancedAnimationEngine);
 
-      // Hero-spezifische Konfiguration anwenden
-      window.enhancedAnimationEngine.setRepeatOnScroll?.(
-        HERO_ANIMATION_CONFIG.repeatOnScroll
-      );
+    // Hero-spezifische Konfiguration anwenden
+    window.enhancedAnimationEngine.setRepeatOnScroll?.(
+      HERO_ANIMATION_CONFIG.repeatOnScroll
+    );
 
-      // Initial scan für Hero-Elemente
-      triggerAnimationScan('hero-init');
+    // Initial scan für Hero-Elemente
+    triggerAnimationScan('hero-init');
 
-      log.debug('Hero-spezifische Animationen initialisiert');
-    } else {
-      // Retry nach kurzer Verzögerung
-      setTimeout(waitForEngine, 100);
-    }
-  };
-
-  waitForEngine();
+    log.debug('Hero-spezifische Animationen initialisiert');
+  });
 }
 
 // ===== Hero Management Module =====
@@ -124,7 +121,7 @@ const HeroManager = (() => {
     const heroEl =
       getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
-      setTimeout(triggerLoad, 2500);
+      heroTimers.setTimeout(triggerLoad, 2500);
       return;
     }
 
@@ -134,18 +131,10 @@ const HeroManager = (() => {
       return;
     }
 
-    const obs = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) {
-          obs.disconnect();
-          triggerLoad();
-          break;
-        }
-      }
-    }, {});
+    const obs = createTriggerOnceObserver(triggerLoad);
     obs.observe(heroEl);
 
-    setTimeout(triggerLoad, 6000);
+    heroTimers.setTimeout(triggerLoad, 6000);
   }
 
   const ensureHeroData = async () =>
@@ -158,7 +147,7 @@ const HeroManager = (() => {
     const delays = [0, 50, 120, 240, 480];
     let el = null;
     for (const d of delays) {
-      if (d) await new Promise((r) => setTimeout(r, d));
+      if (d) await heroTimers.sleep(d);
       el = getElementById('greetingText');
       if (el) break;
     }
@@ -172,7 +161,7 @@ const HeroManager = (() => {
     el.dataset.last = next;
     if (animated) {
       el.classList.add('fade');
-      setTimeout(() => {
+      heroTimers.setTimeout(() => {
         el.textContent = next;
         el.classList.remove('fade');
       }, 360);
@@ -190,43 +179,14 @@ function initHeroAnimationBootstrap() {
     const hero = getElementById('hero');
     if (!hero) return;
 
-    // Prüfen ob echte Animation Engine bereits existiert
-    if (!window.enhancedAnimationEngine) {
-      // Fallback: Nur setzen wenn noch nicht vorhanden
-      // Diese wird später von der echten Engine ersetzt, ohne sie zu überschreiben
-      const fallbackEngine = {
-        scan() {
-          return true;
-        },
-        setRepeatOnScroll() {
-          return true;
-        },
-        resetElementsIn(container) {
-          if (!container) return;
-          const elements = container.querySelectorAll('[data-animation]');
-          elements.forEach((el) =>
-            el.classList.remove('animate-in', 'is-visible')
-          );
-        },
-        animateElementsIn(container) {
-          if (!container) return;
-          const elements = container.querySelectorAll('[data-animation]');
-          elements.forEach((el, index) => {
-            setTimeout(
-              () => el.classList.add('animate-in', 'is-visible'),
-              index * 100
-            );
-          });
-        }
-      };
-      window.enhancedAnimationEngine = fallbackEngine;
-    }
+    // Fallback Engine falls keine echte verfügbar
+    ensureFallbackAnimationEngine();
 
     // Animation Engine konfigurieren (sowohl Fallback als auch echte Engine)
     window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
     const scan = () => window.enhancedAnimationEngine.scan?.();
     scan();
-    setTimeout(scan, 1000);
+    heroTimers.setTimeout(scan, 1000);
     hero
       .querySelectorAll(
         '.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)'
@@ -243,15 +203,13 @@ function initHeroAnimationBootstrap() {
         );
         for (const s of allSections) {
           if (s !== active) {
-            window.enhancedAnimationEngine?.resetElementsIn?.(s);
+            resetElementsIn(s);
           }
         }
       } catch {
         /* noop */
       }
-      window.enhancedAnimationEngine?.animateElementsIn?.(active, {
-        force: true
-      });
+      animateElementsIn(active, { force: true });
 
       // Wenn zurück zum Hero gescrollt wurde, CRT-Buttons wieder sichtbar machen
       if (id === 'hero') {
@@ -336,7 +294,7 @@ export function initHeroFeatureBundle() {
 
   // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
-  setTimeout(initHeroAnimationBootstrap, 420);
+  heroTimers.setTimeout(initHeroAnimationBootstrap, 420);
 
   // Initialisiere Hero-spezifische Animationen
   initHeroAnimations();

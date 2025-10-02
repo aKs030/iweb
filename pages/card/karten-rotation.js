@@ -71,11 +71,6 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     }
   }
 
-  // Enhanced Animation Engine Integration
-  function triggerAnimationEngineRescan() {
-    triggerAnimationScan('karten-rotation');
-  }
-
   // Snap Scroll Integration
   function handleSnapScrollEvent() {
     const section = getElementById(SECTION_ID);
@@ -121,7 +116,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     section.style.transform = 'none';
 
     // Triggere Animation Engine für bestehende Kinder-Elemente
-    triggerAnimationEngineRescan();
+    triggerAnimationScan('karten-rotation-mount');
 
     // Dispatch event nach setup
     section.dispatchEvent(
@@ -219,7 +214,7 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
     const section = getElementById(SECTION_ID);
     if (section && !section.dataset.currentTemplate && order.length) {
       mount(order[i], true);
-      triggerAnimationEngineRescan();
+      triggerAnimationScan('karten-rotation-clean');
     }
   }
 
@@ -297,10 +292,10 @@ import { EVENTS, fire, on } from '../../content/webentwicklung/utils/events.js';
 
   on(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
     mountInitialIfNeeded();
-    triggerAnimationEngineRescan();
+    triggerAnimationScan('karten-rotation-templates-loaded');
   });
 
-  on(EVENTS.TEMPLATE_MOUNTED, (_e) => {
+  on(EVENTS.TEMPLATE_MOUNTED, () => {
     // Template wurde gemounted - weitere Template-spezifische Aktionen hier
   });
 

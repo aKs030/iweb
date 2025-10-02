@@ -1,6 +1,6 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
 // Verwende zentrale shuffle-Implementierung (nutzt sichere Zufallsquelle wenn verfügbar)
-import { shuffle, getElementById } from '../utils/common-utils.js';
+import { shuffle, getElementById, TimerManager } from '../utils/common-utils.js';
 import { createLogger } from '../utils/logger.js';
 
 const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
@@ -37,7 +37,8 @@ class TypeWriter {
     this.containerEl = containerEl;
     this.onBeforeType = typeof onBeforeType === 'function' ? onBeforeType : null;
 
-    this._timer = null;
+    // Timer Manager für sauberes Cleanup
+    this.timerManager = new TimerManager();
     this._isDeleting = false;
     this._txt = '';
     this._queue = this.shuffle ? createShuffledIndices(this.quotes.length) : [...Array(this.quotes.length).keys()];
@@ -51,7 +52,7 @@ class TypeWriter {
   }
 
   destroy() {
-    this._clearTimer();
+    this.timerManager.clearAll();
     document.body.classList.remove('has-typingjs');
   }
 
@@ -87,8 +88,9 @@ class TypeWriter {
       : [...Array(this.quotes.length).keys()];
   }
 
-  _schedule(ms) { this._timer = setTimeout(() => this._tick(), ms); }
-  _clearTimer() { if (this._timer) { clearTimeout(this._timer); this._timer = null; } }
+  _schedule(ms) { 
+    this.timerManager.setTimeout(() => this._tick(), ms); 
+  }
 
   _renderText(text) {
     // smartBreaks: ", " → Komma behalten + <br>
@@ -139,7 +141,6 @@ class TypeWriter {
       if (delay === null) return;
     }
 
-    this._clearTimer();
     this._schedule(delay);
   }
 

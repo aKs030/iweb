@@ -1,9 +1,35 @@
+/**
+ * Atmospheric Sky System - CSS-basierte Himmel-Effekte
+ * 
+ * Erstellt atmosphärische Hintergrund-Effekte mit:
+ * - Statische Sterne in verschiedenen Größen
+ * - Animierte Sternschnuppen-Effekte
+ * - Parallax-Scrolling für Tiefenwirkung
+ * - Section-responsive Atmosphären-Übergänge
+ * 
+ * Nutzt shared-particle-system für Performance und Synchronisation.
+ * 
+ * @author Portfolio System  
+ * @version 2.0.0 (migriert auf shared system)
+ * @created 2025-10-02
+ */
+
 // Atmosphärisches Himmelssystem
-import { getElementById, throttle } from "../utils/common-utils.js";
+import { getElementById } from "../utils/common-utils.js";
 import { createLogger } from "../utils/logger.js";
+import {
+  sharedParallaxManager,
+  sharedSectionDetector,
+  sharedCleanupManager,
+  getSharedState,
+  registerParticleSystem,
+  unregisterParticleSystem,
+  addTimeout,
+  SHARED_CONFIG
+} from "./shared-particle-system.js";
 
 const log = createLogger("atmosphericSky");
-const CONFIG = {
+const LOCAL_CONFIG = {
   STARS: {
     LOW: { small: 40, medium: 25, large: 10 },
     NORMAL: { small: 80, medium: 50, large: 20 },
@@ -14,11 +40,9 @@ const CONFIG = {
     MAX_DELAY: 15000,
     DURATION: 2000,
   },
-  PERFORMANCE: {
-    THROTTLE_MS: 16,
-    SECTION_TRANSITION_MS: 800,
-  },
 };
+
+// Verwende SHARED_CONFIG für Performance-Settings
 
 const state = {
   isInitialized: false,
@@ -43,7 +67,8 @@ class AtmosphericSkyManager {
   }
 
   async init() {
-    if (state.isInitialized) {
+    const sharedState = getSharedState();
+    if (sharedState.isInitialized && sharedState.systems.has('atmospheric-sky')) {
       log.debug("System already initialized");
       return this.cleanup.bind(this);
     }
@@ -57,6 +82,9 @@ class AtmosphericSkyManager {
     try {
       log.info("Initializing atmospheric sky system");
 
+      // System registrieren
+      registerParticleSystem('atmospheric-sky', this);
+
       this.createHTMLStructure(background);
 
       const starsContainer = background.querySelector(".stars-container");
@@ -69,7 +97,6 @@ class AtmosphericSkyManager {
       this.setupParallax(background);
       this.setupSectionDetection(background);
 
-      state.isInitialized = true;
       log.info("System initialized successfully");
 
       return this.cleanup.bind(this);
@@ -83,6 +110,10 @@ class AtmosphericSkyManager {
   cleanup() {
     log.info("Starting cleanup");
 
+    // Shared cleanup ausführen
+    sharedCleanupManager.cleanupSystem('atmospheric-sky');
+
+    // Lokale cleanup-Funktionen ausführen
     state.cleanupFunctions.forEach((fn) => {
       try {
         fn();
@@ -101,15 +132,8 @@ class AtmosphericSkyManager {
     }
     state.timeouts.active.forEach((timeout) => clearTimeout(timeout));
 
-    if (state.isScrollListenerActive && state.parallaxHandler) {
-      window.removeEventListener("scroll", state.parallaxHandler);
-      state.isScrollListenerActive = false;
-    }
-
-    if (state.sectionObserver) {
-      state.sectionObserver.disconnect();
-      state.sectionObserver = null;
-    }
+    // System deregistrieren
+    unregisterParticleSystem('atmospheric-sky');
 
     this.resetState();
     log.info("Cleanup completed");
@@ -153,7 +177,7 @@ class AtmosphericSkyManager {
   createStarSystem(container, background) {
     const density = background?.getAttribute("data-stars-density") || "normal";
     const starCounts =
-      CONFIG.STARS[density.toUpperCase()] || CONFIG.STARS.NORMAL;
+      LOCAL_CONFIG.STARS[density.toUpperCase()] || LOCAL_CONFIG.STARS.NORMAL;
 
     const starTypes = [
       {
@@ -229,78 +253,56 @@ class AtmosphericSkyManager {
 
       const timeout = setTimeout(() => {
         shootingStar.remove();
-      }, CONFIG.SHOOTING_STARS.DURATION);
+      }, LOCAL_CONFIG.SHOOTING_STARS.DURATION);
 
-      state.timeouts.active.push(timeout);
+      addTimeout(timeout);
     };
 
     const scheduleNext = () => {
       const delay =
         Math.random() *
-          (CONFIG.SHOOTING_STARS.MAX_DELAY - CONFIG.SHOOTING_STARS.MIN_DELAY) +
-        CONFIG.SHOOTING_STARS.MIN_DELAY;
+          (LOCAL_CONFIG.SHOOTING_STARS.MAX_DELAY - LOCAL_CONFIG.SHOOTING_STARS.MIN_DELAY) +
+        LOCAL_CONFIG.SHOOTING_STARS.MIN_DELAY;
 
-      state.timeouts.shootingStar = setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         addShootingStar();
         scheduleNext();
       }, delay);
+      
+      addTimeout(timeoutId);
     };
 
     // Erste Sternschnuppe nach kurzer Verzögerung
-    state.timeouts.shootingStar = setTimeout(() => {
+    const initialTimeoutId = setTimeout(() => {
       addShootingStar();
       scheduleNext();
     }, 5000);
-
-    state.cleanupFunctions.push(() => {
-      if (state.timeouts.shootingStar) {
-        clearTimeout(state.timeouts.shootingStar);
-        state.timeouts.shootingStar = null;
-      }
-    });
+    
+    addTimeout(initialTimeoutId);
   }
 
   setupSectionDetection(background) {
-    const sections = document.querySelectorAll("section[id]");
-    if (!sections.length) {
-      log.warn("No sections found");
-      return;
-    }
-
-    const options = {
-      root: null,
-      rootMargin: "-20% 0px -20% 0px",
-      threshold: 0.3,
+    // Section detection callback registrieren
+    const sectionCallback = (sectionName) => {
+      this.updateAtmosphere(background, sectionName);
     };
 
-    state.sectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const newSection = entry.target.id;
-          if (newSection !== state.currentSection) {
-            state.currentSection = newSection;
-            this.updateAtmosphere(background, newSection);
-          }
-        }
-      });
-    }, options);
+    sharedSectionDetector.addCallback(sectionCallback, 'atmospheric-sky');
 
-    sections.forEach((section) => state.sectionObserver.observe(section));
-
+    // Initial section setup
     setTimeout(() => {
-      const initial = sections[0];
-      if (initial) {
-        state.currentSection = initial.id;
-        this.updateAtmosphere(background, state.currentSection);
+      const sections = document.querySelectorAll("section[id]");
+      if (sections.length > 0) {
+        const initial = sections[0];
+        this.updateAtmosphere(background, initial.id);
       }
     }, 100);
 
-    state.cleanupFunctions.push(() => {
-      if (state.sectionObserver) {
-        state.sectionObserver.disconnect();
-        state.sectionObserver = null;
-      }
-    });
+    sharedCleanupManager.addCleanupFunction(
+      'atmospheric-sky',
+      () => sharedSectionDetector.removeCallback(sectionCallback),
+      'section detection'
+    );
   }
 
   updateAtmosphere(background, section) {
@@ -328,7 +330,7 @@ class AtmosphericSkyManager {
       if (background.getAttribute("data-section") === section) {
         background.setAttribute("data-transitioning", "false");
       }
-    }, CONFIG.PERFORMANCE.SECTION_TRANSITION_MS);
+    }, SHARED_CONFIG.PERFORMANCE.SECTION_TRANSITION_MS);
 
     this.updateMoon(background, section);
   }
@@ -396,51 +398,36 @@ class AtmosphericSkyManager {
   }
 
   setupParallax(background) {
-    state.parallaxHandler = throttle(() => {
+    // Parallax-Handler zum shared system hinzufügen
+    const parallaxHandler = (progress, scrollY) => {
       try {
-        const scrollY = window.pageYOffset;
-        const progress = Math.min(
-          1,
-          Math.max(
-            0,
-            scrollY /
-              Math.max(
-                1,
-                document.documentElement.scrollHeight - window.innerHeight
-              )
-          )
-        );
-
-        document.documentElement.style.setProperty(
-          "--global-scroll-progress",
-          progress
-        );
         background.style.setProperty("--scroll-progress", progress);
 
         background.querySelectorAll(".star").forEach((star, i) => {
           const speed = 0.1 + (i % 5) * 0.05;
-          star.style.transform = `translateY(${scrollY * speed * 0.05}px)`;
+          star.style.transform = `translateY(${scrollY * speed * SHARED_CONFIG.SCROLL.PARALLAX_SPEED}px)`;
         });
       } catch (error) {
         log.error("Parallax error:", error);
       }
-    }, CONFIG.PERFORMANCE.THROTTLE_MS);
+    };
 
-    window.addEventListener("scroll", state.parallaxHandler, { passive: true });
-    state.isScrollListenerActive = true;
-    state.parallaxHandler();
+    sharedParallaxManager.addHandler(parallaxHandler, 'atmospheric-sky');
 
-    state.cleanupFunctions.push(() => {
-      if (state.parallaxHandler) {
-        window.removeEventListener("scroll", state.parallaxHandler);
-        state.isScrollListenerActive = false;
-      }
-    });
+    sharedCleanupManager.addCleanupFunction(
+      'atmospheric-sky',
+      () => sharedParallaxManager.removeHandler(parallaxHandler),
+      'parallax handler'
+    );
   }
 }
 
 const manager = new AtmosphericSkyManager();
 
+/**
+ * Initialisiert das Atmospheric Sky System mit CSS-basierten Stern-Effekten
+ * @returns {Promise<Function>} Cleanup-Funktion für das System
+ */
 export function initAtmosphericSky() {
   return manager.init();
 }

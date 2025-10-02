@@ -7,6 +7,10 @@
  * Konvention: lowercase mit Doppelpunkten für Namespacing (hero:loaded)
  */
 
+import { createLogger } from './logger.js';
+
+const log = createLogger('events');
+
 export const EVENTS = Object.freeze({
   HERO_LOADED: 'hero:loaded',
   HERO_TYPING_END: 'hero:typingEnd',
@@ -31,13 +35,13 @@ export const EVENTS = Object.freeze({
 export function fire(type, detail, target = document) {
   try {
     if (!target || typeof target.dispatchEvent !== 'function') {
-      console.warn('[events] fire(): target ist kein EventTarget', target);
+      log.warn('fire(): target ist kein EventTarget', target);
       return;
     }
     target.dispatchEvent(new CustomEvent(type, { detail }));
   } catch (e) {
     // Fail-Safe: kein Throw ins UI
-    console.warn('fire event error', type, e);
+    log.warn('fire event error', type, e);
   }
 }
 
@@ -63,7 +67,7 @@ export function on(type, handler, options, target = document) {
     opts = undefined;
   }
   if (!realTarget || typeof realTarget.addEventListener !== 'function') {
-    console.warn('[events] on(): target ist kein EventTarget', realTarget);
+    log.warn('on(): target ist kein EventTarget', realTarget);
     return () => {};
   }
   realTarget.addEventListener(type, handler, opts);

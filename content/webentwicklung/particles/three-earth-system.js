@@ -1,17 +1,42 @@
-// Three.js Earth System - Erweiterte Version mit Kamera-Effekten
-import { getElementById, throttle } from "../utils/common-utils.js";
+/**
+ * Three.js Earth System - 3D WebGL Erde mit Sternen
+ * 
+ * High-Quality 3D-Erdvisualisierung mit:
+ * - Realistische Erdtexturen (Day/Night/Bump/Normal Maps)
+ * - Prozedurales Sternfeld mit custom Texturen  
+ * - Scroll-basierte Kamera-Controls
+ * - Section-responsive Animationsübergänge
+ * - Performance-optimiertes Rendering
+ * 
+ * Verwendet shared-particle-system für Parallax-Synchronisation.
+ * 
+ * @author Portfolio System
+ * @version 2.0.0 (teilweise migriert auf shared system)  
+ * @created 2025-10-02
+ */
+
+// Three.js Earth System - High Quality Version
+import { getElementById, TimerManager, throttle } from "../utils/common-utils.js";
 import { createLogger } from "../utils/logger.js";
+import { setupPointerEvents, onScroll, onResize } from "../utils/event-management.js";
+import {
+  sharedParallaxManager,
+  sharedCleanupManager,
+  getSharedState,
+  registerParticleSystem,
+  unregisterParticleSystem
+} from "./shared-particle-system.js";
 
 const log = createLogger("threeEarthSystem");
 
+// Timer Manager für Three.js Earth System
+const earthTimers = new TimerManager();
+
 // ===== Globale Variablen =====
-let isInitialized = false;
-let cleanupFunctions = [];
-let scene, camera, renderer, earthMesh, cloudMesh, composer;
-let starField, nebulae; // Sterne-System
-let animationFrameId = null;
+let scene, camera, renderer, earthMesh, composer;
 let currentSection = "hero";
 let sectionObserver = null;
+let animationFrameId = null;
 
 // Kamera und Animation States
 let cameraTarget = { x: 0, y: 0, z: 5 };
@@ -20,17 +45,11 @@ let cameraRotation = { x: 0, y: 0 };
 let scrollProgress = 0;
 let isScrollBased = true;
 
-// Performance States
-let isLowPerformanceMode = false;
-let lodLevel = 1; // 1 = hoch, 2 = medium, 3 = niedrig
-let lastFrameTime = 0;
-let performanceWarningCount = 0; // Verhindert Spam-Warnings
-let lastPerformanceCheck = 0;
-
 // ===== Three.js Earth System Manager =====
 const ThreeEarthManager = (() => {
   const initThreeEarth = async () => {
-    if (isInitialized) {
+    const sharedState = getSharedState();
+    if (sharedState.isInitialized && sharedState.systems.has('three-earth')) {
       log.debug("Three.js Earth system already initialized");
       return cleanup;
     }
@@ -45,6 +64,9 @@ const ThreeEarthManager = (() => {
     try {
       log.info("Initializing Three.js Earth system");
 
+      // System registrieren
+      registerParticleSystem('three-earth', { type: 'three-earth' });
+
       // Loading State aktivieren
       showLoadingState(container);
 
@@ -53,9 +75,6 @@ const ThreeEarthManager = (() => {
       if (!THREE) {
         throw new Error("Three.js failed to load from all sources");
       }
-
-      // Performance-Detection
-      detectPerformanceCapabilities();
 
       // Scene Setup
       await setupScene(THREE, container);
@@ -84,7 +103,6 @@ const ThreeEarthManager = (() => {
       // Loading State verstecken
       hideLoadingState(container);
 
-      isInitialized = true;
       log.info("Three.js Earth system initialized successfully");
 
       return cleanup;
@@ -103,15 +121,8 @@ const ThreeEarthManager = (() => {
         if (camera) {
           camera = null;
         }
-        // Cleanup-Funktionen auch bei Fehlern ausführen
-        cleanupFunctions.forEach((fn) => {
-          try {
-            fn();
-          } catch (cleanupError) {
-            log.error("Error during emergency cleanup:", cleanupError);
-          }
-        });
-        cleanupFunctions = [];
+        // Shared cleanup ausführen
+        sharedCleanupManager.cleanupSystem('three-earth');
       } catch (emergencyError) {
         log.error("Emergency cleanup failed:", emergencyError);
       }
@@ -126,19 +137,14 @@ const ThreeEarthManager = (() => {
     log.info("Cleaning up Three.js Earth system");
 
     // Animation stoppen
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
+    const sharedState = getSharedState();
+    if (sharedState.animationFrameId) {
+      cancelAnimationFrame(sharedState.animationFrameId);
+      sharedState.animationFrameId = null;
     }
 
-    // Cleanup-Funktionen aufrufen mit Error Handling
-    cleanupFunctions.forEach((fn, index) => {
-      try {
-        fn();
-      } catch (error) {
-        log.error(`Error during cleanup function ${index}:`, error);
-      }
-    });
+    // Shared cleanup ausführen
+    sharedCleanupManager.cleanupSystem('three-earth');
 
     // Erweiterte Three.js Memory Cleanup
     if (scene) {
@@ -196,18 +202,27 @@ const ThreeEarthManager = (() => {
       sectionObserver = null;
     }
 
+    // Timer cleanup
+    earthTimers.clearAll();
+
     // Global references zurücksetzen
-    cleanupFunctions = [];
     scene = null;
     camera = null;
     renderer = null;
     earthMesh = null;
-    cloudMesh = null;
     composer = null;
-    starField = null;
-    nebulae = null;
-    isInitialized = false;
     currentSection = "hero";
+    if (sectionObserver) {
+      sectionObserver.disconnect();
+      sectionObserver = null;
+    }
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+
+    // System aus shared state entfernen
+    unregisterParticleSystem('three-earth');
 
     log.info("Three.js Earth system cleanup completed");
   };
@@ -346,65 +361,21 @@ function loadFromSource(src) {
   });
 }
 
-// ===== Performance Detection =====
-function detectPerformanceCapabilities() {
-  // Mobile Detection
-  const isMobile =
-    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    ) || window.matchMedia("(max-width: 768px), (pointer: coarse)").matches;
-
-  // Performance-basierte LOD-Einstellungen
-  if (isMobile) {
-    isLowPerformanceMode = true;
-    lodLevel = 3;
-    log.info("Low performance mode enabled (mobile device)");
-  } else {
-    // WebGL Performance Test
-    const canvas = document.createElement("canvas");
-    const gl =
-      canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-
-    if (gl) {
-      const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-      const renderer = debugInfo
-        ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-        : "";
-
-      if (renderer.includes("Intel") || renderer.includes("Software")) {
-        isLowPerformanceMode = true;
-        lodLevel = 2;
-        log.info("Medium performance mode enabled (integrated graphics)");
-      } else {
-        lodLevel = 1;
-        log.info("High performance mode enabled");
-      }
-    }
-  }
-
-  // Memory-basierte Anpassungen
-  if (navigator.deviceMemory && navigator.deviceMemory < 4) {
-    isLowPerformanceMode = true;
-    lodLevel = Math.max(lodLevel, 2);
-    log.info("Performance adjusted for low memory device");
-  }
-}
-
 // ===== Scene Setup =====
 async function setupScene(THREE, container) {
   // Scene erstellen
   scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x000511, 20, 100);
 
   // Kamera erstellen mit cinematic FOV
   const aspectRatio = container.clientWidth / container.clientHeight;
   camera = new THREE.PerspectiveCamera(35, aspectRatio, 0.1, 1000); // Cinematic 35mm FOV
 
-  // Renderer erstellen mit Performance-Optimierungen
+  // Renderer erstellen mit hoher Qualität
   renderer = new THREE.WebGLRenderer({
-    antialias: !isLowPerformanceMode,
+    canvas: container.querySelector("canvas") || undefined,
+    antialias: true,
     alpha: true,
-    powerPreference: isLowPerformanceMode ? "low-power" : "high-performance",
+    powerPreference: "high-performance",
   });
 
   // Pixel Ratio optimieren
@@ -413,7 +384,7 @@ async function setupScene(THREE, container) {
   renderer.setClearColor(0x000000, 0); // Transparent für Overlay
 
   // Renderer-Optimierungen
-  renderer.shadowMap.enabled = !isLowPerformanceMode;
+  renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   // Color Management - Kompatibilität für verschiedene Three.js Versionen
@@ -439,14 +410,201 @@ async function setupScene(THREE, container) {
 
   container.appendChild(renderer.domElement);
 
+  // Dezentes Sternsystem erstellen
+  createStarField(THREE);
+
+  // Parallax-Scrolling für Sterne setup
+  setupStarParallax();
+
   // Beleuchtung Setup
   setupLighting(THREE);
 
   log.debug("Scene setup completed", {
-    performance: isLowPerformanceMode ? "low" : "high",
-    lod: lodLevel,
     pixelRatio: renderer.getPixelRatio(),
   });
+}
+
+// ===== Runde Stern-Textur erstellen =====
+function createStarTexture(THREE) {
+  const canvas = document.createElement('canvas');
+  const size = 64; // Textur-Größe
+  canvas.width = size;
+  canvas.height = size;
+  
+  const context = canvas.getContext('2d');
+  const center = size / 2;
+  
+  // Hintergrund transparent
+  context.clearRect(0, 0, size, size);
+  
+  // Haupt-Stern (radialer Gradient mit höherer Intensität)
+  const mainGradient = context.createRadialGradient(center, center, 0, center, center, center * 0.7);
+  mainGradient.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)'); // Helles Zentrum
+  mainGradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)'); // Stärkerer Übergang
+  mainGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); // Sichtbarerer Rand
+  mainGradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.1)'); // Erweiterte Sichtbarkeit
+  mainGradient.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)'); // Transparenter Rand
+  
+  context.fillStyle = mainGradient;
+  context.beginPath();
+  context.arc(center, center, center * 0.7, 0, Math.PI * 2); // Größerer Stern-Kern
+  context.fill();
+  
+  // Stern-Strahlen (heller und länger)
+  context.fillStyle = 'rgba(255, 255, 255, 0.6)'; // Hellere Strahlen
+  const rayWidth = 1.5; // Breitere Strahlen
+  const rayLength = center * 0.9; // Längere Strahlen
+  
+  // Vertikaler Strahl
+  context.fillRect(center - rayWidth/2, center - rayLength, rayWidth, rayLength * 2);
+  // Horizontaler Strahl  
+  context.fillRect(center - rayLength, center - rayWidth/2, rayLength * 2, rayWidth);
+  
+  // Zusätzliche diagonale Strahlen für realistischeren Effekt
+  context.save();
+  context.translate(center, center);
+  context.rotate(Math.PI / 4);
+  context.fillRect(-rayWidth/2, -rayLength * 0.6, rayWidth, rayLength * 1.2);
+  context.fillRect(-rayLength * 0.6, -rayWidth/2, rayLength * 1.2, rayWidth);
+  context.restore();
+  
+  // Three.js Textur erstellen
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  
+  return texture;
+}
+
+// ===== Dezentes Sternsystem =====
+function createStarField(THREE) {
+  const starGeometry = new THREE.BufferGeometry();
+  const starCount = 1500; // Dezente Anzahl von Sternen
+  
+  // Positionen für Sterne generieren
+  const positions = new Float32Array(starCount * 3);
+  const colors = new Float32Array(starCount * 3);
+  const sizes = new Float32Array(starCount);
+  
+  // Sterne in Kugel um die Szene verteilen
+  for (let i = 0; i < starCount; i++) {
+    const i3 = i * 3;
+    
+    // Zufällige Position auf Kugel-Oberfläche
+    const radius = 100 + Math.random() * 200; // Verschiedene Entfernungen
+    const theta = Math.random() * Math.PI * 2; // Azimuth
+    const phi = Math.acos(2 * Math.random() - 1); // Polar
+    
+    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i3 + 2] = radius * Math.cos(phi);
+    
+    // Stern-Farben (heller für bessere Sichtbarkeit)
+    const colorVariation = 0.9 + Math.random() * 0.1;
+    colors[i3] = colorVariation; // R
+    colors[i3 + 1] = colorVariation * (0.95 + Math.random() * 0.05); // G
+    colors[i3 + 2] = colorVariation * (0.9 + Math.random() * 0.1); // B
+    
+    // Stern-Größen (deutlich größer für bessere Sichtbarkeit)
+    sizes[i] = Math.random() < 0.15 ? 4.0 + Math.random() * 6.0 : 2.0 + Math.random() * 3.0;
+  }
+  
+  starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  
+  // Runde Stern-Textur erstellen
+  const starTexture = createStarTexture(THREE);
+  
+  // Stern-Material mit runder Textur (optimiert für Sichtbarkeit)
+  const starMaterial = new THREE.PointsMaterial({
+    size: 3.0, // Größerer Basis-Size
+    sizeAttenuation: true,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.9, // Höhere Opacity
+    blending: THREE.AdditiveBlending,
+    map: starTexture,
+    alphaTest: 0.05 // Niedrigerer alphaTest für mehr Sichtbarkeit
+  });
+  
+  // Stern-Mesh erstellen und zur Szene hinzufügen
+  const starField = new THREE.Points(starGeometry, starMaterial);
+  starField.name = 'starField';
+  scene.add(starField);
+  
+  log.debug(`Created subtle star field with ${starCount} stars`);
+  
+  // Cleanup-Funktion hinzufügen
+  sharedCleanupManager.addCleanupFunction(
+    'three-earth',
+    () => {
+      if (starField) {
+        scene.remove(starField);
+        starGeometry.dispose();
+        starMaterial.dispose();
+        if (starTexture) {
+          starTexture.dispose();
+        }
+        log.debug('Star field disposed');
+      }
+    },
+    'star field cleanup'
+  );
+}
+
+// ===== Parallax-Scrolling für Sterne =====
+function setupStarParallax() {
+  // Parallax-Handler zum shared system hinzufügen
+  const parallaxHandler = (progress, scrollY) => {
+    try {
+      const starField = scene?.getObjectByName('starField');
+      if (!starField) return;
+
+      // Parallax-Bewegung für Sternfeld (harmonisch mit atmospheric-sky-system)
+      // Subtile Y-Rotation basierend auf Scroll-Position
+      const parallaxRotationY = progress * Math.PI * 0.3; // Reduzierte Rotation für natürlicheren Effekt
+      starField.rotation.y = (starField.userData.baseRotationY || 0) + parallaxRotationY;
+
+      // Zusätzliche X-Rotation für 3D-Effekt
+      const parallaxRotationX = Math.sin(progress * Math.PI * 2) * 0.1; // Subtile Neigung
+      starField.rotation.x = parallaxRotationX;
+
+      // Subtile Z-Position-Änderung für Tiefeneffekt (parallel zu CSS-Sternen)
+      const parallaxZ = Math.sin(progress * Math.PI) * 15; // Sanftere Bewegung
+      starField.position.z = parallaxZ;
+
+      // Y-Position-Änderung für vertikale Parallax (wie bei CSS-Sternen)
+      const parallaxY = scrollY * 0.02; // Sehr subtil, wie im atmospheric-sky-system
+      starField.position.y = parallaxY;
+
+      // Opacity-Variation basierend auf Scroll-Position
+      if (starField.material) {
+        const baseOpacity = starField.userData.baseOpacity || 0.9;
+        const scrollOpacity = baseOpacity * (0.7 + Math.sin(progress * Math.PI) * 0.3);
+        starField.material.opacity = Math.max(0.4, Math.min(1.0, scrollOpacity));
+      }
+
+    } catch (error) {
+      log.error("Star parallax error:", error);
+    }
+  };
+
+  // Initial setup
+  const starField = scene?.getObjectByName('starField');
+  if (starField) {
+    starField.userData.baseRotationY = starField.rotation.y;
+    starField.userData.baseOpacity = starField.material?.opacity || 0.9;
+  }
+
+  sharedParallaxManager.addHandler(parallaxHandler, 'three-earth-stars');
+
+  sharedCleanupManager.addCleanupFunction(
+    'three-earth',
+    () => sharedParallaxManager.removeHandler(parallaxHandler),
+    'star parallax handler'
+  );
+
+  log.debug("Star parallax setup completed");
 }
 
 // ===== Beleuchtung Setup =====
@@ -454,10 +612,10 @@ function setupLighting(THREE) {
   // Hauptlichtquelle (Sonne)
   const sunLight = new THREE.DirectionalLight(
     0xffffff,
-    isLowPerformanceMode ? 1.5 : 2.0
+    2.0
   );
   sunLight.position.set(5, 3, 5);
-  sunLight.castShadow = !isLowPerformanceMode;
+  sunLight.castShadow = true;
 
   if (sunLight.castShadow) {
     sunLight.shadow.mapSize.width = 2048;
@@ -473,309 +631,16 @@ function setupLighting(THREE) {
   scene.add(ambientLight);
 
   // Rim Light für cinematischen Effekt
-  if (!isLowPerformanceMode) {
-    const rimLight = new THREE.DirectionalLight(0x4477ff, 0.8);
-    rimLight.position.set(-5, 2, -5);
-    scene.add(rimLight);
-  }
-
-  // Sterne im Hintergrund (nur high performance)
-  if (!isLowPerformanceMode) {
-    createStarField(THREE);
-  }
-}
-
-// ===== Erweitertes Sternenfeld-System =====
-function createStarField(THREE) {
-  // Verschiedene Stern-Schichten für Tiefe
-  const starLayers = [
-    {
-      name: "distant",
-      count: isLowPerformanceMode ? 800 : 3000,
-      distance: 80,
-      size: 0.15,
-    },
-    {
-      name: "medium",
-      count: isLowPerformanceMode ? 300 : 1200,
-      distance: 60,
-      size: 0.3,
-    },
-    {
-      name: "close",
-      count: isLowPerformanceMode ? 200 : 800,
-      distance: 40,
-      size: 0.6,
-    },
-  ];
-
-  starField = new THREE.Group();
-
-  starLayers.forEach((layer, layerIndex) => {
-    const starsGeometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(layer.count * 3);
-    const colors = new Float32Array(layer.count * 3);
-    const sizes = new Float32Array(layer.count);
-    const twinkle = new Float32Array(layer.count);
-
-    for (let i = 0; i < layer.count; i++) {
-      const i3 = i * 3;
-
-      // Realistische Stern-Verteilung (mehr Sterne in der Milchstraßen-Ebene)
-      let phi, theta;
-      if (Math.random() < 0.6) {
-        // Milchstraßen-Band (60% der Sterne)
-        phi = (Math.random() - 0.5) * 0.5 + Math.PI / 2; // Schmales Band
-        theta = Math.random() * Math.PI * 2;
-      } else {
-        // Gleichmäßige Verteilung (40% der Sterne)
-        phi = Math.acos(2 * Math.random() - 1);
-        theta = Math.random() * Math.PI * 2;
-      }
-
-      const radius = layer.distance + Math.random() * 20;
-
-      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i3 + 2] = radius * Math.cos(phi);
-
-      // Realistische Stern-Spektralklassen
-      const color = new THREE.Color();
-      const stellarClass = Math.random();
-
-      if (stellarClass < 0.6) {
-        // Normale Sterne (meist weiß-gelblich) - Subtile Farben
-        const hue = 0.08 + Math.random() * 0.05; // Sehr leicht gelblich
-        const saturation = 0.1 + Math.random() * 0.15; // Sehr geringe Sättigung
-        const lightness = 0.8 + Math.random() * 0.15; // Helle, aber nicht überstrahlende Sterne
-        color.setHSL(hue, saturation, lightness);
-      } else if (stellarClass < 0.8) {
-        // Leicht bläuliche Sterne - Sehr subtil
-        const hue = 0.55 + Math.random() * 0.05; // Leicht bläulich
-        const saturation = 0.08 + Math.random() * 0.12; // Minimale Sättigung
-        const lightness = 0.85 + Math.random() * 0.1;
-        color.setHSL(hue, saturation, lightness);
-      } else if (stellarClass < 0.95) {
-        // Leicht rötliche Sterne - Sehr subtil
-        const hue = 0.02 + Math.random() * 0.02; // Minimal rötlich
-        const saturation = 0.15 + Math.random() * 0.15; // Geringe Sättigung
-        const lightness = 0.7 + Math.random() * 0.2;
-        color.setHSL(hue, saturation, lightness);
-      } else {
-        // Seltene helle Sterne - Immer noch subtil
-        const hue = 0.58 + Math.random() * 0.03; // Leicht bläulich
-        const saturation = 0.2 + Math.random() * 0.15; // Mäßige Sättigung
-        const lightness = 0.9 + Math.random() * 0.05;
-        color.setHSL(hue, saturation, lightness);
-      }
-
-      colors[i3] = color.r;
-      colors[i3 + 1] = color.g;
-      colors[i3 + 2] = color.b;
-
-      // Größenvariationen basierend auf Helligkeitsklasse
-      const magnitude = Math.random();
-      if (magnitude < 0.05) {
-        sizes[i] = layer.size * (3.5 + Math.random() * 2.5); // Seltene helle Riesen
-      } else if (magnitude < 0.15) {
-        sizes[i] = layer.size * (2.2 + Math.random() * 0.8); // Mittelhelle Sterne
-      } else {
-        sizes[i] = layer.size * (1.2 + Math.random() * 1.3); // Normale Hauptreihensterne
-      }
-
-      // Twinkle-Parameter für Animation
-      twinkle[i] = Math.random() * Math.PI * 2;
-    }
-
-    starsGeometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(positions, 3)
-    );
-    starsGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    starsGeometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
-    starsGeometry.setAttribute(
-      "twinkle",
-      new THREE.BufferAttribute(twinkle, 1)
-    );
-
-    // Erweiterte Shader für realistische Sterne
-    const starsMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        pixelRatio: { value: window.devicePixelRatio },
-        twinkleIntensity: { value: layerIndex === 0 ? 0.15 : 0.25 }, // Sehr subtiles Twinkle
-        brightnessVariation: { value: 0.2 }, // Reduzierte Helligkeitsvariation
-      },
-      vertexShader: `
-        uniform float time;
-        uniform float pixelRatio;
-        uniform float twinkleIntensity;
-        
-        attribute float size;
-        attribute float twinkle;
-        attribute vec3 color;
-        
-        varying vec3 vColor;
-        varying float vTwinkle;
-        
-        void main() {
-          vColor = color;
-          
-          // Twinkle-Animation mit verschiedenen Frequenzen
-          float twinklePhase = twinkle + time * (0.5 + sin(twinkle) * 0.3);
-          vTwinkle = 0.7 + sin(twinklePhase) * twinkleIntensity;
-          
-          // Dynamische Größenberechnung
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          
-          // Größe basierend auf Entfernung und Twinkle
-          float finalSize = size * vTwinkle * pixelRatio;
-          finalSize *= (300.0 / -mvPosition.z); // Entfernungsbasierte Skalierung
-          
-          gl_PointSize = finalSize;
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform float time;
-        uniform float brightnessVariation;
-        
-        varying vec3 vColor;
-        varying float vTwinkle;
-        
-        void main() {
-          // Weicher Kreis mit Glow-Effekt
-          vec2 center = gl_PointCoord - 0.5;
-          float distance = length(center);
-          
-          // Stern-Form mit dezenten Cross-Spikes für sehr helle Sterne
-          float alpha = 1.0 - smoothstep(0.2, 0.6, distance);
-          
-          // Sehr subtile Kreuz-Spikes nur für hellste Sterne
-          if (vTwinkle > 0.95) {
-            float spike1 = 1.0 - smoothstep(0.0, 0.03, abs(center.x));
-            float spike2 = 1.0 - smoothstep(0.0, 0.03, abs(center.y));
-            alpha += (spike1 + spike2) * 0.1 * smoothstep(0.3, 0.6, distance);
-          }
-          
-          // Sanfte Helligkeitsvariation über Zeit
-          float brightness = vTwinkle * (0.9 + sin(time * 1.5 + gl_PointCoord.x * 8.0) * brightnessVariation * 0.5);
-          
-          vec3 finalColor = vColor * brightness;
-          
-          gl_FragColor = vec4(finalColor, alpha * vTwinkle * 0.8);
-        }
-      `,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const stars = new THREE.Points(starsGeometry, starsMaterial);
-    stars.name = `starLayer_${layer.name}`;
-    starField.add(stars);
-  });
-
-  // Schwache Nebel-Effekte hinzufügen
-  createNebulae(THREE);
-
-  scene.add(starField);
-
-  const totalStars = starLayers.reduce((sum, layer) => sum + layer.count, 0);
-  log.debug(
-    `Created enhanced star field with ${totalStars} stars in ${starLayers.length} layers`
-  );
-}
-
-// ===== Nebel-Effekte erstellen =====
-function createNebulae(THREE) {
-  if (isLowPerformanceMode) return; // Keine Nebel bei niedriger Performance
-
-  nebulae = new THREE.Group();
-
-  // Verschiedene Nebel-Typen
-  const nebulaTypes = [
-    { color: new THREE.Color(0.8, 0.3, 0.9), size: 15, opacity: 0.08 }, // Violett
-    { color: new THREE.Color(0.3, 0.8, 0.9), size: 18, opacity: 0.06 }, // Cyan
-    { color: new THREE.Color(0.9, 0.6, 0.3), size: 12, opacity: 0.04 }, // Orange
-    { color: new THREE.Color(0.4, 0.9, 0.5), size: 20, opacity: 0.05 }, // Grün
-  ];
-
-  nebulaTypes.forEach((type, index) => {
-    const geometry = new THREE.SphereGeometry(type.size, 16, 16);
-
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        color: { value: type.color },
-        opacity: { value: type.opacity },
-      },
-      vertexShader: `
-        varying vec3 vPosition;
-        void main() {
-          vPosition = position;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform float time;
-        uniform vec3 color;
-        uniform float opacity;
-        varying vec3 vPosition;
-        
-        // Simple noise function
-        float noise(vec3 pos) {
-          return fract(sin(dot(pos.xyz, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
-        }
-        
-        void main() {
-          vec3 pos = vPosition + time * 0.1;
-          float n = noise(pos * 0.5) * noise(pos * 1.2) * noise(pos * 2.0);
-          
-          float alpha = n * opacity * (1.0 - length(vPosition) / 20.0);
-          gl_FragColor = vec4(color, alpha);
-        }
-      `,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide,
-      depthWrite: false,
-    });
-
-    const nebula = new THREE.Mesh(geometry, material);
-
-    // Positioniere Nebel in verschiedenen Bereichen des Himmels
-    const angle = (index / nebulaTypes.length) * Math.PI * 2;
-    nebula.position.set(
-      Math.cos(angle) * 70,
-      (Math.random() - 0.5) * 30,
-      Math.sin(angle) * 70
-    );
-
-    nebulae.add(nebula);
-  });
-
-  starField.add(nebulae);
-  log.debug(`Created ${nebulaTypes.length} nebulae effects`);
+  const rimLight = new THREE.DirectionalLight(0x4477ff, 0.8);
+  rimLight.position.set(-5, 2, -5);
+  scene.add(rimLight);
 }
 
 // ===== Earth-System erstellen =====
 async function createEarthSystem(THREE) {
-  // LOD-basierte Geometrie-Auflösung
+    // Hohe Qualität - feste Werte
   const earthRadius = 3.5; // Vergrößert für Horizont-Effekt
-  let segments;
-
-  switch (lodLevel) {
-    case 1:
-      segments = 128;
-      break; // High quality
-    case 2:
-      segments = 64;
-      break; // Medium quality
-    case 3:
-      segments = 32;
-      break; // Low quality
-  }
+  const segments = 128;
 
   const earthGeometry = new THREE.SphereGeometry(
     earthRadius,
@@ -783,24 +648,16 @@ async function createEarthSystem(THREE) {
     segments
   );
 
-  // Earth-Material mit optimierten Texturen
+  // Earth-Material erstellen
   const earthMaterial = await createEarthMaterial(THREE);
 
   earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
   earthMesh.position.y = -2.8; // Entsprechend der Größe nach unten für Horizont-Effekt
-  earthMesh.castShadow = !isLowPerformanceMode;
-  earthMesh.receiveShadow = !isLowPerformanceMode;
+  earthMesh.castShadow = true;
+  earthMesh.receiveShadow = true;
   scene.add(earthMesh);
 
-  // Wolken-System (nur für high/medium performance)
-  if (lodLevel <= 2) {
-    await createCloudSystem(THREE, earthRadius);
-  }
-
-  // Atmosphäre
-  createAtmosphere();
-
-  log.debug("Earth system created", { segments, lodLevel });
+  log.debug("Earth system created", { segments });
 }
 
 // ===== Earth-Material erstellen =====
@@ -822,30 +679,28 @@ async function createEarthMaterial(THREE) {
       )
     );
 
-    // Zusätzliche Texturen nur bei High Performance
-    if (lodLevel === 1) {
-      promises.push(
-        loadTextureWithFallback(
-          textureLoader,
-          "/content/img/earth/textures/earth_night.jpg",
-          2000
-        )
-      );
-      promises.push(
-        loadTextureWithFallback(
-          textureLoader,
-          "/content/img/earth/textures/earth_normal.jpg",
-          2000
-        )
-      );
-      promises.push(
-        loadTextureWithFallback(
-          textureLoader,
-          "/content/img/earth/textures/earth_bump.jpg",
-          2000
-        )
-      );
-    }
+    // Alle Texturen laden (hohe Qualität)
+    promises.push(
+      loadTextureWithFallback(
+        textureLoader,
+        "/content/img/earth/textures/earth_night.jpg",
+        2000
+      )
+    );
+    promises.push(
+      loadTextureWithFallback(
+        textureLoader,
+        "/content/img/earth/textures/earth_normal.jpg",
+        2000
+      )
+    );
+    promises.push(
+      loadTextureWithFallback(
+        textureLoader,
+        "/content/img/earth/textures/earth_bump.jpg",
+        2000
+      )
+    );
 
     const textures = await Promise.allSettled(promises);
     const [dayTexture, nightTexture, normalTexture, bumpTexture] = textures.map(
@@ -894,14 +749,14 @@ async function createEarthMaterial(THREE) {
       normalTexture: !!normalTexture,
       bumpTexture: !!bumpTexture,
       totalLoaded: loadedCount,
-      lodLevel: lodLevel,
+
     });
 
     // Material basierend auf verfügbaren Texturen
     let material;
 
-    if (dayTexture && lodLevel === 1 && nightTexture) {
-      // Shader Material für Day/Night Cycle (nur high performance)
+    if (dayTexture && nightTexture) {
+      // Shader Material für Day/Night Cycle (high quality)
       material = new THREE.ShaderMaterial({
         uniforms: {
           dayTexture: { value: dayTexture },
@@ -993,10 +848,10 @@ async function loadTextureWithFallback(
   }
 }
 
-// Helper function für einzelnen Load-Versuch
+// Helper function für einzelnen Load-Versuch mit TimerManager
 function loadTextureWithTimeout(loader, url, timeout) {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
+    const timer = earthTimers.setTimeout(() => {
       log.warn(`Texture loading timeout: ${url}`);
       reject(new Error(`Timeout loading ${url}`));
     }, timeout);
@@ -1004,21 +859,21 @@ function loadTextureWithTimeout(loader, url, timeout) {
     loader.load(
       url,
       (texture) => {
-        clearTimeout(timer);
+        earthTimers.clearTimeout(timer);
         resolve(texture);
       },
       undefined, // onProgress
       (error) => {
-        clearTimeout(timer);
+        earthTimers.clearTimeout(timer);
         reject(error);
       }
     );
   });
 }
 
-// Helper function für Verzögerung
+// Helper function für Verzögerung mit TimerManager
 function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return earthTimers.sleep(ms);
 }
 
 // ===== Prozedurales Earth-Material =====
@@ -1146,151 +1001,6 @@ function getEarthFragmentShader() {
   `;
 }
 
-// ===== Wolken-System erstellen =====
-async function createCloudSystem(THREE, earthRadius) {
-  const cloudRadius = earthRadius + 0.08; // Leicht erhöht für besseren Effekt
-
-  // Verbesserte LOD-basierte Segmente
-  let segments;
-  switch (lodLevel) {
-    case 1:
-      segments = 96;
-      break;
-    case 2:
-      segments = 64;
-      break;
-    default:
-      segments = 32;
-      break;
-  }
-
-  const cloudGeometry = new THREE.SphereGeometry(
-    cloudRadius,
-    segments,
-    segments
-  );
-
-  // Optimiertes prozedurales Wolken-Material
-  const cloudMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      time: { value: 0 },
-      opacity: { value: 0.7 },
-      cloudSpeed: { value: 0.3 },
-      cloudDensity: { value: 0.8 },
-      windDirection: { value: new THREE.Vector2(1.0, 0.2) },
-      atmosphereColor: { value: new THREE.Color(0.9, 0.95, 1.0) },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vWorldPosition;
-      
-      void main() {
-        vUv = uv;
-        vNormal = normalize(normalMatrix * normal);
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
-        vWorldPosition = worldPos.xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float time;
-      uniform float opacity;
-      uniform float cloudSpeed;
-      uniform float cloudDensity;
-      uniform vec2 windDirection;
-      uniform vec3 atmosphereColor;
-      
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vWorldPosition;
-      
-      // Verbesserte Noise-Funktionen
-      vec2 hash22(vec2 p) {
-        p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-        return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
-      }
-      
-      float noise(vec2 p) {
-        const float K1 = 0.366025404; // (sqrt(3)-1)/2
-        const float K2 = 0.211324865; // (3-sqrt(3))/6
-        
-        vec2 i = floor(p + (p.x + p.y) * K1);
-        vec2 a = p - i + (i.x + i.y) * K2;
-        vec2 o = step(a.yx, a.xy);
-        vec2 b = a - o + K2;
-        vec2 c = a - 1.0 + 2.0 * K2;
-        
-        vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
-        vec3 n = h * h * h * h * vec3(dot(a, hash22(i + 0.0)), dot(b, hash22(i + o)), dot(c, hash22(i + 1.0)));
-        
-        return dot(n, vec3(70.0));
-      }
-      
-      float fbm(vec2 uv, int octaves) {
-        float value = 0.0;
-        float amplitude = 0.5;
-        float frequency = 1.0;
-        
-        for (int i = 0; i < octaves; i++) {
-          value += amplitude * noise(uv * frequency);
-          amplitude *= 0.5;
-          frequency *= 1.9;
-        }
-        
-        return value;
-      }
-      
-      void main() {
-        // Dynamische UV-Koordinaten mit Windrichtung
-        vec2 windUV = vUv + time * cloudSpeed * 0.08 * windDirection;
-        vec2 detailUV = vUv + time * cloudSpeed * 0.15 * windDirection.yx;
-        
-        // Multi-Layer-Wolken mit verschiedenen Frequenzen
-        float baseClouds = fbm(windUV * 4.0, 3);
-        float detailClouds = fbm(detailUV * 12.0, 2) * 0.3;
-        float microDetails = fbm(windUV * 24.0, 1) * 0.1;
-        
-        float clouds = baseClouds + detailClouds + microDetails;
-        clouds = smoothstep(0.35, 0.85, clouds * cloudDensity);
-        
-        // Höhenbasierte Dichte-Variation
-        float heightFactor = smoothstep(-0.5, 0.5, vWorldPosition.y);
-        clouds *= heightFactor;
-        
-        // Fresnel-Effekt für Atmosphäre
-        float fresnel = 1.0 - dot(normalize(vNormal), vec3(0, 0, 1));
-        fresnel = pow(fresnel, 1.5);
-        
-        // Alpha-Berechnung mit Atmosphäre-Integration
-        float alpha = clouds * opacity;
-        alpha *= (1.0 - fresnel * 0.4); // Reduzierter Fresnel-Effekt
-        
-        // Atmosphärische Farbanpassung
-        vec3 cloudColor = mix(vec3(1.0), atmosphereColor, fresnel * 0.3);
-        
-        gl_FragColor = vec4(cloudColor, alpha);
-      }
-    `,
-    transparent: true,
-    side: THREE.DoubleSide,
-    depthWrite: false, // Performance-Optimierung für Transparenz
-    blending: THREE.NormalBlending,
-  });
-
-  cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
-  cloudMesh.position.y = -2.8; // Gleiche Y-Position wie die Erde
-  scene.add(cloudMesh);
-
-  log.debug("Cloud system created");
-}
-
-// ===== Atmosphäre erstellen =====
-function createAtmosphere() {
-  // Atmosphäre komplett deaktiviert - Early Return
-  log.debug("Atmosphere creation disabled - no blue atmosphere around Earth");
-}
-
 // ===== Kamera-System Setup =====
 function setupCameraSystem(THREE) {
   // Initial Kamera-Position
@@ -1320,9 +1030,13 @@ function setupCameraSystem(THREE) {
   }
 
   // In Animation Loop integrieren
-  cleanupFunctions.push(() => {
-    // Cleanup für Kamera-System (falls nötig)
-  });
+  sharedCleanupManager.addCleanupFunction(
+    'three-earth',
+    () => {
+      // Cleanup für Kamera-System (falls nötig)
+    },
+    'camera system cleanup'
+  );
 
   window.updateCameraPosition = updateCameraPosition; // Für Animation Loop
 
@@ -1391,13 +1105,7 @@ function setupUserControls(container) {
     if (earthMesh) {
       earthMesh.rotation.y = scrollProgress * Math.PI * 2;
     }
-
-    if (cloudMesh) {
-      cloudMesh.rotation.y = scrollProgress * Math.PI * 1.5;
-    }
   }, 16);
-
-  window.addEventListener("scroll", handleScroll, { passive: true });
 
   // Mouse Controls für freie Kamera (optional)
   function enableFreeCamera() {
@@ -1444,30 +1152,25 @@ function setupUserControls(container) {
     container.style.cursor = "grab";
   };
 
-  // Event Listeners
-  container.addEventListener("mousedown", handlePointerDown);
-  container.addEventListener("mousemove", handlePointerMove);
-  container.addEventListener("mouseup", handlePointerUp);
-  container.addEventListener("mouseleave", handlePointerUp);
+  // Pointer Events Setup mit shared utilities
+  const pointerCleanup = setupPointerEvents(container, {
+    onStart: handlePointerDown,
+    onMove: handlePointerMove,
+    onEnd: handlePointerUp
+  }, { passive: false }); // Nicht-passive für preventDefault
 
-  // Touch Events
-  container.addEventListener("touchstart", handlePointerDown, {
-    passive: true,
-  });
-  container.addEventListener("touchmove", handlePointerMove, { passive: true });
-  container.addEventListener("touchend", handlePointerUp);
+  // Scroll Events Setup
+  const scrollCleanup = onScroll(handleScroll);
 
   // Cleanup
-  cleanupFunctions.push(() => {
-    window.removeEventListener("scroll", handleScroll);
-    container.removeEventListener("mousedown", handlePointerDown);
-    container.removeEventListener("mousemove", handlePointerMove);
-    container.removeEventListener("mouseup", handlePointerUp);
-    container.removeEventListener("mouseleave", handlePointerUp);
-    container.removeEventListener("touchstart", handlePointerDown);
-    container.removeEventListener("touchmove", handlePointerMove);
-    container.removeEventListener("touchend", handlePointerUp);
-  });
+  sharedCleanupManager.addCleanupFunction(
+    'three-earth',
+    () => {
+      scrollCleanup();
+      pointerCleanup();
+    },
+    'user controls cleanup'
+  );
 
   // Public API für Kontrolle
   window.ThreeEarthControls = {
@@ -1479,14 +1182,8 @@ function setupUserControls(container) {
   log.debug("User controls setup completed");
 }
 
-// ===== Zoom Controls erstellen =====
 // ===== Postprocessing Setup =====
 async function setupPostprocessing(THREE) {
-  if (isLowPerformanceMode) {
-    log.debug("Postprocessing disabled for performance");
-    return;
-  }
-
   try {
     // EffectComposer dynamisch laden (falls verfügbar)
     if (window.THREE.EffectComposer) {
@@ -1572,30 +1269,30 @@ function updateEarthForSection(sectionName) {
     hero: {
       scale: 1.0,
       rotationSpeed: 0.002,
-      starTwinkle: 0.2,
-      starBrightness: 0.9,
-      nebulaOpacity: 0.4,
+      starTwinkle: 0.3,
+      starBrightness: 1.0, // Hellere Sterne
+      starRotation: 0.0001,
     },
     features: {
       scale: 1.2,
       rotationSpeed: 0.001,
-      starTwinkle: 0.15,
-      starBrightness: 0.8,
-      nebulaOpacity: 0.3,
+      starTwinkle: 0.25,
+      starBrightness: 0.9, // Heller als vorher
+      starRotation: 0.00008,
     },
     about: {
       scale: 0.8,
       rotationSpeed: 0.003,
-      starTwinkle: 0.25,
+      starTwinkle: 0.35,
       starBrightness: 1.0,
-      nebulaOpacity: 0.5,
+      starRotation: 0.00012,
     },
     contact: {
       scale: 1.5,
       rotationSpeed: 0.0005,
-      starTwinkle: 0.1,
-      starBrightness: 0.7,
-      nebulaOpacity: 0.2,
+      starTwinkle: 0.2,
+      starBrightness: 0.85, // Heller als vorher
+      starRotation: 0.00006,
     },
   };
 
@@ -1605,106 +1302,39 @@ function updateEarthForSection(sectionName) {
   earthMesh.userData.targetScale = config.scale;
   earthMesh.userData.rotationSpeed = config.rotationSpeed;
 
-  // Sterne-Konfiguration anpassen
-  if (starField) {
-    starField.children.forEach((starLayer) => {
-      if (starLayer.material?.uniforms) {
-        if (starLayer.material.uniforms.twinkleIntensity) {
-          starLayer.material.uniforms.twinkleIntensity.value =
-            config.starTwinkle;
-        }
-        if (starLayer.material.uniforms.brightnessVariation) {
-          starLayer.material.uniforms.brightnessVariation.value =
-            config.starBrightness;
-        }
-      }
-    });
-  }
+  // Stern-System für Section anpassen
+  updateStarFieldForSection(config);
 
-  // Nebel-Opacity anpassen
-  if (nebulae) {
-    nebulae.children.forEach((nebula) => {
-      if (nebula.material?.uniforms?.opacity) {
-        const baseOpacity = nebula.material.uniforms.opacity.value;
-        nebula.material.uniforms.opacity.value =
-          baseOpacity * config.nebulaOpacity;
-      }
-    });
-  }
+  log.debug(`Earth updated for section: ${sectionName}`, config);
+}
 
-  log.debug(`Earth and stars updated for section: ${sectionName}`, config);
+function updateStarFieldForSection(config) {
+  const starField = scene?.getObjectByName('starField');
+  if (!starField || !starField.material) return;
+  
+  // Stern-Parameter für Section setzen
+  starField.userData.twinkleIntensity = config.starTwinkle;
+  starField.userData.brightness = config.starBrightness;
+  starField.userData.rotationSpeed = config.starRotation;
+  
+  // Basis-Helligkeit setzen
+  starField.material.opacity = config.starBrightness * 0.8;
 }
 
 // ===== Animation Loop =====
 function startAnimationLoop(THREE) {
   const clock = new THREE.Clock();
-  let frameCount = 0;
-  let atmosphereUpdateCounter = 0;
-
-  // Performance Metrics sind bereits oben definiert, verwenden wir sie hier
-
-  function logDetailedPerformanceState(currentFPS, metrics) {
-    const memInfo = performance.memory
-      ? {
-          usedMB: Math.round(performance.memory.usedJSHeapSize / 1048576),
-          totalMB: Math.round(performance.memory.totalJSHeapSize / 1048576),
-          limitMB: Math.round(performance.memory.jsHeapSizeLimit / 1048576),
-        }
-      : null;
-
-    log.info("Detailed Performance State:", {
-      currentFPS: currentFPS.toFixed(1),
-      averageFPS: metrics.averageFPS.toFixed(1),
-      minFPS: metrics.minFPS.toFixed(1),
-      maxFPS: metrics.maxFPS.toFixed(1),
-      lodLevel,
-      isLowPerformanceMode,
-      renderCalls: metrics.renderCalls,
-      memory: memInfo,
-      activeObjects: scene ? scene.children.length : 0,
-    });
-  }
-
   function animate() {
     animationFrameId = requestAnimationFrame(animate);
 
     const deltaTime = clock.getDelta();
-    const elapsedTime = clock.getElapsedTime();
-
-    // Performance Monitoring
-    frameCount++;
-    if (frameCount % 60 === 0) {
-      checkPerformance(performanceMetrics, frameCount);
-    }
-
-    // Early Exit bei kritischer Performance
-    if (performanceMetrics.averageFPS < 15 && frameCount % 2 === 0) {
-      return; // Skip every 2nd frame bei sehr schlechter Performance
-    }
 
     // Earth Updates mit Scale-Animation
     updateEarthRotation();
     updateEarthScale(deltaTime);
 
-    // Cloud Updates (weniger frequent bei schlechter Performance)
-    if (frameCount % (performanceMetrics.averageFPS < 30 ? 3 : 1) === 0) {
-      updateClouds(elapsedTime);
-    }
-
-    // Sterne Updates (weniger frequent bei schlechter Performance)
-    if (frameCount % (performanceMetrics.averageFPS < 30 ? 2 : 1) === 0) {
-      updateStars(elapsedTime);
-      updateStarsForSection();
-    }
-
-    // Atmosphäre Updates (weniger häufig für Performance)
-    atmosphereUpdateCounter++;
-    if (
-      atmosphereUpdateCounter % (performanceMetrics.averageFPS < 30 ? 4 : 2) ===
-      0
-    ) {
-      updateAtmosphereEffects(elapsedTime);
-    }
+    // Subtile Stern-Animation
+    updateStarField(clock.getElapsedTime());
 
     // Kamera-Position Update (LERP)
     if (window.updateCameraPosition) {
@@ -1713,55 +1343,11 @@ function startAnimationLoop(THREE) {
 
     // Rendern
     renderFrame();
-
-    // LOD & Frustum Culling (vereinfacht - nur bei niedriger Performance)
-    if (isLowPerformanceMode || frameCount % 10 === 0) {
-      // Einfaches Distance-based Culling
-      scene.traverse((child) => {
-        if (child.isMesh && camera) {
-          const distance = camera.position.distanceTo(child.position);
-          child.visible = distance <= 50;
-        }
-      });
-    }
-  }
-
-  // Spezialisierte Update-Funktionen für Atmosphäre
-  function updateAtmosphereEffects(elapsedTime) {
-    scene.traverse((child) => {
-      // Atmosphäre-Material Updates
-      if (child.material?.uniforms?.time) {
-        child.material.uniforms.time.value = elapsedTime;
-
-        // Sonnenposition über Zeit animieren
-        if (child.material.uniforms.sunPosition) {
-          const sunAngle = elapsedTime * 0.02;
-          child.material.uniforms.sunPosition.value.set(
-            Math.cos(sunAngle) * 5,
-            Math.sin(sunAngle * 0.5) * 3 + 2,
-            Math.sin(sunAngle) * 5
-          );
-        }
-
-        // Turbidität basierend auf Tageszeit
-        if (child.material.uniforms.turbidity) {
-          const timeOfDay = (Math.sin(elapsedTime * 0.01) + 1) * 0.5;
-          child.material.uniforms.turbidity.value = 1.8 + timeOfDay * 0.8;
-        }
-
-        // Atmosphärische Intensität pulsieren lassen
-        if (child.material.uniforms.intensity) {
-          const baseIntensity = 1.4; // Basis-Wert
-          const pulse = Math.sin(elapsedTime * 0.3) * 0.1 + 1;
-          child.material.uniforms.intensity.value = baseIntensity * pulse;
-        }
-      }
-    });
   }
 
   function renderFrame() {
     try {
-      if (composer && !isLowPerformanceMode) {
+      if (composer) {
         composer.render();
       } else {
         renderer.render(scene, camera);
@@ -1784,145 +1370,6 @@ function startAnimationLoop(THREE) {
         }
       }
     }
-  }
-
-  function checkPerformance(metrics) {
-    const currentTime = performance.now();
-    if (lastFrameTime > 0) {
-      const frameDuration = currentTime - lastFrameTime;
-      const fps = 1000 / frameDuration;
-
-      // Erweiterte Performance-Metriken sammeln
-      updatePerformanceMetrics(fps, frameDuration);
-
-      // Performance-Checks nur alle 3 Sekunden zur Spam-Vermeidung
-      if (currentTime - lastPerformanceCheck < 3000) {
-        lastFrameTime = currentTime;
-        return;
-      }
-      lastPerformanceCheck = currentTime;
-
-      // Automatische Qualitätsanpassung mit detailliertem Logging
-      if (fps < 20 && lodLevel < 3) {
-        lodLevel = Math.min(3, lodLevel + 1);
-        if (performanceWarningCount < 2) {
-          log.warn(
-            `Performance niedrig (${Math.round(
-              fps
-            )} FPS), Qualität auf LOD ${lodLevel} reduziert`
-          );
-          logDetailedPerformanceState(fps, metrics);
-          performanceWarningCount++;
-        }
-
-        // Shader-Komplexität reduzieren und Performance-Optimierungen anwenden
-        scene.traverse((child) => {
-          if (child.material?.defines) {
-            child.material.defines.LOW_QUALITY = true;
-            child.material.needsUpdate = true;
-          }
-        });
-
-        // Simple optimizations only
-        if (starField) {
-          starField.children.forEach((starLayer) => {
-            if (starLayer.material.uniforms?.density) {
-              starLayer.material.uniforms.density.value *= 0.8;
-            }
-          });
-        }
-
-        if (nebulae && lodLevel >= 3) {
-          nebulae.visible = false;
-        }
-      } else if (fps > 55 && lodLevel > 1) {
-        lodLevel = Math.max(1, lodLevel - 1);
-        if (performanceWarningCount > 0) {
-          performanceWarningCount--;
-        }
-        log.info(
-          `Performance verbessert (${Math.round(
-            fps
-          )} FPS), Qualität auf LOD ${lodLevel} erhöht`
-        );
-
-        // Low quality flags entfernen
-        scene.traverse((child) => {
-          if (child.material?.defines?.LOW_QUALITY) {
-            delete child.material.defines.LOW_QUALITY;
-            child.material.needsUpdate = true;
-          }
-        });
-      }
-
-      // Performance-Debug-Overlay aktualisieren
-      updatePerformanceOverlay(fps);
-    }
-    lastFrameTime = currentTime;
-  }
-
-  // Performance Metrics Tracking
-  const performanceMetrics = {
-    fps: [],
-    frameDurations: [],
-    memoryUsage: [],
-    renderCalls: 0,
-    maxFPS: 0,
-    minFPS: Infinity,
-    averageFPS: 0,
-  };
-
-  function updatePerformanceMetrics(fps, frameDuration) {
-    // FPS History (letzte 100 Frames)
-    performanceMetrics.fps.push(fps);
-    if (performanceMetrics.fps.length > 100) {
-      performanceMetrics.fps.shift();
-    }
-
-    // Frame Duration History
-    performanceMetrics.frameDurations.push(frameDuration);
-    if (performanceMetrics.frameDurations.length > 100) {
-      performanceMetrics.frameDurations.shift();
-    }
-
-    // Min/Max/Average tracking
-    performanceMetrics.maxFPS = Math.max(performanceMetrics.maxFPS, fps);
-    performanceMetrics.minFPS = Math.min(performanceMetrics.minFPS, fps);
-    performanceMetrics.averageFPS =
-      performanceMetrics.fps.reduce((a, b) => a + b, 0) /
-      performanceMetrics.fps.length;
-
-    // Memory Usage (falls verfügbar)
-    if (performance.memory) {
-      const currentMemory = {
-        used: performance.memory.usedJSHeapSize,
-        total: performance.memory.totalJSHeapSize,
-        limit: performance.memory.jsHeapSizeLimit,
-        timestamp: Date.now(),
-      };
-
-      performanceMetrics.memoryUsage.push(currentMemory);
-
-      // Memory History begrenzen (letzte 50 Samples)
-      if (performanceMetrics.memoryUsage.length > 50) {
-        performanceMetrics.memoryUsage.shift();
-      }
-    }
-
-    performanceMetrics.renderCalls++;
-  }
-
-  function updatePerformanceOverlay(fps) {
-    const overlay = getElementById("threeEarthPerformance");
-    if (!overlay) return;
-
-    const fpsEl = overlay.querySelector("#fps");
-    const lodEl = overlay.querySelector("#lod");
-    const modeEl = overlay.querySelector("#mode");
-
-    if (fpsEl) fpsEl.textContent = fps.toFixed(1);
-    if (lodEl) lodEl.textContent = lodLevel;
-    if (modeEl) modeEl.textContent = isLowPerformanceMode ? "Low" : "High";
   }
 
   function updateEarthRotation() {
@@ -1961,79 +1408,25 @@ function startAnimationLoop(THREE) {
     }
   }
 
-  function updateStarsForSection() {
-    // Dynamische Sterne-Updates basierend auf aktueller Sektion
-    if (!starField || !window.currentSection) return;
-
-    const sectionName = window.currentSection;
-    const sectionConfigs = {
-      hero: { twinkleSpeed: 0.8, brightness: 0.9 },
-      features: { twinkleSpeed: 0.6, brightness: 0.8 },
-      about: { twinkleSpeed: 1.0, brightness: 1.0 },
-      contact: { twinkleSpeed: 0.4, brightness: 0.7 },
-    };
-
-    const config = sectionConfigs[sectionName] || sectionConfigs.hero;
-
-    starField.children.forEach((starLayer, layerIndex) => {
-      if (starLayer.material?.uniforms) {
-        // Twinkle-Speed basierend auf Layer-Distanz
-        const layerMultiplier = (layerIndex + 1) * 0.3;
-        if (starLayer.material.uniforms.time) {
-          starLayer.material.uniforms.twinkleSpeed = {
-            value: config.twinkleSpeed * layerMultiplier,
-          };
-        }
-
-        // Brightness-Anpassung
-        if (starLayer.material.uniforms.brightnessVariation) {
-          starLayer.material.uniforms.brightnessVariation.value =
-            config.brightness;
-        }
-      }
-    });
-  }
-
-  function updateClouds(elapsedTime) {
-    if (!cloudMesh) return;
-
-    cloudMesh.rotation.y += 0.001;
-
-    // Wolken-Material Zeit-Update
-    if (cloudMesh.material.uniforms?.time) {
-      cloudMesh.material.uniforms.time.value = elapsedTime;
-    }
-  }
-
-  // ===== Sterne Updates =====
-  function updateStars(elapsedTime) {
+  function updateStarField(elapsedTime) {
+    const starField = scene?.getObjectByName('starField');
     if (!starField) return;
 
-    // Sterne-Material Uniforms aktualisieren
-    starField.children.forEach((child) => {
-      if (child.material?.uniforms?.time) {
-        child.material.uniforms.time.value = elapsedTime;
-      }
-    });
+    // Section-spezifische Parameter verwenden
+    const twinkleIntensity = starField.userData.twinkleIntensity || 0.2;
+    const brightness = starField.userData.brightness || 0.9;
+    const rotationSpeed = starField.userData.rotationSpeed || 0.0001;
 
-    // Nebel animieren (falls vorhanden)
-    if (nebulae) {
-      nebulae.children.forEach((nebula, index) => {
-        if (nebula.material?.uniforms?.time) {
-          nebula.material.uniforms.time.value = elapsedTime;
-        }
+    // Subtile Rotation des gesamten Sternfeldes
+    starField.rotation.y = elapsedTime * rotationSpeed;
 
-        // Sanfte Rotation der Nebel
-        nebula.rotation.y += 0.001 * (index + 1);
-        nebula.rotation.z += 0.0005 * (index + 1);
-      });
-    }
-
-    // Parallax-Effekt für Sterne basierend auf Kamera-Bewegung
-    if (camera) {
-      const parallaxStrength = 0.02;
-      starField.rotation.x = camera.rotation.x * parallaxStrength;
-      starField.rotation.y = camera.rotation.y * parallaxStrength;
+    // Funkeln-Effekt durch Opacity-Variation (verstärkt für bessere Sichtbarkeit)
+    if (starField.material) {
+      // Kombiniertes Funkeln mit verschiedenen Frequenzen für natürlicheren Effekt
+      const mainTwinkle = Math.sin(elapsedTime * 0.5) * twinkleIntensity;
+      const fastTwinkle = Math.sin(elapsedTime * 2.0) * (twinkleIntensity * 0.3);
+      const combined = brightness * (0.7 + mainTwinkle + fastTwinkle);
+      starField.material.opacity = Math.max(0.4, Math.min(1.0, combined));
     }
   }
 
@@ -2045,7 +1438,7 @@ function startAnimationLoop(THREE) {
 
 // ===== Resize Handler =====
 function setupResizeHandler() {
-  const handleResize = throttle(() => {
+  const handleResize = () => {
     const container = getElementById("threeEarthContainer");
     if (!container || !camera || !renderer) return;
 
@@ -2062,16 +1455,23 @@ function setupResizeHandler() {
     }
 
     log.debug("Three.js resized", { width, height });
-  }, 100);
+  };
 
-  window.addEventListener("resize", handleResize);
+  // Resize Event mit shared utility (inkl. Throttling)
+  const resizeCleanup = onResize(handleResize, 100);
 
-  cleanupFunctions.push(() => {
-    window.removeEventListener("resize", handleResize);
-  });
+  sharedCleanupManager.addCleanupFunction(
+    'three-earth',
+    resizeCleanup,
+    'resize handler cleanup'
+  );
 }
 
 // ===== Public API & Module Export =====
+/**
+ * Initialisiert das Three.js Earth System mit 3D-Erde und Sternen
+ * @returns {Promise<Function>} Cleanup-Funktion für das System
+ */
 export async function initThreeEarth() {
   log.debug("Initializing Three.js Earth system");
 

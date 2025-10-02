@@ -1,9 +1,18 @@
 /**
- * Fordert (best effort) persistenten Storage an und liefert Status + Quota Estimate zurück.
- * Nutzt die moderne navigator.storage API mit Feature Detection.
- * Fällt still auf "unbekannt" zurück falls nicht unterstützt oder Fehlermeldung.
- * Aufruf ist idempotent: Mehrfache Aufrufe returnen gecachten Promise.
+ * Persistent Storage - Browser Storage Persistence Management
+ * 
+ * Moderne Storage API Integration:
+ * - navigator.storage.persist() für dauerhaften Storage
+ * - Feature Detection mit graceful degradation
+ * - Quota-Informationen und Status-Reporting
+ * - Idempotente Promise-basierte API
+ * - Optional: Auto-Aktivierung mit konfigurierbarer Verzögerung
+ * 
+ * @author Portfolio System
+ * @version 1.0.0
+ * @created 2025-10-02
  */
+
 let _persistPromise = null;
 export async function ensurePersistentStorage() {
   if (_persistPromise) return _persistPromise;

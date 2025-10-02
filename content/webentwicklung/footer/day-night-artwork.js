@@ -5,6 +5,7 @@
 
 import { getElementById, throttle } from '../utils/common-utils.js';
 import { createLogger } from '../utils/logger.js';
+import { createEventManager, onVisibilityChange } from '../utils/event-management.js';
 
 const log = createLogger('dayNightArtwork');
 
@@ -19,6 +20,9 @@ class DayNightArtworkManager {
     this.artwork = null;
     this.skyCanvas = null;
     this.isTransitioning = false;
+    
+    // Event Manager für systematisches Event-Management
+    this.eventManager = createEventManager('dayNightArtwork');
     
     // Throttled event handlers mit Referenzen für cleanup
     this.handleVisibilityChange = throttle(this.onVisibilityChange.bind(this), 100);
@@ -80,19 +84,24 @@ class DayNightArtworkManager {
   }
 
   /**
-   * Event-Listener Setup
+   * Event-Listener Setup mit EventManager
    */
   setupEventListeners() {
-    // Theme-Toggle Click Handler
-    this.artwork.addEventListener('click', this.boundToggleClick, { passive: false });
-    this.artwork.addEventListener('keydown', this.boundToggleKeydown, { passive: false });
+    // Theme-Toggle Events
+    this.eventManager.add(this.artwork, 'click', this.boundToggleClick, { passive: false });
+    this.eventManager.add(this.artwork, 'keydown', this.boundToggleKeydown, { passive: false });
 
-    // Visibility API für Performance
-    document.addEventListener('visibilitychange', this.handleVisibilityChange, { passive: true });
+    // Visibility API für Performance mit shared utility
+    this.visibilityCleanup = onVisibilityChange((isVisible) => {
+      if (!isVisible) {
+        this.handleVisibilityChange();
+      }
+    });
 
     // Theme-System Events
-    window.themeSystem?.addEventListener?.('themeChanged', this.boundThemeChanged);
-
+    if (window.themeSystem?.addEventListener) {
+      this.eventManager.add(window.themeSystem, 'themeChanged', this.boundThemeChanged);
+    }
   }
 
   /**
@@ -250,17 +259,17 @@ class DayNightArtworkManager {
   }
 
   /**
-   * Cleanup-Methode
+   * Cleanup-Methode mit EventManager
    */
   destroy() {
-    // Event-Listener entfernen
-    if (this.artwork) {
-      this.artwork.removeEventListener('click', this.boundToggleClick);
-      this.artwork.removeEventListener('keydown', this.boundToggleKeydown);
+    // Event Manager cleanup (alle Listener automatisch)
+    this.eventManager.destroy();
+    
+    // Visibility cleanup
+    if (this.visibilityCleanup) {
+      this.visibilityCleanup();
+      this.visibilityCleanup = null;
     }
-
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-    window.themeSystem?.removeEventListener?.('themeChanged', this.boundThemeChanged);
 
     // Referenzen löschen
     this.artwork = null;
