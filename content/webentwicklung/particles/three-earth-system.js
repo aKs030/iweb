@@ -591,7 +591,7 @@ function setupStarParallax() {
       const starField = scene?.getObjectByName("starField");
       if (!starField) return;
 
-      // Parallax-Bewegung für Sternfeld (harmonisch mit atmospheric-sky-system)
+      // Parallax-Bewegung für Sternfeld
       // Subtile Y-Rotation basierend auf Scroll-Position
       const parallaxRotationY = progress * Math.PI * 0.3; // Reduzierte Rotation für natürlicheren Effekt
       starField.rotation.y =
@@ -606,7 +606,7 @@ function setupStarParallax() {
       starField.position.z = parallaxZ;
 
       // Y-Position-Änderung für vertikale Parallax (wie bei CSS-Sternen)
-      const parallaxY = scrollY * 0.02; // Sehr subtil, wie im atmospheric-sky-system
+      const parallaxY = scrollY * 0.02; // Sehr subtile vertikale Parallax-Bewegung
       starField.position.y = parallaxY;
 
       // Opacity-Variation basierend auf Scroll-Position

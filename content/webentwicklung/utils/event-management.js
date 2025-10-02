@@ -193,24 +193,6 @@ export function addListener(target, event, handler, options = {}) {
   }
 }
 
-/**
- * Batch Event Setup für Objekte mit mehreren Events
- * @param {EventTarget} target
- * @param {Object} eventMap - { eventName: handler, ... }
- * @param {Object} defaultOptions
- * @returns {Function} cleanup aller Events
- */
-export function addEventMap(target, eventMap, defaultOptions = {}) {
-  const cleanupFunctions = [];
-
-  Object.entries(eventMap).forEach(([event, handler]) => {
-    const cleanup = addListener(target, event, handler, defaultOptions);
-    cleanupFunctions.push(cleanup);
-  });
-
-  return () => cleanupFunctions.forEach((fn) => fn());
-}
-
 // ===== Lifecycle Event Helpers =====
 
 /**
@@ -223,17 +205,6 @@ export function onVisibilityChange(callback) {
 
   const handler = () => callback(!document.hidden);
   return addListener(document, "visibilitychange", handler, { passive: true });
-}
-
-/**
- * Setup für beforeunload Event mit Cleanup-Callback
- * @param {Function} callback - Cleanup Funktion
- * @returns {Function} cleanup
- */
-export function onBeforeUnload(callback) {
-  if (typeof window === "undefined") return () => {};
-
-  return addListener(window, "beforeunload", callback, { once: true });
 }
 
 // ===== Common Event Patterns =====
@@ -347,19 +318,4 @@ export function onScroll(callback, target = window, throttleMs = 16) {
 
 // ===== Debug Utilities =====
 
-/**
- * Loggt aktive Event Listener für Debugging
- * @param {EventListenerManager} manager
- */
-export function debugEventManager(manager) {
-  if (log.isDebugEnabled()) {
-    log.debug(`${manager.name} Event Manager:`, {
-      activeListeners: manager.size,
-      listeners: Array.from(manager.listeners).map((l) => ({
-        target: l.target.tagName || l.target.constructor.name,
-        event: l.event,
-        passive: l.options.passive,
-      })),
-    });
-  }
-}
+

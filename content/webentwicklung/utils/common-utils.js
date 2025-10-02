@@ -6,7 +6,7 @@
  * - Array: shuffle
  * - DOM: getElementById mit Caching
  * - Timer: TimerManager für systematisches Cleanup
- * - Math: randomInt, randomFloat
+ * - Math: randomInt
  *
  * @author Portfolio System
  * @version 1.0.0
@@ -50,7 +50,7 @@ export function debounce(fn, wait = 100) {
 export function shuffle(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(randomFloat(0, i + 1));
+    const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -163,9 +163,6 @@ export class TimerManager {
 // --- Math Utilities ---
 export function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-export function randomFloat(min, max) {
-  return Math.random() * (max - min) + min;
 }
 
 // --- Erweiterbar: Weitere Utilities können hier ergänzt werden ---

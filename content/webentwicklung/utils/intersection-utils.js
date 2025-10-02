@@ -118,80 +118,6 @@ export function createTriggerOnceObserver(
   };
 }
 
-/**
- * Erstellt einen kontinuierlichen Observer für Ratio-basierte Logik
- * @param {Function} callback - Callback für entries (entry, intersectionRatio) => void
- * @param {Object} options - Observer options (optional)
- * @returns {Object} { observer, observe, unobserve, disconnect }
- */
-export function createRatioObserver(
-  callback,
-  options = OBSERVER_CONFIGS.featureRotation
-) {
-  if (!window.IntersectionObserver) {
-    log.warn(
-      "IntersectionObserver nicht verfügbar - Ratio Observer deaktiviert"
-    );
-    return {
-      observer: null,
-      observe: () => {},
-      unobserve: () => {},
-      disconnect: () => {},
-    };
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      callback(entry, entry.intersectionRatio);
-    });
-  }, options);
-
-  return {
-    observer,
-    observe: (element) => observer.observe(element),
-    unobserve: (element) => observer.unobserve(element),
-    disconnect: () => observer.disconnect(),
-  };
-}
-
-// ===== Batch Processing Helpers =====
-
-/**
- * Batch-verarbeitet IntersectionObserver Entries für bessere Performance
- * @param {IntersectionObserverEntry[]} entries - Observer entries
- * @param {Function} visibleCallback - Callback für sichtbare Elemente (element) => void
- * @param {Function} hiddenCallback - Callback für versteckte Elemente (element) => void (optional)
- */
-export function batchProcessEntries(
-  entries,
-  visibleCallback,
-  hiddenCallback = null
-) {
-  const visible = [];
-  const hidden = [];
-
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      visible.push(entry.target);
-    } else if (hiddenCallback) {
-      hidden.push(entry.target);
-    }
-  });
-
-  // Batch callbacks für bessere Performance
-  if (visible.length > 0) {
-    requestAnimationFrame(() => {
-      visible.forEach(visibleCallback);
-    });
-  }
-
-  if (hidden.length > 0 && hiddenCallback) {
-    requestAnimationFrame(() => {
-      hidden.forEach(hiddenCallback);
-    });
-  }
-}
-
 // ===== Cleanup Utilities =====
 
 /**
@@ -225,16 +151,4 @@ export function safeUnobserve(observer, element) {
 
 // ===== Debugging Helpers =====
 
-/**
- * Loggt Observer Configuration für Debugging
- * @param {string} name - Observer Name
- * @param {Object} options - Observer options
- */
-export function logObserverConfig(name, options) {
-  if (log.isDebugEnabled()) {
-    log.debug(`${name} Observer Config:`, {
-      threshold: options.threshold,
-      rootMargin: options.rootMargin || "0px",
-    });
-  }
-}
+

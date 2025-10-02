@@ -9,7 +9,6 @@ import "./utils/section-tracker.js"; // Section Detection für snapSectionChange
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 
 import { EnhancedAnimationEngine } from "./animations/enhanced-animation-engine.js";
-import { initAtmosphericSky } from "./particles/atmospheric-sky-system.js";
 import { initThreeEarth } from "./particles/three-earth-system.js";
 import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
 
@@ -407,18 +406,6 @@ function loadMenuAssets() {
       // TypeWriter Registry global verfügbar machen
       if (!window.TypeWriterRegistry) {
         window.TypeWriterRegistry = TypeWriterRegistry;
-      }
-
-      // Atmosphärisches Himmelssystem initialisieren
-      let atmosphericCleanup = null;
-      try {
-        atmosphericCleanup = initAtmosphericSky();
-        // Cleanup-Funktion global verfügbar machen für Debug-Zwecke
-        if (atmosphericCleanup && typeof atmosphericCleanup === "function") {
-          window.__atmosphericCleanup = atmosphericCleanup;
-        }
-      } catch (error) {
-        log.error("Failed to initialize atmospheric sky system:", error);
       }
 
       // Advanced Three.js Earth System initialisieren (direkte Integration)

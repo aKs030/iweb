@@ -1,9 +1,8 @@
 /**
- * Shared Particle System - Gemeinsame Infrastruktur
+ * Shared Particle System - Gemeinsame Infrastruktur für Three.js Earth System
  *
- * Zentralisiert gemeinsame Funktionalitäten der Particle-Systeme:
+ * Zentralisiert gemeinsame Funktionalitäten für Particle-Systeme:
  * - Parallax-Scroll-Management mit synchronen Effekten
- * - Section-Detection für responsive Animationsübergänge
  * - Resource-Cleanup-Management
  * - Performance-optimiertes State-Management
  *
@@ -12,7 +11,7 @@
  * @created 2025-10-02
  */
 
-// Shared Particle System - Gemeinsame Infrastruktur für Atmospheric Sky & Three.js Earth
+// Shared Particle System - Gemeinsame Infrastruktur für Three.js Earth System
 import { throttle } from "../utils/common-utils.js";
 import { createLogger } from "../utils/logger.js";
 
@@ -198,102 +197,6 @@ export class SharedParallaxManager {
   }
 }
 
-// ===== Shared Section Detection =====
-export class SharedSectionDetector {
-  constructor() {
-    this.observers = new Map();
-    this.callbacks = new Set();
-  }
-
-  addCallback(callback, name = "anonymous") {
-    this.callbacks.add({ callback, name });
-    log.debug(`Section detection callback added: ${name}`);
-
-    if (this.observers.size === 0) {
-      this.setupObserver();
-    }
-  }
-
-  removeCallback(callback) {
-    const callbackObj = Array.from(this.callbacks).find(
-      (c) => c.callback === callback
-    );
-    if (callbackObj) {
-      this.callbacks.delete(callbackObj);
-      log.debug(`Section detection callback removed: ${callbackObj.name}`);
-    }
-
-    if (this.callbacks.size === 0) {
-      this.cleanup();
-    }
-  }
-
-  setupObserver() {
-    if (sharedState.sectionObserver) return;
-
-    sharedState.sectionObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const sectionName =
-              entry.target.dataset.section || entry.target.id || "unknown";
-
-            if (sectionName !== sharedState.currentSection) {
-              sharedState.currentSection = sectionName;
-
-              // CSS Custom Property setzen
-              document.documentElement.style.setProperty(
-                "--current-section",
-                sectionName
-              );
-
-              // Alle Callbacks aufrufen
-              this.callbacks.forEach(({ callback, name }) => {
-                try {
-                  callback(sectionName, entry.target);
-                } catch (error) {
-                  log.error(
-                    `Section detection callback error (${name}):`,
-                    error
-                  );
-                }
-              });
-
-              log.debug(`Section changed: ${sectionName}`);
-            }
-          }
-        });
-      },
-      {
-        threshold: 0.3,
-        rootMargin: "-10% 0px -10% 0px",
-      }
-    );
-
-    // Alle Sections beobachten
-    const sections = document.querySelectorAll(
-      "section[data-section], section[id]"
-    );
-    sections.forEach((section) => {
-      sharedState.sectionObserver.observe(section);
-    });
-
-    log.debug(
-      `Section observer setup completed, watching ${sections.length} sections`
-    );
-  }
-
-  cleanup() {
-    if (sharedState.sectionObserver) {
-      sharedState.sectionObserver.disconnect();
-      sharedState.sectionObserver = null;
-    }
-    this.observers.clear();
-    this.callbacks.clear();
-    log.debug("Section detection cleanup completed");
-  }
-}
-
 // ===== Shared Cleanup Manager =====
 export class SharedCleanupManager {
   constructor() {
@@ -348,7 +251,6 @@ export class SharedCleanupManager {
 
     // Shared systems cleanup
     sharedParallaxManager.deactivate();
-    sharedSectionDetector.cleanup();
 
     // State reset
     sharedState.reset();
@@ -359,7 +261,6 @@ export class SharedCleanupManager {
 
 // ===== Singleton Instances =====
 export const sharedParallaxManager = new SharedParallaxManager();
-export const sharedSectionDetector = new SharedSectionDetector();
 export const sharedCleanupManager = new SharedCleanupManager();
 
 // ===== Public API =====
@@ -374,32 +275,3 @@ export function registerParticleSystem(name, systemInstance) {
 export function unregisterParticleSystem(name) {
   sharedState.unregisterSystem(name);
 }
-
-// ===== Utility Functions =====
-export function addTimeout(timeoutId) {
-  sharedState.timeouts.active.push(timeoutId);
-}
-
-export function setAnimationFrame(frameId) {
-  sharedState.animationFrameId = frameId;
-}
-
-export function isSystemInitialized() {
-  return sharedState.isInitialized;
-}
-
-export function setSystemInitialized(value) {
-  sharedState.isInitialized = value;
-}
-
-// ===== Module Export =====
-export default {
-  sharedParallaxManager,
-  sharedSectionDetector,
-  sharedCleanupManager,
-  getSharedState,
-  registerParticleSystem,
-  unregisterParticleSystem,
-  calculateScrollProgress,
-  SHARED_CONFIG,
-};
