@@ -399,6 +399,19 @@ async function setupScene(THREE, container) {
     renderer.outputEncoding = THREE.sRGBEncoding;
   }
 
+  // ===== DEBUG: Globale Variablen für Debugging verfügbar machen =====
+  if (typeof window !== "undefined") {
+    window.threeEarthDebug = {
+      scene,
+      camera,
+      renderer,
+      get earthMesh() { return earthMesh; },
+      get animationFrameId() { return animationFrameId; },
+      get currentSection() { return currentSection; },
+    };
+    log.debug("Debug-Objekt unter window.threeEarthDebug verfügbar");
+  }
+
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.2;
 

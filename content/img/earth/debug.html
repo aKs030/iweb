@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earth-Grafik Debug-Panel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #0a0a0a;
+      color: #00ff00;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    
+    .panel {
+      background: #1a1a1a;
+      border: 2px solid #00ff00;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+    
+    h1 { color: #00ff00; margin-bottom: 20px; text-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+    h2 { color: #00aaff; margin-bottom: 15px; }
+    
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 10px;
+      margin: 15px 0;
+    }
+    
+    .status-item {
+      background: #0a0a0a;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #333;
+    }
+    
+    .status-item.success { border-left-color: #00ff00; }
+    .status-item.error { border-left-color: #ff0000; }
+    .status-item.warning { border-left-color: #ffaa00; }
+    
+    .status-label {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+    
+    .status-value {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .success { color: #00ff00; }
+    .error { color: #ff0000; }
+    .warning { color: #ffaa00; }
+    
+    button {
+      background: #00ff00;
+      color: #0a0a0a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      margin: 5px;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background: #00aa00;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    }
+    
+    pre {
+      background: #0a0a0a;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      margin: 10px 0;
+    }
+    
+    .log-entry {
+      padding: 5px;
+      margin: 2px 0;
+      border-left: 3px solid #333;
+      padding-left: 10px;
+    }
+    
+    .log-entry.info { border-left-color: #00aaff; color: #00aaff; }
+    .log-entry.warn { border-left-color: #ffaa00; color: #ffaa00; }
+    .log-entry.error { border-left-color: #ff0000; color: #ff0000; }
+    .log-entry.debug { border-left-color: #888; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>🌍 Earth-Grafik Debug-Panel</h1>
+  
+  <div class="panel">
+    <h2>📊 System Status</h2>
+    <div class="status-grid" id="statusGrid"></div>
+    <button onclick="checkStatus()">🔄 Status aktualisieren</button>
+    <button onclick="toggleClouds()">☁️ Wolken Toggle</button>
+    <button onclick="toggleAtmosphere()">🌟 Atmosphäre Toggle</button>
+  </div>
+  
+  <div class="panel">
+    <h2>🔍 Scene Graph</h2>
+    <pre id="sceneGraph">Lädt...</pre>
+    <button onclick="updateSceneGraph()">🔄 Scene Graph aktualisieren</button>
+  </div>
+  
+  <div class="panel">
+    <h2>📝 Console Logs</h2>
+    <div id="consoleLogs"></div>
+    <button onclick="clearLogs()">🗑️ Logs löschen</button>
+  </div>
+  
+  <div class="panel">
+    <h2>🎮 Manual Controls</h2>
+    <div>
+      <label>Wolken-Opacity: <input type="range" id="cloudOpacity" min="0" max="1" step="0.1" value="0.9"></label>
+      <span id="cloudOpacityValue">0.9</span>
+    </div>
+    <div>
+      <label>Atmosphären-Intensität: <input type="range" id="atmoIntensity" min="0" max="2" step="0.1" value="0.8"></label>
+      <span id="atmoIntensityValue">0.8</span>
+    </div>
+    <div>
+      <label>Glow-Farbe: <input type="color" id="glowColor" value="#4488ff"></label>
+    </div>
+    <button onclick="applyManualControls()">✅ Änderungen anwenden</button>
+  </div>
+
+  <script>
+    const logs = [];
+    
+    // Intercept console methods
+    ['log', 'warn', 'error', 'debug'].forEach(method => {
+      const original = console[method];
+      console[method] = function(...args) {
+        logs.push({ type: method, message: args.join(' '), time: new Date().toLocaleTimeString() });
+        updateConsoleLogs();
+        original.apply(console, args);
+      };
+    });
+    
+    function updateConsoleLogs() {
+      const container = document.getElementById('consoleLogs');
+      container.innerHTML = logs.slice(-20).reverse().map(log => 
+        `<div class="log-entry ${log.type}">[${log.time}] ${log.message}</div>`
+      ).join('');
+    }
+    
+    function clearLogs() {
+      logs.length = 0;
+      updateConsoleLogs();
+    }
+    
+    function checkStatus() {
+      const debug = window.parent.threeEarthDebug || window.threeEarthDebug || {};
+      const scene = debug.scene;
+      const renderer = debug.renderer;
+      const earthMesh = debug.earthMesh;
+      
+      const checks = {
+        'Three.js geladen': !!window.parent.THREE || !!window.THREE,
+        'Debug-Objekt': !!debug.scene,
+        'Scene verfügbar': !!scene,
+        'Renderer aktiv': !!renderer && !renderer.forceContextLoss,
+        'Earth Mesh': !!earthMesh,
+        'Wolken-Layer': !!earthMesh?.getObjectByName?.('earthClouds'),
+        'Atmosphäre': !!scene?.getObjectByName?.('earthAtmosphere'),
+        'Animation läuft': !!debug.animationFrameId,
+      };
+      
+      const grid = document.getElementById('statusGrid');
+      grid.innerHTML = Object.entries(checks).map(([label, value]) => `
+        <div class="status-item ${value ? 'success' : 'error'}">
+          <div class="status-label">${label}</div>
+          <div class="status-value ${value ? 'success' : 'error'}">${value ? '✅ OK' : '❌ FEHLT'}</div>
+        </div>
+      `).join('');
+      
+      // Extra Info
+      if (!debug.scene) {
+        console.error('❌ window.threeEarthDebug nicht verfügbar - Three.js System nicht initialisiert?');
+      }
+    }
+    
+    function updateSceneGraph() {
+      const debug = window.parent.threeEarthDebug || window.threeEarthDebug || {};
+      const scene = debug.scene;
+      
+      if (!scene) {
+        document.getElementById('sceneGraph').textContent = 'Scene nicht verfügbar - window.threeEarthDebug fehlt';
+        return;
+      }
+      
+      const graph = [];
+      scene.traverse(obj => {
+        const indent = '  '.repeat(getDepth(obj));
+        graph.push(`${indent}${obj.name || '(unnamed)'} [${obj.type}] visible=${obj.visible}`);
+      });
+      
+      document.getElementById('sceneGraph').textContent = graph.join('\n');
+    }
+    
+    function getDepth(obj) {
+      let depth = 0;
+      let current = obj;
+      while (current.parent) {
+        depth++;
+        current = current.parent;
+      }
+      return depth - 1;
+    }
+    
+    function toggleClouds() {
+      const debug = window.parent.threeEarthDebug || window.threeEarthDebug || {};
+      const earthMesh = debug.earthMesh;
+      const clouds = earthMesh?.getObjectByName?.('earthClouds');
+      
+      if (clouds) {
+        clouds.visible = !clouds.visible;
+        console.log(`Wolken ${clouds.visible ? 'aktiviert' : 'deaktiviert'}`);
+        checkStatus();
+      } else {
+        console.error('Wolken-Layer nicht gefunden - prüfe window.threeEarthDebug');
+      }
+    }
+    
+    function toggleAtmosphere() {
+      const debug = window.parent.threeEarthDebug || window.threeEarthDebug || {};
+      const scene = debug.scene;
+      const atmo = scene?.getObjectByName?.('earthAtmosphere');
+      
+      if (atmo) {
+        atmo.visible = !atmo.visible;
+        console.log(`Atmosphäre ${atmo.visible ? 'aktiviert' : 'deaktiviert'}`);
+        checkStatus();
+      } else {
+        console.error('Atmosphäre nicht gefunden - prüfe window.threeEarthDebug');
+      }
+    }
+    
+    function applyManualControls() {
+      const debug = window.parent.threeEarthDebug || window.threeEarthDebug || {};
+      const earthMesh = debug.earthMesh;
+      const scene = debug.scene;
+      const clouds = earthMesh?.getObjectByName?.('earthClouds');
+      const atmo = scene?.getObjectByName?.('earthAtmosphere');
+      
+      const cloudOpacity = parseFloat(document.getElementById('cloudOpacity').value);
+      const atmoIntensity = parseFloat(document.getElementById('atmoIntensity').value);
+      const glowColor = document.getElementById('glowColor').value;
+      
+      if (clouds?.material) {
+        console.warn('Wolken-Opacity ist shader-basiert - Neustart erforderlich für Änderungen');
+      }
+      
+      if (atmo?.material?.uniforms) {
+        atmo.material.uniforms.glowIntensity.value = atmoIntensity;
+        const color = parseInt(glowColor.slice(1), 16);
+        atmo.material.uniforms.glowColor.value.setHex(color);
+        console.log(`Atmosphäre aktualisiert: Intensität=${atmoIntensity}, Farbe=${glowColor}`);
+      }
+    }
+    
+    // Event listeners für Slider
+    document.getElementById('cloudOpacity').addEventListener('input', (e) => {
+      document.getElementById('cloudOpacityValue').textContent = e.target.value;
+    });
+    
+    document.getElementById('atmoIntensity').addEventListener('input', (e) => {
+      document.getElementById('atmoIntensityValue').textContent = e.target.value;
+    });
+    
+    // Initial status check
+    setTimeout(() => {
+      checkStatus();
+      updateSceneGraph();
+    }, 2000);
+    
+    // Auto-refresh every 5 seconds
+    setInterval(() => {
+      checkStatus();
+    }, 5000);
+  </script>
+</body>
+</html>
