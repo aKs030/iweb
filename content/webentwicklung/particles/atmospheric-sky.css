@@ -1,0 +1,30 @@
+/* Particle Background System */
+
+.global-particle-background {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  isolation: isolate;
+  contain: layout style paint;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    #0f0f23 0%,
+    #1a1a2e 30%,
+    #16213e 60%,
+    #2c3e50 85%,
+    #34495e 100%
+  );
+}
+
+.global-particle-background[data-section="about"] {
+  background: linear-gradient(
+    180deg,
+    #1a1a2e 0%,
+    #2a2a3e 30%,
+    #3a3a4e 60%,
+    #4a4a5e 85%,
+    #5a5a6e 100%
+  );
+}

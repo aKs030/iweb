@@ -315,7 +315,3 @@ export function onScroll(callback, target = window, throttleMs = 16) {
 
   return addListener(target, "scroll", throttledHandler, { passive: true });
 }
-
-// ===== Debug Utilities =====
-
-

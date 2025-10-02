@@ -37,7 +37,7 @@
   z-index: -5; /* Über atmospheric sky, aber unter content */
   pointer-events: none;
   overflow: hidden;
-  
+
   /* WebGL Canvas Optimierungen */
   contain: layout style paint;
   isolation: isolate;
@@ -48,11 +48,11 @@
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
-  
+
   /* Performance Optimierungen */
   transform: translateZ(0); /* Hardware acceleration */
   will-change: transform;
-  
+
   /* Anti-Aliasing für bessere Textqualität */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: high-quality;
@@ -75,7 +75,11 @@
   transform: translate(-50%, -50%);
   text-align: center;
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 .three-earth-loading.hidden {
@@ -93,8 +97,12 @@
 }
 
 @keyframes threeEarthSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */
@@ -105,7 +113,11 @@
   transform: translate(-50%, -50%);
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 14px;
   padding: 20px;
   background: rgba(40, 20, 20, 0.8);
@@ -168,7 +180,10 @@
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   @keyframes threeEarthSpin {
-    0%, 100% { transform: rotate(0deg); }
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
   }
 }
 
@@ -181,7 +196,7 @@
   color: rgba(255, 255, 255, 0.8);
   padding: 8px 12px;
   border-radius: 6px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 12px;
   line-height: 1.4;
   pointer-events: none;
