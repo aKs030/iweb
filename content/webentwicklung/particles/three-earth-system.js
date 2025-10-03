@@ -380,7 +380,7 @@ async function setupScene(THREE, container) {
   // Renderer-Optimierungen für PBR (Physically Based Rendering)
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  
+
   // Physikalisch korrekte Beleuchtung aktivieren (neue Three.js API)
   renderer.useLegacyLights = false; // false = physikalisch korrekte Lichter
 
@@ -675,7 +675,7 @@ function setupLighting(THREE) {
   const rimLight = new THREE.DirectionalLight(0x6699ff, 0.6); // Kühlerer Blauton, reduziert
   rimLight.position.set(-5, 2, -5);
   scene.add(rimLight);
-  
+
   log.debug("PBR lighting setup completed");
 }
 
@@ -815,18 +815,18 @@ async function createEarthMaterial(THREE) {
       // PBR Material (MeshStandardMaterial) für realistisches Rendering
       const materialConfig = {
         map: dayTexture,
-        
+
         // Physikalisch korrekte Werte für die Erde
         roughness: 0.9, // Erde ist nicht glänzend (Ozeane werden später via roughnessMap variiert)
         metalness: 0.0, // Erde ist nicht metallisch
-        
+
         // Displacement & Normal Maps für Oberflächendetails
         displacementScale: 0.0, // Kein Displacement (würde Geometrie ändern)
         normalScale: new THREE.Vector2(1.5, 1.5), // Verstärkte Normal-Map für sichtbare Bergketten
-        
+
         // Environment Mapping für Reflexionen
         envMapIntensity: 0.3, // Subtile Umgebungsreflexionen
-        
+
         // Beleuchtung
         emissive: 0x000000, // Keine Eigenleuchten (Day-Texture)
         emissiveIntensity: 0.0,
