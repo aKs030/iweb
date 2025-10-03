@@ -7,12 +7,11 @@
  * - Scroll-basierte Kamera-Controls
  * - Section-responsive Animationsübergänge
  * - Performance-optimiertes Rendering
- * - Touch-Gesten und Inertia-basierte Controls
  *
  * Verwendet shared-particle-system für Parallax-Synchronisation.
  *
  * @author Portfolio System
- * @version 2.1.0
+ * @version 2.5.0
  * @created 2025-10-02
  */
 
@@ -31,7 +30,6 @@ import {
   getElementById,
   onResize,
   onScroll,
-  setupPointerEvents,
   throttle,
   TimerManager,
 } from "../shared-utilities.js";
@@ -41,18 +39,23 @@ const log = createLogger("threeEarthSystem");
 // Timer Manager für Three.js Earth System
 const earthTimers = new TimerManager();
 
+// ===== Performance: Math-Konstanten (Standard 3D-Pattern) =====
+const TWO_PI = Math.PI * 2;
+const PI_THIRD = Math.PI * 0.3;
+const PI_QUARTER = Math.PI / 4;
+
 // ===== Globale Variablen =====
-let scene, camera, renderer, earthMesh;
+let scene, camera, renderer, earthMesh, starField;
+let earthGeometry = null; // Referenz für explizites Disposal
 let sectionObserver = null;
 let animationFrameId = null;
 let currentSection = "hero";
+let isMobileDevice = false; // Device-Detection Cache
 
 // Kamera und Animation States
 let cameraTarget = { x: 0, y: 0, z: 5 };
 const cameraPosition = { x: 0, y: 0, z: 5 };
 let cameraRotation = { x: 0, y: 0 };
-let scrollProgress = 0;
-let isScrollBased = true;
 
 // ===== Three.js Earth System Manager =====
 const ThreeEarthManager = (() => {
@@ -94,8 +97,8 @@ const ThreeEarthManager = (() => {
       // Kamera-System initialisieren
       setupCameraSystem(THREE);
 
-      // Controls und UX
-      setupUserControls(container);
+      // Scroll-basierte Controls aktivieren
+      setupUserControls();
 
       // Section-Detection aktivieren
       setupSectionDetection();
@@ -172,6 +175,11 @@ const ThreeEarthManager = (() => {
             disposeMaterial(child.material, child.name || child.type);
           }
         }
+
+        // Light disposal (optional cleanup)
+        if (child.isLight) {
+          log.debug("Disposed light:", child.type);
+        }
       });
 
       // Scene komplett leeren
@@ -208,11 +216,19 @@ const ThreeEarthManager = (() => {
     // Timer cleanup
     earthTimers.clearAll();
 
+    // Explicit geometry disposal
+    if (earthGeometry) {
+      earthGeometry.dispose();
+      earthGeometry = null;
+      log.debug("Earth geometry explicitly disposed");
+    }
+
     // Global references zurücksetzen
     scene = null;
     camera = null;
     renderer = null;
     earthMesh = null;
+    starField = null;
     currentSection = "hero";
 
     // System aus shared state entfernen
@@ -269,8 +285,8 @@ async function loadThreeJS() {
 
     // ES Module Loading Strategy (empfohlen für r150+)
     const moduleLoadingSources = [
-      // 1. Lokales ES Module
-      "/content/webentwicklung/lib/three/build/three.module.js",
+      // 1. Lokales ES Module (Production - minified)
+      "/content/webentwicklung/lib/three/build/three.module.min.js",
       // 2. CDN ES Module Fallback
       "https://unpkg.com/three@0.150.0/build/three.module.js",
     ];
@@ -330,13 +346,13 @@ function loadFromSource(src) {
     script.src = src;
     script.crossOrigin = "anonymous";
 
-    // Timeout nach 8 Sekunden pro Quelle
-    const timeout = setTimeout(() => {
+    // Timeout nach 8 Sekunden pro Quelle (mit earthTimers für konsistentes Cleanup)
+    const timeout = earthTimers.setTimeout(() => {
       reject(new Error("Loading timeout"));
     }, 8000);
 
     script.onload = () => {
-      clearTimeout(timeout);
+      earthTimers.clearTimeout(timeout);
       if (window.THREE) {
         resolve(window.THREE);
       } else {
@@ -345,7 +361,7 @@ function loadFromSource(src) {
     };
 
     script.onerror = (error) => {
-      clearTimeout(timeout);
+      earthTimers.clearTimeout(timeout);
       reject(
         new Error(`Script loading failed: ${error.message || "Unknown error"}`)
       );
@@ -357,6 +373,9 @@ function loadFromSource(src) {
 
 // ===== Scene Setup =====
 async function setupScene(THREE, container) {
+  // Device-Detection beim Init (wird bei Resize aktualisiert)
+  isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+
   // Scene erstellen
   scene = new THREE.Scene();
 
@@ -378,8 +397,8 @@ async function setupScene(THREE, container) {
   renderer.setClearColor(0x000000, 0); // Transparent für Overlay
 
   // Renderer-Optimierungen für PBR (Physically Based Rendering)
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Shadow System deaktiviert - keine Schatten-Empfänger in Scene (nur Erde + Sterne)
+  renderer.shadowMap.enabled = false;
 
   // Physikalisch korrekte Beleuchtung aktivieren (neue Three.js API)
   renderer.useLegacyLights = false; // false = physikalisch korrekte Lichter
@@ -393,9 +412,8 @@ async function setupScene(THREE, container) {
     renderer.outputEncoding = THREE.sRGBEncoding;
   }
 
-  // Tone Mapping für realistische HDR-Farben
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0; // Reduziert für natürlichere Farben
+  // Tone Mapping deaktiviert - Scene hat keine HDR-Texturen oder dynamische Lichter
+  // NoToneMapping ist Standard und verursacht keinen Overhead
 
   // Frustum Culling aktivieren - Kompatibilität für verschiedene Three.js Versionen
   if (renderer.setFaceCulling) {
@@ -478,7 +496,7 @@ function createStarTexture(THREE) {
   // Zusätzliche diagonale Strahlen für realistischeren Effekt
   context.save();
   context.translate(center, center);
-  context.rotate(Math.PI / 4);
+  context.rotate(PI_QUARTER);
   context.fillRect(-rayWidth / 2, -rayLength * 0.6, rayWidth, rayLength * 1.2);
   context.fillRect(-rayLength * 0.6, -rayWidth / 2, rayLength * 1.2, rayWidth);
   context.restore();
@@ -493,9 +511,9 @@ function createStarTexture(THREE) {
 // ===== Dezentes Sternsystem mit Performance-Optimierungen =====
 function createStarField(THREE) {
   const starGeometry = new THREE.BufferGeometry();
-  const starCount = 1500; // Dezente Anzahl von Sternen
+  const starCount = 1500;
 
-  // ===== PERFORMANCE: Optimierte Buffer-Geometrie =====
+  // Optimierte Buffer-Geometrie
   const positions = new Float32Array(starCount * 3);
   const colors = new Float32Array(starCount * 3);
   const sizes = new Float32Array(starCount);
@@ -505,19 +523,19 @@ function createStarField(THREE) {
     const i3 = i * 3;
 
     // Zufällige Position auf Kugel-Oberfläche
-    const radius = 100 + Math.random() * 200; // Verschiedene Entfernungen
-    const theta = Math.random() * Math.PI * 2; // Azimuth
-    const phi = Math.acos(2 * Math.random() - 1); // Polar
+    const radius = 100 + Math.random() * 200;
+    const theta = Math.random() * TWO_PI;
+    const phi = Math.acos(2 * Math.random() - 1);
 
     positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
     positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i3 + 2] = radius * Math.cos(phi);
 
-    // Stern-Farben (heller für bessere Sichtbarkeit)
+    // Stern-Farben
     const colorVariation = 0.9 + Math.random() * 0.1;
-    colors[i3] = colorVariation; // R
-    colors[i3 + 1] = colorVariation * (0.95 + Math.random() * 0.05); // G
-    colors[i3 + 2] = colorVariation * (0.9 + Math.random() * 0.1); // B
+    colors[i3] = colorVariation;
+    colors[i3 + 1] = colorVariation * (0.95 + Math.random() * 0.05);
+    colors[i3 + 2] = colorVariation * (0.9 + Math.random() * 0.1);
 
     // Stern-Größen (deutlich größer für bessere Sichtbarkeit)
     sizes[i] =
@@ -526,7 +544,7 @@ function createStarField(THREE) {
         : 2.0 + Math.random() * 3.0;
   }
 
-  // ===== PERFORMANCE: Static Draw für unveränderliche Geometrie =====
+  // Static Draw für unveränderliche Geometrie (Performance)
   starGeometry.setAttribute(
     "position",
     new THREE.BufferAttribute(positions, 3).setUsage(THREE.StaticDrawUsage)
@@ -546,7 +564,7 @@ function createStarField(THREE) {
   // Runde Stern-Textur erstellen
   const starTexture = createStarTexture(THREE);
 
-  // ===== PERFORMANCE: Optimiertes Material mit Blending =====
+  // Optimiertes Material mit Additive Blending
   const starMaterial = new THREE.PointsMaterial({
     size: 3.0, // Größerer Basis-Size
     sizeAttenuation: true,
@@ -560,7 +578,7 @@ function createStarField(THREE) {
   });
 
   // Stern-Mesh erstellen und zur Szene hinzufügen
-  const starField = new THREE.Points(starGeometry, starMaterial);
+  starField = new THREE.Points(starGeometry, starMaterial);
   starField.name = "starField";
   starField.frustumCulled = true; // Enable frustum culling für Performance
   scene.add(starField);
@@ -587,35 +605,35 @@ function createStarField(THREE) {
 
 // ===== Parallax-Scrolling für Sterne =====
 function setupStarParallax() {
+  // Konstanten statt userData Properties
+  const BASE_ROTATION_Y = 0;
+  const BASE_OPACITY = 0.9;
+
   // Parallax-Handler zum shared system hinzufügen
   const parallaxHandler = (progress, scrollY) => {
     try {
-      const starField = scene?.getObjectByName("starField");
       if (!starField) return;
 
       // Parallax-Bewegung für Sternfeld
-      // Subtile Y-Rotation basierend auf Scroll-Position
-      const parallaxRotationY = progress * Math.PI * 0.3; // Reduzierte Rotation für natürlicheren Effekt
-      starField.rotation.y =
-        (starField.userData.baseRotationY || 0) + parallaxRotationY;
+      const parallaxRotationY = progress * PI_THIRD;
+      starField.rotation.y = BASE_ROTATION_Y + parallaxRotationY;
 
       // Zusätzliche X-Rotation für 3D-Effekt
-      const parallaxRotationX = Math.sin(progress * Math.PI * 2) * 0.1; // Subtile Neigung
+      const parallaxRotationX = Math.sin(progress * TWO_PI) * 0.1;
       starField.rotation.x = parallaxRotationX;
 
-      // Subtile Z-Position-Änderung für Tiefeneffekt (parallel zu CSS-Sternen)
-      const parallaxZ = Math.sin(progress * Math.PI) * 15; // Sanftere Bewegung
+      // Subtile Z-Position-Änderung für Tiefeneffekt
+      const parallaxZ = Math.sin(progress * Math.PI) * 15;
       starField.position.z = parallaxZ;
 
-      // Y-Position-Änderung für vertikale Parallax (wie bei CSS-Sternen)
-      const parallaxY = scrollY * 0.02; // Sehr subtile vertikale Parallax-Bewegung
+      // Y-Position-Änderung für vertikale Parallax
+      const parallaxY = scrollY * 0.02;
       starField.position.y = parallaxY;
 
       // Opacity-Variation basierend auf Scroll-Position
       if (starField.material) {
-        const baseOpacity = starField.userData.baseOpacity || 0.9;
         const scrollOpacity =
-          baseOpacity * (0.7 + Math.sin(progress * Math.PI) * 0.3);
+          BASE_OPACITY * (0.7 + Math.sin(progress * Math.PI) * 0.3);
         starField.material.opacity = Math.max(
           0.4,
           Math.min(1.0, scrollOpacity)
@@ -625,13 +643,6 @@ function setupStarParallax() {
       log.error("Star parallax error:", error);
     }
   };
-
-  // Initial setup
-  const starField = scene?.getObjectByName("starField");
-  if (starField) {
-    starField.userData.baseRotationY = starField.rotation.y;
-    starField.userData.baseOpacity = starField.material?.opacity || 0.9;
-  }
 
   sharedParallaxManager.addHandler(parallaxHandler, "three-earth-stars");
 
@@ -646,33 +657,24 @@ function setupStarParallax() {
 
 // ===== Beleuchtung Setup =====
 function setupLighting(THREE) {
-  // Hauptlichtquelle (Sonne) - Intensität für physicallyCorrectLights angepasst
-  const sunLight = new THREE.DirectionalLight(0xfff8f0, 3.5); // Wärmeres Sonnenlicht, stärker für PBR
+  // Hauptlichtquelle (Sonne)
+  const sunLight = new THREE.DirectionalLight(0xfff8f0, 3.5);
   sunLight.position.set(5, 3, 5);
-  sunLight.castShadow = true;
-
-  if (sunLight.castShadow) {
-    sunLight.shadow.mapSize.width = 4096; // Höhere Auflösung für schärfere Schatten
-    sunLight.shadow.mapSize.height = 4096;
-    sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 50;
-    sunLight.shadow.bias = -0.0001; // Reduziert Shadow-Acne
-    sunLight.shadow.radius = 2; // Weichere Schatten
-  }
+  // castShadow deaktiviert - keine Schatten-Empfänger in Scene
 
   scene.add(sunLight);
 
-  // Umgebungslicht - stärker für PBR, simuliert Himmelsstreuung
-  const ambientLight = new THREE.AmbientLight(0x8899bb, 0.8); // Leicht bläulicher Himmel, heller
+  // Umgebungslicht
+  const ambientLight = new THREE.AmbientLight(0x8899bb, 0.8);
   scene.add(ambientLight);
 
-  // Hemisphere Light für realistischeren Himmel-/Boden-Übergang
+  // Hemisphere Light
   const hemiLight = new THREE.HemisphereLight(0x8899ff, 0x332211, 0.5);
   hemiLight.position.set(0, 50, 0);
   scene.add(hemiLight);
 
-  // Rim Light für cinematischen Effekt - kühlerer Ton
-  const rimLight = new THREE.DirectionalLight(0x6699ff, 0.6); // Kühlerer Blauton, reduziert
+  // Rim Light für cinematischen Effekt
+  const rimLight = new THREE.DirectionalLight(0x6699ff, 0.6);
   rimLight.position.set(-5, 2, -5);
   scene.add(rimLight);
 
@@ -681,11 +683,10 @@ function setupLighting(THREE) {
 
 // ===== Earth-System erstellen =====
 async function createEarthSystem(THREE) {
-  // Hohe Qualität - feste Werte
-  const earthRadius = 3.5; // Vergrößert für Horizont-Effekt
+  const earthRadius = 3.5;
   const segments = 128;
 
-  const earthGeometry = new THREE.SphereGeometry(
+  earthGeometry = new THREE.SphereGeometry(
     earthRadius,
     segments,
     segments
@@ -697,8 +698,7 @@ async function createEarthSystem(THREE) {
   earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
   // Position wird dynamisch durch Section-Configs gesetzt (siehe updateEarthForSection)
   earthMesh.position.set(0, -4.5, 0); // Initial Hero-Position
-  earthMesh.castShadow = true;
-  earthMesh.receiveShadow = true;
+  // castShadow/receiveShadow deaktiviert - keine Schatten in Scene
   scene.add(earthMesh);
 
   log.debug("Earth system created", { segments });
@@ -798,49 +798,40 @@ async function createEarthMaterial(THREE) {
     // Material basierend auf verfügbaren Texturen
     let material;
 
-    if (dayTexture && nightTexture) {
-      // Shader Material für Day/Night Cycle (high quality)
-      material = new THREE.ShaderMaterial({
-        uniforms: {
-          dayTexture: { value: dayTexture },
-          nightTexture: { value: nightTexture },
-          normalTexture: { value: normalTexture },
-          sunPosition: { value: new THREE.Vector3(5, 3, 5) },
-          time: { value: 0 },
-        },
-        vertexShader: getEarthVertexShader(),
-        fragmentShader: getEarthFragmentShader(),
-      });
-    } else if (dayTexture) {
-      // PBR Material (MeshStandardMaterial) für realistisches Rendering
+    if (dayTexture) {
+      // PBR Material für realistisches Rendering
       const materialConfig = {
         map: dayTexture,
 
-        // Physikalisch korrekte Werte für die Erde
-        roughness: 0.9, // Erde ist nicht glänzend (Ozeane werden später via roughnessMap variiert)
-        metalness: 0.0, // Erde ist nicht metallisch
+        // Physikalisch korrekte Werte
+        roughness: 0.9,
+        metalness: 0.0,
 
-        // Displacement & Normal Maps für Oberflächendetails
-        displacementScale: 0.0, // Kein Displacement (würde Geometrie ändern)
-        normalScale: new THREE.Vector2(1.5, 1.5), // Verstärkte Normal-Map für sichtbare Bergketten
+        // Normal Maps für Oberflächendetails
+        displacementScale: 0.0,
+        normalScale: new THREE.Vector2(1.5, 1.5),
 
-        // Environment Mapping für Reflexionen
-        envMapIntensity: 0.3, // Subtile Umgebungsreflexionen
+        // Environment Mapping
+        envMapIntensity: 0.3,
 
-        // Beleuchtung
-        emissive: 0x000000, // Keine Eigenleuchten (Day-Texture)
-        emissiveIntensity: 0.0,
+        // Night Texture als emissive Map
+        emissive: 0xffffff,
+        emissiveIntensity: nightTexture ? 0.15 : 0.0,
       };
 
-      // Nur hinzufügen wenn Texturen definiert sind
+      // Texturen hinzufügen wenn verfügbar
+      if (nightTexture) {
+        materialConfig.emissiveMap = nightTexture;
+        log.debug("Night texture applied as emissive map");
+      }
       if (normalTexture) {
         materialConfig.normalMap = normalTexture;
-        log.debug("Normal map applied for surface details");
+        log.debug("Normal map applied");
       }
       if (bumpTexture) {
         materialConfig.bumpMap = bumpTexture;
-        materialConfig.bumpScale = 0.02; // Subtile Bump für zusätzliche Tiefe
-        log.debug("Bump map applied for additional depth");
+        materialConfig.bumpScale = 0.02;
+        log.debug("Bump map applied");
       }
 
       material = new THREE.MeshStandardMaterial(materialConfig);
@@ -850,7 +841,10 @@ async function createEarthMaterial(THREE) {
       material = createProceduralEarthMaterial(THREE);
     }
 
-    // Texture-Optimierungen für maximale Qualität
+    // Texture-Optimierungen mit device-basierter Anisotropic Filtering
+    const maxAniso = renderer.capabilities.getMaxAnisotropy();
+    const anisotropy = isMobileDevice ? Math.min(maxAniso, 4) : Math.min(maxAniso, 16);
+
     [dayTexture, nightTexture, normalTexture, bumpTexture].forEach(
       (texture) => {
         if (texture) {
@@ -858,12 +852,13 @@ async function createEarthMaterial(THREE) {
           texture.generateMipmaps = true;
           texture.minFilter = THREE.LinearMipmapLinearFilter;
           texture.magFilter = THREE.LinearFilter;
-          // Maximale Anisotropie für schärfste Texturen
-          texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+          texture.anisotropy = anisotropy;
           texture.needsUpdate = true;
         }
       }
     );
+
+    log.debug(`Applied ${anisotropy}x anisotropic filtering (device: ${isMobileDevice ? "mobile" : "desktop"})`);
 
     return material;
   } catch (error) {
@@ -879,8 +874,7 @@ async function loadTextureWithFallback(
   timeout = 5000,
   maxRetries = 3
 ) {
-  // ===== OPTIMIERUNG: WebP-Support mit automatischem JPG-Fallback =====
-  // Versuche zuerst WebP zu laden (58.9% kleiner), dann JPG als Fallback
+  // WebP-Support mit automatischem JPG-Fallback
   const webpUrl = url.replace(/\.jpg$/, ".webp");
   const formats = [
     { url: webpUrl, format: "WebP", description: "modern compressed format" },
@@ -961,169 +955,21 @@ function sleep(ms) {
   return earthTimers.sleep(ms);
 }
 
-// ===== Prozedurales Earth-Material =====
+// ===== Prozedurales Earth-Material (Fallback) =====
 function createProceduralEarthMaterial(THREE) {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      time: { value: 0 },
-      resolution: { value: new THREE.Vector2(512, 512) },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vPosition;
-      
-      void main() {
-        vUv = uv;
-        vNormal = normalize(normalMatrix * normal);
-        vPosition = position;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float time;
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vPosition;
-      
-      // Noise functions
-      float noise(vec2 co) {
-        return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
-      }
-      
-      vec3 oceanColor = vec3(0.1, 0.3, 0.8);
-      vec3 landColor = vec3(0.3, 0.6, 0.2);
-      vec3 desertColor = vec3(0.8, 0.7, 0.3);
-      vec3 mountainColor = vec3(0.5, 0.4, 0.3);
-      
-      void main() {
-        vec2 uv = vUv;
-        
-        // Kontinental-Noise
-        float continent = noise(uv * 4.0);
-        float detail = noise(uv * 16.0) * 0.5;
-        float terrain = continent + detail * 0.3;
-        
-        vec3 color;
-        if (terrain < 0.4) {
-          color = oceanColor;
-        } else if (terrain < 0.6) {
-          color = mix(oceanColor, landColor, (terrain - 0.4) * 5.0);
-        } else if (terrain < 0.8) {
-          color = mix(landColor, desertColor, (terrain - 0.6) * 5.0);
-        } else {
-          color = mix(desertColor, mountainColor, (terrain - 0.8) * 5.0);
-        }
-        
-        // Atmosphärischer Effekt am Rand
-        float fresnel = dot(vNormal, vec3(0, 0, 1));
-        fresnel = pow(1.0 - fresnel, 2.0);
-        color = mix(color, vec3(0.2, 0.5, 1.0), fresnel * 0.3);
-        
-        gl_FragColor = vec4(color, 1.0);
-      }
-    `,
+  return new THREE.MeshStandardMaterial({
+    color: 0x2d5a8a,
+    roughness: 0.9,
+    metalness: 0.0,
+    emissive: 0x1a3a5a,
+    emissiveIntensity: 0.1,
   });
 }
 
-// ===== Earth Vertex Shader =====
-function getEarthVertexShader() {
-  return `
-    varying vec2 vUv;
-    varying vec3 vNormal;
-    varying vec3 vSunDirection;
-    varying vec3 vPosition;
-    
-    uniform vec3 sunPosition;
-    
-    void main() {
-      vUv = uv;
-      vNormal = normalize(normalMatrix * normal);
-      vPosition = position;
-      
-      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-      vSunDirection = normalize(sunPosition - worldPosition.xyz);
-      
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `;
-}
-
-// ===== Earth Fragment Shader =====
-function getEarthFragmentShader() {
-  return `
-    uniform sampler2D dayTexture;
-    uniform sampler2D nightTexture;
-    uniform sampler2D normalTexture;
-    uniform float time;
-    
-    varying vec2 vUv;
-    varying vec3 vNormal;
-    varying vec3 vSunDirection;
-    varying vec3 vPosition;
-    
-    void main() {
-      vec3 dayColor = texture2D(dayTexture, vUv).rgb;
-      vec3 nightColor = texture2D(nightTexture, vUv).rgb;
-      
-      // Normal mapping
-      vec3 normalColor = texture2D(normalTexture, vUv).rgb;
-      vec3 normal = normalize(vNormal + (normalColor - 0.5) * 0.1);
-      
-      // Day/Night transition
-      float sunFactor = dot(normal, vSunDirection);
-      float dayNightMix = smoothstep(-0.1, 0.1, sunFactor);
-      
-      vec3 color = mix(nightColor * 0.3, dayColor, dayNightMix);
-      
-      // Atmosphärischer Rim-Effekt
-      float fresnel = 1.0 - dot(normal, vec3(0, 0, 1));
-      fresnel = pow(fresnel, 2.0);
-      color = mix(color, vec3(0.3, 0.6, 1.0), fresnel * 0.2);
-      
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `;
-}
-
 // ===== Kamera-System Setup =====
-function setupCameraSystem(THREE) {
+function setupCameraSystem() {
   // Initial Kamera-Position
   updateCameraForSection("hero");
-
-  // LERP-basierte Kamera-Animation
-  const lerpFactor = 0.05; // Smooth interpolation
-
-  function updateCameraPosition() {
-    // Position LERP
-    cameraPosition.x += (cameraTarget.x - cameraPosition.x) * lerpFactor;
-    cameraPosition.y += (cameraTarget.y - cameraPosition.y) * lerpFactor;
-    cameraPosition.z += (cameraTarget.z - cameraPosition.z) * lerpFactor;
-
-    // Rotation LERP für cinematischen Pitch
-    camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    camera.rotation.x += (cameraRotation.x - camera.rotation.x) * lerpFactor;
-    camera.rotation.y += (cameraRotation.y - camera.rotation.y) * lerpFactor;
-
-    // Look-at mit leichter lateraler Bewegung
-    const lookAtTarget = new THREE.Vector3(
-      Math.sin(Date.now() * 0.0005) * 0.1, // Subtile X-Bewegung
-      Math.sin(Date.now() * 0.0008) * 0.05, // Subtile Y-Bewegung
-      0
-    );
-    camera.lookAt(lookAtTarget);
-  }
-
-  // In Animation Loop integrieren
-  sharedCleanupManager.addCleanupFunction(
-    "three-earth",
-    () => {
-      // Cleanup für Kamera-System (falls nötig)
-    },
-    "camera system cleanup"
-  );
-
-  window.updateCameraPosition = updateCameraPosition; // Für Animation Loop
 
   log.debug("Camera system setup completed");
 }
@@ -1132,32 +978,27 @@ function setupCameraSystem(THREE) {
 function updateCameraForSection(sectionName) {
   const cameraConfigs = {
     hero: {
-      position: { x: 0, y: -1.8, z: 5 }, // Näher für bessere Detail-Sichtbarkeit
-      rotation: { x: 0.2, y: 0 }, // Nach unten blicken für Horizont-Effekt
-      fov: 45, // Ausgewogener FOV für natürliche Perspektive
+      position: { x: 0, y: -1.8, z: 5 },
+      rotation: { x: 0.2, y: 0 },
+      fov: 45,
     },
     features: {
-      position: { x: -3, y: 2.5, z: 6.5 }, // Von links oben - elegante Diagonale
-      rotation: { x: -0.3, y: 0.4 }, // Nach unten und leicht nach rechts gedreht
-      fov: 42, // Ausgewogener FOV für natürliche Perspektive
+      position: { x: -3, y: 2.5, z: 6.5 },
+      rotation: { x: -0.3, y: 0.4 },
+      fov: 42,
     },
     about: {
-      position: { x: 0, y: 1, z: 30 }, // Maximale Distanz für extrem kleine Erde
-      rotation: { x: -0.15, y: 0 }, // Leicht nach unten für Überblick
-      fov: 25, // Sehr enger FOV für maximalen Verkleinerungs-Effekt
-    },
-    contact: {
-      position: { x: 0, y: 3, z: 8 }, // Von oben, weiter weg - "Gott-Perspektive"
-      rotation: { x: -0.35, y: 0 }, // Nach unten blicken auf die Erde
-      fov: 38, // Engerer FOV für fokussierten, meditativen Blick
+      position: { x: 0, y: 1, z: 30 },
+      rotation: { x: -0.15, y: 0 },
+      fov: 25,
     },
   };
 
   const config = cameraConfigs[sectionName] || cameraConfigs.hero;
 
-  // Ziel-Position und -Rotation setzen (wird via LERP erreicht)
-  cameraTarget = { ...config.position };
-  cameraRotation = { ...config.rotation };
+  // Ziel-Position und -Rotation setzen (LERP-Animation)
+  cameraTarget = config.position;
+  cameraRotation = config.rotation;
 
   // FOV anpassen
   if (camera && camera.fov !== config.fov) {
@@ -1168,212 +1009,23 @@ function updateCameraForSection(sectionName) {
   log.debug(`Camera updated for section: ${sectionName}`, config);
 }
 
-// ===== User Controls Setup =====
-// ===== Erweiterte User Controls mit Touch-Gesten & Smooth Dampening =====
-function setupUserControls(container) {
-  let isUserInteracting = false;
-  const mouseStart = { x: 0, y: 0 };
-  const cameraStart = { x: 0, y: 0 };
-
-  // Touch-Gesten State
-  let touchStartDistance = 0;
-  let initialZoom = 5;
-  let currentZoom = 5;
-  let targetZoom = 5;
-
-  // Velocity für Inertia
-  let velocity = { x: 0, y: 0 };
-  const dampingFactor = 0.95; // Smooth dampening
-  const maxVelocity = 0.1;
-
-  // Scroll-basierte Controls (Standard)
+// ===== Scroll-basierte Controls =====
+function setupUserControls() {
+  // Scroll-basierte Earth-Rotation
   const handleScroll = throttle(() => {
-    if (!isScrollBased) return;
-
     const scrollY = window.pageYOffset;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
-    scrollProgress = Math.min(
+    const scrollProgress = Math.min(
       1,
       Math.max(0, scrollY / Math.max(1, documentHeight - windowHeight))
     );
 
     // Earth-Rotation basierend auf Scroll
     if (earthMesh) {
-      earthMesh.rotation.y = scrollProgress * Math.PI * 2;
+      earthMesh.rotation.y = scrollProgress * TWO_PI;
     }
   }, 16);
-
-  // Mouse Controls für freie Kamera (optional)
-  function enableFreeCamera() {
-    isScrollBased = false;
-    container.style.cursor = "grab";
-    log.debug("Free camera mode enabled");
-  }
-
-  function enableScrollCamera() {
-    isScrollBased = true;
-    container.style.cursor = "";
-    log.debug("Scroll-based camera mode enabled");
-  }
-
-  // Pinch-to-Zoom für Touch
-  const handleTouchStart = (event) => {
-    if (isScrollBased) return;
-
-    if (event.touches.length === 2) {
-      // Two-finger gestures
-      const dx = event.touches[0].clientX - event.touches[1].clientX;
-      const dy = event.touches[0].clientY - event.touches[1].clientY;
-      touchStartDistance = Math.sqrt(dx * dx + dy * dy);
-      initialZoom = currentZoom;
-      event.preventDefault();
-    } else if (event.touches.length === 1) {
-      // Single touch drag
-      isUserInteracting = true;
-      mouseStart.x = event.touches[0].clientX;
-      mouseStart.y = event.touches[0].clientY;
-      cameraStart.x = cameraRotation.x;
-      cameraStart.y = cameraRotation.y;
-      velocity = { x: 0, y: 0 }; // Reset velocity
-    }
-  };
-
-  const handleTouchMove = (event) => {
-    if (!isScrollBased && event.touches.length === 2) {
-      // Pinch-to-Zoom
-      const dx = event.touches[0].clientX - event.touches[1].clientX;
-      const dy = event.touches[0].clientY - event.touches[1].clientY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      const scale = touchStartDistance / distance;
-      targetZoom = Math.max(2, Math.min(15, initialZoom * scale));
-      event.preventDefault();
-    } else if (isUserInteracting && event.touches.length === 1) {
-      // Single touch drag with velocity tracking
-      const clientX = event.touches[0].clientX;
-      const clientY = event.touches[0].clientY;
-
-      const deltaX = clientX - mouseStart.x;
-      const deltaY = clientY - mouseStart.y;
-
-      // Update velocity for inertia
-      velocity.x = deltaX * 0.005;
-      velocity.y = -deltaY * 0.005;
-
-      cameraRotation.y = cameraStart.y + deltaX * 0.005;
-      cameraRotation.x = Math.max(
-        -Math.PI / 3,
-        Math.min(Math.PI / 3, cameraStart.x - deltaY * 0.005)
-      );
-
-      event.preventDefault();
-    }
-  };
-
-  const handleTouchEnd = (event) => {
-    if (event.touches.length === 0) {
-      isUserInteracting = false;
-    }
-  };
-
-  // Touch/Mouse Interaction
-  const handlePointerDown = (event) => {
-    if (isScrollBased || event.touches) return; // Touch wird separat behandelt
-
-    isUserInteracting = true;
-    mouseStart.x = event.clientX;
-    mouseStart.y = event.clientY;
-    cameraStart.x = cameraRotation.x;
-    cameraStart.y = cameraRotation.y;
-    velocity = { x: 0, y: 0 }; // Reset velocity
-
-    container.style.cursor = "grabbing";
-  };
-
-  const handlePointerMove = (event) => {
-    if (!isUserInteracting || isScrollBased || event.touches) return;
-
-    const clientX = event.clientX;
-    const clientY = event.clientY;
-
-    const deltaX = clientX - mouseStart.x;
-    const deltaY = clientY - mouseStart.y;
-
-    // Update velocity for inertia
-    velocity.x = deltaX * 0.005;
-    velocity.y = -deltaY * 0.005;
-
-    cameraRotation.y = cameraStart.y + deltaX * 0.005;
-    cameraRotation.x = Math.max(
-      -Math.PI / 3,
-      Math.min(Math.PI / 3, cameraStart.x - deltaY * 0.005)
-    );
-  };
-
-  const handlePointerUp = () => {
-    isUserInteracting = false;
-    container.style.cursor = "grab";
-  };
-
-  // Mouse Wheel Zoom
-  const handleWheel = (event) => {
-    if (isScrollBased) return;
-
-    event.preventDefault();
-    const delta = event.deltaY * 0.01;
-    targetZoom = Math.max(2, Math.min(15, targetZoom + delta));
-  };
-
-  // Inertia & Smooth Dampening Animation
-  function updateInertia() {
-    if (!isUserInteracting && !isScrollBased) {
-      // Apply velocity with dampening
-      if (Math.abs(velocity.x) > 0.001 || Math.abs(velocity.y) > 0.001) {
-        cameraRotation.y += velocity.x;
-        cameraRotation.x += velocity.y;
-
-        // Clamp rotation
-        cameraRotation.x = Math.max(
-          -Math.PI / 3,
-          Math.min(Math.PI / 3, cameraRotation.x)
-        );
-
-        // Apply dampening
-        velocity.x *= dampingFactor;
-        velocity.y *= dampingFactor;
-
-        // Clamp velocity
-        velocity.x = Math.max(-maxVelocity, Math.min(maxVelocity, velocity.x));
-        velocity.y = Math.max(-maxVelocity, Math.min(maxVelocity, velocity.y));
-      }
-
-      // Smooth zoom interpolation
-      if (Math.abs(currentZoom - targetZoom) > 0.01) {
-        currentZoom += (targetZoom - currentZoom) * 0.1;
-        cameraTarget.z = currentZoom;
-      }
-    }
-  }
-
-  // Touch Events (separate für bessere Kontrolle)
-  container.addEventListener("touchstart", handleTouchStart, {
-    passive: false,
-  });
-  container.addEventListener("touchmove", handleTouchMove, { passive: false });
-  container.addEventListener("touchend", handleTouchEnd, { passive: false });
-  container.addEventListener("wheel", handleWheel, { passive: false });
-
-  // Pointer Events Setup mit shared utilities (nur für Maus)
-  const pointerCleanup = setupPointerEvents(
-    container,
-    {
-      onStart: handlePointerDown,
-      onMove: handlePointerMove,
-      onEnd: handlePointerUp,
-    },
-    { passive: false }
-  );
 
   // Scroll Events Setup
   const scrollCleanup = onScroll(handleScroll);
@@ -1383,30 +1035,11 @@ function setupUserControls(container) {
     "three-earth",
     () => {
       scrollCleanup();
-      pointerCleanup();
-      container.removeEventListener("touchstart", handleTouchStart);
-      container.removeEventListener("touchmove", handleTouchMove);
-      container.removeEventListener("touchend", handleTouchEnd);
-      container.removeEventListener("wheel", handleWheel);
     },
     "user controls cleanup"
   );
 
-  // Public API für Kontrolle
-  window.ThreeEarthControls = {
-    enableFreeCamera,
-    enableScrollCamera,
-    isScrollBased: () => isScrollBased,
-    updateInertia, // Export für Animation-Loop
-    getZoom: () => currentZoom,
-    setZoom: (zoom) => {
-      targetZoom = zoom;
-    },
-  };
-
-  log.debug(
-    "Enhanced user controls setup completed (Touch gestures, Inertia, Zoom)"
-  );
+  log.debug("Scroll-based controls setup completed");
 }
 
 // ===== Section Detection Setup =====
@@ -1441,7 +1074,7 @@ function setupSectionDetection() {
   });
 
   // Initial section detection
-  setTimeout(() => {
+  earthTimers.setTimeout(() => {
     const initialSection = document.querySelector("#hero") || sections[0];
     if (initialSection) {
       currentSection = initialSection.id;
@@ -1459,49 +1092,36 @@ function updateEarthForSection(sectionName) {
 
   const sectionConfigs = {
     hero: {
-      position: { x: 0, y: -4.5, z: 0 }, // Tief unten für Horizont-Effekt
-      scale: 1.5, // Größer für bessere Detail-Sichtbarkeit der Texturen
-      rotationSpeed: 0.0015, // Optimale Geschwindigkeit für realistische Erdrotation
-      starTwinkle: 0.25, // Moderates Funkeln
-      starBrightness: 0.9, // Nicht zu hell, damit Erde im Fokus bleibt
+      position: { x: 0, y: -4.5, z: 0 },
+      scale: 1.5,
+      starTwinkle: 0.25,
+      starBrightness: 0.9,
       starRotation: 0.00008,
     },
     features: {
-      position: { x: 1, y: -1, z: -0.5 }, // Leicht rechts und unten, etwas zurück
-      scale: 1.0, // Normal-Größe
-      rotationSpeed: 0.0015,
+      position: { x: 1, y: -1, z: -0.5 },
+      scale: 1.0,
       starTwinkle: 0.25,
       starBrightness: 0.9,
       starRotation: 0.00008,
     },
     about: {
-      position: { x: 0, y: 0, z: -2 }, // Zentriert, leicht zurück
-      scale: 0.35, // Extrem klein für maximalen "Pale Blue Dot"-Effekt
-      rotationSpeed: 0.0008, // Noch langsamere Rotation
-      starTwinkle: 0.5, // Maximales Sternen-Funkeln
-      starBrightness: 1.2, // Maximale Sternenhelligkeit
+      position: { x: 0, y: 0, z: -2 },
+      scale: 0.35,
+      starTwinkle: 0.5,
+      starBrightness: 1.2,
       starRotation: 0.00008,
-    },
-    contact: {
-      position: { x: 0, y: 0.5, z: -1 }, // Leicht oben, weiter hinten
-      scale: 0.85, // Kleiner für "von oben"-Perspektive
-      rotationSpeed: 0.0008,
-      starTwinkle: 0.2,
-      starBrightness: 0.85,
-      starRotation: 0.00006,
     },
   };
 
   const config = sectionConfigs[sectionName] || sectionConfigs.hero;
 
-  // Position Animation mit LERP (Ziel setzen)
+  // Position & Scale Animation (LERP)
   if (config.position) {
-    earthMesh.userData.targetPosition = { ...config.position };
+    earthMesh.userData.targetPosition = config.position;
   }
 
-  // Scale Animation mit LERP
   earthMesh.userData.targetScale = config.scale;
-  earthMesh.userData.rotationSpeed = config.rotationSpeed;
 
   // Stern-System für Section anpassen
   updateStarFieldForSection(config);
@@ -1510,42 +1130,39 @@ function updateEarthForSection(sectionName) {
 }
 
 function updateStarFieldForSection(config) {
-  const starField = scene?.getObjectByName("starField");
   if (!starField || !starField.material) return;
 
-  // Stern-Parameter für Section setzen
+  // Stern-Parameter für Section
   starField.userData.twinkleIntensity = config.starTwinkle;
   starField.userData.brightness = config.starBrightness;
   starField.userData.rotationSpeed = config.starRotation;
 
-  // Basis-Helligkeit setzen
   starField.material.opacity = config.starBrightness * 0.8;
 }
 
-// ===== Animation Loop mit Inertia-Updates =====
+// ===== Animation Loop =====
 function startAnimationLoop(THREE) {
   const clock = new THREE.Clock();
+  const lerpFactor = 0.05;
+
+  // Wiederverwendbare Vector3 (Object-Pooling)
+  const tempVector3 = new THREE.Vector3();
+  const lookAtVector3 = new THREE.Vector3();
+
   function animate() {
     animationFrameId = requestAnimationFrame(animate);
 
     const deltaTime = clock.getDelta();
+    const elapsedTime = clock.getElapsedTime();
 
-    // Inertia & Smooth Controls Update
-    if (window.ThreeEarthControls?.updateInertia) {
-      window.ThreeEarthControls.updateInertia();
-    }
-
-    // Earth Updates mit Scale-Animation
-    updateEarthRotation();
-    updateEarthScale(deltaTime);
+    // Earth Updates (Position & Scale)
+    updateEarthTransform(tempVector3, deltaTime);
 
     // Subtile Stern-Animation
-    updateStarField(clock.getElapsedTime());
+    updateStarField(elapsedTime);
 
     // Kamera-Position Update (LERP)
-    if (window.updateCameraPosition) {
-      window.updateCameraPosition();
-    }
+    updateCameraPosition(lookAtVector3, lerpFactor, elapsedTime);
 
     // Rendern
     renderFrame();
@@ -1555,8 +1172,6 @@ function startAnimationLoop(THREE) {
     try {
       renderer.render(scene, camera);
     } catch (error) {
-      log.error("Render error:", error);
-
       // Critical render failure, stop animation
       log.error("Critical render failure, stopping animation:", error);
       if (animationFrameId) {
@@ -1566,75 +1181,70 @@ function startAnimationLoop(THREE) {
     }
   }
 
-  function updateEarthRotation() {
+  function updateEarthTransform(tempVector3, deltaTime) {
     if (!earthMesh) return;
 
-    if (isScrollBased) {
-      // Bereits in scroll handler gesetzt
-    } else {
-      earthMesh.rotation.y += earthMesh.userData.rotationSpeed || 0.002;
-    }
-
-    // Scale LERP
-    if (earthMesh.userData.targetScale) {
-      const { targetScale } = earthMesh.userData;
-      earthMesh.scale.lerp(
-        new THREE.Vector3(targetScale, targetScale, targetScale),
-        0.02
-      );
-    }
-
-    // Position LERP - smooth transition zwischen Sections
+    // Position LERP
     if (earthMesh.userData.targetPosition) {
       const { targetPosition } = earthMesh.userData;
-      earthMesh.position.lerp(
-        new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z),
-        0.03 // Etwas schneller als Scale für dynamischeren Effekt
-      );
+      tempVector3.set(targetPosition.x, targetPosition.y, targetPosition.z);
+      earthMesh.position.lerp(tempVector3, 0.03);
+    }
+
+    // Scale Animation mit Easing
+    if (earthMesh.userData.targetScale) {
+      const targetScale = earthMesh.userData.targetScale;
+      const currentScale = earthMesh.scale.x;
+      const scaleDiff = targetScale - currentScale;
+
+      if (Math.abs(scaleDiff) > 0.001) {
+        const lerpFactor = Math.min(deltaTime * 4.0, 1.0);
+        const easedFactor = 1 - Math.pow(1 - lerpFactor, 3);
+        const newScale = currentScale + scaleDiff * easedFactor;
+        earthMesh.scale.set(newScale, newScale, newScale);
+      }
     }
   }
 
-  function updateEarthScale(deltaTime) {
-    if (!earthMesh) return;
+  function updateCameraPosition(lookAtVector3, lerpFactor, elapsedTime) {
+    // Position LERP
+    cameraPosition.x += (cameraTarget.x - cameraPosition.x) * lerpFactor;
+    cameraPosition.y += (cameraTarget.y - cameraPosition.y) * lerpFactor;
+    cameraPosition.z += (cameraTarget.z - cameraPosition.z) * lerpFactor;
 
-    // Erweiterte Scale-Animation mit verbessertem Easing
-    const targetScale = earthMesh.userData.targetScale || 1.0;
-    const currentScale = earthMesh.scale.x;
-    const scaleDiff = targetScale - currentScale;
+    // Rotation LERP
+    camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    camera.rotation.x += (cameraRotation.x - camera.rotation.x) * lerpFactor;
+    camera.rotation.y += (cameraRotation.y - camera.rotation.y) * lerpFactor;
 
-    if (Math.abs(scaleDiff) > 0.001) {
-      // Exponential easing für natürlichere Animation
-      const lerpFactor = Math.min(deltaTime * 4.0, 1.0);
-      const easedFactor = 1 - Math.pow(1 - lerpFactor, 3); // Ease out cubic
-      const newScale = currentScale + scaleDiff * easedFactor;
-      earthMesh.scale.set(newScale, newScale, newScale);
-    }
+    // Look-at mit subtiler lateraler Bewegung
+    lookAtVector3.set(
+      Math.sin(elapsedTime * 0.5) * 0.1,
+      Math.sin(elapsedTime * 0.8) * 0.05,
+      0
+    );
+    camera.lookAt(lookAtVector3);
   }
 
   function updateStarField(elapsedTime) {
-    const starField = scene?.getObjectByName("starField");
     if (!starField) return;
 
-    // Section-spezifische Parameter verwenden
+    // Section-spezifische Parameter
     const twinkleIntensity = starField.userData.twinkleIntensity || 0.2;
     const brightness = starField.userData.brightness || 0.9;
     const rotationSpeed = starField.userData.rotationSpeed || 0.0001;
 
-    // Subtile Rotation des gesamten Sternfeldes
+    // Subtile Rotation
     starField.rotation.y = elapsedTime * rotationSpeed;
 
-    // Funkeln-Effekt durch Opacity-Variation (verstärkt für bessere Sichtbarkeit)
+    // Funkeln-Effekt durch Opacity-Variation
     if (starField.material) {
-      // Kombiniertes Funkeln mit verschiedenen Frequenzen für natürlicheren Effekt
       const mainTwinkle = Math.sin(elapsedTime * 0.5) * twinkleIntensity;
-      const fastTwinkle =
-        Math.sin(elapsedTime * 2.0) * (twinkleIntensity * 0.3);
+      const fastTwinkle = Math.sin(elapsedTime * 2.0) * (twinkleIntensity * 0.3);
       const combined = brightness * (0.7 + mainTwinkle + fastTwinkle);
       starField.material.opacity = Math.max(0.4, Math.min(1.0, combined));
     }
   }
-
-  // Rendering wird in der vorherigen renderFrame() Funktion durchgeführt
 
   animate();
   log.debug("Animation loop started");
@@ -1649,15 +1259,18 @@ function setupResizeHandler() {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
+    // Device-Detection aktualisieren (Device-Rotation)
+    isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
 
     renderer.setSize(width, height);
 
-    log.debug("Three.js resized", { width, height });
+    log.debug("Three.js resized", { width, height, isMobile: isMobileDevice });
   };
 
-  // Resize Event mit shared utility (inkl. Throttling)
+  // Resize Event mit Throttling
   const resizeCleanup = onResize(handleResize, 100);
 
   sharedCleanupManager.addCleanupFunction(
@@ -1705,7 +1318,7 @@ function showErrorState(container, error) {
     if (errorText) {
       errorText.textContent = `WebGL-Fehler: ${
         error.message || "Unbekannter Fehler"
-      }. CSS-Fallback wird verwendet.`;
+      }.`;
     }
   }
 
@@ -1714,7 +1327,7 @@ function showErrorState(container, error) {
   // Accessibility announcement
   if (window.announce) {
     window.announce(
-      "3D-Darstellung konnte nicht geladen werden. Vereinfachte Ansicht wird verwendet.",
+      "3D-Darstellung konnte nicht geladen werden.",
       { assertive: true }
     );
   }
