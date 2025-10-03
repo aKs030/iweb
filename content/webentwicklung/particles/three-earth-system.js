@@ -42,7 +42,7 @@ const log = createLogger("threeEarthSystem");
 const earthTimers = new TimerManager();
 
 // ===== Globale Variablen =====
-let scene, camera, renderer, earthMesh, composer;
+let scene, camera, renderer, earthMesh;
 let sectionObserver = null;
 let animationFrameId = null;
 let currentSection = "hero";
@@ -96,9 +96,6 @@ const ThreeEarthManager = (() => {
 
       // Controls und UX
       setupUserControls(container);
-
-      // Postprocessing
-      await setupPostprocessing(THREE);
 
       // Section-Detection aktivieren
       setupSectionDetection();
@@ -196,12 +193,6 @@ const ThreeEarthManager = (() => {
       log.debug("Renderer disposed and context lost");
     }
 
-    // Composer disposal
-    if (composer) {
-      composer.dispose();
-      log.debug("Effect composer disposed");
-    }
-
     // Observer disconnecten
     if (sectionObserver) {
       sectionObserver.disconnect();
@@ -222,7 +213,6 @@ const ThreeEarthManager = (() => {
     camera = null;
     renderer = null;
     earthMesh = null;
-    composer = null;
     currentSection = "hero";
 
     // System aus shared state entfernen
@@ -387,9 +377,12 @@ async function setupScene(THREE, container) {
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setClearColor(0x000000, 0); // Transparent für Overlay
 
-  // Renderer-Optimierungen
+  // Renderer-Optimierungen für PBR (Physically Based Rendering)
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  
+  // Physikalisch korrekte Beleuchtung aktivieren (neue Three.js API)
+  renderer.useLegacyLights = false; // false = physikalisch korrekte Lichter
 
   // Color Management - Kompatibilität für verschiedene Three.js Versionen
   if (THREE.ColorManagement && renderer.outputColorSpace !== undefined) {
@@ -400,8 +393,9 @@ async function setupScene(THREE, container) {
     renderer.outputEncoding = THREE.sRGBEncoding;
   }
 
+  // Tone Mapping für realistische HDR-Farben
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
+  renderer.toneMappingExposure = 1.0; // Reduziert für natürlichere Farben
 
   // Frustum Culling aktivieren - Kompatibilität für verschiedene Three.js Versionen
   if (renderer.setFaceCulling) {
@@ -652,28 +646,37 @@ function setupStarParallax() {
 
 // ===== Beleuchtung Setup =====
 function setupLighting(THREE) {
-  // Hauptlichtquelle (Sonne)
-  const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
+  // Hauptlichtquelle (Sonne) - Intensität für physicallyCorrectLights angepasst
+  const sunLight = new THREE.DirectionalLight(0xfff8f0, 3.5); // Wärmeres Sonnenlicht, stärker für PBR
   sunLight.position.set(5, 3, 5);
   sunLight.castShadow = true;
 
   if (sunLight.castShadow) {
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.mapSize.width = 4096; // Höhere Auflösung für schärfere Schatten
+    sunLight.shadow.mapSize.height = 4096;
     sunLight.shadow.camera.near = 0.5;
     sunLight.shadow.camera.far = 50;
+    sunLight.shadow.bias = -0.0001; // Reduziert Shadow-Acne
+    sunLight.shadow.radius = 2; // Weichere Schatten
   }
 
   scene.add(sunLight);
 
-  // Umgebungslicht
-  const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+  // Umgebungslicht - stärker für PBR, simuliert Himmelsstreuung
+  const ambientLight = new THREE.AmbientLight(0x8899bb, 0.8); // Leicht bläulicher Himmel, heller
   scene.add(ambientLight);
 
-  // Rim Light für cinematischen Effekt
-  const rimLight = new THREE.DirectionalLight(0x4477ff, 0.8);
+  // Hemisphere Light für realistischeren Himmel-/Boden-Übergang
+  const hemiLight = new THREE.HemisphereLight(0x8899ff, 0x332211, 0.5);
+  hemiLight.position.set(0, 50, 0);
+  scene.add(hemiLight);
+
+  // Rim Light für cinematischen Effekt - kühlerer Ton
+  const rimLight = new THREE.DirectionalLight(0x6699ff, 0.6); // Kühlerer Blauton, reduziert
   rimLight.position.set(-5, 2, -5);
   scene.add(rimLight);
+  
+  log.debug("PBR lighting setup completed");
 }
 
 // ===== Earth-System erstellen =====
@@ -715,7 +718,7 @@ async function createEarthMaterial(THREE) {
     promises.push(
       loadTextureWithFallback(
         textureLoader,
-        "/content/img/earth/textures/earth_day.jpg",
+        "/content/img/earth/textures/earth_day.webp",
         2000
       )
     );
@@ -724,21 +727,21 @@ async function createEarthMaterial(THREE) {
     promises.push(
       loadTextureWithFallback(
         textureLoader,
-        "/content/img/earth/textures/earth_night.jpg",
+        "/content/img/earth/textures/earth_night.webp",
         2000
       )
     );
     promises.push(
       loadTextureWithFallback(
         textureLoader,
-        "/content/img/earth/textures/earth_normal.jpg",
+        "/content/img/earth/textures/earth_normal.webp",
         2000
       )
     );
     promises.push(
       loadTextureWithFallback(
         textureLoader,
-        "/content/img/earth/textures/earth_bump.jpg",
+        "/content/img/earth/textures/earth_bump.webp",
         2000
       )
     );
@@ -809,29 +812,45 @@ async function createEarthMaterial(THREE) {
         fragmentShader: getEarthFragmentShader(),
       });
     } else if (dayTexture) {
-      // Standard Material mit Day Texture - nur definierte Texturen verwenden
+      // PBR Material (MeshStandardMaterial) für realistisches Rendering
       const materialConfig = {
         map: dayTexture,
-        bumpScale: 0.1,
-        shininess: 0.3,
-        specular: 0x222222,
+        
+        // Physikalisch korrekte Werte für die Erde
+        roughness: 0.9, // Erde ist nicht glänzend (Ozeane werden später via roughnessMap variiert)
+        metalness: 0.0, // Erde ist nicht metallisch
+        
+        // Displacement & Normal Maps für Oberflächendetails
+        displacementScale: 0.0, // Kein Displacement (würde Geometrie ändern)
+        normalScale: new THREE.Vector2(1.5, 1.5), // Verstärkte Normal-Map für sichtbare Bergketten
+        
+        // Environment Mapping für Reflexionen
+        envMapIntensity: 0.3, // Subtile Umgebungsreflexionen
+        
+        // Beleuchtung
+        emissive: 0x000000, // Keine Eigenleuchten (Day-Texture)
+        emissiveIntensity: 0.0,
       };
 
       // Nur hinzufügen wenn Texturen definiert sind
       if (normalTexture) {
         materialConfig.normalMap = normalTexture;
+        log.debug("Normal map applied for surface details");
       }
       if (bumpTexture) {
         materialConfig.bumpMap = bumpTexture;
+        materialConfig.bumpScale = 0.02; // Subtile Bump für zusätzliche Tiefe
+        log.debug("Bump map applied for additional depth");
       }
 
-      material = new THREE.MeshPhongMaterial(materialConfig);
+      material = new THREE.MeshStandardMaterial(materialConfig);
+      log.info("Using PBR MeshStandardMaterial for realistic Earth rendering");
     } else {
       // Fallback zu prozeduralem Material
       material = createProceduralEarthMaterial(THREE);
     }
 
-    // Texture-Optimierungen
+    // Texture-Optimierungen für maximale Qualität
     [dayTexture, nightTexture, normalTexture, bumpTexture].forEach(
       (texture) => {
         if (texture) {
@@ -839,10 +858,9 @@ async function createEarthMaterial(THREE) {
           texture.generateMipmaps = true;
           texture.minFilter = THREE.LinearMipmapLinearFilter;
           texture.magFilter = THREE.LinearFilter;
-          texture.anisotropy = Math.min(
-            renderer.capabilities.getMaxAnisotropy(),
-            4
-          );
+          // Maximale Anisotropie für schärfste Texturen
+          texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+          texture.needsUpdate = true;
         }
       }
     );
@@ -1114,9 +1132,9 @@ function setupCameraSystem(THREE) {
 function updateCameraForSection(sectionName) {
   const cameraConfigs = {
     hero: {
-      position: { x: 0, y: -2, z: 5.5 }, // Tief unten, nah dran - dramatischer Horizont-Effekt
-      rotation: { x: 0.25, y: 0 }, // Deutlich nach unten blicken für Horizont-Gefühl
-      fov: 50, // Weiter FOV für immersiven Weitwinkel-Effekt
+      position: { x: 0, y: -1.8, z: 5 }, // Näher für bessere Detail-Sichtbarkeit
+      rotation: { x: 0.2, y: 0 }, // Nach unten blicken für Horizont-Effekt
+      fov: 45, // Ausgewogener FOV für natürliche Perspektive
     },
     features: {
       position: { x: -3, y: 2.5, z: 6.5 }, // Von links oben - elegante Diagonale
@@ -1391,41 +1409,6 @@ function setupUserControls(container) {
   );
 }
 
-// ===== Postprocessing Setup =====
-async function setupPostprocessing(THREE) {
-  try {
-    // EffectComposer dynamisch laden (falls verfügbar)
-    if (window.THREE.EffectComposer) {
-      composer = new THREE.EffectComposer(renderer);
-
-      // Render Pass
-      const renderPass = new THREE.RenderPass(scene, camera);
-      composer.addPass(renderPass);
-
-      // Film Grain Pass (cinematic effect)
-      if (window.THREE.FilmPass) {
-        const filmPass = new THREE.FilmPass(0.5, 0.125, 2048, false);
-        composer.addPass(filmPass);
-      }
-
-      // Bloom Pass (cinematic effect)
-      if (window.THREE.UnrealBloomPass) {
-        const bloomPass = new THREE.UnrealBloomPass(
-          new THREE.Vector2(window.innerWidth, window.innerHeight),
-          0.5, // strength
-          0.8, // radius
-          0.1 // threshold
-        );
-        composer.addPass(bloomPass);
-      }
-
-      log.debug("Postprocessing setup completed");
-    }
-  } catch (error) {
-    log.warn("Postprocessing setup failed, continuing without:", error);
-  }
-}
-
 // ===== Section Detection Setup =====
 function setupSectionDetection() {
   const sections = document.querySelectorAll("section[id]");
@@ -1477,11 +1460,11 @@ function updateEarthForSection(sectionName) {
   const sectionConfigs = {
     hero: {
       position: { x: 0, y: -4.5, z: 0 }, // Tief unten für Horizont-Effekt
-      scale: 1.3, // Größer für dramatischen Horizont
-      rotationSpeed: 0.002,
-      starTwinkle: 0.3,
-      starBrightness: 1.0,
-      starRotation: 0.0001,
+      scale: 1.5, // Größer für bessere Detail-Sichtbarkeit der Texturen
+      rotationSpeed: 0.0015, // Optimale Geschwindigkeit für realistische Erdrotation
+      starTwinkle: 0.25, // Moderates Funkeln
+      starBrightness: 0.9, // Nicht zu hell, damit Erde im Fokus bleibt
+      starRotation: 0.00008,
     },
     features: {
       position: { x: 1, y: -1, z: -0.5 }, // Leicht rechts und unten, etwas zurück
@@ -1570,27 +1553,15 @@ function startAnimationLoop(THREE) {
 
   function renderFrame() {
     try {
-      if (composer) {
-        composer.render();
-      } else {
-        renderer.render(scene, camera);
-      }
+      renderer.render(scene, camera);
     } catch (error) {
       log.error("Render error:", error);
 
-      // Simple fallback: disable composer and retry
-      composer = null;
-      try {
-        renderer.render(scene, camera);
-      } catch (fallbackError) {
-        log.error(
-          "Critical render failure, stopping animation:",
-          fallbackError
-        );
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-          animationFrameId = null;
-        }
+      // Critical render failure, stop animation
+      log.error("Critical render failure, stopping animation:", error);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
       }
     }
   }
@@ -1682,10 +1653,6 @@ function setupResizeHandler() {
     camera.updateProjectionMatrix();
 
     renderer.setSize(width, height);
-
-    if (composer) {
-      composer.setSize(width, height);
-    }
 
     log.debug("Three.js resized", { width, height });
   };
