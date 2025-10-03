@@ -1092,7 +1092,7 @@ function updateEarthForSection(sectionName) {
 
   const sectionConfigs = {
     hero: {
-      position: { x: 0, y: -4.5, z: 0 },
+      position: { x: 0, y: -6.0, z: 0 },
       scale: 1.5,
       starTwinkle: 0.25,
       starBrightness: 0.9,
