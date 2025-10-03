@@ -686,11 +686,7 @@ async function createEarthSystem(THREE) {
   const earthRadius = 3.5;
   const segments = 128;
 
-  earthGeometry = new THREE.SphereGeometry(
-    earthRadius,
-    segments,
-    segments
-  );
+  earthGeometry = new THREE.SphereGeometry(earthRadius, segments, segments);
 
   // Earth-Material erstellen
   const earthMaterial = await createEarthMaterial(THREE);
@@ -843,7 +839,9 @@ async function createEarthMaterial(THREE) {
 
     // Texture-Optimierungen mit device-basierter Anisotropic Filtering
     const maxAniso = renderer.capabilities.getMaxAnisotropy();
-    const anisotropy = isMobileDevice ? Math.min(maxAniso, 4) : Math.min(maxAniso, 16);
+    const anisotropy = isMobileDevice
+      ? Math.min(maxAniso, 4)
+      : Math.min(maxAniso, 16);
 
     [dayTexture, nightTexture, normalTexture, bumpTexture].forEach(
       (texture) => {
@@ -858,7 +856,9 @@ async function createEarthMaterial(THREE) {
       }
     );
 
-    log.debug(`Applied ${anisotropy}x anisotropic filtering (device: ${isMobileDevice ? "mobile" : "desktop"})`);
+    log.debug(
+      `Applied ${anisotropy}x anisotropic filtering (device: ${isMobileDevice ? "mobile" : "desktop"})`
+    );
 
     return material;
   } catch (error) {
@@ -1240,7 +1240,8 @@ function startAnimationLoop(THREE) {
     // Funkeln-Effekt durch Opacity-Variation
     if (starField.material) {
       const mainTwinkle = Math.sin(elapsedTime * 0.5) * twinkleIntensity;
-      const fastTwinkle = Math.sin(elapsedTime * 2.0) * (twinkleIntensity * 0.3);
+      const fastTwinkle =
+        Math.sin(elapsedTime * 2.0) * (twinkleIntensity * 0.3);
       const combined = brightness * (0.7 + mainTwinkle + fastTwinkle);
       starField.material.opacity = Math.max(0.4, Math.min(1.0, combined));
     }
@@ -1326,10 +1327,9 @@ function showErrorState(container, error) {
 
   // Accessibility announcement
   if (window.announce) {
-    window.announce(
-      "3D-Darstellung konnte nicht geladen werden.",
-      { assertive: true }
-    );
+    window.announce("3D-Darstellung konnte nicht geladen werden.", {
+      assertive: true,
+    });
   }
 }
 
