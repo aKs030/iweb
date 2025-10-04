@@ -1,6 +1,6 @@
-/* ===== Three.js Earth System Styles ===== */
+/* ===== Three.js Earth System Styles v3.0 ===== */
 
-/* Particle Background System */
+/* Global Particle Background */
 .global-particle-background {
   position: fixed;
   inset: 0;
@@ -17,6 +17,7 @@
     #2c3e50 85%,
     #34495e 100%
   );
+  transition: background 0.8s ease; /* Smooth background transitions */
 }
 
 .global-particle-background[data-section="about"] {
@@ -34,13 +35,17 @@
 .three-earth-container {
   position: fixed;
   inset: 0;
-  z-index: -5; /* Über atmospheric sky, aber unter content */
-  pointer-events: none;
+  z-index: -5;
+  pointer-events: auto; /* Allow mouse events for dragging */
   overflow: hidden;
-
-  /* WebGL Canvas Optimierungen */
   contain: layout style paint;
   isolation: isolate;
+  cursor: grab; /* NEW: Indicate interactivity */
+}
+
+/* NEW: Style for when user is dragging the earth */
+.three-earth-container.is-dragging {
+    cursor: grabbing;
 }
 
 .three-earth-container canvas {
@@ -48,41 +53,30 @@
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
-
-  /* Performance Optimierungen */
   transform: translateZ(0); /* Hardware acceleration */
   will-change: transform;
-
-  /* Anti-Aliasing für bessere Textqualität */
-  image-rendering: -webkit-optimize-contrast;
   image-rendering: high-quality;
 }
 
-/* Loading State für Three.js */
-.three-earth-container.loading {
-  background: radial-gradient(
-    ellipse at center,
-    rgba(20, 40, 80, 0.8) 0%,
-    rgba(10, 20, 40, 0.9) 50%,
-    rgba(0, 0, 0, 1) 100%
-  );
-}
-
-.three-earth-loading {
+/* Loading & Error States */
+.three-earth-loading,
+.three-earth-error {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   color: rgba(255, 255, 255, 0.8);
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 8px;
+  background: rgba(10, 20, 40, 0.8);
 }
 
-.three-earth-loading.hidden {
+.three-earth-loading.hidden,
+.three-earth-error.hidden {
   display: none;
 }
 
@@ -97,97 +91,37 @@
 }
 
 @keyframes threeEarthSpin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Error State */
-.three-earth-error {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
-  font-size: 14px;
-  padding: 20px;
-  background: rgba(40, 20, 20, 0.8);
-  border-radius: 8px;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.three-earth-error.hidden {
-  display: none;
+  to { transform: rotate(360deg); }
 }
 
 .three-earth-container.error {
   background: rgba(40, 20, 20, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Performance Mode Indicators */
-.three-earth-container[data-performance="low"] {
-  /* Reduzierte visuelle Komplexität für schwache Geräte */
-  filter: contrast(0.9) brightness(0.95);
+.three-earth-error {
+  background: rgba(40, 20, 20, 0.8);
 }
 
-.three-earth-container[data-performance="medium"] {
-  /* Mittlere Qualität */
-  filter: contrast(1.05);
-}
 
-.three-earth-container[data-performance="high"] {
-  /* Volle Qualität */
-  filter: contrast(1.1) brightness(1.05);
+/* Section-based Opacity Transitions */
+.three-earth-container {
+    transition: opacity 0.8s ease;
 }
+.three-earth-container[data-section="hero"] { opacity: 1; }
+.three-earth-container[data-section="features"] { opacity: 0.95; }
+.three-earth-container[data-section="about"] { opacity: 0.9; }
 
-/* Section-basierte Kamera-Animationen */
-.three-earth-container[data-section="hero"] {
-  /* Hero-spezifische Anpassungen */
-  opacity: 1;
-}
-
-.three-earth-container[data-section="features"] {
-  /* Features-spezifische Anpassungen */
-  opacity: 0.95;
-}
-
-.three-earth-container[data-section="about"] {
-  /* About-spezifische Anpassungen */
-  opacity: 0.9;
-}
-
-/* High DPI Displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
-  .three-earth-container canvas {
-    /* Optimierungen für Retina-Displays */
-    image-rendering: -webkit-optimize-contrast;
-  }
-}
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  @keyframes threeEarthSpin {
-    0%,
-    100% {
-      transform: rotate(0deg);
-    }
+  @keyframes threeEarthSpin { from { transform: rotate(0deg); } to { transform: rotate(0deg); } }
+  .three-earth-container,
+  .global-particle-background {
+    transition: none; /* Disable transitions */
   }
 }
 
-/* Performance Overlay (Debug) */
+/* NEW: Performance Overlay (Debug) */
 .three-earth-performance-overlay {
   position: absolute;
   top: 10px;
@@ -204,8 +138,10 @@
   transition: opacity 0.3s ease;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+  z-index: 100; /* Ensure it's on top */
 }
 
+/* Show on hover or if permanently visible */
 .three-earth-container:hover .three-earth-performance-overlay,
 .three-earth-performance-overlay.visible {
   opacity: 1;
