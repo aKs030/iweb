@@ -82,17 +82,17 @@ const CONFIG = {
   },
   VOLUMETRIC_CLOUDS: {
     ENABLED: true, // Toggle volumetric clouds (performance-heavy) ✅ AKTIVIERT
-    LAYERS: 3, // Number of cloud layers (1-5)
-    BASE_ALTITUDE: 0.03, // Start altitude above surface
-    LAYER_SPACING: 0.01, // Distance between layers
-    DENSITY: 0.4, // Overall cloud density (0-1)
-    SCALE: 3.0, // Noise texture scale (lower = larger clouds)
-    OCTAVES: 3, // Noise detail levels (1-5, higher = more detail but slower)
-    PERSISTENCE: 0.5, // Detail amplitude falloff
-    LACUNARITY: 2.0, // Detail frequency increase
-    SPEED_MULTIPLIER: [1.0, 0.8, 0.6], // Rotation speed per layer (creates parallax)
-    OPACITY_FALLOFF: 0.7, // Opacity reduction per layer
-    COVERAGE: 0.5, // Cloud coverage (0-1, higher = more clouds)
+    LAYERS: 2, // Number of cloud layers (1-5) - reduziert für natürlicheren Look
+    BASE_ALTITUDE: 0.025, // Start altitude above surface - niedriger für realistischere Höhe
+    LAYER_SPACING: 0.015, // Distance between layers - mehr Abstand
+    DENSITY: 0.25, // Overall cloud density (0-1) - reduziert für luftigere Wolken
+    SCALE: 4.5, // Noise texture scale (lower = larger clouds) - größere Cloud-Strukturen
+    OCTAVES: 4, // Noise detail levels (1-5, higher = more detail) - mehr Detail für Realismus
+    PERSISTENCE: 0.6, // Detail amplitude falloff - mehr Detail beibehalten
+    LACUNARITY: 2.2, // Detail frequency increase - natürlichere Variation
+    SPEED_MULTIPLIER: [1.0, 0.7], // Rotation speed per layer - unterschiedlichere Geschwindigkeiten
+    OPACITY_FALLOFF: 0.65, // Opacity reduction per layer - sanfterer Übergang
+    COVERAGE: 0.35, // Cloud coverage (0-1) - weniger Coverage für realistischere Verteilung
   },
   SUN: {
     RADIUS: 8, // Distanz der Sonne von der Erde
@@ -1014,6 +1014,21 @@ function createVolumetricClouds() {
       return value;
     }
     
+    // Turbulence for more natural cloud edges
+    float turbulence(vec3 p) {
+      float t = 0.0;
+      float amplitude = 1.0;
+      float frequency = 1.0;
+      
+      for (int i = 0; i < 3; i++) {
+        t += abs(snoise(p * frequency)) * amplitude;
+        frequency *= 2.1;
+        amplitude *= 0.5;
+      }
+      
+      return t;
+    }
+    
     void main() {
       // Create 3D position from sphere surface UV
       float theta = vUv.x * 3.14159 * 2.0;
@@ -1025,20 +1040,38 @@ function createVolumetricClouds() {
       ) * uScale;
       
       // Animate noise over time (cloud drift)
-      noisePos.x += uTime * 0.1;
+      noisePos.x += uTime * 0.08;
+      noisePos.z += uTime * 0.03; // Zusätzliche Bewegung für Dynamik
       
-      // Generate cloud density using FBM
+      // Generate base cloud density using FBM
       float noise = fbm(noisePos);
       
-      // Remap noise to cloud coverage
-      float cloudDensity = smoothstep(1.0 - uCoverage, 1.0, (noise + 1.0) * 0.5);
-      cloudDensity *= uDensity;
+      // Add turbulence for wispy edges
+      float turb = turbulence(noisePos * 1.5) * 0.3;
+      noise = mix(noise, turb, 0.4);
+      
+      // Improved cloud shaping mit schärferen Kanten
+      float cloudCoverage = smoothstep(0.4, 0.7, (noise + 1.0) * 0.5);
+      
+      // Zusätzliche Variation für natürlichere Verteilung
+      float variation = smoothstep(1.0 - uCoverage - 0.2, 1.0 - uCoverage + 0.2, cloudCoverage);
+      
+      // Combine für finale Dichte
+      float cloudDensity = variation * uDensity;
+      
+      // Soft edges: Erode cloud boundaries
+      cloudDensity *= smoothstep(0.0, 0.15, cloudCoverage);
+      cloudDensity *= smoothstep(1.0, 0.85, cloudCoverage);
       
       // Apply layer-specific opacity
       float alpha = cloudDensity * uLayerOpacity;
       
-      // Cloud color (white with slight blue tint)
-      vec3 cloudColor = vec3(1.0, 1.0, 1.05);
+      // Discard very transparent pixels for performance
+      if (alpha < 0.02) discard;
+      
+      // Cloud color mit subtiler Variation (heller in der Mitte, dunkler an Kanten)
+      float brightness = mix(0.95, 1.1, cloudCoverage);
+      vec3 cloudColor = vec3(brightness, brightness, brightness * 1.02);
       
       gl_FragColor = vec4(cloudColor, alpha);
     }
