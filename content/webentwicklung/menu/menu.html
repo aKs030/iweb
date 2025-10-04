@@ -1,5 +1,11 @@
 <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
 
+<!-- Skip-Links für Accessibility (WCAG 2.1 Level AA) -->
+<div class="skip-links">
+  <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
+  <a href="#navigation" class="skip-link">Zur Navigation springen</a>
+</div>
+
 <!-- SVG Icon Sprite für Navigation -->
 <svg
   aria-hidden="true"
@@ -61,14 +67,14 @@
     type="button"
     class="site-menu__toggle"
     aria-label="Menü"
-    aria-controls="site-menu"
+    aria-controls="navigation"
     aria-expanded="false"
   >
     <span class="site-menu__hamburger"></span>
   </button>
 
   <!-- Navigation mit Rolle und aria-label -->
-  <nav id="site-menu" class="site-menu" aria-label="Hauptnavigation">
+  <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
     <ul class="site-menu__list">
       <li>
         <a href="/index.html">

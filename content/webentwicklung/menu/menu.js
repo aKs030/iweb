@@ -78,7 +78,7 @@ function initializeMenu(container) {
   if (menuToggle && menu) {
     // ARIA Grundattribute
     menu.setAttribute("role", "navigation");
-    menuToggle.setAttribute("aria-controls", menu.id || "site-menu");
+    menuToggle.setAttribute("aria-controls", menu.id || "navigation");
     menuToggle.setAttribute("aria-expanded", "false");
     menu.setAttribute("aria-hidden", "true");
 

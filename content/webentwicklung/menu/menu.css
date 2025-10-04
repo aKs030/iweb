@@ -9,6 +9,7 @@
  * - Card-basierte Mobile Experience
  * - Dynamic Colors mit verbessertem Kontrast
  * - Touch-optimierte Interactions
+ * - Skip-Links für WCAG 2.1 Level AA Compliance
  * 
  * @author Abdulkerim Sesli
  * @version 2.0.0 - Dynamic Menu Design
@@ -17,6 +18,57 @@
 /* ===== Dynamic Menu Design Tokens ===== */
 /* CSS Custom Properties werden aus root.css geladen */
 /* Alle Design Tokens sind in /content/webentwicklung/root.css definiert */
+
+/* ===== Skip-Links für Accessibility (WCAG 2.1 Level AA) ===== */
+.skip-links {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  width: 100%;
+  background: transparent;
+  pointer-events: none;
+}
+
+.skip-link {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: var(--glass-bg, rgba(0, 0, 0, 0.95));
+  color: var(--text-primary, #ffffff);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 2px solid var(--accent-primary, #00ff88);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: clip-path 0.3s ease, box-shadow 0.2s ease;
+  pointer-events: auto;
+  white-space: nowrap;
+  z-index: 10001;
+  /* Versteckt ohne negative Position (für Lighthouse Tap-Target Test) */
+  clip-path: inset(0 0 100% 0);
+}
+
+.skip-link:focus {
+  clip-path: inset(0);
+  outline: 3px solid var(--accent-primary, #00ff88);
+  outline-offset: 2px;
+  box-shadow: 0 8px 24px rgba(0, 255, 136, 0.3);
+}
+
+.skip-link:hover:focus {
+  background: var(--accent-primary, #00ff88);
+  color: var(--bg-primary, #000000);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
 
 /* ===== Light Mode Overrides ===== */
 /* Light Mode Anpassungen werden aus root.css geladen */
