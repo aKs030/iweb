@@ -27,7 +27,7 @@ import {
   ShootingStarManager,
   unregisterParticleSystem,
 } from "./shared-particle-system.js";
-import { createLogger, getElementById, onResize, onScroll, TimerManager } from "../shared-utilities.js";
+import { createLogger, getElementById, onResize, TimerManager } from "../shared-utilities.js";
 
 const log = createLogger("threeEarthSystem");
 const earthTimers = new TimerManager();
@@ -36,16 +36,16 @@ const earthTimers = new TimerManager();
 const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 96,
-    ROTATION_SPEED: 0.005,
+    SEGMENTS: 64, // Reduziert von 96 für bessere Performance
+    ROTATION_SPEED: 0.001, // Sehr langsam für detaillierte Betrachtung (~104 Minuten/Rotation)
     BUMP_SCALE: 0.015,
-    EMISSIVE_INTENSITY: 0.2,
+    EMISSIVE_INTENSITY: 0.15, // Reduziert für weniger helle Nachtlichter
     EMISSIVE_PULSE_SPEED: 0.2,
   },
   CLOUDS: {
     ALTITUDE: 0.03,
-    ROTATION_SPEED: 0.02,
-    OPACITY: 0.35,
+    ROTATION_SPEED: 0.0013, // Nur 30% schneller als Erde (subtile Drift)
+    OPACITY: 0.4, // Leicht erhöht für bessere Sichtbarkeit ohne Blending
   },
   ATMOSPHERE: {
     SCALE: 1.02,
@@ -132,7 +132,7 @@ const ThreeEarthManager = (() => {
     }
 
     try {
-      log.info(`Initializing Three.js Earth system v${CONFIG.VERSION}`);
+      log.info("Initializing Three.js Earth system v4.0.0");
       registerParticleSystem("three-earth", { type: "three-earth" });
       
       THREE_INSTANCE = await loadThreeJS();
@@ -144,9 +144,12 @@ const ThreeEarthManager = (() => {
       await createEarthSystem();
 
       cloudMesh = await createCloudLayer();
-      earthMesh.add(cloudMesh);
+      // Wolken als eigenständiges Objekt in Scene für unabhängige Rotation
+      cloudMesh.position.copy(earthMesh.position);
+      scene.add(cloudMesh);
 
       atmosphereMesh = createAtmosphere();
+      // Atmosphäre bleibt Child von earthMesh (rotiert mit Erde)
       earthMesh.add(atmosphereMesh);
 
       setupCameraSystem();
@@ -172,7 +175,10 @@ const ThreeEarthManager = (() => {
   const cleanup = () => {
     log.info("Cleaning up Three.js Earth system");
 
-    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
     if (performanceMonitor) performanceMonitor.cleanup();
     if (shootingStarManager) shootingStarManager.cleanup();
     if (sectionObserver) sectionObserver.disconnect();
@@ -266,6 +272,8 @@ async function setupScene(container) {
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE_INSTANCE.SRGBColorSpace;
+  renderer.toneMapping = THREE_INSTANCE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.8; // Leicht reduziert für dunklere Texturen
   
   container.appendChild(renderer.domElement);
   
@@ -356,16 +364,19 @@ function setupStarParallax() {
 
 // ===== Lighting Setup =====
 function setupLighting() {
-  const directionalLight = new THREE_INSTANCE.DirectionalLight(0xfff8f0, 3.5);
+  // Sonne-ähnliches Licht (gedämpft für realistischere Texturen)
+  const directionalLight = new THREE_INSTANCE.DirectionalLight(0xffffff, 2.0);
   directionalLight.position.set(5, 3, 5);
   scene.add(directionalLight);
-  scene.add(new THREE_INSTANCE.AmbientLight(0x8899bb, 0.8));
+  
+  // Sanftes Umgebungslicht (Weltraum-Reflexion)
+  const ambientLight = new THREE_INSTANCE.AmbientLight(0x404040, 0.4);
+  scene.add(ambientLight);
 }
 
 // ===== Earth System Creation =====
 async function createEarthSystem() {
   const loadingManager = new THREE_INSTANCE.LoadingManager();
-  const loadingElement = document.querySelector(".loading-progress-bar");
   loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
       const progress = itemsLoaded / itemsTotal;
       showLoadingState(document.getElementById('threeEarthContainer'), progress);
@@ -395,11 +406,12 @@ async function createEarthSystem() {
   const earthMaterial = new THREE_INSTANCE.MeshStandardMaterial({
     map: dayTexture,
     normalMap: normalTexture,
+    normalScale: new THREE_INSTANCE.Vector2(1.0, 1.0),
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
-    roughness: 0.9,
+    roughness: 0.7, // Reduziert für bessere Licht-Absorption
     metalness: 0.0,
-    emissive: 0xffffff,
+    emissive: 0xffaa44, // Wärmere Farbe für Stadtlichter
     emissiveMap: nightTexture,
     emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY,
   });
@@ -416,18 +428,27 @@ async function createCloudLayer() {
         const cloudTexture = await textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.CLOUDS);
         cloudTexture.wrapS = THREE_INSTANCE.RepeatWrapping;
         cloudTexture.wrapT = THREE_INSTANCE.RepeatWrapping;
+        // Optimierte Textur-Einstellungen
+        cloudTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
         const cloudMaterial = new THREE_INSTANCE.MeshStandardMaterial({
             map: cloudTexture,
             transparent: true,
             opacity: CONFIG.CLOUDS.OPACITY,
-            blending: THREE_INSTANCE.AdditiveBlending,
+            // AdditiveBlending entfernt - zu performance-intensiv
+            blending: THREE_INSTANCE.NormalBlending,
             depthWrite: false,
+            side: THREE_INSTANCE.DoubleSide,
         });
 
-        const cloudGeometry = new THREE_INSTANCE.SphereGeometry(CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE, CONFIG.EARTH.SEGMENTS, CONFIG.EARTH.SEGMENTS);
+        const cloudGeometry = new THREE_INSTANCE.SphereGeometry(
+            CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE, 
+            CONFIG.EARTH.SEGMENTS, 
+            CONFIG.EARTH.SEGMENTS
+        );
         const clouds = new THREE_INSTANCE.Mesh(cloudGeometry, cloudMaterial);
         clouds.renderOrder = 1; // Render after Earth
+        log.info("Cloud layer created successfully");
         return clouds;
     } catch (error) {
         log.warn("Could not load cloud texture, skipping cloud layer.", error);
@@ -611,8 +632,12 @@ function startAnimationLoop() {
       earthMesh.material.emissiveIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY + Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * 0.05;
     }
 
+    // Wolken rotieren eigenständig (nicht als Child, daher X/Y separat)
     if (cloudMesh && cloudMesh.rotation) {
-      cloudMesh.rotation.y = elapsedTime * CONFIG.CLOUDS.ROTATION_SPEED;
+      // Inkrementelle Rotation (nicht elapsedTime!)
+      cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
+      // X-Rotation von Erde übernehmen für Mouse-Interaktion
+      cloudMesh.rotation.x += (mouseState.targetRotationX - cloudMesh.rotation.x) * lerpFactor;
     }
     
     if (starField) {
@@ -643,6 +668,8 @@ function startAnimationLoop() {
 
   function updateObjectTransforms() {
     if (!earthMesh) return;
+    
+    // Animiere Erd-Position und -Scale via Lerp
     if (earthMesh.userData.targetPosition) {
       earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.03);
     }
@@ -651,6 +678,17 @@ function startAnimationLoop() {
       if (Math.abs(scaleDiff) > 0.001) {
         const newScale = earthMesh.scale.x + scaleDiff * 0.05;
         earthMesh.scale.set(newScale, newScale, newScale);
+      }
+    }
+    
+    // Synchronisiere Wolken mit Erde (da eigenständiges Scene-Objekt, nicht Child)
+    // WICHTIG: Position + Scale müssen manuell kopiert werden nach allen Erd-Transformationen
+    if (cloudMesh) {
+      if (cloudMesh.position) {
+        cloudMesh.position.copy(earthMesh.position);
+      }
+      if (cloudMesh.scale && earthMesh.scale) {
+        cloudMesh.scale.copy(earthMesh.scale);
       }
     }
   }
@@ -734,22 +772,30 @@ class PerformanceMonitor {
   
   updateDisplay() {
     const mem = renderer.info.memory;
-    const calls = renderer.info.render.calls;
+    const render = renderer.info.render;
     this.element.innerHTML = `
         FPS: ${Math.round(this.fps)} | 
-        MEM: ${mem.geometries}/${mem.textures} | 
-        CALLS: ${calls} | 
+        MEM: ${mem.geometries}g/${mem.textures}t | 
+        Calls: ${render.calls} | Tris: ${(render.triangles/1000).toFixed(1)}k | 
         PR: ${this.currentPixelRatio.toFixed(2)}
     `;
   }
 
   adjustResolution() {
-    if (this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD && this.currentPixelRatio > 0.7) {
-        this.currentPixelRatio = Math.max(0.7, this.currentPixelRatio - 0.1);
+    // Kritischer FPS-Einbruch erkennen (< 10 FPS)
+    if (this.fps < 10) {
+        this.currentPixelRatio = 0.5; // Drastische Reduktion bei kritischem FPS
+        renderer.setPixelRatio(this.currentPixelRatio);
+        log.error(`Critical FPS (${this.fps.toFixed(1)}), emergency pixel ratio reduction to ${this.currentPixelRatio.toFixed(2)}`);
+        return;
+    }
+    
+    if (this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD && this.currentPixelRatio > 0.5) {
+        this.currentPixelRatio = Math.max(0.5, this.currentPixelRatio - 0.15);
         renderer.setPixelRatio(this.currentPixelRatio);
         log.warn(`Low FPS (${this.fps.toFixed(1)}), reducing pixel ratio to ${this.currentPixelRatio.toFixed(2)}`);
     } else if (this.fps > CONFIG.PERFORMANCE.DRS_UP_THRESHOLD && this.currentPixelRatio < CONFIG.PERFORMANCE.PIXEL_RATIO) {
-        this.currentPixelRatio = Math.min(CONFIG.PERFORMANCE.PIXEL_RATIO, this.currentPixelRatio + 0.1);
+        this.currentPixelRatio = Math.min(CONFIG.PERFORMANCE.PIXEL_RATIO, this.currentPixelRatio + 0.05);
         renderer.setPixelRatio(this.currentPixelRatio);
         log.info(`Good FPS (${this.fps.toFixed(1)}), increasing pixel ratio to ${this.currentPixelRatio.toFixed(2)}`);
     }
