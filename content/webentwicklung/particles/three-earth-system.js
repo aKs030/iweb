@@ -78,8 +78,8 @@ const CONFIG = {
     SCATTERING_STRENGTH: 0.8, // Gesamt-Streuungsstärke
   },
   OCEAN: {
-    SHININESS: 128.0, // Spekulare Schärfe
-    SPECULAR_INTENSITY: 0.6, // Reflexions-Stärke
+    SHININESS: 64.0, // Spekulare Schärfe (reduziert von 128 für weichere Highlights)
+    SPECULAR_INTENSITY: 0.25, // Reflexions-Stärke (reduziert von 0.6)
     SPECULAR_COLOR: 0xffffff, // Weiße Highlights
   },
   SUN: {
@@ -568,7 +568,7 @@ async function createEarthSystem() {
       // Ozean-Erkennung: Dunkle Pixel in Day-Textur sind Wasser
       // Verwende diffuseColor aus vorangegangenem color_fragment
       vec3 baseColor = diffuseColor.rgb;
-      float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.4);
+      float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.3); // Verschärft von 0.4
       
       if (oceanMask > 0.5) {
         // Berechne Spekulare Reflexion (Phong-Modell)
@@ -594,7 +594,7 @@ async function createEarthSystem() {
       
       // Ozean-Specular hinzufügen (wenn oceanMask aktiv)
       vec3 baseColorCheck = diffuseColor.rgb;
-      float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.4);
+      float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.3); // Verschärft von 0.4
       
       if (oceanMaskFinal > 0.5) {
         vec3 sunDirection = normalize(uSunPosition);
