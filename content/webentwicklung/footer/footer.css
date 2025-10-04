@@ -684,31 +684,6 @@ body.footer-expanded .typewriter-title--fixed {
   height: 45px;
 }
 
-/* Mobile responsive für floating theme control */
-@media (max-width: 768px) {
-  .theme-control-floating {
-    top: -30px;
-    right: 15px;
-  }
-
-  .theme-control-floating .day-night-artwork {
-    width: 40px;
-    height: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .theme-control-floating {
-    top: -30px;
-    right: 15px;
-  }
-
-  .theme-control-floating .day-night-artwork {
-    width: 35px;
-    height: 35px;
-  }
-}
-
 /* Enhanced Status Bar */
 .footer-status-bar {
   margin-top: 32px;
@@ -796,75 +771,4 @@ body.footer-expanded .typewriter-title--fixed {
   display: contents; /* Standard: Inhalt wird normal in Grid eingefügt */
 }
 
-/* Mobile Layout: Theme Control rechts neben Join the Journey */
-@media (max-width: 768px) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-  }
 
-  /* Mobile Container wird zu 2-spaltiges Grid */
-  .footer-cards-mobile-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    grid-column: span 2;
-  }
-
-  /* Newsletter Card: normale Breite in mobile */
-  .footer-card-newsletter {
-    grid-column: span 1;
-  }
-
-  /* Mobile Optimierungen */
-  .footer-card {
-    padding: 20px;
-  }
-
-  .footer-card-header {
-    margin-bottom: 16px;
-  }
-
-  .footer-card-title {
-    font-size: 16px;
-  }
-
-  /* Newsletter Form: vertikal gestapelt */
-  .newsletter-input-wrapper {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .newsletter-submit-enhanced {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* Sehr kleine Displays: Vollständig gestapeltes Layout */
-@media (max-width: 480px) {
-  .footer-cards-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  /* Container zurück zu contents für gestapeltes Layout */
-  .footer-cards-mobile-container {
-    display: contents;
-  }
-
-  /* Newsletter Card gestapelt */
-  .footer-card-newsletter {
-    grid-column: span 1;
-  }
-
-  /* Kompaktere Abstände */
-  .footer-card {
-    padding: 16px;
-  }
-
-  .footer-enhanced-content {
-    padding: 20px 16px 16px 16px;
-  }
-
-}
