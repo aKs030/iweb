@@ -1,22 +1,32 @@
 /**
- * Three.js Earth System - 3D WebGL Earth with Stars, Clouds & Atmosphere
+ * Three.js Earth System - 3D WebGL Earth with Stars, Clouds & Multi-Layer Atmosphere
  *
  * High-Quality 3D Earth visualization featuring:
  * - Realistic PBR Earth textures with pulsing city lights
  * - Dynamic, separate cloud layer with drift rotation
- * - Day/Night cycle: Sunlight rotates with clouds, creating moving city lights
- * - Procedural atmospheric glow using an enhanced custom shader
+ * - Day/Night cycle: Automatic or manual sunlight rotation with synchronized city lights
+ * - Multi-Layer Atmosphere with Rayleigh & Mie Scattering (physically-based)
+ * - Ocean Specular Reflections based on sun position
+ * - Smooth camera flight animations to preset positions
+ * - Meteor shower events with configurable frequency and trajectories
  * - Procedural starfield with parallax and twinkling effects
  * - Mouse wheel zoom control for detailed inspection
  * - Scroll-based camera animations and section-responsive scenes
  * - Integrated performance monitor (FPS, Memory) with dynamic resolution scaling
- * - Occasional shooting stars for added visual flair
  * - Texture loading manager with a progress bar for better UX
+ *
+ * NEW in v5.0.0:
+ * - Multi-Layer Atmospheric Scattering (Rayleigh + Mie)
+ * - Ocean Specular Highlights
+ * - Camera Flight System (flyToLocation, flyToPreset)
+ * - Automatic Day/Night Cycle with sync'd city lights
+ * - Enhanced Meteor Shower System
+ * - Preset Camera Positions for Sections
  *
  * Uses shared-particle-system for parallax synchronization and effects.
  *
  * @author Portfolio System
- * @version 4.1.0
+ * @version 5.0.0
  * @created 2025-10-03
  * @last-modified 2025-10-04
  */
@@ -58,11 +68,31 @@ const CONFIG = {
     GLOW_COLOR: 0x6699ff,
     FRESNEL_POWER: 3.5,
     INTENSITY: 0.3,
+    // Multi-Layer Scattering (Rayleigh + Mie)
+    RAYLEIGH_SCALE: 1.05, // Innere Atmosphären-Schicht (Blau-Streuung)
+    MIE_SCALE: 1.025, // Äußere Atmosphären-Schicht (Wolken-Streuung)
+    RAYLEIGH_COLOR: 0x5588ff, // Blaue Rayleigh-Streuung
+    MIE_COLOR: 0xffddaa, // Warme Mie-Streuung (Sonnenuntergangs-Farbe)
+    RAYLEIGH_INTENSITY: 0.4,
+    MIE_INTENSITY: 0.25,
+    SCATTERING_STRENGTH: 0.8, // Gesamt-Streuungsstärke
+  },
+  OCEAN: {
+    SHININESS: 128.0, // Spekulare Schärfe
+    SPECULAR_INTENSITY: 0.6, // Reflexions-Stärke
+    SPECULAR_COLOR: 0xffffff, // Weiße Highlights
   },
   SUN: {
     RADIUS: 8, // Distanz der Sonne von der Erde
     HEIGHT: 3, // Höhe der Sonne
     INTENSITY: 2.0,
+    AUTO_ROTATE: false, // Tag/Nacht-Zyklus aktivieren
+    ROTATION_SPEED: 0.0005, // Umdrehungen pro Frame (~33min für vollen Zyklus bei 60fps)
+  },
+  DAY_NIGHT_CYCLE: {
+    ENABLED: false, // Toggle für automatischen Zyklus
+    SPEED_MULTIPLIER: 10, // Beschleunigungsfaktor (1 = Echtzeit, 10 = 10x schneller)
+    SYNC_CITY_LIGHTS: true, // Stadtlichter mit Nacht-Seite synchronisieren
   },
   STARS: {
     COUNT: 2000,
@@ -75,6 +105,27 @@ const CONFIG = {
     ZOOM_MIN: 4,
     ZOOM_MAX: 30,
     LERP_FACTOR: 0.05, // Linear interpolation factor for smooth camera movement
+    // Preset-Positionen für verschiedene Sections
+    PRESETS: {
+      hero: { x: 0, y: 0, z: 10, lookAt: { x: 0, y: -6, z: 0 } },
+      portfolio: { x: 5, y: 2, z: 8, lookAt: { x: 0, y: -4, z: 0 } },
+      about: { x: -4, y: 3, z: 9, lookAt: { x: 0, y: -5, z: 0 } },
+      contact: { x: 0, y: -3, z: 12, lookAt: { x: 0, y: -6, z: 0 } },
+    },
+    TRANSITION_DURATION: 2.0, // Sekunden für Kamera-Flüge
+  },
+  METEOR_EVENTS: {
+    BASE_FREQUENCY: 0.003, // Basis-Wahrscheinlichkeit pro Frame
+    SHOWER_FREQUENCY: 0.02, // Während Meteoritenregen
+    SHOWER_DURATION: 180, // Frames (~3 Sekunden bei 60fps)
+    SHOWER_COOLDOWN: 1800, // Frames (~30 Sekunden)
+    MAX_SIMULTANEOUS: 3, // Max. parallele Meteore
+    TRAJECTORIES: [
+      // Verschiedene Flugbahnen
+      { start: { x: -100, y: 50, z: -50 }, end: { x: 100, y: -50, z: 50 } },
+      { start: { x: 100, y: 60, z: -40 }, end: { x: -80, y: -40, z: 60 } },
+      { start: { x: -80, y: 70, z: 60 }, end: { x: 90, y: -60, z: -70 } },
+    ],
   },
   PERFORMANCE: {
     PIXEL_RATIO: Math.min(window.devicePixelRatio, 1.5),
@@ -161,7 +212,7 @@ const ThreeEarthManager = (() => {
       setupSectionDetection();
 
       performanceMonitor = new PerformanceMonitor(container);
-      shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
+      shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE, CONFIG.METEOR_EVENTS);
       shootingStarManager.start();
 
       startAnimationLoop();
@@ -447,6 +498,67 @@ async function createEarthSystem() {
     emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY,
   });
 
+  // Ozean-Reflexionen via onBeforeCompile Shader-Injection
+  earthMaterial.onBeforeCompile = (shader) => {
+    // Uniforms für Ozean-Highlights hinzufügen
+    shader.uniforms.uSunPosition = {
+      value: new THREE_INSTANCE.Vector3(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0),
+    };
+    shader.uniforms.uOceanShininess = { value: CONFIG.OCEAN.SHININESS };
+    shader.uniforms.uOceanSpecularIntensity = {
+      value: CONFIG.OCEAN.SPECULAR_INTENSITY,
+    };
+    shader.uniforms.uOceanSpecularColor = {
+      value: new THREE_INSTANCE.Color(CONFIG.OCEAN.SPECULAR_COLOR),
+    };
+
+    // Fragment Shader erweitern
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <color_fragment>",
+      `
+      #include <color_fragment>
+      
+      // Ozean-Erkennung: Dunkle Pixel in Day-Textur sind Wasser
+      float oceanMask = step(diffuseColor.r + diffuseColor.g + diffuseColor.b, 0.4);
+      
+      if (oceanMask > 0.5) {
+        // Berechne Spekulare Reflexion (Phong-Modell)
+        vec3 sunDirection = normalize(uSunPosition);
+        vec3 viewDirection = normalize(vViewPosition);
+        vec3 reflectDirection = reflect(-sunDirection, normal);
+        
+        float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
+        specular *= uOceanSpecularIntensity;
+        
+        // Addiere Spekulare Highlights
+        diffuseColor.rgb += uOceanSpecularColor * specular;
+      }
+      `
+    );
+
+    // Vertex Shader erweitern (für View-Position)
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <worldpos_vertex>",
+      `
+      #include <worldpos_vertex>
+      varying vec3 vViewPosition;
+      vViewPosition = -mvPosition.xyz;
+      `
+    );
+
+    shader.fragmentShader =
+      `
+      uniform vec3 uSunPosition;
+      uniform float uOceanShininess;
+      uniform float uOceanSpecularIntensity;
+      uniform vec3 uOceanSpecularColor;
+      varying vec3 vViewPosition;
+      ` + shader.fragmentShader;
+
+    // Speichere Shader-Referenz für Uniform-Updates
+    earthMesh.userData.oceanShader = shader;
+  };
+
   const earthGeometry = new THREE_INSTANCE.SphereGeometry(
     CONFIG.EARTH.RADIUS,
     CONFIG.EARTH.SEGMENTS,
@@ -502,31 +614,84 @@ async function createCloudLayer() {
 }
 
 function createAtmosphere() {
+  // Erweiterte Multi-Layer Atmosphäre mit Rayleigh & Mie Scattering
   const vertexShader = `
     varying vec3 vNormal;
+    varying vec3 vPosition;
+    varying vec3 vWorldPosition;
     void main() {
         vNormal = normalize(normalMatrix * normal);
+        vPosition = position;
+        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+        vWorldPosition = worldPosition.xyz;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }`;
+  
   const fragmentShader = `
     varying vec3 vNormal;
-    uniform vec3 uGlowColor;
+    varying vec3 vPosition;
+    varying vec3 vWorldPosition;
+    uniform vec3 uRayleighColor;
+    uniform vec3 uMieColor;
     uniform float uPower;
-    uniform float uIntensity;
+    uniform float uRayleighIntensity;
+    uniform float uMieIntensity;
+    uniform float uScatteringStrength;
+    uniform vec3 uSunPosition;
+    
     void main() {
-        float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), uPower);
-        gl_FragColor = vec4(uGlowColor, 1.0) * fresnel * uIntensity;
+        // Fresnel-Effekt für Atmosphären-Rand
+        vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
+        float fresnel = pow(1.0 - abs(dot(vNormal, viewDirection)), uPower);
+        
+        // Rayleigh Scattering (Blau - kurzwellige Streuung)
+        // Stärker am Horizont, nimmt mit Höhe ab
+        float rayleighFactor = fresnel * uRayleighIntensity;
+        vec3 rayleighScatter = uRayleighColor * rayleighFactor;
+        
+        // Mie Scattering (Warm - langwellige Streuung, Sonnenuntergangs-Effekt)
+        // Berechne Winkel zur Sonne
+        vec3 toSun = normalize(uSunPosition - vWorldPosition);
+        float sunAlignment = max(0.0, dot(viewDirection, toSun));
+        
+        // Mie-Phase-Funktion (Henyey-Greenstein approximation)
+        float g = 0.76; // Anisotropie-Parameter
+        float g2 = g * g;
+        float mieFactor = (1.0 - g2) / pow(1.0 + g2 - 2.0 * g * sunAlignment, 1.5);
+        mieFactor *= fresnel * uMieIntensity;
+        
+        vec3 mieScatter = uMieColor * mieFactor;
+        
+        // Kombiniere Rayleigh + Mie mit Gesamt-Streuungsstärke
+        vec3 finalColor = (rayleighScatter + mieScatter) * uScatteringStrength;
+        
+        // Alpha basierend auf Fresnel für weichen Übergang
+        float alpha = fresnel * (uRayleighIntensity + uMieIntensity * 0.5);
+        
+        gl_FragColor = vec4(finalColor, alpha);
     }`;
 
   const atmosphereMaterial = new THREE_INSTANCE.ShaderMaterial({
     vertexShader,
     fragmentShader,
     uniforms: {
-      uGlowColor: {
-        value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.GLOW_COLOR),
+      uRayleighColor: {
+        value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.RAYLEIGH_COLOR),
+      },
+      uMieColor: {
+        value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.MIE_COLOR),
       },
       uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER },
-      uIntensity: { value: CONFIG.ATMOSPHERE.INTENSITY },
+      uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY },
+      uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY },
+      uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH },
+      uSunPosition: {
+        value: new THREE_INSTANCE.Vector3(
+          CONFIG.SUN.RADIUS,
+          CONFIG.SUN.HEIGHT,
+          0
+        ),
+      },
     },
     blending: THREE_INSTANCE.AdditiveBlending,
     transparent: true,
@@ -543,7 +708,56 @@ function createAtmosphere() {
     atmosphereMaterial
   );
   atmosphere.renderOrder = 2; // Render after clouds
-  return atmosphere;
+
+  // Zweite Rayleigh-Schicht (innere blaue Atmosphäre)
+  const rayleighMaterial = new THREE_INSTANCE.ShaderMaterial({
+    vertexShader,
+    fragmentShader: fragmentShader.replace("uMieIntensity", "uMieIntensity * 0.3"), // Reduziere Mie in innerer Schicht
+    uniforms: {
+      uRayleighColor: {
+        value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.RAYLEIGH_COLOR),
+      },
+      uMieColor: {
+        value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.MIE_COLOR),
+      },
+      uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER * 0.8 },
+      uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY * 0.6 },
+      uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY * 0.3 },
+      uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH * 0.7 },
+      uSunPosition: {
+        value: new THREE_INSTANCE.Vector3(
+          CONFIG.SUN.RADIUS,
+          CONFIG.SUN.HEIGHT,
+          0
+        ),
+      },
+    },
+    blending: THREE_INSTANCE.AdditiveBlending,
+    transparent: true,
+    side: THREE_INSTANCE.BackSide,
+    depthWrite: false,
+  });
+
+  const rayleighLayer = new THREE_INSTANCE.Mesh(
+    new THREE_INSTANCE.SphereGeometry(
+      CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.RAYLEIGH_SCALE,
+      CONFIG.EARTH.SEGMENTS,
+      CONFIG.EARTH.SEGMENTS
+    ),
+    rayleighMaterial
+  );
+  rayleighLayer.renderOrder = 2.5; // Zwischen Erde und äußerer Atmosphäre
+
+  // Beide Schichten in Container-Objekt
+  const atmosphereGroup = new THREE_INSTANCE.Group();
+  atmosphereGroup.add(atmosphere);
+  atmosphereGroup.add(rayleighLayer);
+
+  // Speichere Shader-Referenzen für Updates
+  atmosphereGroup.userData.atmosphereMaterial = atmosphereMaterial;
+  atmosphereGroup.userData.rayleighMaterial = rayleighMaterial;
+
+  return atmosphereGroup;
 }
 
 // ===== Camera & Section Updates =====
@@ -551,18 +765,118 @@ function setupCameraSystem() {
   updateCameraForSection("hero");
 }
 
+// Erweiterte Kamera-Steuerung mit Presets und Smooth Transitions
+let cameraTransition = null; // Aktueller Tween
+
 function updateCameraForSection(sectionName) {
-  const configs = {
-    hero: { pos: { x: 0, y: -1.8, z: 10 }, rot: { x: 0.2, y: 0 } },
-    features: { pos: { x: -3, y: 2.5, z: 12 }, rot: { x: -0.3, y: 0.4 } },
-    about: { pos: { x: 0, y: 1, z: 25 }, rot: { x: -0.15, y: 0 } },
+  // Neue Preset-basierte Kamera-Positionen
+  const preset = CONFIG.CAMERA.PRESETS[sectionName];
+  
+  if (preset) {
+    // Nutze Preset mit smooth Transition
+    flyToPreset(sectionName);
+  } else {
+    // Fallback auf alte Konfiguration
+    const configs = {
+      hero: { pos: { x: 0, y: -1.8, z: 10 }, rot: { x: 0.2, y: 0 } },
+      features: { pos: { x: -3, y: 2.5, z: 12 }, rot: { x: -0.3, y: 0.4 } },
+      about: { pos: { x: 0, y: 1, z: 25 }, rot: { x: -0.15, y: 0 } },
+    };
+    const config = configs[sectionName] || configs.hero;
+    cameraTarget.x = config.pos.x;
+    cameraTarget.y = config.pos.y;
+    mouseState.zoom = config.pos.z;
+    cameraRotation.x = config.rot.x;
+    cameraRotation.y = config.rot.y;
+  }
+}
+
+// Fliege zu vordefiniertem Preset
+function flyToPreset(presetName) {
+  const preset = CONFIG.CAMERA.PRESETS[presetName];
+  if (!preset) {
+    log.warn(`Camera preset '${presetName}' not found`);
+    return;
+  }
+
+  // Stoppe laufenden Transition
+  if (cameraTransition) {
+    earthTimers.clearTimeout(cameraTransition);
+    cameraTransition = null;
+  }
+
+  // Smooth Transition zu neuer Position
+  const startPos = { ...cameraTarget };
+  const startZoom = mouseState.zoom;
+  const duration = CONFIG.CAMERA.TRANSITION_DURATION * 1000; // ms
+  const startTime = performance.now();
+
+  function transitionStep() {
+    const elapsed = performance.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Easing: easeInOutCubic
+    const eased = progress < 0.5
+      ? 4 * progress * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+    // Interpoliere Position
+    cameraTarget.x = startPos.x + (preset.x - startPos.x) * eased;
+    cameraTarget.y = startPos.y + (preset.y - startPos.y) * eased;
+    mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
+
+    // Aktualisiere LookAt wenn definiert
+    if (preset.lookAt && camera) {
+      camera.lookAt(
+        preset.lookAt.x,
+        preset.lookAt.y,
+        preset.lookAt.z
+      );
+    }
+
+    if (progress < 1) {
+      cameraTransition = earthTimers.setTimeout(transitionStep, 16); // ~60fps
+    } else {
+      cameraTransition = null;
+      log.debug(`Camera transition to '${presetName}' complete`);
+    }
+  }
+
+  transitionStep();
+}
+
+// Fliege zu Lat/Lon Koordinaten (z.B. für Locations)
+function flyToLocation(lat, lon, zoom = 8, duration = 2.0) {
+  // Konvertiere Lat/Lon zu Kamera-Position
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lon + 180) * (Math.PI / 180);
+
+  const x = -(zoom * Math.sin(phi) * Math.cos(theta));
+  const y = zoom * Math.cos(phi);
+  const z = zoom * Math.sin(phi) * Math.sin(theta);
+
+  // Erstelle temporäres Preset
+  const tempPreset = {
+    x,
+    y,
+    z: zoom,
+    lookAt: { x: 0, y: 0, z: 0 },
   };
-  const config = configs[sectionName] || configs.hero;
-  cameraTarget.x = config.pos.x;
-  cameraTarget.y = config.pos.y;
-  mouseState.zoom = config.pos.z; // Use zoom for Z control
-  cameraRotation.x = config.rot.x;
-  cameraRotation.y = config.rot.y;
+
+  // Speichere in PRESETS und fliege hin
+  CONFIG.CAMERA.PRESETS._temp = tempPreset;
+  const oldDuration = CONFIG.CAMERA.TRANSITION_DURATION;
+  CONFIG.CAMERA.TRANSITION_DURATION = duration;
+  
+  flyToPreset("_temp");
+  
+  // Cleanup nach Transition
+  earthTimers.setTimeout(() => {
+    delete CONFIG.CAMERA.PRESETS._temp;
+    CONFIG.CAMERA.TRANSITION_DURATION = oldDuration;
+  }, duration * 1000 + 100);
+
+  log.info(`Flying to location: ${lat}°N, ${lon}°E`);
 }
 
 function setupSectionDetection() {
@@ -648,27 +962,61 @@ function startAnimationLoop() {
 
     // Erde bleibt statisch - keine Rotation
 
-    // Stadtlichter pulsieren (12.6s Periode, 0.2-0.4 Intensity Range)
-    if (earthMesh) {
-      earthMesh.material.emissiveIntensity =
-        CONFIG.EARTH.EMISSIVE_INTENSITY +
-        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-          CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
-    }
-
     // Wolken driften (80.5s pro Umdrehung)
     if (cloudMesh && cloudMesh.rotation) {
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
     }
 
-    // Sonne kreist mit Wolken → Tag/Nacht-Grenze wandert
-    if (directionalLight && cloudMesh) {
-      const angle = cloudMesh.rotation.y;
-      directionalLight.position.set(
-        Math.cos(angle) * CONFIG.SUN.RADIUS,
-        CONFIG.SUN.HEIGHT,
-        Math.sin(angle) * CONFIG.SUN.RADIUS
-      );
+    // Tag/Nacht-Zyklus: Sonne rotiert automatisch oder mit Wolken
+    if (directionalLight) {
+      let sunAngle;
+      
+      if (CONFIG.DAY_NIGHT_CYCLE.ENABLED) {
+        // Automatischer Zyklus mit beschleunigter Zeit
+        const cycleSpeed = CONFIG.SUN.ROTATION_SPEED * CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER;
+        sunAngle = elapsedTime * cycleSpeed;
+      } else if (cloudMesh) {
+        // Sonne kreist mit Wolken → Tag/Nacht-Grenze wandert
+        sunAngle = cloudMesh.rotation.y;
+      } else {
+        sunAngle = 0;
+      }
+
+      const sunX = Math.cos(sunAngle) * CONFIG.SUN.RADIUS;
+      const sunZ = Math.sin(sunAngle) * CONFIG.SUN.RADIUS;
+      directionalLight.position.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
+
+      // Update Atmosphären-Shader mit neuer Sonnen-Position
+      if (atmosphereMesh?.userData) {
+        const sunPosition = new THREE_INSTANCE.Vector3(sunX, CONFIG.SUN.HEIGHT, sunZ);
+        
+        if (atmosphereMesh.userData.atmosphereMaterial) {
+          atmosphereMesh.userData.atmosphereMaterial.uniforms.uSunPosition.value.copy(sunPosition);
+        }
+        if (atmosphereMesh.userData.rayleighMaterial) {
+          atmosphereMesh.userData.rayleighMaterial.uniforms.uSunPosition.value.copy(sunPosition);
+        }
+      }
+
+      // Update Ozean-Shader mit neuer Sonnen-Position
+      if (earthMesh?.userData?.oceanShader) {
+        earthMesh.userData.oceanShader.uniforms.uSunPosition.value.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
+      }
+
+      // Stadtlichter-Intensität mit Tag/Nacht synchronisieren (optional)
+      if (CONFIG.DAY_NIGHT_CYCLE.SYNC_CITY_LIGHTS && earthMesh) {
+        // Berechne Nacht-Seite basierend auf Sonnenwinkel
+        const nightIntensity = Math.max(0, -Math.cos(sunAngle));
+        earthMesh.material.emissiveIntensity = 
+          CONFIG.EARTH.EMISSIVE_INTENSITY * (0.5 + nightIntensity * 0.5) +
+          Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
+      } else if (earthMesh) {
+        // Standard Pulsation ohne Zyklus-Sync
+        earthMesh.material.emissiveIntensity =
+          CONFIG.EARTH.EMISSIVE_INTENSITY +
+          Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
+            CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
+      }
     }
 
     if (starField) {
@@ -852,5 +1200,77 @@ class PerformanceMonitor {
   }
 }
 
+// ===== Public API =====
 export const { initThreeEarth, cleanup } = ThreeEarthManager;
+
+/**
+ * Public API für externe Kontrolle
+ */
+export const EarthSystemAPI = {
+  /**
+   * Fliege zu geografischen Koordinaten
+   * @param {number} lat - Breitengrad (-90 bis 90)
+   * @param {number} lon - Längengrad (-180 bis 180)
+   * @param {number} zoom - Zoom-Level (4-30)
+   * @param {number} duration - Dauer in Sekunden
+   */
+  flyToLocation: (lat, lon, zoom = 8, duration = 2.0) => {
+    if (typeof flyToLocation === "function") {
+      flyToLocation(lat, lon, zoom, duration);
+    } else {
+      log.warn("Earth system not initialized");
+    }
+  },
+
+  /**
+   * Fliege zu vordefiniertem Preset
+   * @param {string} presetName - Name des Presets (hero, portfolio, about, contact)
+   */
+  flyToPreset: (presetName) => {
+    if (typeof flyToPreset === "function") {
+      flyToPreset(presetName);
+    } else {
+      log.warn("Earth system not initialized");
+    }
+  },
+
+  /**
+   * Aktiviere/Deaktiviere automatischen Tag/Nacht-Zyklus
+   * @param {boolean} enabled - Aktivierungsstatus
+   * @param {number} speedMultiplier - Geschwindigkeitsfaktor (1 = Echtzeit)
+   */
+  setDayNightCycle: (enabled, speedMultiplier = 10) => {
+    CONFIG.DAY_NIGHT_CYCLE.ENABLED = enabled;
+    CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER = speedMultiplier;
+    log.info(
+      `Day/Night cycle ${enabled ? "enabled" : "disabled"} (speed: ${speedMultiplier}x)`
+    );
+  },
+
+  /**
+   * Triggere Meteoritenregen-Event
+   */
+  triggerMeteorShower: () => {
+    if (shootingStarManager) {
+      shootingStarManager.triggerMeteorShower();
+    } else {
+      log.warn("ShootingStarManager not initialized");
+    }
+  },
+
+  /**
+   * Zugriff auf Konfiguration
+   */
+  getConfig: () => CONFIG,
+
+  /**
+   * Update Konfiguration
+   * @param {object} updates - Objekt mit Konfigurations-Updates
+   */
+  updateConfig: (updates) => {
+    Object.assign(CONFIG, updates);
+    log.info("Configuration updated", updates);
+  },
+};
+
 export default ThreeEarthManager;

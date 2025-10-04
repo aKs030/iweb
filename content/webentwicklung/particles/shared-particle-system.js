@@ -134,17 +134,50 @@ export class ShootingStarManager {
     /**
      * @param {THREE.Scene} scene
      * @param {typeof THREE} THREE
+     * @param {object} config - Meteor configuration from three-earth-system CONFIG
      */
-    constructor(scene, THREE) {
+    constructor(scene, THREE, config = {}) {
         this.scene = scene;
         this.THREE = THREE;
         this.activeStars = [];
         this.timeoutId = null;
-        log.debug("ShootingStarManager initialized.");
+        
+        // Import CONFIG.METEOR_EVENTS
+        this.config = config || {
+            BASE_FREQUENCY: 0.003,
+            SHOWER_FREQUENCY: 0.02,
+            SHOWER_DURATION: 180,
+            SHOWER_COOLDOWN: 1800,
+            MAX_SIMULTANEOUS: 3,
+            TRAJECTORIES: [
+                { start: { x: -100, y: 50, z: -50 }, end: { x: 100, y: -50, z: 50 } },
+                { start: { x: 100, y: 60, z: -40 }, end: { x: -80, y: -40, z: 60 } },
+                { start: { x: -80, y: 70, z: 60 }, end: { x: 90, y: -60, z: -70 } },
+            ],
+        };
+
+        // Shower State
+        this.isShowerActive = false;
+        this.showerTimer = 0;
+        this.showerCooldownTimer = 0;
+        
+        log.debug("ShootingStarManager initialized with meteor shower support.");
     }
 
     start() {
-        this.scheduleNextStar();
+        // Nutze per-frame Updates in update() statt setTimeout
+        log.debug("ShootingStarManager started");
+    }
+
+    triggerMeteorShower() {
+        if (this.isShowerActive || this.showerCooldownTimer > 0) {
+            log.debug("Meteor shower already active or in cooldown");
+            return;
+        }
+
+        this.isShowerActive = true;
+        this.showerTimer = 0;
+        log.info("🌠 Meteor shower triggered!");
     }
 
     scheduleNextStar() {
@@ -155,35 +188,107 @@ export class ShootingStarManager {
         }, delay);
     }
 
-    createShootingStar() {
+    createShootingStar(trajectory = null) {
+        // Limitiere simultane Meteore
+        if (this.activeStars.length >= this.config.MAX_SIMULTANEOUS) {
+            return;
+        }
+
         const geometry = new this.THREE.SphereGeometry(0.05, 8, 8);
-        const material = new this.THREE.MeshBasicMaterial({ color: 0xfffdef });
+        const material = new this.THREE.MeshBasicMaterial({ 
+            color: 0xfffdef,
+            transparent: true,
+            opacity: 1.0,
+        });
         const star = new this.THREE.Mesh(geometry, material);
 
-        // Random starting position outside the view frustum
-        star.position.set(
-            (Math.random() - 0.5) * 100,
-            20 + Math.random() * 20,
-            -50 - Math.random() * 50
-        );
+        // Nutze vordefinierte Trajectory oder generiere zufällige
+        let startPos, velocity;
+        
+        if (trajectory) {
+            startPos = trajectory.start;
+            const direction = new this.THREE.Vector3(
+                trajectory.end.x - trajectory.start.x,
+                trajectory.end.y - trajectory.start.y,
+                trajectory.end.z - trajectory.start.z
+            ).normalize();
+            velocity = direction.multiplyScalar(0.3 + Math.random() * 0.2);
+        } else {
+            // Fallback: Alte zufällige Generation
+            startPos = {
+                x: (Math.random() - 0.5) * 100,
+                y: 20 + Math.random() * 20,
+                z: -50 - Math.random() * 50,
+            };
+            velocity = new this.THREE.Vector3(
+                (Math.random() - 0.9) * 0.2,
+                (Math.random() - 0.6) * -0.2,
+                0
+            );
+        }
 
-        const velocity = new this.THREE.Vector3(
-            (Math.random() - 0.9) * 0.2, // Move mostly left
-            (Math.random() - 0.6) * -0.2, // Move mostly down
-            0
-        );
+        star.position.set(startPos.x, startPos.y, startPos.z);
 
-        const lifetime = 400 + Math.random() * 200; // Frames to live
+        // Trail-Effekt via Scale-Deformation
+        const stretchFactor = 2 + Math.random() * 3;
+        star.scale.set(1, 1, stretchFactor);
+        star.lookAt(star.position.clone().add(velocity));
 
-        this.activeStars.push({ mesh: star, velocity, lifetime, age: 0 });
+        const lifetime = 300 + Math.random() * 200; // Frames
+
+        this.activeStars.push({ 
+            mesh: star, 
+            velocity, 
+            lifetime, 
+            age: 0,
+            initialOpacity: 1.0,
+        });
         this.scene.add(star);
     }
 
     update() {
+        // Meteoritenregen-Logic
+        if (this.isShowerActive) {
+            this.showerTimer++;
+            
+            if (this.showerTimer >= this.config.SHOWER_DURATION) {
+                // Shower beenden
+                this.isShowerActive = false;
+                this.showerCooldownTimer = this.config.SHOWER_COOLDOWN;
+                log.info("Meteor shower ended");
+            }
+        }
+
+        // Cooldown
+        if (this.showerCooldownTimer > 0) {
+            this.showerCooldownTimer--;
+        }
+
+        // Spawn-Wahrscheinlichkeit
+        const spawnChance = this.isShowerActive 
+            ? this.config.SHOWER_FREQUENCY 
+            : this.config.BASE_FREQUENCY;
+
+        if (Math.random() < spawnChance) {
+            // Wähle zufällige Trajectory
+            const trajectory = this.config.TRAJECTORIES[
+                Math.floor(Math.random() * this.config.TRAJECTORIES.length)
+            ];
+            this.createShootingStar(trajectory);
+        }
+
+        // Update aktive Meteore
         for (let i = this.activeStars.length - 1; i >= 0; i--) {
             const star = this.activeStars[i];
             star.age++;
             star.mesh.position.add(star.velocity);
+
+            // Fade-out am Ende der Lifetime
+            const fadeStart = star.lifetime * 0.7;
+            if (star.age > fadeStart) {
+                const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
+                star.mesh.material.opacity = star.initialOpacity * (1 - fadeProgress);
+            }
 
             if (star.age > star.lifetime) {
                 this.scene.remove(star.mesh);

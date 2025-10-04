@@ -13,9 +13,48 @@
 
 **Performance:** 513 KB (WebP) vs. 1.249 KB (JPG) - 58.9% Größenreduktion
 
+## Three.js Earth System v5.0.0 Features
+
+Das Three.js System (`/content/webentwicklung/particles/three-earth-system.js`) bietet folgende Features:
+
+### 🌍 Visuelle Features
+
+1. **Multi-Layer Atmosphäre** - Physikalisch basiertes Rayleigh & Mie Scattering
+   - Rayleigh-Schicht (blaue Streuung) für realistische Atmosphäre
+   - Mie-Schicht (warme Streuung) für Sonnenuntergangs-Effekte
+   - Dynamische Shader-Updates basierend auf Sonnen-Position
+
+2. **Ozean-Reflexionen** - Spekulare Highlights auf Ozeanen
+   - Phong-Reflexionsmodell mit Sonnenlicht-Synchronisation
+   - Automatische Ozean-Erkennung via Textur-Analyse
+   - Konfigurierbare Shininess & Intensität
+
+3. **Tag/Nacht-Zyklus** - Automatische oder manuelle Sonnen-Rotation
+   - Beschleunigter Zyklus (konfigurierbar: 1x-100x Speed)
+   - Stadtlichter synchronisiert mit Nacht-Seite
+   - Toggle zwischen Auto/Manual Mode
+
+4. **Meteoritenregen-System** - Erweiterte Shooting-Star-Events
+   - Verschiedene Flugbahnen (3 vordefinierte Trajectories)
+   - Shower-Events mit erhöhter Frequenz
+   - Cooldown-System zur Vermeidung von Spam
+   - Fade-out & Trail-Effekte
+
+### 🎮 Interaktive Features
+
+5. **Kamera-Flug-System**
+   - `flyToLocation(lat, lon, zoom, duration)` - Fliege zu Koordinaten
+   - `flyToPreset(name)` - Preset-Positionen (hero, portfolio, about)
+   - Smooth easeInOutCubic Transitions
+   - Section-basierte automatische Kamera-Wechsel
+
+6. **Preset-Kamera-Positionen** - Vordefinierte Views für Sections
+   - Integration mit IntersectionObserver
+   - Konfigurierbare Transition-Duration (Standard: 2s)
+
 ## Texture Loading Strategy
 
-Das Three.js System (`/content/webentwicklung/particles/three-earth-system.js`) lädt Texturen mit automatischem Fallback:
+Das System lädt Texturen mit automatischem Fallback:
 
 1. **High Performance (LOD 1):** Alle 4 Texturen für Shader-Material
 2. **Medium Performance (LOD 2):** Nur Day + Normal für Standard-Material
@@ -31,9 +70,35 @@ Das Three.js System (`/content/webentwicklung/particles/three-earth-system.js`) 
 - ✅ LOD-basiertes Textur-Loading
 - ✅ Touch-Gesten (Pinch-to-Zoom, Drag-Rotation)
 - ✅ Smooth Inertia/Dampening (0.95)
-- ✅ Shooting Stars Animation
+- ✅ Dynamic Resolution Scaling (DRS) basierend auf FPS
+- ✅ Multi-Layer Atmospheric Scattering (v5.0+)
+- ✅ Ocean Specular Reflections (v5.0+)
 
 Details siehe: [`OPTIMIZATIONS.md`](./OPTIMIZATIONS.md)
+
+## Public API (v5.0.0)
+
+```javascript
+import { EarthSystemAPI } from "/content/webentwicklung/particles/three-earth-system.js";
+
+// Fliege zu Location (z.B. Berlin)
+EarthSystemAPI.flyToLocation(52.52, 13.405, 8, 2.5);
+
+// Aktiviere Tag/Nacht-Zyklus (10x beschleunigt)
+EarthSystemAPI.setDayNightCycle(true, 10);
+
+// Triggere Meteoritenregen
+EarthSystemAPI.triggerMeteorShower();
+
+// Fliege zu Preset
+EarthSystemAPI.flyToPreset("portfolio");
+
+// Konfiguration anpassen
+EarthSystemAPI.updateConfig({
+  OCEAN: { SPECULAR_INTENSITY: 0.8 },
+  DAY_NIGHT_CYCLE: { SPEED_MULTIPLIER: 20 },
+});
+```
 
 ## Quellen
 
@@ -44,10 +109,6 @@ Details siehe: [`OPTIMIZATIONS.md`](./OPTIMIZATIONS.md)
 ---
 
 _Texturen sind hochwertige NASA-Satellitenbilder für realistische Earth-Darstellung._
-
-### Basis Texture (für WebGL Fallback):
-
-```bash
 # Sehr kleine Grundtextur für prozedurales Material
 cwebp -q 70 -resize 256 128 earth_basic.jpg -o earth_basic.webp
 ```
