@@ -512,27 +512,15 @@ async function createEarthSystem() {
       value: new THREE_INSTANCE.Color(CONFIG.OCEAN.SPECULAR_COLOR),
     };
 
-    // Vertex Shader: Füge varying am Anfang hinzu
-    shader.vertexShader = `
-      varying vec3 vViewPosition;
-    ` + shader.vertexShader;
+    // WICHTIG: MeshStandardMaterial hat BEREITS vViewPosition varying!
+    // Wir müssen es NICHT neu deklarieren, nur nutzen.
 
-    // Vertex Shader: Setze vViewPosition
-    shader.vertexShader = shader.vertexShader.replace(
-      "#include <worldpos_vertex>",
-      `
-      #include <worldpos_vertex>
-      vViewPosition = -mvPosition.xyz;
-      `
-    );
-
-    // Fragment Shader: Füge Uniforms und varying am Anfang hinzu
+    // Fragment Shader: Füge nur Uniforms am Anfang hinzu (KEIN varying!)
     shader.fragmentShader = `
       uniform vec3 uSunPosition;
       uniform float uOceanShininess;
       uniform float uOceanSpecularIntensity;
       uniform vec3 uOceanSpecularColor;
-      varying vec3 vViewPosition;
     ` + shader.fragmentShader;
 
     // Fragment Shader: Füge Ozean-Reflexionen hinzu
