@@ -1,12 +1,25 @@
 # Earth Textures für Three.js System
 
+## 🎨 Three.js Earth System v5.0.0
+
+Das Earth System wurde mit **Advanced Rendering Features** erweitert!
+
+### Neue High-End Features:
+- 🌅 **Rayleigh/Mie Atmospheric Scattering** - Physikalisch korrekte Atmosphäre
+- ☁️ **Volumetric 3D Clouds** - Multi-Layer volumetrische Wolken mit Simplex Noise
+- 🌊 **Ocean Specular Reflections** - Fresnel-basierte Sonnenreflexionen
+
+📖 **Vollständige Dokumentation:** [`ADVANCED_FEATURES.md`](./ADVANCED_FEATURES.md)
+
+---
+
 ## Aktuelle Texturen (NASA-Quellen)
 
 **Pfad:** `/content/img/earth/textures/`
 
 ### Produktive Texturen (WebP):
 
-- ✅ `earth_day.webp` - NASA Blue Marble Tag-Textur
+- ✅ `earth_day.webp` - NASA Blue Marble Tag-Textur (auch als Ocean-Mask für Reflections)
 - ✅ `earth_night.webp` - NASA Earth at Night
 - ✅ `earth_normal.webp` - NASA Topographie Normal Map
 - ✅ `earth_bump.webp` - NASA Elevation Bump Map
@@ -32,8 +45,11 @@ Das Three.js System (`/content/webentwicklung/particles/three-earth-system.js`) 
 - ✅ Touch-Gesten (Pinch-to-Zoom, Drag-Rotation)
 - ✅ Smooth Inertia/Dampening (0.95)
 - ✅ Shooting Stars Animation
+- ✨ **NEW:** Adaptive Shader Quality (Auto-disable auf Mobile)
+- ✨ **NEW:** Dynamic Resolution Scaling (FPS-based)
+- ✨ **NEW:** Multi-Layer Cloud System mit Parallax
 
-Details siehe: [`OPTIMIZATIONS.md`](./OPTIMIZATIONS.md)
+Details siehe: [`OPTIMIZATIONS.md`](./OPTIMIZATIONS.md) & [`ADVANCED_FEATURES.md`](./ADVANCED_FEATURES.md)
 
 ## Quellen
 
