@@ -247,7 +247,11 @@ const ThreeEarthManager = (() => {
       setupSectionDetection();
 
       performanceMonitor = new PerformanceMonitor(container);
-      shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE, CONFIG.METEOR_EVENTS);
+      shootingStarManager = new ShootingStarManager(
+        scene,
+        THREE_INSTANCE,
+        CONFIG.METEOR_EVENTS
+      );
       shootingStarManager.start();
 
       startAnimationLoop();
@@ -537,7 +541,11 @@ async function createEarthSystem() {
   earthMaterial.onBeforeCompile = (shader) => {
     // Uniforms für Ozean-Highlights hinzufügen
     shader.uniforms.uSunPosition = {
-      value: new THREE_INSTANCE.Vector3(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0),
+      value: new THREE_INSTANCE.Vector3(
+        CONFIG.SUN.RADIUS,
+        CONFIG.SUN.HEIGHT,
+        0
+      ),
     };
     shader.uniforms.uOceanShininess = { value: CONFIG.OCEAN.SHININESS };
     shader.uniforms.uOceanSpecularIntensity = {
@@ -551,7 +559,8 @@ async function createEarthSystem() {
     // Wir müssen es NICHT neu deklarieren, nur nutzen.
 
     // Fragment Shader: Füge nur Uniforms am Anfang hinzu (KEIN varying!)
-    shader.fragmentShader = `
+    shader.fragmentShader =
+      `
       uniform vec3 uSunPosition;
       uniform float uOceanShininess;
       uniform float uOceanSpecularIntensity;
@@ -585,7 +594,7 @@ async function createEarthSystem() {
       }
       `
     );
-    
+
     // Füge Specular Addition NACH roughness_fragment hinzu
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <roughness_fragment>",
@@ -681,7 +690,7 @@ function createAtmosphere() {
         vWorldPosition = worldPosition.xyz;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }`;
-  
+
   const fragmentShader = `
     varying vec3 vNormal;
     varying vec3 vPosition;
@@ -818,7 +827,9 @@ function createAtmosphere() {
       uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER * 0.8 },
       uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY * 0.6 },
       uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY },
-      uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH * 0.7 },
+      uScatteringStrength: {
+        value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH * 0.7,
+      },
       uSunPosition: {
         value: new THREE_INSTANCE.Vector3(
           CONFIG.SUN.RADIUS,
@@ -847,7 +858,7 @@ function createAtmosphere() {
   const atmosphereGroup = new THREE_INSTANCE.Group();
   atmosphereGroup.add(atmosphere);
   atmosphereGroup.add(rayleighLayer);
-  
+
   // Globale Referenz für Performance Toggle
   rayleighAtmosphereMesh = rayleighLayer;
 
@@ -869,7 +880,7 @@ let cameraTransition = null; // Aktueller Tween
 function updateCameraForSection(sectionName) {
   // Neue Preset-basierte Kamera-Positionen
   const preset = CONFIG.CAMERA.PRESETS[sectionName];
-  
+
   if (preset) {
     // Nutze Preset mit smooth Transition
     flyToPreset(sectionName);
@@ -912,11 +923,12 @@ function flyToPreset(presetName) {
   function transitionStep() {
     const elapsed = performance.now() - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    
+
     // Easing: easeInOutCubic
-    const eased = progress < 0.5
-      ? 4 * progress * progress * progress
-      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+    const eased =
+      progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
     // Interpoliere Position
     cameraTarget.x = startPos.x + (preset.x - startPos.x) * eased;
@@ -925,11 +937,7 @@ function flyToPreset(presetName) {
 
     // Aktualisiere LookAt wenn definiert
     if (preset.lookAt && camera) {
-      camera.lookAt(
-        preset.lookAt.x,
-        preset.lookAt.y,
-        preset.lookAt.z
-      );
+      camera.lookAt(preset.lookAt.x, preset.lookAt.y, preset.lookAt.z);
     }
 
     if (progress < 1) {
@@ -965,14 +973,17 @@ function flyToLocation(lat, lon, zoom = 8, duration = 2.0) {
   CONFIG.CAMERA.PRESETS._temp = tempPreset;
   const oldDuration = CONFIG.CAMERA.TRANSITION_DURATION;
   CONFIG.CAMERA.TRANSITION_DURATION = duration;
-  
+
   flyToPreset("_temp");
-  
+
   // Cleanup nach Transition
-  earthTimers.setTimeout(() => {
-    delete CONFIG.CAMERA.PRESETS._temp;
-    CONFIG.CAMERA.TRANSITION_DURATION = oldDuration;
-  }, duration * 1000 + 100);
+  earthTimers.setTimeout(
+    () => {
+      delete CONFIG.CAMERA.PRESETS._temp;
+      CONFIG.CAMERA.TRANSITION_DURATION = oldDuration;
+    },
+    duration * 1000 + 100
+  );
 
   log.info(`Flying to location: ${lat}°N, ${lon}°E`);
 }
@@ -1068,10 +1079,11 @@ function startAnimationLoop() {
     // Tag/Nacht-Zyklus: Sonne rotiert automatisch oder mit Wolken
     if (directionalLight) {
       let sunAngle;
-      
+
       if (CONFIG.DAY_NIGHT_CYCLE.ENABLED) {
         // Automatischer Zyklus mit beschleunigter Zeit
-        const cycleSpeed = CONFIG.SUN.ROTATION_SPEED * CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER;
+        const cycleSpeed =
+          CONFIG.SUN.ROTATION_SPEED * CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER;
         sunAngle = elapsedTime * cycleSpeed;
       } else if (cloudMesh) {
         // Sonne kreist mit Wolken → Tag/Nacht-Grenze wandert
@@ -1086,39 +1098,54 @@ function startAnimationLoop() {
 
       // Update Atmosphären-Shader mit neuer Sonnen-Position
       if (atmosphereMesh?.userData) {
-        const sunPosition = new THREE_INSTANCE.Vector3(sunX, CONFIG.SUN.HEIGHT, sunZ);
-        
+        const sunPosition = new THREE_INSTANCE.Vector3(
+          sunX,
+          CONFIG.SUN.HEIGHT,
+          sunZ
+        );
+
         if (atmosphereMesh.userData.atmosphereMaterial) {
-          atmosphereMesh.userData.atmosphereMaterial.uniforms.uSunPosition.value.copy(sunPosition);
+          atmosphereMesh.userData.atmosphereMaterial.uniforms.uSunPosition.value.copy(
+            sunPosition
+          );
         }
         if (atmosphereMesh.userData.rayleighMaterial) {
-          atmosphereMesh.userData.rayleighMaterial.uniforms.uSunPosition.value.copy(sunPosition);
+          atmosphereMesh.userData.rayleighMaterial.uniforms.uSunPosition.value.copy(
+            sunPosition
+          );
         }
       }
 
       // Update Ozean-Shader mit neuer Sonnen-Position
       if (earthMesh?.userData?.oceanShader) {
-        earthMesh.userData.oceanShader.uniforms.uSunPosition.value.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
+        earthMesh.userData.oceanShader.uniforms.uSunPosition.value.set(
+          sunX,
+          CONFIG.SUN.HEIGHT,
+          sunZ
+        );
       }
 
       // Stadtlichter-Intensität mit Tag/Nacht synchronisieren (optional)
       if (CONFIG.DAY_NIGHT_CYCLE.SYNC_CITY_LIGHTS && earthMesh) {
         // Berechne Nacht-Seite basierend auf Sonnenwinkel
         const nightIntensity = Math.max(0, -Math.cos(sunAngle));
-        
+
         // Nur Pulsation wenn enabled (Performance Toggle)
         const pulseAmount = earthMesh.userData.emissivePulseEnabled
-          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
+          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
+            CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
           : 0;
-        
-        earthMesh.material.emissiveIntensity = 
-          CONFIG.EARTH.EMISSIVE_INTENSITY * (0.5 + nightIntensity * 0.5) + pulseAmount;
+
+        earthMesh.material.emissiveIntensity =
+          CONFIG.EARTH.EMISSIVE_INTENSITY * (0.5 + nightIntensity * 0.5) +
+          pulseAmount;
       } else if (earthMesh) {
         // Standard Pulsation ohne Zyklus-Sync
         const pulseAmount = earthMesh.userData.emissivePulseEnabled
-          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
+          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
+            CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
           : 0;
-        
+
         earthMesh.material.emissiveIntensity =
           CONFIG.EARTH.EMISSIVE_INTENSITY + pulseAmount;
       }
@@ -1353,7 +1380,9 @@ class PerformanceMonitor {
     if (earthMesh?.userData?.oceanShader) {
       earthMesh.userData.oceanShader.uniforms.uOceanSpecularIntensity.value =
         features.oceanReflections ? CONFIG.OCEAN.SPECULAR_INTENSITY : 0.0;
-      log.debug(`Ocean Reflections: ${features.oceanReflections ? "ON" : "OFF"}`);
+      log.debug(
+        `Ocean Reflections: ${features.oceanReflections ? "ON" : "OFF"}`
+      );
     }
 
     // City Lights Pulse Toggle

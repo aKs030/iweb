@@ -19,26 +19,26 @@ Das Three.js System (`/content/webentwicklung/particles/three-earth-system.js`) 
 
 ### 🌍 Visuelle Features
 
-1. **Multi-Layer Atmosphäre** 
-    - Physikalisch basiertes Rayleigh & Mie Scattering
+1. **Multi-Layer Atmosphäre**
+   - Physikalisch basiertes Rayleigh & Mie Scattering
    - Rayleigh-Schicht (blaue Streuung) für realistische Atmosphäre
    - Mie-Schicht (warme Streuung) für Sonnenuntergangs-Effekte
    - Dynamische Shader-Updates basierend auf Sonnen-Position
 
-2. **Ozean-Reflexionen** 
-    - Spekulare Highlights auf Ozeanen
+2. **Ozean-Reflexionen**
+   - Spekulare Highlights auf Ozeanen
    - Phong-Reflexionsmodell mit Sonnenlicht-Synchronisation
    - Automatische Ozean-Erkennung via Textur-Analyse
    - Konfigurierbare Shininess & Intensität
 
-3. **Tag/Nacht-Zyklus** 
-    - Automatische oder manuelle Sonnen-Rotation
+3. **Tag/Nacht-Zyklus**
+   - Automatische oder manuelle Sonnen-Rotation
    - Beschleunigter Zyklus (konfigurierbar: 1x-100x Speed)
    - Stadtlichter synchronisiert mit Nacht-Seite
    - Toggle zwischen Auto/Manual Mode
 
-4. **Meteoritenregen-System** 
-    - Erweiterte Shooting-Star-Events
+4. **Meteoritenregen-System**
+   - Erweiterte Shooting-Star-Events
    - Verschiedene Flugbahnen (3 vordefinierte Trajectories)
    - Shower-Events mit erhöhter Frequenz
    - Cooldown-System zur Vermeidung von Spam
@@ -113,8 +113,11 @@ EarthSystemAPI.updateConfig({
 ---
 
 _Texturen sind hochwertige NASA-Satellitenbilder für realistische Earth-Darstellung._
+
 # Sehr kleine Grundtextur für prozedurales Material
+
 cwebp -q 70 -resize 256 128 earth_basic.jpg -o earth_basic.webp
+
 ```
 
 ## Performance Level Texturen:
@@ -181,3 +184,4 @@ Das Three.js System generiert automatisch MIP-Maps für bessere Performance bei 
 - WebP: Chrome 23+, Firefox 65+, Safari 14+
 - JPEG Fallback: Alle Browser
 - WebGL: Chrome 9+, Firefox 4+, Safari 5.1+
+```
