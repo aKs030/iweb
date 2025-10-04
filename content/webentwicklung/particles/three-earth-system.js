@@ -133,6 +133,39 @@ const CONFIG = {
     DRS_DOWN_THRESHOLD: 45, // Dynamic Resolution Scaling FPS threshold to scale down
     DRS_UP_THRESHOLD: 55, // Dynamic Resolution Scaling FPS threshold to scale up
   },
+  QUALITY_LEVELS: {
+    // Progressive Enhancement: Features werden bei niedrigem FPS deaktiviert
+    HIGH: {
+      minFPS: 45,
+      features: {
+        multiLayerAtmosphere: true,
+        oceanReflections: true,
+        cloudLayer: true,
+        cityLightsPulse: true,
+        meteorShowers: true,
+      },
+    },
+    MEDIUM: {
+      minFPS: 25,
+      features: {
+        multiLayerAtmosphere: false, // Deaktiviere Rayleigh Layer
+        oceanReflections: true,
+        cloudLayer: true,
+        cityLightsPulse: false,
+        meteorShowers: true,
+      },
+    },
+    LOW: {
+      minFPS: 0,
+      features: {
+        multiLayerAtmosphere: false,
+        oceanReflections: false, // Deaktiviere Ocean Shader
+        cloudLayer: false, // Entferne Cloud Layer
+        cityLightsPulse: false,
+        meteorShowers: false,
+      },
+    },
+  },
   PATHS: {
     THREE_JS: [
       "/content/webentwicklung/lib/three/build/three.module.min.js",
@@ -158,6 +191,8 @@ let performanceMonitor = null;
 let shootingStarManager = null;
 let THREE_INSTANCE = null;
 let directionalLight = null; // Sonne - rotiert mit Wolken
+let currentQualityLevel = "HIGH"; // HIGH, MEDIUM, LOW
+let rayleighAtmosphereMesh = null; // Separate Rayleigh-Schicht für Toggle
 
 // Camera and Animation States
 const cameraTarget = { x: 0, y: 0, z: 10 };
@@ -592,6 +627,7 @@ async function createEarthSystem() {
   // Target-Werte für Transitions speichern
   earthMesh.userData.targetPosition = { x: 0, y: -6.0, z: 0 };
   earthMesh.userData.targetScale = 1.5;
+  earthMesh.userData.emissivePulseEnabled = true; // Performance Toggle für City Lights Pulsation
 
   scene.add(earthMesh);
 }
@@ -811,6 +847,9 @@ function createAtmosphere() {
   const atmosphereGroup = new THREE_INSTANCE.Group();
   atmosphereGroup.add(atmosphere);
   atmosphereGroup.add(rayleighLayer);
+  
+  // Globale Referenz für Performance Toggle
+  rayleighAtmosphereMesh = rayleighLayer;
 
   // Speichere Shader-Referenzen für Updates
   atmosphereGroup.userData.atmosphereMaterial = atmosphereMaterial;
@@ -1066,15 +1105,22 @@ function startAnimationLoop() {
       if (CONFIG.DAY_NIGHT_CYCLE.SYNC_CITY_LIGHTS && earthMesh) {
         // Berechne Nacht-Seite basierend auf Sonnenwinkel
         const nightIntensity = Math.max(0, -Math.cos(sunAngle));
+        
+        // Nur Pulsation wenn enabled (Performance Toggle)
+        const pulseAmount = earthMesh.userData.emissivePulseEnabled
+          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
+          : 0;
+        
         earthMesh.material.emissiveIntensity = 
-          CONFIG.EARTH.EMISSIVE_INTENSITY * (0.5 + nightIntensity * 0.5) +
-          Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
+          CONFIG.EARTH.EMISSIVE_INTENSITY * (0.5 + nightIntensity * 0.5) + pulseAmount;
       } else if (earthMesh) {
         // Standard Pulsation ohne Zyklus-Sync
+        const pulseAmount = earthMesh.userData.emissivePulseEnabled
+          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
+          : 0;
+        
         earthMesh.material.emissiveIntensity =
-          CONFIG.EARTH.EMISSIVE_INTENSITY +
-          Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-            CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
+          CONFIG.EARTH.EMISSIVE_INTENSITY + pulseAmount;
       }
     }
 
@@ -1220,7 +1266,18 @@ class PerformanceMonitor {
   }
 
   adjustResolution() {
-    // Kritischer FPS-Einbruch erkennen (< 10 FPS)
+    // SCHRITT 1: Quality-Level anpassen basierend auf FPS
+    this.adjustQualityLevel();
+
+    // SCHRITT 2: Pixel Ratio anpassen (nur bei kritischem FPS)
+    if (this.fps < 10 && currentQualityLevel !== "LOW") {
+      // Erst Quality auf LOW, dann Pixel Ratio reduzieren
+      log.error(
+        `Critical FPS (${this.fps.toFixed(1)}), switching to LOW quality mode`
+      );
+      return; // Quality-Wechsel wird beim nächsten Frame wirksam
+    }
+
     if (this.fps < 10) {
       this.currentPixelRatio = 0.5; // Drastische Reduktion bei kritischem FPS
       renderer.setPixelRatio(this.currentPixelRatio);
@@ -1251,6 +1308,69 @@ class PerformanceMonitor {
       log.info(
         `Good FPS (${this.fps.toFixed(1)}), increasing pixel ratio to ${this.currentPixelRatio.toFixed(2)}`
       );
+    }
+  }
+
+  adjustQualityLevel() {
+    const prevLevel = currentQualityLevel;
+
+    // Bestimme Quality-Level basierend auf FPS
+    if (this.fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
+      currentQualityLevel = "LOW";
+    } else if (this.fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
+      currentQualityLevel = "MEDIUM";
+    } else {
+      currentQualityLevel = "HIGH";
+    }
+
+    // Nur Aktion bei Level-Wechsel
+    if (prevLevel !== currentQualityLevel) {
+      log.warn(
+        `Quality level changed: ${prevLevel} → ${currentQualityLevel} (FPS: ${this.fps.toFixed(1)})`
+      );
+      this.applyQualitySettings();
+    }
+  }
+
+  applyQualitySettings() {
+    const features = CONFIG.QUALITY_LEVELS[currentQualityLevel].features;
+
+    // Multi-Layer Atmosphere Toggle
+    if (rayleighAtmosphereMesh) {
+      rayleighAtmosphereMesh.visible = features.multiLayerAtmosphere;
+      log.debug(
+        `Multi-Layer Atmosphere: ${features.multiLayerAtmosphere ? "ON" : "OFF"}`
+      );
+    }
+
+    // Cloud Layer Toggle
+    if (cloudMesh) {
+      cloudMesh.visible = features.cloudLayer;
+      log.debug(`Cloud Layer: ${features.cloudLayer ? "ON" : "OFF"}`);
+    }
+
+    // Ocean Reflections Toggle (via Shader Uniform)
+    if (earthMesh?.userData?.oceanShader) {
+      earthMesh.userData.oceanShader.uniforms.uOceanSpecularIntensity.value =
+        features.oceanReflections ? CONFIG.OCEAN.SPECULAR_INTENSITY : 0.0;
+      log.debug(`Ocean Reflections: ${features.oceanReflections ? "ON" : "OFF"}`);
+    }
+
+    // City Lights Pulse Toggle
+    if (earthMesh?.userData?.emissivePulseEnabled !== undefined) {
+      earthMesh.userData.emissivePulseEnabled = features.cityLightsPulse;
+      log.debug(
+        `City Lights Pulse: ${features.cityLightsPulse ? "ON" : "OFF"}`
+      );
+    }
+
+    // Meteor Showers Toggle
+    if (shootingStarManager) {
+      // Meteor Manager hat kein direktes disable, wir setzen frequency auf 0
+      shootingStarManager.baseFrequency = features.meteorShowers
+        ? CONFIG.METEOR_EVENTS.BASE_FREQUENCY
+        : 0;
+      log.debug(`Meteor Showers: ${features.meteorShowers ? "ON" : "OFF"}`);
     }
   }
 
