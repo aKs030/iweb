@@ -10,9 +10,10 @@
  * - iOS Safari Adressleisten-Animationen-Support
  * - Mobile-optimierte Skalierung (70% max-height, min-scale 0.75)
  * - ResizeObserver Loop Prevention via requestAnimationFrame
+ * - CONFIG-basierte Konfiguration (keine Magic Numbers)
  *
  * @author Abdulkerim Sesli
- * @version 1.3.0
+ * @version 1.4.0
  */
 
 import { createLogger, getElementById, throttle } from "../shared-utilities.js";

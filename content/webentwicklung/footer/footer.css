@@ -31,8 +31,8 @@
  * - Grid: minmax(min(100%, 260px), 1fr) für optimale Mobile-Anpassung
  * 
  * @author Abdulkerim Sesli
- * @version 4.8.0 - Balanced Mobile Spacing Optimization
- * @updated 2025-10-04 - Ausgewogene Mobile-Abstände (6px) für größere Karten + bessere UX
+ * @version 4.9.0
+ * @updated 2025-10-04 - Doppelte Skalierung behoben + will-change Performance-Optimierung
  */
 
 /* ===== Dynamic Footer Design Tokens ===== */

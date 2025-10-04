@@ -5,12 +5,12 @@
  * - Dynamisches Laden des Footer-Inhalts
  * - Automatische Jahr-Aktualisierung
  * - Error Handling mit Fallback
- * - Performance-optimiert (Event Delegation)
+ * - Performance-optimiert (Event Delegation, RAF)
  * - Event-basierte Koordination (footer:loaded)
  * - Accessibility-Support
  *
  * @author Abdulkerim Sesli
- * @version 2.6.0
+ * @version 2.7.0
  */
 
 // ===== Shared Utilities Import =====
@@ -275,8 +275,8 @@ function showFallbackFooter(container) {
     <footer id="site-footer" class="site-footer-fixed" role="contentinfo">
       <div class="footer-minimized">
         <p class="footer-copyright-minimal">
-          &copy; ${currentYear} 
-          <a href="https://abdulkerimsesli.de">Abdulkerim Sesli</a>. 
+          &copy; ${currentYear}
+          <a href="https://abdulkerimsesli.de">Abdulkerim Sesli</a>.
           Alle Rechte vorbehalten.
         </p>
       </div>

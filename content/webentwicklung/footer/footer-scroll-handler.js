@@ -7,9 +7,10 @@
  * - Performance-optimiert mit Intersection Observer
  * - Event-basierte Koordination mit load-footer.js
  * - Accessibility-Support
+ * - CONFIG-basierte Konfiguration (keine Magic Numbers)
  *
  * @author Abdulkerim Sesli
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 import { createLogger, getElementById } from "../shared-utilities.js";
