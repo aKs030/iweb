@@ -20,6 +20,12 @@
  * @last-modified 2025-10-04
  */
 import {
+  createLogger,
+  getElementById,
+  onResize,
+  TimerManager,
+} from "../shared-utilities.js";
+import {
   getSharedState,
   registerParticleSystem,
   sharedCleanupManager,
@@ -27,7 +33,6 @@ import {
   ShootingStarManager,
   unregisterParticleSystem,
 } from "./shared-particle-system.js";
-import { createLogger, getElementById, onResize, TimerManager } from "../shared-utilities.js";
 
 const log = createLogger("threeEarthSystem");
 const earthTimers = new TimerManager();
@@ -69,23 +74,22 @@ const CONFIG = {
     PIXEL_RATIO: Math.min(window.devicePixelRatio, 1.5),
     TARGET_FPS: 50,
     DRS_DOWN_THRESHOLD: 45, // Dynamic Resolution Scaling FPS threshold to scale down
-    DRS_UP_THRESHOLD: 55,   // Dynamic Resolution Scaling FPS threshold to scale up
+    DRS_UP_THRESHOLD: 55, // Dynamic Resolution Scaling FPS threshold to scale up
   },
   PATHS: {
     THREE_JS: [
-        "/content/webentwicklung/lib/three/build/three.module.min.js",
-        "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
+      "/content/webentwicklung/lib/three/build/three.module.min.js",
+      "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
     ],
     TEXTURES: {
-        DAY: "/content/img/earth/textures/earth_day.webp",
-        NIGHT: "/content/img/earth/textures/earth_night.webp",
-        NORMAL: "/content/img/earth/textures/earth_normal.webp",
-        BUMP: "/content/img/earth/textures/earth_bump.webp",
-        CLOUDS: "/content/img/earth/textures/earth_clouds_1024.png"
-    }
-  }
+      DAY: "/content/img/earth/textures/earth_day.webp",
+      NIGHT: "/content/img/earth/textures/earth_night.webp",
+      NORMAL: "/content/img/earth/textures/earth_normal.webp",
+      BUMP: "/content/img/earth/textures/earth_bump.webp",
+      CLOUDS: "/content/img/earth/textures/earth_clouds_1024.png",
+    },
+  },
 };
-
 
 // ===== Global Variables =====
 let scene, camera, renderer, earthMesh, starField, cloudMesh, atmosphereMesh;
@@ -134,10 +138,11 @@ const ThreeEarthManager = (() => {
     try {
       log.info("Initializing Three.js Earth system v4.0.0");
       registerParticleSystem("three-earth", { type: "three-earth" });
-      
+
       THREE_INSTANCE = await loadThreeJS();
-      if (!THREE_INSTANCE) throw new Error("Three.js failed to load from all sources");
-      
+      if (!THREE_INSTANCE)
+        throw new Error("Three.js failed to load from all sources");
+
       showLoadingState(container, 0); // Show initial loading state
 
       await setupScene(container);
@@ -162,7 +167,7 @@ const ThreeEarthManager = (() => {
 
       startAnimationLoop();
       setupResizeHandler();
-      
+
       log.info("Three.js Earth system initialized successfully.");
       return cleanup;
     } catch (error) {
@@ -182,7 +187,7 @@ const ThreeEarthManager = (() => {
     if (performanceMonitor) performanceMonitor.cleanup();
     if (shootingStarManager) shootingStarManager.cleanup();
     if (sectionObserver) sectionObserver.disconnect();
-    
+
     earthTimers.clearAll();
     sharedCleanupManager.cleanupSystem("three-earth");
 
@@ -195,8 +200,15 @@ const ThreeEarthManager = (() => {
       renderer.dispose();
       renderer.forceContextLoss();
     }
-    
-    scene = camera = renderer = earthMesh = starField = cloudMesh = atmosphereMesh = null;
+
+    scene =
+      camera =
+      renderer =
+      earthMesh =
+      starField =
+      cloudMesh =
+      atmosphereMesh =
+        null;
     currentSection = "hero";
 
     unregisterParticleSystem("three-earth");
@@ -204,25 +216,25 @@ const ThreeEarthManager = (() => {
   };
 
   function disposeObject(obj) {
-      if (obj.geometry) obj.geometry.dispose();
-      if (obj.material) {
-          if (Array.isArray(obj.material)) {
-              obj.material.forEach(disposeMaterial);
-          } else {
-              disposeMaterial(obj.material);
-          }
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) {
+      if (Array.isArray(obj.material)) {
+        obj.material.forEach(disposeMaterial);
+      } else {
+        disposeMaterial(obj.material);
       }
+    }
   }
 
   function disposeMaterial(material) {
-    Object.values(material).forEach(value => {
-        if (value && typeof value.dispose === 'function') {
-            value.dispose();
-        }
+    Object.values(material).forEach((value) => {
+      if (value && typeof value.dispose === "function") {
+        value.dispose();
+      }
     });
     material.dispose();
   }
-  
+
   function handleInitializationError(container, error) {
     try {
       if (renderer) renderer.dispose();
@@ -259,24 +271,29 @@ async function setupScene(container) {
   isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
   scene = new THREE_INSTANCE.Scene();
   const aspectRatio = container.clientWidth / container.clientHeight;
-  camera = new THREE_INSTANCE.PerspectiveCamera(CONFIG.CAMERA.FOV, aspectRatio, CONFIG.CAMERA.NEAR, CONFIG.CAMERA.FAR);
-  
+  camera = new THREE_INSTANCE.PerspectiveCamera(
+    CONFIG.CAMERA.FOV,
+    aspectRatio,
+    CONFIG.CAMERA.NEAR,
+    CONFIG.CAMERA.FAR
+  );
+
   renderer = new THREE_INSTANCE.WebGLRenderer({
     canvas: container.querySelector("canvas") || undefined,
     antialias: true,
     alpha: true,
     powerPreference: "high-performance",
   });
-  
+
   renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE_INSTANCE.SRGBColorSpace;
   renderer.toneMapping = THREE_INSTANCE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.8; // Leicht reduziert für dunklere Texturen
-  
+
   container.appendChild(renderer.domElement);
-  
+
   createStarField();
   setupStarParallax();
   setupLighting();
@@ -284,7 +301,9 @@ async function setupScene(container) {
 
 // ===== Starfield & Parallax =====
 function createStarField() {
-  const starCount = isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT;
+  const starCount = isMobileDevice
+    ? CONFIG.STARS.COUNT / 2
+    : CONFIG.STARS.COUNT;
   const positions = new Float32Array(starCount * 3);
   const colors = new Float32Array(starCount * 3);
   const sizes = new Float32Array(starCount);
@@ -302,17 +321,26 @@ function createStarField() {
 
     color.setHSL(Math.random() * 0.1 + 0.5, 0.8, 0.8 + Math.random() * 0.2);
     colors[i3] = color.r;
-    colors[i3+1] = color.g;
-    colors[i3+2] = color.b;
+    colors[i3 + 1] = color.g;
+    colors[i3 + 2] = color.b;
 
     sizes[i] = Math.random() * 1.5 + 0.5;
   }
-  
+
   const starGeometry = new THREE_INSTANCE.BufferGeometry();
-  starGeometry.setAttribute("position", new THREE_INSTANCE.BufferAttribute(positions, 3));
-  starGeometry.setAttribute("color", new THREE_INSTANCE.BufferAttribute(colors, 3));
-  starGeometry.setAttribute("size", new THREE_INSTANCE.BufferAttribute(sizes, 1));
-  
+  starGeometry.setAttribute(
+    "position",
+    new THREE_INSTANCE.BufferAttribute(positions, 3)
+  );
+  starGeometry.setAttribute(
+    "color",
+    new THREE_INSTANCE.BufferAttribute(colors, 3)
+  );
+  starGeometry.setAttribute(
+    "size",
+    new THREE_INSTANCE.BufferAttribute(sizes, 1)
+  );
+
   const starMaterial = new THREE_INSTANCE.ShaderMaterial({
     uniforms: {
       time: { value: 0.0 },
@@ -368,7 +396,7 @@ function setupLighting() {
   const directionalLight = new THREE_INSTANCE.DirectionalLight(0xffffff, 2.0);
   directionalLight.position.set(5, 3, 5);
   scene.add(directionalLight);
-  
+
   // Sanftes Umgebungslicht (Weltraum-Reflexion)
   const ambientLight = new THREE_INSTANCE.AmbientLight(0x404040, 0.4);
   scene.add(ambientLight);
@@ -378,29 +406,29 @@ function setupLighting() {
 async function createEarthSystem() {
   const loadingManager = new THREE_INSTANCE.LoadingManager();
   loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
-      const progress = itemsLoaded / itemsTotal;
-      showLoadingState(document.getElementById('threeEarthContainer'), progress);
+    const progress = itemsLoaded / itemsTotal;
+    showLoadingState(document.getElementById("threeEarthContainer"), progress);
   };
   loadingManager.onLoad = () => {
     // A short delay to allow the user to see the "100%" state
     setTimeout(() => {
-        hideLoadingState(document.getElementById('threeEarthContainer'));
+      hideLoadingState(document.getElementById("threeEarthContainer"));
     }, 500);
   };
 
-
   const textureLoader = new THREE_INSTANCE.TextureLoader(loadingManager);
-  
-  const [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
+
+  const [dayTexture, nightTexture, normalTexture, bumpTexture] =
+    await Promise.all([
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
-      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP)
-  ]);
-  
+      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
+    ]);
+
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
-  [dayTexture, nightTexture, normalTexture, bumpTexture].forEach(tex => {
-    if(tex) tex.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+  [dayTexture, nightTexture, normalTexture, bumpTexture].forEach((tex) => {
+    if (tex) tex.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
   });
 
   const earthMaterial = new THREE_INSTANCE.MeshStandardMaterial({
@@ -416,44 +444,50 @@ async function createEarthSystem() {
     emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY,
   });
 
-  const earthGeometry = new THREE_INSTANCE.SphereGeometry(CONFIG.EARTH.RADIUS, CONFIG.EARTH.SEGMENTS, CONFIG.EARTH.SEGMENTS);
+  const earthGeometry = new THREE_INSTANCE.SphereGeometry(
+    CONFIG.EARTH.RADIUS,
+    CONFIG.EARTH.SEGMENTS,
+    CONFIG.EARTH.SEGMENTS
+  );
   earthMesh = new THREE_INSTANCE.Mesh(earthGeometry, earthMaterial);
   earthMesh.position.set(0, -4.5, 0);
   scene.add(earthMesh);
 }
 
 async function createCloudLayer() {
-    const textureLoader = new THREE_INSTANCE.TextureLoader();
-    try {
-        const cloudTexture = await textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.CLOUDS);
-        cloudTexture.wrapS = THREE_INSTANCE.RepeatWrapping;
-        cloudTexture.wrapT = THREE_INSTANCE.RepeatWrapping;
-        // Optimierte Textur-Einstellungen
-        cloudTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const textureLoader = new THREE_INSTANCE.TextureLoader();
+  try {
+    const cloudTexture = await textureLoader.loadAsync(
+      CONFIG.PATHS.TEXTURES.CLOUDS
+    );
+    cloudTexture.wrapS = THREE_INSTANCE.RepeatWrapping;
+    cloudTexture.wrapT = THREE_INSTANCE.RepeatWrapping;
+    // Optimierte Textur-Einstellungen
+    cloudTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
-        const cloudMaterial = new THREE_INSTANCE.MeshStandardMaterial({
-            map: cloudTexture,
-            transparent: true,
-            opacity: CONFIG.CLOUDS.OPACITY,
-            // AdditiveBlending entfernt - zu performance-intensiv
-            blending: THREE_INSTANCE.NormalBlending,
-            depthWrite: false,
-            side: THREE_INSTANCE.DoubleSide,
-        });
+    const cloudMaterial = new THREE_INSTANCE.MeshStandardMaterial({
+      map: cloudTexture,
+      transparent: true,
+      opacity: CONFIG.CLOUDS.OPACITY,
+      // AdditiveBlending entfernt - zu performance-intensiv
+      blending: THREE_INSTANCE.NormalBlending,
+      depthWrite: false,
+      side: THREE_INSTANCE.DoubleSide,
+    });
 
-        const cloudGeometry = new THREE_INSTANCE.SphereGeometry(
-            CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE, 
-            CONFIG.EARTH.SEGMENTS, 
-            CONFIG.EARTH.SEGMENTS
-        );
-        const clouds = new THREE_INSTANCE.Mesh(cloudGeometry, cloudMaterial);
-        clouds.renderOrder = 1; // Render after Earth
-        log.info("Cloud layer created successfully");
-        return clouds;
-    } catch (error) {
-        log.warn("Could not load cloud texture, skipping cloud layer.", error);
-        return new THREE_INSTANCE.Object3D(); // Return empty object if fails
-    }
+    const cloudGeometry = new THREE_INSTANCE.SphereGeometry(
+      CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE,
+      CONFIG.EARTH.SEGMENTS,
+      CONFIG.EARTH.SEGMENTS
+    );
+    const clouds = new THREE_INSTANCE.Mesh(cloudGeometry, cloudMaterial);
+    clouds.renderOrder = 1; // Render after Earth
+    log.info("Cloud layer created successfully");
+    return clouds;
+  } catch (error) {
+    log.warn("Could not load cloud texture, skipping cloud layer.", error);
+    return new THREE_INSTANCE.Object3D(); // Return empty object if fails
+  }
 }
 
 function createAtmosphere() {
@@ -472,12 +506,14 @@ function createAtmosphere() {
         float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), uPower);
         gl_FragColor = vec4(uGlowColor, 1.0) * fresnel * uIntensity;
     }`;
-  
+
   const atmosphereMaterial = new THREE_INSTANCE.ShaderMaterial({
     vertexShader,
     fragmentShader,
     uniforms: {
-      uGlowColor: { value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.GLOW_COLOR) },
+      uGlowColor: {
+        value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.GLOW_COLOR),
+      },
       uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER },
       uIntensity: { value: CONFIG.ATMOSPHERE.INTENSITY },
     },
@@ -488,7 +524,11 @@ function createAtmosphere() {
   });
 
   const atmosphere = new THREE_INSTANCE.Mesh(
-    new THREE_INSTANCE.SphereGeometry(CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE, CONFIG.EARTH.SEGMENTS, CONFIG.EARTH.SEGMENTS),
+    new THREE_INSTANCE.SphereGeometry(
+      CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE,
+      CONFIG.EARTH.SEGMENTS,
+      CONFIG.EARTH.SEGMENTS
+    ),
     atmosphereMaterial
   );
   atmosphere.renderOrder = 2; // Render after clouds
@@ -526,7 +566,9 @@ function setupSectionDetection() {
             currentSection = newSection;
             updateCameraForSection(newSection);
             updateEarthForSection(newSection);
-            document.querySelector('.three-earth-container')?.setAttribute('data-section', newSection);
+            document
+              .querySelector(".three-earth-container")
+              ?.setAttribute("data-section", newSection);
           }
         }
       });
@@ -562,7 +604,7 @@ function setupUserControls(container) {
     if (!mouseState.isDragging) return;
     const deltaX = e.clientX - mouseState.previousMouseX;
     const deltaY = e.clientY - mouseState.previousMouseY;
-    
+
     mouseState.rotationVelocityY = deltaX * 0.0001;
     mouseState.rotationVelocityX = deltaY * 0.0001;
 
@@ -576,14 +618,17 @@ function setupUserControls(container) {
   };
 
   const onWheel = (e) => {
-      mouseState.zoom -= e.deltaY * 0.01;
-      mouseState.zoom = Math.max(CONFIG.CAMERA.ZOOM_MIN, Math.min(CONFIG.CAMERA.ZOOM_MAX, mouseState.zoom));
+    mouseState.zoom -= e.deltaY * 0.01;
+    mouseState.zoom = Math.max(
+      CONFIG.CAMERA.ZOOM_MIN,
+      Math.min(CONFIG.CAMERA.ZOOM_MAX, mouseState.zoom)
+    );
   };
 
   container.addEventListener("mousedown", onMouseDown);
   container.addEventListener("mousemove", onMouseMove);
   window.addEventListener("mouseup", onMouseUp);
-  container.addEventListener('wheel', onWheel, { passive: true });
+  container.addEventListener("wheel", onWheel, { passive: true });
 
   sharedCleanupManager.addCleanupFunction(
     "three-earth",
@@ -591,8 +636,9 @@ function setupUserControls(container) {
       container.removeEventListener("mousedown", onMouseDown);
       container.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
-      container.removeEventListener('wheel', onWheel);
-    }, "user controls cleanup"
+      container.removeEventListener("wheel", onWheel);
+    },
+    "user controls cleanup"
   );
 }
 
@@ -604,32 +650,39 @@ function startAnimationLoop() {
     animationFrameId = requestAnimationFrame(animate);
     const elapsedTime = clock.getElapsedTime();
     const lerpFactor = CONFIG.CAMERA.LERP_FACTOR;
-    
+
     // Auto-rotation and inertia
     if (mouseState.autoRotation && !mouseState.isDragging) {
       mouseState.targetRotationY += CONFIG.EARTH.ROTATION_SPEED;
     }
-    
+
     // Apply inertia
     if (!mouseState.isDragging) {
-        mouseState.targetRotationY += mouseState.rotationVelocityY;
-        mouseState.targetRotationX += mouseState.rotationVelocityX;
-        mouseState.rotationVelocityY *= mouseState.dampingFactor;
-        mouseState.rotationVelocityX *= mouseState.dampingFactor;
+      mouseState.targetRotationY += mouseState.rotationVelocityY;
+      mouseState.targetRotationX += mouseState.rotationVelocityX;
+      mouseState.rotationVelocityY *= mouseState.dampingFactor;
+      mouseState.rotationVelocityX *= mouseState.dampingFactor;
     } else {
-        mouseState.targetRotationY += mouseState.rotationVelocityY * 100; // Multiply to feel responsive
-        mouseState.targetRotationX += mouseState.rotationVelocityX * 100;
-        mouseState.rotationVelocityY = 0; // Reset velocity while dragging
-        mouseState.rotationVelocityX = 0;
+      mouseState.targetRotationY += mouseState.rotationVelocityY * 100; // Multiply to feel responsive
+      mouseState.targetRotationX += mouseState.rotationVelocityX * 100;
+      mouseState.rotationVelocityY = 0; // Reset velocity while dragging
+      mouseState.rotationVelocityX = 0;
     }
 
     // Clamp vertical rotation
-    mouseState.targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, mouseState.targetRotationX));
+    mouseState.targetRotationX = Math.max(
+      -Math.PI / 2,
+      Math.min(Math.PI / 2, mouseState.targetRotationX)
+    );
 
     if (earthMesh) {
-      earthMesh.rotation.y += (mouseState.targetRotationY - earthMesh.rotation.y) * lerpFactor;
-      earthMesh.rotation.x += (mouseState.targetRotationX - earthMesh.rotation.x) * lerpFactor;
-      earthMesh.material.emissiveIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY + Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * 0.05;
+      earthMesh.rotation.y +=
+        (mouseState.targetRotationY - earthMesh.rotation.y) * lerpFactor;
+      earthMesh.rotation.x +=
+        (mouseState.targetRotationX - earthMesh.rotation.x) * lerpFactor;
+      earthMesh.material.emissiveIntensity =
+        CONFIG.EARTH.EMISSIVE_INTENSITY +
+        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * 0.05;
     }
 
     // Wolken rotieren eigenständig (nicht als Child, daher X/Y separat)
@@ -637,11 +690,12 @@ function startAnimationLoop() {
       // Inkrementelle Rotation (nicht elapsedTime!)
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
       // X-Rotation von Erde übernehmen für Mouse-Interaktion
-      cloudMesh.rotation.x += (mouseState.targetRotationX - cloudMesh.rotation.x) * lerpFactor;
+      cloudMesh.rotation.x +=
+        (mouseState.targetRotationX - cloudMesh.rotation.x) * lerpFactor;
     }
-    
+
     if (starField) {
-        starField.material.uniforms.time.value = elapsedTime;
+      starField.material.uniforms.time.value = elapsedTime;
     }
 
     updateCameraPosition(lerpFactor);
@@ -659,16 +713,16 @@ function startAnimationLoop() {
     cameraPosition.y += (cameraTarget.y - cameraPosition.y) * lerpFactor;
     cameraPosition.z += (cameraTarget.z - cameraPosition.z) * lerpFactor;
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    
+
     camera.rotation.x += (cameraRotation.x - camera.rotation.x) * lerpFactor;
     camera.rotation.y += (cameraRotation.y - camera.rotation.y) * lerpFactor;
-    
+
     camera.lookAt(0, 0, 0);
   }
 
   function updateObjectTransforms() {
     if (!earthMesh) return;
-    
+
     // Animiere Erd-Position und -Scale via Lerp
     if (earthMesh.userData.targetPosition) {
       earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.03);
@@ -680,7 +734,7 @@ function startAnimationLoop() {
         earthMesh.scale.set(newScale, newScale, newScale);
       }
     }
-    
+
     // Synchronisiere Wolken mit Erde (da eigenständiges Scene-Objekt, nicht Child)
     // WICHTIG: Position + Scale müssen manuell kopiert werden nach allen Erd-Transformationen
     if (cloudMesh) {
@@ -718,19 +772,19 @@ function setupResizeHandler() {
 
 // ===== UI State Management =====
 function showLoadingState(container, progress) {
-    container.classList.add("loading");
-    const loadingElement = container.querySelector(".three-earth-loading");
-    if (loadingElement) loadingElement.classList.remove("hidden");
-    const progressBar = container.querySelector(".loading-progress-bar");
-    const progressText = container.querySelector(".loading-progress-text");
-    if(progressBar) progressBar.style.width = `${progress * 100}%`;
-    if(progressText) progressText.textContent = `${Math.round(progress * 100)}%`;
+  container.classList.add("loading");
+  const loadingElement = container.querySelector(".three-earth-loading");
+  if (loadingElement) loadingElement.classList.remove("hidden");
+  const progressBar = container.querySelector(".loading-progress-bar");
+  const progressText = container.querySelector(".loading-progress-text");
+  if (progressBar) progressBar.style.width = `${progress * 100}%`;
+  if (progressText) progressText.textContent = `${Math.round(progress * 100)}%`;
 }
 
 function hideLoadingState(container) {
-    container.classList.remove("loading");
-    const loadingElement = container.querySelector(".three-earth-loading");
-    if (loadingElement) loadingElement.classList.add("hidden");
+  container.classList.remove("loading");
+  const loadingElement = container.querySelector(".three-earth-loading");
+  if (loadingElement) loadingElement.classList.add("hidden");
 }
 
 function showErrorState(container, error) {
@@ -769,14 +823,14 @@ class PerformanceMonitor {
       this.adjustResolution();
     }
   }
-  
+
   updateDisplay() {
     const mem = renderer.info.memory;
     const render = renderer.info.render;
     this.element.innerHTML = `
         FPS: ${Math.round(this.fps)} | 
         MEM: ${mem.geometries}g/${mem.textures}t | 
-        Calls: ${render.calls} | Tris: ${(render.triangles/1000).toFixed(1)}k | 
+        Calls: ${render.calls} | Tris: ${(render.triangles / 1000).toFixed(1)}k | 
         PR: ${this.currentPixelRatio.toFixed(2)}
     `;
   }
@@ -784,20 +838,35 @@ class PerformanceMonitor {
   adjustResolution() {
     // Kritischer FPS-Einbruch erkennen (< 10 FPS)
     if (this.fps < 10) {
-        this.currentPixelRatio = 0.5; // Drastische Reduktion bei kritischem FPS
-        renderer.setPixelRatio(this.currentPixelRatio);
-        log.error(`Critical FPS (${this.fps.toFixed(1)}), emergency pixel ratio reduction to ${this.currentPixelRatio.toFixed(2)}`);
-        return;
+      this.currentPixelRatio = 0.5; // Drastische Reduktion bei kritischem FPS
+      renderer.setPixelRatio(this.currentPixelRatio);
+      log.error(
+        `Critical FPS (${this.fps.toFixed(1)}), emergency pixel ratio reduction to ${this.currentPixelRatio.toFixed(2)}`
+      );
+      return;
     }
-    
-    if (this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD && this.currentPixelRatio > 0.5) {
-        this.currentPixelRatio = Math.max(0.5, this.currentPixelRatio - 0.15);
-        renderer.setPixelRatio(this.currentPixelRatio);
-        log.warn(`Low FPS (${this.fps.toFixed(1)}), reducing pixel ratio to ${this.currentPixelRatio.toFixed(2)}`);
-    } else if (this.fps > CONFIG.PERFORMANCE.DRS_UP_THRESHOLD && this.currentPixelRatio < CONFIG.PERFORMANCE.PIXEL_RATIO) {
-        this.currentPixelRatio = Math.min(CONFIG.PERFORMANCE.PIXEL_RATIO, this.currentPixelRatio + 0.05);
-        renderer.setPixelRatio(this.currentPixelRatio);
-        log.info(`Good FPS (${this.fps.toFixed(1)}), increasing pixel ratio to ${this.currentPixelRatio.toFixed(2)}`);
+
+    if (
+      this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD &&
+      this.currentPixelRatio > 0.5
+    ) {
+      this.currentPixelRatio = Math.max(0.5, this.currentPixelRatio - 0.15);
+      renderer.setPixelRatio(this.currentPixelRatio);
+      log.warn(
+        `Low FPS (${this.fps.toFixed(1)}), reducing pixel ratio to ${this.currentPixelRatio.toFixed(2)}`
+      );
+    } else if (
+      this.fps > CONFIG.PERFORMANCE.DRS_UP_THRESHOLD &&
+      this.currentPixelRatio < CONFIG.PERFORMANCE.PIXEL_RATIO
+    ) {
+      this.currentPixelRatio = Math.min(
+        CONFIG.PERFORMANCE.PIXEL_RATIO,
+        this.currentPixelRatio + 0.05
+      );
+      renderer.setPixelRatio(this.currentPixelRatio);
+      log.info(
+        `Good FPS (${this.fps.toFixed(1)}), increasing pixel ratio to ${this.currentPixelRatio.toFixed(2)}`
+      );
     }
   }
 
