@@ -105,22 +105,10 @@ const CONFIG = {
     ZOOM_MIN: 4,
     ZOOM_MAX: 30,
     LERP_FACTOR: 0.05, // Linear interpolation factor for smooth camera movement
-    // Preset-Positionen für verschiedene Sections (optimiert für Geo-Locations)
+    // Preset-Positionen für verschiedene Sections
     PRESETS: {
-      // Hero: Türkei (Ankara ~39.9°N, 32.9°E) - Zentrale Türkei sichtbar
-      hero: { 
-        x: -4.2,  // Kamera rechts von Türkei (Ost-Position)
-        y: -2.8,  // Mittlere Höhe für ~40° Nord
-        z: 12,    // Zoom-Level für gute Sicht auf Anatolien
-        lookAt: { x: 0, y: -6, z: 0 } 
-      },
-      // Portfolio (Section 2): Deutschland (Berlin ~52.5°N, 13.4°E) - Mitteleuropa sichtbar
-      portfolio: { 
-        x: -1.8,  // Kamera leicht rechts von Deutschland
-        y: -1.2,  // Höhere Position für ~52° Nord
-        z: 11,    // Zoom für Deutschland/Mitteleuropa
-        lookAt: { x: 0, y: -4, z: 0 } 
-      },
+      hero: { x: 0, y: 0, z: 10, lookAt: { x: 0, y: -6, z: 0 } },
+      portfolio: { x: 5, y: 2, z: 8, lookAt: { x: 0, y: -4, z: 0 } },
       about: { x: -4, y: 3, z: 9, lookAt: { x: 0, y: -5, z: 0 } },
       contact: { x: 0, y: -3, z: 12, lookAt: { x: 0, y: -6, z: 0 } },
     },

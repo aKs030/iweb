@@ -19,22 +19,26 @@ Das Three.js System (`/content/webentwicklung/particles/three-earth-system.js`) 
 
 ### 🌍 Visuelle Features
 
-1. **Multi-Layer Atmosphäre** - Physikalisch basiertes Rayleigh & Mie Scattering
+1. **Multi-Layer Atmosphäre** 
+    - Physikalisch basiertes Rayleigh & Mie Scattering
    - Rayleigh-Schicht (blaue Streuung) für realistische Atmosphäre
    - Mie-Schicht (warme Streuung) für Sonnenuntergangs-Effekte
    - Dynamische Shader-Updates basierend auf Sonnen-Position
 
-2. **Ozean-Reflexionen** - Spekulare Highlights auf Ozeanen
+2. **Ozean-Reflexionen** 
+    - Spekulare Highlights auf Ozeanen
    - Phong-Reflexionsmodell mit Sonnenlicht-Synchronisation
    - Automatische Ozean-Erkennung via Textur-Analyse
    - Konfigurierbare Shininess & Intensität
 
-3. **Tag/Nacht-Zyklus** - Automatische oder manuelle Sonnen-Rotation
+3. **Tag/Nacht-Zyklus** 
+    - Automatische oder manuelle Sonnen-Rotation
    - Beschleunigter Zyklus (konfigurierbar: 1x-100x Speed)
    - Stadtlichter synchronisiert mit Nacht-Seite
    - Toggle zwischen Auto/Manual Mode
 
-4. **Meteoritenregen-System** - Erweiterte Shooting-Star-Events
+4. **Meteoritenregen-System** 
+    - Erweiterte Shooting-Star-Events
    - Verschiedene Flugbahnen (3 vordefinierte Trajectories)
    - Shower-Events mit erhöhter Frequenz
    - Cooldown-System zur Vermeidung von Spam
