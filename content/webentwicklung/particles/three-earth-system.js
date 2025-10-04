@@ -24,8 +24,8 @@ import {
   registerParticleSystem,
   sharedCleanupManager,
   sharedParallaxManager,
+  ShootingStarManager,
   unregisterParticleSystem,
-  ShootingStarManager, // NEW: Import the new shooting star manager
 } from "./shared-particle-system.js";
 
 // ===== Shared Utilities Import =====
@@ -98,18 +98,18 @@ const ThreeEarthManager = (() => {
 
       await setupScene(THREE, container);
       await createEarthSystem(THREE);
-      
+
       // NEW: Create new visual components
       cloudMesh = await createCloudLayer(THREE);
       earthMesh.add(cloudMesh); // Als Child der Erde - skaliert automatisch mit
-      
+
       atmosphereMesh = createAtmosphere(THREE);
       earthMesh.add(atmosphereMesh); // Als Child der Erde - perfekte Synchronisation
 
       setupCameraSystem();
       setupUserControls(container);
       setupSectionDetection();
-      
+
       // NEW: Initialize performance monitor and shooting stars
       performanceMonitor = new PerformanceMonitor(container);
       shootingStarManager = new ShootingStarManager(scene, THREE);
@@ -135,7 +135,7 @@ const ThreeEarthManager = (() => {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
-    
+
     // NEW: Cleanup new components
     if (performanceMonitor) performanceMonitor.cleanup();
     if (shootingStarManager) shootingStarManager.cleanup();
@@ -169,9 +169,16 @@ const ThreeEarthManager = (() => {
     earthTimers.clearAll();
     if (earthGeometry) earthGeometry.dispose();
 
-    scene = camera = renderer = earthMesh = starField = cloudMesh = atmosphereMesh = null;
+    scene =
+      camera =
+      renderer =
+      earthMesh =
+      starField =
+      cloudMesh =
+      atmosphereMesh =
+        null;
     currentSection = "hero";
-    
+
     unregisterParticleSystem("three-earth");
     log.info("Three.js Earth system cleanup completed");
   };
@@ -185,10 +192,19 @@ const ThreeEarthManager = (() => {
     }
     showErrorState(container, error);
   }
-  
+
   function disposeMaterial(material) {
     try {
-      const textureMaps = ["map", "normalMap", "bumpMap", "specularMap", "emissiveMap", "alphaMap", "roughnessMap", "metalnessMap"];
+      const textureMaps = [
+        "map",
+        "normalMap",
+        "bumpMap",
+        "specularMap",
+        "emissiveMap",
+        "alphaMap",
+        "roughnessMap",
+        "metalnessMap",
+      ];
       textureMaps.forEach((mapName) => {
         if (material[mapName]) material[mapName].dispose();
       });
@@ -208,29 +224,29 @@ const ThreeEarthManager = (() => {
 
 // ===== Three.js ES Module Loading (unchanged from original) =====
 async function loadThreeJS() {
-    try {
-        if (window.THREE) return window.THREE;
-        const sources = [
-            "/content/webentwicklung/lib/three/build/three.module.min.js",
-            "https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js"
-        ];
-        for (const src of sources) {
-            try {
-                const THREE = await import(src);
-                const ThreeJS = THREE.default || THREE;
-                if (ThreeJS?.WebGLRenderer) {
-                    window.THREE = ThreeJS;
-                    return ThreeJS;
-                }
-            } catch (error) {
-                log.warn(`Failed to load ES Module from ${src}:`, error);
-            }
+  try {
+    if (window.THREE) return window.THREE;
+    const sources = [
+      "/content/webentwicklung/lib/three/build/three.module.min.js",
+      "https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js",
+    ];
+    for (const src of sources) {
+      try {
+        const THREE = await import(src);
+        const ThreeJS = THREE.default || THREE;
+        if (ThreeJS?.WebGLRenderer) {
+          window.THREE = ThreeJS;
+          return ThreeJS;
         }
-        throw new Error("All Three.js loading sources failed");
-    } catch (error) {
-        log.error("Error loading Three.js:", error);
-        return null;
+      } catch (error) {
+        log.warn(`Failed to load ES Module from ${src}:`, error);
+      }
     }
+    throw new Error("All Three.js loading sources failed");
+  } catch (error) {
+    log.error("Error loading Three.js:", error);
+    return null;
+  }
 }
 
 // ===== Scene Setup =====
@@ -241,7 +257,9 @@ async function setupScene(THREE, container) {
   camera = new THREE.PerspectiveCamera(35, aspectRatio, 0.1, 1000);
   renderer = new THREE.WebGLRenderer({
     canvas: container.querySelector("canvas") || undefined,
-    antialias: true, alpha: true, powerPreference: "high-performance",
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance",
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(container.clientWidth, container.clientHeight);
@@ -256,34 +274,46 @@ async function setupScene(THREE, container) {
 
 // ===== Starfield & Parallax (unchanged from original, minor logging improvements) =====
 function createStarField(THREE) {
-    const starCount = 1500;
-    const starGeometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(starCount * 3);
-    for (let i = 0; i < starCount; i++) {
-        const i3 = i * 3;
-        const radius = 100 + Math.random() * 200;
-        const theta = Math.random() * TWO_PI;
-        const phi = Math.acos(2 * Math.random() - 1);
-        positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-        positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-        positions[i3 + 2] = radius * Math.cos(phi);
-    }
-    starGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const starMaterial = new THREE.PointsMaterial({
-        size: 1.5, sizeAttenuation: true, color: 0xffffff, transparent: true,
-        opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false,
-    });
-    starField = new THREE.Points(starGeometry, starMaterial);
-    starField.name = "starField";
-    scene.add(starField);
-    log.debug(`Created star field with ${starCount} stars`);
-    sharedCleanupManager.addCleanupFunction("three-earth", () => {
-        if (starField) {
-            scene.remove(starField);
-            starGeometry.dispose();
-            starMaterial.dispose();
-        }
-    }, "star field cleanup");
+  const starCount = 1500;
+  const starGeometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    const i3 = i * 3;
+    const radius = 100 + Math.random() * 200;
+    const theta = Math.random() * TWO_PI;
+    const phi = Math.acos(2 * Math.random() - 1);
+    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i3 + 2] = radius * Math.cos(phi);
+  }
+  starGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(positions, 3)
+  );
+  const starMaterial = new THREE.PointsMaterial({
+    size: 1.5,
+    sizeAttenuation: true,
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  starField = new THREE.Points(starGeometry, starMaterial);
+  starField.name = "starField";
+  scene.add(starField);
+  log.debug(`Created star field with ${starCount} stars`);
+  sharedCleanupManager.addCleanupFunction(
+    "three-earth",
+    () => {
+      if (starField) {
+        scene.remove(starField);
+        starGeometry.dispose();
+        starMaterial.dispose();
+      }
+    },
+    "star field cleanup"
+  );
 }
 
 function setupStarParallax() {
@@ -295,7 +325,9 @@ function setupStarParallax() {
   };
   sharedParallaxManager.addHandler(parallaxHandler, "three-earth-stars");
   sharedCleanupManager.addCleanupFunction(
-    "three-earth", () => sharedParallaxManager.removeHandler(parallaxHandler), "star parallax handler"
+    "three-earth",
+    () => sharedParallaxManager.removeHandler(parallaxHandler),
+    "star parallax handler"
   );
 }
 
@@ -304,7 +336,7 @@ function setupLighting(THREE) {
   const directionalLight = new THREE.DirectionalLight(0xfff8f0, 3.5);
   directionalLight.position.set(5, 3, 5);
   scene.add(directionalLight);
-  
+
   scene.add(new THREE.AmbientLight(0x8899bb, 0.8));
   scene.add(new THREE.HemisphereLight(0x8899ff, 0x332211, 0.5));
 }
@@ -320,13 +352,13 @@ async function createEarthSystem(THREE) {
 
 // ===== Cloud Layer (Deaktiviert) =====
 async function createCloudLayer(THREE) {
-    log.debug("Cloud layer skipped (texture not available)");
-    return new THREE.Object3D();
+  log.debug("Cloud layer skipped (texture not available)");
+  return new THREE.Object3D();
 }
 
 // ===== Atmospheric Glow =====
 function createAtmosphere(THREE) {
-    const vertexShader = `
+  const vertexShader = `
         varying vec3 vNormal;
         varying vec3 vPosition;
         void main() {
@@ -335,7 +367,7 @@ function createAtmosphere(THREE) {
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
     `;
-    const fragmentShader = `
+  const fragmentShader = `
         varying vec3 vNormal;
         varying vec3 vPosition;
         uniform vec3 uGlowColor;
@@ -348,107 +380,111 @@ function createAtmosphere(THREE) {
             gl_FragColor = vec4(uGlowColor, 1.0) * fresnel * uIntensity;
         }
     `;
-    const atmosphereMaterial = new THREE.ShaderMaterial({
-        vertexShader,
-        fragmentShader,
-        uniforms: {
-            uGlowColor: { value: new THREE.Color(0x4488cc) }, // Noch dunkleres Blau
-            uPower: { value: isMobileDevice ? 5.0 : 4.0 },     // Sehr scharf = dünner Rand
-            uIntensity: { value: 0.25 }                         // Sehr subtil
-        },
-        blending: THREE.AdditiveBlending,
-        transparent: true,
-        side: THREE.BackSide,
-        depthWrite: false,
-    });
+  const atmosphereMaterial = new THREE.ShaderMaterial({
+    vertexShader,
+    fragmentShader,
+    uniforms: {
+      uGlowColor: { value: new THREE.Color(0x4488cc) }, // Noch dunkleres Blau
+      uPower: { value: isMobileDevice ? 5.0 : 4.0 }, // Sehr scharf = dünner Rand
+      uIntensity: { value: 0.25 }, // Sehr subtil
+    },
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    side: THREE.BackSide,
+    depthWrite: false,
+  });
 
-    // Atmosphäre: Nur 2% größer als Erde für hauchzarten Glow
-    const atmosphere = new THREE.Mesh(
-        new THREE.SphereGeometry(EARTH_RADIUS * 1.02, 64, 64),
-        atmosphereMaterial
-    );
-    
-    // Render-Reihenfolge: Atmosphäre wird zuletzt gerendert (über der Erde)
-    atmosphere.renderOrder = 1;
-    
-    log.info("Atmospheric glow created (radius: " + (EARTH_RADIUS * 1.02).toFixed(2) + ", ultra-subtle)");
-    return atmosphere;
+  // Atmosphäre: Nur 2% größer als Erde für hauchzarten Glow
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(EARTH_RADIUS * 1.02, 64, 64),
+    atmosphereMaterial
+  );
+
+  // Render-Reihenfolge: Atmosphäre wird zuletzt gerendert (über der Erde)
+  atmosphere.renderOrder = 1;
+
+  log.info(
+    "Atmospheric glow created (radius: " +
+      (EARTH_RADIUS * 1.02).toFixed(2) +
+      ", ultra-subtle)"
+  );
+  return atmosphere;
 }
 
 // ===== Earth Material Creation (Browser-Cache-optimiert) =====
 async function createEarthMaterial(THREE) {
-    const textureLoader = new THREE.TextureLoader();
-    
-    try {
-        log.debug("Loading Earth textures...");
-        
-        // Lade Texturen parallel - Browser nutzt Cache automatisch
-        const texturePromises = [
-            new Promise((resolve, reject) => {
-                textureLoader.load(
-                    "/content/img/earth/textures/earth_day.webp",
-                    resolve,
-                    undefined,
-                    reject
-                );
-            }),
-            new Promise((resolve, reject) => {
-                textureLoader.load(
-                    "/content/img/earth/textures/earth_night.webp",
-                    resolve,
-                    undefined,
-                    reject
-                );
-            }),
-            new Promise((resolve, reject) => {
-                textureLoader.load(
-                    "/content/img/earth/textures/earth_normal.webp",
-                    resolve,
-                    undefined,
-                    reject
-                );
-            }),
-            new Promise((resolve, reject) => {
-                textureLoader.load(
-                    "/content/img/earth/textures/earth_bump.webp",
-                    resolve,
-                    undefined,
-                    reject
-                );
-            }),
-        ];
+  const textureLoader = new THREE.TextureLoader();
 
-        const [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all(texturePromises);
+  try {
+    log.debug("Loading Earth textures...");
 
-        const material = new THREE.MeshStandardMaterial({
-            map: dayTexture,
-            normalMap: normalTexture,
-            bumpMap: bumpTexture,
-            bumpScale: 0.02,
-            roughness: 0.9,
-            metalness: 0.0,
-            emissive: 0xffffff,
-            emissiveMap: nightTexture,
-            emissiveIntensity: 0.15,
-        });
+    // Lade Texturen parallel - Browser nutzt Cache automatisch
+    const texturePromises = [
+      new Promise((resolve, reject) => {
+        textureLoader.load(
+          "/content/img/earth/textures/earth_day.webp",
+          resolve,
+          undefined,
+          reject
+        );
+      }),
+      new Promise((resolve, reject) => {
+        textureLoader.load(
+          "/content/img/earth/textures/earth_night.webp",
+          resolve,
+          undefined,
+          reject
+        );
+      }),
+      new Promise((resolve, reject) => {
+        textureLoader.load(
+          "/content/img/earth/textures/earth_normal.webp",
+          resolve,
+          undefined,
+          reject
+        );
+      }),
+      new Promise((resolve, reject) => {
+        textureLoader.load(
+          "/content/img/earth/textures/earth_bump.webp",
+          resolve,
+          undefined,
+          reject
+        );
+      }),
+    ];
 
-        const maxAniso = renderer.capabilities.getMaxAnisotropy();
-        const anisotropy = isMobileDevice ? 4 : 16;
-        [dayTexture, nightTexture, normalTexture, bumpTexture].forEach(tex => {
-            if (tex) {
-                tex.anisotropy = Math.min(maxAniso, anisotropy);
-                tex.needsUpdate = true;
-            }
-        });
-        
-        log.info("Earth material created successfully with all textures");
-        return material;
-    } catch (error) {
-        log.warn("Failed to load PBR textures, using procedural material:", error);
-        return new THREE.MeshStandardMaterial({ color: 0x2d5a8a, roughness: 0.9 });
-    }
+    const [dayTexture, nightTexture, normalTexture, bumpTexture] =
+      await Promise.all(texturePromises);
+
+    const material = new THREE.MeshStandardMaterial({
+      map: dayTexture,
+      normalMap: normalTexture,
+      bumpMap: bumpTexture,
+      bumpScale: 0.02,
+      roughness: 0.9,
+      metalness: 0.0,
+      emissive: 0xffffff,
+      emissiveMap: nightTexture,
+      emissiveIntensity: 0.15,
+    });
+
+    const maxAniso = renderer.capabilities.getMaxAnisotropy();
+    const anisotropy = isMobileDevice ? 4 : 16;
+    [dayTexture, nightTexture, normalTexture, bumpTexture].forEach((tex) => {
+      if (tex) {
+        tex.anisotropy = Math.min(maxAniso, anisotropy);
+        tex.needsUpdate = true;
+      }
+    });
+
+    log.info("Earth material created successfully with all textures");
+    return material;
+  } catch (error) {
+    log.warn("Failed to load PBR textures, using procedural material:", error);
+    return new THREE.MeshStandardMaterial({ color: 0x2d5a8a, roughness: 0.9 });
+  }
 }
-
 
 // ===== Camera & Section Updates (unchanged) =====
 function setupCameraSystem() {
@@ -458,7 +494,11 @@ function setupCameraSystem() {
 function updateCameraForSection(sectionName) {
   const configs = {
     hero: { pos: { x: 0, y: -1.8, z: 5 }, rot: { x: 0.2, y: 0 }, fov: 45 },
-    features: { pos: { x: -3, y: 2.5, z: 6.5 }, rot: { x: -0.3, y: 0.4 }, fov: 42 },
+    features: {
+      pos: { x: -3, y: 2.5, z: 6.5 },
+      rot: { x: -0.3, y: 0.4 },
+      fov: 42,
+    },
     about: { pos: { x: 0, y: 1, z: 30 }, rot: { x: -0.15, y: 0 }, fov: 25 },
   };
   const config = configs[sectionName] || configs.hero;
@@ -473,35 +513,37 @@ function updateCameraForSection(sectionName) {
 function setupSectionDetection() {
   const sections = document.querySelectorAll("section[id]");
   if (sections.length === 0) return;
-  sectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const newSection = entry.target.id;
-        if (newSection !== currentSection) {
-          currentSection = newSection;
-          updateCameraForSection(newSection);
-          updateEarthForSection(newSection);
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const newSection = entry.target.id;
+          if (newSection !== currentSection) {
+            currentSection = newSection;
+            updateCameraForSection(newSection);
+            updateEarthForSection(newSection);
+          }
         }
-      }
-    });
-  }, { rootMargin: "-20% 0px -20% 0px", threshold: 0.3 });
+      });
+    },
+    { rootMargin: "-20% 0px -20% 0px", threshold: 0.3 }
+  );
   sections.forEach((section) => sectionObserver.observe(section));
 }
 
 function updateEarthForSection(sectionName) {
-    if (!earthMesh) return;
-    const configs = {
-        hero: { pos: { x: 0, y: -6.0, z: 0 }, scale: 1.5 },
-        features: { pos: { x: 1, y: -1, z: -0.5 }, scale: 1.0 },
-        about: { pos: { x: 0, y: 0, z: -2 }, scale: 0.35 },
-    };
-    const config = configs[sectionName] || configs.hero;
-    if (config.pos) earthMesh.userData.targetPosition = config.pos;
-    earthMesh.userData.targetScale = config.scale;
+  if (!earthMesh) return;
+  const configs = {
+    hero: { pos: { x: 0, y: -6.0, z: 0 }, scale: 1.5 },
+    features: { pos: { x: 1, y: -1, z: -0.5 }, scale: 1.0 },
+    about: { pos: { x: 0, y: 0, z: -2 }, scale: 0.35 },
+  };
+  const config = configs[sectionName] || configs.hero;
+  if (config.pos) earthMesh.userData.targetPosition = config.pos;
+  earthMesh.userData.targetScale = config.scale;
 
-    // Atmosphäre und Clouds sind jetzt Children der Erde - keine separate Position nötig
+  // Atmosphäre und Clouds sind jetzt Children der Erde - keine separate Position nötig
 }
-
 
 // ===== User Controls & Interaction =====
 function setupUserControls(container) {
@@ -513,57 +555,68 @@ function setupUserControls(container) {
   }, 16);
 
   const scrollCleanup = onScroll(handleScroll);
-  
+
   // NEW: Mouse drag controls
   const onMouseDown = (e) => {
     mouseState.isDragging = true;
     mouseState.autoRotation = false;
     mouseState.previousMouseX = e.clientX;
     mouseState.previousMouseY = e.clientY;
-    container.classList.add('is-dragging');
+    container.classList.add("is-dragging");
   };
-  
+
   const onMouseMove = (e) => {
     if (!mouseState.isDragging) return;
     const deltaX = e.clientX - mouseState.previousMouseX;
     const deltaY = e.clientY - mouseState.previousMouseY;
-    
+
     mouseState.targetRotationY += deltaX * 0.005;
     mouseState.targetRotationX += deltaY * 0.005;
-    
+
     // Clamp vertical rotation to avoid flipping
-    mouseState.targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, mouseState.targetRotationX));
-    
+    mouseState.targetRotationX = Math.max(
+      -Math.PI / 2,
+      Math.min(Math.PI / 2, mouseState.targetRotationX)
+    );
+
     mouseState.previousMouseX = e.clientX;
     mouseState.previousMouseY = e.clientY;
   };
 
   const onMouseUp = () => {
     mouseState.isDragging = false;
-    container.classList.remove('is-dragging');
+    container.classList.remove("is-dragging");
     // Optional: Re-enable auto-rotation after a delay
-    earthTimers.setTimeout(() => { mouseState.autoRotation = true; }, 5000);
+    earthTimers.setTimeout(() => {
+      mouseState.autoRotation = true;
+    }, 5000);
   };
 
-  container.addEventListener('mousedown', onMouseDown);
-  container.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
+  container.addEventListener("mousedown", onMouseDown);
+  container.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onMouseUp);
 
-  sharedCleanupManager.addCleanupFunction("three-earth", () => {
-    scrollCleanup();
-    container.removeEventListener('mousedown', onMouseDown);
-    container.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
-  }, "user controls cleanup");
+  sharedCleanupManager.addCleanupFunction(
+    "three-earth",
+    () => {
+      scrollCleanup();
+      container.removeEventListener("mousedown", onMouseDown);
+      container.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    },
+    "user controls cleanup"
+  );
 }
 
 function calculateScrollProgress() {
-    const scrollY = window.pageYOffset;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    return Math.min(1, Math.max(0, scrollY / Math.max(1, documentHeight - windowHeight)));
+  const scrollY = window.pageYOffset;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+  return Math.min(
+    1,
+    Math.max(0, scrollY / Math.max(1, documentHeight - windowHeight))
+  );
 }
-
 
 // ===== Animation Loop =====
 function startAnimationLoop(THREE) {
@@ -576,8 +629,10 @@ function startAnimationLoop(THREE) {
 
     // LERP rotations for smooth interaction
     if (earthMesh) {
-      earthMesh.rotation.y += (mouseState.targetRotationY - earthMesh.rotation.y) * lerpFactor;
-      earthMesh.rotation.x += (mouseState.targetRotationX - earthMesh.rotation.x) * lerpFactor;
+      earthMesh.rotation.y +=
+        (mouseState.targetRotationY - earthMesh.rotation.y) * lerpFactor;
+      earthMesh.rotation.x +=
+        (mouseState.targetRotationX - earthMesh.rotation.x) * lerpFactor;
     }
 
     // NEW: Animate cloud layer independently
@@ -591,7 +646,7 @@ function startAnimationLoop(THREE) {
 
     // Update object positions (Earth, Clouds, Atmosphere)
     updateObjectTransforms();
-    
+
     // NEW: Update other systems
     if (shootingStarManager) shootingStarManager.update();
     if (performanceMonitor) performanceMonitor.update();
@@ -608,24 +663,24 @@ function startAnimationLoop(THREE) {
     camera.rotation.y += (cameraRotation.y - camera.rotation.y) * lerpFactor;
     camera.lookAt(0, 0, 0);
   }
-  
+
   function updateObjectTransforms() {
-      // Nur earthMesh wird transformiert - Atmosphäre & Clouds folgen automatisch als Children
-      if (!earthMesh) return;
-      
-      // Position LERP
-      if (earthMesh.userData.targetPosition) {
-          earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.03);
+    // Nur earthMesh wird transformiert - Atmosphäre & Clouds folgen automatisch als Children
+    if (!earthMesh) return;
+
+    // Position LERP
+    if (earthMesh.userData.targetPosition) {
+      earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.03);
+    }
+
+    // Scale LERP
+    if (earthMesh.userData.targetScale) {
+      const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
+      if (Math.abs(scaleDiff) > 0.001) {
+        const newScale = earthMesh.scale.x + scaleDiff * 0.05;
+        earthMesh.scale.set(newScale, newScale, newScale);
       }
-      
-      // Scale LERP
-      if (earthMesh.userData.targetScale) {
-          const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
-          if (Math.abs(scaleDiff) > 0.001) {
-              const newScale = earthMesh.scale.x + scaleDiff * 0.05;
-              earthMesh.scale.set(newScale, newScale, newScale);
-          }
-      }
+    }
   }
 
   animate();
@@ -644,7 +699,11 @@ function setupResizeHandler() {
     renderer.setSize(width, height);
   };
   const resizeCleanup = onResize(handleResize, 100);
-  sharedCleanupManager.addCleanupFunction("three-earth", resizeCleanup, "resize handler cleanup");
+  sharedCleanupManager.addCleanupFunction(
+    "three-earth",
+    resizeCleanup,
+    "resize handler cleanup"
+  );
 }
 
 // ===== UI State Management (unchanged) =====
@@ -667,42 +726,42 @@ function showErrorState(container, error) {
   if (errorElement) {
     errorElement.classList.remove("hidden");
     const errorText = errorElement.querySelector("p");
-    if (errorText) errorText.textContent = `WebGL-Fehler: ${error.message || "Unbekannter Fehler"}.`;
+    if (errorText)
+      errorText.textContent = `WebGL-Fehler: ${error.message || "Unbekannter Fehler"}.`;
   }
 }
 
 // ===== NEW: Performance Monitor Class =====
 class PerformanceMonitor {
-    constructor(parentContainer) {
-        this.element = document.createElement('div');
-        this.element.className = 'three-earth-performance-overlay';
-        parentContainer.appendChild(this.element);
+  constructor(parentContainer) {
+    this.element = document.createElement("div");
+    this.element.className = "three-earth-performance-overlay";
+    parentContainer.appendChild(this.element);
 
-        this.frame = 0;
-        this.lastTime = performance.now();
-        this.fps = 0;
-        log.debug("Performance monitor initialized.");
-    }
+    this.frame = 0;
+    this.lastTime = performance.now();
+    this.fps = 0;
+    log.debug("Performance monitor initialized.");
+  }
 
-    update() {
-        this.frame++;
-        const time = performance.now();
-        if (time >= this.lastTime + 1000) {
-            this.fps = (this.frame * 1000) / (time - this.lastTime);
-            this.lastTime = time;
-            this.frame = 0;
-            this.element.textContent = `FPS: ${Math.round(this.fps)}`;
-        }
+  update() {
+    this.frame++;
+    const time = performance.now();
+    if (time >= this.lastTime + 1000) {
+      this.fps = (this.frame * 1000) / (time - this.lastTime);
+      this.lastTime = time;
+      this.frame = 0;
+      this.element.textContent = `FPS: ${Math.round(this.fps)}`;
     }
+  }
 
-    cleanup() {
-        if (this.element && this.element.parentNode) {
-            this.element.parentNode.removeChild(this.element);
-        }
-        log.debug("Performance monitor cleaned up.");
+  cleanup() {
+    if (this.element && this.element.parentNode) {
+      this.element.parentNode.removeChild(this.element);
     }
+    log.debug("Performance monitor cleaned up.");
+  }
 }
-
 
 export const { initThreeEarth, cleanup } = ThreeEarthManager;
 export default ThreeEarthManager;
