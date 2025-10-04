@@ -21,6 +21,8 @@ pnpm-debug.log*
 validation-*.txt     # Lokale Validation Reports
 eslint-report.json   # ESLint Output
 lighthouse-reports/  # Performance Testing
+reports/lighthouse/*.html  # Lighthouse HTML Reports (lokal)
+reports/lighthouse/*.json  # Lighthouse JSON Reports (lokal)
 
 # AI/Copilot temporäre Dateien
 .copilot/

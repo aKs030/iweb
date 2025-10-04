@@ -11,6 +11,9 @@
     "analyze:bundle": "node scripts/analyze-bundle-size.js",
     "audit:a11y": "node scripts/audit-a11y.js",
     "performance:guide": "node scripts/performance-profiling-guide.js",
+    "lighthouse": "node scripts/lighthouse-audit.js both",
+    "lighthouse:desktop": "node scripts/lighthouse-audit.js desktop",
+    "lighthouse:mobile": "node scripts/lighthouse-audit.js mobile",
     "test:all": "npm run lint:js && npm run lint:html && npm run check:css && npm run audit:a11y"
   },
   "keywords": [
@@ -25,13 +28,16 @@
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.11.1",
+    "chrome-launcher": "^1.2.1",
     "eslint": "^9.11.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "glob": "^11.0.0",
     "globals": "^14.0.0",
     "html-validate": "^8.22.0",
-    "prettier": "^3.3.3"
+    "lighthouse": "^12.8.2",
+    "prettier": "^3.3.3",
+    "puppeteer": "^24.23.0"
   },
   "eslintConfig": {
     "env": {
