@@ -51,7 +51,7 @@ async function initializeFooter() {
     window.footerAPI = {
       showNotification,
     };
-    
+
     log.info("Footer erfolgreich initialisiert");
 
     // Smooth Scrolling für interne Links im Footer
@@ -86,7 +86,7 @@ async function loadFooterContent(container) {
     "/content/webentwicklung/footer/footer.html";
 
   log.debug(`Lade Footer von: ${footerSrc}`);
-  
+
   const response = await fetch(footerSrc);
 
   if (!response.ok) {
@@ -95,7 +95,7 @@ async function loadFooterContent(container) {
 
   const footerHTML = await response.text();
   container.innerHTML = footerHTML;
-  
+
   log.debug("Footer HTML erfolgreich geladen");
 
   // ARIA-Label für bessere Accessibility

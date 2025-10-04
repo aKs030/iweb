@@ -31,6 +31,7 @@
 #### Performance-Budget-Verstöße:
 
 ⚠️ **4 CSS-Dateien über Budget:**
+
 - `footer.css`: 20.61 KB (Budget: 10 KB) → **+10.61 KB**
 - `menu.css`: 17.53 KB (Budget: 10 KB) → **+7.53 KB**
 - `index.css`: 16.00 KB (Budget: 15 KB) → **+1.00 KB**
@@ -41,6 +42,7 @@
 #### Dependency Analysis:
 
 **Meistgenutzte Module:**
+
 - ⭐ `shared-utilities.js`: 7x importiert
 - Erfolgreiches Pattern: Zero-Duplikation durch zentrale Utils
 
@@ -62,6 +64,7 @@
 **✅ Alle HTML-Dateien sind ARIA-konform!**
 
 #### Landmarks-Status:
+
 - ✅ `index.html`: main landmark vorhanden
 - ✅ `menu.html`: navigation landmark vorhanden
 - ✅ `footer.html`: navigation landmark vorhanden
@@ -88,21 +91,25 @@
 ### Chrome DevTools Checks
 
 #### 1️⃣ Performance Tab:
+
 - [ ] Long Tasks < 50ms
 - [ ] LCP < 2.5s (Target)
 - [ ] CLS < 0.1 (Target)
 
 #### 2️⃣ Memory Profiling:
+
 - [ ] Keine Detached DOM Trees
 - [ ] Stabile Heap Size bei Navigation
 - [ ] `TimerManager` verhindert Leaks ✅
 
 #### 3️⃣ Network:
+
 - [ ] HTTP/2 Multiplexing nutzen
 - [ ] Three.js lazy loading ✅
 - [ ] Service Worker Caching ✅
 
 #### 4️⃣ Coverage:
+
 - [ ] < 20% ungenutzter Code bei Initial Load
 - [ ] Section-based Loading ✅
 
@@ -114,7 +121,7 @@
 ✅ **Native ES6 Modules** → Browser-Caching  
 ✅ **HTTP/2 Multiplexing-optimiert**  
 ✅ **Selective Loading** → Nur aktive Sections  
-✅ **Service Worker** → Offline-Fähigkeit  
+✅ **Service Worker** → Offline-Fähigkeit
 
 **Initial Page Load:** ~270 KB (ohne Three.js)  
 **Three.js Lazy Load:** +635 KB (bei Bedarf)
@@ -175,15 +182,15 @@
 
 ### Target vs. Current (geschätzt)
 
-| Metrik | Target | Current | Status |
-|--------|--------|---------|--------|
-| **LCP** | < 2.5s | ~1.8s* | ✅ |
-| **FID** | < 100ms | ~50ms* | ✅ |
-| **CLS** | < 0.1 | ~0.05* | ✅ |
-| **FCP** | < 1.8s | ~1.2s* | ✅ |
-| **TTFB** | < 600ms | ~400ms* | ✅ |
+| Metrik   | Target  | Current  | Status |
+| -------- | ------- | -------- | ------ |
+| **LCP**  | < 2.5s  | ~1.8s\*  | ✅     |
+| **FID**  | < 100ms | ~50ms\*  | ✅     |
+| **CLS**  | < 0.1   | ~0.05\*  | ✅     |
+| **FCP**  | < 1.8s  | ~1.2s\*  | ✅     |
+| **TTFB** | < 600ms | ~400ms\* | ✅     |
 
-*Geschätzt - Lighthouse-Audit empfohlen für exakte Werte
+\*Geschätzt - Lighthouse-Audit empfohlen für exakte Werte
 
 ---
 
@@ -219,4 +226,4 @@
 
 ---
 
-*Generiert am 4. Oktober 2025 | Tools: analyze-bundle-size.js, audit-a11y.js, performance-profiling-guide.js*
+_Generiert am 4. Oktober 2025 | Tools: analyze-bundle-size.js, audit-a11y.js, performance-profiling-guide.js_

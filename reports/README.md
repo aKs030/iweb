@@ -5,11 +5,13 @@ Dieses Verzeichnis enthält automatisch generierte Performance- und Qualitäts-R
 ## 📊 Verfügbare Analysen
 
 ### Bundle Size Analysis
+
 ```bash
 npm run analyze:bundle
 ```
 
 **Prüft:**
+
 - JavaScript Module-Größen
 - CSS Datei-Größen
 - Asset-Größen (Texturen, Bilder)
@@ -21,11 +23,13 @@ npm run analyze:bundle
 ---
 
 ### Accessibility Audit
+
 ```bash
 npm run audit:a11y
 ```
 
 **Prüft:**
+
 - ARIA-Attribute Validierung
 - Semantic HTML
 - Image Alt-Text
@@ -38,11 +42,13 @@ npm run audit:a11y
 ---
 
 ### Performance Profiling Guide
+
 ```bash
 npm run performance:guide
 ```
 
 **Zeigt:**
+
 - Chrome DevTools Anleitung
 - Core Web Vitals Monitoring
 - Lighthouse CLI Commands
@@ -55,11 +61,13 @@ npm run performance:guide
 ### Lighthouse Reports (Optional)
 
 **Installation:**
+
 ```bash
 npm install --save-dev lighthouse
 ```
 
 **HTML Report (mit Browser-Ansicht):**
+
 ```bash
 npx lighthouse http://localhost:8000 \
   --view \
@@ -68,6 +76,7 @@ npx lighthouse http://localhost:8000 \
 ```
 
 **JSON Report (für CI):**
+
 ```bash
 npx lighthouse http://localhost:8000 \
   --chrome-flags="--headless" \
@@ -76,6 +85,7 @@ npx lighthouse http://localhost:8000 \
 ```
 
 **Nur Performance:**
+
 ```bash
 npx lighthouse http://localhost:8000 \
   --only-categories=performance \
@@ -87,15 +97,18 @@ npx lighthouse http://localhost:8000 \
 ## 🎯 Performance Budgets
 
 ### JavaScript
+
 - **Critical (main.js, shared-utilities.js):** < 50 KB
 - **Module:** < 25 KB pro File
 - **Vendor (Three.js):** < 700 KB
 
 ### CSS
+
 - **Critical (root.css, index.css):** < 15 KB
 - **Module:** < 10 KB pro File
 
 ### Images
+
 - **Texturen (WebP):** < 200 KB
 - **Icons:** < 50 KB
 
@@ -103,13 +116,13 @@ npx lighthouse http://localhost:8000 \
 
 ## 📈 Core Web Vitals Targets
 
-| Metrik | Target | Kategorie |
-|--------|--------|-----------|
-| **LCP** (Largest Contentful Paint) | < 2.5s | Good |
-| **FID** (First Input Delay) | < 100ms | Good |
-| **CLS** (Cumulative Layout Shift) | < 0.1 | Good |
-| **FCP** (First Contentful Paint) | < 1.8s | Good |
-| **TTFB** (Time to First Byte) | < 600ms | Good |
+| Metrik                             | Target  | Kategorie |
+| ---------------------------------- | ------- | --------- |
+| **LCP** (Largest Contentful Paint) | < 2.5s  | Good      |
+| **FID** (First Input Delay)        | < 100ms | Good      |
+| **CLS** (Cumulative Layout Shift)  | < 0.1   | Good      |
+| **FCP** (First Contentful Paint)   | < 1.8s  | Good      |
+| **TTFB** (Time to First Byte)      | < 600ms | Good      |
 
 ---
 
@@ -129,19 +142,19 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      
+          node-version: "18"
+
       - run: npm install
-      
+
       # Alle Tests
       - run: npm run test:all
-      
+
       # Bundle Size
       - run: npm run analyze:bundle
-      
+
       # A11y Audit
       - run: npm run audit:a11y
-      
+
       # Optional: Lighthouse CI
       - run: npm install -g @lhci/cli
       - run: lhci autorun
@@ -178,18 +191,21 @@ reports/*.txt
 ## 🛠️ Troubleshooting
 
 ### Bundle Size zu groß?
+
 - [ ] Ungenutzte Imports entfernen
 - [ ] Code-Splitting prüfen
 - [ ] Lazy Loading implementieren
 - [ ] Vendor-Libs auf CDN auslagern
 
 ### Accessibility-Fehler?
+
 - [ ] ARIA-Attribute gemäß Spec verwenden
 - [ ] Alt-Text für alle Bilder
 - [ ] Semantic HTML prüfen
 - [ ] Keyboard-Navigation testen
 
 ### Performance-Probleme?
+
 - [ ] Chrome DevTools Performance-Tab nutzen
 - [ ] Long Tasks identifizieren (> 50ms)
 - [ ] Memory Leaks prüfen (Heap Snapshots)

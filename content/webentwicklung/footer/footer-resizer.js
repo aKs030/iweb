@@ -87,7 +87,7 @@ export function initFooterResizer() {
     log.debug("Footer Resizer bereits initialisiert");
     return;
   }
-  
+
   log.debug("Initialisiere Footer Resizer");
   STATE.inited = true;
   apply();

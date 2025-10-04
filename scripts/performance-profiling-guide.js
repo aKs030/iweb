@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Performance Profiling Guide & Automated Metrics
- * 
+ *
  * Kombiniert:
  * - Chrome DevTools Instruktionen
  * - Automatisierte Performance-Metriken
@@ -207,5 +207,7 @@ console.log(`
 ════════════════════════════════════════════════════════════════════════════════
 `);
 
-console.log('✨ Performance Profiling Guide bereit!\n');
-console.log('💡 Tipp: Führe "npm run analyze:bundle" für Bundle-Size-Analyse aus\n');
+console.log("✨ Performance Profiling Guide bereit!\n");
+console.log(
+  '💡 Tipp: Führe "npm run analyze:bundle" für Bundle-Size-Analyse aus\n'
+);
