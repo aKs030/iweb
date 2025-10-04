@@ -68,18 +68,18 @@ const CONFIG = {
     GLOW_COLOR: 0x6699ff,
     FRESNEL_POWER: 3.5,
     INTENSITY: 0.3,
-    // Multi-Layer Scattering (Rayleigh + Mie)
+    // Multi-Layer Scattering (Rayleigh + Mie) - Reduziert für subtilen Effekt
     RAYLEIGH_SCALE: 1.05, // Innere Atmosphären-Schicht (Blau-Streuung)
     MIE_SCALE: 1.025, // Äußere Atmosphären-Schicht (Wolken-Streuung)
     RAYLEIGH_COLOR: 0x5588ff, // Blaue Rayleigh-Streuung
     MIE_COLOR: 0xffddaa, // Warme Mie-Streuung (Sonnenuntergangs-Farbe)
-    RAYLEIGH_INTENSITY: 0.3, // Reduziert von 0.4
-    MIE_INTENSITY: 0.05, // STARK reduziert von 0.25 (war Ursache für weißen Streifen)
-    SCATTERING_STRENGTH: 0.4, // Reduziert von 0.8
+    RAYLEIGH_INTENSITY: 0.2, // Reduziert von 0.4 → 0.2 (-50%)
+    MIE_INTENSITY: 0.12, // Reduziert von 0.25 → 0.12 (-52%)
+    SCATTERING_STRENGTH: 0.4, // Reduziert von 0.8 → 0.4 (-50%)
   },
   OCEAN: {
-    SHININESS: 64.0, // Spekulare Schärfe (reduziert von 128 für weichere Highlights)
-    SPECULAR_INTENSITY: 0.15, // Subtil (war 0.25, nicht Ursache für Streifen)
+    SHININESS: 128.0, // Spekulare Schärfe
+    SPECULAR_INTENSITY: 0.6, // Reflexions-Stärke
     SPECULAR_COLOR: 0xffffff, // Weiße Highlights
   },
   SUN: {
@@ -568,7 +568,7 @@ async function createEarthSystem() {
       // Ozean-Erkennung: Dunkle Pixel in Day-Textur sind Wasser
       // Verwende diffuseColor aus vorangegangenem color_fragment
       vec3 baseColor = diffuseColor.rgb;
-      float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.3); // Verschärft von 0.4
+      float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.4);
       
       if (oceanMask > 0.5) {
         // Berechne Spekulare Reflexion (Phong-Modell)
@@ -594,7 +594,7 @@ async function createEarthSystem() {
       
       // Ozean-Specular hinzufügen (wenn oceanMask aktiv)
       vec3 baseColorCheck = diffuseColor.rgb;
-      float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.3); // Verschärft von 0.4
+      float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.4);
       
       if (oceanMaskFinal > 0.5) {
         vec3 sunDirection = normalize(uSunPosition);
