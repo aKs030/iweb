@@ -52,40 +52,40 @@ const earthTimers = new TimerManager();
 const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 64, // Reduziert von 96 für bessere Performance
-    BUMP_SCALE: 0.015,
-    EMISSIVE_INTENSITY: 0.3, // Erhöht für hellere Stadtlichter
-    EMISSIVE_PULSE_SPEED: 0.5, // ~12.6s pro Pulsation
-    EMISSIVE_PULSE_AMPLITUDE: 0.1, // Pulsations-Stärke
+    SEGMENTS: 64, // Optimiert für Balance Performance/Qualität
+    BUMP_SCALE: 0.008, // Reduziert von 0.015 → subtilere Oberflächenstruktur
+    EMISSIVE_INTENSITY: 0.18, // Reduziert von 0.3 → realistischere City Lights
+    EMISSIVE_PULSE_SPEED: 0.3, // Langsamere Pulsation (0.5 → 0.3)
+    EMISSIVE_PULSE_AMPLITUDE: 0.06, // Dezentere Pulsation (0.1 → 0.06)
   },
   CLOUDS: {
     ALTITUDE: 0.03,
-    ROTATION_SPEED: 0.0013, // Subtiler Drift (~80.5s pro Umdrehung)
-    OPACITY: 0.4,
+    ROTATION_SPEED: 0.0008, // Langsamerer Drift (~130s pro Umdrehung, realistischer)
+    OPACITY: 0.28, // Reduziert von 0.4 → transparentere, realistischere Wolken
   },
   ATMOSPHERE: {
-    SCALE: 1.02,
-    GLOW_COLOR: 0x6699ff,
-    FRESNEL_POWER: 3.5,
-    INTENSITY: 0.3,
-    // Multi-Layer Scattering (Rayleigh + Mie) - Reduziert für subtilen Effekt
-    RAYLEIGH_SCALE: 1.05, // Innere Atmosphären-Schicht (Blau-Streuung)
-    MIE_SCALE: 1.025, // Äußere Atmosphären-Schicht (Wolken-Streuung)
-    RAYLEIGH_COLOR: 0x5588ff, // Blaue Rayleigh-Streuung
-    MIE_COLOR: 0xffddaa, // Warme Mie-Streuung (Sonnenuntergangs-Farbe)
-    RAYLEIGH_INTENSITY: 0.2, // Reduziert von 0.4 → 0.2 (-50%)
-    MIE_INTENSITY: 0.12, // Reduziert von 0.25 → 0.12 (-52%)
-    SCATTERING_STRENGTH: 0.4, // Reduziert von 0.8 → 0.4 (-50%)
+    SCALE: 1.018, // Reduziert von 1.02 → dünnere Atmosphäre
+    GLOW_COLOR: 0x4488ee, // Etwas blaustichiger für realistischeren Effekt
+    FRESNEL_POWER: 4.2, // Erhöht von 3.5 → schärferer Rand-Glow
+    INTENSITY: 0.22, // Reduziert von 0.3 für subtileren Basis-Glow
+    // Multi-Layer Scattering (Rayleigh + Mie) - Optimiert für Balance
+    RAYLEIGH_SCALE: 1.04, // Reduziert von 1.05 → kompaktere Blau-Schicht
+    MIE_SCALE: 1.022, // Reduziert von 1.025 → kompaktere Warm-Schicht
+    RAYLEIGH_COLOR: 0x3366dd, // Satteres Blau (statt 0x5588ff)
+    MIE_COLOR: 0xffcc88, // Wärmere Töne (statt 0xffddaa)
+    RAYLEIGH_INTENSITY: 0.15, // Weitere Reduktion: 0.2 → 0.15 (-25%)
+    MIE_INTENSITY: 0.08, // Weitere Reduktion: 0.12 → 0.08 (-33%)
+    SCATTERING_STRENGTH: 0.3, // Weitere Reduktion: 0.4 → 0.3 (-25%)
   },
   OCEAN: {
-    SHININESS: 128.0, // Spekulare Schärfe
-    SPECULAR_INTENSITY: 0.6, // Reflexions-Stärke
-    SPECULAR_COLOR: 0xffffff, // Weiße Highlights
+    SHININESS: 80.0, // Reduziert von 128 → weichere, größere Highlights (realistischer)
+    SPECULAR_INTENSITY: 0.45, // Reduziert von 0.6 → subtilere Reflexionen
+    SPECULAR_COLOR: 0xeeffff, // Leicht blaustichig (realistischer als rein weiß)
   },
   SUN: {
-    RADIUS: 8, // Distanz der Sonne von der Erde
-    HEIGHT: 3, // Höhe der Sonne
-    INTENSITY: 2.0,
+    RADIUS: 10, // Erhöht von 8 → weichere Beleuchtung aus größerer Distanz
+    HEIGHT: 2, // Reduziert von 3 → flacherer Winkel (dramatischere Schatten)
+    INTENSITY: 1.8, // Reduziert von 2.0 → weichere Beleuchtung
     AUTO_ROTATE: false, // Tag/Nacht-Zyklus aktivieren
     ROTATION_SPEED: 0.0005, // Umdrehungen pro Frame (~33min für vollen Zyklus bei 60fps)
   },
@@ -95,8 +95,8 @@ const CONFIG = {
     SYNC_CITY_LIGHTS: true, // Stadtlichter mit Nacht-Seite synchronisieren
   },
   STARS: {
-    COUNT: 2000,
-    TWINKLE_SPEED: 0.5,
+    COUNT: 3000, // Erhöht von 2000 → dichteres Sternenfeld
+    TWINKLE_SPEED: 0.3, // Reduziert von 0.5 → langsameres, subtileres Funkeln
   },
   CAMERA: {
     FOV: 35,
