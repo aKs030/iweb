@@ -13,8 +13,24 @@
  */
 
 import { createLogger, getElementById } from "../shared-utilities.js";
+import { updateCurrentYear } from "./load-footer.js";
 
 const log = createLogger("footerScrollHandler");
+
+/**
+ * Konfigurationskonstanten für Footer-Scroll-Handler
+ * @constant {Object} CONFIG
+ * @property {number} FALLBACK_INIT_DELAY - Fallback-Init-Verzögerung wenn Event fehlt (ms)
+ * @property {string} OBSERVER_ROOT_MARGIN - IntersectionObserver Root-Margin (trigger bei halber Sichtbarkeit)
+ * @property {number[]} OBSERVER_THRESHOLDS - IntersectionObserver Thresholds
+ * @property {number} MIN_INTERSECTION_RATIO - Minimales Intersection-Ratio für Footer-Expansion
+ */
+const CONFIG = {
+  FALLBACK_INIT_DELAY: 100,
+  OBSERVER_ROOT_MARGIN: "0px 0px -50% 0px",
+  OBSERVER_THRESHOLDS: [0.1, 0.5],
+  MIN_INTERSECTION_RATIO: 0.1,
+};
 
 // Footer-Zustand
 let footerExpanded = false;
@@ -53,8 +69,8 @@ function setupLastSectionObserver() {
   // Observer-Optionen - Trigger wenn Zone sichtbar wird
   const observerOptions = {
     root: null,
-    rootMargin: "0px 0px -50% 0px", // Trigger wenn Zone zur Hälfte sichtbar ist
-    threshold: [0.1, 0.5],
+    rootMargin: CONFIG.OBSERVER_ROOT_MARGIN,
+    threshold: CONFIG.OBSERVER_THRESHOLDS,
   };
 
   lastSectionObserver = new IntersectionObserver((entries) => {
@@ -62,7 +78,8 @@ function setupLastSectionObserver() {
       if (entry.target.id === "footer-trigger-zone") {
         // Footer expandiert wenn Trigger-Zone sichtbar wird
         const shouldExpand =
-          entry.isIntersecting && entry.intersectionRatio >= 0.1;
+          entry.isIntersecting &&
+          entry.intersectionRatio >= CONFIG.MIN_INTERSECTION_RATIO;
         toggleFooterExpansion(shouldExpand);
       }
     });
@@ -92,10 +109,8 @@ function toggleFooterExpansion(shouldExpand) {
     footerMaximized.classList.remove("footer-hidden");
     footerExpanded = true;
 
-    // Jahr in erweiterten Footer aktualisieren - nutze globale API
-    if (window.footerAPI?.updateYear) {
-      window.footerAPI.updateYear();
-    }
+    // Jahr in erweiterten Footer aktualisieren
+    updateCurrentYear();
   } else if (!shouldExpand && footerExpanded) {
     // Footer kollabieren
     footer.classList.remove("footer-expanded");
@@ -115,17 +130,6 @@ function cleanup() {
   }
 }
 
-/**
- * Öffentliche API
- */
-window.footerScrollAPI = {
-  expand: () => toggleFooterExpansion(true),
-  collapse: () => toggleFooterExpansion(false),
-  toggle: () => toggleFooterExpansion(!footerExpanded),
-  isExpanded: () => footerExpanded,
-  cleanup,
-};
-
 // Warte auf footer:loaded Event für bessere Koordination
 document.addEventListener(
   "footer:loaded",
@@ -139,11 +143,11 @@ document.addEventListener(
 // Fallback: Falls Event bereits gefeuert wurde, prüfe DOM
 if (document.readyState !== "loading") {
   setTimeout(() => {
-    if (document.getElementById("site-footer") && !lastSectionObserver) {
+    if (getElementById("site-footer") && !lastSectionObserver) {
       log.debug("Footer bereits geladen, starte Scroll Handler (Fallback)");
       initializeFooterScrollHandler();
     }
-  }, 100);
+  }, CONFIG.FALLBACK_INIT_DELAY);
 }
 
 // Cleanup bei Page Unload

@@ -15,9 +15,39 @@
  * @version 1.3.0
  */
 
-import { createLogger, throttle } from "../shared-utilities.js";
+import { createLogger, throttle, getElementById } from "../shared-utilities.js";
 
 const log = createLogger("footerResizer");
+
+/**
+ * Konfigurationskonstanten für Footer-Resizer
+ * @constant {Object} CONFIG
+ * @property {number} MOBILE_BREAKPOINT - Viewport-Breite für Mobile-Detection (px)
+ * @property {number} MAX_FOOTER_RATIO_MOBILE - Max Footer-Höhe auf Mobile (70% viewport)
+ * @property {number} MAX_FOOTER_RATIO_DESKTOP - Max Footer-Höhe auf Desktop (60% viewport)
+ * @property {number} MIN_SCALE_MOBILE - Minimale Skalierung auf Mobile (verhindert zu kleine UI)
+ * @property {number} MIN_SCALE_DESKTOP - Minimale Skalierung auf Desktop
+ * @property {number} THROTTLE_DELAY - Resize-Event Throttle-Verzögerung (ms)
+ * @property {number} FALLBACK_INIT_DELAY - Fallback-Init-Verzögerung wenn Event fehlt (ms)
+ * @property {number} QUICK_REFRESH_DELAY - Erste Sicherheits-Refresh-Verzögerung (ms)
+ * @property {number} DELAYED_REFRESH - Zweite Sicherheits-Refresh-Verzögerung (ms)
+ * @property {number} PAGESHOW_DELAY - Verzögerung nach pageshow-Event (ms)
+ * @property {number} FONTS_READY_DELAY - Verzögerung nach Fonts-Ready (ms)
+ */
+const CONFIG = {
+  MOBILE_BREAKPOINT: 768,
+  MAX_FOOTER_RATIO_MOBILE: 0.7,
+  MAX_FOOTER_RATIO_DESKTOP: 0.6,
+  MIN_SCALE_MOBILE: 0.75,
+  MIN_SCALE_DESKTOP: 0.5,
+  THROTTLE_DELAY: 150,
+  FALLBACK_INIT_DELAY: 100,
+  QUICK_REFRESH_DELAY: 250,
+  DELAYED_REFRESH: 1200,
+  PAGESHOW_DELAY: 60,
+  FONTS_READY_DELAY: 30,
+};
+
 const STATE = { inited: false, observers: [], t1: null, t2: null, rafId: null };
 
 function setCSSVar(name, value) {
@@ -54,7 +84,7 @@ function computeScale() {
 }
 
 function apply() {
-  const siteFooter = document.getElementById("site-footer");
+  const siteFooter = getElementById("site-footer");
   if (!siteFooter) {
     log.debug("Footer noch nicht geladen, überspringe apply()");
     return;
@@ -65,8 +95,10 @@ function apply() {
   setCSSVar("--vh", `${usable * 0.01}px`);
 
   // Mobile-optimierte Footer-Höhe: Auf kleinen Screens mehr Platz (bis 70%)
-  const isMobile = window.innerWidth <= 768;
-  const maxFooterRatio = isMobile ? 0.7 : 0.6; // 70% auf Mobile, 60% auf Desktop
+  const isMobile = window.innerWidth <= CONFIG.MOBILE_BREAKPOINT;
+  const maxFooterRatio = isMobile
+    ? CONFIG.MAX_FOOTER_RATIO_MOBILE
+    : CONFIG.MAX_FOOTER_RATIO_DESKTOP;
   const maxFooter = Math.round(usable * maxFooterRatio);
   setCSSVar("--footer-max-height", `${maxFooter}px`);
 
@@ -85,7 +117,7 @@ function apply() {
     let scale = base > 0 ? Math.min(1, maxFooter / base) : computeScale();
 
     // Mobile: Weniger aggressive Skalierung (minimum 0.75 statt 0.5)
-    const minScale = isMobile ? 0.75 : 0.5;
+    const minScale = isMobile ? CONFIG.MIN_SCALE_MOBILE : CONFIG.MIN_SCALE_DESKTOP;
     scale = Math.max(minScale, Number(scale.toFixed(3)));
 
     setCSSVar("--footer-scale", String(scale));
@@ -106,7 +138,7 @@ function apply() {
 
 const onResize = throttle(() => {
   requestAnimationFrame(apply);
-}, 150);
+}, CONFIG.THROTTLE_DELAY);
 
 export function cleanup() {
   if (!STATE.inited) return;
@@ -156,7 +188,7 @@ export function initFooterResizer() {
   const content = document.querySelector(
     "#site-footer .footer-enhanced-content"
   );
-  if (content && "ResizeObserver" in window) {
+  if (content && typeof ResizeObserver !== "undefined") {
     try {
       const ro = new ResizeObserver(() => scheduleApply());
       ro.observe(content);
@@ -166,8 +198,8 @@ export function initFooterResizer() {
     }
   }
 
-  const footer = document.getElementById("site-footer");
-  if (footer && "MutationObserver" in window) {
+  const footer = getElementById("site-footer");
+  if (footer && typeof MutationObserver !== "undefined") {
     try {
       const mo = new MutationObserver(() => scheduleApply());
       mo.observe(footer, {
@@ -182,14 +214,20 @@ export function initFooterResizer() {
     }
   }
   // Sicherheits-Refresh nach UI-Änderungen auf iOS (Adressleiste ein/aus)
-  STATE.t1 = setTimeout(apply, 250);
-  STATE.t2 = setTimeout(apply, 1200);
+  STATE.t1 = setTimeout(apply, CONFIG.QUICK_REFRESH_DELAY);
+  STATE.t2 = setTimeout(apply, CONFIG.DELAYED_REFRESH);
   // pageshow (bfcache) und fonts (Layout kann sich nachträglich ändern)
-  window.addEventListener("pageshow", () => setTimeout(apply, 60), {
-    once: true,
-  });
+  window.addEventListener(
+    "pageshow",
+    () => setTimeout(apply, CONFIG.PAGESHOW_DELAY),
+    {
+      once: true,
+    }
+  );
   if (document.fonts?.ready) {
-    document.fonts.ready.then(() => setTimeout(apply, 30)).catch(() => {});
+    document.fonts.ready
+      .then(() => setTimeout(apply, CONFIG.FONTS_READY_DELAY))
+      .catch(() => {});
   }
 
   log.info("Footer Resizer erfolgreich initialisiert");
@@ -209,11 +247,11 @@ document.addEventListener(
 if (document.readyState !== "loading") {
   // Prüfe ob Footer bereits existiert
   setTimeout(() => {
-    if (document.getElementById("site-footer") && !STATE.inited) {
+    if (getElementById("site-footer") && !STATE.inited) {
       log.debug("Footer bereits geladen, starte Resizer (Fallback)");
       initFooterResizer();
     }
-  }, 100);
+  }, CONFIG.FALLBACK_INIT_DELAY);
 }
 
 export default initFooterResizer;

@@ -286,15 +286,6 @@ function showFallbackFooter(container) {
   container.innerHTML = fallbackHTML;
 }
 
-/**
- * Öffentliche API für manuelle Aktualisierungen
- */
-window.footerAPI = {
-  updateYear: updateCurrentYear,
-  reload: initializeFooter,
-  showNotification,
-};
-
 // Footer automatisch initialisieren wenn DOM bereit ist
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeFooter);

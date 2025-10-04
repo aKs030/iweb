@@ -64,7 +64,6 @@
 
   z-index: 1000;
   transition: all 0.3s var(--dynamic-footer-spring-smooth);
-  will-change: transform, opacity;
 
   /* Typography Base */
   font-family: var(--dynamic-footer-font-family);
@@ -122,13 +121,13 @@
   transition: all 0.2s var(--dynamic-footer-spring-quick);
   border-radius: 3px;
   padding: 2px 4px;
-  will-change: transform, color, background-color;
   display: inline-flex;
   align-items: center;
 }
 
 .footer-brand-link:hover,
 .footer-brand-link:focus {
+  will-change: transform, color, background-color;
   color: var(--dynamic-footer-accent-blue);
   background: var(--dynamic-footer-fill-secondary);
   transform: translateY(-1px);
@@ -554,19 +553,19 @@ body.footer-expanded {
   transform: scale(var(--footer-scale));
 }
 
-/* Feintuning: Abstände skalieren mit, um interne Überläufe zu vermeiden */
+/* Child-Elemente werden durch Parent transform: scale() skaliert - keine doppelte Skalierung! */
 .footer-card {
-  padding: calc(clamp(12px, 1.5vw + 6px, 24px) * var(--footer-scale));
+  padding: clamp(12px, 1.5vw + 6px, 24px);
 }
 .footer-card-header {
-  margin-bottom: calc(clamp(8px, 1vw + 6px, 20px) * var(--footer-scale));
+  margin-bottom: clamp(8px, 1vw + 6px, 20px);
 }
 .footer-card-title {
-  font-size: calc(var(--dynamic-footer-text-primary) * var(--footer-scale));
+  font-size: var(--dynamic-footer-text-primary);
 }
 .footer-status-bar {
-  margin-top: calc(clamp(12px, 2.5vw + 4px, 32px) * var(--footer-scale));
-  padding-top: calc(clamp(12px, 1.5vw + 6px, 24px) * var(--footer-scale));
+  margin-top: clamp(12px, 2.5vw + 4px, 32px);
+  padding-top: clamp(12px, 1.5vw + 6px, 24px);
 }
 
 /* Footer Trigger Zone */
