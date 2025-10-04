@@ -675,8 +675,8 @@ function createScatteringAtmosphere() {
     }
     
     // Optical depth calculation (simplified for performance)
-    vec3 opticalDepth(vec3 point, vec3 direction, float length) {
-      float stepSize = length / float(uLightSamples);
+    vec3 opticalDepth(vec3 point, vec3 direction, float pathLength) {
+      float stepSize = pathLength / float(uLightSamples);
       vec3 rayleighDepth = vec3(0.0);
       float mieDepth = 0.0;
       
@@ -684,11 +684,11 @@ function createScatteringAtmosphere() {
         if (i >= uLightSamples) break;
         
         vec3 samplePoint = point + direction * stepSize * float(i);
-        float height = length(samplePoint) - uEarthRadius;
+        float altitude = length(samplePoint) - uEarthRadius;
         
         // Exponential density falloff
-        float rayleighDensity = exp(-height / uRayleighScaleHeight);
-        float mieDensity = exp(-height / uMieScaleHeight);
+        float rayleighDensity = exp(-altitude / uRayleighScaleHeight);
+        float mieDensity = exp(-altitude / uMieScaleHeight);
         
         rayleighDepth += uRayleighCoeff * rayleighDensity * stepSize;
         mieDepth += uMieCoeff * mieDensity * stepSize;
@@ -717,14 +717,14 @@ function createScatteringAtmosphere() {
         if (i >= uSamples) break;
         
         vec3 samplePoint = rayOrigin + rayDir * stepSize * (float(i) + 0.5);
-        float height = length(samplePoint) - uEarthRadius;
+        float altitude = length(samplePoint) - uEarthRadius;
         
         // Skip if below surface
-        if (height < 0.0) continue;
+        if (altitude < 0.0) continue;
         
         // Calculate densities at sample point
-        float rayleighDensity = exp(-height / uRayleighScaleHeight);
-        float mieDensity = exp(-height / uMieScaleHeight);
+        float rayleighDensity = exp(-altitude / uRayleighScaleHeight);
+        float mieDensity = exp(-altitude / uMieScaleHeight);
         
         // Optical depth to sun
         vec3 opticalDepthToSun = opticalDepth(samplePoint, sunDir, uAtmosphereRadius - length(samplePoint));
