@@ -5,13 +5,16 @@
  * - Scroll-Detection für letzte Sektion ('about')
  * - Smooth Footer-Expansion/Kollaps
  * - Performance-optimiert mit Intersection Observer
+ * - Event-basierte Koordination mit load-footer.js
  * - Accessibility-Support
  *
  * @author Abdulkerim Sesli
- * @version 1.0.0
+ * @version 1.2.0
  */
 
-import { getElementById } from "../shared-utilities.js";
+import { createLogger, getElementById } from "../shared-utilities.js";
+
+const log = createLogger("footerScrollHandler");
 
 // Footer-Zustand
 let footerExpanded = false;
@@ -21,18 +24,15 @@ let lastSectionObserver = null;
  * Initialisiert das Footer-Scroll-System
  */
 function initializeFooterScrollHandler() {
-  // Warten bis Footer geladen ist
-  const checkFooterReady = () => {
-    const footer = getElementById("site-footer");
-    if (footer) {
-      setupLastSectionObserver();
-    } else {
-      // Nochmal nach 100ms versuchen
-      setTimeout(checkFooterReady, 100);
-    }
-  };
-
-  checkFooterReady();
+  log.debug("Initialisiere Footer Scroll Handler");
+  
+  const footer = getElementById("site-footer");
+  if (footer) {
+    setupLastSectionObserver();
+    log.info("Footer Scroll Handler erfolgreich initialisiert");
+  } else {
+    log.warn("Footer nicht gefunden - Scroll Handler konnte nicht initialisiert werden");
+  }
 }
 
 /**
@@ -44,6 +44,7 @@ function setupLastSectionObserver() {
   const footer = getElementById("site-footer");
 
   if (!triggerZone || !footer) {
+    log.warn("Footer-Trigger-Zone oder Footer nicht gefunden");
     return;
   }
 
@@ -66,6 +67,7 @@ function setupLastSectionObserver() {
   }, observerOptions);
 
   lastSectionObserver.observe(triggerZone);
+  log.debug("Intersection Observer für Footer-Trigger-Zone eingerichtet");
 }
 
 /**
@@ -122,13 +124,20 @@ window.footerScrollAPI = {
   cleanup,
 };
 
-// System automatisch initialisieren
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(initializeFooterScrollHandler, 500); // Nach Footer-Load warten
-  });
-} else {
-  setTimeout(initializeFooterScrollHandler, 500);
+// Warte auf footer:loaded Event für bessere Koordination
+document.addEventListener("footer:loaded", () => {
+  log.debug("Footer:loaded Event empfangen, starte Scroll Handler");
+  initializeFooterScrollHandler();
+}, { once: true });
+
+// Fallback: Falls Event bereits gefeuert wurde, prüfe DOM
+if (document.readyState !== "loading") {
+  setTimeout(() => {
+    if (document.getElementById("site-footer") && !lastSectionObserver) {
+      log.debug("Footer bereits geladen, starte Scroll Handler (Fallback)");
+      initializeFooterScrollHandler();
+    }
+  }, 100);
 }
 
 // Cleanup bei Page Unload

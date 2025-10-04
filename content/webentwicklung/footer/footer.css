@@ -23,9 +23,16 @@
  * - ≤768px: Optimiertes 2-Spalten Layout
  * - ≤480px: Vollständig gestapeltes Layout
  * 
+ * Responsive Spacing:
+ * - Alle Abstände skalieren fluid mit clamp()
+ * - Viewport-Höhe: 60vh Desktop, 50vh Tablet, 40vh Mobile
+ * - Keine Media Queries - Pure CSS clamp() Magic
+ * - Mobile: Minimale Abstände (6px) für maximale Kartenfläche
+ * - Grid: minmax(min(100%, 260px), 1fr) für optimale Mobile-Anpassung
+ * 
  * @author Abdulkerim Sesli
- * @version 4.2.0 - Mobile Layout Optimization & Code Cleanup
- * @updated 2025-09-28 - Theme Control Mobile Layout & CSS Consolidation
+ * @version 4.8.0 - Balanced Mobile Spacing Optimization
+ * @updated 2025-10-04 - Ausgewogene Mobile-Abstände (6px) für größere Karten + bessere UX
  */
 
 /* ===== Dynamic Footer Design Tokens ===== */
@@ -37,7 +44,8 @@
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 32px);
+  /* Responsive horizontale Abstände: 32px Desktop, 16px Tablet, 6px Mobile */
+  width: calc(100% - clamp(6px, 1.5vw + 3px, 32px) * 2);
   max-width: 1400px;
   min-width: 320px;
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
@@ -70,7 +78,8 @@
 
 /* ===== Optimized Minimized Footer ===== */
 .footer-minimized {
-  padding: 6px 16px;
+  /* Responsive Padding: 16px Desktop, 10px Tablet, 6px Mobile */
+  padding: 6px clamp(6px, 1vw + 3px, 16px);
   max-width: 1200px;
   margin: 0 auto;
   opacity: 1;
@@ -195,7 +204,8 @@
   /* Hülle, die die Höhe gegenüber dem echten Viewport begrenzt */
   /* Dynamische Variable aus JS (footer-resizer) + Fallback auf svh/lvh/vh */
   height: var(--footer-actual-height, auto);
-  max-height: var(--footer-max-height, min(60svh, 60lvh, 60vh));
+  /* Responsive max-height: 60vh Desktop, 50vh Tablet, 40vh Mobile */
+  max-height: var(--footer-max-height, clamp(40vh, 25vh + 25vw, 60vh));
   overflow: clip; /* kein internes Scrollen */
   width: 100%;
 }
@@ -203,23 +213,27 @@
 .footer-enhanced-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 24px 20px 24px;
+  /* Responsive Padding: 40px/24px Desktop, 28px/14px Tablet, 20px/6px Mobile */
+  padding: clamp(20px, 2.5vw + 10px, 40px) clamp(6px, 1.5vw + 3px, 24px) 16px;
   box-sizing: border-box;
 }
 
 /* ===== Card-Based Layout System ===== */
 .footer-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
+  /* Mobile: 1 Spalte, Tablet+: auto-fit mit min 260px */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  /* Responsive Gap: 24px Desktop, 14px Tablet, 6px Mobile */
+  gap: clamp(6px, 1.5vw + 3px, 24px);
+  margin-bottom: clamp(16px, 2.5vw + 8px, 32px);
 }
 
 .footer-card {
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-card-radius);
-  padding: 24px;
+  /* Responsive Padding: 24px Desktop, 18px Tablet, 12px Mobile */
+  padding: clamp(12px, 1.5vw + 6px, 24px);
   transition: all 0.25s var(--dynamic-footer-spring-quick);
   position: relative;
   overflow: hidden;
@@ -237,7 +251,8 @@
 }
 
 .footer-card-header {
-  margin-bottom: 20px;
+  /* Responsive Abstand: 20px Desktop, 14px Tablet, 8px Mobile */
+  margin-bottom: clamp(8px, 1vw + 6px, 20px);
   position: relative;
 }
 
@@ -531,12 +546,7 @@ body.footer-expanded {
   overflow: clip;
 }
 
-/* Proportionale Skalierung der Inhalte auf sehr kleinen Viewports 
-   ohne Media Queries via clamp + viewport-bezogene Variable */
-:root {
-
-}
-
+/* Proportionale Skalierung der Inhalte - gesteuert durch footer-resizer.js */
 .footer-enhanced-content {
   transform-origin: top center;
   transform: scale(var(--footer-scale));
@@ -544,17 +554,17 @@ body.footer-expanded {
 
 /* Feintuning: Abstände skalieren mit, um interne Überläufe zu vermeiden */
 .footer-card {
-  padding: calc(24px * var(--footer-scale));
+  padding: calc(clamp(12px, 1.5vw + 6px, 24px) * var(--footer-scale));
 }
 .footer-card-header {
-  margin-bottom: calc(20px * var(--footer-scale));
+  margin-bottom: calc(clamp(8px, 1vw + 6px, 20px) * var(--footer-scale));
 }
 .footer-card-title {
   font-size: calc(var(--dynamic-footer-text-primary) * var(--footer-scale));
 }
 .footer-status-bar {
-  margin-top: calc(32px * var(--footer-scale));
-  padding-top: calc(24px * var(--footer-scale));
+  margin-top: calc(clamp(12px, 2.5vw + 4px, 32px) * var(--footer-scale));
+  padding-top: calc(clamp(12px, 1.5vw + 6px, 24px) * var(--footer-scale));
 }
 
 /* Footer Trigger Zone */

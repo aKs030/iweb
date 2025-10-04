@@ -5,11 +5,12 @@
  * - Dynamisches Laden des Footer-Inhalts
  * - Automatische Jahr-Aktualisierung
  * - Error Handling mit Fallback
- * - Performance-optimiert
+ * - Performance-optimiert (Event Delegation)
+ * - Event-basierte Koordination (footer:loaded)
  * - Accessibility-Support
  *
  * @author Abdulkerim Sesli
- * @version 2.5.0
+ * @version 2.6.0
  */
 
 // ===== Shared Utilities Import =====
@@ -47,17 +48,20 @@ async function initializeFooter() {
       log.debug("Day/Night Artwork nicht geladen:", artworkError.message);
     }
 
-    // Globale Footer API bereitstellen
-    window.footerAPI = {
-      showNotification,
-    };
-
     log.info("Footer erfolgreich initialisiert");
 
-    // Smooth Scrolling für interne Links im Footer
-    const footerLinks = document.querySelectorAll('#site-footer a[href^="#"]');
-    footerLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
+    // Fire footer:loaded Event für andere Module (z.B. footer-resizer)
+    document.dispatchEvent(new CustomEvent("footer:loaded", {
+      detail: { footerId: "site-footer" }
+    }));
+
+    // Smooth Scrolling für interne Links im Footer (Event Delegation)
+    const footer = getElementById("site-footer");
+    if (footer) {
+      footer.addEventListener("click", (e) => {
+        const link = e.target.closest('a[href^="#"]');
+        if (!link) return;
+
         const targetId = link.getAttribute("href").substring(1);
         const targetElement = getElementById(targetId);
 
@@ -69,7 +73,7 @@ async function initializeFooter() {
           });
         }
       });
-    });
+    }
   } catch (error) {
     log.error("Fehler beim Initialisieren des Footers:", error);
     showFallbackFooter(footerContainer);
@@ -112,13 +116,13 @@ async function loadFooterContent(container) {
  * Aktualisiert das aktuelle Jahr automatisch
  */
 function updateCurrentYear() {
+  const currentYear = new Date().getFullYear();
   const yearElements = document.querySelectorAll(
     "#current-year, #current-year-full"
   );
-  const currentYear = new Date().getFullYear();
 
   yearElements.forEach((element) => {
-    if (element && element.textContent !== String(currentYear)) {
+    if (element?.textContent !== String(currentYear)) {
       element.textContent = currentYear;
     }
   });
@@ -183,7 +187,7 @@ function setupNewsletterForm() {
  * Richtet Cookie-Einstellungen ein
  */
 function setupCookieSettings() {
-  const cookieBtn = document.querySelector(".cookie-settings-btn");
+  const cookieBtn = document.querySelector(".footer-cookie-btn");
 
   if (!cookieBtn) return;
 
@@ -204,22 +208,20 @@ function showNotification(message, type = "info") {
     if (existing) existing.remove();
   }
 
-  // Einfache Notification-Implementierung
+  // Hintergrundfarbe basierend auf Typ bestimmen
+  const colorMap = {
+    error: "#ff4444",
+    success: "#44ff44",
+    info: "#007AFF",
+  };
+  const backgroundColor = colorMap[type] || colorMap.info;
+
+  // Notification-Element erstellen
   const notification = document.createElement("div");
   notification.className = `footer-notification footer-notification--${type}`;
   notification.textContent = message;
   notification.setAttribute("role", "alert");
   notification.setAttribute("aria-live", "polite");
-
-  // Hintergrundfarbe basierend auf Typ bestimmen
-  let backgroundColor;
-  if (type === "error") {
-    backgroundColor = "#ff4444";
-  } else if (type === "success") {
-    backgroundColor = "#44ff44";
-  } else {
-    backgroundColor = "#007AFF";
-  }
 
   // Performance: CSS in einem Block setzen
   Object.assign(notification.style, {
@@ -289,10 +291,6 @@ window.footerAPI = {
   updateYear: updateCurrentYear,
   reload: initializeFooter,
   showNotification,
-  toggleTheme: () => {
-    const themeToggle = document.querySelector(".theme-toggle-btn");
-    if (themeToggle) themeToggle.click();
-  },
 };
 
 // Footer automatisch initialisieren wenn DOM bereit ist
