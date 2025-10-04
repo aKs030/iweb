@@ -1,14 +1,11 @@
 /**
- * Three.js Earth System - 3D WebGL Earth with Advanced Rendering
+ * Three.js Earth System - 3D WebGL Earth with Stars, Clouds & Atmosphere
  *
  * High-Quality 3D Earth visualization featuring:
  * - Realistic PBR Earth textures with pulsing city lights
- * - ADVANCED: Rayleigh/Mie atmospheric scattering for realistic sky
- * - ADVANCED: Volumetric 3D clouds with multi-layer parallax (Simplex noise)
- * - ADVANCED: Ocean specular reflections with Fresnel effects
- * - Dynamic cloud layer with drift rotation (2D fallback option)
+ * - Dynamic, separate cloud layer with drift rotation
  * - Day/Night cycle: Sunlight rotates with clouds, creating moving city lights
- * - Procedural atmospheric glow using enhanced custom shader
+ * - Procedural atmospheric glow using an enhanced custom shader
  * - Procedural starfield with parallax and twinkling effects
  * - Mouse wheel zoom control for detailed inspection
  * - Scroll-based camera animations and section-responsive scenes
@@ -19,7 +16,7 @@
  * Uses shared-particle-system for parallax synchronization and effects.
  *
  * @author Portfolio System
- * @version 5.0.0
+ * @version 4.1.0
  * @created 2025-10-03
  * @last-modified 2025-10-04
  */
@@ -61,38 +58,6 @@ const CONFIG = {
     GLOW_COLOR: 0x6699ff,
     FRESNEL_POWER: 3.5,
     INTENSITY: 0.3,
-    // Rayleigh/Mie Scattering Parameters
-    RAYLEIGH_COEFFICIENT: [5.5e-6, 13.0e-6, 22.4e-6], // RGB wavelength scattering (blue scatters more)
-    MIE_COEFFICIENT: 21e-6, // Aerosol/particle scattering
-    RAYLEIGH_SCALE_HEIGHT: 8000, // meters - exponential density falloff
-    MIE_SCALE_HEIGHT: 1200, // meters - aerosol layer thickness
-    MIE_DIRECTIONAL_G: 0.76, // Henyey-Greenstein phase function parameter (forward scattering)
-    ATMOSPHERE_RADIUS: 1.025, // Extended atmosphere for scattering
-    SAMPLES: 16, // Ray-marching samples (lower for performance)
-    LIGHT_SAMPLES: 8, // Optical depth samples
-  },
-  OCEAN: {
-    SPECULAR_INTENSITY: 1.5, // Strength of ocean highlights
-    SPECULAR_POWER: 128.0, // Sharpness/focus of highlights (higher = tighter)
-    FRESNEL_BIAS: 0.1, // Base reflectivity at normal incidence
-    FRESNEL_SCALE: 0.8, // Fresnel effect strength
-    FRESNEL_POWER: 3.0, // Fresnel curve exponent
-    OCEAN_MASK_THRESHOLD: 0.3, // RGB threshold to detect water in day texture (blue > threshold)
-    ROUGHNESS_VARIATION: 0.15, // Ocean surface roughness variation
-  },
-  VOLUMETRIC_CLOUDS: {
-    ENABLED: false, // Toggle volumetric clouds (performance-heavy) ❌ DEAKTIVIERT - Classic 2D besser
-    LAYERS: 2, // Number of cloud layers (1-5) - reduziert für natürlicheren Look
-    BASE_ALTITUDE: 0.025, // Start altitude above surface - niedriger für realistischere Höhe
-    LAYER_SPACING: 0.015, // Distance between layers - mehr Abstand
-    DENSITY: 0.25, // Overall cloud density (0-1) - reduziert für luftigere Wolken
-    SCALE: 4.5, // Noise texture scale (lower = larger clouds) - größere Cloud-Strukturen
-    OCTAVES: 4, // Noise detail levels (1-5, higher = more detail) - mehr Detail für Realismus
-    PERSISTENCE: 0.6, // Detail amplitude falloff - mehr Detail beibehalten
-    LACUNARITY: 2.2, // Detail frequency increase - natürlichere Variation
-    SPEED_MULTIPLIER: [1.0, 0.7], // Rotation speed per layer - unterschiedlichere Geschwindigkeiten
-    OPACITY_FALLOFF: 0.65, // Opacity reduction per layer - sanfterer Übergang
-    COVERAGE: 0.35, // Cloud coverage (0-1) - weniger Coverage für realistischere Verteilung
   },
   SUN: {
     RADIUS: 8, // Distanz der Sonne von der Erde
@@ -143,11 +108,6 @@ let shootingStarManager = null;
 let THREE_INSTANCE = null;
 let directionalLight = null; // Sonne - rotiert mit Wolken
 
-// New: Advanced atmosphere and ocean
-let scatteringAtmosphere = null; // Rayleigh/Mie scattering atmosphere
-let oceanSpecularMesh = null; // Ocean reflection layer
-let volumetricCloudLayers = []; // Array of volumetric cloud layers
-
 // Camera and Animation States
 const cameraTarget = { x: 0, y: 0, z: 10 };
 const cameraPosition = { x: 0, y: 0, z: 10 };
@@ -174,7 +134,7 @@ const ThreeEarthManager = (() => {
     }
 
     try {
-      log.info("Initializing Three.js Earth system v5.0.0");
+      log.info("Initializing Three.js Earth system v4.0.0");
       registerParticleSystem("three-earth", { type: "three-earth" });
 
       THREE_INSTANCE = await loadThreeJS();
@@ -186,43 +146,15 @@ const ThreeEarthManager = (() => {
       await setupScene(container);
       await createEarthSystem();
 
-      // Create ocean reflections (requires day texture from earthMesh)
-      oceanSpecularMesh = createOceanReflections();
-      if (oceanSpecularMesh && earthMesh.material.map) {
-        oceanSpecularMesh.material.uniforms.uDayTexture.value = earthMesh.material.map;
-        oceanSpecularMesh.position.copy(earthMesh.position);
-        oceanSpecularMesh.scale.copy(earthMesh.scale);
-        scene.add(oceanSpecularMesh);
-      }
+      cloudMesh = await createCloudLayer();
+      // Wolken als eigenständiges Objekt in Scene für unabhängige Rotation
+      cloudMesh.position.copy(earthMesh.position);
+      cloudMesh.scale.copy(earthMesh.scale); // Scale auch initial kopieren!
+      scene.add(cloudMesh);
 
-      // Cloud system: Use either volumetric or classic 2D
-      if (CONFIG.VOLUMETRIC_CLOUDS.ENABLED) {
-        volumetricCloudLayers = createVolumetricClouds();
-        volumetricCloudLayers.forEach(layer => {
-          layer.position.copy(earthMesh.position);
-          layer.scale.copy(earthMesh.scale);
-          scene.add(layer);
-        });
-      } else {
-        cloudMesh = await createCloudLayer();
-        // Wolken als eigenständiges Objekt in Scene für unabhängige Rotation
-        cloudMesh.position.copy(earthMesh.position);
-        cloudMesh.scale.copy(earthMesh.scale); // Scale auch initial kopieren!
-        scene.add(cloudMesh);
-      }
-
-      // Basic atmosphere (always enabled for glow)
       atmosphereMesh = createAtmosphere();
       // Atmosphäre bleibt Child von earthMesh (rotiert mit Erde)
       earthMesh.add(atmosphereMesh);
-
-      // Advanced atmospheric scattering (optional, performance-heavy)
-      scatteringAtmosphere = createScatteringAtmosphere();
-      if (scatteringAtmosphere) {
-        scatteringAtmosphere.position.copy(earthMesh.position);
-        scatteringAtmosphere.scale.copy(earthMesh.scale);
-        scene.add(scatteringAtmosphere);
-      }
 
       setupCameraSystem();
       setupUserControls(container);
@@ -275,12 +207,8 @@ const ThreeEarthManager = (() => {
       starField =
       cloudMesh =
       atmosphereMesh =
-      scatteringAtmosphere =
-      oceanSpecularMesh =
       directionalLight =
         null;
-    
-    volumetricCloudLayers = [];
     currentSection = "hero";
 
     unregisterParticleSystem("three-earth");
@@ -618,510 +546,6 @@ function createAtmosphere() {
   return atmosphere;
 }
 
-// ===== Advanced Rayleigh/Mie Atmospheric Scattering =====
-function createScatteringAtmosphere() {
-  // Performance check: Disable on mobile for complex shader
-  if (isMobileDevice && CONFIG.PERFORMANCE.PIXEL_RATIO < 1.0) {
-    log.info("Skipping atmospheric scattering on low-performance device");
-    return null;
-  }
-
-  const vertexShader = `
-    varying vec3 vWorldPosition;
-    varying vec3 vNormal;
-    varying vec3 vViewPosition;
-    
-    void main() {
-      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-      vWorldPosition = worldPosition.xyz;
-      vNormal = normalize(normalMatrix * normal);
-      
-      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-      vViewPosition = -mvPosition.xyz;
-      
-      gl_Position = projectionMatrix * mvPosition;
-    }
-  `;
-
-  const fragmentShader = `
-    uniform vec3 uSunPosition;
-    uniform vec3 uRayleighCoeff;
-    uniform float uMieCoeff;
-    uniform float uRayleighScaleHeight;
-    uniform float uMieScaleHeight;
-    uniform float uMieG;
-    uniform float uEarthRadius;
-    uniform float uAtmosphereRadius;
-    uniform int uSamples;
-    uniform int uLightSamples;
-    uniform vec3 uCameraPosition;
-    
-    varying vec3 vWorldPosition;
-    varying vec3 vNormal;
-    varying vec3 vViewPosition;
-    
-    const float PI = 3.14159265359;
-    const float E = 2.71828;
-    
-    // Henyey-Greenstein phase function for Mie scattering
-    float henyeyGreenstein(float cosTheta, float g) {
-      float g2 = g * g;
-      return (1.0 - g2) / (4.0 * PI * pow(1.0 + g2 - 2.0 * g * cosTheta, 1.5));
-    }
-    
-    // Rayleigh phase function
-    float rayleighPhase(float cosTheta) {
-      return (3.0 / (16.0 * PI)) * (1.0 + cosTheta * cosTheta);
-    }
-    
-    // Optical depth calculation (simplified for performance)
-    vec3 opticalDepth(vec3 point, vec3 direction, float pathLength) {
-      float stepSize = pathLength / float(uLightSamples);
-      vec3 rayleighDepth = vec3(0.0);
-      float mieDepth = 0.0;
-      
-      for (int i = 0; i < 8; i++) { // Max samples hardcoded for WebGL 1.0
-        if (i >= uLightSamples) break;
-        
-        vec3 samplePoint = point + direction * stepSize * float(i);
-        float altitude = length(samplePoint) - uEarthRadius;
-        
-        // Exponential density falloff
-        float rayleighDensity = exp(-altitude / uRayleighScaleHeight);
-        float mieDensity = exp(-altitude / uMieScaleHeight);
-        
-        rayleighDepth += uRayleighCoeff * rayleighDensity * stepSize;
-        mieDepth += uMieCoeff * mieDensity * stepSize;
-      }
-      
-      return rayleighDepth + vec3(mieDepth);
-    }
-    
-    void main() {
-      vec3 viewDir = normalize(vViewPosition);
-      vec3 sunDir = normalize(uSunPosition);
-      
-      // Calculate ray through atmosphere
-      vec3 rayOrigin = uCameraPosition;
-      vec3 rayDir = normalize(vWorldPosition - rayOrigin);
-      
-      // Distance from camera to atmosphere edge
-      float distToAtmosphere = length(vWorldPosition - rayOrigin);
-      float stepSize = distToAtmosphere / float(uSamples);
-      
-      vec3 rayleighScattering = vec3(0.0);
-      vec3 mieScattering = vec3(0.0);
-      
-      // Ray-march through atmosphere
-      for (int i = 0; i < 16; i++) { // Max samples hardcoded for WebGL 1.0
-        if (i >= uSamples) break;
-        
-        vec3 samplePoint = rayOrigin + rayDir * stepSize * (float(i) + 0.5);
-        float altitude = length(samplePoint) - uEarthRadius;
-        
-        // Skip if below surface
-        if (altitude < 0.0) continue;
-        
-        // Calculate densities at sample point
-        float rayleighDensity = exp(-altitude / uRayleighScaleHeight);
-        float mieDensity = exp(-altitude / uMieScaleHeight);
-        
-        // Optical depth to sun
-        vec3 opticalDepthToSun = opticalDepth(samplePoint, sunDir, uAtmosphereRadius - length(samplePoint));
-        
-        // Optical depth to camera
-        vec3 opticalDepthToCamera = opticalDepth(samplePoint, -rayDir, length(samplePoint - rayOrigin));
-        
-        // Total attenuation
-        vec3 attenuation = exp(-(opticalDepthToSun + opticalDepthToCamera));
-        
-        // Accumulate scattering
-        rayleighScattering += uRayleighCoeff * rayleighDensity * attenuation * stepSize;
-        mieScattering += vec3(uMieCoeff) * mieDensity * attenuation * stepSize;
-      }
-      
-      // Apply phase functions
-      float cosTheta = dot(rayDir, sunDir);
-      float rayleighFactor = rayleighPhase(cosTheta);
-      float mieFactor = henyeyGreenstein(cosTheta, uMieG);
-      
-      vec3 scatteredLight = rayleighScattering * rayleighFactor + mieScattering * mieFactor;
-      
-      // Add base glow at edges (Fresnel)
-      float fresnel = pow(1.0 - abs(dot(vNormal, viewDir)), 2.5);
-      vec3 glowColor = vec3(0.4, 0.6, 1.0) * fresnel * 0.3;
-      
-      vec3 finalColor = scatteredLight + glowColor;
-      float alpha = min(1.0, length(finalColor) * 2.0);
-      
-      gl_FragColor = vec4(finalColor, alpha);
-    }
-  `;
-
-  const scatteringMaterial = new THREE_INSTANCE.ShaderMaterial({
-    vertexShader,
-    fragmentShader,
-    uniforms: {
-      uSunPosition: { value: new THREE_INSTANCE.Vector3(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0) },
-      uRayleighCoeff: { value: new THREE_INSTANCE.Vector3(...CONFIG.ATMOSPHERE.RAYLEIGH_COEFFICIENT) },
-      uMieCoeff: { value: CONFIG.ATMOSPHERE.MIE_COEFFICIENT },
-      uRayleighScaleHeight: { value: CONFIG.ATMOSPHERE.RAYLEIGH_SCALE_HEIGHT },
-      uMieScaleHeight: { value: CONFIG.ATMOSPHERE.MIE_SCALE_HEIGHT },
-      uMieG: { value: CONFIG.ATMOSPHERE.MIE_DIRECTIONAL_G },
-      uEarthRadius: { value: CONFIG.EARTH.RADIUS },
-      uAtmosphereRadius: { value: CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.ATMOSPHERE_RADIUS },
-      uSamples: { value: CONFIG.ATMOSPHERE.SAMPLES },
-      uLightSamples: { value: CONFIG.ATMOSPHERE.LIGHT_SAMPLES },
-      uCameraPosition: { value: new THREE_INSTANCE.Vector3() },
-    },
-    transparent: true,
-    blending: THREE_INSTANCE.AdditiveBlending,
-    side: THREE_INSTANCE.BackSide,
-    depthWrite: false,
-  });
-
-  const scatteringGeometry = new THREE_INSTANCE.SphereGeometry(
-    CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.ATMOSPHERE_RADIUS,
-    48, // Lower segments for performance
-    48
-  );
-
-  const atmosphere = new THREE_INSTANCE.Mesh(scatteringGeometry, scatteringMaterial);
-  atmosphere.renderOrder = 3; // Render after basic atmosphere
-  
-  log.info("Advanced atmospheric scattering created successfully");
-  return atmosphere;
-}
-
-// ===== Ocean Specular Reflections Layer =====
-function createOceanReflections() {
-  if (isMobileDevice && CONFIG.PERFORMANCE.PIXEL_RATIO < 1.0) {
-    log.info("Skipping ocean reflections on low-performance device");
-    return null;
-  }
-
-  const vertexShader = `
-    varying vec3 vNormal;
-    varying vec3 vWorldPosition;
-    varying vec2 vUv;
-    
-    void main() {
-      vUv = uv;
-      vNormal = normalize(normalMatrix * normal);
-      vec4 worldPos = modelMatrix * vec4(position, 1.0);
-      vWorldPosition = worldPos.xyz;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `;
-
-  const fragmentShader = `
-    uniform sampler2D uDayTexture;
-    uniform vec3 uSunPosition;
-    uniform vec3 uCameraPosition;
-    uniform float uSpecularIntensity;
-    uniform float uSpecularPower;
-    uniform float uFresnelBias;
-    uniform float uFresnelScale;
-    uniform float uFresnelPower;
-    uniform float uOceanThreshold;
-    
-    varying vec3 vNormal;
-    varying vec3 vWorldPosition;
-    varying vec2 vUv;
-    
-    void main() {
-      // Sample day texture to detect ocean (blue areas)
-      vec3 texColor = texture2D(uDayTexture, vUv).rgb;
-      
-      // Ocean mask: Blue channel dominates, green/red are low
-      float oceanMask = step(uOceanThreshold, texColor.b) * 
-                        step(texColor.b, texColor.r + 0.3) * 
-                        step(texColor.b, texColor.g + 0.3);
-      
-      if (oceanMask < 0.5) discard; // Not ocean, skip pixel
-      
-      // Calculate view and light directions
-      vec3 viewDir = normalize(uCameraPosition - vWorldPosition);
-      vec3 sunDir = normalize(uSunPosition - vWorldPosition);
-      vec3 normal = normalize(vNormal);
-      
-      // Phong specular reflection
-      vec3 reflectDir = reflect(-sunDir, normal);
-      float specular = pow(max(dot(viewDir, reflectDir), 0.0), uSpecularPower);
-      
-      // Fresnel effect (more reflection at grazing angles)
-      float fresnel = uFresnelBias + uFresnelScale * pow(1.0 - max(dot(viewDir, normal), 0.0), uFresnelPower);
-      
-      // Combine specular with fresnel
-      float finalSpecular = specular * fresnel * uSpecularIntensity;
-      
-      // Sun color with slight blue tint for water
-      vec3 specularColor = mix(vec3(1.0, 0.95, 0.8), vec3(0.8, 0.9, 1.0), 0.3);
-      
-      gl_FragColor = vec4(specularColor * finalSpecular, finalSpecular * 0.6);
-    }
-  `;
-
-  // We need to pass the day texture - will be set after earth creation
-  const oceanMaterial = new THREE_INSTANCE.ShaderMaterial({
-    vertexShader,
-    fragmentShader,
-    uniforms: {
-      uDayTexture: { value: null }, // Will be set after texture loads
-      uSunPosition: { value: new THREE_INSTANCE.Vector3(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0) },
-      uCameraPosition: { value: new THREE_INSTANCE.Vector3() },
-      uSpecularIntensity: { value: CONFIG.OCEAN.SPECULAR_INTENSITY },
-      uSpecularPower: { value: CONFIG.OCEAN.SPECULAR_POWER },
-      uFresnelBias: { value: CONFIG.OCEAN.FRESNEL_BIAS },
-      uFresnelScale: { value: CONFIG.OCEAN.FRESNEL_SCALE },
-      uFresnelPower: { value: CONFIG.OCEAN.FRESNEL_POWER },
-      uOceanThreshold: { value: CONFIG.OCEAN.OCEAN_MASK_THRESHOLD },
-    },
-    transparent: true,
-    blending: THREE_INSTANCE.AdditiveBlending,
-    depthWrite: false,
-    side: THREE_INSTANCE.FrontSide,
-  });
-
-  const oceanGeometry = new THREE_INSTANCE.SphereGeometry(
-    CONFIG.EARTH.RADIUS + 0.002, // Slightly above earth surface to avoid z-fighting
-    CONFIG.EARTH.SEGMENTS,
-    CONFIG.EARTH.SEGMENTS
-  );
-
-  const oceanLayer = new THREE_INSTANCE.Mesh(oceanGeometry, oceanMaterial);
-  oceanLayer.renderOrder = 1; // Render after earth, before clouds
-  
-  log.info("Ocean specular reflections layer created successfully");
-  return oceanLayer;
-}
-
-// ===== Volumetric 3D Cloud System =====
-function createVolumetricClouds() {
-  if (!CONFIG.VOLUMETRIC_CLOUDS.ENABLED || (isMobileDevice && CONFIG.PERFORMANCE.PIXEL_RATIO < 1.0)) {
-    log.info("Volumetric clouds disabled (config or performance)");
-    return [];
-  }
-
-  // Simplex 3D Noise function (embedded for performance)
-  const simplexNoiseGLSL = `
-    // Simplex 3D Noise by Ian McEwan, Ashima Arts
-    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-    vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-    vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-    vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-    
-    float snoise(vec3 v) {
-      const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-      
-      vec3 i  = floor(v + dot(v, C.yyy));
-      vec3 x0 = v - i + dot(i, C.xxx);
-      
-      vec3 g = step(x0.yzx, x0.xyz);
-      vec3 l = 1.0 - g;
-      vec3 i1 = min(g.xyz, l.zxy);
-      vec3 i2 = max(g.xyz, l.zxy);
-      
-      vec3 x1 = x0 - i1 + C.xxx;
-      vec3 x2 = x0 - i2 + C.yyy;
-      vec3 x3 = x0 - D.yyy;
-      
-      i = mod289(i);
-      vec4 p = permute(permute(permute(
-                i.z + vec4(0.0, i1.z, i2.z, 1.0))
-              + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-              + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-      
-      float n_ = 0.142857142857;
-      vec3 ns = n_ * D.wyz - D.xzx;
-      
-      vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-      
-      vec4 x_ = floor(j * ns.z);
-      vec4 y_ = floor(j - 7.0 * x_);
-      
-      vec4 x = x_ *ns.x + ns.yyyy;
-      vec4 y = y_ *ns.x + ns.yyyy;
-      vec4 h = 1.0 - abs(x) - abs(y);
-      
-      vec4 b0 = vec4(x.xy, y.xy);
-      vec4 b1 = vec4(x.zw, y.zw);
-      
-      vec4 s0 = floor(b0)*2.0 + 1.0;
-      vec4 s1 = floor(b1)*2.0 + 1.0;
-      vec4 sh = -step(h, vec4(0.0));
-      
-      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-      
-      vec3 p0 = vec3(a0.xy, h.x);
-      vec3 p1 = vec3(a0.zw, h.y);
-      vec3 p2 = vec3(a1.xy, h.z);
-      vec3 p3 = vec3(a1.zw, h.w);
-      
-      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-      p0 *= norm.x;
-      p1 *= norm.y;
-      p2 *= norm.z;
-      p3 *= norm.w;
-      
-      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-      m = m * m;
-      return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-    }
-  `;
-
-  const vertexShader = `
-    varying vec2 vUv;
-    varying vec3 vPosition;
-    
-    void main() {
-      vUv = uv;
-      vPosition = position;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `;
-
-  const fragmentShader = `
-    ${simplexNoiseGLSL}
-    
-    uniform float uTime;
-    uniform float uScale;
-    uniform int uOctaves;
-    uniform float uPersistence;
-    uniform float uLacunarity;
-    uniform float uDensity;
-    uniform float uCoverage;
-    uniform float uLayerOpacity;
-    
-    varying vec2 vUv;
-    varying vec3 vPosition;
-    
-    // Fractal Brownian Motion (FBM) for detailed noise
-    float fbm(vec3 p) {
-      float value = 0.0;
-      float amplitude = 1.0;
-      float frequency = 1.0;
-      
-      for (int i = 0; i < 5; i++) { // Max octaves hardcoded
-        if (i >= uOctaves) break;
-        value += amplitude * snoise(p * frequency);
-        frequency *= uLacunarity;
-        amplitude *= uPersistence;
-      }
-      
-      return value;
-    }
-    
-    // Turbulence for more natural cloud edges
-    float turbulence(vec3 p) {
-      float t = 0.0;
-      float amplitude = 1.0;
-      float frequency = 1.0;
-      
-      for (int i = 0; i < 3; i++) {
-        t += abs(snoise(p * frequency)) * amplitude;
-        frequency *= 2.1;
-        amplitude *= 0.5;
-      }
-      
-      return t;
-    }
-    
-    void main() {
-      // Create 3D position from sphere surface UV
-      float theta = vUv.x * 3.14159 * 2.0;
-      float phi = vUv.y * 3.14159;
-      vec3 noisePos = vec3(
-        sin(phi) * cos(theta),
-        cos(phi),
-        sin(phi) * sin(theta)
-      ) * uScale;
-      
-      // Animate noise over time (cloud drift)
-      noisePos.x += uTime * 0.08;
-      noisePos.z += uTime * 0.03; // Zusätzliche Bewegung für Dynamik
-      
-      // Generate base cloud density using FBM
-      float noise = fbm(noisePos);
-      
-      // Add turbulence for wispy edges
-      float turb = turbulence(noisePos * 1.5) * 0.3;
-      noise = mix(noise, turb, 0.4);
-      
-      // Improved cloud shaping mit schärferen Kanten
-      float cloudCoverage = smoothstep(0.4, 0.7, (noise + 1.0) * 0.5);
-      
-      // Zusätzliche Variation für natürlichere Verteilung
-      float variation = smoothstep(1.0 - uCoverage - 0.2, 1.0 - uCoverage + 0.2, cloudCoverage);
-      
-      // Combine für finale Dichte
-      float cloudDensity = variation * uDensity;
-      
-      // Soft edges: Erode cloud boundaries
-      cloudDensity *= smoothstep(0.0, 0.15, cloudCoverage);
-      cloudDensity *= smoothstep(1.0, 0.85, cloudCoverage);
-      
-      // Apply layer-specific opacity
-      float alpha = cloudDensity * uLayerOpacity;
-      
-      // Discard very transparent pixels for performance
-      if (alpha < 0.02) discard;
-      
-      // Cloud color mit subtiler Variation (heller in der Mitte, dunkler an Kanten)
-      float brightness = mix(0.95, 1.1, cloudCoverage);
-      vec3 cloudColor = vec3(brightness, brightness, brightness * 1.02);
-      
-      gl_FragColor = vec4(cloudColor, alpha);
-    }
-  `;
-
-  const cloudLayers = [];
-  const numLayers = Math.min(CONFIG.VOLUMETRIC_CLOUDS.LAYERS, 5); // Cap at 5 for performance
-
-  for (let i = 0; i < numLayers; i++) {
-    const altitude = CONFIG.VOLUMETRIC_CLOUDS.BASE_ALTITUDE + (i * CONFIG.VOLUMETRIC_CLOUDS.LAYER_SPACING);
-    const speedMult = CONFIG.VOLUMETRIC_CLOUDS.SPEED_MULTIPLIER[i] || 1.0;
-    const opacity = CONFIG.VOLUMETRIC_CLOUDS.DENSITY * Math.pow(CONFIG.VOLUMETRIC_CLOUDS.OPACITY_FALLOFF, i);
-
-    const cloudMaterial = new THREE_INSTANCE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms: {
-        uTime: { value: 0.0 },
-        uScale: { value: CONFIG.VOLUMETRIC_CLOUDS.SCALE + i * 0.5 }, // Vary scale per layer
-        uOctaves: { value: CONFIG.VOLUMETRIC_CLOUDS.OCTAVES },
-        uPersistence: { value: CONFIG.VOLUMETRIC_CLOUDS.PERSISTENCE },
-        uLacunarity: { value: CONFIG.VOLUMETRIC_CLOUDS.LACUNARITY },
-        uDensity: { value: CONFIG.VOLUMETRIC_CLOUDS.DENSITY },
-        uCoverage: { value: CONFIG.VOLUMETRIC_CLOUDS.COVERAGE },
-        uLayerOpacity: { value: opacity },
-      },
-      transparent: true,
-      blending: THREE_INSTANCE.NormalBlending,
-      depthWrite: false,
-      side: THREE_INSTANCE.DoubleSide,
-    });
-
-    const cloudGeometry = new THREE_INSTANCE.SphereGeometry(
-      CONFIG.EARTH.RADIUS + altitude,
-      48, // Lower segments for performance
-      48
-    );
-
-    const cloudLayer = new THREE_INSTANCE.Mesh(cloudGeometry, cloudMaterial);
-    cloudLayer.renderOrder = 1; // Render after earth
-    cloudLayer.userData.rotationSpeed = CONFIG.CLOUDS.ROTATION_SPEED * speedMult;
-    cloudLayer.userData.layerIndex = i;
-
-    cloudLayers.push(cloudLayer);
-  }
-
-  log.info(`Created ${cloudLayers.length} volumetric cloud layers`);
-  return cloudLayers;
-}
-
 // ===== Camera & Section Updates =====
 function setupCameraSystem() {
   updateCameraForSection("hero");
@@ -1237,39 +661,14 @@ function startAnimationLoop() {
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
     }
 
-    // Volumetric cloud layers rotation (each at different speeds)
-    if (volumetricCloudLayers.length > 0) {
-      volumetricCloudLayers.forEach(layer => {
-        if (layer.rotation) {
-          layer.rotation.y += layer.userData.rotationSpeed;
-        }
-        // Update time uniform for animated noise
-        if (layer.material && layer.material.uniforms && layer.material.uniforms.uTime) {
-          layer.material.uniforms.uTime.value = elapsedTime;
-        }
-      });
-    }
-
     // Sonne kreist mit Wolken → Tag/Nacht-Grenze wandert
-    if (directionalLight && (cloudMesh || volumetricCloudLayers.length > 0)) {
-      const angle = cloudMesh ? cloudMesh.rotation.y : (volumetricCloudLayers[0]?.rotation.y || 0);
+    if (directionalLight && cloudMesh) {
+      const angle = cloudMesh.rotation.y;
       directionalLight.position.set(
         Math.cos(angle) * CONFIG.SUN.RADIUS,
         CONFIG.SUN.HEIGHT,
         Math.sin(angle) * CONFIG.SUN.RADIUS
       );
-      
-      // Update atmospheric scattering sun position
-      if (scatteringAtmosphere && scatteringAtmosphere.material.uniforms) {
-        scatteringAtmosphere.material.uniforms.uSunPosition.value.copy(directionalLight.position);
-        scatteringAtmosphere.material.uniforms.uCameraPosition.value.copy(camera.position);
-      }
-      
-      // Update ocean specular sun position
-      if (oceanSpecularMesh && oceanSpecularMesh.material.uniforms) {
-        oceanSpecularMesh.material.uniforms.uSunPosition.value.copy(directionalLight.position);
-        oceanSpecularMesh.material.uniforms.uCameraPosition.value.copy(camera.position);
-      }
     }
 
     if (starField) {
@@ -1321,38 +720,6 @@ function startAnimationLoop() {
       }
       if (cloudMesh.scale && earthMesh.scale) {
         cloudMesh.scale.copy(earthMesh.scale);
-      }
-    }
-
-    // Synchronize volumetric cloud layers
-    if (volumetricCloudLayers.length > 0) {
-      volumetricCloudLayers.forEach(layer => {
-        if (layer.position) {
-          layer.position.copy(earthMesh.position);
-        }
-        if (layer.scale && earthMesh.scale) {
-          layer.scale.copy(earthMesh.scale);
-        }
-      });
-    }
-
-    // Synchronize atmospheric scattering
-    if (scatteringAtmosphere) {
-      if (scatteringAtmosphere.position) {
-        scatteringAtmosphere.position.copy(earthMesh.position);
-      }
-      if (scatteringAtmosphere.scale && earthMesh.scale) {
-        scatteringAtmosphere.scale.copy(earthMesh.scale);
-      }
-    }
-
-    // Synchronize ocean specular layer
-    if (oceanSpecularMesh) {
-      if (oceanSpecularMesh.position) {
-        oceanSpecularMesh.position.copy(earthMesh.position);
-      }
-      if (oceanSpecularMesh.scale && earthMesh.scale) {
-        oceanSpecularMesh.scale.copy(earthMesh.scale);
       }
     }
   }
