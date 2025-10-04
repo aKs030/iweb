@@ -73,13 +73,13 @@ const CONFIG = {
     MIE_SCALE: 1.025, // Äußere Atmosphären-Schicht (Wolken-Streuung)
     RAYLEIGH_COLOR: 0x5588ff, // Blaue Rayleigh-Streuung
     MIE_COLOR: 0xffddaa, // Warme Mie-Streuung (Sonnenuntergangs-Farbe)
-    RAYLEIGH_INTENSITY: 0.4,
-    MIE_INTENSITY: 0.25,
-    SCATTERING_STRENGTH: 0.8, // Gesamt-Streuungsstärke
+    RAYLEIGH_INTENSITY: 0.3, // Reduziert von 0.4
+    MIE_INTENSITY: 0.05, // STARK reduziert von 0.25 (war Ursache für weißen Streifen)
+    SCATTERING_STRENGTH: 0.4, // Reduziert von 0.8
   },
   OCEAN: {
     SHININESS: 64.0, // Spekulare Schärfe (reduziert von 128 für weichere Highlights)
-    SPECULAR_INTENSITY: 0.25, // Reflexions-Stärke (reduziert von 0.6)
+    SPECULAR_INTENSITY: 0.15, // Subtil (war 0.25, nicht Ursache für Streifen)
     SPECULAR_COLOR: 0xffffff, // Weiße Highlights
   },
   SUN: {
