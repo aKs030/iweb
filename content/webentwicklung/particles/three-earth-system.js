@@ -81,7 +81,7 @@ const CONFIG = {
     ROUGHNESS_VARIATION: 0.15, // Ocean surface roughness variation
   },
   VOLUMETRIC_CLOUDS: {
-    ENABLED: true, // Toggle volumetric clouds (performance-heavy) ✅ AKTIVIERT
+    ENABLED: false, // Toggle volumetric clouds (performance-heavy) ❌ DEAKTIVIERT - Classic 2D besser
     LAYERS: 2, // Number of cloud layers (1-5) - reduziert für natürlicheren Look
     BASE_ALTITUDE: 0.025, // Start altitude above surface - niedriger für realistischere Höhe
     LAYER_SPACING: 0.015, // Distance between layers - mehr Abstand
