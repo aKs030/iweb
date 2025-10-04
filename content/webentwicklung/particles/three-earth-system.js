@@ -393,7 +393,10 @@ function setupStarParallax() {
 // ===== Lighting Setup =====
 function setupLighting() {
   // Sonne - rotiert mit Wolken für wandernde Tag/Nacht-Grenze
-  directionalLight = new THREE_INSTANCE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY);
+  directionalLight = new THREE_INSTANCE.DirectionalLight(
+    0xffffff,
+    CONFIG.SUN.INTENSITY
+  );
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
@@ -450,15 +453,15 @@ async function createEarthSystem() {
     CONFIG.EARTH.SEGMENTS
   );
   earthMesh = new THREE_INSTANCE.Mesh(earthGeometry, earthMaterial);
-  
+
   // Initiale Position und Scale für Hero-Section setzen
   earthMesh.position.set(0, -6.0, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);
-  
+
   // Target-Werte für Transitions speichern
   earthMesh.userData.targetPosition = { x: 0, y: -6.0, z: 0 };
   earthMesh.userData.targetScale = 1.5;
-  
+
   scene.add(earthMesh);
 }
 
@@ -594,7 +597,7 @@ function updateEarthForSection(sectionName) {
     about: { pos: { x: 0, y: 0, z: -2 }, scale: 0.35 },
   };
   const config = configs[sectionName] || configs.hero;
-  
+
   // Nur setzen wenn config.pos existiert (immer der Fall, aber defensive)
   if (config.pos) {
     earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
@@ -603,10 +606,12 @@ function updateEarthForSection(sectionName) {
       config.pos.z
     );
   }
-  
+
   earthMesh.userData.targetScale = config.scale;
-  
-  log.debug(`Section: ${sectionName}, Target Scale: ${config.scale}, Current Scale: ${earthMesh.scale.x.toFixed(2)}`);
+
+  log.debug(
+    `Section: ${sectionName}, Target Scale: ${config.scale}, Current Scale: ${earthMesh.scale.x.toFixed(2)}`
+  );
 }
 
 // ===== User Controls & Interaction =====
@@ -642,19 +647,20 @@ function startAnimationLoop() {
     const lerpFactor = CONFIG.CAMERA.LERP_FACTOR;
 
     // Erde bleibt statisch - keine Rotation
-    
+
     // Stadtlichter pulsieren (12.6s Periode, 0.2-0.4 Intensity Range)
     if (earthMesh) {
       earthMesh.material.emissiveIntensity =
         CONFIG.EARTH.EMISSIVE_INTENSITY +
-        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
+        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
+          CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
     }
 
     // Wolken driften (80.5s pro Umdrehung)
     if (cloudMesh && cloudMesh.rotation) {
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
     }
-    
+
     // Sonne kreist mit Wolken → Tag/Nacht-Grenze wandert
     if (directionalLight && cloudMesh) {
       const angle = cloudMesh.rotation.y;
