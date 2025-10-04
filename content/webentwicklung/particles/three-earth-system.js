@@ -273,13 +273,6 @@ const ThreeEarthManager = (() => {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
-    
-    // Stoppe Earth-Rotation-Effekt
-    if (earthRotationEffect) {
-      earthTimers.clearInterval(earthRotationEffect);
-      earthRotationEffect = null;
-    }
-    
     if (performanceMonitor) performanceMonitor.cleanup();
     if (shootingStarManager) shootingStarManager.cleanup();
     if (sectionObserver) sectionObserver.disconnect();
@@ -885,29 +878,7 @@ function setupCameraSystem() {
 let cameraTransition = null; // Aktueller Tween
 
 function updateCameraForSection(sectionName) {
-  // Geografische Kamera-Flüge für spezifische Sections
-  if (sectionName === "hero") {
-    // Fliege zur Türkei (Ankara)
-    flyToLocation(39.9, 32.9, 8, 3.0); // 3 Sekunden Flug
-    log.info("🇪🇷 Flying to Türkei (Ankara)");
-    return;
-  }
-  
-  if (sectionName === "features") {
-    // Fliege zu Deutschland (Berlin)
-    flyToLocation(52.5, 13.4, 8, 3.0);
-    log.info("🇩🇪 Flying to Deutschland (Berlin)");
-    return;
-  }
-  
-  if (sectionName === "about") {
-    // Erde-Drehungs-Effekt: 360° Rotation um die Erde
-    startEarthRotationEffect();
-    log.info("🌍 Starting Earth rotation effect");
-    return;
-  }
-
-  // Fallback: Nutze Presets falls vorhanden
+  // Neue Preset-basierte Kamera-Positionen
   const preset = CONFIG.CAMERA.PRESETS[sectionName];
 
   if (preset) {
@@ -988,7 +959,7 @@ function flyToLocation(lat, lon, zoom = 8, duration = 2.0) {
 
   const x = -(zoom * Math.sin(phi) * Math.cos(theta));
   const y = zoom * Math.cos(phi);
-  // z wird direkt in zoom verwendet (Kamera-Distanz)
+  const z = zoom * Math.sin(phi) * Math.sin(theta);
 
   // Erstelle temporäres Preset
   const tempPreset = {
@@ -1015,52 +986,6 @@ function flyToLocation(lat, lon, zoom = 8, duration = 2.0) {
   );
 
   log.info(`Flying to location: ${lat}°N, ${lon}°E`);
-}
-
-// Erde-Drehungs-Effekt: 360° Rotation um die Erde
-let earthRotationEffect = null;
-
-function startEarthRotationEffect() {
-  // Stoppe laufenden Effekt
-  if (earthRotationEffect) {
-    earthTimers.clearInterval(earthRotationEffect);
-    earthRotationEffect = null;
-  }
-
-  const startTime = performance.now();
-  const duration = 8000; // 8 Sekunden für volle Rotation
-  const radius = 12; // Distanz von der Erde
-  const height = 2; // Höhe über Äquator
-  const startAngle = Math.atan2(cameraTarget.x, mouseState.zoom); // Aktueller Winkel
-
-  function rotationStep() {
-    const elapsed = performance.now() - startTime;
-    const progress = (elapsed / duration) % 1; // Loop
-
-    // 360° Rotation
-    const angle = startAngle + progress * Math.PI * 2;
-
-    // Kreisförmige Kamera-Position
-    cameraTarget.x = Math.sin(angle) * radius;
-    cameraTarget.y = height;
-    mouseState.zoom = Math.cos(angle) * radius;
-
-    // LookAt Erde-Zentrum
-    if (camera) {
-      camera.lookAt(0, 0, 0);
-    }
-
-    // Stoppe nach einer vollen Rotation
-    if (elapsed >= duration) {
-      earthTimers.clearInterval(earthRotationEffect);
-      earthRotationEffect = null;
-      log.debug("Earth rotation effect complete");
-    }
-  }
-
-  // 60fps Update
-  earthRotationEffect = earthTimers.setInterval(rotationStep, 16);
-  rotationStep(); // Erster Frame sofort
 }
 
 function setupSectionDetection() {
