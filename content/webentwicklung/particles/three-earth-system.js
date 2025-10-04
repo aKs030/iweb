@@ -512,7 +512,30 @@ async function createEarthSystem() {
       value: new THREE_INSTANCE.Color(CONFIG.OCEAN.SPECULAR_COLOR),
     };
 
-    // Fragment Shader erweitern
+    // Vertex Shader: Füge varying am Anfang hinzu
+    shader.vertexShader = `
+      varying vec3 vViewPosition;
+    ` + shader.vertexShader;
+
+    // Vertex Shader: Setze vViewPosition
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <worldpos_vertex>",
+      `
+      #include <worldpos_vertex>
+      vViewPosition = -mvPosition.xyz;
+      `
+    );
+
+    // Fragment Shader: Füge Uniforms und varying am Anfang hinzu
+    shader.fragmentShader = `
+      uniform vec3 uSunPosition;
+      uniform float uOceanShininess;
+      uniform float uOceanSpecularIntensity;
+      uniform vec3 uOceanSpecularColor;
+      varying vec3 vViewPosition;
+    ` + shader.fragmentShader;
+
+    // Fragment Shader: Füge Ozean-Reflexionen hinzu
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <color_fragment>",
       `
@@ -535,25 +558,6 @@ async function createEarthSystem() {
       }
       `
     );
-
-    // Vertex Shader erweitern (für View-Position)
-    shader.vertexShader = shader.vertexShader.replace(
-      "#include <worldpos_vertex>",
-      `
-      #include <worldpos_vertex>
-      varying vec3 vViewPosition;
-      vViewPosition = -mvPosition.xyz;
-      `
-    );
-
-    shader.fragmentShader =
-      `
-      uniform vec3 uSunPosition;
-      uniform float uOceanShininess;
-      uniform float uOceanSpecularIntensity;
-      uniform vec3 uOceanSpecularColor;
-      varying vec3 vViewPosition;
-      ` + shader.fragmentShader;
 
     // Speichere Shader-Referenz für Uniform-Updates
     earthMesh.userData.oceanShader = shader;
@@ -709,10 +713,50 @@ function createAtmosphere() {
   );
   atmosphere.renderOrder = 2; // Render after clouds
 
-  // Zweite Rayleigh-Schicht (innere blaue Atmosphäre)
+  // Zweite Rayleigh-Schicht (innere blaue Atmosphäre) mit reduziertem Mie-Effekt
+  const rayleighFragmentShader = `
+    varying vec3 vNormal;
+    varying vec3 vPosition;
+    varying vec3 vWorldPosition;
+    uniform vec3 uRayleighColor;
+    uniform vec3 uMieColor;
+    uniform float uPower;
+    uniform float uRayleighIntensity;
+    uniform float uMieIntensity;
+    uniform float uScatteringStrength;
+    uniform vec3 uSunPosition;
+    
+    void main() {
+        // Fresnel-Effekt für Atmosphären-Rand
+        vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
+        float fresnel = pow(1.0 - abs(dot(vNormal, viewDirection)), uPower);
+        
+        // Rayleigh Scattering (Blau - kurzwellige Streuung)
+        float rayleighFactor = fresnel * uRayleighIntensity;
+        vec3 rayleighScatter = uRayleighColor * rayleighFactor;
+        
+        // Mie Scattering - reduziert für innere Schicht
+        vec3 toSun = normalize(uSunPosition - vWorldPosition);
+        float sunAlignment = max(0.0, dot(viewDirection, toSun));
+        
+        float g = 0.76;
+        float g2 = g * g;
+        float mieFactor = (1.0 - g2) / pow(1.0 + g2 - 2.0 * g * sunAlignment, 1.5);
+        mieFactor *= fresnel * uMieIntensity * 0.3; // 30% Reduktion für innere Schicht
+        
+        vec3 mieScatter = uMieColor * mieFactor;
+        
+        // Kombiniere Rayleigh + Mie
+        vec3 finalColor = (rayleighScatter + mieScatter) * uScatteringStrength;
+        
+        float alpha = fresnel * (uRayleighIntensity + uMieIntensity * 0.15);
+        
+        gl_FragColor = vec4(finalColor, alpha);
+    }`;
+
   const rayleighMaterial = new THREE_INSTANCE.ShaderMaterial({
     vertexShader,
-    fragmentShader: fragmentShader.replace("uMieIntensity", "uMieIntensity * 0.3"), // Reduziere Mie in innerer Schicht
+    fragmentShader: rayleighFragmentShader,
     uniforms: {
       uRayleighColor: {
         value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.RAYLEIGH_COLOR),
@@ -722,7 +766,7 @@ function createAtmosphere() {
       },
       uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER * 0.8 },
       uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY * 0.6 },
-      uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY * 0.3 },
+      uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY },
       uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH * 0.7 },
       uSunPosition: {
         value: new THREE_INSTANCE.Vector3(
