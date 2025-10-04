@@ -13,9 +13,11 @@
  */
 
 // ===== Shared Utilities Import =====
-import { getElementById } from "../shared-utilities.js";
+import { createLogger, getElementById } from "../shared-utilities.js";
 
 import { initializeDayNightArtwork } from "./day-night-artwork.js";
+
+const log = createLogger("loadFooter");
 
 /**
  * Initialisiert das Footer-System
@@ -24,10 +26,12 @@ async function initializeFooter() {
   const footerContainer = getElementById("footer-container");
 
   if (!footerContainer) {
+    log.warn("Footer Container nicht gefunden");
     return;
   }
 
   try {
+    log.debug("Initialisiere Footer");
     await loadFooterContent(footerContainer);
     updateCurrentYear();
 
@@ -38,14 +42,17 @@ async function initializeFooter() {
     // Day/Night Artwork Theme Toggle initialisieren
     try {
       await initializeDayNightArtwork();
-    } catch {
+    } catch (artworkError) {
       // Artwork-Initialisierung ist optional - bei Fehler still ignorieren
+      log.debug("Day/Night Artwork nicht geladen:", artworkError.message);
     }
 
     // Globale Footer API bereitstellen
     window.footerAPI = {
       showNotification,
     };
+    
+    log.info("Footer erfolgreich initialisiert");
 
     // Smooth Scrolling für interne Links im Footer
     const footerLinks = document.querySelectorAll('#site-footer a[href^="#"]');
@@ -63,7 +70,8 @@ async function initializeFooter() {
         }
       });
     });
-  } catch {
+  } catch (error) {
+    log.error("Fehler beim Initialisieren des Footers:", error);
     showFallbackFooter(footerContainer);
   }
 }
@@ -77,6 +85,8 @@ async function loadFooterContent(container) {
     container.getAttribute("data-footer-src") ||
     "/content/webentwicklung/footer/footer.html";
 
+  log.debug(`Lade Footer von: ${footerSrc}`);
+  
   const response = await fetch(footerSrc);
 
   if (!response.ok) {
@@ -85,6 +95,8 @@ async function loadFooterContent(container) {
 
   const footerHTML = await response.text();
   container.innerHTML = footerHTML;
+  
+  log.debug("Footer HTML erfolgreich geladen");
 
   // ARIA-Label für bessere Accessibility
   const footer = container.querySelector("#site-footer");

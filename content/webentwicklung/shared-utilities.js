@@ -265,10 +265,7 @@ export class EventListenerManager {
 
       return () => this.remove(target, event, handler);
     } catch (error) {
-      console.error(
-        `${this.name}: Fehler beim Hinzufügen von ${event} Listener:`,
-        error
-      );
+      this.log.error(`Fehler beim Hinzufügen von ${event} Listener:`, error);
       return () => {};
     }
   }
@@ -283,10 +280,7 @@ export class EventListenerManager {
         target.removeEventListener(event, handler, listenerToRemove.options);
         this.listeners.delete(listenerToRemove);
       } catch (error) {
-        console.warn(
-          `${this.name}: Fehler beim Entfernen von ${event} Listener:`,
-          error
-        );
+        this.log.warn(`Fehler beim Entfernen von ${event} Listener:`, error);
       }
     }
   }
@@ -296,7 +290,7 @@ export class EventListenerManager {
       try {
         target.removeEventListener(event, handler, options);
       } catch (error) {
-        console.warn(`${this.name}: Cleanup Fehler für ${event}:`, error);
+        this.log.warn(`Cleanup Fehler für ${event}:`, error);
       }
     });
 

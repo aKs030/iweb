@@ -4,8 +4,9 @@
  * Technik: Dynamische Viewport-Messung (inkl. iOS Safe-Area), CSS-Variablen, ResizeObserver/Events.
  */
 
-import { throttle } from "../shared-utilities.js";
+import { createLogger, throttle } from "../shared-utilities.js";
 
+const log = createLogger("footerResizer");
 const STATE = { inited: false, observers: [], t1: null, t2: null };
 
 function setCSSVar(name, value) {
@@ -82,7 +83,12 @@ const onResize = throttle(() => {
 }, 150);
 
 export function initFooterResizer() {
-  if (STATE.inited) return;
+  if (STATE.inited) {
+    log.debug("Footer Resizer bereits initialisiert");
+    return;
+  }
+  
+  log.debug("Initialisiere Footer Resizer");
   STATE.inited = true;
   apply();
   window.addEventListener("resize", onResize, { passive: true });

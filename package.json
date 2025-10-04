@@ -7,7 +7,11 @@
     "lint:js": "eslint content/**/*.js pages/**/*.js --fix",
     "lint:html": "node scripts/validate-html.js",
     "check:css": "node scripts/check-css-consolidation.js",
-    "consolidate:css": "node scripts/consolidate-css.js"
+    "consolidate:css": "node scripts/consolidate-css.js",
+    "analyze:bundle": "node scripts/analyze-bundle-size.js",
+    "audit:a11y": "node scripts/audit-a11y.js",
+    "performance:guide": "node scripts/performance-profiling-guide.js",
+    "test:all": "npm run lint:js && npm run lint:html && npm run check:css && npm run audit:a11y"
   },
   "keywords": [
     "portfolio",

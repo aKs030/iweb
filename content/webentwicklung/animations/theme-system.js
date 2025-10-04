@@ -2,9 +2,19 @@
  * Theme System - Globale Theme-Initialisierung
  * Features: System-Theme-Erkennung, localStorage-Persistierung, FOUC-Vermeidung
  */
+
+import { createLogger } from "../shared-utilities.js";
+
+const log = createLogger("themeSystem");
 let __themeInitialized = false;
 function initializeGlobalTheme() {
-  if (__themeInitialized) return;
+  if (__themeInitialized) {
+    log.debug("Theme System bereits initialisiert");
+    return;
+  }
+  
+  log.debug("Initialisiere Theme System");
+  
   // Transition styles are provided by the external stylesheet
   // Ensure external transition CSS is loaded to avoid runtime-injected <style>
   const TRANSITION_CSS_HREF = '/content/webentwicklung/animations/theme-transitions.css';
@@ -12,7 +22,7 @@ function initializeGlobalTheme() {
     const link = document.createElement('link');
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', TRANSITION_CSS_HREF);
-    document.head.appendChild(link);
+    log.debug("Transition CSS nachgeladen");
   }
   
   // Theme basierend auf localStorage oder System-Präferenz setzen
@@ -21,11 +31,13 @@ function initializeGlobalTheme() {
   
   if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
     initialTheme = savedTheme;
+    log.debug(`Gespeichertes Theme verwendet: ${initialTheme}`);
   } else {
     // System-Präferenz prüfen
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     initialTheme = prefersDark ? 'dark' : 'light';
     localStorage.setItem('theme', initialTheme);
+    log.debug(`System-Theme erkannt: ${initialTheme}`);
   }
   
   // Theme sofort anwenden (vor DOM-Ready um FOUC zu vermeiden)
@@ -33,6 +45,7 @@ function initializeGlobalTheme() {
   updateThemeMetaTags(initialTheme);
   
   __themeInitialized = true;
+  log.info(`Theme System initialisiert: ${initialTheme}`);
 }
 
 /**
@@ -63,6 +76,8 @@ function updateThemeMetaTags(theme) {
 
 function setTheme(theme) {
   const validatedTheme = ['dark', 'light'].includes(theme) ? theme : 'dark';
+  
+  log.debug(`Theme wird gesetzt: ${theme} → ${validatedTheme}`);
   
   document.documentElement.setAttribute('data-theme', validatedTheme);
   localStorage.setItem('theme', validatedTheme);

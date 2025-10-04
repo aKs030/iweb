@@ -4,31 +4,35 @@
 
 **Pfad:** `/content/img/earth/textures/`
 
-### Produktive Texturen:
-- ✅ `earth_day.jpg` (463KB) - NASA Blue Marble Tag-Textur
-- ✅ `earth_night.jpg` (255KB) - NASA Earth at Night  
-- ✅ `earth_normal.jpg` (337KB) - NASA Topographie Normal Map
-- ✅ `earth_bump.jpg` (223KB) - NASA Elevation Bump Map
+### Produktive Texturen (WebP):
+- ✅ `earth_day.webp` - NASA Blue Marble Tag-Textur
+- ✅ `earth_night.webp` - NASA Earth at Night  
+- ✅ `earth_normal.webp` - NASA Topographie Normal Map
+- ✅ `earth_bump.webp` - NASA Elevation Bump Map
 
-**Status:** Alle Texturen erfolgreich geladen und im Three.js System aktiv.
+**Performance:** 513 KB (WebP) vs. 1.249 KB (JPG) - 58.9% Größenreduktion
 
 ## Texture Loading Strategy
 
-Das Three.js System lädt Texturen mit automatischem Fallback:
+Das Three.js System (`/content/webentwicklung/particles/three-earth-system.js`) lädt Texturen mit automatischem Fallback:
 
 1. **High Performance (LOD 1):** Alle 4 Texturen für Shader-Material
 2. **Medium Performance (LOD 2):** Nur Day + Normal für Standard-Material  
 3. **Low Performance (LOD 3):** Nur Day-Textur
 4. **Fallback:** Prozedurales Material wenn keine Texturen verfügbar
 
-## Performance Monitoring
+**Timeout:** 2s pro Textur mit automatischem Fallback
 
-```javascript
-// Texture Loading wird überwacht:
-- Timeout: 2s pro Textur
-- Fallback: Automatisch zu prozeduralem Material
-- Logging: Detaillierte Load-Statistiken verfügbar
-```
+## Performance Features
+
+- ✅ WebP-Format mit JPEG-Fallback (Browser-Kompatibilität)
+- ✅ GPU-Optimierungen (`StaticDrawUsage`, `frustumCulled`)
+- ✅ LOD-basiertes Textur-Loading
+- ✅ Touch-Gesten (Pinch-to-Zoom, Drag-Rotation)
+- ✅ Smooth Inertia/Dampening (0.95)
+- ✅ Shooting Stars Animation
+
+Details siehe: [`OPTIMIZATIONS.md`](./OPTIMIZATIONS.md)
 
 ## Quellen
 
@@ -39,14 +43,6 @@ Das Three.js System lädt Texturen mit automatischem Fallback:
 ---
 
 *Texturen sind hochwertige NASA-Satellitenbilder für realistische Earth-Darstellung.*
-```
-
-### JPEG Fallbacks:
-```bash
-# Für ältere Browser
-convert earth_8k.jpg -resize 1024x512 -quality 85 earth_day.jpg
-convert earth_night_8k.jpg -resize 1024x512 -quality 80 earth_night.jpg
-```
 
 ### Basis Texture (für WebGL Fallback):
 ```bash

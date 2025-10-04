@@ -37,6 +37,12 @@ lighthouse-reports/  # Performance Testing
 test-results/
 coverage-reports/
 benchmark-results/
+reports/*.html
+reports/*.json
+reports/*.txt
+!reports/README.md
+!reports/.gitignore
+!reports/ANALYSIS-SUMMARY.md
 
 # Git temporäre Dateien
 *.orig

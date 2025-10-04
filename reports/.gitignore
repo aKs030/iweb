@@ -1,0 +1,14 @@
+# Performance Reports
+*.html
+*.json
+*.txt
+
+# Lighthouse
+.lighthouseci/
+lighthouse-*.json
+lighthouse-*.html
+lhci-*.json
+
+# Playwright/Puppeteer
+playwright-report/
+test-results/
