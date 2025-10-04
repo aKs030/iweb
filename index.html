@@ -40,8 +40,9 @@
   <meta name="web-vitals-extension" content="enabled">
   <link rel="preconnect" href="https://abdulkerimsesli.de">
   
-  <!-- Three.js Module Preload (Performance-Optimierung) -->
-  <link rel="modulepreload" href="/content/webentwicklung/lib/three/build/three.module.min.js" as="script" crossorigin>
+  <!-- Three.js Module Preload entfernt für bessere Mobile Performance -->
+  <!-- Wird nur bei Bedarf via Dynamic Import geladen (Code-Splitting) -->
+  <!-- <link rel="modulepreload" href="/content/webentwicklung/lib/three/build/three.module.min.js" as="script" crossorigin> -->
 
   <!-- Open Graph Meta-Tags -->
   <meta property="og:title" content="Abdul aus Berlin – Webentwicklung &amp; Fotografie Portfolio">
