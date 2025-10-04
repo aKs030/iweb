@@ -1,4 +1,4 @@
-/* ===== Three.js Earth System Styles v3.0 ===== */
+/* ===== Three.js Earth System Styles v4.0 ===== */
 
 /* Global Particle Background */
 .global-particle-background {
@@ -7,28 +7,14 @@
   z-index: -10;
   pointer-events: none;
   isolation: isolate;
-  contain: layout style paint;
+  contain: strict;
   overflow: hidden;
-  background: linear-gradient(
-    180deg,
-    #0f0f23 0%,
-    #1a1a2e 30%,
-    #16213e 60%,
-    #2c3e50 85%,
-    #34495e 100%
-  );
-  transition: background 0.8s ease; /* Smooth background transitions */
+  background: radial-gradient(circle at 50% 50%, #16213e 0%, #0f0f23 70%);
+  transition: background 0.8s ease-in-out;
 }
 
 .global-particle-background[data-section="about"] {
-  background: linear-gradient(
-    180deg,
-    #1a1a2e 0%,
-    #2a2a3e 30%,
-    #3a3a4e 60%,
-    #4a4a5e 85%,
-    #5a5a6e 100%
-  );
+  background: radial-gradient(circle at 50% 50%, #3a3a4e 0%, #1a1a2e 70%);
 }
 
 /* Three.js Container */
@@ -36,14 +22,14 @@
   position: fixed;
   inset: 0;
   z-index: -5;
-  pointer-events: auto; /* Allow mouse events for dragging */
+  pointer-events: auto;
   overflow: hidden;
-  contain: layout style paint;
+  contain: strict;
   isolation: isolate;
-  cursor: grab; /* NEW: Indicate interactivity */
+  cursor: grab;
+  transition: opacity 0.8s ease;
 }
 
-/* NEW: Style for when user is dragging the earth */
 .three-earth-container.is-dragging {
     cursor: grabbing;
 }
@@ -55,7 +41,6 @@
   object-fit: cover;
   transform: translateZ(0); /* Hardware acceleration */
   will-change: transform;
-  image-rendering: high-quality;
 }
 
 /* Loading & Error States */
@@ -65,84 +50,92 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 300px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   font-family: var(--font-inter);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  padding: 20px;
-  border-radius: 8px;
-  background: rgba(10, 20, 40, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 24px;
+  border-radius: 12px;
+  background: rgba(10, 20, 40, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 
 .three-earth-loading.hidden,
 .three-earth-error.hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.loading-spinner {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top: 3px solid rgba(135, 206, 235, 0.8);
-  border-radius: 50%;
-  animation: threeEarthSpin 1s linear infinite;
+/* NEW: Loading progress bar */
+.loading-progress-container {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 16px 0;
 }
 
-@keyframes threeEarthSpin {
-  to { transform: rotate(360deg); }
+.loading-progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #87ceeb;
+    border-radius: 4px;
+    transition: width 0.3s ease-out;
+}
+
+.loading-progress-text {
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .three-earth-container.error {
-  background: rgba(40, 20, 20, 0.8);
+  background: rgba(60, 20, 20, 0.5);
 }
 
 .three-earth-error {
-  background: rgba(40, 20, 20, 0.8);
+  background: rgba(60, 20, 20, 0.9);
 }
-
 
 /* Section-based Opacity Transitions */
-.three-earth-container {
-    transition: opacity 0.8s ease;
-}
 .three-earth-container[data-section="hero"] { opacity: 1; }
 .three-earth-container[data-section="features"] { opacity: 0.95; }
-.three-earth-container[data-section="about"] { opacity: 0.9; }
-
+.three-earth-container[data-section="about"] { opacity: 0.85; }
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  @keyframes threeEarthSpin { from { transform: rotate(0deg); } to { transform: rotate(0deg); } }
   .three-earth-container,
   .global-particle-background {
-    transition: none; /* Disable transitions */
+    transition: none;
   }
 }
 
-/* NEW: Performance Overlay (Debug) */
+/* Performance Overlay (Debug) */
 .three-earth-performance-overlay {
   position: absolute;
-  top: 10px;
+  bottom: 10px;
   left: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.75);
+  color: rgba(255, 255, 255, 0.85);
   padding: 8px 12px;
   border-radius: 6px;
   font-family: "Courier New", monospace;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 11px;
+  line-height: 1.5;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  z-index: 100; /* Ensure it's on top */
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-/* Show on hover or if permanently visible */
-.three-earth-container:hover .three-earth-performance-overlay,
-.three-earth-performance-overlay.visible {
+.three-earth-container:hover .three-earth-performance-overlay {
   opacity: 1;
 }
