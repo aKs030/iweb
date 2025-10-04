@@ -523,17 +523,21 @@ async function createEarthSystem() {
       uniform vec3 uOceanSpecularColor;
     ` + shader.fragmentShader;
 
-    // Fragment Shader: Füge Ozean-Reflexionen hinzu
+    // Fragment Shader: Füge Ozean-Reflexionen NACH normal_fragment_maps hinzu
+    // (dort ist 'normal' bereits berechnet)
     shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <color_fragment>",
+      "#include <normal_fragment_maps>",
       `
-      #include <color_fragment>
+      #include <normal_fragment_maps>
       
       // Ozean-Erkennung: Dunkle Pixel in Day-Textur sind Wasser
-      float oceanMask = step(diffuseColor.r + diffuseColor.g + diffuseColor.b, 0.4);
+      // Verwende diffuseColor aus vorangegangenem color_fragment
+      vec3 baseColor = diffuseColor.rgb;
+      float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.4);
       
       if (oceanMask > 0.5) {
         // Berechne Spekulare Reflexion (Phong-Modell)
+        // 'normal' ist jetzt verfügbar (aus normal_fragment_maps)
         vec3 sunDirection = normalize(uSunPosition);
         vec3 viewDirection = normalize(vViewPosition);
         vec3 reflectDirection = reflect(-sunDirection, normal);
@@ -541,7 +545,30 @@ async function createEarthSystem() {
         float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
         specular *= uOceanSpecularIntensity;
         
-        // Addiere Spekulare Highlights
+        // Speichere Specular für spätere Addition (nach roughness_fragment)
+        // Wir müssen diffuseColor später updaten, nicht hier
+      }
+      `
+    );
+    
+    // Füge Specular Addition NACH roughness_fragment hinzu
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <roughness_fragment>",
+      `
+      #include <roughness_fragment>
+      
+      // Ozean-Specular hinzufügen (wenn oceanMask aktiv)
+      vec3 baseColorCheck = diffuseColor.rgb;
+      float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.4);
+      
+      if (oceanMaskFinal > 0.5) {
+        vec3 sunDirection = normalize(uSunPosition);
+        vec3 viewDirection = normalize(vViewPosition);
+        vec3 reflectDirection = reflect(-sunDirection, normal);
+        
+        float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
+        specular *= uOceanSpecularIntensity;
+        
         diffuseColor.rgb += uOceanSpecularColor * specular;
       }
       `
