@@ -51,9 +51,11 @@ async function initializeFooter() {
     log.info("Footer erfolgreich initialisiert");
 
     // Fire footer:loaded Event für andere Module (z.B. footer-resizer)
-    document.dispatchEvent(new CustomEvent("footer:loaded", {
-      detail: { footerId: "site-footer" }
-    }));
+    document.dispatchEvent(
+      new CustomEvent("footer:loaded", {
+        detail: { footerId: "site-footer" },
+      })
+    );
 
     // Smooth Scrolling für interne Links im Footer (Event Delegation)
     const footer = getElementById("site-footer");

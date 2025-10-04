@@ -25,13 +25,15 @@ let lastSectionObserver = null;
  */
 function initializeFooterScrollHandler() {
   log.debug("Initialisiere Footer Scroll Handler");
-  
+
   const footer = getElementById("site-footer");
   if (footer) {
     setupLastSectionObserver();
     log.info("Footer Scroll Handler erfolgreich initialisiert");
   } else {
-    log.warn("Footer nicht gefunden - Scroll Handler konnte nicht initialisiert werden");
+    log.warn(
+      "Footer nicht gefunden - Scroll Handler konnte nicht initialisiert werden"
+    );
   }
 }
 
@@ -125,10 +127,14 @@ window.footerScrollAPI = {
 };
 
 // Warte auf footer:loaded Event für bessere Koordination
-document.addEventListener("footer:loaded", () => {
-  log.debug("Footer:loaded Event empfangen, starte Scroll Handler");
-  initializeFooterScrollHandler();
-}, { once: true });
+document.addEventListener(
+  "footer:loaded",
+  () => {
+    log.debug("Footer:loaded Event empfangen, starte Scroll Handler");
+    initializeFooterScrollHandler();
+  },
+  { once: true }
+);
 
 // Fallback: Falls Event bereits gefeuert wurde, prüfe DOM
 if (document.readyState !== "loading") {

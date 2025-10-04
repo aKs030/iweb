@@ -1,16 +1,16 @@
 /**
  * Footer Resizer - Adaptive Footer-Höhen-Verwaltung
- * 
+ *
  * Ziel: Footer nie höher als 60% (Desktop) / 70% (Mobile) des Bildschirms
  * Technik: Dynamische Viewport-Messung (inkl. iOS Safe-Area), CSS-Variablen, ResizeObserver/Events.
- * 
+ *
  * Features:
  * - Event-basierte Koordination mit load-footer.js
  * - Performance-optimiert (keine unnötigen getComputedStyle Calls)
  * - iOS Safari Adressleisten-Animationen-Support
  * - Mobile-optimierte Skalierung (70% max-height, min-scale 0.75)
  * - ResizeObserver Loop Prevention via requestAnimationFrame
- * 
+ *
  * @author Abdulkerim Sesli
  * @version 1.3.0
  */
@@ -59,17 +59,17 @@ function apply() {
     log.debug("Footer noch nicht geladen, überspringe apply()");
     return;
   }
-  
+
   const { usable } = measureViewport();
   // Dynamische 1vh-Variable: 1vh = 1% des aktuellen Viewports (Workaround für Mobile)
   setCSSVar("--vh", `${usable * 0.01}px`);
-  
+
   // Mobile-optimierte Footer-Höhe: Auf kleinen Screens mehr Platz (bis 70%)
   const isMobile = window.innerWidth <= 768;
   const maxFooterRatio = isMobile ? 0.7 : 0.6; // 70% auf Mobile, 60% auf Desktop
   const maxFooter = Math.round(usable * maxFooterRatio);
   setCSSVar("--footer-max-height", `${maxFooter}px`);
-  
+
   // Proportionale Inhalts-Skalierung basierend auf tatsächlicher Inhaltshöhe
   const content = document.querySelector(
     "#site-footer .footer-enhanced-content"
@@ -83,17 +83,19 @@ function apply() {
     // Benötigte Skalierung berechnen, um in maxFooter zu passen
     const base = Math.max(1, naturalHeight || 0);
     let scale = base > 0 ? Math.min(1, maxFooter / base) : computeScale();
-    
+
     // Mobile: Weniger aggressive Skalierung (minimum 0.75 statt 0.5)
     const minScale = isMobile ? 0.75 : 0.5;
     scale = Math.max(minScale, Number(scale.toFixed(3)));
-    
+
     setCSSVar("--footer-scale", String(scale));
     // Exakte tatsächliche Footer-Höhe nach Skalierung setzen
     const actual = Math.round(base * scale);
     setCSSVar("--footer-actual-height", `${actual}px`);
-    
-    log.debug(`Footer Scale: ${scale}, Mobile: ${isMobile}, MaxHeight: ${maxFooter}px, Actual: ${actual}px`);
+
+    log.debug(
+      `Footer Scale: ${scale}, Mobile: ${isMobile}, MaxHeight: ${maxFooter}px, Actual: ${actual}px`
+    );
   } else {
     // Fallback: leichte Breiten-basierte Skalierung
     setCSSVar("--footer-scale", String(computeScale()));
@@ -108,24 +110,24 @@ const onResize = throttle(() => {
 
 export function cleanup() {
   if (!STATE.inited) return;
-  
+
   log.debug("Footer Resizer Cleanup");
   window.removeEventListener("resize", onResize);
   window.removeEventListener("orientationchange", onResize);
-  
+
   if (window.visualViewport) {
     const vv = window.visualViewport;
     vv.removeEventListener("resize", onResize);
     vv.removeEventListener("scroll", onResize);
   }
-  
-  STATE.observers.forEach(obs => obs.disconnect());
+
+  STATE.observers.forEach((obs) => obs.disconnect());
   STATE.observers = [];
-  
+
   if (STATE.t1) clearTimeout(STATE.t1);
   if (STATE.t2) clearTimeout(STATE.t2);
   if (STATE.rafId) cancelAnimationFrame(STATE.rafId);
-  
+
   STATE.inited = false;
 }
 
@@ -137,10 +139,10 @@ export function initFooterResizer() {
 
   log.debug("Initialisiere Footer Resizer");
   STATE.inited = true;
-  
+
   // Initiale Berechnung
   apply();
-  
+
   // Viewport-Events registrieren
   window.addEventListener("resize", onResize, { passive: true });
   window.addEventListener("orientationchange", onResize, { passive: true });
@@ -163,7 +165,7 @@ export function initFooterResizer() {
       log.debug("ResizeObserver konnte nicht initialisiert werden:", err);
     }
   }
-  
+
   const footer = document.getElementById("site-footer");
   if (footer && "MutationObserver" in window) {
     try {
@@ -189,15 +191,19 @@ export function initFooterResizer() {
   if (document.fonts?.ready) {
     document.fonts.ready.then(() => setTimeout(apply, 30)).catch(() => {});
   }
-  
+
   log.info("Footer Resizer erfolgreich initialisiert");
 }
 
 // Warte auf Footer-loaded Event statt Auto-Init
-document.addEventListener("footer:loaded", () => {
-  log.debug("Footer:loaded Event empfangen, starte Resizer");
-  initFooterResizer();
-}, { once: true });
+document.addEventListener(
+  "footer:loaded",
+  () => {
+    log.debug("Footer:loaded Event empfangen, starte Resizer");
+    initFooterResizer();
+  },
+  { once: true }
+);
 
 // Fallback: Falls Event bereits gefeuert wurde, prüfe DOM
 if (document.readyState !== "loading") {

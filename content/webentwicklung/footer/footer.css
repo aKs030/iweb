@@ -68,7 +68,9 @@
 
   /* Typography Base */
   font-family: var(--dynamic-footer-font-family);
-  font-feature-settings: "kern" 1, "liga" 1;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
@@ -780,5 +782,3 @@ body.footer-expanded .typewriter-title--fixed {
 .footer-cards-mobile-container {
   display: contents; /* Standard: Inhalt wird normal in Grid eingefügt */
 }
-
-
