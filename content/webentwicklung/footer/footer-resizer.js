@@ -15,7 +15,7 @@
  * @version 1.3.0
  */
 
-import { createLogger, throttle, getElementById } from "../shared-utilities.js";
+import { createLogger, getElementById, throttle } from "../shared-utilities.js";
 
 const log = createLogger("footerResizer");
 
@@ -117,7 +117,9 @@ function apply() {
     let scale = base > 0 ? Math.min(1, maxFooter / base) : computeScale();
 
     // Mobile: Weniger aggressive Skalierung (minimum 0.75 statt 0.5)
-    const minScale = isMobile ? CONFIG.MIN_SCALE_MOBILE : CONFIG.MIN_SCALE_DESKTOP;
+    const minScale = isMobile
+      ? CONFIG.MIN_SCALE_MOBILE
+      : CONFIG.MIN_SCALE_DESKTOP;
     scale = Math.max(minScale, Number(scale.toFixed(3)));
 
     setCSSVar("--footer-scale", String(scale));
