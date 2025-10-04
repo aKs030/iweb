@@ -3,10 +3,11 @@
  *
  * High-Quality 3D Earth visualization featuring:
  * - Realistic PBR Earth textures with pulsing city lights
- * - Dynamic, separate cloud layer with distinct rotation
+ * - Dynamic, separate cloud layer with drift rotation
+ * - Day/Night cycle: Sunlight rotates with clouds, creating moving city lights
  * - Procedural atmospheric glow using an enhanced custom shader
  * - Procedural starfield with parallax and twinkling effects
- * - Interactive mouse controls with inertia for smooth rotation and zooming
+ * - Mouse wheel zoom control for detailed inspection
  * - Scroll-based camera animations and section-responsive scenes
  * - Integrated performance monitor (FPS, Memory) with dynamic resolution scaling
  * - Occasional shooting stars for added visual flair
@@ -15,7 +16,7 @@
  * Uses shared-particle-system for parallax synchronization and effects.
  *
  * @author Portfolio System
- * @version 4.0.0
+ * @version 4.1.0
  * @created 2025-10-03
  * @last-modified 2025-10-04
  */
@@ -42,21 +43,26 @@ const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
     SEGMENTS: 64, // Reduziert von 96 für bessere Performance
-    ROTATION_SPEED: 0.001, // Sehr langsam für detaillierte Betrachtung (~104 Minuten/Rotation)
     BUMP_SCALE: 0.015,
-    EMISSIVE_INTENSITY: 0.15, // Reduziert für weniger helle Nachtlichter
-    EMISSIVE_PULSE_SPEED: 0.2,
+    EMISSIVE_INTENSITY: 0.3, // Erhöht für hellere Stadtlichter
+    EMISSIVE_PULSE_SPEED: 0.5, // ~12.6s pro Pulsation
+    EMISSIVE_PULSE_AMPLITUDE: 0.1, // Pulsations-Stärke
   },
   CLOUDS: {
     ALTITUDE: 0.03,
-    ROTATION_SPEED: 0.0013, // Nur 30% schneller als Erde (subtile Drift)
-    OPACITY: 0.4, // Leicht erhöht für bessere Sichtbarkeit ohne Blending
+    ROTATION_SPEED: 0.0013, // Subtiler Drift (~80.5s pro Umdrehung)
+    OPACITY: 0.4,
   },
   ATMOSPHERE: {
     SCALE: 1.02,
     GLOW_COLOR: 0x6699ff,
     FRESNEL_POWER: 3.5,
     INTENSITY: 0.3,
+  },
+  SUN: {
+    RADIUS: 8, // Distanz der Sonne von der Erde
+    HEIGHT: 3, // Höhe der Sonne
+    INTENSITY: 2.0,
   },
   STARS: {
     COUNT: 2000,
@@ -100,24 +106,16 @@ let isMobileDevice = false;
 let performanceMonitor = null;
 let shootingStarManager = null;
 let THREE_INSTANCE = null;
+let directionalLight = null; // Sonne - rotiert mit Wolken
 
 // Camera and Animation States
 const cameraTarget = { x: 0, y: 0, z: 10 };
 const cameraPosition = { x: 0, y: 0, z: 10 };
 const cameraRotation = { x: 0, y: 0 };
 
-// Mouse Interaction State with Inertia
+// Mouse Interaction State - Nur Zoom aktiv
 const mouseState = {
-  isDragging: false,
-  previousMouseX: 0,
-  previousMouseY: 0,
-  targetRotationY: 0,
-  targetRotationX: 0,
-  rotationVelocityX: 0,
-  rotationVelocityY: 0,
-  zoom: 10,
-  autoRotation: true,
-  dampingFactor: 0.95, // For inertia effect
+  zoom: 10, // Nur Zoom via Mausrad
 };
 
 // ===== Three.js Earth System Manager =====
@@ -151,6 +149,7 @@ const ThreeEarthManager = (() => {
       cloudMesh = await createCloudLayer();
       // Wolken als eigenständiges Objekt in Scene für unabhängige Rotation
       cloudMesh.position.copy(earthMesh.position);
+      cloudMesh.scale.copy(earthMesh.scale); // Scale auch initial kopieren!
       scene.add(cloudMesh);
 
       atmosphereMesh = createAtmosphere();
@@ -208,6 +207,7 @@ const ThreeEarthManager = (() => {
       starField =
       cloudMesh =
       atmosphereMesh =
+      directionalLight =
         null;
     currentSection = "hero";
 
@@ -392,13 +392,13 @@ function setupStarParallax() {
 
 // ===== Lighting Setup =====
 function setupLighting() {
-  // Sonne-ähnliches Licht (gedämpft für realistischere Texturen)
-  const directionalLight = new THREE_INSTANCE.DirectionalLight(0xffffff, 2.0);
-  directionalLight.position.set(5, 3, 5);
+  // Sonne - rotiert mit Wolken für wandernde Tag/Nacht-Grenze
+  directionalLight = new THREE_INSTANCE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY);
+  directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
-  // Sanftes Umgebungslicht (Weltraum-Reflexion)
-  const ambientLight = new THREE_INSTANCE.AmbientLight(0x404040, 0.4);
+  // Sanftes Umgebungslicht (reduziert für sichtbare Stadtlichter)
+  const ambientLight = new THREE_INSTANCE.AmbientLight(0x404040, 0.2);
   scene.add(ambientLight);
 }
 
@@ -450,7 +450,15 @@ async function createEarthSystem() {
     CONFIG.EARTH.SEGMENTS
   );
   earthMesh = new THREE_INSTANCE.Mesh(earthGeometry, earthMaterial);
-  earthMesh.position.set(0, -4.5, 0);
+  
+  // Initiale Position und Scale für Hero-Section setzen
+  earthMesh.position.set(0, -6.0, 0);
+  earthMesh.scale.set(1.5, 1.5, 1.5);
+  
+  // Target-Werte für Transitions speichern
+  earthMesh.userData.targetPosition = { x: 0, y: -6.0, z: 0 };
+  earthMesh.userData.targetScale = 1.5;
+  
   scene.add(earthMesh);
 }
 
@@ -586,37 +594,24 @@ function updateEarthForSection(sectionName) {
     about: { pos: { x: 0, y: 0, z: -2 }, scale: 0.35 },
   };
   const config = configs[sectionName] || configs.hero;
-  if (config.pos) earthMesh.userData.targetPosition = config.pos;
+  
+  // Nur setzen wenn config.pos existiert (immer der Fall, aber defensive)
+  if (config.pos) {
+    earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
+      config.pos.x,
+      config.pos.y,
+      config.pos.z
+    );
+  }
+  
   earthMesh.userData.targetScale = config.scale;
+  
+  log.debug(`Section: ${sectionName}, Target Scale: ${config.scale}, Current Scale: ${earthMesh.scale.x.toFixed(2)}`);
 }
 
 // ===== User Controls & Interaction =====
 function setupUserControls(container) {
-  const onMouseDown = (e) => {
-    mouseState.isDragging = true;
-    mouseState.autoRotation = false;
-    mouseState.previousMouseX = e.clientX;
-    mouseState.previousMouseY = e.clientY;
-    container.classList.add("is-dragging");
-  };
-
-  const onMouseMove = (e) => {
-    if (!mouseState.isDragging) return;
-    const deltaX = e.clientX - mouseState.previousMouseX;
-    const deltaY = e.clientY - mouseState.previousMouseY;
-
-    mouseState.rotationVelocityY = deltaX * 0.0001;
-    mouseState.rotationVelocityX = deltaY * 0.0001;
-
-    mouseState.previousMouseX = e.clientX;
-    mouseState.previousMouseY = e.clientY;
-  };
-
-  const onMouseUp = () => {
-    mouseState.isDragging = false;
-    container.classList.remove("is-dragging");
-  };
-
+  // Nur Zoom via Mausrad - Drag-Rotation entfernt
   const onWheel = (e) => {
     mouseState.zoom -= e.deltaY * 0.01;
     mouseState.zoom = Math.max(
@@ -625,17 +620,12 @@ function setupUserControls(container) {
     );
   };
 
-  container.addEventListener("mousedown", onMouseDown);
-  container.addEventListener("mousemove", onMouseMove);
-  window.addEventListener("mouseup", onMouseUp);
+  // Nur Wheel-Event - Drag-Events entfernt
   container.addEventListener("wheel", onWheel, { passive: true });
 
   sharedCleanupManager.addCleanupFunction(
     "three-earth",
     () => {
-      container.removeEventListener("mousedown", onMouseDown);
-      container.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
       container.removeEventListener("wheel", onWheel);
     },
     "user controls cleanup"
@@ -651,47 +641,28 @@ function startAnimationLoop() {
     const elapsedTime = clock.getElapsedTime();
     const lerpFactor = CONFIG.CAMERA.LERP_FACTOR;
 
-    // Auto-rotation and inertia
-    if (mouseState.autoRotation && !mouseState.isDragging) {
-      mouseState.targetRotationY += CONFIG.EARTH.ROTATION_SPEED;
-    }
-
-    // Apply inertia
-    if (!mouseState.isDragging) {
-      mouseState.targetRotationY += mouseState.rotationVelocityY;
-      mouseState.targetRotationX += mouseState.rotationVelocityX;
-      mouseState.rotationVelocityY *= mouseState.dampingFactor;
-      mouseState.rotationVelocityX *= mouseState.dampingFactor;
-    } else {
-      mouseState.targetRotationY += mouseState.rotationVelocityY * 100; // Multiply to feel responsive
-      mouseState.targetRotationX += mouseState.rotationVelocityX * 100;
-      mouseState.rotationVelocityY = 0; // Reset velocity while dragging
-      mouseState.rotationVelocityX = 0;
-    }
-
-    // Clamp vertical rotation
-    mouseState.targetRotationX = Math.max(
-      -Math.PI / 2,
-      Math.min(Math.PI / 2, mouseState.targetRotationX)
-    );
-
+    // Erde bleibt statisch - keine Rotation
+    
+    // Stadtlichter pulsieren (12.6s Periode, 0.2-0.4 Intensity Range)
     if (earthMesh) {
-      earthMesh.rotation.y +=
-        (mouseState.targetRotationY - earthMesh.rotation.y) * lerpFactor;
-      earthMesh.rotation.x +=
-        (mouseState.targetRotationX - earthMesh.rotation.x) * lerpFactor;
       earthMesh.material.emissiveIntensity =
         CONFIG.EARTH.EMISSIVE_INTENSITY +
-        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * 0.05;
+        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
     }
 
-    // Wolken rotieren eigenständig (nicht als Child, daher X/Y separat)
+    // Wolken driften (80.5s pro Umdrehung)
     if (cloudMesh && cloudMesh.rotation) {
-      // Inkrementelle Rotation (nicht elapsedTime!)
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
-      // X-Rotation von Erde übernehmen für Mouse-Interaktion
-      cloudMesh.rotation.x +=
-        (mouseState.targetRotationX - cloudMesh.rotation.x) * lerpFactor;
+    }
+    
+    // Sonne kreist mit Wolken → Tag/Nacht-Grenze wandert
+    if (directionalLight && cloudMesh) {
+      const angle = cloudMesh.rotation.y;
+      directionalLight.position.set(
+        Math.cos(angle) * CONFIG.SUN.RADIUS,
+        CONFIG.SUN.HEIGHT,
+        Math.sin(angle) * CONFIG.SUN.RADIUS
+      );
     }
 
     if (starField) {
