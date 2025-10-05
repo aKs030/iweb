@@ -4,18 +4,27 @@
  * High-Quality 3D Earth visualization featuring:
  * - Realistic PBR Earth textures with pulsing city lights
  * - Dynamic, separate cloud layer with drift rotation
- * - Day/Night cycle: Automatic or manual sunlight rotation with synchronized city lights
+ * - Day/Night Toggle System: Section-based mode switching with camera orbit effects
  * - Multi-Layer Atmosphere with Rayleigh & Mie Scattering (physically-based)
  * - Ocean Specular Reflections based on sun position
- * - Smooth camera flight animations to preset positions
+ * - Cinematic camera flight animations with arc movement and easing
  * - Meteor shower events with configurable frequency and trajectories
  * - Procedural starfield with parallax and twinkling effects
  * - Mouse wheel zoom control for detailed inspection
  * - Scroll-based camera animations and section-responsive scenes
- * - Integrated performance monitor (FPS, Memory) with dynamic resolution scaling
+ * - Integrated performance monitor (FPS, Memory) with adaptive quality scaling
  * - Texture loading manager with a progress bar for better UX
  *
- * NEW in v5.0.0:
+ * NEW in v6.0.0 (2025-10-05):
+ * - Day/Night Toggle System: about section toggles between day/night on each visit
+ * - Orbital Camera Flight: Camera flies around Earth during day↔night transitions
+ * - Arc Movement: Camera follows cinematic arc path during orbital flights
+ * - Easing Functions: easeOutCubic for professional-looking camera transitions
+ * - Adaptive Lighting: Complete day (ambient 1.5) vs. night (ambient 0.3, sun 0.4)
+ * - Performance Optimizations: Conditional cloud sync, throttled pulsation (50% reduction)
+ * - Enhanced City Lights: 4.0x emissive intensity, warmer color (0xffcc66)
+ *
+ * v5.0.0 Features:
  * - Multi-Layer Atmospheric Scattering (Rayleigh + Mie)
  * - Ocean Specular Highlights
  * - Camera Flight System (flyToLocation, flyToPreset)
@@ -26,9 +35,9 @@
  * Uses shared-particle-system for parallax synchronization and effects.
  *
  * @author Portfolio System
- * @version 5.0.0
+ * @version 6.0.0
  * @created 2025-10-03
- * @last-modified 2025-10-04
+ * @last-modified 2025-10-05
  */
 import {
   createLogger,
@@ -90,9 +99,15 @@ const CONFIG = {
     ROTATION_SPEED: 0.0005, // Umdrehungen pro Frame (~33min für vollen Zyklus bei 60fps)
   },
   DAY_NIGHT_CYCLE: {
-    ENABLED: false, // Toggle für automatischen Zyklus
-    SPEED_MULTIPLIER: 10, // Beschleunigungsfaktor (1 = Echtzeit, 10 = 10x schneller)
+    ENABLED: false, // Automatischer Zyklus deaktiviert - verwende Section-basiertes Toggle-System
+    SPEED_MULTIPLIER: 10, // Beschleunigungsfaktor (falls ENABLED = true)
     SYNC_CITY_LIGHTS: true, // Stadtlichter mit Nacht-Seite synchronisieren
+    // Section-basierte Tag/Nacht-Modi (FINAL - nur aktive Sections)
+    SECTION_MODES: {
+      hero: { mode: "day", sunAngle: 0 },           // Tag: Sonne vorne (0°)
+      features: { mode: "day", sunAngle: 0 },       // Tag: Sonne vorne (0°)
+      about: { mode: "toggle", sunAngle: Math.PI }, // Toggle: Wechsel bei jedem Besuch
+    },
   },
   STARS: {
     COUNT: 3000, // Erhöht von 2000 → dichteres Sternenfeld
@@ -105,12 +120,23 @@ const CONFIG = {
     ZOOM_MIN: 4,
     ZOOM_MAX: 30,
     LERP_FACTOR: 0.05, // Linear interpolation factor for smooth camera movement
-    // Preset-Positionen für verschiedene Sections
+    // Preset-Positionen für Section-basierte Kamera-Flug-Effekte (FINAL)
     PRESETS: {
-      hero: { x: 0, y: 0, z: 10, lookAt: { x: 0, y: -6, z: 0 } },
-      portfolio: { x: 5, y: 2, z: 8, lookAt: { x: 0, y: -4, z: 0 } },
-      about: { x: -4, y: 3, z: 9, lookAt: { x: 0, y: -5, z: 0 } },
-      contact: { x: 0, y: -3, z: 12, lookAt: { x: 0, y: -6, z: 0 } },
+      hero: { 
+        x: 0, y: 0, z: 10, 
+        lookAt: { x: 0, y: -6, z: 0 },
+        earthRotation: 0, // Tag-Seite vorne (0°)
+      },
+      features: { 
+        x: 1, y: -1, z: 8, 
+        lookAt: { x: 0, y: -4, z: 0 },
+        earthRotation: 0, // Tag-Seite vorne (0°)
+      },
+      about: { 
+        x: 0, y: 0, z: 9, 
+        lookAt: { x: 0, y: -5, z: 0 },
+        earthRotation: Math.PI, // Nacht-Seite vorne (180°) - bei Toggle
+      },
     },
     TRANSITION_DURATION: 2.0, // Sekunden für Kamera-Flüge
   },
@@ -191,8 +217,15 @@ let performanceMonitor = null;
 let shootingStarManager = null;
 let THREE_INSTANCE = null;
 let directionalLight = null; // Sonne - rotiert mit Wolken
+let ambientLight = null; // Umgebungslicht - wird bei Nacht ausgeschaltet
 let currentQualityLevel = "HIGH"; // HIGH, MEDIUM, LOW
 let rayleighAtmosphereMesh = null; // Separate Rayleigh-Schicht für Toggle
+let dayMaterial = null; // Day-Only Material (global)
+let nightMaterial = null; // Night-Only Material (global)
+let lastAboutMode = null; // Letzter Modus bei "about" (für Toggle)
+let cameraOrbitAngle = 0; // Horizontale Rotation um Erde (0° = Tag, 180° = Nacht)
+let targetOrbitAngle = 0; // Target für smooth Transition
+let frameCount = 0; // Frame-Counter für Performance-Optimierungen
 
 // Camera and Animation States
 const cameraTarget = { x: 0, y: 0, z: 10 };
@@ -220,7 +253,7 @@ const ThreeEarthManager = (() => {
     }
 
     try {
-      log.info("Initializing Three.js Earth system v4.0.0");
+      log.info("Initializing Three.js Earth system v6.0.0");
       registerParticleSystem("three-earth", { type: "three-earth" });
 
       THREE_INSTANCE = await loadThreeJS();
@@ -490,8 +523,8 @@ function setupLighting() {
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
-  // Sanftes Umgebungslicht (reduziert für sichtbare Stadtlichter)
-  const ambientLight = new THREE_INSTANCE.AmbientLight(0x404040, 0.2);
+  // Umgebungslicht: Initial für Tag-Modus (1.5 = komplette Ausleuchtung)
+  ambientLight = new THREE_INSTANCE.AmbientLight(0x404040, 1.5);
   scene.add(ambientLight);
 }
 
@@ -524,103 +557,122 @@ async function createEarthSystem() {
     if (tex) tex.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
   });
 
-  const earthMaterial = new THREE_INSTANCE.MeshStandardMaterial({
+  // ===== ZWEI SEPARATE MATERIALS: Day-Only und Night-Only =====
+  
+  // DAY MATERIAL: Nur Day-Textur, keine Emissive (City Lights)
+  dayMaterial = new THREE_INSTANCE.MeshStandardMaterial({
     map: dayTexture,
     normalMap: normalTexture,
     normalScale: new THREE_INSTANCE.Vector2(1.0, 1.0),
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
-    roughness: 0.7, // Reduziert für bessere Licht-Absorption
+    roughness: 0.7,
     metalness: 0.0,
-    emissive: 0xffaa44, // Wärmere Farbe für Stadtlichter
-    emissiveMap: nightTexture,
-    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY,
+    emissive: 0x000000, // Kein Emissive bei Tag
+    emissiveIntensity: 0,
   });
 
-  // Ozean-Reflexionen via onBeforeCompile Shader-Injection
-  earthMaterial.onBeforeCompile = (shader) => {
-    // Uniforms für Ozean-Highlights hinzufügen
-    shader.uniforms.uSunPosition = {
-      value: new THREE_INSTANCE.Vector3(
-        CONFIG.SUN.RADIUS,
-        CONFIG.SUN.HEIGHT,
-        0
-      ),
+  // NIGHT MATERIAL: Night-Textur als Map + als Emissive für City Lights
+  nightMaterial = new THREE_INSTANCE.MeshStandardMaterial({
+    map: dayTexture, // Basis-Textur bleibt Day (für Geo-Details)
+    normalMap: normalTexture,
+    normalScale: new THREE_INSTANCE.Vector2(1.0, 1.0),
+    bumpMap: bumpTexture,
+    bumpScale: CONFIG.EARTH.BUMP_SCALE,
+    roughness: 0.7,
+    metalness: 0.0,
+    emissive: 0xffcc66, // Hellere, wärmere City Lights (war 0xffaa44)
+    emissiveMap: nightTexture,
+    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0, // Viel heller: 2.5x → 4.0x
+  });
+
+  // AKTUELLES MATERIAL: Startet mit Day
+  const earthMaterial = dayMaterial;
+
+  // ===== Ocean Shader Injection Function (für beide Materials) =====
+  const applyOceanShader = (material) => {
+    material.onBeforeCompile = (shader) => {
+      // Uniforms für Ozean-Highlights hinzufügen
+      shader.uniforms.uSunPosition = {
+        value: new THREE_INSTANCE.Vector3(
+          CONFIG.SUN.RADIUS,
+          CONFIG.SUN.HEIGHT,
+          0
+        ),
+      };
+      shader.uniforms.uOceanShininess = { value: CONFIG.OCEAN.SHININESS };
+      shader.uniforms.uOceanSpecularIntensity = {
+        value: CONFIG.OCEAN.SPECULAR_INTENSITY,
+      };
+      shader.uniforms.uOceanSpecularColor = {
+        value: new THREE_INSTANCE.Color(CONFIG.OCEAN.SPECULAR_COLOR),
+      };
+
+      // WICHTIG: MeshStandardMaterial hat BEREITS vViewPosition varying!
+      // Wir müssen es NICHT neu deklarieren, nur nutzen.
+
+      // Fragment Shader: Füge nur Uniforms am Anfang hinzu (KEIN varying!)
+      shader.fragmentShader =
+        `
+        uniform vec3 uSunPosition;
+        uniform float uOceanShininess;
+        uniform float uOceanSpecularIntensity;
+        uniform vec3 uOceanSpecularColor;
+      ` + shader.fragmentShader;
+
+      // Fragment Shader: Füge Ozean-Reflexionen NACH normal_fragment_maps hinzu
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <normal_fragment_maps>",
+        `
+        #include <normal_fragment_maps>
+        
+        // Ozean-Erkennung: Dunkle Pixel in Day-Textur sind Wasser
+        vec3 baseColor = diffuseColor.rgb;
+        float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.4);
+        
+        if (oceanMask > 0.5) {
+          // Berechne Spekulare Reflexion (Phong-Modell)
+          vec3 sunDirection = normalize(uSunPosition);
+          vec3 viewDirection = normalize(vViewPosition);
+          vec3 reflectDirection = reflect(-sunDirection, normal);
+          
+          float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
+          specular *= uOceanSpecularIntensity;
+        }
+        `
+      );
+
+      // Füge Specular Addition NACH roughness_fragment hinzu
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <roughness_fragment>",
+        `
+        #include <roughness_fragment>
+        
+        // Ozean-Specular hinzufügen (wenn oceanMask aktiv)
+        vec3 baseColorCheck = diffuseColor.rgb;
+        float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.4);
+        
+        if (oceanMaskFinal > 0.5) {
+          vec3 sunDirection = normalize(uSunPosition);
+          vec3 viewDirection = normalize(vViewPosition);
+          vec3 reflectDirection = reflect(-sunDirection, normal);
+          
+          float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
+          specular *= uOceanSpecularIntensity;
+          
+          diffuseColor.rgb += uOceanSpecularColor * specular;
+        }
+        `
+      );
+
+      // Speichere Shader-Referenz für Uniform-Updates
+      material.userData.oceanShader = shader;
     };
-    shader.uniforms.uOceanShininess = { value: CONFIG.OCEAN.SHININESS };
-    shader.uniforms.uOceanSpecularIntensity = {
-      value: CONFIG.OCEAN.SPECULAR_INTENSITY,
-    };
-    shader.uniforms.uOceanSpecularColor = {
-      value: new THREE_INSTANCE.Color(CONFIG.OCEAN.SPECULAR_COLOR),
-    };
-
-    // WICHTIG: MeshStandardMaterial hat BEREITS vViewPosition varying!
-    // Wir müssen es NICHT neu deklarieren, nur nutzen.
-
-    // Fragment Shader: Füge nur Uniforms am Anfang hinzu (KEIN varying!)
-    shader.fragmentShader =
-      `
-      uniform vec3 uSunPosition;
-      uniform float uOceanShininess;
-      uniform float uOceanSpecularIntensity;
-      uniform vec3 uOceanSpecularColor;
-    ` + shader.fragmentShader;
-
-    // Fragment Shader: Füge Ozean-Reflexionen NACH normal_fragment_maps hinzu
-    // (dort ist 'normal' bereits berechnet)
-    shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <normal_fragment_maps>",
-      `
-      #include <normal_fragment_maps>
-      
-      // Ozean-Erkennung: Dunkle Pixel in Day-Textur sind Wasser
-      // Verwende diffuseColor aus vorangegangenem color_fragment
-      vec3 baseColor = diffuseColor.rgb;
-      float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.4);
-      
-      if (oceanMask > 0.5) {
-        // Berechne Spekulare Reflexion (Phong-Modell)
-        // 'normal' ist jetzt verfügbar (aus normal_fragment_maps)
-        vec3 sunDirection = normalize(uSunPosition);
-        vec3 viewDirection = normalize(vViewPosition);
-        vec3 reflectDirection = reflect(-sunDirection, normal);
-        
-        float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
-        specular *= uOceanSpecularIntensity;
-        
-        // Speichere Specular für spätere Addition (nach roughness_fragment)
-        // Wir müssen diffuseColor später updaten, nicht hier
-      }
-      `
-    );
-
-    // Füge Specular Addition NACH roughness_fragment hinzu
-    shader.fragmentShader = shader.fragmentShader.replace(
-      "#include <roughness_fragment>",
-      `
-      #include <roughness_fragment>
-      
-      // Ozean-Specular hinzufügen (wenn oceanMask aktiv)
-      vec3 baseColorCheck = diffuseColor.rgb;
-      float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.4);
-      
-      if (oceanMaskFinal > 0.5) {
-        vec3 sunDirection = normalize(uSunPosition);
-        vec3 viewDirection = normalize(vViewPosition);
-        vec3 reflectDirection = reflect(-sunDirection, normal);
-        
-        float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
-        specular *= uOceanSpecularIntensity;
-        
-        diffuseColor.rgb += uOceanSpecularColor * specular;
-      }
-      `
-    );
-
-    // Speichere Shader-Referenz für Uniform-Updates
-    earthMesh.userData.oceanShader = shader;
   };
+
+  // Wende Ocean Shader auf BEIDE Materials an
+  applyOceanShader(dayMaterial);
+  applyOceanShader(nightMaterial);
 
   const earthGeometry = new THREE_INSTANCE.SphereGeometry(
     CONFIG.EARTH.RADIUS,
@@ -629,14 +681,20 @@ async function createEarthSystem() {
   );
   earthMesh = new THREE_INSTANCE.Mesh(earthGeometry, earthMaterial);
 
+  // Speichere aktuellen Mode in userData
+  earthMesh.userData.currentMode = "day"; // Initial: Tag-Modus
+
   // Initiale Position und Scale für Hero-Section setzen
   earthMesh.position.set(0, -6.0, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);
+  earthMesh.rotation.y = 0; // Initiale Rotation: Tag-Seite vorne
 
   // Target-Werte für Transitions speichern
   earthMesh.userData.targetPosition = { x: 0, y: -6.0, z: 0 };
   earthMesh.userData.targetScale = 1.5;
+  earthMesh.userData.targetRotation = 0; // Target Y-Rotation für schnelle Drehung
   earthMesh.userData.emissivePulseEnabled = true; // Performance Toggle für City Lights Pulsation
+  earthMesh.userData.baseEmissiveIntensity = 0; // Tag: Keine City Lights
 
   scene.add(earthMesh);
 }
@@ -953,7 +1011,7 @@ function flyToPreset(presetName) {
 
 // Fliege zu Lat/Lon Koordinaten (z.B. für Locations)
 function flyToLocation(lat, lon, zoom = 8, duration = 2.0) {
-  // Konvertiere Lat/Lon zu Kamera-Position
+  // Konvertiere Lat/Lon zu Kamera-Position (sphärische Koordinaten)
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lon + 180) * (Math.PI / 180);
 
@@ -961,11 +1019,11 @@ function flyToLocation(lat, lon, zoom = 8, duration = 2.0) {
   const y = zoom * Math.cos(phi);
   const z = zoom * Math.sin(phi) * Math.sin(theta);
 
-  // Erstelle temporäres Preset
+  // Erstelle temporäres Preset mit korrekten sphärischen Koordinaten
   const tempPreset = {
     x,
     y,
-    z: zoom,
+    z, // Verwende berechnetes z (nicht zoom!)
     lookAt: { x: 0, y: 0, z: 0 },
   };
 
@@ -1014,14 +1072,15 @@ function setupSectionDetection() {
 
 function updateEarthForSection(sectionName) {
   if (!earthMesh) return;
+  
   const configs = {
-    hero: { pos: { x: 0, y: -6.0, z: 0 }, scale: 1.5 },
-    features: { pos: { x: 1, y: -1, z: -0.5 }, scale: 1.0 },
-    about: { pos: { x: 0, y: 0, z: -2 }, scale: 0.35 },
+    hero: { pos: { x: 0, y: -6.0, z: 0 }, scale: 1.5, mode: "day", rotation: 0 },
+    features: { pos: { x: 1, y: -1, z: -0.5 }, scale: 1.0, mode: "day", rotation: 0 },
+    about: { pos: { x: 0, y: 0, z: -2 }, scale: 0.35, mode: "toggle", rotation: Math.PI * 2 },
   };
   const config = configs[sectionName] || configs.hero;
 
-  // Nur setzen wenn config.pos existiert (immer der Fall, aber defensive)
+  // Position Target
   if (config.pos) {
     earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
       config.pos.x,
@@ -1030,10 +1089,101 @@ function updateEarthForSection(sectionName) {
     );
   }
 
+  // Scale Target
   earthMesh.userData.targetScale = config.scale;
+  
+  // Rotation Target (schnelle Drehung für dramatischen Effekt)
+  earthMesh.userData.targetRotation = config.rotation;
+  
+  // SPECIAL: About Section Toggle-System
+  let targetMode = config.mode;
+  
+  if (sectionName === "about" && config.mode === "toggle") {
+    // Toggle-Logik: Wechsel zwischen Tag und Nacht bei jedem Besuch
+    if (lastAboutMode === null) {
+      // Erster Besuch: Wechsel zu Nacht (da wir von hero mit Tag kommen)
+      targetMode = "night";
+    } else {
+      // Jeder weitere Besuch: Toggle
+      targetMode = lastAboutMode === "day" ? "night" : "day";
+    }
+    
+    // Speichere für nächsten Toggle
+    lastAboutMode = targetMode;
+    
+    log.info(`🔄 About section toggle: ${targetMode.toUpperCase()} mode`);
+  } else {
+    // Andere Sections (hero, features): BEHALTE aktuellen Mode
+    // Ignoriere config.mode - Mode wird nur bei about geändert
+    targetMode = earthMesh.userData.currentMode;
+    log.debug(`Section ${sectionName}: Keeping current mode (${targetMode.toUpperCase()})`);
+  }
+  
+  // MATERIAL SWAP: Tag <-> Nacht (oder beibehalten wenn nicht about)
+  if (earthMesh.userData.currentMode !== targetMode) {
+    // Nutze globale Material-Variablen
+    const newMaterial = targetMode === "day" ? dayMaterial : nightMaterial;
+    
+    if (!newMaterial) {
+      log.error(`Material for mode '${targetMode}' not found!`);
+      return;
+    }
+    
+    earthMesh.material = newMaterial;
+    earthMesh.material.needsUpdate = true; // Force Material Update
+    earthMesh.userData.currentMode = targetMode;
+    
+    // 🎬 KAMERA-EFFEKT: Fliege zur entsprechenden Seite der Erde
+    if (targetMode === "day") {
+      targetOrbitAngle = 0; // Tag: Vorderseite (0°)
+      // Erde dreht sich zurück zur Tag-Position
+      earthMesh.userData.targetRotation = 0;
+      log.info(`✅ Material switched to: DAY mode → Camera + Earth rotating to sunlit side`);
+    } else {
+      targetOrbitAngle = Math.PI; // Nacht: Rückseite (180°)
+      // Erde dreht sich zur Nacht-Position (180° zusätzlich)
+      earthMesh.userData.targetRotation = earthMesh.rotation.y + Math.PI;
+      log.info(`✅ Material switched to: NIGHT mode → Camera + Earth rotating to dark side`);
+    }
+  } else {
+    log.debug(`Material remains: ${targetMode.toUpperCase()} mode (no change)`);
+  }
+  
+  // Beleuchtung basierend auf Mode: Tag = komplett hell, Nacht = komplett dunkel
+  if (directionalLight && ambientLight) {
+    const currentMode = earthMesh.userData.currentMode;
+    
+    if (currentMode === "day") {
+      // TAG: Sehr starkes Umgebungslicht für KOMPLETTE Ausleuchtung (keine dunkle Seite)
+      directionalLight.intensity = CONFIG.SUN.INTENSITY;
+      ambientLight.intensity = 1.5; // MASSIV erhöht: 0.2 → 1.5 für komplette Ausleuchtung
+      directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
+      
+      // Update Ocean Shader
+      if (earthMesh.material.userData?.oceanShader) {
+        earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
+          CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0
+        );
+      }
+    } else {
+      // NACHT: Reduzierte Beleuchtung für Sichtbarkeit, Stadtlichter im Fokus
+      directionalLight.intensity = 0.4; // Leichtes Mondlicht für Kontur (war 0)
+      ambientLight.intensity = 0.3; // Mehr Umgebungslicht für Details (war 0.05)
+      directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
+      
+      // Ocean Shader mit reduzierter Intensität
+      if (earthMesh.material.userData?.oceanShader) {
+        earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
+          CONFIG.SUN.RADIUS * 0.3, CONFIG.SUN.HEIGHT, 0
+        );
+      }
+    }
+    
+    log.debug(`Lights ${currentMode === "day" ? "ON" : "OFF"} (sun: ${directionalLight.intensity}, ambient: ${ambientLight.intensity})`);
+  }
 
   log.debug(
-    `Section: ${sectionName}, Target Scale: ${config.scale}, Current Scale: ${earthMesh.scale.x.toFixed(2)}`
+    `Section: ${sectionName}, Mode: ${earthMesh.userData.currentMode}, Scale: ${config.scale}, Rotation: ${(config.rotation * 180 / Math.PI).toFixed(0)}°`
   );
 }
 
@@ -1066,30 +1216,33 @@ function startAnimationLoop() {
 
   function animate() {
     animationFrameId = requestAnimationFrame(animate);
+    frameCount++; // Frame-Counter für Throttling
     const elapsedTime = clock.getElapsedTime();
     const lerpFactor = CONFIG.CAMERA.LERP_FACTOR;
 
-    // Erde bleibt statisch - keine Rotation
+    // Erde rotiert nicht automatisch - nur via Section-Transition (updateEarthForSection)
+    // Die Y-Rotation wird in updateObjectTransforms() animiert
 
-    // Wolken driften (80.5s pro Umdrehung)
+    // Wolken driften unabhängig (separate Y-Rotation)
     if (cloudMesh && cloudMesh.rotation) {
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
     }
 
-    // Tag/Nacht-Zyklus: Sonne rotiert automatisch oder mit Wolken
+    // Tag/Nacht-Zyklus: Section-basiert ODER automatisch
     if (directionalLight) {
       let sunAngle;
 
       if (CONFIG.DAY_NIGHT_CYCLE.ENABLED) {
-        // Automatischer Zyklus mit beschleunigter Zeit
+        // Automatischer Zyklus mit beschleunigter Zeit (wenn aktiviert)
         const cycleSpeed =
           CONFIG.SUN.ROTATION_SPEED * CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER;
         sunAngle = elapsedTime * cycleSpeed;
-      } else if (cloudMesh) {
-        // Sonne kreist mit Wolken → Tag/Nacht-Grenze wandert
-        sunAngle = cloudMesh.rotation.y;
       } else {
-        sunAngle = 0;
+        // Section-basiert: Sonne folgt currentSection Mode
+        // (wird in updateEarthForSection() gesetzt, hier nur Update für Shader)
+        sunAngle = directionalLight.position.x !== 0 
+          ? Math.atan2(directionalLight.position.z, directionalLight.position.x)
+          : 0;
       }
 
       const sunX = Math.cos(sunAngle) * CONFIG.SUN.RADIUS;
@@ -1116,38 +1269,31 @@ function startAnimationLoop() {
         }
       }
 
-      // Update Ozean-Shader mit neuer Sonnen-Position
-      if (earthMesh?.userData?.oceanShader) {
-        earthMesh.userData.oceanShader.uniforms.uSunPosition.value.set(
+      // Update Ozean-Shader mit neuer Sonnen-Position (nur wenn automatischer Zyklus)
+      if (CONFIG.DAY_NIGHT_CYCLE.ENABLED && earthMesh?.material?.userData?.oceanShader) {
+        earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
           sunX,
           CONFIG.SUN.HEIGHT,
           sunZ
         );
       }
 
-      // Stadtlichter-Intensität mit Tag/Nacht synchronisieren (optional)
-      if (CONFIG.DAY_NIGHT_CYCLE.SYNC_CITY_LIGHTS && earthMesh) {
-        // Berechne Nacht-Seite basierend auf Sonnenwinkel
-        const nightIntensity = Math.max(0, -Math.cos(sunAngle));
-
-        // Nur Pulsation wenn enabled (Performance Toggle)
-        const pulseAmount = earthMesh.userData.emissivePulseEnabled
-          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-            CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
-          : 0;
-
-        earthMesh.material.emissiveIntensity =
-          CONFIG.EARTH.EMISSIVE_INTENSITY * (0.5 + nightIntensity * 0.5) +
-          pulseAmount;
-      } else if (earthMesh) {
-        // Standard Pulsation ohne Zyklus-Sync
-        const pulseAmount = earthMesh.userData.emissivePulseEnabled
-          ? Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-            CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
-          : 0;
-
-        earthMesh.material.emissiveIntensity =
-          CONFIG.EARTH.EMISSIVE_INTENSITY + pulseAmount;
+      // Stadtlichter-Pulsation: Nur bei Night-Material (Tag-Material hat keine Emissive)
+      // OPTIMIERUNG: Update nur jeden 2. Frame für bessere Performance
+      if (
+        earthMesh && 
+        earthMesh.userData.emissivePulseEnabled && 
+        earthMesh.userData.currentMode === "night" &&
+        earthMesh.material?.emissiveIntensity !== undefined &&
+        frameCount % 2 === 0 // Throttle auf jeden 2. Frame
+      ) {
+        const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0; // Night Material Basis (erhöht von 2.5x)
+        const pulseAmount =
+          Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
+          CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2; // Stärkere Pulsation bei Nacht
+        
+        // Pulsation auf Basis-Intensität anwenden
+        earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
       }
     }
 
@@ -1165,25 +1311,51 @@ function startAnimationLoop() {
   }
 
   function updateCameraPosition(lerpFactor) {
+    // Optimierte orbital rotation mit Easing (Tag/Nacht Übergang)
+    const angleDiff = targetOrbitAngle - cameraOrbitAngle;
+    
+    // Easing-Funktion: Schnell starten, sanft enden (easeOutCubic)
+    const rawProgress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
+    const easedProgress = 1 - Math.pow(1 - rawProgress, 3);
+    const easingFactor = 0.05 + (easedProgress * 0.08); // 5% bis 13% je nach Progress
+    
+    cameraOrbitAngle += angleDiff * easingFactor;
+    
+    // Basis-Zoom aus mouseState
     cameraTarget.z = mouseState.zoom;
-    cameraPosition.x += (cameraTarget.x - cameraPosition.x) * lerpFactor;
-    cameraPosition.y += (cameraTarget.y - cameraPosition.y) * lerpFactor;
-    cameraPosition.z += (cameraTarget.z - cameraPosition.z) * lerpFactor;
+    
+    // Berechne Kamera-Position auf Orbit um die Erde
+    const radius = mouseState.zoom;
+    
+    // Arc-Bewegung: Kamera hebt sich während des Flugs an (dramatischer Effekt)
+    const flightProgress = Math.abs(angleDiff) / Math.PI; // 0 = am Ziel, 1 = am weitesten entfernt
+    const arcHeight = Math.sin(flightProgress * Math.PI) * radius * 0.2; // Max 20% Höhe bei 50% Progress
+    
+    const finalX = cameraTarget.x + Math.sin(cameraOrbitAngle) * radius * 0.8;
+    const finalY = cameraTarget.y + arcHeight; // Dynamische Höhe während Flug
+    const finalZ = Math.cos(cameraOrbitAngle) * radius;
+    
+    // Smooth Lerp zur Ziel-Position (adaptiver Lerp-Faktor während Flug)
+    const adaptiveLerp = flightProgress > 0.1 ? lerpFactor * 1.5 : lerpFactor; // Schneller während Flug
+    cameraPosition.x += (finalX - cameraPosition.x) * adaptiveLerp;
+    cameraPosition.y += (finalY - cameraPosition.y) * adaptiveLerp;
+    cameraPosition.z += (finalZ - cameraPosition.z) * adaptiveLerp;
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-    camera.rotation.x += (cameraRotation.x - camera.rotation.x) * lerpFactor;
-    camera.rotation.y += (cameraRotation.y - camera.rotation.y) * lerpFactor;
-
-    camera.lookAt(0, 0, 0);
+    // Kamera schaut zur Erde mit leichtem Offset während Flug (cinematischer Look)
+    const lookAtOffset = flightProgress * 0.5; // Slight offset während Bewegung
+    camera.lookAt(lookAtOffset, 0, 0);
   }
 
   function updateObjectTransforms() {
     if (!earthMesh) return;
 
-    // Animiere Erd-Position und -Scale via Lerp
+    // Animiere Erd-Position via Lerp
     if (earthMesh.userData.targetPosition) {
       earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.03);
     }
+    
+    // Animiere Erd-Scale via Lerp
     if (earthMesh.userData.targetScale) {
       const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
       if (Math.abs(scaleDiff) > 0.001) {
@@ -1191,15 +1363,43 @@ function startAnimationLoop() {
         earthMesh.scale.set(newScale, newScale, newScale);
       }
     }
+    
+    // Animiere Erd-Rotation (Y-Achse für schnelle Drehung bei Tag/Nacht-Wechsel)
+    if (earthMesh.userData.targetRotation !== undefined) {
+      const rotDiff = earthMesh.userData.targetRotation - earthMesh.rotation.y;
+      
+      // KEINE Normalisierung! Wir wollen die volle Rotation (z.B. 2π = 360°)
+      // So kann die Erde mehrfach rotieren für dramatischen Effekt
+      
+      if (Math.abs(rotDiff) > 0.001) {
+        // Schnellere Rotation für dramatischen Effekt (0.08 statt 0.04)
+        earthMesh.rotation.y += rotDiff * 0.08;
+      } else {
+        // Snapping bei fast erreicht - verhindert Endlos-Drift
+        earthMesh.rotation.y = earthMesh.userData.targetRotation;
+      }
+    }
 
     // Synchronisiere Wolken mit Erde (da eigenständiges Scene-Objekt, nicht Child)
-    // WICHTIG: Position + Scale müssen manuell kopiert werden nach allen Erd-Transformationen
-    if (cloudMesh) {
-      if (cloudMesh.position) {
+    // OPTIMIERUNG: Nur bei Änderungen updaten (nicht jeden Frame)
+    if (cloudMesh && earthMesh) {
+      // Position-Sync nur wenn nötig (Prüfe Distanz)
+      const posDiff = cloudMesh.position.distanceTo(earthMesh.position);
+      if (posDiff > 0.001) {
         cloudMesh.position.copy(earthMesh.position);
       }
-      if (cloudMesh.scale && earthMesh.scale) {
+      
+      // Scale-Sync nur wenn nötig
+      if (Math.abs(cloudMesh.scale.x - earthMesh.scale.x) > 0.001) {
         cloudMesh.scale.copy(earthMesh.scale);
+      }
+      
+      // Rotation: Wolken behalten eigene Y-Rotation für Drift, kopiere nur X/Z
+      if (Math.abs(cloudMesh.rotation.x - earthMesh.rotation.x) > 0.001) {
+        cloudMesh.rotation.x = earthMesh.rotation.x;
+      }
+      if (Math.abs(cloudMesh.rotation.z - earthMesh.rotation.z) > 0.001) {
+        cloudMesh.rotation.z = earthMesh.rotation.z;
       }
     }
   }
