@@ -160,6 +160,7 @@ export class ShootingStarManager {
         this.isShowerActive = false;
         this.showerTimer = 0;
         this.showerCooldownTimer = 0;
+        this.disabled = false; // Performance Toggle
         
         log.debug("ShootingStarManager initialized with meteor shower support.");
     }
@@ -178,14 +179,6 @@ export class ShootingStarManager {
         this.isShowerActive = true;
         this.showerTimer = 0;
         log.info("🌠 Meteor shower triggered!");
-    }
-
-    scheduleNextStar() {
-        const delay = 10000 + Math.random() * 15000; // Every 10-25 seconds
-        this.timeoutId = setTimeout(() => {
-            this.createShootingStar();
-            this.scheduleNextStar();
-        }, delay);
     }
 
     createShootingStar(trajectory = null) {
@@ -247,6 +240,9 @@ export class ShootingStarManager {
     }
 
     update() {
+        // Skip wenn disabled (Performance Toggle)
+        if (this.disabled) return;
+        
         // Meteoritenregen-Logic
         if (this.isShowerActive) {
             this.showerTimer++;
@@ -300,7 +296,6 @@ export class ShootingStarManager {
     }
 
     cleanup() {
-        clearTimeout(this.timeoutId);
         this.activeStars.forEach(star => {
             this.scene.remove(star.mesh);
             star.mesh.geometry.dispose();

@@ -238,6 +238,9 @@ const cameraTarget = { x: 0, y: 0, z: 10 };
 const cameraPosition = { x: 0, y: 0, z: 10 };
 const cameraRotation = { x: 0, y: 0 };
 
+// Wiederverwendbare Vector3 für Animation Loop (Memory Optimization)
+let sunPositionVector = null; // Wird in startAnimationLoop() initialisiert
+
 // Mouse Interaction State - Nur Zoom aktiv
 const mouseState = {
   zoom: 10, // Nur Zoom via Mausrad
@@ -328,6 +331,16 @@ const ThreeEarthManager = (() => {
       renderer.dispose();
       renderer.forceContextLoss();
     }
+    
+    // Dispose globale Materials
+    if (dayMaterial) {
+      disposeMaterial(dayMaterial);
+      dayMaterial = null;
+    }
+    if (nightMaterial) {
+      disposeMaterial(nightMaterial);
+      nightMaterial = null;
+    }
 
     scene =
       camera =
@@ -337,8 +350,15 @@ const ThreeEarthManager = (() => {
       cloudMesh =
       atmosphereMesh =
       directionalLight =
+      ambientLight =
+      rayleighAtmosphereMesh =
         null;
     currentSection = "hero";
+    lastAboutMode = null;
+    cameraOrbitAngle = 0;
+    targetOrbitAngle = 0;
+    frameCount = 0;
+    sunPositionVector = null;
 
     unregisterParticleSystem("three-earth");
     log.info("Three.js Earth system cleanup completed.");
@@ -356,11 +376,22 @@ const ThreeEarthManager = (() => {
   }
 
   function disposeMaterial(material) {
+    // Dispose Textures und andere Properties
     Object.values(material).forEach((value) => {
       if (value && typeof value.dispose === "function") {
         value.dispose();
       }
     });
+    
+    // Für ShaderMaterial: Dispose auch Uniforms (falls Texturen)
+    if (material.uniforms) {
+      Object.values(material.uniforms).forEach((uniform) => {
+        if (uniform.value && typeof uniform.value.dispose === "function") {
+          uniform.value.dispose();
+        }
+      });
+    }
+    
     material.dispose();
   }
 
@@ -550,13 +581,26 @@ async function createEarthSystem() {
 
   const textureLoader = new THREE_INSTANCE.TextureLoader(loadingManager);
 
+  // Textur-Loading mit Error-Handling
+  const loadTexture = (path, name) => {
+    return textureLoader.loadAsync(path).catch((error) => {
+      log.error(`Failed to load texture '${name}' from ${path}:`, error);
+      return null;
+    });
+  };
+
   const [dayTexture, nightTexture, normalTexture, bumpTexture] =
     await Promise.all([
-      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
-      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
-      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
-      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
+      loadTexture(CONFIG.PATHS.TEXTURES.DAY, "day"),
+      loadTexture(CONFIG.PATHS.TEXTURES.NIGHT, "night"),
+      loadTexture(CONFIG.PATHS.TEXTURES.NORMAL, "normal"),
+      loadTexture(CONFIG.PATHS.TEXTURES.BUMP, "bump"),
     ]);
+
+  // Prüfe ob kritische Texturen geladen wurden
+  if (!dayTexture) {
+    throw new Error("Failed to load critical day texture");
+  }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   [dayTexture, nightTexture, normalTexture, bumpTexture].forEach((tex) => {
@@ -626,11 +670,12 @@ async function createEarthSystem() {
         uniform vec3 uOceanSpecularColor;
       ` + shader.fragmentShader;
 
-      // Fragment Shader: Füge Ozean-Reflexionen NACH normal_fragment_maps hinzu
+      // Fragment Shader: Füge Ozean-Reflexionen NACH roughness_fragment hinzu
+      // KONSOLIDIERT: Eine einzige Injection statt zwei separate
       shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <normal_fragment_maps>",
+        "#include <roughness_fragment>",
         `
-        #include <normal_fragment_maps>
+        #include <roughness_fragment>
         
         // Ozean-Erkennung: Dunkle Pixel in Day-Textur sind Wasser
         vec3 baseColor = diffuseColor.rgb;
@@ -644,28 +689,8 @@ async function createEarthSystem() {
           
           float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
           specular *= uOceanSpecularIntensity;
-        }
-        `
-      );
-
-      // Füge Specular Addition NACH roughness_fragment hinzu
-      shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <roughness_fragment>",
-        `
-        #include <roughness_fragment>
-        
-        // Ozean-Specular hinzufügen (wenn oceanMask aktiv)
-        vec3 baseColorCheck = diffuseColor.rgb;
-        float oceanMaskFinal = step(baseColorCheck.r + baseColorCheck.g + baseColorCheck.b, 0.4);
-        
-        if (oceanMaskFinal > 0.5) {
-          vec3 sunDirection = normalize(uSunPosition);
-          vec3 viewDirection = normalize(vViewPosition);
-          vec3 reflectDirection = reflect(-sunDirection, normal);
           
-          float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
-          specular *= uOceanSpecularIntensity;
-          
+          // Füge Ocean Specular zu diffuseColor hinzu
           diffuseColor.rgb += uOceanSpecularColor * specular;
         }
         `
@@ -695,8 +720,8 @@ async function createEarthSystem() {
   earthMesh.scale.set(1.5, 1.5, 1.5);
   earthMesh.rotation.y = 0; // Initiale Rotation: Tag-Seite vorne
 
-  // Target-Werte für Transitions speichern
-  earthMesh.userData.targetPosition = { x: 0, y: -6.0, z: 0 };
+  // Target-Werte für Transitions speichern (WICHTIG: Vector3 für lerp()-Kompatibilität!)
+  earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(0, -6.0, 0);
   earthMesh.userData.targetScale = 1.5;
   earthMesh.userData.targetRotation = 0; // Target Y-Rotation für schnelle Drehung
   earthMesh.userData.emissivePulseEnabled = true; // Performance Toggle für City Lights Pulsation
@@ -1152,6 +1177,13 @@ function updateEarthForSection(sectionName) {
       return;
     }
 
+    // Dispose altes Material wenn es weder dayMaterial noch nightMaterial ist (Memory Leak Prevention)
+    const oldMaterial = earthMesh.material;
+    if (oldMaterial && oldMaterial !== dayMaterial && oldMaterial !== nightMaterial) {
+      oldMaterial.dispose();
+      log.debug("Disposed old material during mode switch");
+    }
+
     earthMesh.material = newMaterial;
     earthMesh.material.needsUpdate = true; // Force Material Update
     earthMesh.userData.currentMode = targetMode;
@@ -1192,8 +1224,8 @@ function updateEarthForSection(sectionName) {
       // Nacht: Sonne bleibt an fixer Position (Standard)
       directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
 
-      // Ocean Shader mit reduzierter Intensität
-      if (earthMesh.material.userData?.oceanShader) {
+      // Ocean Shader mit reduzierter Intensität (mit Null-Check)
+      if (earthMesh?.material?.userData?.oceanShader) {
         earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
           CONFIG.SUN.RADIUS * 0.3,
           CONFIG.SUN.HEIGHT,
@@ -1238,6 +1270,9 @@ function setupUserControls(container) {
 // ===== Animation Loop =====
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
+  
+  // Initialisiere wiederverwendbare Vector3 für Sun Position (Memory Optimization)
+  sunPositionVector = new THREE_INSTANCE.Vector3();
 
   function animate() {
     animationFrameId = requestAnimationFrame(animate);
@@ -1278,22 +1313,18 @@ function startAnimationLoop() {
       const sunZ = Math.sin(sunAngle) * CONFIG.SUN.RADIUS;
       directionalLight.position.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
 
-      // Update Atmosphären-Shader mit neuer Sonnen-Position
+      // Update Atmosphären-Shader mit neuer Sonnen-Position (wiederverwendbare Vector3)
       if (atmosphereMesh?.userData) {
-        const sunPosition = new THREE_INSTANCE.Vector3(
-          sunX,
-          CONFIG.SUN.HEIGHT,
-          sunZ
-        );
+        sunPositionVector.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
 
         if (atmosphereMesh.userData.atmosphereMaterial) {
           atmosphereMesh.userData.atmosphereMaterial.uniforms.uSunPosition.value.copy(
-            sunPosition
+            sunPositionVector
           );
         }
         if (atmosphereMesh.userData.rayleighMaterial) {
           atmosphereMesh.userData.rayleighMaterial.uniforms.uSunPosition.value.copy(
-            sunPosition
+            sunPositionVector
           );
         }
       }
@@ -1386,8 +1417,8 @@ function startAnimationLoop() {
       const sunZ = Math.cos(cameraOrbitAngle) * CONFIG.SUN.RADIUS;
       directionalLight.position.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
 
-      // Ocean Shader Update mit aktueller Sonnen-Position
-      if (earthMesh.material.userData?.oceanShader) {
+      // Ocean Shader Update mit aktueller Sonnen-Position (mit Null-Check)
+      if (earthMesh?.material?.userData?.oceanShader) {
         earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
           sunX,
           CONFIG.SUN.HEIGHT,
@@ -1431,25 +1462,48 @@ function startAnimationLoop() {
     }
 
     // Synchronisiere Wolken mit Erde (da eigenständiges Scene-Objekt, nicht Child)
-    // OPTIMIERUNG: Nur bei Änderungen updaten (nicht jeden Frame)
+    // OPTIMIERUNG: Einfaches Copy - Earth Position/Scale ändert sich nur bei Section-Transitions
     if (cloudMesh && earthMesh) {
-      // Position-Sync nur wenn nötig (Prüfe Distanz)
-      const posDiff = cloudMesh.position.distanceTo(earthMesh.position);
-      if (posDiff > 0.001) {
+      // Initialisiere lastSync-Tracking mit wiederverwendbarer Vector3
+      if (!cloudMesh.userData.lastSync) {
+        cloudMesh.userData.lastSync = {
+          position: new THREE_INSTANCE.Vector3(),
+          scale: 0,
+          rotationX: 0,
+          rotationZ: 0,
+        };
+        // Initial Sync
         cloudMesh.position.copy(earthMesh.position);
+        cloudMesh.scale.copy(earthMesh.scale);
+        cloudMesh.userData.lastSync.position.copy(earthMesh.position);
+        cloudMesh.userData.lastSync.scale = earthMesh.scale.x;
+        cloudMesh.userData.lastSync.rotationX = earthMesh.rotation.x;
+        cloudMesh.userData.lastSync.rotationZ = earthMesh.rotation.z;
+      }
+      
+      const lastSync = cloudMesh.userData.lastSync;
+      
+      // Position-Sync: Direkte Distanz-Prüfung (schneller als equals() bei lerp-Animationen)
+      const posDiff = earthMesh.position.distanceToSquared(lastSync.position);
+      if (posDiff > 0.00001) { // Threshold für relevante Änderungen
+        cloudMesh.position.copy(earthMesh.position);
+        lastSync.position.copy(earthMesh.position);
       }
 
-      // Scale-Sync nur wenn nötig
-      if (Math.abs(cloudMesh.scale.x - earthMesh.scale.x) > 0.001) {
+      // Scale-Sync
+      if (Math.abs(earthMesh.scale.x - lastSync.scale) > 0.001) {
         cloudMesh.scale.copy(earthMesh.scale);
+        lastSync.scale = earthMesh.scale.x;
       }
 
       // Rotation: Wolken behalten eigene Y-Rotation für Drift, kopiere nur X/Z
-      if (Math.abs(cloudMesh.rotation.x - earthMesh.rotation.x) > 0.001) {
+      if (Math.abs(earthMesh.rotation.x - lastSync.rotationX) > 0.001) {
         cloudMesh.rotation.x = earthMesh.rotation.x;
+        lastSync.rotationX = earthMesh.rotation.x;
       }
-      if (Math.abs(cloudMesh.rotation.z - earthMesh.rotation.z) > 0.001) {
+      if (Math.abs(earthMesh.rotation.z - lastSync.rotationZ) > 0.001) {
         cloudMesh.rotation.z = earthMesh.rotation.z;
+        lastSync.rotationZ = earthMesh.rotation.z;
       }
     }
   }
@@ -1626,9 +1680,9 @@ class PerformanceMonitor {
       log.debug(`Cloud Layer: ${features.cloudLayer ? "ON" : "OFF"}`);
     }
 
-    // Ocean Reflections Toggle (via Shader Uniform)
-    if (earthMesh?.userData?.oceanShader) {
-      earthMesh.userData.oceanShader.uniforms.uOceanSpecularIntensity.value =
+    // Ocean Reflections Toggle (via Shader Uniform mit Null-Check)
+    if (earthMesh?.material?.userData?.oceanShader) {
+      earthMesh.material.userData.oceanShader.uniforms.uOceanSpecularIntensity.value =
         features.oceanReflections ? CONFIG.OCEAN.SPECULAR_INTENSITY : 0.0;
       log.debug(
         `Ocean Reflections: ${features.oceanReflections ? "ON" : "OFF"}`
@@ -1645,10 +1699,8 @@ class PerformanceMonitor {
 
     // Meteor Showers Toggle
     if (shootingStarManager) {
-      // Meteor Manager hat kein direktes disable, wir setzen frequency auf 0
-      shootingStarManager.baseFrequency = features.meteorShowers
-        ? CONFIG.METEOR_EVENTS.BASE_FREQUENCY
-        : 0;
+      // Nutze disabled-Flag für Performance Toggle
+      shootingStarManager.disabled = !features.meteorShowers;
       log.debug(`Meteor Showers: ${features.meteorShowers ? "ON" : "OFF"}`);
     }
   }
