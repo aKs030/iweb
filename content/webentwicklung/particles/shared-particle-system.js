@@ -34,10 +34,17 @@ class SharedParticleState {
     this.isInitialized = false;
   }
   /** @param {string} name */
-  registerSystem(name, instance) { this.systems.set(name, instance); }
+  registerSystem(name, instance) {
+    this.systems.set(name, instance);
+  }
   /** @param {string} name */
-  unregisterSystem(name) { this.systems.delete(name); }
-  reset() { this.systems.clear(); this.isInitialized = false; }
+  unregisterSystem(name) {
+    this.systems.delete(name);
+  }
+  reset() {
+    this.systems.clear();
+    this.isInitialized = false;
+  }
 }
 const sharedState = new SharedParticleState();
 
@@ -58,7 +65,9 @@ export class SharedParallaxManager {
   }
   /** @param {function(number): void} handler */
   removeHandler(handler) {
-    const handlerObj = Array.from(this.handlers).find(h => h.handler === handler);
+    const handlerObj = Array.from(this.handlers).find(
+      (h) => h.handler === handler
+    );
     if (handlerObj) this.handlers.delete(handlerObj);
     if (this.handlers.size === 0) this.deactivate();
   }
@@ -66,7 +75,10 @@ export class SharedParallaxManager {
     if (this.isActive) return;
     this.scrollHandler = throttle(() => {
       const progress = this.calculateScrollProgress();
-      document.documentElement.style.setProperty(`${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`, progress.toFixed(4));
+      document.documentElement.style.setProperty(
+        `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
+        progress.toFixed(4)
+      );
       this.handlers.forEach(({ handler }) => handler(progress));
     }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS);
     window.addEventListener("scroll", this.scrollHandler, { passive: true });
@@ -104,25 +116,34 @@ export class SharedCleanupManager {
       this.cleanupFunctions.set(systemName, []);
     }
     this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
-    log.debug(`Cleanup function '${description}' added for system '${systemName}'.`);
+    log.debug(
+      `Cleanup function '${description}' added for system '${systemName}'.`
+    );
   }
   /** @param {string} systemName */
   cleanupSystem(systemName) {
     const systemCleanups = this.cleanupFunctions.get(systemName);
     if (!systemCleanups) return;
-    log.info(`Cleaning up system: ${systemName} (${systemCleanups.length} functions)`);
+    log.info(
+      `Cleaning up system: ${systemName} (${systemCleanups.length} functions)`
+    );
     systemCleanups.forEach(({ fn, description }) => {
-        try {
-            fn();
-        } catch (e) {
-            log.error(`Error during cleanup of '${description}' in '${systemName}':`, e);
-        }
+      try {
+        fn();
+      } catch (e) {
+        log.error(
+          `Error during cleanup of '${description}' in '${systemName}':`,
+          e
+        );
+      }
     });
     this.cleanupFunctions.delete(systemName);
   }
   cleanupAll() {
     log.info("Starting global cleanup of all registered systems.");
-    this.cleanupFunctions.forEach((_, systemName) => this.cleanupSystem(systemName));
+    this.cleanupFunctions.forEach((_, systemName) =>
+      this.cleanupSystem(systemName)
+    );
     sharedParallaxManager.deactivate();
     sharedState.reset();
     log.info("Global cleanup completed.");
@@ -131,192 +152,199 @@ export class SharedCleanupManager {
 
 // ===== Shooting Star Manager =====
 export class ShootingStarManager {
-    /**
-     * @param {THREE.Scene} scene
-     * @param {typeof THREE} THREE
-     * @param {object} config - Meteor configuration from three-earth-system CONFIG
-     */
-    constructor(scene, THREE, config = {}) {
-        this.scene = scene;
-        this.THREE = THREE;
-        this.activeStars = [];
-        this.timeoutId = null;
-        
-        // Import CONFIG.METEOR_EVENTS
-        this.config = config || {
-            BASE_FREQUENCY: 0.003,
-            SHOWER_FREQUENCY: 0.02,
-            SHOWER_DURATION: 180,
-            SHOWER_COOLDOWN: 1800,
-            MAX_SIMULTANEOUS: 3,
-            TRAJECTORIES: [
-                { start: { x: -100, y: 50, z: -50 }, end: { x: 100, y: -50, z: 50 } },
-                { start: { x: 100, y: 60, z: -40 }, end: { x: -80, y: -40, z: 60 } },
-                { start: { x: -80, y: 70, z: 60 }, end: { x: 90, y: -60, z: -70 } },
-            ],
-        };
+  /**
+   * @param {THREE.Scene} scene
+   * @param {typeof THREE} THREE
+   * @param {object} config - Meteor configuration from three-earth-system CONFIG
+   */
+  constructor(scene, THREE, config = {}) {
+    this.scene = scene;
+    this.THREE = THREE;
+    this.activeStars = [];
+    this.timeoutId = null;
 
-        // Shower State
+    // Import CONFIG.METEOR_EVENTS
+    this.config = config || {
+      BASE_FREQUENCY: 0.003,
+      SHOWER_FREQUENCY: 0.02,
+      SHOWER_DURATION: 180,
+      SHOWER_COOLDOWN: 1800,
+      MAX_SIMULTANEOUS: 3,
+      TRAJECTORIES: [
+        { start: { x: -100, y: 50, z: -50 }, end: { x: 100, y: -50, z: 50 } },
+        { start: { x: 100, y: 60, z: -40 }, end: { x: -80, y: -40, z: 60 } },
+        { start: { x: -80, y: 70, z: 60 }, end: { x: 90, y: -60, z: -70 } },
+      ],
+    };
+
+    // Shower State
+    this.isShowerActive = false;
+    this.showerTimer = 0;
+    this.showerCooldownTimer = 0;
+    this.disabled = false; // Performance Toggle
+
+    log.debug("ShootingStarManager initialized with meteor shower support.");
+  }
+
+  start() {
+    // Nutze per-frame Updates in update() statt setTimeout
+    log.debug("ShootingStarManager started");
+  }
+
+  triggerMeteorShower() {
+    if (this.isShowerActive || this.showerCooldownTimer > 0) {
+      log.debug("Meteor shower already active or in cooldown");
+      return;
+    }
+
+    this.isShowerActive = true;
+    this.showerTimer = 0;
+    log.info("🌠 Meteor shower triggered!");
+  }
+
+  createShootingStar(trajectory = null) {
+    // Limitiere simultane Meteore
+    if (this.activeStars.length >= this.config.MAX_SIMULTANEOUS) {
+      return;
+    }
+
+    const geometry = new this.THREE.SphereGeometry(0.05, 8, 8);
+    const material = new this.THREE.MeshBasicMaterial({
+      color: 0xfffdef,
+      transparent: true,
+      opacity: 1.0,
+    });
+    const star = new this.THREE.Mesh(geometry, material);
+
+    // Nutze vordefinierte Trajectory oder generiere zufällige
+    let startPos, velocity;
+
+    if (trajectory) {
+      startPos = trajectory.start;
+      const direction = new this.THREE.Vector3(
+        trajectory.end.x - trajectory.start.x,
+        trajectory.end.y - trajectory.start.y,
+        trajectory.end.z - trajectory.start.z
+      ).normalize();
+      velocity = direction.multiplyScalar(0.3 + Math.random() * 0.2);
+    } else {
+      // Fallback: Alte zufällige Generation
+      startPos = {
+        x: (Math.random() - 0.5) * 100,
+        y: 20 + Math.random() * 20,
+        z: -50 - Math.random() * 50,
+      };
+      velocity = new this.THREE.Vector3(
+        (Math.random() - 0.9) * 0.2,
+        (Math.random() - 0.6) * -0.2,
+        0
+      );
+    }
+
+    star.position.set(startPos.x, startPos.y, startPos.z);
+
+    // Trail-Effekt via Scale-Deformation
+    const stretchFactor = 2 + Math.random() * 3;
+    star.scale.set(1, 1, stretchFactor);
+    star.lookAt(star.position.clone().add(velocity));
+
+    const lifetime = 300 + Math.random() * 200; // Frames
+
+    this.activeStars.push({
+      mesh: star,
+      velocity,
+      lifetime,
+      age: 0,
+      initialOpacity: 1.0,
+    });
+    this.scene.add(star);
+  }
+
+  update() {
+    // Skip wenn disabled (Performance Toggle)
+    if (this.disabled) return;
+
+    // Meteoritenregen-Logic
+    if (this.isShowerActive) {
+      this.showerTimer++;
+
+      if (this.showerTimer >= this.config.SHOWER_DURATION) {
+        // Shower beenden
         this.isShowerActive = false;
-        this.showerTimer = 0;
-        this.showerCooldownTimer = 0;
-        this.disabled = false; // Performance Toggle
-        
-        log.debug("ShootingStarManager initialized with meteor shower support.");
+        this.showerCooldownTimer = this.config.SHOWER_COOLDOWN;
+        log.info("Meteor shower ended");
+      }
     }
 
-    start() {
-        // Nutze per-frame Updates in update() statt setTimeout
-        log.debug("ShootingStarManager started");
+    // Cooldown
+    if (this.showerCooldownTimer > 0) {
+      this.showerCooldownTimer--;
     }
 
-    triggerMeteorShower() {
-        if (this.isShowerActive || this.showerCooldownTimer > 0) {
-            log.debug("Meteor shower already active or in cooldown");
-            return;
-        }
+    // Spawn-Wahrscheinlichkeit
+    const spawnChance = this.isShowerActive
+      ? this.config.SHOWER_FREQUENCY
+      : this.config.BASE_FREQUENCY;
 
-        this.isShowerActive = true;
-        this.showerTimer = 0;
-        log.info("🌠 Meteor shower triggered!");
+    if (Math.random() < spawnChance) {
+      // Wähle zufällige Trajectory
+      const trajectory =
+        this.config.TRAJECTORIES[
+          Math.floor(Math.random() * this.config.TRAJECTORIES.length)
+        ];
+      this.createShootingStar(trajectory);
     }
 
-    createShootingStar(trajectory = null) {
-        // Limitiere simultane Meteore
-        if (this.activeStars.length >= this.config.MAX_SIMULTANEOUS) {
-            return;
-        }
+    // Update aktive Meteore
+    for (let i = this.activeStars.length - 1; i >= 0; i--) {
+      const star = this.activeStars[i];
+      star.age++;
+      star.mesh.position.add(star.velocity);
 
-        const geometry = new this.THREE.SphereGeometry(0.05, 8, 8);
-        const material = new this.THREE.MeshBasicMaterial({ 
-            color: 0xfffdef,
-            transparent: true,
-            opacity: 1.0,
-        });
-        const star = new this.THREE.Mesh(geometry, material);
+      // Fade-out am Ende der Lifetime
+      const fadeStart = star.lifetime * 0.7;
+      if (star.age > fadeStart) {
+        const fadeProgress =
+          (star.age - fadeStart) / (star.lifetime - fadeStart);
+        star.mesh.material.opacity = star.initialOpacity * (1 - fadeProgress);
+      }
 
-        // Nutze vordefinierte Trajectory oder generiere zufällige
-        let startPos, velocity;
-        
-        if (trajectory) {
-            startPos = trajectory.start;
-            const direction = new this.THREE.Vector3(
-                trajectory.end.x - trajectory.start.x,
-                trajectory.end.y - trajectory.start.y,
-                trajectory.end.z - trajectory.start.z
-            ).normalize();
-            velocity = direction.multiplyScalar(0.3 + Math.random() * 0.2);
-        } else {
-            // Fallback: Alte zufällige Generation
-            startPos = {
-                x: (Math.random() - 0.5) * 100,
-                y: 20 + Math.random() * 20,
-                z: -50 - Math.random() * 50,
-            };
-            velocity = new this.THREE.Vector3(
-                (Math.random() - 0.9) * 0.2,
-                (Math.random() - 0.6) * -0.2,
-                0
-            );
-        }
-
-        star.position.set(startPos.x, startPos.y, startPos.z);
-
-        // Trail-Effekt via Scale-Deformation
-        const stretchFactor = 2 + Math.random() * 3;
-        star.scale.set(1, 1, stretchFactor);
-        star.lookAt(star.position.clone().add(velocity));
-
-        const lifetime = 300 + Math.random() * 200; // Frames
-
-        this.activeStars.push({ 
-            mesh: star, 
-            velocity, 
-            lifetime, 
-            age: 0,
-            initialOpacity: 1.0,
-        });
-        this.scene.add(star);
+      if (star.age > star.lifetime) {
+        this.scene.remove(star.mesh);
+        star.mesh.geometry.dispose();
+        star.mesh.material.dispose();
+        this.activeStars.splice(i, 1);
+      }
     }
+  }
 
-    update() {
-        // Skip wenn disabled (Performance Toggle)
-        if (this.disabled) return;
-        
-        // Meteoritenregen-Logic
-        if (this.isShowerActive) {
-            this.showerTimer++;
-            
-            if (this.showerTimer >= this.config.SHOWER_DURATION) {
-                // Shower beenden
-                this.isShowerActive = false;
-                this.showerCooldownTimer = this.config.SHOWER_COOLDOWN;
-                log.info("Meteor shower ended");
-            }
-        }
-
-        // Cooldown
-        if (this.showerCooldownTimer > 0) {
-            this.showerCooldownTimer--;
-        }
-
-        // Spawn-Wahrscheinlichkeit
-        const spawnChance = this.isShowerActive 
-            ? this.config.SHOWER_FREQUENCY 
-            : this.config.BASE_FREQUENCY;
-
-        if (Math.random() < spawnChance) {
-            // Wähle zufällige Trajectory
-            const trajectory = this.config.TRAJECTORIES[
-                Math.floor(Math.random() * this.config.TRAJECTORIES.length)
-            ];
-            this.createShootingStar(trajectory);
-        }
-
-        // Update aktive Meteore
-        for (let i = this.activeStars.length - 1; i >= 0; i--) {
-            const star = this.activeStars[i];
-            star.age++;
-            star.mesh.position.add(star.velocity);
-
-            // Fade-out am Ende der Lifetime
-            const fadeStart = star.lifetime * 0.7;
-            if (star.age > fadeStart) {
-                const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
-                star.mesh.material.opacity = star.initialOpacity * (1 - fadeProgress);
-            }
-
-            if (star.age > star.lifetime) {
-                this.scene.remove(star.mesh);
-                star.mesh.geometry.dispose();
-                star.mesh.material.dispose();
-                this.activeStars.splice(i, 1);
-            }
-        }
-    }
-
-    cleanup() {
-        this.activeStars.forEach(star => {
-            this.scene.remove(star.mesh);
-            star.mesh.geometry.dispose();
-            star.mesh.material.dispose();
-        });
-        this.activeStars = [];
-        log.debug("ShootingStarManager cleaned up.");
-    }
+  cleanup() {
+    this.activeStars.forEach((star) => {
+      this.scene.remove(star.mesh);
+      star.mesh.geometry.dispose();
+      star.mesh.material.dispose();
+    });
+    this.activeStars = [];
+    log.debug("ShootingStarManager cleaned up.");
+  }
 }
-
 
 // ===== Singleton Instances =====
 export const sharedParallaxManager = new SharedParallaxManager();
 export const sharedCleanupManager = new SharedCleanupManager();
 
 // ===== Public API =====
-export function getSharedState() { return sharedState; }
+export function getSharedState() {
+  return sharedState;
+}
 /**
  * @param {string} name
  * @param {any} instance
  */
-export function registerParticleSystem(name, instance) { sharedState.registerSystem(name, instance); }
+export function registerParticleSystem(name, instance) {
+  sharedState.registerSystem(name, instance);
+}
 /** @param {string} name */
-export function unregisterParticleSystem(name) { sharedState.unregisterSystem(name); }
+export function unregisterParticleSystem(name) {
+  sharedState.unregisterSystem(name);
+}

@@ -331,7 +331,7 @@ const ThreeEarthManager = (() => {
       renderer.dispose();
       renderer.forceContextLoss();
     }
-    
+
     // Dispose globale Materials
     if (dayMaterial) {
       disposeMaterial(dayMaterial);
@@ -382,7 +382,7 @@ const ThreeEarthManager = (() => {
         value.dispose();
       }
     });
-    
+
     // Für ShaderMaterial: Dispose auch Uniforms (falls Texturen)
     if (material.uniforms) {
       Object.values(material.uniforms).forEach((uniform) => {
@@ -391,7 +391,7 @@ const ThreeEarthManager = (() => {
         }
       });
     }
-    
+
     material.dispose();
   }
 
@@ -1179,7 +1179,11 @@ function updateEarthForSection(sectionName) {
 
     // Dispose altes Material wenn es weder dayMaterial noch nightMaterial ist (Memory Leak Prevention)
     const oldMaterial = earthMesh.material;
-    if (oldMaterial && oldMaterial !== dayMaterial && oldMaterial !== nightMaterial) {
+    if (
+      oldMaterial &&
+      oldMaterial !== dayMaterial &&
+      oldMaterial !== nightMaterial
+    ) {
       oldMaterial.dispose();
       log.debug("Disposed old material during mode switch");
     }
@@ -1270,7 +1274,7 @@ function setupUserControls(container) {
 // ===== Animation Loop =====
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
-  
+
   // Initialisiere wiederverwendbare Vector3 für Sun Position (Memory Optimization)
   sunPositionVector = new THREE_INSTANCE.Vector3();
 
@@ -1480,12 +1484,13 @@ function startAnimationLoop() {
         cloudMesh.userData.lastSync.rotationX = earthMesh.rotation.x;
         cloudMesh.userData.lastSync.rotationZ = earthMesh.rotation.z;
       }
-      
+
       const lastSync = cloudMesh.userData.lastSync;
-      
+
       // Position-Sync: Direkte Distanz-Prüfung (schneller als equals() bei lerp-Animationen)
       const posDiff = earthMesh.position.distanceToSquared(lastSync.position);
-      if (posDiff > 0.00001) { // Threshold für relevante Änderungen
+      if (posDiff > 0.00001) {
+        // Threshold für relevante Änderungen
         cloudMesh.position.copy(earthMesh.position);
         lastSync.position.copy(earthMesh.position);
       }
