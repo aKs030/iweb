@@ -1191,7 +1191,7 @@ function updateEarthForSection(sectionName) {
       ambientLight.intensity = 0.3; // Mehr Umgebungslicht für Details
       // Nacht: Sonne bleibt an fixer Position (Standard)
       directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
-      
+
       // Ocean Shader mit reduzierter Intensität
       if (earthMesh.material.userData?.oceanShader) {
         earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
@@ -1378,14 +1378,14 @@ function startAnimationLoop() {
     // Kamera schaut zur Erde mit leichtem Offset während Flug (cinematischer Look)
     const lookAtOffset = flightProgress * 0.5; // Slight offset während Bewegung
     camera.lookAt(lookAtOffset, 0, 0);
-    
+
     // 🌞 SONNE FOLGT KAMERA: Bei Tag-Modus rotiert Sonne mit Kamera-Orbit
     // Dadurch ist die sichtbare Erd-Seite IMMER von der Sonne beleuchtet
     if (directionalLight && earthMesh?.userData.currentMode === "day") {
       const sunX = Math.sin(cameraOrbitAngle) * CONFIG.SUN.RADIUS;
       const sunZ = Math.cos(cameraOrbitAngle) * CONFIG.SUN.RADIUS;
       directionalLight.position.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
-      
+
       // Ocean Shader Update mit aktueller Sonnen-Position
       if (earthMesh.material.userData?.oceanShader) {
         earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
