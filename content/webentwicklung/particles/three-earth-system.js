@@ -73,18 +73,18 @@ const CONFIG = {
     OPACITY: 0.28, // Reduziert von 0.4 → transparentere, realistischere Wolken
   },
   ATMOSPHERE: {
-    SCALE: 1.018, // Reduziert von 1.02 → dünnere Atmosphäre
+    SCALE: 1.015, // Weiter reduziert von 1.018 → noch dünnere, subtilere Atmosphäre
     GLOW_COLOR: 0x4488ee, // Etwas blaustichiger für realistischeren Effekt
-    FRESNEL_POWER: 4.2, // Erhöht von 3.5 → schärferer Rand-Glow
-    INTENSITY: 0.22, // Reduziert von 0.3 für subtileren Basis-Glow
-    // Multi-Layer Scattering (Rayleigh + Mie) - Optimiert für Balance
-    RAYLEIGH_SCALE: 1.04, // Reduziert von 1.05 → kompaktere Blau-Schicht
-    MIE_SCALE: 1.022, // Reduziert von 1.025 → kompaktere Warm-Schicht
+    FRESNEL_POWER: 4.5, // Erhöht von 4.2 → noch schärferer Rand-Glow (mehr Fokus am Rand)
+    INTENSITY: 0.12, // Deutlich reduziert von 0.22 → sehr subtiler Basis-Glow (-45%)
+    // Multi-Layer Scattering (Rayleigh + Mie) - Fein justiert für Realismus
+    RAYLEIGH_SCALE: 1.03, // Weiter reduziert von 1.04 → kompaktere Blau-Schicht
+    MIE_SCALE: 1.018, // Weiter reduziert von 1.022 → kompaktere Warm-Schicht
     RAYLEIGH_COLOR: 0x3366dd, // Satteres Blau (statt 0x5588ff)
     MIE_COLOR: 0xffcc88, // Wärmere Töne (statt 0xffddaa)
-    RAYLEIGH_INTENSITY: 0.15, // Weitere Reduktion: 0.2 → 0.15 (-25%)
-    MIE_INTENSITY: 0.08, // Weitere Reduktion: 0.12 → 0.08 (-33%)
-    SCATTERING_STRENGTH: 0.3, // Weitere Reduktion: 0.4 → 0.3 (-25%)
+    RAYLEIGH_INTENSITY: 0.08, // Stark reduziert: 0.15 → 0.08 (-47%)
+    MIE_INTENSITY: 0.04, // Stark reduziert: 0.08 → 0.04 (-50%)
+    SCATTERING_STRENGTH: 0.18, // Stark reduziert: 0.3 → 0.18 (-40%)
   },
   OCEAN: {
     SHININESS: 80.0, // Reduziert von 128 → weichere, größere Highlights (realistischer)
