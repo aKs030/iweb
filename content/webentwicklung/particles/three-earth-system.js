@@ -1,43 +1,44 @@
 /**
- * Three.js Earth System - 3D WebGL Earth with Stars, Clouds & Multi-Layer Atmosphere
+ * Three.js Earth System - Cinematic 3D WebGL Earth Visualization
  *
- * High-Quality 3D Earth visualization featuring:
- * - Realistic PBR Earth textures with pulsing city lights
- * - Dynamic, separate cloud layer with drift rotation
- * - Day/Night Toggle System: Section-based mode switching with camera orbit effects
- * - Multi-Layer Atmosphere with Rayleigh & Mie Scattering (physically-based)
+ * Professional Earth visualization with cinematischer Look:
+ * - Realistic PBR Earth textures with subtle city lights pulsation
+ * - Dynamic cloud layer with slow, realistic drift rotation
+ * - Day/Night Toggle System with smooth orbital camera transitions
+ * - Multi-Layer Atmosphere (Rayleigh & Mie Scattering)
  * - Ocean Specular Reflections based on sun position
- * - Cinematic camera flight animations with arc movement and easing
- * - Meteor shower events with configurable frequency and trajectories
- * - Procedural starfield with parallax and twinkling effects
+ * - Cinematic camera flight system with arc movement and adaptive easing
+ * - Meteor shower events with configurable trajectories
+ * - Procedural starfield with parallax and subtle twinkling
  * - Mouse wheel zoom control for detailed inspection
- * - Scroll-based camera animations and section-responsive scenes
- * - Integrated performance monitor (FPS, Memory) with adaptive quality scaling
- * - Texture loading manager with a progress bar for better UX
+ * - Section-responsive camera presets with smooth transitions
+ * - Integrated performance monitor with adaptive quality scaling
+ * - Texture loading manager with progress bar
  *
- * NEW in v6.0.0 (2025-10-05):
- * - Day/Night Toggle System: about section toggles between day/night on each visit
- * - Orbital Camera Flight: Camera flies around Earth during day↔night transitions
- * - Arc Movement: Camera follows cinematic arc path during orbital flights
- * - Easing Functions: easeOutCubic for professional-looking camera transitions
- * - Adaptive Lighting: Complete day (ambient 1.5) vs. night (ambient 0.3, sun 0.4)
- * - Performance Optimizations: Conditional cloud sync, throttled pulsation (50% reduction)
- * - Enhanced City Lights: 4.0x emissive intensity, warmer color (0xffcc66)
+ * NEW in v7.0 CINEMATIC (2025-10-06):
+ * - Complete CONFIG overhaul for professional, cinematic look
+ * - Unified timing values: Faster, smoother camera transitions (1.4s base)
+ * - Distance-adaptive transitions: Short flights 1.5s, long flights ~2.5s
+ * - Enhanced easing: easeInOutQuart for camera, easeOutQuart for orbit
+ * - Optimized camera presets: Closer positions, more dynamic angles
+ * - Arc-curve zoom: Prevents close-up during long flights (about→features)
+ * - Cinematic lighting system: Balanced day/night with color temperature
+ * - Smoothed transform animations: Earth rotation with progressive easing
+ * - Harmonized speeds: Cloud drift 0.0006, Stars twinkle 0.25
+ * - Performance: Reduced ambient light, optimized layer intensities
  *
- * v5.0.0 Features:
- * - Multi-Layer Atmospheric Scattering (Rayleigh + Mie)
- * - Ocean Specular Highlights
- * - Camera Flight System (flyToLocation, flyToPreset)
- * - Automatic Day/Night Cycle with sync'd city lights
- * - Enhanced Meteor Shower System
- * - Preset Camera Positions for Sections
+ * v6.0.0 Features:
+ * - Day/Night Toggle System with orbital camera flights
+ * - Arc Movement during day↔night transitions
+ * - Adaptive Lighting: Complete day vs. atmospheric night
+ * - Enhanced City Lights: 4.0x intensity, warm color
  *
  * Uses shared-particle-system for parallax synchronization and effects.
  *
  * @author Portfolio System
- * @version 6.0.0
+ * @version 7.0.0-cinematic
  * @created 2025-10-03
- * @last-modified 2025-10-05
+ * @last-modified 2025-10-06
  */
 import {
   createLogger,
@@ -57,116 +58,132 @@ import {
 const log = createLogger("threeEarthSystem");
 const earthTimers = new TimerManager();
 
-// ===== NEW: Central Configuration Object =====
+// ===== CINEMATIC CONFIGURATION v7.0 =====
+// Komplett neu optimiert für professionellen, cinematischen Look
+// Einheitliche Timing-Werte, smoothe Transitions, konsistente Speeds
 const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 64, // Optimiert für Balance Performance/Qualität
-    BUMP_SCALE: 0.008, // Reduziert von 0.015 → subtilere Oberflächenstruktur
-    EMISSIVE_INTENSITY: 0.18, // Reduziert von 0.3 → realistischere City Lights
-    EMISSIVE_PULSE_SPEED: 0.3, // Langsamere Pulsation (0.5 → 0.3)
-    EMISSIVE_PULSE_AMPLITUDE: 0.06, // Dezentere Pulsation (0.1 → 0.06)
+    SEGMENTS: 64,
+    BUMP_SCALE: 0.006, // Subtile Oberflächenstruktur
+    EMISSIVE_INTENSITY: 0.15, // Dezente City Lights
+    EMISSIVE_PULSE_SPEED: 0.25, // Langsame, cinematische Pulsation
+    EMISSIVE_PULSE_AMPLITUDE: 0.05, // Subtile Amplitude
   },
   CLOUDS: {
     ALTITUDE: 0.03,
-    ROTATION_SPEED: 0.0008, // Langsamerer Drift (~130s pro Umdrehung, realistischer)
-    OPACITY: 0.28, // Reduziert von 0.4 → transparentere, realistischere Wolken
+    ROTATION_SPEED: 0.0006, // Sehr langsamer, realistischer Drift (~180s/Umdrehung)
+    OPACITY: 0.25, // Transparente, realistische Wolken
   },
   ATMOSPHERE: {
-    SCALE: 1.015, // Weiter reduziert von 1.018 → noch dünnere, subtilere Atmosphäre
-    GLOW_COLOR: 0x4488ee, // Etwas blaustichiger für realistischeren Effekt
-    FRESNEL_POWER: 4.5, // Erhöht von 4.2 → noch schärferer Rand-Glow (mehr Fokus am Rand)
-    INTENSITY: 0.12, // Deutlich reduziert von 0.22 → sehr subtiler Basis-Glow (-45%)
-    // Multi-Layer Scattering (Rayleigh + Mie) - Fein justiert für Realismus
-    RAYLEIGH_SCALE: 1.03, // Weiter reduziert von 1.04 → kompaktere Blau-Schicht
-    MIE_SCALE: 1.018, // Weiter reduziert von 1.022 → kompaktere Warm-Schicht
-    RAYLEIGH_COLOR: 0x3366dd, // Satteres Blau (statt 0x5588ff)
-    MIE_COLOR: 0xffcc88, // Wärmere Töne (statt 0xffddaa)
-    RAYLEIGH_INTENSITY: 0.08, // Stark reduziert: 0.15 → 0.08 (-47%)
-    MIE_INTENSITY: 0.04, // Stark reduziert: 0.08 → 0.04 (-50%)
-    SCATTERING_STRENGTH: 0.18, // Stark reduziert: 0.3 → 0.18 (-40%)
+    SCALE: 1.012, // Dünne, subtile Atmosphäre
+    GLOW_COLOR: 0x4488ff,
+    FRESNEL_POWER: 4.8, // Scharfer Rand-Glow
+    INTENSITY: 0.1, // Sehr subtiler Basis-Glow
+    // Multi-Layer Scattering - Realistische Werte
+    RAYLEIGH_SCALE: 1.025,
+    MIE_SCALE: 1.015,
+    RAYLEIGH_COLOR: 0x3366dd,
+    MIE_COLOR: 0xffcc88,
+    RAYLEIGH_INTENSITY: 0.06,
+    MIE_INTENSITY: 0.03,
+    SCATTERING_STRENGTH: 0.15,
   },
   OCEAN: {
-    SHININESS: 80.0, // Reduziert von 128 → weichere, größere Highlights (realistischer)
-    SPECULAR_INTENSITY: 0.45, // Reduziert von 0.6 → subtilere Reflexionen
-    SPECULAR_COLOR: 0xeeffff, // Leicht blaustichig (realistischer als rein weiß)
+    SHININESS: 90.0, // Weiche, realistische Highlights
+    SPECULAR_INTENSITY: 0.4,
+    SPECULAR_COLOR: 0xeeffff,
   },
   SUN: {
-    RADIUS: 10, // Erhöht von 8 → weichere Beleuchtung aus größerer Distanz
-    HEIGHT: 2, // Reduziert von 3 → flacherer Winkel (dramatischere Schatten)
-    INTENSITY: 1.8, // Reduziert von 2.0 → weichere Beleuchtung
-    AUTO_ROTATE: false, // Tag/Nacht-Zyklus aktivieren
-    ROTATION_SPEED: 0.0005, // Umdrehungen pro Frame (~33min für vollen Zyklus bei 60fps)
+    RADIUS: 12, // Weiche Beleuchtung aus großer Distanz
+    HEIGHT: 2.5,
+    INTENSITY: 1.6, // Ausbalancierte Intensität
+    AUTO_ROTATE: false,
+    ROTATION_SPEED: 0.0004,
+  },
+  LIGHTING: {
+    // Cinematische Tag/Nacht-Beleuchtung
+    DAY: {
+      AMBIENT_INTENSITY: 1.2, // Reduziert für mehr Kontrast (1.5 → 1.2)
+      AMBIENT_COLOR: 0x505050, // Etwas wärmer als 0x404040
+      SUN_INTENSITY: 1.6, // Aus CONFIG.SUN.INTENSITY
+    },
+    NIGHT: {
+      AMBIENT_INTENSITY: 0.25, // Reduziert für dramatischeren Look (0.3 → 0.25)
+      AMBIENT_COLOR: 0x202040, // Kühlerer Ton für Nacht
+      SUN_INTENSITY: 0.3, // Reduziert für subtileres Mondlicht (0.4 → 0.3)
+    },
   },
   DAY_NIGHT_CYCLE: {
-    ENABLED: false, // Automatischer Zyklus deaktiviert - verwende Section-basiertes Toggle-System
-    SPEED_MULTIPLIER: 10, // Beschleunigungsfaktor (falls ENABLED = true)
-    SYNC_CITY_LIGHTS: true, // Stadtlichter mit Nacht-Seite synchronisieren
-    // Section-basierte Tag/Nacht-Modi (FINAL - nur aktive Sections)
+    ENABLED: false,
+    SPEED_MULTIPLIER: 10,
+    SYNC_CITY_LIGHTS: true,
     SECTION_MODES: {
-      hero: { mode: "day", sunAngle: 0 }, // Tag: Sonne vorne (0°)
-      features: { mode: "day", sunAngle: 0 }, // Tag: Sonne vorne (0°)
-      about: { mode: "toggle", sunAngle: Math.PI }, // Toggle: Wechsel bei jedem Besuch
+      hero: { mode: "day", sunAngle: 0 },
+      features: { mode: "day", sunAngle: 0 },
+      about: { mode: "toggle", sunAngle: Math.PI },
     },
   },
   STARS: {
-    COUNT: 3000, // Erhöht von 2000 → dichteres Sternenfeld
-    TWINKLE_SPEED: 0.3, // Reduziert von 0.5 → langsameres, subtileres Funkeln
+    COUNT: 2500, // Ausbalanciertes Sternenfeld
+    TWINKLE_SPEED: 0.25, // Langsames, subtiles Funkeln
   },
   CAMERA: {
-    FOV: 35,
+    FOV: 40, // Leicht erhöht für cinematischeren Look
     NEAR: 0.1,
     FAR: 1000,
-    ZOOM_MIN: 4,
-    ZOOM_MAX: 30,
-    LERP_FACTOR: 0.05, // Linear interpolation factor for smooth camera movement
-    // Preset-Positionen für Section-basierte Kamera-Flug-Effekte (FINAL)
+    ZOOM_MIN: 5,
+    ZOOM_MAX: 25,
+    LERP_FACTOR: 0.08, // Schnellere, smoothe Bewegung
+    // Cinematische Preset-Positionen - Näher & dynamischer
     PRESETS: {
       hero: {
         x: 0,
-        y: 0,
-        z: 10,
-        lookAt: { x: 0, y: -6, z: 0 },
-        earthRotation: 0, // Tag-Seite vorne (0°)
+        y: 0.5,
+        z: 12,
+        lookAt: { x: 0, y: -0.5, z: 0 },
+        earthRotation: 0,
       },
       features: {
-        x: 1,
-        y: -1,
-        z: 8,
-        lookAt: { x: 0, y: -4, z: 0 },
-        earthRotation: 0, // Tag-Seite vorne (0°)
+        x: 2,
+        y: -1.5,
+        z: 22, // Näher als vorher (90 → 22) - nicht so weit weg
+        lookAt: { x: 0, y: 0, z: 0 },
+        earthRotation: 0,
       },
       about: {
-        x: 0,
-        y: 0,
-        z: 9,
-        lookAt: { x: 0, y: -5, z: 0 },
-        earthRotation: Math.PI, // Nacht-Seite vorne (180°) - bei Toggle
+        x: -1,
+        y: 1,
+        z: 10,
+        lookAt: { x: 0, y: 0, z: 0 },
+        earthRotation: Math.PI,
       },
     },
-    TRANSITION_DURATION: 2.0, // Sekunden für Kamera-Flüge
+    // Schnellere, cinematische Transitions
+    TRANSITION_DURATION: 1.4, // Basis-Dauer reduziert (2.0 → 1.4s)
+    TRANSITION_DURATION_MULTIPLIER: 0.008, // Weniger distanzbasierte Erhöhung
+    ARC_HEIGHT_BASE: 0.25, // Basis Arc-Höhe
+    ARC_HEIGHT_MULTIPLIER: 0.6, // Moderater Arc bei weiten Flügen
   },
   METEOR_EVENTS: {
-    BASE_FREQUENCY: 0.003, // Basis-Wahrscheinlichkeit pro Frame
-    SHOWER_FREQUENCY: 0.02, // Während Meteoritenregen
-    SHOWER_DURATION: 180, // Frames (~3 Sekunden bei 60fps)
-    SHOWER_COOLDOWN: 1800, // Frames (~30 Sekunden)
-    MAX_SIMULTANEOUS: 3, // Max. parallele Meteore
+    BASE_FREQUENCY: 0.002,
+    SHOWER_FREQUENCY: 0.015,
+    SHOWER_DURATION: 150,
+    SHOWER_COOLDOWN: 1500,
+    MAX_SIMULTANEOUS: 2,
     TRAJECTORIES: [
-      // Verschiedene Flugbahnen
-      { start: { x: -100, y: 50, z: -50 }, end: { x: 100, y: -50, z: 50 } },
-      { start: { x: 100, y: 60, z: -40 }, end: { x: -80, y: -40, z: 60 } },
-      { start: { x: -80, y: 70, z: 60 }, end: { x: 90, y: -60, z: -70 } },
+      { start: { x: -80, y: 50, z: -40 }, end: { x: 80, y: -40, z: 50 } },
+      { start: { x: 80, y: 60, z: -30 }, end: { x: -70, y: -35, z: 55 } },
+      { start: { x: -70, y: 65, z: 50 }, end: { x: 75, y: -50, z: -60 } },
     ],
   },
   PERFORMANCE: {
     PIXEL_RATIO: Math.min(window.devicePixelRatio, 1.5),
     TARGET_FPS: 50,
-    DRS_DOWN_THRESHOLD: 45, // Dynamic Resolution Scaling FPS threshold to scale down
-    DRS_UP_THRESHOLD: 55, // Dynamic Resolution Scaling FPS threshold to scale up
+    DRS_DOWN_THRESHOLD: 45,
+    DRS_UP_THRESHOLD: 55,
   },
   QUALITY_LEVELS: {
-    // Progressive Enhancement: Features werden bei niedrigem FPS deaktiviert
     HIGH: {
       minFPS: 45,
       features: {
@@ -180,7 +197,7 @@ const CONFIG = {
     MEDIUM: {
       minFPS: 25,
       features: {
-        multiLayerAtmosphere: false, // Deaktiviere Rayleigh Layer
+        multiLayerAtmosphere: false,
         oceanReflections: true,
         cloudLayer: true,
         cityLightsPulse: false,
@@ -191,8 +208,8 @@ const CONFIG = {
       minFPS: 0,
       features: {
         multiLayerAtmosphere: false,
-        oceanReflections: false, // Deaktiviere Ocean Shader
-        cloudLayer: false, // Entferne Cloud Layer
+        oceanReflections: false,
+        cloudLayer: false,
         cityLightsPulse: false,
         meteorShowers: false,
       },
@@ -213,38 +230,40 @@ const CONFIG = {
   },
 };
 
-// ===== Global Variables =====
+// ===== Global State Variables =====
+// Scene & Core Objects
 let scene, camera, renderer, earthMesh, starField, cloudMesh, atmosphereMesh;
+let directionalLight = null;
+let ambientLight = null;
+let rayleighAtmosphereMesh = null;
+let THREE_INSTANCE = null;
+
+// Materials & Modes
+let dayMaterial = null;
+let nightMaterial = null;
+let lastAboutMode = null;
+
+// System State
 let sectionObserver = null;
 let animationFrameId = null;
 let currentSection = "hero";
+let currentQualityLevel = "HIGH";
 let isMobileDevice = false;
+let frameCount = 0;
+
+// Managers & Effects
 let performanceMonitor = null;
 let shootingStarManager = null;
-let THREE_INSTANCE = null;
-let directionalLight = null; // Sonne - rotiert mit Wolken
-let ambientLight = null; // Umgebungslicht - wird bei Nacht ausgeschaltet
-let currentQualityLevel = "HIGH"; // HIGH, MEDIUM, LOW
-let rayleighAtmosphereMesh = null; // Separate Rayleigh-Schicht für Toggle
-let dayMaterial = null; // Day-Only Material (global)
-let nightMaterial = null; // Night-Only Material (global)
-let lastAboutMode = null; // Letzter Modus bei "about" (für Toggle)
-let cameraOrbitAngle = 0; // Horizontale Rotation um Erde (0° = Tag, 180° = Nacht)
-let targetOrbitAngle = 0; // Target für smooth Transition
-let frameCount = 0; // Frame-Counter für Performance-Optimierungen
+let sunPositionVector = null;
 
-// Camera and Animation States
+// Camera State
 const cameraTarget = { x: 0, y: 0, z: 10 };
 const cameraPosition = { x: 0, y: 0, z: 10 };
-const cameraRotation = { x: 0, y: 0 };
+let cameraOrbitAngle = 0;
+let targetOrbitAngle = 0;
 
-// Wiederverwendbare Vector3 für Animation Loop (Memory Optimization)
-let sunPositionVector = null; // Wird in startAnimationLoop() initialisiert
-
-// Mouse Interaction State - Nur Zoom aktiv
-const mouseState = {
-  zoom: 10, // Nur Zoom via Mausrad
-};
+// User Interaction
+const mouseState = { zoom: 10 };
 
 // ===== Three.js Earth System Manager =====
 const ThreeEarthManager = (() => {
@@ -543,16 +562,11 @@ function setupStarParallax() {
     starField.position.z = Math.sin(progress * Math.PI) * 15;
   };
   sharedParallaxManager.addHandler(parallaxHandler, "three-earth-stars");
-  sharedCleanupManager.addCleanupFunction(
-    "three-earth",
-    () => sharedParallaxManager.removeHandler(parallaxHandler),
-    "star parallax handler"
-  );
 }
 
-// ===== Lighting Setup =====
+// ===== Cinematic Lighting Setup =====
 function setupLighting() {
-  // Sonne - rotiert mit Wolken für wandernde Tag/Nacht-Grenze
+  // Sonne - rotiert mit Kamera-Orbit für konsistente Beleuchtung
   directionalLight = new THREE_INSTANCE.DirectionalLight(
     0xffffff,
     CONFIG.SUN.INTENSITY
@@ -560,8 +574,11 @@ function setupLighting() {
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
-  // Umgebungslicht: Initial für Tag-Modus (1.5 = komplette Ausleuchtung)
-  ambientLight = new THREE_INSTANCE.AmbientLight(0x404040, 1.5);
+  // Umgebungslicht: Initial für Tag-Modus (cinematische Werte)
+  ambientLight = new THREE_INSTANCE.AmbientLight(
+    CONFIG.LIGHTING.DAY.AMBIENT_COLOR,
+    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY
+  );
   scene.add(ambientLight);
 }
 
@@ -963,29 +980,17 @@ function setupCameraSystem() {
   updateCameraForSection("hero");
 }
 
-// Erweiterte Kamera-Steuerung mit Presets und Smooth Transitions
-let cameraTransition = null; // Aktueller Tween
+// Kamera-Steuerung mit Presets und Smooth Transitions
+let cameraTransition = null;
 
 function updateCameraForSection(sectionName) {
-  // Neue Preset-basierte Kamera-Positionen
   const preset = CONFIG.CAMERA.PRESETS[sectionName];
 
   if (preset) {
-    // Nutze Preset mit smooth Transition
     flyToPreset(sectionName);
   } else {
-    // Fallback auf alte Konfiguration
-    const configs = {
-      hero: { pos: { x: 0, y: -1.8, z: 10 }, rot: { x: 0.2, y: 0 } },
-      features: { pos: { x: -3, y: 2.5, z: 12 }, rot: { x: -0.3, y: 0.4 } },
-      about: { pos: { x: 0, y: 1, z: 25 }, rot: { x: -0.15, y: 0 } },
-    };
-    const config = configs[sectionName] || configs.hero;
-    cameraTarget.x = config.pos.x;
-    cameraTarget.y = config.pos.y;
-    mouseState.zoom = config.pos.z;
-    cameraRotation.x = config.rot.x;
-    cameraRotation.y = config.rot.y;
+    log.warn(`No camera preset for section '${sectionName}', using hero`);
+    flyToPreset("hero");
   }
 }
 
@@ -1006,23 +1011,58 @@ function flyToPreset(presetName) {
   // Smooth Transition zu neuer Position
   const startPos = { ...cameraTarget };
   const startZoom = mouseState.zoom;
-  const duration = CONFIG.CAMERA.TRANSITION_DURATION * 1000; // ms
+  
+  // Berechne Distanz für adaptive Transition-Dauer
+  const distance = Math.sqrt(
+    Math.pow(preset.x - startPos.x, 2) +
+    Math.pow(preset.y - startPos.y, 2) +
+    Math.pow(preset.z - startZoom, 2)
+  );
+  
+  // Adaptive Dauer: Basis + distanzbasiert (min 1.5s, max 4.5s)
+  const baseDuration = CONFIG.CAMERA.TRANSITION_DURATION;
+  const adaptiveDuration = Math.max(
+    1.5,
+    Math.min(4.5, baseDuration + distance * CONFIG.CAMERA.TRANSITION_DURATION_MULTIPLIER)
+  );
+  const duration = adaptiveDuration * 1000; // ms
   const startTime = performance.now();
+
+  log.debug(`Camera flight to '${presetName}': distance=${distance.toFixed(1)}, duration=${adaptiveDuration.toFixed(1)}s`);
 
   function transitionStep() {
     const elapsed = performance.now() - startTime;
     const progress = Math.min(elapsed / duration, 1);
 
-    // Easing: easeInOutCubic
+    // Easing: easeInOutQuart (smoothere Beschleunigung/Verzögerung)
     const eased =
       progress < 0.5
-        ? 4 * progress * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        ? 8 * progress * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 4) / 2;
 
-    // Interpoliere Position
+    // Interpoliere Position mit smoothem Easing
     cameraTarget.x = startPos.x + (preset.x - startPos.x) * eased;
     cameraTarget.y = startPos.y + (preset.y - startPos.y) * eased;
-    mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
+    
+    // Cinematische Zoom-Kurve: Arc-Movement für weite Flüge
+    const zoomDistance = Math.abs(preset.z - startZoom);
+    
+    if (zoomDistance > 8) {
+      // Weite Flüge: Bogen-Kurve (erst raus, dann zum Ziel)
+      const arcPeak = Math.max(startZoom, preset.z) * 1.12; // 12% über Maximum
+      if (progress < 0.5) {
+        // Erste Hälfte: Start → Arc-Peak
+        const arcEased = easeOutQuad(progress * 2);
+        mouseState.zoom = startZoom + (arcPeak - startZoom) * arcEased;
+      } else {
+        // Zweite Hälfte: Arc-Peak → Ziel
+        const arcEased = easeInQuad((progress - 0.5) * 2);
+        mouseState.zoom = arcPeak + (preset.z - arcPeak) * arcEased;
+      }
+    } else {
+      // Kurze Flüge: Direkte Interpolation
+      mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
+    }
 
     // Aktualisiere LookAt wenn definiert
     if (preset.lookAt && camera) {
@@ -1037,46 +1077,18 @@ function flyToPreset(presetName) {
     }
   }
 
+  // Helper Easing Functions für Arc-Movement
+  function easeOutQuad(t) {
+    return t * (2 - t);
+  }
+  function easeInQuad(t) {
+    return t * t;
+  }
+
   transitionStep();
 }
 
-// Fliege zu Lat/Lon Koordinaten (z.B. für Locations)
-function flyToLocation(lat, lon, zoom = 8, duration = 2.0) {
-  // Konvertiere Lat/Lon zu Kamera-Position (sphärische Koordinaten)
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lon + 180) * (Math.PI / 180);
-
-  const x = -(zoom * Math.sin(phi) * Math.cos(theta));
-  const y = zoom * Math.cos(phi);
-  const z = zoom * Math.sin(phi) * Math.sin(theta);
-
-  // Erstelle temporäres Preset mit korrekten sphärischen Koordinaten
-  const tempPreset = {
-    x,
-    y,
-    z, // Verwende berechnetes z (nicht zoom!)
-    lookAt: { x: 0, y: 0, z: 0 },
-  };
-
-  // Speichere in PRESETS und fliege hin
-  CONFIG.CAMERA.PRESETS._temp = tempPreset;
-  const oldDuration = CONFIG.CAMERA.TRANSITION_DURATION;
-  CONFIG.CAMERA.TRANSITION_DURATION = duration;
-
-  flyToPreset("_temp");
-
-  // Cleanup nach Transition
-  earthTimers.setTimeout(
-    () => {
-      delete CONFIG.CAMERA.PRESETS._temp;
-      CONFIG.CAMERA.TRANSITION_DURATION = oldDuration;
-    },
-    duration * 1000 + 100
-  );
-
-  log.info(`Flying to location: ${lat}°N, ${lon}°E`);
-}
-
+// ===== Section Detection & Earth Updates =====
 function setupSectionDetection() {
   const sections = document.querySelectorAll("section[id]");
   if (sections.length === 0) return;
@@ -1212,26 +1224,28 @@ function updateEarthForSection(sectionName) {
     log.debug(`Material remains: ${targetMode.toUpperCase()} mode (no change)`);
   }
 
-  // Beleuchtung basierend auf Mode: Tag = komplett hell, Nacht = komplett dunkel
+  // Cinematische Beleuchtung basierend auf Mode
   if (directionalLight && ambientLight) {
     const currentMode = earthMesh.userData.currentMode;
 
     if (currentMode === "day") {
-      // TAG: Sehr starkes Umgebungslicht für KOMPLETTE Ausleuchtung
-      directionalLight.intensity = CONFIG.SUN.INTENSITY;
-      ambientLight.intensity = 1.5; // MASSIV erhöht für komplette Ausleuchtung
+      // TAG: Starke, warme Beleuchtung für klare Sicht
+      directionalLight.intensity = CONFIG.LIGHTING.DAY.SUN_INTENSITY;
+      ambientLight.intensity = CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY;
+      ambientLight.color.setHex(CONFIG.LIGHTING.DAY.AMBIENT_COLOR);
       // Sonnen-Position wird in updateCameraPosition() gesetzt (folgt Kamera-Orbit)
     } else {
-      // NACHT: Reduzierte Beleuchtung für Sichtbarkeit, Stadtlichter im Fokus
-      directionalLight.intensity = 0.4; // Leichtes Mondlicht für Kontur
-      ambientLight.intensity = 0.3; // Mehr Umgebungslicht für Details
-      // Nacht: Sonne bleibt an fixer Position (Standard)
+      // NACHT: Reduzierte, kühle Beleuchtung für dramatischen Look
+      directionalLight.intensity = CONFIG.LIGHTING.NIGHT.SUN_INTENSITY;
+      ambientLight.intensity = CONFIG.LIGHTING.NIGHT.AMBIENT_INTENSITY;
+      ambientLight.color.setHex(CONFIG.LIGHTING.NIGHT.AMBIENT_COLOR);
+      // Nacht: Sonne an fixer Position (subtiles Mondlicht)
       directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
 
-      // Ocean Shader mit reduzierter Intensität (mit Null-Check)
+      // Ocean Shader mit reduzierter Intensität
       if (earthMesh?.material?.userData?.oceanShader) {
         earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
-          CONFIG.SUN.RADIUS * 0.3,
+          CONFIG.SUN.RADIUS * 0.25,
           CONFIG.SUN.HEIGHT,
           0
         );
@@ -1239,7 +1253,7 @@ function updateEarthForSection(sectionName) {
     }
 
     log.debug(
-      `Lights ${currentMode === "day" ? "ON" : "OFF"} (sun: ${directionalLight.intensity}, ambient: ${ambientLight.intensity})`
+      `Cinematic Lights: ${currentMode.toUpperCase()} (sun: ${directionalLight.intensity.toFixed(1)}, ambient: ${ambientLight.intensity.toFixed(2)})`
     );
   }
 
@@ -1379,32 +1393,32 @@ function startAnimationLoop() {
   }
 
   function updateCameraPosition(lerpFactor) {
-    // Optimierte orbital rotation mit Easing (Tag/Nacht Übergang)
+    // Cinematische orbital rotation mit Easing (Day/Night Transitions)
     const angleDiff = targetOrbitAngle - cameraOrbitAngle;
 
-    // Easing-Funktion: Schnell starten, sanft enden (easeOutCubic)
+    // Easing: easeOutQuart für smoothere Verzögerung
     const rawProgress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
-    const easedProgress = 1 - Math.pow(1 - rawProgress, 3);
-    const easingFactor = 0.05 + easedProgress * 0.08; // 5% bis 13% je nach Progress
+    const easedProgress = 1 - Math.pow(1 - rawProgress, 4);
+    const easingFactor = 0.06 + easedProgress * 0.12; // 6% bis 18%
 
     cameraOrbitAngle += angleDiff * easingFactor;
 
     // Basis-Zoom aus mouseState
     cameraTarget.z = mouseState.zoom;
-
-    // Berechne Kamera-Position auf Orbit um die Erde
     const radius = mouseState.zoom;
 
-    // Arc-Bewegung: Kamera hebt sich während des Flugs an (dramatischer Effekt)
-    const flightProgress = Math.abs(angleDiff) / Math.PI; // 0 = am Ziel, 1 = am weitesten entfernt
-    const arcHeight = Math.sin(flightProgress * Math.PI) * radius * 0.2; // Max 20% Höhe bei 50% Progress
+    // Cinematische Arc-Bewegung: Kamera hebt sich während Flug an
+    const flightProgress = Math.abs(angleDiff) / Math.PI;
+    const arcBase = CONFIG.CAMERA.ARC_HEIGHT_BASE;
+    const arcMult = CONFIG.CAMERA.ARC_HEIGHT_MULTIPLIER;
+    const arcHeight = Math.sin(flightProgress * Math.PI) * radius * (arcBase + arcMult * Math.min(1, radius / 30));
 
-    const finalX = cameraTarget.x + Math.sin(cameraOrbitAngle) * radius * 0.8;
-    const finalY = cameraTarget.y + arcHeight; // Dynamische Höhe während Flug
+    const finalX = cameraTarget.x + Math.sin(cameraOrbitAngle) * radius * 0.75;
+    const finalY = cameraTarget.y + arcHeight;
     const finalZ = Math.cos(cameraOrbitAngle) * radius;
 
-    // Smooth Lerp zur Ziel-Position (adaptiver Lerp-Faktor während Flug)
-    const adaptiveLerp = flightProgress > 0.1 ? lerpFactor * 1.5 : lerpFactor; // Schneller während Flug
+    // Adaptiver Lerp: Schneller während Flug, langsamer bei Ankunft
+    const adaptiveLerp = flightProgress > 0.15 ? lerpFactor * 1.8 : lerpFactor;
     cameraPosition.x += (finalX - cameraPosition.x) * adaptiveLerp;
     cameraPosition.y += (finalY - cameraPosition.y) * adaptiveLerp;
     cameraPosition.z += (finalZ - cameraPosition.z) * adaptiveLerp;
@@ -1435,32 +1449,32 @@ function startAnimationLoop() {
   function updateObjectTransforms() {
     if (!earthMesh) return;
 
-    // Animiere Erd-Position via Lerp
+    // Cinematische Earth Position mit Lerp
     if (earthMesh.userData.targetPosition) {
-      earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.03);
+      earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04); // Leicht erhöht für smootheren Look
     }
 
-    // Animiere Erd-Scale via Lerp
+    // Cinematische Earth Scale mit Lerp
     if (earthMesh.userData.targetScale) {
       const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
       if (Math.abs(scaleDiff) > 0.001) {
-        const newScale = earthMesh.scale.x + scaleDiff * 0.05;
+        const newScale = earthMesh.scale.x + scaleDiff * 0.06; // Erhöht von 0.05
         earthMesh.scale.set(newScale, newScale, newScale);
       }
     }
 
-    // Animiere Erd-Rotation (Y-Achse für schnelle Drehung bei Tag/Nacht-Wechsel)
+    // Cinematische Earth Rotation (Y-Achse für Day/Night Transitions)
     if (earthMesh.userData.targetRotation !== undefined) {
       const rotDiff = earthMesh.userData.targetRotation - earthMesh.rotation.y;
 
-      // KEINE Normalisierung! Wir wollen die volle Rotation (z.B. 2π = 360°)
-      // So kann die Erde mehrfach rotieren für dramatischen Effekt
-
       if (Math.abs(rotDiff) > 0.001) {
-        // Schnellere Rotation für dramatischen Effekt (0.08 statt 0.04)
-        earthMesh.rotation.y += rotDiff * 0.08;
+        // Smoothe Rotation mit easeOutCubic für cinematischen Look
+        const progress = Math.abs(rotDiff) / Math.PI;
+        const easing = 1 - Math.pow(1 - Math.min(progress, 1), 3);
+        const speed = 0.06 + easing * 0.06; // 6%-12% je nach Progress
+        earthMesh.rotation.y += rotDiff * speed;
       } else {
-        // Snapping bei fast erreicht - verhindert Endlos-Drift
+        // Snapping bei Ankunft
         earthMesh.rotation.y = earthMesh.userData.targetRotation;
       }
     }
@@ -1723,23 +1737,8 @@ export const { initThreeEarth, cleanup } = ThreeEarthManager;
  */
 export const EarthSystemAPI = {
   /**
-   * Fliege zu geografischen Koordinaten
-   * @param {number} lat - Breitengrad (-90 bis 90)
-   * @param {number} lon - Längengrad (-180 bis 180)
-   * @param {number} zoom - Zoom-Level (4-30)
-   * @param {number} duration - Dauer in Sekunden
-   */
-  flyToLocation: (lat, lon, zoom = 8, duration = 2.0) => {
-    if (typeof flyToLocation === "function") {
-      flyToLocation(lat, lon, zoom, duration);
-    } else {
-      log.warn("Earth system not initialized");
-    }
-  },
-
-  /**
    * Fliege zu vordefiniertem Preset
-   * @param {string} presetName - Name des Presets (hero, portfolio, about, contact)
+   * @param {string} presetName - Name des Presets (hero, features, about)
    */
   flyToPreset: (presetName) => {
     if (typeof flyToPreset === "function") {
