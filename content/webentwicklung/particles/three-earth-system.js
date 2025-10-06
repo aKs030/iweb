@@ -1011,24 +1011,29 @@ function flyToPreset(presetName) {
   // Smooth Transition zu neuer Position
   const startPos = { ...cameraTarget };
   const startZoom = mouseState.zoom;
-  
+
   // Berechne Distanz für adaptive Transition-Dauer
   const distance = Math.sqrt(
     Math.pow(preset.x - startPos.x, 2) +
-    Math.pow(preset.y - startPos.y, 2) +
-    Math.pow(preset.z - startZoom, 2)
+      Math.pow(preset.y - startPos.y, 2) +
+      Math.pow(preset.z - startZoom, 2)
   );
-  
+
   // Adaptive Dauer: Basis + distanzbasiert (min 1.5s, max 4.5s)
   const baseDuration = CONFIG.CAMERA.TRANSITION_DURATION;
   const adaptiveDuration = Math.max(
     1.5,
-    Math.min(4.5, baseDuration + distance * CONFIG.CAMERA.TRANSITION_DURATION_MULTIPLIER)
+    Math.min(
+      4.5,
+      baseDuration + distance * CONFIG.CAMERA.TRANSITION_DURATION_MULTIPLIER
+    )
   );
   const duration = adaptiveDuration * 1000; // ms
   const startTime = performance.now();
 
-  log.debug(`Camera flight to '${presetName}': distance=${distance.toFixed(1)}, duration=${adaptiveDuration.toFixed(1)}s`);
+  log.debug(
+    `Camera flight to '${presetName}': distance=${distance.toFixed(1)}, duration=${adaptiveDuration.toFixed(1)}s`
+  );
 
   function transitionStep() {
     const elapsed = performance.now() - startTime;
@@ -1043,10 +1048,10 @@ function flyToPreset(presetName) {
     // Interpoliere Position mit smoothem Easing
     cameraTarget.x = startPos.x + (preset.x - startPos.x) * eased;
     cameraTarget.y = startPos.y + (preset.y - startPos.y) * eased;
-    
+
     // Cinematische Zoom-Kurve: Arc-Movement für weite Flüge
     const zoomDistance = Math.abs(preset.z - startZoom);
-    
+
     if (zoomDistance > 8) {
       // Weite Flüge: Bogen-Kurve (erst raus, dann zum Ziel)
       const arcPeak = Math.max(startZoom, preset.z) * 1.12; // 12% über Maximum
@@ -1411,7 +1416,10 @@ function startAnimationLoop() {
     const flightProgress = Math.abs(angleDiff) / Math.PI;
     const arcBase = CONFIG.CAMERA.ARC_HEIGHT_BASE;
     const arcMult = CONFIG.CAMERA.ARC_HEIGHT_MULTIPLIER;
-    const arcHeight = Math.sin(flightProgress * Math.PI) * radius * (arcBase + arcMult * Math.min(1, radius / 30));
+    const arcHeight =
+      Math.sin(flightProgress * Math.PI) *
+      radius *
+      (arcBase + arcMult * Math.min(1, radius / 30));
 
     const finalX = cameraTarget.x + Math.sin(cameraOrbitAngle) * radius * 0.75;
     const finalY = cameraTarget.y + arcHeight;
