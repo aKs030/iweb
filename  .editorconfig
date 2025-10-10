@@ -1,0 +1,29 @@
+# ============================
+# EditorConfig für iweb-Projekt
+# Einheitliche Formatierung über alle Editoren & Tools
+# ============================
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.{js,json,yaml,yml}]
+quote_type = single
+max_line_length = 100
+
+[*.{html,css,scss}]
+indent_size = 2
+indent_style = space
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+[.gitignore]
+insert_final_newline = false

@@ -547,6 +547,17 @@ a:hover {
   min-height: 80vh; /* Sorgt für ausreichend Höhe zur Zentrierung */
 }
 
+/* Features Cards Grid - Desktop */
+.features-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg, 2rem);
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
 /* Features Section spezifische Zentrierung */
 #features.section {
   display: flex;
@@ -554,6 +565,8 @@ a:hover {
   justify-content: center;
   padding: 0 !important; /* Remove section padding */
   margin: 0 !important; /* Remove any margins */
+  position: relative;
+  z-index: 1;
 }
 
 .features-content::before {

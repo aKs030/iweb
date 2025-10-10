@@ -14,15 +14,11 @@ async function consolidateCss() {
     console.log('🔄 Konsolidiere CSS Custom Properties...\n');
 
     const rootCssPath = join(projectRoot, 'content/webentwicklung/root.css');
-    
+
     // Find all CSS files except root.css
     const cssFiles = await glob('**/*.css', {
       cwd: projectRoot,
-      ignore: [
-        'node_modules/**', 
-        '.git/**', 
-        'content/webentwicklung/root.css'
-      ]
+      ignore: ['node_modules/**', '.git/**', 'content/webentwicklung/root.css'],
     });
 
     let rootCssContent = await readFile(rootCssPath, 'utf8');
@@ -36,20 +32,25 @@ async function consolidateCss() {
 
       if (matches && matches.length > 0) {
         console.log(`📄 ${file}: ${matches.length} Properties gefunden`);
-        
+
         // Add properties to root.css if not already present
         for (const property of matches) {
           const propName = property.match(/--[\w-]+/)[0];
-          
+
           if (!rootCssContent.includes(propName)) {
             // Find the :root section and add the property
             const rootSectionMatch = rootCssContent.match(/(:root\s*{[^}]*)/);
             if (rootSectionMatch) {
-              const newRootSection = rootSectionMatch[1] + '\n  ' + property.trim();
-              rootCssContent = rootCssContent.replace(rootSectionMatch[1], newRootSection);
+              const newRootSection =
+                rootSectionMatch[1] + '\n  ' + property.trim();
+              rootCssContent = rootCssContent.replace(
+                rootSectionMatch[1],
+                newRootSection
+              );
             } else {
               // Create :root section if it doesn't exist
-              rootCssContent = `:root {\n  ${property.trim()}\n}\n\n` + rootCssContent;
+              rootCssContent =
+                `:root {\n  ${property.trim()}\n}\n\n` + rootCssContent;
             }
             totalMoved++;
           }
@@ -64,9 +65,8 @@ async function consolidateCss() {
     // Write updated root.css
     await writeFile(rootCssPath, rootCssContent, 'utf8');
 
-    console.log(`\n✅ Konsolidierung abgeschlossen!`);
+    console.log('\n✅ Konsolidierung abgeschlossen!');
     console.log(`📊 ${totalMoved} Properties nach root.css verschoben`);
-
   } catch (error) {
     console.error('❌ Fehler bei der CSS Konsolidierung:', error);
     process.exit(1);

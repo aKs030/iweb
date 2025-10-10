@@ -6,13 +6,13 @@
  * Generiert Performance-Budget-Report
  */
 
-import { readFileSync, readdirSync, statSync } from "fs";
-import { dirname, extname, join, relative } from "path";
-import { fileURLToPath } from "url";
+import { readFileSync, readdirSync, statSync } from 'fs';
+import { dirname, extname, join, relative } from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PROJECT_ROOT = join(__dirname, "..");
+const PROJECT_ROOT = join(__dirname, '..');
 
 // ===== Performance Budgets (in KB) =====
 const BUDGETS = {
@@ -34,8 +34,8 @@ const BUDGETS = {
 // ===== File Scanner =====
 function scanDirectory(
   dir,
-  extensions = [".js", ".css"],
-  excludeDirs = ["node_modules", ".git", "scripts"]
+  extensions = ['.js', '.css'],
+  excludeDirs = ['node_modules', '.git', 'scripts']
 ) {
   const files = [];
 
@@ -72,13 +72,13 @@ function scanDirectory(
 
 // ===== Module Analysis =====
 function analyzeModules() {
-  console.log("📦 JavaScript Module Analyse\n");
-  console.log("═".repeat(80));
+  console.log('📦 JavaScript Module Analyse\n');
+  console.log('═'.repeat(80));
 
   const jsFiles = scanDirectory(
     PROJECT_ROOT,
-    [".js"],
-    ["node_modules", ".git", "scripts"]
+    ['.js'],
+    ['node_modules', '.git', 'scripts']
   );
 
   // Kategorisieren
@@ -92,18 +92,18 @@ function analyzeModules() {
   };
 
   jsFiles.forEach((file) => {
-    if (file.path.includes("lib/three")) {
+    if (file.path.includes('lib/three')) {
       categories.vendor.push(file);
     } else if (
-      file.path.includes("main.js") ||
-      file.path.includes("shared-utilities.js")
+      file.path.includes('main.js') ||
+      file.path.includes('shared-utilities.js')
     ) {
       categories.core.push(file);
-    } else if (file.path.includes("animations/")) {
+    } else if (file.path.includes('animations/')) {
       categories.animations.push(file);
-    } else if (file.path.includes("particles/")) {
+    } else if (file.path.includes('particles/')) {
       categories.particles.push(file);
-    } else if (file.path.includes("pages/")) {
+    } else if (file.path.includes('pages/')) {
       categories.pages.push(file);
     } else {
       categories.components.push(file);
@@ -122,28 +122,28 @@ function analyzeModules() {
     totalSize += categorySize;
 
     console.log(`\n📁 ${category.toUpperCase()}`);
-    console.log("─".repeat(80));
+    console.log('─'.repeat(80));
 
     files
       .sort((a, b) => b.size - a.size)
       .forEach((file) => {
         const budgetKey =
-          category === "vendor"
-            ? "vendor"
-            : category === "core"
-              ? "critical"
-              : "module";
+          category === 'vendor'
+            ? 'vendor'
+            : category === 'core'
+              ? 'critical'
+              : 'module';
         const budget = BUDGETS.js[budgetKey];
         const overBudget = parseFloat(file.sizeKB) > budget;
 
-        const icon = overBudget ? "⚠️" : "✅";
-        const budgetInfo = overBudget ? ` (Budget: ${budget} KB)` : "";
+        const icon = overBudget ? '⚠️' : '✅';
+        const budgetInfo = overBudget ? ` (Budget: ${budget} KB)` : '';
 
         console.log(
           `${icon} ${file.sizeKB.padStart(8)} KB  ${file.path}${budgetInfo}`
         );
 
-        if (overBudget && category !== "vendor") {
+        if (overBudget && category !== 'vendor') {
           warnings.push({
             file: file.path,
             size: file.sizeKB,
@@ -153,26 +153,26 @@ function analyzeModules() {
         }
       });
 
-    console.log(`   ${"─".repeat(70)}`);
+    console.log(`   ${'─'.repeat(70)}`);
     console.log(`   Summe: ${categorySizeKB} KB`);
   });
 
-  console.log("\n" + "═".repeat(80));
+  console.log('\n' + '═'.repeat(80));
   console.log(`📊 GESAMT JavaScript: ${(totalSize / 1024).toFixed(2)} KB`);
-  console.log("═".repeat(80));
+  console.log('═'.repeat(80));
 
   return { totalSize, warnings };
 }
 
 // ===== CSS Analysis =====
 function analyzeCSS() {
-  console.log("\n\n🎨 CSS Dateien Analyse\n");
-  console.log("═".repeat(80));
+  console.log('\n\n🎨 CSS Dateien Analyse\n');
+  console.log('═'.repeat(80));
 
   const cssFiles = scanDirectory(
     PROJECT_ROOT,
-    [".css"],
-    ["node_modules", ".git"]
+    ['.css'],
+    ['node_modules', '.git']
   );
 
   let totalSize = 0;
@@ -182,13 +182,13 @@ function analyzeCSS() {
     .sort((a, b) => b.size - a.size)
     .forEach((file) => {
       const isCritical =
-        file.path.includes("root.css") || file.path.includes("index.css");
+        file.path.includes('root.css') || file.path.includes('index.css');
       const budget = isCritical ? BUDGETS.css.critical : BUDGETS.css.module;
       const overBudget = parseFloat(file.sizeKB) > budget;
 
-      const icon = overBudget ? "⚠️" : "✅";
-      const type = isCritical ? "[CRITICAL]" : "[MODULE]  ";
-      const budgetInfo = overBudget ? ` (Budget: ${budget} KB)` : "";
+      const icon = overBudget ? '⚠️' : '✅';
+      const type = isCritical ? '[CRITICAL]' : '[MODULE]  ';
+      const budgetInfo = overBudget ? ` (Budget: ${budget} KB)` : '';
 
       console.log(
         `${icon} ${file.sizeKB.padStart(8)} KB  ${type}  ${file.path}${budgetInfo}`
@@ -201,28 +201,28 @@ function analyzeCSS() {
           file: file.path,
           size: file.sizeKB,
           budget,
-          type: isCritical ? "critical" : "module",
+          type: isCritical ? 'critical' : 'module',
         });
       }
     });
 
-  console.log("═".repeat(80));
+  console.log('═'.repeat(80));
   console.log(`📊 GESAMT CSS: ${(totalSize / 1024).toFixed(2)} KB`);
-  console.log("═".repeat(80));
+  console.log('═'.repeat(80));
 
   return { totalSize, warnings };
 }
 
 // ===== Asset Analysis =====
 function analyzeAssets() {
-  console.log("\n\n🖼️  Asset Analyse (WebP Texturen)\n");
-  console.log("═".repeat(80));
+  console.log('\n\n🖼️  Asset Analyse (WebP Texturen)\n');
+  console.log('═'.repeat(80));
 
-  const assetFiles = scanDirectory(join(PROJECT_ROOT, "content/img"), [
-    ".webp",
-    ".jpg",
-    ".png",
-    ".svg",
+  const assetFiles = scanDirectory(join(PROJECT_ROOT, 'content/img'), [
+    '.webp',
+    '.jpg',
+    '.png',
+    '.svg',
   ]);
 
   let totalSize = 0;
@@ -231,12 +231,12 @@ function analyzeAssets() {
     .sort((a, b) => b.size - a.size)
     .slice(0, 15) // Top 15
     .forEach((file) => {
-      const isTexture = file.path.includes("earth/textures");
+      const isTexture = file.path.includes('earth/textures');
       const budget = isTexture ? BUDGETS.image.texture : BUDGETS.image.icon;
       const overBudget = parseFloat(file.sizeKB) > budget;
 
-      const icon = overBudget ? "⚠️" : "✅";
-      const type = isTexture ? "[TEXTURE]" : "[IMAGE]  ";
+      const icon = overBudget ? '⚠️' : '✅';
+      const type = isTexture ? '[TEXTURE]' : '[IMAGE]  ';
 
       console.log(
         `${icon} ${file.sizeKB.padStart(8)} KB  ${type}  ${file.path}`
@@ -244,20 +244,20 @@ function analyzeAssets() {
       totalSize += file.size;
     });
 
-  console.log("═".repeat(80));
+  console.log('═'.repeat(80));
   console.log(`📊 GESAMT Assets (Top 15): ${(totalSize / 1024).toFixed(2)} KB`);
-  console.log("═".repeat(80));
+  console.log('═'.repeat(80));
 }
 
 // ===== Import Dependency Analysis =====
 function analyzeImports() {
-  console.log("\n\n🔗 Import-Abhängigkeiten\n");
-  console.log("═".repeat(80));
+  console.log('\n\n🔗 Import-Abhängigkeiten\n');
+  console.log('═'.repeat(80));
 
   const jsFiles = scanDirectory(
     PROJECT_ROOT,
-    [".js"],
-    ["node_modules", ".git", "scripts"]
+    ['.js'],
+    ['node_modules', '.git', 'scripts']
   );
 
   const importCount = {};
@@ -265,7 +265,7 @@ function analyzeImports() {
 
   jsFiles.forEach((file) => {
     try {
-      const content = readFileSync(join(PROJECT_ROOT, file.path), "utf-8");
+      const content = readFileSync(join(PROJECT_ROOT, file.path), 'utf-8');
       const imports = content.match(/import\s+.*?from\s+['"](.+?)['"]/g) || [];
 
       importCount[file.path] = imports.length;
@@ -282,20 +282,20 @@ function analyzeImports() {
     }
   });
 
-  console.log("\n📥 Meistgenutzte Module (Top 10):");
-  console.log("─".repeat(80));
+  console.log('\n📥 Meistgenutzte Module (Top 10):');
+  console.log('─'.repeat(80));
 
   Object.entries(mostImported)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
     .forEach(([path, count]) => {
-      const isSharedUtilities = path.includes("shared-utilities");
-      const icon = isSharedUtilities ? "⭐" : "  ";
+      const isSharedUtilities = path.includes('shared-utilities');
+      const icon = isSharedUtilities ? '⭐' : '  ';
       console.log(`${icon} ${count.toString().padStart(3)}x  ${path}`);
     });
 
-  console.log("\n📤 Module mit meisten Imports (Top 10):");
-  console.log("─".repeat(80));
+  console.log('\n📤 Module mit meisten Imports (Top 10):');
+  console.log('─'.repeat(80));
 
   Object.entries(importCount)
     .sort((a, b) => b[1] - a[1])
@@ -307,14 +307,14 @@ function analyzeImports() {
 
 // ===== Performance Summary =====
 function generateSummary(jsAnalysis, cssAnalysis) {
-  console.log("\n\n" + "═".repeat(80));
-  console.log("📊 PERFORMANCE BUDGET SUMMARY");
-  console.log("═".repeat(80));
+  console.log('\n\n' + '═'.repeat(80));
+  console.log('📊 PERFORMANCE BUDGET SUMMARY');
+  console.log('═'.repeat(80));
 
   const allWarnings = [...jsAnalysis.warnings, ...cssAnalysis.warnings];
 
   if (allWarnings.length === 0) {
-    console.log("\n✅ Alle Dateien innerhalb des Performance-Budgets!");
+    console.log('\n✅ Alle Dateien innerhalb des Performance-Budgets!');
   } else {
     console.log(`\n⚠️  ${allWarnings.length} Datei(en) über Budget:\n`);
 
@@ -328,13 +328,13 @@ function generateSummary(jsAnalysis, cssAnalysis) {
   }
 
   // Zero-Build Benefits
-  console.log("\n💡 Zero-Build Vorteile:");
-  console.log("─".repeat(80));
-  console.log("   ✅ Keine Build-Zeit");
-  console.log("   ✅ Native ES6 Modules (Browser-Caching)");
-  console.log("   ✅ HTTP/2 Multiplexing-optimiert");
-  console.log("   ✅ Selective Loading (nur geladene Sections)");
-  console.log("   ✅ Service Worker Caching aktiv");
+  console.log('\n💡 Zero-Build Vorteile:');
+  console.log('─'.repeat(80));
+  console.log('   ✅ Keine Build-Zeit');
+  console.log('   ✅ Native ES6 Modules (Browser-Caching)');
+  console.log('   ✅ HTTP/2 Multiplexing-optimiert');
+  console.log('   ✅ Selective Loading (nur geladene Sections)');
+  console.log('   ✅ Service Worker Caching aktiv');
 
   // Total Transfer
   const totalKB = (
@@ -342,14 +342,14 @@ function generateSummary(jsAnalysis, cssAnalysis) {
     1024
   ).toFixed(2);
   console.log(`\n📦 Initial Page Load (ohne Three.js): ~${totalKB} KB`);
-  console.log("   (Three.js: 635 KB - lazy loaded bei Bedarf)");
+  console.log('   (Three.js: 635 KB - lazy loaded bei Bedarf)');
 
-  console.log("\n" + "═".repeat(80));
+  console.log('\n' + '═'.repeat(80));
 }
 
 // ===== Main Execution =====
 async function main() {
-  console.log("🚀 Bundle Size Analyzer - Zero-Build Portfolio\n");
+  console.log('🚀 Bundle Size Analyzer - Zero-Build Portfolio\n');
 
   const jsAnalysis = analyzeModules();
   const cssAnalysis = analyzeCSS();
@@ -357,7 +357,7 @@ async function main() {
   analyzeImports();
   generateSummary(jsAnalysis, cssAnalysis);
 
-  console.log("\n✨ Analyse abgeschlossen!\n");
+  console.log('\n✨ Analyse abgeschlossen!\n');
 
   // Exit code basierend auf Warnings
   const hasWarnings =
@@ -366,6 +366,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("❌ Fehler bei der Analyse:", error);
+  console.error('❌ Fehler bei der Analyse:', error);
   process.exit(1);
 });

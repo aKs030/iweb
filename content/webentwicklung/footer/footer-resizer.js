@@ -16,9 +16,9 @@
  * @version 1.4.0
  */
 
-import { createLogger, getElementById, throttle } from "../shared-utilities.js";
+import { createLogger, getElementById, throttle } from '../shared-utilities.js';
 
-const log = createLogger("footerResizer");
+const log = createLogger('footerResizer');
 
 /**
  * Konfigurationskonstanten für Footer-Resizer
@@ -85,15 +85,15 @@ function computeScale() {
 }
 
 function apply() {
-  const siteFooter = getElementById("site-footer");
+  const siteFooter = getElementById('site-footer');
   if (!siteFooter) {
-    log.debug("Footer noch nicht geladen, überspringe apply()");
+    log.debug('Footer noch nicht geladen, überspringe apply()');
     return;
   }
 
   const { usable } = measureViewport();
   // Dynamische 1vh-Variable: 1vh = 1% des aktuellen Viewports (Workaround für Mobile)
-  setCSSVar("--vh", `${usable * 0.01}px`);
+  setCSSVar('--vh', `${usable * 0.01}px`);
 
   // Mobile-optimierte Footer-Höhe: Auf kleinen Screens mehr Platz (bis 70%)
   const isMobile = window.innerWidth <= CONFIG.MOBILE_BREAKPOINT;
@@ -101,15 +101,15 @@ function apply() {
     ? CONFIG.MAX_FOOTER_RATIO_MOBILE
     : CONFIG.MAX_FOOTER_RATIO_DESKTOP;
   const maxFooter = Math.round(usable * maxFooterRatio);
-  setCSSVar("--footer-max-height", `${maxFooter}px`);
+  setCSSVar('--footer-max-height', `${maxFooter}px`);
 
   // Proportionale Inhalts-Skalierung basierend auf tatsächlicher Inhaltshöhe
   const content = document.querySelector(
-    "#site-footer .footer-enhanced-content"
+    '#site-footer .footer-enhanced-content'
   );
   if (content) {
     // Temporär auf Scale 1 messen
-    setCSSVar("--footer-scale", "1");
+    setCSSVar('--footer-scale', '1');
     // Force reflow, dann messen
     void content.offsetHeight;
     const naturalHeight = content.scrollHeight; // unskaliert
@@ -123,19 +123,19 @@ function apply() {
       : CONFIG.MIN_SCALE_DESKTOP;
     scale = Math.max(minScale, Number(scale.toFixed(3)));
 
-    setCSSVar("--footer-scale", String(scale));
+    setCSSVar('--footer-scale', String(scale));
     // Exakte tatsächliche Footer-Höhe nach Skalierung setzen
     const actual = Math.round(base * scale);
-    setCSSVar("--footer-actual-height", `${actual}px`);
+    setCSSVar('--footer-actual-height', `${actual}px`);
 
     log.debug(
       `Footer Scale: ${scale}, Mobile: ${isMobile}, MaxHeight: ${maxFooter}px, Actual: ${actual}px`
     );
   } else {
     // Fallback: leichte Breiten-basierte Skalierung
-    setCSSVar("--footer-scale", String(computeScale()));
+    setCSSVar('--footer-scale', String(computeScale()));
     // Keine Content-Referenz: nutze maxFooter als Annäherung
-    setCSSVar("--footer-actual-height", `${maxFooter}px`);
+    setCSSVar('--footer-actual-height', `${maxFooter}px`);
   }
 }
 
@@ -146,14 +146,14 @@ const onResize = throttle(() => {
 export function cleanup() {
   if (!STATE.inited) return;
 
-  log.debug("Footer Resizer Cleanup");
-  window.removeEventListener("resize", onResize);
-  window.removeEventListener("orientationchange", onResize);
+  log.debug('Footer Resizer Cleanup');
+  window.removeEventListener('resize', onResize);
+  window.removeEventListener('orientationchange', onResize);
 
   if (window.visualViewport) {
     const vv = window.visualViewport;
-    vv.removeEventListener("resize", onResize);
-    vv.removeEventListener("scroll", onResize);
+    vv.removeEventListener('resize', onResize);
+    vv.removeEventListener('scroll', onResize);
   }
 
   STATE.observers.forEach((obs) => obs.disconnect());
@@ -168,41 +168,41 @@ export function cleanup() {
 
 export function initFooterResizer() {
   if (STATE.inited) {
-    log.debug("Footer Resizer bereits initialisiert");
+    log.debug('Footer Resizer bereits initialisiert');
     return;
   }
 
-  log.debug("Initialisiere Footer Resizer");
+  log.debug('Initialisiere Footer Resizer');
   STATE.inited = true;
 
   // Initiale Berechnung
   apply();
 
   // Viewport-Events registrieren
-  window.addEventListener("resize", onResize, { passive: true });
-  window.addEventListener("orientationchange", onResize, { passive: true });
+  window.addEventListener('resize', onResize, { passive: true });
+  window.addEventListener('orientationchange', onResize, { passive: true });
   // visualViewport-Events (iOS Safari: Adressleisten-Animationen)
   if (window.visualViewport) {
     const vv = window.visualViewport;
-    vv.addEventListener("resize", onResize, { passive: true });
-    vv.addEventListener("scroll", onResize, { passive: true });
+    vv.addEventListener('resize', onResize, { passive: true });
+    vv.addEventListener('scroll', onResize, { passive: true });
   }
   // DOM-Änderungen im Footer beobachten (Lazy-Load/Interaktionen)
   const content = document.querySelector(
-    "#site-footer .footer-enhanced-content"
+    '#site-footer .footer-enhanced-content'
   );
-  if (content && typeof ResizeObserver !== "undefined") {
+  if (content && typeof ResizeObserver !== 'undefined') {
     try {
       const ro = new ResizeObserver(() => scheduleApply());
       ro.observe(content);
       STATE.observers.push(ro);
     } catch (err) {
-      log.debug("ResizeObserver konnte nicht initialisiert werden:", err);
+      log.debug('ResizeObserver konnte nicht initialisiert werden:', err);
     }
   }
 
-  const footer = getElementById("site-footer");
-  if (footer && typeof MutationObserver !== "undefined") {
+  const footer = getElementById('site-footer');
+  if (footer && typeof MutationObserver !== 'undefined') {
     try {
       const mo = new MutationObserver(() => scheduleApply());
       mo.observe(footer, {
@@ -213,7 +213,7 @@ export function initFooterResizer() {
       });
       STATE.observers.push(mo);
     } catch (err) {
-      log.debug("MutationObserver konnte nicht initialisiert werden:", err);
+      log.debug('MutationObserver konnte nicht initialisiert werden:', err);
     }
   }
   // Sicherheits-Refresh nach UI-Änderungen auf iOS (Adressleiste ein/aus)
@@ -221,7 +221,7 @@ export function initFooterResizer() {
   STATE.t2 = setTimeout(apply, CONFIG.DELAYED_REFRESH);
   // pageshow (bfcache) und fonts (Layout kann sich nachträglich ändern)
   window.addEventListener(
-    "pageshow",
+    'pageshow',
     () => setTimeout(apply, CONFIG.PAGESHOW_DELAY),
     {
       once: true,
@@ -233,25 +233,25 @@ export function initFooterResizer() {
       .catch(() => {});
   }
 
-  log.info("Footer Resizer erfolgreich initialisiert");
+  log.info('Footer Resizer erfolgreich initialisiert');
 }
 
 // Warte auf Footer-loaded Event statt Auto-Init
 document.addEventListener(
-  "footer:loaded",
+  'footer:loaded',
   () => {
-    log.debug("Footer:loaded Event empfangen, starte Resizer");
+    log.debug('Footer:loaded Event empfangen, starte Resizer');
     initFooterResizer();
   },
   { once: true }
 );
 
 // Fallback: Falls Event bereits gefeuert wurde, prüfe DOM
-if (document.readyState !== "loading") {
+if (document.readyState !== 'loading') {
   // Prüfe ob Footer bereits existiert
   setTimeout(() => {
-    if (getElementById("site-footer") && !STATE.inited) {
-      log.debug("Footer bereits geladen, starte Resizer (Fallback)");
+    if (getElementById('site-footer') && !STATE.inited) {
+      log.debug('Footer bereits geladen, starte Resizer (Fallback)');
       initFooterResizer();
     }
   }, CONFIG.FALLBACK_INIT_DELAY);

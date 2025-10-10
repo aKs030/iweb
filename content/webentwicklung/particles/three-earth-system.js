@@ -45,7 +45,7 @@ import {
   getElementById,
   onResize,
   TimerManager,
-} from "../shared-utilities.js";
+} from '../shared-utilities.js';
 import {
   getSharedState,
   registerParticleSystem,
@@ -53,9 +53,9 @@ import {
   sharedParallaxManager,
   ShootingStarManager,
   unregisterParticleSystem,
-} from "./shared-particle-system.js";
+} from './shared-particle-system.js';
 
-const log = createLogger("threeEarthSystem");
+const log = createLogger('threeEarthSystem');
 const earthTimers = new TimerManager();
 
 // ===== CINEMATIC CONFIGURATION v7.0 =====
@@ -119,9 +119,9 @@ const CONFIG = {
     SPEED_MULTIPLIER: 10,
     SYNC_CITY_LIGHTS: true,
     SECTION_MODES: {
-      hero: { mode: "day", sunAngle: 0 },
-      features: { mode: "day", sunAngle: 0 },
-      about: { mode: "toggle", sunAngle: Math.PI },
+      hero: { mode: 'day', sunAngle: 0 },
+      features: { mode: 'day', sunAngle: 0 },
+      about: { mode: 'toggle', sunAngle: Math.PI },
     },
   },
   STARS: {
@@ -217,15 +217,15 @@ const CONFIG = {
   },
   PATHS: {
     THREE_JS: [
-      "/content/webentwicklung/lib/three/build/three.module.min.js",
-      "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
+      '/content/webentwicklung/lib/three/build/three.module.min.js',
+      'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js',
     ],
     TEXTURES: {
-      DAY: "/content/img/earth/textures/earth_day.webp",
-      NIGHT: "/content/img/earth/textures/earth_night.webp",
-      NORMAL: "/content/img/earth/textures/earth_normal.webp",
-      BUMP: "/content/img/earth/textures/earth_bump.webp",
-      CLOUDS: "/content/img/earth/textures/earth_clouds_1024.png",
+      DAY: '/content/img/earth/textures/earth_day.webp',
+      NIGHT: '/content/img/earth/textures/earth_night.webp',
+      NORMAL: '/content/img/earth/textures/earth_normal.webp',
+      BUMP: '/content/img/earth/textures/earth_bump.webp',
+      CLOUDS: '/content/img/earth/textures/earth_clouds_1024.png',
     },
   },
 };
@@ -246,8 +246,8 @@ let lastAboutMode = null;
 // System State
 let sectionObserver = null;
 let animationFrameId = null;
-let currentSection = "hero";
-let currentQualityLevel = "HIGH";
+let currentSection = 'hero';
+let currentQualityLevel = 'HIGH';
 let isMobileDevice = false;
 let frameCount = 0;
 
@@ -269,24 +269,24 @@ const mouseState = { zoom: 10 };
 const ThreeEarthManager = (() => {
   const initThreeEarth = async () => {
     const sharedState = getSharedState();
-    if (sharedState.systems.has("three-earth")) {
-      log.debug("Three.js Earth system already initialized.");
+    if (sharedState.systems.has('three-earth')) {
+      log.debug('Three.js Earth system already initialized.');
       return cleanup;
     }
 
-    const container = getElementById("threeEarthContainer");
+    const container = getElementById('threeEarthContainer');
     if (!container) {
-      log.warn("Three.js Earth container not found.");
+      log.warn('Three.js Earth container not found.');
       return () => {};
     }
 
     try {
-      log.info("Initializing Three.js Earth system v6.0.0");
-      registerParticleSystem("three-earth", { type: "three-earth" });
+      log.info('Initializing Three.js Earth system v6.0.0');
+      registerParticleSystem('three-earth', { type: 'three-earth' });
 
       THREE_INSTANCE = await loadThreeJS();
       if (!THREE_INSTANCE)
-        throw new Error("Three.js failed to load from all sources");
+        throw new Error('Three.js failed to load from all sources');
 
       showLoadingState(container, 0); // Show initial loading state
 
@@ -318,17 +318,17 @@ const ThreeEarthManager = (() => {
       startAnimationLoop();
       setupResizeHandler();
 
-      log.info("Three.js Earth system initialized successfully.");
+      log.info('Three.js Earth system initialized successfully.');
       return cleanup;
     } catch (error) {
-      log.error("Failed to initialize Three.js Earth system:", error);
+      log.error('Failed to initialize Three.js Earth system:', error);
       handleInitializationError(container, error);
       return () => {};
     }
   };
 
   const cleanup = () => {
-    log.info("Cleaning up Three.js Earth system");
+    log.info('Cleaning up Three.js Earth system');
 
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
@@ -339,7 +339,7 @@ const ThreeEarthManager = (() => {
     if (sectionObserver) sectionObserver.disconnect();
 
     earthTimers.clearAll();
-    sharedCleanupManager.cleanupSystem("three-earth");
+    sharedCleanupManager.cleanupSystem('three-earth');
 
     if (scene) {
       scene.traverse(disposeObject);
@@ -372,15 +372,15 @@ const ThreeEarthManager = (() => {
       ambientLight =
       rayleighAtmosphereMesh =
         null;
-    currentSection = "hero";
+    currentSection = 'hero';
     lastAboutMode = null;
     cameraOrbitAngle = 0;
     targetOrbitAngle = 0;
     frameCount = 0;
     sunPositionVector = null;
 
-    unregisterParticleSystem("three-earth");
-    log.info("Three.js Earth system cleanup completed.");
+    unregisterParticleSystem('three-earth');
+    log.info('Three.js Earth system cleanup completed.');
   };
 
   function disposeObject(obj) {
@@ -397,7 +397,7 @@ const ThreeEarthManager = (() => {
   function disposeMaterial(material) {
     // Dispose Textures und andere Properties
     Object.values(material).forEach((value) => {
-      if (value && typeof value.dispose === "function") {
+      if (value && typeof value.dispose === 'function') {
         value.dispose();
       }
     });
@@ -405,7 +405,7 @@ const ThreeEarthManager = (() => {
     // Für ShaderMaterial: Dispose auch Uniforms (falls Texturen)
     if (material.uniforms) {
       Object.values(material.uniforms).forEach((uniform) => {
-        if (uniform.value && typeof uniform.value.dispose === "function") {
+        if (uniform.value && typeof uniform.value.dispose === 'function') {
           uniform.value.dispose();
         }
       });
@@ -417,9 +417,9 @@ const ThreeEarthManager = (() => {
   function handleInitializationError(container, error) {
     try {
       if (renderer) renderer.dispose();
-      sharedCleanupManager.cleanupSystem("three-earth");
+      sharedCleanupManager.cleanupSystem('three-earth');
     } catch (emergencyError) {
-      log.error("Emergency cleanup failed:", emergencyError);
+      log.error('Emergency cleanup failed:', emergencyError);
     }
     showErrorState(container, error);
   }
@@ -447,7 +447,7 @@ async function loadThreeJS() {
 
 // ===== Scene Setup =====
 async function setupScene(container) {
-  isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+  isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
   scene = new THREE_INSTANCE.Scene();
   const aspectRatio = container.clientWidth / container.clientHeight;
   camera = new THREE_INSTANCE.PerspectiveCamera(
@@ -458,10 +458,10 @@ async function setupScene(container) {
   );
 
   renderer = new THREE_INSTANCE.WebGLRenderer({
-    canvas: container.querySelector("canvas") || undefined,
+    canvas: container.querySelector('canvas') || undefined,
     antialias: true,
     alpha: true,
-    powerPreference: "high-performance",
+    powerPreference: 'high-performance',
   });
 
   renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
@@ -508,15 +508,15 @@ function createStarField() {
 
   const starGeometry = new THREE_INSTANCE.BufferGeometry();
   starGeometry.setAttribute(
-    "position",
+    'position',
     new THREE_INSTANCE.BufferAttribute(positions, 3)
   );
   starGeometry.setAttribute(
-    "color",
+    'color',
     new THREE_INSTANCE.BufferAttribute(colors, 3)
   );
   starGeometry.setAttribute(
-    "size",
+    'size',
     new THREE_INSTANCE.BufferAttribute(sizes, 1)
   );
 
@@ -551,7 +551,7 @@ function createStarField() {
   });
 
   starField = new THREE_INSTANCE.Points(starGeometry, starMaterial);
-  starField.name = "starField";
+  starField.name = 'starField';
   scene.add(starField);
 }
 
@@ -561,7 +561,7 @@ function setupStarParallax() {
     starField.rotation.y = progress * Math.PI * 0.2;
     starField.position.z = Math.sin(progress * Math.PI) * 15;
   };
-  sharedParallaxManager.addHandler(parallaxHandler, "three-earth-stars");
+  sharedParallaxManager.addHandler(parallaxHandler, 'three-earth-stars');
 }
 
 // ===== Cinematic Lighting Setup =====
@@ -587,12 +587,12 @@ async function createEarthSystem() {
   const loadingManager = new THREE_INSTANCE.LoadingManager();
   loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
     const progress = itemsLoaded / itemsTotal;
-    showLoadingState(document.getElementById("threeEarthContainer"), progress);
+    showLoadingState(document.getElementById('threeEarthContainer'), progress);
   };
   loadingManager.onLoad = () => {
     // A short delay to allow the user to see the "100%" state
     setTimeout(() => {
-      hideLoadingState(document.getElementById("threeEarthContainer"));
+      hideLoadingState(document.getElementById('threeEarthContainer'));
     }, 500);
   };
 
@@ -608,15 +608,15 @@ async function createEarthSystem() {
 
   const [dayTexture, nightTexture, normalTexture, bumpTexture] =
     await Promise.all([
-      loadTexture(CONFIG.PATHS.TEXTURES.DAY, "day"),
-      loadTexture(CONFIG.PATHS.TEXTURES.NIGHT, "night"),
-      loadTexture(CONFIG.PATHS.TEXTURES.NORMAL, "normal"),
-      loadTexture(CONFIG.PATHS.TEXTURES.BUMP, "bump"),
+      loadTexture(CONFIG.PATHS.TEXTURES.DAY, 'day'),
+      loadTexture(CONFIG.PATHS.TEXTURES.NIGHT, 'night'),
+      loadTexture(CONFIG.PATHS.TEXTURES.NORMAL, 'normal'),
+      loadTexture(CONFIG.PATHS.TEXTURES.BUMP, 'bump'),
     ]);
 
   // Prüfe ob kritische Texturen geladen wurden
   if (!dayTexture) {
-    throw new Error("Failed to load critical day texture");
+    throw new Error('Failed to load critical day texture');
   }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
@@ -690,7 +690,7 @@ async function createEarthSystem() {
       // Fragment Shader: Füge Ozean-Reflexionen NACH roughness_fragment hinzu
       // KONSOLIDIERT: Eine einzige Injection statt zwei separate
       shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <roughness_fragment>",
+        '#include <roughness_fragment>',
         `
         #include <roughness_fragment>
         
@@ -730,7 +730,7 @@ async function createEarthSystem() {
   earthMesh = new THREE_INSTANCE.Mesh(earthGeometry, earthMaterial);
 
   // Speichere aktuellen Mode in userData
-  earthMesh.userData.currentMode = "day"; // Initial: Tag-Modus
+  earthMesh.userData.currentMode = 'day'; // Initial: Tag-Modus
 
   // Initiale Position und Scale für Hero-Section setzen
   earthMesh.position.set(0, -6.0, 0);
@@ -775,10 +775,10 @@ async function createCloudLayer() {
     );
     const clouds = new THREE_INSTANCE.Mesh(cloudGeometry, cloudMaterial);
     clouds.renderOrder = 1; // Render after Earth
-    log.info("Cloud layer created successfully");
+    log.info('Cloud layer created successfully');
     return clouds;
   } catch (error) {
-    log.warn("Could not load cloud texture, skipping cloud layer.", error);
+    log.warn('Could not load cloud texture, skipping cloud layer.', error);
     return new THREE_INSTANCE.Object3D(); // Return empty object if fails
   }
 }
@@ -977,7 +977,7 @@ function createAtmosphere() {
 
 // ===== Camera & Section Updates =====
 function setupCameraSystem() {
-  updateCameraForSection("hero");
+  updateCameraForSection('hero');
 }
 
 // Kamera-Steuerung mit Presets und Smooth Transitions
@@ -990,7 +990,7 @@ function updateCameraForSection(sectionName) {
     flyToPreset(sectionName);
   } else {
     log.warn(`No camera preset for section '${sectionName}', using hero`);
-    flyToPreset("hero");
+    flyToPreset('hero');
   }
 }
 
@@ -1095,7 +1095,7 @@ function flyToPreset(presetName) {
 
 // ===== Section Detection & Earth Updates =====
 function setupSectionDetection() {
-  const sections = document.querySelectorAll("section[id]");
+  const sections = document.querySelectorAll('section[id]');
   if (sections.length === 0) return;
   sectionObserver = new IntersectionObserver(
     (entries) => {
@@ -1107,13 +1107,13 @@ function setupSectionDetection() {
             updateCameraForSection(newSection);
             updateEarthForSection(newSection);
             document
-              .querySelector(".three-earth-container")
-              ?.setAttribute("data-section", newSection);
+              .querySelector('.three-earth-container')
+              ?.setAttribute('data-section', newSection);
           }
         }
       });
     },
-    { rootMargin: "-20% 0px -20% 0px", threshold: 0.3 }
+    { rootMargin: '-20% 0px -20% 0px', threshold: 0.3 }
   );
   sections.forEach((section) => sectionObserver.observe(section));
 }
@@ -1125,19 +1125,19 @@ function updateEarthForSection(sectionName) {
     hero: {
       pos: { x: 0, y: -6.0, z: 0 },
       scale: 1.5,
-      mode: "day",
+      mode: 'day',
       rotation: 0,
     },
     features: {
       pos: { x: 1, y: -1, z: -0.5 },
       scale: 1.0,
-      mode: "day",
+      mode: 'day',
       rotation: 0,
     },
     about: {
       pos: { x: 0, y: 0, z: -2 },
       scale: 0.35,
-      mode: "toggle",
+      mode: 'toggle',
       rotation: Math.PI * 2,
     },
   };
@@ -1161,14 +1161,14 @@ function updateEarthForSection(sectionName) {
   // SPECIAL: About Section Toggle-System
   let targetMode = config.mode;
 
-  if (sectionName === "about" && config.mode === "toggle") {
+  if (sectionName === 'about' && config.mode === 'toggle') {
     // Toggle-Logik: Wechsel zwischen Tag und Nacht bei jedem Besuch
     if (lastAboutMode === null) {
       // Erster Besuch: Wechsel zu Nacht (da wir von hero mit Tag kommen)
-      targetMode = "night";
+      targetMode = 'night';
     } else {
       // Jeder weitere Besuch: Toggle
-      targetMode = lastAboutMode === "day" ? "night" : "day";
+      targetMode = lastAboutMode === 'day' ? 'night' : 'day';
     }
 
     // Speichere für nächsten Toggle
@@ -1187,7 +1187,7 @@ function updateEarthForSection(sectionName) {
   // MATERIAL SWAP: Tag <-> Nacht (oder beibehalten wenn nicht about)
   if (earthMesh.userData.currentMode !== targetMode) {
     // Nutze globale Material-Variablen
-    const newMaterial = targetMode === "day" ? dayMaterial : nightMaterial;
+    const newMaterial = targetMode === 'day' ? dayMaterial : nightMaterial;
 
     if (!newMaterial) {
       log.error(`Material for mode '${targetMode}' not found!`);
@@ -1202,7 +1202,7 @@ function updateEarthForSection(sectionName) {
       oldMaterial !== nightMaterial
     ) {
       oldMaterial.dispose();
-      log.debug("Disposed old material during mode switch");
+      log.debug('Disposed old material during mode switch');
     }
 
     earthMesh.material = newMaterial;
@@ -1210,19 +1210,19 @@ function updateEarthForSection(sectionName) {
     earthMesh.userData.currentMode = targetMode;
 
     // 🎬 KAMERA-EFFEKT: Fliege zur entsprechenden Seite der Erde
-    if (targetMode === "day") {
+    if (targetMode === 'day') {
       targetOrbitAngle = 0; // Tag: Vorderseite (0°)
       // Erde dreht sich zurück zur Tag-Position
       earthMesh.userData.targetRotation = 0;
       log.info(
-        `✅ Material switched to: DAY mode → Camera + Earth rotating to sunlit side`
+        '✅ Material switched to: DAY mode → Camera + Earth rotating to sunlit side'
       );
     } else {
       targetOrbitAngle = Math.PI; // Nacht: Rückseite (180°)
       // Erde dreht sich zur Nacht-Position (180° zusätzlich)
       earthMesh.userData.targetRotation = earthMesh.rotation.y + Math.PI;
       log.info(
-        `✅ Material switched to: NIGHT mode → Camera + Earth rotating to dark side`
+        '✅ Material switched to: NIGHT mode → Camera + Earth rotating to dark side'
       );
     }
   } else {
@@ -1233,7 +1233,7 @@ function updateEarthForSection(sectionName) {
   if (directionalLight && ambientLight) {
     const currentMode = earthMesh.userData.currentMode;
 
-    if (currentMode === "day") {
+    if (currentMode === 'day') {
       // TAG: Starke, warme Beleuchtung für klare Sicht
       directionalLight.intensity = CONFIG.LIGHTING.DAY.SUN_INTENSITY;
       ambientLight.intensity = CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY;
@@ -1279,14 +1279,14 @@ function setupUserControls(container) {
   };
 
   // Nur Wheel-Event - Drag-Events entfernt
-  container.addEventListener("wheel", onWheel, { passive: true });
+  container.addEventListener('wheel', onWheel, { passive: true });
 
   sharedCleanupManager.addCleanupFunction(
-    "three-earth",
+    'three-earth',
     () => {
-      container.removeEventListener("wheel", onWheel);
+      container.removeEventListener('wheel', onWheel);
     },
-    "user controls cleanup"
+    'user controls cleanup'
   );
 }
 
@@ -1326,9 +1326,9 @@ function startAnimationLoop() {
         sunAngle =
           directionalLight.position.x !== 0
             ? Math.atan2(
-                directionalLight.position.z,
-                directionalLight.position.x
-              )
+              directionalLight.position.z,
+              directionalLight.position.x
+            )
             : 0;
       }
 
@@ -1369,7 +1369,7 @@ function startAnimationLoop() {
       if (
         earthMesh &&
         earthMesh.userData.emissivePulseEnabled &&
-        earthMesh.userData.currentMode === "night" &&
+        earthMesh.userData.currentMode === 'night' &&
         earthMesh.material?.emissiveIntensity !== undefined &&
         frameCount % 2 === 0 // Throttle auf jeden 2. Frame
       ) {
@@ -1438,7 +1438,7 @@ function startAnimationLoop() {
 
     // 🌞 SONNE FOLGT KAMERA: Bei Tag-Modus rotiert Sonne mit Kamera-Orbit
     // Dadurch ist die sichtbare Erd-Seite IMMER von der Sonne beleuchtet
-    if (directionalLight && earthMesh?.userData.currentMode === "day") {
+    if (directionalLight && earthMesh?.userData.currentMode === 'day') {
       const sunX = Math.sin(cameraOrbitAngle) * CONFIG.SUN.RADIUS;
       const sunZ = Math.cos(cameraOrbitAngle) * CONFIG.SUN.RADIUS;
       directionalLight.position.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
@@ -1541,57 +1541,57 @@ function startAnimationLoop() {
 // ===== Resize Handler =====
 function setupResizeHandler() {
   const handleResize = () => {
-    const container = getElementById("threeEarthContainer");
+    const container = getElementById('threeEarthContainer');
     if (!container || !camera || !renderer) return;
     const width = container.clientWidth;
     const height = container.clientHeight;
-    isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+    isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
   };
   const resizeCleanup = onResize(handleResize, 100);
   sharedCleanupManager.addCleanupFunction(
-    "three-earth",
+    'three-earth',
     resizeCleanup,
-    "resize handler cleanup"
+    'resize handler cleanup'
   );
 }
 
 // ===== UI State Management =====
 function showLoadingState(container, progress) {
-  container.classList.add("loading");
-  const loadingElement = container.querySelector(".three-earth-loading");
-  if (loadingElement) loadingElement.classList.remove("hidden");
-  const progressBar = container.querySelector(".loading-progress-bar");
-  const progressText = container.querySelector(".loading-progress-text");
+  container.classList.add('loading');
+  const loadingElement = container.querySelector('.three-earth-loading');
+  if (loadingElement) loadingElement.classList.remove('hidden');
+  const progressBar = container.querySelector('.loading-progress-bar');
+  const progressText = container.querySelector('.loading-progress-text');
   if (progressBar) progressBar.style.width = `${progress * 100}%`;
   if (progressText) progressText.textContent = `${Math.round(progress * 100)}%`;
 }
 
 function hideLoadingState(container) {
-  container.classList.remove("loading");
-  const loadingElement = container.querySelector(".three-earth-loading");
-  if (loadingElement) loadingElement.classList.add("hidden");
+  container.classList.remove('loading');
+  const loadingElement = container.querySelector('.three-earth-loading');
+  if (loadingElement) loadingElement.classList.add('hidden');
 }
 
 function showErrorState(container, error) {
-  container.classList.add("error");
-  container.classList.remove("loading");
-  const errorElement = container.querySelector(".three-earth-error");
+  container.classList.add('error');
+  container.classList.remove('loading');
+  const errorElement = container.querySelector('.three-earth-error');
   if (errorElement) {
-    errorElement.classList.remove("hidden");
-    const errorText = errorElement.querySelector("p");
+    errorElement.classList.remove('hidden');
+    const errorText = errorElement.querySelector('p');
     if (errorText)
-      errorText.textContent = `WebGL Error: ${error.message || "Unknown error"}. Please try refreshing.`;
+      errorText.textContent = `WebGL Error: ${error.message || 'Unknown error'}. Please try refreshing.`;
   }
 }
 
 // ===== Performance Monitor & Dynamic Resolution =====
 class PerformanceMonitor {
   constructor(parentContainer) {
-    this.element = document.createElement("div");
-    this.element.className = "three-earth-performance-overlay";
+    this.element = document.createElement('div');
+    this.element.className = 'three-earth-performance-overlay';
     parentContainer.appendChild(this.element);
 
     this.frame = 0;
@@ -1628,7 +1628,7 @@ class PerformanceMonitor {
     this.adjustQualityLevel();
 
     // SCHRITT 2: Pixel Ratio anpassen (nur bei kritischem FPS)
-    if (this.fps < 10 && currentQualityLevel !== "LOW") {
+    if (this.fps < 10 && currentQualityLevel !== 'LOW') {
       // Erst Quality auf LOW, dann Pixel Ratio reduzieren
       log.error(
         `Critical FPS (${this.fps.toFixed(1)}), switching to LOW quality mode`
@@ -1674,11 +1674,11 @@ class PerformanceMonitor {
 
     // Bestimme Quality-Level basierend auf FPS
     if (this.fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
-      currentQualityLevel = "LOW";
+      currentQualityLevel = 'LOW';
     } else if (this.fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
-      currentQualityLevel = "MEDIUM";
+      currentQualityLevel = 'MEDIUM';
     } else {
-      currentQualityLevel = "HIGH";
+      currentQualityLevel = 'HIGH';
     }
 
     // Nur Aktion bei Level-Wechsel
@@ -1697,14 +1697,14 @@ class PerformanceMonitor {
     if (rayleighAtmosphereMesh) {
       rayleighAtmosphereMesh.visible = features.multiLayerAtmosphere;
       log.debug(
-        `Multi-Layer Atmosphere: ${features.multiLayerAtmosphere ? "ON" : "OFF"}`
+        `Multi-Layer Atmosphere: ${features.multiLayerAtmosphere ? 'ON' : 'OFF'}`
       );
     }
 
     // Cloud Layer Toggle
     if (cloudMesh) {
       cloudMesh.visible = features.cloudLayer;
-      log.debug(`Cloud Layer: ${features.cloudLayer ? "ON" : "OFF"}`);
+      log.debug(`Cloud Layer: ${features.cloudLayer ? 'ON' : 'OFF'}`);
     }
 
     // Ocean Reflections Toggle (via Shader Uniform mit Null-Check)
@@ -1712,7 +1712,7 @@ class PerformanceMonitor {
       earthMesh.material.userData.oceanShader.uniforms.uOceanSpecularIntensity.value =
         features.oceanReflections ? CONFIG.OCEAN.SPECULAR_INTENSITY : 0.0;
       log.debug(
-        `Ocean Reflections: ${features.oceanReflections ? "ON" : "OFF"}`
+        `Ocean Reflections: ${features.oceanReflections ? 'ON' : 'OFF'}`
       );
     }
 
@@ -1720,7 +1720,7 @@ class PerformanceMonitor {
     if (earthMesh?.userData?.emissivePulseEnabled !== undefined) {
       earthMesh.userData.emissivePulseEnabled = features.cityLightsPulse;
       log.debug(
-        `City Lights Pulse: ${features.cityLightsPulse ? "ON" : "OFF"}`
+        `City Lights Pulse: ${features.cityLightsPulse ? 'ON' : 'OFF'}`
       );
     }
 
@@ -1728,7 +1728,7 @@ class PerformanceMonitor {
     if (shootingStarManager) {
       // Nutze disabled-Flag für Performance Toggle
       shootingStarManager.disabled = !features.meteorShowers;
-      log.debug(`Meteor Showers: ${features.meteorShowers ? "ON" : "OFF"}`);
+      log.debug(`Meteor Showers: ${features.meteorShowers ? 'ON' : 'OFF'}`);
     }
   }
 
@@ -1749,10 +1749,10 @@ export const EarthSystemAPI = {
    * @param {string} presetName - Name des Presets (hero, features, about)
    */
   flyToPreset: (presetName) => {
-    if (typeof flyToPreset === "function") {
+    if (typeof flyToPreset === 'function') {
       flyToPreset(presetName);
     } else {
-      log.warn("Earth system not initialized");
+      log.warn('Earth system not initialized');
     }
   },
 
@@ -1765,7 +1765,7 @@ export const EarthSystemAPI = {
     CONFIG.DAY_NIGHT_CYCLE.ENABLED = enabled;
     CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER = speedMultiplier;
     log.info(
-      `Day/Night cycle ${enabled ? "enabled" : "disabled"} (speed: ${speedMultiplier}x)`
+      `Day/Night cycle ${enabled ? 'enabled' : 'disabled'} (speed: ${speedMultiplier}x)`
     );
   },
 
@@ -1776,7 +1776,7 @@ export const EarthSystemAPI = {
     if (shootingStarManager) {
       shootingStarManager.triggerMeteorShower();
     } else {
-      log.warn("ShootingStarManager not initialized");
+      log.warn('ShootingStarManager not initialized');
     }
   },
 
@@ -1791,7 +1791,7 @@ export const EarthSystemAPI = {
    */
   updateConfig: (updates) => {
     Object.assign(CONFIG, updates);
-    log.info("Configuration updated", updates);
+    log.info('Configuration updated', updates);
   },
 };
 

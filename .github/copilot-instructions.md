@@ -25,20 +25,6 @@ Deutsches Portfolio-Projekt mit ES6 Modulen, Zero-Build-Tooling und modernen Web
 
 **Warum wichtig**: Sections laden asynchron. Komponenten-JavaScript muss auf `section:loaded` Event warten oder im `MAP` Array in `main.js` registriert werden.
 
-### Animation System (`animations/enhanced-animation-engine.js`)
-
-```javascript
-// Data-Attribute API (declarative):
-<div data-animation="slideInLeft" data-delay="300" data-duration="0.6" data-once>
-
-// Nach DOM-Updates IMMER rescan triggern:
-window.enhancedAnimationEngine.scan();
-// oder via shared utility:
-scheduleAnimationScan();
-```
-
-**Performance**: System nutzt IntersectionObserver mit device-spezifischen Thresholds (Mobile: 0.1, Desktop: 0.25). Animationen mit `data-once` werden via `WeakSet` getrackt.
-
 ### Three.js Earth System (`particles/three-earth-system.js`)
 
 ```javascript
@@ -146,8 +132,6 @@ localStorage.setItem("iweb-debug", "true");
 setGlobalLogLevel("debug");
 ```
 
-**Animation Debug**: `data-animations="off"` am Parent deaktiviert alle Child-Animationen. `window.enhancedAnimationEngine` API für programmatische Kontrolle.
-
 ### Performance Profiling
 
 Three.js LOD-System loggt Texture-Loading. Performance-Detection via:
@@ -188,7 +172,7 @@ function cleanup() {
 }
 ```
 
-### Dynamic Content mit Animation
+### Dynamic Content laden
 
 ```javascript
 async function loadContent(url) {
@@ -197,7 +181,7 @@ async function loadContent(url) {
   const html = await res.text();
 
   container.innerHTML = html;
-  scheduleAnimationScan(); // WICHTIG: Rescan nach DOM-Änderung
+}
 }
 ```
 
@@ -224,7 +208,6 @@ content/webentwicklung/     # Core Components & Systems
   main.js                   # Entry Point + SectionLoader + Global Init
   shared-utilities.js       # ZENTRALE Utils (createLogger, TimerManager, Events)
   root.css                  # ALLE CSS Custom Properties
-  animations/               # Enhanced Animation Engine + Theme System
   particles/                # Three.js Earth + Shared Particle System
   TypeWriter/               # TypeWriter Component
   footer/, menu/            # Layout Components

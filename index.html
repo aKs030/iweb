@@ -106,17 +106,16 @@
   <link rel="stylesheet" href="/content/webentwicklung/index.css">
   <link rel="stylesheet" href="/content/webentwicklung/buttons.css">
   <link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css">
-  <link rel="stylesheet" href="/content/webentwicklung/animations/animation-keyframes.css">
   <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css">
   <!-- CSS direkt laden für bessere Performance -->
   <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css">
   <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css">
   <link rel="stylesheet" href="/pages/about/about.css">
+  <link rel="stylesheet" href="/pages/card/karten-star-animation.css">
   <link rel="stylesheet" href="/pages/home/hero.css">
   <link rel="stylesheet" href="/content/webentwicklung/TypeWriter/typewriter.css">
 
-  <!-- Theme System - früh laden um FOUC zu verhindern -->
-  <script type="module" src="/content/webentwicklung/animations/theme-system.js"></script>
+  <!-- Theme System entfernt - Animation-System wurde deaktiviert -->
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json" data-cfasync="false">
@@ -428,7 +427,6 @@
   </main>
 
   <!-- Optimierte Script-Ladereihenfolge -->
-  <!-- Animation Engine wird über main.js geladen -->
   <!-- (Lazy) Komponenten: karten-rotation & about werden jetzt on-demand via IntersectionObserver in main.js geladen -->
   <!-- Haupt-Entry Point -->
   <script src="/content/webentwicklung/main.js" type="module"></script>

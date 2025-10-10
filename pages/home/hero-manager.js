@@ -1,104 +1,13 @@
 // ===== Shared Utilities Import =====
 import {
-  animateElementsIn,
-  createLogger,
   createTriggerOnceObserver,
-  ensureFallbackAnimationEngine,
   EVENTS,
   getElementById,
-  resetElementsIn,
   TimerManager,
-  triggerAnimationScan,
-  waitForAnimationEngine,
-} from "../../content/webentwicklung/shared-utilities.js";
-
-const log = createLogger("hero-manager");
+} from '../../content/webentwicklung/shared-utilities.js';
 
 // Timer Manager für Hero-spezifische Timeouts
 const heroTimers = new TimerManager();
-
-// ===== Hero-spezifische Animation Engine Erweiterungen =====
-
-/**
- * Hero-spezifische Animation-Aliases
- * Diese Aliases waren ursprünglich in der enhanced-animation-engine.js
- */
-export const HERO_ANIMATION_ALIASES = new Map([
-  // Hero-spezifische Grußtext-Animation
-  ["greeting", "fadeInUp"],
-  // Weitere Hero-spezifische Animationen können hier hinzugefügt werden
-]);
-
-/**
- * Hero-spezifische Animation-Konfiguration
- */
-export const HERO_ANIMATION_CONFIG = {
-  // Optimierte Performance-Einstellungen für Hero-Bereich
-  threshold: 0.1,
-  rootMargin: "50px",
-  repeatOnScroll: true,
-
-  // Hero-spezifische Animation-Durationen
-  durations: {
-    greeting: 0.8, // Längere Dauer für Grußtext
-    heroButtons: 0.6, // Standard für Hero-Buttons
-    heroSubtitle: 0.7, // Subtitle-Animationen
-  },
-};
-
-/**
- * Erweitert die globale Animation Engine um Hero-spezifische Aliases
- * @param {Object} animationEngine - Die Enhanced Animation Engine Instanz
- */
-export function extendAnimationEngineForHero(animationEngine) {
-  if (
-    !animationEngine ||
-    typeof animationEngine.parseDataAttribute !== "function"
-  ) {
-    log.warn("Animation Engine nicht verfügbar oder inkompatibel");
-    return;
-  }
-
-  // Backup der ursprünglichen parseDataAttribute Methode
-  const originalParseDataAttribute =
-    animationEngine.parseDataAttribute.bind(animationEngine);
-
-  // Erweiterte parseDataAttribute Methode mit Hero-Aliases
-  animationEngine.parseDataAttribute = function (element, attribute) {
-    const result = originalParseDataAttribute(element, attribute);
-
-    if (!result) return null;
-
-    // Hero-spezifische Alias-Behandlung
-    const heroAlias = HERO_ANIMATION_ALIASES.get(result.type?.toLowerCase());
-    if (heroAlias) {
-      result.type = heroAlias;
-    }
-
-    return result;
-  };
-}
-
-/**
- * Initialisiert Hero-spezifische Animationen
- * Sollte nach dem Laden der main Animation Engine aufgerufen werden
- */
-function initHeroAnimations() {
-  // Warten bis die globale Animation Engine verfügbar ist
-  waitForAnimationEngine(() => {
-    extendAnimationEngineForHero(window.enhancedAnimationEngine);
-
-    // Hero-spezifische Konfiguration anwenden
-    window.enhancedAnimationEngine.setRepeatOnScroll?.(
-      HERO_ANIMATION_CONFIG.repeatOnScroll
-    );
-
-    // Initial scan für Hero-Elemente
-    triggerAnimationScan("hero-init");
-
-    log.debug("Hero-spezifische Animationen initialisiert");
-  });
-}
 
 // ===== Hero Management Module =====
 const HeroManager = (() => {
@@ -127,7 +36,7 @@ const HeroManager = (() => {
     };
 
     const heroEl =
-      getElementById("hero") || document.querySelector("section#hero");
+      getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
       heroTimers.setTimeout(triggerLoad, 2500);
       return;
@@ -146,7 +55,7 @@ const HeroManager = (() => {
   }
 
   const ensureHeroData = async () =>
-    heroData || (heroData = await import("./GrussText.js").catch(() => ({})));
+    heroData || (heroData = await import('./GrussText.js').catch(() => ({})));
 
   // Hero Data Module für externe Verwendung (z.B. TypeWriter) bereitstellen
   window.__heroEnsureData = ensureHeroData;
@@ -156,22 +65,22 @@ const HeroManager = (() => {
     let el = null;
     for (const d of delays) {
       if (d) await heroTimers.sleep(d);
-      el = getElementById("greetingText");
+      el = getElementById('greetingText');
       if (el) break;
     }
     if (!el) return;
 
     const mod = await ensureHeroData();
     const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
-    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : "";
+    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
     if (!next) return;
 
     el.dataset.last = next;
     if (animated) {
-      el.classList.add("fade");
+      el.classList.add('fade');
       heroTimers.setTimeout(() => {
         el.textContent = next;
-        el.classList.remove("fade");
+        el.classList.remove('fade');
       }, 360);
     } else {
       el.textContent = next;
@@ -181,71 +90,20 @@ const HeroManager = (() => {
   return { initLazyHeroModules, setRandomGreetingHTML, ensureHeroData };
 })();
 
-// ===== Animation Engine Bootstrap (nur für Hero-bezogene Trigger) =====
+// ===== Animation Engine Bootstrap (entfernt) =====
 function initHeroAnimationBootstrap() {
-  try {
-    const hero = getElementById("hero");
-    if (!hero) return;
-
-    // Fallback Engine falls keine echte verfügbar
-    ensureFallbackAnimationEngine();
-
-    // Animation Engine konfigurieren (sowohl Fallback als auch echte Engine)
-    window.enhancedAnimationEngine.setRepeatOnScroll?.(true);
-    const scan = () => window.enhancedAnimationEngine.scan?.();
-    scan();
-    heroTimers.setTimeout(scan, 1000);
-    hero
-      .querySelectorAll(
-        '.hero-buttons [data-animation="crt"].animate-element:not(.is-visible)'
-      )
-      ?.forEach((b) => b.classList.add("is-visible"));
-    window.addEventListener("snapSectionChange", (e) => {
-      const id = e.detail?.id;
-      if (!id) return;
-      const active = getElementById(id);
-      if (!active) return;
-      try {
-        const allSections = Array.from(
-          document.querySelectorAll("main .section, .section")
-        );
-        for (const s of allSections) {
-          if (s !== active) {
-            resetElementsIn(s);
-          }
-        }
-      } catch {
-        /* noop */
-      }
-      animateElementsIn(active, { force: true });
-
-      // Wenn zurück zum Hero gescrollt wurde, CRT-Buttons wieder sichtbar machen
-      if (id === "hero") {
-        try {
-          active
-            .querySelectorAll('.hero-buttons [data-animation="crt"]')
-            .forEach((btn) => {
-              btn.classList.add("animate-element", "is-visible");
-            });
-        } catch {
-          /* noop */
-        }
-      }
-    });
-  } catch {
-    // Silent fail
-  }
+  // Animation-System wurde entfernt
 }
 
 // ===== Public API =====
 export function initHeroFeatureBundle() {
   // Events für Hero
   document.addEventListener(EVENTS.HERO_LOADED, () => {
-    const el = getElementById("greetingText");
+    const el = getElementById('greetingText');
     if (!el) return;
-    if (!el.textContent.trim() || el.textContent.trim() === "Willkommen") {
+    if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
       HeroManager.setRandomGreetingHTML();
-      (window.announce || (() => {}))("Hero Bereich bereit.");
+      (window.announce || (() => {}))('Hero Bereich bereit.');
     }
     // Einmalige Typing-Initialisierung starten
     try {
@@ -259,23 +117,14 @@ export function initHeroFeatureBundle() {
       /* noop */
     }
 
-    // Force-Visible: CRT Buttons sofort sichtbar machen, falls Animation-Scan später kommt
-    try {
-      document
-        .querySelectorAll('.hero-buttons [data-animation="crt"]')
-        .forEach((btn) => {
-          btn.classList.add("animate-element", "is-visible");
-        });
-    } catch {
-      /* noop */
-    }
+    // Force-Visible: CRT Buttons - Animation-System entfernt
   });
 
   // Verwende koordinierte Events statt separaten DOMContentLoaded Handler
   document.addEventListener(
     EVENTS.HERO_INIT_READY,
     () => {
-      const el = getElementById("greetingText");
+      const el = getElementById('greetingText');
       if (!el) return;
       if (!el.textContent.trim()) {
         HeroManager.setRandomGreetingHTML();
@@ -296,7 +145,7 @@ export function initHeroFeatureBundle() {
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
-    const text = e.detail?.text || "Text";
+    const text = e.detail?.text || 'Text';
     (window.announce || (() => {}))(`Zitat vollständig: ${text}`);
   });
 
@@ -304,6 +153,5 @@ export function initHeroFeatureBundle() {
   HeroManager.initLazyHeroModules();
   heroTimers.setTimeout(initHeroAnimationBootstrap, 420);
 
-  // Initialisiere Hero-spezifische Animationen
-  initHeroAnimations();
+  // Animation-System wurde entfernt
 }

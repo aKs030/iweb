@@ -14,25 +14,24 @@
  */
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById } from "../shared-utilities.js";
+import { createLogger, getElementById } from '../shared-utilities.js';
+import { initializeDayNightArtwork } from './day-night-artwork.js';
 
-import { initializeDayNightArtwork } from "./day-night-artwork.js";
-
-const log = createLogger("loadFooter");
+const log = createLogger('loadFooter');
 
 /**
  * Initialisiert das Footer-System
  */
 async function initializeFooter() {
-  const footerContainer = getElementById("footer-container");
+  const footerContainer = getElementById('footer-container');
 
   if (!footerContainer) {
-    log.warn("Footer Container nicht gefunden");
+    log.warn('Footer Container nicht gefunden');
     return;
   }
 
   try {
-    log.debug("Initialisiere Footer");
+    log.debug('Initialisiere Footer');
     await loadFooterContent(footerContainer);
     updateCurrentYear();
 
@@ -45,39 +44,39 @@ async function initializeFooter() {
       await initializeDayNightArtwork();
     } catch (artworkError) {
       // Artwork-Initialisierung ist optional - bei Fehler still ignorieren
-      log.debug("Day/Night Artwork nicht geladen:", artworkError.message);
+      log.debug('Day/Night Artwork nicht geladen:', artworkError.message);
     }
 
-    log.info("Footer erfolgreich initialisiert");
+    log.info('Footer erfolgreich initialisiert');
 
     // Fire footer:loaded Event für andere Module (z.B. footer-resizer)
     document.dispatchEvent(
-      new CustomEvent("footer:loaded", {
-        detail: { footerId: "site-footer" },
+      new CustomEvent('footer:loaded', {
+        detail: { footerId: 'site-footer' },
       })
     );
 
     // Smooth Scrolling für interne Links im Footer (Event Delegation)
-    const footer = getElementById("site-footer");
+    const footer = getElementById('site-footer');
     if (footer) {
-      footer.addEventListener("click", (e) => {
+      footer.addEventListener('click', (e) => {
         const link = e.target.closest('a[href^="#"]');
         if (!link) return;
 
-        const targetId = link.getAttribute("href").substring(1);
+        const targetId = link.getAttribute('href').substring(1);
         const targetElement = getElementById(targetId);
 
         if (targetElement) {
           e.preventDefault();
           targetElement.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
+            behavior: 'smooth',
+            block: 'start',
           });
         }
       });
     }
   } catch (error) {
-    log.error("Fehler beim Initialisieren des Footers:", error);
+    log.error('Fehler beim Initialisieren des Footers:', error);
     showFallbackFooter(footerContainer);
   }
 }
@@ -88,8 +87,8 @@ async function initializeFooter() {
 async function loadFooterContent(container) {
   const footerSrc =
     container.dataset.footerSrc ||
-    container.getAttribute("data-footer-src") ||
-    "/content/webentwicklung/footer/footer.html";
+    container.getAttribute('data-footer-src') ||
+    '/content/webentwicklung/footer/footer.html';
 
   log.debug(`Lade Footer von: ${footerSrc}`);
 
@@ -102,14 +101,14 @@ async function loadFooterContent(container) {
   const footerHTML = await response.text();
   container.innerHTML = footerHTML;
 
-  log.debug("Footer HTML erfolgreich geladen");
+  log.debug('Footer HTML erfolgreich geladen');
 
   // ARIA-Label für bessere Accessibility
-  const footer = container.querySelector("#site-footer");
-  if (footer && !footer.getAttribute("aria-label")) {
+  const footer = container.querySelector('#site-footer');
+  if (footer && !footer.getAttribute('aria-label')) {
     footer.setAttribute(
-      "aria-label",
-      "Website Footer mit Kontaktinformationen und Links"
+      'aria-label',
+      'Website Footer mit Kontaktinformationen und Links'
     );
   }
 }
@@ -120,7 +119,7 @@ async function loadFooterContent(container) {
 function updateCurrentYear() {
   const currentYear = new Date().getFullYear();
   const yearElements = document.querySelectorAll(
-    "#current-year, #current-year-full"
+    '#current-year, #current-year-full'
   );
 
   yearElements.forEach((element) => {
@@ -134,41 +133,41 @@ function updateCurrentYear() {
  * Richtet Newsletter-Anmeldung ein
  */
 function setupNewsletterForm() {
-  const newsletterForm = document.querySelector(".newsletter-form-enhanced");
+  const newsletterForm = document.querySelector('.newsletter-form-enhanced');
 
   if (!newsletterForm) return;
 
-  newsletterForm.addEventListener("submit", async (e) => {
+  newsletterForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const emailInput = newsletterForm.querySelector(
-      ".newsletter-input-enhanced"
+      '.newsletter-input-enhanced'
     );
     const submitBtn = newsletterForm.querySelector(
-      ".newsletter-submit-enhanced"
+      '.newsletter-submit-enhanced'
     );
     const email = emailInput.value.trim();
 
-    if (!email?.includes?.("@")) {
+    if (!email?.includes?.('@')) {
       showNotification(
-        "Bitte geben Sie eine gültige E-Mail-Adresse ein",
-        "error"
+        'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+        'error'
       );
       return;
     }
 
     // UI-Feedback
     const originalText = submitBtn.textContent;
-    submitBtn.textContent = "Wird gesendet...";
+    submitBtn.textContent = 'Wird gesendet...';
     submitBtn.disabled = true;
 
     try {
       // Hier würde die Newsletter-API-Anfrage stehen
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulation
 
-      emailInput.value = "";
-      submitBtn.textContent = "✓ Angemeldet";
-      showNotification("Erfolgreich für Newsletter angemeldet!", "success");
+      emailInput.value = '';
+      submitBtn.textContent = '✓ Angemeldet';
+      showNotification('Erfolgreich für Newsletter angemeldet!', 'success');
 
       setTimeout(() => {
         submitBtn.textContent = originalText;
@@ -178,8 +177,8 @@ function setupNewsletterForm() {
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
       showNotification(
-        "Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.",
-        "error"
+        'Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut.',
+        'error'
       );
     }
   });
@@ -189,58 +188,58 @@ function setupNewsletterForm() {
  * Richtet Cookie-Einstellungen ein
  */
 function setupCookieSettings() {
-  const cookieBtn = document.querySelector(".footer-cookie-btn");
+  const cookieBtn = document.querySelector('.footer-cookie-btn');
 
   if (!cookieBtn) return;
 
-  cookieBtn.addEventListener("click", () => {
+  cookieBtn.addEventListener('click', () => {
     // Hier würde ein Cookie-Banner oder Modal geöffnet werden
-    showNotification("Cookie-Einstellungen werden geladen...", "info");
+    showNotification('Cookie-Einstellungen werden geladen...', 'info');
   });
 }
 
 /**
  * Zeigt Benachrichtigungen an (Performance-optimiert)
  */
-function showNotification(message, type = "info") {
+function showNotification(message, type = 'info') {
   // Prevent notification spam
   if (showNotification._timeout) {
     clearTimeout(showNotification._timeout);
-    const existing = document.querySelector(".footer-notification");
+    const existing = document.querySelector('.footer-notification');
     if (existing) existing.remove();
   }
 
   // Hintergrundfarbe basierend auf Typ bestimmen
   const colorMap = {
-    error: "#ff4444",
-    success: "#44ff44",
-    info: "#007AFF",
+    error: '#ff4444',
+    success: '#44ff44',
+    info: '#007AFF',
   };
   const backgroundColor = colorMap[type] || colorMap.info;
 
   // Notification-Element erstellen
-  const notification = document.createElement("div");
+  const notification = document.createElement('div');
   notification.className = `footer-notification footer-notification--${type}`;
   notification.textContent = message;
-  notification.setAttribute("role", "alert");
-  notification.setAttribute("aria-live", "polite");
+  notification.setAttribute('role', 'alert');
+  notification.setAttribute('aria-live', 'polite');
 
   // Performance: CSS in einem Block setzen
   Object.assign(notification.style, {
-    position: "fixed",
-    top: "20px",
-    right: "20px",
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
     background: backgroundColor,
-    color: "white",
-    padding: "1rem 1.5rem",
-    borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-    zIndex: "10000",
-    opacity: "0",
-    transform: "translateX(100%)",
-    transition: "all 0.3s ease",
-    maxWidth: "300px",
-    wordWrap: "break-word",
+    color: 'white',
+    padding: '1rem 1.5rem',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    zIndex: '10000',
+    opacity: '0',
+    transform: 'translateX(100%)',
+    transition: 'all 0.3s ease',
+    maxWidth: '300px',
+    wordWrap: 'break-word',
   });
 
   document.body.appendChild(notification);
@@ -248,15 +247,15 @@ function showNotification(message, type = "info") {
   // Animation einblenden mit RAF für Performance
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      notification.style.opacity = "1";
-      notification.style.transform = "translateX(0)";
+      notification.style.opacity = '1';
+      notification.style.transform = 'translateX(0)';
     });
   });
 
   // Nach 3 Sekunden ausblenden
   showNotification._timeout = setTimeout(() => {
-    notification.style.opacity = "0";
-    notification.style.transform = "translateX(100%)";
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
     setTimeout(() => {
       if (notification.parentNode) {
         notification.remove();
@@ -287,8 +286,8 @@ function showFallbackFooter(container) {
 }
 
 // Footer automatisch initialisieren wenn DOM bereit ist
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeFooter);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeFooter);
 } else {
   initializeFooter();
 }

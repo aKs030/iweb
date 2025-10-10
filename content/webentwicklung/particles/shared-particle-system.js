@@ -13,9 +13,9 @@
  * @last-modified 2025-10-04 - Added JSDoc comments and minor code cleanup.
  */
 
-import { createLogger, throttle } from "../shared-utilities.js";
+import { createLogger, throttle } from '../shared-utilities.js';
 
-const log = createLogger("sharedParticleSystem");
+const log = createLogger('sharedParticleSystem');
 
 // ===== Shared Configuration =====
 export const SHARED_CONFIG = {
@@ -23,7 +23,7 @@ export const SHARED_CONFIG = {
     THROTTLE_MS: 16, // Aim for 60fps
   },
   SCROLL: {
-    CSS_PROPERTY_PREFIX: "--scroll-",
+    CSS_PROPERTY_PREFIX: '--scroll-',
   },
 };
 
@@ -59,7 +59,7 @@ export class SharedParallaxManager {
    * @param {function(number): void} handler
    * @param {string} name
    */
-  addHandler(handler, name = "anonymous") {
+  addHandler(handler, name = 'anonymous') {
     this.handlers.add({ handler, name });
     if (!this.isActive) this.activate();
   }
@@ -81,13 +81,13 @@ export class SharedParallaxManager {
       );
       this.handlers.forEach(({ handler }) => handler(progress));
     }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS);
-    window.addEventListener("scroll", this.scrollHandler, { passive: true });
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
     this.isActive = true;
     this.scrollHandler(); // Initial call to set position
   }
   deactivate() {
     if (!this.isActive) return;
-    window.removeEventListener("scroll", this.scrollHandler);
+    window.removeEventListener('scroll', this.scrollHandler);
     this.isActive = false;
     this.handlers.clear();
   }
@@ -111,7 +111,7 @@ export class SharedCleanupManager {
    * @param {function(): void} cleanupFn
    * @param {string} description
    */
-  addCleanupFunction(systemName, cleanupFn, description = "anonymous") {
+  addCleanupFunction(systemName, cleanupFn, description = 'anonymous') {
     if (!this.cleanupFunctions.has(systemName)) {
       this.cleanupFunctions.set(systemName, []);
     }
@@ -140,13 +140,13 @@ export class SharedCleanupManager {
     this.cleanupFunctions.delete(systemName);
   }
   cleanupAll() {
-    log.info("Starting global cleanup of all registered systems.");
+    log.info('Starting global cleanup of all registered systems.');
     this.cleanupFunctions.forEach((_, systemName) =>
       this.cleanupSystem(systemName)
     );
     sharedParallaxManager.deactivate();
     sharedState.reset();
-    log.info("Global cleanup completed.");
+    log.info('Global cleanup completed.');
   }
 }
 
@@ -183,23 +183,23 @@ export class ShootingStarManager {
     this.showerCooldownTimer = 0;
     this.disabled = false; // Performance Toggle
 
-    log.debug("ShootingStarManager initialized with meteor shower support.");
+    log.debug('ShootingStarManager initialized with meteor shower support.');
   }
 
   start() {
     // Nutze per-frame Updates in update() statt setTimeout
-    log.debug("ShootingStarManager started");
+    log.debug('ShootingStarManager started');
   }
 
   triggerMeteorShower() {
     if (this.isShowerActive || this.showerCooldownTimer > 0) {
-      log.debug("Meteor shower already active or in cooldown");
+      log.debug('Meteor shower already active or in cooldown');
       return;
     }
 
     this.isShowerActive = true;
     this.showerTimer = 0;
-    log.info("🌠 Meteor shower triggered!");
+    log.info('🌠 Meteor shower triggered!');
   }
 
   createShootingStar(trajectory = null) {
@@ -272,7 +272,7 @@ export class ShootingStarManager {
         // Shower beenden
         this.isShowerActive = false;
         this.showerCooldownTimer = this.config.SHOWER_COOLDOWN;
-        log.info("Meteor shower ended");
+        log.info('Meteor shower ended');
       }
     }
 
@@ -325,7 +325,7 @@ export class ShootingStarManager {
       star.mesh.material.dispose();
     });
     this.activeStars = [];
-    log.debug("ShootingStarManager cleaned up.");
+    log.debug('ShootingStarManager cleaned up.');
   }
 }
 

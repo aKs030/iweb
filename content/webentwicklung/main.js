@@ -1,6 +1,5 @@
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 
-import { EnhancedAnimationEngine } from "./animations/enhanced-animation-engine.js";
 // Three.js wird nur bei Bedarf geladen (Code-Splitting für Performance)
 // import { initThreeEarth } from "./particles/three-earth-system.js";
 import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
@@ -12,7 +11,6 @@ import {
   EVENTS,
   fire,
   getElementById,
-  scheduleAnimationScan,
   schedulePersistentStorageRequest,
   SectionTracker,
 } from "./shared-utilities.js";
@@ -410,10 +408,7 @@ function loadMenuAssets() {
       );
 
       // 2. Kern-Module initialisieren
-      // Enhanced Animation Engine initialisieren
-      if (!window.enhancedAnimationEngine) {
-        window.enhancedAnimationEngine = new EnhancedAnimationEngine();
-      }
+      // Animation-System wurde entfernt
 
       // TypeWriter Registry global verfügbar machen
       if (!window.TypeWriterRegistry) {
@@ -423,20 +418,25 @@ function loadMenuAssets() {
       // Advanced Three.js Earth System initialisieren (Lazy Loading für Performance)
       // Überspringen bei Lighthouse/Performance-Audits für bessere Scores
       let threeEarthCleanup = null;
-      
-      const isLighthouse = navigator.userAgent.includes('Chrome-Lighthouse') || 
-                           navigator.userAgent.includes('HeadlessChrome');
-      
+
+      const isLighthouse =
+        navigator.userAgent.includes("Chrome-Lighthouse") ||
+        navigator.userAgent.includes("HeadlessChrome");
+
       if (isLighthouse) {
-        log.info("Lighthouse detected - skipping Three.js for better performance scores");
+        log.info(
+          "Lighthouse detected - skipping Three.js for better performance scores"
+        );
       } else {
         const initEarthWhenReady = async () => {
           const earthContainer = getElementById("threeEarthContainer");
           if (!earthContainer) {
-            log.debug("Earth container not found, skipping Three.js initialization");
+            log.debug(
+              "Earth container not found, skipping Three.js initialization"
+            );
             return;
           }
-          
+
           // Warte auf Intersection für lazy loading
           const earthObserver = new IntersectionObserver(
             async (entries) => {
@@ -444,28 +444,36 @@ function loadMenuAssets() {
                 if (entry.isIntersecting && !threeEarthCleanup) {
                   log.info("Loading Three.js Earth system...");
                   earthObserver.disconnect();
-                  
+
                   try {
                     // Dynamischer Import (Code-Splitting)
-                    const { initThreeEarth } = await import("./particles/three-earth-system.js");
+                    const { initThreeEarth } = await import(
+                      "./particles/three-earth-system.js"
+                    );
                     threeEarthCleanup = await initThreeEarth();
-                    
-                    if (threeEarthCleanup && typeof threeEarthCleanup === "function") {
+
+                    if (
+                      threeEarthCleanup &&
+                      typeof threeEarthCleanup === "function"
+                    ) {
                       window.__threeEarthCleanup = threeEarthCleanup;
                       log.info("Three.js Earth system initialized");
                     }
                   } catch (error) {
-                    log.warn("Three.js Earth system failed, using CSS fallback:", error);
+                    log.warn(
+                      "Three.js Earth system failed, using CSS fallback:",
+                      error
+                    );
                   }
                 }
               }
             },
             { rootMargin: "300px", threshold: 0.01 }
           );
-          
+
           earthObserver.observe(earthContainer);
         };
-        
+
         // Verzögere bis Browser idle
         if (window.requestIdleCallback) {
           requestIdleCallback(initEarthWhenReady, { timeout: 2000 });
@@ -476,15 +484,7 @@ function loadMenuAssets() {
 
       fire(EVENTS.CORE_INITIALIZED);
 
-      // === Mobile Performance Optimierung (nach Engine-Init) ===
-      const isMobile = window.matchMedia(
-        "(max-width: 600px), (pointer: coarse)"
-      ).matches;
-      if (isMobile && window.enhancedAnimationEngine) {
-        window.enhancedAnimationEngine.options.maxAnimations = 3;
-        window.enhancedAnimationEngine.options.threshold = 0.1;
-        window.enhancedAnimationEngine.setRepeatOnScroll(false);
-      }
+      // === Mobile Performance Optimierung entfernt ===
 
       // 3. Hero Feature-Bundle initialisieren
       fire(EVENTS.HERO_INIT_READY);
@@ -495,11 +495,7 @@ function loadMenuAssets() {
       fire(EVENTS.MODULES_READY);
       tryHide();
 
-      // Re-scan nach Template-Loading für Enhanced Animation Engine
-      document.addEventListener(EVENTS.FEATURES_TEMPLATES_LOADED, () => {
-        // Animation Engine rescan für neue Templates
-        scheduleAnimationScan(120);
-      });
+      // Animation Engine Event Handler entfernt
 
       // Menü-Assets laden
       loadMenuAssets();
