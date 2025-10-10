@@ -175,8 +175,10 @@ import {
       const sectionRect = section.getBoundingClientRect();
 
       // Relative Position innerhalb der Card
-      const targetX = cardRect.left - sectionRect.left + Math.random() * cardRect.width;
-      const targetY = cardRect.top - sectionRect.top + Math.random() * cardRect.height;
+      const targetX =
+        cardRect.left - sectionRect.left + Math.random() * cardRect.width;
+      const targetY =
+        cardRect.top - sectionRect.top + Math.random() * cardRect.height;
 
       // Partikel-Properties (inspiriert von Earth's StarField)
       starfieldParticles.push({
@@ -210,7 +212,11 @@ import {
 
     // Twinkle-Effekt (sin-based mit twinkleSpeed)
     const twinkle =
-      (Math.sin(time * STARFIELD_CONFIG.TWINKLE_SPEED + particle.twinkleOffset) + 1) / 2;
+      (Math.sin(
+        time * STARFIELD_CONFIG.TWINKLE_SPEED + particle.twinkleOffset
+      ) +
+        1) /
+      2;
     const opacity = particle.opacity * (0.5 + twinkle * 0.5);
 
     // Größe nimmt ab während Formation (Sterne konvergieren)
@@ -256,7 +262,9 @@ import {
 
     // Continue Animation oder beenden
     if (progress < 1) {
-      starfieldAnimationId = requestAnimationFrame(() => animateStarfield(section));
+      starfieldAnimationId = requestAnimationFrame(() =>
+        animateStarfield(section)
+      );
     } else {
       // Animation complete - Cards sind bereits durch CSS-Animation sichtbar
       log.info('✨ Starfield formation complete');
@@ -338,8 +346,10 @@ import {
       const cardRect = startCard.getBoundingClientRect();
       const sectionRect = section.getBoundingClientRect();
 
-      const startX = cardRect.left - sectionRect.left + Math.random() * cardRect.width;
-      const startY = cardRect.top - sectionRect.top + Math.random() * cardRect.height;
+      const startX =
+        cardRect.left - sectionRect.left + Math.random() * cardRect.width;
+      const startY =
+        cardRect.top - sectionRect.top + Math.random() * cardRect.height;
 
       // Ziel: Random über Section verteilt (wie Forward Start)
       const targetX = Math.random() * rect.width;
@@ -359,7 +369,9 @@ import {
       });
     }
 
-    log.info(`Initialized ${particleCount} particles for REVERSE (mobile: ${isMobile})`);
+    log.info(
+      `Initialized ${particleCount} particles for REVERSE (mobile: ${isMobile})`
+    );
   }
 
   /**
@@ -388,8 +400,13 @@ import {
 
       // Twinkle-Effekt
       const twinkle =
-        (Math.sin((now / 1000) * STARFIELD_CONFIG.TWINKLE_SPEED + particle.twinkleOffset) + 1) / 2;
-      const opacity = particle.opacity * (0.5 + twinkle * 0.5) * (1 - progress * 0.3); // Fade out
+        (Math.sin(
+          (now / 1000) * STARFIELD_CONFIG.TWINKLE_SPEED + particle.twinkleOffset
+        ) +
+          1) /
+        2;
+      const opacity =
+        particle.opacity * (0.5 + twinkle * 0.5) * (1 - progress * 0.3); // Fade out
 
       // Größe wächst während Reverse (Partikel → Sterne)
       const size = particle.size * (1 + progress * 0.5); // +50% am Ende
@@ -407,7 +424,9 @@ import {
 
     // Continue oder beenden
     if (progress < 1) {
-      starfieldAnimationId = requestAnimationFrame(() => animateReverseStarfield(section));
+      starfieldAnimationId = requestAnimationFrame(() =>
+        animateReverseStarfield(section)
+      );
     } else {
       // Reverse complete
       log.info('🔄 Reverse starfield complete');
@@ -418,7 +437,11 @@ import {
       isReversing = false;
 
       // Section zurück zu initial State
-      section.classList.remove('starfield-animating', 'cards-materializing', 'cards-visible');
+      section.classList.remove(
+        'starfield-animating',
+        'cards-materializing',
+        'cards-visible'
+      );
       section.classList.add('cards-hidden');
     }
   }
@@ -510,15 +533,23 @@ import {
             !isReversing &&
             (!isVisible || parseFloat(ratio) < REVERSE_THRESHOLD)
           ) {
-            log.info(`🔄 Section leaving (ratio=${ratio}) - triggering reverse animation`);
+            log.info(
+              `🔄 Section leaving (ratio=${ratio}) - triggering reverse animation`
+            );
             applyReverseStarfieldAnimation(section);
             return; // Stop weitere Checks
           }
 
           // Forward Animation bei hohem Threshold (Section fast komplett sichtbar)
           if (isVisible && parseFloat(ratio) >= SNAP_THRESHOLD) {
-            if (!hasAnimated && !isReversing && section.dataset.currentTemplate) {
-              log.info(`🚀 Snap complete (${ratio}) - starting starfield animation!`);
+            if (
+              !hasAnimated &&
+              !isReversing &&
+              section.dataset.currentTemplate
+            ) {
+              log.info(
+                `🚀 Snap complete (${ratio}) - starting starfield animation!`
+              );
               hasAnimated = true;
 
               // Starte Starfield Constellation Animation
@@ -547,7 +578,10 @@ import {
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const visibleRatio =
-        Math.max(0, Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)) / rect.height;
+        Math.max(
+          0,
+          Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
+        ) / rect.height;
 
       // Trigger Reverse während Scrollen (VOR IntersectionObserver)
       if (visibleRatio < REVERSE_THRESHOLD && hasAnimated && !isReversing) {
