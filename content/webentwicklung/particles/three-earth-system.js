@@ -1326,9 +1326,9 @@ function startAnimationLoop() {
         sunAngle =
           directionalLight.position.x !== 0
             ? Math.atan2(
-              directionalLight.position.z,
-              directionalLight.position.x
-            )
+                directionalLight.position.z,
+                directionalLight.position.x
+              )
             : 0;
       }
 

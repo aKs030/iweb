@@ -1,9 +1,7 @@
-import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
-
+import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
 // Three.js wird nur bei Bedarf geladen (Code-Splitting für Performance)
 // import { initThreeEarth } from "./particles/three-earth-system.js";
-import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
-
+import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
 // ===== Shared Utilities Import =====
 import {
   createLazyLoadObserver,
@@ -13,11 +11,11 @@ import {
   getElementById,
   schedulePersistentStorageRequest,
   SectionTracker,
-} from "./shared-utilities.js";
+} from './shared-utilities.js';
 
 // ===== Module-specific Utilities =====
 
-const log = createLogger("main");
+const log = createLogger('main');
 
 // ===== Section Tracker Instance =====
 const sectionTracker = new SectionTracker();
@@ -27,10 +25,10 @@ window.sectionTracker = sectionTracker;
 // ===== Accessibility Utilities =====
 function announce(message, { assertive = false } = {}) {
   try {
-    const id = assertive ? "live-region-assertive" : "live-region-status";
+    const id = assertive ? 'live-region-assertive' : 'live-region-status';
     const region = getElementById(id);
     if (!region) return;
-    region.textContent = "";
+    region.textContent = '';
     requestAnimationFrame(() => {
       region.textContent = message;
     });
@@ -42,9 +40,9 @@ function announce(message, { assertive = false } = {}) {
 window.announce = window.announce || announce;
 
 // ===== Service Worker Registrierung =====
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
 
@@ -52,16 +50,16 @@ if ("serviceWorker" in navigator) {
 (() => {
   const MAP = [
     {
-      id: "features",
-      module: "/pages/card/karten-rotation.js",
+      id: 'features',
+      module: '/pages/card/karten-rotation.js',
       loaded: false,
-      type: "feature-rotation",
+      type: 'feature-rotation',
     },
     {
-      id: "about",
-      module: "/pages/about/about.js",
+      id: 'about',
+      module: '/pages/about/about.js',
       loaded: false,
-      type: "about-section",
+      type: 'about-section',
     },
   ];
 
@@ -81,7 +79,7 @@ if ("serviceWorker" in navigator) {
   }
 
   // Delay Setup bis DOMContentLoaded, Sections existieren initial (hero eager) andere werden dynamisch geladen.
-  document.addEventListener("section:loaded", (ev) => {
+  document.addEventListener('section:loaded', (ev) => {
     const id = ev.detail?.id;
     const candidate = MAP.find((m) => m.id === id);
     if (candidate && !candidate.loaded) {
@@ -90,7 +88,7 @@ if ("serviceWorker" in navigator) {
     }
   });
   // Falls Features/About bereits im DOM (eager oder schnell geladen)
-  ["features", "about"].forEach((id) => {
+  ['features', 'about'].forEach((id) => {
     const el = getElementById(id);
     if (el) lazyLoader.observe(el);
   });
@@ -99,7 +97,7 @@ if ("serviceWorker" in navigator) {
 const SectionLoader = (() => {
   if (window.SectionLoader) return window.SectionLoader;
 
-  const SELECTOR = "section[data-section-src]";
+  const SELECTOR = 'section[data-section-src]';
   const SEEN = new WeakSet();
 
   // Dispatch Helper für konsistente CustomEvents
@@ -121,16 +119,16 @@ const SectionLoader = (() => {
   async function loadInto(section) {
     if (SEEN.has(section)) return;
     SEEN.add(section);
-    const url = section.getAttribute("data-section-src");
+    const url = section.getAttribute('data-section-src');
     if (!url) {
-      section.removeAttribute("aria-busy");
+      section.removeAttribute('aria-busy');
       return;
     }
 
     prepSectionForLoad(section);
     const sectionName = resolveSectionName(section);
     announce(`Lade Abschnitt ${sectionName}…`);
-    dispatchSectionEvent("section:will-load", section, { url });
+    dispatchSectionEvent('section:will-load', section, { url });
 
     const maxAttempts = 2;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -147,24 +145,24 @@ const SectionLoader = (() => {
       }
       await backoff(attempt);
     }
-    section.removeAttribute("aria-busy");
+    section.removeAttribute('aria-busy');
   }
 
   /** Bereitet Section DOM-State für Ladevorgang vor (ARIA + Status) */
   function prepSectionForLoad(section) {
-    section.setAttribute("aria-busy", "true");
-    section.dataset.state = "loading";
+    section.setAttribute('aria-busy', 'true');
+    section.dataset.state = 'loading';
   }
 
   /** Ermittelt sprechbaren Section-Namen (für Announce) */
   function resolveSectionName(section) {
-    const labelId = section.getAttribute("aria-labelledby");
+    const labelId = section.getAttribute('aria-labelledby');
     if (labelId) {
       const lbl = getElementById(labelId);
       const txt = lbl?.textContent?.trim();
       if (txt) return txt;
     }
-    return section.id || "Abschnitt";
+    return section.id || 'Abschnitt';
   }
 
   /**
@@ -180,18 +178,18 @@ const SectionLoader = (() => {
         timeout = setTimeout(() => controller.abort(), 8000);
       }
       const res = await fetch(url, {
-        credentials: "same-origin",
+        credentials: 'same-origin',
         signal: controller?.signal,
       });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText} @ ${url}`);
       const html = await res.text();
       if (timeout) clearTimeout(timeout);
-      section.insertAdjacentHTML("beforeend", html);
-      const tpl = section.querySelector("template");
+      section.insertAdjacentHTML('beforeend', html);
+      const tpl = section.querySelector('template');
       if (tpl) section.appendChild(tpl.content.cloneNode(true));
-      section.querySelectorAll(".section-skeleton").forEach((n) => n.remove());
-      section.dataset.state = "loaded";
-      if (section.id === "hero") fire(EVENTS.HERO_LOADED);
+      section.querySelectorAll('.section-skeleton').forEach((n) => n.remove());
+      section.dataset.state = 'loaded';
+      if (section.id === 'hero') fire(EVENTS.HERO_LOADED);
       return { ok: true };
     } catch (error) {
       const transient =
@@ -200,25 +198,25 @@ const SectionLoader = (() => {
       if (timeout) clearTimeout(timeout);
       return { ok: false, error, transient };
     } finally {
-      if (section.dataset.state === "loaded")
-        section.removeAttribute("aria-busy");
+      if (section.dataset.state === 'loaded')
+        section.removeAttribute('aria-busy');
     }
   }
 
   /** Abschluss bei Erfolg (Announce) */
   function finalizeSuccess(section, sectionName) {
     announce(`Abschnitt ${sectionName} geladen.`);
-    dispatchSectionEvent("section:loaded", section, { state: "loaded" });
+    dispatchSectionEvent('section:loaded', section, { state: 'loaded' });
   }
 
   /** Abschluss bei Fehler (Announce + Status) */
   function finalizeError(section, sectionName) {
-    section.dataset.state = "error";
-    section.removeAttribute("aria-busy");
+    section.dataset.state = 'error';
+    section.removeAttribute('aria-busy');
     announce(`Fehler beim Laden von Abschnitt ${sectionName}.`, {
       assertive: true,
     });
-    dispatchSectionEvent("section:error", section, { state: "error" });
+    dispatchSectionEvent('section:error', section, { state: 'error' });
     injectRetryUI(section);
   }
 
@@ -234,7 +232,7 @@ const SectionLoader = (() => {
     const lazy = [];
 
     sections.forEach((section) => {
-      if (section.hasAttribute("data-eager")) {
+      if (section.hasAttribute('data-eager')) {
         loadInto(section);
       } else {
         lazy.push(section);
@@ -250,23 +248,23 @@ const SectionLoader = (() => {
   }
 
   function injectRetryUI(section) {
-    if (section.querySelector(".section-retry")) return;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "section-retry";
-    btn.textContent = "Erneut laden";
-    btn.addEventListener("click", () => retry(section), { once: true });
-    const wrapper = document.createElement("div");
-    wrapper.className = "section-error-box";
+    if (section.querySelector('.section-retry')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'section-retry';
+    btn.textContent = 'Erneut laden';
+    btn.addEventListener('click', () => retry(section), { once: true });
+    const wrapper = document.createElement('div');
+    wrapper.className = 'section-error-box';
     wrapper.append(btn);
     section.append(wrapper);
   }
 
   async function retry(section) {
     // Cleanup previous error UI
-    section.querySelectorAll(".section-error-box").forEach((n) => n.remove());
-    section.dataset.state = "";
-    section.setAttribute("aria-busy", "true");
+    section.querySelectorAll('.section-error-box').forEach((n) => n.remove());
+    section.dataset.state = '';
+    section.setAttribute('aria-busy', 'true');
     SEEN.delete(section); // allow reprocessing
     await loadInto(section);
   }
@@ -283,7 +281,7 @@ const SectionLoader = (() => {
 })();
 
 // Section Loader initialisieren
-if (document.readyState !== "loading") {
+if (document.readyState !== 'loading') {
   SectionLoader.init();
 } else {
   // Wird vom zentralen DOMContentLoaded Handler aufgerufen
@@ -294,10 +292,10 @@ if (document.readyState !== "loading") {
 const ScrollSnapping = (() => {
   let snapTimer = null;
   const snapContainer =
-    document.querySelector(".snap-container") || document.documentElement;
+    document.querySelector('.snap-container') || document.documentElement;
 
-  const disableSnap = () => snapContainer.classList.add("no-snap");
-  const enableSnap = () => snapContainer.classList.remove("no-snap");
+  const disableSnap = () => snapContainer.classList.add('no-snap');
+  const enableSnap = () => snapContainer.classList.remove('no-snap');
 
   const onActiveScroll = () => {
     disableSnap();
@@ -306,18 +304,18 @@ const ScrollSnapping = (() => {
   };
 
   function init() {
-    addEventListener("wheel", onActiveScroll, { passive: true });
-    addEventListener("touchmove", onActiveScroll, { passive: true });
-    addEventListener("keydown", (e) => {
+    addEventListener('wheel', onActiveScroll, { passive: true });
+    addEventListener('touchmove', onActiveScroll, { passive: true });
+    addEventListener('keydown', (e) => {
       if (
         [
-          "PageDown",
-          "PageUp",
-          "Home",
-          "End",
-          "ArrowDown",
-          "ArrowUp",
-          "Space",
+          'PageDown',
+          'PageUp',
+          'Home',
+          'End',
+          'ArrowDown',
+          'ArrowUp',
+          'Space',
         ].includes(e.key)
       ) {
         onActiveScroll();
@@ -333,27 +331,27 @@ ScrollSnapping.init();
 
 // ===== Menu Loading =====
 function loadMenuAssets() {
-  const c = getElementById("menu-container");
+  const c = getElementById('menu-container');
   if (!c) return;
-  if (c.dataset.assetsLoaded === "1") return;
+  if (c.dataset.assetsLoaded === '1') return;
   if (
     document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')
   ) {
-    c.dataset.assetsLoaded = "1";
+    c.dataset.assetsLoaded = '1';
     return;
   }
-  const s = document.createElement("script");
-  s.src = "/content/webentwicklung/menu/menu.js";
+  const s = document.createElement('script');
+  s.src = '/content/webentwicklung/menu/menu.js';
   s.defer = true;
   s.onload = () => {
-    c.dataset.assetsLoaded = "1";
+    c.dataset.assetsLoaded = '1';
   };
   document.body.appendChild(s);
 }
 
 // ===== Application Initialization =====
 (() => {
-  "use strict";
+  'use strict';
 
   // Loading State Management
   let __modulesReady = false,
@@ -362,29 +360,29 @@ function loadMenuAssets() {
   const __MIN = 600; // Mindestzeit für Loading Screen
 
   function hideLoading() {
-    const el = getElementById("loadingScreen");
+    const el = getElementById('loadingScreen');
     if (!el) return;
 
-    el.classList.add("hide");
-    el.setAttribute("aria-hidden", "true");
+    el.classList.add('hide');
+    el.setAttribute('aria-hidden', 'true');
     Object.assign(el.style, {
-      opacity: "0",
-      pointerEvents: "none",
-      visibility: "hidden",
+      opacity: '0',
+      pointerEvents: 'none',
+      visibility: 'hidden',
     });
 
     const rm = () => {
-      el.style.display = "none";
-      el.removeEventListener("transitionend", rm);
+      el.style.display = 'none';
+      el.removeEventListener('transitionend', rm);
     };
-    el.addEventListener("transitionend", rm);
+    el.addEventListener('transitionend', rm);
     setTimeout(rm, 700);
-    announce("Initiales Laden abgeschlossen.");
+    announce('Initiales Laden abgeschlossen.');
   }
 
   // Zentraler DOMContentLoaded Handler - koordiniert alle Module
   document.addEventListener(
-    "DOMContentLoaded",
+    'DOMContentLoaded',
     async () => {
       __start = performance.now();
 
@@ -393,13 +391,13 @@ function loadMenuAssets() {
 
       const tryHide = () => {
         if (!__modulesReady) return;
-        if (!__windowLoaded && document.readyState !== "complete") return;
+        if (!__windowLoaded && document.readyState !== 'complete') return;
         const elapsed = performance.now() - __start;
         setTimeout(hideLoading, Math.max(0, __MIN - elapsed));
       };
 
       addEventListener(
-        "load",
+        'load',
         () => {
           __windowLoaded = true;
           tryHide();
@@ -420,19 +418,19 @@ function loadMenuAssets() {
       let threeEarthCleanup = null;
 
       const isLighthouse =
-        navigator.userAgent.includes("Chrome-Lighthouse") ||
-        navigator.userAgent.includes("HeadlessChrome");
+        navigator.userAgent.includes('Chrome-Lighthouse') ||
+        navigator.userAgent.includes('HeadlessChrome');
 
       if (isLighthouse) {
         log.info(
-          "Lighthouse detected - skipping Three.js for better performance scores"
+          'Lighthouse detected - skipping Three.js for better performance scores'
         );
       } else {
         const initEarthWhenReady = async () => {
-          const earthContainer = getElementById("threeEarthContainer");
+          const earthContainer = getElementById('threeEarthContainer');
           if (!earthContainer) {
             log.debug(
-              "Earth container not found, skipping Three.js initialization"
+              'Earth container not found, skipping Three.js initialization'
             );
             return;
           }
@@ -442,33 +440,33 @@ function loadMenuAssets() {
             async (entries) => {
               for (const entry of entries) {
                 if (entry.isIntersecting && !threeEarthCleanup) {
-                  log.info("Loading Three.js Earth system...");
+                  log.info('Loading Three.js Earth system...');
                   earthObserver.disconnect();
 
                   try {
                     // Dynamischer Import (Code-Splitting)
                     const { initThreeEarth } = await import(
-                      "./particles/three-earth-system.js"
+                      './particles/three-earth-system.js'
                     );
                     threeEarthCleanup = await initThreeEarth();
 
                     if (
                       threeEarthCleanup &&
-                      typeof threeEarthCleanup === "function"
+                      typeof threeEarthCleanup === 'function'
                     ) {
                       window.__threeEarthCleanup = threeEarthCleanup;
-                      log.info("Three.js Earth system initialized");
+                      log.info('Three.js Earth system initialized');
                     }
                   } catch (error) {
                     log.warn(
-                      "Three.js Earth system failed, using CSS fallback:",
+                      'Three.js Earth system failed, using CSS fallback:',
                       error
                     );
                   }
                 }
               }
             },
-            { rootMargin: "300px", threshold: 0.01 }
+            { rootMargin: '300px', threshold: 0.01 }
           );
 
           earthObserver.observe(earthContainer);

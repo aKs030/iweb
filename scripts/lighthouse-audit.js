@@ -211,7 +211,7 @@ async function runAudit(formFactor) {
         chromeFlags: ['--headless', '--disable-gpu', '--no-sandbox'],
       });
       chromeExecutable = chrome.port;
-    } catch (_chromeError) {
+    } catch {
       console.log('⚠️  Chrome nicht gefunden, verwende Puppeteer Chromium...');
       browser = await puppeteer.launch({
         headless: true,
