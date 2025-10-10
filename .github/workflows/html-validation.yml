@@ -1,4 +1,6 @@
 name: HTML Validation & Quality Checks
+permissions:
+  contents: read
 
 on: [push, pull_request]
 
