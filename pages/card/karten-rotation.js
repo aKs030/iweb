@@ -4,8 +4,8 @@ import {
   EVENTS,
   fire,
   getElementById,
-  throttle,
   shuffle as shuffleArray,
+  throttle,
 } from '../../content/webentwicklung/shared-utilities.js';
 
 (() => {
