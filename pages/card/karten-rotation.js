@@ -26,6 +26,7 @@ import {
   const THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.65, 0.75, 1];
   const SNAP_THRESHOLD = 0.75; // Forward Animation bei 75% Sichtbarkeit
   const REVERSE_THRESHOLD = 0.65; // Reverse Animation bei <65%
+  const SCROLL_THROTTLE = 100; // ms
 
   // Module State
   let order = [];
@@ -109,6 +110,7 @@ import {
       live.setAttribute('data-feature-rotation-live', '');
       live.setAttribute('aria-live', 'polite');
       live.setAttribute('aria-atomic', 'true');
+      live.className = 'sr-only';
       live.style.cssText =
         'position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;';
       section.appendChild(live);
@@ -126,27 +128,40 @@ import {
    * DPR-aware, responsive, GPU-optimiert
    */
   function createStarfieldCanvas(section) {
-    const canvas = document.createElement('canvas');
-    canvas.className = 'starfield-canvas';
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.className = 'starfield-canvas';
 
-    const rect = section.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); // Max 2x für Performance
+      const rect = section.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2); // Max 2x für Performance
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
 
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+      const ctx = canvas.getContext('2d', { 
+        alpha: true,
+        desynchronized: true // Better performance
+      });
+      
+      if (!ctx) {
+        throw new Error('Failed to get 2D context');
+      }
+      
+      ctx.scale(dpr, dpr);
 
-    section.appendChild(canvas);
+      section.appendChild(canvas);
 
-    starfieldCanvas = canvas;
-    starfieldContext = ctx;
+      starfieldCanvas = canvas;
+      starfieldContext = ctx;
 
-    log.debug(`Starfield canvas: ${rect.width}x${rect.height}, DPR: ${dpr}`);
-    return canvas;
+      log.debug(`Starfield canvas: ${rect.width}x${rect.height}, DPR: ${dpr}`);
+      return canvas;
+    } catch (error) {
+      log.error('Failed to create starfield canvas:', error);
+      return null;
+    }
   }
 
   /**
@@ -161,6 +176,11 @@ import {
 
     const rect = section.getBoundingClientRect();
     const cards = section.querySelectorAll('.card');
+
+    if (!cards.length) {
+      log.warn('No cards found for particle initialization');
+      return;
+    }
 
     starfieldParticles = [];
 
@@ -292,7 +312,12 @@ import {
     section.classList.add('starfield-animating');
 
     // Erstelle Canvas
-    createStarfieldCanvas(section);
+    if (!createStarfieldCanvas(section)) {
+      log.error('Failed to create canvas, skipping animation');
+      section.classList.remove('starfield-animating');
+      section.classList.add('cards-visible');
+      return;
+    }
 
     // Initialisiere Partikel
     initializeParticles(section);
@@ -337,6 +362,11 @@ import {
 
     const rect = section.getBoundingClientRect();
     const cards = section.querySelectorAll('.card');
+
+    if (!cards.length) {
+      log.warn('No cards found for reverse particle initialization');
+      return;
+    }
 
     starfieldParticles = [];
 
@@ -463,7 +493,14 @@ import {
     section.classList.add('starfield-animating');
 
     // Canvas erstellen
-    createStarfieldCanvas(section);
+    if (!createStarfieldCanvas(section)) {
+      log.error('Failed to create canvas for reverse, resetting state');
+      hasAnimated = false;
+      isReversing = false;
+      section.classList.remove('starfield-animating');
+      section.classList.add('cards-hidden');
+      return;
+    }
 
     // Reverse Partikel initialisieren
     initializeReverseParticles(section);
@@ -510,18 +547,46 @@ import {
     fire(EVENTS.FEATURES_CHANGE, { index: i, total: order.length });
   }
 
+  /**
+   * Throttle function for scroll events
+   */
+  function throttle(func, delay) {
+    let timeoutId;
+    let lastExecTime = 0;
+    
+    return function (...args) {
+      const currentTime = Date.now();
+      
+      if (currentTime - lastExecTime > delay) {
+        func.apply(this, args);
+        lastExecTime = currentTime;
+      } else {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          func.apply(this, args);
+          lastExecTime = Date.now();
+        }, delay - (currentTime - lastExecTime));
+      }
+    };
+  }
+
   function observe() {
     const section = getElementById(SECTION_ID);
     if (!section) return;
-    if (io) io.disconnect();
+    
+    // Cleanup existing observer
+    if (io) {
+      io.disconnect();
+      io = null;
+    }
 
     io = new IntersectionObserver(
-      (ents) => {
-        for (const e of ents) {
-          if (e.target !== section) continue;
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target !== section) continue;
 
-          const ratio = e.intersectionRatio.toFixed(3);
-          const isVisible = e.isIntersecting;
+          const ratio = entry.intersectionRatio.toFixed(3);
+          const isVisible = entry.isIntersecting;
 
           log.debug(
             `📊 Intersection: visible=${isVisible}, ratio=${ratio}, hasAnimated=${hasAnimated}, isReversing=${isReversing}`
@@ -568,13 +633,8 @@ import {
     io.observe(section);
 
     // Scroll Event Listener für frühe Reverse-Erkennung
-    // Throttled auf 100ms für Performance
-    let lastScrollCheck = 0;
-    const handleScroll = () => {
-      const now = performance.now();
-      if (now - lastScrollCheck < 100) return; // Throttle
-      lastScrollCheck = now;
-
+    // Throttled für bessere Performance
+    const handleScroll = throttle(() => {
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const visibleRatio =
@@ -588,15 +648,18 @@ import {
         log.info(`🔄 Scroll away detected (ratio: ${visibleRatio.toFixed(2)})`);
         applyReverseStarfieldAnimation(section);
       }
-    };
+    }, SCROLL_THROTTLE);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Cleanup function registrieren
-    return () => {
+    observerCleanup = () => {
       io?.disconnect();
+      io = null;
       window.removeEventListener('scroll', handleScroll);
     };
+    
+    return observerCleanup;
   }
 
   async function init() {
@@ -608,45 +671,50 @@ import {
       return;
     }
 
-    // 1. Templates laden
-    log.debug('Step 1: Loading templates...');
-    if (!loaded) {
-      await ensureTemplates(section);
+    try {
+      // 1. Templates laden
+      log.debug('Step 1: Loading templates...');
+      if (!loaded) {
+        await ensureTemplates(section);
+      }
+
+      // 2. Prüfe ob Templates geladen wurden
+      log.debug('Step 2: Checking for available templates...');
+      const availableTemplates = TEMPLATE_IDS.filter((id) => {
+        const found = getElementById(id);
+        log.debug(`  - ${id}: ${found ? '✅ found' : '❌ missing'}`);
+        return found;
+      });
+
+      if (availableTemplates.length === 0) {
+        log.error(`No templates found! Searched for: ${TEMPLATE_IDS.join(', ')}`);
+        return;
+      }
+
+      // 3. Order shuffeln mit verfügbaren Templates
+      log.debug('Step 3: Shuffling template order...');
+      order = shuffleArray([...availableTemplates]);
+      log.info(`Template order: ${order.join(', ')} (${order.length} templates)`);
+
+      // 4. Cards mounten
+      log.debug('Step 4: Mounting initial cards...');
+      if (section) {
+        mountInitialCards();
+      } else {
+        log.warn('Features section not found');
+      }
+
+      // 5. Observer starten
+      log.debug('Step 5: Starting observer...');
+      observe();
+
+      log.info('✅ FeatureRotation initialized successfully');
+    } catch (error) {
+      log.error('Failed to initialize:', error);
     }
-
-    // 2. Prüfe ob Templates geladen wurden
-    log.debug('Step 2: Checking for available templates...');
-    const availableTemplates = TEMPLATE_IDS.filter((id) => {
-      const found = getElementById(id);
-      log.debug(`  - ${id}: ${found ? '✅ found' : '❌ missing'}`);
-      return found;
-    });
-
-    if (availableTemplates.length === 0) {
-      log.error(`No templates found! Searched for: ${TEMPLATE_IDS.join(', ')}`);
-      return;
-    }
-
-    // 3. Order shufflen mit verfügbaren Templates
-    log.debug('Step 3: Shuffling template order...');
-    order = shuffleArray([...availableTemplates]);
-    log.info(`Template order: ${order.join(', ')} (${order.length} templates)`);
-
-    // 4. Cards mounten
-    log.debug('Step 4: Mounting initial cards...');
-    if (section) {
-      mountInitialCards();
-    } else {
-      log.warn('Features section not found');
-    }
-
-    // 5. Observer starten
-    log.debug('Step 5: Starting observer...');
-    observerCleanup = observe();
-
-    log.info('✅ FeatureRotation initialized successfully');
   }
 
+  // Public API
   window.FeatureRotation = {
     current: () => ({ index: i, id: order[i] }),
     destroy() {
@@ -657,12 +725,35 @@ import {
       io?.disconnect();
       io = null;
       cleanupStarfield(); // Cleanup Starfield Animation
+      hasAnimated = false;
+      isReversing = false;
+      loaded = false;
+      order = [];
+      i = 0;
       delete window.FeatureRotation;
     },
+    // Expose for debugging
+    debug: {
+      getState: () => ({
+        hasAnimated,
+        isReversing,
+        loaded,
+        currentTemplate: document.getElementById(SECTION_ID)?.dataset?.currentTemplate
+      }),
+      forceAnimation: () => {
+        const section = getElementById(SECTION_ID);
+        if (section && !hasAnimated) {
+          hasAnimated = true;
+          applyStarfieldAnimation(section);
+        }
+      }
+    }
   };
 
   // Init starten
-  document.readyState === 'loading'
-    ? document.addEventListener('DOMContentLoaded', init, { once: true })
-    : init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
 })();

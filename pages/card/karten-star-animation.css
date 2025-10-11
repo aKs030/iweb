@@ -24,6 +24,8 @@
   z-index: 1001; /* Über Cards */
   pointer-events: none;
   opacity: 1;
+  -webkit-transition: opacity 0.6s ease-out;
+  -o-transition: opacity 0.6s ease-out;
   transition: opacity 0.6s ease-out;
 }
 
@@ -33,6 +35,7 @@
   z-index: 1000;
   opacity: 0;
   visibility: visible;
+  -webkit-animation: cards-appear-with-starfield 1400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation: cards-appear-with-starfield 1400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
@@ -63,6 +66,44 @@
  * - 50-85%: Sharpening + Glow-Peak
  * - 85-100%: Final fade-in + Glow fade-out
  */
+@-webkit-keyframes cards-appear-with-starfield {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0.92);
+    transform: scale(0.92);
+    -webkit-filter: brightness(0.8) blur(8px);
+    filter: brightness(0.8) blur(8px);
+  }
+  50% {
+    opacity: 0.3;
+    -webkit-transform: scale(0.96);
+    transform: scale(0.96);
+    -webkit-filter: brightness(0.9) blur(4px);
+    filter: brightness(0.9) blur(4px);
+  }
+  70% {
+    opacity: 0.6;
+    -webkit-transform: scale(0.98);
+    transform: scale(0.98);
+    -webkit-filter: brightness(1) blur(2px);
+    filter: brightness(1) blur(2px);
+  }
+  85% {
+    opacity: 0.85;
+    -webkit-transform: scale(0.99);
+    transform: scale(0.99);
+    -webkit-filter: brightness(1.1) blur(0px) drop-shadow(0 0 15px rgba(88, 166, 255, 0.5));
+    filter: brightness(1.1) blur(0px) drop-shadow(0 0 15px rgba(88, 166, 255, 0.5));
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    -webkit-filter: brightness(1) blur(0px) drop-shadow(0 0 0px rgba(88, 166, 255, 0));
+    filter: brightness(1) blur(0px) drop-shadow(0 0 0px rgba(88, 166, 255, 0));
+  }
+}
+
 @keyframes cards-appear-with-starfield {
   0% {
     opacity: 0;
@@ -97,11 +138,34 @@
 
 .features-cards {
   will-change: opacity, transform, filter;
+  -webkit-transform: translateZ(0);
   transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
 }
 
 #features.cards-visible .features-cards {
   will-change: auto;
+}
+
+/* ========================================
+   Screen Reader Only Utility Class
+======================================== */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  border: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap !important;
+  -webkit-clip-path: inset(100%) !important;
+  clip-path: inset(100%) !important;
+  clip: rect(0 0 0 0) !important;
+  overflow: hidden !important;
 }
 
 /* ========================================
@@ -110,11 +174,33 @@
 
 @media (max-width: 768px) {
   /* Mobile: JavaScript reduziert Partikel-Count auf 60 */
+  .features-cards {
+    /* Optimize for mobile performance */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .starfield-canvas {
-    display: none;
+    display: none !important;
+  }
+  
+  @-webkit-keyframes cards-appear-with-starfield {
+    0% {
+      opacity: 0;
+      -webkit-transform: none;
+      transform: none;
+      -webkit-filter: none;
+      filter: none;
+    }
+    100% {
+      opacity: 1;
+      -webkit-transform: none;
+      transform: none;
+      -webkit-filter: none;
+      filter: none;
+    }
   }
   
   @keyframes cards-appear-with-starfield {
@@ -131,6 +217,11 @@
   }
   
   #features.starfield-animating .features-cards {
+    -webkit-animation-duration: 200ms;
     animation-duration: 200ms;
+  }
+  
+  .features-cards {
+    will-change: auto !important;
   }
 }
