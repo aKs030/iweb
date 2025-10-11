@@ -4,6 +4,7 @@ import {
   EVENTS,
   fire,
   getElementById,
+  throttle,
   shuffle as shuffleArray,
 } from '../../content/webentwicklung/shared-utilities.js';
 
@@ -140,15 +141,15 @@ import {
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
 
-      const ctx = canvas.getContext('2d', { 
+      const ctx = canvas.getContext('2d', {
         alpha: true,
-        desynchronized: true // Better performance
+        desynchronized: true, // Better performance
       });
-      
+
       if (!ctx) {
         throw new Error('Failed to get 2D context');
       }
-      
+
       ctx.scale(dpr, dpr);
 
       section.appendChild(canvas);
@@ -306,6 +307,15 @@ import {
    * @param {HTMLElement} section - Features Section
    */
   function applyStarfieldAnimation(section) {
+    // Respektiere reduzierte Bewegung
+    if (
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      section.classList.remove('starfield-animating');
+      section.classList.add('cards-visible');
+      return;
+    }
     log.info('🌟 Starting Starfield Constellation Animation');
 
     // Bereite Section vor
@@ -492,6 +502,19 @@ import {
     section.classList.remove('cards-materializing', 'cards-visible');
     section.classList.add('starfield-animating');
 
+    // Respektiere reduzierte Bewegung
+    if (
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      // Direkt zurück zum Hidden-State ohne Partikel-Animation
+      hasAnimated = false;
+      isReversing = false;
+      section.classList.remove('starfield-animating');
+      section.classList.add('cards-hidden');
+      return;
+    }
+
     // Canvas erstellen
     if (!createStarfieldCanvas(section)) {
       log.error('Failed to create canvas for reverse, resetting state');
@@ -547,33 +570,12 @@ import {
     fire(EVENTS.FEATURES_CHANGE, { index: i, total: order.length });
   }
 
-  /**
-   * Throttle function for scroll events
-   */
-  function throttle(func, delay) {
-    let timeoutId;
-    let lastExecTime = 0;
-    
-    return function (...args) {
-      const currentTime = Date.now();
-      
-      if (currentTime - lastExecTime > delay) {
-        func.apply(this, args);
-        lastExecTime = currentTime;
-      } else {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          func.apply(this, args);
-          lastExecTime = Date.now();
-        }, delay - (currentTime - lastExecTime));
-      }
-    };
-  }
+  // Scroll-Throttle kommt aus shared-utilities
 
   function observe() {
     const section = getElementById(SECTION_ID);
     if (!section) return;
-    
+
     // Cleanup existing observer
     if (io) {
       io.disconnect();
@@ -585,18 +587,18 @@ import {
         for (const entry of entries) {
           if (entry.target !== section) continue;
 
-          const ratio = entry.intersectionRatio.toFixed(3);
+          const ratio = entry.intersectionRatio; // numerisch behalten
           const isVisible = entry.isIntersecting;
 
           log.debug(
-            `📊 Intersection: visible=${isVisible}, ratio=${ratio}, hasAnimated=${hasAnimated}, isReversing=${isReversing}`
+            `📊 Intersection: visible=${isVisible}, ratio=${ratio.toFixed(3)}, hasAnimated=${hasAnimated}, isReversing=${isReversing}`
           );
 
           // Reverse Animation: Section verlässt Viewport
           if (
             hasAnimated &&
             !isReversing &&
-            (!isVisible || parseFloat(ratio) < REVERSE_THRESHOLD)
+            (!isVisible || ratio < REVERSE_THRESHOLD)
           ) {
             log.info(
               `🔄 Section leaving (ratio=${ratio}) - triggering reverse animation`
@@ -606,7 +608,7 @@ import {
           }
 
           // Forward Animation bei hohem Threshold (Section fast komplett sichtbar)
-          if (isVisible && parseFloat(ratio) >= SNAP_THRESHOLD) {
+          if (isVisible && ratio >= SNAP_THRESHOLD) {
             if (
               !hasAnimated &&
               !isReversing &&
@@ -637,11 +639,11 @@ import {
     const handleScroll = throttle(() => {
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      const visibleRatio =
-        Math.max(
-          0,
-          Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
-        ) / rect.height;
+      const visibleHeight = Math.max(
+        0,
+        Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
+      );
+      const visibleRatio = rect.height > 0 ? visibleHeight / rect.height : 1;
 
       // Trigger Reverse während Scrollen (VOR IntersectionObserver)
       if (visibleRatio < REVERSE_THRESHOLD && hasAnimated && !isReversing) {
@@ -658,7 +660,7 @@ import {
       io = null;
       window.removeEventListener('scroll', handleScroll);
     };
-    
+
     return observerCleanup;
   }
 
@@ -687,14 +689,18 @@ import {
       });
 
       if (availableTemplates.length === 0) {
-        log.error(`No templates found! Searched for: ${TEMPLATE_IDS.join(', ')}`);
+        log.error(
+          `No templates found! Searched for: ${TEMPLATE_IDS.join(', ')}`
+        );
         return;
       }
 
       // 3. Order shuffeln mit verfügbaren Templates
       log.debug('Step 3: Shuffling template order...');
       order = shuffleArray([...availableTemplates]);
-      log.info(`Template order: ${order.join(', ')} (${order.length} templates)`);
+      log.info(
+        `Template order: ${order.join(', ')} (${order.length} templates)`
+      );
 
       // 4. Cards mounten
       log.debug('Step 4: Mounting initial cards...');
@@ -738,7 +744,8 @@ import {
         hasAnimated,
         isReversing,
         loaded,
-        currentTemplate: document.getElementById(SECTION_ID)?.dataset?.currentTemplate
+        currentTemplate:
+          document.getElementById(SECTION_ID)?.dataset?.currentTemplate,
       }),
       forceAnimation: () => {
         const section = getElementById(SECTION_ID);
@@ -746,8 +753,8 @@ import {
           hasAnimated = true;
           applyStarfieldAnimation(section);
         }
-      }
-    }
+      },
+    },
   };
 
   // Init starten
