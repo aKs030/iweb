@@ -24,9 +24,9 @@ import {
   const TEMPLATE_URL = '/pages/card/karten.html';
 
   // Animation Configuration
-  const THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.65, 0.75, 1];
+  const THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1];
   const SNAP_THRESHOLD = 0.75; // Forward Animation bei 75% Sichtbarkeit
-  const REVERSE_THRESHOLD = 0.65; // Reverse Animation bei <65%
+  const REVERSE_THRESHOLD = 0.7; // Reverse Animation bei <70% (früher triggern!)
   const SCROLL_THROTTLE = 100; // ms
 
   // Module State
@@ -37,6 +37,97 @@ import {
   let isReversing = false;
   let io = null;
   let observerCleanup = null;
+
+  // Scroll/Snap Orchestration State
+  let pendingSnap = false;
+  let targetSectionEl = null;
+  let reverseTriggered = false; // Verhindert Doppel-Trigger
+
+  function lockSnap() {
+    document.documentElement.classList.add('snap-locked');
+    document.body.classList.add('snap-locked');
+    const container = document.querySelector('.snap-container');
+    container?.classList.add('snap-locked');
+    log.debug('🔒 Scroll-Snap locked');
+  }
+
+  function unlockSnap() {
+    document.documentElement.classList.remove('snap-locked');
+    document.body.classList.remove('snap-locked');
+    const container = document.querySelector('.snap-container');
+    container?.classList.remove('snap-locked');
+    log.debug('🔓 Scroll-Snap unlocked');
+  }
+
+  /**
+   * Bestimmt Scroll-Richtung basierend auf Section-Position im Viewport
+   * Zuverlässiger als scrollY-Vergleich!
+   */
+  function getScrollDirection(section) {
+    const rect = section.getBoundingClientRect();
+    const viewportCenter = window.innerHeight / 2;
+    const sectionCenter = rect.top + rect.height / 2;
+
+    // Section ist über dem Viewport-Center → User scrollt nach unten (next)
+    // Section ist unter dem Viewport-Center → User scrollt nach oben (prev)
+    return sectionCenter < viewportCenter ? 'next' : 'prev';
+  }
+
+  function findSiblingSection(section, direction = 'next') {
+    const all = Array.from(document.querySelectorAll('.section'));
+    const idx = all.indexOf(section);
+    if (idx === -1) {
+      log.warn(`Section not found in DOM: ${section.id || '(no id)'}`);
+      return null;
+    }
+    const sibling =
+      direction === 'next' ? all[idx + 1] || null : all[idx - 1] || null;
+    log.debug(
+      `findSiblingSection: current=${section.id}, direction=${direction}, sibling=${sibling?.id || 'none'}`
+    );
+    return sibling;
+  }
+
+  /**
+   * Zentralisierte Reverse-Trigger Funktion
+   * Verhindert Doppel-Trigger von IO und Scroll-Handler
+   */
+  function triggerReverse(section, source = 'unknown') {
+    if (reverseTriggered || isReversing) {
+      log.debug(
+        `⏭️ Reverse already triggered/running (source=${source}, triggered=${reverseTriggered}, reversing=${isReversing}), skipping`
+      );
+      return false;
+    }
+
+    if (!hasAnimated) {
+      log.debug(
+        `⏭️ Forward animation not completed yet, skipping reverse trigger from ${source}`
+      );
+      return false;
+    }
+
+    reverseTriggered = true;
+
+    // Bestimme Richtung basierend auf Section-Position
+    const direction = getScrollDirection(section);
+
+    // Ziel-Section merken und Snap sperren
+    targetSectionEl = findSiblingSection(section, direction);
+    pendingSnap = !!targetSectionEl;
+
+    log.info(
+      `🔄 TRIGGER REVERSE (${source}): direction=${direction}, target=${targetSectionEl?.id || 'none'}, willSnap=${pendingSnap}`
+    );
+
+    // Snap sperren BEVOR Animation
+    if (pendingSnap) {
+      lockSnap();
+    }
+
+    applyReverseStarfieldAnimation(section);
+    return true;
+  }
 
   // Starfield Animation State
   let starfieldCanvas = null;
@@ -51,7 +142,7 @@ import {
     PARTICLE_COUNT_MOBILE: 60,
     TWINKLE_SPEED: 0.25, // Wie Earth's CONFIG.STARS.TWINKLE_SPEED
     ANIMATION_DURATION: 1400, // Synchron mit Earth's TRANSITION_DURATION
-    REVERSE_DURATION: 1000, // Reverse schneller für snappier feel
+    REVERSE_DURATION: 800, // Reverse schneller für snappier feel (war 1000ms)
     EASING: [0.22, 1, 0.36, 1], // Earth's ease-out-expo
     PARTICLE_COLOR: 'rgba(9, 139, 255, 0.8)',
     PARTICLE_GLOW: 'rgba(255, 255, 255, 0.9)',
@@ -157,7 +248,9 @@ import {
       starfieldCanvas = canvas;
       starfieldContext = ctx;
 
-      log.debug(`Starfield canvas: ${rect.width}x${rect.height}, DPR: ${dpr}`);
+      log.info(
+        `✅ Starfield canvas created: ${rect.width}x${rect.height}, DPR: ${dpr}`
+      );
       return canvas;
     } catch (error) {
       log.error('Failed to create starfield canvas:', error);
@@ -469,12 +562,15 @@ import {
       );
     } else {
       // Reverse complete
-      log.info('🔄 Reverse starfield complete');
+      log.info(
+        '🔄 Reverse starfield complete - cards hidden, ready for re-animation'
+      );
       cleanupStarfield();
 
-      // Reset State
+      // Reset State - WICHTIG: hasAnimated bleibt false für Re-Animation
       hasAnimated = false;
       isReversing = false;
+      reverseTriggered = false; // Reset für nächsten Cycle
 
       // Section zurück zu initial State
       section.classList.remove(
@@ -483,6 +579,52 @@ import {
         'cards-visible'
       );
       section.classList.add('cards-hidden');
+
+      // Nach Abschluss: Snap freigeben und ggf. zum Zielsektor scrollen
+      try {
+        const target = targetSectionEl;
+        const shouldSnap = pendingSnap;
+        targetSectionEl = null;
+        pendingSnap = false;
+
+        if (target && shouldSnap) {
+          // Validiere dass Target noch im DOM ist
+          if (document.contains(target)) {
+            log.info(
+              `➡️ Navigating to target section: #${target.id || 'unknown'}`
+            );
+
+            // Scroll ZUERST, dann Snap freigeben nach Scroll-Ende
+            // Timeout muss länger sein als smooth scroll duration
+            setTimeout(() => {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+              // Snap-Lock erst nach Scroll-Completion freigeben
+              setTimeout(() => {
+                unlockSnap();
+                log.debug('🔓 Snap unlocked after navigation complete');
+              }, 800); // 800ms für smooth scroll + buffer
+            }, 100);
+          } else {
+            log.warn(
+              `⚠️ Target section no longer in DOM: #${target.id || 'unknown'}`
+            );
+            unlockSnap();
+          }
+        } else {
+          log.debug(
+            'No target section for navigation (user stayed on section)'
+          );
+          unlockSnap();
+        }
+      } catch (err) {
+        log.error(`Error during post-reverse navigation: ${err.message}`);
+        unlockSnap();
+      }
+
+      log.debug(
+        `State after reverse: hasAnimated=${hasAnimated}, isReversing=${isReversing}`
+      );
     }
   }
 
@@ -491,16 +633,16 @@ import {
    */
   function applyReverseStarfieldAnimation(section) {
     if (isReversing) {
-      log.debug('Reverse animation already running, skipping');
+      log.warn('⚠️ Reverse animation already running, skipping duplicate call');
       return; // Guard gegen mehrfache Aufrufe
     }
 
     log.info('🔄 Starting REVERSE Starfield Animation (Cards → Stars)');
     isReversing = true;
 
-    // Cards sofort unsichtbar
-    section.classList.remove('cards-materializing', 'cards-visible');
-    section.classList.add('starfield-animating');
+    // CSS-Klassen für Reverse Animation
+    section.classList.remove('cards-visible');
+    section.classList.add('cards-materializing', 'starfield-animating');
 
     // Respektiere reduzierte Bewegung
     if (
@@ -508,11 +650,34 @@ import {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ) {
       // Direkt zurück zum Hidden-State ohne Partikel-Animation
+      log.info('⏩ Reduced motion: Skipping particle animation');
       hasAnimated = false;
       isReversing = false;
-      section.classList.remove('starfield-animating');
+      reverseTriggered = false; // Reset
+      section.classList.remove('starfield-animating', 'cards-materializing');
       section.classList.add('cards-hidden');
+
+      // Snap freigeben und ggf. zum Ziel navigieren
+      const target = targetSectionEl;
+      const shouldSnap = pendingSnap;
+      targetSectionEl = null;
+      pendingSnap = false;
+      unlockSnap();
+
+      if (target && shouldSnap) {
+        log.info(
+          `➡️ Direct navigation to: #${target.id || 'unknown'} (reduced motion)`
+        );
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       return;
+    }
+
+    // Aktuelle Position fixieren (Snap bereits gesperrt vom Handler)
+    try {
+      section.scrollIntoView({ behavior: 'auto', block: 'start' });
+    } catch {
+      // ignore
     }
 
     // Canvas erstellen
@@ -520,8 +685,10 @@ import {
       log.error('Failed to create canvas for reverse, resetting state');
       hasAnimated = false;
       isReversing = false;
-      section.classList.remove('starfield-animating');
+      reverseTriggered = false; // Reset
+      section.classList.remove('starfield-animating', 'cards-materializing');
       section.classList.add('cards-hidden');
+      unlockSnap();
       return;
     }
 
@@ -587,39 +754,33 @@ import {
         for (const entry of entries) {
           if (entry.target !== section) continue;
 
-          const ratio = entry.intersectionRatio; // numerisch behalten
+          const ratio = entry.intersectionRatio;
           const isVisible = entry.isIntersecting;
 
-          log.debug(
+          log.info(
             `📊 Intersection: visible=${isVisible}, ratio=${ratio.toFixed(3)}, hasAnimated=${hasAnimated}, isReversing=${isReversing}`
           );
 
           // Reverse Animation: Section verlässt Viewport
-          if (
-            hasAnimated &&
-            !isReversing &&
-            (!isVisible || ratio < REVERSE_THRESHOLD)
-          ) {
-            log.info(
-              `🔄 Section leaving (ratio=${ratio}) - triggering reverse animation`
-            );
-            applyReverseStarfieldAnimation(section);
-            return; // Stop weitere Checks
+          // Triggert wenn Section weniger als REVERSE_THRESHOLD sichtbar ist
+          if (hasAnimated && !isReversing && ratio < REVERSE_THRESHOLD) {
+            triggerReverse(section, 'IntersectionObserver');
+            return;
           }
 
-          // Forward Animation bei hohem Threshold (Section fast komplett sichtbar)
-          if (isVisible && ratio >= SNAP_THRESHOLD) {
-            if (
-              !hasAnimated &&
-              !isReversing &&
-              section.dataset.currentTemplate
-            ) {
+          // Forward Animation bei hohem Threshold
+          if (
+            isVisible &&
+            ratio >= SNAP_THRESHOLD &&
+            !hasAnimated &&
+            !isReversing
+          ) {
+            if (section.dataset.currentTemplate) {
               log.info(
-                `🚀 Snap complete (${ratio}) - starting starfield animation!`
+                `🚀 TRIGGERING FORWARD: Snap complete (${ratio.toFixed(3)})`
               );
               hasAnimated = true;
 
-              // Starte Starfield Constellation Animation
               requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                   applyStarfieldAnimation(section);
@@ -637,18 +798,28 @@ import {
     // Scroll Event Listener für frühe Reverse-Erkennung
     // Throttled für bessere Performance
     const handleScroll = throttle(() => {
+      if (!hasAnimated || isReversing) {
+        log.debug(
+          `Scroll handler skipped: hasAnimated=${hasAnimated}, isReversing=${isReversing}`
+        );
+        return;
+      }
+
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const visibleHeight = Math.max(
         0,
         Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
       );
-      const visibleRatio = rect.height > 0 ? visibleHeight / rect.height : 1;
+      const visibleRatio = rect.height > 0 ? visibleHeight / rect.height : 0;
 
-      // Trigger Reverse während Scrollen (VOR IntersectionObserver)
-      if (visibleRatio < REVERSE_THRESHOLD && hasAnimated && !isReversing) {
-        log.info(`🔄 Scroll away detected (ratio: ${visibleRatio.toFixed(2)})`);
-        applyReverseStarfieldAnimation(section);
+      log.debug(
+        `📐 Scroll check: ratio=${visibleRatio.toFixed(3)}, threshold=${REVERSE_THRESHOLD}`
+      );
+
+      // Trigger Reverse während Scrollen
+      if (visibleRatio < REVERSE_THRESHOLD && visibleRatio > 0) {
+        triggerReverse(section, 'ScrollHandler');
       }
     }, SCROLL_THROTTLE);
 

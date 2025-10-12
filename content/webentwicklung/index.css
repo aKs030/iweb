@@ -60,6 +60,22 @@ body {
   scroll-snap-stop: always;
 }
 
+/* Während orchestrierter Übergänge (Reverse → Section-Wechsel) Snap deaktivieren */
+html.snap-locked,
+body.snap-locked {
+  scroll-snap-type: none !important;
+  scroll-behavior: auto !important;
+}
+
+.snap-container.snap-locked {
+  scroll-snap-type: none !important;
+}
+
+/* Temporäres Deaktivieren von Snap bei aktiven User-Scrolls (JS: main.js ScrollSnapping) */
+.snap-container.no-snap {
+  scroll-snap-type: none !important;
+}
+
 *,
 *::before,
 *::after {

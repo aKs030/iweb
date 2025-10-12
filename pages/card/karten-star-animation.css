@@ -39,6 +39,16 @@
   animation: cards-appear-with-starfield 1400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Reverse Animation: Cards → Partikel (schneller: 800ms) */
+#features.cards-materializing .features-cards {
+  position: relative;
+  z-index: 1000;
+  opacity: 1;
+  visibility: visible;
+  -webkit-animation: cards-dematerialize 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: cards-dematerialize 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 /* ========================================
    Card States
 ======================================== */
@@ -129,6 +139,65 @@
     opacity: 1;
     transform: scale(1);
     filter: brightness(1) blur(0px) drop-shadow(0 0 0px rgba(88, 166, 255, 0));
+  }
+}
+
+/* ========================================
+   Reverse Animation - Cards verschwinden zu Partikeln
+   Schneller als Forward (800ms) für snappier feel
+======================================== */
+
+@-webkit-keyframes cards-dematerialize {
+  0% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    -webkit-filter: brightness(1) blur(0px);
+    filter: brightness(1) blur(0px);
+  }
+  30% {
+    opacity: 0.8;
+    -webkit-transform: scale(0.98);
+    transform: scale(0.98);
+    -webkit-filter: brightness(1.1) blur(1px) drop-shadow(0 0 10px rgba(88, 166, 255, 0.4));
+    filter: brightness(1.1) blur(1px) drop-shadow(0 0 10px rgba(88, 166, 255, 0.4));
+  }
+  60% {
+    opacity: 0.4;
+    -webkit-transform: scale(0.94);
+    transform: scale(0.94);
+    -webkit-filter: brightness(0.9) blur(4px);
+    filter: brightness(0.9) blur(4px);
+  }
+  100% {
+    opacity: 0;
+    -webkit-transform: scale(0.88);
+    transform: scale(0.88);
+    -webkit-filter: brightness(0.7) blur(8px);
+    filter: brightness(0.7) blur(8px);
+  }
+}
+
+@keyframes cards-dematerialize {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) blur(0px);
+  }
+  30% {
+    opacity: 0.8;
+    transform: scale(0.98);
+    filter: brightness(1.1) blur(1px) drop-shadow(0 0 10px rgba(88, 166, 255, 0.4));
+  }
+  60% {
+    opacity: 0.4;
+    transform: scale(0.94);
+    filter: brightness(0.9) blur(4px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.88);
+    filter: brightness(0.7) blur(8px);
   }
 }
 
