@@ -44,11 +44,23 @@ import {
   let reverseTriggered = false; // Verhindert Doppel-Trigger
 
   function lockSnap() {
+    // FIX: Scroll SOFORT stoppen BEVOR CSS-Klassen gesetzt werden
+    // Verhindert dass Section sich trotz Lock weiterbewegt
+    const currentScrollY = window.scrollY;
+    window.scrollTo({ top: currentScrollY, behavior: 'instant' });
+
+    // CSS-Klassen für Snap-Disable
     document.documentElement.classList.add('snap-locked');
     document.body.classList.add('snap-locked');
     const container = document.querySelector('.snap-container');
     container?.classList.add('snap-locked');
-    log.debug('🔒 Scroll-Snap locked');
+
+    // Double-check: Force-Stop nochmal nach 16ms (1 frame)
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: currentScrollY, behavior: 'instant' });
+    });
+
+    log.debug(`🔒 Scroll-Snap locked at Y=${currentScrollY}`);
   }
 
   function unlockSnap() {
@@ -61,13 +73,24 @@ import {
 
   /**
    * Bestimmt Scroll-Richtung basierend auf Section-Position im Viewport
-   * Zuverlässiger als scrollY-Vergleich!
+   * FIX: Auch bei komplett außerhalb des Viewports korrekt!
    */
   function getScrollDirection(section) {
     const rect = section.getBoundingClientRect();
     const viewportCenter = window.innerHeight / 2;
     const sectionCenter = rect.top + rect.height / 2;
 
+    // FIX: Bei Section komplett außerhalb - nutze rect.bottom Position
+    if (rect.bottom < 0) {
+      // Section ist komplett oberhalb → User scrollt nach unten (next)
+      return 'next';
+    }
+    if (rect.top > window.innerHeight) {
+      // Section ist komplett unterhalb → User scrollt nach oben (prev)
+      return 'prev';
+    }
+
+    // Section ist teilweise sichtbar - normale Center-Logik
     // Section ist über dem Viewport-Center → User scrollt nach unten (next)
     // Section ist unter dem Viewport-Center → User scrollt nach oben (prev)
     return sectionCenter < viewportCenter ? 'next' : 'prev';
@@ -120,10 +143,8 @@ import {
       `🔄 TRIGGER REVERSE (${source}): direction=${direction}, target=${targetSectionEl?.id || 'none'}, willSnap=${pendingSnap}`
     );
 
-    // Snap sperren BEVOR Animation
-    if (pendingSnap) {
-      lockSnap();
-    }
+    // Snap sperren BEVOR Animation - IMMER (auch ohne Target für Touch-Continuity)
+    lockSnap();
 
     applyReverseStarfieldAnimation(section);
     return true;
@@ -567,6 +588,9 @@ import {
       );
       cleanupStarfield();
 
+      // FIX: Body-Klasse entfernen (overflow wieder freigeben)
+      document.body.classList.remove('starfield-active');
+
       // Reset State - WICHTIG: hasAnimated bleibt false für Re-Animation
       hasAnimated = false;
       isReversing = false;
@@ -587,33 +611,23 @@ import {
         targetSectionEl = null;
         pendingSnap = false;
 
-        if (target && shouldSnap) {
-          // Validiere dass Target noch im DOM ist
-          if (document.contains(target)) {
-            log.info(
-              `➡️ Navigating to target section: #${target.id || 'unknown'}`
-            );
+        if (target && shouldSnap && document.contains(target)) {
+          log.info(
+            `➡️ Navigating to target section: #${target.id || 'unknown'}`
+          );
 
-            // Scroll ZUERST, dann Snap freigeben nach Scroll-Ende
-            // Timeout muss länger sein als smooth scroll duration
-            setTimeout(() => {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Scroll ZUERST (ohne smooth für besseres Touch-Verhalten)
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
 
-              // Snap-Lock erst nach Scroll-Completion freigeben
-              setTimeout(() => {
-                unlockSnap();
-                log.debug('🔓 Snap unlocked after navigation complete');
-              }, 800); // 800ms für smooth scroll + buffer
-            }, 100);
-          } else {
-            log.warn(
-              `⚠️ Target section no longer in DOM: #${target.id || 'unknown'}`
-            );
+          // Snap freigeben nach kurzer Verzögerung (Touch-optimiert)
+          setTimeout(() => {
             unlockSnap();
-          }
+            log.debug('🔓 Snap unlocked after navigation (auto)');
+          }, 150); // Reduziert von 800ms auf 150ms für Touch
         } else {
+          // Kein Target oder ungültig - sofort freigeben
           log.debug(
-            'No target section for navigation (user stayed on section)'
+            `No valid navigation target - unlocking snap immediately (target=${!!target}, shouldSnap=${shouldSnap})`
           );
           unlockSnap();
         }
@@ -640,6 +654,9 @@ import {
     log.info('🔄 Starting REVERSE Starfield Animation (Cards → Stars)');
     isReversing = true;
 
+    // FIX: Body-Klasse für overflow:hidden während Animation
+    document.body.classList.add('starfield-active');
+
     // CSS-Klassen für Reverse Animation
     section.classList.remove('cards-visible');
     section.classList.add('cards-materializing', 'starfield-animating');
@@ -651,6 +668,10 @@ import {
     ) {
       // Direkt zurück zum Hidden-State ohne Partikel-Animation
       log.info('⏩ Reduced motion: Skipping particle animation');
+
+      // FIX: Body-Klasse entfernen
+      document.body.classList.remove('starfield-active');
+
       hasAnimated = false;
       isReversing = false;
       reverseTriggered = false; // Reset
@@ -662,13 +683,17 @@ import {
       const shouldSnap = pendingSnap;
       targetSectionEl = null;
       pendingSnap = false;
-      unlockSnap();
 
-      if (target && shouldSnap) {
+      if (target && shouldSnap && document.contains(target)) {
         log.info(
           `➡️ Direct navigation to: #${target.id || 'unknown'} (reduced motion)`
         );
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.scrollIntoView({ behavior: 'auto', block: 'start' });
+
+        // Verzögertes Unlock für Touch-Stabilität
+        setTimeout(() => unlockSnap(), 100);
+      } else {
+        unlockSnap();
       }
       return;
     }
@@ -683,11 +708,17 @@ import {
     // Canvas erstellen
     if (!createStarfieldCanvas(section)) {
       log.error('Failed to create canvas for reverse, resetting state');
+
+      // FIX: Body-Klasse entfernen bei Error
+      document.body.classList.remove('starfield-active');
+
       hasAnimated = false;
       isReversing = false;
       reverseTriggered = false; // Reset
       section.classList.remove('starfield-animating', 'cards-materializing');
       section.classList.add('cards-hidden');
+
+      // Sofort freigeben bei Error
       unlockSnap();
       return;
     }
@@ -761,9 +792,25 @@ import {
             `📊 Intersection: visible=${isVisible}, ratio=${ratio.toFixed(3)}, hasAnimated=${hasAnimated}, isReversing=${isReversing}`
           );
 
+          // FIX: Reverse auch bei ratio=0 triggern (schnelles Scrollen!)
+          // Section komplett außerhalb Viewport (isIntersecting=false, ratio=0)
+          if (hasAnimated && !isReversing && !reverseTriggered && !isVisible) {
+            log.info(
+              '📊 IO: Section left viewport completely (ratio=0) - triggering reverse'
+            );
+            triggerReverse(section, 'IntersectionObserver-NotVisible');
+            return;
+          }
+
           // Reverse Animation: Section verlässt Viewport
           // Triggert wenn Section weniger als REVERSE_THRESHOLD sichtbar ist
-          if (hasAnimated && !isReversing && ratio < REVERSE_THRESHOLD) {
+          if (
+            hasAnimated &&
+            !isReversing &&
+            !reverseTriggered &&
+            ratio < REVERSE_THRESHOLD &&
+            ratio > 0
+          ) {
             triggerReverse(section, 'IntersectionObserver');
             return;
           }
@@ -796,17 +843,28 @@ import {
     io.observe(section);
 
     // Scroll Event Listener für frühe Reverse-Erkennung
-    // Throttled für bessere Performance
+    // Throttled für bessere Performance (Touch-optimiert)
     const handleScroll = throttle(() => {
-      if (!hasAnimated || isReversing) {
-        log.debug(
-          `Scroll handler skipped: hasAnimated=${hasAnimated}, isReversing=${isReversing}`
-        );
+      if (!hasAnimated || isReversing || reverseTriggered) {
         return;
       }
 
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
+
+      // FIX: Verbesserte Visibility-Prüfung auch bei schnellem Scrollen
+      // Problem: Bei schnellem Scroll kann Section komplett außerhalb sein
+      const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
+
+      if (!isInViewport) {
+        // Section komplett außerhalb Viewport - Reverse SOFORT triggern
+        log.debug(
+          '📐 Section out of viewport - triggering reverse immediately'
+        );
+        triggerReverse(section, 'ScrollHandler-OutOfView');
+        return;
+      }
+
       const visibleHeight = Math.max(
         0,
         Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
@@ -817,19 +875,51 @@ import {
         `📐 Scroll check: ratio=${visibleRatio.toFixed(3)}, threshold=${REVERSE_THRESHOLD}`
       );
 
-      // Trigger Reverse während Scrollen
+      // Trigger Reverse während Scrollen (mit reverseTriggered Check)
       if (visibleRatio < REVERSE_THRESHOLD && visibleRatio > 0) {
         triggerReverse(section, 'ScrollHandler');
       }
     }, SCROLL_THROTTLE);
 
+    // Touch-Event Listener für bessere Touch-Responsiveness
+    const handleTouchMove = throttle(() => {
+      if (!hasAnimated || isReversing || reverseTriggered) return;
+
+      const rect = section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // FIX: Touch-optimierte Out-of-Viewport Detection
+      const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
+
+      if (!isInViewport) {
+        log.debug(
+          '👆 Touch: Section out of viewport - triggering reverse immediately'
+        );
+        triggerReverse(section, 'TouchHandler-OutOfView');
+        return;
+      }
+
+      const visibleHeight = Math.max(
+        0,
+        Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
+      );
+      const visibleRatio = rect.height > 0 ? visibleHeight / rect.height : 0;
+
+      // Trigger Reverse bei Touch (etwas früher für besseres Gefühl)
+      if (visibleRatio < REVERSE_THRESHOLD && visibleRatio > 0) {
+        triggerReverse(section, 'TouchHandler');
+      }
+    }, 50); // Höhere Frequenz für Touch (50ms statt 100ms)
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     // Cleanup function registrieren
     observerCleanup = () => {
       io?.disconnect();
       io = null;
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
 
     return observerCleanup;

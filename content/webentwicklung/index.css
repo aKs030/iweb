@@ -65,10 +65,17 @@ html.snap-locked,
 body.snap-locked {
   scroll-snap-type: none !important;
   scroll-behavior: auto !important;
+  -webkit-overflow-scrolling: auto !important; /* Touch-optimiert */
+  /* FIX: Overflow NUR während starfield-Animation blockieren, nicht bei Navigation */
+}
+
+body.snap-locked.starfield-active {
+  overflow: hidden !important; /* Blockiert Scroll NUR während Animation */
 }
 
 .snap-container.snap-locked {
   scroll-snap-type: none !important;
+  -webkit-overflow-scrolling: auto !important; /* Touch-optimiert */
 }
 
 /* Temporäres Deaktivieren von Snap bei aktiven User-Scrolls (JS: main.js ScrollSnapping) */
