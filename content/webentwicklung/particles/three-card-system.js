@@ -32,9 +32,9 @@ import {
   EVENTS,
   fire,
   getElementById,
+  onResize,
   shuffle as shuffleArray,
   throttle,
-  onResize,
   TimerManager,
 } from "../shared-utilities.js";
 import {

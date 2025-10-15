@@ -23,8 +23,8 @@
  */
 
 import {
-  initFeatureRotation,
   destroyFeatureRotation,
+  initFeatureRotation,
 } from "../../content/webentwicklung/particles/three-card-system.js";
 
 (() => {

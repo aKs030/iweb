@@ -41,19 +41,19 @@
  * @last-modified 2025-10-06
  */
 import {
-  createLogger,
-  getElementById,
-  onResize,
-  TimerManager,
+    createLogger,
+    getElementById,
+    onResize,
+    TimerManager,
 } from "../shared-utilities.js";
 import {
-  getSharedState,
-  loadThreeJS,
-  registerParticleSystem,
-  sharedCleanupManager,
-  sharedParallaxManager,
-  ShootingStarManager,
-  unregisterParticleSystem,
+    getSharedState,
+    loadThreeJS,
+    registerParticleSystem,
+    sharedCleanupManager,
+    sharedParallaxManager,
+    ShootingStarManager,
+    unregisterParticleSystem,
 } from "./shared-particle-system.js";
 
 const log = createLogger("threeEarthSystem");
