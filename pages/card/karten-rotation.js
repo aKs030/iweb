@@ -168,7 +168,9 @@ import {
     EASING: [0.22, 1, 0.36, 1],
     PARTICLE_COLOR: 'rgba(9, 139, 255, 0.8)',
     PARTICLE_GLOW: 'rgba(255, 255, 255, 0.9)',
-  }; // ===== Template Loading & Management =====
+  };
+
+  // ===== Template Loading & Management =====
 
   /**
    * Lädt Card-Templates aus karten.html
