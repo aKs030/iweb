@@ -48,6 +48,7 @@ import {
 } from "../shared-utilities.js";
 import {
   getSharedState,
+  loadThreeJS,
   registerParticleSystem,
   sharedCleanupManager,
   sharedParallaxManager,
@@ -216,10 +217,6 @@ const CONFIG = {
     },
   },
   PATHS: {
-    THREE_JS: [
-      "/content/webentwicklung/lib/three/build/three.module.min.js",
-      "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
-    ],
     TEXTURES: {
       DAY: "/content/img/earth/textures/earth_day.webp",
       NIGHT: "/content/img/earth/textures/earth_night.webp",
@@ -426,24 +423,6 @@ const ThreeEarthManager = (() => {
 
   return { initThreeEarth, cleanup };
 })();
-
-// ===== Three.js ES Module Loading =====
-async function loadThreeJS() {
-  if (window.THREE) return window.THREE;
-  for (const src of CONFIG.PATHS.THREE_JS) {
-    try {
-      const THREE = await import(src);
-      const ThreeJS = THREE.default || THREE;
-      if (ThreeJS?.WebGLRenderer) {
-        window.THREE = ThreeJS;
-        return ThreeJS;
-      }
-    } catch (error) {
-      log.warn(`Failed to load ES Module from ${src}:`, error);
-    }
-  }
-  return null;
-}
 
 // ===== Scene Setup =====
 async function setupScene(container) {

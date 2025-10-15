@@ -24,9 +24,9 @@
   z-index: 1001; /* Über Cards */
   pointer-events: none;
   opacity: 1;
-  -webkit-transition: opacity 0.6s ease-out;
-  -o-transition: opacity 0.6s ease-out;
-  transition: opacity 0.6s ease-out;
+  -webkit-transition: opacity 0.8s ease-out 0.6s; /* Delay: Partikel bleiben länger */
+  -o-transition: opacity 0.8s ease-out 0.6s;
+  transition: opacity 0.8s ease-out 0.6s;
 }
 
 /* Cards während Starfield - synchrone Animation (1400ms) */
@@ -79,48 +79,56 @@
 /**
  * Cards erscheinen während Partikel formieren
  * Timeline:
- * - 0-50%:  Blur fade-in (Cards "entstehen" aus Partikeln)
- * - 50-85%: Sharpening + Glow-Peak
- * - 85-100%: Final fade-in + Glow fade-out
+ * - 0-60%:  Cards bleiben unsichtbar (Partikel formieren sich)
+ * - 60-75%: Blur fade-in (Cards "materialisieren" aus Partikeln)
+ * - 75-90%: Sharpening + Glow-Peak
+ * - 90-100%: Final fade-in + Glow fade-out
  */
 @-webkit-keyframes cards-appear-with-starfield {
   0% {
     opacity: 0;
     -webkit-transform: scale(0.92);
     transform: scale(0.92);
-    -webkit-filter: brightness(0.8) blur(8px);
-    filter: brightness(0.8) blur(8px);
+    -webkit-filter: brightness(0.6) blur(12px);
+    filter: brightness(0.6) blur(12px);
   }
-  50% {
-    opacity: 0.3;
+  60% {
+    opacity: 0;
+    -webkit-transform: scale(0.92);
+    transform: scale(0.92);
+    -webkit-filter: brightness(0.6) blur(12px);
+    filter: brightness(0.6) blur(12px);
+  }
+  75% {
+    opacity: 0.4;
     -webkit-transform: scale(0.96);
     transform: scale(0.96);
-    -webkit-filter: brightness(0.9) blur(4px);
-    filter: brightness(0.9) blur(4px);
+    -webkit-filter: brightness(0.85) blur(6px);
+    filter: brightness(0.85) blur(6px);
   }
-  70% {
-    opacity: 0.6;
+  85% {
+    opacity: 0.7;
     -webkit-transform: scale(0.98);
     transform: scale(0.98);
     -webkit-filter: brightness(1) blur(2px);
     filter: brightness(1) blur(2px);
   }
-  85% {
-    opacity: 0.85;
+  92% {
+    opacity: 0.9;
     -webkit-transform: scale(0.99);
     transform: scale(0.99);
-    -webkit-filter: brightness(1.1) blur(0px)
-      drop-shadow(0 0 15px rgba(88, 166, 255, 0.5));
-    filter: brightness(1.1) blur(0px)
-      drop-shadow(0 0 15px rgba(88, 166, 255, 0.5));
+    -webkit-filter: brightness(1.15) blur(0px)
+      drop-shadow(0 0 20px rgba(9, 139, 255, 0.6));
+    filter: brightness(1.15) blur(0px)
+      drop-shadow(0 0 20px rgba(9, 139, 255, 0.6));
   }
   100% {
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1);
     -webkit-filter: brightness(1) blur(0px)
-      drop-shadow(0 0 0px rgba(88, 166, 255, 0));
-    filter: brightness(1) blur(0px) drop-shadow(0 0 0px rgba(88, 166, 255, 0));
+      drop-shadow(0 0 0px rgba(9, 139, 255, 0));
+    filter: brightness(1) blur(0px) drop-shadow(0 0 0px rgba(9, 139, 255, 0));
   }
 }
 
@@ -128,23 +136,28 @@
   0% {
     opacity: 0;
     transform: scale(0.92);
-    filter: brightness(0.8) blur(8px);
+    filter: brightness(0.6) blur(12px);
   }
-  50% {
-    opacity: 0.3;
+  60% {
+    opacity: 0;
+    transform: scale(0.92);
+    filter: brightness(0.6) blur(12px);
+  }
+  75% {
+    opacity: 0.4;
     transform: scale(0.96);
-    filter: brightness(0.9) blur(4px);
+    filter: brightness(0.85) blur(6px);
   }
-  70% {
-    opacity: 0.6;
+  85% {
+    opacity: 0.7;
     transform: scale(0.98);
     filter: brightness(1) blur(2px);
   }
-  85% {
-    opacity: 0.85;
+  92% {
+    opacity: 0.9;
     transform: scale(0.99);
-    filter: brightness(1.1) blur(0px)
-      drop-shadow(0 0 15px rgba(88, 166, 255, 0.5));
+    filter: brightness(1.15) blur(0px)
+      drop-shadow(0 0 20px rgba(9, 139, 255, 0.6));
   }
   100% {
     opacity: 1;

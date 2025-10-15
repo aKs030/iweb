@@ -333,6 +333,46 @@ export class ShootingStarManager {
 export const sharedParallaxManager = new SharedParallaxManager();
 export const sharedCleanupManager = new SharedCleanupManager();
 
+// ===== Shared Three.js Loading =====
+const THREE_PATHS = [
+  "/content/webentwicklung/particles/three.module.js",
+  "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
+];
+
+/**
+ * Lazy-Load Three.js Library with fallback support
+ * Caches the loaded instance in window.THREE for reuse
+ * @returns {Promise<object|null>}
+ */
+export async function loadThreeJS() {
+  // Return cached instance if available
+  if (window.THREE) {
+    log.info("✅ Three.js already loaded (cached)");
+    return window.THREE;
+  }
+
+  // Try loading from each source
+  for (const src of THREE_PATHS) {
+    try {
+      log.info(`🔄 Loading Three.js from: ${src}`);
+      const THREE = await import(src);
+      const ThreeJS = THREE.default || THREE;
+      
+      // Verify it's a valid Three.js module
+      if (ThreeJS?.WebGLRenderer) {
+        window.THREE = ThreeJS;
+        log.info("✅ Three.js loaded successfully");
+        return ThreeJS;
+      }
+    } catch (error) {
+      log.warn(`Failed to load Three.js from ${src}:`, error);
+    }
+  }
+
+  log.error("❌ Failed to load Three.js from all sources");
+  return null;
+}
+
 // ===== Public API =====
 export function getSharedState() {
   return sharedState;

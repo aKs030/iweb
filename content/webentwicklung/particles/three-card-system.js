@@ -1,13 +1,14 @@
 /**
- * Three.js Card System - WebGL Particle Constellation Animation
+ * Three.js Card System - Integrated WebGL Particle System with Orchestration
  *
- * Professional particle system for card materialization effects:
- * - Three.js-basierte Partikel statt Canvas2D für bessere Performance
- * - Synchron mit karten-rotation.js Animation States
- * - Partikel formieren sich zu Card-Konturen (Forward Animation)
- * - Cards dematerialisieren zu Partikeln (Reverse Animation)
- * - Integriert mit shared-particle-system für Cleanup & Koordination
- * - Wiederverwendung von Earth-System Patterns (LOD, Timing, Easing)
+ * Complete card rotation & particle animation system:
+ * - Template Loading & Management
+ * - IntersectionObserver for trigger detection
+ * - Scroll & Touch event handling
+ * - Three.js WebGL particle animations
+ * - Forward (Particles → Cards) & Reverse (Cards → Particles)
+ * - Scroll-snap orchestration
+ * - Mobile & Touch optimization
  *
  * Features:
  * - GPU-optimiertes BufferGeometry mit InstancedMesh
@@ -16,14 +17,28 @@
  * - Smooth Easing: ease-out-cubic für Formation
  * - Performance-aware: DPR-Capping, LOD-System
  * - Cleanup via TimerManager & SharedCleanupManager
+ * - Race Condition Prevention
+ * - Memory Leak Prevention
+ * - Error Handling mit Fallbacks
  *
  * @author Portfolio System
- * @version 1.0.0
+ * @version 2.0.0 - Integrated Orchestration
  * @created 2025-10-14
+ * @updated 2025-10-15 - Full Integration
  */
 
-import { createLogger, onResize, TimerManager } from "../shared-utilities.js";
 import {
+  createLogger,
+  EVENTS,
+  fire,
+  getElementById,
+  shuffle as shuffleArray,
+  throttle,
+  onResize,
+  TimerManager,
+} from "../shared-utilities.js";
+import {
+  loadThreeJS,
   registerParticleSystem,
   sharedCleanupManager,
   unregisterParticleSystem,
@@ -32,13 +47,25 @@ import {
 const log = createLogger("threeCardSystem");
 const cardTimers = new TimerManager();
 
-// ===== CONFIGURATION =====
+// ===== ORCHESTRATION CONFIGURATION =====
+const SECTION_ID = "features";
+const TEMPLATE_IDS = ["kart-1", "kart-2", "kart-3", "kart-4"];
+const TEMPLATE_URL = "/pages/card/karten.html";
+
+// Animation Thresholds
+const THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1];
+const SNAP_THRESHOLD = 0.75; // Forward Animation bei 75% Sichtbarkeit
+const REVERSE_THRESHOLD = 0.7; // Reverse Animation bei <70%
+const SCROLL_THROTTLE = 100; // ms
+const TOUCH_THROTTLE = 50; // ms - schneller für Touch
+
+// ===== PARTICLE CONFIGURATION =====
 // Synchron mit karten-star-animation.css & Earth-System
 const CONFIG = {
   PARTICLES: {
     COUNT_DESKTOP: 150,
     COUNT_MOBILE: 60,
-    SIZE: 0.08, // Three.js Units (relativ zu Card-Container Scale)
+    SIZE: 2.5, // Three.js Units - größer für bessere Sichtbarkeit
     COLOR: 0x098bff, // Portfolio Blue
     OPACITY: 0.8,
     TWINKLE_SPEED: 0.25, // Wie Earth Starfield
@@ -83,7 +110,22 @@ let animationState = {
   mode: null, // 'forward' | 'reverse'
   startTime: null,
   rafId: null,
+  frameCount: 0, // Debug: Zähle Frames
 };
+
+// ===== Orchestration State =====
+let templateOrder = [];
+let currentTemplateIndex = 0;
+let templatesLoaded = false;
+let hasAnimated = false;
+let isReversing = false;
+let reverseTriggered = false;
+let intersectionObserver = null;
+let observerCleanup = null;
+
+// Scroll/Snap Orchestration State
+let pendingSnap = false;
+let targetSectionEl = null;
 
 /**
  * ThreeCardSystem - Main Class
@@ -131,6 +173,13 @@ class ThreeCardSystem {
         CONFIG.CAMERA.POSITION.z
       );
       this.camera.lookAt(0, 0, 0);
+      
+      log.debug("Camera setup:", {
+        fov: CONFIG.CAMERA.FOV,
+        aspect,
+        position: CONFIG.CAMERA.POSITION,
+        lookAt: { x: 0, y: 0, z: 0 }
+      });
 
       // Renderer Setup
       const dpr = Math.min(
@@ -145,15 +194,33 @@ class ThreeCardSystem {
       this.renderer.setPixelRatio(dpr);
       this.renderer.setClearColor(0x000000, 0); // Transparent
 
-      // Append Canvas
-      this.renderer.domElement.className = "three-card-canvas";
+      // Append Canvas with correct class for CSS styling
+      this.renderer.domElement.className = "starfield-canvas";
+      // Note: Don't override CSS with inline styles - let karten-star-animation.css control z-index
       this.renderer.domElement.style.cssText = `
         position: absolute;
-        inset: 0;
-        z-index: 1001;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         pointer-events: none;
       `;
+      
+      // Ensure container has position: relative
+      const containerStyle = window.getComputedStyle(this.container);
+      if (containerStyle.position === 'static') {
+        this.container.style.position = 'relative';
+        log.debug("Set container position to relative");
+      }
+      
       this.container.appendChild(this.renderer.domElement);
+      
+      log.debug("Canvas appended to DOM:", {
+        canvasWidth: this.renderer.domElement.width,
+        canvasHeight: this.renderer.domElement.height,
+        canvasClassName: this.renderer.domElement.className,
+        containerChildren: this.container.children.length
+      });
 
       // Resize Handler
       this.resizeHandler = onResize(() => this.handleResize());
@@ -192,40 +259,66 @@ class ThreeCardSystem {
 
     const cards = this.container.querySelectorAll(".card");
 
+    log.info(`Looking for cards in container:`, {
+      containerTag: this.container.tagName,
+      containerId: this.container.id,
+      containerClass: this.container.className,
+      cardsFound: cards.length,
+      containerHTML: this.container.innerHTML.substring(0, 200)
+    });
+
     if (!cards.length) {
-      log.warn("No cards found for particle creation");
-      return false;
+      log.error("❌ No cards found for particle creation - cannot animate");
+      log.info("Container structure:", this.container.innerHTML.substring(0, 500));
+      
+      // Fallback: Erstelle zentral verteilte Partikel ohne Card-Targets
+      log.warn("⚠️ Using fallback: center-distributed particles");
+      return this.createFallbackParticles(mode, particleCount);
     }
 
     // Berechne Card-Positionen in Three.js Koordinaten
+    const containerRect = this.container.getBoundingClientRect();
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    
     const cardPositions = Array.from(cards).map((card) => {
       const cardRect = card.getBoundingClientRect();
-      const containerRect = this.container.getBoundingClientRect();
 
-      // Normalisiere zu [-1, 1] Viewport-Space
-      const x =
-        ((cardRect.left + cardRect.width / 2 - containerRect.left) /
-          containerRect.width) *
-          2 -
-        1;
-      const y = -(
-        ((cardRect.top + cardRect.height / 2 - containerRect.top) /
-          containerRect.height) *
-          2 -
-        1
-      );
+      // Berechne Zentrum der Card relativ zum Canvas (in Pixeln)
+      const centerXPx = (cardRect.left + cardRect.width / 2) - canvasRect.left;
+      const centerYPx = (cardRect.top + cardRect.height / 2) - canvasRect.top;
+      
+      // Normalisiere zu [-1, 1] NDC (Normalized Device Coordinates)
+      const ndcX = (centerXPx / canvasRect.width) * 2 - 1;
+      const ndcY = -((centerYPx / canvasRect.height) * 2 - 1); // Y invertiert
+      
+      // Berechne World-Space Position basierend auf Camera FOV
+      const distance = CONFIG.CAMERA.POSITION.z;
+      const vFOV = (CONFIG.CAMERA.FOV * Math.PI) / 180; // Zu Radians
+      const height = 2 * Math.tan(vFOV / 2) * distance;
+      const width = height * (canvasRect.width / canvasRect.height);
+      
+      const worldX = ndcX * (width / 2);
+      const worldY = ndcY * (height / 2);
+      
+      // Card Dimensionen in World-Space
+      const worldWidth = (cardRect.width / canvasRect.width) * width;
+      const worldHeight = (cardRect.height / canvasRect.height) * height;
 
-      // Scale zu Three.js World-Space (Camera sieht ~10 Units bei z=15)
-      const worldScale = 10;
       return {
-        x: x * worldScale * (containerRect.width / containerRect.height),
-        y: y * worldScale,
-        width: (cardRect.width / containerRect.width) * worldScale * 2,
-        height: (cardRect.height / containerRect.height) * worldScale * 2,
+        x: worldX,
+        y: worldY,
+        width: worldWidth,
+        height: worldHeight,
       };
     });
 
-    log.debug("Card positions in 3D space:", cardPositions);
+    log.debug("Card positions in 3D space:", cardPositions.map((pos, i) => ({
+      card: i,
+      x: pos.x.toFixed(2),
+      y: pos.y.toFixed(2),
+      width: pos.width.toFixed(2),
+      height: pos.height.toFixed(2)
+    })));
 
     // BufferGeometry für Partikel
     const geometry = new this.THREE.BufferGeometry();
@@ -236,6 +329,12 @@ class ThreeCardSystem {
     const twinkleOffsets = new Float32Array(particleCount);
 
     this.particleData = [];
+    
+    // Berechne sichtbaren Bereich basierend auf Camera FOV
+    const distance = CONFIG.CAMERA.POSITION.z;
+    const vFOV = (CONFIG.CAMERA.FOV * Math.PI) / 180;
+    const viewHeight = 2 * Math.tan(vFOV / 2) * distance;
+    const viewWidth = viewHeight * (canvasRect.width / canvasRect.height);
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
@@ -244,9 +343,9 @@ class ThreeCardSystem {
       let startX, startY, targetX, targetY;
 
       if (mode === "forward") {
-        // Start: Random über gesamte Viewport
-        startX = (Math.random() - 0.5) * 20;
-        startY = (Math.random() - 0.5) * 15;
+        // Start: Random über sichtbaren Viewport
+        startX = (Math.random() - 0.5) * viewWidth * 1.2; // 20% Überlauf
+        startY = (Math.random() - 0.5) * viewHeight * 1.2;
 
         // Target: Random Card + Position innerhalb Card
         const targetCard =
@@ -260,8 +359,8 @@ class ThreeCardSystem {
         startX = startCard.x + (Math.random() - 0.5) * startCard.width;
         startY = startCard.y + (Math.random() - 0.5) * startCard.height;
 
-        targetX = (Math.random() - 0.5) * 20;
-        targetY = (Math.random() - 0.5) * 15;
+        targetX = (Math.random() - 0.5) * viewWidth * 1.2;
+        targetY = (Math.random() - 0.5) * viewHeight * 1.2;
       }
 
       // Positions (Start)
@@ -296,6 +395,14 @@ class ThreeCardSystem {
         size: sizes[i],
         twinkleOffset: twinkleOffsets[i],
       });
+    }
+    
+    // Debug: Log erste paar Partikel
+    if (this.particleData.length > 0) {
+      log.debug("Sample particle data (first 3):", this.particleData.slice(0, 3).map(p => ({
+        start: `(${p.startX.toFixed(2)}, ${p.startY.toFixed(2)})`,
+        target: `(${p.targetX.toFixed(2)}, ${p.targetY.toFixed(2)})`
+      })));
     }
 
     geometry.setAttribute(
@@ -363,18 +470,167 @@ class ThreeCardSystem {
       vertexColors: true,
     });
 
+    log.debug("Shader material created with config:", {
+      opacity: CONFIG.PARTICLES.OPACITY,
+      size: CONFIG.PARTICLES.SIZE,
+      color: `#${CONFIG.PARTICLES.COLOR.toString(16)}`,
+      particleCount
+    });
+
     this.particles = new this.THREE.Points(geometry, material);
     this.scene.add(this.particles);
 
     log.info(
       `✨ Created ${particleCount} particles in ${mode} mode (mobile: ${isMobile})`
     );
+    
+    // Immediate first render to ensure particles are visible
+    this.renderer.render(this.scene, this.camera);
+    log.debug("Initial render complete - particles should be visible now");
+    
+    return true;
+  }
+
+  /**
+   * Fallback: Erstellt zentral verteilte Partikel ohne Card-Targets
+   * @param {string} mode - 'forward' | 'reverse'
+   * @param {number} particleCount - Anzahl der Partikel
+   */
+  createFallbackParticles(mode = "forward", particleCount = 150) {
+    log.info(`Creating ${particleCount} fallback particles (mode: ${mode})`);
+
+    const geometry = new this.THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const targets = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+    const twinkleOffsets = new Float32Array(particleCount);
+
+    this.particleData = [];
+
+    // Berechne sichtbaren Bereich basierend auf Camera FOV (gleiche Logik wie createParticles)
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    const distance = CONFIG.CAMERA.POSITION.z;
+    const vFOV = (CONFIG.CAMERA.FOV * Math.PI) / 180;
+    const viewHeight = 2 * Math.tan(vFOV / 2) * distance;
+    const viewWidth = viewHeight * (canvasRect.width / canvasRect.height);
+
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+
+      let startX, startY, targetX, targetY;
+
+      if (mode === "forward") {
+        // Start: Random über gesamten sichtbaren Viewport
+        startX = (Math.random() - 0.5) * viewWidth * 1.2;
+        startY = (Math.random() - 0.5) * viewHeight * 1.2;
+
+        // Target: Zentrum mit leichter Streuung
+        targetX = (Math.random() - 0.5) * viewWidth * 0.4;
+        targetY = (Math.random() - 0.5) * viewHeight * 0.4;
+      } else {
+        // Reverse: Zentrum → Random
+        startX = (Math.random() - 0.5) * viewWidth * 0.4;
+        startY = (Math.random() - 0.5) * viewHeight * 0.4;
+
+        targetX = (Math.random() - 0.5) * viewWidth * 1.2;
+        targetY = (Math.random() - 0.5) * viewHeight * 1.2;
+      }
+
+      positions[i3] = startX;
+      positions[i3 + 1] = startY;
+      positions[i3 + 2] = 0;
+
+      targets[i3] = targetX;
+      targets[i3 + 1] = targetY;
+      targets[i3 + 2] = 0;
+
+      // Color
+      const color = new this.THREE.Color(CONFIG.PARTICLES.COLOR);
+      color.offsetHSL(0, 0, (Math.random() - 0.5) * 0.2);
+      colors[i3] = color.r;
+      colors[i3 + 1] = color.g;
+      colors[i3 + 2] = color.b;
+
+      sizes[i] = CONFIG.PARTICLES.SIZE * (0.5 + Math.random() * 1.5);
+      twinkleOffsets[i] = Math.random() * Math.PI * 2;
+
+      this.particleData.push({
+        startX,
+        startY,
+        targetX,
+        targetY,
+        size: sizes[i],
+        twinkleOffset: twinkleOffsets[i],
+      });
+    }
+
+    geometry.setAttribute("position", new this.THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("target", new this.THREE.BufferAttribute(targets, 3));
+    geometry.setAttribute("color", new this.THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
+    geometry.setAttribute("twinkleOffset", new this.THREE.BufferAttribute(twinkleOffsets, 1));
+
+    // Same shader as normal particles
+    const material = new this.THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        opacity: { value: CONFIG.PARTICLES.OPACITY },
+        twinkleSpeed: { value: CONFIG.PARTICLES.TWINKLE_SPEED },
+        twinkleAmplitude: { value: CONFIG.PARTICLES.TWINKLE_AMPLITUDE },
+      },
+      vertexShader: `
+        attribute float size;
+        attribute vec3 target;
+        attribute float twinkleOffset;
+        varying vec3 vColor;
+        varying float vTwinkleOffset;
+        
+        void main() {
+          vColor = color;
+          vTwinkleOffset = twinkleOffset;
+          
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_PointSize = size * 100.0 * (1.0 / -mvPosition.z);
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        uniform float opacity;
+        uniform float twinkleSpeed;
+        uniform float twinkleAmplitude;
+        varying vec3 vColor;
+        varying float vTwinkleOffset;
+        
+        void main() {
+          vec2 center = gl_PointCoord - vec2(0.5);
+          float dist = length(center);
+          if (dist > 0.5) discard;
+          
+          float twinkle = (sin(time * twinkleSpeed + vTwinkleOffset) + 1.0) / 2.0;
+          float finalOpacity = opacity * (1.0 - twinkleAmplitude + twinkle * twinkleAmplitude);
+          float alpha = smoothstep(0.5, 0.0, dist) * finalOpacity;
+          
+          gl_FragColor = vec4(vColor, alpha);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      vertexColors: true,
+    });
+
+    this.particles = new this.THREE.Points(geometry, material);
+    this.scene.add(this.particles);
+
+    log.info(`✨ Created ${particleCount} fallback particles`);
     return true;
   }
 
   /**
    * Startet Animation (Forward oder Reverse)
    * @param {string} mode - 'forward' | 'reverse'
+   * @returns {Promise<boolean>} Resolves when animation completes
    */
   startAnimation(mode = "forward") {
     if (animationState.isAnimating) {
@@ -382,27 +638,45 @@ class ThreeCardSystem {
       this.stopAnimation();
     }
 
+    // Bei Reverse: Cleanup alte Partikel (von Forward)
+    if (mode === "reverse") {
+      this.cleanupParticles();
+    }
+
     // Erstelle neue Partikel
     if (!this.createParticles(mode)) {
       log.error("Failed to create particles");
-      return false;
+      return Promise.resolve(false);
     }
 
     animationState.isAnimating = true;
     animationState.mode = mode;
     animationState.startTime = performance.now();
+    animationState.frameCount = 0;
 
     log.info(`🎬 Starting ${mode} animation`);
-    this.animate();
 
-    return true;
+    // Return Promise that resolves when animation completes
+    return new Promise((resolve) => {
+      const onComplete = () => {
+        this.container.removeEventListener("three-card-animation-complete", onComplete);
+        resolve(true);
+      };
+      this.container.addEventListener("three-card-animation-complete", onComplete);
+      this.animate();
+    });
   }
 
   /**
    * Animation Loop
    */
   animate() {
-    if (!animationState.isAnimating) return;
+    if (!animationState.isAnimating) {
+      log.debug("Animation stopped - isAnimating is false");
+      return;
+    }
+    
+    animationState.frameCount++;
 
     const now = performance.now();
     const elapsed = now - animationState.startTime;
@@ -418,6 +692,11 @@ class ThreeCardSystem {
         ? Easing.easeOutCubic
         : Easing.easeInCubic;
     const eased = easing(progress);
+
+    // Debug erste, jedes 30. und letzte Frame
+    if (progress === 0 || animationState.frameCount % 30 === 0 || progress === 1) {
+      log.debug(`Animation frame #${animationState.frameCount}: progress=${(progress*100).toFixed(1)}%, eased=${eased.toFixed(3)}, elapsed=${elapsed.toFixed(0)}ms`);
+    }
 
     // Update Partikel-Positionen
     if (this.particles) {
@@ -459,17 +738,18 @@ class ThreeCardSystem {
    * Animation Complete Handler
    */
   onAnimationComplete() {
-    log.info(`✅ ${animationState.mode} animation complete`);
+    log.info(`✅ ${animationState.mode} animation complete - ${animationState.frameCount} frames rendered`);
 
-    // Cleanup Partikel
-    if (this.particles) {
-      this.scene.remove(this.particles);
-      this.particles.geometry.dispose();
-      this.particles.material.dispose();
-      this.particles = null;
+    // Bei Forward: Partikel behalten (werden über CSS ausgeblendet)
+    // Bei Reverse: Partikel sofort entfernen
+    if (animationState.mode === "reverse") {
+      this.cleanupParticles();
+    } else {
+      // Forward: Halte Partikel an Zielposition und starte Idle-Render
+      log.debug("Keeping particles for CSS fade-out, starting idle render");
+      this.startIdleRender();
     }
 
-    this.particleData = [];
     animationState.isAnimating = false;
 
     // Event für karten-rotation.js
@@ -481,10 +761,52 @@ class ThreeCardSystem {
 
     animationState.mode = null;
     animationState.startTime = null;
+    animationState.frameCount = 0;
   }
 
   /**
-   * Stoppt laufende Animation
+   * Cleanup Partikel (intern)
+   */
+  cleanupParticles() {
+    if (this.particles) {
+      this.scene.remove(this.particles);
+      this.particles.geometry.dispose();
+      this.particles.material.dispose();
+      this.particles = null;
+      log.debug("Particles cleaned up");
+    }
+    this.particleData = [];
+  }
+
+  /**
+   * Idle Render Loop - Hält Partikel sichtbar mit Twinkle-Effekt
+   * Wird nach Forward-Animation gestartet, bis Reverse beginnt
+   */
+  startIdleRender() {
+    const idleLoop = () => {
+      // Stoppe wenn neue Animation startet oder System nicht mounted
+      if (animationState.isAnimating || !this.mounted || !this.particles) {
+        return;
+      }
+
+      // Update Twinkle-Effekt
+      if (this.particles && this.particles.material && this.particles.material.uniforms) {
+        this.particles.material.uniforms.time.value = performance.now() / 1000;
+      }
+
+      // Render Scene
+      this.renderer.render(this.scene, this.camera);
+
+      // Continue Loop
+      requestAnimationFrame(idleLoop);
+    };
+
+    log.debug("Starting idle render loop for particle twinkle");
+    idleLoop();
+  }
+
+  /**
+   * Stoppt Animation manuell
    */
   stopAnimation() {
     if (animationState.rafId) {
@@ -556,6 +878,519 @@ class ThreeCardSystem {
   }
 }
 
+// ===== ORCHESTRATION FUNCTIONS =====
+// Scroll & Template Management Integration
+
+/**
+ * Scroll-Snap Lock/Unlock
+ */
+function lockSnap() {
+  const currentScrollY = window.scrollY;
+  window.scrollTo({ top: currentScrollY, behavior: "instant" });
+
+  document.documentElement.classList.add("snap-locked");
+  document.body.classList.add("snap-locked");
+  const container = document.querySelector(".snap-container");
+  container?.classList.add("snap-locked");
+
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: currentScrollY, behavior: "instant" });
+  });
+
+  log.debug(`🔒 Scroll-Snap locked at Y=${currentScrollY}`);
+}
+
+function unlockSnap() {
+  document.documentElement.classList.remove("snap-locked");
+  document.body.classList.remove("snap-locked");
+  const container = document.querySelector(".snap-container");
+  container?.classList.remove("snap-locked");
+  log.debug("🔓 Scroll-Snap unlocked");
+}
+
+/**
+ * Bestimmt Scroll-Richtung basierend auf Section-Position
+ */
+function getScrollDirection(section) {
+  const rect = section.getBoundingClientRect();
+  const viewportCenter = window.innerHeight / 2;
+  const sectionCenter = rect.top + rect.height / 2;
+
+  if (rect.bottom < 0) return "next";
+  if (rect.top > window.innerHeight) return "prev";
+
+  return sectionCenter < viewportCenter ? "next" : "prev";
+}
+
+/**
+ * Findet benachbarte Section
+ */
+function findSiblingSection(section, direction = "next") {
+  const all = Array.from(document.querySelectorAll(".section"));
+  const idx = all.indexOf(section);
+  if (idx === -1) return null;
+
+  const sibling = direction === "next" ? all[idx + 1] || null : all[idx - 1] || null;
+  log.debug(
+    `findSiblingSection: current=${section.id}, direction=${direction}, sibling=${sibling?.id || "none"}`
+  );
+  return sibling;
+}
+
+/**
+ * Navigiert zur Ziel-Section nach Reverse-Animation
+ */
+function navigateToTarget() {
+  const target = targetSectionEl;
+  const shouldSnap = pendingSnap;
+
+  targetSectionEl = null;
+  pendingSnap = false;
+
+  if (target && shouldSnap && document.contains(target)) {
+    log.info(`➡️ Navigating to: #${target.id || "unknown"}`);
+    target.scrollIntoView({ behavior: "auto", block: "start" });
+    setTimeout(() => unlockSnap(), 150);
+  } else {
+    unlockSnap();
+  }
+}
+
+/**
+ * Template Loading & Management
+ */
+async function ensureTemplates(section) {
+  if (templatesLoaded) {
+    log.debug("Templates already loaded");
+    return true;
+  }
+
+  const url = section?.dataset.featuresSrc || TEMPLATE_URL;
+  log.debug(`Loading templates from: ${url}`);
+
+  const existing = TEMPLATE_IDS.filter((id) => getElementById(id));
+  if (existing.length > 0) {
+    log.info(`Found ${existing.length} existing templates`);
+    templatesLoaded = true;
+    fire(EVENTS.FEATURES_TEMPLATES_LOADED);
+    return true;
+  }
+
+  try {
+    const res = await fetch(url, { credentials: "same-origin" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const wrap = document.createElement("div");
+    wrap.style.display = "none";
+    wrap.innerHTML = await res.text();
+    document.body.appendChild(wrap);
+
+    const foundAfterLoad = TEMPLATE_IDS.filter((id) => getElementById(id));
+    log.info(`Templates loaded: ${foundAfterLoad.length} templates`);
+
+    templatesLoaded = true;
+    fire(EVENTS.FEATURES_TEMPLATES_LOADED);
+    return true;
+  } catch (error) {
+    log.error(`Failed to load templates: ${error.message}`);
+    fire(EVENTS.FEATURES_TEMPLATES_ERROR, { error, url });
+    return false;
+  }
+}
+
+/**
+ * ARIA Live Region für Screen Reader
+ */
+function createLiveRegion(section, templateId, LIVE_LABEL_PREFIX) {
+  let live = section.querySelector("[data-feature-rotation-live]");
+  if (!live) {
+    live = document.createElement("div");
+    live.setAttribute("data-feature-rotation-live", "");
+    live.setAttribute("aria-live", "polite");
+    live.setAttribute("aria-atomic", "true");
+    live.className = "sr-only";
+    live.style.cssText =
+      "position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;";
+    section.appendChild(live);
+  }
+  live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
+  return live;
+}
+
+/**
+ * Mount Initial Cards
+ */
+function mountInitialCards(section) {
+  if (!section) {
+    log.warn("Section not found for initial cards");
+    return false;
+  }
+
+  if (section.dataset.currentTemplate) {
+    log.debug("Cards already mounted");
+    return true;
+  }
+
+  if (!templateOrder.length) {
+    log.warn("No templates in order array");
+    return false;
+  }
+
+  const tpl = getElementById(templateOrder[currentTemplateIndex]);
+  if (!tpl) {
+    log.warn(`Template ${templateOrder[currentTemplateIndex]} not found`);
+    return false;
+  }
+
+  const LIVE_LABEL_PREFIX = section.dataset.liveLabel || "Feature";
+  const frag = tpl.content ? document.importNode(tpl.content, true) : null;
+
+  section.replaceChildren(frag || tpl.cloneNode(true));
+  createLiveRegion(section, templateOrder[currentTemplateIndex], LIVE_LABEL_PREFIX);
+  section.dataset.currentTemplate = templateOrder[currentTemplateIndex];
+
+  section.classList.add("cards-hidden");
+
+  log.info(`Cards mounted (hidden): ${templateOrder[currentTemplateIndex]}`);
+  fire(EVENTS.FEATURES_CHANGE, { index: currentTemplateIndex, total: templateOrder.length });
+  return true;
+}
+
+/**
+ * Forward Animation Orchestrator
+ */
+async function applyForwardAnimation(section) {
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    log.info("⏩ Reduced motion: Skipping particle animation");
+    section.classList.remove("starfield-animating");
+    section.classList.add("cards-visible");
+    fire(
+      EVENTS.TEMPLATE_MOUNTED,
+      { templateId: section.dataset.currentTemplate },
+      section
+    );
+    return;
+  }
+
+  log.info("🌟 Starting Three.js WebGL Starfield Animation");
+
+  section.classList.add("starfield-animating");
+
+  try {
+    const container = section;
+
+    if (!container || !document.body.contains(container)) {
+      throw new Error("Container not found or not in DOM");
+    }
+
+    const success = await startForwardAnimation(container);
+
+    if (!success) {
+      throw new Error("startForwardAnimation returned false");
+    }
+
+    log.info("✨ WebGL Starfield formation complete");
+    section.classList.remove("starfield-animating");
+    section.classList.add("cards-visible");
+
+    fire(
+      EVENTS.TEMPLATE_MOUNTED,
+      { templateId: section.dataset.currentTemplate },
+      section
+    );
+  } catch (error) {
+    log.error("WebGL Starfield animation failed:", error);
+
+    section.classList.remove("starfield-animating");
+    section.classList.add("cards-visible");
+
+    try {
+      cleanupThreeCardSystem();
+    } catch (cleanupError) {
+      log.warn("Cleanup after error failed:", cleanupError);
+    }
+
+    fire(
+      EVENTS.TEMPLATE_MOUNTED,
+      { templateId: section.dataset.currentTemplate },
+      section
+    );
+  }
+}
+
+/**
+ * Reverse Animation Orchestrator
+ */
+async function applyReverseAnimation(section) {
+  if (isReversing) {
+    log.warn("⚠️ Reverse animation already running, skipping duplicate call");
+    return;
+  }
+
+  log.info("🔄 Starting Three.js REVERSE Starfield Animation");
+  isReversing = true;
+
+  document.body.classList.add("starfield-active");
+
+  section.classList.remove("cards-visible");
+  section.classList.add("cards-materializing", "starfield-animating");
+
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    log.info("⏩ Reduced motion: Skipping particle animation");
+
+    document.body.classList.remove("starfield-active");
+    hasAnimated = false;
+    isReversing = false;
+    reverseTriggered = false;
+    section.classList.remove("starfield-animating", "cards-materializing");
+    section.classList.add("cards-hidden");
+
+    navigateToTarget();
+    return;
+  }
+
+  try {
+    await startReverseAnimation();
+
+    log.info("🔄 Three.js Reverse complete - cards hidden");
+
+    document.body.classList.remove("starfield-active");
+    hasAnimated = false;
+    isReversing = false;
+    reverseTriggered = false;
+
+    section.classList.remove(
+      "starfield-animating",
+      "cards-materializing",
+      "cards-visible"
+    );
+    section.classList.add("cards-hidden");
+
+    navigateToTarget();
+  } catch (error) {
+    log.error("Three.js Reverse animation failed:", error);
+
+    document.body.classList.remove("starfield-active");
+    hasAnimated = false;
+    isReversing = false;
+    reverseTriggered = false;
+    section.classList.remove("starfield-animating", "cards-materializing");
+    section.classList.add("cards-hidden");
+
+    try {
+      cleanupThreeCardSystem();
+    } catch (cleanupError) {
+      log.warn("Cleanup after reverse error failed:", cleanupError);
+    }
+
+    navigateToTarget();
+  }
+}
+
+/**
+ * Trigger Reverse Animation
+ */
+function triggerReverse(section, source = "unknown") {
+  if (!section || !document.body.contains(section)) {
+    log.warn(`⏭️ Cannot trigger reverse: section not in DOM (source=${source})`);
+    return false;
+  }
+
+  if (reverseTriggered || isReversing) {
+    log.debug(
+      `⏭️ Reverse already triggered/running (source=${source}), skipping`
+    );
+    return false;
+  }
+
+  if (!hasAnimated) {
+    log.debug(
+      `⏭️ Forward animation not completed yet, skipping reverse trigger from ${source}`
+    );
+    return false;
+  }
+
+  reverseTriggered = true;
+
+  const direction = getScrollDirection(section);
+
+  targetSectionEl = findSiblingSection(section, direction);
+  pendingSnap = !!targetSectionEl;
+
+  log.info(
+    `🔄 TRIGGER REVERSE (${source}): direction=${direction}, target=${
+      targetSectionEl?.id || "none"
+    }, willSnap=${pendingSnap}`
+  );
+
+  lockSnap();
+
+  applyReverseAnimation(section).catch((error) => {
+    log.error("Reverse animation promise rejected:", error);
+  });
+
+  return true;
+}
+
+/**
+ * IntersectionObserver Setup
+ */
+function setupObserver(section) {
+  if (!section) {
+    log.warn("Section not found for observer");
+    return () => {};
+  }
+
+  // Pre-initialize Three.js system (non-blocking)
+  // Verhindert "System not initialized" Warning bei erstem Animation-Call
+  if (!threeInstance || !threeInstance.mounted) {
+    log.debug("Pre-initializing Three.js system...");
+    initThreeCardSystem(section).catch((error) => {
+      log.warn("Pre-initialization failed (will retry on animation):", error);
+    });
+  }
+
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+    intersectionObserver = null;
+  }
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.target !== section) continue;
+
+        const ratio = entry.intersectionRatio;
+        const isVisible = entry.isIntersecting;
+
+        log.debug(
+          `📊 Intersection: visible=${isVisible}, ratio=${ratio.toFixed(
+            3
+          )}, hasAnimated=${hasAnimated}, isReversing=${isReversing}`
+        );
+
+        if (hasAnimated && !isReversing && !reverseTriggered && !isVisible) {
+          log.info("📊 IO: Section left viewport (ratio=0) - triggering reverse");
+          triggerReverse(section, "IntersectionObserver-NotVisible");
+          return;
+        }
+
+        if (
+          hasAnimated &&
+          !isReversing &&
+          !reverseTriggered &&
+          ratio < REVERSE_THRESHOLD &&
+          ratio > 0
+        ) {
+          triggerReverse(section, "IntersectionObserver");
+          return;
+        }
+
+        if (
+          isVisible &&
+          ratio >= SNAP_THRESHOLD &&
+          !hasAnimated &&
+          !isReversing
+        ) {
+          if (section.dataset.currentTemplate) {
+            log.info(`🚀 TRIGGERING FORWARD: Snap complete (${ratio.toFixed(3)})`);
+            hasAnimated = true;
+
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                applyForwardAnimation(section).catch((error) => {
+                  log.error("Forward animation promise rejected:", error);
+                  hasAnimated = false;
+                });
+              });
+            });
+          }
+        }
+      }
+    },
+    { threshold: THRESHOLDS }
+  );
+
+  intersectionObserver.observe(section);
+
+  const handleScroll = throttle(() => {
+    if (!hasAnimated || isReversing || reverseTriggered) {
+      return;
+    }
+
+    const rect = section.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+
+    const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
+
+    if (!isInViewport) {
+      log.debug("📐 Section out of viewport - triggering reverse immediately");
+      triggerReverse(section, "ScrollHandler-OutOfView");
+      return;
+    }
+
+    const visibleHeight = Math.max(
+      0,
+      Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
+    );
+    const visibleRatio = rect.height > 0 ? visibleHeight / rect.height : 0;
+
+    log.debug(
+      `📐 Scroll check: ratio=${visibleRatio.toFixed(3)}, threshold=${REVERSE_THRESHOLD}`
+    );
+
+    if (visibleRatio < REVERSE_THRESHOLD && visibleRatio > 0) {
+      triggerReverse(section, "ScrollHandler");
+    }
+  }, SCROLL_THROTTLE);
+
+  const handleTouchMove = throttle(() => {
+    if (!hasAnimated || isReversing || reverseTriggered) return;
+
+    const rect = section.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+
+    const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
+
+    if (!isInViewport) {
+      log.debug("👆 Touch: Section out of viewport - triggering reverse immediately");
+      triggerReverse(section, "TouchHandler-OutOfView");
+      return;
+    }
+
+    const visibleHeight = Math.max(
+      0,
+      Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
+    );
+    const visibleRatio = rect.height > 0 ? visibleHeight / rect.height : 0;
+
+    if (visibleRatio < REVERSE_THRESHOLD && visibleRatio > 0) {
+      triggerReverse(section, "TouchHandler");
+    }
+  }, TOUCH_THROTTLE);
+
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+  observerCleanup = () => {
+    if (intersectionObserver) {
+      intersectionObserver.disconnect();
+      intersectionObserver = null;
+    }
+    window.removeEventListener("scroll", handleScroll);
+    window.removeEventListener("touchmove", handleTouchMove);
+    log.debug("Observer cleanup complete");
+  };
+
+  return observerCleanup;
+}
+
 // ===== Public API =====
 
 /**
@@ -601,17 +1436,17 @@ export async function initThreeCardSystem(container) {
 
 /**
  * Startet Forward Animation (Partikel → Cards)
- * @param {HTMLElement} container - Features Section
- * @returns {boolean}
+ * @param {HTMLElement} container - Container oder Section Element
+ * @returns {Promise<boolean>}
  */
-export function startForwardAnimation(container) {
+export async function startForwardAnimation(container) {
   if (!threeInstance || !threeInstance.mounted) {
-    log.warn("System not initialized, attempting init...");
-    // Async init aber sync return - nicht ideal, aber kompatibel mit bestehendem Code
-    initThreeCardSystem(container).then((success) => {
-      if (success) threeInstance.startAnimation("forward");
-    });
-    return false;
+    log.warn("System not initialized, initializing now...");
+    const success = await initThreeCardSystem(container);
+    if (!success) {
+      log.error("Failed to initialize system for forward animation");
+      return false;
+    }
   }
 
   return threeInstance.startAnimation("forward");
@@ -619,11 +1454,11 @@ export function startForwardAnimation(container) {
 
 /**
  * Startet Reverse Animation (Cards → Partikel)
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-export function startReverseAnimation() {
+export async function startReverseAnimation() {
   if (!threeInstance || !threeInstance.mounted) {
-    log.warn("System not initialized");
+    log.error("System not initialized for reverse animation");
     return false;
   }
 
@@ -649,24 +1484,6 @@ export function cleanupThreeCardSystem() {
   }
 }
 
-/**
- * Lazy-Load Three.js Library
- * @returns {Promise<object|null>}
- */
-async function loadThreeJS() {
-  try {
-    // Import via ES6 Module (nutzt existing three.module.min.js)
-    const THREE = await import(
-      "/content/webentwicklung/lib/three/build/three.module.min.js"
-    );
-    log.info("✅ Three.js loaded successfully");
-    return THREE;
-  } catch (error) {
-    log.error("Failed to load Three.js:", error);
-    return null;
-  }
-}
-
 // ===== Export für Testing/Debugging =====
 export function getThreeInstance() {
   return threeInstance;
@@ -674,4 +1491,159 @@ export function getThreeInstance() {
 
 export function getAnimationState() {
   return { ...animationState };
+}
+
+/**
+ * Haupt-Initialisierung für FeatureRotation System
+ * Integriert Template-Loading, Observer-Setup und Animation-Orchestrierung
+ * @returns {Promise<boolean>}
+ */
+export async function initFeatureRotation() {
+  log.info("Initializing Integrated FeatureRotation System");
+
+  const section = getElementById(SECTION_ID);
+  if (!section) {
+    log.error(`Features section '#${SECTION_ID}' not found!`);
+    return false;
+  }
+
+  try {
+    // 1. Templates laden
+    log.debug("Step 1: Loading templates...");
+    const templatesOk = await ensureTemplates(section);
+    if (!templatesOk) {
+      log.error("Failed to load templates");
+      return false;
+    }
+
+    // 2. Prüfe verfügbare Templates
+    log.debug("Step 2: Checking for available templates...");
+    const availableTemplates = TEMPLATE_IDS.filter((id) => {
+      const found = getElementById(id);
+      log.debug(`  - ${id}: ${found ? "✅ found" : "❌ missing"}`);
+      return found;
+    });
+
+    if (availableTemplates.length === 0) {
+      log.error(`No templates found! Searched for: ${TEMPLATE_IDS.join(", ")}`);
+      return false;
+    }
+
+    // 3. Order shuffeln
+    log.debug("Step 3: Shuffling template order...");
+    templateOrder = shuffleArray([...availableTemplates]);
+    log.info(
+      `Template order: ${templateOrder.join(", ")} (${templateOrder.length} templates)`
+    );
+
+    // 4. Cards mounten
+    log.debug("Step 4: Mounting initial cards...");
+    const mountSuccess = mountInitialCards(section);
+    if (!mountSuccess) {
+      log.error("Failed to mount initial cards");
+      return false;
+    }
+
+    // 5. Observer starten
+    log.debug("Step 5: Starting observer...");
+    setupObserver(section);
+
+    log.info("✅ Integrated FeatureRotation System initialized successfully");
+    return true;
+  } catch (error) {
+    log.error("Failed to initialize:", error);
+    return false;
+  }
+}
+
+/**
+ * Vollständiges Cleanup des Systems
+ * Bereinigt alle Resources, Event Listener und State
+ */
+export function destroyFeatureRotation() {
+  log.info("Destroying Integrated FeatureRotation System...");
+
+  // 1. Observer cleanup
+  if (observerCleanup) {
+    try {
+      observerCleanup();
+    } catch (error) {
+      log.warn("Observer cleanup error:", error);
+    }
+    observerCleanup = null;
+  }
+
+  // 2. IntersectionObserver cleanup
+  if (intersectionObserver) {
+    try {
+      intersectionObserver.disconnect();
+    } catch (error) {
+      log.warn("IO disconnect error:", error);
+    }
+    intersectionObserver = null;
+  }
+
+  // 3. Three.js cleanup
+  try {
+    cleanupThreeCardSystem();
+  } catch (error) {
+    log.warn("Three.js cleanup error:", error);
+  }
+
+  // 4. Unlock scroll snap
+  try {
+    unlockSnap();
+  } catch (error) {
+    log.warn("Unlock snap error:", error);
+  }
+
+  // 5. Remove body classes
+  try {
+    document.body.classList.remove("starfield-active");
+  } catch (error) {
+    log.warn("Body class removal error:", error);
+  }
+
+  // 6. State reset
+  hasAnimated = false;
+  isReversing = false;
+  reverseTriggered = false;
+  pendingSnap = false;
+  targetSectionEl = null;
+  templatesLoaded = false;
+  templateOrder = [];
+  currentTemplateIndex = 0;
+
+  log.info("✅ Integrated FeatureRotation System destroyed");
+}
+
+// ===== Auto-Initialization =====
+// Nur wenn als Hauptmodul geladen (nicht als Import)
+if (typeof window !== "undefined" && !window.FeatureRotationIntegrated) {
+  window.FeatureRotationIntegrated = {
+    init: initFeatureRotation,
+    destroy: destroyFeatureRotation,
+    getState: () => ({
+      hasAnimated,
+      isReversing,
+      reverseTriggered,
+      templatesLoaded,
+      templateOrder: [...templateOrder],
+      currentTemplateIndex,
+    }),
+  };
+
+  // Auto-Init bei DOMContentLoaded
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      initFeatureRotation().catch((error) => {
+        log.error("Auto-initialization failed:", error);
+      });
+    }, { once: true });
+  } else {
+    // DOM already loaded
+    initFeatureRotation().catch((error) => {
+      log.error("Auto-initialization failed:", error);
+    });
+  }
 }
