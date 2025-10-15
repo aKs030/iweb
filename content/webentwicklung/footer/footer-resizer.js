@@ -128,9 +128,14 @@ function apply() {
     const actual = Math.round(base * scale);
     setCSSVar('--footer-actual-height', `${actual}px`);
 
-    log.debug(
-      `Footer Scale: ${scale}, Mobile: ${isMobile}, MaxHeight: ${maxFooter}px, Actual: ${actual}px`
-    );
+    // Nur loggen, wenn sich Werte geändert haben (reduziert Log-Spam)
+    const snapshot = `${scale}|${isMobile}|${maxFooter}|${actual}`;
+    if (STATE.lastLogSnapshot !== snapshot) {
+      log.debug(
+        `Footer Scale: ${scale}, Mobile: ${isMobile}, MaxHeight: ${maxFooter}px, Actual: ${actual}px`
+      );
+      STATE.lastLogSnapshot = snapshot;
+    }
   } else {
     // Fallback: leichte Breiten-basierte Skalierung
     setCSSVar('--footer-scale', String(computeScale()));

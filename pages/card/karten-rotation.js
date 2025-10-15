@@ -44,8 +44,8 @@ import {
   let reverseTriggered = false; // Verhindert Doppel-Trigger
 
   function lockSnap() {
-    // FIX: Scroll SOFORT stoppen BEVOR CSS-Klassen gesetzt werden
-    // Verhindert dass Section sich trotz Lock weiterbewegt
+    // Scroll sofort stoppen bevor CSS-Klassen gesetzt werden
+    // Verhindert, dass die Section sich trotz Lock weiterbewegt
     const currentScrollY = window.scrollY;
     window.scrollTo({ top: currentScrollY, behavior: 'instant' });
 
@@ -73,14 +73,13 @@ import {
 
   /**
    * Bestimmt Scroll-Richtung basierend auf Section-Position im Viewport
-   * FIX: Auch bei komplett außerhalb des Viewports korrekt!
+   * Funktioniert auch wenn die Section komplett außerhalb des Viewports liegt.
    */
   function getScrollDirection(section) {
     const rect = section.getBoundingClientRect();
     const viewportCenter = window.innerHeight / 2;
     const sectionCenter = rect.top + rect.height / 2;
-
-    // FIX: Bei Section komplett außerhalb - nutze rect.bottom Position
+    // Bei Section komplett außerhalb auf rect.bottom basieren
     if (rect.bottom < 0) {
       // Section ist komplett oberhalb → User scrollt nach unten (next)
       return 'next';
@@ -157,19 +156,19 @@ import {
   let starfieldAnimationId = null;
   let starfieldStartTime = null;
 
-  // Starfield Configuration (inspiriert von three-earth-system.js)
+  // Starfield Configuration
   const STARFIELD_CONFIG = {
-    PARTICLE_COUNT_DESKTOP: 150,
-    PARTICLE_COUNT_MOBILE: 60,
-    TWINKLE_SPEED: 0.25, // Wie Earth's CONFIG.STARS.TWINKLE_SPEED
-    ANIMATION_DURATION: 1400, // Synchron mit Earth's TRANSITION_DURATION
-    REVERSE_DURATION: 800, // Reverse schneller für snappier feel (war 1000ms)
-    EASING: [0.22, 1, 0.36, 1], // Earth's ease-out-expo
+    PARTICLE_COUNT_DESKTOP: 500,
+    PARTICLE_COUNT_MOBILE: 200,
+    EDGE_PARTICLE_RATIO: 0.6,
+    TWINKLE_SPEED: 0.25,
+    ANIMATION_DURATION: 1400,
+    REVERSE_DURATION: 800,
+    HOLD_PHASE_DURATION: 0.4,
+    EASING: [0.22, 1, 0.36, 1],
     PARTICLE_COLOR: 'rgba(9, 139, 255, 0.8)',
     PARTICLE_GLOW: 'rgba(255, 255, 255, 0.9)',
-  };
-
-  // ===== Template Loading & Management =====
+  }; // ===== Template Loading & Management =====
 
   /**
    * Lädt Card-Templates aus karten.html
@@ -283,7 +282,7 @@ import {
    * Initialisiert Forward-Animation Partikel
    * Start: Random positions → Ziel: Card-Konturen
    */
-  function initializeParticles(section) {
+  function initializeStarfieldParticles(section) {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     const particleCount = isMobile
       ? STARFIELD_CONFIG.PARTICLE_COUNT_MOBILE
@@ -377,7 +376,7 @@ import {
    * Animation Loop - zeichnet alle Partikel
    * Inspiration: Earth's startAnimationLoop()
    */
-  function animateStarfield(section) {
+  function animateStarfieldForward(section) {
     if (!starfieldContext || !starfieldCanvas) return;
 
     const now = performance.now();
@@ -398,7 +397,7 @@ import {
     // Continue Animation oder beenden
     if (progress < 1) {
       starfieldAnimationId = requestAnimationFrame(() =>
-        animateStarfield(section)
+        animateStarfieldForward(section)
       );
     } else {
       // Animation complete - Cards sind bereits durch CSS-Animation sichtbar
@@ -407,11 +406,11 @@ import {
       section.classList.add('cards-visible');
       cleanupStarfield();
 
-      section.dispatchEvent(
-        new CustomEvent(EVENTS.TEMPLATE_MOUNTED, {
-          detail: { templateId: section.dataset.currentTemplate },
-          bubbles: true,
-        })
+      // Einheitliches Event-Firing über shared-utilities
+      fire(
+        EVENTS.TEMPLATE_MOUNTED,
+        { templateId: section.dataset.currentTemplate },
+        section
       );
     }
   }
@@ -444,11 +443,11 @@ import {
     }
 
     // Initialisiere Partikel
-    initializeParticles(section);
+    initializeStarfieldParticles(section);
 
     // Starte Animation Loop
     starfieldStartTime = null; // Reset für neue Animation
-    animateStarfield(section);
+    animateStarfieldForward(section);
   }
 
   /**
@@ -478,7 +477,7 @@ import {
    * Initialisiert Partikel für Reverse Animation
    * Start: Card-Positionen → Ziel: Random verteilt
    */
-  function initializeReverseParticles(section) {
+  function initializeReverseStarfieldParticles(section) {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     const particleCount = isMobile
       ? STARFIELD_CONFIG.PARTICLE_COUNT_MOBILE
@@ -531,7 +530,7 @@ import {
   /**
    * Reverse Animation Loop - Partikel bewegen sich von Cards weg
    */
-  function animateReverseStarfield(section) {
+  function animateStarfieldReverse(section) {
     if (!starfieldContext || !starfieldCanvas) return;
 
     const now = performance.now();
@@ -579,7 +578,7 @@ import {
     // Continue oder beenden
     if (progress < 1) {
       starfieldAnimationId = requestAnimationFrame(() =>
-        animateReverseStarfield(section)
+        animateStarfieldReverse(section)
       );
     } else {
       // Reverse complete
@@ -588,7 +587,7 @@ import {
       );
       cleanupStarfield();
 
-      // FIX: Body-Klasse entfernen (overflow wieder freigeben)
+      // Body-Klasse entfernen (overflow wieder freigeben)
       document.body.classList.remove('starfield-active');
 
       // Reset State - WICHTIG: hasAnimated bleibt false für Re-Animation
@@ -623,7 +622,7 @@ import {
           setTimeout(() => {
             unlockSnap();
             log.debug('🔓 Snap unlocked after navigation (auto)');
-          }, 150); // Reduziert von 800ms auf 150ms für Touch
+          }, 150);
         } else {
           // Kein Target oder ungültig - sofort freigeben
           log.debug(
@@ -654,7 +653,7 @@ import {
     log.info('🔄 Starting REVERSE Starfield Animation (Cards → Stars)');
     isReversing = true;
 
-    // FIX: Body-Klasse für overflow:hidden während Animation
+    // Body-Klasse für overflow:hidden während der Animation
     document.body.classList.add('starfield-active');
 
     // CSS-Klassen für Reverse Animation
@@ -669,7 +668,7 @@ import {
       // Direkt zurück zum Hidden-State ohne Partikel-Animation
       log.info('⏩ Reduced motion: Skipping particle animation');
 
-      // FIX: Body-Klasse entfernen
+      // Body-Klasse entfernen
       document.body.classList.remove('starfield-active');
 
       hasAnimated = false;
@@ -709,7 +708,7 @@ import {
     if (!createStarfieldCanvas(section)) {
       log.error('Failed to create canvas for reverse, resetting state');
 
-      // FIX: Body-Klasse entfernen bei Error
+      // Body-Klasse entfernen bei Fehler
       document.body.classList.remove('starfield-active');
 
       hasAnimated = false;
@@ -724,11 +723,11 @@ import {
     }
 
     // Reverse Partikel initialisieren
-    initializeReverseParticles(section);
+    initializeReverseStarfieldParticles(section);
 
     // Starte Reverse Animation Loop
     starfieldStartTime = null;
-    animateReverseStarfield(section);
+    animateStarfieldReverse(section);
   }
 
   function mountInitialCards() {
@@ -788,11 +787,11 @@ import {
           const ratio = entry.intersectionRatio;
           const isVisible = entry.isIntersecting;
 
-          log.info(
+          log.debug(
             `📊 Intersection: visible=${isVisible}, ratio=${ratio.toFixed(3)}, hasAnimated=${hasAnimated}, isReversing=${isReversing}`
           );
 
-          // FIX: Reverse auch bei ratio=0 triggern (schnelles Scrollen!)
+          // Reverse auch bei ratio=0 triggern (schnelles Scrollen)
           // Section komplett außerhalb Viewport (isIntersecting=false, ratio=0)
           if (hasAnimated && !isReversing && !reverseTriggered && !isVisible) {
             log.info(
@@ -852,8 +851,8 @@ import {
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
-      // FIX: Verbesserte Visibility-Prüfung auch bei schnellem Scrollen
-      // Problem: Bei schnellem Scroll kann Section komplett außerhalb sein
+      // Zusätzliche Visibility-Prüfung für schnelles Scrollen
+      // Bei schnellem Scroll kann Section komplett außerhalb sein
       const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
 
       if (!isInViewport) {
@@ -888,7 +887,7 @@ import {
       const rect = section.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
-      // FIX: Touch-optimierte Out-of-Viewport Detection
+      // Touch-optimierte Out-of-Viewport Detection
       const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
 
       if (!isInViewport) {
@@ -981,9 +980,8 @@ import {
     }
   }
 
-  // Public API
+  // Public API (nur destroy() für Cleanup)
   window.FeatureRotation = {
-    current: () => ({ index: i, id: order[i] }),
     destroy() {
       if (observerCleanup) {
         observerCleanup();
@@ -998,23 +996,6 @@ import {
       order = [];
       i = 0;
       delete window.FeatureRotation;
-    },
-    // Expose for debugging
-    debug: {
-      getState: () => ({
-        hasAnimated,
-        isReversing,
-        loaded,
-        currentTemplate:
-          document.getElementById(SECTION_ID)?.dataset?.currentTemplate,
-      }),
-      forceAnimation: () => {
-        const section = getElementById(SECTION_ID);
-        if (section && !hasAnimated) {
-          hasAnimated = true;
-          applyStarfieldAnimation(section);
-        }
-      },
     },
   };
 

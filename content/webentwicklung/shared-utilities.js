@@ -28,29 +28,45 @@ export function setGlobalLogLevel(level) {
 export function createLogger(category) {
   const prefix = `[${category}]`;
 
+  const consoleRef = globalThis.console || {
+    error: () => {},
+    warn: () => {},
+    info: () => {},
+    debug: () => {},
+  };
+
+  const {
+    error: logError,
+    warn: logWarn,
+    info: logInfo,
+    debug: logDebug,
+  } = consoleRef;
+
   return {
     error: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.error) {
-        console.error(prefix, message, ...args);
+        logError(prefix, message, ...args);
       }
     },
     warn: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.warn) {
-        console.warn(prefix, message, ...args);
+        logWarn(prefix, message, ...args);
       }
     },
     info: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.info) {
-        console.info(prefix, message, ...args);
+        logInfo(prefix, message, ...args);
       }
     },
     debug: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.debug) {
-        console.log(prefix, message, ...args);
+        logDebug(prefix, message, ...args);
       }
     },
   };
 }
+
+const sharedLogger = createLogger('SharedUtilities');
 
 // Debug-Modus basierend auf URL-Parameter oder localStorage
 if (typeof window !== 'undefined') {
@@ -231,18 +247,19 @@ export class EventListenerManager {
     this.name = name;
     this.listeners = new Set();
     this.isDestroyed = false;
+    this.log = createLogger(`EventListenerManager:${name}`);
   }
 
   add(target, event, handler, options = {}) {
     if (this.isDestroyed) {
-      console.warn(
+      this.log.warn(
         `${this.name}: Versuch Listener zu ${event} hinzuzufügen nach destroy`
       );
       return () => {};
     }
 
     if (!target || typeof target.addEventListener !== 'function') {
-      console.warn(
+      this.log.warn(
         `${this.name}: Ungültiges Event Target für ${event}`,
         target
       );
@@ -331,7 +348,7 @@ export function onVisibilityChange(callback) {
     document.addEventListener('visibilitychange', handler, { passive: true });
     return () => document.removeEventListener('visibilitychange', handler);
   } catch (error) {
-    console.error('onVisibilityChange: Event Setup Fehler:', error);
+    sharedLogger.error('onVisibilityChange: Event Setup Fehler:', error);
     return () => {};
   }
 }
@@ -345,7 +362,7 @@ export function createLazyLoadObserver(
   }
 ) {
   if (!window.IntersectionObserver) {
-    console.warn('IntersectionObserver nicht verfügbar - Fallback aktiv');
+    sharedLogger.warn('IntersectionObserver nicht verfügbar - Fallback aktiv');
     return {
       observer: null,
       observe: (element) => callback(element),

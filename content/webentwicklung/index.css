@@ -66,7 +66,7 @@ body.snap-locked {
   scroll-snap-type: none !important;
   scroll-behavior: auto !important;
   -webkit-overflow-scrolling: auto !important; /* Touch-optimiert */
-  /* FIX: Overflow NUR während starfield-Animation blockieren, nicht bei Navigation */
+  /* Overflow nur während der Starfield-Animation blockieren, nicht während Navigation */
 }
 
 body.snap-locked.starfield-active {
