@@ -4,7 +4,7 @@ Webbasiertes Portfolio mit nativen ES6-Modulen, Zero-Build-Tooling und einem Thr
 
 ## Highlights
 
-- Drei zentrale Systeme: SectionLoader, Three.js Earth und Karten-Rotation mit Partikelcanvas
+- Drei zentrale Systeme: SectionLoader, Three.js Earth und Three.js Card System mit Partikel-Animationen
 - Einheitliche Utilities via `content/webentwicklung/shared-utilities.js` (Logger, Timer, Events, DOM-Caching)
 - Accessibilty- und Performance-Optimierungen (WCAG 2.1 AA, Lighthouse ≥ 95)
 - Zero-Build-Setup: alle Imports mit `.js`-Extension, keine Bundler erforderlich
@@ -31,7 +31,7 @@ Webbasiertes Portfolio mit nativen ES6-Modulen, Zero-Build-Tooling und einem Thr
 - `content/webentwicklung/main.js`: SectionLoader lädt HTML-Files lazy/eager und feuert `section:will-load`, `section:prefetched`, `section:loaded`
 - `createLazyLoadObserver()` und `TimerManager` stellen Cleanup sicher (immer Rückgabewert `cleanup` nutzen)
 - Partikel- und Earth-Systeme liegen unter `content/webentwicklung/particles/` mit LOD-Texturmanagement und Timer-Autocleanup
-- Feature-Karten (`pages/card/karten-rotation.js`) setzen auf IntersectionObserver mit 500 Partikeln (Desktop) bzw. 200 (Mobile) und Edge-Dichte 60 %
+- Feature-Karten (`content/webentwicklung/particles/three-card-system.js`) mit 150 Partikeln (Desktop) bzw. 60 (Mobile) und GPU-optimiertem BufferGeometry
 - DOM-Zugriff über `getElementById` (20-Slot-Cache) statt `document.getElementById`
 - CSS-Custom-Properties ausschließlich in `content/webentwicklung/root.css`
 

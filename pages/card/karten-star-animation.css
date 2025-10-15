@@ -78,6 +78,7 @@
 
 /**
  * Cards erscheinen während Partikel formieren
+ * Partikel-Count: Desktop 150, Mobile 60 (GPU-optimiert)
  * Timeline:
  * - 0-60%:  Cards bleiben unsichtbar (Partikel formieren sich)
  * - 60-75%: Blur fade-in (Cards "materialisieren" aus Partikeln)
@@ -283,7 +284,7 @@
 ======================================== */
 
 @media (max-width: 768px) {
-  /* Mobile: JavaScript reduziert Partikel-Count auf 200 */
+  /* Mobile: JavaScript reduziert Partikel-Count auf 60 (GPU-optimiert) */
   .features-cards {
     /* Optimize for mobile performance */
     -webkit-transform: translateZ(0);

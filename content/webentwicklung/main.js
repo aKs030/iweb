@@ -51,7 +51,7 @@ if ("serviceWorker" in navigator) {
   const MAP = [
     {
       id: "features",
-      module: "/pages/card/karten-rotation.js",
+      module: "/content/webentwicklung/particles/three-card-system.js",
       loaded: false,
       type: "feature-rotation",
     },

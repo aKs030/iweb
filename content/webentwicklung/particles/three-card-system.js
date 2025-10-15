@@ -752,7 +752,7 @@ class ThreeCardSystem {
 
     animationState.isAnimating = false;
 
-    // Event für karten-rotation.js
+    // Event für externe Listener
     const event = new CustomEvent("three-card-animation-complete", {
       detail: { mode: animationState.mode },
       bubbles: true,
