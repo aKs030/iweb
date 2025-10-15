@@ -15,12 +15,7 @@ import {
   const log = createLogger("FeatureRotation");
 
   const SECTION_ID = "features";
-  const TEMPLATE_IDS = [
-    "template-features-2",
-    "template-features-3",
-    "template-features-4",
-    "template-features-5",
-  ];
+  const TEMPLATE_IDS = ["kart-1", "kart-2", "kart-3", "kart-4"];
   const TEMPLATE_URL = "/pages/card/karten.html";
 
   // Animation Configuration
