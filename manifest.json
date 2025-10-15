@@ -85,21 +85,5 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "/content/img/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Portfolio Hauptseite auf Mobile"
-    },
-    {
-      "src": "/content/img/screenshot-desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Portfolio Dashboard auf Desktop"
-    }
   ]
 }

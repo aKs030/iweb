@@ -178,10 +178,6 @@ function setSiteTitle() {
     "/index.html": "Startseite",
     "/": "Startseite",
     "/pages/fotogalerie/urban.html": "Album",
-    "/pages/ueber-mich/": "Über mich",
-    "/pages/webentwicklung/project-1.html": "E‑Commerce Platform",
-    "/pages/spiele/space-defender.html": "Space Defender",
-    "/pages/card/wetter.html": "Wetter",
   };
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || "Website";
