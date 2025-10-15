@@ -1,14 +1,14 @@
+import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 import {
-  createLazyLoadObserver,
-  createLogger,
-  EVENTS,
-  fire,
-  getElementById,
-  schedulePersistentStorageRequest,
-  SectionTracker,
+    createLazyLoadObserver,
+    createLogger,
+    EVENTS,
+    fire,
+    getElementById,
+    schedulePersistentStorageRequest,
+    SectionTracker,
 } from "./shared-utilities.js";
 import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
-import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 // Three.js wird nur bei Bedarf geladen (Code-Splitting für Performance)
 // import { initThreeEarth } from "./particles/three-earth-system.js";
 // ===== Shared Utilities Import =====
