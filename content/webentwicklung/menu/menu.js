@@ -34,8 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetch(`/content/webentwicklung/menu/${menuFile}`)
     .then((response) => {
-      if (!response.ok)
+      if (!response.ok) {
         throw new Error(`HTTP-Error! Status: ${response.status}`);
+      }
       return response.text();
     })
     .then((menuMarkup) => {
@@ -203,8 +204,9 @@ function extractSectionInfo(sectionId) {
   };
 
   const section = document.querySelector(`#${sectionId}`);
-  if (!section)
+  if (!section) {
     return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+  }
 
   // Spezielle Behandlung für Hauptseiten-Sektionen - section-header ausblenden
   if (["hero", "features", "about"].includes(sectionId)) {
@@ -223,8 +225,9 @@ function extractSectionInfo(sectionId) {
 
   // Für andere Sektionen: normale Extraktion aus section-header
   const header = section.querySelector(".section-header");
-  if (!header)
+  if (!header) {
     return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+  }
 
   const titleEl = header.querySelector(".section-title, h1, h2, h3");
   const subtitleEl = header.querySelector(".section-subtitle");
@@ -245,7 +248,7 @@ function extractSectionInfo(sectionId) {
  * Initialisiert die Scroll-Detection für dynamische Titel-Updates mit Scroll Snap
  */
 function initializeScrollDetection() {
-  let scrollListener = null;
+  const scrollListener = null;
   let snapEventListener = null;
 
   // Hilfsfunktion für Titel und Untertitel-Update
