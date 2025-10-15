@@ -231,39 +231,56 @@ body.snap-locked.starfield-active {
 
 .section-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
   margin-top: 0;
   padding: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .section-title {
   position: relative;
   display: inline-block;
-  font-size: clamp(1.3rem, 4vw, 2.2rem);
-  margin-bottom: 0.8rem;
+  font-size: clamp(1.5rem, 4.5vw, 2.5rem);
+  margin-bottom: clamp(1rem, 2vw, 1.25rem);
   padding: 0;
+  font-weight: 700;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .section-title::after {
   content: "";
   position: absolute;
-  bottom: -7px;
+  bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
+  width: clamp(50px, 8vw, 70px);
   height: 3px;
   background: linear-gradient(
     90deg,
-    var(--primary-color),
-    var(--primary-light)
+    var(--primary-color) 0%,
+    var(--primary-light) 50%,
+    var(--primary-color) 100%
   );
   border-radius: var(--radius-full);
+  box-shadow: 0 0 15px rgba(7, 161, 255, 0.5);
 }
 
 .section-subtitle {
-  font-size: clamp(1rem, 2vw, 1.15rem);
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
   color: var(--text-secondary);
-  margin-bottom: 1.4rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 400;
+  line-height: 1.5;
+  opacity: 0.9;
 }
 
 /* ========================================
@@ -382,250 +399,6 @@ a:hover {
 }
 
 /* ========================================
-   7) Card Components & Features Layout
-======================================== */
-
-/* Full Screen Section Layout */
-.full-screen-section {
-  min-height: 100vh;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: center !important;
-  text-align: center !important;
-  padding: var(--spacing-xl) 0;
-  margin-top: 0 !important; /* Override main margin für full-screen sections */
-}
-
-/* Base Card Styling - Modern Glassmorphism */
-.card {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  padding: var(--card-pad);
-  min-width: var(--card-min-width);
-  min-height: var(--card-min-height);
-  position: relative;
-  overflow: hidden;
-  transition: all var(--transition-base);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  backdrop-filter: blur(20px) saturate(1.2);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* Inhalt oben ausrichten */
-  height: 100%; /* Karten füllen verfügbare Höhe */
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(7, 161, 255, 0.08) 0%,
-    transparent 50%
-  );
-  opacity: 0;
-  transition: opacity var(--transition-base);
-  pointer-events: none;
-  border-radius: inherit;
-}
-
-.card:hover::before {
-  opacity: 1;
-}
-
-.card:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.04) 100%
-  );
-  border-color: rgba(7, 161, 255, 0.3);
-  -webkit-backdrop-filter: blur(25px) saturate(1.4);
-  backdrop-filter: blur(25px) saturate(1.4);
-  box-shadow:
-    0 12px 48px rgba(0, 0, 0, 0.3),
-    0 0 30px rgba(7, 161, 255, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transform: var(--transform-hover-card);
-}
-
-.card:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* Card Content */
-.card .icon-wrapper {
-  font-size: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(
-    135deg,
-    rgba(7, 161, 255, 0.15) 0%,
-    rgba(7, 161, 255, 0.05) 100%
-  );
-  border: 1px solid rgba(7, 161, 255, 0.2);
-  border-radius: 18px;
-  margin: 0 auto;
-  margin-bottom: var(--spacing-md);
-  position: relative;
-  overflow: hidden;
-  transition: all var(--transition-base);
-  -webkit-backdrop-filter: blur(15px);
-  backdrop-filter: blur(15px);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.card .icon-wrapper::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  transition: transform var(--transition-slow);
-  opacity: 0;
-}
-
-.card:hover .icon-wrapper::before {
-  opacity: 1;
-  transform: rotate(45deg) translate(50%, 50%);
-}
-
-.card:hover .icon-wrapper {
-  background: linear-gradient(
-    135deg,
-    rgba(7, 161, 255, 0.4) 0%,
-    rgba(7, 161, 255, 0.2) 50%,
-    rgba(7, 161, 255, 0.1) 100%
-  );
-  border-color: rgba(7, 161, 255, 0.5);
-  transform: scale(1.1) rotate(5deg);
-  box-shadow:
-    0 0 30px rgba(7, 161, 255, 0.3),
-    0 0 60px rgba(7, 161, 255, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: var(--spacing-sm);
-  color: var(--text-primary);
-  line-height: 1.3;
-  transition: color var(--transition-base);
-}
-
-.card:hover .card-title {
-  color: #ffffff;
-  text-shadow:
-    0 0 15px rgba(7, 161, 255, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.3);
-  transform: translateY(-2px);
-}
-
-.card-title[data-eyebrow]::before {
-  content: attr(data-eyebrow);
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: var(--spacing-xs);
-  transition: all var(--transition-base);
-}
-
-.card:hover .card-title[data-eyebrow]::before {
-  color: #ffffff;
-  text-shadow: 0 0 5px rgba(7, 161, 255, 0.5);
-}
-
-.card-text {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  font-size: 0.9rem;
-}
-
-/* Features Section Layout */
-.features-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 80vh; /* Sorgt für ausreichend Höhe zur Zentrierung */
-}
-
-/* Features Cards Grid - Desktop */
-.features-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-lg, 2rem);
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0;
-}
-
-/* Features Section spezifische Zentrierung */
-#features.section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 !important; /* Remove section padding */
-  margin: 0 !important; /* Remove any margins */
-  position: relative;
-  z-index: 1;
-}
-
-.features-content::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    circle,
-    rgba(7, 161, 255, 0.1) 0%,
-    transparent 70%
-  );
-  transform: translate(-50%, -50%);
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* ========================================
    8) Animations & Keyframes
 ======================================== */
 @keyframes spin {
@@ -637,48 +410,12 @@ a:hover {
 /* ========================================
    9) Responsive Design
 ======================================== */
+
+/* Mobile Layout */
 @media (max-width: 768px) {
   /* Global Responsive Settings */
   html {
     font-size: 15px;
-  }
-
-  /* Responsive Card Layout */
-  .features-cards {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-sm); /* Noch weniger Platz auf Mobile */
-  }
-
-  .features-content {
-    min-height: 70vh; /* Weniger Höhe auf Mobile */
-    padding: 0 var(--spacing-md);
-  }
-
-  #features.section {
-    padding: var(--spacing-sm) 0 !important; /* Minimales Padding auf Mobile */
-  }
-
-  .card {
-    min-width: 0;
-    min-height: 0;
-    height: auto; /* Automatische Höhe auf Mobile */
-    padding: var(--spacing-sm); /* Reduziertes Padding */
-  }
-
-  .card .icon-wrapper {
-    width: 50px;
-    height: 50px;
-    font-size: 2rem;
-  }
-
-  .card-title {
-    font-size: 1.1rem; /* Kleinere Schrift */
-  }
-
-  .card-text {
-    font-size: 0.9rem; /* Kleinerer Text */
-    line-height: 1.4;
   }
 
   /* Section Layout */
@@ -697,6 +434,17 @@ a:hover {
     /* Header + Safe-Area oben/unten berücksichtigen */
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ========================================
+   Accessibility - Reduced Motion
+======================================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
