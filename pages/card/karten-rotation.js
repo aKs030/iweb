@@ -6,22 +6,22 @@ import {
   getElementById,
   shuffle as shuffleArray,
   throttle,
-} from '../../content/webentwicklung/shared-utilities.js';
+} from "../../content/webentwicklung/shared-utilities.js";
 
 (() => {
-  'use strict';
+  "use strict";
   if (window.FeatureRotation) return;
 
-  const log = createLogger('FeatureRotation');
+  const log = createLogger("FeatureRotation");
 
-  const SECTION_ID = 'features';
+  const SECTION_ID = "features";
   const TEMPLATE_IDS = [
-    'template-features-2',
-    'template-features-3',
-    'template-features-4',
-    'template-features-5',
+    "template-features-2",
+    "template-features-3",
+    "template-features-4",
+    "template-features-5",
   ];
-  const TEMPLATE_URL = '/pages/card/karten.html';
+  const TEMPLATE_URL = "/pages/card/karten.html";
 
   // Animation Configuration
   const THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1];
@@ -47,28 +47,28 @@ import {
     // Scroll sofort stoppen bevor CSS-Klassen gesetzt werden
     // Verhindert, dass die Section sich trotz Lock weiterbewegt
     const currentScrollY = window.scrollY;
-    window.scrollTo({ top: currentScrollY, behavior: 'instant' });
+    window.scrollTo({ top: currentScrollY, behavior: "instant" });
 
     // CSS-Klassen für Snap-Disable
-    document.documentElement.classList.add('snap-locked');
-    document.body.classList.add('snap-locked');
-    const container = document.querySelector('.snap-container');
-    container?.classList.add('snap-locked');
+    document.documentElement.classList.add("snap-locked");
+    document.body.classList.add("snap-locked");
+    const container = document.querySelector(".snap-container");
+    container?.classList.add("snap-locked");
 
     // Double-check: Force-Stop nochmal nach 16ms (1 frame)
     requestAnimationFrame(() => {
-      window.scrollTo({ top: currentScrollY, behavior: 'instant' });
+      window.scrollTo({ top: currentScrollY, behavior: "instant" });
     });
 
     log.debug(`🔒 Scroll-Snap locked at Y=${currentScrollY}`);
   }
 
   function unlockSnap() {
-    document.documentElement.classList.remove('snap-locked');
-    document.body.classList.remove('snap-locked');
-    const container = document.querySelector('.snap-container');
-    container?.classList.remove('snap-locked');
-    log.debug('🔓 Scroll-Snap unlocked');
+    document.documentElement.classList.remove("snap-locked");
+    document.body.classList.remove("snap-locked");
+    const container = document.querySelector(".snap-container");
+    container?.classList.remove("snap-locked");
+    log.debug("🔓 Scroll-Snap unlocked");
   }
 
   /**
@@ -82,30 +82,30 @@ import {
     // Bei Section komplett außerhalb auf rect.bottom basieren
     if (rect.bottom < 0) {
       // Section ist komplett oberhalb → User scrollt nach unten (next)
-      return 'next';
+      return "next";
     }
     if (rect.top > window.innerHeight) {
       // Section ist komplett unterhalb → User scrollt nach oben (prev)
-      return 'prev';
+      return "prev";
     }
 
     // Section ist teilweise sichtbar - normale Center-Logik
     // Section ist über dem Viewport-Center → User scrollt nach unten (next)
     // Section ist unter dem Viewport-Center → User scrollt nach oben (prev)
-    return sectionCenter < viewportCenter ? 'next' : 'prev';
+    return sectionCenter < viewportCenter ? "next" : "prev";
   }
 
-  function findSiblingSection(section, direction = 'next') {
-    const all = Array.from(document.querySelectorAll('.section'));
+  function findSiblingSection(section, direction = "next") {
+    const all = Array.from(document.querySelectorAll(".section"));
     const idx = all.indexOf(section);
     if (idx === -1) {
-      log.warn(`Section not found in DOM: ${section.id || '(no id)'}`);
+      log.warn(`Section not found in DOM: ${section.id || "(no id)"}`);
       return null;
     }
     const sibling =
-      direction === 'next' ? all[idx + 1] || null : all[idx - 1] || null;
+      direction === "next" ? all[idx + 1] || null : all[idx - 1] || null;
     log.debug(
-      `findSiblingSection: current=${section.id}, direction=${direction}, sibling=${sibling?.id || 'none'}`
+      `findSiblingSection: current=${section.id}, direction=${direction}, sibling=${sibling?.id || "none"}`
     );
     return sibling;
   }
@@ -114,7 +114,7 @@ import {
    * Zentralisierte Reverse-Trigger Funktion
    * Verhindert Doppel-Trigger von IO und Scroll-Handler
    */
-  function triggerReverse(section, source = 'unknown') {
+  function triggerReverse(section, source = "unknown") {
     if (reverseTriggered || isReversing) {
       log.debug(
         `⏭️ Reverse already triggered/running (source=${source}, triggered=${reverseTriggered}, reversing=${isReversing}), skipping`
@@ -139,7 +139,7 @@ import {
     pendingSnap = !!targetSectionEl;
 
     log.info(
-      `🔄 TRIGGER REVERSE (${source}): direction=${direction}, target=${targetSectionEl?.id || 'none'}, willSnap=${pendingSnap}`
+      `🔄 TRIGGER REVERSE (${source}): direction=${direction}, target=${targetSectionEl?.id || "none"}, willSnap=${pendingSnap}`
     );
 
     // Snap sperren BEVOR Animation - IMMER (auch ohne Target für Touch-Continuity)
@@ -166,8 +166,8 @@ import {
     REVERSE_DURATION: 800,
     HOLD_PHASE_DURATION: 0.4,
     EASING: [0.22, 1, 0.36, 1],
-    PARTICLE_COLOR: 'rgba(9, 139, 255, 0.8)',
-    PARTICLE_GLOW: 'rgba(255, 255, 255, 0.9)',
+    PARTICLE_COLOR: "rgba(9, 139, 255, 0.8)",
+    PARTICLE_GLOW: "rgba(255, 255, 255, 0.9)",
   };
 
   // ===== Template Loading & Management =====
@@ -178,7 +178,7 @@ import {
    */
   async function ensureTemplates(section) {
     if (loaded) {
-      log.debug('Templates already loaded');
+      log.debug("Templates already loaded");
       return;
     }
 
@@ -195,11 +195,11 @@ import {
     }
 
     try {
-      const res = await fetch(url, { credentials: 'same-origin' });
+      const res = await fetch(url, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const wrap = document.createElement('div');
-      wrap.style.display = 'none';
+      const wrap = document.createElement("div");
+      wrap.style.display = "none";
       wrap.innerHTML = await res.text();
       document.body.appendChild(wrap);
 
@@ -218,15 +218,15 @@ import {
    * Erstellt ARIA Live Region für Screen Reader Announcements
    */
   function createLiveRegion(section, templateId, LIVE_LABEL_PREFIX) {
-    let live = section.querySelector('[data-feature-rotation-live]');
+    let live = section.querySelector("[data-feature-rotation-live]");
     if (!live) {
-      live = document.createElement('div');
-      live.setAttribute('data-feature-rotation-live', '');
-      live.setAttribute('aria-live', 'polite');
-      live.setAttribute('aria-atomic', 'true');
-      live.className = 'sr-only';
+      live = document.createElement("div");
+      live.setAttribute("data-feature-rotation-live", "");
+      live.setAttribute("aria-live", "polite");
+      live.setAttribute("aria-atomic", "true");
+      live.className = "sr-only";
       live.style.cssText =
-        'position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;';
+        "position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden;";
       section.appendChild(live);
     }
     live.textContent = `${LIVE_LABEL_PREFIX}: ${templateId}`;
@@ -243,8 +243,8 @@ import {
    */
   function createStarfieldCanvas(section) {
     try {
-      const canvas = document.createElement('canvas');
-      canvas.className = 'starfield-canvas';
+      const canvas = document.createElement("canvas");
+      canvas.className = "starfield-canvas";
 
       const rect = section.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2); // Max 2x für Performance
@@ -254,13 +254,13 @@ import {
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
 
-      const ctx = canvas.getContext('2d', {
+      const ctx = canvas.getContext("2d", {
         alpha: true,
         desynchronized: true, // Better performance
       });
 
       if (!ctx) {
-        throw new Error('Failed to get 2D context');
+        throw new Error("Failed to get 2D context");
       }
 
       ctx.scale(dpr, dpr);
@@ -275,7 +275,7 @@ import {
       );
       return canvas;
     } catch (error) {
-      log.error('Failed to create starfield canvas:', error);
+      log.error("Failed to create starfield canvas:", error);
       return null;
     }
   }
@@ -285,16 +285,16 @@ import {
    * Start: Random positions → Ziel: Card-Konturen
    */
   function initializeStarfieldParticles(section) {
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     const particleCount = isMobile
       ? STARFIELD_CONFIG.PARTICLE_COUNT_MOBILE
       : STARFIELD_CONFIG.PARTICLE_COUNT_DESKTOP;
 
     const rect = section.getBoundingClientRect();
-    const cards = section.querySelectorAll('.card');
+    const cards = section.querySelectorAll(".card");
 
     if (!cards.length) {
-      log.warn('No cards found for particle initialization');
+      log.warn("No cards found for particle initialization");
       return;
     }
 
@@ -403,9 +403,9 @@ import {
       );
     } else {
       // Animation complete - Cards sind bereits durch CSS-Animation sichtbar
-      log.info('✨ Starfield formation complete');
-      section.classList.remove('starfield-animating');
-      section.classList.add('cards-visible');
+      log.info("✨ Starfield formation complete");
+      section.classList.remove("starfield-animating");
+      section.classList.add("cards-visible");
       cleanupStarfield();
 
       // Einheitliches Event-Firing über shared-utilities
@@ -425,22 +425,22 @@ import {
     // Respektiere reduzierte Bewegung
     if (
       window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      section.classList.remove('starfield-animating');
-      section.classList.add('cards-visible');
+      section.classList.remove("starfield-animating");
+      section.classList.add("cards-visible");
       return;
     }
-    log.info('🌟 Starting Starfield Constellation Animation');
+    log.info("🌟 Starting Starfield Constellation Animation");
 
     // Bereite Section vor
-    section.classList.add('starfield-animating');
+    section.classList.add("starfield-animating");
 
     // Erstelle Canvas
     if (!createStarfieldCanvas(section)) {
-      log.error('Failed to create canvas, skipping animation');
-      section.classList.remove('starfield-animating');
-      section.classList.add('cards-visible');
+      log.error("Failed to create canvas, skipping animation");
+      section.classList.remove("starfield-animating");
+      section.classList.add("cards-visible");
       return;
     }
 
@@ -470,7 +470,7 @@ import {
     starfieldParticles = [];
     starfieldStartTime = null;
 
-    log.debug('Starfield cleanup complete');
+    log.debug("Starfield cleanup complete");
   }
 
   // ===== Reverse Animation: Cards → Starfield =====
@@ -480,16 +480,16 @@ import {
    * Start: Card-Positionen → Ziel: Random verteilt
    */
   function initializeReverseStarfieldParticles(section) {
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     const particleCount = isMobile
       ? STARFIELD_CONFIG.PARTICLE_COUNT_MOBILE
       : STARFIELD_CONFIG.PARTICLE_COUNT_DESKTOP;
 
     const rect = section.getBoundingClientRect();
-    const cards = section.querySelectorAll('.card');
+    const cards = section.querySelectorAll(".card");
 
     if (!cards.length) {
-      log.warn('No cards found for reverse particle initialization');
+      log.warn("No cards found for reverse particle initialization");
       return;
     }
 
@@ -585,12 +585,12 @@ import {
     } else {
       // Reverse complete
       log.info(
-        '🔄 Reverse starfield complete - cards hidden, ready for re-animation'
+        "🔄 Reverse starfield complete - cards hidden, ready for re-animation"
       );
       cleanupStarfield();
 
       // Body-Klasse entfernen (overflow wieder freigeben)
-      document.body.classList.remove('starfield-active');
+      document.body.classList.remove("starfield-active");
 
       // Reset State - WICHTIG: hasAnimated bleibt false für Re-Animation
       hasAnimated = false;
@@ -599,11 +599,11 @@ import {
 
       // Section zurück zu initial State
       section.classList.remove(
-        'starfield-animating',
-        'cards-materializing',
-        'cards-visible'
+        "starfield-animating",
+        "cards-materializing",
+        "cards-visible"
       );
-      section.classList.add('cards-hidden');
+      section.classList.add("cards-hidden");
 
       // Nach Abschluss: Snap freigeben und ggf. zum Zielsektor scrollen
       try {
@@ -614,16 +614,16 @@ import {
 
         if (target && shouldSnap && document.contains(target)) {
           log.info(
-            `➡️ Navigating to target section: #${target.id || 'unknown'}`
+            `➡️ Navigating to target section: #${target.id || "unknown"}`
           );
 
           // Scroll ZUERST (ohne smooth für besseres Touch-Verhalten)
-          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          target.scrollIntoView({ behavior: "auto", block: "start" });
 
           // Snap freigeben nach kurzer Verzögerung (Touch-optimiert)
           setTimeout(() => {
             unlockSnap();
-            log.debug('🔓 Snap unlocked after navigation (auto)');
+            log.debug("🔓 Snap unlocked after navigation (auto)");
           }, 150);
         } else {
           // Kein Target oder ungültig - sofort freigeben
@@ -648,36 +648,36 @@ import {
    */
   function applyReverseStarfieldAnimation(section) {
     if (isReversing) {
-      log.warn('⚠️ Reverse animation already running, skipping duplicate call');
+      log.warn("⚠️ Reverse animation already running, skipping duplicate call");
       return; // Guard gegen mehrfache Aufrufe
     }
 
-    log.info('🔄 Starting REVERSE Starfield Animation (Cards → Stars)');
+    log.info("🔄 Starting REVERSE Starfield Animation (Cards → Stars)");
     isReversing = true;
 
     // Body-Klasse für overflow:hidden während der Animation
-    document.body.classList.add('starfield-active');
+    document.body.classList.add("starfield-active");
 
     // CSS-Klassen für Reverse Animation
-    section.classList.remove('cards-visible');
-    section.classList.add('cards-materializing', 'starfield-animating');
+    section.classList.remove("cards-visible");
+    section.classList.add("cards-materializing", "starfield-animating");
 
     // Respektiere reduzierte Bewegung
     if (
       window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       // Direkt zurück zum Hidden-State ohne Partikel-Animation
-      log.info('⏩ Reduced motion: Skipping particle animation');
+      log.info("⏩ Reduced motion: Skipping particle animation");
 
       // Body-Klasse entfernen
-      document.body.classList.remove('starfield-active');
+      document.body.classList.remove("starfield-active");
 
       hasAnimated = false;
       isReversing = false;
       reverseTriggered = false; // Reset
-      section.classList.remove('starfield-animating', 'cards-materializing');
-      section.classList.add('cards-hidden');
+      section.classList.remove("starfield-animating", "cards-materializing");
+      section.classList.add("cards-hidden");
 
       // Snap freigeben und ggf. zum Ziel navigieren
       const target = targetSectionEl;
@@ -687,9 +687,9 @@ import {
 
       if (target && shouldSnap && document.contains(target)) {
         log.info(
-          `➡️ Direct navigation to: #${target.id || 'unknown'} (reduced motion)`
+          `➡️ Direct navigation to: #${target.id || "unknown"} (reduced motion)`
         );
-        target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        target.scrollIntoView({ behavior: "auto", block: "start" });
 
         // Verzögertes Unlock für Touch-Stabilität
         setTimeout(() => unlockSnap(), 100);
@@ -701,23 +701,23 @@ import {
 
     // Aktuelle Position fixieren (Snap bereits gesperrt vom Handler)
     try {
-      section.scrollIntoView({ behavior: 'auto', block: 'start' });
+      section.scrollIntoView({ behavior: "auto", block: "start" });
     } catch {
       // ignore
     }
 
     // Canvas erstellen
     if (!createStarfieldCanvas(section)) {
-      log.error('Failed to create canvas for reverse, resetting state');
+      log.error("Failed to create canvas for reverse, resetting state");
 
       // Body-Klasse entfernen bei Fehler
-      document.body.classList.remove('starfield-active');
+      document.body.classList.remove("starfield-active");
 
       hasAnimated = false;
       isReversing = false;
       reverseTriggered = false; // Reset
-      section.classList.remove('starfield-animating', 'cards-materializing');
-      section.classList.add('cards-hidden');
+      section.classList.remove("starfield-animating", "cards-materializing");
+      section.classList.add("cards-hidden");
 
       // Sofort freigeben bei Error
       unlockSnap();
@@ -735,17 +735,17 @@ import {
   function mountInitialCards() {
     const section = getElementById(SECTION_ID);
     if (!section) {
-      log.warn('Section not found for initial cards');
+      log.warn("Section not found for initial cards");
       return;
     }
 
     if (section.dataset.currentTemplate) {
-      log.debug('Cards already mounted');
+      log.debug("Cards already mounted");
       return;
     }
 
     if (!order.length) {
-      log.warn('No templates in order array');
+      log.warn("No templates in order array");
       return;
     }
 
@@ -755,7 +755,7 @@ import {
       return;
     }
 
-    const LIVE_LABEL_PREFIX = section.dataset.liveLabel || 'Feature';
+    const LIVE_LABEL_PREFIX = section.dataset.liveLabel || "Feature";
     const frag = tpl.content ? document.importNode(tpl.content, true) : null;
 
     section.replaceChildren(frag || tpl.cloneNode(true));
@@ -763,7 +763,7 @@ import {
     section.dataset.currentTemplate = order[i];
 
     // Initial: Cards versteckt, bereit für Starfield-Animation
-    section.classList.add('cards-hidden');
+    section.classList.add("cards-hidden");
 
     log.info(`Cards mounted (hidden): ${order[i]}`);
     fire(EVENTS.FEATURES_CHANGE, { index: i, total: order.length });
@@ -797,9 +797,9 @@ import {
           // Section komplett außerhalb Viewport (isIntersecting=false, ratio=0)
           if (hasAnimated && !isReversing && !reverseTriggered && !isVisible) {
             log.info(
-              '📊 IO: Section left viewport completely (ratio=0) - triggering reverse'
+              "📊 IO: Section left viewport completely (ratio=0) - triggering reverse"
             );
-            triggerReverse(section, 'IntersectionObserver-NotVisible');
+            triggerReverse(section, "IntersectionObserver-NotVisible");
             return;
           }
 
@@ -812,7 +812,7 @@ import {
             ratio < REVERSE_THRESHOLD &&
             ratio > 0
           ) {
-            triggerReverse(section, 'IntersectionObserver');
+            triggerReverse(section, "IntersectionObserver");
             return;
           }
 
@@ -860,9 +860,9 @@ import {
       if (!isInViewport) {
         // Section komplett außerhalb Viewport - Reverse SOFORT triggern
         log.debug(
-          '📐 Section out of viewport - triggering reverse immediately'
+          "📐 Section out of viewport - triggering reverse immediately"
         );
-        triggerReverse(section, 'ScrollHandler-OutOfView');
+        triggerReverse(section, "ScrollHandler-OutOfView");
         return;
       }
 
@@ -878,7 +878,7 @@ import {
 
       // Trigger Reverse während Scrollen (mit reverseTriggered Check)
       if (visibleRatio < REVERSE_THRESHOLD && visibleRatio > 0) {
-        triggerReverse(section, 'ScrollHandler');
+        triggerReverse(section, "ScrollHandler");
       }
     }, SCROLL_THROTTLE);
 
@@ -894,9 +894,9 @@ import {
 
       if (!isInViewport) {
         log.debug(
-          '👆 Touch: Section out of viewport - triggering reverse immediately'
+          "👆 Touch: Section out of viewport - triggering reverse immediately"
         );
-        triggerReverse(section, 'TouchHandler-OutOfView');
+        triggerReverse(section, "TouchHandler-OutOfView");
         return;
       }
 
@@ -908,26 +908,26 @@ import {
 
       // Trigger Reverse bei Touch (etwas früher für besseres Gefühl)
       if (visibleRatio < REVERSE_THRESHOLD && visibleRatio > 0) {
-        triggerReverse(section, 'TouchHandler');
+        triggerReverse(section, "TouchHandler");
       }
     }, 50); // Höhere Frequenz für Touch (50ms statt 100ms)
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
     // Cleanup function registrieren
     observerCleanup = () => {
       io?.disconnect();
       io = null;
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("touchmove", handleTouchMove);
     };
 
     return observerCleanup;
   }
 
   async function init() {
-    log.info('Initializing FeatureRotation');
+    log.info("Initializing FeatureRotation");
 
     const section = getElementById(SECTION_ID);
     if (!section) {
@@ -937,48 +937,48 @@ import {
 
     try {
       // 1. Templates laden
-      log.debug('Step 1: Loading templates...');
+      log.debug("Step 1: Loading templates...");
       if (!loaded) {
         await ensureTemplates(section);
       }
 
       // 2. Prüfe ob Templates geladen wurden
-      log.debug('Step 2: Checking for available templates...');
+      log.debug("Step 2: Checking for available templates...");
       const availableTemplates = TEMPLATE_IDS.filter((id) => {
         const found = getElementById(id);
-        log.debug(`  - ${id}: ${found ? '✅ found' : '❌ missing'}`);
+        log.debug(`  - ${id}: ${found ? "✅ found" : "❌ missing"}`);
         return found;
       });
 
       if (availableTemplates.length === 0) {
         log.error(
-          `No templates found! Searched for: ${TEMPLATE_IDS.join(', ')}`
+          `No templates found! Searched for: ${TEMPLATE_IDS.join(", ")}`
         );
         return;
       }
 
       // 3. Order shuffeln mit verfügbaren Templates
-      log.debug('Step 3: Shuffling template order...');
+      log.debug("Step 3: Shuffling template order...");
       order = shuffleArray([...availableTemplates]);
       log.info(
-        `Template order: ${order.join(', ')} (${order.length} templates)`
+        `Template order: ${order.join(", ")} (${order.length} templates)`
       );
 
       // 4. Cards mounten
-      log.debug('Step 4: Mounting initial cards...');
+      log.debug("Step 4: Mounting initial cards...");
       if (section) {
         mountInitialCards();
       } else {
-        log.warn('Features section not found');
+        log.warn("Features section not found");
       }
 
       // 5. Observer starten
-      log.debug('Step 5: Starting observer...');
+      log.debug("Step 5: Starting observer...");
       observe();
 
-      log.info('✅ FeatureRotation initialized successfully');
+      log.info("✅ FeatureRotation initialized successfully");
     } catch (error) {
-      log.error('Failed to initialize:', error);
+      log.error("Failed to initialize:", error);
     }
   }
 
@@ -1002,8 +1002,8 @@ import {
   };
 
   // Init starten
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
     init();
   }

@@ -44,7 +44,9 @@
   border-radius: 8px;
   border: 2px solid var(--accent-primary, #00ff88);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  transition: clip-path 0.3s ease, box-shadow 0.2s ease;
+  transition:
+    clip-path 0.3s ease,
+    box-shadow 0.2s ease;
   pointer-events: auto;
   white-space: nowrap;
   z-index: 10001;
@@ -149,9 +151,11 @@ body {
 .site-menu__list li a,
 .site-menu__list .submenu li,
 .site-menu__list .submenu li a {
-  font-family: -apple-system, "SF Pro Display", "SF Pro Text", system-ui,
-    sans-serif;
-  font-feature-settings: "kern" 1, "liga" 1;
+  font-family:
+    -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 17px; /* Dynamic Menu Standard Body Size */
@@ -256,7 +260,8 @@ body {
 }
 
 .site-logo {
-  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif !important;
+  font-family:
+    -apple-system, "SF Pro Display", system-ui, sans-serif !important;
   font-size: clamp(18px, 2vw, 22px);
   font-weight: 650 !important; /* Dynamic Menu Semibold */
   color: var(--dynamic-menu-label-primary) !important;
@@ -275,7 +280,8 @@ body {
 }
 
 .site-logo.elegant-logo {
-  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif !important;
+  font-family:
+    -apple-system, "SF Pro Display", system-ui, sans-serif !important;
   font-size: clamp(20px, 2.2vw, 24px);
   font-weight: 700 !important; /* Dynamic Menu Bold */
   color: var(--dynamic-menu-label-primary) !important;
@@ -285,7 +291,8 @@ body {
 
 /* Enhanced Specificity für Dynamic Menu */
 .site-header .site-logo__container .site-logo {
-  font-family: -apple-system, "SF Pro Display", system-ui, sans-serif !important;
+  font-family:
+    -apple-system, "SF Pro Display", system-ui, sans-serif !important;
   font-weight: 650 !important;
   color: var(--dynamic-menu-label-primary) !important;
 }

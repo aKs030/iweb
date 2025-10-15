@@ -22,14 +22,14 @@
  * @created 2025-10-14
  */
 
-import { createLogger, onResize, TimerManager } from '../shared-utilities.js';
+import { createLogger, onResize, TimerManager } from "../shared-utilities.js";
 import {
   registerParticleSystem,
   sharedCleanupManager,
   unregisterParticleSystem,
-} from './shared-particle-system.js';
+} from "./shared-particle-system.js";
 
-const log = createLogger('threeCardSystem');
+const log = createLogger("threeCardSystem");
 const cardTimers = new TimerManager();
 
 // ===== CONFIGURATION =====
@@ -48,8 +48,8 @@ const CONFIG = {
     FORWARD_DURATION: 1400, // ms - Synchron mit CSS (1400ms)
     REVERSE_DURATION: 800, // ms - Schneller für snappier feel
     EASING: {
-      FORWARD: 'easeOutCubic', // Approximation von ease-out-expo
-      REVERSE: 'easeInCubic', // Beschleunigt zum Ende
+      FORWARD: "easeOutCubic", // Approximation von ease-out-expo
+      REVERSE: "easeInCubic", // Beschleunigt zum Ende
     },
   },
   CAMERA: {
@@ -100,7 +100,7 @@ class ThreeCardSystem {
     this.resizeHandler = null;
     this.mounted = false;
 
-    log.info('ThreeCardSystem instantiated');
+    log.info("ThreeCardSystem instantiated");
   }
 
   /**
@@ -108,7 +108,7 @@ class ThreeCardSystem {
    */
   async init() {
     if (this.mounted) {
-      log.warn('System already mounted');
+      log.warn("System already mounted");
       return false;
     }
 
@@ -146,7 +146,7 @@ class ThreeCardSystem {
       this.renderer.setClearColor(0x000000, 0); // Transparent
 
       // Append Canvas
-      this.renderer.domElement.className = 'three-card-canvas';
+      this.renderer.domElement.className = "three-card-canvas";
       this.renderer.domElement.style.cssText = `
         position: absolute;
         inset: 0;
@@ -159,23 +159,23 @@ class ThreeCardSystem {
       this.resizeHandler = onResize(() => this.handleResize());
 
       this.mounted = true;
-      log.info('✅ Three.js Card System initialized', {
+      log.info("✅ Three.js Card System initialized", {
         width: rect.width,
         height: rect.height,
         dpr,
       });
 
       // Register im Shared System
-      registerParticleSystem('cardSystem', this);
+      registerParticleSystem("cardSystem", this);
       sharedCleanupManager.addCleanupFunction(
-        'cardSystem',
+        "cardSystem",
         () => this.cleanup(),
-        'Three.js Card System Cleanup'
+        "Three.js Card System Cleanup"
       );
 
       return true;
     } catch (error) {
-      log.error('Failed to initialize Three.js Card System:', error);
+      log.error("Failed to initialize Three.js Card System:", error);
       return false;
     }
   }
@@ -184,16 +184,16 @@ class ThreeCardSystem {
    * Erstellt Partikel-System mit BufferGeometry
    * @param {string} mode - 'forward' | 'reverse'
    */
-  createParticles(mode = 'forward') {
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  createParticles(mode = "forward") {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     const particleCount = isMobile
       ? CONFIG.PARTICLES.COUNT_MOBILE
       : CONFIG.PARTICLES.COUNT_DESKTOP;
 
-    const cards = this.container.querySelectorAll('.card');
+    const cards = this.container.querySelectorAll(".card");
 
     if (!cards.length) {
-      log.warn('No cards found for particle creation');
+      log.warn("No cards found for particle creation");
       return false;
     }
 
@@ -225,7 +225,7 @@ class ThreeCardSystem {
       };
     });
 
-    log.debug('Card positions in 3D space:', cardPositions);
+    log.debug("Card positions in 3D space:", cardPositions);
 
     // BufferGeometry für Partikel
     const geometry = new this.THREE.BufferGeometry();
@@ -243,7 +243,7 @@ class ThreeCardSystem {
       // Forward: Random → Card, Reverse: Card → Random
       let startX, startY, targetX, targetY;
 
-      if (mode === 'forward') {
+      if (mode === "forward") {
         // Start: Random über gesamte Viewport
         startX = (Math.random() - 0.5) * 20;
         startY = (Math.random() - 0.5) * 15;
@@ -299,14 +299,14 @@ class ThreeCardSystem {
     }
 
     geometry.setAttribute(
-      'position',
+      "position",
       new this.THREE.BufferAttribute(positions, 3)
     );
-    geometry.setAttribute('target', new this.THREE.BufferAttribute(targets, 3));
-    geometry.setAttribute('color', new this.THREE.BufferAttribute(colors, 3));
-    geometry.setAttribute('size', new this.THREE.BufferAttribute(sizes, 1));
+    geometry.setAttribute("target", new this.THREE.BufferAttribute(targets, 3));
+    geometry.setAttribute("color", new this.THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
     geometry.setAttribute(
-      'twinkleOffset',
+      "twinkleOffset",
       new this.THREE.BufferAttribute(twinkleOffsets, 1)
     );
 
@@ -376,15 +376,15 @@ class ThreeCardSystem {
    * Startet Animation (Forward oder Reverse)
    * @param {string} mode - 'forward' | 'reverse'
    */
-  startAnimation(mode = 'forward') {
+  startAnimation(mode = "forward") {
     if (animationState.isAnimating) {
-      log.warn('Animation already running, stopping previous');
+      log.warn("Animation already running, stopping previous");
       this.stopAnimation();
     }
 
     // Erstelle neue Partikel
     if (!this.createParticles(mode)) {
-      log.error('Failed to create particles');
+      log.error("Failed to create particles");
       return false;
     }
 
@@ -407,14 +407,14 @@ class ThreeCardSystem {
     const now = performance.now();
     const elapsed = now - animationState.startTime;
     const duration =
-      animationState.mode === 'forward'
+      animationState.mode === "forward"
         ? CONFIG.ANIMATION.FORWARD_DURATION
         : CONFIG.ANIMATION.REVERSE_DURATION;
     const progress = Math.min(elapsed / duration, 1);
 
     // Easing
     const easing =
-      animationState.mode === 'forward'
+      animationState.mode === "forward"
         ? Easing.easeOutCubic
         : Easing.easeInCubic;
     const eased = easing(progress);
@@ -438,7 +438,7 @@ class ThreeCardSystem {
       this.particles.material.uniforms.time.value = now / 1000;
 
       // Opacity Fade während Reverse
-      if (animationState.mode === 'reverse') {
+      if (animationState.mode === "reverse") {
         this.particles.material.uniforms.opacity.value =
           CONFIG.PARTICLES.OPACITY * (1 - progress * 0.3); // -30% fade
       }
@@ -473,7 +473,7 @@ class ThreeCardSystem {
     animationState.isAnimating = false;
 
     // Event für karten-rotation.js
-    const event = new CustomEvent('three-card-animation-complete', {
+    const event = new CustomEvent("three-card-animation-complete", {
       detail: { mode: animationState.mode },
       bubbles: true,
     });
@@ -503,7 +503,7 @@ class ThreeCardSystem {
     animationState.isAnimating = false;
     animationState.mode = null;
 
-    log.debug('Animation stopped');
+    log.debug("Animation stopped");
   }
 
   /**
@@ -520,14 +520,14 @@ class ThreeCardSystem {
 
     this.renderer.setSize(rect.width, rect.height);
 
-    log.debug('Resized to:', { width: rect.width, height: rect.height });
+    log.debug("Resized to:", { width: rect.width, height: rect.height });
   }
 
   /**
    * Cleanup & Dispose
    */
   cleanup() {
-    log.info('Starting cleanup...');
+    log.info("Starting cleanup...");
 
     this.stopAnimation();
     cardTimers.clearAll();
@@ -551,8 +551,8 @@ class ThreeCardSystem {
     this.camera = null;
     this.mounted = false;
 
-    unregisterParticleSystem('cardSystem');
-    log.info('✅ Cleanup complete');
+    unregisterParticleSystem("cardSystem");
+    log.info("✅ Cleanup complete");
   }
 }
 
@@ -565,7 +565,7 @@ class ThreeCardSystem {
  */
 export async function initThreeCardSystem(container) {
   if (!container) {
-    log.error('Container is required');
+    log.error("Container is required");
     return false;
   }
 
@@ -573,16 +573,16 @@ export async function initThreeCardSystem(container) {
   if (
     CONFIG.PERFORMANCE.REDUCED_MOTION_FALLBACK &&
     window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
   ) {
-    log.info('Reduced motion detected, skipping Three.js initialization');
+    log.info("Reduced motion detected, skipping Three.js initialization");
     return false;
   }
 
   // Lazy-load Three.js
   const THREE = await loadThreeJS();
   if (!THREE) {
-    log.error('Failed to load Three.js');
+    log.error("Failed to load Three.js");
     return false;
   }
 
@@ -606,15 +606,15 @@ export async function initThreeCardSystem(container) {
  */
 export function startForwardAnimation(container) {
   if (!threeInstance || !threeInstance.mounted) {
-    log.warn('System not initialized, attempting init...');
+    log.warn("System not initialized, attempting init...");
     // Async init aber sync return - nicht ideal, aber kompatibel mit bestehendem Code
     initThreeCardSystem(container).then((success) => {
-      if (success) threeInstance.startAnimation('forward');
+      if (success) threeInstance.startAnimation("forward");
     });
     return false;
   }
 
-  return threeInstance.startAnimation('forward');
+  return threeInstance.startAnimation("forward");
 }
 
 /**
@@ -623,11 +623,11 @@ export function startForwardAnimation(container) {
  */
 export function startReverseAnimation() {
   if (!threeInstance || !threeInstance.mounted) {
-    log.warn('System not initialized');
+    log.warn("System not initialized");
     return false;
   }
 
-  return threeInstance.startAnimation('reverse');
+  return threeInstance.startAnimation("reverse");
 }
 
 /**
@@ -657,12 +657,12 @@ async function loadThreeJS() {
   try {
     // Import via ES6 Module (nutzt existing three.module.min.js)
     const THREE = await import(
-      '/content/webentwicklung/lib/three/build/three.module.min.js'
+      "/content/webentwicklung/lib/three/build/three.module.min.js"
     );
-    log.info('✅ Three.js loaded successfully');
+    log.info("✅ Three.js loaded successfully");
     return THREE;
   } catch (error) {
-    log.error('Failed to load Three.js:', error);
+    log.error("Failed to load Three.js:", error);
     return null;
   }
 }

@@ -22,33 +22,77 @@ export default [
       import: importPlugin,
     },
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-      "no-console": "warn",
-      "quotes": ["error", "single"],
-      "semi": ["error", "always"],
-      // "indent" Rule deaktiviert - Prettier übernimmt Formatierung
+      // Variable & Function Rules
+      "no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrors: "all",
+        },
+      ],
+      "no-undef": "error",
+      "prefer-const": "warn",
+
+      // Code Quality
+      "no-console": ["warn", { allow: ["error", "warn"] }],
+      "no-debugger": "error",
+      "no-alert": "warn",
+      eqeqeq: ["error", "always", { null: "ignore" }],
+      curly: ["error", "multi-line"],
+
+      // Style (Prettier übernimmt Formatierung)
+      quotes: ["error", "double", { avoidEscape: true }],
+      semi: ["error", "always"],
+
+      // Import Rules (kritisch für ES6 Module)
+      "import/no-unresolved": [
+        "error",
+        {
+          ignore: ["^/content/", "^/pages/", "three"],
+        },
+      ],
+      "import/extensions": [
+        "error",
+        "always",
+        {
+          ignorePackages: true,
+        },
+      ],
       "import/order": [
         "warn",
         {
           groups: [
             ["builtin", "external"],
             ["internal"],
-            ["parent", "sibling", "index"]
+            ["parent", "sibling", "index"],
           ],
-          "newlines-between": "always"
-        }
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
       ],
+      "import/no-duplicates": "error",
+
+      // Prettier Integration
       "prettier/prettier": [
         "error",
         {
-          singleQuote: true,
+          singleQuote: false,
           semi: true,
           tabWidth: 2,
           trailingComma: "es5",
-          endOfLine: "auto"
-        }
-      ]
-    }
+          endOfLine: "auto",
+          printWidth: 80,
+        },
+      ],
+    },
+  },
+  {
+    files: ["scripts/**/*.js"],
+    rules: {
+      // CLI-Skripte benötigen ausführliche Konsolen-Ausgaben
+      "no-console": "off",
+    },
   },
   {
     ignores: [
@@ -58,7 +102,10 @@ export default [
       "**/*.min.js",
       "**/*.bundle.js",
       ".git/**",
-      ".vscode/**"
-    ]
-  }
+      ".vscode/**",
+      ".idea/**",
+      "reports/**",
+      "content/webentwicklung/lib/**",
+    ],
+  },
 ];

@@ -4,7 +4,7 @@ import {
   EVENTS,
   getElementById,
   TimerManager,
-} from '../../content/webentwicklung/shared-utilities.js';
+} from "../../content/webentwicklung/shared-utilities.js";
 
 // Timer Manager für Hero-spezifische Timeouts
 const heroTimers = new TimerManager();
@@ -36,7 +36,7 @@ const HeroManager = (() => {
     };
 
     const heroEl =
-      getElementById('hero') || document.querySelector('section#hero');
+      getElementById("hero") || document.querySelector("section#hero");
     if (!heroEl) {
       heroTimers.setTimeout(triggerLoad, 2500);
       return;
@@ -55,7 +55,7 @@ const HeroManager = (() => {
   }
 
   const ensureHeroData = async () =>
-    heroData || (heroData = await import('./GrussText.js').catch(() => ({})));
+    heroData || (heroData = await import("./GrussText.js").catch(() => ({})));
 
   // Hero Data Module für externe Verwendung (z.B. TypeWriter) bereitstellen
   window.__heroEnsureData = ensureHeroData;
@@ -65,22 +65,22 @@ const HeroManager = (() => {
     let el = null;
     for (const d of delays) {
       if (d) await heroTimers.sleep(d);
-      el = getElementById('greetingText');
+      el = getElementById("greetingText");
       if (el) break;
     }
     if (!el) return;
 
     const mod = await ensureHeroData();
     const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
-    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
+    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : "";
     if (!next) return;
 
     el.dataset.last = next;
     if (animated) {
-      el.classList.add('fade');
+      el.classList.add("fade");
       heroTimers.setTimeout(() => {
         el.textContent = next;
-        el.classList.remove('fade');
+        el.classList.remove("fade");
       }, 360);
     } else {
       el.textContent = next;
@@ -99,11 +99,11 @@ function initHeroAnimationBootstrap() {
 export function initHeroFeatureBundle() {
   // Events für Hero
   document.addEventListener(EVENTS.HERO_LOADED, () => {
-    const el = getElementById('greetingText');
+    const el = getElementById("greetingText");
     if (!el) return;
-    if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
+    if (!el.textContent.trim() || el.textContent.trim() === "Willkommen") {
       HeroManager.setRandomGreetingHTML();
-      (window.announce || (() => {}))('Hero Bereich bereit.');
+      (window.announce || (() => {}))("Hero Bereich bereit.");
     }
     // Einmalige Typing-Initialisierung starten
     try {
@@ -124,7 +124,7 @@ export function initHeroFeatureBundle() {
   document.addEventListener(
     EVENTS.HERO_INIT_READY,
     () => {
-      const el = getElementById('greetingText');
+      const el = getElementById("greetingText");
       if (!el) return;
       if (!el.textContent.trim()) {
         HeroManager.setRandomGreetingHTML();
@@ -145,7 +145,7 @@ export function initHeroFeatureBundle() {
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
-    const text = e.detail?.text || 'Text';
+    const text = e.detail?.text || "Text";
     (window.announce || (() => {}))(`Zitat vollständig: ${text}`);
   });
 

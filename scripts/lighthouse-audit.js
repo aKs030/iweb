@@ -14,24 +14,24 @@
  * Reports werden gespeichert in: ./reports/lighthouse/
  */
 
-import lighthouse from 'lighthouse';
-import * as chromeLauncher from 'chrome-launcher';
-import puppeteer from 'puppeteer';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import * as chromeLauncher from "chrome-launcher";
+import fs from "fs";
+import lighthouse from "lighthouse";
+import path from "path";
+import puppeteer from "puppeteer";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Konfiguration
 const CONFIG = {
-  url: 'http://localhost:8080', // Lokaler Dev-Server
-  outputDir: path.join(__dirname, '..', 'reports', 'lighthouse'),
+  url: "http://localhost:8080", // Lokaler Dev-Server
+  outputDir: path.join(__dirname, "..", "reports", "lighthouse"),
 
   // Desktop Konfiguration
   desktop: {
-    formFactor: 'desktop',
+    formFactor: "desktop",
     screenEmulation: {
       mobile: false,
       width: 1920,
@@ -51,7 +51,7 @@ const CONFIG = {
 
   // Mobile Konfiguration
   mobile: {
-    formFactor: 'mobile',
+    formFactor: "mobile",
     screenEmulation: {
       mobile: true,
       width: 375,
@@ -101,9 +101,9 @@ function formatTime(ms) {
  * Bewertet Metrik basierend auf Thresholds
  */
 function getScoreStatus(value, threshold) {
-  if (value <= threshold.good) return '✅ GOOD';
-  if (value <= threshold.needsImprovement) return '⚠️  NEEDS IMPROVEMENT';
-  return '❌ POOR';
+  if (value <= threshold.good) return "✅ GOOD";
+  if (value <= threshold.needsImprovement) return "⚠️  NEEDS IMPROVEMENT";
+  return "❌ POOR";
 }
 
 /**
@@ -119,11 +119,11 @@ function extractMetrics(lhr) {
   };
 
   return {
-    performance: getScore('performance'),
-    accessibility: getScore('accessibility'),
-    bestPractices: getScore('best-practices'),
-    seo: getScore('seo'),
-    pwa: getScore('pwa'),
+    performance: getScore("performance"),
+    accessibility: getScore("accessibility"),
+    bestPractices: getScore("best-practices"),
+    seo: getScore("seo"),
+    pwa: getScore("pwa"),
 
     // Core Web Vitals (mit Fallback auf 0)
     lcp: metrics.largestContentfulPaint || 0,
@@ -143,18 +143,18 @@ function extractMetrics(lhr) {
  * Generiert Konsolen-Report
  */
 function printReport(formFactor, metrics) {
-  console.log('\n' + '='.repeat(80));
+  console.log("\n" + "=".repeat(80));
   console.log(`📊 LIGHTHOUSE AUDIT - ${formFactor.toUpperCase()}`);
-  console.log('='.repeat(80));
+  console.log("=".repeat(80));
 
-  console.log('\n🎯 SCORES:');
+  console.log("\n🎯 SCORES:");
   console.log(`  Performance:     ${metrics.performance}/100`);
   console.log(`  Accessibility:   ${metrics.accessibility}/100`);
   console.log(`  Best Practices:  ${metrics.bestPractices}/100`);
   console.log(`  SEO:             ${metrics.seo}/100`);
   console.log(`  PWA:             ${metrics.pwa}/100`);
 
-  console.log('\n⚡ CORE WEB VITALS:');
+  console.log("\n⚡ CORE WEB VITALS:");
   console.log(`  LCP (Largest Contentful Paint): ${formatTime(metrics.lcp)}`);
   console.log(`       ${getScoreStatus(metrics.lcp, THRESHOLDS.LCP)}`);
 
@@ -172,14 +172,14 @@ function printReport(formFactor, metrics) {
 
   console.log(`  SI (Speed Index):               ${formatTime(metrics.si)}`);
 
-  console.log('\n' + '='.repeat(80) + '\n');
+  console.log("\n" + "=".repeat(80) + "\n");
 }
 
 /**
  * Speichert Reports als HTML und JSON
  */
 function saveReports(formFactor, lhr, report) {
-  const timestamp = new Date().toISOString().split('T')[0];
+  const timestamp = new Date().toISOString().split("T")[0];
   const baseFilename = `lighthouse-${formFactor}-${timestamp}`;
 
   // HTML Report
@@ -208,14 +208,14 @@ async function runAudit(formFactor) {
     let chromeExecutable;
     try {
       chrome = await chromeLauncher.launch({
-        chromeFlags: ['--headless', '--disable-gpu', '--no-sandbox'],
+        chromeFlags: ["--headless", "--disable-gpu", "--no-sandbox"],
       });
       chromeExecutable = chrome.port;
     } catch {
-      console.log('⚠️  Chrome nicht gefunden, verwende Puppeteer Chromium...');
+      console.log("⚠️  Chrome nicht gefunden, verwende Puppeteer Chromium...");
       browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
       const browserURL = browser.wsEndpoint();
       const { port } = new URL(browserURL);
@@ -223,8 +223,8 @@ async function runAudit(formFactor) {
     }
 
     const options = {
-      logLevel: 'info',
-      output: 'html',
+      logLevel: "info",
+      output: "html",
       port: chromeExecutable,
       ...CONFIG[formFactor],
     };
@@ -249,10 +249,10 @@ async function runAudit(formFactor) {
   } catch (error) {
     console.error(`❌ Error during ${formFactor} audit:`, error.message);
 
-    if (error.message.includes('ECONNREFUSED')) {
-      console.error('\n⚠️  Lokaler Server läuft nicht!');
-      console.error('   Bitte starte den Dev-Server mit:');
-      console.error('   npx http-server -p 8080\n');
+    if (error.message.includes("ECONNREFUSED")) {
+      console.error("\n⚠️  Lokaler Server läuft nicht!");
+      console.error("   Bitte starte den Dev-Server mit:");
+      console.error("   npx http-server -p 8080\n");
     }
 
     return { success: false, error: error.message };
@@ -271,28 +271,28 @@ async function runAudit(formFactor) {
  */
 async function main() {
   const args = process.argv.slice(2);
-  const mode = args[0] || 'both'; // both, desktop, mobile
+  const mode = args[0] || "both"; // both, desktop, mobile
 
   ensureOutputDir();
 
-  console.log('🔍 Lighthouse Audit Tool');
+  console.log("🔍 Lighthouse Audit Tool");
   console.log(`📍 Target URL: ${CONFIG.url}`);
   console.log(`📁 Output Directory: ${CONFIG.outputDir}\n`);
 
   const results = {};
 
-  if (mode === 'desktop' || mode === 'both') {
-    results.desktop = await runAudit('desktop');
+  if (mode === "desktop" || mode === "both") {
+    results.desktop = await runAudit("desktop");
   }
 
-  if (mode === 'mobile' || mode === 'both') {
-    results.mobile = await runAudit('mobile');
+  if (mode === "mobile" || mode === "both") {
+    results.mobile = await runAudit("mobile");
   }
 
   // Zusammenfassung
-  console.log('\n' + '='.repeat(80));
-  console.log('📋 AUDIT SUMMARY');
-  console.log('='.repeat(80));
+  console.log("\n" + "=".repeat(80));
+  console.log("📋 AUDIT SUMMARY");
+  console.log("=".repeat(80));
 
   for (const [formFactor, result] of Object.entries(results)) {
     if (result.success) {
@@ -306,7 +306,7 @@ async function main() {
     }
   }
 
-  console.log('\n' + '='.repeat(80) + '\n');
+  console.log("\n" + "=".repeat(80) + "\n");
 }
 
 main().catch(console.error);

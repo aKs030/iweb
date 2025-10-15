@@ -66,16 +66,16 @@ export function createLogger(category) {
   };
 }
 
-const sharedLogger = createLogger('SharedUtilities');
+const sharedLogger = createLogger("SharedUtilities");
 
 // Debug-Modus basierend auf URL-Parameter oder localStorage
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   const urlParams = new URLSearchParams(window.location.search);
-  const debugParam = urlParams.get('debug');
-  const debugStorage = window.localStorage?.getItem('iweb-debug');
+  const debugParam = urlParams.get("debug");
+  const debugStorage = window.localStorage?.getItem("iweb-debug");
 
-  if (debugParam === 'true' || debugStorage === 'true') {
-    setGlobalLogLevel('debug');
+  if (debugParam === "true" || debugStorage === "true") {
+    setGlobalLogLevel("debug");
   }
 }
 
@@ -195,23 +195,23 @@ export class TimerManager {
 
 // ===== Events System =====
 export const EVENTS = Object.freeze({
-  HERO_LOADED: 'hero:loaded',
-  HERO_TYPING_END: 'hero:typingEnd',
-  FEATURES_TEMPLATES_LOADED: 'featuresTemplatesLoaded',
-  FEATURES_TEMPLATES_ERROR: 'featuresTemplatesError',
-  TEMPLATE_MOUNTED: 'template:mounted',
-  FEATURES_CHANGE: 'features:change',
+  HERO_LOADED: "hero:loaded",
+  HERO_TYPING_END: "hero:typingEnd",
+  FEATURES_TEMPLATES_LOADED: "featuresTemplatesLoaded",
+  FEATURES_TEMPLATES_ERROR: "featuresTemplatesError",
+  TEMPLATE_MOUNTED: "template:mounted",
+  FEATURES_CHANGE: "features:change",
 
   // Neue Events für koordinierte Initialisierung
-  DOM_READY: 'app:domReady',
-  CORE_INITIALIZED: 'app:coreInitialized',
-  MODULES_READY: 'app:modulesReady',
-  HERO_INIT_READY: 'app:heroInitReady',
+  DOM_READY: "app:domReady",
+  CORE_INITIALIZED: "app:coreInitialized",
+  MODULES_READY: "app:modulesReady",
+  HERO_INIT_READY: "app:heroInitReady",
 });
 
 export function fire(type, detail, target = document) {
   try {
-    if (!target || typeof target.dispatchEvent !== 'function') {
+    if (!target || typeof target.dispatchEvent !== "function") {
       return;
     }
     target.dispatchEvent(new CustomEvent(type, { detail }));
@@ -225,16 +225,16 @@ export function on(type, handler, options, target = document) {
     opts = options;
   if (
     options &&
-    typeof options.addEventListener !== 'function' &&
-    typeof target.addEventListener !== 'function'
+    typeof options.addEventListener !== "function" &&
+    typeof target.addEventListener !== "function"
   ) {
     opts = options;
     realTarget = document;
-  } else if (options && typeof options.addEventListener === 'function') {
+  } else if (options && typeof options.addEventListener === "function") {
     realTarget = options;
     opts = undefined;
   }
-  if (!realTarget || typeof realTarget.addEventListener !== 'function') {
+  if (!realTarget || typeof realTarget.addEventListener !== "function") {
     return () => {};
   }
   realTarget.addEventListener(type, handler, opts);
@@ -243,7 +243,7 @@ export function on(type, handler, options, target = document) {
 
 // ===== Event Management =====
 export class EventListenerManager {
-  constructor(name = 'anonymous') {
+  constructor(name = "anonymous") {
     this.name = name;
     this.listeners = new Set();
     this.isDestroyed = false;
@@ -258,7 +258,7 @@ export class EventListenerManager {
       return () => {};
     }
 
-    if (!target || typeof target.addEventListener !== 'function') {
+    if (!target || typeof target.addEventListener !== "function") {
       this.log.warn(
         `${this.name}: Ungültiges Event Target für ${event}`,
         target
@@ -267,7 +267,7 @@ export class EventListenerManager {
     }
 
     const normalizedOptions =
-      typeof options === 'boolean' ? { capture: options } : options;
+      typeof options === "boolean" ? { capture: options } : options;
 
     const finalOptions = {
       passive: true,
@@ -324,12 +324,12 @@ export class EventListenerManager {
   }
 }
 
-export function createEventManager(name = 'manager', autoCleanup = true) {
+export function createEventManager(name = "manager", autoCleanup = true) {
   const manager = new EventListenerManager(name);
 
-  if (autoCleanup && typeof window !== 'undefined') {
+  if (autoCleanup && typeof window !== "undefined") {
     window.addEventListener(
-      'beforeunload',
+      "beforeunload",
       () => {
         manager.destroy();
       },
@@ -341,14 +341,14 @@ export function createEventManager(name = 'manager', autoCleanup = true) {
 }
 
 export function onVisibilityChange(callback) {
-  if (typeof document === 'undefined') return () => {};
+  if (typeof document === "undefined") return () => {};
 
   const handler = () => callback(!document.hidden);
   try {
-    document.addEventListener('visibilitychange', handler, { passive: true });
-    return () => document.removeEventListener('visibilitychange', handler);
+    document.addEventListener("visibilitychange", handler, { passive: true });
+    return () => document.removeEventListener("visibilitychange", handler);
   } catch (error) {
-    sharedLogger.error('onVisibilityChange: Event Setup Fehler:', error);
+    sharedLogger.error("onVisibilityChange: Event Setup Fehler:", error);
     return () => {};
   }
 }
@@ -358,11 +358,11 @@ export function createLazyLoadObserver(
   callback,
   options = {
     threshold: 0.15,
-    rootMargin: '120px 0px',
+    rootMargin: "120px 0px",
   }
 ) {
   if (!window.IntersectionObserver) {
-    sharedLogger.warn('IntersectionObserver nicht verfügbar - Fallback aktiv');
+    sharedLogger.warn("IntersectionObserver nicht verfügbar - Fallback aktiv");
     return {
       observer: null,
       observe: (element) => callback(element),
@@ -391,20 +391,20 @@ let _persistPromise = null;
 export async function ensurePersistentStorage() {
   if (_persistPromise) return _persistPromise;
   _persistPromise = (async () => {
-    if (!('storage' in navigator)) {
+    if (!("storage" in navigator)) {
       return { supported: false, persisted: false };
     }
     const storage = navigator.storage;
     let persisted = false;
     try {
-      if ('persisted' in storage) {
+      if ("persisted" in storage) {
         persisted = await storage.persisted().catch(() => false);
       }
-      if (!persisted && 'persist' in storage) {
+      if (!persisted && "persist" in storage) {
         persisted = await storage.persist().catch(() => false);
       }
       let quota = null;
-      if ('estimate' in storage) {
+      if ("estimate" in storage) {
         const est = await storage.estimate().catch(() => null);
         if (est) {
           quota = {
@@ -442,7 +442,7 @@ export function randomInt(min, max) {
 
 // ===== Event Management =====
 export function addListener(target, event, handler, options = {}) {
-  if (!target || typeof target.addEventListener !== 'function') {
+  if (!target || typeof target.addEventListener !== "function") {
     return () => {};
   }
 
@@ -457,7 +457,7 @@ export function addListener(target, event, handler, options = {}) {
 }
 
 export function onResize(callback, delay = 100) {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === "undefined") return () => {};
 
   let timeoutId;
   const debouncedHandler = () => {
@@ -465,7 +465,7 @@ export function onResize(callback, delay = 100) {
     timeoutId = setTimeout(callback, delay);
   };
 
-  const cleanup = addListener(window, 'resize', debouncedHandler, {
+  const cleanup = addListener(window, "resize", debouncedHandler, {
     passive: true,
   });
 
@@ -486,7 +486,7 @@ export function onScroll(callback, target = window, throttleMs = 16) {
     }
   };
 
-  return addListener(target, 'scroll', throttledHandler, { passive: true });
+  return addListener(target, "scroll", throttledHandler, { passive: true });
 }
 
 export function setupPointerEvents(
@@ -510,25 +510,25 @@ export function setupPointerEvents(
 
   // Mouse Events
   listeners.add(
-    addListener(element, 'mousedown', handlePointerDown, {
+    addListener(element, "mousedown", handlePointerDown, {
       passive: false,
       ...options,
     })
   );
   listeners.add(
-    addListener(element, 'mousemove', handlePointerMove, {
+    addListener(element, "mousemove", handlePointerMove, {
       passive: true,
       ...options,
     })
   );
   listeners.add(
-    addListener(element, 'mouseup', handlePointerUp, {
+    addListener(element, "mouseup", handlePointerUp, {
       passive: true,
       ...options,
     })
   );
   listeners.add(
-    addListener(element, 'mouseleave', handlePointerUp, {
+    addListener(element, "mouseleave", handlePointerUp, {
       passive: true,
       ...options,
     })
@@ -536,25 +536,25 @@ export function setupPointerEvents(
 
   // Touch Events
   listeners.add(
-    addListener(element, 'touchstart', handlePointerDown, {
+    addListener(element, "touchstart", handlePointerDown, {
       passive: false,
       ...options,
     })
   );
   listeners.add(
-    addListener(element, 'touchmove', handlePointerMove, {
+    addListener(element, "touchmove", handlePointerMove, {
       passive: true,
       ...options,
     })
   );
   listeners.add(
-    addListener(element, 'touchend', handlePointerUp, {
+    addListener(element, "touchend", handlePointerUp, {
       passive: true,
       ...options,
     })
   );
   listeners.add(
-    addListener(element, 'touchcancel', handlePointerUp, {
+    addListener(element, "touchcancel", handlePointerUp, {
       passive: true,
       ...options,
     })
@@ -571,11 +571,11 @@ export function setupPointerEvents(
 export const OBSERVER_CONFIGS = {
   heroLoading: {
     threshold: 0,
-    rootMargin: '0px',
+    rootMargin: "0px",
   },
   sectionTracking: {
     threshold: [0.1, 0.3, 0.5, 0.7],
-    rootMargin: '-10% 0px -10% 0px',
+    rootMargin: "-10% 0px -10% 0px",
   },
 };
 
@@ -619,13 +619,13 @@ export class SectionTracker {
   }
 
   init() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setupObserver());
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => this.setupObserver());
     } else {
       setTimeout(() => this.setupObserver(), 100);
     }
 
-    document.addEventListener('section:loaded', () => {
+    document.addEventListener("section:loaded", () => {
       setTimeout(() => this.refreshSections(), 50);
     });
   }
@@ -633,7 +633,7 @@ export class SectionTracker {
   setupObserver() {
     this.refreshSections();
 
-    if (!('IntersectionObserver' in window) || this.sections.length === 0) {
+    if (!("IntersectionObserver" in window) || this.sections.length === 0) {
       return;
     }
 
@@ -650,7 +650,7 @@ export class SectionTracker {
 
   refreshSections() {
     this.sections = Array.from(
-      document.querySelectorAll('main .section, .section')
+      document.querySelectorAll("main .section, .section")
     ).filter((section) => section.id);
 
     if (this.observer) {
@@ -715,7 +715,7 @@ export class SectionTracker {
         section: getElementById(sectionId),
       };
 
-      const event = new CustomEvent('snapSectionChange', { detail });
+      const event = new CustomEvent("snapSectionChange", { detail });
       window.dispatchEvent(event);
     } catch {
       // Fail silently

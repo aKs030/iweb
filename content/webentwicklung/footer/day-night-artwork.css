@@ -12,7 +12,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.8), transparent);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent);
   transform: translate(-50%, -50%) scale(0);
   animation: artworkRipple 0.8s ease-out forwards;
   pointer-events: none;
@@ -27,15 +27,16 @@
   border: none;
   cursor: pointer;
   overflow: hidden;
-  background: linear-gradient(180deg, 
-    #87CEEB 0%,    /* Himmelblau oben */
-    #FFE4B5 45%,   /* Sonnenuntergangsorange */
-    #98FB98 100%   /* Sanftes Grün unten */
+  background: linear-gradient(
+    180deg,
+    #87ceeb 0%,
+    /* Himmelblau oben */ #ffe4b5 45%,
+    /* Sonnenuntergangsorange */ #98fb98 100% /* Sanftes Grün unten */
   );
-  transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-  box-shadow: 
-    0 4px 20px rgba(0,0,0,0.15),
-    inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transform-style: preserve-3d;
 }
 
@@ -46,9 +47,9 @@
 
 .day-night-artwork:hover {
   transform: scale(1.05) rotateX(5deg);
-  box-shadow: 
-    0 6px 25px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow:
+    0 6px 25px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .day-night-artwork:active {
@@ -57,11 +58,12 @@
 
 /* Night Mode Background */
 [data-theme="dark"] .day-night-artwork {
-  background: linear-gradient(180deg, 
-    #191970 0%,    /* Mitternachtsblau oben */
-    #483D8B 30%,   /* Dunkles Slate Blau */
-    #2F4F4F 70%,   /* Dunkles Schiefer Grau */
-    #228B22 100%   /* Waldgrün unten */
+  background: linear-gradient(
+    180deg,
+    #191970 0%,
+    /* Mitternachtsblau oben */ #483d8b 30%,
+    /* Dunkles Slate Blau */ #2f4f4f 70%,
+    /* Dunkles Schiefer Grau */ #228b22 100% /* Waldgrün unten */
   );
 }
 
@@ -83,16 +85,12 @@
   right: 12px;
   width: 18px;
   height: 18px;
-  background: radial-gradient(circle, 
-    #FFD700 0%,
-    #FFA500 50%,
-    #FF8C00 100%
-  );
+  background: radial-gradient(circle, #ffd700 0%, #ffa500 50%, #ff8c00 100%);
   border-radius: 50%;
   transition: all 0.8s ease;
   opacity: 1;
   transform: scale(1);
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(255, 215, 0, 0.6),
     0 0 20px rgba(255, 140, 0, 0.3);
 }
@@ -112,18 +110,34 @@
   position: absolute;
   width: 1px;
   height: 6px;
-  background: linear-gradient(to bottom, #FFD700, transparent);
+  background: linear-gradient(to bottom, #ffd700, transparent);
   transform-origin: bottom center;
 }
 
-.ray-1 { transform: rotate(0deg) translateY(-12px); }
-.ray-2 { transform: rotate(45deg) translateY(-12px); }
-.ray-3 { transform: rotate(90deg) translateY(-12px); }
-.ray-4 { transform: rotate(135deg) translateY(-12px); }
-.ray-5 { transform: rotate(180deg) translateY(-12px); }
-.ray-6 { transform: rotate(225deg) translateY(-12px); }
-.ray-7 { transform: rotate(270deg) translateY(-12px); }
-.ray-8 { transform: rotate(315deg) translateY(-12px); }
+.ray-1 {
+  transform: rotate(0deg) translateY(-12px);
+}
+.ray-2 {
+  transform: rotate(45deg) translateY(-12px);
+}
+.ray-3 {
+  transform: rotate(90deg) translateY(-12px);
+}
+.ray-4 {
+  transform: rotate(135deg) translateY(-12px);
+}
+.ray-5 {
+  transform: rotate(180deg) translateY(-12px);
+}
+.ray-6 {
+  transform: rotate(225deg) translateY(-12px);
+}
+.ray-7 {
+  transform: rotate(270deg) translateY(-12px);
+}
+.ray-8 {
+  transform: rotate(315deg) translateY(-12px);
+}
 
 /* Night Mode - Sonne verstecken */
 [data-theme="dark"] .sun {
@@ -138,18 +152,19 @@
   left: 8px;
   width: 22px;
   height: 22px;
-  background: radial-gradient(circle at 30% 30%, 
-    #F5F5DC 0%,
-    #E6E6FA 40%,
-    #D3D3D3 100%
+  background: radial-gradient(
+    circle at 30% 30%,
+    #f5f5dc 0%,
+    #e6e6fa 40%,
+    #d3d3d3 100%
   );
   border-radius: 50%;
   opacity: 0;
   transform: scale(0.3) translateY(-30px);
   transition: all 0.8s ease;
-  box-shadow: 
+  box-shadow:
     0 0 15px rgba(245, 245, 220, 0.4),
-    inset -2px -2px 0 rgba(0,0,0,0.1);
+    inset -2px -2px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* Mondkrater */
@@ -162,17 +177,38 @@
 .crater {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, 
-    rgba(0,0,0,0.2), 
-    rgba(0,0,0,0.1), 
+  background: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.1),
     transparent
   );
 }
 
-.crater-1 { width: 4px; height: 4px; top: 20%; left: 30%; }
-.crater-2 { width: 3px; height: 3px; top: 50%; right: 25%; }
-.crater-3 { width: 2px; height: 2px; bottom: 30%; left: 40%; }
-.crater-4 { width: 3px; height: 3px; top: 35%; left: 60%; }
+.crater-1 {
+  width: 4px;
+  height: 4px;
+  top: 20%;
+  left: 30%;
+}
+.crater-2 {
+  width: 3px;
+  height: 3px;
+  top: 50%;
+  right: 25%;
+}
+.crater-3 {
+  width: 2px;
+  height: 2px;
+  bottom: 30%;
+  left: 40%;
+}
+.crater-4 {
+  width: 3px;
+  height: 3px;
+  top: 35%;
+  left: 60%;
+}
 
 /* Night Mode - Mond zeigen */
 [data-theme="dark"] .moon {
@@ -195,28 +231,71 @@
   position: absolute;
   width: 2px;
   height: 2px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 4px rgba(255,255,255,0.8);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
 }
 
-.star-1 { top: 15%; left: 25%; animation: twinkle 2s infinite; }
-.star-2 { top: 25%; right: 20%; animation: twinkle 2.5s infinite 0.5s; }
-.star-3 { top: 40%; left: 15%; animation: twinkle 3s infinite 1s; }
-.star-4 { top: 60%; right: 30%; animation: twinkle 2.2s infinite 0.8s; }
-.star-5 { bottom: 30%; left: 35%; animation: twinkle 2.8s infinite 1.5s; }
-.star-6 { bottom: 45%; right: 15%; animation: twinkle 2.3s infinite 0.3s; }
-.star-7 { top: 35%; left: 70%; animation: twinkle 2.7s infinite 1.2s; }
-.star-8 { bottom: 25%; left: 60%; animation: twinkle 2.4s infinite 0.7s; }
+.star-1 {
+  top: 15%;
+  left: 25%;
+  animation: twinkle 2s infinite;
+}
+.star-2 {
+  top: 25%;
+  right: 20%;
+  animation: twinkle 2.5s infinite 0.5s;
+}
+.star-3 {
+  top: 40%;
+  left: 15%;
+  animation: twinkle 3s infinite 1s;
+}
+.star-4 {
+  top: 60%;
+  right: 30%;
+  animation: twinkle 2.2s infinite 0.8s;
+}
+.star-5 {
+  bottom: 30%;
+  left: 35%;
+  animation: twinkle 2.8s infinite 1.5s;
+}
+.star-6 {
+  bottom: 45%;
+  right: 15%;
+  animation: twinkle 2.3s infinite 0.3s;
+}
+.star-7 {
+  top: 35%;
+  left: 70%;
+  animation: twinkle 2.7s infinite 1.2s;
+}
+.star-8 {
+  bottom: 25%;
+  left: 60%;
+  animation: twinkle 2.4s infinite 0.7s;
+}
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
 @keyframes sunRotate {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 /* Night Mode - Sterne zeigen */
@@ -251,9 +330,24 @@
   animation: cloudFloat1 8s ease-in-out infinite;
 }
 
-.cloud-1 .part-1 { width: 8px; height: 6px; top: 0; left: 0; }
-.cloud-1 .part-2 { width: 6px; height: 4px; top: 2px; left: 6px; }
-.cloud-1 .part-3 { width: 5px; height: 4px; top: 3px; left: 3px; }
+.cloud-1 .part-1 {
+  width: 8px;
+  height: 6px;
+  top: 0;
+  left: 0;
+}
+.cloud-1 .part-2 {
+  width: 6px;
+  height: 4px;
+  top: 2px;
+  left: 6px;
+}
+.cloud-1 .part-3 {
+  width: 5px;
+  height: 4px;
+  top: 3px;
+  left: 3px;
+}
 
 /* Wolke 2 */
 .cloud-2 {
@@ -262,17 +356,37 @@
   animation: cloudFloat2 10s ease-in-out infinite;
 }
 
-.cloud-2 .part-1 { width: 6px; height: 4px; top: 0; left: 0; }
-.cloud-2 .part-2 { width: 4px; height: 3px; top: 1px; left: 4px; }
+.cloud-2 .part-1 {
+  width: 6px;
+  height: 4px;
+  top: 0;
+  left: 0;
+}
+.cloud-2 .part-2 {
+  width: 4px;
+  height: 3px;
+  top: 1px;
+  left: 4px;
+}
 
 @keyframes cloudFloat1 {
-  0%, 100% { transform: translateX(0px) translateY(0px); }
-  50% { transform: translateX(5px) translateY(-2px); }
+  0%,
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+  50% {
+    transform: translateX(5px) translateY(-2px);
+  }
 }
 
 @keyframes cloudFloat2 {
-  0%, 100% { transform: translateX(0px) translateY(0px); }
-  50% { transform: translateX(-3px) translateY(2px); }
+  0%,
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+  50% {
+    transform: translateX(-3px) translateY(2px);
+  }
 }
 
 /* Night Mode - Wolken dunkler */
@@ -302,31 +416,37 @@
   position: absolute;
   bottom: 0;
   border-style: solid;
-  border-color: transparent transparent #228B22 transparent;
+  border-color: transparent transparent #228b22 transparent;
 }
 
 .mountain-1 {
   left: 10%;
   border-width: 0 8px 12px 8px;
-  border-bottom-color: #32CD32;
+  border-bottom-color: #32cd32;
 }
 
 .mountain-2 {
   right: 20%;
   border-width: 0 6px 10px 6px;
-  border-bottom-color: #228B22;
+  border-bottom-color: #228b22;
 }
 
 .mountain-3 {
   right: 5%;
   border-width: 0 5px 8px 5px;
-  border-bottom-color: #2E8B57;
+  border-bottom-color: #2e8b57;
 }
 
 /* Night Mode - Berge dunkler */
-[data-theme="dark"] .mountain-1 { border-bottom-color: #1C5F1C; }
-[data-theme="dark"] .mountain-2 { border-bottom-color: #0F4F0F; }
-[data-theme="dark"] .mountain-3 { border-bottom-color: #1A4A1A; }
+[data-theme="dark"] .mountain-1 {
+  border-bottom-color: #1c5f1c;
+}
+[data-theme="dark"] .mountain-2 {
+  border-bottom-color: #0f4f0f;
+}
+[data-theme="dark"] .mountain-3 {
+  border-bottom-color: #1a4a1a;
+}
 
 /* Bäume */
 .trees {
@@ -345,7 +465,7 @@
 .trunk {
   width: 2px;
   height: 8px;
-  background: #8B4513;
+  background: #8b4513;
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -355,7 +475,7 @@
 .leaves {
   width: 8px;
   height: 6px;
-  background: #228B22;
+  background: #228b22;
   border-radius: 50%;
   position: absolute;
   bottom: 6px;
@@ -374,13 +494,22 @@
 }
 
 @keyframes treeWave {
-  0%, 100% { transform: translateX(0px); }
-  50% { transform: translateX(1px); }
+  0%,
+  100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(1px);
+  }
 }
 
 /* Night Mode - Bäume dunkler */
-[data-theme="dark"] .trunk { background: #5D2F07; }
-[data-theme="dark"] .leaves { background: #0F4F0F; }
+[data-theme="dark"] .trunk {
+  background: #5d2f07;
+}
+[data-theme="dark"] .leaves {
+  background: #0f4f0f;
+}
 
 /* === ATMOSPHÄRISCHE EFFEKTE === */
 .atmosphere {
@@ -400,19 +529,13 @@
   left: 0;
   width: 100%;
   height: 30%;
-  background: linear-gradient(to top, 
-    rgba(255,255,255,0.2), 
-    transparent
-  );
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.2), transparent);
   opacity: 0;
   transition: opacity 0.8s ease;
 }
 
 [data-theme="dark"] .mist {
-  background: linear-gradient(to top, 
-    rgba(100,100,150,0.3), 
-    transparent
-  );
+  background: linear-gradient(to top, rgba(100, 100, 150, 0.3), transparent);
   opacity: 1;
 }
 
@@ -423,8 +546,9 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at 75% 25%, 
-    rgba(255,215,0,0.1), 
+  background: radial-gradient(
+    ellipse at 75% 25%,
+    rgba(255, 215, 0, 0.1),
     transparent 50%
   );
   opacity: 1;
@@ -432,8 +556,9 @@
 }
 
 [data-theme="dark"] .light-rays {
-  background: radial-gradient(ellipse at 25% 25%, 
-    rgba(245,245,220,0.1), 
+  background: radial-gradient(
+    ellipse at 25% 25%,
+    rgba(245, 245, 220, 0.1),
     transparent 50%
   );
   opacity: 0.7;

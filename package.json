@@ -7,18 +7,22 @@
   "author": "aKs030",
   "license": "ISC",
   "scripts": {
-    "lint": "eslint . --ext .js --fix",
-    "lint:js": "eslint content/**/*.js pages/**/*.js --fix",
-    "lint:html": "node scripts/validate-html.js",
+    "lint": "npm run lint:js && npm run lint:html",
+    "lint:js": "eslint content/**/*.js pages/**/*.js scripts/**/*.js --fix",
+    "lint:js:check": "eslint content/**/*.js pages/**/*.js scripts/**/*.js",
+    "lint:html": "node scripts/validate-html.js --ci",
+    "lint:html:verbose": "node scripts/validate-html.js --verbose",
+    "lint:html:all": "node scripts/validate-html.js --verbose --include-reports",
+    "format": "prettier --write \"**/*.{js,json,css,html,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{js,json,css,html,md}\" --ignore-path .gitignore",
     "check:css": "node scripts/check-css-consolidation.js",
     "consolidate:css": "node scripts/consolidate-css.js",
     "analyze:bundle": "node scripts/analyze-bundle-size.js",
     "audit:a11y": "node scripts/audit-a11y.js",
-    "performance:guide": "node scripts/performance-profiling-guide.js",
     "lighthouse": "node scripts/lighthouse-audit.js both",
     "lighthouse:desktop": "node scripts/lighthouse-audit.js desktop",
     "lighthouse:mobile": "node scripts/lighthouse-audit.js mobile",
-    "test:all": "npm run lint && npm run lint:html && npm run check:css && npm run audit:a11y"
+    "test:all": "npm run lint:js:check && npm run lint:html && npm run check:css && npm run audit:a11y"
   },
   "keywords": [
     "portfolio",

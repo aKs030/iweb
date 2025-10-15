@@ -10,9 +10,9 @@ import {
   getElementById,
   onVisibilityChange,
   throttle,
-} from '../shared-utilities.js';
+} from "../shared-utilities.js";
 
-const log = createLogger('dayNightArtwork');
+const log = createLogger("dayNightArtwork");
 
 /**
  * Day/Night Artwork Manager
@@ -26,7 +26,7 @@ class DayNightArtworkManager {
     this.isTransitioning = false;
 
     // Event Manager für systematisches Event-Management
-    this.eventManager = createEventManager('dayNightArtwork');
+    this.eventManager = createEventManager("dayNightArtwork");
 
     // Throttled event handlers mit Referenzen für cleanup
     this.handleVisibilityChange = throttle(
@@ -47,8 +47,8 @@ class DayNightArtworkManager {
       this.initializeSimpleThemeSystem();
 
       // Hole Artwork-Elemente
-      this.artwork = getElementById('dayNightToggle');
-      this.skyCanvas = this.artwork?.querySelector('.sky-canvas');
+      this.artwork = getElementById("dayNightToggle");
+      this.skyCanvas = this.artwork?.querySelector(".sky-canvas");
 
       if (!this.artwork) {
         return false;
@@ -66,7 +66,7 @@ class DayNightArtworkManager {
       this.isInitialized = true;
       return true;
     } catch (error) {
-      log.error('Initialisierung fehlgeschlagen:', error);
+      log.error("Initialisierung fehlgeschlagen:", error);
       return false;
     }
   }
@@ -77,20 +77,20 @@ class DayNightArtworkManager {
   initializeSimpleThemeSystem() {
     if (window.themeSystem) return;
 
-    const STORAGE_KEY = 'theme-preference';
+    const STORAGE_KEY = "theme-preference";
 
     // Einfaches Theme-System mit localStorage
     window.themeSystem = {
       getCurrentTheme() {
-        return localStorage.getItem(STORAGE_KEY) || 'dark';
+        return localStorage.getItem(STORAGE_KEY) || "dark";
       },
 
       setTheme(theme) {
         localStorage.setItem(STORAGE_KEY, theme);
-        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute("data-theme", theme);
 
         // Dispatch Event für Listener
-        const event = new CustomEvent('themeChanged', {
+        const event = new CustomEvent("themeChanged", {
           detail: { theme },
         });
         window.themeSystem.dispatchEvent(event);
@@ -98,7 +98,7 @@ class DayNightArtworkManager {
 
       toggleTheme() {
         const current = this.getCurrentTheme();
-        const next = current === 'light' ? 'dark' : 'light';
+        const next = current === "light" ? "dark" : "light";
         this.setTheme(next);
         return next;
       },
@@ -106,12 +106,12 @@ class DayNightArtworkManager {
       // Event-System
       listeners: [],
       addEventListener(event, handler) {
-        if (event === 'themeChanged') {
+        if (event === "themeChanged") {
           this.listeners.push(handler);
         }
       },
       removeEventListener(event, handler) {
-        if (event === 'themeChanged') {
+        if (event === "themeChanged") {
           this.listeners = this.listeners.filter((h) => h !== handler);
         }
       },
@@ -122,9 +122,9 @@ class DayNightArtworkManager {
 
     // Initiales Theme setzen
     const currentTheme = window.themeSystem.getCurrentTheme();
-    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.documentElement.setAttribute("data-theme", currentTheme);
 
-    log.debug('Einfaches Theme-System initialisiert, Theme:', currentTheme);
+    log.debug("Einfaches Theme-System initialisiert, Theme:", currentTheme);
   }
 
   /**
@@ -140,10 +140,10 @@ class DayNightArtworkManager {
    */
   setupEventListeners() {
     // Theme-Toggle Events
-    this.eventManager.add(this.artwork, 'click', this.boundToggleClick, {
+    this.eventManager.add(this.artwork, "click", this.boundToggleClick, {
       passive: false,
     });
-    this.eventManager.add(this.artwork, 'keydown', this.boundToggleKeydown, {
+    this.eventManager.add(this.artwork, "keydown", this.boundToggleKeydown, {
       passive: false,
     });
 
@@ -158,7 +158,7 @@ class DayNightArtworkManager {
     if (window.themeSystem?.addEventListener) {
       this.eventManager.add(
         window.themeSystem,
-        'themeChanged',
+        "themeChanged",
         this.boundThemeChanged
       );
     }
@@ -188,7 +188,7 @@ class DayNightArtworkManager {
         this.isTransitioning = false;
       }, 1000);
     } catch (error) {
-      log.error('Theme-Toggle fehlgeschlagen:', error);
+      log.error("Theme-Toggle fehlgeschlagen:", error);
       this.isTransitioning = false;
     }
   }
@@ -197,7 +197,7 @@ class DayNightArtworkManager {
    * Keyboard Handler für Accessibility
    */
   handleToggleKeydown(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       // Simuliere Koordinaten für konsistente Effekte
       const rect = this.artwork.getBoundingClientRect();
@@ -223,7 +223,7 @@ class DayNightArtworkManager {
     const y = ((event.clientY - rect.top) / rect.height) * 100;
 
     // Erstelle temporären Ripple
-    const ripple = document.createElement('div');
+    const ripple = document.createElement("div");
     ripple.style.cssText = `
       position: absolute;
       top: ${y}%;
@@ -243,11 +243,11 @@ class DayNightArtworkManager {
     // CSS für Ripple-Animation einfügen falls nicht vorhanden
     // Ensure external CSS for ripple is loaded
     const RIPPLE_CSS_HREF =
-      '/content/webentwicklung/footer/day-night-artwork.css';
+      "/content/webentwicklung/footer/day-night-artwork.css";
     if (!document.querySelector(`link[href="${RIPPLE_CSS_HREF}"]`)) {
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('href', RIPPLE_CSS_HREF);
+      const link = document.createElement("link");
+      link.setAttribute("rel", "stylesheet");
+      link.setAttribute("href", RIPPLE_CSS_HREF);
       document.head.appendChild(link);
     }
 
@@ -271,9 +271,9 @@ class DayNightArtworkManager {
    * Haptic-Feedback-Simulation
    */
   simulateHapticFeedback() {
-    this.artwork.style.transform = 'scale(0.95)';
+    this.artwork.style.transform = "scale(0.95)";
     setTimeout(() => {
-      this.artwork.style.transform = '';
+      this.artwork.style.transform = "";
     }, 150);
   }
 
@@ -286,7 +286,7 @@ class DayNightArtworkManager {
     const currentTheme = window.themeSystem.getCurrentTheme();
 
     // Theme-Attribute setzen für CSS-Selektoren
-    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.documentElement.setAttribute("data-theme", currentTheme);
   }
 
   /**
@@ -296,7 +296,7 @@ class DayNightArtworkManager {
     const newTheme = event?.detail?.theme;
     if (newTheme) {
       // CSS data-theme Attribut aktualisieren
-      document.documentElement.setAttribute('data-theme', newTheme);
+      document.documentElement.setAttribute("data-theme", newTheme);
     }
   }
 
@@ -307,14 +307,14 @@ class DayNightArtworkManager {
     if (!this.artwork) return;
 
     const isHidden = document.hidden;
-    const artworkWrapper = this.artwork.closest('.day-night-artwork-wrapper');
+    const artworkWrapper = this.artwork.closest(".day-night-artwork-wrapper");
 
     if (artworkWrapper) {
       const animations = artworkWrapper.querySelectorAll(
         '[style*="animation"]'
       );
       animations.forEach((el) => {
-        el.style.animationPlayState = isHidden ? 'paused' : 'running';
+        el.style.animationPlayState = isHidden ? "paused" : "running";
       });
     }
   }
@@ -358,7 +358,7 @@ export async function initializeDayNightArtwork() {
 
   if (!success) {
     dayNightArtworkState.manager = null;
-    throw new Error('Fehler beim Initialisieren des Day/Night Artwork');
+    throw new Error("Fehler beim Initialisieren des Day/Night Artwork");
   }
 
   return dayNightArtworkState.manager;

@@ -1,8 +1,4 @@
-# ============================
-# EditorConfig für iweb-Projekt
-# Einheitliche Formatierung über alle Editoren & Tools
-# ============================
-
+# EditorConfig: Konsistente Formatierung im gesamten Projekt
 root = true
 
 [*]
@@ -14,8 +10,8 @@ indent_style = space
 indent_size = 2
 
 [*.{js,json,yaml,yml}]
-quote_type = single
-max_line_length = 100
+quote_type = double
+max_line_length = 80
 
 [*.{html,css,scss}]
 indent_size = 2

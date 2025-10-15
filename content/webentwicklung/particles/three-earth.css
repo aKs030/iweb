@@ -31,7 +31,7 @@
 }
 
 .three-earth-container.is-dragging {
-    cursor: grabbing;
+  cursor: grabbing;
 }
 
 .three-earth-container canvas {
@@ -74,25 +74,25 @@
 
 /* NEW: Loading progress bar */
 .loading-progress-container {
-    width: 100%;
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 16px 0;
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 16px 0;
 }
 
 .loading-progress-bar {
-    width: 0%;
-    height: 100%;
-    background-color: #87ceeb;
-    border-radius: 4px;
-    transition: width 0.3s ease-out;
+  width: 0%;
+  height: 100%;
+  background-color: #87ceeb;
+  border-radius: 4px;
+  transition: width 0.3s ease-out;
 }
 
 .loading-progress-text {
-    font-size: 14px;
-    font-weight: 500;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .three-earth-container.error {
@@ -104,9 +104,15 @@
 }
 
 /* Section-based Opacity Transitions */
-.three-earth-container[data-section="hero"] { opacity: 1; }
-.three-earth-container[data-section="features"] { opacity: 0.95; }
-.three-earth-container[data-section="about"] { opacity: 0.85; }
+.three-earth-container[data-section="hero"] {
+  opacity: 1;
+}
+.three-earth-container[data-section="features"] {
+  opacity: 0.95;
+}
+.three-earth-container[data-section="about"] {
+  opacity: 0.85;
+}
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {

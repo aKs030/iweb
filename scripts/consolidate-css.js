@@ -1,33 +1,33 @@
 #!/usr/bin/env node
 
-import { glob } from 'glob';
-import { readFile, writeFile } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFile, writeFile } from "fs/promises";
+import { glob } from "glob";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, '..');
+const projectRoot = join(__dirname, "..");
 
 async function consolidateCss() {
   try {
-    console.log('🔄 Konsolidiere CSS Custom Properties...\n');
+    console.log("🔄 Konsolidiere CSS Custom Properties...\n");
 
-    const rootCssPath = join(projectRoot, 'content/webentwicklung/root.css');
+    const rootCssPath = join(projectRoot, "content/webentwicklung/root.css");
 
     // Find all CSS files except root.css
-    const cssFiles = await glob('**/*.css', {
+    const cssFiles = await glob("**/*.css", {
       cwd: projectRoot,
-      ignore: ['node_modules/**', '.git/**', 'content/webentwicklung/root.css'],
+      ignore: ["node_modules/**", ".git/**", "content/webentwicklung/root.css"],
     });
 
-    let rootCssContent = await readFile(rootCssPath, 'utf8');
+    let rootCssContent = await readFile(rootCssPath, "utf8");
     const customPropertyRegex = /^\s*--[\w-]+\s*:[^;]+;/gm;
     let totalMoved = 0;
 
     for (const file of cssFiles) {
       const filePath = join(projectRoot, file);
-      const content = await readFile(filePath, 'utf8');
+      const content = await readFile(filePath, "utf8");
       const matches = content.match(customPropertyRegex);
 
       if (matches && matches.length > 0) {
@@ -42,7 +42,7 @@ async function consolidateCss() {
             const rootSectionMatch = rootCssContent.match(/(:root\s*{[^}]*)/);
             if (rootSectionMatch) {
               const newRootSection =
-                rootSectionMatch[1] + '\n  ' + property.trim();
+                rootSectionMatch[1] + "\n  " + property.trim();
               rootCssContent = rootCssContent.replace(
                 rootSectionMatch[1],
                 newRootSection
@@ -57,18 +57,18 @@ async function consolidateCss() {
         }
 
         // Remove properties from original file
-        const cleanedContent = content.replace(customPropertyRegex, '');
-        await writeFile(filePath, cleanedContent, 'utf8');
+        const cleanedContent = content.replace(customPropertyRegex, "");
+        await writeFile(filePath, cleanedContent, "utf8");
       }
     }
 
     // Write updated root.css
-    await writeFile(rootCssPath, rootCssContent, 'utf8');
+    await writeFile(rootCssPath, rootCssContent, "utf8");
 
-    console.log('\n✅ Konsolidierung abgeschlossen!');
+    console.log("\n✅ Konsolidierung abgeschlossen!");
     console.log(`📊 ${totalMoved} Properties nach root.css verschoben`);
   } catch (error) {
-    console.error('❌ Fehler bei der CSS Konsolidierung:', error);
+    console.error("❌ Fehler bei der CSS Konsolidierung:", error);
     process.exit(1);
   }
 }

@@ -1,6 +1,6 @@
 /* ===== TypeWriter CSS Styles ===== */
 /* TypeWriter Title Container & Positioning */
-.typewriter-title{
+.typewriter-title {
   position: absolute;
   left: clamp(12px, 2vw, 20px);
   /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
@@ -21,7 +21,9 @@
   height: var(--box-h);
   gap: var(--gap-px);
   transform: translateY(6px);
-  transition: opacity .45s ease, transform .45s ease;
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
   z-index: 70; /* above footer */
 }
 
@@ -37,7 +39,7 @@
 }
 
 /* TypeWriter Text Elements */
-.typewriter-title .typed-author{ 
+.typewriter-title .typed-author {
   font-size: 0.75em;
   color: rgba(255, 255, 255, 0.72);
   font-weight: 350;
@@ -47,7 +49,7 @@
   text-align: left;
 }
 
-.typewriter-title .typed-quote { 
+.typewriter-title .typed-quote {
   font-size: 0.82em;
   color: rgba(255, 255, 255, 0.82);
   line-height: 1.3;
@@ -56,67 +58,75 @@
   text-align: left;
 }
 
-.typed-text{ 
-  font-weight: 300; 
-  font-size: 0.82em; 
-  line-height: 1.18; 
-  display: inline; 
-  color: var(--text-secondary, #b0b0b0); 
-  text-shadow: none; 
-  white-space: normal; 
-  letter-spacing: 0em; 
-  overflow-wrap: anywhere; 
-  word-break: normal; 
-  -webkit-hyphens: auto; 
-  hyphens: auto; 
-  opacity: 0.8; 
+.typed-text {
+  font-weight: 300;
+  font-size: 0.82em;
+  line-height: 1.18;
+  display: inline;
+  color: var(--text-secondary, #b0b0b0);
+  text-shadow: none;
+  white-space: normal;
+  letter-spacing: 0em;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  opacity: 0.8;
 }
 
-@supports (text-wrap: balance) { 
-  .typewriter-title .typed-text { 
-    text-wrap: balance; 
-  } 
+@supports (text-wrap: balance) {
+  .typewriter-title .typed-text {
+    text-wrap: balance;
+  }
 }
 
 /* TypeWriter Cursor Animation */
-.typewriter-title .typed-text::after{ 
-  content: ''; 
-  display: inline-block; 
-  width: 0; 
-  height: 0.90em; 
-  margin-left: 0.06ch; 
-  border-left: 2px solid var(--text-primary, #fff); 
-  animation: caret-blink 0.9s steps(1,end) infinite; 
-  vertical-align: -0.1em; 
-  opacity: 1; 
+.typewriter-title .typed-text::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0.9em;
+  margin-left: 0.06ch;
+  border-left: 2px solid var(--text-primary, #fff);
+  animation: caret-blink 0.9s steps(1, end) infinite;
+  vertical-align: -0.1em;
+  opacity: 1;
 }
 
-.typewriter-title .cursor{ 
-  display: none !important; 
+.typewriter-title .cursor {
+  display: none !important;
 }
 
-@keyframes caret-blink{
-  50%{opacity:0}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 /* CSS-Only Fallback (wenn TypeWriter JS nicht lädt) */
-body:not(.has-typingjs) .typewriter-title .cursor{ 
-  display: none; 
+body:not(.has-typingjs) .typewriter-title .cursor {
+  display: none;
 }
 
-body:not(.has-typingjs) .typewriter-title .typed-text{ 
-  display:inline-block; 
-  white-space:nowrap; 
-  overflow:hidden; 
-  border-right:2px solid var(--text-primary,#fff); 
-  width:0; 
-  animation: typing 3s steps(var(--typing-steps)) forwards, blink-caret .75s step-end infinite; 
+body:not(.has-typingjs) .typewriter-title .typed-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid var(--text-primary, #fff);
+  width: 0;
+  animation:
+    typing 3s steps(var(--typing-steps)) forwards,
+    blink-caret 0.75s step-end infinite;
 }
 
-@keyframes typing { 
-  to { width: var(--typing-target); } 
+@keyframes typing {
+  to {
+    width: var(--typing-target);
+  }
 }
 
-@keyframes blink-caret { 
-  50% { border-right-color: transparent; } 
+@keyframes blink-caret {
+  50% {
+    border-right-color: transparent;
+  }
 }
