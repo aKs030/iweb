@@ -1,6 +1,7 @@
+/* eslint no-console: ["warn", { allow: ["error", "warn", "info", "log"] }] */
 /**
  * Footer Complete System - All-in-One JavaScript
- * 
+ *
  * Kombiniert alle Footer-Funktionalitäten in einer Datei:
  * - Footer-Laden und Initialisierung
  * - Day/Night Theme Toggle
@@ -8,9 +9,9 @@
  * - Adaptive Resizing
  * - Newsletter-Formular
  * - Cookie-Settings
- * 
+ *
  * KEINE EXTERNEN ABHÄNGIGKEITEN - Komplett eigenständig
- * 
+ *
  * @author Abdulkerim Sesli
  * @version 1.0.0
  * @updated 2025-10-16 - Optimierte All-in-One Version
@@ -21,9 +22,12 @@ const LOG_LEVELS = { error: 0, warn: 1, info: 2, debug: 3 };
 let globalLogLevel = LOG_LEVELS.warn;
 
 // Debug-Modus
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('debug') === 'true' || window.localStorage?.getItem('iweb-debug') === 'true') {
+  if (
+    urlParams.get("debug") === "true" ||
+    window.localStorage?.getItem("iweb-debug") === "true"
+  ) {
     globalLogLevel = LOG_LEVELS.debug;
   }
 }
@@ -31,10 +35,14 @@ if (typeof window !== 'undefined') {
 function createLogger(category) {
   const prefix = `[${category}]`;
   return {
-    error: (msg, ...args) => globalLogLevel >= LOG_LEVELS.error && console.error(prefix, msg, ...args),
-    warn: (msg, ...args) => globalLogLevel >= LOG_LEVELS.warn && console.warn(prefix, msg, ...args),
-    info: (msg, ...args) => globalLogLevel >= LOG_LEVELS.info && console.info(prefix, msg, ...args),
-    debug: (msg, ...args) => globalLogLevel >= LOG_LEVELS.debug && console.log(prefix, msg, ...args)
+    error: (msg, ...args) =>
+      globalLogLevel >= LOG_LEVELS.error && console.error(prefix, msg, ...args),
+    warn: (msg, ...args) =>
+      globalLogLevel >= LOG_LEVELS.warn && console.warn(prefix, msg, ...args),
+    info: (msg, ...args) =>
+      globalLogLevel >= LOG_LEVELS.info && console.info(prefix, msg, ...args),
+    debug: (msg, ...args) =>
+      globalLogLevel >= LOG_LEVELS.debug && console.log(prefix, msg, ...args),
   };
 }
 
@@ -55,23 +63,26 @@ function getElementById(id, useCache = true) {
 function throttle(func, delay) {
   let timeout = null;
   let lastRan = 0;
-  return function(...args) {
+  return function (...args) {
     const now = Date.now();
     if (now - lastRan >= delay) {
       func.apply(this, args);
       lastRan = now;
     } else {
       clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        func.apply(this, args);
-        lastRan = Date.now();
-      }, delay - (now - lastRan));
+      timeout = setTimeout(
+        () => {
+          func.apply(this, args);
+          lastRan = Date.now();
+        },
+        delay - (now - lastRan)
+      );
     }
   };
 }
 
 // ===== THEME SYSTEM =====
-const themeLog = createLogger('ThemeSystem');
+const themeLog = createLogger("ThemeSystem");
 
 class ThemeSystem {
   constructor() {
@@ -80,31 +91,33 @@ class ThemeSystem {
   }
 
   loadTheme() {
-    const saved = localStorage.getItem('preferred-theme');
+    const saved = localStorage.getItem("preferred-theme");
     if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   }
 
   saveTheme(theme) {
-    localStorage.setItem('preferred-theme', theme);
+    localStorage.setItem("preferred-theme", theme);
   }
 
   applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
     this.currentTheme = theme;
     this.saveTheme(theme);
     themeLog.debug(`Theme angewendet: ${theme}`);
   }
 
   toggleTheme() {
-    const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+    const newTheme = this.currentTheme === "light" ? "dark" : "light";
     this.applyTheme(newTheme);
     return newTheme;
   }
 
   createRipple(button, x, y) {
-    const ripple = document.createElement('div');
-    ripple.className = 'artwork-ripple';
+    const ripple = document.createElement("div");
+    ripple.className = "artwork-ripple";
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
     button.appendChild(ripple);
@@ -117,17 +130,19 @@ class ThemeSystem {
     this.applyTheme(this.currentTheme);
     
     // Button-Event-Listener wird später hinzugefügt (wenn Footer geladen ist)
-    themeLog.info('Theme System initialisiert (Warte auf Footer für Toggle-Button)');
+    themeLog.info(
+      "Theme System initialisiert (Warte auf Footer für Toggle-Button)"
+    );
   }
 
   initToggleButton() {
-    const toggle = getElementById('dayNightToggle');
+    const toggle = getElementById("dayNightToggle");
     if (!toggle) {
-      themeLog.warn('Day/Night Toggle Button nicht gefunden');
+      themeLog.warn("Day/Night Toggle Button nicht gefunden");
       return false;
     }
 
-    toggle.addEventListener('click', (e) => {
+    toggle.addEventListener("click", (e) => {
       const rect = toggle.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -136,19 +151,19 @@ class ThemeSystem {
       this.toggleTheme();
     });
 
-    themeLog.info('Theme Toggle Button verbunden');
+    themeLog.info("Theme Toggle Button verbunden");
     return true;
   }
 }
 
 // ===== FOOTER LOADER =====
-const loaderLog = createLogger('FooterLoader');
+const loaderLog = createLogger("FooterLoader");
 
 class FooterLoader {
   async init() {
-    const container = getElementById('footer-container');
+    const container = getElementById("footer-container");
     if (!container) {
-      loaderLog.warn('Footer Container nicht gefunden');
+      loaderLog.warn("Footer Container nicht gefunden");
       return false;
     }
 
@@ -157,21 +172,25 @@ class FooterLoader {
       this.updateYears();
       this.setupInteractions();
       
-      loaderLog.info('Footer erfolgreich geladen');
-      document.dispatchEvent(new CustomEvent('footer:loaded', { 
-        detail: { footerId: 'site-footer' } 
-      }));
+      loaderLog.info("Footer erfolgreich geladen");
+      document.dispatchEvent(
+        new CustomEvent("footer:loaded", {
+          detail: { footerId: "site-footer" },
+        })
+      );
       
       return true;
     } catch (error) {
-      loaderLog.error('Footer-Ladefehler:', error);
+      loaderLog.error("Footer-Ladefehler:", error);
       this.showFallback(container);
       return false;
     }
   }
 
   async loadContent(container) {
-    const src = container.dataset.footerSrc || '/content/webentwicklung/footer/footer.html';
+    const src =
+      container.dataset.footerSrc ||
+      "/content/webentwicklung/footer/footer.html";
     loaderLog.debug(`Lade Footer: ${src}`);
     
     const response = await fetch(src);
@@ -185,48 +204,48 @@ class FooterLoader {
 
   updateYears() {
     const year = new Date().getFullYear();
-    document.querySelectorAll('.current-year').forEach(el => {
+    document.querySelectorAll(".current-year").forEach((el) => {
       el.textContent = year;
     });
   }
 
   setupInteractions() {
     // Newsletter Form
-    const form = document.querySelector('.newsletter-form-enhanced');
+    const form = document.querySelector(".newsletter-form-enhanced");
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener("submit", (e) => {
         e.preventDefault();
         const input = form.querySelector('input[type="email"]');
         if (input?.value) {
-          loaderLog.info('Newsletter-Anmeldung:', input.value);
-          alert(`Danke für deine Anmeldung! (Demo-Modus)`);
-          input.value = '';
+          loaderLog.info("Newsletter-Anmeldung:", input.value);
+          console.warn("Danke für deine Anmeldung! (Demo-Modus)");
+          input.value = "";
         }
       });
     }
 
     // Cookie Settings
-    const cookieBtn = document.querySelector('.footer-cookie-btn');
+    const cookieBtn = document.querySelector(".footer-cookie-btn");
     if (cookieBtn) {
-      cookieBtn.addEventListener('click', () => {
-        loaderLog.info('Cookie-Einstellungen öffnen');
-        alert('Cookie-Einstellungen (Demo-Modus)');
+      cookieBtn.addEventListener("click", () => {
+        loaderLog.info("Cookie-Einstellungen öffnen");
+        console.warn("Cookie-Einstellungen (Demo-Modus)");
       });
     }
 
     // Smooth Scrolling für interne Links
-    const footer = getElementById('site-footer');
+    const footer = getElementById("site-footer");
     if (footer) {
-      footer.addEventListener('click', (e) => {
+      footer.addEventListener("click", (e) => {
         const link = e.target.closest('a[href^="#"]');
         if (!link) return;
         
-        const targetId = link.getAttribute('href').substring(1);
+        const targetId = link.getAttribute("href").substring(1);
         const target = getElementById(targetId);
         
         if (target) {
           e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
     }
@@ -242,7 +261,7 @@ class FooterLoader {
 }
 
 // ===== SCROLL HANDLER =====
-const scrollLog = createLogger('ScrollHandler');
+const scrollLog = createLogger("ScrollHandler");
 
 class ScrollHandler {
   constructor() {
@@ -251,51 +270,55 @@ class ScrollHandler {
   }
 
   init() {
-    const footer = getElementById('site-footer');
-    const trigger = getElementById('footer-trigger-zone');
+    const footer = getElementById("site-footer");
+    const trigger = getElementById("footer-trigger-zone");
     
     if (!footer || !trigger) {
-      scrollLog.warn('Footer oder Trigger-Zone nicht gefunden');
+      scrollLog.warn("Footer oder Trigger-Zone nicht gefunden");
       return;
     }
 
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.target.id === 'footer-trigger-zone') {
-          const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= 0.1;
-          this.toggleExpansion(shouldExpand);
-        }
-      });
-    }, {
-      root: null,
-      rootMargin: '0px 0px -50% 0px',
-      threshold: [0.1, 0.5]
-    });
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target.id === "footer-trigger-zone") {
+            const shouldExpand =
+              entry.isIntersecting && entry.intersectionRatio >= 0.1;
+            this.toggleExpansion(shouldExpand);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: "0px 0px -50% 0px",
+        threshold: [0.1, 0.5],
+      }
+    );
 
     this.observer.observe(trigger);
-    scrollLog.info('Scroll Handler initialisiert');
+    scrollLog.info("Scroll Handler initialisiert");
   }
 
   toggleExpansion(shouldExpand) {
-    const footer = getElementById('site-footer');
+    const footer = getElementById("site-footer");
     if (!footer) return;
 
-    const minimized = footer.querySelector('.footer-minimized');
-    const maximized = footer.querySelector('.footer-maximized');
+    const minimized = footer.querySelector(".footer-minimized");
+    const maximized = footer.querySelector(".footer-maximized");
     if (!minimized || !maximized) return;
 
     if (shouldExpand && !this.expanded) {
-      footer.classList.add('footer-expanded');
-      document.body.classList.add('footer-expanded');
-      maximized.classList.remove('footer-hidden');
+      footer.classList.add("footer-expanded");
+      document.body.classList.add("footer-expanded");
+      maximized.classList.remove("footer-hidden");
       this.expanded = true;
-      scrollLog.debug('Footer expandiert');
+      scrollLog.debug("Footer expandiert");
     } else if (!shouldExpand && this.expanded) {
-      footer.classList.remove('footer-expanded');
-      document.body.classList.remove('footer-expanded');
-      maximized.classList.add('footer-hidden');
+      footer.classList.remove("footer-expanded");
+      document.body.classList.remove("footer-expanded");
+      maximized.classList.add("footer-hidden");
       this.expanded = false;
-      scrollLog.debug('Footer kollabiert');
+      scrollLog.debug("Footer kollabiert");
     }
   }
 
@@ -308,7 +331,7 @@ class ScrollHandler {
 }
 
 // ===== FOOTER RESIZER =====
-const resizerLog = createLogger('FooterResizer');
+const resizerLog = createLogger("FooterResizer");
 
 class FooterResizer {
   constructor() {
@@ -318,9 +341,9 @@ class FooterResizer {
       MAX_FOOTER_RATIO_DESKTOP: 0.6,
       MIN_SCALE_MOBILE: 0.75,
       MIN_SCALE_DESKTOP: 0.5,
-      THROTTLE_DELAY: 150
+      THROTTLE_DELAY: 150,
     };
-    this.lastSnapshot = '';
+    this.lastSnapshot = "";
     this.rafId = null;
   }
 
@@ -331,8 +354,8 @@ class FooterResizer {
       requestAnimationFrame(() => this.apply());
     }, this.config.THROTTLE_DELAY);
 
-    window.addEventListener('resize', onResize);
-    window.visualViewport?.addEventListener('resize', onResize);
+    window.addEventListener("resize", onResize);
+    window.visualViewport?.addEventListener("resize", onResize);
     
     // Zusätzliche Trigger
     setTimeout(() => this.apply(), 250);
@@ -342,7 +365,7 @@ class FooterResizer {
       document.fonts.ready.then(() => setTimeout(() => this.apply(), 30));
     }
 
-    resizerLog.info('Footer Resizer initialisiert');
+    resizerLog.info("Footer Resizer initialisiert");
   }
 
   measureViewport() {
@@ -357,54 +380,65 @@ class FooterResizer {
   }
 
   setCSSVar(name, value) {
-    document.documentElement.style.setProperty(name, value);
+    const footer = getElementById("site-footer");
+    const target = footer ?? document.documentElement;
+    target.style.setProperty(name, value);
   }
 
   apply() {
-    const footer = getElementById('site-footer');
+    const footer = getElementById("site-footer");
     if (!footer) {
-      resizerLog.debug('Footer noch nicht geladen');
+      resizerLog.debug("Footer noch nicht geladen");
       return;
     }
 
     const { usable } = this.measureViewport();
-    this.setCSSVar('--vh', `${usable * 0.01}px`);
+    this.setCSSVar("--vh", `${usable * 0.01}px`);
 
     const isMobile = window.innerWidth <= this.config.MOBILE_BREAKPOINT;
-    const maxRatio = isMobile ? this.config.MAX_FOOTER_RATIO_MOBILE : this.config.MAX_FOOTER_RATIO_DESKTOP;
+    const maxRatio = isMobile
+      ? this.config.MAX_FOOTER_RATIO_MOBILE
+      : this.config.MAX_FOOTER_RATIO_DESKTOP;
     const maxFooter = Math.round(usable * maxRatio);
-    this.setCSSVar('--footer-max-height', `${maxFooter}px`);
+    this.setCSSVar("--footer-max-height", `${maxFooter}px`);
 
-    const content = document.querySelector('#site-footer .footer-enhanced-content');
+    const content = document.querySelector(
+      "#site-footer .footer-enhanced-content"
+    );
     if (content) {
-      this.setCSSVar('--footer-scale', '1');
+      this.setCSSVar("--footer-scale", "1");
       void content.offsetHeight;
       
       const naturalHeight = content.scrollHeight;
       const base = Math.max(1, naturalHeight || 0);
-      let scale = base > 0 ? Math.min(1, maxFooter / base) : this.computeScale();
+      let scale =
+        base > 0 ? Math.min(1, maxFooter / base) : this.computeScale();
       
-      const minScale = isMobile ? this.config.MIN_SCALE_MOBILE : this.config.MIN_SCALE_DESKTOP;
+      const minScale = isMobile
+        ? this.config.MIN_SCALE_MOBILE
+        : this.config.MIN_SCALE_DESKTOP;
       scale = Math.max(minScale, Number(scale.toFixed(3)));
       
-      this.setCSSVar('--footer-scale', String(scale));
+      this.setCSSVar("--footer-scale", String(scale));
       const actual = Math.round(base * scale);
-      this.setCSSVar('--footer-actual-height', `${actual}px`);
+      this.setCSSVar("--footer-actual-height", `${actual}px`);
 
       const snapshot = `${scale}|${isMobile}|${maxFooter}|${actual}`;
       if (this.lastSnapshot !== snapshot) {
-        resizerLog.debug(`Scale: ${scale}, Mobile: ${isMobile}, Max: ${maxFooter}px, Actual: ${actual}px`);
+        resizerLog.debug(
+          `Scale: ${scale}, Mobile: ${isMobile}, Max: ${maxFooter}px, Actual: ${actual}px`
+        );
         this.lastSnapshot = snapshot;
       }
     } else {
-      this.setCSSVar('--footer-scale', String(this.computeScale()));
-      this.setCSSVar('--footer-actual-height', `${maxFooter}px`);
+      this.setCSSVar("--footer-scale", String(this.computeScale()));
+      this.setCSSVar("--footer-actual-height", `${maxFooter}px`);
     }
   }
 }
 
 // ===== MAIN INITIALIZATION =====
-const mainLog = createLogger('FooterSystem');
+const mainLog = createLogger("FooterSystem");
 
 class FooterSystem {
   constructor() {
@@ -415,7 +449,7 @@ class FooterSystem {
   }
 
   async init() {
-    mainLog.info('Initialisiere Footer-System...');
+    mainLog.info("Initialisiere Footer-System...");
 
     // Theme sofort anwenden (noch ohne Toggle-Button)
     this.theme.init();
@@ -431,16 +465,16 @@ class FooterSystem {
       this.scroller.init();
       this.resizer.init();
       
-      mainLog.info('✅ Footer-System vollständig initialisiert');
+      mainLog.info("✅ Footer-System vollständig initialisiert");
     } else {
-      mainLog.error('❌ Footer konnte nicht geladen werden');
+      mainLog.error("❌ Footer konnte nicht geladen werden");
     }
   }
 }
 
 // ===== AUTO-START =====
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
     const system = new FooterSystem();
     system.init();
   });
@@ -450,6 +484,6 @@ if (document.readyState === 'loading') {
 }
 
 // Export für manuelle Initialisierung (optional)
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.FooterSystem = FooterSystem;
 }
