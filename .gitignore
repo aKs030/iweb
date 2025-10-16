@@ -42,6 +42,12 @@ reports/*.json
 reports/*.txt
 !reports/.gitignore
 
+# Debug- & Test-Dateien
+test-*.html
+debug-*.html
+*.test.js
+*.spec.js
+
 # Projekt-spezifische Dateien
 *.webp.bak
 *.avif.bak
