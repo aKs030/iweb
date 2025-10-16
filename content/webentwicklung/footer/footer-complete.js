@@ -121,14 +121,14 @@ class ThemeSystem {
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
     button.appendChild(ripple);
-    
+
     setTimeout(() => ripple.remove(), 800);
   }
 
   init() {
     // Theme sofort anwenden (bevor Footer geladen ist)
     this.applyTheme(this.currentTheme);
-    
+
     // Button-Event-Listener wird später hinzugefügt (wenn Footer geladen ist)
     themeLog.info(
       "Theme System initialisiert (Warte auf Footer für Toggle-Button)"
@@ -146,7 +146,7 @@ class ThemeSystem {
       const rect = toggle.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
+
       this.createRipple(toggle, x, y);
       this.toggleTheme();
     });
@@ -171,14 +171,14 @@ class FooterLoader {
       await this.loadContent(container);
       this.updateYears();
       this.setupInteractions();
-      
+
       loaderLog.info("Footer erfolgreich geladen");
       document.dispatchEvent(
         new CustomEvent("footer:loaded", {
           detail: { footerId: "site-footer" },
         })
       );
-      
+
       return true;
     } catch (error) {
       loaderLog.error("Footer-Ladefehler:", error);
@@ -192,12 +192,12 @@ class FooterLoader {
       container.dataset.footerSrc ||
       "/content/webentwicklung/footer/footer.html";
     loaderLog.debug(`Lade Footer: ${src}`);
-    
+
     const response = await fetch(src);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    
+
     const html = await response.text();
     container.innerHTML = html;
   }
@@ -239,10 +239,10 @@ class FooterLoader {
       footer.addEventListener("click", (e) => {
         const link = e.target.closest('a[href^="#"]');
         if (!link) return;
-        
+
         const targetId = link.getAttribute("href").substring(1);
         const target = getElementById(targetId);
-        
+
         if (target) {
           e.preventDefault();
           target.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -272,7 +272,7 @@ class ScrollHandler {
   init() {
     const footer = getElementById("site-footer");
     const trigger = getElementById("footer-trigger-zone");
-    
+
     if (!footer || !trigger) {
       scrollLog.warn("Footer oder Trigger-Zone nicht gefunden");
       return;
@@ -349,18 +349,18 @@ class FooterResizer {
 
   init() {
     this.apply();
-    
+
     const onResize = throttle(() => {
       requestAnimationFrame(() => this.apply());
     }, this.config.THROTTLE_DELAY);
 
     window.addEventListener("resize", onResize);
     window.visualViewport?.addEventListener("resize", onResize);
-    
+
     // Zusätzliche Trigger
     setTimeout(() => this.apply(), 250);
     setTimeout(() => this.apply(), 1200);
-    
+
     if (document.fonts) {
       document.fonts.ready.then(() => setTimeout(() => this.apply(), 30));
     }
@@ -408,17 +408,17 @@ class FooterResizer {
     if (content) {
       this.setCSSVar("--footer-scale", "1");
       void content.offsetHeight;
-      
+
       const naturalHeight = content.scrollHeight;
       const base = Math.max(1, naturalHeight || 0);
       let scale =
         base > 0 ? Math.min(1, maxFooter / base) : this.computeScale();
-      
+
       const minScale = isMobile
         ? this.config.MIN_SCALE_MOBILE
         : this.config.MIN_SCALE_DESKTOP;
       scale = Math.max(minScale, Number(scale.toFixed(3)));
-      
+
       this.setCSSVar("--footer-scale", String(scale));
       const actual = Math.round(base * scale);
       this.setCSSVar("--footer-actual-height", `${actual}px`);
@@ -456,15 +456,15 @@ class FooterSystem {
 
     // Footer laden
     const loaded = await this.loader.init();
-    
+
     if (loaded) {
       // WICHTIG: Toggle-Button erst NACH Footer-Laden initialisieren
       this.theme.initToggleButton();
-      
+
       // Nach erfolgreichem Laden: Scroll & Resize
       this.scroller.init();
       this.resizer.init();
-      
+
       mainLog.info("✅ Footer-System vollständig initialisiert");
     } else {
       mainLog.error("❌ Footer konnte nicht geladen werden");
