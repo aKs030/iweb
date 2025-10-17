@@ -1,17 +1,113 @@
+/* Optimierungen:
+  - Verwendung von CSS-Variablen für Farben und Abstände für einfache Wartung.
+  - Umstellung auf die BEM-Klassen aus dem optimierten HTML.
+  - Hinzufügen von Hover- und Fokus-Zuständen für die Buttons, um die Interaktivität
+    und Barrierefreiheit zu verbessern (`:focus-visible` sorgt für einen sichtbaren 
+    Fokus nur bei Tastaturnavigation).
+  - Zentralisierung aller Stile, die zur "About"-Sektion gehören, an einem Ort.
+  - Flexbox-Eigenschaften wurden für eine bessere Zentrierung und Ausrichtung verfeinert.
+*/
+
+/* Hauptcontainer der "About"-Sektion 
+   Die Design-Variablen sind jetzt hier gekapselt, anstatt global in :root zu sein.
+*/
 .about {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --text-color: #333;
+  --background-color: #fff;
+  --border-radius: 8px;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2.5rem;
+  --transition-speed: 0.3s ease;
+
   display: flex;
-  flex-direction: column;
-  scroll-snap-align: center;
-  box-sizing: border-box;
   justify-content: center;
   align-items: center;
-  background: transparent;
+  padding: var(--spacing-xl) var(--spacing-md);
+  box-sizing: border-box;
+  width: 100%;
 }
-.about-cta {
+
+.about__container {
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Haupttext-Bereich */
+.about__text {
+  text-align: left;
+  line-height: 1.6;
+}
+
+.about__text h3 {
+  margin-bottom: var(--spacing-md);
+}
+
+.about__text p {
+  margin-bottom: var(--spacing-md);
+}
+
+.about__farewell {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: var(--spacing-lg);
+}
+
+
+/* Call-to-Action Buttons */
+.about__cta {
   margin-top: var(--spacing-xl);
-  margin-bottom: var(--spacing-lg);
   display: flex;
   gap: var(--spacing-md);
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start; /* Oder 'center' je nach Design */
 }
+
+.about__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 600;
+  border: 2px solid transparent;
+  transition: all var(--transition-speed);
+  cursor: pointer;
+}
+
+/* Primärer Button-Stil */
+.about__button--primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.about__button--primary:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Outline Button-Stil */
+.about__button--outline {
+  background-color: transparent;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.about__button--outline:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Fokus-Stil für Barrierefreiheit */
+.about__button:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+

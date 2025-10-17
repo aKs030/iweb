@@ -52,12 +52,12 @@ const SECTION_ID = "features";
 const TEMPLATE_IDS = ["kart-1", "kart-2", "kart-3", "kart-4"];
 const TEMPLATE_URL = "/pages/card/karten.html";
 
-// Animation Thresholds
-const THRESHOLDS = [0, 0.1, 0.25, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1];
-const SNAP_THRESHOLD = 0.75; // Forward Animation bei 75% Sichtbarkeit
-const REVERSE_THRESHOLD = 0.7; // Reverse Animation bei <70%
-const SCROLL_THROTTLE = 100; // ms
-const TOUCH_THROTTLE = 50; // ms - schneller für Touch
+// Animation Thresholds - Optimiert für gleichmäßige Übergänge
+const THRESHOLDS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+const SNAP_THRESHOLD = 0.6; // Forward Animation früher für sanfteren Übergang
+const REVERSE_THRESHOLD = 0.5; // Reverse Animation bei 50% für symmetrisches Verhalten
+const SCROLL_THROTTLE = 80; // ms - Reduziert für reaktivere Übergänge
+const TOUCH_THROTTLE = 40; // ms - Reduziert für flüssigere Touch-Steuerung
 
 // ===== PARTICLE CONFIGURATION =====
 // Synchron mit karten-star-animation.css & Earth-System
@@ -65,25 +65,25 @@ const CONFIG = {
   PARTICLES: {
     COUNT_DESKTOP: 150,
     COUNT_MOBILE: 60,
-    SIZE: 2.5, // Three.js Units - größer für bessere Sichtbarkeit
+    SIZE: 2.2, // Three.js Units - optimiert für gleichmäßige Verteilung
     COLOR: 0x098bff, // Portfolio Blue
-    OPACITY: 0.8,
-    TWINKLE_SPEED: 0.25, // Wie Earth Starfield
-    TWINKLE_AMPLITUDE: 0.5,
+    OPACITY: 0.75, // Leicht reduziert für sanftere Übergänge
+    TWINKLE_SPEED: 0.2, // Langsamer für ruhigere Animation
+    TWINKLE_AMPLITUDE: 0.4, // Reduziert für gleichmäßigeres Erscheinungsbild
   },
   ANIMATION: {
-    FORWARD_DURATION: 2000, // ms - Angepasst an cinematische Kamerafahrten (2.5s)
-    REVERSE_DURATION: 1200, // ms - Etwas länger für smoothere Rückfahrt
+    FORWARD_DURATION: 2500, // ms - Länger für gleichmäßigere Bewegung
+    REVERSE_DURATION: 1800, // ms - Ausgewogen für sanfte Rückfahrt
     EASING: {
       FORWARD: "easeOutCubic", // Sanft beschleunigend
       REVERSE: "easeInCubic", // Sanft abbremsend
     },
   },
   CAMERA: {
-    FOV: 50,
+    FOV: 45, // Reduziert für weniger perspektivische Verzerrung
     NEAR: 0.1,
     FAR: 100,
-    POSITION: { x: 2, y: 2, z: 18 }, // Angepasst an features-Section (rechts-oben)
+    POSITION: { x: 0, y: 0, z: 20 }, // Zentral ausgerichtet für gleichmäßige Sicht
   },
   RENDERER: {
     ALPHA: true,
@@ -96,11 +96,21 @@ const CONFIG = {
   },
 };
 
-// ===== Easing Functions =====
+// ===== Easing Functions - Optimiert für gleichmäßige Kamerabewegung =====
 const Easing = {
-  easeOutCubic: (t) => 1 - Math.pow(1 - t, 3),
-  easeInCubic: (t) => t * t * t,
-  easeOutExpo: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+  // Sanfter Übergang ohne abrupte Beschleunigung
+  easeOutCubic: (t) => {
+    const t1 = t - 1;
+    return t1 * t1 * t1 + 1;
+  },
+  // Gleichmäßigerer Start
+  easeInCubic: (t) => {
+    return t * t * t;
+  },
+  // Alternative: Noch sanfterer Übergang (Ease-In-Out)
+  easeInOutQuad: (t) => {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  },
 };
 
 // ===== Module State =====
@@ -110,6 +120,7 @@ const animationState = {
   mode: null, // 'forward' | 'reverse'
   startTime: null,
   rafId: null,
+  idleRafId: null, // RAF ID for idle render loop
   frameCount: 0, // Debug: Zähle Frames
 };
 
@@ -348,24 +359,25 @@ class ThreeCardSystem {
       let startX, startY, targetX, targetY;
 
       if (mode === "forward") {
-        // Start: Random über sichtbaren Viewport
-        startX = (Math.random() - 0.5) * viewWidth * 1.2; // 20% Überlauf
-        startY = (Math.random() - 0.5) * viewHeight * 1.2;
+        // Start: Gleichmäßig verteilt über gesamten Viewport (kein Überlauf)
+        startX = (Math.random() - 0.5) * viewWidth * 1.0; // Genau im Viewport
+        startY = (Math.random() - 0.5) * viewHeight * 1.0;
 
-        // Target: Random Card + Position innerhalb Card
+        // Target: Random Card + gleichmäßige Position innerhalb Card
         const targetCard =
           cardPositions[Math.floor(Math.random() * cardPositions.length)];
-        targetX = targetCard.x + (Math.random() - 0.5) * targetCard.width;
-        targetY = targetCard.y + (Math.random() - 0.5) * targetCard.height;
+        targetX = targetCard.x + (Math.random() - 0.5) * targetCard.width * 0.9; // 90% der Card-Breite
+        targetY =
+          targetCard.y + (Math.random() - 0.5) * targetCard.height * 0.9;
       } else {
-        // Reverse: Card → Random
+        // Reverse: Card → Gleichmäßig über Viewport
         const startCard =
           cardPositions[Math.floor(Math.random() * cardPositions.length)];
-        startX = startCard.x + (Math.random() - 0.5) * startCard.width;
-        startY = startCard.y + (Math.random() - 0.5) * startCard.height;
+        startX = startCard.x + (Math.random() - 0.5) * startCard.width * 0.9;
+        startY = startCard.y + (Math.random() - 0.5) * startCard.height * 0.9;
 
-        targetX = (Math.random() - 0.5) * viewWidth * 1.2;
-        targetY = (Math.random() - 0.5) * viewHeight * 1.2;
+        targetX = (Math.random() - 0.5) * viewWidth * 1.0; // Gleichmäßige Verteilung
+        targetY = (Math.random() - 0.5) * viewHeight * 1.0;
       }
 
       // Positions (Start)
@@ -378,17 +390,17 @@ class ThreeCardSystem {
       targets[i3 + 1] = targetY;
       targets[i3 + 2] = 0;
 
-      // Color (Portfolio Blue mit leichter Variation)
+      // Color (Portfolio Blue mit minimaler Variation für Gleichmäßigkeit)
       const color = new this.THREE.Color(CONFIG.PARTICLES.COLOR);
-      color.offsetHSL(0, 0, (Math.random() - 0.5) * 0.2); // ±10% Lightness
+      color.offsetHSL(0, 0, (Math.random() - 0.5) * 0.15); // ±7.5% Lightness - reduziert
       colors[i3] = color.r;
       colors[i3 + 1] = color.g;
       colors[i3 + 2] = color.b;
 
-      // Size
-      sizes[i] = CONFIG.PARTICLES.SIZE * (0.5 + Math.random() * 1.5); // 0.5-2.0x
+      // Size - Engere Variation für gleichmäßigeres Erscheinungsbild
+      sizes[i] = CONFIG.PARTICLES.SIZE * (0.7 + Math.random() * 0.6); // 0.7-1.3x - reduziert
 
-      // Twinkle Phase Offset
+      // Twinkle Phase Offset - Gleichmäßig verteilt
       twinkleOffsets[i] = Math.random() * Math.PI * 2;
 
       // Store Data für Animation
@@ -529,20 +541,20 @@ class ThreeCardSystem {
       let startX, startY, targetX, targetY;
 
       if (mode === "forward") {
-        // Start: Random über gesamten sichtbaren Viewport
-        startX = (Math.random() - 0.5) * viewWidth * 1.2;
-        startY = (Math.random() - 0.5) * viewHeight * 1.2;
+        // Start: Gleichmäßig über gesamten Viewport verteilt
+        startX = (Math.random() - 0.5) * viewWidth * 1.0;
+        startY = (Math.random() - 0.5) * viewHeight * 1.0;
 
-        // Target: Zentrum mit leichter Streuung
-        targetX = (Math.random() - 0.5) * viewWidth * 0.4;
-        targetY = (Math.random() - 0.5) * viewHeight * 0.4;
+        // Target: Zentrum mit gleichmäßiger Streuung
+        targetX = (Math.random() - 0.5) * viewWidth * 0.5;
+        targetY = (Math.random() - 0.5) * viewHeight * 0.5;
       } else {
-        // Reverse: Zentrum → Random
-        startX = (Math.random() - 0.5) * viewWidth * 0.4;
-        startY = (Math.random() - 0.5) * viewHeight * 0.4;
+        // Reverse: Zentrum → Gleichmäßig über Viewport
+        startX = (Math.random() - 0.5) * viewWidth * 0.5;
+        startY = (Math.random() - 0.5) * viewHeight * 0.5;
 
-        targetX = (Math.random() - 0.5) * viewWidth * 1.2;
-        targetY = (Math.random() - 0.5) * viewHeight * 1.2;
+        targetX = (Math.random() - 0.5) * viewWidth * 1.0;
+        targetY = (Math.random() - 0.5) * viewHeight * 1.0;
       }
 
       positions[i3] = startX;
@@ -553,14 +565,14 @@ class ThreeCardSystem {
       targets[i3 + 1] = targetY;
       targets[i3 + 2] = 0;
 
-      // Color
+      // Color - Reduzierte Variation für Gleichmäßigkeit
       const color = new this.THREE.Color(CONFIG.PARTICLES.COLOR);
-      color.offsetHSL(0, 0, (Math.random() - 0.5) * 0.2);
+      color.offsetHSL(0, 0, (Math.random() - 0.5) * 0.15);
       colors[i3] = color.r;
       colors[i3 + 1] = color.g;
       colors[i3 + 2] = color.b;
 
-      sizes[i] = CONFIG.PARTICLES.SIZE * (0.5 + Math.random() * 1.5);
+      sizes[i] = CONFIG.PARTICLES.SIZE * (0.7 + Math.random() * 0.6);
       twinkleOffsets[i] = Math.random() * Math.PI * 2;
 
       this.particleData.push({
@@ -647,8 +659,17 @@ class ThreeCardSystem {
    * @returns {Promise<boolean>} Resolves when animation completes
    */
   startAnimation(mode = "forward") {
+    // Stop idle render loop if running
+    if (animationState.idleRafId) {
+      cancelAnimationFrame(animationState.idleRafId);
+      animationState.idleRafId = null;
+      log.debug("Stopped idle render loop for new animation");
+    }
+
     if (animationState.isAnimating) {
-      log.warn("Animation already running, stopping previous");
+      log.warn(
+        `Animation already running (${animationState.mode}), stopping previous before starting ${mode}`
+      );
       this.stopAnimation();
     }
 
@@ -811,9 +832,16 @@ class ThreeCardSystem {
    * Wird nach Forward-Animation gestartet, bis Reverse beginnt
    */
   startIdleRender() {
+    // Cancel existing idle loop if running
+    if (animationState.idleRafId) {
+      cancelAnimationFrame(animationState.idleRafId);
+      animationState.idleRafId = null;
+    }
+
     const idleLoop = () => {
       // Stoppe wenn neue Animation startet oder System nicht mounted
       if (animationState.isAnimating || !this.mounted || !this.particles) {
+        animationState.idleRafId = null;
         return;
       }
 
@@ -830,11 +858,11 @@ class ThreeCardSystem {
       this.renderer.render(this.scene, this.camera);
 
       // Continue Loop
-      requestAnimationFrame(idleLoop);
+      animationState.idleRafId = requestAnimationFrame(idleLoop);
     };
 
     log.debug("Starting idle render loop for particle twinkle");
-    idleLoop();
+    animationState.idleRafId = requestAnimationFrame(idleLoop);
   }
 
   /**
@@ -844,6 +872,11 @@ class ThreeCardSystem {
     if (animationState.rafId) {
       cancelAnimationFrame(animationState.rafId);
       animationState.rafId = null;
+    }
+
+    if (animationState.idleRafId) {
+      cancelAnimationFrame(animationState.idleRafId);
+      animationState.idleRafId = null;
     }
 
     if (this.particles) {
@@ -1136,7 +1169,7 @@ async function applyForwardAnimation(section) {
  */
 async function applyReverseAnimation(section) {
   if (isReversing) {
-    log.warn("⚠️ Reverse animation already running, skipping duplicate call");
+    log.debug("⚠️ Reverse animation already running, skipping duplicate call");
     return;
   }
 
@@ -1214,9 +1247,10 @@ function triggerReverse(section, source = "unknown") {
     return false;
   }
 
-  if (reverseTriggered || isReversing) {
+  // Enhanced guard: Check animation state too
+  if (reverseTriggered || isReversing || animationState.isAnimating) {
     log.debug(
-      `⏭️ Reverse already triggered/running (source=${source}), skipping`
+      `⏭️ Reverse already triggered/running (source=${source}, isAnimating=${animationState.isAnimating}), skipping`
     );
     return false;
   }
@@ -1308,7 +1342,8 @@ function setupObserver(section) {
           isVisible &&
           ratio >= SNAP_THRESHOLD &&
           !hasAnimated &&
-          !isReversing
+          !isReversing &&
+          !animationState.isAnimating
         ) {
           if (section.dataset.currentTemplate) {
             log.info(
@@ -1498,15 +1533,6 @@ export function cleanupThreeCardSystem() {
     threeInstance.cleanup();
     threeInstance = null;
   }
-}
-
-// ===== Export für Testing/Debugging =====
-export function getThreeInstance() {
-  return threeInstance;
-}
-
-export function getAnimationState() {
-  return { ...animationState };
 }
 
 /**

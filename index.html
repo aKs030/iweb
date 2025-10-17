@@ -191,28 +191,33 @@
     />
 
     <!-- CSS mit Priorität laden -->
+
+    <!-- Kritische CSS synchron laden -->
     <link rel="stylesheet" href="/content/webentwicklung/root.css" />
     <link rel="stylesheet" href="/content/webentwicklung/index.css" />
     <link rel="stylesheet" href="/content/webentwicklung/buttons.css" />
-    <link
-      rel="stylesheet"
-      href="/content/webentwicklung/particles/three-earth.css"
-    />
     <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
-    <!-- CSS direkt laden für bessere Performance -->
-    <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
-    <link
-      rel="stylesheet"
-      href="/content/webentwicklung/footer/day-night-artwork.css"
-    />
-    <link rel="stylesheet" href="/pages/about/about.css" />
-    <link rel="stylesheet" href="/pages/card/karten.css" />
-    <link rel="stylesheet" href="/pages/card/karten-star-animation.css" />
     <link rel="stylesheet" href="/pages/home/hero.css" />
-    <link
-      rel="stylesheet"
-      href="/content/webentwicklung/TypeWriter/typewriter.css"
-    />
+    <link rel="stylesheet" href="/content/webentwicklung/TypeWriter/typewriter.css" />
+
+    <!-- Nicht-kritische CSS asynchron laden (Preload+onload-Pattern) -->
+    <link rel="preload" href="/content/webentwicklung/particles/three-earth.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
+
+    <link rel="preload" href="/content/webentwicklung/footer/footer.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" /></noscript>
+
+    <link rel="preload" href="/content/webentwicklung/footer/day-night-artwork.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" /></noscript>
+
+    <link rel="preload" href="/pages/about/about.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
+
+    <link rel="preload" href="/pages/card/karten.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/pages/card/karten.css" /></noscript>
+
+    <link rel="preload" href="/pages/card/karten-star-animation.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/pages/card/karten-star-animation.css" /></noscript>
 
     <!-- Theme System entfernt - Animation-System wurde deaktiviert -->
 
@@ -575,9 +580,8 @@
 
     <!-- Optimierte Script-Ladereihenfolge -->
     <!-- (Lazy) Komponenten: three-card-system & about werden on-demand via IntersectionObserver in main.js geladen -->
-    <!-- Haupt-Entry Point -->
+    <!-- Haupt-Entry Point (inkl. Menu-Import für zentralisierte Verwaltung) -->
     <script src="/content/webentwicklung/main.js" type="module"></script>
-    <script type="module" src="/content/webentwicklung/menu/menu.js"></script>
 
     <!-- Footer System (All-in-One) -->
     <div

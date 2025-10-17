@@ -9,6 +9,11 @@ import {
 } from "./shared-utilities.js";
 import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
+
+// ===== Side-Effect Imports (Module ohne explizite Exports) =====
+// Menü-Modul wird für Side-Effects importiert (Initialisierung)
+import "./menu/menu.js";
+
 // Three.js wird nur bei Bedarf geladen (Code-Splitting für Performance)
 // import { initThreeEarth } from "./particles/three-earth-system.js";
 // ===== Shared Utilities Import =====
@@ -329,27 +334,6 @@ const ScrollSnapping = (() => {
 
 // Scroll Snapping initialisieren
 ScrollSnapping.init();
-
-// ===== Menu Loading =====
-function loadMenuAssets() {
-  const c = getElementById("menu-container");
-  if (!c) return;
-  if (c.dataset.assetsLoaded === "1") return;
-  if (
-    document.querySelector('script[src="/content/webentwicklung/menu/menu.js"]')
-  ) {
-    c.dataset.assetsLoaded = "1";
-    return;
-  }
-  const s = document.createElement("script");
-  s.src = "/content/webentwicklung/menu/menu.js";
-  s.defer = true;
-  s.onload = () => {
-    c.dataset.assetsLoaded = "1";
-  };
-  document.body.appendChild(s);
-}
-
 // ===== Application Initialization =====
 (() => {
   "use strict";
@@ -494,13 +478,8 @@ function loadMenuAssets() {
       fire(EVENTS.MODULES_READY);
       tryHide();
 
-      // Animation Engine Event Handler entfernt
-
-      // Menü-Assets laden
-      loadMenuAssets();
-
-      // Hard fallback für Loading
-      setTimeout(hideLoading, 5000);
+  // Hard fallback für Loading
+  setTimeout(hideLoading, 5000);
 
       // Persistenten Storage anfragen (best effort, verzögert um Initial Load nicht zu blockieren)
       schedulePersistentStorageRequest(2200);
