@@ -205,10 +205,10 @@ class FooterLoader {
         if (input?.value) {
           const email = input.value;
           loaderLog.info("Newsletter-Anmeldung:", email);
-          
+
           // TODO: Backend-Integration für Newsletter-Anmeldung
           // Beispiel: await fetch('/api/newsletter/subscribe', { method: 'POST', body: JSON.stringify({ email }) });
-          
+
           // Visuelles Feedback für Benutzer
           const submitButton = form.querySelector('button[type="submit"]');
           if (submitButton) {
@@ -220,7 +220,7 @@ class FooterLoader {
               submitButton.disabled = false;
             }, 3000);
           }
-          
+
           input.value = "";
         }
       });
@@ -231,7 +231,7 @@ class FooterLoader {
     if (cookieBtn) {
       cookieBtn.addEventListener("click", () => {
         loaderLog.info("Cookie-Einstellungen öffnen");
-        
+
         // TODO: Cookie-Einstellungsdialog implementieren
         // Beispiel: window.dispatchEvent(new CustomEvent('openCookieSettings'));
       });
@@ -379,7 +379,7 @@ class FooterResizer {
     const content = document.querySelector(
       "#site-footer .footer-enhanced-content"
     );
-    
+
     if (content && "ResizeObserver" in window) {
       this.resizeObserver = new ResizeObserver(() => {
         // Debounce mit requestAnimationFrame für optimale Performance
@@ -391,7 +391,7 @@ class FooterResizer {
           this.rafId = null;
         });
       });
-      
+
       this.resizeObserver.observe(content);
       resizerLog.debug("ResizeObserver für Footer-Content aktiviert");
     } else {
@@ -409,7 +409,7 @@ class FooterResizer {
 
     resizerLog.info("Footer Resizer initialisiert");
   }
-  
+
   cleanup() {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
