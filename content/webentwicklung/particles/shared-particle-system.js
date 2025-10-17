@@ -74,6 +74,8 @@ export class SharedParallaxManager {
   activate() {
     if (this.isActive) return;
     this.scrollHandler = throttle(() => {
+      // NOTE: calculateScrollProgress() ist veraltet - wird nicht mehr verwendet
+      // Die Scroll-Position wird ausschließlich über CSS-Variablen gesteuert
       const progress = this.calculateScrollProgress();
       document.documentElement.style.setProperty(
         `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
@@ -91,6 +93,10 @@ export class SharedParallaxManager {
     this.isActive = false;
     this.handlers.clear();
   }
+  /**
+   * @deprecated Wird nicht mehr verwendet - Scroll-Position wird über CSS-Variablen gesteuert
+   * Diese Funktion bleibt für Rückwärtskompatibilität, kann aber entfernt werden
+   */
   calculateScrollProgress() {
     const scrollY = window.pageYOffset;
     const windowHeight = window.innerHeight;

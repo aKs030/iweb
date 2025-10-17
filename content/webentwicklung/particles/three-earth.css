@@ -13,8 +13,6 @@
   transition: background 0.8s ease-in-out;
 }
 
-/* data-section="about" entfernt - nicht verwendet */
-
 /* Three.js Container */
 .three-earth-container {
   position: fixed;
@@ -93,8 +91,6 @@
   font-weight: 500;
 }
 
-/* .three-earth-container.error entfernt - redundant mit .three-earth-error */
-
 .three-earth-error {
   background: rgba(60, 20, 20, 0.9);
 }
@@ -103,11 +99,9 @@
 .three-earth-container[data-section="hero"] {
   opacity: 1;
 }
+
 .three-earth-container[data-section="features"] {
   opacity: 0.95;
-}
-.three-earth-container[data-section="about"] {
-  opacity: 0.85;
 }
 
 /* Reduced Motion */

@@ -514,7 +514,13 @@ class ThreeCardSystem {
   /**
    * Fallback: Erstellt Grid-verteilte Partikel ohne Card-Targets
    * Simuliert ein 4-Karten-Layout für visuell ansprechende Animation
-   * @param {string} mode - 'forward' | 'reverse'
+   * 
+   * WICHTIG: Dieser Fallback verhindert unschöne Darstellung bei fehlenden .card-Elementen
+   * durch gleichmäßige Verteilung im 2x2 Grid-Layout, das die erwartete Karten-Position imitiert.
+   * Die Partikel starten aus einem großen Viewport-Bereich und konvergieren zu Grid-Positionen,
+   * genau wie bei der Card-basierten Animation.
+   * 
+   * @param {string} mode - 'forward' (viewport → grid) | 'reverse' (grid → viewport)
    * @param {number} particleCount - Anzahl der Partikel
    */
   createFallbackParticles(mode = "forward", particleCount = 150) {

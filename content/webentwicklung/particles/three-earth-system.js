@@ -99,7 +99,8 @@ const CONFIG = {
     RADIUS: 12, // Weiche Beleuchtung aus großer Distanz
     HEIGHT: 2.5,
     INTENSITY: 1.6, // Ausbalancierte Intensität
-    // AUTO_ROTATE wurde entfernt - Rotation wird durch Day/Night-Zyklus gesteuert
+    // ROTATION_SPEED: Wird nur bei CONFIG.DAY_NIGHT_CYCLE.ENABLED verwendet
+    // Bei deaktiviertem Zyklus: Sonne folgt Kamera-Orbit (updateCameraPosition)
     ROTATION_SPEED: 0.0004,
   },
   LIGHTING: {
