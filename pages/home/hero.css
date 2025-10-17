@@ -5,7 +5,7 @@ body:not(.hero-active) .hero-title {
 .hero-title {
   /* Responsive font sizing for mid-sized viewports */
   position: relative;
-  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-inter);
   font-size: var(--greet-fs);
   line-height: var(--greet-lh);
   font-weight: var(--greet-weight);

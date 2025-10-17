@@ -6,7 +6,7 @@
             während Cards gleichzeitig materialisieren
    
    Performance: Canvas-basiert, GPU-optimiert
-   Timing: 1.4s (synchron mit Earth TRANSITION_DURATION)
+   Timing: 2.0s (synchron mit cinematischen Kamerafahrten)
    Easing: cubic-bezier(0.22, 1, 0.36, 1) (ease-out-expo)
 ======================================== */
 
@@ -24,24 +24,24 @@
   z-index: 1001; /* Über Cards */
   pointer-events: none;
   opacity: 1;
-  -webkit-transition: opacity 0.8s ease-out 0.6s; /* Delay: Partikel bleiben länger */
-  -o-transition: opacity 0.8s ease-out 0.6s;
-  transition: opacity 0.8s ease-out 0.6s;
+  -webkit-transition: opacity 1s ease-out 0.8s; /* Delay: Partikel bleiben länger (angepasst an 2s)*/
+  -o-transition: opacity 1s ease-out 0.8s;
+  transition: opacity 1s ease-out 0.8s;
 }
 
-/* Cards während Starfield - synchrone Animation (1400ms) */
+/* Cards während Starfield - synchrone Animation (2000ms) */
 #features.starfield-animating .features-cards {
   position: relative;
   z-index: 1000;
   opacity: 0;
   visibility: visible;
-  -webkit-animation: cards-appear-with-starfield 1400ms
+  -webkit-animation: cards-appear-with-starfield 2000ms
     cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation: cards-appear-with-starfield 1400ms cubic-bezier(0.22, 1, 0.36, 1)
+  animation: cards-appear-with-starfield 2000ms cubic-bezier(0.22, 1, 0.36, 1)
     forwards;
 }
 
-/* Reverse Animation: Cards → Partikel (schneller: 800ms) */
+/* Reverse Animation: Cards → Partikel (1200ms) */
 /* "Hold Shape then Materialize" Effekt:
    - 0-40%: Cards blenden komplett aus (Partikel halten Form)
    - 40-100%: Cards bleiben unsichtbar (Partikel dispersieren)
@@ -51,9 +51,9 @@
   z-index: 1000;
   opacity: 1;
   visibility: visible;
-  -webkit-animation: cards-dematerialize 800ms cubic-bezier(0.22, 1, 0.36, 1)
+  -webkit-animation: cards-dematerialize 1200ms cubic-bezier(0.22, 1, 0.36, 1)
     forwards;
-  animation: cards-dematerialize 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: cards-dematerialize 1200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* ========================================
@@ -79,7 +79,7 @@
 /**
  * Cards erscheinen während Partikel formieren
  * Partikel-Count: Desktop 150, Mobile 60 (GPU-optimiert)
- * Timeline:
+ * Timeline (2000ms):
  * - 0-60%:  Cards bleiben unsichtbar (Partikel formieren sich)
  * - 60-75%: Blur fade-in (Cards "materialisieren" aus Partikeln)
  * - 75-90%: Sharpening + Glow-Peak

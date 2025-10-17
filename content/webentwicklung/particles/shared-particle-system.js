@@ -20,7 +20,7 @@ const log = createLogger("sharedParticleSystem");
 // ===== Shared Configuration =====
 export const SHARED_CONFIG = {
   PERFORMANCE: {
-    THROTTLE_MS: 16, // Aim for 60fps
+    THROTTLE_MS: 20, // Angepasst an cinematische Kamerafahrten (sanfter)
   },
   SCROLL: {
     CSS_PROPERTY_PREFIX: "--scroll-",
@@ -357,7 +357,7 @@ export async function loadThreeJS() {
       log.info(`🔄 Loading Three.js from: ${src}`);
       const THREE = await import(src);
       const ThreeJS = THREE.default || THREE;
-      
+
       // Verify it's a valid Three.js module
       if (ThreeJS?.WebGLRenderer) {
         window.THREE = ThreeJS;

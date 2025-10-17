@@ -72,18 +72,18 @@ const CONFIG = {
     TWINKLE_AMPLITUDE: 0.5,
   },
   ANIMATION: {
-    FORWARD_DURATION: 1400, // ms - Synchron mit CSS (1400ms)
-    REVERSE_DURATION: 800, // ms - Schneller für snappier feel
+    FORWARD_DURATION: 2000, // ms - Angepasst an cinematische Kamerafahrten (2.5s)
+    REVERSE_DURATION: 1200, // ms - Etwas länger für smoothere Rückfahrt
     EASING: {
-      FORWARD: "easeOutCubic", // Approximation von ease-out-expo
-      REVERSE: "easeInCubic", // Beschleunigt zum Ende
+      FORWARD: "easeOutCubic", // Sanft beschleunigend
+      REVERSE: "easeInCubic", // Sanft abbremsend
     },
   },
   CAMERA: {
     FOV: 50,
     NEAR: 0.1,
     FAR: 100,
-    POSITION: { x: 0, y: 0, z: 15 }, // Zentriert über Card-Grid
+    POSITION: { x: 2, y: 2, z: 18 }, // Angepasst an features-Section (rechts-oben)
   },
   RENDERER: {
     ALPHA: true,
@@ -105,7 +105,7 @@ const Easing = {
 
 // ===== Module State =====
 let threeInstance = null; // Singleton Three.js Instance
-let animationState = {
+const animationState = {
   isAnimating: false,
   mode: null, // 'forward' | 'reverse'
   startTime: null,
@@ -173,12 +173,12 @@ class ThreeCardSystem {
         CONFIG.CAMERA.POSITION.z
       );
       this.camera.lookAt(0, 0, 0);
-      
+
       log.debug("Camera setup:", {
         fov: CONFIG.CAMERA.FOV,
         aspect,
         position: CONFIG.CAMERA.POSITION,
-        lookAt: { x: 0, y: 0, z: 0 }
+        lookAt: { x: 0, y: 0, z: 0 },
       });
 
       // Renderer Setup
@@ -205,21 +205,21 @@ class ThreeCardSystem {
         height: 100%;
         pointer-events: none;
       `;
-      
+
       // Ensure container has position: relative
       const containerStyle = window.getComputedStyle(this.container);
-      if (containerStyle.position === 'static') {
-        this.container.style.position = 'relative';
+      if (containerStyle.position === "static") {
+        this.container.style.position = "relative";
         log.debug("Set container position to relative");
       }
-      
+
       this.container.appendChild(this.renderer.domElement);
-      
+
       log.debug("Canvas appended to DOM:", {
         canvasWidth: this.renderer.domElement.width,
         canvasHeight: this.renderer.domElement.height,
         canvasClassName: this.renderer.domElement.className,
-        containerChildren: this.container.children.length
+        containerChildren: this.container.children.length,
       });
 
       // Resize Handler
@@ -259,47 +259,49 @@ class ThreeCardSystem {
 
     const cards = this.container.querySelectorAll(".card");
 
-    log.info(`Looking for cards in container:`, {
+    log.info("Looking for cards in container:", {
       containerTag: this.container.tagName,
       containerId: this.container.id,
       containerClass: this.container.className,
       cardsFound: cards.length,
-      containerHTML: this.container.innerHTML.substring(0, 200)
+      containerHTML: this.container.innerHTML.substring(0, 200),
     });
 
     if (!cards.length) {
       log.error("❌ No cards found for particle creation - cannot animate");
-      log.info("Container structure:", this.container.innerHTML.substring(0, 500));
-      
+      log.info(
+        "Container structure:",
+        this.container.innerHTML.substring(0, 500)
+      );
+
       // Fallback: Erstelle zentral verteilte Partikel ohne Card-Targets
       log.warn("⚠️ Using fallback: center-distributed particles");
       return this.createFallbackParticles(mode, particleCount);
     }
 
     // Berechne Card-Positionen in Three.js Koordinaten
-    const containerRect = this.container.getBoundingClientRect();
     const canvasRect = this.renderer.domElement.getBoundingClientRect();
-    
+
     const cardPositions = Array.from(cards).map((card) => {
       const cardRect = card.getBoundingClientRect();
 
       // Berechne Zentrum der Card relativ zum Canvas (in Pixeln)
-      const centerXPx = (cardRect.left + cardRect.width / 2) - canvasRect.left;
-      const centerYPx = (cardRect.top + cardRect.height / 2) - canvasRect.top;
-      
+      const centerXPx = cardRect.left + cardRect.width / 2 - canvasRect.left;
+      const centerYPx = cardRect.top + cardRect.height / 2 - canvasRect.top;
+
       // Normalisiere zu [-1, 1] NDC (Normalized Device Coordinates)
       const ndcX = (centerXPx / canvasRect.width) * 2 - 1;
       const ndcY = -((centerYPx / canvasRect.height) * 2 - 1); // Y invertiert
-      
+
       // Berechne World-Space Position basierend auf Camera FOV
       const distance = CONFIG.CAMERA.POSITION.z;
       const vFOV = (CONFIG.CAMERA.FOV * Math.PI) / 180; // Zu Radians
       const height = 2 * Math.tan(vFOV / 2) * distance;
       const width = height * (canvasRect.width / canvasRect.height);
-      
+
       const worldX = ndcX * (width / 2);
       const worldY = ndcY * (height / 2);
-      
+
       // Card Dimensionen in World-Space
       const worldWidth = (cardRect.width / canvasRect.width) * width;
       const worldHeight = (cardRect.height / canvasRect.height) * height;
@@ -312,13 +314,16 @@ class ThreeCardSystem {
       };
     });
 
-    log.debug("Card positions in 3D space:", cardPositions.map((pos, i) => ({
-      card: i,
-      x: pos.x.toFixed(2),
-      y: pos.y.toFixed(2),
-      width: pos.width.toFixed(2),
-      height: pos.height.toFixed(2)
-    })));
+    log.debug(
+      "Card positions in 3D space:",
+      cardPositions.map((pos, i) => ({
+        card: i,
+        x: pos.x.toFixed(2),
+        y: pos.y.toFixed(2),
+        width: pos.width.toFixed(2),
+        height: pos.height.toFixed(2),
+      }))
+    );
 
     // BufferGeometry für Partikel
     const geometry = new this.THREE.BufferGeometry();
@@ -329,7 +334,7 @@ class ThreeCardSystem {
     const twinkleOffsets = new Float32Array(particleCount);
 
     this.particleData = [];
-    
+
     // Berechne sichtbaren Bereich basierend auf Camera FOV
     const distance = CONFIG.CAMERA.POSITION.z;
     const vFOV = (CONFIG.CAMERA.FOV * Math.PI) / 180;
@@ -396,13 +401,16 @@ class ThreeCardSystem {
         twinkleOffset: twinkleOffsets[i],
       });
     }
-    
+
     // Debug: Log erste paar Partikel
     if (this.particleData.length > 0) {
-      log.debug("Sample particle data (first 3):", this.particleData.slice(0, 3).map(p => ({
-        start: `(${p.startX.toFixed(2)}, ${p.startY.toFixed(2)})`,
-        target: `(${p.targetX.toFixed(2)}, ${p.targetY.toFixed(2)})`
-      })));
+      log.debug(
+        "Sample particle data (first 3):",
+        this.particleData.slice(0, 3).map((p) => ({
+          start: `(${p.startX.toFixed(2)}, ${p.startY.toFixed(2)})`,
+          target: `(${p.targetX.toFixed(2)}, ${p.targetY.toFixed(2)})`,
+        }))
+      );
     }
 
     geometry.setAttribute(
@@ -474,7 +482,7 @@ class ThreeCardSystem {
       opacity: CONFIG.PARTICLES.OPACITY,
       size: CONFIG.PARTICLES.SIZE,
       color: `#${CONFIG.PARTICLES.COLOR.toString(16)}`,
-      particleCount
+      particleCount,
     });
 
     this.particles = new this.THREE.Points(geometry, material);
@@ -483,11 +491,11 @@ class ThreeCardSystem {
     log.info(
       `✨ Created ${particleCount} particles in ${mode} mode (mobile: ${isMobile})`
     );
-    
+
     // Immediate first render to ensure particles are visible
     this.renderer.render(this.scene, this.camera);
     log.debug("Initial render complete - particles should be visible now");
-    
+
     return true;
   }
 
@@ -565,11 +573,17 @@ class ThreeCardSystem {
       });
     }
 
-    geometry.setAttribute("position", new this.THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute(
+      "position",
+      new this.THREE.BufferAttribute(positions, 3)
+    );
     geometry.setAttribute("target", new this.THREE.BufferAttribute(targets, 3));
     geometry.setAttribute("color", new this.THREE.BufferAttribute(colors, 3));
     geometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
-    geometry.setAttribute("twinkleOffset", new this.THREE.BufferAttribute(twinkleOffsets, 1));
+    geometry.setAttribute(
+      "twinkleOffset",
+      new this.THREE.BufferAttribute(twinkleOffsets, 1)
+    );
 
     // Same shader as normal particles
     const material = new this.THREE.ShaderMaterial({
@@ -659,10 +673,16 @@ class ThreeCardSystem {
     // Return Promise that resolves when animation completes
     return new Promise((resolve) => {
       const onComplete = () => {
-        this.container.removeEventListener("three-card-animation-complete", onComplete);
+        this.container.removeEventListener(
+          "three-card-animation-complete",
+          onComplete
+        );
         resolve(true);
       };
-      this.container.addEventListener("three-card-animation-complete", onComplete);
+      this.container.addEventListener(
+        "three-card-animation-complete",
+        onComplete
+      );
       this.animate();
     });
   }
@@ -675,7 +695,7 @@ class ThreeCardSystem {
       log.debug("Animation stopped - isAnimating is false");
       return;
     }
-    
+
     animationState.frameCount++;
 
     const now = performance.now();
@@ -694,8 +714,14 @@ class ThreeCardSystem {
     const eased = easing(progress);
 
     // Debug erste, jedes 30. und letzte Frame
-    if (progress === 0 || animationState.frameCount % 30 === 0 || progress === 1) {
-      log.debug(`Animation frame #${animationState.frameCount}: progress=${(progress*100).toFixed(1)}%, eased=${eased.toFixed(3)}, elapsed=${elapsed.toFixed(0)}ms`);
+    if (
+      progress === 0 ||
+      animationState.frameCount % 30 === 0 ||
+      progress === 1
+    ) {
+      log.debug(
+        `Animation frame #${animationState.frameCount}: progress=${(progress * 100).toFixed(1)}%, eased=${eased.toFixed(3)}, elapsed=${elapsed.toFixed(0)}ms`
+      );
     }
 
     // Update Partikel-Positionen
@@ -738,7 +764,9 @@ class ThreeCardSystem {
    * Animation Complete Handler
    */
   onAnimationComplete() {
-    log.info(`✅ ${animationState.mode} animation complete - ${animationState.frameCount} frames rendered`);
+    log.info(
+      `✅ ${animationState.mode} animation complete - ${animationState.frameCount} frames rendered`
+    );
 
     // Bei Forward: Partikel behalten (werden über CSS ausgeblendet)
     // Bei Reverse: Partikel sofort entfernen
@@ -790,7 +818,11 @@ class ThreeCardSystem {
       }
 
       // Update Twinkle-Effekt
-      if (this.particles && this.particles.material && this.particles.material.uniforms) {
+      if (
+        this.particles &&
+        this.particles.material &&
+        this.particles.material.uniforms
+      ) {
         this.particles.material.uniforms.time.value = performance.now() / 1000;
       }
 
@@ -882,33 +914,6 @@ class ThreeCardSystem {
 // Scroll & Template Management Integration
 
 /**
- * Scroll-Snap Lock/Unlock
- */
-function lockSnap() {
-  const currentScrollY = window.scrollY;
-  window.scrollTo({ top: currentScrollY, behavior: "instant" });
-
-  document.documentElement.classList.add("snap-locked");
-  document.body.classList.add("snap-locked");
-  const container = document.querySelector(".snap-container");
-  container?.classList.add("snap-locked");
-
-  requestAnimationFrame(() => {
-    window.scrollTo({ top: currentScrollY, behavior: "instant" });
-  });
-
-  log.debug(`🔒 Scroll-Snap locked at Y=${currentScrollY}`);
-}
-
-function unlockSnap() {
-  document.documentElement.classList.remove("snap-locked");
-  document.body.classList.remove("snap-locked");
-  const container = document.querySelector(".snap-container");
-  container?.classList.remove("snap-locked");
-  log.debug("🔓 Scroll-Snap unlocked");
-}
-
-/**
  * Bestimmt Scroll-Richtung basierend auf Section-Position
  */
 function getScrollDirection(section) {
@@ -930,7 +935,8 @@ function findSiblingSection(section, direction = "next") {
   const idx = all.indexOf(section);
   if (idx === -1) return null;
 
-  const sibling = direction === "next" ? all[idx + 1] || null : all[idx - 1] || null;
+  const sibling =
+    direction === "next" ? all[idx + 1] || null : all[idx - 1] || null;
   log.debug(
     `findSiblingSection: current=${section.id}, direction=${direction}, sibling=${sibling?.id || "none"}`
   );
@@ -950,9 +956,6 @@ function navigateToTarget() {
   if (target && shouldSnap && document.contains(target)) {
     log.info(`➡️ Navigating to: #${target.id || "unknown"}`);
     target.scrollIntoView({ behavior: "auto", block: "start" });
-    setTimeout(() => unlockSnap(), 150);
-  } else {
-    unlockSnap();
   }
 }
 
@@ -1046,13 +1049,20 @@ function mountInitialCards(section) {
   const frag = tpl.content ? document.importNode(tpl.content, true) : null;
 
   section.replaceChildren(frag || tpl.cloneNode(true));
-  createLiveRegion(section, templateOrder[currentTemplateIndex], LIVE_LABEL_PREFIX);
+  createLiveRegion(
+    section,
+    templateOrder[currentTemplateIndex],
+    LIVE_LABEL_PREFIX
+  );
   section.dataset.currentTemplate = templateOrder[currentTemplateIndex];
 
   section.classList.add("cards-hidden");
 
   log.info(`Cards mounted (hidden): ${templateOrder[currentTemplateIndex]}`);
-  fire(EVENTS.FEATURES_CHANGE, { index: currentTemplateIndex, total: templateOrder.length });
+  fire(EVENTS.FEATURES_CHANGE, {
+    index: currentTemplateIndex,
+    total: templateOrder.length,
+  });
   return true;
 }
 
@@ -1198,7 +1208,9 @@ async function applyReverseAnimation(section) {
  */
 function triggerReverse(section, source = "unknown") {
   if (!section || !document.body.contains(section)) {
-    log.warn(`⏭️ Cannot trigger reverse: section not in DOM (source=${source})`);
+    log.warn(
+      `⏭️ Cannot trigger reverse: section not in DOM (source=${source})`
+    );
     return false;
   }
 
@@ -1228,8 +1240,6 @@ function triggerReverse(section, source = "unknown") {
       targetSectionEl?.id || "none"
     }, willSnap=${pendingSnap}`
   );
-
-  lockSnap();
 
   applyReverseAnimation(section).catch((error) => {
     log.error("Reverse animation promise rejected:", error);
@@ -1276,7 +1286,9 @@ function setupObserver(section) {
         );
 
         if (hasAnimated && !isReversing && !reverseTriggered && !isVisible) {
-          log.info("📊 IO: Section left viewport (ratio=0) - triggering reverse");
+          log.info(
+            "📊 IO: Section left viewport (ratio=0) - triggering reverse"
+          );
           triggerReverse(section, "IntersectionObserver-NotVisible");
           return;
         }
@@ -1299,7 +1311,9 @@ function setupObserver(section) {
           !isReversing
         ) {
           if (section.dataset.currentTemplate) {
-            log.info(`🚀 TRIGGERING FORWARD: Snap complete (${ratio.toFixed(3)})`);
+            log.info(
+              `🚀 TRIGGERING FORWARD: Snap complete (${ratio.toFixed(3)})`
+            );
             hasAnimated = true;
 
             requestAnimationFrame(() => {
@@ -1359,7 +1373,9 @@ function setupObserver(section) {
     const isInViewport = rect.bottom > 0 && rect.top < viewportHeight;
 
     if (!isInViewport) {
-      log.debug("👆 Touch: Section out of viewport - triggering reverse immediately");
+      log.debug(
+        "👆 Touch: Section out of viewport - triggering reverse immediately"
+      );
       triggerReverse(section, "TouchHandler-OutOfView");
       return;
     }
@@ -1590,14 +1606,7 @@ export function destroyFeatureRotation() {
     log.warn("Three.js cleanup error:", error);
   }
 
-  // 4. Unlock scroll snap
-  try {
-    unlockSnap();
-  } catch (error) {
-    log.warn("Unlock snap error:", error);
-  }
-
-  // 5. Remove body classes
+  // 4. Remove body classes
   try {
     document.body.classList.remove("starfield-active");
   } catch (error) {
@@ -1635,11 +1644,15 @@ if (typeof window !== "undefined" && !window.FeatureRotationIntegrated) {
 
   // Auto-Init bei DOMContentLoaded
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      initFeatureRotation().catch((error) => {
-        log.error("Auto-initialization failed:", error);
-      });
-    }, { once: true });
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        initFeatureRotation().catch((error) => {
+          log.error("Auto-initialization failed:", error);
+        });
+      },
+      { once: true }
+    );
   } else {
     // DOM already loaded
     initFeatureRotation().catch((error) => {

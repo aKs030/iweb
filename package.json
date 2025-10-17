@@ -22,7 +22,8 @@
     "lighthouse": "node scripts/lighthouse-audit.js both",
     "lighthouse:desktop": "node scripts/lighthouse-audit.js desktop",
     "lighthouse:mobile": "node scripts/lighthouse-audit.js mobile",
-    "test:all": "npm run lint:js:check && npm run lint:html && npm run check:css && npm run audit:a11y"
+    "test:all": "npm run lint:js:check && npm run lint:html && npm run check:css && npm run audit:a11y",
+    "scan:dead": "node scripts/dead-code-scan.js"
   },
   "keywords": [
     "portfolio",

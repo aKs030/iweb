@@ -5,7 +5,7 @@
 //  - Runtime cache: images & pages (stale-while-revalidate)
 //  - Fonts: cache-first
 
-const SW_VERSION = "v1.2.0"; // Nach utils-Auflösung (Dezember 2025)
+const SW_VERSION = "v1.2.1"; // Cache-Bump nach Font-Aufräumung (Okt 2025)
 const CORE = [
   "/",
   "/index.html",

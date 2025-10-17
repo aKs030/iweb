@@ -41,19 +41,19 @@
  * @last-modified 2025-10-06
  */
 import {
-    createLogger,
-    getElementById,
-    onResize,
-    TimerManager,
+  createLogger,
+  getElementById,
+  onResize,
+  TimerManager,
 } from "../shared-utilities.js";
 import {
-    getSharedState,
-    loadThreeJS,
-    registerParticleSystem,
-    sharedCleanupManager,
-    sharedParallaxManager,
-    ShootingStarManager,
-    unregisterParticleSystem,
+  getSharedState,
+  loadThreeJS,
+  registerParticleSystem,
+  sharedCleanupManager,
+  sharedParallaxManager,
+  ShootingStarManager,
+  unregisterParticleSystem,
 } from "./shared-particle-system.js";
 
 const log = createLogger("threeEarthSystem");
@@ -129,42 +129,52 @@ const CONFIG = {
     COUNT: 2500, // Ausbalanciertes Sternenfeld
     TWINKLE_SPEED: 0.25, // Langsames, subtiles Funkeln
   },
+  MOON: {
+    RADIUS: 0.95, // Relativ zur Erde (ca. 27% der Erde)
+    DISTANCE: 25, // Abstand von Erde in Szenen-Einheiten
+    ORBIT_SPEED: 0.0002, // Langsame Rotation um eigene Achse
+    SEGMENTS: 48, // Etwas weniger Polygone als Erde
+    BUMP_SCALE: 0.012, // Stärkere Krater
+  },
   CAMERA: {
     FOV: 40, // Leicht erhöht für cinematischeren Look
     NEAR: 0.1,
     FAR: 1000,
     ZOOM_MIN: 5,
     ZOOM_MAX: 25,
-    LERP_FACTOR: 0.08, // Schnellere, smoothe Bewegung
-    // Cinematische Preset-Positionen - Näher & dynamischer
+    LERP_FACTOR: 0.04, // Noch sanftere Bewegung für cinematische Fahrten
+    // Cinematische Preset-Positionen - Dynamische Kamerafahrten mit Variation
     PRESETS: {
       hero: {
-        x: 0,
-        y: 0.5,
-        z: 12,
-        lookAt: { x: 0, y: -0.5, z: 0 },
+        x: -3,
+        y: 2,
+        z: 16,
+        lookAt: { x: 0, y: -1, z: 0 }, // Blick auf Erde von links-oben
         earthRotation: 0,
+        target: "earth",
       },
       features: {
-        x: 2,
-        y: -1.5,
-        z: 22, // Näher als vorher (90 → 22) - nicht so weit weg
-        lookAt: { x: 0, y: 0, z: 0 },
+        x: 4,
+        y: 4,
+        z: 12, // Näher ran, von rechts-oben
+        lookAt: { x: 0, y: 1, z: -6 }, // Blick auf Mond
         earthRotation: 0,
+        target: "moon",
       },
       about: {
-        x: -1,
+        x: -2,
         y: 1,
-        z: 10,
-        lookAt: { x: 0, y: 0, z: 0 },
+        z: 18, // Weiter weg, von links
+        lookAt: { x: 0, y: 0, z: 0 }, // Blick auf Erde
         earthRotation: Math.PI,
+        target: "earth",
       },
     },
-    // Schnellere, cinematische Transitions
-    TRANSITION_DURATION: 1.4, // Basis-Dauer reduziert (2.0 → 1.4s)
-    TRANSITION_DURATION_MULTIPLIER: 0.008, // Weniger distanzbasierte Erhöhung
-    ARC_HEIGHT_BASE: 0.25, // Basis Arc-Höhe
-    ARC_HEIGHT_MULTIPLIER: 0.6, // Moderater Arc bei weiten Flügen
+    // Cinematische Transitions mit deutlichem Arc
+    TRANSITION_DURATION: 2.5, // Längere Dauer für ausgedehnte Fahrten
+    TRANSITION_DURATION_MULTIPLIER: 0.012, // Mehr Distanz-Einfluss für variierende Geschwindigkeit
+    ARC_HEIGHT_BASE: 0.8, // Deutlicher Arc für Flug-Gefühl
+    ARC_HEIGHT_MULTIPLIER: 1.2, // Starker Arc bei weiten Fahrten
   },
   METEOR_EVENTS: {
     BASE_FREQUENCY: 0.002,
@@ -223,13 +233,22 @@ const CONFIG = {
       NORMAL: "/content/img/earth/textures/earth_normal.webp",
       BUMP: "/content/img/earth/textures/earth_bump.webp",
       CLOUDS: "/content/img/earth/textures/earth_clouds_1024.png",
+      MOON: "/content/img/earth/textures/moon_texture.webp",
+      MOON_BUMP: "/content/img/earth/textures/moon_bump.webp",
     },
   },
 };
 
 // ===== Global State Variables =====
 // Scene & Core Objects
-let scene, camera, renderer, earthMesh, starField, cloudMesh, atmosphereMesh;
+let scene,
+  camera,
+  renderer,
+  earthMesh,
+  moonMesh,
+  starField,
+  cloudMesh,
+  atmosphereMesh;
 let directionalLight = null;
 let ambientLight = null;
 let rayleighAtmosphereMesh = null;
@@ -282,13 +301,17 @@ const ThreeEarthManager = (() => {
       registerParticleSystem("three-earth", { type: "three-earth" });
 
       THREE_INSTANCE = await loadThreeJS();
-      if (!THREE_INSTANCE)
+      if (!THREE_INSTANCE) {
         throw new Error("Three.js failed to load from all sources");
+      }
 
       showLoadingState(container, 0); // Show initial loading state
 
       await setupScene(container);
       await createEarthSystem();
+
+      // Mond-System mit LOD erstellen
+      moonMesh = await createMoonSystem();
 
       cloudMesh = await createCloudLayer();
       // Wolken als eigenständiges Objekt in Scene für unabhängige Rotation
@@ -362,6 +385,7 @@ const ThreeEarthManager = (() => {
       camera =
       renderer =
       earthMesh =
+      moonMesh =
       starField =
       cloudMesh =
       atmosphereMesh =
@@ -726,6 +750,95 @@ async function createEarthSystem() {
   scene.add(earthMesh);
 }
 
+// ===== Moon System Creation mit LOD =====
+async function createMoonSystem() {
+  const loadingManager = new THREE_INSTANCE.LoadingManager();
+  const textureLoader = new THREE_INSTANCE.TextureLoader(loadingManager);
+
+  // Mond-Texturen laden
+  const loadTexture = (path, name) => {
+    return textureLoader.loadAsync(path).catch((error) => {
+      log.error(`Failed to load moon texture '${name}' from ${path}:`, error);
+      return null;
+    });
+  };
+
+  const [moonTexture, moonBumpTexture] = await Promise.all([
+    loadTexture(CONFIG.PATHS.TEXTURES.MOON, "moon"),
+    loadTexture(CONFIG.PATHS.TEXTURES.MOON_BUMP, "moon_bump"),
+  ]);
+
+  if (!moonTexture) {
+    log.warn("Moon texture failed to load, creating basic moon");
+  }
+
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
+  if (moonTexture) {
+    moonTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+  }
+  if (moonBumpTexture) {
+    moonBumpTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+  }
+
+  // Mond-Material mit Texturen
+  const moonMaterial = new THREE_INSTANCE.MeshStandardMaterial({
+    map: moonTexture || null,
+    bumpMap: moonBumpTexture || null,
+    bumpScale: CONFIG.MOON.BUMP_SCALE,
+    roughness: 0.9, // Mond ist sehr rau
+    metalness: 0.0,
+    color: moonTexture ? 0xffffff : 0xaaaaaa, // Fallback-Farbe wenn keine Textur
+  });
+
+  // LOD-System für Mond (3 Qualitätsstufen)
+  const moonLOD = new THREE_INSTANCE.LOD();
+
+  // High Quality (nah)
+  const moonGeometryHigh = new THREE_INSTANCE.SphereGeometry(
+    CONFIG.MOON.RADIUS,
+    CONFIG.MOON.SEGMENTS,
+    CONFIG.MOON.SEGMENTS
+  );
+  const moonMeshHigh = new THREE_INSTANCE.Mesh(moonGeometryHigh, moonMaterial);
+  moonLOD.addLevel(moonMeshHigh, 0);
+
+  // Medium Quality (mittel)
+  const moonGeometryMed = new THREE_INSTANCE.SphereGeometry(
+    CONFIG.MOON.RADIUS,
+    Math.floor(CONFIG.MOON.SEGMENTS * 0.6),
+    Math.floor(CONFIG.MOON.SEGMENTS * 0.6)
+  );
+  const moonMeshMed = new THREE_INSTANCE.Mesh(moonGeometryMed, moonMaterial);
+  moonLOD.addLevel(moonMeshMed, 15);
+
+  // Low Quality (weit)
+  const moonGeometryLow = new THREE_INSTANCE.SphereGeometry(
+    CONFIG.MOON.RADIUS,
+    Math.floor(CONFIG.MOON.SEGMENTS * 0.35),
+    Math.floor(CONFIG.MOON.SEGMENTS * 0.35)
+  );
+  const moonMeshLow = new THREE_INSTANCE.Mesh(moonGeometryLow, moonMaterial);
+  moonLOD.addLevel(moonMeshLow, 40);
+
+  // Positioniere Mond relativ zur Szene (nicht als Child von Erde)
+  moonLOD.position.set(CONFIG.MOON.DISTANCE, 2, -10);
+  moonLOD.scale.set(1, 1, 1);
+
+  // UserData für Animationen
+  moonLOD.userData.targetPosition = new THREE_INSTANCE.Vector3(
+    CONFIG.MOON.DISTANCE,
+    2,
+    -10
+  );
+  moonLOD.userData.targetScale = 1.0;
+  moonLOD.userData.orbitAngle = 0; // Für optionale Orbit-Animation
+
+  scene.add(moonLOD);
+  log.info("Moon system with LOD created successfully");
+
+  return moonLOD;
+}
+
 async function createCloudLayer() {
   const textureLoader = new THREE_INSTANCE.TextureLoader();
   try {
@@ -991,6 +1104,15 @@ function flyToPreset(presetName) {
   const startPos = { ...cameraTarget };
   const startZoom = mouseState.zoom;
 
+  // LookAt-Blending: Start und End LookAt
+  const startLookAt =
+    camera.userData.currentLookAt || new THREE_INSTANCE.Vector3(0, 0, 0);
+  const endLookAt = new THREE_INSTANCE.Vector3(
+    preset.lookAt.x,
+    preset.lookAt.y,
+    preset.lookAt.z
+  );
+
   // Berechne Distanz für adaptive Transition-Dauer
   const distance = Math.sqrt(
     Math.pow(preset.x - startPos.x, 2) +
@@ -1011,7 +1133,7 @@ function flyToPreset(presetName) {
   const startTime = performance.now();
 
   log.debug(
-    `Camera flight to '${presetName}': distance=${distance.toFixed(1)}, duration=${adaptiveDuration.toFixed(1)}s`
+    `Camera flight to '${presetName}': distance=${distance.toFixed(1)}, duration=${adaptiveDuration.toFixed(1)}s, target=${preset.target || "earth"}`
   );
 
   function transitionStep() {
@@ -1048,15 +1170,25 @@ function flyToPreset(presetName) {
       mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
     }
 
-    // Aktualisiere LookAt wenn definiert
-    if (preset.lookAt && camera) {
-      camera.lookAt(preset.lookAt.x, preset.lookAt.y, preset.lookAt.z);
+    // LookAt-Blending: Sanftes Überblenden zwischen Start- und Ziel-LookAt
+    if (camera) {
+      const blendedLookAt = new THREE_INSTANCE.Vector3().lerpVectors(
+        startLookAt,
+        endLookAt,
+        eased
+      );
+      camera.lookAt(blendedLookAt);
+      camera.userData.currentLookAt = blendedLookAt.clone();
     }
 
     if (progress < 1) {
       cameraTransition = earthTimers.setTimeout(transitionStep, 16); // ~60fps
     } else {
       cameraTransition = null;
+      // Finale LookAt speichern
+      if (camera) {
+        camera.userData.currentLookAt = endLookAt.clone();
+      }
       log.debug(`Camera transition to '${presetName}' complete`);
     }
   }
@@ -1102,40 +1234,46 @@ function updateEarthForSection(sectionName) {
 
   const configs = {
     hero: {
-      pos: { x: 0, y: -6.0, z: 0 },
-      scale: 1.5,
+      earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
+      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 }, // Mond versteckt
       mode: "day",
-      rotation: 0,
     },
     features: {
-      pos: { x: 1, y: -1, z: -0.5 },
-      scale: 1.0,
+      earth: { pos: { x: -7, y: -2, z: -4 }, scale: 0.7, rotation: 0 }, // Erde im Hintergrund rechts
+      moon: {
+        pos: { x: 1, y: 2, z: -5 }, // Mond leicht rechts vor Kamera
+        scale: 1.1,
+      },
       mode: "day",
-      rotation: 0,
     },
     about: {
-      pos: { x: 0, y: 0, z: -2 },
-      scale: 0.35,
+      earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1.0, rotation: Math.PI },
+      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 }, // Mond versteckt
       mode: "toggle",
-      rotation: Math.PI * 2,
     },
   };
   const config = configs[sectionName] || configs.hero;
 
-  // Position Target
-  if (config.pos) {
+  // Erde Position & Scale
+  if (config.earth.pos) {
     earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
-      config.pos.x,
-      config.pos.y,
-      config.pos.z
+      config.earth.pos.x,
+      config.earth.pos.y,
+      config.earth.pos.z
     );
   }
+  earthMesh.userData.targetScale = config.earth.scale;
+  earthMesh.userData.targetRotation = config.earth.rotation;
 
-  // Scale Target
-  earthMesh.userData.targetScale = config.scale;
-
-  // Rotation Target (schnelle Drehung für dramatischen Effekt)
-  earthMesh.userData.targetRotation = config.rotation;
+  // Mond Position & Scale (falls vorhanden)
+  if (moonMesh && config.moon) {
+    moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
+      config.moon.pos.x,
+      config.moon.pos.y,
+      config.moon.pos.z
+    );
+    moonMesh.userData.targetScale = config.moon.scale;
+  }
 
   // SPECIAL: About Section Toggle-System
   let targetMode = config.mode;
@@ -1288,6 +1426,11 @@ function startAnimationLoop() {
     // Wolken driften unabhängig (separate Y-Rotation)
     if (cloudMesh && cloudMesh.rotation) {
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
+    }
+
+    // Mond-Rotation (langsam um eigene Achse)
+    if (moonMesh && moonMesh.rotation) {
+      moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED;
     }
 
     // Tag/Nacht-Zyklus: Section-basiert ODER automatisch
@@ -1512,6 +1655,23 @@ function startAnimationLoop() {
         lastSync.rotationZ = earthMesh.rotation.z;
       }
     }
+
+    // Mond Transform Updates (Position & Scale mit Lerp)
+    if (moonMesh) {
+      // Position Lerp
+      if (moonMesh.userData.targetPosition) {
+        moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04);
+      }
+
+      // Scale Lerp
+      if (moonMesh.userData.targetScale) {
+        const moonScaleDiff = moonMesh.userData.targetScale - moonMesh.scale.x;
+        if (Math.abs(moonScaleDiff) > 0.001) {
+          const newMoonScale = moonMesh.scale.x + moonScaleDiff * 0.06;
+          moonMesh.scale.set(newMoonScale, newMoonScale, newMoonScale);
+        }
+      }
+    }
   }
 
   animate();
@@ -1561,8 +1721,9 @@ function showErrorState(container, error) {
   if (errorElement) {
     errorElement.classList.remove("hidden");
     const errorText = errorElement.querySelector("p");
-    if (errorText)
+    if (errorText) {
       errorText.textContent = `WebGL Error: ${error.message || "Unknown error"}. Please try refreshing.`;
+    }
   }
 }
 

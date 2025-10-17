@@ -181,11 +181,14 @@
     <!-- Resource Hints für moderne Browser (optimiert für Performance) -->
     <!-- Note: Only essential font and CSS preloads. JS modules load naturally without preload. -->
 
-    <!-- Entfernt: Inter Variable Font Preload
-    Grund: Initiales Above-the-Fold Layout nutzt System-Stack (var(--font-primary)).
-    Das Preload verursachte eine Browser-Warnung (Font nicht direkt verwendet).
-    Falls Inter zukünftig für Body/Text Above-the-Fold genutzt werden soll,
-    Preload wieder aktivieren oder Body-Font auf var(--font-inter) umstellen. -->
+    <!-- Preload: Inter Variable Font (wird nun Above-the-Fold im Body genutzt) -->
+    <link
+      rel="preload"
+      as="font"
+      href="/content/webentwicklung/fonts/InterVariable.woff2"
+      type="font/woff2"
+      crossorigin
+    />
 
     <!-- CSS mit Priorität laden -->
     <link rel="stylesheet" href="/content/webentwicklung/root.css" />
