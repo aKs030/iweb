@@ -46,20 +46,6 @@ function createLogger(category) {
   };
 }
 
-const elementCache = new Map();
-function getElementById(id, useCache = true) {
-  if (useCache && elementCache.has(id)) {
-    const cached = elementCache.get(id);
-    if (cached && document.contains(cached)) return cached;
-    elementCache.delete(id);
-  }
-  const element = document.getElementById(id);
-  if (useCache && element && elementCache.size < 20) {
-    elementCache.set(id, element);
-  }
-  return element;
-}
-
 function throttle(func, delay) {
   let timeout = null;
   let lastRan = 0;
@@ -136,7 +122,7 @@ class ThemeSystem {
   }
 
   initToggleButton() {
-    const toggle = getElementById("dayNightToggle");
+    const toggle = document.getElementById("dayNightToggle");
     if (!toggle) {
       themeLog.warn("Day/Night Toggle Button nicht gefunden");
       return false;
@@ -161,7 +147,7 @@ const loaderLog = createLogger("FooterLoader");
 
 class FooterLoader {
   async init() {
-    const container = getElementById("footer-container");
+    const container = document.getElementById("footer-container");
     if (!container) {
       loaderLog.warn("Footer Container nicht gefunden");
       return false;
@@ -217,8 +203,24 @@ class FooterLoader {
         e.preventDefault();
         const input = form.querySelector('input[type="email"]');
         if (input?.value) {
-          loaderLog.info("Newsletter-Anmeldung:", input.value);
-          console.warn("Danke für deine Anmeldung! (Demo-Modus)");
+          const email = input.value;
+          loaderLog.info("Newsletter-Anmeldung:", email);
+          
+          // TODO: Backend-Integration für Newsletter-Anmeldung
+          // Beispiel: await fetch('/api/newsletter/subscribe', { method: 'POST', body: JSON.stringify({ email }) });
+          
+          // Visuelles Feedback für Benutzer
+          const submitButton = form.querySelector('button[type="submit"]');
+          if (submitButton) {
+            const originalText = submitButton.textContent;
+            submitButton.textContent = "✓ Angemeldet!";
+            submitButton.disabled = true;
+            setTimeout(() => {
+              submitButton.textContent = originalText;
+              submitButton.disabled = false;
+            }, 3000);
+          }
+          
           input.value = "";
         }
       });
@@ -229,19 +231,21 @@ class FooterLoader {
     if (cookieBtn) {
       cookieBtn.addEventListener("click", () => {
         loaderLog.info("Cookie-Einstellungen öffnen");
-        console.warn("Cookie-Einstellungen (Demo-Modus)");
+        
+        // TODO: Cookie-Einstellungsdialog implementieren
+        // Beispiel: window.dispatchEvent(new CustomEvent('openCookieSettings'));
       });
     }
 
     // Smooth Scrolling für interne Links
-    const footer = getElementById("site-footer");
+    const footer = document.getElementById("site-footer");
     if (footer) {
       footer.addEventListener("click", (e) => {
         const link = e.target.closest('a[href^="#"]');
         if (!link) return;
 
         const targetId = link.getAttribute("href").substring(1);
-        const target = getElementById(targetId);
+        const target = document.getElementById(targetId);
 
         if (target) {
           e.preventDefault();
@@ -267,11 +271,15 @@ class ScrollHandler {
   constructor() {
     this.expanded = false;
     this.observer = null;
+    // Hysterese-Schwellenwerte: Unterschiedliche Werte für Expand/Collapse
+    // verhindert "Flackern" beim Scrollen
+    this.EXPAND_THRESHOLD = 0.05; // Footer öffnet sich früh
+    this.COLLAPSE_THRESHOLD = 0.02; // Footer schließt sich erst später
   }
 
   init() {
-    const footer = getElementById("site-footer");
-    const trigger = getElementById("footer-trigger-zone");
+    const footer = document.getElementById("site-footer");
+    const trigger = document.getElementById("footer-trigger-zone");
 
     if (!footer || !trigger) {
       scrollLog.warn("Footer oder Trigger-Zone nicht gefunden");
@@ -282,25 +290,32 @@ class ScrollHandler {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.target.id === "footer-trigger-zone") {
+            // Hysterese-Logik: Verschiedene Schwellenwerte je nach Zustand
+            const threshold = this.expanded
+              ? this.COLLAPSE_THRESHOLD
+              : this.EXPAND_THRESHOLD;
+
             const shouldExpand =
-              entry.isIntersecting && entry.intersectionRatio >= 0.1;
+              entry.isIntersecting && entry.intersectionRatio >= threshold;
+
             this.toggleExpansion(shouldExpand);
           }
         });
       },
       {
         root: null,
-        rootMargin: "0px 0px -50% 0px",
-        threshold: [0.1, 0.5],
+        // Großzügigere Margins - Footer bleibt länger expandiert
+        rootMargin: "0px 0px -10% 0px",
+        threshold: [0, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
       }
     );
 
     this.observer.observe(trigger);
-    scrollLog.info("Scroll Handler initialisiert");
+    scrollLog.info("Scroll Handler mit Hysterese initialisiert");
   }
 
   toggleExpansion(shouldExpand) {
-    const footer = getElementById("site-footer");
+    const footer = document.getElementById("site-footer");
     if (!footer) return;
 
     const minimized = footer.querySelector(".footer-minimized");
@@ -345,11 +360,14 @@ class FooterResizer {
     };
     this.lastSnapshot = "";
     this.rafId = null;
+    this.resizeObserver = null;
   }
 
   init() {
+    // Initiale Anwendung
     this.apply();
 
+    // Window Resize Handler (für Viewport-Änderungen)
     const onResize = throttle(() => {
       requestAnimationFrame(() => this.apply());
     }, this.config.THROTTLE_DELAY);
@@ -357,15 +375,50 @@ class FooterResizer {
     window.addEventListener("resize", onResize);
     window.visualViewport?.addEventListener("resize", onResize);
 
-    // Zusätzliche Trigger
-    setTimeout(() => this.apply(), 250);
-    setTimeout(() => this.apply(), 1200);
+    // ResizeObserver für Footer-Content (moderner und präziser)
+    const content = document.querySelector(
+      "#site-footer .footer-enhanced-content"
+    );
+    
+    if (content && "ResizeObserver" in window) {
+      this.resizeObserver = new ResizeObserver(() => {
+        // Debounce mit requestAnimationFrame für optimale Performance
+        if (this.rafId) {
+          cancelAnimationFrame(this.rafId);
+        }
+        this.rafId = requestAnimationFrame(() => {
+          this.apply();
+          this.rafId = null;
+        });
+      });
+      
+      this.resizeObserver.observe(content);
+      resizerLog.debug("ResizeObserver für Footer-Content aktiviert");
+    } else {
+      // Fallback für ältere Browser: zeitgesteuerte Trigger
+      setTimeout(() => this.apply(), 250);
+      setTimeout(() => this.apply(), 1200);
+    }
 
+    // Font-Loading berücksichtigen
     if (document.fonts) {
-      document.fonts.ready.then(() => setTimeout(() => this.apply(), 30));
+      document.fonts.ready.then(() => {
+        requestAnimationFrame(() => this.apply());
+      });
     }
 
     resizerLog.info("Footer Resizer initialisiert");
+  }
+  
+  cleanup() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   measureViewport() {
@@ -380,13 +433,13 @@ class FooterResizer {
   }
 
   setCSSVar(name, value) {
-    const footer = getElementById("site-footer");
+    const footer = document.getElementById("site-footer");
     const target = footer ?? document.documentElement;
     target.style.setProperty(name, value);
   }
 
   apply() {
-    const footer = getElementById("site-footer");
+    const footer = document.getElementById("site-footer");
     if (!footer) {
       resizerLog.debug("Footer noch nicht geladen");
       return;

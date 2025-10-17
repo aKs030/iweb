@@ -179,17 +179,7 @@
     <!-- (Entfernt) Preconnect Google Fonts -->
 
     <!-- Resource Hints für moderne Browser (optimiert für Performance) -->
-    <!-- Note: Only essential font and CSS preloads. JS modules load naturally without preload. -->
-
-    <!-- Preload: Inter Variable Font (wird nun Above-the-Fold im Body genutzt) -->
-    <link
-      rel="preload"
-      as="font"
-      href="/content/webentwicklung/fonts/InterVariable.woff2"
-      type="font/woff2"
-      crossorigin
-    />
-
+    <!-- Note: Font-Preload entfernt - Browser priorisiert Fonts durch font-display: swap automatisch -->
     <!-- CSS mit Priorität laden -->
 
     <!-- Kritische CSS synchron laden -->
@@ -199,24 +189,26 @@
     <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
     <link rel="stylesheet" href="/pages/home/hero.css" />
     <link rel="stylesheet" href="/content/webentwicklung/TypeWriter/typewriter.css" />
+    
+    <!-- Footer CSS synchron laden (Footer ist immer sichtbar/fixed) -->
+    <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
+    <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
 
-    <!-- Nicht-kritische CSS asynchron laden (Preload+onload-Pattern) -->
-    <link rel="preload" href="/content/webentwicklung/particles/three-earth.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <!-- Nicht-kritische CSS asynchron laden (media="print" Pattern für bessere Performance) -->
+    <!-- Three.js Earth Partikel-System (Below-the-Fold) -->
+    <link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
-
-    <link rel="preload" href="/content/webentwicklung/footer/footer.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" /></noscript>
-
-    <link rel="preload" href="/content/webentwicklung/footer/day-night-artwork.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" /></noscript>
-
-    <link rel="preload" href="/pages/about/about.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- About Section Styles (Below-the-Fold) -->
+    <link rel="stylesheet" href="/pages/about/about.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
-    <link rel="preload" href="/pages/card/karten.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <!-- Karten Section Styles (Below-the-Fold) -->
+    <link rel="stylesheet" href="/pages/card/karten.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/pages/card/karten.css" /></noscript>
 
-    <link rel="preload" href="/pages/card/karten-star-animation.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <!-- Karten Star Animation (Below-the-Fold) -->
+    <link rel="stylesheet" href="/pages/card/karten-star-animation.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/pages/card/karten-star-animation.css" /></noscript>
 
     <!-- Theme System entfernt - Animation-System wurde deaktiviert -->

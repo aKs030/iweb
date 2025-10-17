@@ -37,19 +37,7 @@
 
 /* ===== Dynamic Footer Design Tokens ===== */
 /* Hinweis: Footer-spezifische CSS Custom Properties wurden aus root.css hierher verschoben */
-
-#site-footer {
-  /* Default-Skala; wird von JS dynamisch auf #site-footer überschrieben */
-}
-
-/* Light Mode Overrides (komponentenlokal) */
-:root[data-theme="light"] #site-footer {
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) #site-footer {
-  }
-}
+/* Custom Properties werden dynamisch von JS auf #site-footer gesetzt */
 
 /* ===== Dynamic Footer Base Styles ===== */
 .site-footer-fixed {
@@ -524,27 +512,6 @@
 }
 
 /* ===== NEUE FOOTER-KOMPONENTEN ===== */
-
-/* Footer-Einstellungen */
-.footer-settings {
-  display: flex;
-  gap: var(--spacing-lg, 1.5rem);
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.footer-setting-group {
-  display: flex;
-  align-items: center;
-}
-
-.footer-copyright-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--spacing-md, 1rem);
-}
 
 /* Body padding für fixen Footer - aus index.css verschoben */
 body {
