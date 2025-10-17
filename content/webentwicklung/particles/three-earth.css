@@ -13,9 +13,7 @@
   transition: background 0.8s ease-in-out;
 }
 
-.global-particle-background[data-section="about"] {
-  background: radial-gradient(circle at 50% 50%, #3a3a4e 0%, #1a1a2e 70%);
-}
+/* data-section="about" entfernt - nicht verwendet */
 
 /* Three.js Container */
 .three-earth-container {
@@ -95,9 +93,7 @@
   font-weight: 500;
 }
 
-.three-earth-container.error {
-  background: rgba(60, 20, 20, 0.5);
-}
+/* .three-earth-container.error entfernt - redundant mit .three-earth-error */
 
 .three-earth-error {
   background: rgba(60, 20, 20, 0.9);

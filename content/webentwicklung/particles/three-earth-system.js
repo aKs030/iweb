@@ -99,7 +99,7 @@ const CONFIG = {
     RADIUS: 12, // Weiche Beleuchtung aus großer Distanz
     HEIGHT: 2.5,
     INTENSITY: 1.6, // Ausbalancierte Intensität
-    AUTO_ROTATE: false,
+    // AUTO_ROTATE wurde entfernt - Rotation wird durch Day/Night-Zyklus gesteuert
     ROTATION_SPEED: 0.0004,
   },
   LIGHTING: {
@@ -1318,6 +1318,20 @@ function updateEarthForSection(sectionName) {
       oldMaterial !== dayMaterial &&
       oldMaterial !== nightMaterial
     ) {
+      // Dispose Texturen und andere Ressourcen
+      Object.values(oldMaterial).forEach((value) => {
+        if (value && typeof value.dispose === "function") {
+          value.dispose();
+        }
+      });
+      // Für ShaderMaterial: Dispose auch Uniforms
+      if (oldMaterial.uniforms) {
+        Object.values(oldMaterial.uniforms).forEach((uniform) => {
+          if (uniform.value && typeof uniform.value.dispose === "function") {
+            uniform.value.dispose();
+          }
+        });
+      }
       oldMaterial.dispose();
       log.debug("Disposed old material during mode switch");
     }

@@ -279,14 +279,14 @@ class ThreeCardSystem {
     });
 
     if (!cards.length) {
-      log.error("❌ No cards found for particle creation - cannot animate");
-      log.info(
+      log.warn("⚠️ No cards found for particle creation");
+      log.debug(
         "Container structure:",
         this.container.innerHTML.substring(0, 500)
       );
 
-      // Fallback: Erstelle zentral verteilte Partikel ohne Card-Targets
-      log.warn("⚠️ Using fallback: center-distributed particles");
+      // Verbesserter Fallback: Erstelle gleichmäßig verteilte Partikel im Grid-Layout
+      log.info("Using enhanced fallback: grid-distributed particles");
       return this.createFallbackParticles(mode, particleCount);
     }
 
@@ -512,12 +512,15 @@ class ThreeCardSystem {
   }
 
   /**
-   * Fallback: Erstellt zentral verteilte Partikel ohne Card-Targets
+   * Fallback: Erstellt Grid-verteilte Partikel ohne Card-Targets
+   * Simuliert ein 4-Karten-Layout für visuell ansprechende Animation
    * @param {string} mode - 'forward' | 'reverse'
    * @param {number} particleCount - Anzahl der Partikel
    */
   createFallbackParticles(mode = "forward", particleCount = 150) {
-    log.info(`Creating ${particleCount} fallback particles (mode: ${mode})`);
+    log.info(
+      `Creating ${particleCount} fallback particles in grid layout (mode: ${mode})`
+    );
 
     const geometry = new this.THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -528,12 +531,22 @@ class ThreeCardSystem {
 
     this.particleData = [];
 
-    // Berechne sichtbaren Bereich basierend auf Camera FOV (gleiche Logik wie createParticles)
+    // Berechne sichtbaren Bereich basierend auf Camera FOV
     const canvasRect = this.renderer.domElement.getBoundingClientRect();
     const distance = CONFIG.CAMERA.POSITION.z;
     const vFOV = (CONFIG.CAMERA.FOV * Math.PI) / 180;
     const viewHeight = 2 * Math.tan(vFOV / 2) * distance;
     const viewWidth = viewHeight * (canvasRect.width / canvasRect.height);
+
+    // Simuliere 4-Karten-Grid-Layout (2x2)
+    const gridPositions = [
+      { x: -0.3, y: 0.25 }, // Oben Links
+      { x: 0.3, y: 0.25 }, // Oben Rechts
+      { x: -0.3, y: -0.25 }, // Unten Links
+      { x: 0.3, y: -0.25 }, // Unten Rechts
+    ];
+    const cardWidth = viewWidth * 0.35; // 35% der Viewport-Breite
+    const cardHeight = viewHeight * 0.35; // 35% der Viewport-Höhe
 
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
@@ -545,13 +558,21 @@ class ThreeCardSystem {
         startX = (Math.random() - 0.5) * viewWidth * 1.0;
         startY = (Math.random() - 0.5) * viewHeight * 1.0;
 
-        // Target: Zentrum mit gleichmäßiger Streuung
-        targetX = (Math.random() - 0.5) * viewWidth * 0.5;
-        targetY = (Math.random() - 0.5) * viewHeight * 0.5;
+        // Target: Zufällige Grid-Position (simuliert Karten)
+        const targetGrid =
+          gridPositions[Math.floor(Math.random() * gridPositions.length)];
+        targetX =
+          targetGrid.x * viewWidth + (Math.random() - 0.5) * cardWidth * 0.9;
+        targetY =
+          targetGrid.y * viewHeight + (Math.random() - 0.5) * cardHeight * 0.9;
       } else {
-        // Reverse: Zentrum → Gleichmäßig über Viewport
-        startX = (Math.random() - 0.5) * viewWidth * 0.5;
-        startY = (Math.random() - 0.5) * viewHeight * 0.5;
+        // Reverse: Grid-Position → Gleichmäßig über Viewport
+        const startGrid =
+          gridPositions[Math.floor(Math.random() * gridPositions.length)];
+        startX =
+          startGrid.x * viewWidth + (Math.random() - 0.5) * cardWidth * 0.9;
+        startY =
+          startGrid.y * viewHeight + (Math.random() - 0.5) * cardHeight * 0.9;
 
         targetX = (Math.random() - 0.5) * viewWidth * 1.0;
         targetY = (Math.random() - 0.5) * viewHeight * 1.0;
@@ -649,7 +670,9 @@ class ThreeCardSystem {
     this.particles = new this.THREE.Points(geometry, material);
     this.scene.add(this.particles);
 
-    log.info(`✨ Created ${particleCount} fallback particles`);
+    log.info(
+      `✨ Created ${particleCount} fallback particles in grid layout (${mode} mode)`
+    );
     return true;
   }
 
