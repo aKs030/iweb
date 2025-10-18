@@ -28,8 +28,9 @@ class TypeWriter {
     containerEl = null, // .typewriter-title zum Locken
     onBeforeType = null, // Hook: vor dem Tippen reservieren + locken
   }) {
-    if (!textEl || !authorEl || !Array.isArray(quotes) || quotes.length === 0)
+    if (!textEl || !authorEl || !Array.isArray(quotes) || quotes.length === 0) {
       return;
+    }
     this.textEl = textEl;
     this.authorEl = authorEl;
     this.quotes = quotes.slice();

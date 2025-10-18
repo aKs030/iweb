@@ -205,7 +205,7 @@ function openFooterCookieSettings() {
 
   // IntersectionObserver für Section-Erkennung (nur Content-Sections, nicht Background)
   const sections = document.querySelectorAll(
-    "section[id]:not(#atmosphericBackground):not(#threeEarthContainer), main > section[id], [data-section]"
+    "section[id]:not(#threeEarthContainer), main > section[id], [data-section]"
   );
 
   // Aktuell sichtbare Sections beim Start ermitteln (ignorieren)

@@ -1,8 +1,8 @@
 {
-  "timestamp": 1760793249944,
+  "timestamp": 1760801953303,
   "findings": 1,
   "stats": {
-    "totalFiles": 63,
+    "totalFiles": 60,
     "totalFindings": 1,
     "unusedAssets": 0,
     "unusedClasses": 0,

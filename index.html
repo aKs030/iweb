@@ -69,7 +69,7 @@
     <meta name="web-vitals-extension" content="enabled" />
     <link rel="preconnect" href="https://abdulkerimsesli.de" />
 
-    <!-- Google tag (gtag.js) - Blocked until cookie consent -->
+    <!-- Google Analytics (Consent-gesteuert) -->
     <script type="text/plain" data-consent="required" data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN" async></script>
     <script type="text/plain" data-consent="required">
       window.dataLayer = window.dataLayer || [];
@@ -77,10 +77,6 @@
       gtag('js', new Date());
       gtag('config', 'G-S0587RQ4CN');
     </script>
-    
-    <!-- Three.js Module Preload entfernt für bessere Mobile Performance -->
-    <!-- Wird nur bei Bedarf via Dynamic Import geladen (Code-Splitting) -->
-    <!-- <link rel="modulepreload" href="/content/webentwicklung/lib/three/build/three.module.min.js" as="script" crossorigin> -->
 
     <!-- Open Graph Meta-Tags -->
     <meta
@@ -180,16 +176,10 @@
       name="msapplication-TileImage"
       content="/content/img/icons/icon-144.png"
     />
-    <!-- (Entfernt) DNS Prefetch für Google Fonts: jetzt self-hosted Inter -->
+    
     <link rel="dns-prefetch" href="https://api.github.com" />
     <link rel="dns-prefetch" href="https://linkedin.com" />
     <link rel="preconnect" href="https://github.com" crossorigin />
-
-    <!-- (Entfernt) Preconnect Google Fonts -->
-
-    <!-- Resource Hints für moderne Browser (optimiert für Performance) -->
-    <!-- Note: Font-Preload entfernt - Browser priorisiert Fonts durch font-display: swap automatisch -->
-    <!-- CSS mit Priorität laden -->
 
     <!-- Kritische CSS synchron laden -->
     <link rel="stylesheet" href="/content/webentwicklung/root.css" />
@@ -203,11 +193,10 @@
     <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
     <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
     
-    <!-- Cookie Consent Banner CSS (Teil des Footer-Systems) -->
+    <!-- Cookie Consent Banner CSS -->
     <link rel="stylesheet" href="/content/webentwicklung/cookie-consent.css" />
 
-    <!-- Nicht-kritische CSS asynchron laden (media="print" Pattern für bessere Performance) -->
-    <!-- Three.js Earth Partikel-System (Below-the-Fold) -->
+    <!-- Asynchron geladene CSS (Below-the-Fold) -->
     <link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
     
@@ -455,33 +444,6 @@
       <div class="loader"></div>
     </div>
 
-    <!-- Atmosphärisches Himmelssystem -->
-    <div
-      class="global-particle-background"
-      id="atmosphericBackground"
-      data-section="dynamic"
-      data-atmosphere-intensity="auto"
-      data-stars-density="adaptive"
-      data-moon-progression="scroll"
-      data-landscape-reveal="gradual"
-    >
-      <!-- Atmosphärische Effekte -->
-      <div class="atmosphere">
-        <div class="atmospheric-glow"></div>
-        <div class="aurora"></div>
-        <div class="clouds"></div>
-      </div>
-
-      <!-- Sterne-Container -->
-      <div class="stars-container"></div>
-
-      <!-- Mond mit detaillierter Oberfläche -->
-      <div class="moon">
-        <div class="moon-surface"></div>
-        <div class="moon-shadow"></div>
-      </div>
-    </div>
-
     <!-- Advanced Three.js Earth System -->
     <div
       id="threeEarthContainer"
@@ -496,7 +458,6 @@
         zwischen Kamera-Modi.
       </div>
 
-      <!-- Performance Debug Overlay (nur in Entwicklung sichtbar) -->
       <div class="three-earth-performance-overlay" id="threeEarthPerformance">
         <div>FPS: <span id="fps">--</span></div>
         <div>LOD: <span id="lod">--</span></div>
@@ -527,14 +488,12 @@
       aria-atomic="true"
     ></div>
 
-    <!-- Global TypeWriter Title (jetzt außerhalb des dynamisch geladenen Hero-Inhalts) -->
     <p class="typewriter-title typewriter-title--fixed" data-offset-mode="full">
       <span id="typedAuthor" class="typed-author"></span>
       <span id="typedText" class="typed-text"></span>
     </p>
 
     <main id="main-content" tabindex="-1">
-      <!-- Sections (dynamisch geladen via SectionLoader) -->
       <section
         id="hero"
         class="section hero"
@@ -566,7 +525,6 @@
         <div class="section-skeleton" aria-hidden="true"></div>
       </section>
 
-      <!-- Footer Trigger Zone - unsichtbare Zone für Footer-Expansion -->
       <div
         id="footer-trigger-zone"
         class="footer-trigger-zone"
@@ -574,12 +532,8 @@
       ></div>
     </main>
 
-    <!-- Optimierte Script-Ladereihenfolge -->
-    <!-- (Lazy) Komponenten: about wird on-demand via IntersectionObserver in main.js geladen -->
-    <!-- Haupt-Entry Point (inkl. Menu-Import für zentralisierte Verwaltung) -->
     <script src="/content/webentwicklung/main.js" type="module"></script>
 
-    <!-- Footer System (All-in-One) -->
     <div
       id="footer-container"
       data-footer-src="/content/webentwicklung/footer/footer.html"

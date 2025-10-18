@@ -211,10 +211,6 @@
   --delay-1: 1s;
   --delay-2: 2s;
   --delay-3: 3s;
-  --star-opacity: 1;
-  --atmosphere-intensity: 0.8;
-  --moon-visibility: 0.3;
-  --cloud-frequency: 0.5;
   --scroll-progress: 0;
 
   --dynamic-menu-header-bg: rgba(28, 28, 30, 0.72);

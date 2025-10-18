@@ -1,18 +1,5 @@
 /* ===== Three.js Earth System Styles v4.0 ===== */
 
-/* Global Particle Background */
-.global-particle-background {
-  position: fixed;
-  inset: 0;
-  z-index: -10;
-  pointer-events: none;
-  isolation: isolate;
-  contain: strict;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #16213e 0%, #0f0f23 70%);
-  transition: background 0.8s ease-in-out;
-}
-
 /* Three.js Container */
 .three-earth-container {
   position: fixed;
@@ -106,8 +93,7 @@
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .three-earth-container,
-  .global-particle-background {
+  .three-earth-container {
     transition: none;
   }
 }
