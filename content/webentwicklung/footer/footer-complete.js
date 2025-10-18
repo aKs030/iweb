@@ -312,7 +312,7 @@ function openFooterCookieSettings() {
     acceptSelectedBtn.dataset.listenerAdded = "true";
     acceptSelectedBtn.addEventListener("click", () => {
       if (globalSectionObserver) globalSectionObserver.disconnect();
-      
+
       if (analyticsToggle && analyticsToggle.checked) {
         setCookie("cookie_consent", "accepted", 365);
         loadGoogleAnalytics();
@@ -677,7 +677,7 @@ class ScrollHandler {
     // verhindert "Flackern" beim Scrollen
     this.EXPAND_THRESHOLD = 0.05; // Footer öffnet sich früh
     this.COLLAPSE_THRESHOLD = 0.02; // Footer schließt sich erst später
-    
+
     // Globale Referenz setzen
     globalScrollHandler = this;
   }

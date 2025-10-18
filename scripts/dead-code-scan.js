@@ -334,7 +334,7 @@ async function buildReferenceIndex(files, config) {
       while ((match = pattern.exec(txt))) {
         let ref = match[1] || match[2];
         if (!ref || ref.startsWith("data:")) continue;
-        
+
         // Extrahiere lokalen Pfad von vollständigen URLs (z.B. https://abdulkerimsesli.de/content/img/x.webp -> /content/img/x.webp)
         if (ref.startsWith("http")) {
           try {
@@ -352,7 +352,7 @@ async function buildReferenceIndex(files, config) {
             continue; // Ungültige URLs ignorieren
           }
         }
-        
+
         localRefs.push(ref);
       }
     }
