@@ -572,19 +572,7 @@ body.footer-expanded .typewriter-title--fixed {
   bottom: clamp(8px, 1.5vw, 16px);
 }
 
-/* Focus Management für Accessibility */
-.footer-link:focus-visible,
-.footer-copyright-minimal a:focus-visible,
-.footer-copyright-full a:focus-visible {
-  outline: 2px solid var(--primary-color, #007aff);
-  outline-offset: 2px;
-  border-radius: 2px;
-}
-
-.footer-copyright {
-  margin: 0;
-  font-weight: var(--dynamic-footer-font-weight-regular);
-}
+/* Focus Management für Accessibility - Legacy classes removed */
 
 /* ===== Newsletter & Theme Card System ===== */
 .footer-card-wide {

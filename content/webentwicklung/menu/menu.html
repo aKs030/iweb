@@ -99,7 +99,7 @@
           <svg class="nav-icon" aria-hidden="true">
             <use href="#icon-user"></use>
           </svg>
-          <span class="icon-fallback" style="display: none">�</span>
+          <span class="icon-fallback" style="display: none">🧑</span>
           <span>Über mich</span>
         </a>
       </li>
@@ -108,7 +108,6 @@
 </header>
 
 <script>
-  <script>
   // Dynamic Menu Icon System - Production Ready
   document.addEventListener('DOMContentLoaded', function() {
     // Überprüfe SVG Icon Support
@@ -131,13 +130,16 @@
           fallback.style.display = 'inline-block';
           brokenIcons++;
         }
+     });
+    };
+    
+    // This function seems to be incomplete in the original file.
+    // I am assuming it was meant to call checkIcons.
     checkIcons();
-    setupSubmenuPositioning();
 
     // Fallback für dynamische Inhalte
     setTimeout(() => {
       checkIcons();
-      setupSubmenuPositioning();
     }, 200);
   });
 </script>

@@ -335,19 +335,7 @@ a:hover {
   color: var(--primary-light);
 }
 
-.highlight-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  color: var(--text-secondary);
-}
-.highlight-item svg {
-  width: 20px;
-  height: 20px;
-  color: var(--success-color);
-  flex-shrink: 0;
-}
+/* ===== Section: Call-to-Action Highlight ===== */
 
 /* ========================================
    6) Card Components & Loading System
@@ -434,8 +422,7 @@ a:hover {
    10) Print Styles
 ======================================== */
 @media print {
-  .loading-screen,
-  .main-header {
+  .loading-screen {
     display: none !important;
   }
   body {
@@ -453,8 +440,7 @@ a:hover {
     text-decoration: underline;
   }
   button,
-  .btn,
-  .section-cta {
+  .btn {
     display: none !important;
   }
   * {

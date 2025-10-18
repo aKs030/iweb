@@ -21,7 +21,7 @@
  * - Distance-adaptive transitions: Short flights 1.5s, long flights ~2.5s
  * - Enhanced easing: easeInOutQuart for camera, easeOutQuart for orbit
  * - Optimized camera presets: Closer positions, more dynamic angles
- * - Arc-curve zoom: Prevents close-up during long flights (about→features)
+ * - Arc-curve zoom: Prevents close-up during long camera flights
  * - Cinematic lighting system: Balanced day/night with color temperature
  * - Smoothed transform animations: Earth rotation with progressive easing
  * - Harmonized speeds: Cloud drift 0.0006, Stars twinkle 0.25
@@ -249,11 +249,17 @@ let scene,
   moonMesh,
   starField,
   cloudMesh,
-  atmosphereMesh;
+  atmosphereMesh,
+  rayleighAtmosphereMesh;
+
 let directionalLight = null;
 let ambientLight = null;
-let rayleighAtmosphereMesh = null;
 let THREE_INSTANCE = null;
+
+// Starfield Animation State
+let starOriginalPositions = null; // Original positions
+let starTargetPositions = null; // Card target positions
+let starAnimating = false;
 
 // Materials & Modes
 let dayMaterial = null;
@@ -400,6 +406,11 @@ const ThreeEarthManager = (() => {
     targetOrbitAngle = 0;
     frameCount = 0;
     sunPositionVector = null;
+
+    // Cleanup Star Animation State
+    starOriginalPositions = null;
+    starTargetPositions = null;
+    starAnimating = false;
 
     unregisterParticleSystem("three-earth");
     log.info("Three.js Earth system cleanup completed.");
@@ -557,15 +568,283 @@ function createStarField() {
   starField = new THREE_INSTANCE.Points(starGeometry, starMaterial);
   starField.name = "starField";
   scene.add(starField);
+
+  // Speichere Original-Positionen für spätere Transformation
+  starOriginalPositions = new Float32Array(positions);
+
+  log.info(`Starfield created with ${starCount} stars`);
 }
 
 function setupStarParallax() {
   const parallaxHandler = (progress) => {
-    if (!starField) return;
+    if (!starField || starAnimating) return; // Skip parallax während Animation
     starField.rotation.y = progress * Math.PI * 0.2;
     starField.position.z = Math.sin(progress * Math.PI) * 15;
   };
   sharedParallaxManager.addHandler(parallaxHandler, "three-earth-stars");
+}
+
+// ===== Star-to-Cards Transformation =====
+function getCardPositions() {
+  if (!camera) {
+    log.warn("Camera not initialized");
+    return [];
+  }
+
+  const featuresSection = getElementById("features");
+  if (!featuresSection) {
+    log.warn("Features section not found");
+    return [];
+  }
+
+  const cards = featuresSection.querySelectorAll(".card");
+  const positions = [];
+
+  if (cards.length === 0) {
+    log.warn("No cards found in features section, using fallback grid");
+    // Fallback: Grid-Layout in 3D-Space (vor der Kamera)
+    const gridCols = 3;
+    const spacingX = 8;
+    const spacingY = 6;
+    const baseZ = -2; // Vor der Kamera
+
+    for (let i = 0; i < 9; i++) {
+      const row = Math.floor(i / gridCols);
+      const col = i % gridCols;
+      positions.push({
+        x: (col - 1) * spacingX,
+        y: (1 - row) * spacingY + 2, // Leicht nach oben versetzt
+        z: baseZ,
+      });
+    }
+  } else {
+    // Konvertiere 2D-Karten-Positionen zu 3D-Welt-Koordinaten
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    cards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+
+      // Normalisierte Device Coordinates (NDC): -1 bis +1
+      const ndcX = ((rect.left + rect.width / 2) / viewportWidth) * 2 - 1;
+      const ndcY = -(((rect.top + rect.height / 2) / viewportHeight) * 2 - 1); // Y invertiert
+
+      // Erstelle 3D-Vektor in NDC-Space
+      const targetZ = -2; // Tiefe vor der Kamera (näher als Mond bei z: -5)
+      const vector = new THREE_INSTANCE.Vector3(ndcX, ndcY, 0);
+
+      // Unproject: NDC → Welt-Koordinaten
+      vector.unproject(camera);
+
+      // Richtungsvektor von Kamera zum unprojektierten Punkt
+      const direction = vector.sub(camera.position).normalize();
+
+      // Berechne Distanz, um auf die gewünschte Z-Ebene zu kommen
+      // Wir wollen die Sterne auf der Ebene z = targetZ haben
+      const distance = (targetZ - camera.position.z) / direction.z;
+
+      // Finale Position: Kamera-Position + Richtung * Distanz
+      const worldPos = camera.position
+        .clone()
+        .add(direction.multiplyScalar(distance));
+
+      positions.push({
+        x: worldPos.x,
+        y: worldPos.y,
+        z: targetZ,
+      });
+    });
+
+    log.info(`Found ${cards.length} cards, converted to 3D world positions:`, {
+      camera: {
+        x: camera.position.x.toFixed(2),
+        y: camera.position.y.toFixed(2),
+        z: camera.position.z.toFixed(2),
+      },
+      firstThreePositions: positions.slice(0, 3).map((p) => ({
+        x: p.x.toFixed(2),
+        y: p.y.toFixed(2),
+        z: p.z.toFixed(2),
+      })),
+    });
+  }
+
+  return positions;
+}
+
+function animateStarsToCards() {
+  if (!starField || !starOriginalPositions) {
+    log.warn("Cannot animate: starField or originalPositions missing");
+    return;
+  }
+
+  // Verhindere mehrfache gleichzeitige Animationen
+  if (starAnimating) {
+    log.debug("Star animation already in progress, skipping");
+    return;
+  }
+
+  // Karten sind bereits via CSS versteckt (opacity: 0)
+  const cards = document.querySelectorAll("#features .card");
+  cards.forEach((card) => {
+    card.style.transition = "none"; // Disable CSS transitions for smooth JS animation
+  });
+
+  // Starte Animation SOFORT mit initial berechneten Positionen
+  starAnimating = true;
+  log.info(
+    "Starting star-to-cards transformation immediately (positions will update)"
+  );
+
+  // Initial: Berechne Positionen mit aktueller Kamera (kann noch ungenau sein)
+  const cardPositions = getCardPositions();
+  if (cardPositions.length === 0) {
+    log.warn("No card positions found, skipping animation");
+    starAnimating = false;
+    return;
+  }
+
+  // Berechne initiale Ziel-Positionen
+  const positions = starField.geometry.attributes.position.array;
+  const starCount = positions.length / 3;
+  starTargetPositions = new Float32Array(starCount * 3);
+
+  const calculateTargets = (positions) => {
+    for (let i = 0; i < starCount; i++) {
+      const i3 = i * 3;
+      const targetCard = positions[i % positions.length];
+
+      const spreadXY = 0.8;
+      const spreadZ = 0.5;
+
+      starTargetPositions[i3] = targetCard.x + (Math.random() - 0.5) * spreadXY;
+      starTargetPositions[i3 + 1] =
+        targetCard.y + (Math.random() - 0.5) * spreadXY;
+      starTargetPositions[i3 + 2] =
+        targetCard.z + (Math.random() - 0.5) * spreadZ;
+    }
+  };
+
+  calculateTargets(cardPositions);
+
+  // Nach 2s: Aktualisiere Ziel-Positionen mit stabiler Kamera (77% von 2.6s)
+  setTimeout(() => {
+    if (starAnimating) {
+      const updatedPositions = getCardPositions();
+      if (updatedPositions.length > 0) {
+        log.info("Updating star targets with stabilized camera position");
+        calculateTargets(updatedPositions);
+      }
+    }
+  }, 2000);
+
+  animateStarTransformation();
+}
+
+function animateStarTransformation() {
+  if (!starAnimating || !starField || !starTargetPositions) {
+    log.warn("Cannot start transformation: missing required data");
+    starAnimating = false;
+    return;
+  }
+
+  const duration = 4000; // 4 Sekunden (langsamer für dramatischen Effekt)
+  const fadeStartProgress = 0.75; // Karten starten Fade-in erst bei 75% (Sterne fast da!)
+  const fadeEndProgress = 1.0; // Karten vollständig sichtbar bei 100%
+  const startTime = performance.now();
+
+  const cards = document.querySelectorAll("#features .card");
+
+  function animate() {
+    // Safety checks
+    if (!starAnimating || !starField || !starTargetPositions) {
+      starAnimating = false;
+      return;
+    }
+
+    const elapsed = performance.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Easing function für Sterne
+    const eased = easeInOutCubic(progress);
+
+    // Interpoliere Sterne-Positionen
+    const positions = starField.geometry.attributes.position.array;
+    const starCount = positions.length / 3;
+
+    for (let i = 0; i < starCount; i++) {
+      const i3 = i * 3;
+      positions[i3] =
+        starOriginalPositions[i3] +
+        (starTargetPositions[i3] - starOriginalPositions[i3]) * eased;
+      positions[i3 + 1] =
+        starOriginalPositions[i3 + 1] +
+        (starTargetPositions[i3 + 1] - starOriginalPositions[i3 + 1]) * eased;
+      positions[i3 + 2] =
+        starOriginalPositions[i3 + 2] +
+        (starTargetPositions[i3 + 2] - starOriginalPositions[i3 + 2]) * eased;
+    }
+
+    starField.geometry.attributes.position.needsUpdate = true;
+
+    // Fade-in der Karten während Sterne sich nähern
+    if (progress >= fadeStartProgress && progress <= fadeEndProgress) {
+      const fadeProgress =
+        (progress - fadeStartProgress) / (fadeEndProgress - fadeStartProgress);
+      const cardOpacity = easeInOutCubic(fadeProgress);
+
+      cards.forEach((card) => {
+        card.style.opacity = cardOpacity.toString();
+      });
+    } else if (progress > fadeEndProgress) {
+      // Stelle sicher, dass Karten vollständig sichtbar sind
+      cards.forEach((card) => {
+        card.style.opacity = "1";
+      });
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      log.info("Star transformation complete - cards fully visible");
+      starAnimating = false;
+    }
+  }
+
+  animate();
+}
+
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+function resetStarsToOriginal() {
+  if (!starField || !starOriginalPositions) {
+    log.debug("Cannot reset stars: starField or originalPositions missing");
+    return;
+  }
+
+  // Stoppe laufende Animation
+  starAnimating = false;
+
+  // Verstecke Karten wieder für nächste Animation
+  const cards = document.querySelectorAll("#features .card");
+  cards.forEach((card) => {
+    card.style.opacity = "0";
+    card.style.transition = "opacity 0.5s ease"; // Smooth fade-out beim Verlassen
+  });
+
+  // Sofortiges Reset auf Original-Positionen
+  const positions = starField.geometry.attributes.position.array;
+  for (let i = 0; i < positions.length; i++) {
+    positions[i] = starOriginalPositions[i];
+  }
+  starField.geometry.attributes.position.needsUpdate = true;
+
+  // Cleanup
+  starTargetPositions = null;
+
+  log.info("Stars reset to original positions");
 }
 
 // ===== Cinematic Lighting Setup =====
@@ -1209,15 +1488,38 @@ function flyToPreset(presetName) {
 function setupSectionDetection() {
   const sections = document.querySelectorAll("section[id]");
   if (sections.length === 0) return;
+
   sectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const newSection = entry.target.id;
           if (newSection !== currentSection) {
+            const previousSection = currentSection;
             currentSection = newSection;
             updateCameraForSection(newSection);
             updateEarthForSection(newSection);
+
+            // Sterne-Transformation für Features Section
+            if (newSection === "features") {
+              log.info(
+                "Features section entered, starting star animation immediately"
+              );
+
+              // Starte Animation SOFORT - parallel zur Kamera
+              // Die Positionen werden nach 2s automatisch aktualisiert
+              const cards = document.querySelectorAll("#features .card");
+              if (cards.length === 0) {
+                log.warn("No cards found, skipping animation");
+              } else {
+                animateStarsToCards(); // Startet sofort!
+              }
+            } else if (previousSection === "features") {
+              // Zurück zu Original wenn wir features verlassen
+              log.info("Leaving features section, resetting stars");
+              resetStarsToOriginal();
+            }
+
             document
               .querySelector(".three-earth-container")
               ?.setAttribute("data-section", newSection);
@@ -1294,7 +1596,7 @@ function updateEarthForSection(sectionName) {
 
     log.info(`🔄 About section toggle: ${targetMode.toUpperCase()} mode`);
   } else {
-    // Andere Sections (hero, features): BEHALTE aktuellen Mode
+    // Andere Sections (hero): BEHALTE aktuellen Mode
     // Ignoriere config.mode - Mode wird nur bei about geändert
     targetMode = earthMesh.userData.currentMode;
     log.debug(

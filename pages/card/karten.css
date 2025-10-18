@@ -66,6 +66,9 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
+
+  /* Initial unsichtbar für Stern-Animation */
+  opacity: 0;
 }
 
 /* Performance: will-change nach Animation entfernen */

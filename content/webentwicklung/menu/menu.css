@@ -664,17 +664,7 @@ main {
     color: var(--dynamic-menu-label-secondary);
   }
 
-  /* Dynamic Menu Mobile Overlay */
-  .site-menu__overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9997;
-    background: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+  /* Dynamic Menu Mobile Overlay - Removed (unused) */
 
   /* Mobile submenu indicator - integriert von 768px Media Query */
   .has-submenu > a::after,
@@ -729,12 +719,4 @@ main {
   opacity: 1;
 }
 
-/* ===== Dynamic Menu Overlay States ===== */
-.site-menu__overlay {
-  display: none;
-}
-
-.site-menu.open ~ .site-menu__overlay {
-  display: block;
-  opacity: 1;
-}
+/* ===== Dynamic Menu Overlay States - Removed (unused) ===== */

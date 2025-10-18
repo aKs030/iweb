@@ -55,12 +55,6 @@ if ("serviceWorker" in navigator) {
 (() => {
   const MAP = [
     {
-      id: "features",
-      module: "/content/webentwicklung/particles/three-card-system.js",
-      loaded: false,
-      type: "feature-rotation",
-    },
-    {
       id: "about",
       module: "/pages/about/about.js",
       loaded: false,
@@ -92,8 +86,8 @@ if ("serviceWorker" in navigator) {
       if (el) lazyLoader.observe(el);
     }
   });
-  // Falls Features/About bereits im DOM (eager oder schnell geladen)
-  ["features", "about"].forEach((id) => {
+  // Falls About bereits im DOM (eager oder schnell geladen)
+  ["about"].forEach((id) => {
     const el = getElementById(id);
     if (el) lazyLoader.observe(el);
   });
@@ -478,8 +472,8 @@ ScrollSnapping.init();
       fire(EVENTS.MODULES_READY);
       tryHide();
 
-  // Hard fallback für Loading
-  setTimeout(hideLoading, 5000);
+      // Hard fallback für Loading
+      setTimeout(hideLoading, 5000);
 
       // Persistenten Storage anfragen (best effort, verzögert um Initial Load nicht zu blockieren)
       schedulePersistentStorageRequest(2200);
