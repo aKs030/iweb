@@ -449,6 +449,6 @@ window.__initTyping = async () => {
 export {
   initHeroSubtitleImpl as initHeroSubtitle,
   TypeWriter,
-  TypeWriterRegistry,
+  TypeWriterRegistry
 };
 export default TypeWriterRegistry;
