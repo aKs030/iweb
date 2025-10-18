@@ -28,5 +28,6 @@
   "files.watcherExclude": {
     "**/node_modules/**": true
   },
-  "explorer.confirmDelete": false
+  "explorer.confirmDelete": false,
+  "diffEditor.codeLens": true
 }

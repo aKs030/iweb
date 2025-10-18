@@ -69,6 +69,15 @@
     <meta name="web-vitals-extension" content="enabled" />
     <link rel="preconnect" href="https://abdulkerimsesli.de" />
 
+    <!-- Google tag (gtag.js) - Blocked until cookie consent -->
+    <script type="text/plain" data-consent="required" data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN" async></script>
+    <script type="text/plain" data-consent="required">
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-S0587RQ4CN');
+    </script>
+    
     <!-- Three.js Module Preload entfernt für bessere Mobile Performance -->
     <!-- Wird nur bei Bedarf via Dynamic Import geladen (Code-Splitting) -->
     <!-- <link rel="modulepreload" href="/content/webentwicklung/lib/three/build/three.module.min.js" as="script" crossorigin> -->
@@ -193,6 +202,9 @@
     <!-- Footer CSS synchron laden (Footer ist immer sichtbar/fixed) -->
     <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
     <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
+    
+    <!-- Cookie Consent Banner CSS (Teil des Footer-Systems) -->
+    <link rel="stylesheet" href="/content/webentwicklung/cookie-consent.css" />
 
     <!-- Nicht-kritische CSS asynchron laden (media="print" Pattern für bessere Performance) -->
     <!-- Three.js Earth Partikel-System (Below-the-Fold) -->

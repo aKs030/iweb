@@ -49,8 +49,19 @@ const DEFAULT_CONFIG = {
     ".mp4",
     ".webm",
     ".json",
+    ".xml",
   ],
-  codeExtensions: [".html", ".css", ".js", ".jsx", ".ts", ".tsx", ".vue"],
+  codeExtensions: [
+    ".html",
+    ".css",
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".vue",
+    ".json",
+    ".xml",
+  ],
   ignoreDirs: [
     "node_modules",
     ".git",
@@ -294,6 +305,14 @@ async function buildReferenceIndex(files, config) {
     const patterns = [
       // HTML/JSX attributes
       /(?:href|src|data-src|data-background)\s*=\s*["']([^"']+)["']/g,
+      // Meta tag content attributes (Open Graph, Twitter Cards, etc.)
+      /(?:property|name)\s*=\s*["']og:image["'][^>]*content\s*=\s*["']([^"']+)["']/gi,
+      /(?:property|name)\s*=\s*["']twitter:image["'][^>]*content\s*=\s*["']([^"']+)["']/gi,
+      /content\s*=\s*["']([^"']*\/content\/img\/[^"']+)["']/g,
+      // JSON-LD image references
+      /"image"\s*:\s*["']([^"']+\.(?:webp|png|jpg|jpeg|svg|gif))["']/g,
+      // Manifest.json icon references
+      /"src"\s*:\s*["']([^"']+\/icons\/[^"']+)["']/g,
       // CSS url()
       /url\(\s*["']?([^"'\)]+)["']?\s*\)/g,
       // JavaScript imports
@@ -313,10 +332,28 @@ async function buildReferenceIndex(files, config) {
     for (const pattern of patterns) {
       let match;
       while ((match = pattern.exec(txt))) {
-        const ref = match[1] || match[2];
-        if (ref && !ref.startsWith("http") && !ref.startsWith("data:")) {
-          localRefs.push(ref);
+        let ref = match[1] || match[2];
+        if (!ref || ref.startsWith("data:")) continue;
+        
+        // Extrahiere lokalen Pfad von vollständigen URLs (z.B. https://abdulkerimsesli.de/content/img/x.webp -> /content/img/x.webp)
+        if (ref.startsWith("http")) {
+          try {
+            const url = new URL(ref);
+            // Nur URLs der eigenen Domain berücksichtigen
+            if (
+              url.hostname === "abdulkerimsesli.de" ||
+              url.hostname === "localhost"
+            ) {
+              ref = url.pathname;
+            } else {
+              continue; // Externe URLs ignorieren
+            }
+          } catch {
+            continue; // Ungültige URLs ignorieren
+          }
         }
+        
+        localRefs.push(ref);
       }
     }
 

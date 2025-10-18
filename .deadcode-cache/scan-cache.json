@@ -1,14 +1,14 @@
 {
-  "timestamp": 1760775087747,
-  "findings": 5,
+  "timestamp": 1760793249944,
+  "findings": 1,
   "stats": {
-    "totalFiles": 57,
-    "totalFindings": 5,
-    "unusedAssets": 4,
+    "totalFiles": 63,
+    "totalFindings": 1,
+    "unusedAssets": 0,
     "unusedClasses": 0,
     "unusedFunctions": 1,
-    "totalUnusedSize": 35657,
-    "totalUnusedSizeMB": "0.03",
+    "totalUnusedSize": 0,
+    "totalUnusedSizeMB": "0.00",
     "severityBreakdown": {
       "high": 0,
       "medium": 0,
