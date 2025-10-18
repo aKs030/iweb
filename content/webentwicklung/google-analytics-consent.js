@@ -48,7 +48,7 @@ function enableConsentScripts() {
     script.parentNode.replaceChild(newScript, script);
   });
 
-  console.info("[Cookie Consent] Google Analytics Scripts aktiviert");
+  console.warn("[Cookie Consent] Google Analytics Scripts aktiviert");
 }
 
 // Export für Nutzung in footer-complete.js

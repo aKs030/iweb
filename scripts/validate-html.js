@@ -25,7 +25,7 @@ const htmlvalidate = new HtmlValidate({
 async function validateSingleFile(file, filePath, isQuiet) {
   try {
     const content = await readFile(filePath, "utf8");
-    const report = htmlvalidate.validateString(content, filePath);
+    const report = await htmlvalidate.validateString(content, filePath);
 
     if (report.valid) {
       if (!isQuiet) {

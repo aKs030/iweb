@@ -1,6 +1,6 @@
-<footer id="site-footer" class="site-footer-fixed" aria-label="Website footer">
+<footer id="site-footer" class="site-footer-fixed" aria-label="Main website footer">
   <!-- Minimized Footer (Default) -->
-  <div class="footer-minimized" role="contentinfo">
+  <div class="footer-minimized">
     <div class="footer-minimal-content">
       <!-- Copyright -->
       <span class="footer-copyright-text">
@@ -18,17 +18,17 @@
         <span class="cookie-text">
           🍪 <span class="cookie-text-full">Wir verwenden Google Analytics zur Website-Optimierung.</span><span class="cookie-text-short">Analytics.</span>
         </span>
-        <button id="accept-cookies-btn" class="cookie-accept-btn">
+        <button id="accept-cookies-btn" type="button" class="cookie-accept-btn">
           <span class="btn-text-full">Akzeptieren</span><span class="btn-text-short">OK</span>
         </button>
-        <button id="reject-cookies-btn" class="cookie-reject-btn">
+        <button id="reject-cookies-btn" type="button" class="cookie-reject-btn">
           <span class="btn-text-full">Ablehnen</span><span class="btn-text-short">Nein</span>
         </button>
       </div>
       
       <!-- Navigation -->
       <nav class="footer-minimal-nav" aria-label="Footer links">
-        <button id="footer-cookies-link" class="footer-nav-link footer-cookies-link" aria-label="Cookie-Einstellungen">
+        <button id="footer-cookies-link" type="button" class="footer-nav-link footer-cookies-link" aria-label="Cookie-Einstellungen">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <circle cx="8" cy="10" r="1.5" fill="currentColor"></circle>
@@ -64,7 +64,7 @@
       <div class="cookie-modal-content">
         <div class="cookie-modal-header">
           <h2 id="cookie-modal-title">🍪 Cookie-Einstellungen</h2>
-          <button class="cookie-modal-close" aria-label="Schließen">&times;</button>
+          <button type="button" class="cookie-modal-close" aria-label="Schließen">&times;</button>
         </div>
         
         <div class="cookie-modal-body">
@@ -89,7 +89,7 @@
           <!-- Analytics Cookies -->
           <div class="cookie-category">
             <div class="cookie-category-header">
-              <h3>Analyse & Performance</h3>
+              <h3>Analyse &amp; Performance</h3>
               <label class="cookie-toggle">
                 <input type="checkbox" id="analytics-toggle" checked>
                 <span class="cookie-toggle-slider"></span>
@@ -118,12 +118,11 @@
         </div>
         
         <div class="cookie-modal-footer">
-          <button id="modal-reject-all" class="cookie-modal-btn cookie-modal-btn-secondary">Nur Essenzielle</button>
-          <button id="modal-accept-selected" class="cookie-modal-btn cookie-modal-btn-primary">Auswahl speichern</button>
-          <button id="modal-accept-all" class="cookie-modal-btn cookie-modal-btn-primary">Alle akzeptieren</button>
+          <button id="modal-reject-all" type="button" class="cookie-modal-btn cookie-modal-btn-secondary">Nur Essenzielle</button>
+          <button id="modal-accept-selected" type="button" class="cookie-modal-btn cookie-modal-btn-primary">Auswahl speichern</button>
+          <button id="modal-accept-all" type="button" class="cookie-modal-btn cookie-modal-btn-primary">Alle akzeptieren</button>
         </div>
       </div>
-    </div>
     </div>
   </div>
 
@@ -135,7 +134,7 @@
       <div class="cookie-settings-container">
         <div class="cookie-settings-header">
           <h2>🍪 Cookie-Einstellungen</h2>
-          <button class="cookie-settings-close" id="close-cookie-footer" aria-label="Schließen">
+          <button type="button" class="cookie-settings-close" id="close-cookie-footer" aria-label="Schließen">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -165,7 +164,7 @@
           <!-- Analytics Cookies -->
           <div class="cookie-category">
             <div class="cookie-category-header">
-              <h3>Analyse & Performance</h3>
+              <h3>Analyse &amp; Performance</h3>
               <label class="cookie-toggle">
                 <input type="checkbox" id="footer-analytics-toggle" checked>
                 <span class="cookie-toggle-slider"></span>
@@ -194,9 +193,9 @@
         </div>
         
         <div class="cookie-settings-footer">
-          <button id="footer-reject-all" class="cookie-settings-btn cookie-settings-btn-secondary">Nur Essenzielle</button>
-          <button id="footer-accept-selected" class="cookie-settings-btn cookie-settings-btn-primary">Auswahl speichern</button>
-          <button id="footer-accept-all" class="cookie-settings-btn cookie-settings-btn-primary">Alle akzeptieren</button>
+          <button id="footer-reject-all" type="button" class="cookie-settings-btn cookie-settings-btn-secondary">Nur Essenzielle</button>
+          <button id="footer-accept-selected" type="button" class="cookie-settings-btn cookie-settings-btn-primary">Auswahl speichern</button>
+          <button id="footer-accept-all" type="button" class="cookie-settings-btn cookie-settings-btn-primary">Alle akzeptieren</button>
         </div>
       </div>
     </div>
