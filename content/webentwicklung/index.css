@@ -1,17 +1,4 @@
-/**
- * Hauptstyles für die Portfolio-Website
- * 
- * Features:
- * - Responsive Design mit CSS Grid/Flexbox
- * - Scroll-Snap Navigation zwischen Sektionen
- * - Moderne Typografie mit Inter Font
- * - Card-Komponenten mit Hover-Effekten
- * - Dark Theme optimiert
- * - Accessibility & Print-Styles
- * 
- * @author Abdulkerim Sesli
- * @version 1.0.0
- */
+
 
 /* Button Styles Import */
 @import "buttons.css";
