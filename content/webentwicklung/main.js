@@ -1,3 +1,4 @@
+import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 import {
   createLazyLoadObserver,
   createLogger,
@@ -8,7 +9,6 @@ import {
   SectionTracker,
 } from "./shared-utilities.js";
 import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
-import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 
 // ===== Side-Effect Imports (Module ohne explizite Exports) =====
 // Menü-Modul wird für Side-Effects importiert (Initialisierung)
