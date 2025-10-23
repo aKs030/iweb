@@ -55,7 +55,7 @@ const HeroManager = (() => {
   }
 
   const ensureHeroData = async () =>
-    heroData || (heroData = await import("./GrussText.js").catch(() => ({})));
+    heroData || (heroData = await import("./GrussText.js").catch((err) => { console.warn('Failed to load GrussText.js', err); return {}; }));
 
   // Hero Data Module für externe Verwendung (z.B. TypeWriter) bereitstellen
   window.__heroEnsureData = ensureHeroData;
@@ -113,8 +113,8 @@ export function initHeroFeatureBundle() {
           window.__typingStarted = false;
         });
       }
-    } catch {
-      /* noop */
+    } catch (e) {
+      console.warn('Error during typing initialization.', e);
     }
 
     // Force-Visible: CRT Buttons - Animation-System entfernt
@@ -137,8 +137,8 @@ export function initHeroFeatureBundle() {
             window.__typingStarted = false;
           });
         }
-      } catch {
-        /* noop */
+      } catch (e) {
+        console.warn('Error during typing initialization.', e);
       }
     },
     { once: true }

@@ -106,8 +106,8 @@ const SectionLoader = (() => {
         detail: { id: section?.id, section, ...detail },
       });
       document.dispatchEvent(ev);
-    } catch {
-      /* ignore */
+    } catch (e) {
+      console.warn('Failed to dispatch section event:', type, e);
     }
   }
 

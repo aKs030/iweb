@@ -52,8 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
       });
     })
-    .catch(() => {
-      // Menü-Laden fehlgeschlagen - graceful fallback
+    .catch((err) => {
+      log.error('Menu loading failed:', err);
     });
 });
 

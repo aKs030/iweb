@@ -215,8 +215,8 @@ export function fire(type, detail, target = document) {
       return;
     }
     target.dispatchEvent(new CustomEvent(type, { detail }));
-  } catch {
-    // Fail silently
+  } catch (e) {
+    console.warn('Failed to dispatch event:', type, e);
   }
 }
 

@@ -143,8 +143,8 @@ class TypeWriter {
           detail: { text: full, author },
         });
         document.dispatchEvent(ev);
-      } catch {
-        // Event dispatch failed, continue silently
+      } catch (e) {
+        log.warn('Failed to dispatch hero:typingEnd event:', e);
       }
       delay = this.wait;
       this._isDeleting = true;

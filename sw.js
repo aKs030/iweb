@@ -29,7 +29,7 @@ self.addEventListener("install", (event) => {
     (async () => {
       const cache = await caches.open(CACHE_NAMES.CORE);
       // addAll sollte komplett funktionieren; wenn nicht, SW trotzdem aktivierbar
-      await cache.addAll(CORE).catch(() => {});
+      await cache.addAll(CORE).catch((err) => { console.warn('sw.js: Core cache addAll failed', err); });
       // Sofortiger Activate-Wunsch
       self.skipWaiting?.();
     })()

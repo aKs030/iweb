@@ -8,7 +8,7 @@
     const html = await resp.text();
     host.innerHTML = html;
     document.dispatchEvent(new CustomEvent("about:loaded"));
-  } catch {
-    // Silent fail
+  } catch (err) {
+    console.warn('Failed to load about.html content', err);
   }
 })();
