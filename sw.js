@@ -13,6 +13,9 @@ const CORE = [
   "/content/webentwicklung/index.css",
   "/content/webentwicklung/main.js",
   "/content/webentwicklung/shared-utilities.js",
+  "/content/webentwicklung/menu/menu.css",
+  "/content/webentwicklung/footer/footer.css",
+  "/content/webentwicklung/TypeWriter/typewriter.css"
 ];
 
 const CACHE_NAMES = {

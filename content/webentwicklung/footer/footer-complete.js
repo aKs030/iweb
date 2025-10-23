@@ -1,4 +1,5 @@
-/* eslint no-console: ["warn", { allow: ["error", "warn", "info", "log"] }] */
+import { createLogger } from '../shared-utilities.js';
+
 /**
  * Footer Complete System - All-in-One JavaScript
  *
@@ -417,34 +418,6 @@ function deleteAnalyticsCookies() {
 // =================================================================
 
 // ===== SHARED UTILITIES =====
-const LOG_LEVELS = { error: 0, warn: 1, info: 2, debug: 3 };
-let globalLogLevel = LOG_LEVELS.warn;
-
-// Debug-Modus
-if (typeof window !== "undefined") {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (
-    urlParams.get("debug") === "true" ||
-    window.localStorage?.getItem("iweb-debug") === "true"
-  ) {
-    globalLogLevel = LOG_LEVELS.debug;
-  }
-}
-
-function createLogger(category) {
-  const prefix = `[${category}]`;
-  return {
-    error: (msg, ...args) =>
-      globalLogLevel >= LOG_LEVELS.error && console.error(prefix, msg, ...args),
-    warn: (msg, ...args) =>
-      globalLogLevel >= LOG_LEVELS.warn && console.warn(prefix, msg, ...args),
-    info: (msg, ...args) =>
-      globalLogLevel >= LOG_LEVELS.info && console.info(prefix, msg, ...args),
-    debug: (msg, ...args) =>
-      globalLogLevel >= LOG_LEVELS.debug && console.log(prefix, msg, ...args),
-  };
-}
-
 function throttle(func, delay) {
   let timeout = null;
   let lastRan = 0;
