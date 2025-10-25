@@ -280,7 +280,7 @@ body:not(.hero-active) .floating-icon {
   justify-content: center;
   align-items: center;
   position: absolute;
-  bottom: 13rem;
+  bottom: clamp(4rem, 20vh, 13rem);
   left: 50%;
   transform: translateX(-50%);
   width: fit-content;
