@@ -210,6 +210,9 @@ body {
   min-width: 1000px; /* Ensure minimum width for all 4 menu items */
   height: 52px;
   padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
   /* Dynamic Menu Glassmorphismus */
   background: var(--dynamic-menu-header-bg);
@@ -225,10 +228,9 @@ body {
 
   /* Layout - Improved spacing */
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   z-index: 9999;
-  gap: 20px; /* Add gap between logo and menu */
 
   /* Animation - kombinierte Transform-Definition */
   animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce)
@@ -257,6 +259,8 @@ body {
   align-items: flex-start;
   gap: 2px;
   padding: 4px 0;
+  position: absolute;
+  left: 24px;
 }
 
 .site-logo {
@@ -333,22 +337,23 @@ body {
 .site-menu {
   display: flex;
   align-items: center;
+  justify-content: center;
   transition: transform 0.4s var(--dynamic-menu-spring-smooth);
-  flex: 1;
-  justify-content: flex-end;
-  overflow: visible; /* Stellt sicher, dass nichts abgeschnitten wird */
-  min-width: 0; /* Ermöglicht Flexbox-Shrinking */
+  overflow: visible;
+  margin: 0 auto;
+  width: auto;
+  position: relative; /* Basis-Position für Desktop */
 }
 
 .site-menu__list {
   list-style: none;
   display: flex;
-  gap: clamp(8px, 1.5vw, 16px); /* Größerer Gap für bessere Sichtbarkeit */
+  gap: clamp(16px, 2vw, 24px); /* Größerer Abstand zwischen den Menüpunkten */
   align-items: center;
   flex-wrap: nowrap;
   margin: 0;
   padding: 0;
-  min-width: max-content; /* Stellt sicher, dass alle Items Platz haben */
+  justify-content: center; /* Zusätzliche Zentrierung der Menüpunkte */
 }
 
 .site-menu__list li {
@@ -424,7 +429,8 @@ body {
   cursor: pointer;
   width: 40px;
   height: 40px;
-  position: relative;
+  position: absolute;
+  right: 24px;
   transition: all 0.2s var(--dynamic-menu-spring-quick);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -558,17 +564,35 @@ main {
 /* ===== Dynamic Menu Mobile Experience ===== */
 @media (max-width: 1000px) {
   /* Angepasst von 900px auf 1000px für mehr Desktop-Platz */
-  .site-menu__toggle {
-    display: block;
-  }
-
   .site-header {
+    display: flex;
+    justify-content: flex-start; /* Änderung für besseres mobiles Layout */
     top: 8px;
     width: calc(100% - 16px);
     height: 48px;
     padding: 0 20px;
     border-radius: 20px;
     min-width: auto; /* Remove min-width constraint on mobile */
+  }
+
+  .site-logo__container {
+    position: relative; /* Zurücksetzen der absoluten Positionierung */
+    left: 0;
+  }
+
+  .site-menu__toggle {
+    display: block;
+    position: absolute;
+    right: 20px; /* Angepasst an das mobile Padding */
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .site-menu {
+    position: fixed; /* Fixierte Position für Mobile-Menü */
+    left: auto; /* Zurücksetzen der horizontalen Zentrierung */
+    margin: 0; /* Zurücksetzen des Auto-Margins */
+    width: auto;
   }
 
   /* Adjust page content for smaller floating header */
@@ -579,10 +603,11 @@ main {
   /* Dynamic Menu Card-based Mobile Menu */
   .site-menu {
     position: fixed;
-    top: 72px;
+    top: 64px; /* Angepasst an die neue Header-Höhe */
     right: 8px;
     width: min(90vw, 320px);
     padding: 0;
+    left: auto; /* Verhindert Konflikte mit der Desktop-Zentrierung */
 
     /* Dynamic Menu Card Design */
     background: var(--dynamic-menu-header-bg);
