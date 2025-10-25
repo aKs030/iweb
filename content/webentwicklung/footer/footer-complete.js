@@ -15,8 +15,8 @@ import { createLogger } from '../shared-utilities.js';
  * KEINE EXTERNEN ABHÄNGIGKEITEN - Komplett eigenständig
  *
  * @author Abdulkerim Sesli
- * @version 1.1.0
- * @updated 2025-10-18 - Cookie Consent Integration
+ * @version 1.2.0
+ * @updated 2025-10-25 - Critical Observer Cleanup Fixes
  */
 
 // =================================================================
@@ -28,7 +28,6 @@ import { createLogger } from '../shared-utilities.js';
  * Aktiviert die blockierten Scripts mit data-consent="required"
  */
 function loadGoogleAnalytics() {
-  // Finde alle blockierten Scripts mit data-consent Attribut
   const blockedScripts = document.querySelectorAll(
     'script[data-consent="required"]'
   );
@@ -41,25 +40,20 @@ function loadGoogleAnalytics() {
   }
 
   blockedScripts.forEach((script) => {
-    // Erstelle neues aktiviertes Script
     const newScript = document.createElement("script");
 
-    // Kopiere alle Attribute (außer data-consent und type)
     Array.from(script.attributes).forEach((attr) => {
       if (attr.name === "data-src") {
-        // data-src wird zu src
         newScript.setAttribute("src", attr.value);
       } else if (attr.name !== "data-consent" && attr.name !== "type") {
         newScript.setAttribute(attr.name, attr.value);
       }
     });
 
-    // Kopiere Inline-Code falls vorhanden
     if (script.innerHTML.trim()) {
       newScript.innerHTML = script.innerHTML;
     }
 
-    // Ersetze blockiertes Script mit aktiviertem
     script.parentNode.replaceChild(newScript, script);
   });
 }
@@ -105,13 +99,11 @@ function initializeConsentBanner() {
   const consentBanner = document.getElementById("cookie-consent-banner");
   const acceptButton = document.getElementById("accept-cookies-btn");
 
-  // Wenn die Elemente nicht gefunden werden, abbrechen
   if (!consentBanner || !acceptButton) {
     console.error("[Cookie Consent] Banner-Elemente nicht gefunden.");
     return;
   }
 
-  // Prüfen, ob der Nutzer bereits eine Entscheidung getroffen hat
   const consent = getCookie("cookie_consent");
   if (consent === "accepted") {
     loadGoogleAnalytics();
@@ -119,13 +111,10 @@ function initializeConsentBanner() {
   } else if (consent === "rejected") {
     consentBanner.classList.add("hidden");
   } else {
-    // Wenn keine Zustimmung vorliegt, zeige den Banner inline an
     consentBanner.classList.remove("hidden");
   }
 
-  // Event-Listener für den Akzeptieren-Button
   acceptButton.addEventListener("click", () => {
-    // Banner ausblenden mit scale-Animation
     consentBanner.style.opacity = "0";
     consentBanner.style.transform = "scale(0.95)";
 
@@ -137,11 +126,9 @@ function initializeConsentBanner() {
     loadGoogleAnalytics();
   });
 
-  // Event-Listener für den Ablehnen-Button (DSGVO-konform)
   const rejectButton = document.getElementById("reject-cookies-btn");
   if (rejectButton) {
     rejectButton.addEventListener("click", () => {
-      // Banner ausblenden
       consentBanner.style.opacity = "0";
       consentBanner.style.transform = "scale(0.95)";
 
@@ -153,7 +140,6 @@ function initializeConsentBanner() {
     });
   }
 
-  // Event-Listener für den Cookies-Link (Footer maximieren mit Cookie-Einstellungen)
   const cookiesLink = document.querySelector(".footer-cookies-link");
   if (cookiesLink) {
     cookiesLink.addEventListener("click", (e) => {
@@ -187,29 +173,24 @@ function openFooterCookieSettings() {
     return;
   }
 
-  // Toggle-Status basierend auf aktueller Einwilligung setzen
   const consent = getCookie("cookie_consent");
   if (analyticsToggle) {
     analyticsToggle.checked = consent === "accepted";
   }
 
-  // Footer expandieren
   footer.classList.add("footer-expanded");
   footerMin.classList.add("footer-hidden");
   footerMax.classList.remove("footer-hidden");
   cookieView.classList.remove("hidden");
 
-  // Normal Content ausblenden
   if (normalContent) {
     normalContent.style.display = "none";
   }
 
-  // IntersectionObserver für Section-Erkennung (nur Content-Sections, nicht Background)
   const sections = document.querySelectorAll(
     "section[id]:not(#threeEarthContainer), main > section[id], [data-section]"
   );
 
-  // Aktuell sichtbare Sections beim Start ermitteln (ignorieren)
   const initialVisibleSections = new Set();
   sections.forEach((section) => {
     const rect = section.getBoundingClientRect();
@@ -220,50 +201,48 @@ function openFooterCookieSettings() {
     }
   });
 
-  // Flag um mehrfaches Triggern zu verhindern
   let hasTriggered = false;
 
-  // Wenn bereits ein Observer existiert, disconnecte ihn
+  // ✅ KRITISCHER FIX: Cleanup existing observer
   if (globalSectionObserver) {
     globalSectionObserver.disconnect();
+    globalSectionObserver = null;
   }
 
   globalSectionObserver = new IntersectionObserver(
     (entries) => {
-      // Wenn bereits getriggert, ignoriere alle weiteren Events
       if (hasTriggered) return;
 
-      // Prüfe ob Footer noch maximiert ist
       const currentFooter = document.getElementById("site-footer");
       if (
         !currentFooter ||
         !currentFooter.classList.contains("footer-expanded")
       ) {
-        // Footer ist bereits minimiert, Observer deaktivieren
-        globalSectionObserver.disconnect();
+        if (globalSectionObserver) {
+          globalSectionObserver.disconnect();
+          globalSectionObserver = null;
+        }
         return;
       }
 
       entries.forEach((entry) => {
-        // Wenn bereits getriggert, stoppe
         if (hasTriggered) return;
 
         if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
           const sectionId =
             entry.target.id || entry.target.dataset.section || "unknown";
 
-          // Ignoriere initial sichtbare Sections
           if (initialVisibleSections.has(sectionId)) {
             return;
           }
 
-          // Flag setzen um weitere Trigger zu blockieren
           hasTriggered = true;
 
-          // Observer SOFORT disconnecten
-          globalSectionObserver.disconnect();
+          if (globalSectionObserver) {
+            globalSectionObserver.disconnect();
+            globalSectionObserver = null;
+          }
 
-          // Footer schließen
           closeFooterCookieSettings();
         }
       });
@@ -275,27 +254,30 @@ function openFooterCookieSettings() {
     }
   );
 
-  // Alle Content-Sections beobachten
   sections.forEach((section) => {
     globalSectionObserver.observe(section);
   });
 
-  // Close-Button Event (nur einmal registrieren)
   const closeBtn = document.getElementById("close-cookie-footer");
   if (closeBtn && !closeBtn.dataset.listenerAdded) {
     closeBtn.dataset.listenerAdded = "true";
     closeBtn.addEventListener("click", () => {
-      globalSectionObserver.disconnect();
+      if (globalSectionObserver) {
+        globalSectionObserver.disconnect();
+        globalSectionObserver = null;
+      }
       closeFooterCookieSettings();
     });
   }
 
-  // "Nur Essenzielle" Button
   const rejectAllBtn = document.getElementById("footer-reject-all");
   if (rejectAllBtn && !rejectAllBtn.dataset.listenerAdded) {
     rejectAllBtn.dataset.listenerAdded = "true";
     rejectAllBtn.addEventListener("click", () => {
-      if (globalSectionObserver) globalSectionObserver.disconnect();
+      if (globalSectionObserver) {
+        globalSectionObserver.disconnect();
+        globalSectionObserver = null;
+      }
       setCookie("cookie_consent", "rejected", 365);
       deleteAnalyticsCookies();
       closeFooterCookieSettings();
@@ -307,12 +289,14 @@ function openFooterCookieSettings() {
     });
   }
 
-  // "Auswahl speichern" Button
   const acceptSelectedBtn = document.getElementById("footer-accept-selected");
   if (acceptSelectedBtn && !acceptSelectedBtn.dataset.listenerAdded) {
     acceptSelectedBtn.dataset.listenerAdded = "true";
     acceptSelectedBtn.addEventListener("click", () => {
-      if (globalSectionObserver) globalSectionObserver.disconnect();
+      if (globalSectionObserver) {
+        globalSectionObserver.disconnect();
+        globalSectionObserver = null;
+      }
 
       if (analyticsToggle && analyticsToggle.checked) {
         setCookie("cookie_consent", "accepted", 365);
@@ -331,12 +315,14 @@ function openFooterCookieSettings() {
     });
   }
 
-  // "Alle akzeptieren" Button
   const acceptAllBtn = document.getElementById("footer-accept-all");
   if (acceptAllBtn && !acceptAllBtn.dataset.listenerAdded) {
     acceptAllBtn.dataset.listenerAdded = "true";
     acceptAllBtn.addEventListener("click", () => {
-      if (globalSectionObserver) globalSectionObserver.disconnect();
+      if (globalSectionObserver) {
+        globalSectionObserver.disconnect();
+        globalSectionObserver = null;
+      }
       setCookie("cookie_consent", "accepted", 365);
       loadGoogleAnalytics();
       closeFooterCookieSettings();
@@ -359,28 +345,24 @@ function closeFooterCookieSettings() {
   const cookieView = document.getElementById("footer-cookie-view");
   const normalContent = document.getElementById("footer-normal-content");
 
-  // Observer disconnecten beim Schließen
+  // ✅ KRITISCHER FIX: Cleanup observer
   if (globalSectionObserver) {
     globalSectionObserver.disconnect();
     globalSectionObserver = null;
   }
 
   if (footer && footerMin && footerMax && cookieView) {
-    // Cookie-View verstecken
     cookieView.classList.add("hidden");
 
-    // Footer komplett minimieren
     footer.classList.remove("footer-expanded");
     document.body.classList.remove("footer-expanded");
     footerMax.classList.add("footer-hidden");
     footerMin.classList.remove("footer-hidden");
 
-    // ScrollHandler-Status zurücksetzen
     if (globalScrollHandler) {
       globalScrollHandler.expanded = false;
     }
 
-    // Normal Content wieder anzeigen
     if (normalContent) {
       normalContent.style.display = "block";
     }
@@ -404,9 +386,7 @@ function deleteAnalyticsCookies() {
   const cookiesToDelete = ["_ga", "_gid", "_gat", "_gat_gtag_G_S0587RQ4CN"];
 
   cookiesToDelete.forEach((cookieName) => {
-    // Cookie für aktuelle Domain löschen
     document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    // Cookie für Root-Domain löschen (falls vorhanden)
     const domain = window.location.hostname;
     document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
     document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${domain}`;
@@ -484,10 +464,7 @@ class ThemeSystem {
   }
 
   init() {
-    // Theme sofort anwenden (bevor Footer geladen ist)
     this.applyTheme(this.currentTheme);
-
-    // Button-Event-Listener wird später hinzugefügt (wenn Footer geladen ist)
     themeLog.info(
       "Theme System initialisiert (Warte auf Footer für Toggle-Button)"
     );
@@ -530,7 +507,6 @@ class FooterLoader {
       this.updateYears();
       this.setupInteractions();
 
-      // Cookie Consent Banner initialisieren (nach Footer-Laden)
       initializeConsentBanner();
 
       loaderLog.info("Footer erfolgreich geladen");
@@ -571,7 +547,6 @@ class FooterLoader {
   }
 
   setupInteractions() {
-    // Newsletter Form
     const form = document.querySelector(".newsletter-form-enhanced");
     if (form) {
       form.addEventListener("submit", (e) => {
@@ -581,10 +556,6 @@ class FooterLoader {
           const email = input.value;
           loaderLog.info("Newsletter-Anmeldung:", email);
 
-          // TODO: Backend-Integration für Newsletter-Anmeldung
-          // Beispiel: await fetch('/api/newsletter/subscribe', { method: 'POST', body: JSON.stringify({ email }) });
-
-          // Visuelles Feedback für Benutzer
           const submitButton = form.querySelector('button[type="submit"]');
           if (submitButton) {
             const originalText = submitButton.textContent;
@@ -601,7 +572,6 @@ class FooterLoader {
       });
     }
 
-    // Cookie Settings
     const cookieBtn = document.querySelector(".footer-cookie-btn");
     if (cookieBtn) {
       cookieBtn.addEventListener("click", () => {
@@ -609,7 +579,6 @@ class FooterLoader {
       });
     }
 
-    // Smooth Scrolling für interne Links
     const footer = document.getElementById("site-footer");
     if (footer) {
       footer.addEventListener("click", (e) => {
@@ -639,19 +608,15 @@ class FooterLoader {
 // ===== SCROLL HANDLER =====
 const scrollLog = createLogger("ScrollHandler");
 
-// Globale Referenz für ScrollHandler
 let globalScrollHandler = null;
 
 class ScrollHandler {
   constructor() {
     this.expanded = false;
     this.observer = null;
-    // Hysterese-Schwellenwerte: Unterschiedliche Werte für Expand/Collapse
-    // verhindert "Flackern" beim Scrollen
-    this.EXPAND_THRESHOLD = 0.05; // Footer öffnet sich früh
-    this.COLLAPSE_THRESHOLD = 0.02; // Footer schließt sich erst später
+    this.EXPAND_THRESHOLD = 0.05;
+    this.COLLAPSE_THRESHOLD = 0.02;
 
-    // Globale Referenz setzen
     globalScrollHandler = this;
   }
 
@@ -668,7 +633,6 @@ class ScrollHandler {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.target.id === "footer-trigger-zone") {
-            // Hysterese-Logik: Verschiedene Schwellenwerte je nach Zustand
             const threshold = this.expanded
               ? this.COLLAPSE_THRESHOLD
               : this.EXPAND_THRESHOLD;
@@ -682,7 +646,6 @@ class ScrollHandler {
       },
       {
         root: null,
-        // Großzügigere Margins - Footer bleibt länger expandiert
         rootMargin: "0px 0px -10% 0px",
         threshold: [0, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
       }
@@ -742,10 +705,8 @@ class FooterResizer {
   }
 
   init() {
-    // Initiale Anwendung
     this.apply();
 
-    // Window Resize Handler (für Viewport-Änderungen)
     const onResize = throttle(() => {
       requestAnimationFrame(() => this.apply());
     }, this.config.THROTTLE_DELAY);
@@ -753,14 +714,12 @@ class FooterResizer {
     window.addEventListener("resize", onResize);
     window.visualViewport?.addEventListener("resize", onResize);
 
-    // ResizeObserver für Footer-Content (moderner und präziser)
     const content = document.querySelector(
       "#site-footer .footer-enhanced-content"
     );
 
     if (content && "ResizeObserver" in window) {
       this.resizeObserver = new ResizeObserver(() => {
-        // Debounce mit requestAnimationFrame für optimale Performance
         if (this.rafId) {
           cancelAnimationFrame(this.rafId);
         }
@@ -773,12 +732,10 @@ class FooterResizer {
       this.resizeObserver.observe(content);
       resizerLog.debug("ResizeObserver für Footer-Content aktiviert");
     } else {
-      // Fallback für ältere Browser: zeitgesteuerte Trigger
       setTimeout(() => this.apply(), 250);
       setTimeout(() => this.apply(), 1200);
     }
 
-    // Font-Loading berücksichtigen
     if (document.fonts) {
       document.fonts.ready.then(() => {
         requestAnimationFrame(() => this.apply());
@@ -882,17 +839,13 @@ class FooterSystem {
   async init() {
     mainLog.info("Initialisiere Footer-System...");
 
-    // Theme sofort anwenden (noch ohne Toggle-Button)
     this.theme.init();
 
-    // Footer laden
     const loaded = await this.loader.init();
 
     if (loaded) {
-      // WICHTIG: Toggle-Button erst NACH Footer-Laden initialisieren
       this.theme.initToggleButton();
 
-      // Nach erfolgreichem Laden: Scroll & Resize
       this.scroller.init();
       this.resizer.init();
 
@@ -914,7 +867,6 @@ if (document.readyState === "loading") {
   system.init();
 }
 
-// Export für manuelle Initialisierung (optional)
 if (typeof window !== "undefined") {
   window.FooterSystem = FooterSystem;
 }
