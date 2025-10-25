@@ -428,24 +428,39 @@ const ThreeEarthManager = (() => {
   }
 
   function disposeMaterial(material) {
-    // Dispose Textures und andere Properties
-    Object.values(material).forEach((value) => {
-      if (value && typeof value.dispose === "function") {
-        value.dispose();
+  if (!material) return;
+  
+  // Dispose spezifische Texture-Properties
+  const textureProperties = [
+    'map', 'normalMap', 'bumpMap', 'envMap', 
+    'lightMap', 'aoMap', 'emissiveMap', 'alphaMap',
+    'metalnessMap', 'roughnessMap', 'displacementMap'
+  ];
+  
+  textureProperties.forEach(prop => {
+    if (material[prop] && typeof material[prop].dispose === 'function') {
+      material[prop].dispose();
+      material[prop] = null;
+    }
+  });
+  
+  // Dispose Uniforms für ShaderMaterial
+  if (material.uniforms) {
+    Object.keys(material.uniforms).forEach(uniformName => {
+      const uniform = material.uniforms[uniformName];
+      if (uniform.value && typeof uniform.value.dispose === 'function') {
+        uniform.value.dispose();
+        uniform.value = null;
       }
     });
-
-    // Für ShaderMaterial: Dispose auch Uniforms (falls Texturen)
-    if (material.uniforms) {
-      Object.values(material.uniforms).forEach((uniform) => {
-        if (uniform.value && typeof uniform.value.dispose === "function") {
-          uniform.value.dispose();
-        }
-      });
-    }
-
-    material.dispose();
   }
+  
+  try {
+    material.dispose();
+  } catch (error) {
+    console.warn('Error disposing material:', error);
+  }
+}
 
   function handleInitializationError(container, error) {
     try {
@@ -462,35 +477,65 @@ const ThreeEarthManager = (() => {
 
 // ===== Scene Setup =====
 async function setupScene(container) {
-  isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
-  scene = new THREE_INSTANCE.Scene();
-  const aspectRatio = container.clientWidth / container.clientHeight;
-  camera = new THREE_INSTANCE.PerspectiveCamera(
-    CONFIG.CAMERA.FOV,
-    aspectRatio,
-    CONFIG.CAMERA.NEAR,
-    CONFIG.CAMERA.FAR
-  );
+  if (!container) {
+    throw new Error('Container element is required');
+  }
+  
+  try {
+    isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+    
+    if (!THREE_INSTANCE) {
+      throw new Error('Three.js instance not available');
+    }
+    
+    scene = new THREE_INSTANCE.Scene();
+    
+    const aspectRatio = container.clientWidth / container.clientHeight;
+    if (!isFinite(aspectRatio) || aspectRatio <= 0) {
+      throw new Error('Invalid container dimensions');
+    }
+    
+    camera = new THREE_INSTANCE.PerspectiveCamera(
+      CONFIG.CAMERA.FOV,
+      aspectRatio,
+      CONFIG.CAMERA.NEAR,
+      CONFIG.CAMERA.FAR
+    );
 
-  renderer = new THREE_INSTANCE.WebGLRenderer({
-    canvas: container.querySelector("canvas") || undefined,
-    antialias: true,
-    alpha: true,
-    powerPreference: "high-performance",
-  });
+    renderer = new THREE_INSTANCE.WebGLRenderer({
+      canvas: container.querySelector("canvas") || undefined,
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+    
+    // Teste WebGL-Funktionalität
+    const gl = renderer.getContext();
+    if (!gl) {
+      throw new Error('WebGL context could not be created');
+    }
+    
+    renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE_INSTANCE.SRGBColorSpace;
+    renderer.toneMapping = THREE_INSTANCE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.8;
 
-  renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = THREE_INSTANCE.SRGBColorSpace;
-  renderer.toneMapping = THREE_INSTANCE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.8; // Leicht reduziert für dunklere Texturen
+    container.appendChild(renderer.domElement);
 
-  container.appendChild(renderer.domElement);
-
-  createStarField();
-  setupStarParallax();
-  setupLighting();
+    createStarField();
+    setupStarParallax();
+    setupLighting();
+    
+    log.info("Scene setup completed successfully");
+    return true;
+    
+  } catch (error) {
+    console.error('Scene setup failed:', error);
+    showWebGLErrorMessage(container, error);
+    return false;
+  }
 }
 
 // ===== Starfield & Parallax =====
@@ -2042,6 +2087,32 @@ function showErrorState(container, error) {
       errorText.textContent = `WebGL Error: ${error.message || "Unknown error"}. Please try refreshing.`;
     }
   }
+}
+
+function showWebGLErrorMessage(container, error) {
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'three-earth-error';
+  errorDiv.innerHTML = `
+    <h3>WebGL Error</h3>
+    <p>Die 3D-Visualisierung konnte nicht geladen werden.</p>
+    <details>
+      <summary>Technische Details</summary>
+      <pre>${error.message}</pre>
+    </details>
+    <p>
+      <small>Mögliche Lösungen:</small><br>
+      • Browser aktualisieren<br>
+      • Hardware-Beschleunigung aktivieren<br>
+      • Anderen Browser verwenden
+    </p>
+  `;
+  
+  const existingError = container.querySelector('.three-earth-error');
+  if (existingError) {
+    existingError.remove();
+  }
+  
+  container.appendChild(errorDiv);
 }
 
 // ===== Performance Monitor & Dynamic Resolution =====
