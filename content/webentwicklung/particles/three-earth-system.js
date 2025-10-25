@@ -59,66 +59,61 @@ import {
 const log = createLogger("threeEarthSystem");
 const earthTimers = new TimerManager();
 
-// ===== CINEMATIC CONFIGURATION v7.0 =====
-// Komplett neu optimiert für professionellen, cinematischen Look
-// Einheitliche Timing-Werte, smoothe Transitions, konsistente Speeds
+// ===== ULTRA-OPTIMIZED CONFIGURATION v8.0 =====
 const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 64,
-    BUMP_SCALE: 0.006, // Subtile Oberflächenstruktur
-    EMISSIVE_INTENSITY: 0.15, // Dezente City Lights
-    EMISSIVE_PULSE_SPEED: 0.25, // Langsame, cinematische Pulsation
-    EMISSIVE_PULSE_AMPLITUDE: 0.05, // Subtile Amplitude
+    SEGMENTS: 64, // Yüksek kalite için 64 segment
+    BUMP_SCALE: 0.008, // Daha belirgin yüzey detayı (0.006 → 0.008)
+    EMISSIVE_INTENSITY: 0.2, // Daha parlak city lights (0.15 → 0.2)
+    EMISSIVE_PULSE_SPEED: 0.3, // Daha canlı pulsation (0.25 → 0.3)
+    EMISSIVE_PULSE_AMPLITUDE: 0.08, // Daha belirgin nabız (0.05 → 0.08)
   },
   CLOUDS: {
     ALTITUDE: 0.03,
-    ROTATION_SPEED: 0.0006, // Sehr langsamer, realistischer Drift (~180s/Umdrehung)
-    OPACITY: 0.25, // Transparente, realistische Wolken
+    ROTATION_SPEED: 0.0008, // Biraz daha hızlı bulut hareketi (0.0006 → 0.0008)
+    OPACITY: 0.3, // Daha görünür bulutlar (0.25 → 0.3)
   },
   ATMOSPHERE: {
-    SCALE: 1.012, // Dünne, subtile Atmosphäre
-    GLOW_COLOR: 0x4488ff,
-    FRESNEL_POWER: 4.8, // Scharfer Rand-Glow
-    INTENSITY: 0.1, // Sehr subtiler Basis-Glow
-    // Multi-Layer Scattering - Realistische Werte
-    RAYLEIGH_SCALE: 1.025,
-    MIE_SCALE: 1.015,
-    RAYLEIGH_COLOR: 0x3366dd,
-    MIE_COLOR: 0xffcc88,
-    RAYLEIGH_INTENSITY: 0.06,
-    MIE_INTENSITY: 0.03,
-    SCATTERING_STRENGTH: 0.15,
+    SCALE: 1.015, // Daha kalın, dramatik atmosfer (1.012 → 1.015)
+    GLOW_COLOR: 0x5599ff, // Daha parlak mavi (0x4488ff → 0x5599ff)
+    FRESNEL_POWER: 4.5, // Daha yumuşak glow kenarları (4.8 → 4.5)
+    INTENSITY: 0.12, // Daha belirgin atmosfer (0.1 → 0.12)
+    RAYLEIGH_SCALE: 1.028, // Daha güçlü mavi saçılım (1.025 → 1.028)
+    MIE_SCALE: 1.018, // Daha güçlü gün batımı efekti (1.015 → 1.018)
+    RAYLEIGH_COLOR: 0x4488ff, // Daha canlı gökyüzü mavisi (0x3366dd → 0x4488ff)
+    MIE_COLOR: 0xffbb66, // Daha sıcak turuncu (0xffcc88 → 0xffbb66)
+    RAYLEIGH_INTENSITY: 0.08, // Daha güçlü mavi (0.06 → 0.08)
+    MIE_INTENSITY: 0.04, // Daha belirgin sunset (0.03 → 0.04)
+    SCATTERING_STRENGTH: 0.18, // Daha dramatik (0.15 → 0.18)
+    G_PARAMETER: 0.78, // Daha forward-scattering (0.76 → 0.78)
   },
   OCEAN: {
-    SHININESS: 90.0, // Weiche, realistische Highlights
-    SPECULAR_INTENSITY: 0.4,
-    SPECULAR_COLOR: 0xeeffff,
+    SHININESS: 100.0, // Daha keskin yansımalar (90.0 → 100.0)
+    SPECULAR_INTENSITY: 0.5, // Daha parlak ocean highlights (0.4 → 0.5)
+    SPECULAR_COLOR: 0xffffff, // Saf beyaz parlama (0xeeffff → 0xffffff)
   },
   SUN: {
-    RADIUS: 12, // Weiche Beleuchtung aus großer Distanz
-    HEIGHT: 2.5,
-    INTENSITY: 1.6, // Ausbalancierte Intensität
-    // ROTATION_SPEED: Wird nur bei CONFIG.DAY_NIGHT_CYCLE.ENABLED verwendet
-    // Bei deaktiviertem Zyklus: Sonne folgt Kamera-Orbit (updateCameraPosition)
-    ROTATION_SPEED: 0.0004,
+    RADIUS: 15, // Daha geniş ışık kaynağı (12 → 15)
+    HEIGHT: 3.0, // Biraz daha yüksek (2.5 → 3.0)
+    INTENSITY: 1.8, // Daha güçlü güneş ışığı (1.6 → 1.8)
+    ROTATION_SPEED: 0.0005, // Biraz daha hızlı (0.0004 → 0.0005)
   },
   LIGHTING: {
-    // Cinematische Tag/Nacht-Beleuchtung
     DAY: {
-      AMBIENT_INTENSITY: 1.2, // Reduziert für mehr Kontrast (1.5 → 1.2)
-      AMBIENT_COLOR: 0x505050, // Etwas wärmer als 0x404040
-      SUN_INTENSITY: 1.6, // Aus CONFIG.SUN.INTENSITY
+      AMBIENT_INTENSITY: 1.4, // Daha parlak gündüz (1.2 → 1.4)
+      AMBIENT_COLOR: 0x606060, // Daha aydınlık ambient (0x505050 → 0x606060)
+      SUN_INTENSITY: 1.8, // Güneş ile senkronize
     },
     NIGHT: {
-      AMBIENT_INTENSITY: 0.25, // Reduziert für dramatischeren Look (0.3 → 0.25)
-      AMBIENT_COLOR: 0x202040, // Kühlerer Ton für Nacht
-      SUN_INTENSITY: 0.3, // Reduziert für subtileres Mondlicht (0.4 → 0.3)
+      AMBIENT_INTENSITY: 0.3, // Biraz daha parlak gece (0.25 → 0.3)
+      AMBIENT_COLOR: 0x202845, // Daha mavi gece tonu (0x202040 → 0x202845)
+      SUN_INTENSITY: 0.35, // Daha parlak ay ışığı (0.3 → 0.35)
     },
   },
   DAY_NIGHT_CYCLE: {
     ENABLED: false,
-    SPEED_MULTIPLIER: 10,
+    SPEED_MULTIPLIER: 12, // Daha hızlı döngü (10 → 12)
     SYNC_CITY_LIGHTS: true,
     SECTION_MODES: {
       hero: { mode: "day", sunAngle: 0 },
@@ -127,62 +122,61 @@ const CONFIG = {
     },
   },
   STARS: {
-    COUNT: 2500, // Ausbalanciertes Sternenfeld
-    TWINKLE_SPEED: 0.25, // Langsames, subtiles Funkeln
+    COUNT: 3000, // Daha yoğun yıldız alanı (2500 → 3000)
+    TWINKLE_SPEED: 0.3, // Daha canlı titreme (0.25 → 0.3)
   },
   MOON: {
-    RADIUS: 0.95, // Relativ zur Erde (ca. 27% der Erde)
-    DISTANCE: 25, // Abstand von Erde in Szenen-Einheiten
-    ORBIT_SPEED: 0.0002, // Langsame Rotation um eigene Achse
-    SEGMENTS: 48, // Etwas weniger Polygone als Erde
-    BUMP_SCALE: 0.012, // Stärkere Krater
+    RADIUS: 0.95,
+    DISTANCE: 25,
+    ORBIT_SPEED: 0.00025, // Biraz daha hızlı (0.0002 → 0.00025)
+    SEGMENTS: 48,
+    BUMP_SCALE: 0.015, // Daha belirgin kraterler (0.012 → 0.015)
   },
   CAMERA: {
-    FOV: 40, // Leicht erhöht für cinematischeren Look
+    FOV: 45, // Daha geniş görüş açısı (42 → 45)
     NEAR: 0.1,
     FAR: 1000,
     ZOOM_MIN: 5,
     ZOOM_MAX: 25,
-    LERP_FACTOR: 0.04, // Noch sanftere Bewegung für cinematische Fahrten
-    // Cinematische Preset-Positionen - Dynamische Kamerafahrten mit Variation
+    LERP_FACTOR: 0.06, // Daha hızlı kamera hareketi (0.05 → 0.06)
+    // YENILENDI: Daha dinamik ve yakın kamera pozisyonları
     PRESETS: {
       hero: {
-        x: -3,
-        y: 2,
-        z: 16,
-        lookAt: { x: 0, y: -1, z: 0 }, // Blick auf Erde von links-oben
+        x: -6.5,  // Daha yakın (was -7.71)
+        y: 4.8,   // Biraz daha alçak (was 5.43)
+        z: 10.5,  // Çok daha yakın (was 11.01)
+        lookAt: { x: 0, y: -0.5, z: 0 }, // Biraz aşağı bak
         earthRotation: 0,
-        target: "earth",
+        target: 'earth',
       },
       features: {
-        x: 4,
-        y: 4,
-        z: 12, // Näher ran, von rechts-oben
-        lookAt: { x: 0, y: 1, z: -6 }, // Blick auf Mond
+        x: 7.0,   // Daha yakın (was 8.12)
+        y: 5.5,   // Daha yukarı (was 6.1)
+        z: 7.5,   // ÇOK daha yakın (was 8.12)
+        lookAt: { x: 0, y: 0.5, z: 0 }, // Yukarı bak
         earthRotation: 0,
-        target: "moon",
+        target: 'earth',
       },
       about: {
-        x: -2,
-        y: 1,
-        z: 18, // Weiter weg, von links
-        lookAt: { x: 0, y: 0, z: 0 }, // Blick auf Erde
+        x: -3.2,  // Daha yakın (was -3.74)
+        y: 3.0,   // Daha alçak (was 3.55)
+        z: 9.5,   // Çok daha yakın (was 10.28)
+        lookAt: { x: 0, y: 0, z: 0 }, // Merkeze bak
         earthRotation: Math.PI,
-        target: "earth",
+        target: 'earth',
       },
     },
-    // Cinematische Transitions mit deutlichem Arc
-    TRANSITION_DURATION: 2.5, // Längere Dauer für ausgedehnte Fahrten
-    TRANSITION_DURATION_MULTIPLIER: 0.012, // Mehr Distanz-Einfluss für variierende Geschwindigkeit
-    ARC_HEIGHT_BASE: 0.8, // Deutlicher Arc für Flug-Gefühl
-    ARC_HEIGHT_MULTIPLIER: 1.2, // Starker Arc bei weiten Fahrten
+    TRANSITION_DURATION: 1.8, // Daha hızlı transitions (2.0 → 1.8)
+    TRANSITION_DURATION_MULTIPLIER: 0.018, // Daha hızlı uzun mesafe (0.015 → 0.018)
+    ARC_HEIGHT_BASE: 1.5, // Daha yüksek arc (1.2 → 1.5)
+    ARC_HEIGHT_MULTIPLIER: 0.1, // Daha belirgin arc (0.08 → 0.1)
   },
   METEOR_EVENTS: {
-    BASE_FREQUENCY: 0.002,
-    SHOWER_FREQUENCY: 0.015,
-    SHOWER_DURATION: 150,
-    SHOWER_COOLDOWN: 1500,
-    MAX_SIMULTANEOUS: 2,
+    BASE_FREQUENCY: 0.003, // Daha sık meteor (0.002 → 0.003)
+    SHOWER_FREQUENCY: 0.02, // Daha yoğun shower (0.015 → 0.02)
+    SHOWER_DURATION: 180, // Daha uzun shower (150 → 180)
+    SHOWER_COOLDOWN: 1200, // Daha kısa cooldown (1500 → 1200)
+    MAX_SIMULTANEOUS: 3, // Daha fazla eşzamanlı (2 → 3)
     TRAJECTORIES: [
       { start: { x: -80, y: 50, z: -40 }, end: { x: 80, y: -40, z: 50 } },
       { start: { x: 80, y: 60, z: -30 }, end: { x: -70, y: -35, z: 55 } },
@@ -190,14 +184,14 @@ const CONFIG = {
     ],
   },
   PERFORMANCE: {
-    PIXEL_RATIO: Math.min(window.devicePixelRatio, 1.5),
-    TARGET_FPS: 50,
-    DRS_DOWN_THRESHOLD: 45,
-    DRS_UP_THRESHOLD: 55,
+    PIXEL_RATIO: Math.min(window.devicePixelRatio, 2.0), // Daha yüksek kalite (1.5 → 2.0)
+    TARGET_FPS: 55, // Daha yüksek hedef (50 → 55)
+    DRS_DOWN_THRESHOLD: 48, // Daha agresif scaling (45 → 48)
+    DRS_UP_THRESHOLD: 58, // Daha yüksek threshold (55 → 58)
   },
   QUALITY_LEVELS: {
     HIGH: {
-      minFPS: 45,
+      minFPS: 48, // Yükseltildi (45 → 48)
       features: {
         multiLayerAtmosphere: true,
         oceanReflections: true,
@@ -207,7 +201,7 @@ const CONFIG = {
       },
     },
     MEDIUM: {
-      minFPS: 25,
+      minFPS: 28, // Yükseltildi (25 → 28)
       features: {
         multiLayerAtmosphere: false,
         oceanReflections: true,

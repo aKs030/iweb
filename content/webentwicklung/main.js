@@ -14,10 +14,6 @@ import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
 // Menü-Modul wird für Side-Effects importiert (Initialisierung)
 import "./menu/menu.js";
 
-// Three.js wird nur bei Bedarf geladen (Code-Splitting für Performance)
-// import { initThreeEarth } from "./particles/three-earth-system.js";
-// ===== Shared Utilities Import =====
-
 // ===== Module-specific Utilities =====
 
 const log = createLogger("main");
@@ -92,6 +88,7 @@ if ("serviceWorker" in navigator) {
     if (el) lazyLoader.observe(el);
   });
 })();
+
 // ===== Section Loader Module =====
 const SectionLoader = (() => {
   if (window.SectionLoader) return window.SectionLoader;
@@ -107,7 +104,7 @@ const SectionLoader = (() => {
       });
       document.dispatchEvent(ev);
     } catch (e) {
-      console.warn('Failed to dispatch section event:', type, e);
+      console.warn("Failed to dispatch section event:", type, e);
     }
   }
 
@@ -328,6 +325,7 @@ const ScrollSnapping = (() => {
 
 // Scroll Snapping initialisieren
 ScrollSnapping.init();
+
 // ===== Application Initialization =====
 (() => {
   "use strict";
@@ -423,18 +421,20 @@ ScrollSnapping.init();
                   earthObserver.disconnect();
 
                   try {
-                    // Dynamischer Import (Code-Splitting)
-                    const { initThreeEarth } = await import(
+                    // Dynamischer Import (Code-Splitting) - FIXED
+                    const module = await import(
                       "./particles/three-earth-system.js"
                     );
-                    threeEarthCleanup = await initThreeEarth();
+                    const ThreeEarthManager = module.default;
+                    threeEarthCleanup =
+                      await ThreeEarthManager.initThreeEarth();
 
                     if (
                       threeEarthCleanup &&
                       typeof threeEarthCleanup === "function"
                     ) {
                       window.__threeEarthCleanup = threeEarthCleanup;
-                      log.info("Three.js Earth system initialized");
+                      log.info("Three.js Earth system initialized successfully");
                     }
                   } catch (error) {
                     log.warn(
