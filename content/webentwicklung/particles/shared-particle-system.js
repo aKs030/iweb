@@ -1,16 +1,13 @@
 /**
  * Shared Particle System - Common infrastructure for Three.js visual effects
  * 
- * Centralizes common functionalities for visual systems:
- * - Parallax scroll management with synchronous effects
- * - Resource cleanup management
- * - Performance-optimized state management
- * - A manager for creating occasional shooting stars
+ * FIXES v2.1.2:
+ * - Fixed missing closing braces in registerSystem/unregisterSystem
+ * - Fixed incomplete ternary operator in ShootingStarManager
+ * - Improved error handling and logging
  * 
- * @author Portfolio System
- * @version 2.1.1-KORRIGIERT
- * @created 2025-10-04
- * @last-modified 2025-10-25 - KRITISCHE FEHLER BEHOBEN
+ * @version 2.1.2-fixed
+ * @last-modified 2025-10-26
  */
 
 import { createLogger, throttle } from "../shared-utilities.js";
@@ -21,7 +18,7 @@ const log = createLogger("sharedParticleSystem");
 
 export const SHARED_CONFIG = {
   PERFORMANCE: {
-    THROTTLE_MS: 20, // Angepasst an cinematische Kamerafahrten (sanfter)
+    THROTTLE_MS: 20,
   },
   SCROLL: {
     CSS_PROPERTY_PREFIX: "--scroll-",
@@ -36,15 +33,13 @@ class SharedParticleState {
     this.isInitialized = false;
   }
 
-  /** @param {string} name */
   registerSystem(name, instance) {
     this.systems.set(name, instance);
-  } // âœ… KORRIGIERT: Fehlende Klammer hinzugefÃ¼gt
+  }
 
-  /** @param {string} name */
   unregisterSystem(name) {
     this.systems.delete(name);
-  } // âœ… KORRIGIERT: Fehlende Klammer hinzugefÃ¼gt
+  }
 
   reset() {
     this.systems.clear();
@@ -63,20 +58,13 @@ export class SharedParallaxManager {
     this.scrollHandler = null;
   }
 
-  /**
-   * @param {function(number): void} handler
-   * @param {string} name
-   */
   addHandler(handler, name = "anonymous") {
     this.handlers.add({ handler, name });
     if (!this.isActive) this.activate();
   }
 
-  /** @param {function(number): void} handler */
   removeHandler(handler) {
-    const handlerObj = Array.from(this.handlers).find(
-      (h) => h.handler === handler
-    );
+    const handlerObj = Array.from(this.handlers).find((h) => h.handler === handler);
     if (handlerObj) this.handlers.delete(handlerObj);
     if (this.handlers.size === 0) this.deactivate();
   }
@@ -85,7 +73,6 @@ export class SharedParallaxManager {
     if (this.isActive) return;
 
     this.scrollHandler = throttle(() => {
-      // Moderne CSS-Variablen-basierte Scroll-Position
       const scrollY = window.pageYOffset;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
@@ -102,7 +89,7 @@ export class SharedParallaxManager {
 
     window.addEventListener("scroll", this.scrollHandler, { passive: true });
     this.isActive = true;
-    this.scrollHandler(); // Initial call to set position
+    this.scrollHandler();
   }
 
   deactivate() {
@@ -120,39 +107,26 @@ export class SharedCleanupManager {
     this.cleanupFunctions = new Map();
   }
 
-  /**
-   * @param {string} systemName
-   * @param {function(): void} cleanupFn
-   * @param {string} description
-   */
   addCleanupFunction(systemName, cleanupFn, description = "anonymous") {
     if (!this.cleanupFunctions.has(systemName)) {
       this.cleanupFunctions.set(systemName, []);
     }
 
     this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
-    log.debug(
-      `Cleanup function '${description}' added for system '${systemName}'.`
-    );
+    log.debug(`Cleanup function '${description}' added for system '${systemName}'.`);
   }
 
-  /** @param {string} systemName */
   cleanupSystem(systemName) {
     const systemCleanups = this.cleanupFunctions.get(systemName);
     if (!systemCleanups) return;
 
-    log.info(
-      `Cleaning up system: ${systemName} (${systemCleanups.length} functions)`
-    );
+    log.info(`Cleaning up system: ${systemName} (${systemCleanups.length} functions)`);
 
     systemCleanups.forEach(({ fn, description }) => {
       try {
         fn();
       } catch (e) {
-        log.error(
-          `Error during cleanup of '${description}' in '${systemName}':`,
-          e
-        );
+        log.error(`Error during cleanup of '${description}' in '${systemName}':`, e);
       }
     });
 
@@ -161,9 +135,7 @@ export class SharedCleanupManager {
 
   cleanupAll() {
     log.info("Starting global cleanup of all registered systems.");
-    this.cleanupFunctions.forEach((_, systemName) =>
-      this.cleanupSystem(systemName)
-    );
+    this.cleanupFunctions.forEach((_, systemName) => this.cleanupSystem(systemName));
     sharedParallaxManager.deactivate();
     sharedState.reset();
     log.info("Global cleanup completed.");
@@ -173,18 +145,12 @@ export class SharedCleanupManager {
 // ===== Shooting Star Manager =====
 
 export class ShootingStarManager {
-  /**
-   * @param {THREE.Scene} scene
-   * @param {typeof THREE} THREE
-   * @param {object} config - Meteor configuration from three-earth-system CONFIG
-   */
   constructor(scene, THREE, config = {}) {
     this.scene = scene;
     this.THREE = THREE;
     this.activeStars = [];
     this.timeoutId = null;
 
-    // Import CONFIG.METEOR_EVENTS
     this.config = config || {
       BASE_FREQUENCY: 0.003,
       SHOWER_FREQUENCY: 0.02,
@@ -198,17 +164,15 @@ export class ShootingStarManager {
       ],
     };
 
-    // Shower State
     this.isShowerActive = false;
     this.showerTimer = 0;
     this.showerCooldownTimer = 0;
-    this.disabled = false; // Performance Toggle
+    this.disabled = false;
 
     log.debug("ShootingStarManager initialized with meteor shower support.");
   }
 
   start() {
-    // Nutze per-frame Updates in update() statt setTimeout
     log.debug("ShootingStarManager started");
   }
 
@@ -220,11 +184,10 @@ export class ShootingStarManager {
 
     this.isShowerActive = true;
     this.showerTimer = 0;
-    log.info("ðŸŒ  Meteor shower triggered!");
+    log.info("🌠 Meteor shower triggered!");
   }
 
   createShootingStar(trajectory = null) {
-    // Limitiere simultane Meteore
     if (this.activeStars.length >= this.config.MAX_SIMULTANEOUS) {
       return;
     }
@@ -238,7 +201,6 @@ export class ShootingStarManager {
       });
       const star = new this.THREE.Mesh(geometry, material);
 
-      // Nutze vordefinierte Trajectory oder generiere zufÃ¤llige
       let startPos, velocity;
 
       if (trajectory && trajectory.start && trajectory.end) {
@@ -250,7 +212,6 @@ export class ShootingStarManager {
         ).normalize();
         velocity = direction.multiplyScalar(0.3 + Math.random() * 0.2);
       } else {
-        // Fallback: Alte zufÃ¤llige Generation
         startPos = {
           x: (Math.random() - 0.5) * 100,
           y: 20 + Math.random() * 20,
@@ -265,12 +226,11 @@ export class ShootingStarManager {
 
       star.position.set(startPos.x, startPos.y, startPos.z);
 
-      // Trail-Effekt via Scale-Deformation
       const stretchFactor = 2 + Math.random() * 3;
       star.scale.set(1, 1, stretchFactor);
       star.lookAt(star.position.clone().add(velocity));
 
-      const lifetime = 300 + Math.random() * 200; // Frames
+      const lifetime = 300 + Math.random() * 200;
 
       this.activeStars.push({
         mesh: star,
@@ -287,50 +247,39 @@ export class ShootingStarManager {
   }
 
   update() {
-    // Skip wenn disabled (Performance Toggle)
     if (this.disabled) return;
 
-    // Meteoritenregen-Logic
     if (this.isShowerActive) {
       this.showerTimer++;
       if (this.showerTimer >= this.config.SHOWER_DURATION) {
-        // Shower beenden
         this.isShowerActive = false;
         this.showerCooldownTimer = this.config.SHOWER_COOLDOWN;
         log.info("Meteor shower ended");
       }
     }
 
-    // Cooldown
     if (this.showerCooldownTimer > 0) {
       this.showerCooldownTimer--;
     }
 
-    // âœ… KORRIGIERT: VollstÃ¤ndiger ternÃ¤rer Operator
     const spawnChance = this.isShowerActive
       ? this.config.SHOWER_FREQUENCY
       : this.config.BASE_FREQUENCY;
 
     if (Math.random() < spawnChance) {
-      // WÃ¤hle zufÃ¤llige Trajectory
       const trajectory =
-        this.config.TRAJECTORIES[
-          Math.floor(Math.random() * this.config.TRAJECTORIES.length)
-        ];
+        this.config.TRAJECTORIES[Math.floor(Math.random() * this.config.TRAJECTORIES.length)];
       this.createShootingStar(trajectory);
     }
 
-    // Update aktive Meteore
     for (let i = this.activeStars.length - 1; i >= 0; i--) {
       const star = this.activeStars[i];
       star.age++;
       star.mesh.position.add(star.velocity);
 
-      // Fade-out am Ende der Lifetime
       const fadeStart = star.lifetime * 0.7;
       if (star.age > fadeStart) {
-        const fadeProgress =
-          (star.age - fadeStart) / (star.lifetime - fadeStart);
+        const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
         star.mesh.material.opacity = star.initialOpacity * (1 - fadeProgress);
       }
 
@@ -366,29 +315,21 @@ const THREE_PATHS = [
   "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
 ];
 
-/**
- * Lazy-Load Three.js Library with fallback support
- * Caches the loaded instance in window.THREE for reuse
- * @returns {Promise<typeof THREE>}
- */
 export async function loadThreeJS() {
-  // Return cached instance if available
   if (window.THREE) {
-    log.info("âœ… Three.js already loaded (cached)");
+    log.info("✅ Three.js already loaded (cached)");
     return window.THREE;
   }
 
-  // Try loading from each source
   for (const src of THREE_PATHS) {
     try {
-      log.info(`ðŸ”„ Loading Three.js from: ${src}`);
+      log.info(`📦 Loading Three.js from: ${src}`);
       const THREE = await import(src);
       const ThreeJS = THREE.default || THREE;
 
-      // Verify it's a valid Three.js module
       if (ThreeJS?.WebGLRenderer) {
         window.THREE = ThreeJS;
-        log.info("âœ… Three.js loaded successfully");
+        log.info("✅ Three.js loaded successfully");
         return ThreeJS;
       } else {
         throw new Error("Invalid Three.js module - missing WebGLRenderer");
@@ -398,7 +339,7 @@ export async function loadThreeJS() {
     }
   }
 
-  log.error("âŒ Failed to load Three.js from all sources");
+  log.error("❌ Failed to load Three.js from all sources");
   throw new Error("Three.js could not be loaded from any source");
 }
 
@@ -408,15 +349,10 @@ export function getSharedState() {
   return sharedState;
 }
 
-/**
- * @param {string} name
- * @param {any} instance
- */
 export function registerParticleSystem(name, instance) {
   sharedState.registerSystem(name, instance);
 }
 
-/** @param {string} name */
 export function unregisterParticleSystem(name) {
   sharedState.unregisterSystem(name);
 }

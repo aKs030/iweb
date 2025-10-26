@@ -1,4 +1,4 @@
-
+/* ===== OPTIMIZED INDEX.CSS v2.0 ===== */
 
 /* Button Styles */
 .btn {
@@ -20,11 +20,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--primary-dark)
-  );
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: #fff;
   box-shadow: 0 0 12px rgba(9, 139, 255, 0.3);
 }
@@ -60,23 +56,20 @@
   color: var(--primary-color);
 }
 
-/* Native Scroll-Snap Container für zuverlässiges Section-Snapping */
+/* Scroll-Snap Container */
 .snap-container {
   height: 100vh;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
 }
+
 .section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
   min-height: 100vh;
 }
-/* Root-Variablen wurden in content/webentwicklung/root.css ausgelagert */
 
-/* ========================================
-   2) Base Styles & Scroll-Snap System
-======================================== */
-
+/* Base Styles */
 html,
 body {
   height: 100%;
@@ -86,15 +79,10 @@ body {
   scroll-snap-type: y mandatory;
   scroll-padding-top: var(--header-height);
   transition: padding-bottom var(--transition-base);
-
-  /* Typography & Rendering */
   -webkit-font-smoothing: antialiased;
   font-kerning: normal;
   font-variant-ligatures: common-ligatures contextual;
-  font-feature-settings:
-    "kern" 1,
-    "liga" 1,
-    "calt" 1;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
 body {
@@ -107,7 +95,6 @@ body {
   scroll-snap-stop: always;
 }
 
-/* Temporäres Deaktivieren von Snap bei aktiven User-Scrolls (JS: main.js ScrollSnapping) */
 .snap-container.no-snap {
   scroll-snap-type: none !important;
 }
@@ -117,11 +104,8 @@ body {
 *::after {
   box-sizing: border-box;
 }
-/* ========================================
-   3) Layout & Container System
-======================================== */
 
-/* Mobile-first Container mit Safe-Area Support */
+/* Container System */
 .container {
   width: 100%;
   max-width: 900px;
@@ -137,71 +121,70 @@ body {
 .snap-section {
   scroll-snap-align: start;
   opacity: 0.8;
-  transition:
-    opacity var(--transition-slow),
-    transform var(--transition-slow);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
-/* Mobile Container & Layout (480px and below) */
-@media (max-width: 480px) {
-  .container {
-    max-width: 100vw;
-    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
-  }
-
-  /* Header Safe-Area Compensation */
-  body {
-    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
-  }
-
-  /* Features Content & Cards */
-  .features-content {
-    padding: 0 var(--spacing-sm);
-  }
-
-  .card {
-    padding: calc(var(--spacing-sm) * 0.9);
-  }
-
-  .card .icon-wrapper {
-    width: 45px;
-    height: 45px;
-    font-size: 1.8rem;
-  }
+.snap-section.in-view {
+  opacity: 1;
+  transform: var(--transform-none);
 }
 
-/* Extra small devices (375px and below) */
-@media (max-width: 375px) {
-  html {
-    font-size: 14px;
-  }
-  .container {
-    padding-inline: max(0.25rem, env(safe-area-inset-left, 0px));
-  }
-  .section {
-    padding: var(--spacing-lg) 0;
-  }
+.snap-section.section-active {
+  z-index: 2;
 }
 
-@media (max-width: 600px) {
-  .snap-section,
-  .section {
-    scroll-snap-align: center;
-  }
+/* Section Headers */
+.section-header {
+  text-align: center;
+  margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+  margin-top: 0;
+  padding: 0;
+  position: relative;
+  z-index: 2;
 }
 
-/* ========================================
-   4) Section System & Error Handling
-======================================== */
+.section-title {
+  position: relative;
+  display: inline-block;
+  font-size: clamp(1.5rem, 4.5vw, 2.5rem);
+  margin-bottom: clamp(1rem, 2vw, 1.25rem);
+  padding: 0;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(50px, 8vw, 70px);
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-light) 50%, var(--primary-color) 100%);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 15px rgba(7, 161, 255, 0.5);
+}
+
+.section-subtitle {
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  color: var(--text-secondary);
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 400;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+/* Error Handling */
 .section-error-box {
   margin: var(--spacing-md) 0;
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--border-color);
-  background: linear-gradient(
-    145deg,
-    rgba(255, 0, 0, 0.08),
-    rgba(255, 0, 0, 0.03)
-  );
+  background: linear-gradient(145deg, rgba(255, 0, 0, 0.08), rgba(255, 0, 0, 0.03));
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -226,10 +209,7 @@ body {
   gap: 0.35rem;
   font-weight: 500;
   box-shadow: var(--shadow-sm);
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .section-retry:hover {
@@ -246,119 +226,47 @@ body {
   outline-offset: 2px;
 }
 
-.snap-section.in-view {
-  opacity: 1;
-  transform: var(--transform-none);
-}
-
-.snap-section.section-active {
-  z-index: 2;
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
-  margin-top: 0;
-  padding: 0;
-  position: relative;
-  z-index: 2;
-}
-
-.section-title {
-  position: relative;
-  display: inline-block;
-  font-size: clamp(1.5rem, 4.5vw, 2.5rem);
-  margin-bottom: clamp(1rem, 2vw, 1.25rem);
-  padding: 0;
-  font-weight: 700;
-  background: linear-gradient(
-    135deg,
-    #ffffff 0%,
-    rgba(255, 255, 255, 0.9) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
-}
-
-.section-title::after {
-  content: "";
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: clamp(50px, 8vw, 70px);
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--primary-color) 0%,
-    var(--primary-light) 50%,
-    var(--primary-color) 100%
-  );
-  border-radius: var(--radius-full);
-  box-shadow: 0 0 15px rgba(7, 161, 255, 0.5);
-}
-
-.section-subtitle {
-  font-size: clamp(1rem, 2.2vw, 1.2rem);
-  color: var(--text-secondary);
-  margin-bottom: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 400;
-  line-height: 1.5;
-  opacity: 0.9;
-}
-
-/* ========================================
-   5) Typography System
-======================================== */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--spacing-md);
 }
-/* Headline-Tracking */
-h1,
-h2,
-h3 {
+
+h1, h2, h3 {
   letter-spacing: -0.012em;
 }
-h4,
-h5,
-h6 {
+
+h4, h5, h6 {
   letter-spacing: -0.006em;
 }
+
 @supports (text-wrap: balance) {
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  .section-title {
+  h1, h2, h3, h4, h5, h6, .section-title {
     text-wrap: balance;
   }
 }
+
 h1 {
   font-size: clamp(2.5rem, 5vw, 4rem);
 }
+
 h2 {
   font-size: clamp(2rem, 4vw, 3rem);
 }
+
 h3 {
   font-size: clamp(1.5rem, 3vw, 2rem);
 }
+
 h4 {
   font-size: clamp(1.25rem, 2vw, 1.5rem);
 }
+
 h5 {
   font-size: 1.125rem;
 }
+
 h6 {
   font-size: 1rem;
 }
@@ -366,8 +274,8 @@ h6 {
 p {
   margin-bottom: var(--spacing-md);
   color: var(--text-secondary);
-  line-height: 1.6; /* bessere Lesbarkeit */
-  letter-spacing: 0.003em; /* minimal mehr Luft */
+  line-height: 1.6;
+  letter-spacing: 0.003em;
 }
 
 a {
@@ -375,15 +283,10 @@ a {
   text-decoration: none;
   transition: color var(--transition-fast);
 }
+
 a:hover {
   color: var(--primary-light);
 }
-
-/* ===== Section: Call-to-Action Highlight ===== */
-
-/* ========================================
-   6) Card Components & Loading System
-======================================== */
 
 /* Loading Screen */
 .loading-screen {
@@ -399,10 +302,12 @@ a:hover {
   z-index: 9999;
   transition: opacity var(--transition-slow);
 }
+
 .loading-screen.hide {
   opacity: 0;
   pointer-events: none;
 }
+
 .loader {
   width: 60px;
   height: 60px;
@@ -412,32 +317,25 @@ a:hover {
   animation: spin 1s linear infinite;
 }
 
-/* ========================================
-   8) Animations & Keyframes
-======================================== */
+/* Animations */
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* ========================================
-   9) Responsive Design
-======================================== */
-
 /* Mobile Layout */
 @media (max-width: 768px) {
-  /* Global Responsive Settings */
   html {
     font-size: 15px;
   }
 
-  /* Section Layout */
   .section {
     min-height: 100svh;
     height: auto;
     padding: var(--spacing-xl) 0;
   }
+
   @supports (min-height: 100dvh) {
     .section {
       min-height: 100dvh;
@@ -445,15 +343,58 @@ a:hover {
   }
 
   .section .container {
-    /* Header + Safe-Area oben/unten berücksichtigen */
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   }
 }
 
-/* ========================================
-   Accessibility - Reduced Motion
-======================================== */
+@media (max-width: 480px) {
+  .container {
+    max-width: 100vw;
+    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
+  }
+
+  body {
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+  }
+
+  .features-content {
+    padding: 0 var(--spacing-sm);
+  }
+
+  .card {
+    padding: calc(var(--spacing-sm) * 0.9);
+  }
+
+  .card .icon-wrapper {
+    width: 45px;
+    height: 45px;
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 375px) {
+  html {
+    font-size: 14px;
+  }
+
+  .container {
+    padding-inline: max(0.25rem, env(safe-area-inset-left, 0px));
+  }
+
+  .section {
+    padding: var(--spacing-lg) 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .snap-section,
+  .section {
+    scroll-snap-align: center;
+  }
+}
+
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -462,92 +403,84 @@ a:hover {
   }
 }
 
-/* ========================================
-   10) Print Styles
-======================================== */
-@media print {
-  .loading-screen {
-    display: none !important;
-  }
-  body {
-    color: black;
-    background: white;
-    font-size: 12pt;
-  }
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  a {
-    color: black;
-    text-decoration: underline;
-  }
-  button,
-  .btn {
-    display: none !important;
-  }
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* ========================================
-   11) Accessibility & Browser Compatibility
-======================================== */
-/* Verbesserter globaler Fokusindikator: zweistufiger Ring für bessere Sichtbarkeit auf dunklem & hellem Hintergrund */
+/* Focus Indicators */
 *:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 4px
-    color-mix(in srgb, var(--primary-color) 55%, transparent);
-  transition:
-    box-shadow 0.15s ease,
-    outline-color 0.15s ease;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  transition: box-shadow 0.15s ease, outline-color 0.15s ease;
 }
+
 @media (prefers-contrast: more) {
   *:focus-visible {
     outline: 3px solid #ffffff;
     outline-offset: 4px;
-    box-shadow:
-      0 0 0 5px #000,
-      0 0 0 8px var(--primary-color);
+    box-shadow: 0 0 0 5px #000, 0 0 0 8px var(--primary-color);
   }
 }
+
 @media (forced-colors: active) {
   *:focus-visible {
-    outline: 2px solid ButtonText; /* Systemfarbe */
+    outline: 2px solid ButtonText;
     outline-offset: 4px;
-    box-shadow: none; /* System übernimmt Kontrast */
+    box-shadow: none;
   }
 }
+
 ::selection {
   background: var(--primary-color);
   color: white;
 }
 
-/* Scrollbar vollständig ausblenden */
-/* Webkit-basierte Browser (Chrome, Safari, Edge) */
+/* Hide Scrollbar */
 ::-webkit-scrollbar {
   width: 0px;
   height: 0px;
   background: transparent;
 }
 
-/* Firefox */
 html {
-  /* Nur setzen, wenn vom Browser unterstützt */
   @supports (scrollbar-width: none) {
     scrollbar-width: none;
   }
-  -ms-overflow-style: none; /* IE und Edge Fallback */
+  -ms-overflow-style: none;
 }
 
-/* ========================================
-   12) Section Visibility Control
-======================================== */
-/* Hide section headers for main page sections */
+/* Print Styles */
+@media print {
+  .loading-screen {
+    display: none !important;
+  }
+
+  body {
+    color: black;
+    background: white;
+    font-size: 12pt;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  a {
+    color: black;
+    text-decoration: underline;
+  }
+
+  button,
+  .btn {
+    display: none !important;
+  }
+
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Hide Section Headers (Page-specific) */
 #hero .section-header,
 #hero .section-subtitle,
 #features .section-header,

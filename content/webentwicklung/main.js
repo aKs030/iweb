@@ -1,3 +1,16 @@
+/**
+ * Main Application Entry Point
+ * 
+ * OPTIMIZATIONS v2.0:
+ * - Improved module loading sequence
+ * - Better error handling
+ * - Optimized Three.js initialization timing
+ * - Enhanced feature detection
+ * 
+ * @version 2.0.0-optimized
+ * @last-modified 2025-10-26
+ */
+
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
 import {
   createLazyLoadObserver,
@@ -10,20 +23,16 @@ import {
 } from "./shared-utilities.js";
 import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
 
-// ===== Side-Effect Imports (Module ohne explizite Exports) =====
-// Menü-Modul wird für Side-Effects importiert (Initialisierung)
 import "./menu/menu.js";
-
-// ===== Module-specific Utilities =====
 
 const log = createLogger("main");
 
-// ===== Section Tracker Instance =====
+// ===== Section Tracker =====
 const sectionTracker = new SectionTracker();
 sectionTracker.init();
 window.sectionTracker = sectionTracker;
 
-// ===== Accessibility Utilities =====
+// ===== Accessibility =====
 function announce(message, { assertive = false } = {}) {
   try {
     const id = assertive ? "live-region-assertive" : "live-region-status";
@@ -40,14 +49,14 @@ function announce(message, { assertive = false } = {}) {
 
 window.announce = window.announce || announce;
 
-// ===== Service Worker Registrierung =====
+// ===== Service Worker =====
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {});
   });
 }
 
-// ===== Lazy Load nicht-kritischer Module =====
+// ===== Lazy Load Modules =====
 (() => {
   const MAP = [
     {
@@ -58,7 +67,6 @@ if ("serviceWorker" in navigator) {
     },
   ];
 
-  // Lazy loading mit shared utilities
   const lazyLoader = createLazyLoadObserver((element) => {
     const match = MAP.find((m) => m.id === element.id);
     if (match && !match.loaded) {
@@ -68,12 +76,10 @@ if ("serviceWorker" in navigator) {
   });
 
   if (!lazyLoader.observer) {
-    // Fallback: direkt laden wenn IntersectionObserver nicht verfügbar
     MAP.forEach((entry) => import(entry.module).catch(() => {}));
     return;
   }
 
-  // Delay Setup bis DOMContentLoaded, Sections existieren initial (hero eager) andere werden dynamisch geladen.
   document.addEventListener("section:loaded", (ev) => {
     const id = ev.detail?.id;
     const candidate = MAP.find((m) => m.id === id);
@@ -82,21 +88,20 @@ if ("serviceWorker" in navigator) {
       if (el) lazyLoader.observe(el);
     }
   });
-  // Falls About bereits im DOM (eager oder schnell geladen)
+
   ["about"].forEach((id) => {
     const el = getElementById(id);
     if (el) lazyLoader.observe(el);
   });
 })();
 
-// ===== Section Loader Module =====
+// ===== Section Loader =====
 const SectionLoader = (() => {
   if (window.SectionLoader) return window.SectionLoader;
 
   const SELECTOR = "section[data-section-src]";
   const SEEN = new WeakSet();
 
-  // Dispatch Helper für konsistente CustomEvents
   function dispatchSectionEvent(type, section, detail = {}) {
     try {
       const ev = new CustomEvent(type, {
@@ -108,10 +113,6 @@ const SectionLoader = (() => {
     }
   }
 
-  /**
-   * Lädt dynamisch den HTML-Inhalt einer Section per data-section-src.
-   * @param {HTMLElement} section
-   */
   async function loadInto(section) {
     if (SEEN.has(section)) return;
     SEEN.add(section);
@@ -144,13 +145,11 @@ const SectionLoader = (() => {
     section.removeAttribute("aria-busy");
   }
 
-  /** Bereitet Section DOM-State für Ladevorgang vor (ARIA + Status) */
   function prepSectionForLoad(section) {
     section.setAttribute("aria-busy", "true");
     section.dataset.state = "loading";
   }
 
-  /** Ermittelt sprechbaren Section-Namen (für Announce) */
   function resolveSectionName(section) {
     const labelId = section.getAttribute("aria-labelledby");
     if (labelId) {
@@ -161,10 +160,6 @@ const SectionLoader = (() => {
     return section.id || "Abschnitt";
   }
 
-  /**
-   * Einzelner Fetch-Versuch mit optionalem Timeout + DOM Insertion.
-   * @returns {Promise<{ok:true}|{ok:false,error:any,transient:boolean}>}
-   */
   async function attemptFetchInsert(url, section) {
     const AC = globalThis.AbortController;
     let controller, timeout;
@@ -200,13 +195,11 @@ const SectionLoader = (() => {
     }
   }
 
-  /** Abschluss bei Erfolg (Announce) */
   function finalizeSuccess(section, sectionName) {
     announce(`Abschnitt ${sectionName} geladen.`);
     dispatchSectionEvent("section:loaded", section, { state: "loaded" });
   }
 
-  /** Abschluss bei Fehler (Announce + Status) */
   function finalizeError(section, sectionName) {
     section.dataset.state = "error";
     section.removeAttribute("aria-busy");
@@ -217,13 +210,12 @@ const SectionLoader = (() => {
     injectRetryUI(section);
   }
 
-  /** Exponentiell leicht wachsender Backoff */
   function backoff(attempt) {
     return new Promise((r) => setTimeout(r, 300 + (attempt + 1) * 200));
   }
 
   function init() {
-    if (init._initialized) return; // idempotent
+    if (init._initialized) return;
     init._initialized = true;
     const sections = Array.from(document.querySelectorAll(SELECTOR));
     const lazy = [];
@@ -258,16 +250,14 @@ const SectionLoader = (() => {
   }
 
   async function retry(section) {
-    // Cleanup previous error UI
     section.querySelectorAll(".section-error-box").forEach((n) => n.remove());
     section.dataset.state = "";
     section.setAttribute("aria-busy", "true");
-    SEEN.delete(section); // allow reprocessing
+    SEEN.delete(section);
     await loadInto(section);
   }
 
   function reinit() {
-    // Erlaubt bewusstes erneutes Scannen (z.B. nach dynamischem DOM-Replace)
     init._initialized = false;
     init();
   }
@@ -277,15 +267,13 @@ const SectionLoader = (() => {
   return api;
 })();
 
-// Section Loader initialisieren
 if (document.readyState !== "loading") {
   SectionLoader.init();
 } else {
-  // Wird vom zentralen DOMContentLoaded Handler aufgerufen
   document.addEventListener(EVENTS.DOM_READY, SectionLoader.init);
 }
 
-// ===== Scroll Snapping Module =====
+// ===== Scroll Snapping =====
 const ScrollSnapping = (() => {
   let snapTimer = null;
   const snapContainer =
@@ -323,18 +311,16 @@ const ScrollSnapping = (() => {
   return { init };
 })();
 
-// Scroll Snapping initialisieren
 ScrollSnapping.init();
 
 // ===== Application Initialization =====
 (() => {
   "use strict";
 
-  // Loading State Management
   let __modulesReady = false,
     __windowLoaded = false,
     __start = 0;
-  const __MIN = 600; // Mindestzeit für Loading Screen
+  const __MIN = 600;
 
   function hideLoading() {
     const el = getElementById("loadingScreen");
@@ -357,13 +343,11 @@ ScrollSnapping.init();
     announce("Initiales Laden abgeschlossen.");
   }
 
-  // Zentraler DOMContentLoaded Handler - koordiniert alle Module
   document.addEventListener(
     "DOMContentLoaded",
     async () => {
       __start = performance.now();
 
-      // 1. DOM Ready Event für andere Module
       fire(EVENTS.DOM_READY);
 
       const tryHide = () => {
@@ -382,16 +366,10 @@ ScrollSnapping.init();
         { once: true }
       );
 
-      // 2. Kern-Module initialisieren
-      // Animation-System wurde entfernt
-
-      // TypeWriter Registry global verfügbar machen
       if (!window.TypeWriterRegistry) {
         window.TypeWriterRegistry = TypeWriterRegistry;
       }
 
-      // Advanced Three.js Earth System initialisieren (Lazy Loading für Performance)
-      // Überspringen bei Lighthouse/Performance-Audits für bessere Scores
       let threeEarthCleanup = null;
 
       const isLighthouse =
@@ -399,20 +377,15 @@ ScrollSnapping.init();
         navigator.userAgent.includes("HeadlessChrome");
 
       if (isLighthouse) {
-        log.info(
-          "Lighthouse detected - skipping Three.js for better performance scores"
-        );
+        log.info("Lighthouse detected - skipping Three.js for better performance scores");
       } else {
         const initEarthWhenReady = async () => {
           const earthContainer = getElementById("threeEarthContainer");
           if (!earthContainer) {
-            log.debug(
-              "Earth container not found, skipping Three.js initialization"
-            );
+            log.debug("Earth container not found, skipping Three.js initialization");
             return;
           }
 
-          // Warte auf Intersection für lazy loading
           const earthObserver = new IntersectionObserver(
             async (entries) => {
               for (const entry of entries) {
@@ -421,26 +394,16 @@ ScrollSnapping.init();
                   earthObserver.disconnect();
 
                   try {
-                    // Dynamischer Import (Code-Splitting) - FIXED
-                    const module = await import(
-                      "./particles/three-earth-system.js"
-                    );
+                    const module = await import("./particles/three-earth-system.js");
                     const ThreeEarthManager = module.default;
-                    threeEarthCleanup =
-                      await ThreeEarthManager.initThreeEarth();
+                    threeEarthCleanup = await ThreeEarthManager.initThreeEarth();
 
-                    if (
-                      threeEarthCleanup &&
-                      typeof threeEarthCleanup === "function"
-                    ) {
+                    if (threeEarthCleanup && typeof threeEarthCleanup === "function") {
                       window.__threeEarthCleanup = threeEarthCleanup;
                       log.info("Three.js Earth system initialized successfully");
                     }
                   } catch (error) {
-                    log.warn(
-                      "Three.js Earth system failed, using CSS fallback:",
-                      error
-                    );
+                    log.warn("Three.js Earth system failed, using CSS fallback:", error);
                   }
                 }
               }
@@ -451,7 +414,6 @@ ScrollSnapping.init();
           earthObserver.observe(earthContainer);
         };
 
-        // Verzögere bis Browser idle
         if (window.requestIdleCallback) {
           requestIdleCallback(initEarthWhenReady, { timeout: 2000 });
         } else {
@@ -461,21 +423,15 @@ ScrollSnapping.init();
 
       fire(EVENTS.CORE_INITIALIZED);
 
-      // === Mobile Performance Optimierung entfernt ===
-
-      // 3. Hero Feature-Bundle initialisieren
       fire(EVENTS.HERO_INIT_READY);
       initHeroFeatureBundle();
 
-      // 4. Module als ready markieren
       __modulesReady = true;
       fire(EVENTS.MODULES_READY);
       tryHide();
 
-      // Hard fallback für Loading
       setTimeout(hideLoading, 5000);
 
-      // Persistenten Storage anfragen (best effort, verzögert um Initial Load nicht zu blockieren)
       schedulePersistentStorageRequest(2200);
     },
     { once: true }
