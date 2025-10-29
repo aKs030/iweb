@@ -1,436 +1,371 @@
-import { createLogger } from '../shared-utilities.js';
-
 /**
- * Footer Complete System - All-in-One JavaScript
+ * Footer Complete System - Optimized
  *
- * Kombiniert alle Footer-Funktionalitäten in einer Datei:
- * - Footer-Laden und Initialisierung
- * - Day/Night Theme Toggle
- * - Scroll-basierte Footer-Expansion
- * - Adaptive Resizing
- * - Newsletter-Formular
- * - Cookie-Settings
- * - Cookie Consent & Google Analytics
+ * OPTIMIZATIONS v2.0:
+ * - Consolidated cookie handling
+ * - Improved observer cleanup
+ * - Reduced code duplication
+ * - Better error boundaries
+ * - Streamlined initialization
+ * - Enhanced memory management
  *
- * KEINE EXTERNEN ABHÄNGIGKEITEN - Komplett eigenständig
- *
- * @author Abdulkerim Sesli
- * @version 1.2.0
- * @updated 2025-10-25 - Critical Observer Cleanup Fixes
+ * @version 2.0.0
+ * @last-modified 2025-10-29
  */
 
-// =================================================================
-// START: COOKIE CONSENT & GOOGLE ANALYTICS
-// =================================================================
+import { createLogger, throttle } from '../shared-utilities.js';
 
-/**
- * Funktion zum Laden und Konfigurieren von Google Analytics
- * Aktiviert die blockierten Scripts mit data-consent="required"
- */
-function loadGoogleAnalytics() {
-  const blockedScripts = document.querySelectorAll(
-    'script[data-consent="required"]'
-  );
+const log = createLogger("FooterSystem");
 
-  if (blockedScripts.length === 0) {
-    console.warn(
-      "[Cookie Consent] Keine blockierten GA Scripts gefunden im Head"
-    );
-    return;
-  }
+// ===== Cookie Utilities =====
 
-  blockedScripts.forEach((script) => {
-    const newScript = document.createElement("script");
-
-    Array.from(script.attributes).forEach((attr) => {
-      if (attr.name === "data-src") {
-        newScript.setAttribute("src", attr.value);
-      } else if (attr.name !== "data-consent" && attr.name !== "type") {
-        newScript.setAttribute(attr.name, attr.value);
-      }
-    });
-
-    if (script.innerHTML.trim()) {
-      newScript.innerHTML = script.innerHTML;
-    }
-
-    script.parentNode.replaceChild(newScript, script);
-  });
-}
-
-/**
- * Funktion zum Setzen eines Cookies
- * @param {string} name - Name des Cookies
- * @param {string} value - Wert des Cookies
- * @param {number} days - Gültigkeitsdauer in Tagen
- */
-function setCookie(name, value, days) {
-  let expires = "";
-  if (days) {
+const CookieManager = {
+  set(name, value, days = 365) {
     const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    expires = "; expires=" + date.toUTCString();
-  }
-  document.cookie = name + "=" + (value || "") + expires + "; path=/";
-}
+    const expires = `; expires=${date.toUTCString()}`;
+    document.cookie = `${name}=${value || ""}${expires}; path=/`;
+  },
 
-/**
- * Funktion zum Lesen eines Cookies
- * @param {string} name - Name des Cookies
- * @returns {string|null} - Wert des Cookies oder null
- */
-function getCookie(name) {
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(";");
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === " ") c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-}
-
-/**
- * Initialisiert den Cookie Consent Banner
- * Prüft ob bereits eine Zustimmung vorliegt und zeigt ggf. den Banner an
- * Banner erscheint inline zwischen Copyright und Links
- */
-function initializeConsentBanner() {
-  const consentBanner = document.getElementById("cookie-consent-banner");
-  const acceptButton = document.getElementById("accept-cookies-btn");
-
-  if (!consentBanner || !acceptButton) {
-    console.error("[Cookie Consent] Banner-Elemente nicht gefunden.");
-    return;
-  }
-
-  const consent = getCookie("cookie_consent");
-  if (consent === "accepted") {
-    loadGoogleAnalytics();
-    consentBanner.classList.add("hidden");
-  } else if (consent === "rejected") {
-    consentBanner.classList.add("hidden");
-  } else {
-    consentBanner.classList.remove("hidden");
-  }
-
-  acceptButton.addEventListener("click", () => {
-    consentBanner.style.opacity = "0";
-    consentBanner.style.transform = "scale(0.95)";
-
-    setTimeout(() => {
-      consentBanner.classList.add("hidden");
-    }, 300);
-
-    setCookie("cookie_consent", "accepted", 365);
-    loadGoogleAnalytics();
-  });
-
-  const rejectButton = document.getElementById("reject-cookies-btn");
-  if (rejectButton) {
-    rejectButton.addEventListener("click", () => {
-      consentBanner.style.opacity = "0";
-      consentBanner.style.transform = "scale(0.95)";
-
-      setTimeout(() => {
-        consentBanner.classList.add("hidden");
-      }, 300);
-
-      setCookie("cookie_consent", "rejected", 365);
-    });
-  }
-
-  const cookiesLink = document.querySelector(".footer-cookies-link");
-  if (cookiesLink) {
-    cookiesLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      openFooterCookieSettings();
-    });
-  }
-}
-
-// Globaler IntersectionObserver für Section-Erkennung
-let globalSectionObserver = null;
-
-/**
- * Öffnet den Footer mit Cookie-Einstellungen
- */
-function openFooterCookieSettings() {
-  const footer = document.getElementById("site-footer");
-  const footerMin = footer?.querySelector(".footer-minimized");
-  const footerMax = footer?.querySelector(".footer-maximized");
-  const cookieView = document.getElementById("footer-cookie-view");
-  const normalContent = document.getElementById("footer-normal-content");
-  const analyticsToggle = document.getElementById("footer-analytics-toggle");
-
-  if (!footer || !footerMin || !footerMax || !cookieView) {
-    console.error("[Cookie Settings] FEHLER - Fehlende Elemente:", {
-      footer: !!footer,
-      footerMin: !!footerMin,
-      footerMax: !!footerMax,
-      cookieView: !!cookieView,
-    });
-    return;
-  }
-
-  const consent = getCookie("cookie_consent");
-  if (analyticsToggle) {
-    analyticsToggle.checked = consent === "accepted";
-  }
-
-  footer.classList.add("footer-expanded");
-  footerMin.classList.add("footer-hidden");
-  footerMax.classList.remove("footer-hidden");
-  cookieView.classList.remove("hidden");
-
-  if (normalContent) {
-    normalContent.style.display = "none";
-  }
-
-  const sections = document.querySelectorAll(
-    "section[id]:not(#threeEarthContainer), main > section[id], [data-section]"
-  );
-
-  const initialVisibleSections = new Set();
-  sections.forEach((section) => {
-    const rect = section.getBoundingClientRect();
-    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-    if (isVisible) {
-      const sectionId = section.id || section.dataset.section || "unknown";
-      initialVisibleSections.add(sectionId);
-    }
-  });
-
-  let hasTriggered = false;
-
-  // ✅ KRITISCHER FIX: Cleanup existing observer
-  if (globalSectionObserver) {
-    globalSectionObserver.disconnect();
-    globalSectionObserver = null;
-  }
-
-  globalSectionObserver = new IntersectionObserver(
-    (entries) => {
-      if (hasTriggered) return;
-
-      const currentFooter = document.getElementById("site-footer");
-      if (
-        !currentFooter ||
-        !currentFooter.classList.contains("footer-expanded")
-      ) {
-        if (globalSectionObserver) {
-          globalSectionObserver.disconnect();
-          globalSectionObserver = null;
-        }
-        return;
+  get(name) {
+    const nameEQ = `${name}=`;
+    const cookies = document.cookie.split(";");
+    
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(nameEQ)) {
+        return cookie.substring(nameEQ.length);
       }
+    }
+    return null;
+  },
 
-      entries.forEach((entry) => {
-        if (hasTriggered) return;
+  delete(name) {
+    const domains = [
+      "",
+      window.location.hostname,
+      `.${window.location.hostname}`,
+    ];
 
-        if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-          const sectionId =
-            entry.target.id || entry.target.dataset.section || "unknown";
+    domains.forEach((domain) => {
+      const domainPart = domain ? `; domain=${domain}` : "";
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
+    });
+  },
 
-          if (initialVisibleSections.has(sectionId)) {
-            return;
-          }
+  deleteAnalytics() {
+    const analyticsCookies = ["_ga", "_gid", "_gat", "_gat_gtag_G_S0587RQ4CN"];
+    analyticsCookies.forEach((name) => this.delete(name));
+    log.info("Analytics cookies deleted");
+  },
+};
 
-          hasTriggered = true;
+// ===== Google Analytics Loader =====
 
-          if (globalSectionObserver) {
-            globalSectionObserver.disconnect();
-            globalSectionObserver = null;
-          }
+const GoogleAnalytics = {
+  load() {
+    const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
 
-          closeFooterCookieSettings();
+    if (blockedScripts.length === 0) {
+      log.warn("No blocked GA scripts found");
+      return;
+    }
+
+    blockedScripts.forEach((script) => {
+      const newScript = document.createElement("script");
+
+      // Copy attributes
+      Array.from(script.attributes).forEach((attr) => {
+        if (attr.name === "data-src") {
+          newScript.setAttribute("src", attr.value);
+        } else if (attr.name !== "data-consent" && attr.name !== "type") {
+          newScript.setAttribute(attr.name, attr.value);
         }
       });
-    },
-    {
-      root: null,
-      rootMargin: "0px",
-      threshold: [0.5, 0.7],
+
+      // Copy inline content
+      if (script.innerHTML.trim()) {
+        newScript.innerHTML = script.innerHTML;
+      }
+
+      script.parentNode.replaceChild(newScript, script);
+    });
+
+    log.info("Google Analytics loaded");
+  },
+};
+
+// ===== Cookie Consent Banner =====
+
+class ConsentBanner {
+  constructor() {
+    this.banner = document.getElementById("cookie-consent-banner");
+    this.acceptBtn = document.getElementById("accept-cookies-btn");
+    this.rejectBtn = document.getElementById("reject-cookies-btn");
+    this.cookiesLink = document.querySelector(".footer-cookies-link");
+  }
+
+  init() {
+    if (!this.banner || !this.acceptBtn) {
+      log.error("Consent banner elements not found");
+      return;
     }
-  );
 
-  sections.forEach((section) => {
-    globalSectionObserver.observe(section);
-  });
+    const consent = CookieManager.get("cookie_consent");
 
-  const closeBtn = document.getElementById("close-cookie-footer");
-  if (closeBtn && !closeBtn.dataset.listenerAdded) {
-    closeBtn.dataset.listenerAdded = "true";
-    closeBtn.addEventListener("click", () => {
-      if (globalSectionObserver) {
-        globalSectionObserver.disconnect();
-        globalSectionObserver = null;
-      }
-      closeFooterCookieSettings();
-    });
+    if (consent === "accepted") {
+      GoogleAnalytics.load();
+      this.banner.classList.add("hidden");
+    } else if (consent === "rejected") {
+      this.banner.classList.add("hidden");
+    } else {
+      this.banner.classList.remove("hidden");
+    }
+
+    this.setupEventListeners();
+    log.info("Consent banner initialized");
   }
 
-  const rejectAllBtn = document.getElementById("footer-reject-all");
-  if (rejectAllBtn && !rejectAllBtn.dataset.listenerAdded) {
-    rejectAllBtn.dataset.listenerAdded = "true";
-    rejectAllBtn.addEventListener("click", () => {
-      if (globalSectionObserver) {
-        globalSectionObserver.disconnect();
-        globalSectionObserver = null;
-      }
-      setCookie("cookie_consent", "rejected", 365);
-      deleteAnalyticsCookies();
-      closeFooterCookieSettings();
+  setupEventListeners() {
+    this.acceptBtn.addEventListener("click", () => this.accept());
 
-      const banner = document.getElementById("cookie-consent-banner");
-      if (banner) banner.classList.add("hidden");
+    if (this.rejectBtn) {
+      this.rejectBtn.addEventListener("click", () => this.reject());
+    }
 
-      setTimeout(() => window.location.reload(), 300);
-    });
+    if (this.cookiesLink) {
+      this.cookiesLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        CookieSettings.open();
+      });
+    }
   }
 
-  const acceptSelectedBtn = document.getElementById("footer-accept-selected");
-  if (acceptSelectedBtn && !acceptSelectedBtn.dataset.listenerAdded) {
-    acceptSelectedBtn.dataset.listenerAdded = "true";
-    acceptSelectedBtn.addEventListener("click", () => {
-      if (globalSectionObserver) {
-        globalSectionObserver.disconnect();
-        globalSectionObserver = null;
-      }
-
-      if (analyticsToggle && analyticsToggle.checked) {
-        setCookie("cookie_consent", "accepted", 365);
-        loadGoogleAnalytics();
-      } else {
-        setCookie("cookie_consent", "rejected", 365);
-        deleteAnalyticsCookies();
-      }
-
-      closeFooterCookieSettings();
-
-      const banner = document.getElementById("cookie-consent-banner");
-      if (banner) banner.classList.add("hidden");
-
-      setTimeout(() => window.location.reload(), 300);
-    });
+  accept() {
+    this.hide();
+    CookieManager.set("cookie_consent", "accepted");
+    GoogleAnalytics.load();
   }
 
-  const acceptAllBtn = document.getElementById("footer-accept-all");
-  if (acceptAllBtn && !acceptAllBtn.dataset.listenerAdded) {
-    acceptAllBtn.dataset.listenerAdded = "true";
-    acceptAllBtn.addEventListener("click", () => {
-      if (globalSectionObserver) {
-        globalSectionObserver.disconnect();
-        globalSectionObserver = null;
-      }
-      setCookie("cookie_consent", "accepted", 365);
-      loadGoogleAnalytics();
-      closeFooterCookieSettings();
+  reject() {
+    this.hide();
+    CookieManager.set("cookie_consent", "rejected");
+  }
 
-      const banner = document.getElementById("cookie-consent-banner");
-      if (banner) banner.classList.add("hidden");
-
-      setTimeout(() => window.location.reload(), 300);
-    });
+  hide() {
+    this.banner.style.opacity = "0";
+    this.banner.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      this.banner.classList.add("hidden");
+    }, 300);
   }
 }
 
-/**
- * Schließt die Cookie-Einstellungen und minimiert Footer
- */
-function closeFooterCookieSettings() {
-  const footer = document.getElementById("site-footer");
-  const footerMin = footer?.querySelector(".footer-minimized");
-  const footerMax = footer?.querySelector(".footer-maximized");
-  const cookieView = document.getElementById("footer-cookie-view");
-  const normalContent = document.getElementById("footer-normal-content");
+// ===== Cookie Settings Manager =====
 
-  // ✅ KRITISCHER FIX: Cleanup observer
-  if (globalSectionObserver) {
-    globalSectionObserver.disconnect();
-    globalSectionObserver = null;
+const CookieSettings = (() => {
+  let sectionObserver = null;
+  let initialVisibleSections = new Set();
+  let hasTriggered = false;
+
+  function getElements() {
+    return {
+      footer: document.getElementById("site-footer"),
+      footerMin: document.querySelector(".footer-minimized"),
+      footerMax: document.querySelector(".footer-maximized"),
+      cookieView: document.getElementById("footer-cookie-view"),
+      normalContent: document.getElementById("footer-normal-content"),
+      analyticsToggle: document.getElementById("footer-analytics-toggle"),
+      closeBtn: document.getElementById("close-cookie-footer"),
+      rejectAllBtn: document.getElementById("footer-reject-all"),
+      acceptSelectedBtn: document.getElementById("footer-accept-selected"),
+      acceptAllBtn: document.getElementById("footer-accept-all"),
+    };
   }
 
-  if (footer && footerMin && footerMax && cookieView) {
-    cookieView.classList.add("hidden");
-
-    footer.classList.remove("footer-expanded");
-    document.body.classList.remove("footer-expanded");
-    footerMax.classList.add("footer-hidden");
-    footerMin.classList.remove("footer-hidden");
-
-    if (globalScrollHandler) {
-      globalScrollHandler.expanded = false;
+  function cleanupObserver() {
+    if (sectionObserver) {
+      sectionObserver.disconnect();
+      sectionObserver = null;
     }
+    hasTriggered = false;
+    initialVisibleSections.clear();
+  }
 
-    if (normalContent) {
-      normalContent.style.display = "block";
-    }
-  } else {
-    console.warn(
-      "[Cookie Settings] Konnte nicht schließen - Elemente fehlen:",
+  function setupSectionObserver(elements) {
+    cleanupObserver();
+
+    const sections = document.querySelectorAll(
+      "section[id]:not(#threeEarthContainer), main > section[id], [data-section]"
+    );
+
+    // Store initially visible sections
+    sections.forEach((section) => {
+      const rect = section.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        const id = section.id || section.dataset.section || "unknown";
+        initialVisibleSections.add(id);
+      }
+    });
+
+    sectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (hasTriggered || !elements.footer.classList.contains("footer-expanded")) {
+          cleanupObserver();
+          return;
+        }
+
+        entries.forEach((entry) => {
+          if (hasTriggered) return;
+
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            const id = entry.target.id || entry.target.dataset.section || "unknown";
+
+            if (!initialVisibleSections.has(id)) {
+              hasTriggered = true;
+              cleanupObserver();
+              close();
+            }
+          }
+        });
+      },
       {
-        footer: !!footer,
-        footerMin: !!footerMin,
-        footerMax: !!footerMax,
-        cookieView: !!cookieView,
+        root: null,
+        rootMargin: "0px",
+        threshold: [0.5, 0.7],
       }
     );
+
+    sections.forEach((section) => sectionObserver.observe(section));
   }
-}
 
-/**
- * Entfernt Google Analytics Cookies (bei Widerruf)
- */
-function deleteAnalyticsCookies() {
-  const cookiesToDelete = ["_ga", "_gid", "_gat", "_gat_gtag_G_S0587RQ4CN"];
+  function setupEventListeners(elements) {
+    const addOnce = (element, handler) => {
+      if (element && !element.dataset.listenerAdded) {
+        element.dataset.listenerAdded = "true";
+        element.addEventListener("click", handler);
+      }
+    };
 
-  cookiesToDelete.forEach((cookieName) => {
-    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    const domain = window.location.hostname;
-    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
-    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${domain}`;
-  });
-}
+    addOnce(elements.closeBtn, () => {
+      cleanupObserver();
+      close();
+    });
 
-// =================================================================
-// ENDE: COOKIE CONSENT & GOOGLE ANALYTICS
-// =================================================================
+    addOnce(elements.rejectAllBtn, () => {
+      cleanupObserver();
+      CookieManager.set("cookie_consent", "rejected");
+      CookieManager.deleteAnalytics();
+      close();
+      
+      const banner = document.getElementById("cookie-consent-banner");
+      if (banner) banner.classList.add("hidden");
+      
+      setTimeout(() => window.location.reload(), 300);
+    });
 
-// ===== SHARED UTILITIES =====
-function throttle(func, delay) {
-  let timeout = null;
-  let lastRan = 0;
-  return function (...args) {
-    const now = Date.now();
-    if (now - lastRan >= delay) {
-      func.apply(this, args);
-      lastRan = now;
-    } else {
-      clearTimeout(timeout);
-      timeout = setTimeout(
-        () => {
-          func.apply(this, args);
-          lastRan = Date.now();
-        },
-        delay - (now - lastRan)
-      );
+    addOnce(elements.acceptSelectedBtn, () => {
+      cleanupObserver();
+
+      if (elements.analyticsToggle?.checked) {
+        CookieManager.set("cookie_consent", "accepted");
+        GoogleAnalytics.load();
+      } else {
+        CookieManager.set("cookie_consent", "rejected");
+        CookieManager.deleteAnalytics();
+      }
+
+      close();
+      
+      const banner = document.getElementById("cookie-consent-banner");
+      if (banner) banner.classList.add("hidden");
+      
+      setTimeout(() => window.location.reload(), 300);
+    });
+
+    addOnce(elements.acceptAllBtn, () => {
+      cleanupObserver();
+      CookieManager.set("cookie_consent", "accepted");
+      GoogleAnalytics.load();
+      close();
+      
+      const banner = document.getElementById("cookie-consent-banner");
+      if (banner) banner.classList.add("hidden");
+      
+      setTimeout(() => window.location.reload(), 300);
+    });
+  }
+
+  function open() {
+    const elements = getElements();
+
+    if (!elements.footer || !elements.cookieView) {
+      log.error("Cookie settings elements not found");
+      return;
     }
-  };
-}
 
-// ===== THEME SYSTEM =====
-const themeLog = createLogger("ThemeSystem");
+    // Set analytics toggle
+    const consent = CookieManager.get("cookie_consent");
+    if (elements.analyticsToggle) {
+      elements.analyticsToggle.checked = consent === "accepted";
+    }
+
+    // Expand footer
+    elements.footer.classList.add("footer-expanded");
+    elements.footerMin?.classList.add("footer-hidden");
+    elements.footerMax?.classList.remove("footer-hidden");
+    elements.cookieView.classList.remove("hidden");
+
+    if (elements.normalContent) {
+      elements.normalContent.style.display = "none";
+    }
+
+    // Setup observers and listeners
+    setupSectionObserver(elements);
+    setupEventListeners(elements);
+
+    log.info("Cookie settings opened");
+  }
+
+  function close() {
+    cleanupObserver();
+
+    const elements = getElements();
+
+    if (!elements.footer) return;
+
+    elements.cookieView?.classList.add("hidden");
+    elements.footer.classList.remove("footer-expanded");
+    document.body.classList.remove("footer-expanded");
+    elements.footerMax?.classList.add("footer-hidden");
+    elements.footerMin?.classList.remove("footer-hidden");
+
+    if (elements.normalContent) {
+      elements.normalContent.style.display = "block";
+    }
+
+    // Reset scroll handler state
+    if (window.footerScrollHandler) {
+      window.footerScrollHandler.expanded = false;
+    }
+
+    log.info("Cookie settings closed");
+  }
+
+  return { open, close };
+})();
+
+// ===== Theme System =====
 
 class ThemeSystem {
   constructor() {
     this.currentTheme = this.loadTheme();
-    this.ripples = [];
   }
 
   loadTheme() {
     const saved = localStorage.getItem("preferred-theme");
     if (saved) return saved;
+
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
@@ -444,7 +379,7 @@ class ThemeSystem {
     document.documentElement.setAttribute("data-theme", theme);
     this.currentTheme = theme;
     this.saveTheme(theme);
-    themeLog.debug(`Theme angewendet: ${theme}`);
+    log.debug(`Theme applied: ${theme}`);
   }
 
   toggleTheme() {
@@ -459,21 +394,18 @@ class ThemeSystem {
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
     button.appendChild(ripple);
-
     setTimeout(() => ripple.remove(), 800);
   }
 
   init() {
     this.applyTheme(this.currentTheme);
-    themeLog.info(
-      "Theme System initialisiert (Warte auf Footer für Toggle-Button)"
-    );
+    log.info("Theme system initialized");
   }
 
   initToggleButton() {
     const toggle = document.getElementById("dayNightToggle");
     if (!toggle) {
-      themeLog.warn("Day/Night Toggle Button nicht gefunden");
+      log.warn("Day/Night toggle button not found");
       return false;
     }
 
@@ -486,19 +418,18 @@ class ThemeSystem {
       this.toggleTheme();
     });
 
-    themeLog.info("Theme Toggle Button verbunden");
+    log.info("Theme toggle button initialized");
     return true;
   }
 }
 
-// ===== FOOTER LOADER =====
-const loaderLog = createLogger("FooterLoader");
+// ===== Footer Loader =====
 
 class FooterLoader {
   async init() {
     const container = document.getElementById("footer-container");
     if (!container) {
-      loaderLog.warn("Footer Container nicht gefunden");
+      log.warn("Footer container not found");
       return false;
     }
 
@@ -507,9 +438,11 @@ class FooterLoader {
       this.updateYears();
       this.setupInteractions();
 
-      initializeConsentBanner();
+      // Initialize consent banner
+      const consentBanner = new ConsentBanner();
+      consentBanner.init();
 
-      loaderLog.info("Footer erfolgreich geladen");
+      log.info("Footer loaded successfully");
       document.dispatchEvent(
         new CustomEvent("footer:loaded", {
           detail: { footerId: "site-footer" },
@@ -518,17 +451,15 @@ class FooterLoader {
 
       return true;
     } catch (error) {
-      loaderLog.error("Footer-Ladefehler:", error);
+      log.error("Footer load failed:", error);
       this.showFallback(container);
       return false;
     }
   }
 
   async loadContent(container) {
-    const src =
-      container.dataset.footerSrc ||
-      "/content/webentwicklung/footer/footer.html";
-    loaderLog.debug(`Lade Footer: ${src}`);
+    const src = container.dataset.footerSrc || "/content/webentwicklung/footer/footer.html";
+    log.debug(`Loading footer: ${src}`);
 
     const response = await fetch(src);
     if (!response.ok) {
@@ -547,53 +478,63 @@ class FooterLoader {
   }
 
   setupInteractions() {
+    this.setupNewsletter();
+    this.setupCookieButton();
+    this.setupSmoothScroll();
+  }
+
+  setupNewsletter() {
     const form = document.querySelector(".newsletter-form-enhanced");
-    if (form) {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const input = form.querySelector('input[type="email"]');
-        if (input?.value) {
-          const email = input.value;
-          loaderLog.info("Newsletter-Anmeldung:", email);
+    if (!form) return;
 
-          const submitButton = form.querySelector('button[type="submit"]');
-          if (submitButton) {
-            const originalText = submitButton.textContent;
-            submitButton.textContent = "✓ Angemeldet!";
-            submitButton.disabled = true;
-            setTimeout(() => {
-              submitButton.textContent = originalText;
-              submitButton.disabled = false;
-            }, 3000);
-          }
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = form.querySelector('input[type="email"]');
+      
+      if (input?.value) {
+        const email = input.value;
+        log.info("Newsletter signup:", email);
 
-          input.value = "";
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+          const originalText = submitButton.textContent;
+          submitButton.textContent = "✓ Angemeldet!";
+          submitButton.disabled = true;
+
+          setTimeout(() => {
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+          }, 3000);
         }
-      });
-    }
 
+        input.value = "";
+      }
+    });
+  }
+
+  setupCookieButton() {
     const cookieBtn = document.querySelector(".footer-cookie-btn");
     if (cookieBtn) {
-      cookieBtn.addEventListener("click", () => {
-        openFooterCookieSettings();
-      });
+      cookieBtn.addEventListener("click", () => CookieSettings.open());
     }
+  }
 
+  setupSmoothScroll() {
     const footer = document.getElementById("site-footer");
-    if (footer) {
-      footer.addEventListener("click", (e) => {
-        const link = e.target.closest('a[href^="#"]');
-        if (!link) return;
+    if (!footer) return;
 
-        const targetId = link.getAttribute("href").substring(1);
-        const target = document.getElementById(targetId);
+    footer.addEventListener("click", (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (!link) return;
 
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      });
-    }
+      const targetId = link.getAttribute("href").substring(1);
+      const target = document.getElementById(targetId);
+
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
   }
 
   showFallback(container) {
@@ -605,10 +546,7 @@ class FooterLoader {
   }
 }
 
-// ===== SCROLL HANDLER =====
-const scrollLog = createLogger("ScrollHandler");
-
-let globalScrollHandler = null;
+// ===== Scroll Handler =====
 
 class ScrollHandler {
   constructor() {
@@ -617,7 +555,7 @@ class ScrollHandler {
     this.EXPAND_THRESHOLD = 0.05;
     this.COLLAPSE_THRESHOLD = 0.02;
 
-    globalScrollHandler = this;
+    window.footerScrollHandler = this;
   }
 
   init() {
@@ -625,7 +563,7 @@ class ScrollHandler {
     const trigger = document.getElementById("footer-trigger-zone");
 
     if (!footer || !trigger) {
-      scrollLog.warn("Footer oder Trigger-Zone nicht gefunden");
+      log.warn("Footer or trigger zone not found");
       return;
     }
 
@@ -652,7 +590,7 @@ class ScrollHandler {
     );
 
     this.observer.observe(trigger);
-    scrollLog.info("Scroll Handler mit Hysterese initialisiert");
+    log.info("Scroll handler initialized");
   }
 
   toggleExpansion(shouldExpand) {
@@ -668,13 +606,13 @@ class ScrollHandler {
       document.body.classList.add("footer-expanded");
       maximized.classList.remove("footer-hidden");
       this.expanded = true;
-      scrollLog.debug("Footer expandiert");
+      log.debug("Footer expanded");
     } else if (!shouldExpand && this.expanded) {
       footer.classList.remove("footer-expanded");
       document.body.classList.remove("footer-expanded");
       maximized.classList.add("footer-hidden");
       this.expanded = false;
-      scrollLog.debug("Footer kollabiert");
+      log.debug("Footer collapsed");
     }
   }
 
@@ -686,8 +624,7 @@ class ScrollHandler {
   }
 }
 
-// ===== FOOTER RESIZER =====
-const resizerLog = createLogger("FooterResizer");
+// ===== Footer Resizer =====
 
 class FooterResizer {
   constructor() {
@@ -714,15 +651,19 @@ class FooterResizer {
     window.addEventListener("resize", onResize);
     window.visualViewport?.addEventListener("resize", onResize);
 
-    const content = document.querySelector(
-      "#site-footer .footer-enhanced-content"
-    );
+    this.setupResizeObserver();
+    this.setupFontObserver();
 
-    if (content && "ResizeObserver" in window) {
+    log.info("Footer resizer initialized");
+  }
+
+  setupResizeObserver() {
+    const content = document.querySelector("#site-footer .footer-enhanced-content");
+
+    if (content && window.ResizeObserver) {
       this.resizeObserver = new ResizeObserver(() => {
-        if (this.rafId) {
-          cancelAnimationFrame(this.rafId);
-        }
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+        
         this.rafId = requestAnimationFrame(() => {
           this.apply();
           this.rafId = null;
@@ -730,19 +671,20 @@ class FooterResizer {
       });
 
       this.resizeObserver.observe(content);
-      resizerLog.debug("ResizeObserver für Footer-Content aktiviert");
+      log.debug("ResizeObserver activated");
     } else {
+      // Fallback
       setTimeout(() => this.apply(), 250);
       setTimeout(() => this.apply(), 1200);
     }
+  }
 
+  setupFontObserver() {
     if (document.fonts) {
       document.fonts.ready.then(() => {
         requestAnimationFrame(() => this.apply());
       });
     }
-
-    resizerLog.info("Footer Resizer initialisiert");
   }
 
   cleanup() {
@@ -775,10 +717,7 @@ class FooterResizer {
 
   apply() {
     const footer = document.getElementById("site-footer");
-    if (!footer) {
-      resizerLog.debug("Footer noch nicht geladen");
-      return;
-    }
+    if (!footer) return;
 
     const { usable } = this.measureViewport();
     this.setCSSVar("--vh", `${usable * 0.01}px`);
@@ -790,17 +729,15 @@ class FooterResizer {
     const maxFooter = Math.round(usable * maxRatio);
     this.setCSSVar("--footer-max-height", `${maxFooter}px`);
 
-    const content = document.querySelector(
-      "#site-footer .footer-enhanced-content"
-    );
+    const content = document.querySelector("#site-footer .footer-enhanced-content");
+    
     if (content) {
       this.setCSSVar("--footer-scale", "1");
-      void content.offsetHeight;
+      void content.offsetHeight; // Force reflow
 
       const naturalHeight = content.scrollHeight;
       const base = Math.max(1, naturalHeight || 0);
-      let scale =
-        base > 0 ? Math.min(1, maxFooter / base) : this.computeScale();
+      let scale = base > 0 ? Math.min(1, maxFooter / base) : this.computeScale();
 
       const minScale = isMobile
         ? this.config.MIN_SCALE_MOBILE
@@ -813,9 +750,7 @@ class FooterResizer {
 
       const snapshot = `${scale}|${isMobile}|${maxFooter}|${actual}`;
       if (this.lastSnapshot !== snapshot) {
-        resizerLog.debug(
-          `Scale: ${scale}, Mobile: ${isMobile}, Max: ${maxFooter}px, Actual: ${actual}px`
-        );
+        log.debug(`Scale: ${scale}, Mobile: ${isMobile}, Max: ${maxFooter}px, Actual: ${actual}px`);
         this.lastSnapshot = snapshot;
       }
     } else {
@@ -825,8 +760,7 @@ class FooterResizer {
   }
 }
 
-// ===== MAIN INITIALIZATION =====
-const mainLog = createLogger("FooterSystem");
+// ===== Main Footer System =====
 
 class FooterSystem {
   constructor() {
@@ -837,7 +771,7 @@ class FooterSystem {
   }
 
   async init() {
-    mainLog.info("Initialisiere Footer-System...");
+    log.info("Initializing footer system...");
 
     this.theme.init();
 
@@ -845,28 +779,36 @@ class FooterSystem {
 
     if (loaded) {
       this.theme.initToggleButton();
-
       this.scroller.init();
       this.resizer.init();
 
-      mainLog.info("✅ Footer-System vollständig initialisiert");
+      log.info("✅ Footer system fully initialized");
     } else {
-      mainLog.error("❌ Footer konnte nicht geladen werden");
+      log.error("❌ Footer failed to load");
     }
+  }
+
+  cleanup() {
+    this.scroller.cleanup();
+    this.resizer.cleanup();
+    log.info("Footer system cleanup completed");
   }
 }
 
-// ===== AUTO-START =====
+// ===== Auto-Start =====
+
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     const system = new FooterSystem();
     system.init();
-  });
+  }, { once: true });
 } else {
   const system = new FooterSystem();
   system.init();
 }
 
+// Export for external use
 if (typeof window !== "undefined") {
   window.FooterSystem = FooterSystem;
+  window.CookieSettings = CookieSettings;
 }

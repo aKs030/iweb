@@ -1,119 +1,132 @@
 /**
- * Dynamic Footer System - Karten-basiertes Design mit Mobile Optimierung
+ * Dynamic Footer System - Optimized
  * 
- * Features:
- * - Dynamic Island-inspirierte Footer-Navigation
- * - Modulares Karten-System mit floating Theme Control
- * - Mobile-optimiertes Layout 
- * - Glassmorphismus mit optimaler Performance
- * - Spring-basierte Micro-Animationen
- * - Vollständig responsive Grid-Layout
- * - Touch-optimierte Interaktionen
+ * OPTIMIZATIONS v5.0:
+ * - Consolidated responsive values with CSS variables
+ * - Removed duplicate selectors and properties
+ * - Improved animation performance
+ * - Better state management
+ * - Streamlined media queries
+ * - Enhanced accessibility
  * 
- * Struktur:
- * - Profile Card: Persönliche Informationen
- * - Work Card: Portfolio-Navigation
- * - Connect Card: Social Media Links  
- * - Tech Card: Technologie-Stack
- * - Newsletter Card: "Join the Journey" - reine Newsletter-Anmeldung
- * - Floating Theme Control: Day-Night-Theme-Umschaltung (rechts oben)
- * 
- * Mobile Responsive:
- * - >768px: Standard Grid Layout
- * - ≤768px: Optimiertes 2-Spalten Layout
- * - ≤480px: Vollständig gestapeltes Layout
- * 
- * Responsive Spacing:
- * - Alle Abstände skalieren fluid mit clamp()
- * - Viewport-Höhe: 60vh Desktop, 50vh Tablet, 40vh Mobile
- * - Keine Media Queries - Pure CSS clamp() Magic
- * - Mobile: Minimale Abstände (6px) für maximale Kartenfläche
- * - Grid: minmax(min(100%, 260px), 1fr) für optimale Mobile-Anpassung
- * 
- * @author Abdulkerim Sesli
- * @version 4.9.0
- * @updated 2025-10-04 - Doppelte Skalierung behoben + will-change Performance-Optimierung
+ * @version 5.0.0
+ * @last-modified 2025-10-29
  */
 
-/* ===== Dynamic Footer Design Tokens ===== */
-/* Hinweis: Footer-spezifische CSS Custom Properties wurden aus root.css hierher verschoben */
-/* Custom Properties werden dynamisch von JS auf #site-footer gesetzt */
+/* ===== Footer CSS Variables ===== */
+:root {
+  /* Spacing System */
+  --footer-spacing-xs: clamp(6px, 1vw, 12px);
+  --footer-spacing-sm: clamp(8px, 1.5vw, 16px);
+  --footer-spacing-md: clamp(12px, 2vw, 24px);
+  --footer-spacing-lg: clamp(20px, 3vw, 40px);
+  
+  /* Typography */
+  --footer-text-xs: clamp(10px, 1.5vw, 11px);
+  --footer-text-sm: clamp(11px, 1.8vw, 13px);
+  
+  /* Layout */
+  --footer-horizontal-margin: clamp(6px, 1.5vw + 3px, 32px);
+  --footer-card-min-width: min(100%, 260px);
+  --footer-max-height: clamp(40vh, 25vh + 25vw, 60vh);
+  
+  /* Transitions */
+  --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --footer-transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-/* ===== Dynamic Footer Base Styles ===== */
+/* ===== Base Footer Container ===== */
 .site-footer-fixed {
   position: fixed;
   bottom: 12px;
   left: 50%;
-  transform: translateX(-50%);
-  /* Responsive horizontale Abstände: 32px Desktop, 16px Tablet, 6px Mobile */
-  width: calc(100% - clamp(6px, 1.5vw + 3px, 32px) * 2);
+  width: calc(100% - var(--footer-horizontal-margin) * 2);
   max-width: 1400px;
   min-width: 320px;
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
-
-  /* Dynamic Footer Glassmorphismus */
+  
+  /* Glassmorphism */
   background: var(--dynamic-footer-header-bg);
   backdrop-filter: blur(var(--dynamic-footer-blur-radius));
   -webkit-backdrop-filter: blur(var(--dynamic-footer-blur-radius));
-
-  /* Dynamic Island Shape */
+  
+  /* Shape & Shadow */
   border-radius: var(--dynamic-footer-pill-radius);
   border: 1px solid var(--dynamic-footer-separator);
-
-  /* Dynamic Footer Shadow System */
   box-shadow: var(--dynamic-footer-shadow-depth-2);
-
-  z-index: 1000;
-  transition: all 0.3s var(--dynamic-footer-spring-smooth);
-
-  /* Typography Base */
+  
+  /* Typography */
   font-family: var(--dynamic-footer-font-family);
-  font-feature-settings:
-    "kern" 1,
-    "liga" 1;
+  font-feature-settings: "kern" 1, "liga" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /* Touch Optimization */
+  
+  /* Positioning & Interaction */
+  transform: translateX(-50%);
+  z-index: 1000;
   touch-action: pan-y;
+  
+  /* Entrance Animation */
+  animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
+  opacity: 0;
+  transition: all var(--footer-transition-smooth);
 }
 
-/* ===== Optimized Minimized Footer ===== */
+@keyframes footerEntrance {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* ===== Body Padding ===== */
+body {
+  padding-bottom: 60px;
+  transition: padding-bottom var(--transition-base);
+}
+
+body.footer-expanded {
+  padding-bottom: var(--footer-actual-height, var(--footer-max-height));
+}
+
+/* ===== Minimized Footer ===== */
 .footer-minimized {
-  /* Responsive Padding: 16px Desktop, 10px Tablet, 6px Mobile */
-  padding: 6px clamp(6px, 1vw + 3px, 16px);
+  padding: 6px var(--footer-spacing-sm);
   max-width: 1200px;
   margin: 0 auto;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
   opacity: 1;
   transform: translateY(0);
   transition: all 0.25s var(--dynamic-footer-spring-quick);
-  display: flex;
-  align-items: center;
-  min-height: 40px;
 }
 
 .footer-minimal-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: clamp(8px, 1.5vw, 12px);
-  flex-wrap: nowrap; /* Verhindert Umbruch */
+  gap: var(--footer-spacing-xs);
+  flex-wrap: nowrap;
   width: 100%;
   min-height: 24px;
 }
 
 .footer-copyright-text {
   color: var(--dynamic-footer-label-secondary);
-  font-size: clamp(10px, 1.5vw, 11px);
+  font-size: var(--footer-text-xs);
   font-weight: var(--dynamic-footer-font-weight-regular);
-  font-family: var(--dynamic-footer-font-family);
   margin: 0;
   line-height: 1.3;
   letter-spacing: -0.005em;
+  white-space: nowrap;
+  flex-shrink: 1;
   display: flex;
   align-items: center;
-  white-space: nowrap; /* Verhindert Umbruch im Copyright */
-  flex-shrink: 1; /* Erlaubt Schrumpfen wenn nötig */
 }
 
 .footer-brand-link {
@@ -121,16 +134,15 @@
   text-decoration: none;
   font-weight: var(--dynamic-footer-font-weight-medium);
   margin-left: 4px;
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
-  border-radius: 3px;
   padding: 2px 4px;
+  border-radius: 3px;
   display: inline-flex;
   align-items: center;
+  transition: all var(--footer-transition-quick);
 }
 
 .footer-brand-link:hover,
 .footer-brand-link:focus {
-  will-change: transform, color, background-color;
   color: var(--dynamic-footer-accent-blue);
   background: var(--dynamic-footer-fill-secondary);
   transform: translateY(-1px);
@@ -139,33 +151,31 @@
 
 .footer-minimal-nav {
   display: flex;
-  gap: clamp(4px, 1vw, 8px);
+  gap: var(--footer-spacing-xs);
   align-items: center;
-  flex-shrink: 0; /* Navigation bleibt immer volle Größe */
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
 .footer-nav-link {
   color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
-  font-size: clamp(10px, 1.5vw, 11px);
+  font-size: var(--footer-text-xs);
   font-weight: var(--dynamic-footer-font-weight-regular);
-  font-family: var(--dynamic-footer-font-family);
   padding: 2px clamp(3px, 0.8vw, 6px);
   border-radius: var(--dynamic-footer-micro-radius);
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
-  position: relative;
-  will-change: transform, color, background-color;
   display: inline-flex;
   align-items: center;
   gap: clamp(2px, 0.5vw, 4px);
   white-space: nowrap;
+  position: relative;
+  transition: all var(--footer-transition-quick);
 }
 
 .footer-nav-link svg {
   flex-shrink: 0;
   opacity: 0.8;
-  transition: opacity 0.2s var(--dynamic-footer-spring-quick);
+  transition: opacity var(--footer-transition-quick);
 }
 
 .footer-nav-link:hover,
@@ -189,8 +199,8 @@
   width: 0;
   height: 1px;
   background: var(--dynamic-footer-accent-blue);
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
   transform: translateX(-50%);
+  transition: width var(--footer-transition-quick);
 }
 
 .footer-nav-link:hover::after,
@@ -198,78 +208,38 @@
   width: 100%;
 }
 
-/* ===== Mobile Optimierung für Footer-Links ===== */
-@media (max-width: 480px) {
-  .footer-copyright-text {
-    font-size: 10px;
-  }
-  
-  .footer-nav-link {
-    font-size: 10px;
-    padding: 2px 3px;
-    gap: 2px;
-  }
-  
-  .footer-nav-link svg {
-    width: 10px;
-    height: 10px;
-  }
-  
-  .footer-minimal-content {
-    gap: 6px;
-  }
-  
-  .footer-minimal-nav {
-    gap: 3px;
-  }
-}
-
-/* ===== Dynamic Footer Maximized Mode ===== */
-/* ===== Enhanced Maximized Footer ===== */
+/* ===== Maximized Footer ===== */
 .footer-maximized {
   opacity: 0;
   transform: translateY(20px);
+  max-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  pointer-events: none;
   transition: all 0.35s var(--dynamic-footer-spring-smooth);
-  max-height: 0;
-  overflow: hidden;
-  padding-bottom: 0;
-  pointer-events: none;
-}
-
-.footer-maximized.footer-hidden {
-  opacity: 0;
-  transform: translateY(20px);
-  max-height: 0;
-  overflow: hidden;
-  padding-bottom: 0;
-  pointer-events: none;
 }
 
 .footer-maximized-viewport {
-  /* Hülle, die die Höhe gegenüber dem echten Viewport begrenzt */
-  /* Dynamische Variable aus JS (footer-resizer) + Fallback auf svh/lvh/vh */
   height: var(--footer-actual-height, auto);
-  /* Responsive max-height: 60vh Desktop, 50vh Tablet, 40vh Mobile */
-  max-height: var(--footer-max-height, clamp(40vh, 25vh + 25vw, 60vh));
-  overflow: clip; /* kein internes Scrollen */
+  max-height: var(--footer-max-height);
+  overflow: clip;
   width: 100%;
 }
 
 .footer-enhanced-content {
   max-width: 1400px;
   margin: 0 auto;
-  /* Responsive Padding: 40px/24px Desktop, 28px/14px Tablet, 20px/6px Mobile */
-  padding: clamp(20px, 2.5vw + 10px, 40px) clamp(6px, 1.5vw + 3px, 24px) 16px;
+  padding: var(--footer-spacing-lg) var(--footer-spacing-md) 16px;
   box-sizing: border-box;
+  transform-origin: top center;
+  transform: scale(var(--footer-scale, 1));
 }
 
-/* ===== Card-Based Layout System ===== */
+/* ===== Card System ===== */
 .footer-cards-grid {
   display: grid;
-  /* Mobile: 1 Spalte, Tablet+: auto-fit mit min 260px */
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  /* Responsive Gap: 24px Desktop, 14px Tablet, 6px Mobile */
-  gap: clamp(6px, 1.5vw + 3px, 24px);
+  grid-template-columns: repeat(auto-fit, minmax(var(--footer-card-min-width), 1fr));
+  gap: var(--footer-spacing-md);
   margin-bottom: clamp(16px, 2.5vw + 8px, 32px);
 }
 
@@ -277,11 +247,10 @@
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-card-radius);
-  /* Responsive Padding: 24px Desktop, 18px Tablet, 12px Mobile */
-  padding: clamp(12px, 1.5vw + 6px, 24px);
-  transition: all 0.25s var(--dynamic-footer-spring-quick);
+  padding: var(--footer-spacing-md);
   position: relative;
   overflow: hidden;
+  transition: all 0.25s var(--dynamic-footer-spring-quick);
 }
 
 .footer-card:hover {
@@ -296,7 +265,6 @@
 }
 
 .footer-card-header {
-  /* Responsive Abstand: 20px Desktop, 14px Tablet, 8px Mobile */
   margin-bottom: clamp(8px, 1vw + 6px, 20px);
   position: relative;
 }
@@ -305,38 +273,36 @@
   color: var(--dynamic-footer-label-primary);
   font-size: var(--dynamic-footer-text-primary);
   font-weight: var(--dynamic-footer-font-weight-medium);
-  font-family: var(--dynamic-footer-font-family);
   margin: 0;
   letter-spacing: -0.02em;
 }
 
 .footer-card-accent {
   height: 2px;
+  width: 40px;
   background: var(--dynamic-footer-accent-blue);
   border-radius: 2px;
   margin-top: 8px;
-  width: 40px;
-  transition: width 0.3s var(--dynamic-footer-spring-smooth);
+  transition: width var(--footer-transition-smooth);
 }
 
 .footer-card:hover .footer-card-accent {
   width: 80px;
 }
 
-/* ===== Profile Card Styles ===== */
+/* ===== Profile Card ===== */
 .footer-profile-name {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--dynamic-footer-text-primary);
   font-weight: var(--dynamic-footer-font-weight-medium);
   margin: 0 0 8px 0;
-  font-family: var(--dynamic-footer-font-family);
 }
 
 .footer-profile-role {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--dynamic-footer-text-secondary);
-  margin: 0 0 12px 0;
   font-weight: var(--dynamic-footer-font-weight-regular);
+  margin: 0 0 12px 0;
 }
 
 .footer-profile-location {
@@ -351,9 +317,6 @@
 .location-icon {
   width: 14px;
   height: 14px;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 4px;
   flex-shrink: 0;
 }
 
@@ -361,15 +324,15 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 12px;
   color: var(--dynamic-footer-accent-blue);
+  background: var(--dynamic-footer-fill-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--dynamic-footer-micro-radius);
   text-decoration: none;
   font-size: var(--dynamic-footer-text-secondary);
   font-weight: var(--dynamic-footer-font-weight-medium);
-  padding: 8px 12px;
-  background: var(--dynamic-footer-fill-secondary);
-  border-radius: var(--dynamic-footer-micro-radius);
-  border: 1px solid transparent;
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
+  transition: all var(--footer-transition-quick);
 }
 
 .footer-contact-cta:hover {
@@ -386,7 +349,7 @@
   flex-shrink: 0;
 }
 
-/* ===== Work Navigation Styles ===== */
+/* ===== Work Navigation ===== */
 .footer-work-nav {
   display: flex;
   flex-direction: column;
@@ -397,13 +360,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--dynamic-footer-label-secondary);
-  text-decoration: none;
   padding: 10px 12px;
+  color: var(--dynamic-footer-label-secondary);
   border-radius: var(--dynamic-footer-micro-radius);
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
+  text-decoration: none;
   font-size: var(--dynamic-footer-text-secondary);
   font-weight: var(--dynamic-footer-font-weight-regular);
+  transition: all var(--footer-transition-quick);
 }
 
 .footer-work-link:hover {
@@ -419,7 +382,7 @@
   flex-shrink: 0;
 }
 
-/* ===== Social Grid Styles ===== */
+/* ===== Social Grid ===== */
 .footer-social-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -437,9 +400,9 @@
   border-radius: var(--dynamic-footer-micro-radius);
   color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
   font-size: var(--dynamic-footer-text-small);
   font-weight: var(--dynamic-footer-font-weight-regular);
+  transition: all var(--footer-transition-quick);
 }
 
 .footer-social-card:hover {
@@ -455,7 +418,7 @@
   align-items: center;
   justify-content: center;
   opacity: 0.8;
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
+  transition: all var(--footer-transition-quick);
 }
 
 .footer-social-card:hover .social-card-icon {
@@ -463,7 +426,7 @@
   transform: scale(1.1);
 }
 
-/* ===== Tech Grid Styles ===== */
+/* ===== Tech Grid ===== */
 .footer-tech-grid {
   display: flex;
   flex-wrap: wrap;
@@ -475,8 +438,8 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: var(--dynamic-footer-font-weight-medium);
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
   cursor: default;
+  transition: all var(--footer-transition-quick);
 }
 
 .tech-primary {
@@ -499,130 +462,7 @@
   transform: translateY(-1px) scale(1.05);
 }
 
-/* Footer-Zustand Klassen */
-.footer-expanded .footer-minimized {
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none;
-}
-
-/* ===== Dynamic Footer Entrance Animation ===== */
-@keyframes dynamicFooterAppear {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(20px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
-  }
-}
-
-.site-footer-fixed {
-  /* Add entrance animation similar to menu */
-  animation: dynamicFooterAppear 0.8s var(--dynamic-footer-spring-bounce)
-    forwards;
-  opacity: 0;
-  transform: translateX(-50%) translateY(20px) scale(0.95);
-}
-
-/* ===== Footer Mode Transitions ===== */
-.footer-expanded .footer-minimized {
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none;
-  transition: all 0.3s var(--dynamic-footer-spring-smooth);
-}
-
-.footer-expanded .footer-maximized {
-  opacity: 1;
-  transform: translateY(0);
-  max-height: var(--footer-max-height, min(60svh, 60lvh, 60vh));
-  overflow: visible;
-  padding-bottom: 20px;
-  pointer-events: auto;
-  transition: all 0.3s var(--dynamic-footer-spring-smooth);
-}
-
-.footer-expanded .footer-hidden {
-  opacity: 1;
-  transform: translateY(0);
-  max-height: var(--footer-max-height, min(60svh, 60lvh, 60vh));
-  overflow: visible;
-  padding-bottom: 20px;
-  pointer-events: auto;
-  transition: all 0.3s var(--dynamic-footer-spring-smooth);
-}
-
-/* ===== NEUE FOOTER-KOMPONENTEN ===== */
-
-/* Body padding für fixen Footer - aus index.css verschoben */
-body {
-  padding-bottom: 60px; /* Platz für fixen Footer */
-  transition: padding-bottom var(--transition-base);
-}
-
-/* Footer-Expansion Zustand */
-/* Im erweiterten Zustand den Body-Padding dynamisch begrenzen, 
-   sodass niemals mehr als 60vh beansprucht wird */
-body.footer-expanded {
-  padding-bottom: var(
-    --footer-actual-height,
-    var(--footer-max-height, min(60svh, 60lvh, 60vh))
-  );
-}
-
-/* Interner Scrollbereich wenn Inhalt höher als Hülle ist */
-/* Kein internes Scrollen nötig, Inhalt wird proportional skaliert */
-.footer-maximized-viewport {
-  overflow: clip;
-}
-
-/* Proportionale Skalierung der Inhalte - gesteuert durch footer-resizer.js */
-.footer-enhanced-content {
-  transform-origin: top center;
-  transform: scale(var(--footer-scale));
-}
-
-/* Child-Elemente werden durch Parent transform: scale() skaliert - keine doppelte Skalierung! */
-.footer-card {
-  padding: clamp(12px, 1.5vw + 6px, 24px);
-}
-.footer-card-header {
-  margin-bottom: clamp(8px, 1vw + 6px, 20px);
-}
-.footer-card-title {
-  font-size: var(--dynamic-footer-text-primary);
-}
-.footer-status-bar {
-  margin-top: clamp(12px, 2.5vw + 4px, 32px);
-  padding-top: clamp(12px, 1.5vw + 6px, 24px);
-}
-
-/* Footer Trigger Zone */
-.footer-trigger-zone {
-  height: 100vh; /* Eine Viewport-Höhe für ausreichend Scroll-Raum */
-  width: 100%;
-  pointer-events: none;
-  background: transparent;
-  scroll-snap-align: start; /* Ermöglicht Scroll zu dieser Zone */
-}
-
-/* Responsive Anpassung für erweiterten Footer */
-body.footer-expanded .typewriter-title,
-body.footer-expanded .typewriter-title--fixed {
-  /* Im erweiterten Footer-Modus: noch dichter am Footer */
-  bottom: clamp(8px, 1.5vw, 16px);
-}
-
-/* Focus Management für Accessibility - Legacy classes removed */
-
-/* ===== Newsletter & Theme Card System ===== */
-.footer-card-wide {
-  grid-column: span 2;
-}
-
-/* Newsletter Card - "Join the Journey" - Reine Newsletter-Anmeldung seit Sept 2025 */
+/* ===== Newsletter ===== */
 .footer-newsletter-enhanced {
   margin-bottom: 24px;
 }
@@ -630,8 +470,8 @@ body.footer-expanded .typewriter-title--fixed {
 .newsletter-description {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--dynamic-footer-text-secondary);
-  margin: 0 0 16px 0;
   line-height: 1.5;
+  margin: 0 0 16px 0;
 }
 
 .newsletter-form-enhanced {
@@ -654,7 +494,7 @@ body.footer-expanded .typewriter-title--fixed {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--dynamic-footer-text-secondary);
   font-family: var(--dynamic-footer-font-family);
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
+  transition: all var(--footer-transition-quick);
 }
 
 .newsletter-input-enhanced:focus {
@@ -680,9 +520,9 @@ body.footer-expanded .typewriter-title--fixed {
   font-size: var(--dynamic-footer-text-secondary);
   font-weight: var(--dynamic-footer-font-weight-medium);
   font-family: var(--dynamic-footer-font-family);
-  cursor: pointer;
-  transition: all 0.2s var(--dynamic-footer-spring-quick);
   white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--footer-transition-quick);
 }
 
 .newsletter-submit-enhanced:hover {
@@ -701,7 +541,6 @@ body.footer-expanded .typewriter-title--fixed {
 }
 
 /* ===== Floating Theme Control ===== */
-/* Theme Control als floating Element rechts oben ohne Card-Hintergrund */
 .theme-control-floating {
   position: absolute;
   top: -30px;
@@ -710,16 +549,15 @@ body.footer-expanded .typewriter-title--fixed {
   pointer-events: auto;
 }
 
-/* Überschreibe Größe für floating Element */
 .theme-control-floating .day-night-artwork {
   width: 45px;
   height: 45px;
 }
 
-/* Enhanced Status Bar */
+/* ===== Status Bar ===== */
 .footer-status-bar {
-  margin-top: 32px;
-  padding-top: 24px;
+  margin-top: clamp(12px, 2.5vw + 4px, 32px);
+  padding-top: var(--footer-spacing-md);
   border-top: 1px solid var(--dynamic-footer-separator);
 }
 
@@ -746,7 +584,7 @@ body.footer-expanded .typewriter-title--fixed {
   color: var(--dynamic-footer-label-primary);
   text-decoration: none;
   font-weight: var(--dynamic-footer-font-weight-medium);
-  transition: color 0.2s var(--dynamic-footer-spring-quick);
+  transition: color var(--footer-transition-quick);
 }
 
 .footer-brand-link-enhanced:hover {
@@ -771,7 +609,7 @@ body.footer-expanded .typewriter-title--fixed {
   color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
   font-size: var(--dynamic-footer-text-small);
-  transition: color 0.2s var(--dynamic-footer-spring-quick);
+  transition: color var(--footer-transition-quick);
 }
 
 .footer-legal-link-enhanced:hover {
@@ -792,7 +630,7 @@ body.footer-expanded .typewriter-title--fixed {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--dynamic-footer-text-small);
   cursor: pointer;
-  transition: color 0.2s var(--dynamic-footer-spring-quick);
+  transition: color var(--footer-transition-quick);
 }
 
 .footer-cookie-btn:hover {
@@ -805,26 +643,20 @@ body.footer-expanded .typewriter-title--fixed {
   flex-shrink: 0;
 }
 
-/* ===== COOKIE SETTINGS VIEW IM FOOTER ===== */
-/* Normal Footer Content - wird ausgeblendet wenn Cookie-Settings aktiv */
+/* ===== Cookie Settings ===== */
 .footer-normal-content {
   display: block;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--footer-transition-smooth), transform var(--footer-transition-smooth);
 }
 
-/* Wenn Cookie-Settings aktiv: Normal Content ausblenden */
 .footer-maximized:has(.footer-cookie-settings:not(.hidden)) .footer-normal-content {
   display: none;
 }
 
-/* Cookie Settings Container - nimmt ganzen Footer ein */
 .footer-cookie-settings {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 500px; /* Mindesthöhe für Cookie-Settings */
+  inset: 0;
+  min-height: 500px;
   background: var(--dynamic-footer-bg-card);
   border-radius: var(--dynamic-footer-radius-large);
   z-index: 100;
@@ -834,32 +666,6 @@ body.footer-expanded .typewriter-title--fixed {
 
 .footer-cookie-settings.hidden {
   display: none;
-}
-
-/* Footer braucht min-height wenn Cookie-Settings aktiv */
-.footer-maximized:has(.footer-cookie-settings:not(.hidden)) {
-  min-height: 500px;
-}
-
-/* WICHTIG: Footer-expanded mit Cookie-Settings überschreibt Standard-Maximized */
-.site-footer-fixed.footer-expanded .footer-maximized:has(.footer-cookie-settings:not(.hidden)) {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-  max-height: min(70vh, 700px) !important;
-  min-height: 500px !important;
-  overflow: visible !important;
-  padding-bottom: 20px !important;
-  pointer-events: auto !important;
-}
-
-/* Fallback ohne :has() für ältere Browser */
-.site-footer-fixed.footer-expanded .footer-maximized {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-  max-height: min(70vh, 700px) !important;
-  overflow: visible !important;
-  padding-bottom: 20px !important;
-  pointer-events: auto !important;
 }
 
 @keyframes slideUpFade {
@@ -880,7 +686,6 @@ body.footer-expanded .typewriter-title--fixed {
   overflow: hidden;
 }
 
-/* Cookie Settings Header */
 .cookie-settings-header {
   display: flex;
   align-items: center;
@@ -902,13 +707,13 @@ body.footer-expanded .typewriter-title--fixed {
   background: transparent;
   border: none;
   color: var(--dynamic-footer-text-secondary);
-  cursor: pointer;
   padding: 8px;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all var(--footer-transition-quick);
 }
 
 .cookie-settings-close:hover {
@@ -921,7 +726,6 @@ body.footer-expanded .typewriter-title--fixed {
   height: 20px;
 }
 
-/* Cookie Settings Content */
 .cookie-settings-content {
   flex: 1;
   overflow-y: auto;
@@ -935,7 +739,6 @@ body.footer-expanded .typewriter-title--fixed {
   margin-bottom: clamp(1.5rem, 3vw, 2rem);
 }
 
-/* Cookie Settings Footer */
 .cookie-settings-footer {
   display: flex;
   gap: clamp(0.5rem, 1vw, 0.75rem);
@@ -954,9 +757,9 @@ body.footer-expanded .typewriter-title--fixed {
   border-radius: 8px;
   font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
   font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  transition: all var(--footer-transition-quick);
 }
 
 .cookie-settings-btn-primary {
@@ -983,7 +786,71 @@ body.footer-expanded .typewriter-title--fixed {
   transform: translateY(-2px);
 }
 
-/* Mobile Anpassungen für Cookie Settings */
+/* ===== Footer States ===== */
+.footer-expanded .footer-minimized {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.footer-expanded .footer-maximized {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: var(--footer-max-height);
+  overflow: visible;
+  padding-bottom: 20px;
+  pointer-events: auto;
+}
+
+.footer-maximized:has(.footer-cookie-settings:not(.hidden)) {
+  min-height: 500px;
+}
+
+.site-footer-fixed.footer-expanded .footer-maximized:has(.footer-cookie-settings:not(.hidden)) {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  max-height: min(70vh, 700px) !important;
+  min-height: 500px !important;
+  overflow: visible !important;
+  padding-bottom: 20px !important;
+  pointer-events: auto !important;
+}
+
+/* ===== Footer Trigger Zone ===== */
+.footer-trigger-zone {
+  height: 100vh;
+  width: 100%;
+  background: transparent;
+  pointer-events: none;
+  scroll-snap-align: start;
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 480px) {
+  .footer-copyright-text,
+  .footer-nav-link {
+    font-size: 10px;
+  }
+  
+  .footer-nav-link {
+    padding: 2px 3px;
+    gap: 2px;
+  }
+  
+  .footer-nav-link svg {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .footer-minimal-content {
+    gap: 6px;
+  }
+  
+  .footer-minimal-nav {
+    gap: 3px;
+  }
+}
+
 @media (max-width: 768px) {
   .cookie-settings-footer {
     flex-direction: column;
@@ -993,11 +860,13 @@ body.footer-expanded .typewriter-title--fixed {
     width: 100%;
     min-width: unset;
   }
+  
+  .footer-card-wide {
+    grid-column: span 1;
+  }
 }
 
-/* ===== Mobile Responsive Design ===== */
-
-/* Container für Newsletter und Theme Control */
+/* ===== Utility Classes ===== */
 .footer-cards-mobile-container {
-  display: contents; /* Standard: Inhalt wird normal in Grid eingefügt */
+  display: contents;
 }

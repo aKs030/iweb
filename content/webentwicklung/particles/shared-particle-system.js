@@ -1,13 +1,15 @@
 /**
- * Shared Particle System - Common infrastructure for Three.js visual effects
+ * Shared Particle System - Optimized Common Infrastructure
  * 
- * FIXES v2.1.2:
- * - Fixed missing closing braces in registerSystem/unregisterSystem
- * - Fixed incomplete ternary operator in ShootingStarManager
- * - Improved error handling and logging
+ * OPTIMIZATIONS v2.2.0:
+ * - Removed unused ShootingStarManager (moved to earth system)
+ * - Simplified state management
+ * - Improved cleanup flow
+ * - Better error handling
+ * - Reduced memory footprint
  * 
- * @version 2.1.2-fixed
- * @last-modified 2025-10-26
+ * @version 2.2.0
+ * @last-modified 2025-10-29
  */
 
 import { createLogger, throttle } from "../shared-utilities.js";
@@ -34,16 +36,29 @@ class SharedParticleState {
   }
 
   registerSystem(name, instance) {
+    if (this.systems.has(name)) {
+      log.warn(`System '${name}' already registered, overwriting`);
+    }
     this.systems.set(name, instance);
+    log.debug(`System '${name}' registered`);
   }
 
   unregisterSystem(name) {
-    this.systems.delete(name);
+    const deleted = this.systems.delete(name);
+    if (deleted) {
+      log.debug(`System '${name}' unregistered`);
+    }
+    return deleted;
+  }
+
+  hasSystem(name) {
+    return this.systems.has(name);
   }
 
   reset() {
     this.systems.clear();
     this.isInitialized = false;
+    log.debug("State reset");
   }
 }
 
@@ -59,14 +74,29 @@ export class SharedParallaxManager {
   }
 
   addHandler(handler, name = "anonymous") {
+    if (typeof handler !== 'function') {
+      log.error(`Invalid handler for '${name}', must be a function`);
+      return;
+    }
+
     this.handlers.add({ handler, name });
-    if (!this.isActive) this.activate();
+    log.debug(`Parallax handler '${name}' added`);
+
+    if (!this.isActive) {
+      this.activate();
+    }
   }
 
   removeHandler(handler) {
     const handlerObj = Array.from(this.handlers).find((h) => h.handler === handler);
-    if (handlerObj) this.handlers.delete(handlerObj);
-    if (this.handlers.size === 0) this.deactivate();
+    if (handlerObj) {
+      this.handlers.delete(handlerObj);
+      log.debug(`Parallax handler '${handlerObj.name}' removed`);
+    }
+
+    if (this.handlers.size === 0) {
+      this.deactivate();
+    }
   }
 
   activate() {
@@ -79,24 +109,43 @@ export class SharedParallaxManager {
       const scrollableHeight = Math.max(1, documentHeight - windowHeight);
       const progress = Math.min(1, Math.max(0, scrollY / scrollableHeight));
 
+      // Update CSS variable
       document.documentElement.style.setProperty(
         `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
         progress.toFixed(4)
       );
 
-      this.handlers.forEach(({ handler }) => handler(progress));
+      // Call all handlers
+      this.handlers.forEach(({ handler, name }) => {
+        try {
+          handler(progress);
+        } catch (error) {
+          log.error(`Error in parallax handler '${name}':`, error);
+        }
+      });
     }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS);
 
     window.addEventListener("scroll", this.scrollHandler, { passive: true });
     this.isActive = true;
+    
+    // Initial call
     this.scrollHandler();
+    
+    log.info("Parallax manager activated");
   }
 
   deactivate() {
     if (!this.isActive) return;
-    window.removeEventListener("scroll", this.scrollHandler);
+
+    if (this.scrollHandler) {
+      window.removeEventListener("scroll", this.scrollHandler);
+      this.scrollHandler = null;
+    }
+
     this.isActive = false;
     this.handlers.clear();
+    
+    log.info("Parallax manager deactivated");
   }
 }
 
@@ -108,198 +157,67 @@ export class SharedCleanupManager {
   }
 
   addCleanupFunction(systemName, cleanupFn, description = "anonymous") {
+    if (typeof cleanupFn !== 'function') {
+      log.error(`Invalid cleanup function for '${systemName}', must be a function`);
+      return;
+    }
+
     if (!this.cleanupFunctions.has(systemName)) {
       this.cleanupFunctions.set(systemName, []);
     }
 
     this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
-    log.debug(`Cleanup function '${description}' added for system '${systemName}'.`);
+    log.debug(`Cleanup function '${description}' registered for '${systemName}'`);
   }
 
   cleanupSystem(systemName) {
     const systemCleanups = this.cleanupFunctions.get(systemName);
-    if (!systemCleanups) return;
+    if (!systemCleanups || systemCleanups.length === 0) {
+      log.debug(`No cleanup functions for system '${systemName}'`);
+      return;
+    }
 
-    log.info(`Cleaning up system: ${systemName} (${systemCleanups.length} functions)`);
+    log.info(`Cleaning up system '${systemName}' (${systemCleanups.length} functions)`);
+
+    let successCount = 0;
+    let errorCount = 0;
 
     systemCleanups.forEach(({ fn, description }) => {
       try {
         fn();
-      } catch (e) {
-        log.error(`Error during cleanup of '${description}' in '${systemName}':`, e);
+        successCount++;
+      } catch (error) {
+        errorCount++;
+        log.error(`Error in cleanup '${description}' for '${systemName}':`, error);
       }
     });
 
     this.cleanupFunctions.delete(systemName);
+    
+    log.info(`System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`);
   }
 
   cleanupAll() {
-    log.info("Starting global cleanup of all registered systems.");
-    this.cleanupFunctions.forEach((_, systemName) => this.cleanupSystem(systemName));
+    log.info("Starting global cleanup of all systems");
+    
+    const systemNames = Array.from(this.cleanupFunctions.keys());
+    systemNames.forEach((systemName) => this.cleanupSystem(systemName));
+    
+    // Deactivate parallax
     sharedParallaxManager.deactivate();
+    
+    // Reset state
     sharedState.reset();
-    log.info("Global cleanup completed.");
-  }
-}
-
-// ===== Shooting Star Manager =====
-
-export class ShootingStarManager {
-  constructor(scene, THREE, config = {}) {
-    this.scene = scene;
-    this.THREE = THREE;
-    this.activeStars = [];
-    this.timeoutId = null;
-
-    this.config = config || {
-      BASE_FREQUENCY: 0.003,
-      SHOWER_FREQUENCY: 0.02,
-      SHOWER_DURATION: 180,
-      SHOWER_COOLDOWN: 1800,
-      MAX_SIMULTANEOUS: 3,
-      TRAJECTORIES: [
-        { start: { x: -100, y: 50, z: -50 }, end: { x: 100, y: -50, z: 50 } },
-        { start: { x: 100, y: 60, z: -40 }, end: { x: -80, y: -40, z: 60 } },
-        { start: { x: -80, y: 70, z: 60 }, end: { x: 90, y: -60, z: -70 } },
-      ],
-    };
-
-    this.isShowerActive = false;
-    this.showerTimer = 0;
-    this.showerCooldownTimer = 0;
-    this.disabled = false;
-
-    log.debug("ShootingStarManager initialized with meteor shower support.");
+    
+    log.info("Global cleanup completed");
   }
 
-  start() {
-    log.debug("ShootingStarManager started");
+  hasSystem(systemName) {
+    return this.cleanupFunctions.has(systemName);
   }
 
-  triggerMeteorShower() {
-    if (this.isShowerActive || this.showerCooldownTimer > 0) {
-      log.debug("Meteor shower already active or in cooldown");
-      return;
-    }
-
-    this.isShowerActive = true;
-    this.showerTimer = 0;
-    log.info("🌠 Meteor shower triggered!");
-  }
-
-  createShootingStar(trajectory = null) {
-    if (this.activeStars.length >= this.config.MAX_SIMULTANEOUS) {
-      return;
-    }
-
-    try {
-      const geometry = new this.THREE.SphereGeometry(0.05, 8, 8);
-      const material = new this.THREE.MeshBasicMaterial({
-        color: 0xfffdef,
-        transparent: true,
-        opacity: 1.0,
-      });
-      const star = new this.THREE.Mesh(geometry, material);
-
-      let startPos, velocity;
-
-      if (trajectory && trajectory.start && trajectory.end) {
-        startPos = trajectory.start;
-        const direction = new this.THREE.Vector3(
-          trajectory.end.x - trajectory.start.x,
-          trajectory.end.y - trajectory.start.y,
-          trajectory.end.z - trajectory.start.z
-        ).normalize();
-        velocity = direction.multiplyScalar(0.3 + Math.random() * 0.2);
-      } else {
-        startPos = {
-          x: (Math.random() - 0.5) * 100,
-          y: 20 + Math.random() * 20,
-          z: -50 - Math.random() * 50,
-        };
-        velocity = new this.THREE.Vector3(
-          (Math.random() - 0.9) * 0.2,
-          (Math.random() - 0.6) * -0.2,
-          0
-        );
-      }
-
-      star.position.set(startPos.x, startPos.y, startPos.z);
-
-      const stretchFactor = 2 + Math.random() * 3;
-      star.scale.set(1, 1, stretchFactor);
-      star.lookAt(star.position.clone().add(velocity));
-
-      const lifetime = 300 + Math.random() * 200;
-
-      this.activeStars.push({
-        mesh: star,
-        velocity,
-        lifetime,
-        age: 0,
-        initialOpacity: 1.0,
-      });
-
-      this.scene.add(star);
-    } catch (error) {
-      log.error("Failed to create shooting star:", error);
-    }
-  }
-
-  update() {
-    if (this.disabled) return;
-
-    if (this.isShowerActive) {
-      this.showerTimer++;
-      if (this.showerTimer >= this.config.SHOWER_DURATION) {
-        this.isShowerActive = false;
-        this.showerCooldownTimer = this.config.SHOWER_COOLDOWN;
-        log.info("Meteor shower ended");
-      }
-    }
-
-    if (this.showerCooldownTimer > 0) {
-      this.showerCooldownTimer--;
-    }
-
-    const spawnChance = this.isShowerActive
-      ? this.config.SHOWER_FREQUENCY
-      : this.config.BASE_FREQUENCY;
-
-    if (Math.random() < spawnChance) {
-      const trajectory =
-        this.config.TRAJECTORIES[Math.floor(Math.random() * this.config.TRAJECTORIES.length)];
-      this.createShootingStar(trajectory);
-    }
-
-    for (let i = this.activeStars.length - 1; i >= 0; i--) {
-      const star = this.activeStars[i];
-      star.age++;
-      star.mesh.position.add(star.velocity);
-
-      const fadeStart = star.lifetime * 0.7;
-      if (star.age > fadeStart) {
-        const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
-        star.mesh.material.opacity = star.initialOpacity * (1 - fadeProgress);
-      }
-
-      if (star.age > star.lifetime) {
-        this.scene.remove(star.mesh);
-        star.mesh.geometry.dispose();
-        star.mesh.material.dispose();
-        this.activeStars.splice(i, 1);
-      }
-    }
-  }
-
-  cleanup() {
-    this.activeStars.forEach((star) => {
-      this.scene.remove(star.mesh);
-      star.mesh.geometry.dispose();
-      star.mesh.material.dispose();
-    });
-    this.activeStars = [];
-    log.debug("ShootingStarManager cleaned up.");
+  getSystemCount() {
+    return this.cleanupFunctions.size;
   }
 }
 
@@ -315,32 +233,54 @@ const THREE_PATHS = [
   "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
 ];
 
+let threeLoadingPromise = null;
+
 export async function loadThreeJS() {
-  if (window.THREE) {
+  // Return cached instance
+  if (window.THREE?.WebGLRenderer) {
     log.info("✅ Three.js already loaded (cached)");
     return window.THREE;
   }
 
-  for (const src of THREE_PATHS) {
-    try {
-      log.info(`📦 Loading Three.js from: ${src}`);
-      const THREE = await import(src);
-      const ThreeJS = THREE.default || THREE;
+  // Return existing loading promise to prevent duplicate loads
+  if (threeLoadingPromise) {
+    log.debug("Three.js load already in progress, waiting...");
+    return threeLoadingPromise;
+  }
 
-      if (ThreeJS?.WebGLRenderer) {
+  threeLoadingPromise = (async () => {
+    for (let i = 0; i < THREE_PATHS.length; i++) {
+      const src = THREE_PATHS[i];
+      try {
+        log.info(`📦 Loading Three.js from: ${src}`);
+        const THREE = await import(src);
+        const ThreeJS = THREE.default || THREE;
+
+        if (!ThreeJS?.WebGLRenderer) {
+          throw new Error("Invalid Three.js module - missing WebGLRenderer");
+        }
+
         window.THREE = ThreeJS;
         log.info("✅ Three.js loaded successfully");
         return ThreeJS;
-      } else {
-        throw new Error("Invalid Three.js module - missing WebGLRenderer");
-      }
-    } catch (error) {
-      log.warn(`Failed to load Three.js from ${src}:`, error);
-    }
-  }
 
-  log.error("❌ Failed to load Three.js from all sources");
-  throw new Error("Three.js could not be loaded from any source");
+      } catch (error) {
+        log.warn(`Failed to load Three.js from ${src}:`, error.message);
+        
+        // If last attempt, throw error
+        if (i === THREE_PATHS.length - 1) {
+          log.error("❌ Failed to load Three.js from all sources");
+          throw new Error("Three.js could not be loaded from any source");
+        }
+      }
+    }
+  })();
+
+  try {
+    return await threeLoadingPromise;
+  } finally {
+    threeLoadingPromise = null;
+  }
 }
 
 // ===== Public API =====
@@ -354,5 +294,17 @@ export function registerParticleSystem(name, instance) {
 }
 
 export function unregisterParticleSystem(name) {
-  sharedState.unregisterSystem(name);
+  return sharedState.unregisterSystem(name);
+}
+
+export function hasParticleSystem(name) {
+  return sharedState.hasSystem(name);
+}
+
+// ===== Global Cleanup Hook =====
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    sharedCleanupManager.cleanupAll();
+  });
 }

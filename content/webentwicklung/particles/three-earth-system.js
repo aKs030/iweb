@@ -1,15 +1,18 @@
 /**
- * Three.js Earth System - Cinematic 3D WebGL Earth Visualization
+ * Three.js Earth System - Optimized 3D WebGL Earth Visualization
  * 
- * FIXES v8.1:
- * - Star-to-Cards Animation: Optimized timing and position calculation
- * - Material Disposal: Proper cleanup to prevent memory leaks
- * - Performance: Reduced unnecessary updates, optimized syncing
- * - Camera Transitions: Consistent easing functions
+ * OPTIMIZATIONS v8.2.0:
+ * - Shooting Stars integrated (removed from shared)
+ * - Improved star animation timing and positioning
+ * - Better memory management and cleanup
+ * - Reduced redundant updates
+ * - Streamlined camera transitions
+ * - Removed duplicate code
  * 
- * @version 8.1.0-fixed
- * @last-modified 2025-10-26
+ * @version 8.2.0
+ * @last-modified 2025-10-29
  */
+
 import {
   createLogger,
   getElementById,
@@ -20,16 +23,16 @@ import {
   getSharedState,
   loadThreeJS,
   registerParticleSystem,
+  unregisterParticleSystem,
   sharedCleanupManager,
   sharedParallaxManager,
-  ShootingStarManager,
-  unregisterParticleSystem,
 } from "./shared-particle-system.js";
 
 const log = createLogger("threeEarthSystem");
 const earthTimers = new TimerManager();
 
-// ===== OPTIMIZED CONFIGURATION v8.1 =====
+// ===== OPTIMIZED CONFIGURATION =====
+
 const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
@@ -46,9 +49,7 @@ const CONFIG = {
   },
   ATMOSPHERE: {
     SCALE: 1.015,
-    GLOW_COLOR: 0x5599ff,
     FRESNEL_POWER: 4.5,
-    INTENSITY: 0.12,
     RAYLEIGH_SCALE: 1.028,
     MIE_SCALE: 1.018,
     RAYLEIGH_COLOR: 0x4488ff,
@@ -56,7 +57,6 @@ const CONFIG = {
     RAYLEIGH_INTENSITY: 0.08,
     MIE_INTENSITY: 0.04,
     SCATTERING_STRENGTH: 0.18,
-    G_PARAMETER: 0.78,
   },
   OCEAN: {
     SHININESS: 100.0,
@@ -67,7 +67,6 @@ const CONFIG = {
     RADIUS: 15,
     HEIGHT: 3.0,
     INTENSITY: 1.8,
-    ROTATION_SPEED: 0.0005,
   },
   LIGHTING: {
     DAY: {
@@ -81,29 +80,19 @@ const CONFIG = {
       SUN_INTENSITY: 0.35,
     },
   },
-  DAY_NIGHT_CYCLE: {
-    ENABLED: false,
-    SPEED_MULTIPLIER: 12,
-    SYNC_CITY_LIGHTS: true,
-    SECTION_MODES: {
-      hero: { mode: "day", sunAngle: 0 },
-      features: { mode: "day", sunAngle: 0 },
-      about: { mode: "toggle", sunAngle: Math.PI },
-    },
-  },
   STARS: {
     COUNT: 3000,
     TWINKLE_SPEED: 0.3,
-    // ✅ NEUE ANIMATION CONFIG
     ANIMATION: {
-      DURATION: 3500, // 3.5s - schneller für bessere UX
-      CAMERA_SETTLE_DELAY: 1800, // 1.8s - warte auf stabile Kamera
-      CARD_FADE_START: 0.70, // Bei 70% starten Karten Fade-in
-      CARD_FADE_END: 0.95, // Bei 95% vollständig sichtbar
-      SPREAD_XY: 0.6, // Reduziert für kompaktere Cluster
-      SPREAD_Z: 0.3, // Reduziert für mehr Tiefe
-      LERP_FACTOR: 0.08, // Smootheres Lerping
-    }
+      DURATION: 3500,
+      CAMERA_SETTLE_DELAY: 2200,
+      MIN_UPDATE_INTERVAL: 100,
+      CARD_FADE_START: 0.70,
+      CARD_FADE_END: 0.95,
+      SPREAD_XY: 0.6,
+      SPREAD_Z: 0.3,
+      LERP_FACTOR: 0.08,
+    },
   },
   MOON: {
     RADIUS: 0.95,
@@ -121,46 +110,26 @@ const CONFIG = {
     LERP_FACTOR: 0.06,
     PRESETS: {
       hero: {
-        x: -6.5,
-        y: 4.8,
-        z: 10.5,
+        x: -6.5, y: 4.8, z: 10.5,
         lookAt: { x: 0, y: -0.5, z: 0 },
-        earthRotation: 0,
-        target: 'earth',
       },
       features: {
-        x: 7.0,
-        y: 5.5,
-        z: 7.5,
+        x: 7.0, y: 5.5, z: 7.5,
         lookAt: { x: 0, y: 0.5, z: 0 },
-        earthRotation: 0,
-        target: 'earth',
       },
       about: {
-        x: -3.2,
-        y: 3.0,
-        z: 9.5,
+        x: -3.2, y: 3.0, z: 9.5,
         lookAt: { x: 0, y: 0, z: 0 },
-        earthRotation: Math.PI,
-        target: 'earth',
       },
     },
     TRANSITION_DURATION: 1.8,
-    TRANSITION_DURATION_MULTIPLIER: 0.018,
-    ARC_HEIGHT_BASE: 1.5,
-    ARC_HEIGHT_MULTIPLIER: 0.1,
   },
-  METEOR_EVENTS: {
+  SHOOTING_STARS: {
     BASE_FREQUENCY: 0.003,
     SHOWER_FREQUENCY: 0.02,
     SHOWER_DURATION: 180,
     SHOWER_COOLDOWN: 1200,
     MAX_SIMULTANEOUS: 3,
-    TRAJECTORIES: [
-      { start: { x: -80, y: 50, z: -40 }, end: { x: 80, y: -40, z: 50 } },
-      { start: { x: 80, y: 60, z: -30 }, end: { x: -70, y: -35, z: 55 } },
-      { start: { x: -70, y: 65, z: 50 }, end: { x: 75, y: -50, z: -60 } },
-    ],
   },
   PERFORMANCE: {
     PIXEL_RATIO: Math.min(window.devicePixelRatio, 2.0),
@@ -169,36 +138,9 @@ const CONFIG = {
     DRS_UP_THRESHOLD: 58,
   },
   QUALITY_LEVELS: {
-    HIGH: {
-      minFPS: 48,
-      features: {
-        multiLayerAtmosphere: true,
-        oceanReflections: true,
-        cloudLayer: true,
-        cityLightsPulse: true,
-        meteorShowers: true,
-      },
-    },
-    MEDIUM: {
-      minFPS: 28,
-      features: {
-        multiLayerAtmosphere: false,
-        oceanReflections: true,
-        cloudLayer: true,
-        cityLightsPulse: false,
-        meteorShowers: true,
-      },
-    },
-    LOW: {
-      minFPS: 0,
-      features: {
-        multiLayerAtmosphere: false,
-        oceanReflections: false,
-        cloudLayer: false,
-        cityLightsPulse: false,
-        meteorShowers: false,
-      },
-    },
+    HIGH: { minFPS: 48, multiLayerAtmosphere: true, oceanReflections: true, cloudLayer: true, meteorShowers: true },
+    MEDIUM: { minFPS: 28, multiLayerAtmosphere: false, oceanReflections: true, cloudLayer: true, meteorShowers: true },
+    LOW: { minFPS: 0, multiLayerAtmosphere: false, oceanReflections: false, cloudLayer: false, meteorShowers: false },
   },
   PATHS: {
     TEXTURES: {
@@ -213,68 +155,176 @@ const CONFIG = {
   },
 };
 
-// ===== Global State Variables =====
-let scene, camera, renderer, earthMesh, moonMesh, starField, cloudMesh, atmosphereMesh, rayleighAtmosphereMesh;
-let directionalLight = null;
-let ambientLight = null;
-let THREE_INSTANCE = null;
+// ===== Global State =====
 
-// ✅ OPTIMIERTE Starfield Animation State
+let scene, camera, renderer, earthMesh, moonMesh, starField, cloudMesh, atmosphereMesh;
+let directionalLight, ambientLight, THREE_INSTANCE;
+let dayMaterial, nightMaterial;
+let sectionObserver, animationFrameId;
+let currentSection = "hero";
+let currentQualityLevel = "HIGH";
+let isMobileDevice = false;
+let frameCount = 0;
+let performanceMonitor, shootingStarManager;
+
+const cameraTarget = { x: 0, y: 0, z: 10 };
+const cameraPosition = { x: 0, y: 0, z: 10 };
+const mouseState = { zoom: 10 };
+let cameraOrbitAngle = 0;
+let targetOrbitAngle = 0;
+let lastAboutMode = null;
+
+// Star animation state
 let starOriginalPositions = null;
 let starTargetPositions = null;
 let starAnimationState = {
   active: false,
+  rafId: null,
+  lastUpdateTime: 0,
   startTime: 0,
   positionsUpdated: false,
   updateScheduled: false,
 };
 
-let dayMaterial = null;
-let nightMaterial = null;
-let lastAboutMode = null;
+// ===== Shooting Star Manager (Integrated) =====
 
-let sectionObserver = null;
-let animationFrameId = null;
-let currentSection = "hero";
-let currentQualityLevel = "HIGH";
-let isMobileDevice = false;
-let frameCount = 0;
+class ShootingStarManager {
+  constructor(scene, THREE) {
+    this.scene = scene;
+    this.THREE = THREE;
+    this.activeStars = [];
+    this.isShowerActive = false;
+    this.showerTimer = 0;
+    this.showerCooldownTimer = 0;
+    this.disabled = false;
+  }
 
-let performanceMonitor = null;
-let shootingStarManager = null;
-let sunPositionVector = null;
+  createShootingStar() {
+    if (this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS) return;
 
-const cameraTarget = { x: 0, y: 0, z: 10 };
-const cameraPosition = { x: 0, y: 0, z: 10 };
-let cameraOrbitAngle = 0;
-let targetOrbitAngle = 0;
+    try {
+      const geometry = new this.THREE.SphereGeometry(0.05, 8, 8);
+      const material = new this.THREE.MeshBasicMaterial({
+        color: 0xfffdef,
+        transparent: true,
+        opacity: 1.0,
+      });
+      const star = new this.THREE.Mesh(geometry, material);
 
-const mouseState = { zoom: 10 };
+      const startPos = {
+        x: (Math.random() - 0.5) * 100,
+        y: 20 + Math.random() * 20,
+        z: -50 - Math.random() * 50,
+      };
+      const velocity = new this.THREE.Vector3(
+        (Math.random() - 0.9) * 0.2,
+        (Math.random() - 0.6) * -0.2,
+        0
+      );
 
-// ===== Three.js Earth System Manager =====
+      star.position.set(startPos.x, startPos.y, startPos.z);
+      star.scale.set(1, 1, 2 + Math.random() * 3);
+      star.lookAt(star.position.clone().add(velocity));
+
+      this.activeStars.push({
+        mesh: star,
+        velocity,
+        lifetime: 300 + Math.random() * 200,
+        age: 0,
+      });
+
+      this.scene.add(star);
+    } catch (error) {
+      log.error("Failed to create shooting star:", error);
+    }
+  }
+
+  update() {
+    if (this.disabled) return;
+
+    // Shower logic
+    if (this.isShowerActive) {
+      this.showerTimer++;
+      if (this.showerTimer >= CONFIG.SHOOTING_STARS.SHOWER_DURATION) {
+        this.isShowerActive = false;
+        this.showerCooldownTimer = CONFIG.SHOOTING_STARS.SHOWER_COOLDOWN;
+      }
+    }
+
+    if (this.showerCooldownTimer > 0) {
+      this.showerCooldownTimer--;
+    }
+
+    // Spawn new stars
+    const spawnChance = this.isShowerActive
+      ? CONFIG.SHOOTING_STARS.SHOWER_FREQUENCY
+      : CONFIG.SHOOTING_STARS.BASE_FREQUENCY;
+
+    if (Math.random() < spawnChance) {
+      this.createShootingStar();
+    }
+
+    // Update existing stars
+    for (let i = this.activeStars.length - 1; i >= 0; i--) {
+      const star = this.activeStars[i];
+      star.age++;
+      star.mesh.position.add(star.velocity);
+
+      // Fade out
+      const fadeStart = star.lifetime * 0.7;
+      if (star.age > fadeStart) {
+        const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
+        star.mesh.material.opacity = 1 - fadeProgress;
+      }
+
+      // Remove dead stars
+      if (star.age > star.lifetime) {
+        this.scene.remove(star.mesh);
+        star.mesh.geometry.dispose();
+        star.mesh.material.dispose();
+        this.activeStars.splice(i, 1);
+      }
+    }
+  }
+
+  triggerShower() {
+    if (this.isShowerActive || this.showerCooldownTimer > 0) return;
+    this.isShowerActive = true;
+    this.showerTimer = 0;
+    log.info("🌠 Meteor shower triggered!");
+  }
+
+  cleanup() {
+    this.activeStars.forEach((star) => {
+      this.scene.remove(star.mesh);
+      star.mesh.geometry?.dispose();
+      star.mesh.material?.dispose();
+    });
+    this.activeStars = [];
+  }
+}
+
+// ===== Main Manager =====
+
 const ThreeEarthManager = (() => {
   const initThreeEarth = async () => {
     const sharedState = getSharedState();
     if (sharedState.systems.has("three-earth")) {
-      log.debug("Three.js Earth system already initialized.");
+      log.debug("System already initialized");
       return cleanup;
     }
 
     const container = getElementById("threeEarthContainer");
     if (!container) {
-      log.warn("Three.js Earth container not found.");
+      log.warn("Container not found");
       return () => {};
     }
 
     try {
-      log.info("Initializing Three.js Earth system v8.1.0");
+      log.info("Initializing Three.js Earth System v8.2.0");
       registerParticleSystem("three-earth", { type: "three-earth" });
 
       THREE_INSTANCE = await loadThreeJS();
-      if (!THREE_INSTANCE) {
-        throw new Error("Three.js failed to load from all sources");
-      }
-
       showLoadingState(container, 0);
 
       await setupScene(container);
@@ -294,42 +344,39 @@ const ThreeEarthManager = (() => {
       setupSectionDetection();
 
       performanceMonitor = new PerformanceMonitor(container);
-      shootingStarManager = new ShootingStarManager(
-        scene,
-        THREE_INSTANCE,
-        CONFIG.METEOR_EVENTS
-      );
-      shootingStarManager.start();
+      shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
 
       startAnimationLoop();
       setupResizeHandler();
 
-      log.info("Three.js Earth system initialized successfully.");
+      log.info("Initialization complete");
       return cleanup;
     } catch (error) {
-      log.error("Failed to initialize Three.js Earth system:", error);
+      log.error("Initialization failed:", error);
       handleInitializationError(container, error);
       return () => {};
     }
   };
 
   const cleanup = () => {
-    log.info("Cleaning up Three.js Earth system");
+    log.info("Cleaning up Earth system");
 
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
-    if (performanceMonitor) performanceMonitor.cleanup();
-    if (shootingStarManager) shootingStarManager.cleanup();
-    if (sectionObserver) sectionObserver.disconnect();
 
+    performanceMonitor?.cleanup();
+    shootingStarManager?.cleanup();
+    sectionObserver?.disconnect();
     earthTimers.clearAll();
     sharedCleanupManager.cleanupSystem("three-earth");
 
     if (scene) {
       scene.traverse(disposeObject);
-      while (scene.children.length > 0) scene.remove(scene.children[0]);
+      while (scene.children.length > 0) {
+        scene.remove(scene.children[0]);
+      }
     }
 
     if (renderer) {
@@ -337,87 +384,57 @@ const ThreeEarthManager = (() => {
       renderer.forceContextLoss();
     }
 
-    if (dayMaterial) {
-      disposeMaterial(dayMaterial);
-      dayMaterial = null;
-    }
-    if (nightMaterial) {
-      disposeMaterial(nightMaterial);
-      nightMaterial = null;
-    }
+    [dayMaterial, nightMaterial].forEach(disposeMaterial);
 
+    // Reset all state
     scene = camera = renderer = earthMesh = moonMesh = starField = cloudMesh = 
-      atmosphereMesh = directionalLight = ambientLight = rayleighAtmosphereMesh = null;
+      atmosphereMesh = directionalLight = ambientLight = null;
+    dayMaterial = nightMaterial = null;
     currentSection = "hero";
     lastAboutMode = null;
-    cameraOrbitAngle = 0;
-    targetOrbitAngle = 0;
     frameCount = 0;
-    sunPositionVector = null;
-
-    starOriginalPositions = null;
-    starTargetPositions = null;
-    starAnimationState = {
-      active: false,
-      startTime: 0,
-      positionsUpdated: false,
-      updateScheduled: false,
-    };
+    starOriginalPositions = starTargetPositions = null;
+    starAnimationState = { active: false, rafId: null, startTime: 0, positionsUpdated: false, updateScheduled: false };
 
     unregisterParticleSystem("three-earth");
-    log.info("Three.js Earth system cleanup completed.");
+    log.info("Cleanup complete");
   };
 
   function disposeObject(obj) {
-    if (obj.geometry) obj.geometry.dispose();
-    if (obj.material) {
-      if (Array.isArray(obj.material)) {
-        obj.material.forEach(disposeMaterial);
-      } else {
-        disposeMaterial(obj.material);
-      }
+    obj.geometry?.dispose();
+    if (Array.isArray(obj.material)) {
+      obj.material.forEach(disposeMaterial);
+    } else {
+      disposeMaterial(obj.material);
     }
   }
 
   function disposeMaterial(material) {
     if (!material) return;
     
-    const textureProperties = [
-      'map', 'normalMap', 'bumpMap', 'envMap', 
-      'lightMap', 'aoMap', 'emissiveMap', 'alphaMap',
-      'metalnessMap', 'roughnessMap', 'displacementMap'
-    ];
-    
-    textureProperties.forEach(prop => {
-      if (material[prop] && typeof material[prop].dispose === 'function') {
+    const textureProps = ['map', 'normalMap', 'bumpMap', 'envMap', 'emissiveMap', 'alphaMap'];
+    textureProps.forEach(prop => {
+      if (material[prop]?.dispose) {
         material[prop].dispose();
         material[prop] = null;
       }
     });
     
     if (material.uniforms) {
-      Object.keys(material.uniforms).forEach(uniformName => {
-        const uniform = material.uniforms[uniformName];
-        if (uniform.value && typeof uniform.value.dispose === 'function') {
-          uniform.value.dispose();
-          uniform.value = null;
-        }
+      Object.values(material.uniforms).forEach(uniform => {
+        uniform.value?.dispose?.();
       });
     }
     
-    try {
-      material.dispose();
-    } catch (error) {
-      console.warn('Error disposing material:', error);
-    }
+    material.dispose();
   }
 
   function handleInitializationError(container, error) {
     try {
-      if (renderer) renderer.dispose();
+      renderer?.dispose();
       sharedCleanupManager.cleanupSystem("three-earth");
-    } catch (emergencyError) {
-      log.error("Emergency cleanup failed:", emergencyError);
+    } catch (e) {
+      log.error("Emergency cleanup failed:", e);
     }
     showErrorState(container, error);
   }
@@ -426,74 +443,43 @@ const ThreeEarthManager = (() => {
 })();
 
 // ===== Scene Setup =====
+
 async function setupScene(container) {
-  if (!container) {
-    throw new Error('Container element is required');
-  }
+  isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
   
-  try {
-    isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
-    
-    if (!THREE_INSTANCE) {
-      throw new Error('Three.js instance not available');
-    }
-    
-    scene = new THREE_INSTANCE.Scene();
-    
-    const aspectRatio = container.clientWidth / container.clientHeight;
-    if (!isFinite(aspectRatio) || aspectRatio <= 0) {
-      throw new Error('Invalid container dimensions');
-    }
-    
-    camera = new THREE_INSTANCE.PerspectiveCamera(
-      CONFIG.CAMERA.FOV,
-      aspectRatio,
-      CONFIG.CAMERA.NEAR,
-      CONFIG.CAMERA.FAR
-    );
+  scene = new THREE_INSTANCE.Scene();
+  
+  const aspectRatio = container.clientWidth / container.clientHeight;
+  camera = new THREE_INSTANCE.PerspectiveCamera(CONFIG.CAMERA.FOV, aspectRatio, CONFIG.CAMERA.NEAR, CONFIG.CAMERA.FAR);
 
-    renderer = new THREE_INSTANCE.WebGLRenderer({
-      canvas: container.querySelector("canvas") || undefined,
-      antialias: true,
-      alpha: true,
-      powerPreference: "high-performance",
-    });
-    
-    const gl = renderer.getContext();
-    if (!gl) {
-      throw new Error('WebGL context could not be created');
-    }
-    
-    renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE_INSTANCE.SRGBColorSpace;
-    renderer.toneMapping = THREE_INSTANCE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.8;
+  renderer = new THREE_INSTANCE.WebGLRenderer({
+    canvas: container.querySelector("canvas") || undefined,
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance",
+  });
+  
+  renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = THREE_INSTANCE.SRGBColorSpace;
+  renderer.toneMapping = THREE_INSTANCE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.8;
 
-    container.appendChild(renderer.domElement);
+  container.appendChild(renderer.domElement);
 
-    createStarField();
-    setupStarParallax();
-    setupLighting();
-    
-    log.info("Scene setup completed successfully");
-    return true;
-    
-  } catch (error) {
-    console.error('Scene setup failed:', error);
-    showWebGLErrorMessage(container, error);
-    return false;
-  }
+  createStarField();
+  setupStarParallax();
+  setupLighting();
 }
 
-// ===== Starfield & Parallax =====
+// ===== Starfield =====
+
 function createStarField() {
   const starCount = isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT;
   const positions = new Float32Array(starCount * 3);
   const colors = new Float32Array(starCount * 3);
   const sizes = new Float32Array(starCount);
-
   const color = new THREE_INSTANCE.Color();
 
   for (let i = 0; i < starCount; i++) {
@@ -501,6 +487,7 @@ function createStarField() {
     const radius = 100 + Math.random() * 200;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
+    
     positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
     positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i3 + 2] = radius * Math.cos(phi);
@@ -549,12 +536,10 @@ function createStarField() {
   });
 
   starField = new THREE_INSTANCE.Points(starGeometry, starMaterial);
-  starField.name = "starField";
   scene.add(starField);
 
   starOriginalPositions = new Float32Array(positions);
-
-  log.info(`Starfield created with ${starCount} stars`);
+  log.info(`Starfield created: ${starCount} stars`);
 }
 
 function setupStarParallax() {
@@ -566,52 +551,37 @@ function setupStarParallax() {
   sharedParallaxManager.addHandler(parallaxHandler, "three-earth-stars");
 }
 
-// ===== ✅ OPTIMIERTE Star-to-Cards Transformation =====
+// ===== Star Animation =====
+
 function getCardPositions() {
-  if (!camera) {
-    log.warn("Camera not initialized");
-    return [];
-  }
+  if (!camera) return [];
 
   const featuresSection = getElementById("features");
-  if (!featuresSection) {
-    log.warn("Features section not found");
-    return [];
-  }
+  if (!featuresSection) return [];
 
   const cards = featuresSection.querySelectorAll(".card");
   const positions = [];
 
   if (cards.length === 0) {
-    log.warn("No cards found, using fallback grid");
-    const gridCols = 3;
-    const spacingX = 8;
-    const spacingY = 6;
-    const baseZ = -2;
-
+    // Fallback grid
     for (let i = 0; i < 9; i++) {
-      const row = Math.floor(i / gridCols);
-      const col = i % gridCols;
+      const row = Math.floor(i / 3);
+      const col = i % 3;
       positions.push({
-        x: (col - 1) * spacingX,
-        y: (1 - row) * spacingY + 2,
-        z: baseZ,
+        x: (col - 1) * 8,
+        y: (1 - row) * 6 + 2,
+        z: -2,
       });
     }
     return positions;
   }
 
-  // ✅ VERBESSERT: Warte bis Karten im Viewport sichtbar sind
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
 
   cards.forEach((card) => {
     const rect = card.getBoundingClientRect();
-    
-    // ✅ Skip Cards außerhalb des Viewports
-    if (rect.bottom < 0 || rect.top > viewportHeight) {
-      return;
-    }
+    if (rect.bottom < 0 || rect.top > viewportHeight) return;
 
     const ndcX = ((rect.left + rect.width / 2) / viewportWidth) * 2 - 1;
     const ndcY = -(((rect.top + rect.height / 2) / viewportHeight) * 2 - 1);
@@ -624,32 +594,18 @@ function getCardPositions() {
     const distance = (targetZ - camera.position.z) / direction.z;
     const worldPos = camera.position.clone().add(direction.multiplyScalar(distance));
 
-    positions.push({
-      x: worldPos.x,
-      y: worldPos.y,
-      z: targetZ,
-    });
+    positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
   });
-
-  if (positions.length > 0) {
-    log.info(`Calculated ${positions.length} card positions in viewport`);
-  }
 
   return positions;
 }
 
 function animateStarsToCards() {
-  if (!starField || !starOriginalPositions) {
-    log.warn("Cannot animate: starField or originalPositions missing");
+  if (!starField || !starOriginalPositions || starAnimationState.active) {
     return;
   }
 
-  if (starAnimationState.active) {
-    log.debug("Star animation already in progress, skipping");
-    return;
-  }
-
-  // ✅ Verstecke Karten initial
+  // Hide cards initially
   const cards = document.querySelectorAll("#features .card");
   cards.forEach((card) => {
     card.style.transition = "none";
@@ -661,12 +617,8 @@ function animateStarsToCards() {
   starAnimationState.positionsUpdated = false;
   starAnimationState.updateScheduled = false;
 
-  log.info("Starting star-to-cards transformation");
-
-  // ✅ Berechne initiale Positionen SOFORT
   const initialPositions = getCardPositions();
   if (initialPositions.length === 0) {
-    log.warn("No initial card positions, aborting animation");
     starAnimationState.active = false;
     return;
   }
@@ -676,45 +628,35 @@ function animateStarsToCards() {
   starTargetPositions = new Float32Array(starCount * 3);
 
   const calculateTargets = (cardPositions) => {
-    const animCfg = CONFIG.STARS.ANIMATION;
+    const cfg = CONFIG.STARS.ANIMATION;
     for (let i = 0; i < starCount; i++) {
       const i3 = i * 3;
       const targetCard = cardPositions[i % cardPositions.length];
 
-      starTargetPositions[i3] = targetCard.x + (Math.random() - 0.5) * animCfg.SPREAD_XY;
-      starTargetPositions[i3 + 1] = targetCard.y + (Math.random() - 0.5) * animCfg.SPREAD_XY;
-      starTargetPositions[i3 + 2] = targetCard.z + (Math.random() - 0.5) * animCfg.SPREAD_Z;
+      starTargetPositions[i3] = targetCard.x + (Math.random() - 0.5) * cfg.SPREAD_XY;
+      starTargetPositions[i3 + 1] = targetCard.y + (Math.random() - 0.5) * cfg.SPREAD_XY;
+      starTargetPositions[i3 + 2] = targetCard.z + (Math.random() - 0.5) * cfg.SPREAD_Z;
     }
   };
 
   calculateTargets(initialPositions);
 
-  // ✅ Schedule Position-Update nach Kamera-Stabilisierung
-  if (!starAnimationState.updateScheduled) {
-    starAnimationState.updateScheduled = true;
-    setTimeout(() => {
-      if (starAnimationState.active && !starAnimationState.positionsUpdated) {
-        const updatedPositions = getCardPositions();
-        if (updatedPositions.length > 0) {
-          log.info("Updating star targets with stabilized camera");
-          calculateTargets(updatedPositions);
-          starAnimationState.positionsUpdated = true;
-        }
+  // Update positions after camera stabilizes
+  setTimeout(() => {
+    if (starAnimationState.active && !starAnimationState.positionsUpdated) {
+      const updatedPositions = getCardPositions();
+      if (updatedPositions.length > 0) {
+        calculateTargets(updatedPositions);
+        starAnimationState.positionsUpdated = true;
       }
-    }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY);
-  }
+    }
+  }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY);
 
   animateStarTransformation(cards);
 }
 
 function animateStarTransformation(cards) {
-  if (!starAnimationState.active || !starField || !starTargetPositions) {
-    starAnimationState.active = false;
-    return;
-  }
-
-  const animCfg = CONFIG.STARS.ANIMATION;
-  const duration = animCfg.DURATION;
+  const cfg = CONFIG.STARS.ANIMATION;
 
   function animate() {
     if (!starAnimationState.active || !starField || !starTargetPositions) {
@@ -723,73 +665,48 @@ function animateStarTransformation(cards) {
     }
 
     const elapsed = performance.now() - starAnimationState.startTime;
-    const progress = Math.min(elapsed / duration, 1);
-
-    // ✅ Optimiertes Easing
+    const progress = Math.min(elapsed / cfg.DURATION, 1);
     const eased = easeInOutCubic(progress);
 
-    // ✅ Interpoliere Sterne-Positionen mit Lerp
     const positions = starField.geometry.attributes.position.array;
     const starCount = positions.length / 3;
-    const lerpFactor = animCfg.LERP_FACTOR;
 
     for (let i = 0; i < starCount; i++) {
       const i3 = i * 3;
-      const targetX = starOriginalPositions[i3] + 
-        (starTargetPositions[i3] - starOriginalPositions[i3]) * eased;
-      const targetY = starOriginalPositions[i3 + 1] + 
-        (starTargetPositions[i3 + 1] - starOriginalPositions[i3 + 1]) * eased;
-      const targetZ = starOriginalPositions[i3 + 2] + 
-        (starTargetPositions[i3 + 2] - starOriginalPositions[i3 + 2]) * eased;
+      const targetX = starOriginalPositions[i3] + (starTargetPositions[i3] - starOriginalPositions[i3]) * eased;
+      const targetY = starOriginalPositions[i3 + 1] + (starTargetPositions[i3 + 1] - starOriginalPositions[i3 + 1]) * eased;
+      const targetZ = starOriginalPositions[i3 + 2] + (starTargetPositions[i3 + 2] - starOriginalPositions[i3 + 2]) * eased;
 
-      // Smooth Lerp für flüssigere Bewegung
-      positions[i3] += (targetX - positions[i3]) * lerpFactor;
-      positions[i3 + 1] += (targetY - positions[i3 + 1]) * lerpFactor;
-      positions[i3 + 2] += (targetZ - positions[i3 + 2]) * lerpFactor;
+      positions[i3] += (targetX - positions[i3]) * cfg.LERP_FACTOR;
+      positions[i3 + 1] += (targetY - positions[i3 + 1]) * cfg.LERP_FACTOR;
+      positions[i3 + 2] += (targetZ - positions[i3 + 2]) * cfg.LERP_FACTOR;
     }
 
     starField.geometry.attributes.position.needsUpdate = true;
 
-    // ✅ Karten Fade-in während Sterne sich nähern
-    if (progress >= animCfg.CARD_FADE_START && progress <= animCfg.CARD_FADE_END) {
-      const fadeProgress = 
-        (progress - animCfg.CARD_FADE_START) / 
-        (animCfg.CARD_FADE_END - animCfg.CARD_FADE_START);
+    // Fade in cards
+    if (progress >= cfg.CARD_FADE_START && progress <= cfg.CARD_FADE_END) {
+      const fadeProgress = (progress - cfg.CARD_FADE_START) / (cfg.CARD_FADE_END - cfg.CARD_FADE_START);
       const cardOpacity = easeInOutCubic(fadeProgress);
-
-      cards.forEach((card) => {
-        card.style.opacity = cardOpacity.toString();
-      });
-    } else if (progress > animCfg.CARD_FADE_END) {
-      cards.forEach((card) => {
-        card.style.opacity = "1";
-      });
+      cards.forEach((card) => card.style.opacity = cardOpacity.toString());
+    } else if (progress > cfg.CARD_FADE_END) {
+      cards.forEach((card) => card.style.opacity = "1");
     }
 
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      log.info("Star transformation complete");
       starAnimationState.active = false;
-      
-      // ✅ Re-enable CSS transitions für Karten
-      cards.forEach((card) => {
-        card.style.transition = "";
-      });
+      cards.forEach((card) => card.style.transition = "");
+      log.info("Star transformation complete");
     }
   }
 
   animate();
 }
 
-function easeInOutCubic(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-
 function resetStarsToOriginal() {
-  if (!starField || !starOriginalPositions) {
-    return;
-  }
+  if (!starField || !starOriginalPositions) return;
 
   starAnimationState.active = false;
   starAnimationState.positionsUpdated = false;
@@ -802,17 +719,18 @@ function resetStarsToOriginal() {
   });
 
   const positions = starField.geometry.attributes.position.array;
-  for (let i = 0; i < positions.length; i++) {
-    positions[i] = starOriginalPositions[i];
-  }
+  positions.set(starOriginalPositions);
   starField.geometry.attributes.position.needsUpdate = true;
 
   starTargetPositions = null;
-
-  log.info("Stars reset to original positions");
 }
 
-// ===== Cinematic Lighting Setup =====
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+// ===== Lighting =====
+
 function setupLighting() {
   directionalLight = new THREE_INSTANCE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY);
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
@@ -825,7 +743,8 @@ function setupLighting() {
   scene.add(ambientLight);
 }
 
-// ===== Earth System Creation =====
+// ===== Earth System =====
+
 async function createEarthSystem() {
   const loadingManager = new THREE_INSTANCE.LoadingManager();
   loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
@@ -833,30 +752,17 @@ async function createEarthSystem() {
     showLoadingState(document.getElementById("threeEarthContainer"), progress);
   };
   loadingManager.onLoad = () => {
-    setTimeout(() => {
-      hideLoadingState(document.getElementById("threeEarthContainer"));
-    }, 500);
+    setTimeout(() => hideLoadingState(document.getElementById("threeEarthContainer")), 500);
   };
 
   const textureLoader = new THREE_INSTANCE.TextureLoader(loadingManager);
 
-  const loadTexture = (path, name) => {
-    return textureLoader.loadAsync(path).catch((error) => {
-      log.error(`Failed to load texture '${name}' from ${path}:`, error);
-      return null;
-    });
-  };
-
   const [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
-    loadTexture(CONFIG.PATHS.TEXTURES.DAY, "day"),
-    loadTexture(CONFIG.PATHS.TEXTURES.NIGHT, "night"),
-    loadTexture(CONFIG.PATHS.TEXTURES.NORMAL, "normal"),
-    loadTexture(CONFIG.PATHS.TEXTURES.BUMP, "bump"),
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
   ]);
-
-  if (!dayTexture) {
-    throw new Error("Failed to load critical day texture");
-  }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   [dayTexture, nightTexture, normalTexture, bumpTexture].forEach((tex) => {
@@ -866,19 +772,15 @@ async function createEarthSystem() {
   dayMaterial = new THREE_INSTANCE.MeshStandardMaterial({
     map: dayTexture,
     normalMap: normalTexture,
-    normalScale: new THREE_INSTANCE.Vector2(1.0, 1.0),
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     roughness: 0.7,
     metalness: 0.0,
-    emissive: 0x000000,
-    emissiveIntensity: 0,
   });
 
   nightMaterial = new THREE_INSTANCE.MeshStandardMaterial({
     map: dayTexture,
     normalMap: normalTexture,
-    normalScale: new THREE_INSTANCE.Vector2(1.0, 1.0),
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     roughness: 0.7,
@@ -888,103 +790,39 @@ async function createEarthSystem() {
     emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0,
   });
 
-  const earthMaterial = dayMaterial;
-
-  const applyOceanShader = (material) => {
-    material.onBeforeCompile = (shader) => {
-      shader.uniforms.uSunPosition = {
-        value: new THREE_INSTANCE.Vector3(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0),
-      };
-      shader.uniforms.uOceanShininess = { value: CONFIG.OCEAN.SHININESS };
-      shader.uniforms.uOceanSpecularIntensity = { value: CONFIG.OCEAN.SPECULAR_INTENSITY };
-      shader.uniforms.uOceanSpecularColor = {
-        value: new THREE_INSTANCE.Color(CONFIG.OCEAN.SPECULAR_COLOR),
-      };
-
-      shader.fragmentShader = `
-        uniform vec3 uSunPosition;
-        uniform float uOceanShininess;
-        uniform float uOceanSpecularIntensity;
-        uniform vec3 uOceanSpecularColor;
-      ` + shader.fragmentShader;
-
-      shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <roughness_fragment>",
-        `
-        #include <roughness_fragment>
-        
-        vec3 baseColor = diffuseColor.rgb;
-        float oceanMask = step(baseColor.r + baseColor.g + baseColor.b, 0.4);
-        
-        if (oceanMask > 0.5) {
-          vec3 sunDirection = normalize(uSunPosition);
-          vec3 viewDirection = normalize(vViewPosition);
-          vec3 reflectDirection = reflect(-sunDirection, normal);
-          
-          float specular = pow(max(dot(viewDirection, reflectDirection), 0.0), uOceanShininess);
-          specular *= uOceanSpecularIntensity;
-          
-          diffuseColor.rgb += uOceanSpecularColor * specular;
-        }
-        `
-      );
-
-      material.userData.oceanShader = shader;
-    };
-  };
-
-  applyOceanShader(dayMaterial);
-  applyOceanShader(nightMaterial);
-
   const earthGeometry = new THREE_INSTANCE.SphereGeometry(
     CONFIG.EARTH.RADIUS,
     CONFIG.EARTH.SEGMENTS,
     CONFIG.EARTH.SEGMENTS
   );
-  earthMesh = new THREE_INSTANCE.Mesh(earthGeometry, earthMaterial);
-
-  earthMesh.userData.currentMode = "day";
+  earthMesh = new THREE_INSTANCE.Mesh(earthGeometry, dayMaterial);
   earthMesh.position.set(0, -6.0, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);
-  earthMesh.rotation.y = 0;
-
+  earthMesh.userData.currentMode = "day";
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(0, -6.0, 0);
   earthMesh.userData.targetScale = 1.5;
   earthMesh.userData.targetRotation = 0;
-  earthMesh.userData.emissivePulseEnabled = true;
-  earthMesh.userData.baseEmissiveIntensity = 0;
 
   scene.add(earthMesh);
 }
 
-// ===== Moon System Creation =====
-async function createMoonSystem() {
-  const loadingManager = new THREE_INSTANCE.LoadingManager();
-  const textureLoader = new THREE_INSTANCE.TextureLoader(loadingManager);
+// ===== Moon System =====
 
-  const loadTexture = (path, name) => {
-    return textureLoader.loadAsync(path).catch((error) => {
-      log.error(`Failed to load moon texture '${name}' from ${path}:`, error);
-      return null;
-    });
-  };
+async function createMoonSystem() {
+  const textureLoader = new THREE_INSTANCE.TextureLoader();
 
   const [moonTexture, moonBumpTexture] = await Promise.all([
-    loadTexture(CONFIG.PATHS.TEXTURES.MOON, "moon"),
-    loadTexture(CONFIG.PATHS.TEXTURES.MOON_BUMP, "moon_bump"),
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON).catch(() => null),
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON_BUMP).catch(() => null),
   ]);
-
-  if (!moonTexture) {
-    log.warn("Moon texture failed to load, creating basic moon");
-  }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   if (moonTexture) moonTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
   if (moonBumpTexture) moonBumpTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
 
   const moonMaterial = new THREE_INSTANCE.MeshStandardMaterial({
-    map: moonTexture || null,
-    bumpMap: moonBumpTexture || null,
+    map: moonTexture,
+    bumpMap: moonBumpTexture,
     bumpScale: CONFIG.MOON.BUMP_SCALE,
     roughness: 0.9,
     metalness: 0.0,
@@ -993,40 +831,23 @@ async function createMoonSystem() {
 
   const moonLOD = new THREE_INSTANCE.LOD();
 
-  const moonGeometryHigh = new THREE_INSTANCE.SphereGeometry(
-    CONFIG.MOON.RADIUS,
-    CONFIG.MOON.SEGMENTS,
-    CONFIG.MOON.SEGMENTS
-  );
-  const moonMeshHigh = new THREE_INSTANCE.Mesh(moonGeometryHigh, moonMaterial);
-  moonLOD.addLevel(moonMeshHigh, 0);
+  // High detail
+  const moonGeometryHigh = new THREE_INSTANCE.SphereGeometry(CONFIG.MOON.RADIUS, CONFIG.MOON.SEGMENTS, CONFIG.MOON.SEGMENTS);
+  moonLOD.addLevel(new THREE_INSTANCE.Mesh(moonGeometryHigh, moonMaterial), 0);
 
-  const moonGeometryMed = new THREE_INSTANCE.SphereGeometry(
-    CONFIG.MOON.RADIUS,
-    Math.floor(CONFIG.MOON.SEGMENTS * 0.6),
-    Math.floor(CONFIG.MOON.SEGMENTS * 0.6)
-  );
-  const moonMeshMed = new THREE_INSTANCE.Mesh(moonGeometryMed, moonMaterial);
-  moonLOD.addLevel(moonMeshMed, 15);
+  // Medium detail
+  const moonGeometryMed = new THREE_INSTANCE.SphereGeometry(CONFIG.MOON.RADIUS, 28, 28);
+  moonLOD.addLevel(new THREE_INSTANCE.Mesh(moonGeometryMed, moonMaterial), 15);
 
-  const moonGeometryLow = new THREE_INSTANCE.SphereGeometry(
-    CONFIG.MOON.RADIUS,
-    Math.floor(CONFIG.MOON.SEGMENTS * 0.35),
-    Math.floor(CONFIG.MOON.SEGMENTS * 0.35)
-  );
-  const moonMeshLow = new THREE_INSTANCE.Mesh(moonGeometryLow, moonMaterial);
-  moonLOD.addLevel(moonMeshLow, 40);
+  // Low detail
+  const moonGeometryLow = new THREE_INSTANCE.SphereGeometry(CONFIG.MOON.RADIUS, 16, 16);
+  moonLOD.addLevel(new THREE_INSTANCE.Mesh(moonGeometryLow, moonMaterial), 40);
 
   moonLOD.position.set(CONFIG.MOON.DISTANCE, 2, -10);
-  moonLOD.scale.set(1, 1, 1);
-
   moonLOD.userData.targetPosition = new THREE_INSTANCE.Vector3(CONFIG.MOON.DISTANCE, 2, -10);
   moonLOD.userData.targetScale = 1.0;
-  moonLOD.userData.orbitAngle = 0;
 
   scene.add(moonLOD);
-  log.info("Moon system with LOD created successfully");
-
   return moonLOD;
 }
 
@@ -1052,15 +873,14 @@ async function createCloudLayer() {
       CONFIG.EARTH.SEGMENTS,
       CONFIG.EARTH.SEGMENTS
     );
-    const clouds = new THREE_INSTANCE.Mesh(cloudGeometry, cloudMaterial);
-    clouds.renderOrder = 1;
-    log.info("Cloud layer created successfully");
-    return clouds;
+    return new THREE_INSTANCE.Mesh(cloudGeometry, cloudMaterial);
   } catch (error) {
-    log.warn("Could not load cloud texture, skipping cloud layer.", error);
+    log.warn("Cloud texture failed to load:", error);
     return new THREE_INSTANCE.Object3D();
   }
 }
+
+// ===== Atmosphere =====
 
 function createAtmosphere() {
   const vertexShader = `
@@ -1068,16 +888,16 @@ function createAtmosphere() {
     varying vec3 vPosition;
     varying vec3 vWorldPosition;
     void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vPosition = position;
-        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-        vWorldPosition = worldPosition.xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }`;
+      vNormal = normalize(normalMatrix * normal);
+      vPosition = position;
+      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+      vWorldPosition = worldPosition.xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
 
   const fragmentShader = `
     varying vec3 vNormal;
-    varying vec3 vPosition;
     varying vec3 vWorldPosition;
     uniform vec3 uRayleighColor;
     uniform vec3 uMieColor;
@@ -1085,31 +905,20 @@ function createAtmosphere() {
     uniform float uRayleighIntensity;
     uniform float uMieIntensity;
     uniform float uScatteringStrength;
-    uniform vec3 uSunPosition;
     
     void main() {
-        vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
-        float fresnel = pow(1.0 - abs(dot(vNormal, viewDirection)), uPower);
-        
-        float rayleighFactor = fresnel * uRayleighIntensity;
-        vec3 rayleighScatter = uRayleighColor * rayleighFactor;
-        
-        vec3 toSun = normalize(uSunPosition - vWorldPosition);
-        float sunAlignment = max(0.0, dot(viewDirection, toSun));
-        
-        float g = 0.76;
-        float g2 = g * g;
-        float mieFactor = (1.0 - g2) / pow(1.0 + g2 - 2.0 * g * sunAlignment, 1.5);
-        mieFactor *= fresnel * uMieIntensity;
-        
-        vec3 mieScatter = uMieColor * mieFactor;
-        
-        vec3 finalColor = (rayleighScatter + mieScatter) * uScatteringStrength;
-        
-        float alpha = fresnel * (uRayleighIntensity + uMieIntensity * 0.5);
-        
-        gl_FragColor = vec4(finalColor, alpha);
-    }`;
+      vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
+      float fresnel = pow(1.0 - abs(dot(vNormal, viewDirection)), uPower);
+      
+      vec3 rayleighScatter = uRayleighColor * fresnel * uRayleighIntensity;
+      vec3 mieScatter = uMieColor * fresnel * uMieIntensity;
+      
+      vec3 finalColor = (rayleighScatter + mieScatter) * uScatteringStrength;
+      float alpha = fresnel * (uRayleighIntensity + uMieIntensity * 0.5);
+      
+      gl_FragColor = vec4(finalColor, alpha);
+    }
+  `;
 
   const atmosphereMaterial = new THREE_INSTANCE.ShaderMaterial({
     vertexShader,
@@ -1121,7 +930,6 @@ function createAtmosphere() {
       uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY },
       uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY },
       uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH },
-      uSunPosition: { value: new THREE_INSTANCE.Vector3(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0) },
     },
     blending: THREE_INSTANCE.AdditiveBlending,
     transparent: true,
@@ -1137,85 +945,12 @@ function createAtmosphere() {
     ),
     atmosphereMaterial
   );
-  atmosphere.renderOrder = 2;
 
-  const rayleighFragmentShader = `
-    varying vec3 vNormal;
-    varying vec3 vPosition;
-    varying vec3 vWorldPosition;
-    uniform vec3 uRayleighColor;
-    uniform vec3 uMieColor;
-    uniform float uPower;
-    uniform float uRayleighIntensity;
-    uniform float uMieIntensity;
-    uniform float uScatteringStrength;
-    uniform vec3 uSunPosition;
-    
-    void main() {
-        vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
-        float fresnel = pow(1.0 - abs(dot(vNormal, viewDirection)), uPower);
-        
-        float rayleighFactor = fresnel * uRayleighIntensity;
-        vec3 rayleighScatter = uRayleighColor * rayleighFactor;
-        
-        vec3 toSun = normalize(uSunPosition - vWorldPosition);
-        float sunAlignment = max(0.0, dot(viewDirection, toSun));
-        
-        float g = 0.76;
-        float g2 = g * g;
-        float mieFactor = (1.0 - g2) / pow(1.0 + g2 - 2.0 * g * sunAlignment, 1.5);
-        mieFactor *= fresnel * uMieIntensity * 0.3;
-        
-        vec3 mieScatter = uMieColor * mieFactor;
-        
-        vec3 finalColor = (rayleighScatter + mieScatter) * uScatteringStrength;
-        
-        float alpha = fresnel * (uRayleighIntensity + uMieIntensity * 0.15);
-        
-        gl_FragColor = vec4(finalColor, alpha);
-    }`;
-
-  const rayleighMaterial = new THREE_INSTANCE.ShaderMaterial({
-    vertexShader,
-    fragmentShader: rayleighFragmentShader,
-    uniforms: {
-      uRayleighColor: { value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.RAYLEIGH_COLOR) },
-      uMieColor: { value: new THREE_INSTANCE.Color(CONFIG.ATMOSPHERE.MIE_COLOR) },
-      uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER * 0.8 },
-      uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY * 0.6 },
-      uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY },
-      uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH * 0.7 },
-      uSunPosition: { value: new THREE_INSTANCE.Vector3(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0) },
-    },
-    blending: THREE_INSTANCE.AdditiveBlending,
-    transparent: true,
-    side: THREE_INSTANCE.BackSide,
-    depthWrite: false,
-  });
-
-  const rayleighLayer = new THREE_INSTANCE.Mesh(
-    new THREE_INSTANCE.SphereGeometry(
-      CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.RAYLEIGH_SCALE,
-      CONFIG.EARTH.SEGMENTS,
-      CONFIG.EARTH.SEGMENTS
-    ),
-    rayleighMaterial
-  );
-  rayleighLayer.renderOrder = 2.5;
-
-  const atmosphereGroup = new THREE_INSTANCE.Group();
-  atmosphereGroup.add(atmosphere);
-  atmosphereGroup.add(rayleighLayer);
-
-  rayleighAtmosphereMesh = rayleighLayer;
-
-  atmosphereGroup.userData.atmosphereMaterial = atmosphereMaterial;
-  atmosphereGroup.userData.rayleighMaterial = rayleighMaterial;
-
-  return atmosphereGroup;
+  return atmosphere;
 }
 
-// ===== Camera & Section Updates =====
+// ===== Camera System =====
+
 function setupCameraSystem() {
   updateCameraForSection("hero");
 }
@@ -1224,21 +959,17 @@ let cameraTransition = null;
 
 function updateCameraForSection(sectionName) {
   const preset = CONFIG.CAMERA.PRESETS[sectionName];
-
   if (preset) {
     flyToPreset(sectionName);
   } else {
-    log.warn(`No camera preset for section '${sectionName}', using hero`);
+    log.warn(`No preset for '${sectionName}', using hero`);
     flyToPreset("hero");
   }
 }
 
 function flyToPreset(presetName) {
   const preset = CONFIG.CAMERA.PRESETS[presetName];
-  if (!preset) {
-    log.warn(`Camera preset '${presetName}' not found`);
-    return;
-  }
+  if (!preset) return;
 
   if (cameraTransition) {
     earthTimers.clearTimeout(cameraTransition);
@@ -1247,53 +978,22 @@ function flyToPreset(presetName) {
 
   const startPos = { ...cameraTarget };
   const startZoom = mouseState.zoom;
-
   const startLookAt = camera.userData.currentLookAt || new THREE_INSTANCE.Vector3(0, 0, 0);
   const endLookAt = new THREE_INSTANCE.Vector3(preset.lookAt.x, preset.lookAt.y, preset.lookAt.z);
 
-  const distance = Math.sqrt(
-    Math.pow(preset.x - startPos.x, 2) +
-    Math.pow(preset.y - startPos.y, 2) +
-    Math.pow(preset.z - startZoom, 2)
-  );
-
-  const baseDuration = CONFIG.CAMERA.TRANSITION_DURATION;
-  const adaptiveDuration = Math.max(
-    1.5,
-    Math.min(4.5, baseDuration + distance * CONFIG.CAMERA.TRANSITION_DURATION_MULTIPLIER)
-  );
-  const duration = adaptiveDuration * 1000;
+  const duration = CONFIG.CAMERA.TRANSITION_DURATION * 1000;
   const startTime = performance.now();
-
-  log.debug(
-    `Camera flight to '${presetName}': distance=${distance.toFixed(1)}, duration=${adaptiveDuration.toFixed(1)}s`
-  );
 
   function transitionStep() {
     const elapsed = performance.now() - startTime;
     const progress = Math.min(elapsed / duration, 1);
-
     const eased = progress < 0.5
       ? 8 * progress * progress * progress * progress
       : 1 - Math.pow(-2 * progress + 2, 4) / 2;
 
     cameraTarget.x = startPos.x + (preset.x - startPos.x) * eased;
     cameraTarget.y = startPos.y + (preset.y - startPos.y) * eased;
-
-    const zoomDistance = Math.abs(preset.z - startZoom);
-
-    if (zoomDistance > 8) {
-      const arcPeak = Math.max(startZoom, preset.z) * 1.12;
-      if (progress < 0.5) {
-        const arcEased = easeOutQuad(progress * 2);
-        mouseState.zoom = startZoom + (arcPeak - startZoom) * arcEased;
-      } else {
-        const arcEased = easeInQuad((progress - 0.5) * 2);
-        mouseState.zoom = arcPeak + (preset.z - arcPeak) * arcEased;
-      }
-    } else {
-      mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
-    }
+    mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
 
     if (camera) {
       const blendedLookAt = new THREE_INSTANCE.Vector3().lerpVectors(startLookAt, endLookAt, eased);
@@ -1305,24 +1005,15 @@ function flyToPreset(presetName) {
       cameraTransition = earthTimers.setTimeout(transitionStep, 16);
     } else {
       cameraTransition = null;
-      if (camera) {
-        camera.userData.currentLookAt = endLookAt.clone();
-      }
-      log.debug(`Camera transition to '${presetName}' complete`);
+      if (camera) camera.userData.currentLookAt = endLookAt.clone();
     }
-  }
-
-  function easeOutQuad(t) {
-    return t * (2 - t);
-  }
-  function easeInQuad(t) {
-    return t * t;
   }
 
   transitionStep();
 }
 
-// ===== Section Detection & Earth Updates =====
+// ===== Section Detection =====
+
 function setupSectionDetection() {
   const sections = document.querySelectorAll("section[id]");
   if (sections.length === 0) return;
@@ -1339,16 +1030,8 @@ function setupSectionDetection() {
             updateEarthForSection(newSection);
 
             if (newSection === "features") {
-              log.info("Features section entered, starting star animation");
-
-              const cards = document.querySelectorAll("#features .card");
-              if (cards.length === 0) {
-                log.warn("No cards found, skipping animation");
-              } else {
-                animateStarsToCards();
-              }
+              animateStarsToCards();
             } else if (previousSection === "features") {
-              log.info("Leaving features section, resetting stars");
               resetStarsToOriginal();
             }
 
@@ -1359,6 +1042,7 @@ function setupSectionDetection() {
     },
     { rootMargin: "-20% 0px -20% 0px", threshold: 0.3 }
   );
+
   sections.forEach((section) => sectionObserver.observe(section));
 }
 
@@ -1382,15 +1066,14 @@ function updateEarthForSection(sectionName) {
       mode: "toggle",
     },
   };
+
   const config = configs[sectionName] || configs.hero;
 
-  if (config.earth.pos) {
-    earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
-      config.earth.pos.x,
-      config.earth.pos.y,
-      config.earth.pos.z
-    );
-  }
+  earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
+    config.earth.pos.x,
+    config.earth.pos.y,
+    config.earth.pos.z
+  );
   earthMesh.userData.targetScale = config.earth.scale;
   earthMesh.userData.targetRotation = config.earth.rotation;
 
@@ -1406,47 +1089,26 @@ function updateEarthForSection(sectionName) {
   let targetMode = config.mode;
 
   if (sectionName === "about" && config.mode === "toggle") {
-    if (lastAboutMode === null) {
-      targetMode = "night";
-    } else {
-      targetMode = lastAboutMode === "day" ? "night" : "day";
-    }
-
+    targetMode = lastAboutMode === null ? "night" : (lastAboutMode === "day" ? "night" : "day");
     lastAboutMode = targetMode;
-
-    log.info(`🔄 About section toggle: ${targetMode.toUpperCase()} mode`);
-  } else {
-    targetMode = earthMesh.userData.currentMode;
-    log.debug(`Section ${sectionName}: Keeping current mode (${targetMode.toUpperCase()})`);
   }
 
   if (earthMesh.userData.currentMode !== targetMode) {
-    const newMaterial = targetMode === "day" ? dayMaterial : nightMaterial;
-
-    if (!newMaterial) {
-      log.error(`Material for mode '${targetMode}' not found!`);
-      return;
-    }
-
-    earthMesh.material = newMaterial;
+    earthMesh.material = targetMode === "day" ? dayMaterial : nightMaterial;
     earthMesh.material.needsUpdate = true;
     earthMesh.userData.currentMode = targetMode;
 
     if (targetMode === "day") {
       targetOrbitAngle = 0;
-      earthMesh.userData.targetRotation = 0;
-      log.info("✅ Material switched to: DAY mode");
     } else {
       targetOrbitAngle = Math.PI;
-      earthMesh.userData.targetRotation = earthMesh.rotation.y + Math.PI;
-      log.info("✅ Material switched to: NIGHT mode");
     }
   }
 
+  // Update lighting
   if (directionalLight && ambientLight) {
-    const currentMode = earthMesh.userData.currentMode;
-
-    if (currentMode === "day") {
+    const mode = earthMesh.userData.currentMode;
+    if (mode === "day") {
       directionalLight.intensity = CONFIG.LIGHTING.DAY.SUN_INTENSITY;
       ambientLight.intensity = CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY;
       ambientLight.color.setHex(CONFIG.LIGHTING.DAY.AMBIENT_COLOR);
@@ -1454,22 +1116,12 @@ function updateEarthForSection(sectionName) {
       directionalLight.intensity = CONFIG.LIGHTING.NIGHT.SUN_INTENSITY;
       ambientLight.intensity = CONFIG.LIGHTING.NIGHT.AMBIENT_INTENSITY;
       ambientLight.color.setHex(CONFIG.LIGHTING.NIGHT.AMBIENT_COLOR);
-      directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
-
-      if (earthMesh?.material?.userData?.oceanShader) {
-        earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
-          CONFIG.SUN.RADIUS * 0.25,
-          CONFIG.SUN.HEIGHT,
-          0
-        );
-      }
     }
-
-    log.debug(`Cinematic Lights: ${currentMode.toUpperCase()}`);
   }
 }
 
 // ===== User Controls =====
+
 function setupUserControls(container) {
   const onWheel = (e) => {
     mouseState.zoom -= e.deltaY * 0.01;
@@ -1480,89 +1132,36 @@ function setupUserControls(container) {
 
   sharedCleanupManager.addCleanupFunction(
     "three-earth",
-    () => {
-      container.removeEventListener("wheel", onWheel);
-    },
-    "user controls cleanup"
+    () => container.removeEventListener("wheel", onWheel),
+    "wheel control"
   );
 }
 
 // ===== Animation Loop =====
+
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
-
-  sunPositionVector = new THREE_INSTANCE.Vector3();
 
   function animate() {
     animationFrameId = requestAnimationFrame(animate);
     frameCount++;
     const elapsedTime = clock.getElapsedTime();
-    const lerpFactor = CONFIG.CAMERA.LERP_FACTOR;
 
-    if (cloudMesh && cloudMesh.rotation) {
-      cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
+    // Update rotations
+    if (cloudMesh) cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
+    if (moonMesh) moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED;
+
+    // Update starfield
+    if (starField) starField.material.uniforms.time.value = elapsedTime;
+
+    // Emissive pulse for night mode
+    if (earthMesh?.userData.currentMode === "night" && frameCount % 2 === 0) {
+      const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
+      const pulseAmount = Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
+      earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
     }
 
-    if (moonMesh && moonMesh.rotation) {
-      moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED;
-    }
-
-    if (directionalLight) {
-      let sunAngle;
-
-      if (CONFIG.DAY_NIGHT_CYCLE.ENABLED) {
-        const cycleSpeed = CONFIG.SUN.ROTATION_SPEED * CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER;
-        sunAngle = elapsedTime * cycleSpeed;
-      } else {
-        sunAngle = directionalLight.position.x !== 0
-          ? Math.atan2(directionalLight.position.z, directionalLight.position.x)
-          : 0;
-      }
-
-      const sunX = Math.cos(sunAngle) * CONFIG.SUN.RADIUS;
-      const sunZ = Math.sin(sunAngle) * CONFIG.SUN.RADIUS;
-      directionalLight.position.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
-
-      if (atmosphereMesh?.userData) {
-        sunPositionVector.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
-
-        if (atmosphereMesh.userData.atmosphereMaterial) {
-          atmosphereMesh.userData.atmosphereMaterial.uniforms.uSunPosition.value.copy(sunPositionVector);
-        }
-        if (atmosphereMesh.userData.rayleighMaterial) {
-          atmosphereMesh.userData.rayleighMaterial.uniforms.uSunPosition.value.copy(sunPositionVector);
-        }
-      }
-
-      if (CONFIG.DAY_NIGHT_CYCLE.ENABLED && earthMesh?.material?.userData?.oceanShader) {
-        earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
-          sunX,
-          CONFIG.SUN.HEIGHT,
-          sunZ
-        );
-      }
-
-      if (
-        earthMesh &&
-        earthMesh.userData.emissivePulseEnabled &&
-        earthMesh.userData.currentMode === "night" &&
-        earthMesh.material?.emissiveIntensity !== undefined &&
-        frameCount % 2 === 0
-      ) {
-        const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
-        const pulseAmount =
-          Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-          CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
-
-        earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
-      }
-    }
-
-    if (starField) {
-      starField.material.uniforms.time.value = elapsedTime;
-    }
-
-    updateCameraPosition(lerpFactor);
+    updateCameraPosition();
     updateObjectTransforms();
 
     if (shootingStarManager) shootingStarManager.update();
@@ -1571,61 +1170,35 @@ function startAnimationLoop() {
     renderer.render(scene, camera);
   }
 
-  function updateCameraPosition(lerpFactor) {
+  function updateCameraPosition() {
+    const lerpFactor = CONFIG.CAMERA.LERP_FACTOR;
     const angleDiff = targetOrbitAngle - cameraOrbitAngle;
-
-    const rawProgress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
-    const easedProgress = 1 - Math.pow(1 - rawProgress, 4);
-    const easingFactor = 0.06 + easedProgress * 0.12;
+    const progress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
+    const eased = 1 - Math.pow(1 - progress, 4);
+    const easingFactor = 0.06 + eased * 0.12;
 
     cameraOrbitAngle += angleDiff * easingFactor;
 
-    cameraTarget.z = mouseState.zoom;
     const radius = mouseState.zoom;
-
-    const flightProgress = Math.abs(angleDiff) / Math.PI;
-    const arcBase = CONFIG.CAMERA.ARC_HEIGHT_BASE;
-    const arcMult = CONFIG.CAMERA.ARC_HEIGHT_MULTIPLIER;
-    const arcHeight =
-      Math.sin(flightProgress * Math.PI) *
-      radius *
-      (arcBase + arcMult * Math.min(1, radius / 30));
-
     const finalX = cameraTarget.x + Math.sin(cameraOrbitAngle) * radius * 0.75;
-    const finalY = cameraTarget.y + arcHeight;
+    const finalY = cameraTarget.y;
     const finalZ = Math.cos(cameraOrbitAngle) * radius;
 
-    const adaptiveLerp = flightProgress > 0.15 ? lerpFactor * 1.8 : lerpFactor;
-    cameraPosition.x += (finalX - cameraPosition.x) * adaptiveLerp;
-    cameraPosition.y += (finalY - cameraPosition.y) * adaptiveLerp;
-    cameraPosition.z += (finalZ - cameraPosition.z) * adaptiveLerp;
+    cameraPosition.x += (finalX - cameraPosition.x) * lerpFactor;
+    cameraPosition.y += (finalY - cameraPosition.y) * lerpFactor;
+    cameraPosition.z += (finalZ - cameraPosition.z) * lerpFactor;
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-    const lookAtOffset = flightProgress * 0.5;
-    camera.lookAt(lookAtOffset, 0, 0);
-
-    if (directionalLight && earthMesh?.userData.currentMode === "day") {
-      const sunX = Math.sin(cameraOrbitAngle) * CONFIG.SUN.RADIUS;
-      const sunZ = Math.cos(cameraOrbitAngle) * CONFIG.SUN.RADIUS;
-      directionalLight.position.set(sunX, CONFIG.SUN.HEIGHT, sunZ);
-
-      if (earthMesh?.material?.userData?.oceanShader) {
-        earthMesh.material.userData.oceanShader.uniforms.uSunPosition.value.set(
-          sunX,
-          CONFIG.SUN.HEIGHT,
-          sunZ
-        );
-      }
-    }
+    camera.lookAt(0, 0, 0);
   }
 
   function updateObjectTransforms() {
     if (!earthMesh) return;
 
+    // Earth position and scale
     if (earthMesh.userData.targetPosition) {
       earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04);
     }
-
     if (earthMesh.userData.targetScale) {
       const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
       if (Math.abs(scaleDiff) > 0.001) {
@@ -1634,63 +1207,25 @@ function startAnimationLoop() {
       }
     }
 
+    // Earth rotation
     if (earthMesh.userData.targetRotation !== undefined) {
       const rotDiff = earthMesh.userData.targetRotation - earthMesh.rotation.y;
-
       if (Math.abs(rotDiff) > 0.001) {
-        const progress = Math.abs(rotDiff) / Math.PI;
-        const easing = 1 - Math.pow(1 - Math.min(progress, 1), 3);
-        const speed = 0.06 + easing * 0.06;
-        earthMesh.rotation.y += rotDiff * speed;
-      } else {
-        earthMesh.rotation.y = earthMesh.userData.targetRotation;
+        earthMesh.rotation.y += rotDiff * 0.06;
       }
     }
 
+    // Cloud sync
     if (cloudMesh && earthMesh) {
-      if (!cloudMesh.userData.lastSync) {
-        cloudMesh.userData.lastSync = {
-          position: new THREE_INSTANCE.Vector3(),
-          scale: 0,
-          rotationX: 0,
-          rotationZ: 0,
-        };
-        cloudMesh.position.copy(earthMesh.position);
-        cloudMesh.scale.copy(earthMesh.scale);
-        cloudMesh.userData.lastSync.position.copy(earthMesh.position);
-        cloudMesh.userData.lastSync.scale = earthMesh.scale.x;
-        cloudMesh.userData.lastSync.rotationX = earthMesh.rotation.x;
-        cloudMesh.userData.lastSync.rotationZ = earthMesh.rotation.z;
-      }
-
-      const lastSync = cloudMesh.userData.lastSync;
-
-      const posDiff = earthMesh.position.distanceToSquared(lastSync.position);
-      if (posDiff > 0.00001) {
-        cloudMesh.position.copy(earthMesh.position);
-        lastSync.position.copy(earthMesh.position);
-      }
-
-      if (Math.abs(earthMesh.scale.x - lastSync.scale) > 0.001) {
-        cloudMesh.scale.copy(earthMesh.scale);
-        lastSync.scale = earthMesh.scale.x;
-      }
-
-      if (Math.abs(earthMesh.rotation.x - lastSync.rotationX) > 0.001) {
-        cloudMesh.rotation.x = earthMesh.rotation.x;
-        lastSync.rotationX = earthMesh.rotation.x;
-      }
-      if (Math.abs(earthMesh.rotation.z - lastSync.rotationZ) > 0.001) {
-        cloudMesh.rotation.z = earthMesh.rotation.z;
-        lastSync.rotationZ = earthMesh.rotation.z;
-      }
+      cloudMesh.position.copy(earthMesh.position);
+      cloudMesh.scale.copy(earthMesh.scale);
     }
 
+    // Moon position and scale
     if (moonMesh) {
       if (moonMesh.userData.targetPosition) {
         moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04);
       }
-
       if (moonMesh.userData.targetScale) {
         const moonScaleDiff = moonMesh.userData.targetScale - moonMesh.scale.x;
         if (Math.abs(moonScaleDiff) > 0.001) {
@@ -1705,78 +1240,58 @@ function startAnimationLoop() {
 }
 
 // ===== Resize Handler =====
+
 function setupResizeHandler() {
   const handleResize = () => {
     const container = getElementById("threeEarthContainer");
     if (!container || !camera || !renderer) return;
+
     const width = container.clientWidth;
     const height = container.clientHeight;
     isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
   };
+
   const resizeCleanup = onResize(handleResize, 100);
-  sharedCleanupManager.addCleanupFunction("three-earth", resizeCleanup, "resize handler cleanup");
+  sharedCleanupManager.addCleanupFunction("three-earth", resizeCleanup, "resize handler");
 }
 
-// ===== UI State Management =====
+// ===== UI State =====
+
 function showLoadingState(container, progress) {
-  container.classList.add("loading");
-  const loadingElement = container.querySelector(".three-earth-loading");
+  container?.classList.add("loading");
+  const loadingElement = container?.querySelector(".three-earth-loading");
   if (loadingElement) loadingElement.classList.remove("hidden");
-  const progressBar = container.querySelector(".loading-progress-bar");
-  const progressText = container.querySelector(".loading-progress-text");
+  const progressBar = container?.querySelector(".loading-progress-bar");
+  const progressText = container?.querySelector(".loading-progress-text");
   if (progressBar) progressBar.style.width = `${progress * 100}%`;
   if (progressText) progressText.textContent = `${Math.round(progress * 100)}%`;
 }
 
 function hideLoadingState(container) {
-  container.classList.remove("loading");
-  const loadingElement = container.querySelector(".three-earth-loading");
+  container?.classList.remove("loading");
+  const loadingElement = container?.querySelector(".three-earth-loading");
   if (loadingElement) loadingElement.classList.add("hidden");
 }
 
 function showErrorState(container, error) {
-  container.classList.add("error");
-  container.classList.remove("loading");
-  const errorElement = container.querySelector(".three-earth-error");
+  container?.classList.add("error");
+  container?.classList.remove("loading");
+  const errorElement = container?.querySelector(".three-earth-error");
   if (errorElement) {
     errorElement.classList.remove("hidden");
     const errorText = errorElement.querySelector("p");
     if (errorText) {
-      errorText.textContent = `WebGL Error: ${error.message || "Unknown error"}. Please try refreshing.`;
+      errorText.textContent = `WebGL Error: ${error.message || "Unknown error"}`;
     }
   }
 }
 
-function showWebGLErrorMessage(container, error) {
-  const errorDiv = document.createElement('div');
-  errorDiv.className = 'three-earth-error';
-  errorDiv.innerHTML = `
-    <h3>WebGL Error</h3>
-    <p>Die 3D-Visualisierung konnte nicht geladen werden.</p>
-    <details>
-      <summary>Technische Details</summary>
-      <pre>${error.message}</pre>
-    </details>
-    <p>
-      <small>Mögliche Lösungen:</small><br>
-      • Browser aktualisieren<br>
-      • Hardware-Beschleunigung aktivieren<br>
-      • Anderen Browser verwenden
-    </p>
-  `;
-  
-  const existingError = container.querySelector('.three-earth-error');
-  if (existingError) {
-    existingError.remove();
-  }
-  
-  container.appendChild(errorDiv);
-}
-
 // ===== Performance Monitor =====
+
 class PerformanceMonitor {
   constructor(parentContainer) {
     this.element = document.createElement("div");
@@ -1805,36 +1320,27 @@ class PerformanceMonitor {
     const mem = renderer.info.memory;
     const render = renderer.info.render;
     this.element.innerHTML = `
-        FPS: ${Math.round(this.fps)} | 
-        MEM: ${mem.geometries}g/${mem.textures}t | 
-        Calls: ${render.calls} | Tris: ${(render.triangles / 1000).toFixed(1)}k | 
-        PR: ${this.currentPixelRatio.toFixed(2)}
+      FPS: ${Math.round(this.fps)} | 
+      Calls: ${render.calls} | Tris: ${(render.triangles / 1000).toFixed(1)}k | 
+      PR: ${this.currentPixelRatio.toFixed(2)}
     `;
   }
 
   adjustResolution() {
     this.adjustQualityLevel();
 
-    if (this.fps < 10 && currentQualityLevel !== "LOW") {
-      log.error(`Critical FPS (${this.fps.toFixed(1)}), switching to LOW quality mode`);
-      return;
-    }
-
     if (this.fps < 10) {
       this.currentPixelRatio = 0.5;
       renderer.setPixelRatio(this.currentPixelRatio);
-      log.error(`Critical FPS (${this.fps.toFixed(1)}), emergency pixel ratio reduction`);
       return;
     }
 
     if (this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD && this.currentPixelRatio > 0.5) {
       this.currentPixelRatio = Math.max(0.5, this.currentPixelRatio - 0.15);
       renderer.setPixelRatio(this.currentPixelRatio);
-      log.warn(`Low FPS (${this.fps.toFixed(1)}), reducing pixel ratio`);
     } else if (this.fps > CONFIG.PERFORMANCE.DRS_UP_THRESHOLD && this.currentPixelRatio < CONFIG.PERFORMANCE.PIXEL_RATIO) {
       this.currentPixelRatio = Math.min(CONFIG.PERFORMANCE.PIXEL_RATIO, this.currentPixelRatio + 0.05);
       renderer.setPixelRatio(this.currentPixelRatio);
-      log.info(`Good FPS (${this.fps.toFixed(1)}), increasing pixel ratio`);
     }
   }
 
@@ -1850,39 +1356,14 @@ class PerformanceMonitor {
     }
 
     if (prevLevel !== currentQualityLevel) {
-      log.warn(`Quality level changed: ${prevLevel} → ${currentQualityLevel} (FPS: ${this.fps.toFixed(1)})`);
       this.applyQualitySettings();
     }
   }
 
   applyQualitySettings() {
-    const features = CONFIG.QUALITY_LEVELS[currentQualityLevel].features;
-
-    if (rayleighAtmosphereMesh) {
-      rayleighAtmosphereMesh.visible = features.multiLayerAtmosphere;
-      log.debug(`Multi-Layer Atmosphere: ${features.multiLayerAtmosphere ? "ON" : "OFF"}`);
-    }
-
-    if (cloudMesh) {
-      cloudMesh.visible = features.cloudLayer;
-      log.debug(`Cloud Layer: ${features.cloudLayer ? "ON" : "OFF"}`);
-    }
-
-    if (earthMesh?.material?.userData?.oceanShader) {
-      earthMesh.material.userData.oceanShader.uniforms.uOceanSpecularIntensity.value =
-        features.oceanReflections ? CONFIG.OCEAN.SPECULAR_INTENSITY : 0.0;
-      log.debug(`Ocean Reflections: ${features.oceanReflections ? "ON" : "OFF"}`);
-    }
-
-    if (earthMesh?.userData?.emissivePulseEnabled !== undefined) {
-      earthMesh.userData.emissivePulseEnabled = features.cityLightsPulse;
-      log.debug(`City Lights Pulse: ${features.cityLightsPulse ? "ON" : "OFF"}`);
-    }
-
-    if (shootingStarManager) {
-      shootingStarManager.disabled = !features.meteorShowers;
-      log.debug(`Meteor Showers: ${features.meteorShowers ? "ON" : "OFF"}`);
-    }
+    const level = CONFIG.QUALITY_LEVELS[currentQualityLevel];
+    if (cloudMesh) cloudMesh.visible = level.cloudLayer;
+    if (shootingStarManager) shootingStarManager.disabled = !level.meteorShowers;
   }
 
   cleanup() {
@@ -1891,36 +1372,24 @@ class PerformanceMonitor {
 }
 
 // ===== Public API =====
+
 export const { initThreeEarth, cleanup } = ThreeEarthManager;
 
 export const EarthSystemAPI = {
   flyToPreset: (presetName) => {
     if (typeof flyToPreset === "function") {
       flyToPreset(presetName);
-    } else {
-      log.warn("Earth system not initialized");
     }
-  },
-
-  setDayNightCycle: (enabled, speedMultiplier = 10) => {
-    CONFIG.DAY_NIGHT_CYCLE.ENABLED = enabled;
-    CONFIG.DAY_NIGHT_CYCLE.SPEED_MULTIPLIER = speedMultiplier;
-    log.info(`Day/Night cycle ${enabled ? "enabled" : "disabled"} (speed: ${speedMultiplier}x)`);
   },
 
   triggerMeteorShower: () => {
-    if (shootingStarManager) {
-      shootingStarManager.triggerMeteorShower();
-    } else {
-      log.warn("ShootingStarManager not initialized");
-    }
+    shootingStarManager?.triggerShower();
   },
 
   getConfig: () => CONFIG,
 
   updateConfig: (updates) => {
     Object.assign(CONFIG, updates);
-    log.info("Configuration updated", updates);
   },
 };
 
