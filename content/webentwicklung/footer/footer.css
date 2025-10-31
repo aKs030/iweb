@@ -222,7 +222,10 @@ body.footer-expanded {
 .footer-maximized-viewport {
   height: var(--footer-actual-height, auto);
   max-height: var(--footer-max-height);
-  overflow: clip;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   width: 100%;
 }
 
@@ -232,7 +235,6 @@ body.footer-expanded {
   padding: var(--footer-spacing-lg) var(--footer-spacing-md) 16px;
   box-sizing: border-box;
   transform-origin: top center;
-  transform: scale(var(--footer-scale, 1));
 }
 
 /* ===== Card System ===== */
