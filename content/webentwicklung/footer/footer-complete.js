@@ -630,8 +630,10 @@ class FooterResizer {
   constructor() {
     this.config = {
       MOBILE_BREAKPOINT: 768,
-      MAX_FOOTER_RATIO_MOBILE: 0.7,
+      MAX_FOOTER_RATIO_MOBILE: 0.92,
       MAX_FOOTER_RATIO_DESKTOP: 0.6,
+      MIN_FOOTER_HEIGHT_MOBILE: 420,
+      MIN_FOOTER_HEIGHT_DESKTOP: 380,
       THROTTLE_DELAY: 150,
     };
     this.lastSnapshot = "";
@@ -697,9 +699,15 @@ class FooterResizer {
   }
 
   measureViewport() {
-    const vv = window.visualViewport;
-    const h = Math.max(1, vv?.height ?? window.innerHeight ?? 0);
-    return { h, usable: h };
+    const layoutHeight = Math.max(
+      window.innerHeight || 0,
+      document.documentElement?.clientHeight || 0,
+      1
+    );
+    const visualHeight = window.visualViewport?.height || 0;
+    const usable = Math.max(layoutHeight, visualHeight, 1);
+
+    return { layoutHeight, visualHeight, usable };
   }
 
   setCSSVar(name, value) {
@@ -719,7 +727,11 @@ class FooterResizer {
     const maxRatio = isMobile
       ? this.config.MAX_FOOTER_RATIO_MOBILE
       : this.config.MAX_FOOTER_RATIO_DESKTOP;
-    const maxFooter = Math.round(usable * maxRatio);
+    const minHeight = isMobile
+      ? this.config.MIN_FOOTER_HEIGHT_MOBILE
+      : this.config.MIN_FOOTER_HEIGHT_DESKTOP;
+    const baseMax = Math.round(usable * maxRatio);
+    const maxFooter = Math.min(usable, Math.max(baseMax, minHeight));
     this.setCSSVar("--footer-max-height", `${maxFooter}px`);
 
     const content = document.querySelector("#site-footer .footer-enhanced-content");
