@@ -630,10 +630,10 @@ class FooterResizer {
   constructor() {
     this.config = {
       MOBILE_BREAKPOINT: 768,
-      MAX_FOOTER_RATIO_MOBILE: 0.7,
+      MAX_FOOTER_RATIO_MOBILE: 0.92,
       MAX_FOOTER_RATIO_DESKTOP: 0.6,
-      MIN_SCALE_MOBILE: 0.75,
-      MIN_SCALE_DESKTOP: 0.5,
+      MIN_FOOTER_HEIGHT_MOBILE: 420,
+      MIN_FOOTER_HEIGHT_DESKTOP: 380,
       THROTTLE_DELAY: 150,
     };
     this.lastSnapshot = "";
@@ -699,14 +699,15 @@ class FooterResizer {
   }
 
   measureViewport() {
-    const vv = window.visualViewport;
-    const h = Math.max(1, vv?.height ?? window.innerHeight ?? 0);
-    return { h, usable: h };
-  }
+    const layoutHeight = Math.max(
+      window.innerHeight || 0,
+      document.documentElement?.clientHeight || 0,
+      1
+    );
+    const visualHeight = window.visualViewport?.height || 0;
+    const usable = Math.max(layoutHeight, visualHeight, 1);
 
-  computeScale() {
-    const w = Math.max(320, window.innerWidth);
-    return Math.max(0.8, Math.min(1, 0.88 + w / 2000));
+    return { layoutHeight, visualHeight, usable };
   }
 
   setCSSVar(name, value) {
@@ -726,35 +727,26 @@ class FooterResizer {
     const maxRatio = isMobile
       ? this.config.MAX_FOOTER_RATIO_MOBILE
       : this.config.MAX_FOOTER_RATIO_DESKTOP;
-    const maxFooter = Math.round(usable * maxRatio);
+    const minHeight = isMobile
+      ? this.config.MIN_FOOTER_HEIGHT_MOBILE
+      : this.config.MIN_FOOTER_HEIGHT_DESKTOP;
+    const baseMax = Math.round(usable * maxRatio);
+    const maxFooter = Math.min(usable, Math.max(baseMax, minHeight));
     this.setCSSVar("--footer-max-height", `${maxFooter}px`);
 
     const content = document.querySelector("#site-footer .footer-enhanced-content");
     
     if (content) {
-      this.setCSSVar("--footer-scale", "1");
-      void content.offsetHeight; // Force reflow
-
-      const naturalHeight = content.scrollHeight;
-      const base = Math.max(1, naturalHeight || 0);
-      let scale = base > 0 ? Math.min(1, maxFooter / base) : this.computeScale();
-
-      const minScale = isMobile
-        ? this.config.MIN_SCALE_MOBILE
-        : this.config.MIN_SCALE_DESKTOP;
-      scale = Math.max(minScale, Number(scale.toFixed(3)));
-
-      this.setCSSVar("--footer-scale", String(scale));
-      const actual = Math.round(base * scale);
+      const naturalHeight = Math.max(1, content.scrollHeight || 0);
+      const actual = Math.min(naturalHeight, maxFooter);
       this.setCSSVar("--footer-actual-height", `${actual}px`);
 
-      const snapshot = `${scale}|${isMobile}|${maxFooter}|${actual}`;
+      const snapshot = `${naturalHeight}|${isMobile}|${maxFooter}|${actual}`;
       if (this.lastSnapshot !== snapshot) {
-        log.debug(`Scale: ${scale}, Mobile: ${isMobile}, Max: ${maxFooter}px, Actual: ${actual}px`);
+        log.debug(`Content: ${naturalHeight}px, Mobile: ${isMobile}, Max: ${maxFooter}px, Viewport: ${actual}px`);
         this.lastSnapshot = snapshot;
       }
     } else {
-      this.setCSSVar("--footer-scale", String(this.computeScale()));
       this.setCSSVar("--footer-actual-height", `${maxFooter}px`);
     }
   }
