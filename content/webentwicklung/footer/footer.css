@@ -893,33 +893,58 @@ body.footer-expanded {
   .footer-maximized-viewport {
     padding-inline: clamp(8px, 4vw, 16px);
     scrollbar-gutter: stable both-edges;
+    max-height: min(
+      var(--footer-max-height, calc(var(--vh, 1vh) * 92)),
+      720px
+    );
   }
 
   .footer-enhanced-content {
-    padding: clamp(16px, 6vw, 24px) clamp(12px, 5vw, 20px) 20px;
+    padding: clamp(12px, 5vw, 18px) clamp(10px, 4vw, 16px) 16px;
   }
 
   .footer-cards-grid {
-    gap: clamp(12px, 5vw, 20px);
+    gap: clamp(8px, 4vw, 16px);
+    grid-template-columns: 1fr;
   }
 
   .footer-card {
-    padding: clamp(14px, 6vw, 22px);
+    padding: clamp(12px, 5vw, 18px);
+  }
+
+  .footer-card-header {
+    margin-bottom: clamp(10px, 3.6vw, 16px);
   }
 
   .footer-card-title {
-    font-size: clamp(1.05rem, 4vw, 1.25rem);
+    font-size: clamp(0.95rem, 3.6vw, 1.15rem);
   }
 
+  .footer-profile-role,
+  .footer-profile-location,
   .footer-work-link,
   .footer-card-content p,
   .footer-card-content a,
-  .footer-social-card {
-    font-size: clamp(0.95rem, 3.8vw, 1.05rem);
+  .footer-social-card,
+  .footer-stack-item {
+    font-size: clamp(0.85rem, 3.2vw, 1rem);
+    line-height: 1.4;
+  }
+
+  .footer-profile-location {
+    gap: 4px;
+  }
+
+  .footer-work-nav {
+    gap: clamp(8px, 3vw, 12px);
+  }
+
+  .footer-work-link {
+    padding: clamp(8px, 3.5vw, 12px) clamp(10px, 4vw, 14px);
   }
 
   .footer-social-card {
-    padding: clamp(14px, 5vw, 20px);
+    padding: clamp(12px, 4.5vw, 18px);
   }
 }
 
