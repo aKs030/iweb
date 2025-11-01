@@ -307,7 +307,7 @@ function setSiteTitle() {
   const titleMap = {
     "/index.html": "Startseite",
     "/": "Startseite",
-    "/pages/fotogalerie/urban.html": "Album",
+    "/pages/fotos/fotos.html": "Album",
     "/pages/card/karten.html": "Projekte",
   };
   const path = window.location.pathname;
