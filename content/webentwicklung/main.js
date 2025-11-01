@@ -81,6 +81,20 @@ if ("serviceWorker" in navigator) {
       .then(() => log.debug("Service Worker registered"))
       .catch((error) => log.debug("Service Worker registration failed:", error));
   }, { once: true });
+
+  // Optional: Hinweise vom Service Worker (z. B. Update verfügbar)
+  try {
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      const type = event?.data?.type;
+      if (type === "SW_ACTIVATED") {
+        // Hier könntest du ein dezentes Banner anzeigen oder ein Icon blinken lassen
+        log.debug("Service Worker aktiviert:", event.data?.version);
+        // announce("Eine neue Version ist bereit. Laden zum Aktualisieren.", { dedupe: true });
+      }
+    });
+  } catch (e) {
+    log.debug("SW message listener error:", e);
+  }
 }
 
 // ===== Lazy Module Loader =====

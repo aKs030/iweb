@@ -1,11 +1,15 @@
 // ===========================
-// iweb Service Worker v3.0
+// iweb Service Worker v4.1
 // ===========================
 
 // Konfiguration
 const DEBUG = /localhost|127\.0\.0\.1/.test(self.location.hostname);
-const STATIC_CACHE = 'iweb-static-v3';
-const DYNAMIC_CACHE = 'iweb-dynamic-v3';
+const STATIC_CACHE = 'iweb-static-v4';
+const DYNAMIC_CACHE = 'iweb-dynamic-v4';
+const PAGES_CACHE = 'iweb-pages-v4'; // HTML-Teilseiten separat halten
+const MAX_DYNAMIC_ENTRIES = 200;
+const OFFLINE_IMAGE = '/content/img/icons/offline.svg';
+const PAGES_TTL_MS = 1000 * 60 * 60 * 48; // 48 Stunden nur für Seiten-HTML
 
 // Ressourcen, die immer offline verfügbar sein sollen
 const STATIC_ASSETS = [
@@ -38,7 +42,8 @@ const STATIC_ASSETS = [
   '/content/img/icons/favicon.svg',
   '/content/img/icons/icon-96.png',
   '/content/img/icons/icon-144.png',
-  '/content/img/icons/icon-192.png'
+  '/content/img/icons/icon-192.png',
+  '/content/img/icons/icon-512.png'
 ];
 
 const log = (...args) => { if (DEBUG) console.log('[SW]', ...args); };
@@ -51,14 +56,13 @@ self.addEventListener('install', (event) => {
   log('Installing…', { STATIC_CACHE, DYNAMIC_CACHE });
   event.waitUntil(
     caches.open(STATIC_CACHE).then(async (cache) => {
-      await Promise.all(
-        STATIC_ASSETS.map(async (url) => {
-          try {
-            await cache.add(url);
-          } catch (err) {
+      // Install robust: nicht an einer fehlenden Datei scheitern
+      await Promise.allSettled(
+        STATIC_ASSETS.map((url) =>
+          cache.add(url).catch((err) => {
             warn('Skip caching (missing?):', url, err && err.message);
-          }
-        })
+          })
+        )
       );
     }).then(() => self.skipWaiting())
   );
@@ -70,25 +74,94 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   log('Activated');
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
+    (async () => {
+      // Navigation Preload aktivieren (wo verfügbar)
+      if ('navigationPreload' in self.registration) {
+        try { await self.registration.navigationPreload.enable(); } catch {}
+      }
+
+      const keys = await caches.keys();
+      await Promise.all(
         keys
-          .filter((key) => (key.startsWith('iweb-')) && key !== STATIC_CACHE && key !== DYNAMIC_CACHE)
+          .filter((key) => key.startsWith('iweb-') && key !== STATIC_CACHE && key !== DYNAMIC_CACHE && key !== PAGES_CACHE)
           .map((oldKey) => {
             log('Deleting old cache:', oldKey);
             return caches.delete(oldKey);
           })
-      )
-    ).then(() => self.clients.claim())
+      );
+
+      await self.clients.claim();
+
+      // Clients informieren, dass ein Update aktiv ist (optional UI-Hinweis)
+      const clients = await self.clients.matchAll({ type: 'window' });
+      for (const client of clients) {
+        try { client.postMessage({ type: 'SW_ACTIVATED', version: 'v4.0' }); } catch {}
+      }
+    })()
   );
 });
 
+// Hilfsfunktionen
+function isAnalytics(url) {
+  return /google-analytics\.com|googletagmanager\.com|gtag\/js|clarity\.ms|hotjar\.com/.test(url);
+}
+
+function isSameOrigin(url) {
+  try { return new URL(url).origin === self.location.origin; } catch { return false; }
+}
+
+async function safePut(cacheName, req, res) {
+  try {
+    // Nur erfolgreiche, nicht-opaque Responses cachen
+    if (res && res.ok && (res.type === 'basic' || res.type === 'default')) {
+      // Für Seiten-HTML: Stempel hinzufügen, um TTL zu ermöglichen
+      const stamped = (cacheName === PAGES_CACHE)
+        ? stampResponse(res)
+        : res;
+      const cache = await caches.open(cacheName);
+      await cache.put(req, stamped.clone());
+      // Optional: Cache begrenzen
+      if (cacheName === DYNAMIC_CACHE) {
+        try {
+          const keys = await cache.keys();
+          if (keys.length > MAX_DYNAMIC_ENTRIES) {
+            await cache.delete(keys[0]);
+          }
+        } catch {}
+      }
+    }
+  } catch (e) {
+    if (DEBUG) console.debug('safePut failed', e);
+  }
+}
+
+function stampResponse(res) {
+  try {
+    const headers = new Headers(res.headers);
+    headers.set('sw-fetched-at', String(Date.now()));
+    return new Response(res.clone().body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers
+    });
+  } catch (e) {
+    // Fallback: original Response zurückgeben, wenn Stempeln fehlschlägt
+    return res;
+  }
+}
+
+function isExpiredByTTL(res, ttlMs) {
+  const h = res.headers?.get?.('sw-fetched-at');
+  const ts = h ? Number(h) : 0;
+  if (!ts || Number.isNaN(ts)) return true; // Alte Einträge ohne Stempel: als abgelaufen betrachten
+  return (Date.now() - ts) > ttlMs;
+}
+
 // Strategien
-async function networkFirst(req) {
+async function networkFirst(req, cacheName = DYNAMIC_CACHE) {
   try {
     const fresh = await fetch(req);
-    const cache = await caches.open(DYNAMIC_CACHE);
-    cache.put(req, fresh.clone());
+    await safePut(cacheName, req, fresh);
     return fresh;
   } catch (_) {
     const cached = await caches.match(req);
@@ -100,31 +173,21 @@ async function networkFirst(req) {
   }
 }
 
-async function cacheFirst(req) {
+async function cacheFirst(req, cacheName = DYNAMIC_CACHE) {
   const cached = await caches.match(req);
   if (cached) return cached;
   const res = await fetch(req);
-  const cache = await caches.open(DYNAMIC_CACHE);
-  cache.put(req, res.clone());
+  await safePut(cacheName, req, res);
   return res;
 }
 
-async function staleWhileRevalidate(req) {
-  const cache = await caches.open(DYNAMIC_CACHE);
+async function staleWhileRevalidate(req, cacheName = DYNAMIC_CACHE) {
   const cached = await caches.match(req);
-  const network = fetch(req).then((res) => {
-    cache.put(req, res.clone());
+  const network = fetch(req).then(async (res) => {
+    await safePut(cacheName, req, res);
     return res;
   }).catch(() => undefined);
   return cached || network || fetch(req);
-}
-
-function isAnalytics(url) {
-  return /google-analytics\.com|googletagmanager\.com|gtag\/js/.test(url);
-}
-
-function isSameOrigin(url) {
-  try { return new URL(url).origin === self.location.origin; } catch { return false; }
 }
 
 // ------------------------------------------------------
@@ -139,12 +202,26 @@ self.addEventListener('fetch', (event) => {
   const url = req.url;
   if (url.startsWith('chrome-extension')) return;
   if (isAnalytics(url)) return; // Tracking nicht cachen
+  if (req.headers.get('range')) return; // Range-Requests nicht abfangen
 
   const dest = req.destination; // '', 'document', 'style', 'script', 'image', 'font', 'manifest', ...
 
   // Navigationsanfragen: Network-first mit Offline-Fallback
-  if (req.mode === 'navigate' || dest === 'document' || req.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(networkFirst(req));
+  if (req.mode === 'navigate' || dest === 'document') {
+    event.respondWith((async () => {
+      // Navigation preload bevorzugen, falls verfügbar
+      const preload = await event.preloadResponse;
+      if (preload) {
+        return preload;
+      }
+      return networkFirst(req);
+    })());
+    return;
+  }
+
+  // Sonstige HTML-Fetches (z. B. Teilseiten/Partials): Stale-while-revalidate in separatem Pages-Cache
+  if (req.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(pagesStrategy(req));
     return;
   }
 
@@ -155,7 +232,18 @@ self.addEventListener('fetch', (event) => {
       return;
     }
     if (dest === 'image' || dest === 'font') {
-      event.respondWith(cacheFirst(req));
+      event.respondWith((async () => {
+        try {
+          return await cacheFirst(req);
+        } catch (e) {
+          // Offline-Placeholder nur für Bilder
+          if (dest === 'image') {
+            const ph = await caches.match(OFFLINE_IMAGE);
+            if (ph) return ph;
+          }
+          return Response.error();
+        }
+      })());
       return;
     }
     if (dest === 'manifest') {
@@ -164,15 +252,12 @@ self.addEventListener('fetch', (event) => {
     }
   }
 
-  // Fallback: Versuche Netzwerk, dann Cache
+  // Fremd-Origin oder sonstiges: Netzwerk durchschleifen, ohne zu cachen
   event.respondWith(
-    fetch(req).then((res) => {
-      const clone = res.clone();
-      caches.open(DYNAMIC_CACHE).then((c) => c.put(req, clone));
-      return res;
-    }).catch(async () => {
+    fetch(req).catch(async () => {
+      // Bei Offline nur dann Offline-Seite liefern, wenn es um Navigation ging – hier nein
       const cached = await caches.match(req);
-      return cached || caches.match('/offline.html');
+      return cached || Response.error();
     })
   );
 });
@@ -185,3 +270,29 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// Spezielle Strategie nur für Seiten-HTML mit TTL
+async function pagesStrategy(req) {
+  const cache = await caches.open(PAGES_CACHE);
+  const cached = await cache.match(req);
+
+  // Wenn ein (möglicherweise abgelaufener) Cache existiert, parallel aktualisieren
+  const networkPromise = fetch(req).then(async (res) => {
+    await safePut(PAGES_CACHE, req, res);
+    return res;
+  }).catch(() => undefined);
+
+  if (cached) {
+    // TTL prüfen: wenn abgelaufen, bevorzugt Netzwerk liefern, sonst Cache
+    if (isExpiredByTTL(cached, PAGES_TTL_MS)) {
+      const fresh = await networkPromise;
+      return fresh || cached; // Offline: lieber alten Cache liefern
+    }
+    // Nicht abgelaufen: sofort Cache, Netzwerk aktualisiert im Hintergrund
+    return cached;
+  }
+
+  // Kein Cache: versuche Netzwerk, sonst Offline-Seite als harte Fallback nur bei HTML sinnvoll
+  const fresh = await networkPromise;
+  return fresh || caches.match('/offline.html');
+}
