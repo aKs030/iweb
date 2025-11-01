@@ -73,28 +73,34 @@ const sectionTracker = new SectionTracker();
 sectionTracker.init();
 window.sectionTracker = sectionTracker;
 
-// ===== Service Worker Registration =====
+// ===== Service Worker Entfernung (Decommission) =====
+// Entfernt vorhandene Service Worker und löscht projektbezogene Caches
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then(() => log.debug("Service Worker registered"))
-      .catch((error) => log.debug("Service Worker registration failed:", error));
-  }, { once: true });
+  window.addEventListener(
+    "load",
+    async () => {
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
 
-  // Optional: Hinweise vom Service Worker (z. B. Update verfügbar)
-  try {
-    navigator.serviceWorker.addEventListener("message", (event) => {
-      const type = event?.data?.type;
-      if (type === "SW_ACTIVATED") {
-        // Hier könntest du ein dezentes Banner anzeigen oder ein Icon blinken lassen
-        log.debug("Service Worker aktiviert:", event.data?.version);
-        // announce("Eine neue Version ist bereit. Laden zum Aktualisieren.", { dedupe: true });
+        // Projekt-Caches aufräumen (nur unsere iweb-*-Caches)
+        if (window.caches && typeof caches.keys === "function") {
+          try {
+            const keys = await caches.keys();
+            const ours = keys.filter((k) => k.startsWith("iweb-"));
+            await Promise.all(ours.map((k) => caches.delete(k)));
+          } catch (e) {
+            log.debug("Cache cleanup failed:", e);
+          }
+        }
+
+        log.info("Service Worker entfernt und Caches bereinigt");
+      } catch (error) {
+        log.debug("Service Worker removal failed:", error);
       }
-    });
-  } catch (e) {
-    log.debug("SW message listener error:", e);
-  }
+    },
+    { once: true }
+  );
 }
 
 // ===== Lazy Module Loader =====
