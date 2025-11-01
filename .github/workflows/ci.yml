@@ -34,7 +34,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Service Worker wurde aus dem Projekt entfernt
-      # - name: Service worker syntax check
-      #   run: |
-      #     node -e "const fs=require('fs'); const vm=require('vm'); const ctx={ self: { location: { hostname:'localhost', origin:'http://localhost' }, clients:{claim(){}} } }; vm.createContext(ctx); vm.runInContext(fs.readFileSync('sw.js','utf8'), ctx); console.log('sw.js parsed ok');"
+  # Hinweis: Service Worker wurde entfernt – keine SW-Checks mehr notwendig
