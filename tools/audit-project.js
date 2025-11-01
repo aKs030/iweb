@@ -207,18 +207,23 @@ function maybeCheckSitemap() {
       if (p.startsWith('/')) p = p.slice(1);
       if (!p) p = 'index.html';
       if (p.endsWith('/')) p += 'index.html';
-      const exists = allFiles.has(toPosix(p));
-      checks.push({ url: u, path: toPosix(p), exists });
-      if (!exists) missing.push({ from: 'sitemap.xml', ref: toPosix(p), note: 'sitemap <loc> file missing' });
+  const posixPath = toPosix(p);
+  const exists = allFiles.has(posixPath);
+  checks.push({ url: u, path: posixPath, exists });
+  // Mark sitemap-referenced files as referenced to avoid false orphaning
+  referenced.add(posixPath);
+  if (!exists) missing.push({ from: 'sitemap.xml', ref: posixPath, note: 'sitemap <loc> file missing' });
     } catch {
       // Not a valid URL, try to treat as path
       let p = u.replace(/^https?:\/\/[^/]+\//i, '');
       if (p.startsWith('/')) p = p.slice(1);
       if (!p) p = 'index.html';
       if (p.endsWith('/')) p += 'index.html';
-      const exists = allFiles.has(toPosix(p));
-      checks.push({ url: u, path: toPosix(p), exists });
-      if (!exists) missing.push({ from: 'sitemap.xml', ref: toPosix(p), note: 'sitemap <loc> file missing' });
+  const posixPath = toPosix(p);
+  const exists = allFiles.has(posixPath);
+  checks.push({ url: u, path: posixPath, exists });
+  referenced.add(posixPath);
+  if (!exists) missing.push({ from: 'sitemap.xml', ref: posixPath, note: 'sitemap <loc> file missing' });
     }
   }
   return { sitemap: checks };
@@ -247,6 +252,7 @@ function run() {
   const unlinkedPages = [];
   for (const rel of allFiles) {
     if (rel.startsWith('tools/')) continue; // ignore self
+    if (rel.startsWith('content/img/og/')) continue; // OG assets are intentional and may be referenced by crawlers only
     const ext = path.posix.extname(rel).toLowerCase();
     if (referenced.has(rel)) continue;
     if (HTML_EXT.has(ext)) {
