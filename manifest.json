@@ -1,0 +1,44 @@
+{
+  "name": "iweb",
+  "short_name": "iweb",
+  "description": "Modernes Portfolio & Creative Development Plattform von Abdulkerim Sesli.",
+  "lang": "de-DE",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d0d0d",
+  "theme_color": "#0d0d0d",
+  "icons": [
+    {
+      "src": "/content/img/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/content/img/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/content/img/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/content/img/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_actions": [
+    {
+      "name": "Startseite öffnen",
+      "url": "/",
+      "launch_type": "single-instance"
+    }
+  ],
+  "categories": ["portfolio", "developer", "creative", "web"],
+  "prefer_related_applications": false
+}
