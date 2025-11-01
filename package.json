@@ -1,0 +1,11 @@
+{
+  "name": "iweb",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Static site for Abdulkerim Sesli with audit tooling",
+  "license": "MIT",
+  "scripts": {
+    "audit": "node tools/audit-project.js",
+    "audit:strict": "node tools/audit-project.js --strict"
+  }
+}

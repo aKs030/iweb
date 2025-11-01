@@ -313,7 +313,12 @@ function run() {
     }
   }
 
-  // Exit code: 0 even if missing, to not break flows; adjust if needed
+  // Strict mode: fail build if missing references found
+  const strict = process.argv.includes('--strict');
+  if (strict && result.summary.missingRefs > 0) {
+    console.error(`\nStrict mode: ${result.summary.missingRefs} missing reference(s) detected. Exiting with code 1.`);
+    process.exit(1);
+  }
 }
 
 run();

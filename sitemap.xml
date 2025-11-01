@@ -7,12 +7,12 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://abdulkerimsesli.de/content/img/og-portfolio.webp</image:loc>
+      <image:loc>/content/img/icons/icon-512.png</image:loc>
       <image:title>Abdulkerim Sesli Portfolio</image:title>
       <image:caption>Web Developer and Photographer Portfolio</image:caption>
     </image:image>
     <image:image>
-      <image:loc>https://abdulkerimsesli.de/content/img/profile.webp</image:loc>
+      <image:loc>/content/img/icons/icon-512.png</image:loc>
       <image:title>Abdulkerim Sesli Profile</image:title>
       <image:caption>Professional profile photo</image:caption>
     </image:image>
