@@ -73,35 +73,6 @@ const sectionTracker = new SectionTracker();
 sectionTracker.init();
 window.sectionTracker = sectionTracker;
 
-// ===== Service Worker Entfernung (Decommission) =====
-// Entfernt vorhandene Service Worker und löscht projektbezogene Caches
-if ("serviceWorker" in navigator) {
-  window.addEventListener(
-    "load",
-    async () => {
-      try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map((r) => r.unregister()));
-
-        // Projekt-Caches aufräumen (nur unsere iweb-*-Caches)
-        if (window.caches && typeof caches.keys === "function") {
-          try {
-            const keys = await caches.keys();
-            const ours = keys.filter((k) => k.startsWith("iweb-"));
-            await Promise.all(ours.map((k) => caches.delete(k)));
-          } catch (e) {
-            log.debug("Cache cleanup failed:", e);
-          }
-        }
-
-        log.info("Service Worker entfernt und Caches bereinigt");
-      } catch (error) {
-        log.debug("Service Worker removal failed:", error);
-      }
-    },
-    { once: true }
-  );
-}
 
 // ===== Lazy Module Loader =====
 const LazyModuleLoader = (() => {

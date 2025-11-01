@@ -307,24 +307,6 @@
       }
     </script>
 
-    <!-- Entferne evtl. vorhandene Service Worker und zugehörige Caches (schnell & inline) -->
-    <script>
-      (function() {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations()
-            .then(function(regs){ return Promise.all(regs.map(function(r){ return r.unregister(); })); })
-            .then(function(){
-              if (window.caches && typeof caches.keys === 'function') {
-                return caches.keys().then(function(keys){
-                  var ours = keys.filter(function(k){ return k.startsWith('iweb-'); });
-                  return Promise.all(ours.map(function(k){ return caches.delete(k); }));
-                });
-              }
-            })
-            .catch(function(){});
-        }
-      })();
-    </script>
 
   <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0d0d0d">

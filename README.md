@@ -1,6 +1,6 @@
 # iweb
 
-## Hinweis: Service Worker entfernt (Nov 2025)
+## Hinweis: Service Worker vollständig entfernt (Nov 2025)
 
 Die Website nutzt keinen Service Worker mehr. Bei Auslieferung nach diesem Datum werden eventuell vorhandene, alte Installer automatisch entfernt und projektbezogene Caches bereinigt:
 
