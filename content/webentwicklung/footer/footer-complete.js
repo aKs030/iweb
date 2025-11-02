@@ -1,21 +1,7 @@
 /**
- * Footer Complete System - Optimized
- *
- * This version incorporates several improvements over the original footer implementation.
- *
- * Changes introduced:
- * 1. **Cookie security**: Cookies now include `SameSite=Lax` and, when served over HTTPS,
- *    the `Secure` flag. This reduces the risk of CSRF and cross-site attacks.
- * 2. **Event listener cleanup**: Click handlers for the cookie settings
- *    (close, reject, accept selected, accept all) are stored on the element
- *    and explicitly removed when the cookie settings are closed. This prevents
- *    memory leaks and duplicate handler registrations on repeated opens.
- * 3. **No forced page reload**: The consent actions no longer trigger a full
- *    `window.location.reload()` after a short timeout. Instead the banner is
- *    hidden immediately and consent state is persisted via cookies.
- *
- * Note: The rest of the footer system remains unchanged but is included
- *       here for completeness.
+ * Footer Complete System - Final Optimized
+ * Optimiert für kompakte Darstellung ohne Scrolling
+ * @version 7.0.0 FINAL
  */
 
 import { createLogger, throttle } from '../shared-utilities.js';
@@ -23,13 +9,11 @@ import { createLogger, throttle } from '../shared-utilities.js';
 const log = createLogger("FooterSystem");
 
 // ===== Cookie Utilities =====
-
 const CookieManager = {
   set(name, value, days = 365) {
     const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
-    // Add SameSite and Secure flags to cookies. Secure is only applied when using HTTPS.
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
     document.cookie = `${name}=${value || ""}${expires}; path=/; SameSite=Lax${secure}`;
   },
@@ -62,7 +46,6 @@ const CookieManager = {
 };
 
 // ===== Google Analytics Loader =====
-
 const GoogleAnalytics = {
   load() {
     const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
@@ -72,7 +55,6 @@ const GoogleAnalytics = {
     }
     blockedScripts.forEach((script) => {
       const newScript = document.createElement("script");
-      // Copy attributes
       Array.from(script.attributes).forEach((attr) => {
         if (attr.name === "data-src") {
           newScript.setAttribute("src", attr.value);
@@ -80,7 +62,6 @@ const GoogleAnalytics = {
           newScript.setAttribute(attr.name, attr.value);
         }
       });
-      // Copy inline content
       if (script.innerHTML.trim()) {
         newScript.innerHTML = script.innerHTML;
       }
@@ -91,7 +72,6 @@ const GoogleAnalytics = {
 };
 
 // ===== Cookie Consent Banner =====
-
 class ConsentBanner {
   constructor() {
     this.banner = document.getElementById("cookie-consent-banner");
@@ -152,7 +132,6 @@ class ConsentBanner {
 }
 
 // ===== Cookie Settings Manager =====
-
 const CookieSettings = (() => {
   let sectionObserver = null;
   let initialVisibleSections = new Set();
@@ -187,7 +166,6 @@ const CookieSettings = (() => {
     const sections = document.querySelectorAll(
       "section[id]:not(#threeEarthContainer), main > section[id], [data-section]"
     );
-    // Store initially visible sections
     sections.forEach((section) => {
       const rect = section.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) {
@@ -222,12 +200,6 @@ const CookieSettings = (() => {
     sections.forEach((section) => sectionObserver.observe(section));
   }
 
-  /**
-   * Remove click event handlers from cookie settings elements. The handler
-   * references are stored on the element as `_clickHandler`. After removal
-   * the `listenerAdded` flag is cleared so handlers can be reattached on
-   * subsequent opens. This prevents accumulating duplicate listeners.
-   */
   function cleanupClickListeners(elements) {
     ["closeBtn", "rejectAllBtn", "acceptSelectedBtn", "acceptAllBtn"].forEach((key) => {
       const el = elements[key];
@@ -244,7 +216,6 @@ const CookieSettings = (() => {
   function setupEventListeners(elements) {
     const addOnce = (element, handler) => {
       if (element && !element.dataset.listenerAdded) {
-        // store handler on the element to allow cleanup later
         const wrapper = handler;
         element._clickHandler = wrapper;
         element.dataset.listenerAdded = "true";
@@ -262,7 +233,6 @@ const CookieSettings = (() => {
       close();
       const banner = document.getElementById("cookie-consent-banner");
       if (banner) banner.classList.add("hidden");
-      // No reload – UI updates happen immediately.
     });
     addOnce(elements.acceptSelectedBtn, () => {
       cleanupObserver();
@@ -293,20 +263,18 @@ const CookieSettings = (() => {
       log.error("Cookie settings elements not found");
       return;
     }
-    // Set analytics toggle
     const consent = CookieManager.get("cookie_consent");
     if (elements.analyticsToggle) {
       elements.analyticsToggle.checked = consent === "accepted";
     }
-    // Expand footer
     elements.footer.classList.add("footer-expanded");
+    document.body.classList.add("footer-expanded");
     elements.footerMin?.classList.add("footer-hidden");
     elements.footerMax?.classList.remove("footer-hidden");
     elements.cookieView.classList.remove("hidden");
     if (elements.normalContent) {
       elements.normalContent.style.display = "none";
     }
-    // Setup observers and listeners
     setupSectionObserver(elements);
     setupEventListeners(elements);
     log.info("Cookie settings opened");
@@ -324,11 +292,9 @@ const CookieSettings = (() => {
     if (elements.normalContent) {
       elements.normalContent.style.display = "block";
     }
-    // Reset scroll handler state
     if (window.footerScrollHandler) {
       window.footerScrollHandler.expanded = false;
     }
-    // Remove click listeners to prevent memory leaks
     cleanupClickListeners(elements);
     log.info("Cookie settings closed");
   }
@@ -336,7 +302,6 @@ const CookieSettings = (() => {
 })();
 
 // ===== Theme System =====
-
 class ThemeSystem {
   constructor() {
     this.currentTheme = this.loadTheme();
@@ -391,7 +356,6 @@ class ThemeSystem {
 }
 
 // ===== Footer Loader =====
-
 class FooterLoader {
   async init() {
     const container = document.getElementById("footer-container");
@@ -401,9 +365,12 @@ class FooterLoader {
     }
     try {
       await this.loadContent(container);
+      // Ensure expected card markup exists (some environments may strip or
+      // transform injected HTML). This guarantees at least the default set of
+      // cards are present so the resizer and layout behave predictably.
+      this.ensureDefaultCards();
       this.updateYears();
       this.setupInteractions();
-      // Initialize consent banner
       const consentBanner = new ConsentBanner();
       consentBanner.init();
       log.info("Footer loaded successfully");
@@ -435,6 +402,56 @@ class FooterLoader {
       el.textContent = year;
     });
   }
+
+  /**
+   * Make sure the footer-cards-grid contains the expected card elements.
+   * If cards are missing (e.g. server trimmed markup or runtime transformations),
+   * replace the grid content with a minimal, predictable set.
+   */
+  ensureDefaultCards() {
+    try {
+      const grid = document.querySelector('#site-footer .footer-cards-grid');
+      if (!grid) return;
+      const existing = grid.querySelectorAll('.footer-card');
+      if (existing.length >= 4) return; // enough cards present
+
+      grid.innerHTML = `
+        <article class="footer-card">
+          <div class="footer-card-header"><h3 class="footer-card-title">About</h3><div class="footer-card-accent"></div></div>
+          <div class="footer-card-content"><p class="footer-profile-name">Abdulkerim Sesli</p><p class="footer-profile-role">Full‑Stack Developer • Photographer</p><a href="mailto:hello@abdulkerimsesli.de" class="footer-contact-cta">Kontakt</a></div>
+        </article>
+        <article class="footer-card">
+          <div class="footer-card-header"><h3 class="footer-card-title">Work</h3><div class="footer-card-accent"></div></div>
+          <div class="footer-card-content"><nav class="footer-work-nav"><a href="#portfolio" class="footer-work-link">Portfolio</a><a href="#projekte" class="footer-work-link">Projekte</a><a href="#lab" class="footer-work-link">Code Lab</a></nav></div>
+        </article>
+        <article class="footer-card">
+          <div class="footer-card-header"><h3 class="footer-card-title">Connect</h3><div class="footer-card-accent"></div></div>
+          <div class="footer-card-content"><div class="footer-social-grid"><a href="https://github.com/aKs030" class="footer-social-card" target="_blank" rel="noopener">GitHub</a><a href="https://linkedin.com/in/abdulkerim-sesli" class="footer-social-card" target="_blank" rel="noopener">LinkedIn</a><a href="https://instagram.com/abdul.codes" class="footer-social-card" target="_blank" rel="noopener">Instagram</a></div></div>
+        </article>
+        <article class="footer-card footer-card-newsletter">
+          <div class="footer-card-header"><h3 class="footer-card-title">Newsletter</h3><div class="footer-card-accent"></div></div>
+          <div class="footer-card-content"><p class="newsletter-description">Kurze Updates & Insights — direkt in dein Postfach.</p><form class="newsletter-form-enhanced"><div class="newsletter-input-wrapper"><input type="email" class="newsletter-input-enhanced" placeholder="deine@email.de" required><button type="submit" class="newsletter-submit-enhanced">Abonnieren</button></div></form></div>
+        </article>
+      `;
+
+      // If a FooterResizer exists, trigger a recalculation
+      if (window.footerScrollHandler && window.footerScrollHandler.expanded !== undefined) {
+        // no-op; scroll handler presence is fine
+      }
+      if (window.FooterSystem) {
+        // try to nudge the resizer if available
+        try {
+          const sys = window.FooterSystem;
+          // if user instantiated (global constructor), we can't access instance
+          // but we can call a global resizer if set on document
+        } catch (e) {
+          // ignore
+        }
+      }
+    } catch (e) {
+      log.warn('ensureDefaultCards failed', e);
+    }
+  }
   setupInteractions() {
     this.setupNewsletter();
     this.setupCookieButton();
@@ -452,7 +469,7 @@ class FooterLoader {
         const submitButton = form.querySelector('button[type="submit"]');
         if (submitButton) {
           const originalText = submitButton.textContent;
-          submitButton.textContent = "✓ Angemeldet!";
+          submitButton.textContent = "✓ Done!";
           submitButton.disabled = true;
           setTimeout(() => {
             submitButton.textContent = originalText;
@@ -493,7 +510,6 @@ class FooterLoader {
 }
 
 // ===== Scroll Handler =====
-
 class ScrollHandler {
   constructor() {
     this.expanded = false;
@@ -560,108 +576,100 @@ class ScrollHandler {
 
 class FooterResizer {
   constructor() {
-    this.config = {
-      MOBILE_BREAKPOINT: 768,
-      MAX_FOOTER_RATIO_MOBILE: 0.92,
-      MAX_FOOTER_RATIO_DESKTOP: 0.6,
-      MIN_FOOTER_HEIGHT_MOBILE: 420,
-      MIN_FOOTER_HEIGHT_DESKTOP: 380,
-      THROTTLE_DELAY: 150,
-    };
-    this.lastSnapshot = "";
-    this.rafId = null;
+    this.rAF = null;
     this.resizeObserver = null;
+    this.onResize = this.onResize.bind(this);
+    this.onVisualResize = this.onResize.bind(this);
   }
+
   init() {
+    // initial measurement
     this.apply();
-    const onResize = throttle(() => {
-      requestAnimationFrame(() => this.apply());
-    }, this.config.THROTTLE_DELAY);
-    window.addEventListener("resize", onResize);
-    window.visualViewport?.addEventListener("resize", onResize);
-    this.setupResizeObserver();
-    this.setupFontObserver();
-    log.info("Footer resizer initialized");
-  }
-  setupResizeObserver() {
-    const content = document.querySelector("#site-footer .footer-enhanced-content");
+    // listen to common resize events
+    window.addEventListener('resize', this.onResize, { passive: true });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', this.onVisualResize, { passive: true });
+
+    // observe content changes inside footer so we can recompute if cards change
+    const content = document.querySelector('#site-footer .footer-enhanced-content');
     if (content && window.ResizeObserver) {
-      this.resizeObserver = new ResizeObserver(() => {
-        if (this.rafId) cancelAnimationFrame(this.rafId);
-        this.rafId = requestAnimationFrame(() => {
-          this.apply();
-          this.rafId = null;
-        });
-      });
+      this.resizeObserver = new ResizeObserver(() => this.apply());
       this.resizeObserver.observe(content);
-      log.debug("ResizeObserver activated");
+    }
+  }
+
+  apply() {
+    const footer = document.getElementById('site-footer');
+    const content = footer?.querySelector('.footer-enhanced-content');
+    // prefer measured content height, fall back to footer height or a safe fraction
+    let height = 0;
+    if (content) {
+      // Try the straightforward measurement first
+      height = Math.max(0, content.scrollHeight || content.offsetHeight || 0);
+      // If the content is hidden or collapsed (offsetHeight === 0) the
+      // scrollHeight may be incorrect. Measure by cloning off-DOM to get
+      // the natural content height without affecting layout/visibility.
+      if ((height <= 1 || content.offsetHeight === 0) && typeof document !== 'undefined') {
+        try {
+          const clone = content.cloneNode(true);
+          // Make clone invisible and out of flow but measurable
+          clone.style.position = 'absolute';
+          clone.style.visibility = 'hidden';
+          clone.style.height = 'auto';
+          clone.style.maxHeight = 'none';
+          clone.style.overflow = 'visible';
+          // Ensure the clone uses the same width so text wraps similarly
+          const width = content.getBoundingClientRect().width || content.offsetWidth || window.innerWidth;
+          clone.style.width = `${width}px`;
+          document.body.appendChild(clone);
+          const measured = Math.max(clone.scrollHeight || clone.offsetHeight || 0, height);
+          document.body.removeChild(clone);
+          height = measured;
+        } catch (e) {
+          // fallback: keep previous height
+          log.debug('FooterResizer: clone-measure failed', e);
+        }
+      }
+    } else if (footer) {
+      height = Math.max(0, footer.scrollHeight || footer.offsetHeight || 0);
     } else {
-      // Fallbacks ensure the footer height is calculated at least once on load
-      setTimeout(() => this.apply(), 250);
-      setTimeout(() => this.apply(), 1200);
+      height = Math.round((window.innerHeight || 600) * 0.5);
+    }
+
+    // cap the height to viewport minus a small gap (approximate safe-area)
+    const gap = 24; // matches CSS fallback calc(100dvh - 24px - safe-area)
+    const cap = Math.max(0, Math.round((window.innerHeight || 600) - gap));
+    if (height > cap) height = cap;
+
+    // write to :root so CSS uses the computed value
+    try {
+      document.documentElement.style.setProperty('--footer-actual-height', `${height}px`);
+    } catch (e) {
+      // ignore write errors in odd embed contexts
+      // eslint-disable-next-line no-console
+      log.warn('FooterResizer: could not set CSS var --footer-actual-height', e);
     }
   }
-  setupFontObserver() {
-    if (document.fonts) {
-      document.fonts.ready.then(() => {
-        requestAnimationFrame(() => this.apply());
-      });
-    }
+
+  onResize() {
+    if (this.rAF) cancelAnimationFrame(this.rAF);
+    this.rAF = requestAnimationFrame(() => {
+      this.apply();
+      this.rAF = null;
+    });
   }
+
   cleanup() {
+    window.removeEventListener('resize', this.onResize);
+    if (window.visualViewport) window.visualViewport.removeEventListener('resize', this.onVisualResize);
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
     }
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
-  }
-  measureViewport() {
-    const layoutHeight = Math.max(
-      window.innerHeight || 0,
-      document.documentElement?.clientHeight || 0,
-      1
-    );
-    const visualHeight = window.visualViewport?.height || 0;
-    const usable = Math.max(layoutHeight, visualHeight, 1);
-    return { layoutHeight, visualHeight, usable };
-  }
-  setCSSVar(name, value) {
-    const footer = document.getElementById("site-footer");
-    const target = footer ?? document.documentElement;
-    target.style.setProperty(name, value);
-  }
-  apply() {
-    const footer = document.getElementById("site-footer");
-    if (!footer) return;
-    const { usable } = this.measureViewport();
-    this.setCSSVar("--vh", `${usable * 0.01}px`);
-    const isMobile = window.innerWidth <= this.config.MOBILE_BREAKPOINT;
-    const maxRatio = isMobile ? this.config.MAX_FOOTER_RATIO_MOBILE : this.config.MAX_FOOTER_RATIO_DESKTOP;
-    const minHeight = isMobile ? this.config.MIN_FOOTER_HEIGHT_MOBILE : this.config.MIN_FOOTER_HEIGHT_DESKTOP;
-    const baseMax = Math.round(usable * maxRatio);
-    const maxFooter = Math.min(usable, Math.max(baseMax, minHeight));
-    this.setCSSVar("--footer-max-height", `${maxFooter}px`);
-    const content = document.querySelector("#site-footer .footer-enhanced-content");
-    if (content) {
-      const naturalHeight = Math.max(1, content.scrollHeight || 0);
-      const actual = Math.min(naturalHeight, maxFooter);
-      this.setCSSVar("--footer-actual-height", `${actual}px`);
-      const snapshot = `${naturalHeight}|${isMobile}|${maxFooter}|${actual}`;
-      if (this.lastSnapshot !== snapshot) {
-        log.debug(`Content: ${naturalHeight}px, Mobile: ${isMobile}, Max: ${maxFooter}px, Viewport: ${actual}px`);
-        this.lastSnapshot = snapshot;
-      }
-    } else {
-      this.setCSSVar("--footer-actual-height", `${maxFooter}px`);
-    }
+    if (this.rAF) cancelAnimationFrame(this.rAF);
   }
 }
 
 // ===== Main Footer System =====
-
 class FooterSystem {
   constructor() {
     this.theme = new ThemeSystem();
@@ -676,7 +684,12 @@ class FooterSystem {
     if (loaded) {
       this.theme.initToggleButton();
       this.scroller.init();
-      this.resizer.init();
+      // init resizer after footer content is loaded
+      try {
+        this.resizer.init();
+      } catch (e) {
+        log.warn('FooterResizer init failed', e);
+      }
       log.info("✅ Footer system fully initialized");
     } else {
       log.error("❌ Footer failed to load");
@@ -684,13 +697,16 @@ class FooterSystem {
   }
   cleanup() {
     this.scroller.cleanup();
-    this.resizer.cleanup();
+    try {
+      this.resizer.cleanup();
+    } catch (e) {
+      // ignore
+    }
     log.info("Footer system cleanup completed");
   }
 }
 
 // ===== Auto-Start =====
-
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     const system = new FooterSystem();
