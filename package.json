@@ -1,25 +1,18 @@
 {
-  "name": "iweb-tests",
+  "name": "iweb",
   "version": "0.1.0",
   "private": true,
+  "description": "Static site for Abdulkerim with test tooling",
+  "license": "MIT",
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "audit": "node tools/audit-project.js",
+    "audit:strict": "node tools/audit-project.js --strict"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "http-server": "^14.1.1"
-  }
-}
-{
-  "name": "iweb",
-  "private": true,
-  "version": "0.0.0",
-  "description": "Static site for Abdulkerim with audit tooling",
-  "license": "MIT",
-  "scripts": {
-    "audit": "node tools/audit-project.js",
-    "audit:strict": "node tools/audit-project.js --strict"
   }
 }
