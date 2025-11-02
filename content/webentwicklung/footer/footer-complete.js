@@ -277,6 +277,16 @@ const CookieSettings = (() => {
     }
     setupSectionObserver(elements);
     setupEventListeners(elements);
+    // Accessibility: mark triggers as expanded and move focus into the panel
+    ["footer-cookies-link", "footer-open-cookie-btn"].forEach((id) => {
+      const t = document.getElementById(id);
+      if (t) t.setAttribute("aria-expanded", "true");
+    });
+    // Focus first interactive element inside the cookie view
+    const firstFocusable = elements.cookieView.querySelector('button, [href], input, select, textarea');
+    if (firstFocusable) {
+      firstFocusable.focus({ preventScroll: true });
+    }
     log.info("Cookie settings opened");
   }
 
@@ -296,6 +306,13 @@ const CookieSettings = (() => {
       window.footerScrollHandler.expanded = false;
     }
     cleanupClickListeners(elements);
+    // Accessibility: reset aria-expanded on triggers and return focus
+    ["footer-cookies-link", "footer-open-cookie-btn"].forEach((id) => {
+      const t = document.getElementById(id);
+      if (t) t.setAttribute("aria-expanded", "false");
+    });
+    const trigger = document.getElementById("footer-cookies-link") || document.getElementById("footer-open-cookie-btn");
+    if (trigger) trigger.focus({ preventScroll: true });
     log.info("Cookie settings closed");
   }
   return { open, close };

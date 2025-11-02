@@ -15,6 +15,11 @@
   padding: var(--spacing-xl) var(--spacing-md);
   box-sizing: border-box;
   width: 100%;
+  /* Rhythm & leading variables local to About section */
+  --leading-lg: 1.8;
+  --leading-md: 1.6;
+  --space-lg: 1.8rem;
+  --space-md: 1.2rem;
 }
 
 .about__container {
@@ -34,7 +39,9 @@
 }
 
 .about__text p {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 1.2rem;
+  max-width: 700px;
+  color: rgba(240, 240, 240, 0.88);
 }
 
 .about__farewell {
@@ -97,3 +104,143 @@
   outline: 3px solid var(--primary-color);
   outline-offset: 2px;
 }
+
+/* --------------------------------------------------------------------------
+   Mapped/merged styles from legacy helpers into BEM
+   - .about-section -> .about__container / .about__text
+   - .button-group    -> .about__cta
+   - .btn.primary     -> .about__button--primary (existing)
+   - .btn.secondary   -> .about__button--secondary (new alias)
+--------------------------------------------------------------------------- */
+
+/* Container adjustments (from .about-section) */
+.about__container {
+  /* keep existing max-width/width/etc. */
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+  padding: 5rem 1.5rem;
+  color: #f5f5f5;
+  font-size: 1.05rem;
+}
+
+/* Main text adjustments (from .about-section) */
+.about__text {
+  text-align: left;
+  line-height: 1.6;
+}
+
+
+
+.about__text h1 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  margin-bottom: var(--space-lg, 1.8rem);
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: var(--leading-lg);
+}
+
+.about__text p {
+  font-size: clamp(0.95rem, 2.2vw, 1.05rem);
+  margin-bottom: var(--space-md, 1.2rem);
+  max-width: 700px;
+  color: rgba(240, 240, 240, 0.88);
+  line-height: var(--leading-md);
+}
+
+.about__text strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.about__text em {
+  color: #7fc8ff;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* Button group mapping */
+
+.about__cta {
+  margin-top: 2rem; /* override to match legacy spacing */
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile-Optimierungen für die About-Sektion
+   - kompakteres Padding
+   - kleinere / gut lesbare Schriftgrößen
+   - gestapelte Buttons mit vollen Breiten für bessere Tap-Targets
+   - Rücksicht auf Safe-Area Inset unten
+--------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+  .about__container {
+    padding: 2.5rem 1rem;
+    font-size: 1rem; /* etwas kleiner als Desktop */
+  }
+
+  .about__text {
+    line-height: 1.55;
+  }
+
+  .about__text h1,
+  .about__text h3 {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .about__text p {
+    font-size: 0.98rem;
+    margin-bottom: 1rem;
+  }
+
+  .about__text em {
+    display: inline-block;
+    font-size: 1rem;
+  }
+
+  /* Buttons: gestapelt, volle Breite, größere Tap-Ziele */
+  .about__cta {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+    margin-top: 1.25rem;
+  }
+
+  /* Button-Basis: override globale min-width und sorgen für angenehme Höhe */
+  .about__cta .btn {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.9rem 1rem;
+    min-height: 44px; /* mobile touch target */
+    min-width: 0; /* überschreibt desktop-min-width */
+    text-align: center;
+  }
+
+  /* Falls Icon + Text in Buttons, Icon kleiner halten */
+  .about__cta .btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Mehr Platz am unteren Rand für Geräte mit Home-Indikator */
+  .about__container {
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 360px) {
+  .about__container {
+    padding: 2rem 0.75rem;
+  }
+
+  .about__text h1,
+  .about__text h3 {
+    font-size: 1.4rem;
+  }
+}
+
