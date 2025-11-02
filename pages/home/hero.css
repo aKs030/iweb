@@ -294,28 +294,28 @@ body:not(.hero-active) .floating-icon {
 }
 
 /* ===== CRT Styles (aus buttons.css verschoben) ===== */
-.btn-crt {
+.hero__button--crt {
   position: relative;
   isolation: isolate;
   background: var(--primary-color);
   color: #fff;
 }
 
-.btn-crt.btn-secondary {
+.hero__button--crt.btn-secondary {
   background: transparent;
 }
 
-.btn-crt:hover::after {
+.hero__button--crt:hover::after {
   opacity: 0.4;
 }
 
-.btn-crt.btn-secondary {
+.hero__button--crt.btn-secondary {
   background: var(--bg-secondary);
   border: 2px solid var(--primary-color);
   color: var(--primary-color);
 }
 
-.btn-crt.btn-secondary:hover {
+.hero__button--crt.btn-secondary:hover {
   background: var(--primary-color);
   color: #fff;
 }

@@ -13,17 +13,17 @@
         <span class="cookie-text">
           🍪 <span class="cookie-text-full">Wir verwenden Google Analytics.</span><span class="cookie-text-short">Analytics</span>
         </span>
-        <button id="accept-cookies-btn" type="button" class="cookie-accept-btn">
+        <button id="accept-cookies-btn" type="button" class="cookie-accept-btn" aria-label="Alle Cookies akzeptieren">
           <span class="btn-text-full">OK</span><span class="btn-text-short">✓</span>
         </button>
-        <button id="reject-cookies-btn" type="button" class="cookie-reject-btn">
+        <button id="reject-cookies-btn" type="button" class="cookie-reject-btn" aria-label="Nur essenzielle Cookies wählen">
           <span class="btn-text-full">Nein</span><span class="btn-text-short">✗</span>
         </button>
       </div>
       
       <!-- Navigation -->
       <nav class="footer-minimal-nav" aria-label="Footer links">
-        <button id="footer-cookies-link" type="button" class="footer-nav-link footer-cookies-link" aria-label="Cookie-Einstellungen">
+  <button id="footer-cookies-link" type="button" class="footer-nav-link footer-cookies-link" aria-label="Cookie-Einstellungen" aria-controls="footer-cookie-view" aria-expanded="false">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <circle cx="8" cy="10" r="1.5" fill="currentColor"></circle>
@@ -129,7 +129,7 @@
     
       <!-- Floating Theme Control -->
       <div class="theme-control-floating">
-        <button type="button" class="day-night-artwork" id="dayNightToggle" aria-label="Design wechseln" title="Design wechseln (Tag/Nacht)" aria-pressed="false">
+          <button type="button" class="day-night-artwork" id="dayNightToggle" aria-label="Design wechseln" title="Design wechseln (Tag/Nacht)" aria-pressed="false">
           <span class="sky-canvas" aria-hidden="true">
             <span class="sun">
               <span class="sun-rays">
@@ -255,7 +255,7 @@
                 <form class="newsletter-form-enhanced">
                   <div class="newsletter-input-wrapper">
                     <input type="email" class="newsletter-input-enhanced" placeholder="deine@email.de" required>
-                    <button type="submit" class="newsletter-submit-enhanced">Abonnieren</button>
+              <button type="submit" class="newsletter-submit-enhanced">Abonnieren</button>
                   </div>
                 </form>
               </div>
@@ -285,7 +285,7 @@
                   </svg>
                   Privacy
                 </a>
-                <button type="button" class="footer-cookie-btn">
+                <button id="footer-open-cookie-btn" type="button" class="footer-cookie-btn" aria-label="Cookie-Einstellungen öffnen" aria-controls="footer-cookie-view" aria-expanded="false">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <path d="M21.95 10.99c-1.79-.03-3.7-1.95-2.68-4.22-2.97 1-5.78-1.59-5.19-4.56C7.11.02 2 6.27 2 12c0 5.52 4.48 10 10 10 5.89 0 10.54-5.08 9.95-11.01z" fill="currentColor"/>
                   </svg>
