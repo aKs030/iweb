@@ -1,8 +1,22 @@
 {
+  "name": "iweb-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "http-server": "^14.1.1"
+  }
+}
+{
   "name": "iweb",
   "private": true,
   "version": "0.0.0",
-  "description": "Static site for Abdulkerim Sesli with audit tooling",
+  "description": "Static site for Abdulkerim with audit tooling",
   "license": "MIT",
   "scripts": {
     "audit": "node tools/audit-project.js",
