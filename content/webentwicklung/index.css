@@ -337,9 +337,18 @@ a:hover {
     padding: var(--spacing-xl) 0;
   }
 
+  .section.about {
+    min-height: auto;
+    scroll-snap-stop: normal;
+  }
+
   @supports (min-height: 100dvh) {
     .section {
       min-height: 100dvh;
+    }
+
+    .section.about {
+      min-height: auto;
     }
   }
 

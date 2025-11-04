@@ -7,68 +7,134 @@
   - Dem SVG-Icon wurde ein `<title>`-Element für bessere Barrierefreiheit hinzugefügt, 
     damit Screenreader das Icon beschreiben können.
 -->
-<section id="about" class="about">
+<div class="about-fragment">
+  <style data-inline="about-fallback">
+    :where(.section.about, .about-fragment) {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1.5rem;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    :where(.section.about, .about-fragment) .about__container {
+      margin: 0 auto;
+      padding: 5rem 1.5rem;
+      text-align: center;
+    }
+
+    .about__cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    @media (max-width: 768px) {
+      .section.about {
+        min-height: auto;
+        scroll-snap-stop: normal;
+      }
+
+      :where(.section.about, .about-fragment) {
+        display: block;
+        padding: 1.75rem 0;
+      }
+
+      :where(.section.about, .about-fragment) .about__container {
+        padding: 3rem 1.25rem;
+        padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
+      }
+    }
+
+    @media (max-width: 600px) {
+      :where(.section.about, .about-fragment) .about__container {
+        padding: 2.5rem 1rem;
+        padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+      }
+
+      .about__cta {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .about__cta .btn {
+        width: 100%;
+        max-width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
   <div class="about__container">
     <div class="about__content">
       <div class="about__text parallax-element" data-parallax-speed="0.1">
         <h1>Danke für Ihren Besuch!</h1>
 
-      <p>
-        Es freut mich sehr, dass Sie sich die Zeit genommen haben, meine Website
-        zu erkunden. Mein Name ist <strong>Abdulkerim</strong> und ich bin ein
-        leidenschaftlicher Webentwickler aus Berlin, der es liebt, digitale
-        Träume in die Realität umzusetzen.
-      </p>
+        <p>
+          Es freut mich sehr, dass Sie sich die Zeit genommen haben, meine
+          Website zu erkunden. Mein Name ist <strong>Abdulkerim</strong> und ich
+          bin ein leidenschaftlicher Webentwickler aus Berlin, der es liebt,
+          digitale Träume in die Realität umzusetzen.
+        </p>
 
-      <p>
-        Hinter jedem Projekt steckt eine Geschichte, hinter jedem Code eine
-        Vision. Ich glaube fest daran, dass großartige Websites mehr sind als
-        nur funktionale Tools – sie sind digitale Erlebnisse, die Menschen
-        bewegen und inspirieren.
-      </p>
+        <p>
+          Hinter jedem Projekt steckt eine Geschichte, hinter jedem Code eine
+          Vision. Ich glaube fest daran, dass großartige Websites mehr sind als
+          nur funktionale Tools – sie sind digitale Erlebnisse, die Menschen
+          bewegen und inspirieren.
+        </p>
 
-      <p>
-        Meine Mission ist es, das Web zu einem schöneren und zugänglicheren Ort
-        zu machen. Dabei verbinde ich moderne Technologien mit kreativem Design
-        und stelle den Menschen stets in den Mittelpunkt meiner Arbeit.
-      </p>
+        <p>
+          Meine Mission ist es, das Web zu einem schöneren und zugänglicheren
+          Ort zu machen. Dabei verbinde ich moderne Technologien mit kreativem
+          Design und stelle den Menschen stets in den Mittelpunkt meiner Arbeit.
+        </p>
 
-      <p>
-        <em>Jede Zeile Code, die ich schreibe, trägt ein Stück meiner Leidenschaft in sich.</em><br />
-        Von der ersten Idee bis zum finalen Launch begleite ich Sie auf Ihrer
-        digitalen Reise.
-      </p>
+        <p>
+          <em
+            >Jede Zeile Code, die ich schreibe, trägt ein Stück meiner
+            Leidenschaft in sich.</em
+          ><br />
+          Von der ersten Idee bis zum finalen Launch begleite ich Sie auf Ihrer
+          digitalen Reise.
+        </p>
 
-      <p>
-        Ich hoffe, meine Arbeit konnte Sie inspirieren und Ihnen einen Einblick
-        in meine Welt der Webentwicklung geben. Es war mir eine wahre Freude,
-        Sie hier zu haben.
-      </p>
+        <p>
+          Ich hoffe, meine Arbeit konnte Sie inspirieren und Ihnen einen
+          Einblick in meine Welt der Webentwicklung geben. Es war mir eine wahre
+          Freude, Sie hier zu haben.
+        </p>
 
-      <p class="about__farewell">
-        <strong>Herzlichen Dank für Ihr Interesse und besuchen Sie mich gerne wieder!</strong>
-      </p>
-
-      <div class="about__cta">
-        <a href="#hero" class="btn btn-primary">Zur Startseite</a>
-        <a href="#contact" class="btn btn-secondary">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-            focusable="false"
+        <p class="about__farewell">
+          <strong
+            >Herzlichen Dank für Ihr Interesse und besuchen Sie mich gerne
+            wieder!</strong
           >
-            <title>Lebenslauf herunterladen</title>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          <span>Lebenslauf</span>
-        </a>
+        </p>
+
+        <div class="about__cta">
+          <a href="#hero" class="btn btn-primary">Zur Startseite</a>
+          <a href="#contact" class="btn btn-secondary">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <title>Lebenslauf herunterladen</title>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>Lebenslauf</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
