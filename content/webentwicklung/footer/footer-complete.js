@@ -257,6 +257,18 @@ const CookieSettings = (() => {
     });
   }
 
+  const COOKIE_TRIGGER_SELECTOR = "[data-cookie-trigger]";
+
+  function setTriggerExpanded(value) {
+    document.querySelectorAll(COOKIE_TRIGGER_SELECTOR).forEach((trigger) => {
+      trigger.setAttribute("aria-expanded", value ? "true" : "false");
+    });
+  }
+
+  function getPrimaryTrigger() {
+    return document.querySelector(COOKIE_TRIGGER_SELECTOR);
+  }
+
   function open() {
     const elements = getElements();
     if (!elements.footer || !elements.cookieView) {
@@ -278,10 +290,7 @@ const CookieSettings = (() => {
     setupSectionObserver(elements);
     setupEventListeners(elements);
     // Accessibility: mark triggers as expanded and move focus into the panel
-    ["footer-cookies-link", "footer-open-cookie-btn"].forEach((id) => {
-      const t = document.getElementById(id);
-      if (t) t.setAttribute("aria-expanded", "true");
-    });
+    setTriggerExpanded(true);
     // Focus first interactive element inside the cookie view
     const firstFocusable = elements.cookieView.querySelector('button, [href], input, select, textarea');
     if (firstFocusable) {
@@ -307,11 +316,8 @@ const CookieSettings = (() => {
     }
     cleanupClickListeners(elements);
     // Accessibility: reset aria-expanded on triggers and return focus
-    ["footer-cookies-link", "footer-open-cookie-btn"].forEach((id) => {
-      const t = document.getElementById(id);
-      if (t) t.setAttribute("aria-expanded", "false");
-    });
-    const trigger = document.getElementById("footer-cookies-link") || document.getElementById("footer-open-cookie-btn");
+    setTriggerExpanded(false);
+    const trigger = getPrimaryTrigger();
     if (trigger) trigger.focus({ preventScroll: true });
     log.info("Cookie settings closed");
   }
