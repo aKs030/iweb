@@ -4,6 +4,7 @@
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
@@ -16,7 +17,12 @@
   position: relative;
   overflow: hidden;
   min-width: 160px;
+  min-height: 44px; /* WCAG Touch-Target */
   text-align: center;
+  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.2);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .btn-primary {
@@ -45,6 +51,12 @@
   left: 100%;
 }
 
+/* Active/Touch state for mobile */
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 8px rgba(9, 139, 255, 0.4);
+}
+
 .btn-secondary {
   background: transparent;
   color: var(--text-primary);
@@ -54,6 +66,11 @@
 .btn-secondary:hover {
   border-color: var(--primary-color);
   color: var(--primary-color);
+}
+
+.btn-secondary:active {
+  transform: scale(0.97);
+  background: rgba(0, 122, 255, 0.1);
 }
 
 /* Scroll-Snap Container */
@@ -388,10 +405,90 @@ a:hover {
   }
 }
 
+/* ===== iPhone SE Index-Optimierung (375x667) ===== */
+@media (min-width: 375px) and (max-width: 375px) and (min-height: 667px) and (max-height: 667px) {
+  html {
+    font-size: 14.5px;
+  }
+  
+  .section {
+    min-height: 667px;
+    padding: var(--spacing-lg) 0;
+  }
+  
+  .container {
+    padding-inline: max(0.75rem, env(safe-area-inset-left, 0px));
+  }
+  
+  body {
+    padding-top: calc(56px + env(safe-area-inset-top, 0px));
+  }
+  
+  .btn {
+    min-width: 150px;
+    padding: 0.8rem 1.4rem;
+    font-size: 0.925rem;
+  }
+  
+  .card {
+    padding: calc(var(--spacing-md) * 1.1);
+  }
+  
+  .card .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 1.9rem;
+  }
+}
+
 @media (max-width: 600px) {
   .snap-section,
   .section {
     scroll-snap-align: center;
+  }
+}
+
+/* Landscape Mode Optimizations */
+@media (max-width: 896px) and (orientation: landscape) {
+  .section {
+    min-height: 100svh;
+    padding: var(--spacing-md) 0;
+  }
+  
+  .container {
+    padding-inline: max(1.5rem, env(safe-area-inset-left, 0px));
+  }
+  
+  /* Buttons nebeneinander im Landscape */
+  .btn-group {
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+  
+  .btn {
+    min-width: 120px;
+    padding: 0.625rem 1.25rem;
+  }
+}
+
+/* Touch-optimierte Button-Gruppen auf Mobile */
+@media (max-width: 480px) {
+  .btn {
+    min-width: 140px;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9375rem;
+  }
+  
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  .btn-group .btn {
+    width: 100%;
+    max-width: 320px;
   }
 }
 

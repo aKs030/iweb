@@ -437,7 +437,7 @@ class FooterLoader {
       const grid = document.querySelector('#site-footer .footer-cards-grid');
       if (!grid) return;
       const existing = grid.querySelectorAll('.footer-card');
-      if (existing.length >= 4) return; // enough cards present
+      if (existing.length >= 3) return; // enough cards present (removed Connect card)
 
       grid.innerHTML = `
         <article class="footer-card">
@@ -448,13 +448,9 @@ class FooterLoader {
           <div class="footer-card-header"><h3 class="footer-card-title">Work</h3><div class="footer-card-accent"></div></div>
           <div class="footer-card-content"><nav class="footer-work-nav"><a href="#portfolio" class="footer-work-link">Portfolio</a><a href="#projekte" class="footer-work-link">Projekte</a><a href="#lab" class="footer-work-link">Code Lab</a></nav></div>
         </article>
-        <article class="footer-card">
-          <div class="footer-card-header"><h3 class="footer-card-title">Connect</h3><div class="footer-card-accent"></div></div>
-          <div class="footer-card-content"><div class="footer-social-grid"><a href="https://github.com/aKs030" class="footer-social-card" target="_blank" rel="noopener">GitHub</a><a href="https://linkedin.com/in/abdulkerim-sesli" class="footer-social-card" target="_blank" rel="noopener">LinkedIn</a><a href="https://instagram.com/abdul.codes" class="footer-social-card" target="_blank" rel="noopener">Instagram</a></div></div>
-        </article>
         <article class="footer-card footer-card-newsletter">
           <div class="footer-card-header"><h3 class="footer-card-title">Newsletter</h3><div class="footer-card-accent"></div></div>
-          <div class="footer-card-content"><p class="newsletter-description">Kurze Updates & Insights — direkt in dein Postfach.</p><form class="newsletter-form-enhanced"><div class="newsletter-input-wrapper"><input type="email" class="newsletter-input-enhanced" placeholder="deine@email.de" required><button type="submit" class="newsletter-submit-enhanced">Abonnieren</button></div></form></div>
+          <div class="footer-card-content"><p class="newsletter-description">Kurze Updates & Insights — direkt in dein Postfach.</p><form class="newsletter-form-enhanced"><div class="newsletter-input-wrapper"><input type="email" class="newsletter-input-enhanced" placeholder="deine@email.de" required><button type="submit" class="newsletter-submit-enhanced"><span class="btn-text-full">Abonnieren</span><span class="btn-text-short">→</span></button></div></form></div>
         </article>
       `;
 

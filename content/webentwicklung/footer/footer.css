@@ -60,26 +60,31 @@ body.footer-expanded {
   padding-bottom: 70vh;
 }
 
-/* ===== Minimized Footer ===== */
+/* ===== Minimized Footer - Eine kompakte Zeile ===== */
 .footer-minimized {
-  padding: 6px var(--footer-spacing-sm);
+  padding: 5px 10px;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 40px;
+  min-height: 36px;
+  max-height: 40px;
   display: flex;
   align-items: center;
   opacity: 1;
   transform: translateY(0);
   transition: all 0.25s var(--dynamic-footer-spring-quick);
+  overflow: hidden;
 }
 
 .footer-minimal-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--footer-spacing-xs);
-  flex-wrap: nowrap;
-  width: 100%;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  max-height: 40px !important;
+  overflow: hidden !important;
 }
 
 .footer-copyright-text {
@@ -92,6 +97,9 @@ body.footer-expanded {
   flex-shrink: 1;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .footer-brand-link {
@@ -111,10 +119,12 @@ body.footer-expanded {
 }
 
 .footer-minimal-nav {
-  display: flex;
-  gap: var(--footer-spacing-xs);
-  align-items: center;
-  flex-shrink: 0;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 6px !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  flex-wrap: nowrap !important;
 }
 
 .footer-nav-link {
@@ -125,16 +135,25 @@ body.footer-expanded {
   border-radius: var(--dynamic-footer-micro-radius);
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   white-space: nowrap;
   justify-content: center;
-  min-height: 44px;
+  min-height: 36px;
   transition: all var(--footer-transition-quick);
 }
 
 .footer-nav-link svg {
   flex-shrink: 0;
   opacity: 0.8;
+  width: 14px;
+  height: 14px;
+}
+
+/* Text-Label im Footer-Button */
+.footer-nav-link .nav-text,
+.footer-nav-link > span {
+  display: inline;
+  font-size: var(--footer-text-xs);
 }
 
 .footer-nav-link:hover {
@@ -142,6 +161,12 @@ body.footer-expanded {
   background: var(--dynamic-footer-fill-primary);
   text-decoration: none;
 }
+
+.footer-nav-link:hover svg {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
 
 /* ===== Maximized Footer - MIT SCROLL für alle Karten ===== */
 .footer-maximized {
@@ -161,7 +186,7 @@ body.footer-expanded {
   max-height: var(--footer-actual-height, 75vh);
   box-sizing: border-box;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
   position: relative;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
@@ -219,6 +244,7 @@ body.footer-expanded {
   display: flex;
   flex-direction: column;
   min-height: 100px;
+  width: 100%;
   transition: all 0.25s var(--dynamic-footer-spring-quick);
 }
 
@@ -354,46 +380,101 @@ body.footer-expanded {
   flex-shrink: 0;
 }
 
-/* ===== Social Grid ===== */
+/* ===== Social Icons - Direkt in Status-Bar (ohne Card) ===== */
 .footer-social-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  flex: 1;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  min-width: fit-content !important;
+  flex-wrap: nowrap !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 100 !important;
 }
 
 .footer-social-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 6px;
-  background: var(--dynamic-footer-fill-secondary);
-  border: 1px solid var(--dynamic-footer-separator);
-  border-radius: var(--dynamic-footer-micro-radius);
-  color: var(--dynamic-footer-label-secondary);
-  text-decoration: none;
-  font-size: var(--footer-text-xs);
-  min-height: 44px;
-  transition: all var(--footer-transition-quick);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  background: transparent !important;
+  border: 2px solid var(--dynamic-footer-separator) !important;
+  border-radius: 50% !important;
+  color: var(--dynamic-footer-label-secondary) !important;
+  text-decoration: none !important;
+  transition: all var(--footer-transition-quick) !important;
+  flex-shrink: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 101 !important;
+  pointer-events: auto !important;
 }
 
 .footer-social-card:hover {
   background: var(--dynamic-footer-fill-primary);
   border-color: var(--dynamic-footer-accent-blue);
-  color: var(--dynamic-footer-label-primary);
-  transform: translateY(-2px);
+  color: var(--dynamic-footer-accent-blue);
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
   text-decoration: none;
 }
 
 .social-card-icon {
-  opacity: 0.8;
-  transition: opacity var(--footer-transition-quick);
+  width: 20px !important;
+  height: 20px !important;
+  opacity: 0.85 !important;
+  transition: all var(--footer-transition-quick) !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
 .footer-social-card:hover .social-card-icon {
-  opacity: 1;
+  opacity: 1 !important;
+  transform: scale(1.05) !important;
+}
+
+/* Text-Labels verstecken */
+.footer-social-card span {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Debug: Sicherstellen dass alle 3 Links sichtbar sind */
+.footer-social-grid a:nth-child(1),
+.footer-social-grid a:nth-child(2),
+.footer-social-grid a:nth-child(3) {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Platform-spezifische Hover-Farben */
+.footer-social-card[href*="github"]:hover {
+  border-color: #6e5494;
+  color: #6e5494;
+  box-shadow: 0 4px 12px rgba(110, 84, 148, 0.3);
+}
+
+.footer-social-card[href*="linkedin"]:hover {
+  border-color: #0077b5;
+  color: #0077b5;
+  box-shadow: 0 4px 12px rgba(0, 119, 181, 0.3);
+}
+
+.footer-social-card[href*="instagram"]:hover {
+  border-color: #e4405f;
+  color: #e4405f;
+  box-shadow: 0 4px 12px rgba(228, 64, 95, 0.3);
 }
 
 /* ===== Tech Grid ===== */
@@ -439,11 +520,19 @@ body.footer-expanded {
   grid-column: 1 / -1;
 }
 
+.footer-card-newsletter .footer-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
 .newsletter-description {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--footer-text-xs);
   line-height: 1.4;
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
+  max-width: 400px;
 }
 
 .newsletter-form-enhanced {
@@ -451,17 +540,22 @@ body.footer-expanded {
   flex-direction: row;
   gap: 6px;
   margin-top: auto;
+  align-items: center;
+  justify-content: center;
 }
 
 .newsletter-input-wrapper {
   display: flex;
   gap: 6px;
-  width: 100%;
+  max-width: 350px;
+  flex: 0 1 auto;
 }
 
 .newsletter-input-enhanced {
   flex: 1;
-  padding: 8px 10px;
+  min-width: 180px;
+  max-width: 220px;
+  padding: 8px 12px;
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-micro-radius);
   background: var(--dynamic-footer-fill-secondary);
@@ -486,7 +580,7 @@ body.footer-expanded {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: var(--dynamic-footer-accent-blue);
   color: white;
   border: none;
@@ -496,7 +590,12 @@ body.footer-expanded {
   cursor: pointer;
   white-space: nowrap;
   min-height: 44px;
+  flex-shrink: 0;
   transition: all var(--footer-transition-quick);
+}
+
+.newsletter-submit-enhanced .btn-text-short {
+  display: none;
 }
 
 .newsletter-submit-enhanced:hover {
@@ -528,14 +627,20 @@ body.footer-expanded {
   margin-top: var(--footer-spacing-sm);
   padding-top: var(--footer-spacing-sm);
   border-top: 1px solid var(--dynamic-footer-separator);
+  overflow: visible;
+  pointer-events: auto !important;
 }
 
 .footer-status-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--footer-spacing-sm);
+  gap: clamp(12px, 2vw, 24px);
   flex-wrap: wrap;
+  width: 100%;
+  overflow: visible;
+  min-height: 50px;
+  pointer-events: auto !important;
 }
 
 .footer-copyright-enhanced {
@@ -544,6 +649,8 @@ body.footer-expanded {
   gap: 4px;
   color: var(--dynamic-footer-label-tertiary);
   font-size: var(--footer-text-xs);
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .footer-brand-link-enhanced {
@@ -551,10 +658,37 @@ body.footer-expanded {
   text-decoration: none;
   font-weight: var(--dynamic-footer-font-weight-medium);
   transition: color var(--footer-transition-quick);
+  white-space: nowrap;
 }
 
 .footer-brand-link-enhanced:hover {
   color: var(--dynamic-footer-accent-blue);
+}
+
+/* Social-Icons in der Mitte - immer sichtbar */
+.footer-status-content .footer-social-grid {
+  order: 1;
+  flex-shrink: 0;
+  min-width: fit-content;
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.footer-copyright-enhanced {
+  order: 0;
+}
+
+.footer-legal-nav {
+  order: 2;
+}
+
+/* Alle 3 Social-Links müssen sichtbar sein */
+.footer-status-content .footer-social-grid > a {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .footer-legal-nav {
@@ -562,6 +696,9 @@ body.footer-expanded {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  flex-shrink: 1;
+  min-width: 0;
+  pointer-events: auto !important;
 }
 
 .footer-legal-link-enhanced,
@@ -579,6 +716,7 @@ body.footer-expanded {
   border-radius: var(--dynamic-footer-micro-radius);
   min-height: 44px;
   transition: all var(--footer-transition-quick);
+  pointer-events: auto !important;
 }
 
 .footer-legal-link-enhanced:hover,
@@ -903,7 +1041,7 @@ body.footer-expanded {
   height: auto;
   overflow: visible;
   padding-bottom: 14px;
-  pointer-events: auto;
+  pointer-events: auto !important;
 }
 
 /* ===== Mobile Optimierung ===== */
@@ -914,129 +1052,219 @@ body.footer-expanded {
   }
 
   .site-footer-fixed {
-    width: calc(100% - 12px);
-    bottom: 10px;
+    width: calc(100% - 16px);
+    bottom: 8px;
     border-radius: var(--dynamic-footer-radius-large);
   }
-
-  .footer-minimal-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--footer-spacing-sm);
+  
+  /* ===== Minimierter Footer bleibt horizontal ===== */
+  .footer-minimized {
+    padding: 5px 8px;
+    min-height: 36px;
   }
 
   .footer-copyright-text {
-    justify-content: center;
-    width: 100%;
+    font-size: clamp(9px, 2.2vw, 11px);
   }
-
-  .footer-minimal-nav {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--footer-spacing-sm);
+  
+  .footer-brand-link {
+    padding: 1px 3px;
+    margin-left: 2px;
   }
 
   .footer-minimal-nav .footer-nav-link {
-    width: 100%;
-    white-space: normal;
-    text-align: center;
+    padding: 5px 8px !important;
+    min-height: 32px !important;
+  }
+  
+  /* Text ausblenden auf Mobile - nur Icons zeigen */
+  .footer-nav-link .nav-text,
+  .footer-nav-link > span {
+    display: none !important;
   }
 
+  /* ===== Maximierter Footer - Mobile Optimierung ===== */
   .footer-maximized {
-    padding-bottom: var(--footer-spacing-md);
+    padding: 0;
   }
 
   .footer-maximized-viewport {
-    max-height: none;
-    overflow: visible;
+    max-height: calc(85vh - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .footer-normal-content {
-    gap: var(--footer-spacing-md);
+    gap: var(--footer-spacing-sm);
   }
 
   .footer-enhanced-content {
-    padding: 12px;
-    gap: var(--footer-spacing-md);
+    padding: 10px;
+    gap: var(--footer-spacing-sm);
   }
 
   .footer-cards-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--footer-card-gap);
+    gap: 12px;
   }
 
   .footer-card {
-    padding: var(--footer-spacing-sm);
+    padding: 10px;
+    min-height: 80px;
+  }
+  
+  .footer-card-title {
+    font-size: clamp(13px, 3.2vw, 14px);
+    margin-bottom: 4px;
+  }
+  
+  .footer-card-content {
+    font-size: clamp(11px, 2.8vw, 12px);
   }
 
   .footer-card-newsletter {
     grid-column: span 2;
   }
 
-  .footer-social-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--footer-spacing-sm);
-  }
-
   .newsletter-form-enhanced {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--footer-spacing-sm);
+    gap: 8px;
   }
 
   .newsletter-input-wrapper {
-    flex-direction: column;
-    gap: var(--footer-spacing-sm);
+    flex-direction: row;
+    gap: 6px;
+  }
+  
+  .newsletter-input-enhanced {
+    flex: 1;
+    min-height: 40px;
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  
+  .newsletter-submit-enhanced {
+    min-height: 40px;
+    font-size: 14px;
+    padding: 6px 12px;
+    white-space: nowrap;
+  }
+  
+  .newsletter-submit-enhanced .btn-text-full {
+    display: none;
+  }
+  
+  .newsletter-submit-enhanced .btn-text-short {
+    display: inline;
+    font-size: 18px;
   }
 
   .footer-status-content {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: var(--footer-spacing-sm);
+    gap: 12px;
+  }
+  
+  /* Explizite Reihenfolge: Copyright -> Social -> Legal */
+  .footer-copyright-enhanced {
+    order: 0;
+  }
+  
+  /* Social-Icons zwischen Copyright und Legal */
+  .footer-social-grid {
+    gap: 10px;
+    order: 1;
+  }
+  
+  .footer-legal-nav {
+    order: 2;
+  }
+  
+  .footer-social-card {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .social-card-icon {
+    width: 18px;
+    height: 18px;
   }
 
   .footer-legal-nav {
     justify-content: center;
     width: 100%;
-    gap: var(--footer-spacing-sm);
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .footer-legal-link-enhanced,
+  .footer-cookie-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 42px;
   }
 
   .footer-status-bar {
-    margin-top: var(--footer-spacing-sm);
-    padding-top: var(--footer-spacing-sm);
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+  
+  .footer-copyright-enhanced {
+    font-size: 11px;
   }
 
   .theme-control-floating {
     position: static;
     order: -1;
-    margin-inline: auto;
+    margin: 0 auto 10px;
   }
 
   .theme-control-floating .day-night-artwork {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
 
+  /* Cookie Settings Mobile */
   .cookie-settings-container {
-    max-height: none;
-    height: auto;
+    max-height: calc(90vh - env(safe-area-inset-bottom));
+  }
+  
+  .cookie-settings-header {
+    padding: 12px 14px;
+  }
+  
+  .cookie-settings-header h2 {
+    font-size: 16px;
   }
 
   .cookie-settings-content {
-    overflow: visible;
+    padding: 12px;
+    overflow-y: auto;
+  }
+  
+  .cookie-category {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .cookie-category-header h3 {
+    font-size: 14px;
   }
 
   .cookie-settings-footer {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--footer-spacing-sm);
+    gap: 8px;
+    padding: 10px 12px;
   }
 
   .cookie-settings-btn {
     width: 100%;
     min-width: unset;
+    min-height: 46px;
+    font-size: 15px;
   }
 
   body.footer-expanded {
@@ -1047,44 +1275,231 @@ body.footer-expanded {
 /* ===== Sehr kleine Displays - 1 Spalte ===== */
 @media (max-width: 480px) {
   :root {
-    --footer-card-gap: 6px;
-    --footer-spacing-sm: 6px;
-    --footer-spacing-md: 6px;
+    --footer-card-gap: 8px;
+    --footer-spacing-sm: 8px;
+    --footer-spacing-md: 10px;
   }
   
+  .site-footer-fixed {
+    width: calc(100% - 12px);
+    bottom: 6px;
+  }
+  
+  /* ===== Minimierter Footer - Extra kompakt ===== */
+  .footer-minimized {
+    padding: 4px 6px !important;
+    min-height: 32px !important;
+  }
+  
+  .footer-copyright-text {
+    font-size: clamp(8px, 2vw, 10px) !important;
+    max-width: 50% !important;
+  }
+  
+  .footer-minimal-nav .footer-nav-link {
+    padding: 4px 6px !important;
+    min-height: 28px !important;
+  }
+  
+  .footer-nav-link svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* ===== Maximierter Footer - 1 Spalte Layout ===== */
   .footer-cards-grid {
     grid-template-columns: 1fr;
-    gap: var(--footer-spacing-sm);
+    gap: 10px;
   }
 
   .footer-card {
-    padding: var(--footer-spacing-sm);
+    padding: 12px;
+    min-height: 70px;
+  }
+  
+  .footer-card-title {
+    font-size: 14px;
+  }
+  
+  .footer-card-content {
+    font-size: 12px;
+  }
+  
+  .newsletter-description {
+    font-size: 11px;
+    line-height: 1.3;
+    margin: 0 0 6px 0;
+  }
+
+  .footer-enhanced-content {
+    padding: 10px 8px;
+  }
+  
+  /* Social-Icons kompakt */
+  .footer-social-grid {
+    gap: 8px;
+  }
+  
+  .footer-social-card {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .social-card-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .footer-legal-link-enhanced,
+  .footer-cookie-btn {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .theme-control-floating .day-night-artwork {
+    width: 42px;
+    height: 42px;
+  }
+  
+  /* Cookie Settings - Extra kompakt */
+  .cookie-settings-btn {
+    min-height: 48px;
+    font-size: 15px;
+  }
+  
+  body.footer-expanded {
+    padding-bottom: var(--footer-actual-height, var(--footer-max-height));
+  }
+}
+
+/* ===== iPhone SE Footer-Optimierung (375x667) ===== */
+@media (min-width: 375px) and (max-width: 375px) and (min-height: 667px) and (max-height: 667px) {
+  :root {
+    --footer-card-gap: 10px;
+    --footer-spacing-sm: 8px;
+    --footer-spacing-md: 12px;
+  }
+  
+  .site-footer-fixed {
+    bottom: 6px;
+    width: calc(100% - 12px);
+    max-height: calc(667px - 80px);
+  }
+  
+  /* ===== Minimierter Footer - Optimiert für 375px ===== */
+  .footer-minimized {
+    padding: 4px 8px !important;
+    min-height: 32px !important;
+  }
+  
+  .footer-copyright-text {
+    font-size: 9px !important;
+    max-width: 45% !important;
+  }
+  
+  .footer-minimal-nav .footer-nav-link {
+    padding: 5px 7px !important;
+    min-height: 30px !important;
+  }
+  
+  .footer-nav-link svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+  
+  /* ===== Maximierter Footer - iPhone SE ===== */
+  .footer-maximized-viewport {
+    max-height: calc(667px - 100px);
+  }
+  
+  .footer-cards-grid {
+    gap: 10px;
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-card {
+    padding: 11px;
+    min-height: 70px;
+  }
+  
+  .footer-card-title {
+    font-size: 13px;
   }
 
   .footer-enhanced-content {
     padding: 10px;
   }
-
-  .footer-minimal-content {
-    gap: var(--footer-spacing-sm);
+  
+  /* Social-Icons iPhone SE */
+  .footer-social-grid {
+    gap: 8px;
   }
-
-  .footer-minimal-nav {
-    gap: var(--footer-spacing-sm);
-  }
-
-  .theme-control-floating .day-night-artwork {
+  
+  .footer-social-card {
     width: 36px;
     height: 36px;
   }
-
-  .footer-social-grid {
-    grid-template-columns: 1fr;
+  
+  .social-card-icon {
+    width: 20px;
+    height: 20px;
   }
   
-  body.footer-expanded {
-    /* See note above for mobile breakpoint: prefer the computed CSS var */
-    padding-bottom: var(--footer-actual-height, var(--footer-max-height));
+  .newsletter-input-enhanced {
+    min-height: 38px;
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  
+  .newsletter-submit-enhanced {
+    min-height: 38px;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  .newsletter-submit-enhanced .btn-text-full {
+    display: none;
+  }
+  
+  .newsletter-submit-enhanced .btn-text-short {
+    display: inline;
+    font-size: 16px;
+  }
+  
+  .footer-legal-link-enhanced,
+  .footer-cookie-btn {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .cookie-settings-btn {
+    min-height: 46px;
+    padding: 10px 16px;
+  }
+  
+  .footer-maximized-viewport {
+    max-height: calc(667px - 100px);
+  }
+}
+
+/* ===== Landscape Mode für Footer ===== */
+@media (max-width: 896px) and (orientation: landscape) {
+  .site-footer-fixed {
+    bottom: 8px;
+    max-height: 70vh;
+  }
+  
+  .footer-maximized-viewport {
+    max-height: 65vh;
+    overflow-y: auto;
+  }
+  
+  .footer-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .footer-card-newsletter {
+    grid-column: span 2;
   }
 }
 

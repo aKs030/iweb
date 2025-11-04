@@ -397,6 +397,128 @@
   .card:hover .icon-wrapper {
     transform: scale(1.08) rotate(-3deg);
   }
+  
+  /* Touch-Feedback für Mobile */
+  .card:active {
+    transform: translateY(-2px) scale(1.005);
+  }
+}
+
+/* ========================================
+   Sehr kleine Screens (< 375px)
+======================================== */
+@media (max-width: 375px) {
+  :root {
+    --card-min-width: 0;
+    --card-min-height: 0;
+  }
+  
+  .features-cards {
+    gap: 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .card {
+    padding: 1.125rem;
+  }
+  
+  .card .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    font-size: 1.65rem;
+  }
+}
+
+/* ===== iPhone SE Card-Optimierung (375x667) ===== */
+@media (min-width: 375px) and (max-width: 375px) and (min-height: 667px) and (max-height: 667px) {
+  :root {
+    --card-min-width: 0;
+    --card-min-height: 260px;
+  }
+  
+  #features.section {
+    padding: clamp(1.25rem, 3.5vw, 1.75rem) 0 !important;
+  }
+  
+  .features-content {
+    min-height: 667px;
+    padding: 0 clamp(1.125rem, 4.2vw, 1.5rem);
+  }
+  
+  .features-cards {
+    grid-template-columns: 1fr;
+    gap: clamp(1.25rem, 4.2vw, 1.5rem);
+    padding: 0 0.625rem;
+  }
+  
+  .card {
+    padding: clamp(1.25rem, 4.2vw, 1.5rem);
+    min-height: 260px;
+  }
+  
+  .card .icon-wrapper {
+    width: 54px;
+    height: 54px;
+    font-size: 1.85rem;
+    margin-bottom: 1rem;
+  }
+  
+  .card-title {
+    font-size: clamp(1.125rem, 4.5vw, 1.25rem);
+    margin-bottom: 0.625rem;
+  }
+  
+  .card-description {
+    font-size: clamp(0.9rem, 3.5vw, 1rem);
+    line-height: 1.5;
+  }
+}
+
+/* ========================================
+   Landscape Mode für Cards
+======================================== */
+@media (max-width: 896px) and (orientation: landscape) {
+  .features-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .card {
+    min-height: 0;
+    padding: 1.25rem;
+  }
+  
+  .full-screen-section {
+    min-height: 100svh;
+    padding: var(--spacing-md) 0;
+  }
+}
+
+/* ========================================
+   Touch-Optimierungen für Touch-Devices
+======================================== */
+@media (hover: none) and (pointer: coarse) {
+  .card {
+    -webkit-tap-highlight-color: rgba(7, 161, 255, 0.1);
+    touch-action: manipulation;
+  }
+  
+  /* Touch-Feedback statt Hover */
+  .card:active {
+    transform: translateY(-4px) scale(1.008);
+    box-shadow: var(--card-shadow-hover);
+    border-color: rgba(7, 161, 255, 0.35);
+  }
+  
+  .card:active::before {
+    opacity: 1;
+  }
+  
+  .card:active .icon-wrapper {
+    transform: scale(1.1) rotate(-5deg);
+  }
 }
 
 /* ========================================

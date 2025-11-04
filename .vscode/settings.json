@@ -1,3 +1,8 @@
 {
-    "geminicodeassist.project": "celestial-century-8vm9l"
+    "geminicodeassist.project": "celestial-century-8vm9l",
+    // Live Preview Extension (empfohlen statt Live Server)
+    "livePreview.defaultPreviewPath": "/index.html",
+    "livePreview.autoRefreshPreview": "On Changes to Saved Files",
+    "livePreview.portNumber": 3000,
+    "livePreview.openPreviewTarget": "Embedded Preview"
 }
