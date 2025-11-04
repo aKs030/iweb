@@ -7,8 +7,7 @@
   - Zentralisierung aller Stile, die zur "About"-Sektion gehören, an einem Ort.
 */
 
-/* Hauptcontainer der "About"-Sektion */
-.about {
+:where(.section.about, .about-fragment) {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -20,8 +19,7 @@
   --leading-md: 1.6;
   --space-lg: 1.8rem;
   --space-md: 1.2rem;
-}
-
+:where(.section.about, .about-fragment) .about__container,
 .about__container {
   max-width: 800px;
   width: 100%;
@@ -182,11 +180,12 @@
     min-height: auto;
   }
 
-  .about {
+  :where(.section.about, .about-fragment) {
     display: block;
     padding: 1.5rem 0;
   }
 
+  :where(.section.about, .about-fragment) .about__container,
   .about__container {
     padding: 2.5rem 1rem;
     font-size: 1rem; /* etwas kleiner als Desktop */
@@ -213,6 +212,7 @@
   }
 
   /* Buttons: gestapelt, volle Breite, größere Tap-Ziele */
+  :where(.section.about, .about-fragment) .about__cta,
   .about__cta {
     flex-direction: column;
     gap: 0.75rem;
@@ -221,6 +221,7 @@
   }
 
   /* Button-Basis: override globale min-width und sorgen für angenehme Höhe */
+  :where(.section.about, .about-fragment) .about__cta .btn,
   .about__cta .btn {
     width: 100%;
     max-width: 100%;
@@ -231,18 +232,21 @@
   }
 
   /* Falls Icon + Text in Buttons, Icon kleiner halten */
+  :where(.section.about, .about-fragment) .about__cta .btn svg,
   .about__cta .btn svg {
     width: 18px;
     height: 18px;
   }
 
   /* Mehr Platz am unteren Rand für Geräte mit Home-Indikator */
+  :where(.section.about, .about-fragment) .about__container,
   .about__container {
     padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
 @media (max-width: 360px) {
+  :where(.section.about, .about-fragment) .about__container,
   .about__container {
     padding: 2rem 0.75rem;
   }

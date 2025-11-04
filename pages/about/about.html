@@ -7,10 +7,21 @@
   - Dem SVG-Icon wurde ein `<title>`-Element für bessere Barrierefreiheit hinzugefügt, 
     damit Screenreader das Icon beschreiben können.
 -->
-<section id="about" class="about">
+<div class="about-fragment">
   <style data-inline="about-fallback">
-    .section.about {
-      min-height: auto;
+    :where(.section.about, .about-fragment) {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1.5rem;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    :where(.section.about, .about-fragment) .about__container {
+      margin: 0 auto;
+      padding: 5rem 1.5rem;
+      text-align: center;
     }
 
     .about__cta {
@@ -21,9 +32,17 @@
     }
 
     @media (max-width: 600px) {
-      .about {
+      .section.about {
+        min-height: auto;
+      }
+
+      :where(.section.about, .about-fragment) {
         display: block;
         padding: 1.5rem 0;
+      }
+
+      :where(.section.about, .about-fragment) .about__container {
+        padding: 2.5rem 1rem;
       }
 
       .about__cta {
@@ -110,4 +129,4 @@
       </div>
     </div>
   </div>
-</section>
+</div>
