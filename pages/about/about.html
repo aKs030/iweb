@@ -8,23 +8,11 @@
     damit Screenreader das Icon beschreiben können.
 -->
 <section id="about" class="about">
-  <script data-inline="about-viewport">
-    (function () {
-      if (typeof document === "undefined") return;
-      const viewportMeta = document.querySelector('meta[name="viewport"]');
-      if (!viewportMeta) {
-        document.documentElement.classList.add("about-no-viewport");
-        const meta = document.createElement("meta");
-        meta.name = "viewport";
-        meta.content = "width=device-width, initial-scale=1";
-        (document.head || document.documentElement).appendChild(meta);
-        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
-          window.dispatchEvent(new Event("resize"));
-        }
-      }
-    })();
-  </script>
   <style data-inline="about-fallback">
+    .section.about {
+      min-height: auto;
+    }
+
     .about__cta {
       display: flex;
       gap: 1rem;
@@ -32,19 +20,12 @@
       justify-content: flex-start;
     }
 
-    .about-no-viewport .about__cta {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.75rem;
-    }
-
-    .about-no-viewport .about__cta .btn {
-      width: 100%;
-      max-width: 100%;
-      text-align: center;
-    }
-
     @media (max-width: 600px) {
+      .about {
+        display: block;
+        padding: 1.5rem 0;
+      }
+
       .about__cta {
         flex-direction: column;
         align-items: stretch;

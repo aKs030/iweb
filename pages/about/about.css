@@ -193,6 +193,13 @@
    - Rücksicht auf Safe-Area Inset unten
 --------------------------------------------------------------------------- */
 @media (max-width: 600px) {
+  .section.about {
+    min-height: auto;
+  }
+
+  .about {
+    display: block;
+    padding: 1.5rem 0;
   .about {
     min-height: auto;
     padding: 1.5rem 0;
