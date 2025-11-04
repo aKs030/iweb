@@ -170,6 +170,21 @@
   justify-content: flex-start;
 }
 
+.about-no-viewport .about__cta {
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.about-no-viewport .about__cta .btn {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.9rem 1rem;
+  min-height: 44px;
+  min-width: 0;
+  text-align: center;
+}
+
 /* --------------------------------------------------------------------------
    Mobile-Optimierungen für die About-Sektion
    - kompakteres Padding
