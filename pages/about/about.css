@@ -7,8 +7,7 @@
   - Zentralisierung aller Stile, die zur "About"-Sektion gehören, an einem Ort.
 */
 
-/* Hauptcontainer der "About"-Sektion */
-.about {
+:where(.section.about, .about-fragment) {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -20,8 +19,7 @@
   --leading-md: 1.6;
   --space-lg: 1.8rem;
   --space-md: 1.2rem;
-}
-
+:where(.section.about, .about-fragment) .about__container,
 .about__container {
   max-width: 800px;
   width: 100%;
@@ -177,16 +175,32 @@
    - gestapelte Buttons mit vollen Breiten für bessere Tap-Targets
    - Rücksicht auf Safe-Area Inset unten
 --------------------------------------------------------------------------- */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .section.about {
+    min-height: auto;
+    scroll-snap-stop: normal;
+  }
+
+  :where(.section.about, .about-fragment) {
+    display: block;
+    padding: clamp(1.75rem, 5vw, 2.25rem) 0;
+  }
+
+  :where(.section.about, .about-fragment) .about__container,
   .about__container {
-    padding: 2.5rem 1rem;
+    padding: clamp(2.75rem, 6vw, 3.25rem) clamp(1.25rem, 4vw, 1.75rem);
+    padding-bottom: calc(
+      clamp(2.75rem, 6vw, 3.25rem) + env(safe-area-inset-bottom, 0px)
+    );
     font-size: 1rem; /* etwas kleiner als Desktop */
   }
 
   .about__text {
     line-height: 1.55;
   }
+}
 
+@media (max-width: 600px) {
   .about__text h1,
   .about__text h3 {
     font-size: 1.6rem;
@@ -204,6 +218,7 @@
   }
 
   /* Buttons: gestapelt, volle Breite, größere Tap-Ziele */
+  :where(.section.about, .about-fragment) .about__cta,
   .about__cta {
     flex-direction: column;
     gap: 0.75rem;
@@ -212,6 +227,7 @@
   }
 
   /* Button-Basis: override globale min-width und sorgen für angenehme Höhe */
+  :where(.section.about, .about-fragment) .about__cta .btn,
   .about__cta .btn {
     width: 100%;
     max-width: 100%;
@@ -222,18 +238,15 @@
   }
 
   /* Falls Icon + Text in Buttons, Icon kleiner halten */
+  :where(.section.about, .about-fragment) .about__cta .btn svg,
   .about__cta .btn svg {
     width: 18px;
     height: 18px;
   }
-
-  /* Mehr Platz am unteren Rand für Geräte mit Home-Indikator */
-  .about__container {
-    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
-  }
 }
 
 @media (max-width: 360px) {
+  :where(.section.about, .about-fragment) .about__container,
   .about__container {
     padding: 2rem 0.75rem;
   }
