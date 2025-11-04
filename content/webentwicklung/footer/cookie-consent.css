@@ -10,15 +10,6 @@
  * @version 3.1.0
  */
 
-/* ===== FOOTER SPACING OPTIMIERUNG ===== */
-.footer-copyright-text {
-  margin-right: 6px !important;
-}
-
-.footer-minimal-nav {
-  margin-left: 6px !important;
-}
-
 /* ===== INLINE COOKIE BANNER (HORIZONTAL) ===== */
 .cookie-banner-inline {
   display: inline-flex;
@@ -26,6 +17,7 @@
   gap: 8px;
   padding: 4px 8px;
   margin: 0 8px;
+  flex-wrap: wrap;
   
   /* Komplett transparent - keine Border, kein Hintergrund */
   background: transparent;
@@ -192,58 +184,50 @@
     padding: 3px 10px;
     font-size: 0.7rem;
   }
-  
-  /* Reduziere Footer-Abstände */
-  .footer-copyright-text {
-    margin-right: 3px !important;
+}
+
+@media (max-width: 768px) {
+  .cookie-banner-inline {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    gap: clamp(6px, 3vw, 16px);
+    margin: 0;
   }
-  
-  .footer-minimal-nav {
-    margin-left: 3px !important;
-    gap: 5px !important;
+
+  .cookie-text {
+    white-space: normal;
+    text-align: center;
+    flex: 1 1 100%;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .cookie-accept-btn,
+  .cookie-reject-btn {
+    flex: 1 1 140px;
+    min-height: 44px;
+    justify-content: center;
   }
 }
 
 /* Sehr kleine Mobile - Ultra-kompakt */
 @media (max-width: 480px) {
-  /* Kurze Texte bleiben */
   .cookie-banner-inline {
-    gap: 3px;
-    padding: 2px 4px;
-    margin: 0 3px;
+    gap: clamp(4px, 4vw, 12px);
+    padding: 4px;
   }
-  
+
   .cookie-text {
-    font-size: 0.65rem;
-    gap: 2px;
+    font-size: 0.7rem;
+    gap: 4px;
   }
-  
-  .cookie-accept-btn {
-    padding: 2px 8px;
-    font-size: 0.65rem;
-    border-radius: 4px;
-  }
-  
-  /* Minimale Footer-Abstände für eine Zeile */
-  .footer-copyright-text {
-    margin-right: 2px !important;
-    font-size: 10px !important;
-  }
-  
-  .footer-minimal-nav {
-    margin-left: 2px !important;
-    gap: 4px !important;
-  }
-  
-  .footer-nav-link {
-    padding: 2px 4px !important;
-    font-size: 10px !important;
-  }
-  
-  /* Verhindere Umbruch */
-  .footer-minimal-content {
-    flex-wrap: nowrap !important;
-    gap: 6px !important;
+
+  .cookie-accept-btn,
+  .cookie-reject-btn {
+    flex: 1 1 100%;
+    font-size: 0.7rem;
+    padding: 6px 10px;
   }
 }
 

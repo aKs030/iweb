@@ -6,13 +6,13 @@
 
 /* ===== CSS Variables ===== */
 :root {
-  --footer-spacing-xs: 6px;
-  --footer-spacing-sm: 10px;
-  --footer-spacing-md: 14px;
-  --footer-spacing-lg: 18px;
-  --footer-text-xs: 10px;
-  --footer-text-sm: 12px;
-  --footer-text-base: 13px;
+  --footer-spacing-xs: clamp(4px, 0.4vw + 2px, 8px);
+  --footer-spacing-sm: clamp(6px, 0.6vw + 4px, 12px);
+  --footer-spacing-md: clamp(10px, 0.8vw + 6px, 18px);
+  --footer-spacing-lg: clamp(14px, 1vw + 8px, 24px);
+  --footer-text-xs: clamp(11px, 0.68rem + 0.15vw, 14px);
+  --footer-text-sm: clamp(12px, 0.72rem + 0.18vw, 15px);
+  --footer-text-base: clamp(13px, 0.76rem + 0.2vw, 16px);
   --footer-horizontal-margin: clamp(8px, 2vw, 32px);
   --footer-card-gap: 16px;
   --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -121,12 +121,14 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
   font-size: var(--footer-text-xs);
-  padding: 2px 4px;
+  padding: 6px 10px;
   border-radius: var(--dynamic-footer-micro-radius);
   display: inline-flex;
   align-items: center;
   gap: 3px;
   white-space: nowrap;
+  justify-content: center;
+  min-height: 44px;
   transition: all var(--footer-transition-quick);
 }
 
@@ -166,6 +168,13 @@ body.footer-expanded {
   scrollbar-color: var(--dynamic-footer-separator) transparent;
 }
 
+.footer-normal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--footer-spacing-md);
+}
+
 .footer-maximized-viewport::-webkit-scrollbar {
   width: 6px;
 }
@@ -196,7 +205,7 @@ body.footer-expanded {
 /* ===== Kompaktes Card Grid - Alle Karten sichtbar ===== */
 .footer-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--footer-card-gap);
   margin-bottom: var(--footer-spacing-md);
   width: 100%;
@@ -295,6 +304,7 @@ body.footer-expanded {
   font-size: var(--footer-text-xs);
   font-weight: var(--dynamic-footer-font-weight-medium);
   margin-top: auto;
+  min-height: 44px;
   transition: all var(--footer-transition-quick);
 }
 
@@ -327,6 +337,7 @@ body.footer-expanded {
   border-radius: var(--dynamic-footer-micro-radius);
   text-decoration: none;
   font-size: var(--footer-text-xs);
+  min-height: 44px;
   transition: all var(--footer-transition-quick);
 }
 
@@ -364,6 +375,7 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-secondary);
   text-decoration: none;
   font-size: var(--footer-text-xs);
+  min-height: 44px;
   transition: all var(--footer-transition-quick);
 }
 
@@ -456,6 +468,7 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--footer-text-xs);
   font-family: var(--dynamic-footer-font-family);
+  min-height: 44px;
   transition: all var(--footer-transition-quick);
 }
 
@@ -482,6 +495,7 @@ body.footer-expanded {
   font-weight: var(--dynamic-footer-font-weight-medium);
   cursor: pointer;
   white-space: nowrap;
+  min-height: 44px;
   transition: all var(--footer-transition-quick);
 }
 
@@ -561,13 +575,16 @@ body.footer-expanded {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  transition: color var(--footer-transition-quick);
+  padding: 6px 10px;
+  border-radius: var(--dynamic-footer-micro-radius);
+  min-height: 44px;
+  transition: all var(--footer-transition-quick);
 }
 
 .footer-legal-link-enhanced:hover,
 .footer-cookie-btn:hover {
   color: var(--dynamic-footer-accent-blue);
+  background: var(--dynamic-footer-fill-primary);
 }
 
 .footer-legal-link-enhanced svg,
@@ -845,6 +862,7 @@ body.footer-expanded {
   font-size: var(--footer-text-xs);
   font-weight: 600;
   cursor: pointer;
+  min-height: 44px;
   transition: all var(--footer-transition-quick);
 }
 
@@ -888,78 +906,140 @@ body.footer-expanded {
   pointer-events: auto;
 }
 
-/* ===== Mobile Optimierung - 2 Spalten ===== */
+/* ===== Mobile Optimierung ===== */
 @media (max-width: 768px) {
   :root {
-    --footer-card-gap: 8px;
-    --footer-spacing-md: 8px;
+    --footer-card-gap: clamp(8px, 2vw, 16px);
+    --footer-spacing-md: clamp(10px, 2vw, 18px);
   }
-  
+
   .site-footer-fixed {
-    width: calc(100% - 16px);
-    bottom: 8px;
+    width: calc(100% - 12px);
+    bottom: 10px;
+    border-radius: var(--dynamic-footer-radius-large);
   }
-  
-  .footer-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  
-  .footer-card {
-    padding: 6px;
-  }
-  
-  .footer-card-newsletter {
-    grid-column: 1 / -1;
-  }
-  
-  .footer-enhanced-content {
-    padding: 8px;
-  }
-  
-  .footer-social-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-  }
-  
-  .footer-status-content {
+
+  .footer-minimal-content {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    align-items: stretch;
+    gap: var(--footer-spacing-sm);
   }
-  
-  .theme-control-floating {
-    top: -20px;
-    right: 10px;
+
+  .footer-copyright-text {
+    justify-content: center;
+    width: 100%;
   }
-  
-  .theme-control-floating .day-night-artwork {
-    width: 36px;
-    height: 36px;
+
+  .footer-minimal-nav {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--footer-spacing-sm);
   }
-  
+
+  .footer-minimal-nav .footer-nav-link {
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .footer-maximized {
+    padding-bottom: var(--footer-spacing-md);
+  }
+
+  .footer-maximized-viewport {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .footer-normal-content {
+    gap: var(--footer-spacing-md);
+  }
+
+  .footer-enhanced-content {
+    padding: 12px;
+    gap: var(--footer-spacing-md);
+  }
+
+  .footer-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--footer-card-gap);
+  }
+
+  .footer-card {
+    padding: var(--footer-spacing-sm);
+  }
+
+  .footer-card-newsletter {
+    grid-column: span 2;
+  }
+
+  .footer-social-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--footer-spacing-sm);
+  }
+
   .newsletter-form-enhanced {
     flex-direction: column;
+    align-items: stretch;
+    gap: var(--footer-spacing-sm);
   }
-  
+
   .newsletter-input-wrapper {
     flex-direction: column;
-    gap: 4px;
+    gap: var(--footer-spacing-sm);
   }
-  
+
+  .footer-status-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--footer-spacing-sm);
+  }
+
+  .footer-legal-nav {
+    justify-content: center;
+    width: 100%;
+    gap: var(--footer-spacing-sm);
+  }
+
+  .footer-status-bar {
+    margin-top: var(--footer-spacing-sm);
+    padding-top: var(--footer-spacing-sm);
+  }
+
+  .theme-control-floating {
+    position: static;
+    order: -1;
+    margin-inline: auto;
+  }
+
+  .theme-control-floating .day-night-artwork {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cookie-settings-container {
+    max-height: none;
+    height: auto;
+  }
+
+  .cookie-settings-content {
+    overflow: visible;
+  }
+
   .cookie-settings-footer {
     flex-direction: column;
+    align-items: stretch;
+    gap: var(--footer-spacing-sm);
   }
-  
+
   .cookie-settings-btn {
     width: 100%;
     min-width: unset;
   }
-  
+
   body.footer-expanded {
-    /* Use the computed footer height variable so JS-driven measurements
-       (or the --footer-max-height fallback) control the body padding.
-       This avoids an arbitrary 50vh cap that can hide cards on small viewports. */
     padding-bottom: var(--footer-actual-height, var(--footer-max-height));
   }
 }
@@ -974,43 +1054,32 @@ body.footer-expanded {
   
   .footer-cards-grid {
     grid-template-columns: 1fr;
-    gap: 6px;
+    gap: var(--footer-spacing-sm);
   }
-  
+
   .footer-card {
-    padding: 6px;
+    padding: var(--footer-spacing-sm);
   }
-  
-  .footer-card-newsletter {
-    grid-column: 1 / -1;
-  }
-  
+
   .footer-enhanced-content {
-    padding: 6px;
+    padding: 10px;
   }
-  
-  .footer-copyright-text,
-  .footer-nav-link {
-    font-size: 9px;
+
+  .footer-minimal-content {
+    gap: var(--footer-spacing-sm);
   }
-  
+
   .footer-minimal-nav {
-    gap: 3px;
+    gap: var(--footer-spacing-sm);
   }
-  
-  .theme-control-floating {
-    top: -18px;
-    right: 8px;
-  }
-  
+
   .theme-control-floating .day-night-artwork {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
   }
-  
-  .footer-status-bar {
-    margin-top: 6px;
-    padding-top: 6px;
+
+  .footer-social-grid {
+    grid-template-columns: 1fr;
   }
   
   body.footer-expanded {
@@ -1033,5 +1102,12 @@ body.footer-expanded {
 @media (min-width: 1200px) {
   .footer-cards-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 769px) {
+  .footer-minimal-nav .footer-nav-link {
+    justify-content: flex-start;
+    text-align: left;
   }
 }

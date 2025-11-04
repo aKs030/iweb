@@ -33,5 +33,3 @@ jobs:
             ./**/*.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Hinweis: Service Worker wurde entfernt – keine SW-Checks mehr notwendig
