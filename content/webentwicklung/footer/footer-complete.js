@@ -103,11 +103,12 @@ class ConsentBanner {
     if (this.rejectBtn) {
       this.rejectBtn.addEventListener("click", () => this.reject());
     }
-    if (this.cookiesLink) {
+    if (this.cookiesLink && !this.cookiesLink.dataset.cookieTriggerBound) {
       this.cookiesLink.addEventListener("click", (e) => {
         e.preventDefault();
         CookieSettings.open();
       });
+      this.cookiesLink.dataset.cookieTriggerBound = "true";
     }
   }
 
@@ -504,10 +505,23 @@ class FooterLoader {
     });
   }
   setupCookieButton() {
-    const cookieBtn = document.querySelector(".footer-cookie-btn");
-    if (cookieBtn) {
-      cookieBtn.addEventListener("click", () => CookieSettings.open());
-    }
+    const triggers = document.querySelectorAll("[data-cookie-trigger]");
+    if (!triggers.length) return;
+    triggers.forEach((trigger) => {
+      if (trigger.dataset.cookieTriggerBound) return;
+      const handler = (event) => {
+        const tag = trigger.tagName.toLowerCase();
+        if (tag === "a") {
+          const href = trigger.getAttribute("href") || "";
+          if (!href || href.startsWith("#")) {
+            event.preventDefault();
+          }
+        }
+        CookieSettings.open();
+      };
+      trigger.addEventListener("click", handler);
+      trigger.dataset.cookieTriggerBound = "true";
+    });
   }
   setupSmoothScroll() {
     const footer = document.getElementById("site-footer");
