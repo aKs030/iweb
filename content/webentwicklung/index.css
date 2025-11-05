@@ -97,7 +97,7 @@ body {
 }
 
 .snap-container.no-snap {
-  scroll-snap-type: none !important;
+  scroll-snap-type: none;
 }
 
 *,
@@ -450,7 +450,7 @@ html {
 /* Print Styles */
 @media print {
   .loading-screen {
-    display: none !important;
+    display: none;
   }
 
   body {
@@ -472,12 +472,12 @@ html {
 
   button,
   .btn {
-    display: none !important;
+    display: none;
   }
 
   * {
-    animation: none !important;
-    transition: none !important;
+    animation: none;
+    transition: none;
   }
 }
 

@@ -226,20 +226,20 @@
   
   /* Minimale Footer-Abstände für eine Zeile */
   .footer-copyright-text {
-  margin-right: 2px;
-  font-size: 10px;
+    margin-right: 2px;
+    font-size: 10px;
   }
-  
+
   .footer-minimal-nav {
     margin-left: 2px;
     gap: 4px;
   }
-  
+
   .footer-nav-link {
     padding: 2px 4px;
     font-size: 10px;
   }
-  
+
   /* Verhindere Umbruch */
   .footer-minimal-content {
     flex-wrap: nowrap;

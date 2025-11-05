@@ -94,7 +94,7 @@
 }
 
 .typewriter-title .cursor {
-  display: none !important;
+  display: none;
 }
 
 @keyframes caret-blink {
