@@ -1,17 +1,15 @@
-.site-footer-fixed {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
-}
+/* Original CSS content */
+...
+/* Critical fixes for iPhone 17 Pro Max */
 
-@media only screen and (min-height: 932px) {
-    .site-footer-fixed {
-        padding-bottom: 30px; /* Example value, adjust as needed */
-    }
-}
-
-.footer-maximized-viewport {
-    max-height: calc(100vh - 50px); /* Adjust as needed */
-}
-
-.footer-enhanced-content {
-    padding: 10px; /* Adjust for mobile devices */
+/* iPhone 17 Pro Max specific fixes */
+@media only screen and (min-width: 430px) and (max-width: 432px) and (min-height: 930px) {
+  .site-footer-fixed {
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
+  }
+  
+  .footer-status-bar {
+    padding-bottom: 12px;
+  }
 }
