@@ -29,7 +29,12 @@ test.describe('Layout & accessibility smoke tests', () => {
     }
   });
 
-  test('About section layout: mobile (stacked buttons)', async ({ page }) => {
+  test('About section layout: mobile (stacked buttons)', async ({ page }, testInfo) => {
+    // This test is intended to validate the mobile stacked CTA layout — run only for the mobile project
+    if (!/iPhone|Mobile/i.test(testInfo.project.name)) {
+      test.skip('mobile-only test');
+    }
+
     await page.goto('/pages/about/about.html');
     // Playwright mobile project will emulate a narrow viewport
     const cta = page.locator('.about__cta');
