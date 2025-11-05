@@ -184,8 +184,8 @@ body.footer-expanded {
   width: 100%;
   height: auto;
   /* Use computed actual height so JS-driven measurements cap the viewport
-     instead of a static 75vh which can be too small on some devices. */
-  max-height: var(--footer-actual-height, 75vh);
+     instead of a static value. Use 85vh as fallback for better visibility on iPhone */
+  max-height: var(--footer-actual-height, 85vh);
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: visible;
@@ -1091,7 +1091,7 @@ body.footer-expanded {
   }
 
   .footer-maximized-viewport {
-    max-height: calc(85vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
+    max-height: calc(88vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -1490,14 +1490,15 @@ body.footer-expanded {
     --footer-card-gap: 12px;
     --footer-spacing-sm: 10px;
     --footer-spacing-md: 14px;
+    --footer-max-height: calc(88vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
   }
   
   .site-footer-fixed {
-    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     width: calc(100% - 16px);
-    max-height: calc(85vh - env(safe-area-inset-bottom, 0px));
+    max-height: none;
     /* Ensure footer doesn't overlap with Safari's bottom bar */
-    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
   }
   
   /* ===== Minimierter Footer - Large iPhone Models ===== */
@@ -1523,8 +1524,10 @@ body.footer-expanded {
   
   /* ===== Maximierter Footer - Large iPhone Models ===== */
   .footer-maximized-viewport {
-    max-height: calc(85vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    max-height: calc(88vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .footer-cards-grid {
@@ -1542,14 +1545,14 @@ body.footer-expanded {
   }
 
   .footer-enhanced-content {
-    padding: 12px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 14px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
   
   /* Social-Icons Large iPhone Models */
   .footer-social-grid {
     gap: 10px;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
   }
   
   .footer-social-card {
@@ -1588,12 +1591,13 @@ body.footer-expanded {
   
   .cookie-settings-container {
     max-height: calc(90vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
   }
 
   /* Status bar with safe area padding */
   .footer-status-bar {
-    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    margin-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .footer-card-newsletter {
