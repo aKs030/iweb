@@ -1484,7 +1484,7 @@ body.footer-expanded {
   }
 }
 
-/* ===== iPhone Pro Max models Footer-Optimierung (Large iPhones: 414-430px wide, 896-932px tall) ===== */
+/* ===== Large iPhone Models Footer-Optimierung (iPhone 12/13/14/15/16/17 Pro Max: 414-430px × 896+px) ===== */
 @media (min-width: 414px) and (max-width: 430px) and (min-height: 896px) {
   :root {
     --footer-card-gap: 12px;
