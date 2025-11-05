@@ -200,7 +200,7 @@
   
   .footer-minimal-nav {
     margin-left: 3px !important;
-    gap: 5px !important;
+  gap: 5px;
   }
 }
 
@@ -227,23 +227,23 @@
   /* Minimale Footer-Abstände für eine Zeile */
   .footer-copyright-text {
     margin-right: 2px !important;
-    font-size: 10px !important;
+  font-size: 10px;
   }
   
   .footer-minimal-nav {
     margin-left: 2px !important;
-    gap: 4px !important;
+  gap: 4px;
   }
   
   .footer-nav-link {
-    padding: 2px 4px !important;
-    font-size: 10px !important;
+  padding: 2px 4px;
+  font-size: 10px;
   }
   
   /* Verhindere Umbruch */
   .footer-minimal-content {
-    flex-wrap: nowrap !important;
-    gap: 6px !important;
+  flex-wrap: nowrap;
+  gap: 6px;
   }
 }
 

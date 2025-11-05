@@ -97,7 +97,7 @@ body {
 }
 
 .snap-container.no-snap {
-  scroll-snap-type: none !important;
+  scroll-snap-type: none;
 }
 
 *,
