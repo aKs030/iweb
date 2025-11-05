@@ -26,7 +26,7 @@
 /* ===== Base Footer Container ===== */
 .site-footer-fixed {
   position: fixed;
-  bottom: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   width: calc(100% - var(--footer-horizontal-margin) * 2);
   max-width: 1400px;
@@ -43,6 +43,8 @@
   animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
   transition: all var(--footer-transition-smooth);
+  /* Additional padding for Safari's bottom bar on iPhone */
+  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
 }
 
 @keyframes footerEntrance {
@@ -52,12 +54,12 @@
 
 /* ===== Body Padding ===== */
 body {
-  padding-bottom: 70px;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   transition: padding-bottom var(--footer-transition-smooth);
 }
 
 body.footer-expanded {
-  padding-bottom: 70vh;
+  padding-bottom: calc(70vh + env(safe-area-inset-bottom, 0px));
 }
 
 /* ===== Minimized Footer - Eine kompakte Zeile ===== */
@@ -1053,7 +1055,7 @@ body.footer-expanded {
 
   .site-footer-fixed {
     width: calc(100% - 16px);
-    bottom: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     border-radius: var(--dynamic-footer-radius-large);
   }
   
@@ -1089,7 +1091,7 @@ body.footer-expanded {
   }
 
   .footer-maximized-viewport {
-    max-height: calc(85vh - env(safe-area-inset-bottom));
+    max-height: calc(85vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -1228,7 +1230,7 @@ body.footer-expanded {
 
   /* Cookie Settings Mobile */
   .cookie-settings-container {
-    max-height: calc(90vh - env(safe-area-inset-bottom));
+    max-height: calc(90vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
   }
   
   .cookie-settings-header {
@@ -1282,7 +1284,7 @@ body.footer-expanded {
   
   .site-footer-fixed {
     width: calc(100% - 12px);
-    bottom: 6px;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
   }
   
   /* ===== Minimierter Footer - Extra kompakt ===== */
@@ -1381,9 +1383,9 @@ body.footer-expanded {
   }
   
   .site-footer-fixed {
-    bottom: 6px;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
     width: calc(100% - 12px);
-    max-height: calc(667px - 80px);
+    max-height: calc(667px - 80px - env(safe-area-inset-bottom, 0px));
   }
   
   /* ===== Minimierter Footer - Optimiert für 375px ===== */
@@ -1478,19 +1480,140 @@ body.footer-expanded {
   }
   
   .footer-maximized-viewport {
-    max-height: calc(667px - 100px);
+    max-height: calc(667px - 100px - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
+  }
+}
+
+/* ===== Large iPhone Models Footer-Optimierung (iPhone 12/13/14/15/16/17 Pro Max: 414-430px × 896+px) ===== */
+@media (min-width: 414px) and (max-width: 430px) and (min-height: 896px) {
+  :root {
+    --footer-card-gap: 12px;
+    --footer-spacing-sm: 10px;
+    --footer-spacing-md: 14px;
+  }
+  
+  .site-footer-fixed {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 16px);
+    max-height: calc(85vh - env(safe-area-inset-bottom, 0px));
+    /* Ensure footer doesn't overlap with Safari's bottom bar */
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  }
+  
+  /* ===== Minimierter Footer - Large iPhone Models ===== */
+  .footer-minimized {
+    padding: 6px 10px !important;
+    min-height: 38px !important;
+  }
+  
+  .footer-copyright-text {
+    font-size: 10px !important;
+    max-width: 50% !important;
+  }
+  
+  .footer-minimal-nav .footer-nav-link {
+    padding: 6px 8px !important;
+    min-height: 44px !important;
+  }
+  
+  .footer-nav-link svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  /* ===== Maximierter Footer - Large iPhone Models ===== */
+  .footer-maximized-viewport {
+    max-height: calc(85vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .footer-cards-grid {
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .footer-card {
+    padding: 12px;
+    min-height: 90px;
+  }
+  
+  .footer-card-title {
+    font-size: 15px;
+  }
+
+  .footer-enhanced-content {
+    padding: 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  
+  /* Social-Icons Large iPhone Models */
+  .footer-social-grid {
+    gap: 10px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .footer-social-card {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .social-card-icon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .newsletter-input-enhanced {
+    min-height: 44px;
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+  
+  .newsletter-submit-enhanced {
+    min-height: 44px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  .footer-legal-link-enhanced,
+  .footer-cookie-btn {
+    min-height: 44px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .cookie-settings-btn {
+    min-height: 48px;
+    padding: 12px 18px;
+  }
+  
+  .cookie-settings-container {
+    max-height: calc(90vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Status bar with safe area padding */
+  .footer-status-bar {
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .footer-card-newsletter {
+    grid-column: span 2;
+  }
+
+  body.footer-expanded {
+    padding-bottom: calc(var(--footer-actual-height, var(--footer-max-height)) + env(safe-area-inset-bottom, 0px));
   }
 }
 
 /* ===== Landscape Mode für Footer ===== */
 @media (max-width: 896px) and (orientation: landscape) {
   .site-footer-fixed {
-    bottom: 8px;
-    max-height: 70vh;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(70vh - env(safe-area-inset-bottom, 0px));
   }
   
   .footer-maximized-viewport {
-    max-height: 65vh;
+    max-height: calc(65vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));
     overflow-y: auto;
   }
   

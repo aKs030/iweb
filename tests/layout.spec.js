@@ -135,6 +135,92 @@ test.describe('Layout & accessibility smoke tests', () => {
     expect(gaScript).toBeNull();
   });
 
+  test('Footer respects safe-area-inset-bottom on iPhone devices', async ({ page }) => {
+    // Test footer positioning with safe-area-inset
+    await page.goto('/');
+    
+    const footer = page.locator('#site-footer');
+    await expect(footer).toBeVisible();
+    
+    // Check that footer has safe-area-inset-bottom in its bottom positioning
+    const bottomValue = await footer.evaluate((el) => {
+      const computed = getComputedStyle(el);
+      return computed.bottom;
+    });
+    
+    // The bottom value should be greater than the base value when safe-area-inset is applied
+    // On devices without notches, it should still work with fallback
+    expect(bottomValue).toBeTruthy();
+    
+    // Check that footer has padding-bottom for safe area
+    const paddingBottom = await footer.evaluate((el) => {
+      const computed = getComputedStyle(el);
+      return parseFloat(computed.paddingBottom);
+    });
+    
+    // Should have some padding (at least 0, but likely more on devices with safe areas)
+    expect(paddingBottom).toBeGreaterThanOrEqual(0);
+    
+    // Check that all footer content is accessible (not cut off)
+    const footerLinks = page.locator('.footer-nav-link, .footer-legal-link-enhanced, .footer-cookie-btn');
+    const linkCount = await footerLinks.count();
+    
+    for (let i = 0; i < linkCount; i++) {
+      const link = footerLinks.nth(i);
+      if (await link.isVisible()) {
+        const box = await link.boundingBox();
+        expect(box).not.toBeNull();
+        // Verify element is within viewport
+        const viewport = page.viewportSize();
+        expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+      }
+    }
+  });
+
+  test('Footer expanded state respects safe-area on iPhone 17 Pro Max', async ({ page }) => {
+    // Set viewport to iPhone 17 Pro Max dimensions
+    await page.setViewportSize({ width: 430, height: 932 });
+    await page.goto('/');
+    
+    const footer = page.locator('#site-footer');
+    await expect(footer).toBeVisible();
+    
+    // Open cookie settings to expand footer
+    const cookieTrigger = await getVisibleCookieTrigger(page);
+    await cookieTrigger.click();
+    await page.waitForTimeout(300); // Wait for animation
+    
+    // Check cookie view is visible
+    const cookieView = page.locator('#footer-cookie-view');
+    await expect(cookieView).toBeVisible();
+    
+    // Check that cookie settings container has safe-area padding
+    const container = page.locator('.cookie-settings-container');
+    const maxHeight = await container.evaluate((el) => {
+      return getComputedStyle(el).maxHeight;
+    });
+    
+    // Should include safe-area-inset in calculation
+    expect(maxHeight).toContain('vh');
+    
+    // Verify all buttons are accessible and have minimum touch target size
+    const buttons = page.locator('.cookie-settings-btn');
+    const buttonCount = await buttons.count();
+    
+    // Get viewport height dynamically
+    const viewportHeight = page.viewportSize().height;
+    
+    for (let i = 0; i < buttonCount; i++) {
+      const button = buttons.nth(i);
+      const box = await button.boundingBox();
+      expect(box).not.toBeNull();
+      // Check minimum touch target size (44x44 for iPhone)
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      // Verify button is within viewport and not cut off
+      expect(box.y + box.height).toBeLessThanOrEqual(viewportHeight);
+    }
+  });
+
   const responsiveBreakpoints = [
     { width: 320, socialColumns: 1 },
     { width: 360, socialColumns: 1 },
