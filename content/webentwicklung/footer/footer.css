@@ -390,7 +390,6 @@ body.footer-expanded {
   justify-content: center !important;
   gap: 12px !important;
   padding: 0 !important;
-  flex-shrink: 0 !important;
   min-width: fit-content !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -1642,13 +1641,6 @@ body.footer-expanded {
 @media (min-width: 481px) and (max-width: 599px) {
   .footer-social-grid {
     grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-  }
-}
-
-/* ===== Social Grid: 2 columns for 600-768px ===== */
-@media (min-width: 600px) and (max-width: 768px) {
-  .footer-social-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
