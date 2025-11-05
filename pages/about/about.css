@@ -342,8 +342,8 @@
 
   /* Ensure stacked CTA buttons on touch devices (covers device emulation without meta viewport) */
   .about__cta {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-    align-items: stretch !important;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
   }
 }
