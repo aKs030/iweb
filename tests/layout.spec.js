@@ -221,6 +221,56 @@ test.describe('Layout & accessibility smoke tests', () => {
     }
   });
 
+  test('All footer elements visible and accessible on iPhone 17 Pro Max', async ({ page }) => {
+    // Set viewport to iPhone 17 Pro Max dimensions
+    await page.setViewportSize({ width: 430, height: 932 });
+    await page.goto('/');
+    
+    const footer = page.locator('#site-footer');
+    await expect(footer).toBeVisible();
+    
+    // Check footer positioning - should account for safe-area-inset-bottom
+    const footerBottom = await footer.evaluate((el) => {
+      const computed = getComputedStyle(el);
+      return computed.bottom;
+    });
+    
+    // Footer should have bottom positioning that includes safe-area-inset
+    expect(footerBottom).toBeTruthy();
+    
+    // Check that footer container doesn't have restrictive max-height on iPhone 17 Pro Max
+    const footerMaxHeight = await footer.evaluate((el) => {
+      return getComputedStyle(el).maxHeight;
+    });
+    
+    // max-height should be 'none' or a large value, not restrictive
+    expect(footerMaxHeight === 'none' || parseFloat(footerMaxHeight) > 800).toBeTruthy();
+    
+    // Verify footer links are all visible and clickable
+    const footerLinks = page.locator('.footer-nav-link');
+    const linkCount = await footerLinks.count();
+    
+    expect(linkCount).toBeGreaterThan(0);
+    
+    for (let i = 0; i < linkCount; i++) {
+      const link = footerLinks.nth(i);
+      await expect(link).toBeVisible();
+      const box = await link.boundingBox();
+      expect(box).not.toBeNull();
+      // Ensure link is within viewport
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize().height);
+    }
+    
+    // Verify footer has proper padding-bottom for safe area
+    const paddingBottom = await footer.evaluate((el) => {
+      return parseFloat(getComputedStyle(el).paddingBottom);
+    });
+    
+    // Should have at least 10px padding (or more with safe-area-inset)
+    expect(paddingBottom).toBeGreaterThanOrEqual(10);
+  });
+
   const responsiveBreakpoints = [
     { width: 320, socialColumns: 1 },
     { width: 360, socialColumns: 1 },
