@@ -20,7 +20,13 @@ test.describe('Layout & accessibility smoke tests', () => {
 
     // On desktop project we expect horizontal layout (not column)
     const flexDir = await cta.evaluate((el) => getComputedStyle(el).flexDirection);
-    expect(flexDir).not.toBe('column');
+    // Assert based on the actual viewport width so this test is stable across projects
+    const currentWidth = await page.evaluate(() => window.innerWidth);
+    if (currentWidth <= 600) {
+      expect(flexDir).toBe('column');
+    } else {
+      expect(flexDir).not.toBe('column');
+    }
   });
 
   test('About section layout: mobile (stacked buttons)', async ({ page }) => {
