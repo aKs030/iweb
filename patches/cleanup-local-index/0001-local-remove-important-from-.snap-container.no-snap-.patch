@@ -1,0 +1,111 @@
+From 4c15fb84d5054ad72fb09bfe4a138208d6373152 Mon Sep 17 00:00:00 2001
+From: abdo <abdo@example.com>
+Date: Wed, 5 Nov 2025 21:55:57 +0100
+Subject: [PATCH] local: remove !important from .snap-container.no-snap
+ (conservative)
+
+---
+ content/webentwicklung/index.css |  2 +-
+ tools/prioritize-important.js    | 77 ++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+), 1 deletion(-)
+ create mode 100644 tools/prioritize-important.js
+
+diff --git a/content/webentwicklung/index.css b/content/webentwicklung/index.css
+index b464400..68112b7 100644
+--- a/content/webentwicklung/index.css
++++ b/content/webentwicklung/index.css
+@@ -97,7 +97,7 @@ body {
+ }
+ 
+ .snap-container.no-snap {
+-  scroll-snap-type: none !important;
++  scroll-snap-type: none;
+ }
+ 
+ *,
+diff --git a/tools/prioritize-important.js b/tools/prioritize-important.js
+new file mode 100644
+index 0000000..339d29f
+--- /dev/null
++++ b/tools/prioritize-important.js
+@@ -0,0 +1,77 @@
++#!/usr/bin/env node
++const fs = require('fs');
++const path = require('path');
++
++const repoRoot = path.resolve(__dirname, '..');
++const reportFile = path.join(repoRoot, 'IMPORTANT_REPORT.md');
++
++if (!fs.existsSync(reportFile)) {
++  console.error('IMPORTANT_REPORT.md not found. Run tools/scan-important.js first.');
++  process.exit(1);
++}
++
++const text = fs.readFileSync(reportFile, 'utf8');
++
++// Extract the review section
++const reviewStart = text.indexOf('## review');
++if (reviewStart === -1) {
++  console.log('No review section found.');
++  process.exit(0);
++}
++const reviewText = text.slice(reviewStart);
++
++const entryRegex = /- \*\*([^:]+):(\d+)\*\* — ([^\n]+)/g;
++let m;
++const entries = [];
++while ((m = entryRegex.exec(reviewText)) !== null) {
++  const file = m[1].trim();
++  const line = parseInt(m[2], 10);
++  const snippet = m[3].trim();
++  // capture following code block (```) if exists
++  const after = reviewText.slice(m.index + m[0].length);
++  const codeMatch = after.match(/```\n([\s\S]*?)\n```/);
++  const context = codeMatch ? codeMatch[1].trim() : '';
++  entries.push({file, line, snippet, context});
++}
++
++// Group by file
++const byFile = entries.reduce((acc,e)=>{ acc[e.file] = acc[e.file]||[]; acc[e.file].push(e); return acc; }, {});
++
++// Scoring heuristic: lower risk -> higher priority for auto-removal
++function riskScore(entry) {
++  const s = (entry.snippet + ' ' + entry.context).toLowerCase();
++  // safe patterns: animation/transition none or very small durations
++  if (/animation:\s*none|transition:\s*none|animation-duration:\s*0(?:\.0+)?ms/.test(s)) return 10;
++  // print-only or prefers-reduced-motion contexts: medium (likely intentional)
++  if (/@media\s*\(prefers-reduced-motion|@media\s*\(print\)/.test(s)) return 4;
++  // visually-hidden/clip — do not auto-remove
++  if (/visually-hidden|clip:\s*rect\(0 0 0 0\)/.test(s)) return 0;
++  // tiny spacing adjustments - low-medium risk
++  if (/margin|padding|gap|font-size|min-height/.test(s)) return 5;
++  // menu / font-weight / color critical: high risk
++  if (/font-family|font-weight|color|text-shadow/.test(s)) return 1;
++  // default conservative
++  return 3;
++}
++
++const fileScores = Object.keys(byFile).map(file => {
++  const items = byFile[file];
++  const score = items.reduce((sum,e)=> sum + riskScore(e), 0) / items.length;
++  return {file, count: items.length, score, items};
++});
++
++// sort by score desc (higher score = safer)
++fileScores.sort((a,b)=> b.score - a.score || b.count - a.count);
++
++const top = fileScores.slice(0, 12);
++
++console.log('\nPrioritized Top review candidates (higher score = safer to auto-handle)\n');
++for (const f of top) {
++  console.log(`- ${f.file} — ${f.count} hits — score ${f.score.toFixed(1)}`);
++  const sample = f.items.slice(0,2).map(it => `  • line ${it.line}: ${it.snippet}`).join('\n');
++  console.log(sample + '\n');
++}
++
++console.log('\nSuggested action: For files with score >=7, consider automatic removal (create PRs). For score 4-6, create a manual small PR per file and review. For score <=3, manual review required and do not auto-change.');
++
++process.exit(0);
+-- 
+2.50.1 (Apple Git-155)
+

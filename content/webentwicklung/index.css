@@ -120,7 +120,7 @@ body {
 
 /* Section Snap Behavior */
 .snap-section {
-  scroll-snap-align: start;
+  scroll-snap-type: none;
   opacity: 0.8;
   transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
