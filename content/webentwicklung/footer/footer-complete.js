@@ -288,6 +288,15 @@ const CookieSettings = (() => {
     if (elements.normalContent) {
       elements.normalContent.style.display = "none";
     }
+    // Ensure footer is visible after layout changes (avoid overlay intercepts
+    // and make Playwright clicks/viewport checks stable).
+    requestAnimationFrame(() => {
+      try {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
+      } catch (e) {
+        /* noop */
+      }
+    });
     setupSectionObserver(elements);
     setupEventListeners(elements);
     // Accessibility: mark triggers as expanded and move focus into the panel

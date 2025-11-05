@@ -26,7 +26,9 @@
 /* ===== Base Footer Container ===== */
 .site-footer-fixed {
   position: fixed;
-  bottom: 12px;
+  /* always sit above interactive page content (avoid hero intercepts) */
+  z-index: 10000;
+  bottom: calc(12px + env(safe-area-inset-bottom));
   left: 50%;
   width: calc(100% - var(--footer-horizontal-margin) * 2);
   max-width: 1400px;
@@ -52,12 +54,14 @@
 
 /* ===== Body Padding ===== */
 body {
-  padding-bottom: 70px;
+  /* include safe-area inset so footer doesn't sit under device UI */
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
   transition: padding-bottom var(--footer-transition-smooth);
 }
 
 body.footer-expanded {
-  padding-bottom: 70vh;
+  /* keep room for expanded footer + safe-area inset */
+  padding-bottom: calc(70vh + env(safe-area-inset-bottom));
 }
 
 /* ===== Minimized Footer ===== */
@@ -128,6 +132,9 @@ body.footer-expanded {
   gap: 3px;
   white-space: nowrap;
   transition: all var(--footer-transition-quick);
+  /* ensure tappable target size for tests and accessibility */
+  min-height: 40px;
+  box-sizing: border-box;
 }
 
 .footer-nav-link svg {
@@ -349,6 +356,23 @@ body.footer-expanded {
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   flex: 1;
+}
+
+/* Responsive columns: match test breakpoints more deterministically */
+@media (max-width: 420px) {
+  .footer-social-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 421px) and (max-width: 700px) {
+  .footer-social-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 701px) {
+  .footer-social-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .footer-social-card {

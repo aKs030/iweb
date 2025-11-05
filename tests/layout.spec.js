@@ -20,10 +20,24 @@ test.describe('Layout & accessibility smoke tests', () => {
 
     // On desktop project we expect horizontal layout (not column)
     const flexDir = await cta.evaluate((el) => getComputedStyle(el).flexDirection);
-    expect(flexDir).not.toBe('column');
+    // Assert based on the actual viewport width so this test is stable across projects
+    const { width, isTouch } = await page.evaluate(() => ({
+      width: window.innerWidth,
+      isTouch: window.matchMedia('(hover: none) and (pointer: coarse)').matches || (navigator.maxTouchPoints || 0) > 0,
+    }));
+    if (width <= 600 || isTouch) {
+      expect(flexDir).toBe('column');
+    } else {
+      expect(flexDir).not.toBe('column');
+    }
   });
 
-  test('About section layout: mobile (stacked buttons)', async ({ page }) => {
+  test('About section layout: mobile (stacked buttons)', async ({ page }, testInfo) => {
+    // This test is intended to validate the mobile stacked CTA layout — run only for the mobile project
+    if (!/iPhone|Mobile/i.test(testInfo.project.name)) {
+      test.skip('mobile-only test');
+    }
+
     await page.goto('/pages/about/about.html');
     // Playwright mobile project will emulate a narrow viewport
     const cta = page.locator('.about__cta');
