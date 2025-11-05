@@ -207,6 +207,9 @@ test.describe('Layout & accessibility smoke tests', () => {
     const buttons = page.locator('.cookie-settings-btn');
     const buttonCount = await buttons.count();
     
+    // Get viewport height dynamically
+    const viewportHeight = page.viewportSize().height;
+    
     for (let i = 0; i < buttonCount; i++) {
       const button = buttons.nth(i);
       const box = await button.boundingBox();
@@ -214,7 +217,7 @@ test.describe('Layout & accessibility smoke tests', () => {
       // Check minimum touch target size (44x44 for iPhone)
       expect(box.height).toBeGreaterThanOrEqual(44);
       // Verify button is within viewport and not cut off
-      expect(box.y + box.height).toBeLessThanOrEqual(932);
+      expect(box.y + box.height).toBeLessThanOrEqual(viewportHeight);
     }
   });
 
