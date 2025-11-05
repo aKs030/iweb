@@ -104,13 +104,13 @@
 
 /* Wenn SVG funktioniert, verstecke Fallback */
 .nav-icon:not(:empty) + .icon-fallback {
-  display: none !important;
+  display: none;
 }
 
 /* Wenn SVG nicht funktioniert oder leer ist, zeige Fallback */
 .nav-icon:empty + .icon-fallback,
 .nav-icon[data-broken] + .icon-fallback {
-  display: inline-block !important;
+  display: inline-block;
 }
 
 /* Spezielle Abstände für Buttons */
