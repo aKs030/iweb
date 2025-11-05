@@ -21,8 +21,11 @@ test.describe('Layout & accessibility smoke tests', () => {
     // On desktop project we expect horizontal layout (not column)
     const flexDir = await cta.evaluate((el) => getComputedStyle(el).flexDirection);
     // Assert based on the actual viewport width so this test is stable across projects
-    const currentWidth = await page.evaluate(() => window.innerWidth);
-    if (currentWidth <= 600) {
+    const { width, isTouch } = await page.evaluate(() => ({
+      width: window.innerWidth,
+      isTouch: window.matchMedia('(hover: none) and (pointer: coarse)').matches || (navigator.maxTouchPoints || 0) > 0,
+    }));
+    if (width <= 600 || isTouch) {
       expect(flexDir).toBe('column');
     } else {
       expect(flexDir).not.toBe('column');
