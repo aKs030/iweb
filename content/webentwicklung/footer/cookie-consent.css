@@ -12,11 +12,11 @@
 
 /* ===== FOOTER SPACING OPTIMIERUNG ===== */
 .footer-copyright-text {
-  margin-right: 6px !important;
+  margin-right: 6px;
 }
 
 .footer-minimal-nav {
-  margin-left: 6px !important;
+  margin-left: 6px;
 }
 
 /* ===== INLINE COOKIE BANNER (HORIZONTAL) ===== */
@@ -195,12 +195,12 @@
   
   /* Reduziere Footer-Abstände */
   .footer-copyright-text {
-    margin-right: 3px !important;
+    margin-right: 3px;
   }
   
   .footer-minimal-nav {
-    margin-left: 3px !important;
-    gap: 5px !important;
+    margin-left: 3px;
+    gap: 5px;
   }
 }
 
@@ -226,24 +226,24 @@
   
   /* Minimale Footer-Abstände für eine Zeile */
   .footer-copyright-text {
-    margin-right: 2px !important;
-    font-size: 10px !important;
+    margin-right: 2px;
+    font-size: 10px;
   }
-  
+
   .footer-minimal-nav {
-    margin-left: 2px !important;
-    gap: 4px !important;
+    margin-left: 2px;
+    gap: 4px;
   }
-  
+
   .footer-nav-link {
-    padding: 2px 4px !important;
-    font-size: 10px !important;
+    padding: 2px 4px;
+    font-size: 10px;
   }
-  
+
   /* Verhindere Umbruch */
   .footer-minimal-content {
-    flex-wrap: nowrap !important;
-    gap: 6px !important;
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 }
 

@@ -1,0 +1,28 @@
+From 926b61da55d20f1e7de191b6236b43efe5a7ffa8 Mon Sep 17 00:00:00 2001
+From: abdo <abdo@example.com>
+Date: Wed, 5 Nov 2025 21:56:13 +0100
+Subject: [PATCH] local: remove !important from display and flex-direction in
+ .full-screen-section (conservative)
+
+---
+ pages/card/karten.css | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pages/card/karten.css b/pages/card/karten.css
+index 642f969..0ab18b4 100644
+--- a/pages/card/karten.css
++++ b/pages/card/karten.css
+@@ -34,8 +34,8 @@
+ ======================================== */
+ .full-screen-section {
+   min-height: 100vh;
+-  display: flex !important;
+-  flex-direction: column !important;
++  display: flex;
++  flex-direction: column;
+   justify-content: center !important;
+   align-items: center !important;
+   text-align: center !important;
+-- 
+2.50.1 (Apple Git-155)
+

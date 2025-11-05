@@ -1,0 +1,37 @@
+From ecea2dd78be438a7b3ecfb9bb866be0dc0fd0b45 Mon Sep 17 00:00:00 2001
+From: abdo <abdo@example.com>
+Date: Wed, 5 Nov 2025 22:01:14 +0100
+Subject: [PATCH 2/2] local: remove !important from #features.section
+ padding/margin (conservative)
+
+---
+ pages/card/karten.css | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/pages/card/karten.css b/pages/card/karten.css
+index 642f969..925e0c6 100644
+--- a/pages/card/karten.css
++++ b/pages/card/karten.css
+@@ -273,8 +273,8 @@
+   display: flex;
+   align-items: center;
+   justify-content: center;
+-  padding: 0 !important;
+-  margin: 0 !important;
++  padding: 0;
++  margin: 0;
+   position: relative;
+   z-index: 1;
+ }
+@@ -358,7 +358,7 @@
+   }
+ 
+   #features.section {
+-    padding: clamp(1rem, 3vw, 1.5rem) 0 !important;
++    padding: clamp(1rem, 3vw, 1.5rem) 0;
+   }
+ 
+   .features-content {
+-- 
+2.50.1 (Apple Git-155)
+
