@@ -1638,6 +1638,8 @@ body.footer-expanded {
 }
 
 /* ===== Social Grid: 1 column for 481-599px ===== */
+/* This override is needed because @media (max-width: 768px) sets 2 columns,
+   but tests expect 1 column up to 599px (e.g., at 414px) */
 @media (min-width: 481px) and (max-width: 599px) {
   .footer-social-grid {
     grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
