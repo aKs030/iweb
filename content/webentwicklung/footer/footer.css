@@ -64,6 +64,11 @@ body.footer-expanded {
   padding-bottom: calc(70vh + env(safe-area-inset-bottom));
 }
 
+/* Hidden state for footer elements */
+.footer-hidden {
+  display: none !important;
+}
+
 /* ===== Minimized Footer ===== */
 .footer-minimized {
   padding: 6px var(--footer-spacing-sm);
