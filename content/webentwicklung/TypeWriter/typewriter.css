@@ -119,6 +119,12 @@ body:not(.has-typingjs) .typewriter-title .typed-text {
     blink-caret 0.75s step-end infinite;
 }
 
+/* Locked state for TypeWriter */
+.is-locked {
+  pointer-events: none;
+  user-select: none;
+}
+
 @keyframes typing {
   to {
     width: var(--typing-target);
