@@ -917,6 +917,7 @@ body.footer-expanded {
   :root {
     --footer-card-gap: 8px;
     --footer-spacing-md: 8px;
+    --footer-max-height: calc(80dvh - 24px - env(safe-area-inset-bottom)); /* Reduziert für mobile, um Überlappung zu vermeiden */
   }
   
   .site-footer-fixed {
