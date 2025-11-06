@@ -1,0 +1,349 @@
+/* Optimierungen:
+  - Verwendung von CSS-Variablen für Farben und Abstände für einfache Wartung.
+  - Umstellung auf die BEM-Klassen aus dem optimierten HTML.
+  - Hinzufügen von Hover- und Fokus-Zuständen für die Buttons, um die Interaktivität
+    und Barrierefreiheit zu verbessern (`:focus-visible` sorgt für einen sichtbaren 
+    Fokus nur bei Tastaturnavigation).
+  - Zentralisierung aller Stile, die zur "About"-Sektion gehören, an einem Ort.
+*/
+
+:where(.section.about, .about-fragment) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  box-sizing: border-box;
+  width: 100%;
+  /* Rhythm & leading variables local to About section */
+  --leading-lg: 1.8;
+  --leading-md: 1.6;
+  --space-lg: 1.8rem;
+  --space-md: 1.2rem;
+}
+:where(.section.about, .about-fragment) .about__container,
+.about__container {
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Haupttext-Bereich */
+.about__text {
+  text-align: left;
+  line-height: 1.6;
+}
+
+.about__text h3 {
+  margin-bottom: var(--spacing-md);
+}
+
+.about__text p {
+  margin-bottom: 1.2rem;
+  max-width: 700px;
+  color: rgba(240, 240, 240, 0.88);
+}
+
+.about__farewell {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: var(--spacing-lg);
+}
+
+
+/* Call-to-Action Buttons */
+.about__cta {
+  margin-top: var(--spacing-xl);
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: flex-start; /* Oder 'center' je nach Design */
+}
+
+.about__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  border: 2px solid transparent;
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+/* Primärer Button-Stil */
+.about__button--primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.about__button--primary:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Outline Button-Stil */
+.about__button--outline {
+  background-color: transparent;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.about__button--outline:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Lokaler Fokus-Stil entfernt: globaler Fokus-Indikator in `root.css` nutzt einheitliches Styling */
+
+/* --------------------------------------------------------------------------
+   Mapped/merged styles from legacy helpers into BEM
+   - .about-section -> .about__container / .about__text
+   - .button-group    -> .about__cta
+   - .btn.primary     -> .about__button--primary (existing)
+   - .btn.secondary   -> .about__button--secondary (new alias)
+--------------------------------------------------------------------------- */
+
+/* Container adjustments (from .about-section) */
+.about__container {
+  /* keep existing max-width/width/etc. */
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+  padding: 5rem 1.5rem;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+/* Main text adjustments (from .about-section) */
+.about__text {
+  text-align: left;
+  line-height: 1.6;
+}
+
+
+
+.about__text h1 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  margin-bottom: var(--space-lg, 1.8rem);
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: var(--leading-lg);
+}
+
+.about__text p {
+  font-size: clamp(0.95rem, 2.2vw, 1.05rem);
+  margin-bottom: var(--space-md, 1.2rem);
+  max-width: 700px;
+  color: rgba(240, 240, 240, 0.88);
+  line-height: var(--leading-md);
+}
+
+.about__text strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.about__text em {
+  color: #7fc8ff;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* Button group mapping */
+
+.about__cta {
+  margin-top: 2rem; /* override to match legacy spacing */
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.about-no-viewport .about__cta {
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.about-no-viewport .about__cta .btn {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.9rem 1rem;
+  min-height: 44px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile-Optimierungen für die About-Sektion
+   - kompakteres Padding
+   - kleinere / gut lesbare Schriftgrößen
+   - gestapelte Buttons mit vollen Breiten für bessere Tap-Targets
+   - Rücksicht auf Safe-Area Inset unten
+--------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+  .section.about {
+    min-height: auto;
+  }
+
+  :where(.section.about, .about-fragment) {
+    display: block;
+    padding: 1.5rem 0;
+  }
+
+  :where(.section.about, .about-fragment) .about__container,
+  .about__container {
+    padding: 2.5rem 1rem;
+    font-size: 1rem; /* etwas kleiner als Desktop */
+  }
+
+  .about__text {
+    line-height: 1.55;
+  }
+
+  .about__text h1,
+  .about__text h3 {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .about__text p {
+    font-size: 0.98rem;
+    margin-bottom: 1rem;
+  }
+
+  .about__text em {
+    display: inline-block;
+    font-size: 1rem;
+  }
+
+  /* Buttons: gestapelt, volle Breite, größere Tap-Ziele */
+  :where(.section.about, .about-fragment) .about__cta,
+  .about__cta {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+    margin-top: 1.25rem;
+  }
+
+  /* Button-Basis: override globale min-width und sorgen für angenehme Höhe */
+  :where(.section.about, .about-fragment) .about__cta .btn,
+  .about__cta .btn {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.9rem 1rem;
+    min-height: 44px; /* mobile touch target */
+    min-width: 0; /* überschreibt desktop-min-width */
+    text-align: center;
+  }
+
+  /* Falls Icon + Text in Buttons, Icon kleiner halten */
+  :where(.section.about, .about-fragment) .about__cta .btn svg,
+  .about__cta .btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Mehr Platz am unteren Rand für Geräte mit Home-Indikator */
+  :where(.section.about, .about-fragment) .about__container,
+  .about__container {
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 360px) {
+  :where(.section.about, .about-fragment) .about__container,
+  .about__container {
+    padding: 2rem 0.75rem;
+  }
+
+  .about__text h1,
+  .about__text h3 {
+    font-size: 1.4rem;
+  }
+}
+
+
+/* ===== iPhone SE About-Optimierung (375x667) ===== */
+@media (min-width: 375px) and (max-width: 375px) and (min-height: 667px) and (max-height: 667px) {
+  :where(.section.about, .about-fragment) .about__container,
+  .about__container {
+    padding: 2rem 1.125rem;
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  .about__text h1,
+  .about__text h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+
+  .about__text p {
+    font-size: 0.94rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .about__cta {
+    margin-top: 1.25rem;
+    gap: 0.875rem;
+  }
+
+  .about__cta .btn {
+    padding: 0.925rem 1.125rem;
+    min-height: 47px;
+    font-size: 0.96rem;
+  }
+}
+
+/* ===== Landscape Mode für About-Sektion ===== */
+@media (max-width: 896px) and (orientation: landscape) {
+  :where(.section.about, .about-fragment) .about__container,
+  .about__container {
+    padding: 1.5rem 2rem;
+    max-width: 90vw;
+  }
+  
+  .about__cta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .about__cta .btn {
+    width: auto;
+    min-width: 180px;
+    max-width: 45%;
+  }
+}
+
+/* ===== Touch-Optimierung für Buttons ===== */
+@media (hover: none) and (pointer: coarse) {
+  .about__button {
+    -webkit-tap-highlight-color: rgba(0, 122, 255, 0.2);
+    touch-action: manipulation;
+  }
+  
+  .about__button:active {
+    transform: scale(0.98);
+  }
+  
+  .about__button--primary:active {
+    background-color: var(--primary-dark);
+  }
+
+  /* Ensure stacked CTA buttons on touch devices (covers device emulation without meta viewport) */
+  .about__cta {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+}

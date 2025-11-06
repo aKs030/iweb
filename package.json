@@ -1,0 +1,20 @@
+{
+  "name": "iweb",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Static site for Abdulkerim with test tooling",
+  "license": "MIT",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report",
+    "audit": "node tools/audit-project.js",
+    "audit:strict": "node tools/audit-project.js --strict",
+    "important:scan": "node tools/scan-important.js",
+    "important:prioritize": "node tools/prioritize-important.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "http-server": "^14.1.1"
+  }
+}

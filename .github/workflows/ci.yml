@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: HTML validation (non-blocking)
+        run: |
+          npx --yes html-validate "index.html" "pages/**/*.html"
+        continue-on-error: true
+
+      - name: Link check
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: >-
+            --verbose --no-progress --base .
+            --exclude-mail --exclude-tel
+            --accept 200,203,206,429
+            ./**/*.html
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Hinweis: Service Worker wurde entfernt – keine SW-Checks mehr notwendig
