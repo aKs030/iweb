@@ -6,6 +6,7 @@
     Fokus nur bei Tastaturnavigation).
   - Zentralisierung aller Stile, die zur "About"-Sektion gehören, an einem Ort.
 */
+@import url("/content/webentwicklung/buttons.css");
 
 :where(.section.about, .about-fragment) {
   display: flex;
@@ -77,6 +78,13 @@
   gap: clamp(0.75rem, 2vw, 1rem);
   flex-wrap: wrap;
   justify-content: flex-start; /* Oder 'center' je nach Design */
+}
+
+.about__button--outline:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Lokaler Fokus-Stil entfernt: globaler Fokus-Indikator in `root.css` nutzt einheitliches Styling */
