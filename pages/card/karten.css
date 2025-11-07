@@ -375,9 +375,16 @@
   }
 
   .full-screen-section {
-    min-height: auto;
+    min-height: 100svh;
     padding: clamp(1.5rem, 7vw, 2.75rem) 0;
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @supports (min-height: 100dvh) {
+    .full-screen-section {
+      min-height: 100dvh;
+    }
   }
 
   .features-content {
