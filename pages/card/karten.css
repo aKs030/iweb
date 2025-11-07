@@ -299,10 +299,10 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 80vh;
+  min-height: 72vh;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--spacing-lg);
+  padding: clamp(1.25rem, 3vw, 2rem) var(--spacing-lg);
   position: relative;
 }
 
@@ -376,25 +376,31 @@
 
   .full-screen-section {
     min-height: auto;
-    padding: clamp(1.5rem, 7vw, 2.75rem) 0;
+    padding: clamp(1.15rem, 6vw, 2.25rem) 0;
     justify-content: flex-start;
   }
 
   .features-content {
     min-height: auto;
-    padding: 0 clamp(0.75rem, 4vw, 1.25rem);
+    padding: clamp(1rem, 4.5vw, 1.5rem) clamp(0.75rem, 4vw, 1.25rem);
+    align-items: stretch;
+  }
+
+  .features-content::before {
+    opacity: 0.35;
+    filter: blur(40px);
   }
 
   .features-cards {
     grid-template-columns: 1fr;
-    gap: clamp(1rem, 3.5vw, 1.5rem);
-    margin-top: clamp(0.75rem, 3vw, 1.25rem);
-    padding: 0 clamp(0.5rem, 3vw, 0.875rem);
+    gap: clamp(0.85rem, 3.25vw, 1.35rem);
+    margin-top: clamp(0.5rem, 2.5vw, 1rem);
+    padding: 0 clamp(0.5rem, 3vw, 0.85rem);
   }
 
   .card {
     height: auto;
-    padding: clamp(1rem, 4vw, 1.5rem);
+    padding: clamp(0.9rem, 3.75vw, 1.35rem);
     transition: transform 0.3s ease,
                 background 0.25s ease,
                 border-color 0.25s ease,
@@ -407,10 +413,10 @@
   }
 
   .card .icon-wrapper {
-    width: clamp(48px, 11vw, 56px);
-    height: clamp(48px, 11vw, 56px);
-    font-size: clamp(1.55rem, 4.5vw, 2.05rem);
-    margin-bottom: clamp(0.75rem, 3vw, 1.1rem);
+    width: clamp(44px, 11vw, 52px);
+    height: clamp(44px, 11vw, 52px);
+    font-size: clamp(1.45rem, 4.25vw, 1.9rem);
+    margin-bottom: clamp(0.65rem, 3vw, 1rem);
   }
 
   .card:hover .icon-wrapper {
@@ -418,44 +424,58 @@
   }
 
   .card-title {
-    font-size: clamp(0.95rem, 3.8vw, 1.15rem);
-    line-height: 1.25;
-    margin-bottom: clamp(0.5rem, 2.5vw, 0.75rem);
+    font-size: clamp(0.9rem, 3.6vw, 1.1rem);
+    line-height: 1.2;
+    margin-bottom: clamp(0.45rem, 2.3vw, 0.7rem);
   }
 
   .card-title[data-eyebrow]::before {
-    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
-    margin-bottom: clamp(0.35rem, 2vw, 0.6rem);
+    font-size: clamp(0.62rem, 2.3vw, 0.72rem);
+    margin-bottom: clamp(0.3rem, 1.8vw, 0.55rem);
     letter-spacing: 0.1em;
   }
 
   .card-text {
-    font-size: clamp(0.82rem, 3.5vw, 0.92rem);
-    line-height: 1.6;
+    font-size: clamp(0.78rem, 3.25vw, 0.88rem);
+    line-height: 1.5;
   }
 }
 
 @media (max-width: 480px) {
   .features-cards {
-    gap: clamp(0.85rem, 4vw, 1.15rem);
+    gap: clamp(0.7rem, 4vw, 1rem);
   }
 
   .card {
-    padding: clamp(0.85rem, 5vw, 1.25rem);
+    padding: clamp(0.75rem, 5vw, 1.1rem);
   }
 
   .card .icon-wrapper {
-    width: clamp(44px, 13vw, 50px);
-    height: clamp(44px, 13vw, 50px);
-    font-size: clamp(1.45rem, 5.5vw, 1.9rem);
+    width: clamp(40px, 14vw, 48px);
+    height: clamp(40px, 14vw, 48px);
+    font-size: clamp(1.3rem, 5.25vw, 1.7rem);
   }
 
   .card-title {
-    font-size: clamp(0.92rem, 4.4vw, 1.05rem);
+    font-size: clamp(0.86rem, 4.25vw, 1rem);
   }
 
   .card-text {
-    font-size: clamp(0.8rem, 4.2vw, 0.9rem);
+    font-size: clamp(0.74rem, 3.9vw, 0.86rem);
+  }
+
+  .features-content .section-header {
+    text-align: left;
+    margin-bottom: 0.65rem;
+  }
+
+  .features-content .section-title {
+    font-size: clamp(1.05rem, 6vw, 1.35rem);
+  }
+
+  .features-content .section-subtitle {
+    font-size: clamp(0.78rem, 4.5vw, 0.95rem);
+    line-height: 1.4;
   }
 }
 
