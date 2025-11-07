@@ -281,13 +281,6 @@ const CookieSettings = (() => {
     if (elements.normalContent) {
       elements.normalContent.style.display = "none";
     }
-    requestAnimationFrame(() => {
-      try {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
-      } catch (e) {
-        /* noop */
-      }
-    });
     setupSectionObserver(elements);
     setupButtonHandlers(elements);
     setTriggerExpanded(true);
