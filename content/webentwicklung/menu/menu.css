@@ -293,7 +293,7 @@ body {
   font-style: normal;
 }
 
-.site-logo:hover {
+.site-header .site-logo__container .site-logo:hover {
   transform: scale(1.02);
   color: var(--dynamic-menu-accent-blue);
 }
