@@ -95,10 +95,6 @@ body {
 }
 
 body {
-  font-family: var(--font-inter);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  margin: 0;
   text-rendering: optimizeLegibility;
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -106,12 +102,6 @@ body {
 
 .snap-container.no-snap {
   scroll-snap-type: none;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
 }
 
 /* Container System */

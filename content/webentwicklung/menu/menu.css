@@ -133,19 +133,6 @@ button.submenu-toggle:focus .icon-fallback {
 }
 
 /* ===== Dynamic Menu Base Styles ===== */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  overflow-x: hidden;
-}
-
 /* ===== Dynamic Menu Typography System ===== */
 .site-menu__list li,
 .site-menu__list li a,

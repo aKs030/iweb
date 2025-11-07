@@ -67,16 +67,8 @@
 }
 
 .about__button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-md);
-  text-decoration: none;
   font-weight: 600;
   border: 2px solid transparent;
-  transition: all var(--transition-base);
-  cursor: pointer;
 }
 
 /* Primärer Button-Stil */
@@ -183,6 +175,7 @@
   .about__container {
     padding: 2.05rem 0.9rem;
     font-size: 0.92rem; /* etwas kleiner als Desktop */
+    padding-bottom: calc(2.25rem + env(safe-area-inset-bottom, 0px));
   }
 
   .about__text {
@@ -205,15 +198,10 @@
     font-size: 0.95rem;
   }
 
-  /* Buttons: gestapelt, volle Breite, größere Tap-Ziele */
   .about__cta {
-    flex-direction: column;
-    gap: 0.65rem;
-    align-items: stretch;
     margin-top: 1.1rem;
   }
 
-  /* Button-Basis: override globale min-width und sorgen für angenehme Höhe */
   .about__cta .btn {
     width: 100%;
     max-width: 100%;
@@ -223,15 +211,17 @@
     text-align: center;
   }
 
-  /* Falls Icon + Text in Buttons, Icon kleiner halten */
   .about__cta .btn svg {
     width: 18px;
     height: 18px;
   }
+}
 
-  /* Mehr Platz am unteren Rand für Geräte mit Home-Indikator */
-  .about__container {
-    padding-bottom: calc(2.25rem + env(safe-area-inset-bottom, 0px));
+@media (max-width: 600px), (hover: none) and (pointer: coarse) {
+  .about__cta {
+    flex-direction: column;
+    gap: 0.65rem;
+    align-items: stretch;
   }
 }
 
@@ -294,12 +284,5 @@
   
   .about__button--primary:active {
     background-color: var(--primary-dark);
-  }
-
-  /* Ensure stacked CTA buttons on touch devices (covers device emulation without meta viewport) */
-  .about__cta {
-    flex-direction: column;
-    gap: 0.65rem;
-    align-items: stretch;
   }
 }

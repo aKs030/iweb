@@ -301,10 +301,6 @@ body:not(.hero-active) .floating-icon {
   color: #fff;
 }
 
-.hero__button--crt.btn-secondary {
-  background: transparent;
-}
-
 .hero__button--crt:hover::after {
   opacity: 0.4;
 }
