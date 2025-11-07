@@ -12,7 +12,7 @@ const path = require('path');
 
 const ROOT = process.cwd();
 
-const IGNORE_DIRS = new Set(['.git', '.github', '.vscode', 'node_modules', 'tools']);
+const IGNORE_DIRS = new Set(['.git', '.github', '.vscode', 'node_modules', 'tools', 'tests']);
 const HTML_EXT = new Set(['.html', '.htm']);
 const CSS_EXT = new Set(['.css']);
 const JS_EXT = new Set(['.js', '.mjs', '.cjs']);
@@ -252,6 +252,7 @@ function run() {
   const unlinkedPages = [];
   for (const rel of allFiles) {
     if (rel.startsWith('tools/')) continue; // ignore self
+    if (rel === 'playwright.config.js') continue;
     if (rel.startsWith('content/img/og/')) continue; // OG assets are intentional and may be referenced by crawlers only
     const ext = path.posix.extname(rel).toLowerCase();
     if (referenced.has(rel)) continue;
