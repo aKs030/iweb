@@ -371,30 +371,30 @@
   }
 
   #features.section {
-    padding: clamp(1rem, 3vw, 1.5rem) 0;
+    padding: clamp(0.75rem, 2.5vw, 1.25rem) 0;
   }
 
   .full-screen-section {
     min-height: auto;
-    padding: clamp(2rem, 8vw, 3rem) 0;
+    padding: clamp(1.5rem, 7vw, 2.75rem) 0;
     justify-content: flex-start;
   }
 
   .features-content {
     min-height: auto;
-    padding: 0 clamp(1rem, 4vw, 1.5rem);
+    padding: 0 clamp(0.75rem, 4vw, 1.25rem);
   }
 
   .features-cards {
     grid-template-columns: 1fr;
-    gap: clamp(1.25rem, 4vw, 1.75rem);
-    margin-top: clamp(1rem, 3vw, 1.5rem);
-    padding: 0 clamp(0.75rem, 3vw, 1rem);
+    gap: clamp(1rem, 3.5vw, 1.5rem);
+    margin-top: clamp(0.75rem, 3vw, 1.25rem);
+    padding: 0 clamp(0.5rem, 3vw, 0.875rem);
   }
 
   .card {
     height: auto;
-    padding: clamp(1.25rem, 4vw, 1.75rem);
+    padding: clamp(1rem, 4vw, 1.5rem);
     transition: transform 0.3s ease,
                 background 0.25s ease,
                 border-color 0.25s ease,
@@ -407,14 +407,55 @@
   }
 
   .card .icon-wrapper {
-    width: clamp(52px, 12vw, 60px);
-    height: clamp(52px, 12vw, 60px);
-    font-size: clamp(1.75rem, 5vw, 2.25rem);
-    margin-bottom: clamp(0.875rem, 3vw, 1.25rem);
+    width: clamp(48px, 11vw, 56px);
+    height: clamp(48px, 11vw, 56px);
+    font-size: clamp(1.55rem, 4.5vw, 2.05rem);
+    margin-bottom: clamp(0.75rem, 3vw, 1.1rem);
   }
 
   .card:hover .icon-wrapper {
     transform: scale(1.08) rotate(-3deg);
+  }
+
+  .card-title {
+    font-size: clamp(0.95rem, 3.8vw, 1.15rem);
+    line-height: 1.25;
+    margin-bottom: clamp(0.5rem, 2.5vw, 0.75rem);
+  }
+
+  .card-title[data-eyebrow]::before {
+    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+    margin-bottom: clamp(0.35rem, 2vw, 0.6rem);
+    letter-spacing: 0.1em;
+  }
+
+  .card-text {
+    font-size: clamp(0.82rem, 3.5vw, 0.92rem);
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 480px) {
+  .features-cards {
+    gap: clamp(0.85rem, 4vw, 1.15rem);
+  }
+
+  .card {
+    padding: clamp(0.85rem, 5vw, 1.25rem);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(44px, 13vw, 50px);
+    height: clamp(44px, 13vw, 50px);
+    font-size: clamp(1.45rem, 5.5vw, 1.9rem);
+  }
+
+  .card-title {
+    font-size: clamp(0.92rem, 4.4vw, 1.05rem);
+  }
+
+  .card-text {
+    font-size: clamp(0.8rem, 4.2vw, 0.9rem);
   }
 }
 
