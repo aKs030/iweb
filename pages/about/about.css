@@ -14,11 +14,24 @@
   padding: var(--spacing-xl) var(--spacing-md);
   box-sizing: border-box;
   width: 100%;
+  min-height: 100vh;
   /* Rhythm & leading variables local to About section */
   --leading-lg: 1.65;
   --leading-md: 1.55;
   --space-lg: 1.75rem;
   --space-md: 1.1rem;
+}
+
+@supports (min-height: 100svh) {
+  :where(.section.about, .about-fragment) {
+    min-height: 100svh;
+  }
+}
+
+@supports (min-height: 100dvh) {
+  :where(.section.about, .about-fragment) {
+    min-height: 100dvh;
+  }
 }
 .about__container {
   max-width: 780px;
@@ -157,10 +170,6 @@
    - Rücksicht auf Safe-Area Inset unten
 --------------------------------------------------------------------------- */
 @media (max-width: 768px) {
-  .section.about {
-    min-height: auto;
-  }
-
   :where(.section.about, .about-fragment) {
     padding: clamp(1.5rem, 4.75vw, 2.2rem) clamp(1rem, 4vw, 1.45rem);
   }
@@ -171,12 +180,11 @@
 }
 
 @media (max-width: 600px) {
-  .section.about {
-    min-height: auto;
-  }
-
   :where(.section.about, .about-fragment) {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     padding: 1.35rem 0;
   }
 
