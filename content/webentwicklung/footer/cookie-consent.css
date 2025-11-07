@@ -7,7 +7,7 @@
  * - Optimierte Abstände für harmonisches Layout
  * 
  * @author Abdulkerim Sesli
- * @version 3.2.0 OPTIMIZED
+ * @version 3.1.0
  */
 
 /* ===== FOOTER SPACING OPTIMIERUNG ===== */
@@ -95,9 +95,7 @@
 
 /* ===== ACCEPT BUTTON (COMPACT INLINE) ===== */
 .cookie-accept-btn {
-  padding: 8px 14px;
-  min-height: 44px;
-  min-width: 44px;
+  padding: 4px 14px;
   background: linear-gradient(135deg, #0a84ff 0%, #0066cc 100%);
   color: #ffffff;
   border: none;
@@ -129,9 +127,7 @@
 
 /* ===== REJECT BUTTON (DSGVO-KONFORM) ===== */
 .cookie-reject-btn {
-  padding: 8px 14px;
-  min-height: 44px;
-  min-width: 44px;
+  padding: 4px 14px;
   background: transparent;
   color: var(--dynamic-footer-text-primary, #e5e5e7);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -192,12 +188,9 @@
     gap: 3px;
   }
   
-  .cookie-accept-btn,
-  .cookie-reject-btn {
-    padding: 6px 10px;
+  .cookie-accept-btn {
+    padding: 3px 10px;
     font-size: 0.7rem;
-    min-height: 40px;
-    min-width: 40px;
   }
   
   /* Reduziere Footer-Abstände */
@@ -225,9 +218,8 @@
     gap: 2px;
   }
   
-  .cookie-accept-btn,
-  .cookie-reject-btn {
-    padding: 4px 8px;
+  .cookie-accept-btn {
+    padding: 2px 8px;
     font-size: 0.65rem;
     border-radius: 4px;
   }
@@ -367,8 +359,8 @@
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   padding: 0;
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -589,7 +581,6 @@
 .cookie-modal-btn {
   flex: 1;
   padding: 0.75rem 1.5rem;
-  min-height: 44px;
   border: none;
   border-radius: 8px;
   font-size: 0.9375rem;
@@ -661,50 +652,32 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  /* padding und font werden von .footer-nav-link geerbt */
 }
 
 /* ===== ACCESSIBILITY ===== */
 
-/* Visually Hidden Class */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .cookie-banner-inline,
-  .cookie-modal,
-  .cookie-modal-content {
+  .cookie-banner-inline {
     animation: none;
   }
   
-  .cookie-accept-btn:hover,
-  .cookie-reject-btn:hover,
-  .cookie-modal-btn:hover {
+  .cookie-accept-btn:hover {
     transform: none;
   }
 }
 
 /* High Contrast */
 @media (prefers-contrast: high) {
-  .cookie-accept-btn,
-  .cookie-reject-btn {
+  .cookie-accept-btn {
     border: 2px solid currentColor;
   }
 }
 
 /* ===== PRINT STYLES ===== */
 @media print {
-  .cookie-banner-inline,
-  .cookie-modal {
+  .cookie-banner-inline {
     display: none;
   }
 }
