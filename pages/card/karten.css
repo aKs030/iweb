@@ -374,8 +374,14 @@
     padding: clamp(1rem, 3vw, 1.5rem) 0;
   }
 
+  .full-screen-section {
+    min-height: auto;
+    padding: clamp(2rem, 8vw, 3rem) 0;
+    justify-content: flex-start;
+  }
+
   .features-content {
-    min-height: 70vh;
+    min-height: auto;
     padding: 0 clamp(1rem, 4vw, 1.5rem);
   }
 

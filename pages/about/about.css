@@ -187,6 +187,21 @@
    - gestapelte Buttons mit vollen Breiten für bessere Tap-Targets
    - Rücksicht auf Safe-Area Inset unten
 --------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .section.about {
+    min-height: auto;
+  }
+
+  :where(.section.about, .about-fragment) {
+    padding: clamp(2rem, 6vw, 2.75rem) clamp(1.25rem, 5vw, 1.75rem);
+  }
+
+  :where(.section.about, .about-fragment) .about__container,
+  .about__container {
+    padding: clamp(2.75rem, 8vw, 3.5rem) clamp(1.25rem, 6vw, 1.75rem);
+  }
+}
+
 @media (max-width: 600px) {
   .section.about {
     min-height: auto;
