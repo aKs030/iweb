@@ -69,6 +69,14 @@
   min-height: 100vh;
 }
 
+@media (max-width: 768px) {
+  .section.features,
+  .section.about {
+    min-height: auto;
+    padding-block: clamp(2.5rem, 8vw, 3.5rem);
+  }
+}
+
 /* Base Styles */
 html,
 body {
