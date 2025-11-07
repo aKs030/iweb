@@ -65,8 +65,8 @@ body.footer-expanded {
 }
 
 /* Hidden state for footer elements */
-.footer-hidden {
-  display: none !important;
+.site-footer-fixed .footer-hidden {
+  display: none;
 }
 
 /* ===== Minimized Footer ===== */

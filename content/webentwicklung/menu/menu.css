@@ -263,12 +263,12 @@ body {
   left: 24px;
 }
 
-.site-logo {
+.site-header .site-logo__container .site-logo {
   font-family:
-    -apple-system, "SF Pro Display", system-ui, sans-serif !important;
+    -apple-system, "SF Pro Display", system-ui, sans-serif;
   font-size: clamp(18px, 2vw, 22px);
-  font-weight: 650 !important; /* Dynamic Menu Semibold */
-  color: var(--dynamic-menu-label-primary) !important;
+  font-weight: 650; /* Dynamic Menu Semibold */
+  color: var(--dynamic-menu-label-primary);
   text-shadow: none;
 
   /* Dynamic Menu Micro-Animation */
@@ -283,27 +283,19 @@ body {
   text-transform: none;
 }
 
-.site-logo.elegant-logo {
+.site-header .site-logo__container .site-logo.elegant-logo {
   font-family:
-    -apple-system, "SF Pro Display", system-ui, sans-serif !important;
+    -apple-system, "SF Pro Display", system-ui, sans-serif;
   font-size: clamp(20px, 2.2vw, 24px);
-  font-weight: 700 !important; /* Dynamic Menu Bold */
-  color: var(--dynamic-menu-label-primary) !important;
+  font-weight: 700; /* Dynamic Menu Bold */
+  color: var(--dynamic-menu-label-primary);
   letter-spacing: -0.03em;
   font-style: normal;
 }
 
-/* Enhanced Specificity für Dynamic Menu */
-.site-header .site-logo__container .site-logo {
-  font-family:
-    -apple-system, "SF Pro Display", system-ui, sans-serif !important;
-  font-weight: 650 !important;
-  color: var(--dynamic-menu-label-primary) !important;
-}
-
 .site-logo:hover {
   transform: scale(1.02);
-  color: var(--dynamic-menu-accent-blue) !important;
+  color: var(--dynamic-menu-accent-blue);
 }
 
 /* ===== Dynamic Menu Subtitle System ===== */
@@ -512,10 +504,10 @@ body {
 }
 
 /* Dynamische Rechts-Positionierung über JavaScript */
-.site-menu__list .submenu.position-right {
-  left: auto !important;
-  right: 0 !important;
-  transform-origin: top right !important;
+.site-menu__list .has-submenu .submenu.position-right {
+  left: auto;
+  right: 0;
+  transform-origin: top right;
 }
 
 /* Automatische rechts-Ausrichtung wenn nötig */
@@ -528,9 +520,9 @@ body {
 
 /* Verhindere Überlauf bei sehr schmalen Bildschirmen */
 @media (max-width: 480px) {
-  .site-menu__list .submenu {
-    left: -10px !important;
-    right: -10px !important;
+  .site-menu.open .site-menu__list .submenu {
+    left: -10px;
+    right: -10px;
     min-width: auto;
     width: auto;
   }
@@ -659,7 +651,7 @@ main {
   }
 
   /* Dynamic Menu Mobile Submenu */
-  .site-menu__list .submenu {
+  .site-menu.open .site-menu__list .submenu {
     display: none;
     position: static;
     background: var(--dynamic-menu-fill-secondary);
@@ -669,9 +661,9 @@ main {
     padding: 8px;
     margin: 4px 0;
     margin-left: 12px;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: none !important;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
     transition: none;
   }
 
