@@ -128,6 +128,19 @@
 /* ========================================
    Card Focus State
 ======================================== */
+.card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-link:focus-visible {
+  outline: none;
+}
+
+.card:focus-within,
 .card:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
