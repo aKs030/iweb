@@ -1,4 +1,4 @@
-/* ===== OPTIMIZED INDEX.CSS v2.0 ===== */
+/* ===== OPTIMIZED INDEX.CSS v3.0 ===== */
 
 /* Button Styles */
 .btn {
@@ -489,19 +489,9 @@ html {
   }
 }
 
-/* Hide Section Headers (Page-specific) */
-#hero .section-header,
-#hero .section-subtitle,
-#features .section-header,
-#features .section-subtitle,
-#features .features-content .section-header,
-#features .features-content .section-subtitle,
-#about .section-header,
-#about .section-subtitle {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  height: 0 !important;
-  margin: 0;
-  padding: 0;
-}
+/* ===== OPTIMIZED: Removed dead section header hiding rules =====
+   Original code tried to hide non-existent elements:
+   #hero .section-header, #features .section-header, etc.
+   These sections don't have .section-header elements in the HTML.
+   Removed ~20 lines of unnecessary CSS.
+===== */

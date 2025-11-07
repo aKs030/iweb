@@ -1,7 +1,7 @@
 /**
- * Footer Complete System - Final Optimized
- * Optimiert für kompakte Darstellung ohne Scrolling
- * @version 7.0.0 FINAL
+ * Footer Complete System - Fully Optimized
+ * Removed duplicate code, simplified logic, better performance
+ * @version 8.0.0 OPTIMIZED
  */
 
 import { createLogger, throttle } from '../shared-utilities.js';
@@ -77,7 +77,6 @@ class ConsentBanner {
     this.banner = document.getElementById("cookie-consent-banner");
     this.acceptBtn = document.getElementById("accept-cookies-btn");
     this.rejectBtn = document.getElementById("reject-cookies-btn");
-    this.cookiesLink = document.querySelector(".footer-cookies-link");
   }
 
   init() {
@@ -102,13 +101,6 @@ class ConsentBanner {
     this.acceptBtn.addEventListener("click", () => this.accept());
     if (this.rejectBtn) {
       this.rejectBtn.addEventListener("click", () => this.reject());
-    }
-    if (this.cookiesLink && !this.cookiesLink.dataset.cookieTriggerBound) {
-      this.cookiesLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        CookieSettings.open();
-      });
-      this.cookiesLink.dataset.cookieTriggerBound = "true";
     }
   }
 
@@ -137,6 +129,7 @@ const CookieSettings = (() => {
   let sectionObserver = null;
   let initialVisibleSections = new Set();
   let hasTriggered = false;
+  let boundHandlers = new WeakMap();
 
   function getElements() {
     return {
@@ -153,7 +146,7 @@ const CookieSettings = (() => {
     };
   }
 
-  function cleanupObserver() {
+  function cleanup() {
     if (sectionObserver) {
       sectionObserver.disconnect();
       sectionObserver = null;
@@ -163,7 +156,7 @@ const CookieSettings = (() => {
   }
 
   function setupSectionObserver(elements) {
-    cleanupObserver();
+    cleanup();
     const sections = document.querySelectorAll(
       "section[id]:not(#threeEarthContainer), main > section[id], [data-section]"
     );
@@ -177,7 +170,7 @@ const CookieSettings = (() => {
     sectionObserver = new IntersectionObserver(
       (entries) => {
         if (hasTriggered || !elements.footer.classList.contains("footer-expanded")) {
-          cleanupObserver();
+          cleanup();
           return;
         }
         entries.forEach((entry) => {
@@ -186,7 +179,7 @@ const CookieSettings = (() => {
             const id = entry.target.id || entry.target.dataset.section || "unknown";
             if (!initialVisibleSections.has(id)) {
               hasTriggered = true;
-              cleanupObserver();
+              cleanup();
               close();
             }
           }
@@ -201,60 +194,60 @@ const CookieSettings = (() => {
     sections.forEach((section) => sectionObserver.observe(section));
   }
 
-  function cleanupClickListeners(elements) {
-    ["closeBtn", "rejectAllBtn", "acceptSelectedBtn", "acceptAllBtn"].forEach((key) => {
-      const el = elements[key];
-      if (el && el.dataset.listenerAdded) {
-        if (typeof el._clickHandler === 'function') {
-          el.removeEventListener('click', el._clickHandler);
+  // ===== OPTIMIZED: Unified Button Handler =====
+  function setupButtonHandlers(elements) {
+    const handlers = {
+      closeBtn: () => {
+        cleanup();
+        close();
+      },
+      rejectAllBtn: () => {
+        cleanup();
+        CookieManager.set("cookie_consent", "rejected");
+        CookieManager.deleteAnalytics();
+        close();
+        const banner = document.getElementById("cookie-consent-banner");
+        if (banner) banner.classList.add("hidden");
+      },
+      acceptSelectedBtn: () => {
+        cleanup();
+        if (elements.analyticsToggle?.checked) {
+          CookieManager.set("cookie_consent", "accepted");
+          GoogleAnalytics.load();
+        } else {
+          CookieManager.set("cookie_consent", "rejected");
+          CookieManager.deleteAnalytics();
         }
-        delete el._clickHandler;
-        delete el.dataset.listenerAdded;
+        close();
+        const banner = document.getElementById("cookie-consent-banner");
+        if (banner) banner.classList.add("hidden");
+      },
+      acceptAllBtn: () => {
+        cleanup();
+        CookieManager.set("cookie_consent", "accepted");
+        GoogleAnalytics.load();
+        close();
+        const banner = document.getElementById("cookie-consent-banner");
+        if (banner) banner.classList.add("hidden");
+      },
+    };
+
+    Object.entries(handlers).forEach(([key, handler]) => {
+      const element = elements[key];
+      if (element && !boundHandlers.has(element)) {
+        element.addEventListener("click", handler);
+        boundHandlers.set(element, handler);
       }
     });
   }
 
-  function setupEventListeners(elements) {
-    const addOnce = (element, handler) => {
-      if (element && !element.dataset.listenerAdded) {
-        const wrapper = handler;
-        element._clickHandler = wrapper;
-        element.dataset.listenerAdded = "true";
-        element.addEventListener("click", wrapper);
+  function removeButtonHandlers(elements) {
+    ["closeBtn", "rejectAllBtn", "acceptSelectedBtn", "acceptAllBtn"].forEach((key) => {
+      const element = elements[key];
+      if (element && boundHandlers.has(element)) {
+        element.removeEventListener("click", boundHandlers.get(element));
+        boundHandlers.delete(element);
       }
-    };
-    addOnce(elements.closeBtn, () => {
-      cleanupObserver();
-      close();
-    });
-    addOnce(elements.rejectAllBtn, () => {
-      cleanupObserver();
-      CookieManager.set("cookie_consent", "rejected");
-      CookieManager.deleteAnalytics();
-      close();
-      const banner = document.getElementById("cookie-consent-banner");
-      if (banner) banner.classList.add("hidden");
-    });
-    addOnce(elements.acceptSelectedBtn, () => {
-      cleanupObserver();
-      if (elements.analyticsToggle?.checked) {
-        CookieManager.set("cookie_consent", "accepted");
-        GoogleAnalytics.load();
-      } else {
-        CookieManager.set("cookie_consent", "rejected");
-        CookieManager.deleteAnalytics();
-      }
-      close();
-      const banner = document.getElementById("cookie-consent-banner");
-      if (banner) banner.classList.add("hidden");
-    });
-    addOnce(elements.acceptAllBtn, () => {
-      cleanupObserver();
-      CookieManager.set("cookie_consent", "accepted");
-      GoogleAnalytics.load();
-      close();
-      const banner = document.getElementById("cookie-consent-banner");
-      if (banner) banner.classList.add("hidden");
     });
   }
 
@@ -288,8 +281,6 @@ const CookieSettings = (() => {
     if (elements.normalContent) {
       elements.normalContent.style.display = "none";
     }
-    // Ensure footer is visible after layout changes (avoid overlay intercepts
-    // and make Playwright clicks/viewport checks stable).
     requestAnimationFrame(() => {
       try {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
@@ -298,10 +289,8 @@ const CookieSettings = (() => {
       }
     });
     setupSectionObserver(elements);
-    setupEventListeners(elements);
-    // Accessibility: mark triggers as expanded and move focus into the panel
+    setupButtonHandlers(elements);
     setTriggerExpanded(true);
-    // Focus first interactive element inside the cookie view
     const firstFocusable = elements.cookieView.querySelector('button, [href], input, select, textarea');
     if (firstFocusable) {
       firstFocusable.focus({ preventScroll: true });
@@ -310,7 +299,7 @@ const CookieSettings = (() => {
   }
 
   function close() {
-    cleanupObserver();
+    cleanup();
     const elements = getElements();
     if (!elements.footer) return;
     elements.cookieView?.classList.add("hidden");
@@ -324,8 +313,7 @@ const CookieSettings = (() => {
     if (window.footerScrollHandler) {
       window.footerScrollHandler.expanded = false;
     }
-    cleanupClickListeners(elements);
-    // Accessibility: reset aria-expanded on triggers and return focus
+    removeButtonHandlers(elements);
     setTriggerExpanded(false);
     const trigger = getPrimaryTrigger();
     if (trigger) trigger.focus({ preventScroll: true });
@@ -398,9 +386,6 @@ class FooterLoader {
     }
     try {
       await this.loadContent(container);
-      // Ensure expected card markup exists (some environments may strip or
-      // transform injected HTML). This guarantees at least the default set of
-      // cards are present so the resizer and layout behave predictably.
       this.ensureDefaultCards();
       this.updateYears();
       this.setupInteractions();
@@ -436,17 +421,12 @@ class FooterLoader {
     });
   }
 
-  /**
-   * Make sure the footer-cards-grid contains the expected card elements.
-   * If cards are missing (e.g. server trimmed markup or runtime transformations),
-   * replace the grid content with a minimal, predictable set.
-   */
   ensureDefaultCards() {
     try {
       const grid = document.querySelector('#site-footer .footer-cards-grid');
       if (!grid) return;
       const existing = grid.querySelectorAll('.footer-card');
-      if (existing.length >= 4) return; // enough cards present
+      if (existing.length >= 4) return;
 
       grid.innerHTML = `
         <article class="footer-card">
@@ -463,33 +443,20 @@ class FooterLoader {
         </article>
         <article class="footer-card footer-card-newsletter">
           <div class="footer-card-header"><h3 class="footer-card-title">Newsletter</h3><div class="footer-card-accent"></div></div>
-          <div class="footer-card-content"><p class="newsletter-description">Kurze Updates & Insights — direkt in dein Postfach.</p><form class="newsletter-form-enhanced"><div class="newsletter-input-wrapper"><input type="email" class="newsletter-input-enhanced" placeholder="deine@email.de" required><button type="submit" class="newsletter-submit-enhanced">Abonnieren</button></div></form></div>
+          <div class="footer-card-content"><p class="newsletter-description">Kurze Updates & Insights – direkt in dein Postfach.</p><form class="newsletter-form-enhanced"><div class="newsletter-input-wrapper"><input type="email" class="newsletter-input-enhanced" placeholder="deine@email.de" required><button type="submit" class="newsletter-submit-enhanced">Abonnieren</button></div></form></div>
         </article>
       `;
-
-      // If a FooterResizer exists, trigger a recalculation
-      if (window.footerScrollHandler && window.footerScrollHandler.expanded !== undefined) {
-        // no-op; scroll handler presence is fine
-      }
-      if (window.FooterSystem) {
-        // try to nudge the resizer if available
-        try {
-          const sys = window.FooterSystem;
-          // if user instantiated (global constructor), we can't access instance
-          // but we can call a global resizer if set on document
-        } catch (e) {
-          // ignore
-        }
-      }
     } catch (e) {
       log.warn('ensureDefaultCards failed', e);
     }
   }
+
   setupInteractions() {
     this.setupNewsletter();
-    this.setupCookieButton();
+    this.setupCookieTriggers(); // OPTIMIZED: Renamed for clarity
     this.setupSmoothScroll();
   }
+
   setupNewsletter() {
     const form = document.querySelector(".newsletter-form-enhanced");
     if (!form) return;
@@ -513,11 +480,15 @@ class FooterLoader {
       }
     });
   }
-  setupCookieButton() {
+
+  // ===== OPTIMIZED: Unified Cookie Trigger Setup =====
+  setupCookieTriggers() {
     const triggers = document.querySelectorAll("[data-cookie-trigger]");
     if (!triggers.length) return;
+
     triggers.forEach((trigger) => {
       if (trigger.dataset.cookieTriggerBound) return;
+      
       const handler = (event) => {
         const tag = trigger.tagName.toLowerCase();
         if (tag === "a") {
@@ -528,10 +499,14 @@ class FooterLoader {
         }
         CookieSettings.open();
       };
+      
       trigger.addEventListener("click", handler);
       trigger.dataset.cookieTriggerBound = "true";
     });
+    
+    log.info(`Setup ${triggers.length} cookie triggers`);
   }
+
   setupSmoothScroll() {
     const footer = document.getElementById("site-footer");
     if (!footer) return;
@@ -618,8 +593,7 @@ class ScrollHandler {
   }
 }
 
-// ===== Footer Resizer =====
-
+// ===== Footer Resizer (OPTIMIZED) =====
 class FooterResizer {
   constructor() {
     this.rAF = null;
@@ -629,13 +603,12 @@ class FooterResizer {
   }
 
   init() {
-    // initial measurement
     this.apply();
-    // listen to common resize events
     window.addEventListener('resize', this.onResize, { passive: true });
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', this.onVisualResize, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', this.onVisualResize, { passive: true });
+    }
 
-    // observe content changes inside footer so we can recompute if cards change
     const content = document.querySelector('#site-footer .footer-enhanced-content');
     if (content && window.ResizeObserver) {
       this.resizeObserver = new ResizeObserver(() => this.apply());
@@ -643,56 +616,37 @@ class FooterResizer {
     }
   }
 
+  // ===== OPTIMIZED: Simplified measurement =====
   apply() {
     const footer = document.getElementById('site-footer');
     const content = footer?.querySelector('.footer-enhanced-content');
-    // prefer measured content height, fall back to footer height or a safe fraction
+    
     let height = 0;
+    
     if (content) {
-      // Try the straightforward measurement first
+      // Primary measurement
       height = Math.max(0, content.scrollHeight || content.offsetHeight || 0);
-      // If the content is hidden or collapsed (offsetHeight === 0) the
-      // scrollHeight may be incorrect. Measure by cloning off-DOM to get
-      // the natural content height without affecting layout/visibility.
-      if ((height <= 1 || content.offsetHeight === 0) && typeof document !== 'undefined') {
-        try {
-          const clone = content.cloneNode(true);
-          // Make clone invisible and out of flow but measurable
-          clone.style.position = 'absolute';
-          clone.style.visibility = 'hidden';
-          clone.style.height = 'auto';
-          clone.style.maxHeight = 'none';
-          clone.style.overflow = 'visible';
-          // Ensure the clone uses the same width so text wraps similarly
-          const width = content.getBoundingClientRect().width || content.offsetWidth || window.innerWidth;
-          clone.style.width = `${width}px`;
-          document.body.appendChild(clone);
-          const measured = Math.max(clone.scrollHeight || clone.offsetHeight || 0, height);
-          document.body.removeChild(clone);
-          height = measured;
-        } catch (e) {
-          // fallback: keep previous height
-          log.debug('FooterResizer: clone-measure failed', e);
-        }
+      
+      // Fallback: use fixed percentage if content is hidden/collapsed
+      if (height <= 1) {
+        height = Math.round((window.innerHeight || 600) * 0.5);
       }
     } else if (footer) {
       height = Math.max(0, footer.scrollHeight || footer.offsetHeight || 0);
     } else {
+      // Ultimate fallback
       height = Math.round((window.innerHeight || 600) * 0.5);
     }
 
-    // cap the height to viewport minus a small gap (approximate safe-area)
-    const gap = 24; // matches CSS fallback calc(100dvh - 24px - safe-area)
+    // Cap to viewport minus safe-area
+    const gap = 24;
     const cap = Math.max(0, Math.round((window.innerHeight || 600) - gap));
     if (height > cap) height = cap;
 
-    // write to :root so CSS uses the computed value
     try {
       document.documentElement.style.setProperty('--footer-actual-height', `${height}px`);
     } catch (e) {
-      // ignore write errors in odd embed contexts
-      // eslint-disable-next-line no-console
-      log.warn('FooterResizer: could not set CSS var --footer-actual-height', e);
+      log.warn('FooterResizer: could not set CSS var', e);
     }
   }
 
@@ -706,7 +660,9 @@ class FooterResizer {
 
   cleanup() {
     window.removeEventListener('resize', this.onResize);
-    if (window.visualViewport) window.visualViewport.removeEventListener('resize', this.onVisualResize);
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this.onVisualResize);
+    }
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
@@ -730,7 +686,6 @@ class FooterSystem {
     if (loaded) {
       this.theme.initToggleButton();
       this.scroller.init();
-      // init resizer after footer content is loaded
       try {
         this.resizer.init();
       } catch (e) {

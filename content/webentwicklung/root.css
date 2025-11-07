@@ -1,18 +1,10 @@
 /* =============================================
-   Self-Hosted Fonts (Inter) - ersetzt externes Google Fonts Stylesheet
-   Hinweis: WOFF2 Dateien in content/webentwicklung/fonts/ ablegen.
-   Unbenutzte Gewichte entfernen für Performance. Subset (latin) empfohlen.
+   Self-Hosted Fonts (Inter)
 ============================================= */
 @font-face {
-  /* Variable Hauptfont: Inter (self-hosted)
-     Optimierungen:
-     - local() Quellen vor Netzlast (falls Nutzer Inter installiert hat)
-     - unicode-range auf Basic Latin für kleinere CSSOM (erweiterbar bei Bedarf)
-     - font-synthesis: none verhindert unsaubere künstliche Fette/Kursive
-  */
   font-family: "Inter";
   font-style: normal;
-  font-weight: 100 900; /* Variable Font Range */
+  font-weight: 100 900;
   font-display: swap;
   font-synthesis: none;
   src:
@@ -20,10 +12,10 @@
     local("Inter"),
     url("/content/webentwicklung/fonts/InterVariable.woff2")
       format("woff2-variations");
-  unicode-range: U+0000-00FF; /* Basic Latin (kann erweitert werden) */
+  unicode-range: U+0000-00FF;
 }
 
-/* Utility: Verstecktes Inline SVG Sprite */
+/* Utility: Hidden Inline SVG Sprite */
 .svg-sprite-hidden {
   position: absolute;
   width: 0;
@@ -34,61 +26,37 @@
 
 /* =======================
    Global CSS Variables - Dark & Light Mode System
-   
-   FARBÜBERSICHT:
-   ==============
-   
-   📊 DARK MODE (Standard):
-   • App BG:      #0a0a0a (sehr dunkel)
-   • Section BG:  #111111 (dunkel)  
-   • Card BG:     #1a1a1a (weniger dunkel)
-   • Text:        #ffffff → #b0b0b0 → #7a7a7a (hell → grau)
-   • Border:      #2a2a2a (dunkelgrau)
-   
-   � LIGHT MODE (Blauer Hintergrund):
-   • App BG:      #1e3a8a (tiefes Blau)
-   • Section BG:  #1e40af (mittleres Blau)
-   • Card BG:     #2563eb (helles Blau)
-   • Text:        #ffffff → #e2e8f0 → #cbd5e1 (weiß → hellgrau)
-   • Border:      #3b82f6 (helles Blau)
-   
-   🎨 BRAND COLORS (beide Modi):
-   • Primary:     #007AFF (Safari Blau)
-   • Primary Dark: #0051D5 (dunkler)
-   • Primary Light: #34AADC (heller)
-   • Success:     #2d9e47 (Dark) / #10b981 (Light)
 ======================= */
 
-/* Default: Dark Mode (Primärer Modus) */
+/* Default: Dark Mode */
 :root {
   --theme-mode: "dark";
 
-  /* Brand Colors - Safari UI inspiriert */
-  --primary-color: #007aff; /* Safari UI Blau - Haupt-Akzentfarbe */
-  --primary-dark: #0051d5; /* Dunkleres Blau für Hover-Effekte */
-  --primary-light: #34aadc; /* Helleres Blau für disabled States */
+  /* Brand Colors - Safari UI inspired */
+  --primary-color: #007aff;
+  --primary-dark: #0051d5;
+  --primary-light: #34aadc;
 
   /* Semantic Colors */
-  --success-color: #2d9e47; /* Grün für Erfolg/Bestätigung */
+  --success-color: #2d9e47;
 
   /* ===== DARK MODE (Standard) ===== */
-  /* Optimierte Dark Mode Farben für bessere Readability */
-  --bg-primary: #0a0a0a; /* 🌑 Tiefes Schwarz - Haupthintergrund */
-  --bg-secondary: #161616; /* 🌑 Dunkles Grau - Cards und Panels */
-  --bg-tertiary: #262626; /* 🌑 Mittleres Grau - Hover und Sections */
-  --bg-interactive: #404040; /* 🌑 Interaktive Elemente */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #161616;
+  --bg-tertiary: #262626;
+  --bg-interactive: #404040;
 
-  /* Text Farben - Optimiert für Dark Mode */
-  --text-primary: #f5f5f5; /* 🌑 Haupttext - Hoher Kontrast */
-  --text-secondary: #d4d4d4; /* 🌑 Sekundärtext */
-  --text-muted: #a3a3a3; /* 🌑 Gedämpfter Text */
-  --text-faded: #737373; /* 🌑 Sehr schwacher Text */
+  /* Text Colors - Optimized for Dark Mode */
+  --text-primary: #f5f5f5;
+  --text-secondary: #d4d4d4;
+  --text-muted: #a3a3a3;
+  --text-faded: #737373;
 
   /* Particle System - Dark Mode */
-  --particle-color: rgba(9, 139, 255, 0.8); /* 🌑 Safari Blau mit Alpha */
+  --particle-color: rgba(9, 139, 255, 0.8);
 
   /* Borders */
-  --border-color: #2a2a2a; /* Standard Border Color */
+  --border-color: #2a2a2a;
 
   /* ======================= */
   /* LAYOUT & DESIGN TOKENS  */
@@ -110,7 +78,6 @@
   --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", monospace;
   --font-inter:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  /* Critical font stack used by the minimal critical CSS (moved here to satisfy check-root.sh) */
   --critical-font-stack:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
     Cantarell, sans-serif;
@@ -118,11 +85,11 @@
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);
-  --font-size-p: 1.08rem; /* Größer für mobile Lesbarkeit */
+  --font-size-p: 1.08rem;
   --line-height-base: 1.7;
   --font-size-h2: 1.5rem;
 
-  /* Animation & Transitions - Optimiert */
+  /* Animation & Transitions - Optimized */
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -170,10 +137,10 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* Partikel */
+  /* Particle */
   --particle-opacity: 0.4;
 
-  /* Greeting Hero (aus pages/home/hero.css) */
+  /* Greeting Hero */
   --greet-fs: clamp(1.6rem, 4vw, 2.6rem);
   --greet-lh: 1.14;
   --greet-weight: 600;
@@ -191,121 +158,141 @@
   --color-bg-secondary: var(--bg-tertiary);
 
   /* Cards / Features */
-  --card-pad: clamp(0.75rem, 3vw, 2rem); /* Kleineres Minimum für Mobile */
-  --card-min-width: 260px; /* Reduziert von 320px */
-  --card-min-height: 180px; /* Reduziert von 220px */
+  --card-pad: clamp(0.75rem, 3vw, 2rem);
+  --card-min-width: 260px;
+  --card-min-height: 180px;
   --pad-x: clamp(1rem, 4vw, 2rem);
-  --gap: clamp(0.75rem, 3vw, 1.5rem); /* Kleineres Gap auf Mobile */
+  --gap: clamp(0.75rem, 3vw, 1.5rem);
 
   /* Safe-area */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   /* ===== TypeWriter Custom Properties ===== */
-  /* CSS-Only Fallback für TypeWriter */
   --typing-target: 28ch;
   --typing-steps: 28;
 
-  /* Animation Delays für Hero Floating Icons */
+  /* Animation Delays for Hero Floating Icons */
   --delay-0: 0s;
   --delay-1: 1s;
   --delay-2: 2s;
   --delay-3: 3s;
   --scroll-progress: 0;
 
-  --dynamic-menu-header-bg: rgba(28, 28, 30, 0.72);
-  --dynamic-menu-blur-radius: 20px;
-  --dynamic-menu-pill-radius: 24px;
-  --dynamic-menu-card-radius: 16px;
-  --dynamic-menu-micro-radius: 8px;
-  --dynamic-menu-shadow-depth-2:
+  /* ===== OPTIMIZED: Unified Component Variables ===== */
+  /* Used by both Menu & Footer - DRY principle */
+  --component-header-bg: rgba(28, 28, 30, 0.72);
+  --component-blur-radius: 20px;
+  --component-pill-radius: 24px;
+  --component-card-radius: 16px;
+  --component-micro-radius: 8px;
+  --component-shadow-depth-2:
     0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
-  --dynamic-menu-shadow-depth-3:
+  --component-shadow-depth-3:
     0 8px 32px rgba(0, 0, 0, 0.18), 0 4px 8px rgba(0, 0, 0, 0.15);
-  --dynamic-menu-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --dynamic-menu-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --dynamic-menu-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);
-  --dynamic-menu-accent-blue: #007aff;
-  --dynamic-menu-accent-blue-hover: #0056cc;
-  --dynamic-menu-label-primary: rgba(255, 255, 255, 0.95);
-  --dynamic-menu-label-secondary: rgba(255, 255, 255, 0.7);
-  --dynamic-menu-separator: rgba(255, 255, 255, 0.15);
-  --dynamic-menu-fill-primary: rgba(255, 255, 255, 0.1);
-  --dynamic-menu-fill-secondary: rgba(255, 255, 255, 0.05);
-
-  --dynamic-footer-header-bg: rgba(28, 28, 30, 0.72);
-  --dynamic-footer-blur-radius: 20px;
-  --dynamic-footer-pill-radius: 24px;
-  --dynamic-footer-card-radius: 16px;
-  --dynamic-footer-micro-radius: 8px;
-  --dynamic-footer-shadow-depth-2:
-    0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
-  --dynamic-footer-shadow-depth-3:
-    0 8px 32px rgba(0, 0, 0, 0.18), 0 4px 8px rgba(0, 0, 0, 0.15);
-  --dynamic-footer-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --dynamic-footer-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --dynamic-footer-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);
-  --dynamic-footer-accent-blue: #007aff;
-  --dynamic-footer-accent-blue-hover: #0056cc;
-  --dynamic-footer-label-primary: rgba(255, 255, 255, 0.95);
-  --dynamic-footer-label-secondary: rgba(255, 255, 255, 0.7);
-  --dynamic-footer-label-tertiary: rgba(255, 255, 255, 0.5);
-  --dynamic-footer-separator: rgba(255, 255, 255, 0.15);
-  --dynamic-footer-fill-primary: rgba(255, 255, 255, 0.1);
-  --dynamic-footer-fill-secondary: rgba(255, 255, 255, 0.05);
-  --dynamic-footer-font-family:
+  --component-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --component-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --component-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);
+  --component-accent-blue: #007aff;
+  --component-accent-blue-hover: #0056cc;
+  --component-label-primary: rgba(255, 255, 255, 0.95);
+  --component-label-secondary: rgba(255, 255, 255, 0.7);
+  --component-label-tertiary: rgba(255, 255, 255, 0.5);
+  --component-separator: rgba(255, 255, 255, 0.15);
+  --component-fill-primary: rgba(255, 255, 255, 0.1);
+  --component-fill-secondary: rgba(255, 255, 255, 0.05);
+  --component-font-family:
     -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-  --dynamic-footer-text-primary: 17px;
-  --dynamic-footer-text-secondary: 15px;
-  --dynamic-footer-text-small: 13px;
-  --dynamic-footer-font-weight-medium: 510;
-  --dynamic-footer-font-weight-regular: 450;
+  --component-text-primary: 17px;
+  --component-text-secondary: 15px;
+  --component-text-small: 13px;
+  --component-font-weight-medium: 510;
+  --component-font-weight-regular: 450;
+
+  /* ===== OPTIMIZED: Aliases for backwards compatibility ===== */
+  /* Menu aliases */
+  --dynamic-menu-header-bg: var(--component-header-bg);
+  --dynamic-menu-blur-radius: var(--component-blur-radius);
+  --dynamic-menu-pill-radius: var(--component-pill-radius);
+  --dynamic-menu-card-radius: var(--component-card-radius);
+  --dynamic-menu-micro-radius: var(--component-micro-radius);
+  --dynamic-menu-shadow-depth-2: var(--component-shadow-depth-2);
+  --dynamic-menu-shadow-depth-3: var(--component-shadow-depth-3);
+  --dynamic-menu-spring-bounce: var(--component-spring-bounce);
+  --dynamic-menu-spring-smooth: var(--component-spring-smooth);
+  --dynamic-menu-spring-quick: var(--component-spring-quick);
+  --dynamic-menu-accent-blue: var(--component-accent-blue);
+  --dynamic-menu-accent-blue-hover: var(--component-accent-blue-hover);
+  --dynamic-menu-label-primary: var(--component-label-primary);
+  --dynamic-menu-label-secondary: var(--component-label-secondary);
+  --dynamic-menu-separator: var(--component-separator);
+  --dynamic-menu-fill-primary: var(--component-fill-primary);
+  --dynamic-menu-fill-secondary: var(--component-fill-secondary);
+
+  /* Footer aliases */
+  --dynamic-footer-header-bg: var(--component-header-bg);
+  --dynamic-footer-blur-radius: var(--component-blur-radius);
+  --dynamic-footer-pill-radius: var(--component-pill-radius);
+  --dynamic-footer-card-radius: var(--component-card-radius);
+  --dynamic-footer-micro-radius: var(--component-micro-radius);
+  --dynamic-footer-shadow-depth-2: var(--component-shadow-depth-2);
+  --dynamic-footer-shadow-depth-3: var(--component-shadow-depth-3);
+  --dynamic-footer-spring-bounce: var(--component-spring-bounce);
+  --dynamic-footer-spring-smooth: var(--component-spring-smooth);
+  --dynamic-footer-spring-quick: var(--component-spring-quick);
+  --dynamic-footer-accent-blue: var(--component-accent-blue);
+  --dynamic-footer-accent-blue-hover: var(--component-accent-blue-hover);
+  --dynamic-footer-label-primary: var(--component-label-primary);
+  --dynamic-footer-label-secondary: var(--component-label-secondary);
+  --dynamic-footer-label-tertiary: var(--component-label-tertiary);
+  --dynamic-footer-separator: var(--component-separator);
+  --dynamic-footer-fill-primary: var(--component-fill-primary);
+  --dynamic-footer-fill-secondary: var(--component-fill-secondary);
+  --dynamic-footer-font-family: var(--component-font-family);
+  --dynamic-footer-text-primary: var(--component-text-primary);
+  --dynamic-footer-text-secondary: var(--component-text-secondary);
+  --dynamic-footer-font-weight-medium: var(--component-font-weight-medium);
+  --dynamic-footer-font-weight-regular: var(--component-font-weight-regular);
 }
 
 /* =======================
-   LIGHT MODE OVERRIDE (Blauer Stil)
+   LIGHT MODE OVERRIDE (Blue Theme)
 ======================= */
-/* ===== LIGHT MODE (Blue Theme) ===== */
 :root[data-theme="light"] {
   --theme-mode: "light";
 
-  /* Realistische Light Mode mit blauem Hintergrund */
-  --bg-primary: #1e3a8a; /* 🔷 Tiefes Blau - Haupthintergrund */
-  --bg-secondary: #1e40af; /* 🔷 Mittleres Blau - Cards und Panels */
-  --bg-tertiary: #2563eb; /* 🔷 Helleres Blau - Hover und Sections */
-  --bg-interactive: #3b82f6; /* 🔷 Interaktive Elemente */
+  /* Blue Light Mode Background */
+  --bg-primary: #1e3a8a;
+  --bg-secondary: #1e40af;
+  --bg-tertiary: #2563eb;
+  --bg-interactive: #3b82f6;
 
-  /* Text Farben - Optimiert für blauen Hintergrund */
-  --text-primary: #f8fafc; /* 🔷 Sehr heller Text */
-  --text-secondary: #e2e8f0; /* 🔷 Heller Sekundärtext */
-  --text-muted: #cbd5e1; /* 🔷 Gedämpfter Text */
-  --text-faded: #94a3b8; /* 🔷 Schwacher Text */
+  /* Text Colors - Optimized for blue background */
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #cbd5e1;
+  --text-faded: #94a3b8;
 
   /* Particle System - Light Mode */
-  --particle-color: rgba(
-    248,
-    250,
-    252,
-    0.8
-  ); /* 🔷 Helle Partikel auf blauem Hintergrund */
+  --particle-color: rgba(248, 250, 252, 0.8);
 
-  /* Angepasste Brand-Farben für Light Mode */
-  --primary-color: #60a5fa; /* 🔷 Hellerer Blue für Kontrast */
-  --primary-hover: #93c5fd; /* 🔷 Noch heller bei Hover */
-  --accent-color: #34d399; /* 🔷 Grüner Accent */
-  --accent-secondary: #f87171; /* 🔷 Roter Accent */
+  /* Adjusted Brand Colors for Light Mode */
+  --primary-color: #60a5fa;
+  --primary-hover: #93c5fd;
+  --accent-color: #34d399;
+  --accent-secondary: #f87171;
 
-  /* Status Farben für Light Mode */
-  --success-color: #10b981; /* 🔷 Helleres Grün für Kontrast */
-  --warning-color: #f59e0b; /* 🔷 Warnung Orange */
-  --error-color: #ef4444; /* 🔷 Error Red */
-  --info-color: #3b82f6; /* 🔷 Info Blue */
+  /* Status Colors for Light Mode */
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
 
-  /* Borders und UI-Elemente */
-  --border-color: #3b82f6; /* 🔷 Helles Blau für Borders */
-  --border-subtle: #1e40af; /* 🔷 Subtile Borders */
+  /* Borders and UI Elements */
+  --border-color: #3b82f6;
+  --border-subtle: #1e40af;
 
-  /* Schatten für Light Mode - angepasst für blauen Hintergrund */
+  /* Shadows for Light Mode */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -313,49 +300,30 @@
 }
 
 /* =======================
-   AUTO LIGHT MODE (Browser Preference - Blauer Stil)
+   AUTO LIGHT MODE (Browser Preference)
 ======================= */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     --theme-mode: "light";
-
-    /* Gleiche Struktur wie manueller Light Mode */
-    --bg-primary: #1e3a8a; /* 🔷 Tiefes Blau - Haupthintergrund */
-    --bg-secondary: #1e40af; /* 🔷 Mittleres Blau - Cards und Panels */
-    --bg-tertiary: #2563eb; /* 🔷 Helleres Blau - Hover und Sections */
-    --bg-interactive: #3b82f6; /* 🔷 Interaktive Elemente */
-
-    /* Text Farben - Optimiert für blauen Hintergrund */
-    --text-primary: #f8fafc; /* 🔷 Sehr heller Text */
-    --text-secondary: #e2e8f0; /* 🔷 Heller Sekundärtext */
-    --text-muted: #cbd5e1; /* 🔷 Gedämpfter Text */
-    --text-faded: #94a3b8; /* 🔷 Schwacher Text */
-
-    /* Particle System - Auto Light Mode */
-    --particle-color: rgba(
-      248,
-      250,
-      252,
-      0.8
-    ); /* 🔷 Helle Partikel auf blauem Hintergrund */
-
-    /* Angepasste Brand-Farben für Auto Light Mode */
-    --primary-color: #60a5fa; /* 🔷 Hellerer Blue für Kontrast */
-    --primary-hover: #93c5fd; /* 🔷 Noch heller bei Hover */
-    --accent-color: #34d399; /* 🔷 Grüner Accent */
-    --accent-secondary: #f87171; /* 🔷 Roter Accent */
-
-    /* Status Farben für Auto Light Mode */
-    --success-color: #10b981; /* 🔷 Helleres Grün für Kontrast */
-    --warning-color: #f59e0b; /* 🔷 Warnung Orange */
-    --error-color: #ef4444; /* 🔷 Error Red */
-    --info-color: #3b82f6; /* 🔷 Info Blue */
-
-    /* Borders und UI-Elemente */
-    --border-color: #3b82f6; /* 🔷 Helles Blau für Borders */
-    --border-subtle: #1e40af; /* 🔷 Subtile Borders */
-
-    /* Schatten für Auto Light Mode */
+    --bg-primary: #1e3a8a;
+    --bg-secondary: #1e40af;
+    --bg-tertiary: #2563eb;
+    --bg-interactive: #3b82f6;
+    --text-primary: #f8fafc;
+    --text-secondary: #e2e8f0;
+    --text-muted: #cbd5e1;
+    --text-faded: #94a3b8;
+    --particle-color: rgba(248, 250, 252, 0.8);
+    --primary-color: #60a5fa;
+    --primary-hover: #93c5fd;
+    --accent-color: #34d399;
+    --accent-secondary: #f87171;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --info-color: #3b82f6;
+    --border-color: #3b82f6;
+    --border-subtle: #1e40af;
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -363,7 +331,7 @@
   }
 }
 
-/* Fokus-Indikator für alle interaktiven Elemente */
+/* Focus Indicator for all interactive elements */
 button:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible,
@@ -380,8 +348,6 @@ textarea:focus-visible {
     box-shadow 0.15s,
     outline-color 0.15s;
 }
-
-/* Hinweis: Für Buttons, Menüs und interaktive Komponenten sollten passende ARIA-Attribute (z.B. aria-label, aria-expanded, aria-controls) in HTML/JS gesetzt werden! */
 
 /* Accessibility Helper Classes */
 .visually-hidden {
