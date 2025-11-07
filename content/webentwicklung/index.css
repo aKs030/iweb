@@ -426,8 +426,6 @@ html {
 }
 
 /* ===== OPTIMIZED: Removed dead section header hiding rules =====
-   Original code tried to hide non-existent elements:
-   #hero .section-header, #features .section-header, etc.
-   These sections don't have .section-header elements in the HTML.
-   Removed ~20 lines of unnecessary CSS.
+   Diese Regeln waren doppelt und wurden bereits durch JavaScript
+   in content/webentwicklung/menu/menu.js gehandhabt.
 ===== */
