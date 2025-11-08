@@ -1,3 +1,12 @@
 {
-    "geminicodeassist.project": "celestial-century-8vm9l"
+    "geminicodeassist.project": "celestial-century-8vm9l",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./test-results",
+        "-p",
+        "*test.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
 }
