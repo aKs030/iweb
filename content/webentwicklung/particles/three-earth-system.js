@@ -158,6 +158,10 @@ let currentQualityLevel = "HIGH";
 let isMobileDevice = false;
 let frameCount = 0;
 let performanceMonitor, shootingStarManager;
+// Timestamp of the last explicit mode switch (ms since epoch). Used to
+// debounce successive toggles when the user scrolls quickly.
+let lastModeSwitchAt = 0;
+const MODE_SWITCH_DEBOUNCE_MS = 700;
 
 const cameraTarget = { x: 0, y: 0, z: 10 };
 const cameraPosition = { x: 0, y: 0, z: 10 };
@@ -1006,47 +1010,56 @@ function flyToPreset(presetName) {
 
 function setupSectionDetection() {
   // Section selector extended to include the footer trigger zone
-  const sections = document.querySelectorAll("section[id], div#footer-trigger-zone");
+  const sections = Array.from(document.querySelectorAll("section[id], div#footer-trigger-zone"));
   if (sections.length === 0) return;
+
+  // Helper to map DOM id to logical section id
+  const mapId = (id) => (id === "footer-trigger-zone" ? "site-footer" : id);
+
+  const OBSERVER_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i / 20);
 
   sectionObserver = new IntersectionObserver(
     (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          // Map 'footer-trigger-zone' to 'site-footer'
-          let newSection = entry.target.id;
-          if (newSection === 'footer-trigger-zone') {
-            newSection = 'site-footer';
-          }
-
-          if (newSection !== currentSection) {
-            const previousSection = currentSection;
-            currentSection = newSection;
-
-            // Kamera- und Layout-Updates immer durchführen
-            updateCameraForSection(newSection);
-
-            // Modus (Tag/Nacht) NUR wechseln, wenn die Navigation zwischen
-            // Sektion 2 und 3 stattfindet (features <-> about).
-            const isBetweenFeaturesAndAbout = (
-              (previousSection === 'features' && newSection === 'about') ||
-              (previousSection === 'about' && newSection === 'features')
-            );
-
-            updateEarthForSection(newSection, { allowModeSwitch: isBetweenFeaturesAndAbout });
-
-            if (newSection === "features") {
-              animateStarsToCards();
-            } else if (previousSection === "features") {
-              resetStarsToOriginal();
-            }
-
-            document.querySelector(".three-earth-container")?.setAttribute("data-section", newSection);
-          }
+      // Determine the entry with the largest intersectionRatio (most visible)
+      let best = null;
+      for (const entry of entries) {
+        if (!best || entry.intersectionRatio > best.intersectionRatio) {
+          best = entry;
         }
-      });
+      }
+
+      if (!best) return;
+
+      if (best.isIntersecting) {
+        let newSection = mapId(best.target.id || "");
+
+        if (!newSection) return;
+
+        if (newSection !== currentSection) {
+          const previousSection = currentSection;
+          currentSection = newSection;
+
+          // Kamera- und Layout-Updates immer durchführen
+          updateCameraForSection(newSection);
+
+          // Modus (Tag/Nacht) NUR wechseln, wenn die Navigation in eine
+          // Richtung geht: von 'features' (Sektion 2) nach 'about' (Sektion 3).
+          // Rückwärts-Scroll (about -> features) löst keinen Moduswechsel aus.
+          const isFeaturesToAbout = (previousSection === 'features' && newSection === 'about');
+
+          updateEarthForSection(newSection, { allowModeSwitch: isFeaturesToAbout });
+
+          if (newSection === "features") {
+            animateStarsToCards();
+          } else if (previousSection === "features") {
+            resetStarsToOriginal();
+          }
+
+          document.querySelector(".three-earth-container")?.setAttribute("data-section", newSection);
+        }
+      }
     },
-    { rootMargin: "-20% 0px -20% 0px", threshold: 0.3 }
+    { rootMargin: "-20% 0px -20% 0px", threshold: OBSERVER_THRESHOLDS }
   );
 
   sections.forEach((section) => sectionObserver.observe(section));
@@ -1102,16 +1115,19 @@ function updateEarthForSection(sectionName, options = {}) {
   // Removed previous toggle logic; 'about' uses a fixed mode defined in config.
   const targetMode = config.mode;
 
-  // Only switch day/night when explicitly allowed (e.g. scrolling between
-  // 'features' and 'about'). Otherwise keep current mode and orbit angle.
+  // Only switch day/night when explicitly allowed (e.g. scrolling from
+  // 'features' to 'about'). To allow repeating the visual change on every
+  // such transition (user reported it only switched once), we toggle the
+  // current mode on each allowed transition instead of skipping when the
+  // mode already equals the target.
   if (allowModeSwitch) {
-    if (earthMesh.userData.currentMode !== targetMode) {
-      earthMesh.material = targetMode === "day" ? dayMaterial : nightMaterial;
-      earthMesh.material.needsUpdate = true;
-      earthMesh.userData.currentMode = targetMode;
+    // Toggle mode each time the condition is met
+    const newMode = earthMesh.userData.currentMode === "night" ? "day" : "night";
+    earthMesh.material = newMode === "day" ? dayMaterial : nightMaterial;
+    earthMesh.material.needsUpdate = true;
+    earthMesh.userData.currentMode = newMode;
 
-      targetOrbitAngle = targetMode === "day" ? 0 : Math.PI;
-    }
+    targetOrbitAngle = newMode === "day" ? 0 : Math.PI;
   }
 
   // Update lighting
