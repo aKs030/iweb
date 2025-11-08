@@ -183,7 +183,7 @@ let starAnimationState = {
 
 // ===== Shooting Star Manager (Integrated) =====
 
-class ShootingStarManager {
+export class ShootingStarManager {
   constructor(scene, THREE) {
     this.scene = scene;
     this.THREE = THREE;

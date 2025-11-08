@@ -5,11 +5,16 @@
   position: fixed;
   inset: 0;
   z-index: -5;
+  pointer-events: auto;
   overflow: hidden;
   contain: strict;
   isolation: isolate;
   cursor: grab;
   transition: opacity 0.8s ease;
+}
+
+.three-earth-container.is-dragging {
+  cursor: grabbing;
 }
 
 .three-earth-container canvas {
@@ -78,11 +83,12 @@
 }
 
 /* Section-based Opacity Transitions */
-.three-earth-container[data-section] {
-  opacity: 0.95;
-}
 .three-earth-container[data-section="hero"] {
   opacity: 1;
+}
+
+.three-earth-container[data-section="features"] {
+  opacity: 0.95;
 }
 
 /* Reduced Motion */
