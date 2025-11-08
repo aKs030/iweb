@@ -1,15 +1,13 @@
 /**
  * Main Application Entry Point - Optimized
- * 
- * OPTIMIZATIONS v3.0:
+ * * OPTIMIZATIONS v3.0:
  * - Streamlined initialization sequence
  * - Better error boundaries
  * - Reduced code duplication
  * - Improved lazy loading strategy
  * - Enhanced performance monitoring
  * - Better cleanup handling
- * 
- * @version 3.0.0
+ * * @version 3.0.0
  * @last-modified 2025-11-08
  */
 
@@ -77,7 +75,7 @@ window.sectionTracker = sectionTracker;
 // ===== Lazy Module Loader =====
 const LazyModuleLoader = (() => {
   const modules = [
-    { id: "about", path: "/pages/about/about.js", loaded: false },
+    // { id: "about", path: "/pages/about/about.js", loaded: false }, // Entfernt, da about.js gelöscht wurde
   ];
 
   const loadedModules = new Set();

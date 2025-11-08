@@ -9,7 +9,7 @@
  * - Accessibility-optimiert mit ARIA-Attributen
  *
  * @author Abdulkerim Sesli
- * @version 1.2.0
+ * @version 1.3.0 - Defekte Links repariert
  */
 
 // ===== Shared Utilities Import =====
@@ -120,7 +120,8 @@ function getMenuHTML() {
     <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
       <ul class="site-menu__list">
         <li>
-          <a href="/index.html">
+          <!-- REPARIERT: Link zu #hero für SPA-Verhalten -->
+          <a href="#hero">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-house"></use>
             </svg>
@@ -129,7 +130,8 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="/pages/card/karten.html">
+          <!-- REPARIERT: Link zu #features anstelle einer separaten Seite -->
+          <a href="#features">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-images"></use>
             </svg>
@@ -138,7 +140,8 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="/index.html#about">
+           <!-- REPARIERT: Link zu #about für SPA-Verhalten -->
+          <a href="#about">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
             </svg>
@@ -147,7 +150,8 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="/index.html#contact">
+          <!-- REPARIERT: Link zu #site-footer (Kontaktbereich) -->
+          <a href="#site-footer">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-mail"></use>
             </svg>
@@ -335,9 +339,11 @@ function extractSectionInfo(sectionId) {
 
   const section = document.querySelector(`#${sectionId}`);
   if (!section) {
+    // REPARIERT: 'contact' (für #site-footer) Fallback
     return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
   }
 
+  // REPARIERT: 'contact' (für #site-footer) hinzugefügt, um JS-Ausblenden auszulösen.
   if (["hero", "features", "about", "contact"].includes(sectionId)) {
     const sectionElement = document.querySelector(`#${sectionId}`);
     if (sectionElement) {
@@ -349,6 +355,7 @@ function extractSectionInfo(sectionId) {
         header.style.visibility = "hidden";
       });
     }
+    // REPARIERT: Stelle sicher, dass 'contact' den korrekten Fallback erhält
     return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
   }
 
@@ -420,12 +427,20 @@ function initializeScrollDetection() {
       const { index, id } = event.detail || {};
       let sectionId = id;
 
+      // REPARIERT: ID 'site-footer' abfangen und zu 'contact' zuordnen
+      if (sectionId === 'site-footer') {
+        sectionId = 'contact';
+      }
+
       if (!sectionId && typeof index === "number") {
         const sections = Array.from(
-          document.querySelectorAll("main .section, .section")
+          document.querySelectorAll("main .section, .section, footer#site-footer") // FIX: Footer einbeziehen
         );
         const section = sections[index];
         sectionId = section?.id;
+        if (sectionId === 'site-footer') {
+            sectionId = 'contact';
+        }
       }
 
       if (sectionId) {
@@ -439,9 +454,10 @@ function initializeScrollDetection() {
 
   function waitForSnapSections() {
     const checkAndStart = () => {
-      const sections = document.querySelectorAll("#hero.section, #features.section, #about.section, #contact.section");
+      // REPARIERT: '#site-footer' (für contact) zur Liste der erkannten Sektionen hinzugefügt.
+      const sections = document.querySelectorAll("#hero.section, #features.section, #about.section, #site-footer");
 
-      if (sections.length >= 3) { // hero, features, about should be there
+      if (sections.length >= 4) { // Warten auf alle 4 Sektionen
         initSnapEventListener();
         const { title, subtitle } = extractSectionInfo("hero");
         updateTitleAndSubtitle(title, subtitle);
@@ -465,6 +481,16 @@ function setActiveMenuLink() {
   document.querySelectorAll(".site-menu a[href]").forEach((a) => {
     const href = a.getAttribute("href");
     if (!href) return;
+
+    // REPARIERT: Umgang mit reinen Anker-Links (#about, #features, #site-footer)
+    if (href.startsWith("#")) {
+        if (href === hash || (hash === "" && href === "#hero")) { // FIX: #hero als Standard hervorheben
+            a.classList.add("active");
+        } else {
+            a.classList.remove("active");
+        }
+        return;
+    }
 
     const norm = href.replace(/index\.html$/, "");
     const linkPath = norm.split('#')[0];

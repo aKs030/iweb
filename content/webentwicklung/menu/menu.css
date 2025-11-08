@@ -1,7 +1,6 @@
 /**
  * Dynamic Menu Navigations-System
- * 
- * Features:
+ * * Features:
  * - Dynamic Island-inspirierte Navigation
  * - Glassmorphismus 2.0 mit dynamischen Unschärfe-Effekten
  * - SF Pro Typography System
@@ -10,9 +9,8 @@
  * - Dynamic Colors mit verbessertem Kontrast
  * - Touch-optimierte Interactions
  * - Skip-Links für WCAG 2.1 Level AA Compliance
- * 
- * @author Abdulkerim Sesli
- * @version 2.0.0 - Dynamic Menu Design
+ * * @author Abdulkerim Sesli
+ * @version 2.0.1 - Cleanup !important
  */
 
 /* ===== Dynamic Menu Design Tokens ===== */
@@ -263,14 +261,9 @@ body {
   left: 24px;
 }
 
-.site-header .site-logo__container .site-logo {
-  font-family:
-    -apple-system, "SF Pro Display", system-ui, sans-serif;
-  font-size: clamp(18px, 2vw, 22px);
-  font-weight: 650; /* Dynamic Menu Semibold */
-  color: var(--dynamic-menu-label-primary);
-  text-shadow: none;
-
+/* AUFGERÄUMT: Redundante/konfliktierende .site-logo-Stile entfernt. */
+/* .elegant-logo definiert jetzt das primäre Erscheinungsbild. */
+.site-logo {
   /* Dynamic Menu Micro-Animation */
   transition: all 0.3s var(--dynamic-menu-spring-quick);
   cursor: pointer;
@@ -278,12 +271,11 @@ body {
   display: inline-block;
   position: relative;
   margin: 0;
-  letter-spacing: -0.02em;
   font-variant: normal;
   text-transform: none;
 }
 
-.site-header .site-logo__container .site-logo.elegant-logo {
+.site-logo.elegant-logo {
   font-family:
     -apple-system, "SF Pro Display", system-ui, sans-serif;
   font-size: clamp(20px, 2.2vw, 24px);
@@ -293,7 +285,15 @@ body {
   font-style: normal;
 }
 
-.site-header .site-logo__container .site-logo:hover {
+.site-header .site-logo__container .site-logo {
+  /* AUFGERÄUMT: !important entfernt. Spezifität wird durch .elegant-logo geregelt. */
+  font-family:
+    -apple-system, "SF Pro Display", system-ui, sans-serif;
+  font-weight: 650;
+  color: var(--dynamic-menu-label-primary);
+}
+
+.site-logo:hover {
   transform: scale(1.02);
   color: var(--dynamic-menu-accent-blue);
 }
@@ -504,6 +504,7 @@ body {
 }
 
 /* Dynamische Rechts-Positionierung über JavaScript */
+/* AUFGERÄUMT: !important entfernt */
 .site-menu__list .has-submenu .submenu.position-right {
   left: auto;
   right: 0;
@@ -520,6 +521,7 @@ body {
 
 /* Verhindere Überlauf bei sehr schmalen Bildschirmen */
 @media (max-width: 480px) {
+  /* AUFGERÄUMT: !important entfernt */
   .site-menu.open .site-menu__list .submenu {
     left: -10px;
     right: -10px;
@@ -594,7 +596,7 @@ main {
 
   /* Dynamic Menu Card-based Mobile Menu */
   .site-menu {
-    position: fixed;
+    position: fixed; /* Fixierte Position für Mobile-Menü */
     top: 64px; /* Angepasst an die neue Header-Höhe */
     right: 8px;
     width: min(90vw, 320px);
@@ -651,6 +653,7 @@ main {
   }
 
   /* Dynamic Menu Mobile Submenu */
+  /* AUFGERÄUMT: !important entfernt */
   .site-menu.open .site-menu__list .submenu {
     display: none;
     position: static;
