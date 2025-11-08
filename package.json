@@ -7,11 +7,7 @@
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "test:report": "playwright show-report",
-    "audit": "node tools/audit-project.js",
-    "audit:strict": "node tools/audit-project.js --strict",
-    "important:scan": "node tools/scan-important.js",
-    "important:prioritize": "node tools/prioritize-important.js"
+    "test:report": "playwright show-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
