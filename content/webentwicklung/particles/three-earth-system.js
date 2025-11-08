@@ -10,7 +10,7 @@
  * - Removed duplicate code
  * 
  * @version 8.2.0
- * @last-modified 2025-10-29
+ * @last-modified 2025-11-08
  */
 
 import {

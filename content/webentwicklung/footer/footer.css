@@ -161,6 +161,7 @@ body.footer-expanded {
   overflow: hidden;
   pointer-events: none;
   transition: all var(--footer-transition-smooth);
+  position: relative; /* Wichtig für absolute positionierte Kinder */
 }
 
 .footer-maximized-viewport {
@@ -608,8 +609,8 @@ body.footer-expanded {
 
 /* ===== Cookie Settings ===== */
 .footer-cookie-settings {
-  position: absolute;
-  inset: 0;
+  position: relative; /* Geändert von absolute zu relative */
+  width: 100%;
   background: var(--dynamic-footer-bg-card);
   border-radius: var(--dynamic-footer-radius-large);
   z-index: 100;
@@ -630,14 +631,14 @@ body.footer-expanded {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-height: 75vh;
+  max-height: 50vh; /* Noch kompakter */
 }
 
 .cookie-settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--footer-spacing-md) var(--footer-spacing-lg);
+  padding: 8px 12px; /* Noch kleiner */
   border-bottom: 1px solid var(--dynamic-footer-border-card);
   background: var(--dynamic-footer-bg-elevated);
   flex-shrink: 0;
@@ -645,7 +646,7 @@ body.footer-expanded {
 
 .cookie-settings-header h2 {
   margin: 0;
-  font-size: var(--footer-text-base);
+  font-size: 13px; /* Noch kleiner */
   font-weight: 600;
   color: var(--dynamic-footer-text-primary);
 }
@@ -654,7 +655,7 @@ body.footer-expanded {
   background: transparent;
   border: none;
   color: var(--dynamic-footer-text-secondary);
-  padding: 4px;
+  padding: 3px;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -667,52 +668,52 @@ body.footer-expanded {
 }
 
 .cookie-settings-close svg {
-  width: 18px;
-  height: 18px;
+  width: 14px; /* Noch kleiner */
+  height: 14px;
 }
 
 .cookie-settings-content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--footer-spacing-md);
+  padding: 8px 12px; /* Noch kleiner */
 }
 
 .cookie-settings-intro {
-  font-size: var(--footer-text-xs);
-  line-height: 1.5;
+  font-size: 9px; /* Noch kleiner */
+  line-height: 1.3;
   color: var(--dynamic-footer-text-secondary);
-  margin-bottom: var(--footer-spacing-md);
+  margin-bottom: 8px;
 }
 
 .cookie-category {
-  margin-bottom: var(--footer-spacing-sm);
-  padding: var(--footer-spacing-sm);
+  margin-bottom: 6px; /* Noch kleiner */
+  padding: 6px 8px; /* Noch kompakter */
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .cookie-category-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 3px; /* Noch kleiner */
 }
 
 .cookie-category-header h3 {
   margin: 0;
-  font-size: var(--footer-text-sm);
+  font-size: 11px; /* Noch kleiner */
   color: var(--dynamic-footer-text-primary);
   font-weight: 600;
 }
 
 .cookie-status {
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 9px;
+  padding: 1px 5px; /* Noch kompakter */
+  border-radius: 8px;
+  font-size: 7px; /* Noch kleiner */
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 .cookie-status-required {
@@ -722,17 +723,17 @@ body.footer-expanded {
 }
 
 .cookie-category-description {
-  font-size: var(--footer-text-xs);
-  line-height: 1.4;
+  font-size: 9px; /* Noch kleiner */
+  line-height: 1.2;
   color: var(--dynamic-footer-text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .cookie-toggle {
   position: relative;
   display: inline-block;
-  width: 40px;
-  height: 20px;
+  width: 34px; /* Kleiner */
+  height: 18px; /* Kleiner */
 }
 
 .cookie-toggle input {
@@ -753,8 +754,8 @@ body.footer-expanded {
 .cookie-toggle-slider:before {
   position: absolute;
   content: "";
-  height: 14px;
-  width: 14px;
+  height: 12px; /* Kleiner */
+  width: 12px; /* Kleiner */
   left: 3px;
   bottom: 3px;
   background-color: white;
@@ -767,18 +768,18 @@ body.footer-expanded {
 }
 
 .cookie-toggle input:checked + .cookie-toggle-slider:before {
-  transform: translateX(20px);
+  transform: translateX(16px); /* Angepasst */
 }
 
 .cookie-details {
-  margin-top: 8px;
+  margin-top: 4px; /* Noch kleiner */
 }
 
 .cookie-item {
-  padding: 8px;
+  padding: 4px 6px; /* Noch kompakter */
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  margin-bottom: 6px;
+  border-radius: 4px;
+  margin-bottom: 3px; /* Noch kleiner */
 }
 
 .cookie-item:last-child {
@@ -788,37 +789,37 @@ body.footer-expanded {
 .cookie-item strong {
   display: block;
   color: #0a84ff;
-  font-size: var(--footer-text-xs);
-  margin-bottom: 3px;
+  font-size: 9px; /* Noch kleiner */
+  margin-bottom: 1px;
 }
 
 .cookie-item p {
-  font-size: var(--footer-text-xs);
-  line-height: 1.3;
+  font-size: 8px; /* Noch kleiner */
+  line-height: 1.2;
   color: var(--dynamic-footer-text-secondary);
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
 }
 
 .cookie-duration {
   display: inline-block;
-  font-size: 9px;
+  font-size: 7px; /* Noch kleiner */
   color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.05);
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: 3px;
 }
 
 .cookie-privacy-info {
-  margin-top: var(--footer-spacing-sm);
-  padding: var(--footer-spacing-sm);
+  margin-top: 6px; /* Noch kleiner */
+  padding: 6px 8px; /* Noch kompakter */
   background: rgba(10, 132, 255, 0.1);
   border: 1px solid rgba(10, 132, 255, 0.3);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .cookie-privacy-info h3 {
-  margin: 0 0 6px 0;
-  font-size: var(--footer-text-sm);
+  margin: 0 0 3px 0;
+  font-size: 10px; /* Noch kleiner */
   color: #64d2ff;
   font-weight: 600;
 }
@@ -831,11 +832,11 @@ body.footer-expanded {
 
 .cookie-privacy-info li {
   position: relative;
-  font-size: var(--footer-text-xs);
-  line-height: 1.4;
+  font-size: 8px; /* Noch kleiner */
+  line-height: 1.3;
   color: var(--dynamic-footer-text-secondary);
-  margin-bottom: 4px;
-  padding-left: 16px;
+  margin-bottom: 2px;
+  padding-left: 12px;
 }
 
 .cookie-privacy-info li:before {
@@ -844,6 +845,7 @@ body.footer-expanded {
   left: 0;
   color: #34c759;
   font-weight: bold;
+  font-size: 9px;
 }
 
 .cookie-privacy-info a {
@@ -857,8 +859,8 @@ body.footer-expanded {
 
 .cookie-settings-footer {
   display: flex;
-  gap: 6px;
-  padding: var(--footer-spacing-sm) var(--footer-spacing-md);
+  gap: 4px; /* Kleiner */
+  padding: 6px 10px; /* Noch kompakter */
   border-top: 1px solid var(--dynamic-footer-border-card);
   background: var(--dynamic-footer-bg-elevated);
   flex-shrink: 0;
@@ -867,11 +869,11 @@ body.footer-expanded {
 
 .cookie-settings-btn {
   flex: 1;
-  min-width: 110px;
-  padding: 8px var(--footer-spacing-sm);
+  min-width: 90px; /* Noch kleiner */
+  padding: 6px 8px; /* Noch kompakter */
   border: none;
-  border-radius: 6px;
-  font-size: var(--footer-text-xs);
+  border-radius: 5px;
+  font-size: 10px; /* Noch kleiner */
   font-weight: 600;
   cursor: pointer;
   transition: all var(--footer-transition-quick);
@@ -1065,3 +1067,5 @@ body.footer-expanded {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+
