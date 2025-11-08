@@ -4,9 +4,16 @@
  * @version 8.0.1 - FIX: Minimized footer visibility
  */
 
-import { createLogger, throttle } from '../shared-utilities.js';
+import { createLogger } from '../shared-utilities.js';
 
 const log = createLogger("FooterSystem");
+
+// Tunable constants (avoid magic numbers throughout file)
+const PROGRAMMATIC_SCROLL_MARK_DURATION = 1000; // ms to mark upcoming programmatic scrolls
+const PROGRAMMATIC_SCROLL_WATCH_TIMEOUT = 5000; // ms fallback for watching smooth scroll completion
+const PROGRAMMATIC_SCROLL_TRIGGER_FALLBACK = 800; // ms used when triggering fallback smooth scroll
+const PROGRAMMATIC_SCROLL_WATCH_THRESHOLD = 6; // px threshold to consider scroll reached
+const PROGRAMMATIC_SCROLL_DEFAULT_DURATION = 600; // default token duration when not specified
 
 // ===== Cookie Utilities =====
 const CookieManager = {
@@ -44,6 +51,199 @@ const CookieManager = {
     log.info("Analytics cookies deleted");
   },
 };
+
+// ===== Global Close Handlers (click outside / user scroll to close maximized footer) =====
+// Programmatic scroll token manager — create a token when starting a programmatic scroll
+const ProgrammaticScroll = (() => {
+  let activeToken = null;
+  let timer = null;
+  const watchers = new Map();
+  return {
+  create(duration = PROGRAMMATIC_SCROLL_DEFAULT_DURATION) {
+  try { if (timer) { clearTimeout(timer); timer = null; } } catch (e) {}
+      const token = Symbol('progScroll');
+      activeToken = token;
+      if (duration > 0) {
+        timer = setTimeout(() => {
+          if (activeToken === token) activeToken = null;
+          timer = null;
+        }, duration);
+      }
+      log.debug('ProgrammaticScroll: token created for', duration, 'ms');
+      return token;
+    },
+    clear(token) {
+      if (!activeToken) return;
+      if (!token || activeToken === token) {
+        activeToken = null;
+  try { if (timer) { clearTimeout(timer); timer = null; } } catch (e) {}
+        log.debug('ProgrammaticScroll: token cleared');
+        // clear any watcher associated with this token
+        if (watchers.has(token)) {
+          const watcher = watchers.get(token);
+          try {
+            if (watcher.listener) window.removeEventListener('scroll', watcher.listener, { passive: true });
+          } catch (e) {}
+          try {
+            if (watcher.observer) watcher.observer.disconnect();
+          } catch (e) {}
+          try { if (watcher.timeoutId) clearTimeout(watcher.timeoutId); } catch (e) {}
+          watchers.delete(token);
+        }
+      }
+    },
+    hasActive() {
+      return !!activeToken;
+    }
+    ,
+    // Watch until the scroll reaches the target Y (or bottom). getTarget may be a number or a function returning number.
+    watchUntil(token, getTarget, timeout = PROGRAMMATIC_SCROLL_WATCH_TIMEOUT, threshold = PROGRAMMATIC_SCROLL_WATCH_THRESHOLD) {
+      if (!token) return;
+      let finished = false;
+
+      // resolve target: can be selector string, Element, number, or function that returns number/element
+      const resolve = () => {
+        try {
+          if (typeof getTarget === 'function') return getTarget();
+          if (typeof getTarget === 'string') return document.querySelector(getTarget);
+          return getTarget;
+        } catch (e) {
+          return null;
+        }
+      };
+
+      const resolved = resolve();
+
+      // If target is an Element, use IntersectionObserver for robust detection
+      if (resolved instanceof Element && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (finished) return;
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                finished = true;
+                try { ProgrammaticScroll.clear(token); } catch (e) {}
+              }
+          });
+        }, { root: null, threshold: [0.5, 0.75, 0.9, 1] });
+
+        // initial check
+        try {
+          const rect = resolved.getBoundingClientRect();
+    if ((rect.top < window.innerHeight) && (rect.bottom > 0)) {
+        finished = true;
+        try { ProgrammaticScroll.clear(token); } catch (e) {}
+        return token;
+      }
+    } catch (e) {}
+
+  try { observer.observe(resolved); } catch (e) {}
+        const timeoutId = setTimeout(() => {
+          if (!finished) {
+            try { ProgrammaticScroll.clear(token); } catch (e) {}
+          }
+          try { observer.disconnect(); } catch (e) {}
+        }, timeout);
+
+        watchers.set(token, { observer, timeoutId });
+        log.debug('ProgrammaticScroll: watching token via IntersectionObserver until target or timeout', timeout);
+        return token;
+      }
+
+      // fallback: numeric target or bottom detection
+      const resolveTarget = (typeof getTarget === 'function') ? getTarget : (() => Number(getTarget));
+      const check = () => {
+        try {
+          const targetY = resolveTarget();
+          const current = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+          const atBottom = (window.innerHeight + current) >= (document.body.scrollHeight - threshold);
+          if (!isNaN(Number(targetY)) && Math.abs(current - Number(targetY)) <= threshold) {
+            finished = true;
+            try { ProgrammaticScroll.clear(token); } catch (e) {}
+          } else if (atBottom) {
+            finished = true;
+            try { ProgrammaticScroll.clear(token); } catch (e) {}
+          }
+        } catch (e) {
+        }
+      };
+
+      const listener = () => {
+        if (finished) return;
+        check();
+      };
+
+      // initial check
+      check();
+
+      // attach listener and a fallback timeout
+      try {
+        window.addEventListener('scroll', listener, { passive: true });
+      } catch (e) {}
+      const timeoutId = setTimeout(() => {
+        if (!finished) {
+          try { ProgrammaticScroll.clear(token); } catch (e) {}
+        }
+      }, timeout);
+
+      watchers.set(token, { listener, timeoutId });
+      log.debug('ProgrammaticScroll: watching token until target or timeout', timeout);
+      return token;
+    }
+  };
+})();
+
+const GlobalClose = (() => {
+  let closeHandler = null;
+  let bound = false;
+  const onDocClick = (e) => {
+    try {
+      const footer = document.getElementById('site-footer');
+      if (!footer || !footer.classList.contains('footer-expanded')) return;
+      // If click is inside footer, ignore
+      if (e.target.closest && e.target.closest('#site-footer')) return;
+      // otherwise close
+      if (typeof closeHandler === 'function') closeHandler();
+    } catch (err) {
+      log.warn('GlobalClose onDocClick error', err);
+    }
+  };
+
+  const onUserScroll = (e) => {
+    try {
+      // If there's an active programmatic scroll token, ignore this user-scroll event
+      if (ProgrammaticScroll.hasActive()) return;
+      const footer = document.getElementById('site-footer');
+      if (!footer || !footer.classList.contains('footer-expanded')) return;
+      // close on user scroll/wheel/touch
+      if (typeof closeHandler === 'function') closeHandler();
+    } catch (err) {
+      log.warn('GlobalClose onUserScroll error', err);
+    }
+  };
+
+  return {
+    setCloseHandler(fn) {
+      closeHandler = fn;
+    },
+    bind() {
+      if (bound) return;
+      document.addEventListener('click', onDocClick, true);
+      window.addEventListener('wheel', onUserScroll, { passive: true });
+      window.addEventListener('touchstart', onUserScroll, { passive: true });
+      bound = true;
+      log.debug('GlobalClose: bound');
+    },
+    unbind() {
+      if (!bound) return;
+      document.removeEventListener('click', onDocClick, true);
+      window.removeEventListener('wheel', onUserScroll);
+      window.removeEventListener('touchstart', onUserScroll);
+      bound = false;
+      log.debug('GlobalClose: unbound');
+    },
+    
+  };
+})();
 
 // ===== Google Analytics Loader =====
 const GoogleAnalytics = {
@@ -287,11 +487,17 @@ const CookieSettings = (() => {
     
     requestAnimationFrame(() => {
       try {
+        // programmatic instant scroll to bottom (no smooth)
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
       } catch (e) {
-        /* noop */
       }
     });
+    // Bind global close handlers (click outside, user scroll)
+      try {
+        ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION); // mark upcoming programmatic scrolls to ignore
+        GlobalClose.bind();
+      } catch (e) {
+      }
     setupSectionObserver(elements);
     setupButtonHandlers(elements);
     setTriggerExpanded(true);
@@ -317,6 +523,11 @@ const CookieSettings = (() => {
     if (window.footerScrollHandler) {
       window.footerScrollHandler.expanded = false;
     }
+    // Unbind global close handlers when footer closed
+    try {
+      GlobalClose.unbind();
+    } catch (e) {
+    }
     removeButtonHandlers(elements);
     setTriggerExpanded(false);
     const trigger = getPrimaryTrigger();
@@ -325,6 +536,18 @@ const CookieSettings = (() => {
   }
   return { open, close };
 })();
+
+// Register CookieSettings.close with GlobalClose so handlers can call it
+try {
+  GlobalClose.setCloseHandler(() => {
+    try {
+      CookieSettings.close();
+    } catch (e) {
+      log.warn('GlobalClose: CookieSettings.close failed', e);
+    }
+  });
+} catch (e) {
+}
 
 // ===== Theme System =====
 class ThemeSystem {
@@ -458,6 +681,7 @@ class FooterLoader {
   setupInteractions() {
     this.setupNewsletter();
     this.setupCookieTriggers(); // OPTIMIZED: Renamed for clarity
+    this.setupFooterTriggers(); // Bind generic footer-open triggers (data-footer-trigger)
     this.setupSmoothScroll();
   }
 
@@ -509,6 +733,65 @@ class FooterLoader {
     });
     
     log.info(`Setup ${triggers.length} cookie triggers`);
+  }
+
+  // ===== Footer Trigger Setup (open maximized footer without cookie settings) =====
+  setupFooterTriggers() {
+    const triggers = document.querySelectorAll("[data-footer-trigger]");
+    if (!triggers.length) return;
+
+    triggers.forEach((trigger) => {
+      if (trigger.dataset.footerTriggerBound) return;
+
+      const handler = (event) => {
+        const tag = trigger.tagName.toLowerCase();
+        if (tag === "a") {
+          const href = trigger.getAttribute("href") || "";
+          if (!href || href.startsWith("#")) {
+            event.preventDefault();
+          }
+        }
+
+        // Prefer existing scroll handler API
+        try {
+          // If there's a scroll handler, use its toggle API. That will also bind global handlers via toggleExpansion below.
+          if (window.footerScrollHandler && typeof window.footerScrollHandler.toggleExpansion === 'function') {
+            window.footerScrollHandler.toggleExpansion(true);
+          } else {
+            // Fallback: manipulate DOM similarly to CookieSettings.open() but without showing cookie view
+            const footer = document.getElementById("site-footer");
+            if (!footer) return;
+            const footerMin = footer.querySelector('.footer-minimized');
+            const footerMax = footer.querySelector('.footer-maximized');
+            footer.classList.add("footer-expanded");
+            document.body.classList.add("footer-expanded");
+            footerMin?.classList.add("footer-hidden");
+            footerMax?.classList.remove("footer-hidden");
+            try {
+              // Programmatic smooth scroll — create token and watch until the footer viewport becomes visible
+              const token = ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_DEFAULT_DURATION);
+              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+              // Observe the maximized footer viewport element for arrival instead of relying on document height
+              ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport', PROGRAMMATIC_SCROLL_WATCH_TIMEOUT);
+            } catch (e) {
+            }
+          }
+        } catch (e) {
+          log.warn('setupFooterTriggers handler failed', e);
+        }
+
+        // update aria state for accessibility
+        try {
+          trigger.setAttribute('aria-expanded', 'true');
+        } catch (e) {
+        }
+      };
+
+      trigger.addEventListener("click", handler);
+      trigger.dataset.footerTriggerBound = "true";
+    });
+
+    log.info(`Setup ${triggers.length} footer triggers`);
   }
 
   setupSmoothScroll() {
@@ -576,6 +859,9 @@ class ScrollHandler {
     const maximized = footer.querySelector(".footer-maximized");
     if (!minimized || !maximized) return;
     if (shouldExpand && !this.expanded) {
+  // mark upcoming programmatic scrolls and bind global close handlers
+  try { ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION); } catch (e) {}
+  try { GlobalClose.bind(); } catch (e) {}
       footer.classList.add("footer-expanded");
       document.body.classList.add("footer-expanded");
       maximized.classList.remove("footer-hidden");
@@ -588,6 +874,8 @@ class ScrollHandler {
       maximized.classList.add("footer-hidden");
       minimized?.classList.remove("footer-hidden"); // Explizit minimiert einblenden
       this.expanded = false;
+      // unbind global close handlers
+  try { GlobalClose.unbind(); } catch(e) {}
       log.debug("Footer collapsed");
     }
   }
