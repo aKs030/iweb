@@ -5,11 +5,11 @@
  * - Removed unused OBSERVER_CONFIGS.heroLoading
  * - Consolidated duplicate event handling
  * - Improved type safety
- * - Better error boundaries
- * - Reduced code by 15%
+ * OPTIMIZATIONS v3.1.0:
+ * - SectionTracker query updated to include footer.
  *
- * @version 3.0.0
- * @last-modified 2025-11-07
+ * @version 3.1.0
+ * @last-modified 2025-11-08
  */
 
 // ===== Logger System =====
@@ -586,8 +586,9 @@ export class SectionTracker {
   }
 
   refreshSections() {
+    // FIX: Selektor erweitert, um main-Sektionen UND den site-footer zu erfassen
     this.sections = Array.from(
-      document.querySelectorAll("main .section, .section")
+      document.querySelectorAll("main .section[id], footer#site-footer[id]")
     ).filter((section) => section.id);
 
     if (this.observer) {

@@ -1,14 +1,15 @@
 /**
  * Shared Particle System - Optimized Common Infrastructure
- * 
- * OPTIMIZATIONS v2.2.0:
+ * * OPTIMIZATIONS v2.2.0:
  * - Removed unused ShootingStarManager (moved to earth system)
  * - Simplified state management
  * - Improved cleanup flow
  * - Better error handling
  * - Reduced memory footprint
- * 
- * @version 2.2.0
+ *
+ * OPTIMIZATIONS v2.3.0:
+ * - Removed local three.js path, using CDN only.
+ * * @version 2.3.0
  * @last-modified 2025-11-08
  */
 
@@ -228,8 +229,8 @@ export const sharedCleanupManager = new SharedCleanupManager();
 
 // ===== Shared Three.js Loading =====
 
+// AUFGERÄUMT: Lokaler Pfad entfernt, nur noch CDN
 const THREE_PATHS = [
-  "/content/webentwicklung/particles/three.module.js",
   "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
 ];
 
@@ -303,7 +304,7 @@ export function hasParticleSystem(name) {
 
 // ===== Global Cleanup Hook =====
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.addEventListener('beforeunload', () => {
     sharedCleanupManager.cleanupAll();
   });

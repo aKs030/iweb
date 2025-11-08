@@ -1,7 +1,7 @@
 /**
  * Footer Complete System - Fully Optimized
  * Removed duplicate code, simplified logic, better performance
- * @version 8.0.0 OPTIMIZED
+ * @version 8.0.1 - FIX: Minimized footer visibility
  */
 
 import { createLogger, throttle } from '../shared-utilities.js';
@@ -278,7 +278,7 @@ const CookieSettings = (() => {
     
     elements.footer.classList.add("footer-expanded");
     document.body.classList.add("footer-expanded");
-    elements.footerMin?.classList.add("footer-hidden");
+    elements.footerMin?.classList.add("footer-hidden"); // Explizit minimiert ausblenden
     elements.footerMax?.classList.remove("footer-hidden");
     elements.cookieView.classList.remove("hidden");
     if (elements.normalContent) {
@@ -310,7 +310,7 @@ const CookieSettings = (() => {
     elements.footer.classList.remove("footer-expanded");
     document.body.classList.remove("footer-expanded");
     elements.footerMax?.classList.add("footer-hidden");
-    elements.footerMin?.classList.remove("footer-hidden");
+    elements.footerMin?.classList.remove("footer-hidden"); // Explizit minimiert einblenden
     if (elements.normalContent) {
       elements.normalContent.style.display = "block";
     }
@@ -579,12 +579,14 @@ class ScrollHandler {
       footer.classList.add("footer-expanded");
       document.body.classList.add("footer-expanded");
       maximized.classList.remove("footer-hidden");
+      minimized?.classList.add("footer-hidden"); // Explizit minimiert ausblenden
       this.expanded = true;
       log.debug("Footer expanded");
     } else if (!shouldExpand && this.expanded) {
       footer.classList.remove("footer-expanded");
       document.body.classList.remove("footer-expanded");
       maximized.classList.add("footer-hidden");
+      minimized?.classList.remove("footer-hidden"); // Explizit minimiert einblenden
       this.expanded = false;
       log.debug("Footer collapsed");
     }

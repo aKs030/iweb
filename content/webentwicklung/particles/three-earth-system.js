@@ -1,15 +1,7 @@
 /**
  * Three.js Earth System - Optimized 3D WebGL Earth Visualization
- * 
- * OPTIMIZATIONS v8.2.0:
- * - Shooting Stars integrated (removed from shared)
- * - Improved star animation timing and positioning
- * - Better memory management and cleanup
- * - Reduced redundant updates
- * - Streamlined camera transitions
- * - Removed duplicate code
- * 
- * @version 8.2.0
+ * Lightweight cleanup and documentation update.
+ * @version 8.2.3
  * @last-modified 2025-11-08
  */
 
@@ -172,7 +164,6 @@ const cameraPosition = { x: 0, y: 0, z: 10 };
 const mouseState = { zoom: 10 };
 let cameraOrbitAngle = 0;
 let targetOrbitAngle = 0;
-let lastAboutMode = null;
 
 // Star animation state
 let starOriginalPositions = null;
@@ -321,7 +312,7 @@ const ThreeEarthManager = (() => {
     }
 
     try {
-      log.info("Initializing Three.js Earth System v8.2.0");
+      log.info("Initializing Three.js Earth System v8.2.1");
       registerParticleSystem("three-earth", { type: "three-earth" });
 
       THREE_INSTANCE = await loadThreeJS();
@@ -391,7 +382,6 @@ const ThreeEarthManager = (() => {
       atmosphereMesh = directionalLight = ambientLight = null;
     dayMaterial = nightMaterial = null;
     currentSection = "hero";
-    lastAboutMode = null;
     frameCount = 0;
     starOriginalPositions = starTargetPositions = null;
     starAnimationState = { active: false, rafId: null, startTime: 0, positionsUpdated: false, updateScheduled: false };
@@ -1015,19 +1005,35 @@ function flyToPreset(presetName) {
 // ===== Section Detection =====
 
 function setupSectionDetection() {
-  const sections = document.querySelectorAll("section[id]");
+  // Section selector extended to include the footer trigger zone
+  const sections = document.querySelectorAll("section[id], div#footer-trigger-zone");
   if (sections.length === 0) return;
 
   sectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const newSection = entry.target.id;
+          // Map 'footer-trigger-zone' to 'site-footer'
+          let newSection = entry.target.id;
+          if (newSection === 'footer-trigger-zone') {
+            newSection = 'site-footer';
+          }
+
           if (newSection !== currentSection) {
             const previousSection = currentSection;
             currentSection = newSection;
+
+            // Kamera- und Layout-Updates immer durchführen
             updateCameraForSection(newSection);
-            updateEarthForSection(newSection);
+
+            // Modus (Tag/Nacht) NUR wechseln, wenn die Navigation zwischen
+            // Sektion 2 und 3 stattfindet (features <-> about).
+            const isBetweenFeaturesAndAbout = (
+              (previousSection === 'features' && newSection === 'about') ||
+              (previousSection === 'about' && newSection === 'features')
+            );
+
+            updateEarthForSection(newSection, { allowModeSwitch: isBetweenFeaturesAndAbout });
 
             if (newSection === "features") {
               animateStarsToCards();
@@ -1046,8 +1052,9 @@ function setupSectionDetection() {
   sections.forEach((section) => sectionObserver.observe(section));
 }
 
-function updateEarthForSection(sectionName) {
+function updateEarthForSection(sectionName, options = {}) {
   if (!earthMesh) return;
+  const allowModeSwitch = !!options.allowModeSwitch;
 
   const configs = {
     hero: {
@@ -1060,14 +1067,20 @@ function updateEarthForSection(sectionName) {
       moon: { pos: { x: 1, y: 2, z: -5 }, scale: 1.1 },
       mode: "day",
     },
-    about: {
+    about: { // Sektor 3
       earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1.0, rotation: Math.PI },
       moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-      mode: "toggle",
+  mode: "night",
     },
+    contact: { // Sektor 4 (für site-footer)
+      earth: { pos: { x: 0, y: -1.5, z: 0 }, scale: 1.1, rotation: Math.PI / 2 },
+      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+  mode: "day",
+    }
   };
-
-  const config = configs[sectionName] || configs.hero;
+  
+  // Map 'site-footer' to the 'contact' config
+  const config = configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero;
 
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
     config.earth.pos.x,
@@ -1086,22 +1099,18 @@ function updateEarthForSection(sectionName) {
     moonMesh.userData.targetScale = config.moon.scale;
   }
 
-  let targetMode = config.mode;
+  // Removed previous toggle logic; 'about' uses a fixed mode defined in config.
+  const targetMode = config.mode;
 
-  if (sectionName === "about" && config.mode === "toggle") {
-    targetMode = lastAboutMode === null ? "night" : (lastAboutMode === "day" ? "night" : "day");
-    lastAboutMode = targetMode;
-  }
+  // Only switch day/night when explicitly allowed (e.g. scrolling between
+  // 'features' and 'about'). Otherwise keep current mode and orbit angle.
+  if (allowModeSwitch) {
+    if (earthMesh.userData.currentMode !== targetMode) {
+      earthMesh.material = targetMode === "day" ? dayMaterial : nightMaterial;
+      earthMesh.material.needsUpdate = true;
+      earthMesh.userData.currentMode = targetMode;
 
-  if (earthMesh.userData.currentMode !== targetMode) {
-    earthMesh.material = targetMode === "day" ? dayMaterial : nightMaterial;
-    earthMesh.material.needsUpdate = true;
-    earthMesh.userData.currentMode = targetMode;
-
-    if (targetMode === "day") {
-      targetOrbitAngle = 0;
-    } else {
-      targetOrbitAngle = Math.PI;
+      targetOrbitAngle = targetMode === "day" ? 0 : Math.PI;
     }
   }
 
