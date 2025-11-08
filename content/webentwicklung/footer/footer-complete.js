@@ -265,14 +265,17 @@ const CookieSettings = (() => {
 
   function open() {
     const elements = getElements();
+    
     if (!elements.footer || !elements.cookieView) {
       log.error("Cookie settings elements not found");
       return;
     }
+    
     const consent = CookieManager.get("cookie_consent");
     if (elements.analyticsToggle) {
       elements.analyticsToggle.checked = consent === "accepted";
     }
+    
     elements.footer.classList.add("footer-expanded");
     document.body.classList.add("footer-expanded");
     elements.footerMin?.classList.add("footer-hidden");
@@ -281,6 +284,7 @@ const CookieSettings = (() => {
     if (elements.normalContent) {
       elements.normalContent.style.display = "none";
     }
+    
     requestAnimationFrame(() => {
       try {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });

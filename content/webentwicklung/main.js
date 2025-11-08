@@ -10,7 +10,7 @@
  * - Better cleanup handling
  * 
  * @version 3.0.0
- * @last-modified 2025-10-29
+ * @last-modified 2025-11-08
  */
 
 import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";

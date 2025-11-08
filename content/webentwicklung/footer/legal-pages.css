@@ -1,8 +1,10 @@
 /**
  * Legal Pages Shared Styles
  * Used by datenschutz.html and impressum.html
- * Eliminates ~200 lines of duplicate code
- * @version 1.0.0
+ * ✓ UTF-8 encoding fixed
+ * ✓ Better accessibility
+ * ✓ Improved mobile support
+ * @version 1.1.0 OPTIMIZED
  */
 
 /* Base Layout */
@@ -71,6 +73,12 @@ a:hover {
   text-decoration: underline;
 }
 
+a:focus-visible {
+  outline: 2px solid #0a84ff;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 /* Components */
 .highlight {
   background: rgba(10, 132, 255, 0.1);
@@ -85,6 +93,7 @@ a:hover {
   padding: 1.5rem;
   border-radius: 8px;
   margin: 2rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .disclaimer {
@@ -93,12 +102,14 @@ a:hover {
   padding: 1rem;
   margin: 1.5rem 0;
   font-size: 0.9rem;
+  border-radius: 4px;
 }
 
 .last-updated {
   color: #999;
   font-size: 0.9rem;
   margin-top: 1rem;
+  font-style: italic;
 }
 
 /* Back Link Button */
@@ -106,6 +117,7 @@ a:hover {
   display: inline-block;
   margin-top: 2rem;
   padding: 0.75rem 1.5rem;
+  min-height: 44px;
   background: linear-gradient(135deg, #0a84ff 0%, #0066cc 100%);
   color: white;
   border-radius: 6px;
@@ -119,6 +131,15 @@ a:hover {
   transform: translateY(-2px);
   text-decoration: none;
   box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+}
+
+.back-link:active {
+  transform: translateY(0);
+}
+
+.back-link:focus-visible {
+  outline: 2px solid rgba(10, 132, 255, 0.8);
+  outline-offset: 3px;
 }
 
 /* Mobile Responsiveness */
@@ -144,6 +165,10 @@ a:hover {
   .disclaimer {
     padding: 1rem;
   }
+  
+  ul, ol {
+    padding-left: 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -167,6 +192,33 @@ a:hover {
   .back-link {
     display: block;
     text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .back-link:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .highlight,
+  .contact-box,
+  .disclaimer {
+    border: 2px solid currentColor;
+  }
+  
+  .back-link {
+    border: 2px solid currentColor;
   }
 }
 
@@ -197,5 +249,14 @@ a:hover {
   .disclaimer {
     background: white;
     border: 1px solid #ccc;
+    page-break-inside: avoid;
+  }
+  
+  h2, h3 {
+    page-break-after: avoid;
+  }
+  
+  ul, ol {
+    page-break-inside: avoid;
   }
 }
