@@ -114,6 +114,14 @@ const CONFIG = {
         z: 9.5,
         lookAt: { x: 0, y: 0, z: 0 }
       }
+      ,
+      // Camera preset for the contact/footer zone
+      contact: {
+        x: -0.5,
+        y: 3.0,
+        z: 9.5,
+        lookAt: { x: 0, y: 0, z: 0 }
+      }
     },
     TRANSITION_DURATION: 1.8
   },
@@ -1001,9 +1009,12 @@ function setupCameraSystem() {
 let cameraTransition = null;
 
 function updateCameraForSection(sectionName) {
-  const preset = CONFIG.CAMERA.PRESETS[sectionName];
+  // Map 'site-footer' to the 'contact' camera preset so the footer
+  // can have its own camera view instead of falling back to 'hero'.
+  const presetKey = sectionName === 'site-footer' ? 'contact' : sectionName;
+  const preset = CONFIG.CAMERA.PRESETS[presetKey];
   if (preset) {
-    flyToPreset(sectionName);
+    flyToPreset(presetKey);
   } else {
     log.warn(`No preset for '${sectionName}', using hero`);
     flyToPreset('hero');
