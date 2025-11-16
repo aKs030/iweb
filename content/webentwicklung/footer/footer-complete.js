@@ -316,7 +316,6 @@ const GlobalClose = (() => {
   };
 })();
 
- 
 // ===== Google Analytics Loader =====
 const GoogleAnalytics = {
   load() {
@@ -604,7 +603,7 @@ const CookieSettings = (() => {
     } catch (e) {
       /* ignored */
     }
-    
+
     removeButtonHandlers(elements);
     setTriggerExpanded(false);
     const trigger = getPrimaryTrigger();
@@ -627,7 +626,6 @@ try {
 } catch (e) {
   /* ignored */
 }
-
 
 // ===== Theme System =====
 class ThemeSystem {
@@ -962,7 +960,7 @@ class ScrollHandler {
       document.body.classList.add('footer-expanded');
       maximized.classList.remove('footer-hidden');
       minimized?.classList.add('footer-hidden'); // Explizit minimiert ausblenden
- 
+
       this.expanded = true;
       log.debug('Footer expanded');
     } else if (!shouldExpand && this.expanded) {
@@ -978,7 +976,6 @@ class ScrollHandler {
         /* ignored */
       }
       log.debug('Footer collapsed');
- 
     }
   }
   cleanup() {
