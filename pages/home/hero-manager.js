@@ -98,9 +98,7 @@ const HeroManager = (() => {
 })();
 
 // ===== Animation Engine Bootstrap (entfernt) =====
-function initHeroAnimationBootstrap() {
-  // Animation-System wurde entfernt
-}
+// Animation system removed; placeholder function deleted to keep code clean
 
 // ===== Public API =====
 export function initHeroFeatureBundle() {
@@ -158,7 +156,6 @@ export function initHeroFeatureBundle() {
 
   // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
-  heroTimers.setTimeout(initHeroAnimationBootstrap, 420);
 
   // Animation-System wurde entfernt
 }
