@@ -23,7 +23,7 @@ const LOG_LEVELS = {
 
 let globalLogLevel = LOG_LEVELS.warn;
 
-export function setGlobalLogLevel(level) {
+function setGlobalLogLevel(level) {
   if (level in LOG_LEVELS) {
     globalLogLevel = LOG_LEVELS[level];
   }
