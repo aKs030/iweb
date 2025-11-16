@@ -680,7 +680,7 @@ main {
     color: var(--dynamic-menu-label-secondary);
   }
 
-  /* Dynamic Menu Mobile Overlay - Removed (unused) */
+  /* Dynamic Menu Mobile Overlay (moved/optimized) */
 
   /* Mobile submenu indicator - integriert von 768px Media Query */
   .has-submenu > a::after,
@@ -735,4 +735,4 @@ main {
   opacity: 1;
 }
 
-/* ===== Dynamic Menu Overlay States - Removed (unused) ===== */
+/* ===== Dynamic Menu Overlay States (optimized) ===== */

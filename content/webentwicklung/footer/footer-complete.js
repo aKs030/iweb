@@ -7,6 +7,7 @@
 import { createLogger } from '../shared-utilities.js';
 
 const log = createLogger('FooterSystem');
+// (duplicate constants removed)
 
 // Tunable constants (avoid magic numbers throughout file)
 const PROGRAMMATIC_SCROLL_MARK_DURATION = 1000; // ms to mark upcoming programmatic scrolls
@@ -14,7 +15,6 @@ const PROGRAMMATIC_SCROLL_WATCH_TIMEOUT = 5000; // ms fallback for watching smoo
 const _PROGRAMMATIC_SCROLL_TRIGGER_FALLBACK = 800; // ms used when triggering fallback smooth scroll (unused, keep for future)
 const PROGRAMMATIC_SCROLL_WATCH_THRESHOLD = 6; // px threshold to consider scroll reached
 const PROGRAMMATIC_SCROLL_DEFAULT_DURATION = 600; // default token duration when not specified
-
 // ===== Cookie Utilities =====
 const CookieManager = {
   set(name, value, days = 365) {
@@ -52,6 +52,8 @@ const CookieManager = {
   }
 };
 
+// ===== Global Close Handlers (click outside / user scroll to close maximized footer) =====
+// Programmatic scroll token manager — create a token when starting a programmatic scroll
 // ===== Global Close Handlers (click outside / user scroll to close maximized footer) =====
 // Programmatic scroll token manager — create a token when starting a programmatic scroll
 const ProgrammaticScroll = (() => {
@@ -603,6 +605,7 @@ const CookieSettings = (() => {
     } catch (e) {
       /* ignored */
     }
+
     removeButtonHandlers(elements);
     setTriggerExpanded(false);
     const trigger = getPrimaryTrigger();
@@ -612,6 +615,7 @@ const CookieSettings = (() => {
   return { open, close };
 })();
 
+// Register CookieSettings.close with GlobalClose so handlers can call it
 // Register CookieSettings.close with GlobalClose so handlers can call it
 try {
   GlobalClose.setCloseHandler(() => {
@@ -812,6 +816,7 @@ class FooterLoader {
   }
 
   // ===== Footer Trigger Setup (open maximized footer without cookie settings) =====
+  // ===== Footer Trigger Setup (open maximized footer without cookie settings) =====
   setupFooterTriggers() {
     const triggers = document.querySelectorAll('[data-footer-trigger]');
     if (!triggers.length) return;
@@ -959,6 +964,7 @@ class ScrollHandler {
       document.body.classList.add('footer-expanded');
       maximized.classList.remove('footer-hidden');
       minimized?.classList.add('footer-hidden'); // Explizit minimiert ausblenden
+
       this.expanded = true;
       log.debug('Footer expanded');
     } else if (!shouldExpand && this.expanded) {
