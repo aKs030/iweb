@@ -34,7 +34,10 @@ body {
   -webkit-font-smoothing: antialiased;
   font-kerning: normal;
   font-variant-ligatures: common-ligatures contextual;
-  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1,
+    'calt' 1;
 }
 
 body {
@@ -62,10 +65,7 @@ body {
   width: 100%;
   max-width: 900px;
   margin-inline: auto;
-  padding-inline: max(
-    clamp(0.5rem, 4vw, 1.5rem),
-    env(safe-area-inset-left, 0px)
-  );
+  padding-inline: max(clamp(0.5rem, 4vw, 1.5rem), env(safe-area-inset-left, 0px));
   box-sizing: border-box;
 }
 
@@ -73,7 +73,9 @@ body {
 .snap-section {
   scroll-snap-type: none;
   opacity: 0.8;
-  transition: opacity var(--transition-slow), transform var(--transition-slow);
+  transition:
+    opacity var(--transition-slow),
+    transform var(--transition-slow);
 }
 
 .snap-section.in-view {
@@ -110,14 +112,19 @@ body {
 }
 
 .section-title::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
   width: clamp(50px, 8vw, 70px);
   height: 3px;
-  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-light) 50%, var(--primary-color) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--primary-color) 0%,
+    var(--primary-light) 50%,
+    var(--primary-color) 100%
+  );
   border-radius: var(--radius-full);
   box-shadow: 0 0 15px rgba(7, 161, 255, 0.5);
 }
@@ -161,7 +168,10 @@ body {
   gap: 0.35rem;
   font-weight: 500;
   box-shadow: var(--shadow-sm);
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .section-retry:hover {
@@ -179,22 +189,37 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--spacing-md);
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   letter-spacing: -0.012em;
 }
 
-h4, h5, h6 {
+h4,
+h5,
+h6 {
   letter-spacing: -0.006em;
 }
 
 @supports (text-wrap: balance) {
-  h1, h2, h3, h4, h5, h6, .section-title {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .section-title {
     text-wrap: balance;
   }
 }
@@ -353,14 +378,18 @@ a:hover {
   outline: 2px solid #fff;
   outline-offset: 3px;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
-  transition: box-shadow 0.15s ease, outline-color 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    outline-color 0.15s ease;
 }
 
 @media (prefers-contrast: more) {
   *:focus-visible {
     outline: 3px solid #ffffff;
     outline-offset: 4px;
-    box-shadow: 0 0 0 5px #000, 0 0 0 8px var(--primary-color);
+    box-shadow:
+      0 0 0 5px #000,
+      0 0 0 8px var(--primary-color);
   }
 }
 

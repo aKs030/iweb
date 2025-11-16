@@ -83,11 +83,11 @@
 }
 
 /* Section-based Opacity Transitions */
-.three-earth-container[data-section="hero"] {
+.three-earth-container[data-section='hero'] {
   opacity: 1;
 }
 
-.three-earth-container[data-section="features"] {
+.three-earth-container[data-section='features'] {
   opacity: 0.95;
 }
 
@@ -107,7 +107,7 @@
   color: rgba(255, 255, 255, 0.85);
   padding: 8px 12px;
   border-radius: 6px;
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-size: 11px;
   line-height: 1.5;
   pointer-events: none;

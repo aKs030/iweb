@@ -11,7 +11,7 @@
  * @last-modified 2025-11-08
  */
 
-import { initHeroFeatureBundle } from "../../pages/home/hero-manager.js";
+import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
 import {
   createLazyLoadObserver,
   createLogger,
@@ -19,47 +19,47 @@ import {
   fire,
   getElementById,
   schedulePersistentStorageRequest,
-  SectionTracker,
-} from "./shared-utilities.js";
-import TypeWriterRegistry from "./TypeWriter/TypeWriter.js";
-import "./menu/menu.js";
+  SectionTracker
+} from './shared-utilities.js';
+import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
+import './menu/menu.js';
 
-const log = createLogger("main");
+const log = createLogger('main');
 
 // ===== Performance Tracking =====
 const perfMarks = {
   start: performance.now(),
   domReady: 0,
   modulesReady: 0,
-  windowLoaded: 0,
+  windowLoaded: 0
 };
 
 // ===== Accessibility Announcements =====
 const announce = (() => {
   const cache = new Map();
-  
+
   return (message, { assertive = false, dedupe = false } = {}) => {
     if (!message) return;
-    
+
     // Prevent duplicate announcements
     if (dedupe && cache.has(message)) return;
     if (dedupe) {
       cache.set(message, true);
       setTimeout(() => cache.delete(message), 3000);
     }
-    
+
     try {
-      const id = assertive ? "live-region-assertive" : "live-region-status";
+      const id = assertive ? 'live-region-assertive' : 'live-region-status';
       const region = getElementById(id);
       if (!region) return;
-      
+
       // Clear and announce
-      region.textContent = "";
+      region.textContent = '';
       requestAnimationFrame(() => {
         region.textContent = message;
       });
     } catch (error) {
-      log.debug("Announcement failed:", error);
+      log.debug('Announcement failed:', error);
     }
   };
 })();
@@ -71,7 +71,6 @@ const sectionTracker = new SectionTracker();
 sectionTracker.init();
 window.sectionTracker = sectionTracker;
 
-
 // ===== Lazy Module Loader =====
 const LazyModuleLoader = (() => {
   const modules = [
@@ -82,7 +81,7 @@ const LazyModuleLoader = (() => {
 
   async function loadModule(module) {
     if (loadedModules.has(module.id)) return;
-    
+
     loadedModules.add(module.id);
     module.loaded = true;
 
@@ -111,7 +110,7 @@ const LazyModuleLoader = (() => {
     }
 
     // Listen for section loaded events
-    document.addEventListener("section:loaded", (ev) => {
+    document.addEventListener('section:loaded', (ev) => {
       const id = ev.detail?.id;
       const module = modules.find((m) => m.id === id);
       if (module && !module.loaded) {
@@ -134,7 +133,7 @@ const LazyModuleLoader = (() => {
 const SectionLoader = (() => {
   if (window.SectionLoader) return window.SectionLoader;
 
-  const SELECTOR = "section[data-section-src]";
+  const SELECTOR = 'section[data-section-src]';
   const loadedSections = new WeakSet();
   const retryAttempts = new WeakMap();
   const MAX_RETRIES = 2;
@@ -144,7 +143,7 @@ const SectionLoader = (() => {
     try {
       document.dispatchEvent(
         new CustomEvent(type, {
-          detail: { id: section?.id, section, ...detail },
+          detail: { id: section?.id, section, ...detail }
         })
       );
     } catch (error) {
@@ -153,13 +152,13 @@ const SectionLoader = (() => {
   }
 
   function getSectionName(section) {
-    const labelId = section.getAttribute("aria-labelledby");
+    const labelId = section.getAttribute('aria-labelledby');
     if (labelId) {
       const label = getElementById(labelId);
       const text = label?.textContent?.trim();
       if (text) return text;
     }
-    return section.id || "Abschnitt";
+    return section.id || 'Abschnitt';
   }
 
   async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
@@ -168,8 +167,8 @@ const SectionLoader = (() => {
 
     try {
       const response = await fetch(url, {
-        credentials: "same-origin",
-        signal: controller.signal,
+        credentials: 'same-origin',
+        signal: controller.signal
       });
       clearTimeout(timeoutId);
       return response;
@@ -181,10 +180,10 @@ const SectionLoader = (() => {
 
   async function loadSection(section) {
     if (loadedSections.has(section)) return;
-    
-    const url = section.getAttribute("data-section-src");
+
+    const url = section.getAttribute('data-section-src');
     if (!url) {
-      section.removeAttribute("aria-busy");
+      section.removeAttribute('aria-busy');
       return;
     }
 
@@ -193,11 +192,11 @@ const SectionLoader = (() => {
     const attempts = retryAttempts.get(section) || 0;
 
     // Prepare section
-    section.setAttribute("aria-busy", "true");
-    section.dataset.state = "loading";
-    
+    section.setAttribute('aria-busy', 'true');
+    section.dataset.state = 'loading';
+
     announce(`Lade ${sectionName}…`, { dedupe: true });
-    dispatchEvent("section:will-load", section, { url });
+    dispatchEvent('section:will-load', section, { url });
 
     try {
       const response = await fetchWithTimeout(url);
@@ -207,31 +206,30 @@ const SectionLoader = (() => {
       }
 
       const html = await response.text();
-      
+
       // Insert content
-      section.insertAdjacentHTML("beforeend", html);
-      
+      section.insertAdjacentHTML('beforeend', html);
+
       // Handle templates
-      const template = section.querySelector("template");
+      const template = section.querySelector('template');
       if (template) {
         section.appendChild(template.content.cloneNode(true));
       }
 
       // Remove skeletons
-      section.querySelectorAll(".section-skeleton").forEach((el) => el.remove());
+      section.querySelectorAll('.section-skeleton').forEach((el) => el.remove());
 
       // Mark as loaded
-      section.dataset.state = "loaded";
-      section.removeAttribute("aria-busy");
+      section.dataset.state = 'loaded';
+      section.removeAttribute('aria-busy');
 
       announce(`${sectionName} geladen`, { dedupe: true });
-      dispatchEvent("section:loaded", section, { state: "loaded" });
+      dispatchEvent('section:loaded', section, { state: 'loaded' });
 
       // Fire hero event if needed
-      if (section.id === "hero") {
+      if (section.id === 'hero') {
         fire(EVENTS.HERO_LOADED);
       }
-
     } catch (error) {
       log.warn(`Section load failed: ${sectionName}`, error);
 
@@ -241,43 +239,43 @@ const SectionLoader = (() => {
       if (shouldRetry) {
         retryAttempts.set(section, attempts + 1);
         loadedSections.delete(section);
-        
+
         // Exponential backoff
         const delay = 300 * Math.pow(2, attempts);
         await new Promise((resolve) => setTimeout(resolve, delay));
-        
+
         return loadSection(section);
       }
 
       // Final error state
-      section.dataset.state = "error";
-      section.removeAttribute("aria-busy");
-      
+      section.dataset.state = 'error';
+      section.removeAttribute('aria-busy');
+
       announce(`Fehler beim Laden von ${sectionName}`, { assertive: true });
-      dispatchEvent("section:error", section, { state: "error" });
-      
+      dispatchEvent('section:error', section, { state: 'error' });
+
       injectRetryUI(section);
     }
   }
 
   function injectRetryUI(section) {
-    if (section.querySelector(".section-retry")) return;
+    if (section.querySelector('.section-retry')) return;
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "section-retry";
-    button.textContent = "Erneut laden";
-    button.addEventListener("click", () => retrySection(section), { once: true });
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'section-retry';
+    button.textContent = 'Erneut laden';
+    button.addEventListener('click', () => retrySection(section), { once: true });
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "section-error-box";
+    const wrapper = document.createElement('div');
+    wrapper.className = 'section-error-box';
     wrapper.appendChild(button);
     section.appendChild(wrapper);
   }
 
   async function retrySection(section) {
-    section.querySelectorAll(".section-error-box").forEach((el) => el.remove());
-    section.dataset.state = "";
+    section.querySelectorAll('.section-error-box').forEach((el) => el.remove());
+    section.dataset.state = '';
     loadedSections.delete(section);
     retryAttempts.delete(section);
     await loadSection(section);
@@ -292,7 +290,7 @@ const SectionLoader = (() => {
     const lazySections = [];
 
     sections.forEach((section) => {
-      if (section.hasAttribute("data-eager")) {
+      if (section.hasAttribute('data-eager')) {
         eagerSections.push(section);
       } else {
         lazySections.push(section);
@@ -320,7 +318,7 @@ const SectionLoader = (() => {
 })();
 
 // Initialize section loader
-if (document.readyState !== "loading") {
+if (document.readyState !== 'loading') {
   SectionLoader.init();
 } else {
   document.addEventListener(EVENTS.DOM_READY, SectionLoader.init, { once: true });
@@ -329,10 +327,10 @@ if (document.readyState !== "loading") {
 // ===== Scroll Snapping =====
 const ScrollSnapping = (() => {
   let snapTimer = null;
-  const snapContainer = document.querySelector(".snap-container") || document.documentElement;
+  const snapContainer = document.querySelector('.snap-container') || document.documentElement;
 
-  const disableSnap = () => snapContainer.classList.add("no-snap");
-  const enableSnap = () => snapContainer.classList.remove("no-snap");
+  const disableSnap = () => snapContainer.classList.add('no-snap');
+  const enableSnap = () => snapContainer.classList.remove('no-snap');
 
   function handleScroll() {
     disableSnap();
@@ -341,16 +339,16 @@ const ScrollSnapping = (() => {
   }
 
   function handleKey(event) {
-    const scrollKeys = ["PageDown", "PageUp", "Home", "End", "ArrowDown", "ArrowUp", "Space"];
+    const scrollKeys = ['PageDown', 'PageUp', 'Home', 'End', 'ArrowDown', 'ArrowUp', 'Space'];
     if (scrollKeys.includes(event.key)) {
       handleScroll();
     }
   }
 
   function init() {
-    window.addEventListener("wheel", handleScroll, { passive: true });
-    window.addEventListener("touchmove", handleScroll, { passive: true });
-    window.addEventListener("keydown", handleKey, { passive: true });
+    window.addEventListener('wheel', handleScroll, { passive: true });
+    window.addEventListener('touchmove', handleScroll, { passive: true });
+    window.addEventListener('keydown', handleKey, { passive: true });
   }
 
   return { init };
@@ -364,32 +362,32 @@ const LoadingScreenManager = (() => {
   let startTime = 0;
 
   function hide() {
-    const loadingScreen = getElementById("loadingScreen");
+    const loadingScreen = getElementById('loadingScreen');
     if (!loadingScreen) return;
 
     const elapsed = performance.now() - startTime;
     const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed);
 
     setTimeout(() => {
-      loadingScreen.classList.add("hide");
-      loadingScreen.setAttribute("aria-hidden", "true");
-      
+      loadingScreen.classList.add('hide');
+      loadingScreen.setAttribute('aria-hidden', 'true');
+
       Object.assign(loadingScreen.style, {
-        opacity: "0",
-        pointerEvents: "none",
-        visibility: "hidden",
+        opacity: '0',
+        pointerEvents: 'none',
+        visibility: 'hidden'
       });
 
       const cleanup = () => {
-        loadingScreen.style.display = "none";
-        loadingScreen.removeEventListener("transitionend", cleanup);
+        loadingScreen.style.display = 'none';
+        loadingScreen.removeEventListener('transitionend', cleanup);
       };
 
-      loadingScreen.addEventListener("transitionend", cleanup);
+      loadingScreen.addEventListener('transitionend', cleanup);
       setTimeout(cleanup, 700);
 
-      announce("Anwendung geladen", { dedupe: true });
-      
+      announce('Anwendung geladen', { dedupe: true });
+
       perfMarks.loadingHidden = performance.now();
       log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`);
     }, delay);
@@ -407,47 +405,47 @@ const ThreeEarthLoader = (() => {
   let cleanupFn = null;
   let isLoading = false;
 
-  const isLighthouse = 
-    navigator.userAgent.includes("Chrome-Lighthouse") ||
-    navigator.userAgent.includes("HeadlessChrome");
+  const isLighthouse =
+    navigator.userAgent.includes('Chrome-Lighthouse') ||
+    navigator.userAgent.includes('HeadlessChrome');
 
   async function load() {
     if (isLoading || cleanupFn) return;
 
     if (isLighthouse) {
-      log.info("Lighthouse detected - skipping Three.js");
+      log.info('Lighthouse detected - skipping Three.js');
       return;
     }
 
-    const container = getElementById("threeEarthContainer");
+    const container = getElementById('threeEarthContainer');
     if (!container) {
-      log.debug("Earth container not found");
+      log.debug('Earth container not found');
       return;
     }
 
     isLoading = true;
 
     try {
-      log.info("Loading Three.js Earth system...");
-      const module = await import("./particles/three-earth-system.js");
+      log.info('Loading Three.js Earth system...');
+      const module = await import('./particles/three-earth-system.js');
       const ThreeEarthManager = module.default;
-      
+
       cleanupFn = await ThreeEarthManager.initThreeEarth();
 
-      if (typeof cleanupFn === "function") {
+      if (typeof cleanupFn === 'function') {
         window.__threeEarthCleanup = cleanupFn;
-        log.info("Three.js Earth system initialized");
+        log.info('Three.js Earth system initialized');
         perfMarks.threeJsLoaded = performance.now();
       }
     } catch (error) {
-      log.warn("Three.js failed, using CSS fallback:", error);
+      log.warn('Three.js failed, using CSS fallback:', error);
     } finally {
       isLoading = false;
     }
   }
 
   function init() {
-    const container = getElementById("threeEarthContainer");
+    const container = getElementById('threeEarthContainer');
     if (!container) return;
 
     const observer = new IntersectionObserver(
@@ -459,7 +457,7 @@ const ThreeEarthLoader = (() => {
           }
         }
       },
-      { rootMargin: "300px", threshold: 0.01 }
+      { rootMargin: '300px', threshold: 0.01 }
     );
 
     observer.observe(container);
@@ -477,67 +475,75 @@ const ThreeEarthLoader = (() => {
 })();
 
 // ===== Application Bootstrap =====
-document.addEventListener("DOMContentLoaded", async () => {
-  perfMarks.domReady = performance.now();
-  LoadingScreenManager.init();
+document.addEventListener(
+  'DOMContentLoaded',
+  async () => {
+    perfMarks.domReady = performance.now();
+    LoadingScreenManager.init();
 
-  fire(EVENTS.DOM_READY);
+    fire(EVENTS.DOM_READY);
 
-  // Initialize TypeWriter registry
-  if (!window.TypeWriterRegistry) {
-    window.TypeWriterRegistry = TypeWriterRegistry;
-  }
-
-  // Track readiness state
-  let modulesReady = false;
-  let windowLoaded = false;
-
-  const checkReady = () => {
-    if (!modulesReady || !windowLoaded) return;
-    LoadingScreenManager.hide();
-  };
-
-  // Window load handler
-  window.addEventListener("load", () => {
-    perfMarks.windowLoaded = performance.now();
-    windowLoaded = true;
-    checkReady();
-  }, { once: true });
-
-  // Core initialization
-  fire(EVENTS.CORE_INITIALIZED);
-
-  // Initialize hero
-  fire(EVENTS.HERO_INIT_READY);
-  initHeroFeatureBundle();
-
-  // Initialize lazy modules
-  LazyModuleLoader.init();
-
-  // Initialize Three.js (delayed)
-  ThreeEarthLoader.initDelayed();
-
-  // Mark modules as ready
-  modulesReady = true;
-  perfMarks.modulesReady = performance.now();
-  fire(EVENTS.MODULES_READY);
-  checkReady();
-
-  // Fallback: Force hide after 5 seconds
-  setTimeout(() => {
-    if (!windowLoaded) {
-      log.warn("Forcing loading screen hide after timeout");
-      LoadingScreenManager.hide();
+    // Initialize TypeWriter registry
+    if (!window.TypeWriterRegistry) {
+      window.TypeWriterRegistry = TypeWriterRegistry;
     }
-  }, 5000);
 
-  // Request persistent storage
-  schedulePersistentStorageRequest(2200);
+    // Track readiness state
+    let modulesReady = false;
+    let windowLoaded = false;
 
-  // Log performance metrics
-  log.info("Performance:", {
-    domReady: Math.round(perfMarks.domReady - perfMarks.start),
-    modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
-    windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start),
-  });
-}, { once: true });
+    const checkReady = () => {
+      if (!modulesReady || !windowLoaded) return;
+      LoadingScreenManager.hide();
+    };
+
+    // Window load handler
+    window.addEventListener(
+      'load',
+      () => {
+        perfMarks.windowLoaded = performance.now();
+        windowLoaded = true;
+        checkReady();
+      },
+      { once: true }
+    );
+
+    // Core initialization
+    fire(EVENTS.CORE_INITIALIZED);
+
+    // Initialize hero
+    fire(EVENTS.HERO_INIT_READY);
+    initHeroFeatureBundle();
+
+    // Initialize lazy modules
+    LazyModuleLoader.init();
+
+    // Initialize Three.js (delayed)
+    ThreeEarthLoader.initDelayed();
+
+    // Mark modules as ready
+    modulesReady = true;
+    perfMarks.modulesReady = performance.now();
+    fire(EVENTS.MODULES_READY);
+    checkReady();
+
+    // Fallback: Force hide after 5 seconds
+    setTimeout(() => {
+      if (!windowLoaded) {
+        log.warn('Forcing loading screen hide after timeout');
+        LoadingScreenManager.hide();
+      }
+    }, 5000);
+
+    // Request persistent storage
+    schedulePersistentStorageRequest(2200);
+
+    // Log performance metrics
+    log.info('Performance:', {
+      domReady: Math.round(perfMarks.domReady - perfMarks.start),
+      modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
+      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
+    });
+  },
+  { once: true }
+);

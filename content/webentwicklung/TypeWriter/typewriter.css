@@ -82,7 +82,7 @@
 
 /* TypeWriter Cursor Animation */
 .typewriter-title .typed-text::after {
-  content: "";
+  content: '';
   display: inline-block;
   width: 0;
   height: 0.9em;
