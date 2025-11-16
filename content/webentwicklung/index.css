@@ -454,12 +454,5 @@ html {
   }
 }
 
-<<<<<<< HEAD
-/* ===== OPTIMIZED: Removed dead section header hiding rules =====
-   Diese Regeln waren doppelt und wurden bereits durch JavaScript
-   in content/webentwicklung/menu/menu.js gehandhabt.
-===== */
-=======
 /* NOTE: Section header hiding rules were optimized and are handled via JS
   (see content/webentwicklung/menu/menu.js). Old duplicate rules removed. */
->>>>>>> chore/pr-cleanup
