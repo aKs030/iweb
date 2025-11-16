@@ -252,19 +252,7 @@ export function on(type, handler, options = {}, target = document) {
 
 // ===== Visibility Change Handler =====
 
-export function onVisibilityChange(callback) {
-  if (typeof document === 'undefined' || !document.addEventListener) return () => {};
-
-  const handler = () => callback(!document.hidden);
-
-  try {
-    // Use addListener helper so we get a proper cleanup function
-    return addListener(document, 'visibilitychange', handler, { passive: true });
-  } catch (error) {
-    sharedLogger.error('onVisibilityChange setup failed:', error);
-    return () => {};
-  }
-}
+// onVisibilityChange removed: prefer using `addListener(document, 'visibilitychange', ...)` directly in modules
 
 // ===== Intersection Observer Utilities =====
 
@@ -431,38 +419,11 @@ export function onResize(callback, delay = 100) {
   return addListener(window, 'resize', debouncedCallback);
 }
 
-export function onScroll(callback, target = window, throttleMs = 16) {
-  const throttledCallback = throttle(callback, throttleMs);
-  return addListener(target, 'scroll', throttledCallback);
-}
+// onScroll removed: prefer using `throttle` + `addListener` directly
 
 // ===== Pointer Events Helper =====
 
-export function setupPointerEvents(element, { onStart, onMove, onEnd }, options = {}) {
-  const cleanupFunctions = [];
-
-  const createHandler = (callback) => (e) => callback?.(e);
-
-  // Mouse events
-  cleanupFunctions.push(
-    addListener(element, 'mousedown', createHandler(onStart), { passive: false, ...options }),
-    addListener(element, 'mousemove', createHandler(onMove), { passive: true, ...options }),
-    addListener(element, 'mouseup', createHandler(onEnd), { passive: true, ...options }),
-    addListener(element, 'mouseleave', createHandler(onEnd), { passive: true, ...options })
-  );
-
-  // Touch events
-  cleanupFunctions.push(
-    addListener(element, 'touchstart', createHandler(onStart), { passive: false, ...options }),
-    addListener(element, 'touchmove', createHandler(onMove), { passive: true, ...options }),
-    addListener(element, 'touchend', createHandler(onEnd), { passive: true, ...options }),
-    addListener(element, 'touchcancel', createHandler(onEnd), { passive: true, ...options })
-  );
-
-  return () => {
-    cleanupFunctions.forEach((cleanup) => cleanup());
-  };
-}
+// setupPointerEvents removed: use addListener for each pointer event directly in place
 
 // ===== Section Tracker =====
 
