@@ -24,6 +24,27 @@ test.describe('Footer interactions', () => {
     expect(cookies).toContain('cookie_consent=accepted');
   });
 
+  test('Cookie reject path keeps analytics blocked', async ({ page }) => {
+    await page.context().clearCookies();
+    await page.goto('/');
+    await page.waitForSelector('#site-footer', { timeout: 7000 });
+
+    const cookieTrigger = await page.$('[data-cookie-trigger]');
+    await cookieTrigger.click();
+    await expect(page.locator('#footer-cookie-view')).toBeVisible({ timeout: 3000 });
+
+    await page.click('#footer-reject-all');
+
+    const cookies = await page.evaluate(() => document.cookie);
+    expect(cookies).toContain('cookie_consent=rejected');
+
+    // Scripts that are blocked by data-consent should remain type=\"text/plain\"
+    const blocked = await page.$$eval('script[data-consent="required"]', (els) =>
+      els.map((e) => e.getAttribute('type'))
+    );
+    expect(blocked.every((t) => t === 'text/plain')).toBeTruthy();
+  });
+
   test('Contact button opens maximized footer', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#site-footer', { timeout: 7000 });
@@ -34,7 +55,10 @@ test.describe('Footer interactions', () => {
     await contactBtn.click();
 
     // After clicking, site footer should expand
-    await page.waitForSelector('#site-footer.footer-expanded, .footer-maximized:not(.footer-hidden)', { timeout: 3000 });
+    await page.waitForSelector(
+      '#site-footer.footer-expanded, .footer-maximized:not(.footer-hidden)',
+      { timeout: 3000 }
+    );
 
     // ensure ARIA expanded attribute set on trigger
     const expanded = await contactBtn.getAttribute('aria-expanded');

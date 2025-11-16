@@ -13,10 +13,14 @@ test.describe('Hero lazy and greeting', () => {
     }
 
     // Await change to not equal default
-    await page.waitForFunction(() => {
-      const el = document.getElementById('greetingText');
-      return el && el.textContent && el.textContent.trim() !== 'Willkommen';
-    }, null, { timeout: 8000 });
+    await page.waitForFunction(
+      () => {
+        const el = document.getElementById('greetingText');
+        return el && el.textContent && el.textContent.trim() !== 'Willkommen';
+      },
+      null,
+      { timeout: 8000 }
+    );
 
     const updated = await page.locator('#greetingText').textContent();
     expect(updated.trim().length).toBeGreaterThan(0);
