@@ -13,19 +13,19 @@
  * @last-modified 2025-11-08
  */
 
-import { createLogger, throttle } from "../shared-utilities.js";
+import { createLogger, throttle } from '../shared-utilities.js';
 
-const log = createLogger("sharedParticleSystem");
+const log = createLogger('sharedParticleSystem');
 
 // ===== Shared Configuration =====
 
 export const SHARED_CONFIG = {
   PERFORMANCE: {
-    THROTTLE_MS: 20,
+    THROTTLE_MS: 20
   },
   SCROLL: {
-    CSS_PROPERTY_PREFIX: "--scroll-",
-  },
+    CSS_PROPERTY_PREFIX: '--scroll-'
+  }
 };
 
 // ===== Shared State Management =====
@@ -59,7 +59,7 @@ class SharedParticleState {
   reset() {
     this.systems.clear();
     this.isInitialized = false;
-    log.debug("State reset");
+    log.debug('State reset');
   }
 }
 
@@ -74,7 +74,7 @@ export class SharedParallaxManager {
     this.scrollHandler = null;
   }
 
-  addHandler(handler, name = "anonymous") {
+  addHandler(handler, name = 'anonymous') {
     if (typeof handler !== 'function') {
       log.error(`Invalid handler for '${name}', must be a function`);
       return;
@@ -126,27 +126,27 @@ export class SharedParallaxManager {
       });
     }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS);
 
-    window.addEventListener("scroll", this.scrollHandler, { passive: true });
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
     this.isActive = true;
-    
+
     // Initial call
     this.scrollHandler();
-    
-    log.info("Parallax manager activated");
+
+    log.info('Parallax manager activated');
   }
 
   deactivate() {
     if (!this.isActive) return;
 
     if (this.scrollHandler) {
-      window.removeEventListener("scroll", this.scrollHandler);
+      window.removeEventListener('scroll', this.scrollHandler);
       this.scrollHandler = null;
     }
 
     this.isActive = false;
     this.handlers.clear();
-    
-    log.info("Parallax manager deactivated");
+
+    log.info('Parallax manager deactivated');
   }
 }
 
@@ -157,7 +157,7 @@ export class SharedCleanupManager {
     this.cleanupFunctions = new Map();
   }
 
-  addCleanupFunction(systemName, cleanupFn, description = "anonymous") {
+  addCleanupFunction(systemName, cleanupFn, description = 'anonymous') {
     if (typeof cleanupFn !== 'function') {
       log.error(`Invalid cleanup function for '${systemName}', must be a function`);
       return;
@@ -194,23 +194,25 @@ export class SharedCleanupManager {
     });
 
     this.cleanupFunctions.delete(systemName);
-    
-    log.info(`System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`);
+
+    log.info(
+      `System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`
+    );
   }
 
   cleanupAll() {
-    log.info("Starting global cleanup of all systems");
-    
+    log.info('Starting global cleanup of all systems');
+
     const systemNames = Array.from(this.cleanupFunctions.keys());
     systemNames.forEach((systemName) => this.cleanupSystem(systemName));
-    
+
     // Deactivate parallax
     sharedParallaxManager.deactivate();
-    
+
     // Reset state
     sharedState.reset();
-    
-    log.info("Global cleanup completed");
+
+    log.info('Global cleanup completed');
   }
 
   hasSystem(systemName) {
@@ -230,22 +232,20 @@ export const sharedCleanupManager = new SharedCleanupManager();
 // ===== Shared Three.js Loading =====
 
 // AUFGERÄUMT: Lokaler Pfad entfernt, nur noch CDN
-const THREE_PATHS = [
-  "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
-];
+const THREE_PATHS = ['https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js'];
 
 let threeLoadingPromise = null;
 
 export async function loadThreeJS() {
   // Return cached instance
   if (window.THREE?.WebGLRenderer) {
-    log.info("✅ Three.js already loaded (cached)");
+    log.info('✅ Three.js already loaded (cached)');
     return window.THREE;
   }
 
   // Return existing loading promise to prevent duplicate loads
   if (threeLoadingPromise) {
-    log.debug("Three.js load already in progress, waiting...");
+    log.debug('Three.js load already in progress, waiting...');
     return threeLoadingPromise;
   }
 
@@ -258,20 +258,19 @@ export async function loadThreeJS() {
         const ThreeJS = THREE.default || THREE;
 
         if (!ThreeJS?.WebGLRenderer) {
-          throw new Error("Invalid Three.js module - missing WebGLRenderer");
+          throw new Error('Invalid Three.js module - missing WebGLRenderer');
         }
 
         window.THREE = ThreeJS;
-        log.info("✅ Three.js loaded successfully");
+        log.info('✅ Three.js loaded successfully');
         return ThreeJS;
-
       } catch (error) {
         log.warn(`Failed to load Three.js from ${src}:`, error.message);
-        
+
         // If last attempt, throw error
         if (i === THREE_PATHS.length - 1) {
-          log.error("❌ Failed to load Three.js from all sources");
-          throw new Error("Three.js could not be loaded from any source");
+          log.error('❌ Failed to load Three.js from all sources');
+          throw new Error('Three.js could not be loaded from any source');
         }
       }
     }
@@ -304,7 +303,7 @@ export function hasParticleSystem(name) {
 
 // ===== Global Cleanup Hook =====
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     sharedCleanupManager.cleanupAll();
   });

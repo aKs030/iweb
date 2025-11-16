@@ -13,19 +13,19 @@
  */
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById } from "../shared-utilities.js";
+import { createLogger, getElementById } from '../shared-utilities.js';
 
-const log = createLogger("menu");
+const _log = createLogger('menu');
 
-document.addEventListener("DOMContentLoaded", () => {
-  const menuContainer = getElementById("menu-container");
+document.addEventListener('DOMContentLoaded', () => {
+  const menuContainer = getElementById('menu-container');
   if (!menuContainer) {
     return;
   }
 
   menuContainer.innerHTML = getMenuHTML();
 
-  const yearEl = getElementById("current-year");
+  const yearEl = getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   initializeMenu(menuContainer);
@@ -34,9 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setSiteTitle();
   setActiveMenuLink();
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener('click', (event) => {
     const isClickInside = menuContainer.contains(event.target);
-    const isMenuToggle = event.target.closest(".site-menu__toggle");
+    const isMenuToggle = event.target.closest('.site-menu__toggle');
     if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
   });
 });
@@ -164,31 +164,30 @@ function getMenuHTML() {
   `;
 }
 
-
 /**
  * Initialisiert die Menü-Toggle-Logik und die Icons
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function initializeMenu(container) {
-  const menuToggle = container.querySelector(".site-menu__toggle");
-  const menu = container.querySelector(".site-menu");
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
   if (menuToggle && menu) {
     // ARIA Grundattribute
-    menu.setAttribute("role", "navigation");
-    menuToggle.setAttribute("aria-controls", menu.id || "navigation");
-    menuToggle.setAttribute("aria-expanded", "false");
-    menu.setAttribute("aria-hidden", "true");
+    menu.setAttribute('role', 'navigation');
+    menuToggle.setAttribute('aria-controls', menu.id || 'navigation');
+    menuToggle.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
 
     const setState = (open) => {
-      menu.classList.toggle("open", open);
-      menuToggle.classList.toggle("active", open);
-      menuToggle.setAttribute("aria-expanded", String(!!open));
-      menu.setAttribute("aria-hidden", String(!open));
+      menu.classList.toggle('open', open);
+      menuToggle.classList.toggle('active', open);
+      menuToggle.setAttribute('aria-expanded', String(!!open));
+      menu.setAttribute('aria-hidden', String(!open));
     };
-    const toggle = () => setState(!menu.classList.contains("open"));
-    menuToggle.addEventListener("click", toggle);
-    menuToggle.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") toggle();
+    const toggle = () => setState(!menu.classList.contains('open'));
+    menuToggle.addEventListener('click', toggle);
+    menuToggle.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') toggle();
     });
   }
 
@@ -201,9 +200,9 @@ function initializeMenu(container) {
 function initializeIcons() {
   const checkIcons = () => {
     const icons = document.querySelectorAll('.nav-icon use');
-    let brokenIcons = 0;
+    let _brokenIcons = 0;
 
-    icons.forEach(use => {
+    icons.forEach((use) => {
       const href = use.getAttribute('href');
       if (!href) return;
 
@@ -215,7 +214,7 @@ function initializeIcons() {
       if (!target && fallback?.classList.contains('icon-fallback')) {
         svg.style.display = 'none';
         fallback.style.display = 'inline-block';
-        brokenIcons++;
+        _brokenIcons++;
       }
     });
   };
@@ -229,10 +228,10 @@ function initializeIcons() {
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function initializeLogo(container) {
-  const logoContainer = container.querySelector(".site-logo__container");
+  const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
-    logoContainer.addEventListener("contextmenu", () => {
-      window.location.href = "/index.html";
+    logoContainer.addEventListener('contextmenu', () => {
+      window.location.href = '/index.html';
     });
   }
 }
@@ -241,35 +240,33 @@ function initializeLogo(container) {
  * Initialisiert die Submenu-Links
  */
 function initializeSubmenuLinks() {
-  const submenuButtons = document.querySelectorAll(
-    ".has-submenu > .submenu-toggle"
-  );
+  const submenuButtons = document.querySelectorAll('.has-submenu > .submenu-toggle');
   submenuButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener('click', () => {
       const submenu = btn.nextElementSibling;
-      const open = submenu.style.display === "block";
-      document.querySelectorAll(".submenu").forEach((sm) => {
-        if (sm !== submenu) sm.style.display = "none";
+      const open = submenu.style.display === 'block';
+      document.querySelectorAll('.submenu').forEach((sm) => {
+        if (sm !== submenu) sm.style.display = 'none';
       });
-      submenu.style.display = open ? "none" : "block";
-      btn.setAttribute("aria-expanded", String(!open));
+      submenu.style.display = open ? 'none' : 'block';
+      btn.setAttribute('aria-expanded', String(!open));
     });
   });
 
-  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   if (isTouch) {
-    document.querySelectorAll(".has-submenu > a").forEach((link) => {
+    document.querySelectorAll('.has-submenu > a').forEach((link) => {
       let tapped = false;
       link.addEventListener(
-        "touchend",
+        'touchend',
         function (e) {
           const parent = link.parentElement;
-          if (!parent.classList.contains("open")) {
+          if (!parent.classList.contains('open')) {
             e.preventDefault();
-            document.querySelectorAll(".has-submenu.open").forEach((el) => {
-              if (el !== parent) el.classList.remove("open");
+            document.querySelectorAll('.has-submenu.open').forEach((el) => {
+              if (el !== parent) el.classList.remove('open');
             });
-            parent.classList.add("open");
+            parent.classList.add('open');
             tapped = true;
             setTimeout(() => {
               tapped = false;
@@ -281,11 +278,9 @@ function initializeSubmenuLinks() {
         { passive: false }
       );
     });
-    document.addEventListener("touchstart", function (e) {
-      if (!e.target.closest(".site-menu")) {
-        document
-          .querySelectorAll(".has-submenu.open")
-          .forEach((el) => el.classList.remove("open"));
+    document.addEventListener('touchstart', function (e) {
+      if (!e.target.closest('.site-menu')) {
+        document.querySelectorAll('.has-submenu.open').forEach((el) => el.classList.remove('open'));
       }
     });
   }
@@ -296,11 +291,11 @@ function initializeSubmenuLinks() {
  * @param {HTMLElement} container - Der Container mit der Menü-Komponente
  */
 function closeMenu(container) {
-  const menuToggle = container.querySelector(".site-menu__toggle");
-  const menu = container.querySelector(".site-menu");
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
   if (menuToggle && menu) {
-    menu.classList.remove("open");
-    menuToggle.classList.remove("active");
+    menu.classList.remove('open');
+    menuToggle.classList.remove('active');
   }
 }
 
@@ -309,17 +304,17 @@ function closeMenu(container) {
  */
 function setSiteTitle() {
   const titleMap = {
-    "/index.html": "Startseite",
-    "/": "Startseite",
-    "/pages/fotos/fotos.html": "Album",
-    "/pages/card/karten.html": "Projekte",
+    '/index.html': 'Startseite',
+    '/': 'Startseite',
+    '/pages/fotos/fotos.html': 'Album',
+    '/pages/card/karten.html': 'Projekte'
   };
   const path = window.location.pathname;
-  const pageTitle = titleMap[path] || document.title || "Website";
-  const siteTitleEl = getElementById("site-title");
+  const pageTitle = titleMap[path] || document.title || 'Website';
+  const siteTitleEl = getElementById('site-title');
   if (siteTitleEl) siteTitleEl.textContent = pageTitle;
 
-  if (path === "/" || path === "/index.html") {
+  if (path === '/' || path === '/index.html') {
     initializeScrollDetection();
   }
 }
@@ -331,50 +326,42 @@ function setSiteTitle() {
  */
 function extractSectionInfo(sectionId) {
   const fallbackTitleMap = {
-    hero: { title: "Startseite", subtitle: "" },
-    features: { title: "Projekte", subtitle: "Meine Arbeiten" },
-    about: { title: "Über mich", subtitle: "Lerne mich kennen" },
-    contact: { title: "Kontakt", subtitle: "Schreiben Sie mir" },
+    hero: { title: 'Startseite', subtitle: '' },
+    features: { title: 'Projekte', subtitle: 'Meine Arbeiten' },
+    about: { title: 'Über mich', subtitle: 'Lerne mich kennen' },
+    contact: { title: 'Kontakt', subtitle: 'Schreiben Sie mir' }
   };
 
   const section = document.querySelector(`#${sectionId}`);
   if (!section) {
     // REPARIERT: 'contact' (für #site-footer) Fallback
-    return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
   // REPARIERT: 'contact' (für #site-footer) hinzugefügt, um JS-Ausblenden auszulösen.
-  if (["hero", "features", "about", "contact"].includes(sectionId)) {
+  if (['hero', 'features', 'about', 'contact'].includes(sectionId)) {
     const sectionElement = document.querySelector(`#${sectionId}`);
     if (sectionElement) {
-      const headers = sectionElement.querySelectorAll(
-        ".section-header, .section-subtitle"
-      );
+      const headers = sectionElement.querySelectorAll('.section-header, .section-subtitle');
       headers.forEach((header) => {
-        header.style.display = "none";
-        header.style.visibility = "hidden";
+        header.style.display = 'none';
+        header.style.visibility = 'hidden';
       });
     }
     // REPARIERT: Stelle sicher, dass 'contact' den korrekten Fallback erhält
-    return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
-  const header = section.querySelector(".section-header");
+  const header = section.querySelector('.section-header');
   if (!header) {
-    return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
-  const titleEl = header.querySelector(".section-title, h1, h2, h3");
-  const subtitleEl = header.querySelector(".section-subtitle");
+  const titleEl = header.querySelector('.section-title, h1, h2, h3');
+  const subtitleEl = header.querySelector('.section-subtitle');
 
-  const title =
-    titleEl?.textContent?.trim() ||
-    fallbackTitleMap[sectionId]?.title ||
-    "Startseite";
-  const subtitle =
-    subtitleEl?.textContent?.trim() ||
-    fallbackTitleMap[sectionId]?.subtitle ||
-    "";
+  const title = titleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.title || 'Startseite';
+  const subtitle = subtitleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.subtitle || '';
 
   return { title, subtitle };
 }
@@ -385,34 +372,34 @@ function extractSectionInfo(sectionId) {
 function initializeScrollDetection() {
   let snapEventListener = null;
 
-  function updateTitleAndSubtitle(newTitle, newSubtitle = "") {
-    const siteTitleEl = getElementById("site-title");
-    const siteSubtitleEl = getElementById("site-subtitle");
+  function updateTitleAndSubtitle(newTitle, newSubtitle = '') {
+    const siteTitleEl = getElementById('site-title');
+    const siteSubtitleEl = getElementById('site-subtitle');
 
     if (!siteTitleEl) return;
 
     const currentTitle = siteTitleEl.textContent;
-    const currentSubtitle = siteSubtitleEl?.textContent || "";
+    const currentSubtitle = siteSubtitleEl?.textContent || '';
 
     if (currentTitle === newTitle && currentSubtitle === newSubtitle) return;
 
-    siteTitleEl.style.transition = "opacity 0.2s ease, transform 0.2s ease";
-    siteTitleEl.style.opacity = "0.6";
-    siteTitleEl.style.transform = "scale(0.95)";
+    siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    siteTitleEl.style.opacity = '0.6';
+    siteTitleEl.style.transform = 'scale(0.95)';
 
     if (siteSubtitleEl) {
-      siteSubtitleEl.classList.remove("show");
+      siteSubtitleEl.classList.remove('show');
     }
 
     setTimeout(() => {
       siteTitleEl.textContent = newTitle;
-      siteTitleEl.style.opacity = "1";
-      siteTitleEl.style.transform = "scale(1)";
+      siteTitleEl.style.opacity = '1';
+      siteTitleEl.style.transform = 'scale(1)';
 
       if (siteSubtitleEl && newSubtitle) {
         siteSubtitleEl.textContent = newSubtitle;
         setTimeout(() => {
-          siteSubtitleEl.classList.add("show");
+          siteSubtitleEl.classList.add('show');
         }, 100);
       }
     }, 200);
@@ -420,7 +407,7 @@ function initializeScrollDetection() {
 
   function initSnapEventListener() {
     if (snapEventListener) {
-      window.removeEventListener("snapSectionChange", snapEventListener);
+      window.removeEventListener('snapSectionChange', snapEventListener);
     }
 
     snapEventListener = (event) => {
@@ -432,14 +419,14 @@ function initializeScrollDetection() {
         sectionId = 'contact';
       }
 
-      if (!sectionId && typeof index === "number") {
+      if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
-          document.querySelectorAll("main .section, .section, footer#site-footer") // FIX: Footer einbeziehen
+          document.querySelectorAll('main .section, .section, footer#site-footer') // FIX: Footer einbeziehen
         );
         const section = sections[index];
         sectionId = section?.id;
         if (sectionId === 'site-footer') {
-            sectionId = 'contact';
+          sectionId = 'contact';
         }
       }
 
@@ -449,17 +436,20 @@ function initializeScrollDetection() {
       }
     };
 
-    window.addEventListener("snapSectionChange", snapEventListener);
+    window.addEventListener('snapSectionChange', snapEventListener);
   }
 
   function waitForSnapSections() {
     const checkAndStart = () => {
       // REPARIERT: '#site-footer' (für contact) zur Liste der erkannten Sektionen hinzugefügt.
-      const sections = document.querySelectorAll("#hero.section, #features.section, #about.section, #site-footer");
+      const sections = document.querySelectorAll(
+        '#hero.section, #features.section, #about.section, #site-footer'
+      );
 
-      if (sections.length >= 4) { // Warten auf alle 4 Sektionen
+      if (sections.length >= 4) {
+        // Warten auf alle 4 Sektionen
         initSnapEventListener();
-        const { title, subtitle } = extractSectionInfo("hero");
+        const { title, subtitle } = extractSectionInfo('hero');
         updateTitleAndSubtitle(title, subtitle);
         return true;
       }
@@ -475,31 +465,32 @@ function initializeScrollDetection() {
 }
 
 function setActiveMenuLink() {
-  const path = window.location.pathname.replace(/index\.html$/, "");
+  const path = window.location.pathname.replace(/index\.html$/, '');
   const hash = window.location.hash;
 
-  document.querySelectorAll(".site-menu a[href]").forEach((a) => {
-    const href = a.getAttribute("href");
+  document.querySelectorAll('.site-menu a[href]').forEach((a) => {
+    const href = a.getAttribute('href');
     if (!href) return;
 
     // REPARIERT: Umgang mit reinen Anker-Links (#about, #features, #site-footer)
-    if (href.startsWith("#")) {
-        if (href === hash || (hash === "" && href === "#hero")) { // FIX: #hero als Standard hervorheben
-            a.classList.add("active");
-        } else {
-            a.classList.remove("active");
-        }
-        return;
+    if (href.startsWith('#')) {
+      if (href === hash || (hash === '' && href === '#hero')) {
+        // FIX: #hero als Standard hervorheben
+        a.classList.add('active');
+      } else {
+        a.classList.remove('active');
+      }
+      return;
     }
 
-    const norm = href.replace(/index\.html$/, "");
+    const norm = href.replace(/index\.html$/, '');
     const linkPath = norm.split('#')[0];
     const linkHash = a.hash;
 
     if (norm === path || (linkPath === path && linkHash === hash)) {
-      a.classList.add("active");
+      a.classList.add('active');
     } else {
-      a.classList.remove("active");
+      a.classList.remove('active');
     }
   });
 }

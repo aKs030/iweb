@@ -26,15 +26,15 @@
   gap: 8px;
   padding: 4px 8px;
   margin: 0 8px;
-  
+
   /* Komplett transparent - keine Border, kein Hintergrund */
   background: transparent;
   border: none;
   border-radius: 8px;
-  
+
   /* Smooth fade-in animation */
   animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  
+
   /* Transition für fade-out */
   opacity: 1;
   transform: scale(1);
@@ -63,7 +63,8 @@
   font-size: 0.8125rem;
   line-height: 1.2;
   color: var(--dynamic-footer-text-primary, #e5e5e7);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   font-weight: 400;
   white-space: nowrap;
   display: inline-flex;
@@ -106,7 +107,8 @@
   white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 4px rgba(10, 132, 255, 0.25);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .cookie-accept-btn:hover {
@@ -137,7 +139,8 @@
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .cookie-reject-btn:hover {
@@ -164,40 +167,40 @@
   .cookie-text-full {
     display: none;
   }
-  
+
   .cookie-text-short {
     display: inline;
   }
-  
+
   .btn-text-full {
     display: none;
   }
-  
+
   .btn-text-short {
     display: inline;
   }
-  
+
   .cookie-banner-inline {
     gap: 5px;
     padding: 3px 6px;
     margin: 0 5px;
   }
-  
+
   .cookie-text {
     font-size: 0.75rem;
     gap: 3px;
   }
-  
+
   .cookie-accept-btn {
     padding: 3px 10px;
     font-size: 0.7rem;
   }
-  
+
   /* Reduziere Footer-Abstände */
   .footer-copyright-text {
     margin-right: 3px;
   }
-  
+
   .footer-minimal-nav {
     margin-left: 3px;
     gap: 5px;
@@ -212,18 +215,18 @@
     padding: 2px 4px;
     margin: 0 3px;
   }
-  
+
   .cookie-text {
     font-size: 0.65rem;
     gap: 2px;
   }
-  
+
   .cookie-accept-btn {
     padding: 2px 8px;
     font-size: 0.65rem;
     border-radius: 4px;
   }
-  
+
   /* Minimale Footer-Abstände für eine Zeile */
   .footer-copyright-text {
     margin-right: 2px;
@@ -253,19 +256,19 @@
     background: transparent;
     border: none;
   }
-  
+
   .cookie-text {
     color: #1d1d1f;
   }
 }
 
 /* ===== THEME DATA ATTRIBUTE SUPPORT ===== */
-[data-theme="light"] .cookie-banner-inline {
+[data-theme='light'] .cookie-banner-inline {
   background: transparent;
   border: none;
 }
 
-[data-theme="light"] .cookie-text {
+[data-theme='light'] .cookie-text {
   color: #1d1d1f;
 }
 
@@ -460,7 +463,7 @@
 
 .cookie-toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 18px;
   width: 18px;
   left: 3px;
@@ -553,7 +556,7 @@
 }
 
 .cookie-privacy-info li:before {
-  content: "✓";
+  content: '✓';
   position: absolute;
   left: 0;
   color: #34c759;
@@ -587,7 +590,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .cookie-modal-btn-primary {
@@ -620,28 +624,28 @@
     max-height: 95vh;
     margin: 0.5rem;
   }
-  
+
   .cookie-modal-header {
     padding: 1rem 1.5rem;
   }
-  
+
   .cookie-modal-header h2 {
     font-size: 1.25rem;
   }
-  
+
   .cookie-modal-body {
     padding: 1.5rem;
   }
-  
+
   .cookie-modal-footer {
     flex-direction: column;
     padding: 1rem 1.5rem;
   }
-  
+
   .cookie-modal-btn {
     width: 100%;
   }
-  
+
   .cookie-category {
     padding: 1rem;
   }
@@ -662,7 +666,7 @@
   .cookie-banner-inline {
     animation: none;
   }
-  
+
   .cookie-accept-btn:hover {
     transform: none;
   }
