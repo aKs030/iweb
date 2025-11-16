@@ -1,14 +1,14 @@
 /**
  * Shared Particle System - Optimized Common Infrastructure
  * * OPTIMIZATIONS v2.2.0:
- * - Removed unused ShootingStarManager (moved to earth system)
+ * - ShootingStarManager moved to `three-earth-system.js`
  * - Simplified state management
  * - Improved cleanup flow
  * - Better error handling
  * - Reduced memory footprint
  *
  * OPTIMIZATIONS v2.3.0:
- * - Removed local three.js path, using CDN only.
+ * - Use CDN for three.js; local path removed
  * * @version 2.3.0
  * @last-modified 2025-11-08
  */
