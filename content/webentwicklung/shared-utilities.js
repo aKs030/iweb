@@ -246,99 +246,20 @@ export function on(type, handler, options = {}, target = document) {
 
 // ===== Event Listener Manager =====
 
-export class EventListenerManager {
-  constructor(name = 'anonymous') {
-    this.name = name;
-    this.listeners = new Set();
-    this.isDestroyed = false;
-    this.log = createLogger(`EventManager:${name}`);
-  }
-
-  add(target, event, handler, options = {}) {
-    if (this.isDestroyed) {
-      this.log.warn(`Cannot add listener after destroy: ${event}`);
-      return () => {};
-    }
-
-    if (!target?.addEventListener) {
-      this.log.warn(`Invalid event target for ${event}`, target);
-      return () => {};
-    }
-
-    const finalOptions = {
-      passive: true,
-      ...(typeof options === 'boolean' ? { capture: options } : options)
-    };
-
-    try {
-      target.addEventListener(event, handler, finalOptions);
-
-      const listenerInfo = { target, event, handler, options: finalOptions };
-      this.listeners.add(listenerInfo);
-
-      return () => this.remove(target, event, handler);
-    } catch (error) {
-      this.log.error(`Failed to add listener for ${event}:`, error);
-      return () => {};
-    }
-  }
-
-  remove(target, event, handler) {
-    const listener = Array.from(this.listeners).find(
-      (l) => l.target === target && l.event === event && l.handler === handler
-    );
-
-    if (listener) {
-      try {
-        target.removeEventListener(event, handler, listener.options);
-        this.listeners.delete(listener);
-      } catch (error) {
-        this.log.warn(`Failed to remove listener for ${event}:`, error);
-      }
-    }
-  }
-
-  removeAll() {
-    this.listeners.forEach(({ target, event, handler, options }) => {
-      try {
-        target.removeEventListener(event, handler, options);
-      } catch (error) {
-        this.log.warn(`Cleanup error for ${event}:`, error);
-      }
-    });
-    this.listeners.clear();
-  }
-
-  destroy() {
-    this.removeAll();
-    this.isDestroyed = true;
-  }
-
-  get size() {
-    return this.listeners.size;
-  }
-}
-
-export function createEventManager(name = 'manager', autoCleanup = true) {
-  const manager = new EventListenerManager(name);
-
-  if (autoCleanup && typeof window !== 'undefined') {
-    window.addEventListener('beforeunload', () => manager.destroy(), { once: true });
-  }
-
-  return manager;
-}
+// Deprecated: EventListenerManager removed to reduce footprint.
+// If you relied on EventListenerManager, please use `addListener` which
+// returns an unregister function: `const cleanup = addListener(el, 'click', onClick)`.
 
 // ===== Visibility Change Handler =====
 
 export function onVisibilityChange(callback) {
-  if (typeof document === 'undefined') return () => {};
+  if (typeof document === 'undefined' || !document.addEventListener) return () => {};
 
   const handler = () => callback(!document.hidden);
 
   try {
-    document.addEventListener('visibilitychange', handler, { passive: true });
-    return () => document.removeEventListener('visibilitychange', handler);
+    // Use addListener helper so we get a proper cleanup function
+    return addListener(document, 'visibilitychange', handler, { passive: true });
   } catch (error) {
     sharedLogger.error('onVisibilityChange setup failed:', error);
     return () => {};
