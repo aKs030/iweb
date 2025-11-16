@@ -27,10 +27,10 @@ jobs:
       - name: Prettier check
         run: npx prettier --check .
 
-      - name: HTML validation (non-blocking)
+      - name: HTML validation
         run: |
           npx --yes html-validate "index.html" "pages/**/*.html"
-        continue-on-error: true
+        # HTML issues make the build fail now (blocking) to enforce correct HTML
 
       - name: Link check
         uses: lycheeverse/lychee-action@v1
