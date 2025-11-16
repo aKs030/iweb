@@ -2,16 +2,15 @@
    Self-Hosted Fonts (Inter)
 ============================================= */
 @font-face {
-  font-family: "Inter";
+  font-family: 'Inter';
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
   font-synthesis: none;
   src:
-    local("Inter Variable"),
-    local("Inter"),
-    url("/content/webentwicklung/fonts/InterVariable.woff2")
-      format("woff2-variations");
+    local('Inter Variable'),
+    local('Inter'),
+    url('/content/webentwicklung/fonts/InterVariable.woff2') format('woff2-variations');
   unicode-range: U+0000-00FF;
 }
 
@@ -30,7 +29,7 @@
 
 /* Default: Dark Mode */
 :root {
-  --theme-mode: "dark";
+  --theme-mode: 'dark';
 
   /* Brand Colors - Safari UI inspired */
   --primary-color: #007aff;
@@ -73,15 +72,12 @@
 
   /* Fonts */
   --font-primary:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, sans-serif;
-  --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", monospace;
-  --font-inter:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --critical-font-stack:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, sans-serif;
-  --font-script: "Lobster", "Dancing Script", cursive, serif;
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-script: 'Lobster', 'Dancing Script', cursive, serif;
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);
@@ -186,10 +182,8 @@
   --component-pill-radius: 24px;
   --component-card-radius: 16px;
   --component-micro-radius: 8px;
-  --component-shadow-depth-2:
-    0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
-  --component-shadow-depth-3:
-    0 8px 32px rgba(0, 0, 0, 0.18), 0 4px 8px rgba(0, 0, 0, 0.15);
+  --component-shadow-depth-2: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+  --component-shadow-depth-3: 0 8px 32px rgba(0, 0, 0, 0.18), 0 4px 8px rgba(0, 0, 0, 0.15);
   --component-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --component-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --component-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);
@@ -201,8 +195,7 @@
   --component-separator: rgba(255, 255, 255, 0.15);
   --component-fill-primary: rgba(255, 255, 255, 0.1);
   --component-fill-secondary: rgba(255, 255, 255, 0.05);
-  --component-font-family:
-    -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+  --component-font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   --component-text-primary: 17px;
   --component-text-secondary: 15px;
   --component-text-small: 13px;
@@ -258,8 +251,8 @@
 /* =======================
    LIGHT MODE OVERRIDE (Blue Theme)
 ======================= */
-:root[data-theme="light"] {
-  --theme-mode: "light";
+:root[data-theme='light'] {
+  --theme-mode: 'light';
 
   /* Blue Light Mode Background */
   --bg-primary: #1e3a8a;
@@ -304,7 +297,7 @@
 ======================= */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --theme-mode: "light";
+    --theme-mode: 'light';
     --bg-primary: #1e3a8a;
     --bg-secondary: #1e40af;
     --bg-tertiary: #2563eb;
@@ -340,8 +333,7 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 4px
-    color-mix(in srgb, var(--primary-color) 55%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
   background: rgba(0, 119, 255, 0.12);
   border-radius: 6px;
   transition:
@@ -393,7 +385,7 @@ textarea:focus-visible {
 }
 
 .btn-primary::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;

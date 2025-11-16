@@ -33,7 +33,7 @@ body:not(.hero-active) .hero-title {
   /* ensure a reasonable minimum line length to avoid many short wrapped columns */
   min-inline-size: clamp(28ch, 36vw, 60ch);
   min-height: 2.6em;
-  font-variation-settings: "opsz" 18;
+  font-variation-settings: 'opsz' 18;
   font-optical-sizing: auto;
   text-shadow:
     0 0 18px rgba(37, 99, 235, 0.35),
@@ -245,7 +245,7 @@ body:not(.hero-active) .floating-icon {
 }
 
 .spotlight-bg::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit; /* match pill shape */

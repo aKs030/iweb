@@ -48,8 +48,14 @@
 }
 
 @keyframes footerEntrance {
-  0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.95); }
-  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 /* ===== Body Padding ===== */
@@ -623,8 +629,14 @@ body.footer-expanded {
 }
 
 @keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .cookie-settings-container {
@@ -753,7 +765,7 @@ body.footer-expanded {
 
 .cookie-toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 12px; /* Kleiner */
   width: 12px; /* Kleiner */
   left: 3px;
@@ -840,7 +852,7 @@ body.footer-expanded {
 }
 
 .cookie-privacy-info li:before {
-  content: "✓";
+  content: '✓';
   position: absolute;
   left: 0;
   color: #34c759;
@@ -924,70 +936,72 @@ body.footer-expanded {
   :root {
     --footer-card-gap: 8px;
     --footer-spacing-md: 8px;
-    --footer-max-height: calc(80dvh - 24px - env(safe-area-inset-bottom)); /* Reduziert für mobile, um Überlappung zu vermeiden */
+    --footer-max-height: calc(
+      80dvh - 24px - env(safe-area-inset-bottom)
+    ); /* Reduziert für mobile, um Überlappung zu vermeiden */
   }
-  
+
   .site-footer-fixed {
     width: calc(100% - 16px);
     bottom: 8px;
   }
-  
+
   .footer-cards-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-  
+
   .footer-card {
     padding: 6px;
   }
-  
+
   .footer-card-newsletter {
     grid-column: 1 / -1;
   }
-  
+
   .footer-enhanced-content {
     padding: 8px;
   }
-  
+
   .footer-social-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 4px;
   }
-  
+
   .footer-status-content {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .theme-control-floating {
     top: -20px;
     right: 10px;
   }
-  
+
   .theme-control-floating .day-night-artwork {
     width: 36px;
     height: 36px;
   }
-  
+
   .newsletter-form-enhanced {
     flex-direction: column;
   }
-  
+
   .newsletter-input-wrapper {
     flex-direction: column;
     gap: 4px;
   }
-  
+
   .cookie-settings-footer {
     flex-direction: column;
   }
-  
+
   .cookie-settings-btn {
     width: 100%;
     min-width: unset;
   }
-  
+
   body.footer-expanded {
     /* Use the computed footer height variable so JS-driven measurements
        (or the --footer-max-height fallback) control the body padding.
@@ -1003,48 +1017,48 @@ body.footer-expanded {
     --footer-spacing-sm: 6px;
     --footer-spacing-md: 6px;
   }
-  
+
   .footer-cards-grid {
     grid-template-columns: 1fr;
     gap: 6px;
   }
-  
+
   .footer-card {
     padding: 6px;
   }
-  
+
   .footer-card-newsletter {
     grid-column: 1 / -1;
   }
-  
+
   .footer-enhanced-content {
     padding: 6px;
   }
-  
+
   .footer-copyright-text,
   .footer-nav-link {
     font-size: 9px;
   }
-  
+
   .footer-minimal-nav {
     gap: 3px;
   }
-  
+
   .theme-control-floating {
     top: -18px;
     right: 8px;
   }
-  
+
   .theme-control-floating .day-night-artwork {
     width: 32px;
     height: 32px;
   }
-  
+
   .footer-status-bar {
     margin-top: 6px;
     padding-top: 6px;
   }
-  
+
   body.footer-expanded {
     /* See note above for mobile breakpoint: prefer the computed CSS var */
     padding-bottom: var(--footer-actual-height, var(--footer-max-height));
@@ -1056,7 +1070,7 @@ body.footer-expanded {
   .footer-cards-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .footer-card-newsletter {
     grid-column: span 2;
   }
@@ -1067,5 +1081,3 @@ body.footer-expanded {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-

@@ -57,10 +57,10 @@ Total occurrences: 17
     animation-iteration-count: 1 !important;
     transition-duration: 0s !important;
   }
-  
+
 ```
 
-- **content/webentwicklung/menu/menu.css:13** — * @version 2.0.1 - Cleanup !important
+- **content/webentwicklung/menu/menu.css:13** — \* @version 2.0.1 - Cleanup !important
 
 ```
  * - Skip-Links für WCAG 2.1 Level AA Compliance
@@ -70,7 +70,7 @@ Total occurrences: 17
 
 ```
 
-- **content/webentwicklung/menu/menu.css:289** — /* AUFGERÄUMT: !important entfernt. Spezifität wird durch .elegant-logo geregelt. */
+- **content/webentwicklung/menu/menu.css:289** — /_ AUFGERÄUMT: !important entfernt. Spezifität wird durch .elegant-logo geregelt. _/
 
 ```
 
@@ -80,7 +80,7 @@ Total occurrences: 17
     -apple-system, "SF Pro Display", system-ui, sans-serif;
 ```
 
-- **content/webentwicklung/menu/menu.css:507** — /* AUFGERÄUMT: !important entfernt */
+- **content/webentwicklung/menu/menu.css:507** — /_ AUFGERÄUMT: !important entfernt _/
 
 ```
 
@@ -90,7 +90,7 @@ Total occurrences: 17
   left: auto;
 ```
 
-- **content/webentwicklung/menu/menu.css:524** — /* AUFGERÄUMT: !important entfernt */
+- **content/webentwicklung/menu/menu.css:524** — /_ AUFGERÄUMT: !important entfernt _/
 
 ```
 /* Verhindere Überlauf bei sehr schmalen Bildschirmen */
@@ -100,7 +100,7 @@ Total occurrences: 17
     left: -10px;
 ```
 
-- **content/webentwicklung/menu/menu.css:656** — /* AUFGERÄUMT: !important entfernt */
+- **content/webentwicklung/menu/menu.css:656** — /_ AUFGERÄUMT: !important entfernt _/
 
 ```
 
@@ -189,4 +189,3 @@ Total occurrences: 17
 }
 
 ```
-
