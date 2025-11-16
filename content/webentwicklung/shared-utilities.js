@@ -18,7 +18,7 @@ const LOG_LEVELS = {
   error: 0,
   warn: 1,
   info: 2,
-  debug: 3,
+  debug: 3
 };
 
 let globalLogLevel = LOG_LEVELS.warn;
@@ -54,20 +54,20 @@ export function createLogger(category) {
       if (globalLogLevel >= LOG_LEVELS.debug) {
         (console.debug || console.log || noop)(prefix, message, ...args);
       }
-    },
+    }
   };
 }
 
-const sharedLogger = createLogger("SharedUtilities");
+const sharedLogger = createLogger('SharedUtilities');
 
 // Auto-enable debug mode
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   const urlParams = new URLSearchParams(window.location.search);
-  const debugParam = urlParams.get("debug");
-  const debugStorage = window.localStorage?.getItem("iweb-debug");
+  const debugParam = urlParams.get('debug');
+  const debugStorage = window.localStorage?.getItem('iweb-debug');
 
-  if (debugParam === "true" || debugStorage === "true") {
-    setGlobalLogLevel("debug");
+  if (debugParam === 'true' || debugStorage === 'true') {
+    setGlobalLogLevel('debug');
   }
 }
 
@@ -199,16 +199,16 @@ export class TimerManager {
 // ===== Events System =====
 
 export const EVENTS = Object.freeze({
-  HERO_LOADED: "hero:loaded",
-  HERO_TYPING_END: "hero:typingEnd",
-  FEATURES_TEMPLATES_LOADED: "featuresTemplatesLoaded",
-  FEATURES_TEMPLATES_ERROR: "featuresTemplatesError",
-  TEMPLATE_MOUNTED: "template:mounted",
-  FEATURES_CHANGE: "features:change",
-  DOM_READY: "app:domReady",
-  CORE_INITIALIZED: "app:coreInitialized",
-  MODULES_READY: "app:modulesReady",
-  HERO_INIT_READY: "app:heroInitReady",
+  HERO_LOADED: 'hero:loaded',
+  HERO_TYPING_END: 'hero:typingEnd',
+  FEATURES_TEMPLATES_LOADED: 'featuresTemplatesLoaded',
+  FEATURES_TEMPLATES_ERROR: 'featuresTemplatesError',
+  TEMPLATE_MOUNTED: 'template:mounted',
+  FEATURES_CHANGE: 'features:change',
+  DOM_READY: 'app:domReady',
+  CORE_INITIALIZED: 'app:coreInitialized',
+  MODULES_READY: 'app:modulesReady',
+  HERO_INIT_READY: 'app:heroInitReady'
 });
 
 export function fire(type, detail = null, target = document) {
@@ -247,7 +247,7 @@ export function on(type, handler, options = {}, target = document) {
 // ===== Event Listener Manager =====
 
 export class EventListenerManager {
-  constructor(name = "anonymous") {
+  constructor(name = 'anonymous') {
     this.name = name;
     this.listeners = new Set();
     this.isDestroyed = false;
@@ -267,7 +267,7 @@ export class EventListenerManager {
 
     const finalOptions = {
       passive: true,
-      ...(typeof options === "boolean" ? { capture: options } : options),
+      ...(typeof options === 'boolean' ? { capture: options } : options)
     };
 
     try {
@@ -319,11 +319,11 @@ export class EventListenerManager {
   }
 }
 
-export function createEventManager(name = "manager", autoCleanup = true) {
+export function createEventManager(name = 'manager', autoCleanup = true) {
   const manager = new EventListenerManager(name);
 
-  if (autoCleanup && typeof window !== "undefined") {
-    window.addEventListener("beforeunload", () => manager.destroy(), { once: true });
+  if (autoCleanup && typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', () => manager.destroy(), { once: true });
   }
 
   return manager;
@@ -332,15 +332,15 @@ export function createEventManager(name = "manager", autoCleanup = true) {
 // ===== Visibility Change Handler =====
 
 export function onVisibilityChange(callback) {
-  if (typeof document === "undefined") return () => {};
+  if (typeof document === 'undefined') return () => {};
 
   const handler = () => callback(!document.hidden);
 
   try {
-    document.addEventListener("visibilitychange", handler, { passive: true });
-    return () => document.removeEventListener("visibilitychange", handler);
+    document.addEventListener('visibilitychange', handler, { passive: true });
+    return () => document.removeEventListener('visibilitychange', handler);
   } catch (error) {
-    sharedLogger.error("onVisibilityChange setup failed:", error);
+    sharedLogger.error('onVisibilityChange setup failed:', error);
     return () => {};
   }
 }
@@ -351,17 +351,17 @@ export function onVisibilityChange(callback) {
 export const OBSERVER_CONFIGS = {
   lazyLoad: {
     threshold: 0.15,
-    rootMargin: "120px 0px",
+    rootMargin: '120px 0px'
   },
   sectionTracking: {
     threshold: [0.1, 0.3, 0.5, 0.7],
-    rootMargin: "-10% 0px -10% 0px",
-  },
+    rootMargin: '-10% 0px -10% 0px'
+  }
 };
 
 function createObserverWrapper(callback, options, triggerOnce = false) {
   if (!window.IntersectionObserver) {
-    sharedLogger.warn("IntersectionObserver not available - using fallback");
+    sharedLogger.warn('IntersectionObserver not available - using fallback');
     return {
       observer: null,
       observe: (element) => {
@@ -371,7 +371,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
           callback(element);
         }
       },
-      disconnect: () => {},
+      disconnect: () => {}
     };
   }
 
@@ -389,7 +389,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
   return {
     observer,
     observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect(),
+    disconnect: () => observer.disconnect()
   };
 }
 
@@ -403,7 +403,7 @@ export function createTriggerOnceObserver(callback, options = {}) {
     return {
       observer: null,
       observe: () => {},
-      disconnect: () => {},
+      disconnect: () => {}
     };
   }
 
@@ -420,7 +420,7 @@ export function createTriggerOnceObserver(callback, options = {}) {
   return {
     observer,
     observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect(),
+    disconnect: () => observer.disconnect()
   };
 }
 
@@ -455,14 +455,14 @@ export async function ensurePersistentStorage() {
           quota = {
             quota: estimate.quota,
             usage: estimate.usage,
-            usageDetails: estimate.usageDetails,
+            usageDetails: estimate.usageDetails
           };
         }
       }
 
       return { supported: true, persisted, quota };
     } catch (error) {
-      sharedLogger.warn("Persistent storage check failed:", error);
+      sharedLogger.warn('Persistent storage check failed:', error);
       return { supported: false, persisted: false };
     }
   })();
@@ -504,15 +504,15 @@ export function addListener(target, event, handler, options = {}) {
 // ===== Window Event Helpers =====
 
 export function onResize(callback, delay = 100) {
-  if (typeof window === "undefined") return () => {};
+  if (typeof window === 'undefined') return () => {};
 
   const debouncedCallback = debounce(callback, delay);
-  return addListener(window, "resize", debouncedCallback);
+  return addListener(window, 'resize', debouncedCallback);
 }
 
 export function onScroll(callback, target = window, throttleMs = 16) {
   const throttledCallback = throttle(callback, throttleMs);
-  return addListener(target, "scroll", throttledCallback);
+  return addListener(target, 'scroll', throttledCallback);
 }
 
 // ===== Pointer Events Helper =====
@@ -524,18 +524,18 @@ export function setupPointerEvents(element, { onStart, onMove, onEnd }, options 
 
   // Mouse events
   cleanupFunctions.push(
-    addListener(element, "mousedown", createHandler(onStart), { passive: false, ...options }),
-    addListener(element, "mousemove", createHandler(onMove), { passive: true, ...options }),
-    addListener(element, "mouseup", createHandler(onEnd), { passive: true, ...options }),
-    addListener(element, "mouseleave", createHandler(onEnd), { passive: true, ...options })
+    addListener(element, 'mousedown', createHandler(onStart), { passive: false, ...options }),
+    addListener(element, 'mousemove', createHandler(onMove), { passive: true, ...options }),
+    addListener(element, 'mouseup', createHandler(onEnd), { passive: true, ...options }),
+    addListener(element, 'mouseleave', createHandler(onEnd), { passive: true, ...options })
   );
 
   // Touch events
   cleanupFunctions.push(
-    addListener(element, "touchstart", createHandler(onStart), { passive: false, ...options }),
-    addListener(element, "touchmove", createHandler(onMove), { passive: true, ...options }),
-    addListener(element, "touchend", createHandler(onEnd), { passive: true, ...options }),
-    addListener(element, "touchcancel", createHandler(onEnd), { passive: true, ...options })
+    addListener(element, 'touchstart', createHandler(onStart), { passive: false, ...options }),
+    addListener(element, 'touchmove', createHandler(onMove), { passive: true, ...options }),
+    addListener(element, 'touchend', createHandler(onEnd), { passive: true, ...options }),
+    addListener(element, 'touchcancel', createHandler(onEnd), { passive: true, ...options })
   );
 
   return () => {
@@ -550,17 +550,17 @@ export class SectionTracker {
     this.sections = [];
     this.currentSectionId = null;
     this.observer = null;
-    this.log = createLogger("SectionTracker");
+    this.log = createLogger('SectionTracker');
   }
 
   init() {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => this.setupObserver(), { once: true });
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.setupObserver(), { once: true });
     } else {
       setTimeout(() => this.setupObserver(), 100);
     }
 
-    document.addEventListener("section:loaded", () => {
+    document.addEventListener('section:loaded', () => {
       setTimeout(() => this.refreshSections(), 50);
     });
   }
@@ -569,7 +569,7 @@ export class SectionTracker {
     this.refreshSections();
 
     if (!window.IntersectionObserver || this.sections.length === 0) {
-      this.log.warn("IntersectionObserver unavailable or no sections found");
+      this.log.warn('IntersectionObserver unavailable or no sections found');
       return;
     }
 
@@ -588,7 +588,7 @@ export class SectionTracker {
   refreshSections() {
     // FIX: Selektor erweitert, um main-Sektionen UND den site-footer zu erfassen
     this.sections = Array.from(
-      document.querySelectorAll("main .section[id], footer#site-footer[id]")
+      document.querySelectorAll('main .section[id], footer#site-footer[id]')
     ).filter((section) => section.id);
 
     if (this.observer) {
@@ -630,11 +630,7 @@ export class SectionTracker {
       const sectionCenter = rect.top + rect.height / 2;
       const distance = Math.abs(sectionCenter - viewportCenter);
 
-      if (
-        distance < bestDistance &&
-        rect.top < viewportCenter &&
-        rect.bottom > viewportCenter
-      ) {
+      if (distance < bestDistance && rect.top < viewportCenter && rect.bottom > viewportCenter) {
         bestDistance = distance;
         activeSection = section;
       }
@@ -652,11 +648,11 @@ export class SectionTracker {
       const section = getElementById(sectionId);
 
       const detail = { id: sectionId, index: sectionIndex, section };
-      window.dispatchEvent(new CustomEvent("snapSectionChange", { detail }));
+      window.dispatchEvent(new CustomEvent('snapSectionChange', { detail }));
 
       this.log.debug(`Section changed: ${sectionId}`);
     } catch (error) {
-      this.log.warn("Failed to dispatch section change:", error);
+      this.log.warn('Failed to dispatch section change:', error);
     }
   }
 

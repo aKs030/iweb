@@ -6,12 +6,12 @@
 
 import { createLogger } from '../shared-utilities.js';
 
-const log = createLogger("FooterSystem");
+const log = createLogger('FooterSystem');
 
 // Tunable constants (avoid magic numbers throughout file)
 const PROGRAMMATIC_SCROLL_MARK_DURATION = 1000; // ms to mark upcoming programmatic scrolls
 const PROGRAMMATIC_SCROLL_WATCH_TIMEOUT = 5000; // ms fallback for watching smooth scroll completion
-const PROGRAMMATIC_SCROLL_TRIGGER_FALLBACK = 800; // ms used when triggering fallback smooth scroll
+const _PROGRAMMATIC_SCROLL_TRIGGER_FALLBACK = 800; // ms used when triggering fallback smooth scroll (unused, keep for future)
 const PROGRAMMATIC_SCROLL_WATCH_THRESHOLD = 6; // px threshold to consider scroll reached
 const PROGRAMMATIC_SCROLL_DEFAULT_DURATION = 600; // default token duration when not specified
 
@@ -22,12 +22,12 @@ const CookieManager = {
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${name}=${value || ""}${expires}; path=/; SameSite=Lax${secure}`;
+    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
   },
 
   get(name) {
     const nameEQ = `${name}=`;
-    const cookies = document.cookie.split(";");
+    const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
       cookie = cookie.trim();
       if (cookie.startsWith(nameEQ)) {
@@ -38,18 +38,18 @@ const CookieManager = {
   },
 
   delete(name) {
-    const domains = ["", window.location.hostname, `.${window.location.hostname}`];
+    const domains = ['', window.location.hostname, `.${window.location.hostname}`];
     domains.forEach((domain) => {
-      const domainPart = domain ? `; domain=${domain}` : "";
+      const domainPart = domain ? `; domain=${domain}` : '';
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
     });
   },
 
   deleteAnalytics() {
-    const analyticsCookies = ["_ga", "_gid", "_gat", "_gat_gtag_G_S0587RQ4CN"];
+    const analyticsCookies = ['_ga', '_gid', '_gat', '_gat_gtag_G_S0587RQ4CN'];
     analyticsCookies.forEach((name) => this.delete(name));
-    log.info("Analytics cookies deleted");
-  },
+    log.info('Analytics cookies deleted');
+  }
 };
 
 // ===== Global Close Handlers (click outside / user scroll to close maximized footer) =====
@@ -59,8 +59,15 @@ const ProgrammaticScroll = (() => {
   let timer = null;
   const watchers = new Map();
   return {
-  create(duration = PROGRAMMATIC_SCROLL_DEFAULT_DURATION) {
-  try { if (timer) { clearTimeout(timer); timer = null; } } catch (e) {}
+    create(duration = PROGRAMMATIC_SCROLL_DEFAULT_DURATION) {
+      try {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+      } catch (e) {
+        /* ignored */
+      }
       const token = Symbol('progScroll');
       activeToken = token;
       if (duration > 0) {
@@ -76,28 +83,48 @@ const ProgrammaticScroll = (() => {
       if (!activeToken) return;
       if (!token || activeToken === token) {
         activeToken = null;
-  try { if (timer) { clearTimeout(timer); timer = null; } } catch (e) {}
+        try {
+          if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+        } catch (e) {
+          /* ignored */
+        }
         log.debug('ProgrammaticScroll: token cleared');
         // clear any watcher associated with this token
         if (watchers.has(token)) {
           const watcher = watchers.get(token);
           try {
-            if (watcher.listener) window.removeEventListener('scroll', watcher.listener, { passive: true });
-          } catch (e) {}
+            if (watcher.listener)
+              window.removeEventListener('scroll', watcher.listener, { passive: true });
+          } catch (e) {
+            /* ignored */
+          }
           try {
             if (watcher.observer) watcher.observer.disconnect();
-          } catch (e) {}
-          try { if (watcher.timeoutId) clearTimeout(watcher.timeoutId); } catch (e) {}
+          } catch (e) {
+            /* ignored */
+          }
+          try {
+            if (watcher.timeoutId) clearTimeout(watcher.timeoutId);
+          } catch (e) {
+            /* ignored */
+          }
           watchers.delete(token);
         }
       }
     },
     hasActive() {
       return !!activeToken;
-    }
-    ,
+    },
     // Watch until the scroll reaches the target Y (or bottom). getTarget may be a number or a function returning number.
-    watchUntil(token, getTarget, timeout = PROGRAMMATIC_SCROLL_WATCH_TIMEOUT, threshold = PROGRAMMATIC_SCROLL_WATCH_THRESHOLD) {
+    watchUntil(
+      token,
+      getTarget,
+      timeout = PROGRAMMATIC_SCROLL_WATCH_TIMEOUT,
+      threshold = PROGRAMMATIC_SCROLL_WATCH_THRESHOLD
+    ) {
       if (!token) return;
       let finished = false;
 
@@ -116,54 +143,92 @@ const ProgrammaticScroll = (() => {
 
       // If target is an Element, use IntersectionObserver for robust detection
       if (resolved instanceof Element && 'IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (finished) return;
-            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (finished) return;
+              if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
                 finished = true;
-                try { ProgrammaticScroll.clear(token); } catch (e) {}
+                try {
+                  ProgrammaticScroll.clear(token);
+                } catch (e) {
+                  /* ignored */
+                }
               }
-          });
-        }, { root: null, threshold: [0.5, 0.75, 0.9, 1] });
+            });
+          },
+          { root: null, threshold: [0.5, 0.75, 0.9, 1] }
+        );
 
         // initial check
         try {
           const rect = resolved.getBoundingClientRect();
-    if ((rect.top < window.innerHeight) && (rect.bottom > 0)) {
-        finished = true;
-        try { ProgrammaticScroll.clear(token); } catch (e) {}
-        return token;
-      }
-    } catch (e) {}
+          if (rect.top < window.innerHeight && rect.bottom > 0) {
+            finished = true;
+            try {
+              ProgrammaticScroll.clear(token);
+            } catch (e) {
+              /* ignored */
+            }
+            return token;
+          }
+        } catch (e) {
+          /* ignored */
+        }
 
-  try { observer.observe(resolved); } catch (e) {}
+        try {
+          observer.observe(resolved);
+        } catch (e) {
+          /* ignored */
+        }
         const timeoutId = setTimeout(() => {
           if (!finished) {
-            try { ProgrammaticScroll.clear(token); } catch (e) {}
+            try {
+              ProgrammaticScroll.clear(token);
+            } catch (e) {
+              /* ignored */
+            }
           }
-          try { observer.disconnect(); } catch (e) {}
+          try {
+            observer.disconnect();
+          } catch (e) {
+            /* ignored */
+          }
         }, timeout);
 
         watchers.set(token, { observer, timeoutId });
-        log.debug('ProgrammaticScroll: watching token via IntersectionObserver until target or timeout', timeout);
+        log.debug(
+          'ProgrammaticScroll: watching token via IntersectionObserver until target or timeout',
+          timeout
+        );
         return token;
       }
 
       // fallback: numeric target or bottom detection
-      const resolveTarget = (typeof getTarget === 'function') ? getTarget : (() => Number(getTarget));
+      const resolveTarget = typeof getTarget === 'function' ? getTarget : () => Number(getTarget);
       const check = () => {
         try {
           const targetY = resolveTarget();
-          const current = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-          const atBottom = (window.innerHeight + current) >= (document.body.scrollHeight - threshold);
+          const current =
+            window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+          const atBottom = window.innerHeight + current >= document.body.scrollHeight - threshold;
           if (!isNaN(Number(targetY)) && Math.abs(current - Number(targetY)) <= threshold) {
             finished = true;
-            try { ProgrammaticScroll.clear(token); } catch (e) {}
+            try {
+              ProgrammaticScroll.clear(token);
+            } catch (e) {
+              /* ignored */
+            }
           } else if (atBottom) {
             finished = true;
-            try { ProgrammaticScroll.clear(token); } catch (e) {}
+            try {
+              ProgrammaticScroll.clear(token);
+            } catch (e) {
+              /* ignored */
+            }
           }
         } catch (e) {
+          /* ignored */
         }
       };
 
@@ -178,10 +243,16 @@ const ProgrammaticScroll = (() => {
       // attach listener and a fallback timeout
       try {
         window.addEventListener('scroll', listener, { passive: true });
-      } catch (e) {}
+      } catch (e) {
+        /* ignored */
+      }
       const timeoutId = setTimeout(() => {
         if (!finished) {
-          try { ProgrammaticScroll.clear(token); } catch (e) {}
+          try {
+            ProgrammaticScroll.clear(token);
+          } catch (e) {
+            /* ignored */
+          }
         }
       }, timeout);
 
@@ -208,7 +279,7 @@ const GlobalClose = (() => {
     }
   };
 
-  const onUserScroll = (e) => {
+  const onUserScroll = (_e) => {
     try {
       // If there's an active programmatic scroll token, ignore this user-scroll event
       if (ProgrammaticScroll.hasActive()) return;
@@ -240,8 +311,7 @@ const GlobalClose = (() => {
       window.removeEventListener('touchstart', onUserScroll);
       bound = false;
       log.debug('GlobalClose: unbound');
-    },
-    
+    }
   };
 })();
 
@@ -250,15 +320,15 @@ const GoogleAnalytics = {
   load() {
     const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
     if (blockedScripts.length === 0) {
-      log.warn("No blocked GA scripts found");
+      log.warn('No blocked GA scripts found');
       return;
     }
     blockedScripts.forEach((script) => {
-      const newScript = document.createElement("script");
+      const newScript = document.createElement('script');
       Array.from(script.attributes).forEach((attr) => {
-        if (attr.name === "data-src") {
-          newScript.setAttribute("src", attr.value);
-        } else if (attr.name !== "data-consent" && attr.name !== "type") {
+        if (attr.name === 'data-src') {
+          newScript.setAttribute('src', attr.value);
+        } else if (attr.name !== 'data-consent' && attr.name !== 'type') {
           newScript.setAttribute(attr.name, attr.value);
         }
       });
@@ -267,59 +337,59 @@ const GoogleAnalytics = {
       }
       script.parentNode.replaceChild(newScript, script);
     });
-    log.info("Google Analytics loaded");
-  },
+    log.info('Google Analytics loaded');
+  }
 };
 
 // ===== Cookie Consent Banner =====
 class ConsentBanner {
   constructor() {
-    this.banner = document.getElementById("cookie-consent-banner");
-    this.acceptBtn = document.getElementById("accept-cookies-btn");
-    this.rejectBtn = document.getElementById("reject-cookies-btn");
+    this.banner = document.getElementById('cookie-consent-banner');
+    this.acceptBtn = document.getElementById('accept-cookies-btn');
+    this.rejectBtn = document.getElementById('reject-cookies-btn');
   }
 
   init() {
     if (!this.banner || !this.acceptBtn) {
-      log.error("Consent banner elements not found");
+      log.error('Consent banner elements not found');
       return;
     }
-    const consent = CookieManager.get("cookie_consent");
-    if (consent === "accepted") {
+    const consent = CookieManager.get('cookie_consent');
+    if (consent === 'accepted') {
       GoogleAnalytics.load();
-      this.banner.classList.add("hidden");
-    } else if (consent === "rejected") {
-      this.banner.classList.add("hidden");
+      this.banner.classList.add('hidden');
+    } else if (consent === 'rejected') {
+      this.banner.classList.add('hidden');
     } else {
-      this.banner.classList.remove("hidden");
+      this.banner.classList.remove('hidden');
     }
     this.setupEventListeners();
-    log.info("Consent banner initialized");
+    log.info('Consent banner initialized');
   }
 
   setupEventListeners() {
-    this.acceptBtn.addEventListener("click", () => this.accept());
+    this.acceptBtn.addEventListener('click', () => this.accept());
     if (this.rejectBtn) {
-      this.rejectBtn.addEventListener("click", () => this.reject());
+      this.rejectBtn.addEventListener('click', () => this.reject());
     }
   }
 
   accept() {
     this.hide();
-    CookieManager.set("cookie_consent", "accepted");
+    CookieManager.set('cookie_consent', 'accepted');
     GoogleAnalytics.load();
   }
 
   reject() {
     this.hide();
-    CookieManager.set("cookie_consent", "rejected");
+    CookieManager.set('cookie_consent', 'rejected');
   }
 
   hide() {
-    this.banner.style.opacity = "0";
-    this.banner.style.transform = "scale(0.95)";
+    this.banner.style.opacity = '0';
+    this.banner.style.transform = 'scale(0.95)';
     setTimeout(() => {
-      this.banner.classList.add("hidden");
+      this.banner.classList.add('hidden');
     }, 300);
   }
 }
@@ -333,16 +403,16 @@ const CookieSettings = (() => {
 
   function getElements() {
     return {
-      footer: document.getElementById("site-footer"),
-      footerMin: document.querySelector(".footer-minimized"),
-      footerMax: document.querySelector(".footer-maximized"),
-      cookieView: document.getElementById("footer-cookie-view"),
-      normalContent: document.getElementById("footer-normal-content"),
-      analyticsToggle: document.getElementById("footer-analytics-toggle"),
-      closeBtn: document.getElementById("close-cookie-footer"),
-      rejectAllBtn: document.getElementById("footer-reject-all"),
-      acceptSelectedBtn: document.getElementById("footer-accept-selected"),
-      acceptAllBtn: document.getElementById("footer-accept-all"),
+      footer: document.getElementById('site-footer'),
+      footerMin: document.querySelector('.footer-minimized'),
+      footerMax: document.querySelector('.footer-maximized'),
+      cookieView: document.getElementById('footer-cookie-view'),
+      normalContent: document.getElementById('footer-normal-content'),
+      analyticsToggle: document.getElementById('footer-analytics-toggle'),
+      closeBtn: document.getElementById('close-cookie-footer'),
+      rejectAllBtn: document.getElementById('footer-reject-all'),
+      acceptSelectedBtn: document.getElementById('footer-accept-selected'),
+      acceptAllBtn: document.getElementById('footer-accept-all')
     };
   }
 
@@ -358,25 +428,25 @@ const CookieSettings = (() => {
   function setupSectionObserver(elements) {
     cleanup();
     const sections = document.querySelectorAll(
-      "section[id]:not(#threeEarthContainer), main > section[id], [data-section]"
+      'section[id]:not(#threeEarthContainer), main > section[id], [data-section]'
     );
     sections.forEach((section) => {
       const rect = section.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) {
-        const id = section.id || section.dataset.section || "unknown";
+        const id = section.id || section.dataset.section || 'unknown';
         initialVisibleSections.add(id);
       }
     });
     sectionObserver = new IntersectionObserver(
       (entries) => {
-        if (hasTriggered || !elements.footer.classList.contains("footer-expanded")) {
+        if (hasTriggered || !elements.footer.classList.contains('footer-expanded')) {
           cleanup();
           return;
         }
         entries.forEach((entry) => {
           if (hasTriggered) return;
           if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-            const id = entry.target.id || entry.target.dataset.section || "unknown";
+            const id = entry.target.id || entry.target.dataset.section || 'unknown';
             if (!initialVisibleSections.has(id)) {
               hasTriggered = true;
               cleanup();
@@ -387,8 +457,8 @@ const CookieSettings = (() => {
       },
       {
         root: null,
-        rootMargin: "0px",
-        threshold: [0.5, 0.7],
+        rootMargin: '0px',
+        threshold: [0.5, 0.7]
       }
     );
     sections.forEach((section) => sectionObserver.observe(section));
@@ -403,59 +473,59 @@ const CookieSettings = (() => {
       },
       rejectAllBtn: () => {
         cleanup();
-        CookieManager.set("cookie_consent", "rejected");
+        CookieManager.set('cookie_consent', 'rejected');
         CookieManager.deleteAnalytics();
         close();
-        const banner = document.getElementById("cookie-consent-banner");
-        if (banner) banner.classList.add("hidden");
+        const banner = document.getElementById('cookie-consent-banner');
+        if (banner) banner.classList.add('hidden');
       },
       acceptSelectedBtn: () => {
         cleanup();
         if (elements.analyticsToggle?.checked) {
-          CookieManager.set("cookie_consent", "accepted");
+          CookieManager.set('cookie_consent', 'accepted');
           GoogleAnalytics.load();
         } else {
-          CookieManager.set("cookie_consent", "rejected");
+          CookieManager.set('cookie_consent', 'rejected');
           CookieManager.deleteAnalytics();
         }
         close();
-        const banner = document.getElementById("cookie-consent-banner");
-        if (banner) banner.classList.add("hidden");
+        const banner = document.getElementById('cookie-consent-banner');
+        if (banner) banner.classList.add('hidden');
       },
       acceptAllBtn: () => {
         cleanup();
-        CookieManager.set("cookie_consent", "accepted");
+        CookieManager.set('cookie_consent', 'accepted');
         GoogleAnalytics.load();
         close();
-        const banner = document.getElementById("cookie-consent-banner");
-        if (banner) banner.classList.add("hidden");
-      },
+        const banner = document.getElementById('cookie-consent-banner');
+        if (banner) banner.classList.add('hidden');
+      }
     };
 
     Object.entries(handlers).forEach(([key, handler]) => {
       const element = elements[key];
       if (element && !boundHandlers.has(element)) {
-        element.addEventListener("click", handler);
+        element.addEventListener('click', handler);
         boundHandlers.set(element, handler);
       }
     });
   }
 
   function removeButtonHandlers(elements) {
-    ["closeBtn", "rejectAllBtn", "acceptSelectedBtn", "acceptAllBtn"].forEach((key) => {
+    ['closeBtn', 'rejectAllBtn', 'acceptSelectedBtn', 'acceptAllBtn'].forEach((key) => {
       const element = elements[key];
       if (element && boundHandlers.has(element)) {
-        element.removeEventListener("click", boundHandlers.get(element));
+        element.removeEventListener('click', boundHandlers.get(element));
         boundHandlers.delete(element);
       }
     });
   }
 
-  const COOKIE_TRIGGER_SELECTOR = "[data-cookie-trigger]";
+  const COOKIE_TRIGGER_SELECTOR = '[data-cookie-trigger]';
 
   function setTriggerExpanded(value) {
     document.querySelectorAll(COOKIE_TRIGGER_SELECTOR).forEach((trigger) => {
-      trigger.setAttribute("aria-expanded", value ? "true" : "false");
+      trigger.setAttribute('aria-expanded', value ? 'true' : 'false');
     });
   }
 
@@ -465,60 +535,64 @@ const CookieSettings = (() => {
 
   function open() {
     const elements = getElements();
-    
+
     if (!elements.footer || !elements.cookieView) {
-      log.error("Cookie settings elements not found");
+      log.error('Cookie settings elements not found');
       return;
     }
-    
-    const consent = CookieManager.get("cookie_consent");
+
+    const consent = CookieManager.get('cookie_consent');
     if (elements.analyticsToggle) {
-      elements.analyticsToggle.checked = consent === "accepted";
+      elements.analyticsToggle.checked = consent === 'accepted';
     }
-    
-    elements.footer.classList.add("footer-expanded");
-    document.body.classList.add("footer-expanded");
-    elements.footerMin?.classList.add("footer-hidden"); // Explizit minimiert ausblenden
-    elements.footerMax?.classList.remove("footer-hidden");
-    elements.cookieView.classList.remove("hidden");
+
+    elements.footer.classList.add('footer-expanded');
+    document.body.classList.add('footer-expanded');
+    elements.footerMin?.classList.add('footer-hidden'); // Explizit minimiert ausblenden
+    elements.footerMax?.classList.remove('footer-hidden');
+    elements.cookieView.classList.remove('hidden');
     if (elements.normalContent) {
-      elements.normalContent.style.display = "none";
+      elements.normalContent.style.display = 'none';
     }
-    
+
     requestAnimationFrame(() => {
       try {
         // programmatic instant scroll to bottom (no smooth)
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
       } catch (e) {
+        /* ignored */
       }
     });
     // Bind global close handlers (click outside, user scroll)
-      try {
-        ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION); // mark upcoming programmatic scrolls to ignore
-        GlobalClose.bind();
-      } catch (e) {
-      }
+    try {
+      ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION); // mark upcoming programmatic scrolls to ignore
+      GlobalClose.bind();
+    } catch (e) {
+      /* ignored */
+    }
     setupSectionObserver(elements);
     setupButtonHandlers(elements);
     setTriggerExpanded(true);
-    const firstFocusable = elements.cookieView.querySelector('button, [href], input, select, textarea');
+    const firstFocusable = elements.cookieView.querySelector(
+      'button, [href], input, select, textarea'
+    );
     if (firstFocusable) {
       firstFocusable.focus({ preventScroll: true });
     }
-    log.info("Cookie settings opened");
+    log.info('Cookie settings opened');
   }
 
   function close() {
     cleanup();
     const elements = getElements();
     if (!elements.footer) return;
-    elements.cookieView?.classList.add("hidden");
-    elements.footer.classList.remove("footer-expanded");
-    document.body.classList.remove("footer-expanded");
-    elements.footerMax?.classList.add("footer-hidden");
-    elements.footerMin?.classList.remove("footer-hidden"); // Explizit minimiert einblenden
+    elements.cookieView?.classList.add('hidden');
+    elements.footer.classList.remove('footer-expanded');
+    document.body.classList.remove('footer-expanded');
+    elements.footerMax?.classList.add('footer-hidden');
+    elements.footerMin?.classList.remove('footer-hidden'); // Explizit minimiert einblenden
     if (elements.normalContent) {
-      elements.normalContent.style.display = "block";
+      elements.normalContent.style.display = 'block';
     }
     if (window.footerScrollHandler) {
       window.footerScrollHandler.expanded = false;
@@ -527,12 +601,13 @@ const CookieSettings = (() => {
     try {
       GlobalClose.unbind();
     } catch (e) {
+      /* ignored */
     }
     removeButtonHandlers(elements);
     setTriggerExpanded(false);
     const trigger = getPrimaryTrigger();
     if (trigger) trigger.focus({ preventScroll: true });
-    log.info("Cookie settings closed");
+    log.info('Cookie settings closed');
   }
   return { open, close };
 })();
@@ -547,6 +622,7 @@ try {
     }
   });
 } catch (e) {
+  /* ignored */
 }
 
 // ===== Theme System =====
@@ -555,27 +631,27 @@ class ThemeSystem {
     this.currentTheme = this.loadTheme();
   }
   loadTheme() {
-    const saved = localStorage.getItem("preferred-theme");
+    const saved = localStorage.getItem('preferred-theme');
     if (saved) return saved;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
   saveTheme(theme) {
-    localStorage.setItem("preferred-theme", theme);
+    localStorage.setItem('preferred-theme', theme);
   }
   applyTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute('data-theme', theme);
     this.currentTheme = theme;
     this.saveTheme(theme);
     log.debug(`Theme applied: ${theme}`);
   }
   toggleTheme() {
-    const newTheme = this.currentTheme === "light" ? "dark" : "light";
+    const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
     this.applyTheme(newTheme);
     return newTheme;
   }
   createRipple(button, x, y) {
-    const ripple = document.createElement("div");
-    ripple.className = "artwork-ripple";
+    const ripple = document.createElement('div');
+    ripple.className = 'artwork-ripple';
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
     button.appendChild(ripple);
@@ -583,22 +659,22 @@ class ThemeSystem {
   }
   init() {
     this.applyTheme(this.currentTheme);
-    log.info("Theme system initialized");
+    log.info('Theme system initialized');
   }
   initToggleButton() {
-    const toggle = document.getElementById("dayNightToggle");
+    const toggle = document.getElementById('dayNightToggle');
     if (!toggle) {
-      log.warn("Day/Night toggle button not found");
+      log.warn('Day/Night toggle button not found');
       return false;
     }
-    toggle.addEventListener("click", (e) => {
+    toggle.addEventListener('click', (e) => {
       const rect = toggle.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       this.createRipple(toggle, x, y);
       this.toggleTheme();
     });
-    log.info("Theme toggle button initialized");
+    log.info('Theme toggle button initialized');
     return true;
   }
 }
@@ -606,9 +682,9 @@ class ThemeSystem {
 // ===== Footer Loader =====
 class FooterLoader {
   async init() {
-    const container = document.getElementById("footer-container");
+    const container = document.getElementById('footer-container');
     if (!container) {
-      log.warn("Footer container not found");
+      log.warn('Footer container not found');
       return false;
     }
     try {
@@ -618,21 +694,21 @@ class FooterLoader {
       this.setupInteractions();
       const consentBanner = new ConsentBanner();
       consentBanner.init();
-      log.info("Footer loaded successfully");
+      log.info('Footer loaded successfully');
       document.dispatchEvent(
-        new CustomEvent("footer:loaded", {
-          detail: { footerId: "site-footer" },
+        new CustomEvent('footer:loaded', {
+          detail: { footerId: 'site-footer' }
         })
       );
       return true;
     } catch (error) {
-      log.error("Footer load failed:", error);
+      log.error('Footer load failed:', error);
       this.showFallback(container);
       return false;
     }
   }
   async loadContent(container) {
-    const src = container.dataset.footerSrc || "/content/webentwicklung/footer/footer.html";
+    const src = container.dataset.footerSrc || '/content/webentwicklung/footer/footer.html';
     log.debug(`Loading footer: ${src}`);
     const response = await fetch(src);
     if (!response.ok) {
@@ -643,7 +719,7 @@ class FooterLoader {
   }
   updateYears() {
     const year = new Date().getFullYear();
-    document.querySelectorAll(".current-year").forEach((el) => {
+    document.querySelectorAll('.current-year').forEach((el) => {
       el.textContent = year;
     });
   }
@@ -686,58 +762,58 @@ class FooterLoader {
   }
 
   setupNewsletter() {
-    const form = document.querySelector(".newsletter-form-enhanced");
+    const form = document.querySelector('.newsletter-form-enhanced');
     if (!form) return;
-    form.addEventListener("submit", (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       const input = form.querySelector('input[type="email"]');
       if (input?.value) {
         const email = input.value;
-        log.info("Newsletter signup:", email);
+        log.info('Newsletter signup:', email);
         const submitButton = form.querySelector('button[type="submit"]');
         if (submitButton) {
           const originalText = submitButton.textContent;
-          submitButton.textContent = "✓ Done!";
+          submitButton.textContent = '✓ Done!';
           submitButton.disabled = true;
           setTimeout(() => {
             submitButton.textContent = originalText;
             submitButton.disabled = false;
           }, 3000);
         }
-        input.value = "";
+        input.value = '';
       }
     });
   }
 
   // ===== OPTIMIZED: Unified Cookie Trigger Setup =====
   setupCookieTriggers() {
-    const triggers = document.querySelectorAll("[data-cookie-trigger]");
+    const triggers = document.querySelectorAll('[data-cookie-trigger]');
     if (!triggers.length) return;
 
     triggers.forEach((trigger) => {
       if (trigger.dataset.cookieTriggerBound) return;
-      
+
       const handler = (event) => {
         const tag = trigger.tagName.toLowerCase();
-        if (tag === "a") {
-          const href = trigger.getAttribute("href") || "";
-          if (!href || href.startsWith("#")) {
+        if (tag === 'a') {
+          const href = trigger.getAttribute('href') || '';
+          if (!href || href.startsWith('#')) {
             event.preventDefault();
           }
         }
         CookieSettings.open();
       };
-      
-      trigger.addEventListener("click", handler);
-      trigger.dataset.cookieTriggerBound = "true";
+
+      trigger.addEventListener('click', handler);
+      trigger.dataset.cookieTriggerBound = 'true';
     });
-    
+
     log.info(`Setup ${triggers.length} cookie triggers`);
   }
 
   // ===== Footer Trigger Setup (open maximized footer without cookie settings) =====
   setupFooterTriggers() {
-    const triggers = document.querySelectorAll("[data-footer-trigger]");
+    const triggers = document.querySelectorAll('[data-footer-trigger]');
     if (!triggers.length) return;
 
     triggers.forEach((trigger) => {
@@ -745,9 +821,9 @@ class FooterLoader {
 
       const handler = (event) => {
         const tag = trigger.tagName.toLowerCase();
-        if (tag === "a") {
-          const href = trigger.getAttribute("href") || "";
-          if (!href || href.startsWith("#")) {
+        if (tag === 'a') {
+          const href = trigger.getAttribute('href') || '';
+          if (!href || href.startsWith('#')) {
             event.preventDefault();
           }
         }
@@ -755,25 +831,33 @@ class FooterLoader {
         // Prefer existing scroll handler API
         try {
           // If there's a scroll handler, use its toggle API. That will also bind global handlers via toggleExpansion below.
-          if (window.footerScrollHandler && typeof window.footerScrollHandler.toggleExpansion === 'function') {
+          if (
+            window.footerScrollHandler &&
+            typeof window.footerScrollHandler.toggleExpansion === 'function'
+          ) {
             window.footerScrollHandler.toggleExpansion(true);
           } else {
             // Fallback: manipulate DOM similarly to CookieSettings.open() but without showing cookie view
-            const footer = document.getElementById("site-footer");
+            const footer = document.getElementById('site-footer');
             if (!footer) return;
             const footerMin = footer.querySelector('.footer-minimized');
             const footerMax = footer.querySelector('.footer-maximized');
-            footer.classList.add("footer-expanded");
-            document.body.classList.add("footer-expanded");
-            footerMin?.classList.add("footer-hidden");
-            footerMax?.classList.remove("footer-hidden");
+            footer.classList.add('footer-expanded');
+            document.body.classList.add('footer-expanded');
+            footerMin?.classList.add('footer-hidden');
+            footerMax?.classList.remove('footer-hidden');
             try {
               // Programmatic smooth scroll — create token and watch until the footer viewport becomes visible
               const token = ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_DEFAULT_DURATION);
               window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
               // Observe the maximized footer viewport element for arrival instead of relying on document height
-              ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport', PROGRAMMATIC_SCROLL_WATCH_TIMEOUT);
+              ProgrammaticScroll.watchUntil(
+                token,
+                '.footer-maximized-viewport',
+                PROGRAMMATIC_SCROLL_WATCH_TIMEOUT
+              );
             } catch (e) {
+              /* ignored */
             }
           }
         } catch (e) {
@@ -784,27 +868,28 @@ class FooterLoader {
         try {
           trigger.setAttribute('aria-expanded', 'true');
         } catch (e) {
+          /* ignored */
         }
       };
 
-      trigger.addEventListener("click", handler);
-      trigger.dataset.footerTriggerBound = "true";
+      trigger.addEventListener('click', handler);
+      trigger.dataset.footerTriggerBound = 'true';
     });
 
     log.info(`Setup ${triggers.length} footer triggers`);
   }
 
   setupSmoothScroll() {
-    const footer = document.getElementById("site-footer");
+    const footer = document.getElementById('site-footer');
     if (!footer) return;
-    footer.addEventListener("click", (e) => {
+    footer.addEventListener('click', (e) => {
       const link = e.target.closest('a[href^="#"]');
       if (!link) return;
-      const targetId = link.getAttribute("href").substring(1);
+      const targetId = link.getAttribute('href').substring(1);
       const target = document.getElementById(targetId);
       if (target) {
         e.preventDefault();
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
   }
@@ -827,16 +912,16 @@ class ScrollHandler {
     window.footerScrollHandler = this;
   }
   init() {
-    const footer = document.getElementById("site-footer");
-    const trigger = document.getElementById("footer-trigger-zone");
+    const footer = document.getElementById('site-footer');
+    const trigger = document.getElementById('footer-trigger-zone');
     if (!footer || !trigger) {
-      log.warn("Footer or trigger zone not found");
+      log.warn('Footer or trigger zone not found');
       return;
     }
     this.observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.target.id === "footer-trigger-zone") {
+          if (entry.target.id === 'footer-trigger-zone') {
             const threshold = this.expanded ? this.COLLAPSE_THRESHOLD : this.EXPAND_THRESHOLD;
             const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
             this.toggleExpansion(shouldExpand);
@@ -845,38 +930,50 @@ class ScrollHandler {
       },
       {
         root: null,
-        rootMargin: "0px 0px -10% 0px",
-        threshold: [0, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
+        rootMargin: '0px 0px -10% 0px',
+        threshold: [0, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 1]
       }
     );
     this.observer.observe(trigger);
-    log.info("Scroll handler initialized");
+    log.info('Scroll handler initialized');
   }
   toggleExpansion(shouldExpand) {
-    const footer = document.getElementById("site-footer");
+    const footer = document.getElementById('site-footer');
     if (!footer) return;
-    const minimized = footer.querySelector(".footer-minimized");
-    const maximized = footer.querySelector(".footer-maximized");
+    const minimized = footer.querySelector('.footer-minimized');
+    const maximized = footer.querySelector('.footer-maximized');
     if (!minimized || !maximized) return;
     if (shouldExpand && !this.expanded) {
-  // mark upcoming programmatic scrolls and bind global close handlers
-  try { ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION); } catch (e) {}
-  try { GlobalClose.bind(); } catch (e) {}
-      footer.classList.add("footer-expanded");
-      document.body.classList.add("footer-expanded");
-      maximized.classList.remove("footer-hidden");
-      minimized?.classList.add("footer-hidden"); // Explizit minimiert ausblenden
+      // mark upcoming programmatic scrolls and bind global close handlers
+      try {
+        ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION);
+      } catch (e) {
+        /* ignored */
+      }
+      try {
+        GlobalClose.bind();
+      } catch (e) {
+        /* ignored */
+      }
+      footer.classList.add('footer-expanded');
+      document.body.classList.add('footer-expanded');
+      maximized.classList.remove('footer-hidden');
+      minimized?.classList.add('footer-hidden'); // Explizit minimiert ausblenden
       this.expanded = true;
-      log.debug("Footer expanded");
+      log.debug('Footer expanded');
     } else if (!shouldExpand && this.expanded) {
-      footer.classList.remove("footer-expanded");
-      document.body.classList.remove("footer-expanded");
-      maximized.classList.add("footer-hidden");
-      minimized?.classList.remove("footer-hidden"); // Explizit minimiert einblenden
+      footer.classList.remove('footer-expanded');
+      document.body.classList.remove('footer-expanded');
+      maximized.classList.add('footer-hidden');
+      minimized?.classList.remove('footer-hidden'); // Explizit minimiert einblenden
       this.expanded = false;
       // unbind global close handlers
-  try { GlobalClose.unbind(); } catch(e) {}
-      log.debug("Footer collapsed");
+      try {
+        GlobalClose.unbind();
+      } catch (e) {
+        /* ignored */
+      }
+      log.debug('Footer collapsed');
     }
   }
   cleanup() {
@@ -914,13 +1011,13 @@ class FooterResizer {
   apply() {
     const footer = document.getElementById('site-footer');
     const content = footer?.querySelector('.footer-enhanced-content');
-    
+
     let height = 0;
-    
+
     if (content) {
       // Primary measurement
       height = Math.max(0, content.scrollHeight || content.offsetHeight || 0);
-      
+
       // Fallback: use fixed percentage if content is hidden/collapsed
       if (height <= 1) {
         height = Math.round((window.innerHeight || 600) * 0.5);
@@ -974,7 +1071,7 @@ class FooterSystem {
     this.resizer = new FooterResizer();
   }
   async init() {
-    log.info("Initializing footer system...");
+    log.info('Initializing footer system...');
     this.theme.init();
     const loaded = await this.loader.init();
     if (loaded) {
@@ -985,9 +1082,9 @@ class FooterSystem {
       } catch (e) {
         log.warn('FooterResizer init failed', e);
       }
-      log.info("✅ Footer system fully initialized");
+      log.info('✅ Footer system fully initialized');
     } else {
-      log.error("❌ Footer failed to load");
+      log.error('❌ Footer failed to load');
     }
   }
   cleanup() {
@@ -997,23 +1094,27 @@ class FooterSystem {
     } catch (e) {
       // ignore
     }
-    log.info("Footer system cleanup completed");
+    log.info('Footer system cleanup completed');
   }
 }
 
 // ===== Auto-Start =====
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    const system = new FooterSystem();
-    system.init();
-  }, { once: true });
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+      const system = new FooterSystem();
+      system.init();
+    },
+    { once: true }
+  );
 } else {
   const system = new FooterSystem();
   system.init();
 }
 
 // Export for external use
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.FooterSystem = FooterSystem;
   window.CookieSettings = CookieSettings;
 }
