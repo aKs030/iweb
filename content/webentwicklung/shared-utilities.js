@@ -1,11 +1,8 @@
 /**
  * Shared Utilities - Optimized Core Functions
  *
- * OPTIMIZATIONS v3.0:
- * - Removed unused OBSERVER_CONFIGS.heroLoading
- * - Consolidated duplicate event handling
- * - Improved type safety
- * OPTIMIZATIONS v3.1.0:
+ * OPTIMIZATIONS v3.1:
+ * - Removed deprecated comments and placeholders
  * - SectionTracker query updated to include footer.
  *
  * @version 3.1.0
@@ -244,19 +241,8 @@ export function on(type, handler, options = {}, target = document) {
   }
 }
 
-// ===== Event Listener Manager =====
-
-// Deprecated: EventListenerManager removed to reduce footprint.
-// If you relied on EventListenerManager, please use `addListener` which
-// returns an unregister function: `const cleanup = addListener(el, 'click', onClick)`.
-
-// ===== Visibility Change Handler =====
-
-// onVisibilityChange removed: prefer using `addListener(document, 'visibilitychange', ...)` directly in modules
-
 // ===== Intersection Observer Utilities =====
 
-// ===== OPTIMIZED: Removed unused heroLoading config =====
 export const OBSERVER_CONFIGS = {
   lazyLoad: {
     threshold: 0.15,
@@ -419,12 +405,6 @@ export function onResize(callback, delay = 100) {
   return addListener(window, 'resize', debouncedCallback);
 }
 
-// onScroll removed: prefer using `throttle` + `addListener` directly
-
-// ===== Pointer Events Helper =====
-
-// setupPointerEvents removed: use addListener for each pointer event directly in place
-
 // ===== Section Tracker =====
 
 export class SectionTracker {
@@ -468,7 +448,7 @@ export class SectionTracker {
   }
 
   refreshSections() {
-    // FIX: Selektor erweitert, um main-Sektionen UND den site-footer zu erfassen
+    // Selektor für main-Sektionen UND den site-footer
     this.sections = Array.from(
       document.querySelectorAll('main .section[id], footer#site-footer[id]')
     ).filter((section) => section.id);
