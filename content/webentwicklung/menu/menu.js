@@ -7,13 +7,16 @@
  * - Responsive Hamburger-Menü
  * - FontAwesome Icons und Google Fonts Integration
  * - Accessibility-optimiert mit ARIA-Attributen
+ * * OPTIMIZATIONS v2.1.0:
+ * - Removed polling in waitForSnapSections in favor of event listeners
+ * - Improved scroll detection robustness
  *
  * @author Abdulkerim Sesli
- * @version 1.3.0 - Defekte Links repariert
+ * @version 2.1.0
  */
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById } from '../shared-utilities.js';
+import { createLogger, getElementById, EVENTS } from '../shared-utilities.js';
 
 const _log = createLogger('menu');
 
@@ -74,24 +77,6 @@ function getMenuHTML() {
             d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128Zm89.6 32h-11.7a174.64 174.64 0 0 1-155.8 0h-11.7A134.4 134.4 0 0 0 0 422.4 57.6 57.6 0 0 0 57.6 480h332.8A57.6 57.6 0 0 0 448 422.4 134.4 134.4 0 0 0 313.6 288Z"
           />
         </symbol>
-        <symbol id="icon-gamepad" viewBox="0 0 640 512">
-          <path
-            fill="currentColor"
-            d="M480.1 96h-320C71.63 96 0 167.6 0 256s71.63 160 160 160c53.85 0 101.5-26.73 130.6-67.67h58.78C378.5 389.3 426.1 416 480 416c88.38 0 160-71.63 160-160S568.5 96 480.1 96zM224 288h-48v48h-32v-48H96v-32h48v-48h32v48h48v32zm208 32c-17.67 0-32-14.33-32-32 0-17.7 14.3-32 32-32s32 14.3 32 32c0 17.7-14.3 32-32 32zm64-96c-17.67 0-32-14.33-32-32 0-17.7 14.3-32 32-32s32 14.3 32 32c0 17.7-14.3 32-32 32z"
-          />
-        </symbol>
-        <symbol id="icon-joystick" viewBox="0 0 448 512">
-          <path
-            fill="currentColor"
-            d="M416 240c0-44.11-35.89-80-80-80h-32V96c0-53.02-42.98-96-96-96s-96 42.98-96 96v64H80c-44.11 0-80 35.89-80 80v144c0 26.51 21.49 48 48 48h320c26.51 0 48-21.49 48-48V240zM144 96c0-35.29 28.71-64 64-64s64 28.71 64 64v64H144V96zm240 288H64V240c0-26.47 21.53-48 48-48h224c26.47 0 48 21.53 48 48v144zm-96-80c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32z"
-          />
-        </symbol>
-        <symbol id="icon-cloud-sun" viewBox="0 0 640 512">
-          <path
-            fill="currentColor"
-            d="M575.2 325.7c.2-1.9.8-3.7.8-5.6 0-61.9-50.1-112-112-112-16.7 0-32.9 3.6-48 10.8C394.8 138.6 332.9 96 261.4 96 161.2 96 80.1 177.1 80.1 277.4c0 11.5 1.1 22.7 3.1 33.5-39.1 21.1-63.1 62.2-63.1 108.1 0 68.1 55.2 123.3 123.3 123.3h368c57.4 0 104-46.6 104-104 0-40.8-23.6-76.1-58-93.3zM511.7 480H143.3c-45.3 0-82.3-37-82.3-82.3 0-33.6 20.4-64.4 51.6-77.5l23.1-9.7-4.1-24.2c-1.4-8.1-2.1-16.3-2.1-24.9 0-78.5 63.8-142.4 142.4-142.4 50.6 0 97.1 26.9 122.5 70.2l11.7 19.9 22.9-5.2c11.2-2.5 22.6-3.8 33.9-3.8 40.1 0 72 31.9 72 72 0 1.7-.1 3.5-.2 5.2l-2.3 21.4 19.3 9.1c26.7 12.6 43.9 39.4 43.9 68.4 0 35.6-29 64.6-64.6 64.6z"
-          />
-        </symbol>
         <symbol id="icon-mail" viewBox="0 0 512 512">
           <path fill="currentColor" d="M48 64C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zM48 96h416c8.8 0 16 7.2 16 16v41.4L288 264.4c-11.3 8.5-26.7 8.5-38 0L32 153.4V112c0-8.8 7.2-16 16-16zm0 320v-222l176 132c22.5 16.9 53.5 16.9 76 0l176-132v222c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16z"/>
         </symbol>
@@ -105,7 +90,6 @@ function getMenuHTML() {
       </span>
     </a>
 
-    <!-- Hamburger-Button -->
     <button
       type="button"
       class="site-menu__toggle"
@@ -116,11 +100,9 @@ function getMenuHTML() {
       <span class="site-menu__hamburger"></span>
     </button>
 
-    <!-- Navigation mit Rolle und aria-label -->
     <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
       <ul class="site-menu__list">
         <li>
-          <!-- REPARIERT: Link zu #hero für SPA-Verhalten -->
           <a href="#hero">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-house"></use>
@@ -130,7 +112,6 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <!-- REPARIERT: Link zu #features anstelle einer separaten Seite -->
           <a href="#features">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-images"></use>
@@ -140,7 +121,6 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-           <!-- REPARIERT: Link zu #about für SPA-Verhalten -->
           <a href="#about">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
@@ -150,7 +130,6 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <!-- REPARIERT: Link zu #site-footer (Kontaktbereich) -->
           <a href="#site-footer">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-mail"></use>
@@ -164,15 +143,10 @@ function getMenuHTML() {
   `;
 }
 
-/**
- * Initialisiert die Menü-Toggle-Logik und die Icons
- * @param {HTMLElement} container - Der Container mit der Menü-Komponente
- */
 function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
   if (menuToggle && menu) {
-    // ARIA Grundattribute
     menu.setAttribute('role', 'navigation');
     menuToggle.setAttribute('aria-controls', menu.id || 'navigation');
     menuToggle.setAttribute('aria-expanded', 'false');
@@ -194,14 +168,9 @@ function initializeMenu(container) {
   initializeIcons();
 }
 
-/**
- * Überprüft SVG Icon Support und zeigt Fallbacks an, wenn nötig.
- */
 function initializeIcons() {
   const checkIcons = () => {
     const icons = document.querySelectorAll('.nav-icon use');
-    let _brokenIcons = 0;
-
     icons.forEach((use) => {
       const href = use.getAttribute('href');
       if (!href) return;
@@ -214,7 +183,6 @@ function initializeIcons() {
       if (!target && fallback?.classList.contains('icon-fallback')) {
         svg.style.display = 'none';
         fallback.style.display = 'inline-block';
-        _brokenIcons++;
       }
     });
   };
@@ -223,10 +191,6 @@ function initializeIcons() {
   setTimeout(checkIcons, 200);
 }
 
-/**
- * Initialisiert das Verhalten für den Logo-Rechtsklick
- * @param {HTMLElement} container - Der Container mit der Menü-Komponente
- */
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
@@ -236,9 +200,6 @@ function initializeLogo(container) {
   }
 }
 
-/**
- * Initialisiert die Submenu-Links
- */
 function initializeSubmenuLinks() {
   const submenuButtons = document.querySelectorAll('.has-submenu > .submenu-toggle');
   submenuButtons.forEach((btn) => {
@@ -286,10 +247,6 @@ function initializeSubmenuLinks() {
   }
 }
 
-/**
- * Schließt das Menü
- * @param {HTMLElement} container - Der Container mit der Menü-Komponente
- */
 function closeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
@@ -299,9 +256,6 @@ function closeMenu(container) {
   }
 }
 
-/**
- * Setzt den Seitentitel im Logo anhand des aktuellen Pfads oder der aktiven Sektion
- */
 function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
@@ -319,11 +273,6 @@ function setSiteTitle() {
   }
 }
 
-/**
- * Extrahiert Titel und Untertitel aus einer Sektion und versteckt section-header Elemente
- * @param {string} sectionId - Die ID der Sektion
- * @returns {Object} - Objekt mit title und subtitle
- */
 function extractSectionInfo(sectionId) {
   const fallbackTitleMap = {
     hero: { title: 'Startseite', subtitle: '' },
@@ -334,11 +283,9 @@ function extractSectionInfo(sectionId) {
 
   const section = document.querySelector(`#${sectionId}`);
   if (!section) {
-    // REPARIERT: 'contact' (für #site-footer) Fallback
     return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
-  // REPARIERT: 'contact' (für #site-footer) hinzugefügt, um JS-Ausblenden auszulösen.
   if (['hero', 'features', 'about', 'contact'].includes(sectionId)) {
     const sectionElement = document.querySelector(`#${sectionId}`);
     if (sectionElement) {
@@ -348,7 +295,6 @@ function extractSectionInfo(sectionId) {
         header.style.visibility = 'hidden';
       });
     }
-    // REPARIERT: Stelle sicher, dass 'contact' den korrekten Fallback erhält
     return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
@@ -367,7 +313,8 @@ function extractSectionInfo(sectionId) {
 }
 
 /**
- * Initialisiert die Scroll-Detection für dynamische Titel-Updates mit Scroll Snap
+ * Initialisiert die Scroll-Detection für dynamische Titel-Updates
+ * OPTIMIZED: Verwendet Event-Listeners statt Polling
  */
 function initializeScrollDetection() {
   let snapEventListener = null;
@@ -414,14 +361,13 @@ function initializeScrollDetection() {
       const { index, id } = event.detail || {};
       let sectionId = id;
 
-      // REPARIERT: ID 'site-footer' abfangen und zu 'contact' zuordnen
       if (sectionId === 'site-footer') {
         sectionId = 'contact';
       }
 
       if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
-          document.querySelectorAll('main .section, .section, footer#site-footer') // FIX: Footer einbeziehen
+          document.querySelectorAll('main .section, .section, footer#site-footer')
         );
         const section = sections[index];
         sectionId = section?.id;
@@ -439,29 +385,22 @@ function initializeScrollDetection() {
     window.addEventListener('snapSectionChange', snapEventListener);
   }
 
-  function waitForSnapSections() {
-    const checkAndStart = () => {
-      // REPARIERT: '#site-footer' (für contact) zur Liste der erkannten Sektionen hinzugefügt.
-      const sections = document.querySelectorAll(
-        '#hero.section, #features.section, #about.section, #site-footer'
-      );
+  // Optimized: Wait for modules ready event instead of polling
+  const start = () => {
+    initSnapEventListener();
+    const { title, subtitle } = extractSectionInfo('hero');
+    updateTitleAndSubtitle(title, subtitle);
+  };
 
-      if (sections.length >= 4) {
-        // Warten auf alle 4 Sektionen
-        initSnapEventListener();
-        const { title, subtitle } = extractSectionInfo('hero');
-        updateTitleAndSubtitle(title, subtitle);
-        return true;
-      }
-      return false;
-    };
-
-    if (checkAndStart()) return;
-
-    setTimeout(checkAndStart, 1000);
+  // Check if already ready
+  if (document.querySelector('#hero') && document.querySelector('#site-footer')) {
+    start();
+  } else {
+    // Listen for the ready event
+    document.addEventListener(EVENTS.MODULES_READY, start, { once: true });
+    // Backup listener in case footer loads late
+    document.addEventListener('footer:loaded', start, { once: true });
   }
-
-  waitForSnapSections();
 }
 
 function setActiveMenuLink() {
@@ -472,10 +411,8 @@ function setActiveMenuLink() {
     const href = a.getAttribute('href');
     if (!href) return;
 
-    // REPARIERT: Umgang mit reinen Anker-Links (#about, #features, #site-footer)
     if (href.startsWith('#')) {
       if (href === hash || (hash === '' && href === '#hero')) {
-        // FIX: #hero als Standard hervorheben
         a.classList.add('active');
       } else {
         a.classList.remove('active');

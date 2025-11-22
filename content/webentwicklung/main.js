@@ -1,13 +1,12 @@
 /**
  * Main Application Entry Point - Optimized
- * * OPTIMIZATIONS v3.0:
+ * * OPTIMIZATIONS v3.1:
+ * - Removed dead code (LazyModuleLoader)
  * - Streamlined initialization sequence
  * - Better error boundaries
- * - Reduced code duplication
- * - Improved lazy loading strategy
  * - Enhanced performance monitoring
  * - Better cleanup handling
- * * @version 3.0.0
+ * * @version 3.1.0
  * @last-modified 2025-11-08
  */
 
@@ -70,64 +69,6 @@ window.announce = announce;
 const sectionTracker = new SectionTracker();
 sectionTracker.init();
 window.sectionTracker = sectionTracker;
-
-// ===== Lazy Module Loader =====
-const LazyModuleLoader = (() => {
-  const modules = [
-    // { id: "about", path: "/pages/about/about.js", loaded: false }, // Entfernt, da about.js gelöscht wurde
-  ];
-
-  const loadedModules = new Set();
-
-  async function loadModule(module) {
-    if (loadedModules.has(module.id)) return;
-
-    loadedModules.add(module.id);
-    module.loaded = true;
-
-    try {
-      await import(module.path);
-      log.debug(`Module loaded: ${module.id}`);
-    } catch (error) {
-      log.warn(`Failed to load module ${module.id}:`, error);
-      loadedModules.delete(module.id);
-      module.loaded = false;
-    }
-  }
-
-  function init() {
-    const lazyLoader = createLazyLoadObserver((element) => {
-      const module = modules.find((m) => m.id === element.id);
-      if (module && !module.loaded) {
-        loadModule(module);
-      }
-    });
-
-    // Fallback: Load immediately if IntersectionObserver not available
-    if (!lazyLoader.observer) {
-      modules.forEach(loadModule);
-      return;
-    }
-
-    // Listen for section loaded events
-    document.addEventListener('section:loaded', (ev) => {
-      const id = ev.detail?.id;
-      const module = modules.find((m) => m.id === id);
-      if (module && !module.loaded) {
-        const el = getElementById(id);
-        if (el) lazyLoader.observe(el);
-      }
-    });
-
-    // Observe initial sections
-    modules.forEach(({ id }) => {
-      const el = getElementById(id);
-      if (el) lazyLoader.observe(el);
-    });
-  }
-
-  return { init, loadModule };
-})();
 
 // ===== Section Loader =====
 const SectionLoader = (() => {
@@ -514,9 +455,6 @@ document.addEventListener(
     // Initialize hero
     fire(EVENTS.HERO_INIT_READY);
     initHeroFeatureBundle();
-
-    // Initialize lazy modules
-    LazyModuleLoader.init();
 
     // Initialize Three.js (delayed)
     ThreeEarthLoader.initDelayed();
