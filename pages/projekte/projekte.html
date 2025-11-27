@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mein Portfolio</title>
+    <title>Meine Projekte</title>
 
-    <!-- 1. Bestehende CSS Dateien für die Erde laden -->
+    <!-- 1. CSS für die Erde laden (Absoluter Pfad wie in index.html) -->
     <link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" />
     
     <!-- 2. Tailwind CSS -->
@@ -30,19 +30,19 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* Body transparent machen, damit die fixierte Erde sichtbar ist */
+        /* Basis-Styling für transparenten Body, damit die Erde sichtbar ist */
         body { 
             margin: 0; 
-            background-color: #000; /* Fallback */
+            background-color: #000; 
             color: white; 
             font-family: sans-serif; 
-            overflow-x: hidden;
+            overflow: hidden; /* Scrollen wird vom React-Container übernommen */
         }
 
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(10, 10, 15, 0.5); }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        /* Styling der Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
         
         @keyframes float {
           0%, 100% { transform: translateY(0); }
@@ -50,16 +50,17 @@
         }
         .animate-float { animation: float 6s ease-in-out infinite; }
 
-        /* Wichtig: Root Container muss über der Erde liegen */
+        /* Der React Root liegt über der Erde */
         #root {
             position: relative;
-            z-index: 1;
+            z-index: 10;
+            height: 100vh;
         }
 
-        /* Überschreibt das Standard-CSS der Erde für diese Seite, falls nötig */
+        /* Container für die 3D Erde - fixiert im Hintergrund */
         .three-earth-container {
-            z-index: -1 !important;
-            opacity: 0.8; /* Erde leicht abdunkeln für bessere Lesbarkeit */
+            z-index: 0 !important;
+            opacity: 0.7; /* Leicht gedimmt für bessere Lesbarkeit des Textes */
         }
     </style>
 </head>
@@ -67,19 +68,19 @@
 
     <!-- --- 3D ERDE CONTAINER (Hintergrund) --- -->
     <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
-        <!-- Loading UI Fallback -->
+        <!-- Lade-Status UI -->
         <div class="three-earth-loading">
             <div class="loading-spinner"></div>
             <p style="color:white; font-family:sans-serif;">Lade Planet...</p>
         </div>
+        <!-- Error UI -->
+        <div class="three-earth-error hidden">
+            <p>WebGL Fehler</p>
+        </div>
     </div>
 
     <!-- --- REACT APP ROOT --- -->
-    <div id="root">
-        <div style="height: 100vh; display: flex; align-items: center; justify-content: center; color: #666;">
-            Lade Portfolio...
-        </div>
-    </div>
+    <div id="root"></div>
 
     <!-- --- REACT CODE --- -->
     <script type="text/babel">
@@ -97,9 +98,6 @@
             </svg>
         );
 
-        const Rocket = (props) => (
-            <IconBase {...props}><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></IconBase>
-        );
         const ArrowLeft = (props) => (
             <IconBase {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></IconBase>
         );
@@ -236,23 +234,30 @@
                 }
             };
 
+            const handleBack = () => {
+                // Versucht zur Startseite zurückzugehen
+                window.location.href = '/index.html';
+            };
+
             return (
-                // WICHTIG: bg-[#0a0a0f] entfernt und durch transparente/semi-transparente Werte ersetzt
-                // snap-container hier entfernt, damit Window-Scroll für Three.js funktioniert
-                <div className="min-h-screen w-full bg-transparent text-white font-sans selection:bg-blue-500/30">
+                // SCROLL CONTAINER mit Snap-Verhalten
+                // h-screen: Füllt den Viewport
+                // overflow-y-scroll: Scrollbar aktivieren
+                // snap-y snap-mandatory: Das Einrast-Verhalten
+                <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-transparent text-white font-sans selection:bg-blue-500/30">
                 
-                    {/* --- Global Background (Atmosphere) --- */}
-                    {/* Deckkraft reduziert, damit Erde sichtbar ist */}
-                    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
+                    {/* --- Global Background (Atmosphere Overlay) --- */}
+                    {/* Liegt über der Erde (opacity reduziert), damit Text lesbar bleibt */}
+                    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
                         <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-blue-900/20 rounded-full blur-[120px] animate-pulse-slow" />
                         <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-900/20 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
                     </div>
 
                     {/* --- Fixed Navigation --- */}
                     <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-center justify-between pointer-events-none mix-blend-screen">
-                        <button className="pointer-events-auto group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-sm text-gray-300 hover:text-white backdrop-blur-md">
+                        <button onClick={handleBack} className="pointer-events-auto group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-sm text-gray-300 hover:text-white backdrop-blur-md">
                         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                        <span className="hidden sm:inline">Zurück</span>
+                        <span className="hidden sm:inline">Zurück zur Übersicht</span>
                         </button>
                         
                         {/* Progress Dots */}
@@ -267,8 +272,8 @@
                         </div>
                     </nav>
 
-                    {/* --- SECTION 1: HERO (REDESIGNED) --- */}
-                    <section className="min-h-screen w-full flex flex-col items-center justify-center relative z-10 px-6 py-24 border-b border-white/5 bg-black/20 backdrop-blur-[2px]">
+                    {/* --- SECTION 1: HERO (SNAP START) --- */}
+                    <section className="snap-start min-h-screen w-full flex flex-col items-center justify-center relative z-10 px-6 py-24 border-b border-white/5 bg-black/10 backdrop-blur-[1px]">
                         
                         <div className="relative z-10 max-w-5xl mx-auto px-6 flex flex-col items-center text-center">
     
@@ -278,44 +283,38 @@
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                                 </span>
-                                Open to Work & Learning
+                                JavaScript & React
                             </div>
 
-                            {/* Main Headline with multi-color gradient */}
+                            {/* Main Headline */}
                             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-tight drop-shadow-2xl">
                                 <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 pb-2">
-                                    Code. Design.
+                                    Meine
                                 </span>
                                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-pulse-slow pb-2">
-                                    Experimente.
+                                    Projekte.
                                 </span>
                             </h1>
 
                             {/* Description */}
                             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10 drop-shadow-md font-medium">
-                                Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Projekte, 
+                                Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, 
                                 vom ersten <span className="text-white font-mono bg-white/10 px-1 rounded mx-1">console.log</span> bis zu interaktiven Web-Apps.
                             </p>
 
                             {/* Buttons */}
                             <div className="flex flex-col sm:flex-row items-center gap-4">
                                 <button onClick={scrollToProjects} className="px-8 py-4 rounded-full bg-white text-black font-bold hover:scale-105 transition-transform flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                                    Projekte entdecken <ArrowDown className="w-4 h-4" />
-                                </button>
-                                <button className="px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-colors backdrop-blur-md">
-                                    Über mich
+                                    Los geht's <ArrowDown className="w-4 h-4" />
                                 </button>
                             </div>
 
                         </div>
-
-                        {/* Background Decorative Elements for Hero */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
                     </section>
 
-                    {/* --- PROJECT SECTIONS --- */}
+                    {/* --- PROJECT SECTIONS (SNAP START) --- */}
                     {projects.map((project, index) => (
-                        <section key={project.id} id={`project-${project.id}`} className="min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 border-b border-white/5 bg-black/20 backdrop-blur-[2px]">
+                        <section key={project.id} id={`project-${project.id}`} className="snap-start min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 border-b border-white/5 bg-black/10 backdrop-blur-[1px]">
                         
                         {/* Background Ambient Glow */}
                         <div className={`absolute inset-0 bg-gradient-to-br ${project.color} opacity-5 blur-[100px] pointer-events-none`} />
@@ -351,7 +350,7 @@
                             {/* Right: Text Content */}
                             <div className="order-1 md:order-2 text-left flex flex-col justify-center">
                             
-                            {/* Header: Title REPLACES Number */}
+                            {/* Header */}
                             <div className="flex items-center gap-4 mb-6">
                                 <h2 className="text-lg md:text-xl font-bold text-white uppercase tracking-widest whitespace-nowrap drop-shadow-lg">
                                     {project.title}
@@ -388,8 +387,8 @@
                         </section>
                     ))}
 
-                    {/* --- SECTION: CONTACT --- */}
-                    <section className="min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 bg-gradient-to-b from-transparent to-black/60 backdrop-blur-sm">
+                    {/* --- SECTION: CONTACT (SNAP START) --- */}
+                    <section className="snap-start min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 bg-gradient-to-b from-transparent to-black/60 backdrop-blur-sm">
                         <div className="max-w-3xl w-full mx-auto text-center">
                         <div className="mb-8 flex justify-center">
                             <div className="p-6 rounded-full bg-blue-600/10 border border-blue-500/30 backdrop-blur-md">
