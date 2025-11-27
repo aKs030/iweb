@@ -1,488 +1,280 @@
-/**
- * Main Application Entry Point - Optimized
- * * OPTIMIZATIONS v3.1:
- * - Removed dead code (LazyModuleLoader)
- * - Streamlined initialization sequence
- * - Better error boundaries
- * - Enhanced performance monitoring
- * - Better cleanup handling
- * * @version 3.1.0
- * @last-modified 2025-11-08
- */
+import React from 'react';
+import { Rocket, ArrowLeft, ExternalLink, Github, ArrowDown, MousePointerClick, Palette, Binary, Gamepad2, ListTodo, Check } from 'lucide-react';
 
-import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
-import {
-  createLazyLoadObserver,
-  createLogger,
-  EVENTS,
-  fire,
-  getElementById,
-  schedulePersistentStorageRequest,
-  SectionTracker
-} from './shared-utilities.js';
-import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
-import './menu/menu.js';
-
-const log = createLogger('main');
-
-// ===== Performance Tracking =====
-const perfMarks = {
-  start: performance.now(),
-  domReady: 0,
-  modulesReady: 0,
-  windowLoaded: 0
-};
-
-// ===== Accessibility Announcements =====
-const announce = (() => {
-  const cache = new Map();
-
-  return (message, { assertive = false, dedupe = false } = {}) => {
-    if (!message) return;
-
-    // Prevent duplicate announcements
-    if (dedupe && cache.has(message)) return;
-    if (dedupe) {
-      cache.set(message, true);
-      setTimeout(() => cache.delete(message), 3000);
-    }
-
-    try {
-      const id = assertive ? 'live-region-assertive' : 'live-region-status';
-      const region = getElementById(id);
-      if (!region) return;
-
-      // Clear and announce
-      region.textContent = '';
-      requestAnimationFrame(() => {
-        region.textContent = message;
-      });
-    } catch (error) {
-      log.debug('Announcement failed:', error);
-    }
-  };
-})();
-
-window.announce = announce;
-
-// ===== Section Tracker =====
-const sectionTracker = new SectionTracker();
-sectionTracker.init();
-window.sectionTracker = sectionTracker;
-
-// ===== Section Loader =====
-const SectionLoader = (() => {
-  if (window.SectionLoader) return window.SectionLoader;
-
-  const SELECTOR = 'section[data-section-src]';
-  const loadedSections = new WeakSet();
-  const retryAttempts = new WeakMap();
-  const MAX_RETRIES = 2;
-  const FETCH_TIMEOUT = 8000;
-
-  function dispatchEvent(type, section, detail = {}) {
-    try {
-      document.dispatchEvent(
-        new CustomEvent(type, {
-          detail: { id: section?.id, section, ...detail }
-        })
-      );
-    } catch (error) {
-      log.debug(`Event dispatch failed: ${type}`, error);
-    }
+const projects = [
+  {
+    id: 1,
+    title: "Schere Stein Papier",
+    description: "Der Klassiker gegen den Computer! Hier habe ich gelernt, wie man Zufall (Math.random) nutzt und Gewinner-Logik programmiert.",
+    tags: ["JavaScript Basics", "Logik", "DOM Manipulation"],
+    category: "Game Logic",
+    color: "from-indigo-500/20 to-purple-500/20",
+    glow: "bg-purple-500",
+    icon: <Gamepad2 className="w-8 h-8 text-purple-400" />,
+    previewContent: (
+      <div className="flex items-center justify-around w-full h-full relative z-10">
+        <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
+          <div className="text-4xl md:text-5xl animate-bounce" style={{ animationDuration: '2s' }}>🪨</div>
+          <span className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Du</span>
+        </div>
+        <div className="font-black text-2xl md:text-3xl text-white/20 italic">VS</div>
+        <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 shadow-lg shadow-purple-500/5">
+          <div className="text-4xl md:text-5xl animate-pulse">✂️</div>
+          <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">CPU</span>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 2,
+    title: "Zahlen Raten",
+    description: "Finde die geheime Zahl zwischen 1 und 100. Das Programm gibt Hinweise wie 'Zu hoch' oder 'Zu niedrig'.",
+    tags: ["Input Handling", "Vergleiche", "If/Else"],
+    category: "Denkspiel",
+    color: "from-green-500/20 to-emerald-500/20",
+    glow: "bg-emerald-500",
+    icon: <Binary className="w-8 h-8 text-emerald-400" />,
+    previewContent: (
+      <div className="flex flex-col items-center justify-center gap-6 w-full h-full relative z-10">
+        <div className="relative group">
+          <div className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-emerald-300 to-emerald-600 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)] group-hover:scale-110 transition-transform duration-300">?</div>
+          <div className="absolute top-0 left-0 w-full h-full bg-emerald-500/20 blur-xl -z-10 animate-pulse"></div>
+        </div>
+        <div className="flex gap-3">
+          <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium shadow-sm">Zu hoch ⬆️</span>
+          <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium shadow-sm">Zu niedrig ⬇️</span>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 3,
+    title: "Bunter Hintergrund",
+    description: "Ein Klick verändert alles! Ein Projekt, um zu verstehen, wie man CSS-Styles direkt per Code (Events) verändert.",
+    tags: ["CSS in JS", "Events", "Hex-Codes"],
+    category: "Interaktion",
+    color: "from-orange-500/20 to-pink-500/20",
+    glow: "bg-pink-500",
+    icon: <Palette className="w-8 h-8 text-pink-400" />,
+    previewContent: (
+      <div className="w-full h-full rounded-xl bg-gradient-to-br from-pink-500/30 via-red-500/30 to-orange-500/30 flex items-center justify-center relative overflow-hidden hover:from-pink-500/50 hover:via-red-500/50 hover:to-orange-500/50 transition-all duration-1000 p-6 border border-white/10 group-hover:rotate-1 transition-transform">
+        <Palette className="absolute top-[-20%] left-[-20%] w-40 h-40 text-white/5 rotate-12 z-0" />
+        <button className="relative z-10 px-6 py-3 bg-white/90 hover:bg-white text-pink-600 font-bold rounded-full shadow-[0_10px_20px_-5px_rgba(236,72,153,0.4)] hover:shadow-[0_15px_25px_-5px_rgba(236,72,153,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+          <Palette className="w-5 h-5" /> <span className="tracking-tight">Farbe ändern</span>
+        </button>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-mono text-white/60 bg-black/20 px-3 py-1 rounded-full border border-white/5">#FF5733</div>
+      </div>
+    )
+  },
+  {
+    id: 4,
+    title: "Meine To-Do Liste",
+    description: "Nie wieder etwas vergessen. Hier habe ich gelernt, wie man neue HTML-Elemente erstellt und wieder löscht.",
+    tags: ["Arrays", "CreateElement", "Listen"],
+    category: "Productivity",
+    color: "from-blue-500/20 to-cyan-500/20",
+    glow: "bg-cyan-500",
+    icon: <ListTodo className="w-8 h-8 text-cyan-400" />,
+    previewContent: (
+      <div className="w-full max-w-[220px] flex flex-col gap-2.5 relative z-10">
+        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 shadow-sm">
+          <div className="w-6 h-6 rounded-[6px] bg-cyan-500 flex items-center justify-center text-white shadow-sm"><Check className="w-3.5 h-3.5 stroke-[3]" /></div>
+          <span className="text-sm text-cyan-200/60 line-through font-medium">HTML Grundlagen</span>
+        </div>
+        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/30 shadow-md shadow-cyan-500/5">
+          <div className="w-6 h-6 rounded-[6px] border-2 border-cyan-400/50 bg-cyan-400/10"></div>
+          <span className="text-sm text-cyan-300 font-semibold">JS Projekt bauen</span>
+        </div>
+        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-cyan-500/5 border border-cyan-500/10 opacity-60">
+          <div className="w-6 h-6 rounded-[6px] border-2 border-cyan-500/20"></div>
+          <span className="text-sm text-gray-400 font-medium">CSS Animationen</span>
+        </div>
+        <div className="absolute -bottom-4 -right-2 w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-cyan-500/30 text-xl font-bold hover:scale-110 transition-transform cursor-pointer">+</div>
+      </div>
+    )
   }
+];
 
-  function getSectionName(section) {
-    const labelId = section.getAttribute('aria-labelledby');
-    if (labelId) {
-      const label = getElementById(labelId);
-      const text = label?.textContent?.trim();
-      if (text) return text;
-    }
-    return section.id || 'Abschnitt';
-  }
+export default function App() {
+  return (
+    // MAIN CONTAINER
+    <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-[#0a0a0f] text-white font-sans selection:bg-blue-500/30">
+      
+      {/* --- Global Background --- */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-blue-900/10 rounded-full blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-900/10 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
+      </div>
 
-  async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+      {/* --- Fixed Navigation --- */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-center justify-between pointer-events-none mix-blend-screen">
+        <button className="pointer-events-auto group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-sm text-gray-300 hover:text-white backdrop-blur-md">
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span className="hidden sm:inline">Zurück</span>
+        </button>
+        
+        {/* Progress Dots */}
+        <div className="hidden lg:flex flex-col gap-3 fixed right-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
+           <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+           {projects.map(p => <div key={p.id} className="w-1.5 h-1.5 rounded-full bg-white/20"></div>)}
+           <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+        </div>
 
-    try {
-      const response = await fetch(url, {
-        credentials: 'same-origin',
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      return response;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      throw error;
-    }
-  }
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center backdrop-blur-md shadow-lg shadow-blue-500/10 pointer-events-auto">
+           <span className="font-bold text-blue-400 text-xs">DEV</span>
+        </div>
+      </nav>
 
-  async function loadSection(section) {
-    if (loadedSections.has(section)) return;
+      {/* --- SECTION 1: HERO --- */}
+      <section className="snap-start min-h-screen w-full flex flex-col items-center justify-center relative z-10 px-6 py-24 border-b border-white/5">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+          <div className="inline-flex items-center justify-center p-5 mb-8 rounded-full bg-gradient-to-br from-blue-500/10 to-cyan-400/10 border border-blue-400/20 shadow-[0_0_40px_rgba(59,130,246,0.15)] animate-float">
+            <Rocket className="w-10 h-10 md:w-12 md:h-12 text-blue-400 drop-shadow-lg" />
+          </div>
+          
+          <h1 className="text-4xl md:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-blue-200 tracking-tight leading-tight">
+            Meine Ersten Projekte
+          </h1>
+          
+          <p className="text-base md:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-16">
+            Jeder fängt mal klein an. <br className="hidden md:block"/>Hier sind meine Experimente mit JavaScript, Logik und Design.
+          </p>
 
-    const url = section.getAttribute('data-section-src');
-    if (!url) {
-      section.removeAttribute('aria-busy');
-      return;
-    }
+          <div className="animate-bounce text-blue-400/50 mt-auto md:mt-0">
+            <ArrowDown className="w-6 h-6" />
+          </div>
+        </div>
+      </section>
 
-    loadedSections.add(section);
-    const sectionName = getSectionName(section);
-    const attempts = retryAttempts.get(section) || 0;
+      {/* --- PROJECT SECTIONS --- */}
+      {projects.map((project, index) => (
+        <section key={project.id} className="snap-start min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 border-b border-white/5">
+          
+          {/* Background Ambient Glow */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${project.color} opacity-5 blur-[100px] pointer-events-none`} />
 
-    // Prepare section
-    section.setAttribute('aria-busy', 'true');
-    section.dataset.state = 'loading';
+          {/* Grid Container */}
+          <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
+            
+            {/* Left: The "Photo" (CSS App Window) */}
+            <div className="order-2 md:order-1 relative group flex justify-center md:block h-full w-full">
+              
+              {/* Back Glow */}
+              <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 ${project.glow} blur-[80px] rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none`} />
 
-    announce(`Lade ${sectionName}…`, { dedupe: true });
-    dispatchEvent('section:will-load', section, { url });
+              {/* App Window Container */}
+              <div className="relative w-full max-w-md aspect-[4/3] md:aspect-auto md:h-[340px] rounded-3xl bg-[#0f1119]/90 border border-white/10 backdrop-blur-xl overflow-hidden shadow-2xl hover:scale-[1.02] transition-transform duration-500 flex flex-col group/window">
+                
+                {/* Browser Title Bar */}
+                <div className="flex items-center gap-4 p-4 border-b border-white/5 bg-white/[0.02] relative z-20">
+                   <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
+                   </div>
+                   <div className="flex-grow h-7 rounded-lg bg-black/20 border border-white/5 flex items-center px-3 text-[10px] text-white/30 font-mono overflow-hidden whitespace-nowrap">
+                     localhost:3000/{project.title.toLowerCase().split(' ')[0]}
+                   </div>
+                </div>
 
-    try {
-      const response = await fetchWithTimeout(url);
+                {/* Main Content Area */}
+                <div className="flex-grow relative flex items-center justify-center p-8 bg-gradient-to-b from-transparent to-black/30 overflow-hidden">
+                   {/* Background Grid Pattern */}
+                   <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=')]"></div>
+                   
+                   {/* Injected Preview Content */}
+                   {project.previewContent}
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+                   {/* Floating Icon Badge */}
+                   <div className="absolute bottom-5 right-5 p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 shadow-xl group-hover/window:rotate-12 group-hover/window:scale-110 transition-all duration-500 z-20">
+                     {project.icon}
+                   </div>
+                </div>
+              </div>
+            </div>
 
-      const html = await response.text();
+            {/* Right: Text Content */}
+            <div className="order-1 md:order-2 text-left flex flex-col justify-center">
+              
+              {/* Header: Title REPLACES Number (Style angepasst: noch etwas kleiner) */}
+              <div className="flex items-center gap-4 mb-6">
+                 <h2 className="text-lg md:text-xl font-bold text-white uppercase tracking-widest whitespace-nowrap">
+                    {project.title}
+                 </h2>
+                 <div className="h-px bg-white/10 flex-grow self-center"></div>
+                 <span className="text-[10px] md:text-xs font-medium tracking-wider text-blue-400 uppercase bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 whitespace-nowrap self-center">
+                    {project.category}
+                 </span>
+              </div>
+              
+              <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-6 md:mb-8">
+                {project.description}
+              </p>
 
-      // Insert content
-      section.insertAdjacentHTML('beforeend', html);
+              <div className="flex flex-wrap gap-2 mb-8 md:mb-10">
+                {project.tags.map((tag, i) => (
+                  <span key={i} className="text-xs md:text-sm text-gray-300 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/20 transition-colors">
+                    {tag}
+                  </span>
+                ))}
+              </div>
 
-      // Handle templates
-      const template = section.querySelector('template');
-      if (template) {
-        section.appendChild(template.content.cloneNode(true));
-      }
+              <div className="flex flex-wrap gap-3 md:gap-4">
+                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-white text-black text-sm md:text-base font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" /> Ansehen
+                </button>
+                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-transparent border border-white/20 text-white text-sm md:text-base hover:bg-white/10 transition-colors flex items-center gap-2">
+                  <Github className="w-4 h-4" /> Code
+                </button>
+              </div>
+            </div>
 
-      // Remove skeletons
-      section.querySelectorAll('.section-skeleton').forEach((el) => el.remove());
+          </div>
+        </section>
+      ))}
 
-      // Mark as loaded
-      section.dataset.state = 'loaded';
-      section.removeAttribute('aria-busy');
+      {/* --- SECTION: CONTACT --- */}
+      <section className="snap-start min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 bg-gradient-to-b from-transparent to-black/40">
+        <div className="max-w-3xl w-full mx-auto text-center">
+          <div className="mb-8 flex justify-center">
+             <div className="p-6 rounded-full bg-blue-600/10 border border-blue-500/30">
+               <MousePointerClick className="w-10 h-10 text-blue-400" />
+             </div>
+          </div>
 
-      announce(`${sectionName} geladen`, { dedupe: true });
-      dispatchEvent('section:loaded', section, { state: 'loaded' });
+          <h2 className="text-3xl md:text-6xl font-bold mb-6 text-white">
+            Lust auf ein Spiel?
+          </h2>
+          <p className="text-gray-400 mb-10 max-w-lg mx-auto text-lg md:text-xl">
+            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button className="w-full sm:w-auto px-10 py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg transition-all hover:scale-105 shadow-[0_0_30px_rgba(37,99,235,0.4)]">
+              Schreib mir
+            </button>
+          </div>
 
-      // Fire hero event if needed
-      if (section.id === 'hero') {
-        fire(EVENTS.HERO_LOADED);
-      }
-    } catch (error) {
-      log.warn(`Section load failed: ${sectionName}`, error);
+          <div className="mt-20 text-gray-600 text-sm">
+             Made with React & Tailwind CSS
+          </div>
+        </div>
+      </section>
 
-      const isTransient = /5\d\d/.test(String(error)) || !navigator.onLine;
-      const shouldRetry = isTransient && attempts < MAX_RETRIES;
-
-      if (shouldRetry) {
-        retryAttempts.set(section, attempts + 1);
-        loadedSections.delete(section);
-
-        // Exponential backoff
-        const delay = 300 * Math.pow(2, attempts);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-
-        return loadSection(section);
-      }
-
-      // Final error state
-      section.dataset.state = 'error';
-      section.removeAttribute('aria-busy');
-
-      announce(`Fehler beim Laden von ${sectionName}`, { assertive: true });
-      dispatchEvent('section:error', section, { state: 'error' });
-
-      injectRetryUI(section);
-    }
-  }
-
-  function injectRetryUI(section) {
-    if (section.querySelector('.section-retry')) return;
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'section-retry';
-    button.textContent = 'Erneut laden';
-    button.addEventListener('click', () => retrySection(section), { once: true });
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'section-error-box';
-    wrapper.appendChild(button);
-    section.appendChild(wrapper);
-  }
-
-  async function retrySection(section) {
-    section.querySelectorAll('.section-error-box').forEach((el) => el.remove());
-    section.dataset.state = '';
-    loadedSections.delete(section);
-    retryAttempts.delete(section);
-    await loadSection(section);
-  }
-
-  function init() {
-    if (init._initialized) return;
-    init._initialized = true;
-
-    const sections = Array.from(document.querySelectorAll(SELECTOR));
-    const eagerSections = [];
-    const lazySections = [];
-
-    sections.forEach((section) => {
-      if (section.hasAttribute('data-eager')) {
-        eagerSections.push(section);
-      } else {
-        lazySections.push(section);
-      }
-    });
-
-    // Load eager sections immediately
-    eagerSections.forEach(loadSection);
-
-    // Lazy load other sections
-    if (lazySections.length) {
-      const observer = createLazyLoadObserver(loadSection);
-      lazySections.forEach((section) => observer.observe(section));
-    }
-  }
-
-  function reinit() {
-    init._initialized = false;
-    init();
-  }
-
-  const api = { init, reinit, loadSection, retrySection };
-  window.SectionLoader = api;
-  return api;
-})();
-
-// Initialize section loader
-if (document.readyState !== 'loading') {
-  SectionLoader.init();
-} else {
-  document.addEventListener(EVENTS.DOM_READY, SectionLoader.init, { once: true });
+      <style>{`
+        .animate-pulse-slow {
+          animation: pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  );
 }
 
-// ===== Scroll Snapping =====
-const ScrollSnapping = (() => {
-  let snapTimer = null;
-  const snapContainer = document.querySelector('.snap-container') || document.documentElement;
-
-  const disableSnap = () => snapContainer.classList.add('no-snap');
-  const enableSnap = () => snapContainer.classList.remove('no-snap');
-
-  function handleScroll() {
-    disableSnap();
-    clearTimeout(snapTimer);
-    snapTimer = setTimeout(enableSnap, 180);
-  }
-
-  function handleKey(event) {
-    const scrollKeys = ['PageDown', 'PageUp', 'Home', 'End', 'ArrowDown', 'ArrowUp', 'Space'];
-    if (scrollKeys.includes(event.key)) {
-      handleScroll();
-    }
-  }
-
-  function init() {
-    window.addEventListener('wheel', handleScroll, { passive: true });
-    window.addEventListener('touchmove', handleScroll, { passive: true });
-    window.addEventListener('keydown', handleKey, { passive: true });
-  }
-
-  return { init };
-})();
-
-ScrollSnapping.init();
-
-// ===== Loading Screen Manager =====
-const LoadingScreenManager = (() => {
-  const MIN_DISPLAY_TIME = 600;
-  let startTime = 0;
-
-  function hide() {
-    const loadingScreen = getElementById('loadingScreen');
-    if (!loadingScreen) return;
-
-    const elapsed = performance.now() - startTime;
-    const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed);
-
-    setTimeout(() => {
-      loadingScreen.classList.add('hide');
-      loadingScreen.setAttribute('aria-hidden', 'true');
-
-      Object.assign(loadingScreen.style, {
-        opacity: '0',
-        pointerEvents: 'none',
-        visibility: 'hidden'
-      });
-
-      const cleanup = () => {
-        loadingScreen.style.display = 'none';
-        loadingScreen.removeEventListener('transitionend', cleanup);
-      };
-
-      loadingScreen.addEventListener('transitionend', cleanup);
-      setTimeout(cleanup, 700);
-
-      announce('Anwendung geladen', { dedupe: true });
-
-      perfMarks.loadingHidden = performance.now();
-      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`);
-    }, delay);
-  }
-
-  function init() {
-    startTime = performance.now();
-  }
-
-  return { init, hide };
-})();
-
-// ===== Three.js Earth System Loader =====
-const ThreeEarthLoader = (() => {
-  let cleanupFn = null;
-  let isLoading = false;
-
-  const isLighthouse =
-    navigator.userAgent.includes('Chrome-Lighthouse') ||
-    navigator.userAgent.includes('HeadlessChrome');
-
-  async function load() {
-    if (isLoading || cleanupFn) return;
-
-    if (isLighthouse) {
-      log.info('Lighthouse detected - skipping Three.js');
-      return;
-    }
-
-    const container = getElementById('threeEarthContainer');
-    if (!container) {
-      log.debug('Earth container not found');
-      return;
-    }
-
-    isLoading = true;
-
-    try {
-      log.info('Loading Three.js Earth system...');
-      const module = await import('./particles/three-earth-system.js');
-      const ThreeEarthManager = module.default;
-
-      cleanupFn = await ThreeEarthManager.initThreeEarth();
-
-      if (typeof cleanupFn === 'function') {
-        window.__threeEarthCleanup = cleanupFn;
-        log.info('Three.js Earth system initialized');
-        perfMarks.threeJsLoaded = performance.now();
-      }
-    } catch (error) {
-      log.warn('Three.js failed, using CSS fallback:', error);
-    } finally {
-      isLoading = false;
-    }
-  }
-
-  function init() {
-    const container = getElementById('threeEarthContainer');
-    if (!container) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            observer.disconnect();
-            load();
-          }
-        }
-      },
-      { rootMargin: '300px', threshold: 0.01 }
-    );
-
-    observer.observe(container);
-  }
-
-  function initDelayed() {
-    if (window.requestIdleCallback) {
-      requestIdleCallback(init, { timeout: 2000 });
-    } else {
-      setTimeout(init, 1000);
-    }
-  }
-
-  return { initDelayed };
-})();
-
-// ===== Application Bootstrap =====
-document.addEventListener(
-  'DOMContentLoaded',
-  async () => {
-    perfMarks.domReady = performance.now();
-    LoadingScreenManager.init();
-
-    fire(EVENTS.DOM_READY);
-
-    // Initialize TypeWriter registry
-    if (!window.TypeWriterRegistry) {
-      window.TypeWriterRegistry = TypeWriterRegistry;
-    }
-
-    // Track readiness state
-    let modulesReady = false;
-    let windowLoaded = false;
-
-    const checkReady = () => {
-      if (!modulesReady || !windowLoaded) return;
-      LoadingScreenManager.hide();
-    };
-
-    // Window load handler
-    window.addEventListener(
-      'load',
-      () => {
-        perfMarks.windowLoaded = performance.now();
-        windowLoaded = true;
-        checkReady();
-      },
-      { once: true }
-    );
-
-    // Core initialization
-    fire(EVENTS.CORE_INITIALIZED);
-
-    // Initialize hero
-    fire(EVENTS.HERO_INIT_READY);
-    initHeroFeatureBundle();
-
-    // Initialize Three.js (delayed)
-    ThreeEarthLoader.initDelayed();
-
-    // Mark modules as ready
-    modulesReady = true;
-    perfMarks.modulesReady = performance.now();
-    fire(EVENTS.MODULES_READY);
-    checkReady();
-
-    // Fallback: Force hide after 5 seconds
-    setTimeout(() => {
-      if (!windowLoaded) {
-        log.warn('Forcing loading screen hide after timeout');
-        LoadingScreenManager.hide();
-      }
-    }, 5000);
-
-    // Request persistent storage
-    schedulePersistentStorageRequest(2200);
-
-    // Log performance metrics
-    log.info('Performance:', {
-      domReady: Math.round(perfMarks.domReady - perfMarks.start),
-      modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
-      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
-    });
-  },
-  { once: true }
-);
 
