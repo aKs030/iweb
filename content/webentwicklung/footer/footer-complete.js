@@ -742,7 +742,7 @@ class FooterLoader {
         </article>
         <article class="footer-card">
           <div class="footer-card-header"><h3 class="footer-card-title">Work</h3><div class="footer-card-accent"></div></div>
-          <div class="footer-card-content"><nav class="footer-work-nav"><a href="#portfolio" class="footer-work-link">Portfolio</a><a href="#projekte" class="footer-work-link">Projekte</a><a href="#lab" class="footer-work-link">Code Lab</a></nav></div>
+          <div class="footer-card-content"><nav class="footer-work-nav"><a href="#portfolio" class="footer-work-link">Portfolio</a><a href="/pages/projekte/projekte.html#project-1" class="footer-work-link">Projekte</a><a href="#lab" class="footer-work-link">Code Lab</a></nav></div>
         </article>
         <article class="footer-card">
           <div class="footer-card-header"><h3 class="footer-card-title">Connect</h3><div class="footer-card-accent"></div></div>
