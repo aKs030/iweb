@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeSubmenuLinks();
   setSiteTitle();
   setActiveMenuLink();
+  // Keep menu active state in sync when hash or history changes
+  window.addEventListener('hashchange', setActiveMenuLink);
+  window.addEventListener('popstate', setActiveMenuLink);
 
   document.addEventListener('click', (event) => {
     const isClickInside = menuContainer.contains(event.target);
@@ -164,6 +167,25 @@ function initializeMenu(container) {
       if (event.key === 'Enter') toggle();
     });
   }
+
+  // Close the mobile menu when any navigation link is clicked
+  container.querySelectorAll('.site-menu a[href]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      // Close the menu on mobile/compact view and delay navigation slightly so the close animation is visible
+      const href = a.getAttribute('href');
+      const isExternal = /^https?:\/\//i.test(href);
+      const isAnchor = href && href.startsWith('#');
+      closeMenu(container);
+
+      if (window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')) {
+        // Prevent default to allow smooth close animation then navigate
+        e.preventDefault();
+        setTimeout(() => {
+          window.location.href = href;
+        }, 160);
+      }
+    });
+  });
 
   initializeIcons();
 }
@@ -412,14 +434,17 @@ function setActiveMenuLink() {
     const href = a.getAttribute('href');
     if (!href) return;
 
-    if (href.startsWith('#')) {
-      if (href === hash || (hash === '' && href === '#hero')) {
-        a.classList.add('active');
-      } else {
-        a.classList.remove('active');
+      if (href.startsWith('#')) {
+        // Only consider in-page anchors active when we're on the index page (where those sections exist)
+        // or when the href matches the current hash exactly.
+        const isIndexPath = path === '/' || path === '/index.html' || path === '';
+        if (href === hash || (isIndexPath && hash === '' && href === '#hero')) {
+          a.classList.add('active');
+        } else {
+          a.classList.remove('active');
+        }
+        return;
       }
-      return;
-    }
 
     const norm = href.replace(/index\.html$/, '');
     const linkPath = norm.split('#')[0];
