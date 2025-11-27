@@ -29,6 +29,13 @@
     <!-- 4. Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- Globale Styles für Menü & Footer -->
+    <link rel="stylesheet" href="../../content/webentwicklung/root.css" />
+    <link rel="stylesheet" href="../../content/webentwicklung/menu/menu.css" />
+    <link rel="stylesheet" href="../../content/webentwicklung/footer/footer.css" />
+    <link rel="stylesheet" href="../../content/webentwicklung/footer/day-night-artwork.css" />
+    <link rel="stylesheet" href="../../content/webentwicklung/footer/cookie-consent.css" />
+
     <style>
         /* Basis-Styling für transparenten Body, damit die Erde sichtbar ist */
         body { 
@@ -62,9 +69,22 @@
             z-index: 0 !important;
             opacity: 0.7; /* Leicht gedimmt für bessere Lesbarkeit des Textes */
         }
+        
+        /* Menü-Container Positioning */
+        .site-header {
+            position: fixed;
+            top: 12px;
+            z-index: 1000;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
+
+    <!-- MENÜ LEISTE -->
+    <header class="site-header">
+        <div id="menu-container"></div>
+    </header>
 
     <!-- --- 3D ERDE CONTAINER (Hintergrund) --- -->
     <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
@@ -98,9 +118,6 @@
             </svg>
         );
 
-        const ArrowLeft = (props) => (
-            <IconBase {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></IconBase>
-        );
         const ExternalLink = (props) => (
             <IconBase {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase>
         );
@@ -234,11 +251,6 @@
                 }
             };
 
-            const handleBack = () => {
-                // Versucht zur Startseite zurückzugehen
-                window.location.href = '/index.html';
-            };
-
             return (
                 // SCROLL CONTAINER mit Snap-Verhalten
                 // h-screen: Füllt den Viewport
@@ -253,24 +265,13 @@
                         <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-900/20 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
                     </div>
 
-                    {/* --- Fixed Navigation --- */}
-                    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-center justify-between pointer-events-none mix-blend-screen">
-                        <button onClick={handleBack} className="pointer-events-auto group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-sm text-gray-300 hover:text-white backdrop-blur-md">
-                        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                        <span className="hidden sm:inline">Zurück zur Übersicht</span>
-                        </button>
-                        
-                        {/* Progress Dots */}
-                        <div className="hidden lg:flex flex-col gap-3 fixed right-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                            <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
-                            {projects.map(p => <div key={p.id} className="w-1.5 h-1.5 rounded-full bg-white/20"></div>)}
-                            <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
-                        </div>
-
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center backdrop-blur-md shadow-lg shadow-blue-500/10 pointer-events-auto">
-                            <span className="font-bold text-blue-400 text-xs">DEV</span>
-                        </div>
-                    </nav>
+                    {/* --- Progress Dots Navigation --- */}
+                    {/* Unabhängige Dots für Projekt-Navigation */}
+                    <div className="hidden lg:flex flex-col gap-3 fixed right-8 top-1/2 -translate-y-1/2 z-40 pointer-events-none">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+                        {projects.map(p => <div key={p.id} className="w-1.5 h-1.5 rounded-full bg-white/20"></div>)}
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+                    </div>
 
                     {/* --- SECTION 1: HERO (SNAP START) --- */}
                     <section className="snap-start min-h-screen w-full flex flex-col items-center justify-center relative z-10 px-6 py-24 border-b border-white/5 bg-black/10 backdrop-blur-[1px]">
@@ -374,10 +375,10 @@
                             </div>
 
                             <div className="flex flex-wrap gap-3 md:gap-4">
-                                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-white text-black text-sm md:text-base font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 shadow-lg">
+                                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-white text-black text-sm md:text-base font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 shadow-lg" rel="noopener noreferrer">
                                 <ExternalLink className="w-4 h-4" /> Ansehen
                                 </button>
-                                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-transparent border border-white/20 text-white text-sm md:text-base hover:bg-white/10 transition-colors flex items-center gap-2 backdrop-blur-md">
+                                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-transparent border border-white/20 text-white text-sm md:text-base hover:bg-white/10 transition-colors flex items-center gap-2 backdrop-blur-md" rel="noopener noreferrer">
                                 <Github className="w-4 h-4" /> Code
                                 </button>
                             </div>
@@ -436,24 +437,27 @@
                 // Ansonsten das "hero" Preset als Fallback
                 const basePreset = config.CAMERA.PRESETS.features || config.CAMERA.PRESETS.hero;
                 
-                // Radius für den Orbit berechnen (basierend auf der Distanz des Base-Presets)
-                const baseRadius = Math.sqrt(basePreset.x**2 + basePreset.z**2) || 12;
+                if (basePreset) {
+                    // Radius für den Orbit berechnen (basierend auf der Distanz des Base-Presets)
+                    // Fallback auf 12, falls x/z 0 sind (unwahrscheinlich aber sicher ist sicher)
+                    const baseRadius = Math.sqrt((basePreset.x || 0)**2 + (basePreset.z || 0)**2) || 12;
 
-                // Loop, um Presets für project-1 bis project-10 zu erstellen
-                for (let i = 1; i <= 10; i++) {
-                    // Winkelberechnung: Startet bei Offset, dann dreht sich um 45 Grad (PI/4) pro Projekt
-                    const angle = i * 0.8; 
-                    
-                    config.CAMERA.PRESETS[`project-${i}`] = { 
-                        ...basePreset,
-                        // Orbitale Bewegung: X und Z ändern sich zyklisch
-                        x: Math.sin(angle) * baseRadius,
-                        z: Math.cos(angle) * baseRadius,
-                        // Leichte Höhenvariation (Sinus-Welle), damit es nicht statisch wirkt
-                        y: Math.max(2, basePreset.y + Math.sin(i * 1.5) * 3),
-                        // Blickrichtung beibehalten
-                        lookAt: basePreset.lookAt
-                    };
+                    // Loop, um Presets für project-1 bis project-10 zu erstellen
+                    for (let i = 1; i <= 10; i++) {
+                        // Winkelberechnung: Startet bei Offset, dann dreht sich um 45 Grad (PI/4) pro Projekt
+                        const angle = i * 0.8; 
+                        
+                        config.CAMERA.PRESETS[`project-${i}`] = { 
+                            ...basePreset,
+                            // Orbitale Bewegung: X und Z ändern sich zyklisch
+                            x: Math.sin(angle) * baseRadius,
+                            z: Math.cos(angle) * baseRadius,
+                            // Leichte Höhenvariation (Sinus-Welle), damit es nicht statisch wirkt
+                            y: Math.max(2, (basePreset.y || 5) + Math.sin(i * 1.5) * 3),
+                            // Blickrichtung beibehalten
+                            lookAt: basePreset.lookAt
+                        };
+                    }
                 }
             } catch (err) {
                 console.warn("Konnte Projekt-Presets nicht automatisch setzen:", err);
@@ -463,5 +467,11 @@
             initThreeEarth();
         });
     </script>
+
+    <!-- Menu & Footer Scripts -->
+    <script src="../../content/webentwicklung/menu/menu.js" type="module"></script>
+    <script src="../../content/webentwicklung/footer/footer-complete.js" type="module"></script>
+
+    <div id="footer-container" data-footer-src="../../content/webentwicklung/footer/footer.html"></div>
 </body>
 </html>

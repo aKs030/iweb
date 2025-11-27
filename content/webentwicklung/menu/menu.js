@@ -112,7 +112,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="#features">
+          <a href="/pages/projekte/projekte.html">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-images"></use>
             </svg>
@@ -261,7 +261,8 @@ function setSiteTitle() {
     '/index.html': 'Startseite',
     '/': 'Startseite',
     '/pages/fotos/fotos.html': 'Album',
-    '/pages/card/karten.html': 'Projekte'
+    '/pages/card/karten.html': 'Projekte',
+    '/pages/projekte/projekte.html': 'Projekte'
   };
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Website';
