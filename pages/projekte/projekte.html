@@ -172,8 +172,9 @@ export default function App() {
                       <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
                       <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
                    </div>
+                   {/* UPDATED: Data Path shown here */}
                    <div className="flex-grow h-7 rounded-lg bg-black/20 border border-white/5 flex items-center px-3 text-[10px] text-white/30 font-mono overflow-hidden whitespace-nowrap">
-                     localhost:3000/{project.title.toLowerCase().split(' ')[0]}
+                     pages/projekte/{project.title.toLowerCase().replace(/\s+/g, '-').replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')}.html
                    </div>
                 </div>
 
@@ -276,5 +277,4 @@ export default function App() {
     </div>
   );
 }
-
 
