@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mein Portfolio</title>
 
-    <!-- 1. Tailwind CSS -->
+    <!-- 1. Bestehende CSS Dateien für die Erde laden -->
+    <link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" />
+    
+    <!-- 2. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,20 +22,26 @@
         }
     </script>
 
-    <!-- 2. React & ReactDOM -->
+    <!-- 3. React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
-    <!-- 3. Babel (Code-Übersetzer) -->
+    <!-- 4. Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 4. Lucide Icons (Neue Quelle: jsDelivr für bessere Stabilität) -->
-    <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
-
     <style>
-        body { margin: 0; background-color: #0a0a0f; color: white; font-family: sans-serif; }
+        /* Body transparent machen, damit die fixierte Erde sichtbar ist */
+        body { 
+            margin: 0; 
+            background-color: #000; /* Fallback */
+            color: white; 
+            font-family: sans-serif; 
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar Styling */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-track { background: rgba(10, 10, 15, 0.5); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         
         @keyframes float {
@@ -40,65 +49,89 @@
           50% { transform: translateY(-10px); }
         }
         .animate-float { animation: float 6s ease-in-out infinite; }
-        
-        #error-message {
-            display: none;
-            position: fixed;
-            top: 20px; left: 20px; right: 20px;
-            padding: 20px;
-            background: #ef4444;
-            color: white;
-            z-index: 9999;
-            border-radius: 8px;
-            font-family: monospace;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+
+        /* Wichtig: Root Container muss über der Erde liegen */
+        #root {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Überschreibt das Standard-CSS der Erde für diese Seite, falls nötig */
+        .three-earth-container {
+            z-index: -1 !important;
+            opacity: 0.8; /* Erde leicht abdunkeln für bessere Lesbarkeit */
         }
     </style>
 </head>
 <body>
-    <!-- Fehler-Container -->
-    <div id="error-message"></div>
 
-    <!-- App Root -->
+    <!-- --- 3D ERDE CONTAINER (Hintergrund) --- -->
+    <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
+        <!-- Loading UI Fallback -->
+        <div class="three-earth-loading">
+            <div class="loading-spinner"></div>
+            <p style="color:white; font-family:sans-serif;">Lade Planet...</p>
+        </div>
+    </div>
+
+    <!-- --- REACT APP ROOT --- -->
     <div id="root">
         <div style="height: 100vh; display: flex; align-items: center; justify-content: center; color: #666;">
             Lade Portfolio...
         </div>
     </div>
 
-    <!-- React Code -->
+    <!-- --- REACT CODE --- -->
     <script type="text/babel">
-        // Globale Fehler abfangen
-        window.onerror = function(msg, url, lineNo, columnNo, error) {
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.style.display = 'block';
-            errorDiv.innerHTML = `<strong>Kritischer Fehler:</strong><br>${msg}<br><small>Zeile: ${lineNo}</small>`;
-            return false;
-        };
+        
+        // --- ICONS ---
+        const IconBase = ({ children, className }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="24" height="24" viewBox="0 0 24 24" 
+                fill="none" stroke="currentColor" strokeWidth="2" 
+                strokeLinecap="round" strokeLinejoin="round"
+                className={className}
+            >
+                {children}
+            </svg>
+        );
 
-        // --- ICON FALLBACK SYSTEM ---
-        // Wir versuchen, echte Icons zu laden. Wenn das fehlschlägt, erstellen wir Dummies,
-        // damit die App nicht abstürzt.
-        let IconLib = window.lucideReact;
+        const Rocket = (props) => (
+            <IconBase {...props}><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></IconBase>
+        );
+        const ArrowLeft = (props) => (
+            <IconBase {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></IconBase>
+        );
+        const ExternalLink = (props) => (
+            <IconBase {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase>
+        );
+        const Github = (props) => (
+            <IconBase {...props}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></IconBase>
+        );
+        const ArrowDown = (props) => (
+            <IconBase {...props}><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></IconBase>
+        );
+        const MousePointerClick = (props) => (
+            <IconBase {...props}><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></IconBase>
+        );
+        const Palette = (props) => (
+            <IconBase {...props}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></IconBase>
+        );
+        const Binary = (props) => (
+            <IconBase {...props}><rect x="14" y="14" width="4" height="6" rx="2"/><rect x="6" y="4" width="4" height="6" rx="2"/><path d="M6 20h4"/><path d="M14 10h4"/><path d="M6 14h2v6"/><path d="M14 4h2v6"/></IconBase>
+        );
+        const Gamepad2 = (props) => (
+            <IconBase {...props}><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.3 2.9A2 2 0 0 0 15 2H9a2 2 0 0 0-2.3.9C3.8 5.7 3 9.4 4.2 13c1 3 3.6 5 6.8 5h2c3.2 0 5.8-2 6.8-5 1.2-3.6.4-7.3-2.5-10.1Z"/></IconBase>
+        );
+        const ListTodo = (props) => (
+            <IconBase {...props}><rect x="3" y="5" width="6" height="6" rx="1"/><path d="m3 17 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></IconBase>
+        );
+        const Check = (props) => (
+            <IconBase {...props}><path d="M20 6 9 17l-5-5"/></IconBase>
+        );
 
-        if (!IconLib) {
-            console.warn("Lucide Icons konnten nicht geladen werden. Verwende Platzhalter.");
-            // Zeige eine Warnung an, aber lasse die App laufen
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.style.display = 'block';
-            errorDiv.style.background = '#f59e0b'; // Orange für Warnung
-            errorDiv.innerHTML = `<strong>Hinweis:</strong> Icons konnten nicht geladen werden (Netzwerkproblem?). Die App läuft trotzdem.`;
-
-            // Erstelle einen "Magischen Proxy", der für JEDES angeforderte Icon
-            // einfach einen leeren Platzhalter oder Text zurückgibt.
-            IconLib = new Proxy({}, {
-                get: (target, prop) => {
-                    return (props) => <span style={{color: 'gray', fontSize: '10px'}}>[{prop}]</span>;
-                }
-            });
-        }
-
-        const { Rocket, ArrowLeft, ExternalLink, Github, ArrowDown, MousePointerClick, Palette, Binary, Gamepad2, ListTodo, Check } = IconLib;
+        // --- HAUPT LOGIK ---
 
         const projects = [
             {
@@ -195,170 +228,193 @@
         ];
 
         function App() {
+            // Function to handle scroll to first project
+            const scrollToProjects = () => {
+                const firstProject = document.getElementById('project-1');
+                if (firstProject) {
+                    firstProject.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
             return (
-                <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-[#0a0a0f] text-white font-sans selection:bg-blue-500/30">
+                // WICHTIG: bg-[#0a0a0f] entfernt und durch transparente/semi-transparente Werte ersetzt
+                // snap-container hier entfernt, damit Window-Scroll für Three.js funktioniert
+                <div className="min-h-screen w-full bg-transparent text-white font-sans selection:bg-blue-500/30">
                 
-                {/* --- Global Background --- */}
-                <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-                    <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-blue-900/10 rounded-full blur-[120px] animate-pulse-slow" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-900/10 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
-                </div>
-
-                {/* --- Fixed Navigation --- */}
-                <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-center justify-between pointer-events-none mix-blend-screen">
-                    <button className="pointer-events-auto group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-sm text-gray-300 hover:text-white backdrop-blur-md">
-                    <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                    <span className="hidden sm:inline">Zurück</span>
-                    </button>
-                    
-                    {/* Progress Dots */}
-                    <div className="hidden lg:flex flex-col gap-3 fixed right-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                        <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
-                        {projects.map(p => <div key={p.id} className="w-1.5 h-1.5 rounded-full bg-white/20"></div>)}
-                        <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+                    {/* --- Global Background (Atmosphere) --- */}
+                    {/* Deckkraft reduziert, damit Erde sichtbar ist */}
+                    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
+                        <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-blue-900/20 rounded-full blur-[120px] animate-pulse-slow" />
+                        <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-900/20 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
                     </div>
 
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center backdrop-blur-md shadow-lg shadow-blue-500/10 pointer-events-auto">
-                        <span className="font-bold text-blue-400 text-xs">DEV</span>
-                    </div>
-                </nav>
-
-                {/* --- SECTION 1: HERO --- */}
-                <section className="snap-start min-h-screen w-full flex flex-col items-center justify-center relative z-10 px-6 py-24 border-b border-white/5">
-                    <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
-                    <div className="inline-flex items-center justify-center p-5 mb-8 rounded-full bg-gradient-to-br from-blue-500/10 to-cyan-400/10 border border-blue-400/20 shadow-[0_0_40px_rgba(59,130,246,0.15)] animate-float">
-                        <Rocket className="w-10 h-10 md:w-12 md:h-12 text-blue-400 drop-shadow-lg" />
-                    </div>
-                    
-                    <h1 className="text-4xl md:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-blue-200 tracking-tight leading-tight">
-                        Meine Ersten Projekte
-                    </h1>
-                    
-                    <p className="text-base md:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-16">
-                        Jeder fängt mal klein an. <br className="hidden md:block"/>Hier sind meine Experimente mit JavaScript, Logik und Design.
-                    </p>
-
-                    <div className="animate-bounce text-blue-400/50 mt-auto md:mt-0">
-                        <ArrowDown className="w-6 h-6" />
-                    </div>
-                    </div>
-                </section>
-
-                {/* --- PROJECT SECTIONS --- */}
-                {projects.map((project, index) => (
-                    <section key={project.id} className="snap-start min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 border-b border-white/5">
-                    
-                    {/* Background Ambient Glow */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${project.color} opacity-5 blur-[100px] pointer-events-none`} />
-
-                    {/* Grid Container */}
-                    <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
-                        
-                        {/* Left: The "Photo" (CSS App Window) */}
-                        <div className="order-2 md:order-1 relative group flex justify-center md:block h-full w-full">
-                        
-                        {/* Back Glow */}
-                        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 ${project.glow} blur-[80px] rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none`} />
-
-                        {/* App Window Container */}
-                        <div className="relative w-full max-w-md aspect-[4/3] md:aspect-auto md:h-[340px] rounded-3xl bg-[#0f1119]/90 border border-white/10 backdrop-blur-xl overflow-hidden shadow-2xl hover:scale-[1.02] transition-transform duration-500 flex flex-col group/window">
-                            
-                            {/* Browser Title Bar */}
-                            <div className="flex items-center gap-4 p-4 border-b border-white/5 bg-white/[0.02] relative z-20">
-                                <div className="flex gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
-                                </div>
-                                {/* UPDATED: Data Path shown here */}
-                                <div className="flex-grow h-7 rounded-lg bg-black/20 border border-white/5 flex items-center px-3 text-[10px] text-white/30 font-mono overflow-hidden whitespace-nowrap">
-                                    pages/projekte/{project.title.toLowerCase().replace(/\s+/g, '-').replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')}.html
-                                </div>
-                            </div>
-
-                            {/* Main Content Area */}
-                            <div className="flex-grow relative flex items-center justify-center p-8 bg-gradient-to-b from-transparent to-black/30 overflow-hidden">
-                                {/* Background Grid Pattern */}
-                                <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=')]"></div>
-                                
-                                {/* Injected Preview Content */}
-                                {project.previewContent}
-
-                                {/* Floating Icon Badge */}
-                                <div className="absolute bottom-5 right-5 p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 shadow-xl group-hover/window:rotate-12 group-hover/window:scale-110 transition-all duration-500 z-20">
-                                    {project.icon}
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-
-                        {/* Right: Text Content */}
-                        <div className="order-1 md:order-2 text-left flex flex-col justify-center">
-                        
-                        {/* Header: Title REPLACES Number */}
-                        <div className="flex items-center gap-4 mb-6">
-                            <h2 className="text-lg md:text-xl font-bold text-white uppercase tracking-widest whitespace-nowrap">
-                                {project.title}
-                            </h2>
-                            <div className="h-px bg-white/10 flex-grow self-center"></div>
-                            <span className="text-[10px] md:text-xs font-medium tracking-wider text-blue-400 uppercase bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 whitespace-nowrap self-center">
-                                {project.category}
-                            </span>
-                        </div>
-                        
-                        <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-6 md:mb-8">
-                            {project.description}
-                        </p>
-
-                        <div className="flex flex-wrap gap-2 mb-8 md:mb-10">
-                            {project.tags.map((tag, i) => (
-                            <span key={i} className="text-xs md:text-sm text-gray-300 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/20 transition-colors">
-                                {tag}
-                            </span>
-                            ))}
-                        </div>
-
-                        <div className="flex flex-wrap gap-3 md:gap-4">
-                            <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-white text-black text-sm md:text-base font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
-                            <ExternalLink className="w-4 h-4" /> Ansehen
-                            </button>
-                            <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-transparent border border-white/20 text-white text-sm md:text-base hover:bg-white/10 transition-colors flex items-center gap-2">
-                            <Github className="w-4 h-4" /> Code
-                            </button>
-                        </div>
-                        </div>
-
-                    </div>
-                    </section>
-                ))}
-
-                {/* --- SECTION: CONTACT --- */}
-                <section className="snap-start min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 bg-gradient-to-b from-transparent to-black/40">
-                    <div className="max-w-3xl w-full mx-auto text-center">
-                    <div className="mb-8 flex justify-center">
-                        <div className="p-6 rounded-full bg-blue-600/10 border border-blue-500/30">
-                        <MousePointerClick className="w-10 h-10 text-blue-400" />
-                        </div>
-                    </div>
-
-                    <h2 className="text-3xl md:text-6xl font-bold mb-6 text-white">
-                        Lust auf ein Spiel?
-                    </h2>
-                    <p className="text-gray-400 mb-10 max-w-lg mx-auto text-lg md:text-xl">
-                        Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?
-                    </p>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <button className="w-full sm:w-auto px-10 py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg transition-all hover:scale-105 shadow-[0_0_30px_rgba(37,99,235,0.4)]">
-                        Schreib mir
+                    {/* --- Fixed Navigation --- */}
+                    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-center justify-between pointer-events-none mix-blend-screen">
+                        <button className="pointer-events-auto group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-sm text-gray-300 hover:text-white backdrop-blur-md">
+                        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                        <span className="hidden sm:inline">Zurück</span>
                         </button>
-                    </div>
+                        
+                        {/* Progress Dots */}
+                        <div className="hidden lg:flex flex-col gap-3 fixed right-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+                            {projects.map(p => <div key={p.id} className="w-1.5 h-1.5 rounded-full bg-white/20"></div>)}
+                            <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+                        </div>
 
-                    <div className="mt-20 text-gray-600 text-sm">
-                        Made with React & Tailwind CSS
-                    </div>
-                    </div>
-                </section>
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center backdrop-blur-md shadow-lg shadow-blue-500/10 pointer-events-auto">
+                            <span className="font-bold text-blue-400 text-xs">DEV</span>
+                        </div>
+                    </nav>
+
+                    {/* --- SECTION 1: HERO (REDESIGNED) --- */}
+                    <section className="min-h-screen w-full flex flex-col items-center justify-center relative z-10 px-6 py-24 border-b border-white/5 bg-black/20 backdrop-blur-[2px]">
+                        
+                        <div className="relative z-10 max-w-5xl mx-auto px-6 flex flex-col items-center text-center">
+    
+                            {/* Floating Badge */}
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-blue-300 text-xs font-medium mb-8 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-default">
+                                <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                </span>
+                                Open to Work & Learning
+                            </div>
+
+                            {/* Main Headline with multi-color gradient */}
+                            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-tight drop-shadow-2xl">
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 pb-2">
+                                    Code. Design.
+                                </span>
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-pulse-slow pb-2">
+                                    Experimente.
+                                </span>
+                            </h1>
+
+                            {/* Description */}
+                            <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10 drop-shadow-md font-medium">
+                                Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Projekte, 
+                                vom ersten <span className="text-white font-mono bg-white/10 px-1 rounded mx-1">console.log</span> bis zu interaktiven Web-Apps.
+                            </p>
+
+                            {/* Buttons */}
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                <button onClick={scrollToProjects} className="px-8 py-4 rounded-full bg-white text-black font-bold hover:scale-105 transition-transform flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                                    Projekte entdecken <ArrowDown className="w-4 h-4" />
+                                </button>
+                                <button className="px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-colors backdrop-blur-md">
+                                    Über mich
+                                </button>
+                            </div>
+
+                        </div>
+
+                        {/* Background Decorative Elements for Hero */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+                    </section>
+
+                    {/* --- PROJECT SECTIONS --- */}
+                    {projects.map((project, index) => (
+                        <section key={project.id} id={`project-${project.id}`} className="min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 border-b border-white/5 bg-black/20 backdrop-blur-[2px]">
+                        
+                        {/* Background Ambient Glow */}
+                        <div className={`absolute inset-0 bg-gradient-to-br ${project.color} opacity-5 blur-[100px] pointer-events-none`} />
+
+                        {/* Grid Container */}
+                        <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
+                            
+                            {/* Left: The "Photo" (CSS App Window) */}
+                            <div className="order-2 md:order-1 relative group flex justify-center md:block h-full w-full">
+                            
+                            {/* Back Glow */}
+                            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 ${project.glow} blur-[80px] rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none`} />
+
+                            {/* App Window Container */}
+                            <div className="relative w-full max-w-md aspect-[4/3] md:aspect-auto md:h-[340px] rounded-3xl bg-[#0f1119]/90 border border-white/10 backdrop-blur-xl overflow-hidden shadow-2xl hover:scale-[1.02] transition-transform duration-500 flex flex-col group/window">
+                                
+                                {/* Main Content Area */}
+                                <div className="flex-grow relative flex items-center justify-center p-8 bg-gradient-to-b from-transparent to-black/30 overflow-hidden">
+                                    {/* Background Grid Pattern */}
+                                    <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=')]"></div>
+                                    
+                                    {/* Injected Preview Content */}
+                                    {project.previewContent}
+
+                                    {/* Floating Icon Badge */}
+                                    <div className="absolute bottom-5 right-5 p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 shadow-xl group-hover/window:rotate-12 group-hover/window:scale-110 transition-all duration-500 z-20">
+                                        {project.icon}
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {/* Right: Text Content */}
+                            <div className="order-1 md:order-2 text-left flex flex-col justify-center">
+                            
+                            {/* Header: Title REPLACES Number */}
+                            <div className="flex items-center gap-4 mb-6">
+                                <h2 className="text-lg md:text-xl font-bold text-white uppercase tracking-widest whitespace-nowrap drop-shadow-lg">
+                                    {project.title}
+                                </h2>
+                                <div className="h-px bg-white/10 flex-grow self-center"></div>
+                                <span className="text-[10px] md:text-xs font-medium tracking-wider text-blue-400 uppercase bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 whitespace-nowrap self-center shadow-lg backdrop-blur-sm">
+                                    {project.category}
+                                </span>
+                            </div>
+                            
+                            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8 font-medium drop-shadow-md">
+                                {project.description}
+                            </p>
+
+                            <div className="flex flex-wrap gap-2 mb-8 md:mb-10">
+                                {project.tags.map((tag, i) => (
+                                <span key={i} className="text-xs md:text-sm text-gray-200 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/30 transition-colors backdrop-blur-md shadow-sm">
+                                    {tag}
+                                </span>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-wrap gap-3 md:gap-4">
+                                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-white text-black text-sm md:text-base font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 shadow-lg">
+                                <ExternalLink className="w-4 h-4" /> Ansehen
+                                </button>
+                                <button className="flex-1 md:flex-none justify-center px-6 py-3 rounded-full bg-transparent border border-white/20 text-white text-sm md:text-base hover:bg-white/10 transition-colors flex items-center gap-2 backdrop-blur-md">
+                                <Github className="w-4 h-4" /> Code
+                                </button>
+                            </div>
+                            </div>
+
+                        </div>
+                        </section>
+                    ))}
+
+                    {/* --- SECTION: CONTACT --- */}
+                    <section className="min-h-screen w-full flex items-center justify-center relative z-10 px-6 py-24 bg-gradient-to-b from-transparent to-black/60 backdrop-blur-sm">
+                        <div className="max-w-3xl w-full mx-auto text-center">
+                        <div className="mb-8 flex justify-center">
+                            <div className="p-6 rounded-full bg-blue-600/10 border border-blue-500/30 backdrop-blur-md">
+                            <MousePointerClick className="w-10 h-10 text-blue-400" />
+                            </div>
+                        </div>
+
+                        <h2 className="text-3xl md:text-6xl font-bold mb-6 text-white drop-shadow-2xl">
+                            Lust auf ein Spiel?
+                        </h2>
+                        <p className="text-gray-300 mb-10 max-w-lg mx-auto text-lg md:text-xl font-medium drop-shadow-md">
+                            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <button className="w-full sm:w-auto px-10 py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg transition-all hover:scale-105 shadow-[0_0_30px_rgba(37,99,235,0.4)]">
+                            Schreib mir
+                            </button>
+                        </div>
+
+                        <div className="mt-20 text-gray-400 text-sm font-medium">
+                            Made with React & Tailwind CSS
+                        </div>
+                        </div>
+                    </section>
                 </div>
             );
         }
@@ -366,5 +422,17 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+
+    <!-- 5. Initialisierung der 3D Erde -->
+    <script type="module">
+        import { initThreeEarth } from '/content/webentwicklung/particles/three-earth-system.js';
+        
+        // Warten bis DOM geladen ist
+        window.addEventListener('DOMContentLoaded', () => {
+            // Erde starten
+            initThreeEarth();
+        });
+    </script>
 </body>
 </html>
+
