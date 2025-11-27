@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mein Portfolio</title>
 
-    <!-- 1. Tailwind CSS laden -->
+    <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 2. Tailwind Konfiguration für die Animationen -->
     <script>
         tailwind.config = {
             theme: {
@@ -21,40 +19,86 @@
         }
     </script>
 
-    <!-- 3. React und ReactDOM laden -->
+    <!-- 2. React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
-    <!-- 4. Babel laden (übersetzt den Code im Browser) -->
+    <!-- 3. Babel (Code-Übersetzer) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 5. Icons laden -->
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.min.js"></script>
+    <!-- 4. Lucide Icons (Neue Quelle: jsDelivr für bessere Stabilität) -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
 
     <style>
-        /* Zusätzliche Styles für Scroll-Verhalten */
-        body { margin: 0; background-color: #0a0a0f; }
+        body { margin: 0; background-color: #0a0a0f; color: white; font-family: sans-serif; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0a0a0f; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
         
         @keyframes float {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
         }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        
+        #error-message {
+            display: none;
+            position: fixed;
+            top: 20px; left: 20px; right: 20px;
+            padding: 20px;
+            background: #ef4444;
+            color: white;
+            z-index: 9999;
+            border-radius: 8px;
+            font-family: monospace;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <!-- Fehler-Container -->
+    <div id="error-message"></div>
 
-    <!-- Hier beginnt dein React Code -->
+    <!-- App Root -->
+    <div id="root">
+        <div style="height: 100vh; display: flex; align-items: center; justify-content: center; color: #666;">
+            Lade Portfolio...
+        </div>
+    </div>
+
+    <!-- React Code -->
     <script type="text/babel">
-        // Icons aus der globalen Bibliothek holen
-        const { Rocket, ArrowLeft, ExternalLink, Github, ArrowDown, MousePointerClick, Palette, Binary, Gamepad2, ListTodo, Check } = lucideReact;
+        // Globale Fehler abfangen
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = `<strong>Kritischer Fehler:</strong><br>${msg}<br><small>Zeile: ${lineNo}</small>`;
+            return false;
+        };
+
+        // --- ICON FALLBACK SYSTEM ---
+        // Wir versuchen, echte Icons zu laden. Wenn das fehlschlägt, erstellen wir Dummies,
+        // damit die App nicht abstürzt.
+        let IconLib = window.lucideReact;
+
+        if (!IconLib) {
+            console.warn("Lucide Icons konnten nicht geladen werden. Verwende Platzhalter.");
+            // Zeige eine Warnung an, aber lasse die App laufen
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+            errorDiv.style.background = '#f59e0b'; // Orange für Warnung
+            errorDiv.innerHTML = `<strong>Hinweis:</strong> Icons konnten nicht geladen werden (Netzwerkproblem?). Die App läuft trotzdem.`;
+
+            // Erstelle einen "Magischen Proxy", der für JEDES angeforderte Icon
+            // einfach einen leeren Platzhalter oder Text zurückgibt.
+            IconLib = new Proxy({}, {
+                get: (target, prop) => {
+                    return (props) => <span style={{color: 'gray', fontSize: '10px'}}>[{prop}]</span>;
+                }
+            });
+        }
+
+        const { Rocket, ArrowLeft, ExternalLink, Github, ArrowDown, MousePointerClick, Palette, Binary, Gamepad2, ListTodo, Check } = IconLib;
 
         const projects = [
             {
@@ -324,4 +368,3 @@
     </script>
 </body>
 </html>
-
