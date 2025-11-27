@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meine Projekte</title>
 
-    <!-- 1. CSS für die Erde laden (Absoluter Pfad wie in index.html) -->
-    <link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" />
+    <!-- 1. CSS für die Erde laden -->
+    <link rel="stylesheet" href="../../content/webentwicklung/particles/three-earth.css" />
     
     <!-- 2. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -424,14 +424,44 @@
 
     <!-- 5. Initialisierung der 3D Erde -->
     <script type="module">
-        import { initThreeEarth } from '/content/webentwicklung/particles/three-earth-system.js';
+        // Fix: Relativer Pfad
+        import { initThreeEarth, EarthSystemAPI } from '../../content/webentwicklung/particles/three-earth-system.js';
         
-        // Warten bis DOM geladen ist
         window.addEventListener('DOMContentLoaded', () => {
+            // Fix: Missing Presets für Projekt-IDs
+            try {
+                const config = EarthSystemAPI.getConfig();
+                
+                // Wir nutzen das "features" Preset als Basis für die Projekte, falls vorhanden
+                // Ansonsten das "hero" Preset als Fallback
+                const basePreset = config.CAMERA.PRESETS.features || config.CAMERA.PRESETS.hero;
+                
+                // Radius für den Orbit berechnen (basierend auf der Distanz des Base-Presets)
+                const baseRadius = Math.sqrt(basePreset.x**2 + basePreset.z**2) || 12;
+
+                // Loop, um Presets für project-1 bis project-10 zu erstellen
+                for (let i = 1; i <= 10; i++) {
+                    // Winkelberechnung: Startet bei Offset, dann dreht sich um 45 Grad (PI/4) pro Projekt
+                    const angle = i * 0.8; 
+                    
+                    config.CAMERA.PRESETS[`project-${i}`] = { 
+                        ...basePreset,
+                        // Orbitale Bewegung: X und Z ändern sich zyklisch
+                        x: Math.sin(angle) * baseRadius,
+                        z: Math.cos(angle) * baseRadius,
+                        // Leichte Höhenvariation (Sinus-Welle), damit es nicht statisch wirkt
+                        y: Math.max(2, basePreset.y + Math.sin(i * 1.5) * 3),
+                        // Blickrichtung beibehalten
+                        lookAt: basePreset.lookAt
+                    };
+                }
+            } catch (err) {
+                console.warn("Konnte Projekt-Presets nicht automatisch setzen:", err);
+            }
+
             // Erde starten
             initThreeEarth();
         });
     </script>
 </body>
 </html>
-
