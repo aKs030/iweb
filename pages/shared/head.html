@@ -180,6 +180,15 @@
 
 <!-- Kritische CSS synchron laden -->
 <link rel="stylesheet" href="/content/webentwicklung/root.css" />
+<!-- three-earth.css is loaded non-blocking to avoid render-blocking and improve TTFP -->
+<link rel="preload" href="/content/webentwicklung/particles/three-earth.css" as="style" onload="this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
+<link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
+<link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
+<link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
+<link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
+<!-- Main application script (loads menu, parallax, and other shared JS) -->
+<script type="module" src="/content/webentwicklung/main.js"></script>
 
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0d0d0d">

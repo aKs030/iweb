@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   menuContainer.innerHTML = getMenuHTML();
+  _log.info('Menu: injected into #menu-container');
 
   const yearEl = getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();

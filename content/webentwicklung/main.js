@@ -352,6 +352,7 @@ const ThreeEarthLoader = (() => {
 
   async function load() {
     if (isLoading || cleanupFn) return;
+    log.info('ThreeEarthLoader: load() invoked, isLoading:', isLoading, 'cleanupFn:', !!cleanupFn);
 
     if (isLighthouse) {
       log.info('Lighthouse detected - skipping Three.js');
@@ -368,10 +369,12 @@ const ThreeEarthLoader = (() => {
 
     try {
       log.info('Loading Three.js Earth system...');
+      log.info('ThreeEarthLoader: importing module particles/three-earth-system.js');
       const module = await import('./particles/three-earth-system.js');
       const ThreeEarthManager = module.default;
 
       cleanupFn = await ThreeEarthManager.initThreeEarth();
+      log.info('ThreeEarthLoader: initThreeEarth() returned cleanup function:', typeof cleanupFn === 'function');
 
       if (typeof cleanupFn === 'function') {
         window.__threeEarthCleanup = cleanupFn;
