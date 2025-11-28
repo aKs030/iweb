@@ -185,6 +185,8 @@ let currentQualityLevel = 'HIGH';
 let isMobileDevice = false;
 let frameCount = 0;
 let performanceMonitor, shootingStarManager;
+let _loadingWatchdog = null;
+const LOADING_TIMEOUT_MS = 12_000; // If assets didn't load in 12s, consider it failed.
 // Timestamp of the last explicit mode switch (ms since epoch). Used to
 // debounce successive toggles when the user scrolls quickly.
 let _lastModeSwitchAt = 0;
@@ -369,6 +371,12 @@ const ThreeEarthManager = (() => {
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
 
       startAnimationLoop();
+      // Ensure the loading overlay is removed once the animation loop starts as a final safeguard
+      try {
+        hideLoadingState(container);
+      } catch (err) {
+        log.warn('Failed to hide loading overlay after animation start', err);
+      }
       setupResizeHandler();
 
       log.info('Initialization complete');
@@ -804,12 +812,18 @@ async function createEarthSystem() {
 
   const textureLoader = new THREE_INSTANCE.TextureLoader(loadingManager);
 
-  const [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
+  let dayTexture, nightTexture, normalTexture, bumpTexture;
+  try {
+    [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
     textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
     textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
     textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
     textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP)
-  ]);
+    ]);
+  } catch (err) {
+    log.error('Texture loading failed:', err);
+    throw new Error('Texture loading failed: ' + (err?.message || String(err)));
+  }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   [dayTexture, nightTexture, normalTexture, bumpTexture].forEach((tex) => {
@@ -1365,23 +1379,75 @@ function showLoadingState(container, progress) {
   const progressText = container?.querySelector('.loading-progress-text');
   if (progressBar) progressBar.style.width = `${progress * 100}%`;
   if (progressText) progressText.textContent = `${Math.round(progress * 100)}%`;
+  try {
+    log.debug('Loading state updated', progress);
+  } catch (_) {}
+
+  // Start/Reset watchdog
+  if (_loadingWatchdog) clearTimeout(_loadingWatchdog);
+  _loadingWatchdog = setTimeout(() => {
+    log.warn('ThreeEarth: loading did not complete within expected time');
+    // If elements are still present, show error state
+    try {
+      showErrorState(container, new Error('Ladezeit überschritten. Bitte Seite neu laden oder überprüfe WebGL/Netzwerk.'));
+    } catch (err) {
+      log.error('Failed to show error state after loading timeout', err);
+    }
+  }, LOADING_TIMEOUT_MS);
 }
 
 function hideLoadingState(container) {
   container?.classList.remove('loading');
   const loadingElement = container?.querySelector('.three-earth-loading');
   if (loadingElement) loadingElement.classList.add('hidden');
+  // Clear any pending watchdog
+  if (_loadingWatchdog) {
+    clearTimeout(_loadingWatchdog);
+    _loadingWatchdog = null;
+  }
 }
 
 function showErrorState(container, error) {
   container?.classList.add('error');
   container?.classList.remove('loading');
+  if (_loadingWatchdog) {
+    clearTimeout(_loadingWatchdog);
+    _loadingWatchdog = null;
+  }
   const errorElement = container?.querySelector('.three-earth-error');
   if (errorElement) {
     errorElement.classList.remove('hidden');
     const errorText = errorElement.querySelector('p');
     if (errorText) {
-      errorText.textContent = `WebGL Error: ${error.message || 'Unknown error'}`;
+      const msg = error?.message || 'Unknown error';
+      errorText.textContent = `WebGL Fehler: ${msg}`;
+    }
+    // Add a retry button if not present
+    let retryBtn = errorElement.querySelector('.three-earth-retry');
+    if (!retryBtn) {
+      retryBtn = document.createElement('button');
+      retryBtn.className = 'retry-btn three-earth-retry';
+      retryBtn.type = 'button';
+      retryBtn.textContent = 'Neu versuchen';
+      retryBtn.addEventListener('click', async () => {
+        // Hide the error UI and reinitialize
+        try {
+          // Show the loading UI again for feedback
+          showLoadingState(container, 0);
+        } catch (_) {}
+        try {
+          // Cleanup previous instance if any
+          try { await cleanup(); } catch (_cleanupErr) { /* ignore */ }
+          // Kick off a fresh initialization
+          initThreeEarth();
+        } catch (err) {
+          log.error('Retry initialization failed:', err);
+          // Show updated error message
+          const txt = errorElement.querySelector('p');
+          if (txt) txt.textContent = `Erneuter Start fehlgeschlagen: ${err.message || err}`;
+        }
+      });
+      errorElement.appendChild(retryBtn);
     }
   }
 }
