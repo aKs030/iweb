@@ -1,7 +1,7 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
-  testDir: 'tests',
+  testDir: 'test',
   timeout: 30 * 1000,
   use: {
     baseURL: 'http://localhost:8080',

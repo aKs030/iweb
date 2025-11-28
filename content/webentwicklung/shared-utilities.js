@@ -410,6 +410,7 @@ export function onResize(callback, delay = 100) {
 export class SectionTracker {
   constructor() {
     this.sections = [];
+    this.sectionRatios = new Map();
     this.currentSectionId = null;
     this.observer = null;
     this.log = createLogger('SectionTracker');
@@ -463,15 +464,27 @@ export class SectionTracker {
   }
 
   handleIntersections(entries) {
+    // Update ratios for changed entries
+    entries.forEach((entry) => {
+      if (entry.target?.id) {
+        this.sectionRatios.set(entry.target.id, {
+          ratio: entry.intersectionRatio,
+          isIntersecting: entry.isIntersecting,
+          target: entry.target
+        });
+      }
+    });
+
+    // Find best visible section among ALL tracked sections
     let bestEntry = null;
     let bestRatio = 0;
 
-    entries.forEach((entry) => {
-      if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
-        bestRatio = entry.intersectionRatio;
-        bestEntry = entry;
+    for (const data of this.sectionRatios.values()) {
+      if (data.isIntersecting && data.ratio > bestRatio) {
+        bestRatio = data.ratio;
+        bestEntry = data;
       }
-    });
+    }
 
     if (bestEntry) {
       const newSectionId = bestEntry.target.id;
@@ -531,6 +544,7 @@ export class SectionTracker {
       this.observer = null;
     }
     this.sections = [];
+    this.sectionRatios.clear();
     this.currentSectionId = null;
   }
 }
