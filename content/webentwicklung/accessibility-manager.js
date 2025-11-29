@@ -98,9 +98,21 @@ class AccessibilityManager {
   trapFocus(container) {
     if (!container) return;
 
-    const focusableElements = container.querySelectorAll(
+    const allFocusable = container.querySelectorAll(
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     );
+
+    // Filter out hidden elements (e.g. type="hidden", display:none, or visibility:hidden)
+    // Note: checkVisibility() is a modern API; fallback to offsetParent check.
+    const focusableElements = Array.from(allFocusable).filter((el) => {
+      if (el.tagName === 'INPUT' && el.type === 'hidden') return false;
+      // offsetParent is null for display:none elements (and fixed position sometimes, but usually focusable)
+      // However, checkVisibility is better if available.
+      if (typeof el.checkVisibility === 'function') {
+        return el.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true });
+      }
+      return el.offsetParent !== null || (el.getClientRects().length > 0);
+    });
 
     if (!focusableElements || focusableElements.length === 0) return;
 
