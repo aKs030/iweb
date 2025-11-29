@@ -42,7 +42,8 @@
 
     // mark as loaded for page-level fallbacks
     try { window.SHARED_HEAD_LOADED = true; } catch (_) {
-      // Ignore errors when setting global flag
+      // Ignore errors when setting global flag (defensive in case document is locked)
+      void 0;
     }
   } catch (err) {
     console.error('head-complete: failed to load shared head', err);
