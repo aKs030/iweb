@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Meine Projekte</title>
     <meta charset="utf-8" />
 <meta
@@ -82,7 +82,6 @@
 </script>
 
 <!-- Open Graph Meta-Tags -->
-<title>Meine Projekte</title>
 <meta
     property="og:title"
     content="Meine Projekte"
@@ -196,9 +195,9 @@
 <!-- Main application script (loads menu, parallax, and other shared JS) -->
 <script type="module" src="/content/webentwicklung/main.js"></script>
 
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0d0d0d">
-<link rel="icon" type="image/svg+xml" href="/content/img/icons/favicon.svg">
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#0d0d0d"/>
+<link rel="icon" type="image/svg+xml" href="/content/img/icons/favicon.svg"/>
 
 <!-- JSON-LD Structured Data -->
 <script type="application/ld+json" data-cfasync="false">
@@ -303,7 +302,7 @@
     <!-- 1. React & ReactDOM (Notwendig für die Logik) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
+
     <!-- KEIN Babel mehr notwendig -->
 
     <!-- Per-page styles only -->
@@ -322,11 +321,11 @@
             --border-light: rgba(255, 255, 255, 0.05);
         }
 
-        body { 
-            margin: 0; 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            font-family: system-ui, -apple-system, sans-serif; 
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -438,11 +437,11 @@
     <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
         <div class="three-earth-loading" role="status" aria-live="polite">
             <div class="loading-spinner" aria-hidden="true"></div>
-            <p style="color:white; font-family:sans-serif;">Lade Planet...</p>
+            <p class="loading-spinner-text">Lade Planet...</p>
             <div class="loading-progress-container" aria-hidden="false">
                 <div class="loading-progress-bar"></div>
             </div>
-            <p class="loading-progress-text" style="color:white; font-family:sans-serif;">0%</p>
+            <p class="loading-progress-text">0%</p>
         </div>
         <div class="three-earth-error hidden"><p>WebGL Fehler</p></div>
     </div>
@@ -468,7 +467,7 @@
         };
 
         // --- Icons ---
-        const ExternalLink = (props) => e(IconBase, props, 
+        const ExternalLink = (props) => e(IconBase, props,
             e('path', { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }),
             e('polyline', { points: "15 3 21 3 21 9" }),
             e('line', { x1: "10", x2: "21", y1: "14", y2: "3" })
@@ -729,17 +728,17 @@
     <!-- 5. Initialisierung der 3D Erde -->
     <script type="module">
         import { initThreeEarth, EarthSystemAPI } from '../../content/webentwicklung/particles/three-earth-system.js';
-        
+
         window.addEventListener('DOMContentLoaded', () => {
             try {
                 const config = EarthSystemAPI.getConfig();
                 const basePreset = config.CAMERA.PRESETS.features || config.CAMERA.PRESETS.hero;
-                
+
                 if (basePreset) {
                     const baseRadius = Math.sqrt((basePreset.x || 0)**2 + (basePreset.z || 0)**2) || 12;
                     for (let i = 1; i <= 10; i++) {
-                        const angle = i * 0.8; 
-                        config.CAMERA.PRESETS[`project-${i}`] = { 
+                        const angle = i * 0.8;
+                        config.CAMERA.PRESETS[`project-${i}`] = {
                             ...basePreset,
                             x: Math.sin(angle) * baseRadius,
                             z: Math.cos(angle) * baseRadius,

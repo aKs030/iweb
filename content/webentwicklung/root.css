@@ -378,6 +378,13 @@ textarea:focus-visible {
   text-align: center;
 }
 
+/* Loading spinner text utility */
+.loading-spinner-text,
+.loading-progress-text {
+  color: #fff;
+  font-family: var(--font-primary);
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: #fff;
