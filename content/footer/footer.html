@@ -1,26 +1,26 @@
-<footer id="site-footer" class="site-footer-fixed" aria-label="Main website footer">
-  <!-- Minimized Footer (Default) -->
+<footer id="site-footer" class="site-footer-fixed" aria-label="Website Footer">
+  <!-- Minimized Footer (Default State) -->
   <div class="footer-minimized">
     <div class="footer-minimal-content">
       <!-- Copyright -->
       <span class="footer-copyright-text">
         © <span class="current-year">2025</span>
-        <a href="https://abdulkerimsesli.de" class="footer-brand-link" title="Zur Homepage"
+        <a href="https://abdulkerimsesli.de" class="footer-brand-link" title="Zur Startseite"
           >Abdulkerim Sesli</a
         >
       </span>
 
-      <!-- Cookie Consent Banner (inline) -->
+      <!-- Cookie Consent Banner (Inline) -->
       <div id="cookie-consent-banner" class="cookie-banner-inline hidden">
         <span class="cookie-text">
-          🍪 <span class="cookie-text-full">Wir verwenden Google Analytics.</span
+          🍪 <span class="cookie-text-full">Wir nutzen Google Analytics.</span
           ><span class="cookie-text-short">Analytics</span>
         </span>
         <button
           id="accept-cookies-btn"
           type="button"
           class="cookie-accept-btn"
-          aria-label="Alle Cookies akzeptieren"
+          aria-label="Alle akzeptieren"
         >
           <span class="btn-text-full">OK</span><span class="btn-text-short">✓</span>
         </button>
@@ -28,14 +28,14 @@
           id="reject-cookies-btn"
           type="button"
           class="cookie-reject-btn"
-          aria-label="Nur essenzielle Cookies wählen"
+          aria-label="Ablehnen"
         >
           <span class="btn-text-full">Nein</span><span class="btn-text-short">✗</span>
         </button>
       </div>
 
-      <!-- Navigation -->
-      <nav class="footer-minimal-nav" aria-label="Footer links">
+      <!-- Quick Navigation -->
+      <nav class="footer-minimal-nav" aria-label="Footer Kurz-Navigation">
         <button
           id="footer-cookies-link"
           type="button"
@@ -95,8 +95,8 @@
     </div>
   </div>
 
-  <!-- Enhanced Maximized Footer -->
-  <div class="footer-maximized footer-hidden" aria-live="polite">
+  <!-- Maximized Footer (Expanded State) -->
+  <div class="footer-maximized footer-hidden">
     <!-- Cookie Settings View -->
     <div
       class="footer-cookie-settings hidden"
@@ -112,7 +112,7 @@
             type="button"
             class="cookie-settings-close"
             id="close-cookie-footer"
-            aria-label="Cookie-Einstellungen schließen"
+            aria-label="Schließen"
           >
             <svg
               width="24"
@@ -135,19 +135,17 @@
             Websitebesuchen.
           </p>
 
-          <!-- Essenzielle Cookies -->
+          <!-- Essential Cookies -->
           <div class="cookie-category">
             <div class="cookie-category-header">
               <h3>Essenzielle Cookies</h3>
               <span class="cookie-status cookie-status-required" role="status">Immer aktiv</span>
             </div>
-            <p class="cookie-category-description">
-              Diese Cookies sind für die Grundfunktionen der Website erforderlich.
-            </p>
+            <p class="cookie-category-description">Für die Grundfunktionen erforderlich.</p>
             <div class="cookie-details">
               <div class="cookie-item">
                 <strong>cookie_consent</strong>
-                <p>Speichert Ihre Cookie-Einwilligung</p>
+                <p>Speichert Ihre Entscheidung.</p>
                 <span class="cookie-duration">365 Tage</span>
               </div>
             </div>
@@ -157,39 +155,28 @@
           <div class="cookie-category">
             <div class="cookie-category-header">
               <h3>Analyse & Performance</h3>
-              <label class="cookie-toggle" for="footer-analytics-toggle">
+              <label class="cookie-toggle">
                 <span class="visually-hidden">Analyse-Cookies aktivieren</span>
-                <input
-                  type="checkbox"
-                  id="footer-analytics-toggle"
-                  checked
-                  aria-describedby="analytics-description"
-                />
-                <span class="cookie-toggle-slider" role="presentation"></span>
+                <input type="checkbox" id="footer-analytics-toggle" checked />
+                <span class="cookie-toggle-slider" aria-hidden="true"></span>
               </label>
             </div>
-            <p class="cookie-category-description" id="analytics-description">
-              Diese Cookies helfen uns zu verstehen, wie Besucher mit unserer Website interagieren.
-            </p>
+            <p class="cookie-category-description">Hilft uns, die Website zu verbessern.</p>
             <div class="cookie-details">
               <div class="cookie-item">
                 <strong>Google Analytics</strong>
-                <p>Erfasst Daten über Seitenaufrufe und Nutzerverhalten zur Website-Optimierung.</p>
+                <p>Erfasst anonymisierte Daten über Nutzung.</p>
                 <span class="cookie-duration">2 Jahre</span>
               </div>
             </div>
           </div>
 
-          <!-- Datenschutz Info -->
           <div class="cookie-privacy-info">
-            <h3>🔒 Ihre Privatsphäre</h3>
+            <h3>🔒 Privatsphäre</h3>
             <ul>
               <li>Keine Werbe-Cookies</li>
               <li>IP-Adresse anonymisiert</li>
-              <li>Widerruf jederzeit möglich</li>
-              <li>
-                <a href="/content/footer/datenschutz.html">Datenschutzerklärung</a>
-              </li>
+              <li><a href="/content/footer/datenschutz.html">Datenschutzerklärung</a></li>
             </ul>
           </div>
         </div>
@@ -199,7 +186,6 @@
             id="footer-reject-all"
             type="button"
             class="cookie-settings-btn cookie-settings-btn-secondary"
-            aria-label="Nur essenzielle Cookies akzeptieren"
           >
             Nur Essenzielle
           </button>
@@ -207,7 +193,6 @@
             id="footer-accept-selected"
             type="button"
             class="cookie-settings-btn cookie-settings-btn-primary"
-            aria-label="Ausgewählte Cookie-Einstellungen speichern"
           >
             Auswahl speichern
           </button>
@@ -215,7 +200,6 @@
             id="footer-accept-all"
             type="button"
             class="cookie-settings-btn cookie-settings-btn-primary"
-            aria-label="Alle Cookies akzeptieren"
           >
             Alle akzeptieren
           </button>
@@ -223,81 +207,63 @@
       </div>
     </div>
 
-    <!-- Normal Footer Content -->
+    <!-- Content Footer (Cards) -->
     <div class="footer-normal-content" id="footer-normal-content">
-      <!-- Floating Theme Control -->
+      <!-- Theme Toggle -->
       <div class="theme-control-floating">
         <button
           type="button"
           class="day-night-artwork"
           id="dayNightToggle"
-          aria-label="Design zwischen Tag und Nacht wechseln"
-          title="Design wechseln (Tag/Nacht)"
+          aria-label="Design wechseln"
+          title="Tag/Nacht Modus"
           aria-pressed="false"
         >
           <span class="sky-canvas" aria-hidden="true">
             <span class="sun">
               <span class="sun-rays">
-                <span class="ray ray-1"></span>
-                <span class="ray ray-2"></span>
-                <span class="ray ray-3"></span>
-                <span class="ray ray-4"></span>
-                <span class="ray ray-5"></span>
-                <span class="ray ray-6"></span>
-                <span class="ray ray-7"></span>
-                <span class="ray ray-8"></span>
+                <span class="ray ray-1"></span><span class="ray ray-2"></span
+                ><span class="ray ray-3"></span><span class="ray ray-4"></span>
+                <span class="ray ray-5"></span><span class="ray ray-6"></span
+                ><span class="ray ray-7"></span><span class="ray ray-8"></span>
               </span>
             </span>
             <span class="moon">
               <span class="moon-craters">
-                <span class="crater crater-1"></span>
-                <span class="crater crater-2"></span>
-                <span class="crater crater-3"></span>
-                <span class="crater crater-4"></span>
+                <span class="crater crater-1"></span><span class="crater crater-2"></span
+                ><span class="crater crater-3"></span><span class="crater crater-4"></span>
               </span>
             </span>
             <span class="stars">
-              <span class="star star-1"></span>
-              <span class="star star-2"></span>
-              <span class="star star-3"></span>
-              <span class="star star-4"></span>
-              <span class="star star-5"></span>
-              <span class="star star-6"></span>
-              <span class="star star-7"></span>
-              <span class="star star-8"></span>
+              <span class="star star-1"></span><span class="star star-2"></span
+              ><span class="star star-3"></span><span class="star star-4"></span>
+              <span class="star star-5"></span><span class="star star-6"></span
+              ><span class="star star-7"></span><span class="star star-8"></span>
             </span>
             <span class="clouds">
-              <span class="cloud cloud-1">
-                <span class="cloud-part part-1"></span>
-                <span class="cloud-part part-2"></span>
-                <span class="cloud-part part-3"></span>
-              </span>
-              <span class="cloud-2">
-                <span class="cloud-part part-1"></span>
-                <span class="cloud-part part-2"></span>
-              </span>
+              <span class="cloud cloud-1"
+                ><span class="cloud-part part-1"></span><span class="cloud-part part-2"></span
+                ><span class="cloud-part part-3"></span
+              ></span>
+              <span class="cloud-2"
+                ><span class="cloud-part part-1"></span><span class="cloud-part part-2"></span
+              ></span>
             </span>
             <span class="landscape">
-              <span class="mountains">
-                <span class="mountain mountain-1"></span>
-                <span class="mountain mountain-2"></span>
-                <span class="mountain mountain-3"></span>
-              </span>
-              <span class="trees">
-                <span class="tree tree-1">
-                  <span class="trunk"></span>
-                  <span class="leaves"></span>
-                </span>
-                <span class="tree tree-2">
-                  <span class="trunk"></span>
-                  <span class="leaves"></span>
-                </span>
-              </span>
+              <span class="mountains"
+                ><span class="mountain mountain-1"></span><span class="mountain mountain-2"></span
+                ><span class="mountain mountain-3"></span
+              ></span>
+              <span class="trees"
+                ><span class="tree tree-1"
+                  ><span class="trunk"></span><span class="leaves"></span></span
+                ><span class="tree tree-2"
+                  ><span class="trunk"></span><span class="leaves"></span></span
+              ></span>
             </span>
           </span>
           <span class="atmosphere" aria-hidden="true">
-            <span class="mist"></span>
-            <span class="light-rays"></span>
+            <span class="mist"></span><span class="light-rays"></span>
           </span>
         </button>
       </div>
@@ -305,7 +271,7 @@
       <div class="footer-maximized-viewport">
         <div class="footer-enhanced-content">
           <div class="footer-cards-grid">
-            <!-- About (Profile) -->
+            <!-- About Card -->
             <article class="footer-card">
               <div class="footer-card-header">
                 <h3 class="footer-card-title">About</h3>
@@ -317,30 +283,34 @@
                 <a
                   href="mailto:hello@abdulkerimsesli.de"
                   class="footer-contact-cta"
-                  aria-label="Kontakt per E-Mail"
+                  aria-label="E-Mail senden"
                   >Kontakt</a
                 >
               </div>
             </article>
 
-            <!-- Work -->
+            <!-- Work Card -->
             <article class="footer-card">
               <div class="footer-card-header">
                 <h3 class="footer-card-title">Work</h3>
                 <div class="footer-card-accent" aria-hidden="true"></div>
               </div>
               <div class="footer-card-content">
-                <nav class="footer-work-nav" aria-label="Work navigation">
-                  <a href="#portfolio" class="footer-work-link">Portfolio</a>
-                  <a href="/pages/projekte/projekte.html#project-1" class="footer-work-link"
-                    >Projekte</a
+                <nav class="footer-work-nav" aria-label="Projekte Navigation">
+                  <a href="#features" class="footer-work-link">Portfolio</a>
+                  <a href="/pages/projekte/projekte.html" class="footer-work-link">Alle Projekte</a>
+                  <a
+                    href="https://github.com/aKs030"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="footer-work-link"
+                    >GitHub Lab</a
                   >
-                  <a href="#lab" class="footer-work-link">Code Lab</a>
                 </nav>
               </div>
             </article>
 
-            <!-- Connect -->
+            <!-- Connect Card -->
             <article class="footer-card">
               <div class="footer-card-header">
                 <h3 class="footer-card-title">Connect</h3>
@@ -353,7 +323,7 @@
                     class="footer-social-card"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="GitHub Profil besuchen"
+                    aria-label="GitHub"
                   >
                     <svg
                       class="social-card-icon"
@@ -376,7 +346,7 @@
                     class="footer-social-card"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="LinkedIn Profil besuchen"
+                    aria-label="LinkedIn"
                   >
                     <svg
                       class="social-card-icon"
@@ -401,7 +371,7 @@
                     class="footer-social-card"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Instagram Profil besuchen"
+                    aria-label="Instagram"
                   >
                     <svg
                       class="social-card-icon"
@@ -423,16 +393,14 @@
               </div>
             </article>
 
-            <!-- Newsletter -->
+            <!-- Newsletter Card -->
             <article class="footer-card footer-card-newsletter">
               <div class="footer-card-header">
                 <h3 class="footer-card-title" id="newsletter-title">Newsletter</h3>
                 <div class="footer-card-accent" aria-hidden="true"></div>
               </div>
               <div class="footer-card-content">
-                <p class="newsletter-description">
-                  Kurze Updates & Insights – direkt in dein Postfach.
-                </p>
+                <p class="newsletter-description">Updates & Insights – direkt in dein Postfach.</p>
                 <form class="newsletter-form-enhanced" aria-labelledby="newsletter-title">
                   <div class="newsletter-input-wrapper">
                     <input
@@ -440,23 +408,16 @@
                       class="newsletter-input-enhanced"
                       placeholder="deine@email.de"
                       required
-                      aria-label="E-Mail-Adresse für Newsletter"
-                      aria-required="true"
+                      aria-label="E-Mail für Newsletter"
                     />
-                    <button
-                      type="submit"
-                      class="newsletter-submit-enhanced"
-                      aria-label="Newsletter abonnieren"
-                    >
-                      Abonnieren
-                    </button>
+                    <button type="submit" class="newsletter-submit-enhanced">Abonnieren</button>
                   </div>
                 </form>
               </div>
             </article>
           </div>
 
-          <!-- Status Bar -->
+          <!-- Footer Status Bar -->
           <div class="footer-status-bar">
             <div class="footer-status-content">
               <div class="footer-copyright-enhanced">
@@ -465,7 +426,7 @@
                   >Abdulkerim Sesli</a
                 >
               </div>
-              <nav class="footer-legal-nav" aria-label="Legal navigation">
+              <nav class="footer-legal-nav" aria-label="Rechtliche Links">
                 <a href="/content/footer/impressum.html" class="footer-legal-link-enhanced">
                   <svg
                     width="14"
@@ -500,8 +461,6 @@
                   type="button"
                   class="footer-cookie-btn"
                   aria-label="Cookie-Einstellungen öffnen"
-                  aria-controls="footer-cookie-view"
-                  aria-expanded="false"
                   data-cookie-trigger
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
