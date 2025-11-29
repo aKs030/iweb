@@ -96,7 +96,8 @@ export class CameraManager {
     this.cameraPosition.z += (finalZ - this.cameraPosition.z) * lerpFactor;
     this.camera.position.set(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
 
-    this.camera.lookAt(0, 0, 0);
+    const currentLookAt = this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
+    this.camera.lookAt(currentLookAt);
   }
 
   handleWheel(e) {
