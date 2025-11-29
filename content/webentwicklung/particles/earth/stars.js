@@ -9,20 +9,25 @@ export class StarManager {
     this.scene = scene;
     this.camera = camera;
     this.starField = null;
-    this.starOriginalPositions = null;
-    this.starTargetPositions = null;
-    this.starAnimationState = {
+    
+    // Animation State for Shader-Transition
+    this.transition = {
       active: false,
       startTime: 0,
-      positionsUpdated: false,
-      updateScheduled: false
+      duration: CONFIG.STARS.ANIMATION.DURATION,
+      startValue: 0,
+      targetValue: 0
     };
+
     this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
   }
 
   createStarField() {
     const starCount = this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT;
+    
+    // Buffer Arrays
     const positions = new Float32Array(starCount * 3);
+    const targetPositions = new Float32Array(starCount * 3); // New: Target positions for GPU
     const colors = new Float32Array(starCount * 3);
     const sizes = new Float32Array(starCount);
     const color = new this.THREE.Color();
@@ -33,9 +38,19 @@ export class StarManager {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
 
-      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i3 + 2] = radius * Math.cos(phi);
+      // Spherical distribution (Start)
+      const x = radius * Math.sin(phi) * Math.cos(theta);
+      const y = radius * Math.sin(phi) * Math.sin(theta);
+      const z = radius * Math.cos(phi);
+
+      positions[i3] = x;
+      positions[i3 + 1] = y;
+      positions[i3 + 2] = z;
+
+      // Initialize targets to same position to avoid glitches
+      targetPositions[i3] = x;
+      targetPositions[i3 + 1] = y;
+      targetPositions[i3 + 2] = z;
 
       color.setHSL(Math.random() * 0.1 + 0.5, 0.8, 0.8 + Math.random() * 0.2);
       colors[i3] = color.r;
@@ -47,20 +62,30 @@ export class StarManager {
 
     const starGeometry = new this.THREE.BufferGeometry();
     starGeometry.setAttribute('position', new this.THREE.BufferAttribute(positions, 3));
+    starGeometry.setAttribute('aTargetPosition', new this.THREE.BufferAttribute(targetPositions, 3));
     starGeometry.setAttribute('color', new this.THREE.BufferAttribute(colors, 3));
     starGeometry.setAttribute('size', new this.THREE.BufferAttribute(sizes, 1));
 
     const starMaterial = new this.THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0.0 },
-        twinkleSpeed: { value: CONFIG.STARS.TWINKLE_SPEED }
+        twinkleSpeed: { value: CONFIG.STARS.TWINKLE_SPEED },
+        uTransition: { value: 0.0 } // 0.0 = Sphere, 1.0 = Cards
       },
       vertexShader: `
         attribute float size;
+        attribute vec3 aTargetPosition;
+        uniform float uTransition;
         varying vec3 vColor;
+        
         void main() {
           vColor = color;
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          
+          // GPU-based interpolation
+          // mix performs linear interpolation between start (position) and end (aTargetPosition)
+          vec3 currentPos = mix(position, aTargetPosition, uTransition);
+          
+          vec4 mvPosition = modelViewMatrix * vec4(currentPos, 1.0);
           gl_PointSize = size * (300.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
         }
@@ -82,7 +107,6 @@ export class StarManager {
 
     this.starField = new this.THREE.Points(starGeometry, starMaterial);
     this.scene.add(this.starField);
-    this.starOriginalPositions = new Float32Array(positions);
 
     return this.starField;
   }
@@ -93,34 +117,22 @@ export class StarManager {
     const featuresSection = getElementById('features');
     if (!featuresSection) return [];
 
+    // Select actual cards, fallback to empty if none found
     const cards = featuresSection.querySelectorAll('.card');
+    if (cards.length === 0) return [];
+
     const positions = [];
-
-    if (cards.length === 0) {
-      // Fallback grid
-      for (let i = 0; i < 9; i++) {
-        const row = Math.floor(i / 3);
-        const col = i % 3;
-        positions.push({
-          x: (col - 1) * 8,
-          y: (1 - row) * 6 + 2,
-          z: -2
-        });
-      }
-      return positions;
-    }
-
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
     cards.forEach((card) => {
       const rect = card.getBoundingClientRect();
-      if (rect.bottom < 0 || rect.top > viewportHeight) return;
-
+      
+      // Calculate Normalized Device Coordinates (NDC) for center of card
       const ndcX = ((rect.left + rect.width / 2) / viewportWidth) * 2 - 1;
       const ndcY = -(((rect.top + rect.height / 2) / viewportHeight) * 2 - 1);
 
-      const targetZ = -2;
+      const targetZ = -2; // Distance from camera
       const vector = new this.THREE.Vector3(ndcX, ndcY, 0);
       vector.unproject(this.camera);
 
@@ -135,133 +147,115 @@ export class StarManager {
   }
 
   animateStarsToCards() {
-    if (!this.starField || !this.starOriginalPositions || this.starAnimationState.active) {
-      return;
-    }
+    if (!this.starField) return;
 
-    // Hide cards initially
+    // Hide cards initially (they will fade in)
     const cards = document.querySelectorAll('#features .card');
-    cards.forEach((card) => {
-      card.style.transition = 'none';
-      card.style.opacity = '0';
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.pointerEvents = 'none';
     });
 
-    this.starAnimationState.active = true;
-    this.starAnimationState.startTime = performance.now();
-    this.starAnimationState.positionsUpdated = false;
+    // 1. Calculate Targets
+    const cardPositions = this.getCardPositions();
+    if (cardPositions.length === 0) return;
 
-    const initialPositions = this.getCardPositions();
-    if (initialPositions.length === 0) {
-      this.starAnimationState.active = false;
-      return;
-    }
+    // 2. Update GPU Buffer
+    this.updateTargetBuffer(cardPositions);
 
-    const positions = this.starField.geometry.attributes.position.array;
-    const starCount = positions.length / 3;
-    this.starTargetPositions = new Float32Array(starCount * 3);
+    // 3. Start Transition to 1.0 (Cards)
+    this.startTransition(1.0);
 
-    const calculateTargets = (cardPositions) => {
-      const cfg = CONFIG.STARS.ANIMATION;
-      for (let i = 0; i < starCount; i++) {
-        const i3 = i * 3;
-        const targetCard = cardPositions[i % cardPositions.length];
-
-        this.starTargetPositions[i3] = targetCard.x + (Math.random() - 0.5) * cfg.SPREAD_XY;
-        this.starTargetPositions[i3 + 1] = targetCard.y + (Math.random() - 0.5) * cfg.SPREAD_XY;
-        this.starTargetPositions[i3 + 2] = targetCard.z + (Math.random() - 0.5) * cfg.SPREAD_Z;
-      }
-    };
-
-    calculateTargets(initialPositions);
-
-    // Update positions after camera stabilizes
+    // Optional: Re-calculate once camera settled for precision
     setTimeout(() => {
-      if (this.starAnimationState.active && !this.starAnimationState.positionsUpdated) {
-        const updatedPositions = this.getCardPositions();
-        if (updatedPositions.length > 0) {
-          calculateTargets(updatedPositions);
-          this.starAnimationState.positionsUpdated = true;
+        if (this.transition.targetValue === 1.0) {
+            const refinedPositions = this.getCardPositions();
+            if (refinedPositions.length > 0) this.updateTargetBuffer(refinedPositions);
         }
-      }
     }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY);
-
-    this.animateStarTransformation(cards);
-  }
-
-  animateStarTransformation(cards) {
-    const cfg = CONFIG.STARS.ANIMATION;
-
-    const animate = () => {
-      if (!this.starAnimationState.active || !this.starField || !this.starTargetPositions) {
-        this.starAnimationState.active = false;
-        return;
-      }
-
-      const elapsed = performance.now() - this.starAnimationState.startTime;
-      const progress = Math.min(elapsed / cfg.DURATION, 1);
-      const eased = this.easeInOutCubic(progress);
-
-      const positions = this.starField.geometry.attributes.position.array;
-      const starCount = positions.length / 3;
-
-      for (let i = 0; i < starCount; i++) {
-        const i3 = i * 3;
-        const targetX =
-          this.starOriginalPositions[i3] +
-          (this.starTargetPositions[i3] - this.starOriginalPositions[i3]) * eased;
-        const targetY =
-          this.starOriginalPositions[i3 + 1] +
-          (this.starTargetPositions[i3 + 1] - this.starOriginalPositions[i3 + 1]) * eased;
-        const targetZ =
-          this.starOriginalPositions[i3 + 2] +
-          (this.starTargetPositions[i3 + 2] - this.starOriginalPositions[i3 + 2]) * eased;
-
-        positions[i3] += (targetX - positions[i3]) * cfg.LERP_FACTOR;
-        positions[i3 + 1] += (targetY - positions[i3 + 1]) * cfg.LERP_FACTOR;
-        positions[i3 + 2] += (targetZ - positions[i3 + 2]) * cfg.LERP_FACTOR;
-      }
-
-      this.starField.geometry.attributes.position.needsUpdate = true;
-
-      // Fade in cards
-      if (progress >= cfg.CARD_FADE_START && progress <= cfg.CARD_FADE_END) {
-        const fadeProgress =
-          (progress - cfg.CARD_FADE_START) / (cfg.CARD_FADE_END - cfg.CARD_FADE_START);
-        const cardOpacity = this.easeInOutCubic(fadeProgress);
-        cards.forEach((card) => (card.style.opacity = cardOpacity.toString()));
-      } else if (progress > cfg.CARD_FADE_END) {
-        cards.forEach((card) => (card.style.opacity = '1'));
-      }
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        this.starAnimationState.active = false;
-        cards.forEach((card) => (card.style.transition = ''));
-        log.info('Star transformation complete');
-      }
-    };
-
-    animate();
   }
 
   resetStarsToOriginal() {
-    if (!this.starField || !this.starOriginalPositions) return;
+    if (!this.starField) return;
+    
+    // Start Transition to 0.0 (Sphere)
+    this.startTransition(0.0);
+  }
 
-    this.starAnimationState.active = false;
-    this.starAnimationState.positionsUpdated = false;
+  updateTargetBuffer(cardPositions) {
+    const attr = this.starField.geometry.attributes.aTargetPosition;
+    const array = attr.array;
+    const count = array.length / 3;
+    const cfg = CONFIG.STARS.ANIMATION;
 
-    const cards = document.querySelectorAll('#features .card');
-    cards.forEach((card) => {
-      card.style.opacity = '0';
-      card.style.transition = 'opacity 0.5s ease';
-    });
+    for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        const target = cardPositions[i % cardPositions.length];
+        
+        // Add spread to form a cloud around the card
+        array[i3] = target.x + (Math.random() - 0.5) * cfg.SPREAD_XY;
+        array[i3 + 1] = target.y + (Math.random() - 0.5) * cfg.SPREAD_XY;
+        array[i3 + 2] = target.z + (Math.random() - 0.5) * cfg.SPREAD_Z;
+    }
+    
+    attr.needsUpdate = true;
+  }
 
-    const positions = this.starField.geometry.attributes.position.array;
-    positions.set(this.starOriginalPositions);
-    this.starField.geometry.attributes.position.needsUpdate = true;
+  startTransition(targetValue) {
+      const current = this.starField.material.uniforms.uTransition.value;
+      if (current === targetValue) return;
 
-    this.starTargetPositions = null;
+      this.transition.active = true;
+      this.transition.startTime = performance.now();
+      this.transition.startValue = current;
+      this.transition.targetValue = targetValue;
+
+      this.animateTransitionLoop();
+  }
+
+  animateTransitionLoop() {
+      if (!this.transition.active) return;
+
+      const now = performance.now();
+      const elapsed = now - this.transition.startTime;
+      let progress = elapsed / this.transition.duration;
+
+      if (progress >= 1) {
+          progress = 1;
+          this.transition.active = false;
+      }
+
+      const eased = this.easeInOutCubic(progress);
+      
+      // Interpolate uniform
+      const val = this.transition.startValue + (this.transition.targetValue - this.transition.startValue) * eased;
+      this.starField.material.uniforms.uTransition.value = val;
+
+      // Sync DOM Cards Opacity
+      this.updateCardOpacity(val);
+
+      if (this.transition.active) {
+          requestAnimationFrame(() => this.animateTransitionLoop());
+      }
+  }
+
+  updateCardOpacity(transitionValue) {
+      // Logic: Fade in cards when stars are almost there
+      const cfg = CONFIG.STARS.ANIMATION;
+      // If going to cards (1.0), fade in. If going to sphere (0.0), fade out.
+      // We assume transitionValue 0->1 maps to sequence.
+      
+      let opacity = 0;
+      if (transitionValue > cfg.CARD_FADE_START) {
+          opacity = (transitionValue - cfg.CARD_FADE_START) / (cfg.CARD_FADE_END - cfg.CARD_FADE_START);
+          opacity = Math.min(Math.max(opacity, 0), 1);
+      }
+
+      const cards = document.querySelectorAll('#features .card');
+      cards.forEach(card => {
+          card.style.opacity = opacity.toString();
+          card.style.pointerEvents = opacity > 0.8 ? 'auto' : 'none';
+      });
   }
 
   easeInOutCubic(t) {

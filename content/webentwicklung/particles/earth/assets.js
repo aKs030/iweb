@@ -4,14 +4,12 @@ import { createLogger } from '../../shared-utilities.js';
 const log = createLogger('EarthAssets');
 
 export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
-  // Use passed loadingManager or fallback to a new one (though centralized is better)
+  // Use passed loadingManager or fallback to a new one
   const manager = loadingManager || new THREE.LoadingManager();
   const textureLoader = new THREE.TextureLoader(manager);
 
   let dayTexture, nightTexture, normalTexture, bumpTexture;
   try {
-    // We use Promise.all to trigger all requests parallelly,
-    // but the loadingManager will track the progress events.
     [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
@@ -49,10 +47,13 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0
   });
 
+  // OPTIMIZATION: Reduce segments on mobile
+  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+
   const earthGeometry = new THREE.SphereGeometry(
     CONFIG.EARTH.RADIUS,
-    CONFIG.EARTH.SEGMENTS,
-    CONFIG.EARTH.SEGMENTS
+    segments,
+    segments
   );
   const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
   earthMesh.position.set(0, -6.0, 0);
@@ -68,7 +69,6 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
 }
 
 export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
-  // Pass manager to loader
   const textureLoader = new THREE.TextureLoader(loadingManager);
 
   const [moonTexture, moonBumpTexture] = await Promise.all([
@@ -115,8 +115,7 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
   return moonLOD;
 }
 
-export async function createCloudLayer(THREE, renderer, loadingManager) {
-  // Pass manager to loader
+export async function createCloudLayer(THREE, renderer, loadingManager, isMobileDevice) {
   const textureLoader = new THREE.TextureLoader(loadingManager);
   try {
     const cloudTexture = await textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.CLOUDS);
@@ -133,10 +132,13 @@ export async function createCloudLayer(THREE, renderer, loadingManager) {
       side: THREE.DoubleSide
     });
 
+    // OPTIMIZATION: Use same segment reduction for clouds
+    const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+
     const cloudGeometry = new THREE.SphereGeometry(
       CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE,
-      CONFIG.EARTH.SEGMENTS,
-      CONFIG.EARTH.SEGMENTS
+      segments,
+      segments
     );
     return new THREE.Mesh(cloudGeometry, cloudMaterial);
   } catch (error) {

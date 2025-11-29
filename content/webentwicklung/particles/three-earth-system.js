@@ -1,7 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 9.1.0 - Added real loading progress
+ * @version 9.2.0 - Added Page Visibility API support & Mobile Optimizations
  */
 
 import { createLogger, getElementById, onResize, TimerManager } from '../shared-utilities.js';
@@ -62,7 +62,7 @@ const ThreeEarthManager = (() => {
     }
 
     try {
-      log.info('Initializing Three.js Earth System v9.1.0 (Modular)');
+      log.info('Initializing Three.js Earth System v9.2.0 (Modular)');
       registerParticleSystem('three-earth', { type: 'three-earth' });
 
       THREE_INSTANCE = await loadThreeJS();
@@ -106,7 +106,7 @@ const ThreeEarthManager = (() => {
       const [earthAssets, moonLOD, cloudObj] = await Promise.all([
         createEarthSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
         createMoonSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
-        createCloudLayer(THREE_INSTANCE, renderer, loadingManager)
+        createCloudLayer(THREE_INSTANCE, renderer, loadingManager, isMobileDevice)
       ]);
 
       earthMesh = earthAssets.earthMesh;
@@ -122,7 +122,7 @@ const ThreeEarthManager = (() => {
         scene.add(cloudMesh);
       }
 
-      const atmosphereMesh = createAtmosphere(THREE_INSTANCE);
+      const atmosphereMesh = createAtmosphere(THREE_INSTANCE, isMobileDevice);
       earthMesh.add(atmosphereMesh);
 
       // Managers
@@ -158,6 +158,9 @@ const ThreeEarthManager = (() => {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
+
+    // Removing Visibility Listener
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
 
     performanceMonitor?.cleanup();
     shootingStarManager?.cleanup();
@@ -237,7 +240,9 @@ const ThreeEarthManager = (() => {
 
 function setupStarParallax(starField) {
   const parallaxHandler = (progress) => {
-    if (!starField || (starManager && starManager.starAnimationState.active)) return;
+    // FIX: Check if starManager exists and has properties before accessing
+    if (!starField || !starManager || (starManager.transition && starManager.transition.active)) return;
+    
     starField.rotation.y = progress * Math.PI * 0.2;
     starField.position.z = Math.sin(progress * Math.PI) * 15;
   };
@@ -375,10 +380,28 @@ function setupUserControls(container) {
   );
 }
 
+// Global Animation Loop Reference
+let animate; 
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+      log.debug('Tab hidden: paused animation loop');
+    }
+  } else {
+    if (!animationFrameId && animate) {
+      animate();
+      log.debug('Tab visible: resumed animation loop');
+    }
+  }
+}
+
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
 
-  function animate() {
+  animate = () => {
     animationFrameId = requestAnimationFrame(animate);
     frameCount++;
     const elapsedTime = clock.getElapsedTime();
@@ -404,48 +427,51 @@ function startAnimationLoop() {
     if (performanceMonitor) performanceMonitor.update();
 
     renderer.render(scene, camera);
-  }
+  };
 
-  function updateObjectTransforms() {
-    if (!earthMesh) return;
-
-    if (earthMesh.userData.targetPosition) {
-      earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04);
-    }
-    if (earthMesh.userData.targetScale) {
-      const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
-      if (Math.abs(scaleDiff) > 0.001) {
-        const newScale = earthMesh.scale.x + scaleDiff * 0.06;
-        earthMesh.scale.set(newScale, newScale, newScale);
-      }
-    }
-    if (earthMesh.userData.targetRotation !== undefined) {
-      const rotDiff = earthMesh.userData.targetRotation - earthMesh.rotation.y;
-      if (Math.abs(rotDiff) > 0.001) {
-        earthMesh.rotation.y += rotDiff * 0.06;
-      }
-    }
-
-    if (cloudMesh && earthMesh) {
-      cloudMesh.position.copy(earthMesh.position);
-      cloudMesh.scale.copy(earthMesh.scale);
-    }
-
-    if (moonMesh) {
-      if (moonMesh.userData.targetPosition) {
-        moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04);
-      }
-      if (moonMesh.userData.targetScale) {
-        const moonScaleDiff = moonMesh.userData.targetScale - moonMesh.scale.x;
-        if (Math.abs(moonScaleDiff) > 0.001) {
-          const newMoonScale = moonMesh.scale.x + moonScaleDiff * 0.06;
-          moonMesh.scale.set(newMoonScale, newMoonScale, newMoonScale);
-        }
-      }
-    }
-  }
+  // Add listener for Page Visibility API
+  document.addEventListener('visibilitychange', handleVisibilityChange);
 
   animate();
+}
+
+function updateObjectTransforms() {
+  if (!earthMesh) return;
+
+  if (earthMesh.userData.targetPosition) {
+    earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04);
+  }
+  if (earthMesh.userData.targetScale) {
+    const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
+    if (Math.abs(scaleDiff) > 0.001) {
+      const newScale = earthMesh.scale.x + scaleDiff * 0.06;
+      earthMesh.scale.set(newScale, newScale, newScale);
+    }
+  }
+  if (earthMesh.userData.targetRotation !== undefined) {
+    const rotDiff = earthMesh.userData.targetRotation - earthMesh.rotation.y;
+    if (Math.abs(rotDiff) > 0.001) {
+      earthMesh.rotation.y += rotDiff * 0.06;
+    }
+  }
+
+  if (cloudMesh && earthMesh) {
+    cloudMesh.position.copy(earthMesh.position);
+    cloudMesh.scale.copy(earthMesh.scale);
+  }
+
+  if (moonMesh) {
+    if (moonMesh.userData.targetPosition) {
+      moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04);
+    }
+    if (moonMesh.userData.targetScale) {
+      const moonScaleDiff = moonMesh.userData.targetScale - moonMesh.scale.x;
+      if (Math.abs(moonScaleDiff) > 0.001) {
+        const newMoonScale = moonMesh.scale.x + moonScaleDiff * 0.06;
+        moonMesh.scale.set(newMoonScale, newMoonScale, newMoonScale);
+      }
+    }
+  }
 }
 
 function applyQualitySettings() {
