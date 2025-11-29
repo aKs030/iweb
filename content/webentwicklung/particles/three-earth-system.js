@@ -20,7 +20,12 @@ import { setupScene, setupLighting, createAtmosphere } from './earth/scene.js';
 import { createEarthSystem, createMoonSystem, createCloudLayer } from './earth/assets.js';
 import { CameraManager } from './earth/camera.js';
 import { StarManager, ShootingStarManager } from './earth/stars.js';
-import { showLoadingState, hideLoadingState, showErrorState, PerformanceMonitor } from './earth/ui.js';
+import {
+  showLoadingState,
+  hideLoadingState,
+  showErrorState,
+  PerformanceMonitor
+} from './earth/ui.js';
 
 const log = createLogger('ThreeEarthSystem');
 const earthTimers = new TimerManager();
@@ -147,14 +152,14 @@ const ThreeEarthManager = (() => {
 
     if (scene) {
       scene.traverse((obj) => {
-          if (obj.geometry) obj.geometry.dispose();
-          if (obj.material) {
-              if (Array.isArray(obj.material)) {
-                  obj.material.forEach(m => disposeMaterial(m));
-              } else {
-                  disposeMaterial(obj.material);
-              }
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach((m) => disposeMaterial(m));
+          } else {
+            disposeMaterial(obj.material);
           }
+        }
       });
       while (scene.children.length > 0) {
         scene.remove(scene.children[0]);
@@ -204,9 +209,9 @@ const ThreeEarthManager = (() => {
       log.error('Emergency cleanup failed:', e);
     }
     showErrorState(container, error, () => {
-        // Retry logic handled by UI helper but requires re-init call
-        cleanup();
-        initThreeEarth();
+      // Retry logic handled by UI helper but requires re-init call
+      cleanup();
+      initThreeEarth();
     });
   }
 
@@ -216,12 +221,12 @@ const ThreeEarthManager = (() => {
 // ===== Helpers =====
 
 function setupStarParallax(starField) {
-    const parallaxHandler = (progress) => {
-        if (!starField || (starManager && starManager.starAnimationState.active)) return;
-        starField.rotation.y = progress * Math.PI * 0.2;
-        starField.position.z = Math.sin(progress * Math.PI) * 15;
-    };
-    sharedParallaxManager.addHandler(parallaxHandler, 'three-earth-stars');
+  const parallaxHandler = (progress) => {
+    if (!starField || (starManager && starManager.starAnimationState.active)) return;
+    starField.rotation.y = progress * Math.PI * 0.2;
+    starField.position.z = Math.sin(progress * Math.PI) * 15;
+  };
+  sharedParallaxManager.addHandler(parallaxHandler, 'three-earth-stars');
 }
 
 function setupSectionDetection() {
@@ -262,7 +267,9 @@ function setupSectionDetection() {
             starManager.resetStarsToOriginal();
           }
 
-          document.querySelector('.three-earth-container')?.setAttribute('data-section', newSection);
+          document
+            .querySelector('.three-earth-container')
+            ?.setAttribute('data-section', newSection);
         }
       }
     },
@@ -343,7 +350,7 @@ function updateEarthForSection(sectionName, options = {}) {
 
 function setupUserControls(container) {
   const onWheel = (e) => {
-      if (cameraManager) cameraManager.handleWheel(e);
+    if (cameraManager) cameraManager.handleWheel(e);
   };
   container.addEventListener('wheel', onWheel, { passive: true });
   sharedCleanupManager.addCleanupFunction(
@@ -427,9 +434,9 @@ function startAnimationLoop() {
 }
 
 function applyQualitySettings() {
-    const level = CONFIG.QUALITY_LEVELS[currentQualityLevel];
-    if (cloudMesh) cloudMesh.visible = level.cloudLayer;
-    if (shootingStarManager) shootingStarManager.disabled = !level.meteorShowers;
+  const level = CONFIG.QUALITY_LEVELS[currentQualityLevel];
+  if (cloudMesh) cloudMesh.visible = level.cloudLayer;
+  if (shootingStarManager) shootingStarManager.disabled = !level.meteorShowers;
 }
 
 function setupResizeHandler() {

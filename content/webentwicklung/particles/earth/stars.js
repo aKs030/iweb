@@ -207,7 +207,8 @@ export class StarManager {
       for (let i = 0; i < starCount; i++) {
         const i3 = i * 3;
         const targetX =
-          this.starOriginalPositions[i3] + (this.starTargetPositions[i3] - this.starOriginalPositions[i3]) * eased;
+          this.starOriginalPositions[i3] +
+          (this.starTargetPositions[i3] - this.starOriginalPositions[i3]) * eased;
         const targetY =
           this.starOriginalPositions[i3 + 1] +
           (this.starTargetPositions[i3 + 1] - this.starOriginalPositions[i3 + 1]) * eased;
@@ -268,9 +269,9 @@ export class StarManager {
   }
 
   update(elapsedTime) {
-     if (this.starField) {
-         this.starField.material.uniforms.time.value = elapsedTime;
-     }
+    if (this.starField) {
+      this.starField.material.uniforms.time.value = elapsedTime;
+    }
   }
 }
 

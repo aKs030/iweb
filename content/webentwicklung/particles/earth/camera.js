@@ -100,15 +100,15 @@ export class CameraManager {
   }
 
   handleWheel(e) {
-      this.mouseState.zoom -= e.deltaY * 0.01;
-      this.mouseState.zoom = Math.max(
-        CONFIG.CAMERA.ZOOM_MIN,
-        Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom)
-      );
+    this.mouseState.zoom -= e.deltaY * 0.01;
+    this.mouseState.zoom = Math.max(
+      CONFIG.CAMERA.ZOOM_MIN,
+      Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom)
+    );
   }
 
   setTargetOrbitAngle(angle) {
-      this.targetOrbitAngle = angle;
+    this.targetOrbitAngle = angle;
   }
 
   cleanup() {
