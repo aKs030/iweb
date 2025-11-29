@@ -9,7 +9,7 @@ test.describe('Shared Utilities', () => {
 
   test('should shuffle array correctly', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { shuffle } = await import('/content/webentwicklung/shared-utilities.js');
+      const { shuffle } = await import('/content/shared-utilities.js');
       const input = [1, 2, 3, 4, 5];
       const shuffled = shuffle([...input]);
       return {
@@ -25,7 +25,7 @@ test.describe('Shared Utilities', () => {
 
   test('should generate randomInt within range', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { randomInt } = await import('/content/webentwicklung/shared-utilities.js');
+      const { randomInt } = await import('/content/shared-utilities.js');
       const min = 5;
       const max = 10;
       const results = [];
@@ -45,7 +45,7 @@ test.describe('Shared Utilities', () => {
 
   test('TimerManager should handle timeouts', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { TimerManager } = await import('/content/webentwicklung/shared-utilities.js');
+      const { TimerManager } = await import('/content/shared-utilities.js');
       const manager = new TimerManager();
       let fired = false;
 
@@ -63,7 +63,7 @@ test.describe('Shared Utilities', () => {
 
   test('TimerManager should clear timeouts', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { TimerManager } = await import('/content/webentwicklung/shared-utilities.js');
+      const { TimerManager } = await import('/content/shared-utilities.js');
       const manager = new TimerManager();
       let fired = false;
 
@@ -83,7 +83,7 @@ test.describe('Shared Utilities', () => {
 
   test('TimerManager should clear all timers', async ({ page }) => {
      const result = await page.evaluate(async () => {
-      const { TimerManager } = await import('/content/webentwicklung/shared-utilities.js');
+      const { TimerManager } = await import('/content/shared-utilities.js');
       const manager = new TimerManager();
       let count = 0;
 
@@ -106,7 +106,7 @@ test.describe('Shared Utilities', () => {
 
   test('Events system should dispatch and listen', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { fire, on } = await import('/content/webentwicklung/shared-utilities.js');
+      const { fire, on } = await import('/content/shared-utilities.js');
       let capturedDetail = null;
 
       const cleanup = on('test-event', (e) => {
@@ -128,7 +128,7 @@ test.describe('Shared Utilities', () => {
     page.on('console', msg => logs.push({ type: msg.type(), text: msg.text() }));
 
     await page.evaluate(async () => {
-      const { createLogger } = await import('/content/webentwicklung/shared-utilities.js');
+      const { createLogger } = await import('/content/shared-utilities.js');
       const logger = createLogger('TestDefault');
       logger.info('Should not appear');
       logger.warn('Should appear');
@@ -153,7 +153,7 @@ test.describe('Shared Utilities', () => {
       // Re-import to trigger initialization logic?
       // ES modules are cached.
       // But page.goto resets the context, so import will run fresh in the new page context.
-      const { createLogger } = await import('/content/webentwicklung/shared-utilities.js');
+      const { createLogger } = await import('/content/shared-utilities.js');
       const logger = createLogger('TestDebug');
       logger.debug('Debug message');
     });

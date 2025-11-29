@@ -6,7 +6,7 @@ test('three-earth detectDeviceCapabilities & optimised config', async ({ page })
 
   const res = await page.evaluate(async () => {
     try {
-      const mod = await import('/content/webentwicklung/particles/three-earth-system.js');
+      const mod = await import('/content/particles/three-earth-system.js');
       const caps = await mod.detectDeviceCapabilities();
       const config = await mod.getOptimizedConfig(caps);
       return { ok: true, caps: Object.keys(caps || {}), configKeys: Object.keys(config || {}) };

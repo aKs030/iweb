@@ -186,43 +186,41 @@
     <!-- Load main CSS files non-blocking with media="print" + onload --- fallback using <noscript> -->
     <link
       rel="stylesheet"
-      href="/content/webentwicklung/root.css"
+      href="/content/root.css"
       media="print"
       onload="this.media='all';this.onload=null;"
     />
-    <noscript><link rel="stylesheet" href="/content/webentwicklung/root.css" /></noscript>
+    <noscript><link rel="stylesheet" href="/content/root.css" /></noscript>
 
     <link
       rel="stylesheet"
-      href="/content/webentwicklung/index.css"
+      href="/content/index.css"
       media="print"
       onload="this.media='all';this.onload=null;"
     />
-    <noscript><link rel="stylesheet" href="/content/webentwicklung/index.css" /></noscript>
+    <noscript><link rel="stylesheet" href="/content/index.css" /></noscript>
 
     <!-- Critical component CSS that should load synchronously (Hero, TypeWriter) -->
     <link rel="stylesheet" href="/pages/home/hero.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/TypeWriter/typewriter.css" />
+    <link rel="stylesheet" href="/content/TypeWriter/typewriter.css" />
 
     <!-- Component CSS -->
-    <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
+    <link rel="stylesheet" href="/content/menu/menu.css" />
+    <link rel="stylesheet" href="/content/footer/footer.css" />
+    <link rel="stylesheet" href="/content/footer/day-night-artwork.css" />
+    <link rel="stylesheet" href="/content/footer/cookie-consent.css" />
 
     <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
     <link
       rel="stylesheet"
-      href="/content/webentwicklung/particles/three-earth.css"
+      href="/content/particles/three-earth.css"
       media="print"
       onload="this.media='all';this.onload=null;"
     />
-    <noscript
-      ><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css"
-    /></noscript>
+    <noscript><link rel="stylesheet" href="/content/particles/three-earth.css" /></noscript>
 
     <!-- Main application script -->
-    <script type="module" src="/content/webentwicklung/main.js"></script>
+    <script type="module" src="/content/main.js"></script>
 
     <!-- Deferred Styles (Below-the-Fold) -->
     <link
@@ -440,7 +438,7 @@
     </main>
 
     <!-- Footer container -->
-    <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
-    <script src="/content/webentwicklung/footer/footer-complete.js" type="module"></script>
+    <div id="footer-container" data-footer-src="/content/footer/footer.html"></div>
+    <script src="/content/footer/footer-complete.js" type="module"></script>
   </body>
 </html>

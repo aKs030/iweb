@@ -9,7 +9,7 @@ test.describe('TypeWriter', () => {
 
   test('should type text correctly', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { TypeWriter } = await import('/content/webentwicklung/TypeWriter/TypeWriter.js');
+      const { TypeWriter } = await import('/content/TypeWriter/TypeWriter.js');
 
       const textEl = document.createElement('span');
       const authorEl = document.createElement('span');
@@ -45,7 +45,7 @@ test.describe('TypeWriter', () => {
 
   test('should delete text and loop/stop', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { TypeWriter } = await import('/content/webentwicklung/TypeWriter/TypeWriter.js');
+      const { TypeWriter } = await import('/content/TypeWriter/TypeWriter.js');
 
       const textEl = document.createElement('span');
       const authorEl = document.createElement('span');
@@ -89,7 +89,7 @@ test.describe('TypeWriter', () => {
 
   test('should dispatch hero:typingEnd event', async ({ page }) => {
     const eventFired = await page.evaluate(async () => {
-      const { TypeWriter } = await import('/content/webentwicklung/TypeWriter/TypeWriter.js');
+      const { TypeWriter } = await import('/content/TypeWriter/TypeWriter.js');
 
       const textEl = document.createElement('span');
       const authorEl = document.createElement('span');

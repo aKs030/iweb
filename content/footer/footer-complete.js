@@ -738,7 +738,7 @@ class FooterLoader {
     }
   }
   async loadContent(container) {
-    const src = container.dataset.footerSrc || '/content/webentwicklung/footer/footer.html';
+    const src = container.dataset.footerSrc || '/content/footer/footer.html';
     log.debug(`Loading footer: ${src}`);
     const response = await fetch(src);
     if (!response.ok) {

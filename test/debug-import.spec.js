@@ -11,7 +11,7 @@ test('debug import shared utilities', async ({ page }) => {
 
   const result = await page.evaluate(async () => {
     try {
-      const mod = await import('/content/webentwicklung/shared-utilities.js');
+      const mod = await import('/content/shared-utilities.js');
       return { ok: true, keys: Object.keys(mod) };
     } catch (err) {
       return { ok: false, error: String(err) };
