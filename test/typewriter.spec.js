@@ -15,7 +15,7 @@ test.describe('TypeWriter', () => {
       const authorEl = document.createElement('span');
       const quotes = [{ text: 'Hello', author: 'World' }];
 
-      const tw = new TypeWriter({
+      const _tw = new TypeWriter({
         textEl,
         authorEl,
         quotes,
@@ -51,7 +51,7 @@ test.describe('TypeWriter', () => {
       const authorEl = document.createElement('span');
       const quotes = [{ text: 'A', author: 'B' }];
 
-      const tw = new TypeWriter({
+      const _tw = new TypeWriter({
         textEl,
         authorEl,
         quotes,
@@ -100,7 +100,7 @@ test.describe('TypeWriter', () => {
         if (e.detail.text === 'Hi') fired = true;
       });
 
-      const tw = new TypeWriter({
+      const _tw = new TypeWriter({
         textEl,
         authorEl,
         quotes,

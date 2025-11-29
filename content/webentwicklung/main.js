@@ -521,15 +521,15 @@ document.addEventListener(
           const { ReconnectingWebSocket } = mod;
           const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
           rws.onopen = () => {
-            console.info('ReconnectingWebSocket open (dev test)');
+            log.info('ReconnectingWebSocket open (dev test)');
             try { rws.send('dev:hello'); } catch (e) { /* ignore */ }
           };
-          rws.onmessage = (e) => console.debug('[dev-ws]', e.data);
-          rws.onclose = (ev) => console.info('ReconnectingWebSocket closed', ev);
-          rws.onerror = (err) => console.warn('ReconnectingWebSocket error', err);
+          rws.onmessage = (e) => log.debug('[dev-ws]', e.data);
+          rws.onclose = (ev) => log.info('ReconnectingWebSocket closed', ev);
+          rws.onerror = (err) => log.warn('ReconnectingWebSocket error', err);
           // Attach for debugging
           if (ENV.debug) window.__devRws = rws;
-        }).catch((e) => console.warn('Failed to import ReconnectingWebSocket', e));
+        }).catch((e) => log.warn('Failed to import ReconnectingWebSocket', e));
       }
     }
   },
