@@ -1,5 +1,5 @@
 (async function () {
-  const { createLogger } = await import('../../content/webentwicklung/shared-utilities.js');
+  const { createLogger } = await import('../../content/shared-utilities.js');
   const logger = createLogger('AboutModule');
   const host = document.querySelector('section#about[data-about-src]');
   if (!host) return;

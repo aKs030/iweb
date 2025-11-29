@@ -10,7 +10,7 @@
   src:
     local('Inter Variable'),
     local('Inter'),
-    url('/content/webentwicklung/fonts/InterVariable.woff2') format('woff2-variations');
+    url('/content/fonts/InterVariable.woff2') format('woff2-variations');
   unicode-range: U+0000-00FF;
 }
 

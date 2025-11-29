@@ -26,11 +26,11 @@
     <link rel="apple-touch-icon" sizes="192x192" href="/content/img/icons/icon-192.png" />
 
     <!-- Global CSS -->
-    <link rel="stylesheet" href="/content/webentwicklung/root.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
+    <link rel="stylesheet" href="/content/root.css" />
+    <link rel="stylesheet" href="/content/menu/menu.css" />
+    <link rel="stylesheet" href="/content/footer/footer.css" />
+    <link rel="stylesheet" href="/content/footer/day-night-artwork.css" />
+    <link rel="stylesheet" href="/content/footer/cookie-consent.css" />
 
     <!-- Three Earth CSS (Loaded dynamically only when the Three Earth system initializes) -->
 
@@ -39,7 +39,7 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
     <!-- Main JS -->
-    <script type="module" src="/content/webentwicklung/main.js"></script>
+    <script type="module" src="/content/main.js"></script>
 
     <style>
         :root {
@@ -211,7 +211,7 @@
     <!-- Optional footer trigger zone (used by footer-complete.js to manage expand/collapse behavior) -->
     <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
     <!-- Footer -->
-    <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
+    <div id="footer-container" data-footer-src="/content/footer/footer.html"></div>
 
     <script>
         const e = React.createElement;
@@ -390,10 +390,10 @@
 
     <!-- Three.js Logic -->
     <script type="module">
-        import { initThreeEarth, EarthSystemAPI } from '/content/webentwicklung/particles/three-earth-system.js';
+        import { initThreeEarth, EarthSystemAPI } from '/content/particles/three-earth-system.js';
 
         async function ensureThreeEarthStyles() {
-            const href = '/content/webentwicklung/particles/three-earth.css';
+            const href = '/content/particles/three-earth.css';
             if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
             return new Promise((resolve, reject) => {
                 // Use the non-blocking media="print" pattern instead of preload to avoid browser
@@ -440,6 +440,6 @@
         });
     </script>
 
-    <script src="/content/webentwicklung/footer/footer-complete.js" type="module"></script>
+    <script src="/content/footer/footer-complete.js" type="module"></script>
   </body>
 </html>

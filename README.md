@@ -47,7 +47,7 @@ open http://127.0.0.1:8081
 open "http://127.0.0.1:8081/?ws-test"
 ```
 
-Die WebSocket-Reconnect-Logik verwendet eine helper-Klasse unter `content/webentwicklung/shared/reconnecting-websocket.js`.
+Die WebSocket-Reconnect-Logik verwendet eine helper-Klasse unter `content/shared/reconnecting-websocket.js`.
 
 Konfigurationsdateien: `.eslintrc.json`, `.prettierrc` und `.eslintignore` wurden hinzugefügt.
 

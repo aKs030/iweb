@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_FRAGMENT_URL = 'content/webentwicklung/test-fragment.html';
-const INVALID_URL = 'content/webentwicklung/does-not-exist.html';
+const TEST_FRAGMENT_URL = 'content/test-fragment.html';
+const INVALID_URL = 'content/does-not-exist.html';
 
 test.describe('SectionLoader', () => {
   test.beforeEach(async ({ page }) => {
