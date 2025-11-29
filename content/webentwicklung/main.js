@@ -374,7 +374,10 @@ const ThreeEarthLoader = (() => {
       const ThreeEarthManager = module.default;
 
       cleanupFn = await ThreeEarthManager.initThreeEarth();
-      log.info('ThreeEarthLoader: initThreeEarth() returned cleanup function:', typeof cleanupFn === 'function');
+      log.info(
+        'ThreeEarthLoader: initThreeEarth() returned cleanup function:',
+        typeof cleanupFn === 'function'
+      );
 
       if (typeof cleanupFn === 'function') {
         window.__threeEarthCleanup = cleanupFn;
