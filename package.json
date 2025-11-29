@@ -10,24 +10,27 @@
     "format": "prettier --write .",
     "prepare": "husky install",
     "test:headed": "playwright test --headed",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "serve": "http-server ./ -p 8081",
+    "ws-server": "node scripts/ws-test-server.js",
+    "dev": "concurrently \"npm run serve\" \"npm run ws-server\""
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "eslint": "^8.47.0",
     "http-server": "^14.1.1",
-    "prettier": "^3.2.2",
     "husky": "^8.0.3",
-    "lint-staged": "^13.2.1"
+    "lint-staged": "^13.2.1",
+    "prettier": "^3.2.2",
+    "ws": "^8.18.3",
+    "concurrently": "^8.2.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ],
     "*.{css,scss,html,json,md}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   }
 }

@@ -43,7 +43,8 @@ let sectionObserver, animationFrameId;
 let currentSection = 'hero';
 let currentQualityLevel = 'HIGH';
 let isMobileDevice = false;
-let frameCount = 0;
+// Detected device capabilities for this session
+let deviceCapabilities = null;
 
 // ===== Main Manager =====
 
@@ -63,17 +64,39 @@ const ThreeEarthManager = (() => {
 
     try {
       log.info('Initializing Three.js Earth System v9.2.0 (Modular)');
+
+      // NEU: Device Detection & optimized config
+      try {
+        deviceCapabilities = detectDeviceCapabilities();
+        const optimizedConfig = getOptimizedConfig(deviceCapabilities);
+        log.info('Device capabilities:', deviceCapabilities);
+        log.info('Using quality preset:', deviceCapabilities.recommendedQuality);
+        // Apply optimized configuration
+        Object.assign(CONFIG, optimizedConfig);
+      } catch (e) {
+        // non-fatal: log & continue with defaults
+        log.debug('Device detection failed, using defaults', e);
+      }
       registerParticleSystem('three-earth', { type: 'three-earth' });
 
       THREE_INSTANCE = await loadThreeJS();
       showLoadingState(container, 0);
 
       // Scene Setup
-      isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
+      isMobileDevice = !!(deviceCapabilities?.isMobile) || window.matchMedia('(max-width: 768px)').matches;
       const sceneObjects = setupScene(THREE_INSTANCE, container);
       scene = sceneObjects.scene;
       camera = sceneObjects.camera;
       renderer = sceneObjects.renderer;
+
+      // Apply performance pixel ratio from CONFIG when set
+      try {
+        if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
+          renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
+        }
+      } catch (e) {
+        log.debug('Unable to set renderer pixel ratio', e);
+      }
 
       // Loading Manager Setup
       const loadingManager = new THREE_INSTANCE.LoadingManager();
@@ -238,6 +261,92 @@ const ThreeEarthManager = (() => {
 
 // ===== Helpers =====
 
+/**
+ * Detect device capabilities for runtime optimizations
+ * - Uses UA heuristics and modern APIs when available
+ */
+function detectDeviceCapabilities() {
+  try {
+    const ua = (navigator.userAgent || '').toLowerCase();
+    const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
+    const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(ua);
+    const hasSlowGPU = /mali|adreno\s?[34]|powervr sgx|intel hd/i.test(ua);
+
+    // Detect via Device Memory API and Performance.memory when available
+    const deviceMemory = navigator.deviceMemory || 0; // in GB
+    const memLimit = (performance && performance.memory && performance.memory.jsHeapSizeLimit) || 0;
+    const isLowMemory = (deviceMemory > 0 && deviceMemory < 1) || (memLimit > 0 && memLimit < 1073741824);
+
+    const cores = navigator.hardwareConcurrency || 2;
+    const isLowCores = cores <= 2;
+
+    const recommendedQuality = isLowEnd || hasSlowGPU ? 'LOW' : (isMobile ? 'MEDIUM' : 'HIGH');
+
+    return {
+      isMobile,
+      isLowEnd: isLowEnd || hasSlowGPU || isLowMemory || isLowCores,
+      cores,
+      deviceMemoryGB: deviceMemory || Math.round(memLimit / (1024 * 1024 * 1024)),
+      recommendedQuality
+    };
+  } catch (e) {
+    // Robust fallback: assume medium
+    return { isMobile: false, isLowEnd: false, cores: 2, deviceMemoryGB: 0, recommendedQuality: 'MEDIUM' };
+  }
+}
+
+/**
+ * Based on detected capabilities, return a merged CONFIG used for optimized scene creation
+ */
+function getOptimizedConfig(capabilities) {
+  const baseConfig = { ...CONFIG };
+  if (!capabilities) return baseConfig;
+
+  if (capabilities.isLowEnd) {
+    return {
+      ...baseConfig,
+      EARTH: {
+        ...baseConfig.EARTH,
+        SEGMENTS: 24,
+        SEGMENTS_MOBILE: 16
+      },
+      STARS: {
+        ...baseConfig.STARS,
+        COUNT: 1000
+      },
+      PERFORMANCE: {
+        ...baseConfig.PERFORMANCE,
+        PIXEL_RATIO: 1.0,
+        TARGET_FPS: 30
+      },
+      CLOUDS: {
+        ...baseConfig.CLOUDS,
+        OPACITY: 0
+      }
+    };
+  }
+
+  if (capabilities.isMobile) {
+    return {
+      ...baseConfig,
+      EARTH: {
+        ...baseConfig.EARTH,
+        SEGMENTS_MOBILE: 32
+      },
+      STARS: {
+        ...baseConfig.STARS,
+        COUNT: 2000
+      },
+      PERFORMANCE: {
+        ...baseConfig.PERFORMANCE,
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0)
+      }
+    };
+  }
+
+  return baseConfig;
+}
+
 function setupStarParallax(starField) {
   const parallaxHandler = (progress) => {
     // FIX: Check if starManager exists and has properties before accessing
@@ -401,29 +510,42 @@ function handleVisibilityChange() {
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
 
+  // Adaptation: frame skipping and conditional updates for low-end devices
+  const capabilities = deviceCapabilities || detectDeviceCapabilities();
+  let frameSkip = capabilities.isLowEnd ? 2 : 1; // skip every n-th frame if low-end
+  let frameCounter = 0;
+
   animate = () => {
     animationFrameId = requestAnimationFrame(animate);
-    frameCount++;
+    frameCounter++;
+
+    // Skip full update/render on low-end devices (adaptive)
+    if (frameCounter % frameSkip !== 0) return;
+
     const elapsedTime = clock.getElapsedTime();
 
-    if (cloudMesh) cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
-    if (moonMesh) moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED;
+    // Conditional rotations and updates
+    if (cloudMesh && frameCounter % 2 === 0) {
+      cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
+    }
 
-    if (starManager) starManager.update(elapsedTime);
+    if (moonMesh && frameCounter % 3 === 0) {
+      moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED;
+    }
 
-    if (earthMesh?.userData.currentMode === 'night' && frameCount % 2 === 0) {
+    if (starManager && !capabilities.isLowEnd) starManager.update(elapsedTime);
+
+    // Emissive pulsing only on medium+ devices
+    if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd && frameCounter % 2 === 0) {
       const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
-      const pulseAmount =
-        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
-        2;
+      const pulseAmount = Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
       earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
     }
 
     if (cameraManager) cameraManager.updateCameraPosition();
     updateObjectTransforms();
 
-    if (shootingStarManager) shootingStarManager.update();
+    if (shootingStarManager && !capabilities.isLowEnd) shootingStarManager.update();
     if (performanceMonitor) performanceMonitor.update();
 
     renderer.render(scene, camera);
@@ -478,6 +600,13 @@ function applyQualitySettings() {
   const level = CONFIG.QUALITY_LEVELS[currentQualityLevel];
   if (cloudMesh) cloudMesh.visible = level.cloudLayer;
   if (shootingStarManager) shootingStarManager.disabled = !level.meteorShowers;
+  try {
+    if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
+      renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
+    }
+  } catch (e) {
+    log.debug('Unable to set PIXEL_RATIO during quality apply', e);
+  }
 }
 
 function setupResizeHandler() {
@@ -516,3 +645,6 @@ export const EarthSystemAPI = {
 };
 
 export default ThreeEarthManager;
+
+// Export for testing and usage
+export { detectDeviceCapabilities, getOptimizedConfig };

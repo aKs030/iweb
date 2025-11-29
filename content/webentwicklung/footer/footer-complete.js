@@ -5,6 +5,7 @@
  */
 
 import { createLogger } from '../shared-utilities.js';
+import { a11y } from '../accessibility-manager.js';
 
 const log = createLogger('FooterSystem');
 // (duplicate constants removed)
@@ -575,11 +576,18 @@ const CookieSettings = (() => {
     setupSectionObserver(elements);
     setupButtonHandlers(elements);
     setTriggerExpanded(true);
-    const firstFocusable = elements.cookieView.querySelector(
-      'button, [href], input, select, textarea'
-    );
-    if (firstFocusable) {
-      firstFocusable.focus({ preventScroll: true });
+    // Activate a11y focus trap for the cookie view
+    try {
+      a11y?.trapFocus(elements.cookieView);
+      a11y?.announce('Cookie-Einstellungen geöffnet', { priority: 'polite' });
+    } catch (e) {
+      // Fallback to focusing first focusable if trap fails
+      const firstFocusable = elements.cookieView.querySelector(
+        'button, [href], input, select, textarea'
+      );
+      if (firstFocusable) {
+        try { firstFocusable.focus({ preventScroll: true }); } catch (err) { firstFocusable.focus(); }
+      }
     }
     log.info('Cookie settings opened');
   }
@@ -610,6 +618,12 @@ const CookieSettings = (() => {
     setTriggerExpanded(false);
     const trigger = getPrimaryTrigger();
     if (trigger) trigger.focus({ preventScroll: true });
+    try {
+      a11y?.releaseFocus();
+      a11y?.announce('Cookie-Einstellungen geschlossen', { priority: 'polite' });
+    } catch (e) {
+      /* ignored */
+    }
     log.info('Cookie settings closed');
   }
   return { open, close };
@@ -693,6 +707,18 @@ class FooterLoader {
     }
     try {
       await this.loadContent(container);
+      // Ensure minimized footer visible by default and maximized hidden
+      try {
+        const footerEl = document.getElementById('site-footer');
+        if (footerEl) {
+          const footerMin = footerEl.querySelector('.footer-minimized');
+          const footerMax = footerEl.querySelector('.footer-maximized');
+          if (footerMin) footerMin.classList.remove('footer-hidden');
+          if (footerMax) footerMax.classList.add('footer-hidden');
+        }
+      } catch (e) {
+        /* ignored */
+      }
       this.ensureDefaultCards();
       this.updateYears();
       this.setupInteractions();
@@ -922,6 +948,15 @@ class ScrollHandler {
     if (!footer || !trigger) {
       log.warn('Footer or trigger zone not found');
       return;
+    }
+    // Ensure minimized footer is visible initially and maximized is hidden
+    try {
+      const minimizedEl = footer.querySelector('.footer-minimized');
+      const maximizedEl = footer.querySelector('.footer-maximized');
+      if (minimizedEl) minimizedEl.classList.remove('footer-hidden');
+      if (maximizedEl) maximizedEl.classList.add('footer-hidden');
+    } catch (e) {
+      /* ignored - defensive: DOM may change */
     }
     this.observer = new IntersectionObserver(
       (entries) => {
