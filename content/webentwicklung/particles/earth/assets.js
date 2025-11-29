@@ -3,16 +3,15 @@ import { createLogger } from '../../shared-utilities.js';
 
 const log = createLogger('EarthAssets');
 
-export async function createEarthSystem(THREE, scene, renderer, isMobileDevice) {
-  const loadingManager = new THREE.LoadingManager();
-
-  // We can hook into loadingManager for progress if needed,
-  // but the orchestrator usually handles UI updates.
-
-  const textureLoader = new THREE.TextureLoader(loadingManager);
+export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
+  // Use passed loadingManager or fallback to a new one (though centralized is better)
+  const manager = loadingManager || new THREE.LoadingManager();
+  const textureLoader = new THREE.TextureLoader(manager);
 
   let dayTexture, nightTexture, normalTexture, bumpTexture;
   try {
+    // We use Promise.all to trigger all requests parallelly,
+    // but the loadingManager will track the progress events.
     [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
@@ -68,8 +67,9 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice) 
   return { earthMesh, dayMaterial, nightMaterial };
 }
 
-export async function createMoonSystem(THREE, scene, renderer, isMobileDevice) {
-  const textureLoader = new THREE.TextureLoader();
+export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
+  // Pass manager to loader
+  const textureLoader = new THREE.TextureLoader(loadingManager);
 
   const [moonTexture, moonBumpTexture] = await Promise.all([
     textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON).catch(() => null),
@@ -115,8 +115,9 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice) {
   return moonLOD;
 }
 
-export async function createCloudLayer(THREE, renderer) {
-  const textureLoader = new THREE.TextureLoader();
+export async function createCloudLayer(THREE, renderer, loadingManager) {
+  // Pass manager to loader
+  const textureLoader = new THREE.TextureLoader(loadingManager);
   try {
     const cloudTexture = await textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.CLOUDS);
     cloudTexture.wrapS = THREE.RepeatWrapping;
