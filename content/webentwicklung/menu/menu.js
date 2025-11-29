@@ -7,12 +7,13 @@
  * - Responsive Hamburger-Menü
  * - FontAwesome Icons und Google Fonts Integration
  * - Accessibility-optimiert mit ARIA-Attributen
- * * OPTIMIZATIONS v2.1.0:
- * - Removed polling in waitForSnapSections in favor of event listeners
- * - Improved scroll detection robustness
+ * * OPTIMIZATIONS v2.2.0:
+ * - Integration of EVENTS constants
+ * - Optimized event listener handling (passive/once)
+ * - Improved performance on scroll via RAF
  *
  * @author Abdulkerim Sesli
- * @version 2.1.0
+ * @version 2.2.0
  */
 
 // ===== Shared Utilities Import =====
@@ -20,11 +21,15 @@ import { createLogger, getElementById, EVENTS } from '../shared-utilities.js';
 
 const _log = createLogger('menu');
 
-document.addEventListener('DOMContentLoaded', () => {
+const initMenu = () => {
   const menuContainer = getElementById('menu-container');
   if (!menuContainer) {
     return;
   }
+
+  // Prevent double initialization
+  if (menuContainer.dataset.initialized === 'true') return;
+  menuContainer.dataset.initialized = 'true';
 
   menuContainer.innerHTML = getMenuHTML();
   _log.info('Menu: injected into #menu-container');
@@ -46,7 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const isMenuToggle = event.target.closest('.site-menu__toggle');
     if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
   });
-});
+};
+
+// Use shared EVENTS.DOM_READY or fallback to DOMContentLoaded
+if (document.readyState !== 'loading') {
+  initMenu();
+} else {
+  document.addEventListener('DOMContentLoaded', initMenu, { once: true });
+}
 
 function getMenuHTML() {
   return `
@@ -134,7 +146,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="#site-footer">
+          <a href="#site-footer" data-footer-trigger aria-expanded="false">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-mail"></use>
             </svg>
@@ -340,7 +352,7 @@ function extractSectionInfo(sectionId) {
 
 /**
  * Initialisiert die Scroll-Detection für dynamische Titel-Updates
- * OPTIMIZED: Verwendet Event-Listeners statt Polling
+ * OPTIMIZED: Verwendet Event-Listeners statt Polling und Events Constant
  */
 function initializeScrollDetection() {
   let snapEventListener = null;

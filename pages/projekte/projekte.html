@@ -208,6 +208,8 @@
     <!-- REACT ROOT (Main Content) -->
     <div id="root"></div>
 
+    <!-- Optional footer trigger zone (used by footer-complete.js to manage expand/collapse behavior) -->
+    <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
     <!-- Footer -->
     <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
 
@@ -394,12 +396,14 @@
             const href = '/content/webentwicklung/particles/three-earth.css';
             if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
             return new Promise((resolve, reject) => {
+                // Use the non-blocking media="print" pattern instead of preload to avoid browser
+                // warnings about unused preloads. This approach avoids render-blocking while
+                // ensuring the stylesheet is applied as soon as it's loaded.
                 const link = document.createElement('link');
-                link.rel = 'preload';
-                link.as = 'style';
+                link.rel = 'stylesheet';
                 link.href = href;
-                // Convert to stylesheet when preloaded
-                link.onload = () => { try { link.rel = 'stylesheet'; resolve(); } catch (e) { resolve(); } };
+                link.media = 'print';
+                link.onload = () => { try { link.media = 'all'; resolve(); } catch (e) { resolve(); } };
                 link.onerror = (e) => reject(e);
                 document.head.appendChild(link);
             });

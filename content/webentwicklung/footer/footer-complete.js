@@ -910,6 +910,57 @@ class FooterLoader {
     log.info(`Setup ${triggers.length} footer triggers`);
   }
 
+  setupFooterTriggersDelegated() {
+    if (this._delegatedBound) return;
+    const delegatedHandler = (event) => {
+      const trigger = event.target.closest && event.target.closest('[data-footer-trigger]');
+      if (!trigger) return;
+      // if the trigger has been bound already with element listener, ignore to avoid double-handling
+      if (trigger.dataset?.footerTriggerBound === 'true') return;
+      // Invoke the handler code path used in setupFooterTriggers
+      try {
+        // Reuse same logic as per-element handler
+        const tag = trigger.tagName.toLowerCase();
+        if (tag === 'a') {
+          const href = trigger.getAttribute('href') || '';
+          if (!href || href.startsWith('#')) {
+            event.preventDefault();
+          }
+        }
+        if (
+          window.footerScrollHandler &&
+          typeof window.footerScrollHandler.toggleExpansion === 'function'
+        ) {
+          window.footerScrollHandler.toggleExpansion(true);
+        } else {
+          const footer = document.getElementById('site-footer');
+          if (!footer) return;
+          const footerMin = footer.querySelector('.footer-minimized');
+          const footerMax = footer.querySelector('.footer-maximized');
+          footer.classList.add('footer-expanded');
+          document.body.classList.add('footer-expanded');
+          footerMin?.classList.add('footer-hidden');
+          footerMax?.classList.remove('footer-hidden');
+          try {
+            const token = ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_DEFAULT_DURATION);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport', PROGRAMMATIC_SCROLL_WATCH_TIMEOUT);
+          } catch (e) {
+            /* ignored */
+          }
+        }
+      } catch (e) {
+        log.warn('delegated footer trigger handler failed', e);
+      }
+      try { trigger.setAttribute('aria-expanded', 'true'); } catch (e) { /* ignored */ }
+    };
+
+    document.addEventListener('click', delegatedHandler);
+    this._delegatedBound = true;
+    this._delegatedHandler = delegatedHandler;
+    log.debug('Footer: delegated trigger handler bound');
+  }
+
   setupSmoothScroll() {
     const footer = document.getElementById('site-footer');
     if (!footer) return;
@@ -944,9 +995,13 @@ class ScrollHandler {
   }
   init() {
     const footer = document.getElementById('site-footer');
-    const trigger = document.getElementById('footer-trigger-zone');
+    // Ensure footer-trigger-zone exists.
+    const trigger = document.getElementById('footer-trigger-zone') || ensureFooterTriggerZone();
+
+    const quiet = isFooterQuietMode();
     if (!footer || !trigger) {
-      log.warn('Footer or trigger zone not found');
+      if (!quiet) log.warn('Footer or trigger zone not found');
+      else log.debug('Footer or trigger zone not found (quiet mode)');
       return;
     }
     // Ensure minimized footer is visible initially and maximized is hidden
@@ -964,6 +1019,17 @@ class ScrollHandler {
           if (entry.target.id === 'footer-trigger-zone') {
             const threshold = this.expanded ? this.COLLAPSE_THRESHOLD : this.EXPAND_THRESHOLD;
             const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
+            // When the page is performing a programmatic scroll (e.g. triggered by a click that
+            // opens the footer), ignore collapse events until the programmatic scroll finishes.
+            try {
+              if (!shouldExpand && typeof ProgrammaticScroll !== 'undefined' && typeof ProgrammaticScroll.hasActive === 'function' && ProgrammaticScroll.hasActive()) {
+                // debug: ignore collapse during programmatic scroll
+                log.debug('Ignoring collapse because programmatic scroll is active');
+                return;
+              }
+            } catch (e) {
+              // Defensive: window.ProgrammaticScroll may not be available
+            }
             this.toggleExpansion(shouldExpand);
           }
         });
@@ -1103,6 +1169,43 @@ class FooterResizer {
   }
 }
 
+// ===== Footer Utilities =====
+function getFooterContainer() {
+  return document.getElementById('footer-container');
+}
+
+function isFooterQuietMode() {
+  const html = document.documentElement;
+  const footerContainer = getFooterContainer();
+  const pageFlag = html?.dataset?.footerQuiet;
+  const containerFlag = footerContainer?.dataset?.footerQuiet || footerContainer?.dataset?.footerOptional;
+  const windowFlag = typeof window !== 'undefined' && window.FOOTER_QUIET;
+  // Return true if quiet mode is requested via one of these methods:
+  // 1) <html data-footer-quiet="true"> (global, per-page)
+  // 2) <div id="footer-container" data-footer-quiet="true"> (per-container)
+  // 3) window.FOOTER_QUIET = true (programmatic runtime flag)
+  return pageFlag === 'true' || containerFlag === 'true' || windowFlag === true;
+}
+
+function ensureFooterTriggerZone() {
+  let trigger = document.getElementById('footer-trigger-zone');
+  if (trigger) return trigger;
+  // If there's a footer container in DOM, insert the trigger just before the footer container
+  const footerContainer = getFooterContainer();
+  if (!footerContainer) return null;
+  try {
+    trigger = document.createElement('div');
+    trigger.id = 'footer-trigger-zone';
+    trigger.className = 'footer-trigger-zone';
+    trigger.setAttribute('aria-hidden', 'true');
+    footerContainer.parentNode.insertBefore(trigger, footerContainer);
+    log.info('Inserted missing #footer-trigger-zone automatically');
+  } catch (e) {
+    log.warn('Unable to auto-insert footer trigger zone:', e);
+  }
+  return trigger;
+}
+
 // ===== Main Footer System =====
 class FooterSystem {
   constructor() {
@@ -1117,6 +1220,8 @@ class FooterSystem {
     const loaded = await this.loader.init();
     if (loaded) {
       this.theme.initToggleButton();
+      // ensure delegated trigger handler is present to handle dynamically injected triggers
+      try { this.setupFooterTriggersDelegated(); } catch (e) { /* ignored */ }
       this.scroller.init();
       try {
         this.resizer.init();
@@ -1134,6 +1239,16 @@ class FooterSystem {
       this.resizer.cleanup();
     } catch (e) {
       // ignore
+    }
+    // Remove delegated click handler if bound
+    try {
+      if (this._delegatedBound && this._delegatedHandler) {
+        document.removeEventListener('click', this._delegatedHandler);
+        this._delegatedBound = false;
+        this._delegatedHandler = null;
+      }
+    } catch (e) {
+      /* ignored */
     }
     log.info('Footer system cleanup completed');
   }

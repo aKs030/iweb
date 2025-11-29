@@ -7,7 +7,7 @@ import {
 } from '../../content/webentwicklung/shared-utilities.js';
 import { createLogger } from '../../content/webentwicklung/shared-utilities.js';
 
-// Logger für HeroManager (global im Modul, damit Event-Handler darauf zugreifen können)
+// Logger für HeroManager
 const logger = createLogger('HeroManager');
 
 // Timer Manager für Hero-spezifische Timeouts
@@ -16,6 +16,7 @@ const heroTimers = new TimerManager();
 // ===== Hero Management Module =====
 const HeroManager = (() => {
   let heroData = null;
+  let isInitialized = false;
 
   async function loadTyped() {
     // Nutze globale TypeWriter Registry
@@ -31,16 +32,23 @@ const HeroManager = (() => {
   }
 
   function initLazyHeroModules() {
+    if (isInitialized) return;
+    isInitialized = true;
+
     let loaded = false;
     const triggerLoad = async () => {
       if (loaded) return;
       loaded = true;
+      // Preload critical hero data parallel to typewriter check
+      ensureHeroData().catch(() => {}); 
+      
       await loadTyped();
       setRandomGreetingHTML();
     };
 
     const heroEl = getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
+      // Retry or fallback if hero element missing momentarily
       heroTimers.setTimeout(triggerLoad, 2500);
       return;
     }
@@ -54,6 +62,7 @@ const HeroManager = (() => {
     const obs = createTriggerOnceObserver(triggerLoad);
     obs.observe(heroEl);
 
+    // Fallback load just in case observer fails or is delayed too long
     heroTimers.setTimeout(triggerLoad, 6000);
   }
 
@@ -70,6 +79,7 @@ const HeroManager = (() => {
   async function setRandomGreetingHTML(animated = false) {
     const delays = [0, 50, 120, 240, 480];
     let el = null;
+    // Retry finding element with exponential backoff if not immediately present
     for (const d of delays) {
       if (d) await heroTimers.sleep(d);
       el = getElementById('greetingText');
@@ -77,33 +87,42 @@ const HeroManager = (() => {
     }
     if (!el) return;
 
-    const mod = await ensureHeroData();
-    const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
-    const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
-    if (!next) return;
+    try {
+      const mod = await ensureHeroData();
+      const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
+      const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
+      if (!next) return;
 
-    el.dataset.last = next;
-    if (animated) {
-      el.classList.add('fade');
-      heroTimers.setTimeout(() => {
+      el.dataset.last = next;
+      if (animated) {
+        el.classList.add('fade');
+        heroTimers.setTimeout(() => {
+          el.textContent = next;
+          el.classList.remove('fade');
+        }, 360);
+      } else {
         el.textContent = next;
-        el.classList.remove('fade');
-      }, 360);
-    } else {
-      el.textContent = next;
+      }
+    } catch (e) {
+      logger.warn('Error setting greeting text', e);
     }
   }
 
-  return { initLazyHeroModules, setRandomGreetingHTML, ensureHeroData };
-})();
+  function cleanup() {
+    heroTimers.clearAll();
+    isInitialized = false;
+  }
 
-// ===== Animation Engine Bootstrap (entfernt) =====
-// Animation system removed; placeholder function deleted to keep code clean
+  return { initLazyHeroModules, setRandomGreetingHTML, ensureHeroData, cleanup };
+})();
 
 // ===== Public API =====
 export function initHeroFeatureBundle() {
+  // Clear any existing timers first to prevent duplicate logic on re-init
+  HeroManager.cleanup();
+
   // Events für Hero
-  document.addEventListener(EVENTS.HERO_LOADED, () => {
+  const onHeroLoaded = () => {
     const el = getElementById('greetingText');
     if (!el) return;
     if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
@@ -121,9 +140,11 @@ export function initHeroFeatureBundle() {
     } catch (e) {
       logger.warn('Error during typing initialization.', e);
     }
+  };
 
-    // Force-Visible: CRT Buttons - Animation-System entfernt
-  });
+  // Event Listener sicher hinzufügen (Remove if existing, though anonymous funcs make this hard, rely on singleton/flags)
+  document.removeEventListener(EVENTS.HERO_LOADED, onHeroLoaded);
+  document.addEventListener(EVENTS.HERO_LOADED, onHeroLoaded);
 
   // Verwende koordinierte Events statt separaten DOMContentLoaded Handler
   document.addEventListener(
@@ -156,6 +177,4 @@ export function initHeroFeatureBundle() {
 
   // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
-
-  // Animation-System wurde entfernt
 }

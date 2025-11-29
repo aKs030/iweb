@@ -10,6 +10,7 @@ export class StarManager {
     this.camera = camera;
     this.renderer = renderer;
     this.starField = null;
+    this.isDisposed = false; // Guard flag for cleanup
     
     // Animation State for Shader-Transition
     this.transition = {
@@ -17,13 +18,16 @@ export class StarManager {
       startTime: 0,
       duration: CONFIG.STARS.ANIMATION.DURATION,
       startValue: 0,
-      targetValue: 0
+      targetValue: 0,
+      rafId: null // Track RAF ID for cancellation
     };
 
     this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
   }
 
   createStarField() {
+    if (this.isDisposed) return null;
+
     const starCount = this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT;
     
     // Buffer Arrays
@@ -113,7 +117,7 @@ export class StarManager {
   }
 
   getCardPositions() {
-    if (!this.camera) return [];
+    if (!this.camera || this.isDisposed) return [];
 
     const featuresSection = getElementById('features');
     if (!featuresSection) return [];
@@ -148,7 +152,7 @@ export class StarManager {
   }
 
   animateStarsToCards() {
-    if (!this.starField) return;
+    if (!this.starField || this.isDisposed) return;
 
     // Hide cards initially (they will fade in)
     const cards = document.querySelectorAll('#features .card');
@@ -169,7 +173,7 @@ export class StarManager {
 
     // Optional: Re-calculate once camera settled for precision
     setTimeout(() => {
-        if (this.transition.targetValue === 1.0) {
+        if (!this.isDisposed && this.transition.targetValue === 1.0) {
             const refinedPositions = this.getCardPositions();
             if (refinedPositions.length > 0) this.updateTargetBuffer(refinedPositions);
         }
@@ -177,13 +181,15 @@ export class StarManager {
   }
 
   resetStarsToOriginal() {
-    if (!this.starField) return;
+    if (!this.starField || this.isDisposed) return;
     
     // Start Transition to 0.0 (Sphere)
     this.startTransition(0.0);
   }
 
   updateTargetBuffer(cardPositions) {
+    if (this.isDisposed || !this.starField) return;
+
     const attr = this.starField.geometry.attributes.aTargetPosition;
     const array = attr.array;
     const count = array.length / 3;
@@ -203,6 +209,8 @@ export class StarManager {
   }
 
   startTransition(targetValue) {
+      if (this.isDisposed) return;
+
       const current = this.starField.material.uniforms.uTransition.value;
       if (current === targetValue) return;
 
@@ -211,11 +219,12 @@ export class StarManager {
       this.transition.startValue = current;
       this.transition.targetValue = targetValue;
 
+      if (this.transition.rafId) cancelAnimationFrame(this.transition.rafId);
       this.animateTransitionLoop();
   }
 
   animateTransitionLoop() {
-      if (!this.transition.active) return;
+      if (!this.transition.active || this.isDisposed) return;
 
       const now = performance.now();
       const elapsed = now - this.transition.startTime;
@@ -229,14 +238,15 @@ export class StarManager {
       const eased = this.easeInOutCubic(progress);
       
       // Interpolate uniform
-      const val = this.transition.startValue + (this.transition.targetValue - this.transition.startValue) * eased;
-      this.starField.material.uniforms.uTransition.value = val;
-
-      // Sync DOM Cards Opacity
-      this.updateCardOpacity(val);
+      if (this.starField && this.starField.material) {
+        const val = this.transition.startValue + (this.transition.targetValue - this.transition.startValue) * eased;
+        this.starField.material.uniforms.uTransition.value = val;
+        // Sync DOM Cards Opacity
+        this.updateCardOpacity(val);
+      }
 
       if (this.transition.active) {
-          requestAnimationFrame(() => this.animateTransitionLoop());
+          this.transition.rafId = requestAnimationFrame(() => this.animateTransitionLoop());
       }
   }
 
@@ -244,7 +254,6 @@ export class StarManager {
       // Logic: Fade in cards when stars are almost there
       const cfg = CONFIG.STARS.ANIMATION;
       // If going to cards (1.0), fade in. If going to sphere (0.0), fade out.
-      // We assume transitionValue 0->1 maps to sequence.
       
       let opacity = 0;
       if (transitionValue > cfg.CARD_FADE_START) {
@@ -264,8 +273,24 @@ export class StarManager {
   }
 
   update(elapsedTime) {
-    if (this.starField) {
+    if (this.starField && !this.isDisposed) {
       this.starField.material.uniforms.time.value = elapsedTime;
+    }
+  }
+
+  cleanup() {
+    this.isDisposed = true;
+    this.transition.active = false;
+    if (this.transition.rafId) {
+      cancelAnimationFrame(this.transition.rafId);
+      this.transition.rafId = null;
+    }
+    
+    if (this.starField) {
+      if (this.scene) this.scene.remove(this.starField);
+      if (this.starField.geometry) this.starField.geometry.dispose();
+      if (this.starField.material) this.starField.material.dispose();
+      this.starField = null;
     }
   }
 }
@@ -279,6 +304,7 @@ export class ShootingStarManager {
     this.showerTimer = 0;
     this.showerCooldownTimer = 0;
     this.disabled = false;
+    this.isDisposed = false;
 
     // Shared resources to avoid GC pressure
     this.sharedGeometry = new this.THREE.SphereGeometry(0.05, 8, 8);
@@ -290,7 +316,7 @@ export class ShootingStarManager {
   }
 
   createShootingStar() {
-    if (this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS) return;
+    if (this.isDisposed || this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS) return;
 
     try {
       // Use cloned material for individual opacity control, but share geometry
@@ -326,7 +352,7 @@ export class ShootingStarManager {
   }
 
   update() {
-    if (this.disabled) return;
+    if (this.disabled || this.isDisposed) return;
 
     // Shower logic
     if (this.isShowerActive) {
@@ -374,13 +400,14 @@ export class ShootingStarManager {
   }
 
   triggerShower() {
-    if (this.isShowerActive || this.showerCooldownTimer > 0) return;
+    if (this.isDisposed || this.isShowerActive || this.showerCooldownTimer > 0) return;
     this.isShowerActive = true;
     this.showerTimer = 0;
     log.info('🌠 Meteor shower triggered!');
   }
 
   cleanup() {
+    this.isDisposed = true;
     this.activeStars.forEach((star) => {
       this.scene.remove(star.mesh);
       star.mesh.material?.dispose();
