@@ -16,10 +16,12 @@
     name="google-site-verification"
     content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs"
 />
-<!-- Security Headers: Diese müssen serverseitig gesetzt werden -->
-<!-- X-Content-Type-Options: nosniff -->
-<!-- X-Frame-Options: DENY -->
-<!-- Referrer-Policy: strict-origin-when-cross-origin -->
+<!-- Security Headers: Set these server-side when possible. Meta fallbacks are provided for local/dev and environments where headers can't be configured. -->
+  <!-- Note: connect-src additions below are for local development only (Live Preview / Live Server) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://www.google-analytics.com https://api.github.com ws://127.0.0.1:3001 ws://localhost:3001 wss://127.0.0.1:3001 wss://localhost:3001; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';" />
+<meta http-equiv="Permissions-Policy" content="geolocation=(), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<meta http-equiv="X-Content-Type-Options" content="nosniff" />
 
 <!-- Performance and Caching -->
 <meta
@@ -180,9 +182,9 @@
 
 <!-- Kritische CSS synchron laden -->
 <link rel="stylesheet" href="/content/webentwicklung/root.css" />
-<!-- three-earth.css is loaded non-blocking to avoid render-blocking and improve TTFP -->
-<link rel="preload" href="/content/webentwicklung/particles/three-earth.css" as="style" onload="this.rel='stylesheet'" />
-<noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
+<!-- three-earth.css used by the 3D Earth particle system; preloaded only on pages that render it (e.g. /pages/projekte/projekte.html) -->
+<!-- Preload critical font (site-wide) to avoid FOIT/FOUC -->
+<link rel="preload" href="/content/webentwicklung/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
 <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
 <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />

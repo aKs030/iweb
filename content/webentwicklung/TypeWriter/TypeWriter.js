@@ -23,15 +23,34 @@ class TypeWriter {
     containerEl = null, // .typewriter-title zum Locken
     onBeforeType = null // Hook: vor dem Tippen reservieren + locken
   }) {
-    if (!textEl || !authorEl || !Array.isArray(quotes) || quotes.length === 0) {
+    // ✅ Strikte Validierung
+    if (!textEl || !authorEl) {
+      log.error('TypeWriter: textEl and authorEl are required');
       return;
+    }
+
+    if (!Array.isArray(quotes) || quotes.length === 0) {
+      log.error('TypeWriter: quotes must be a non-empty array');
+      return;
+    }
+
+    // ✅ Validiere Quote-Format
+    const invalidQuotes = quotes.filter(q => !q.text || typeof q.text !== 'string');
+    if (invalidQuotes.length > 0) {
+      log.warn('TypeWriter: Some quotes have invalid format, filtering them out');
+      this.quotes = quotes.filter(q => q.text && typeof q.text === 'string');
+      if (this.quotes.length === 0) {
+        log.error('TypeWriter: No valid quotes remaining');
+        return;
+      }
+    } else {
+      this.quotes = quotes.slice();
     }
     this.textEl = textEl;
     this.authorEl = authorEl;
-    this.quotes = quotes.slice();
-    this.wait = +wait;
-    this.typeSpeed = +typeSpeed;
-    this.deleteSpeed = +deleteSpeed;
+    this.wait = Math.max(0, +wait);
+    this.typeSpeed = Math.max(10, +typeSpeed);
+    this.deleteSpeed = Math.max(10, +deleteSpeed);
     this.shuffle = !!shuffle;
     this.loop = !!loop;
     this.smartBreaks = !!smartBreaks;
@@ -43,15 +62,27 @@ class TypeWriter {
     this.timerManager = new TimerManager();
     this._isDeleting = false;
     this._txt = '';
-    this._queue = this.shuffle
-      ? createShuffledIndices(this.quotes.length)
-      : [...Array(this.quotes.length).keys()];
-    this._index = this._queue.shift();
-    this._current = this.quotes[this._index];
+    // ✅ Sichere Queue-Initialisierung
+    try {
+      this._queue = this.shuffle
+        ? createShuffledIndices(this.quotes.length)
+        : [...Array(this.quotes.length).keys()];
+      this._index = this._queue.shift();
+      this._current = this.quotes[this._index];
+    } catch (error) {
+      log.error('TypeWriter: Queue initialization failed', error);
+      return;
+    }
 
     document.body.classList.add('has-typingjs'); // CSS-Fallback ausschalten
 
-    if (this.onBeforeType) this.onBeforeType(this._current.text); // vor erstem Tippen
+    if (this.onBeforeType) {
+      try {
+        this.onBeforeType(this._current.text);
+      } catch (error) {
+        log.warn('TypeWriter: onBeforeType callback failed', error);
+      }
+    }
     this._tick();
   }
 
@@ -97,26 +128,43 @@ class TypeWriter {
   }
 
   _renderText(text) {
-    // smartBreaks: ", " → Komma behalten + <br>
-    this.textEl.textContent = '';
-    if (!this.smartBreaks) {
-      this.textEl.textContent = text;
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    const parts = String(text).split(/(, )/);
-    for (const part of parts) {
-      if (part === ', ') {
-        frag.appendChild(document.createTextNode(','));
-        frag.appendChild(document.createElement('br'));
-      } else {
-        frag.appendChild(document.createTextNode(part));
+    if (!this.textEl) return;
+    try {
+      this.textEl.textContent = '';
+
+      if (!this.smartBreaks) {
+        this.textEl.textContent = text;
+        return;
       }
+
+      const frag = document.createDocumentFragment();
+      const parts = String(text).split(/(, )/);
+
+      for (const part of parts) {
+        if (part === ', ') {
+          frag.appendChild(document.createTextNode(','));
+          frag.appendChild(document.createElement('br'));
+        } else {
+          frag.appendChild(document.createTextNode(part));
+        }
+      }
+
+      this.textEl.appendChild(frag);
+    } catch (error) {
+      log.warn('TypeWriter: Text rendering failed', error);
+      // Fallback zu einfachem Text
+      this.textEl.textContent = text;
     }
-    this.textEl.appendChild(frag);
   }
 
   _tick() {
+    // ✅ Guard gegen ungültige States
+    if (!this._current || !this._current.text) {
+      log.warn('TypeWriter: Invalid current quote, skipping');
+      this._handleQuoteTransition();
+      return;
+    }
+
     const full = String(this._current.text || '');
     const author = String(this._current.author || '');
 
@@ -125,13 +173,22 @@ class TypeWriter {
       : full.substring(0, Math.min(full.length, this._txt.length + 1));
 
     this._renderText(this._txt);
-    this.authorEl.textContent = author.trim() ? author : '';
+    
+    // ✅ Sichere Author-Anzeige
+    if (this.authorEl) {
+      try {
+        this.authorEl.textContent = author.trim() ? author : '';
+      } catch (error) {
+        log.warn('TypeWriter: Author update failed', error);
+      }
+    }
 
     let delay = this._isDeleting ? this.deleteSpeed : this.typeSpeed;
     delay = this._applyPunctuationPause(delay);
 
     if (!this._isDeleting && this._txt === full) {
       // Vollständiger Text getippt -> Event feuern (einmal pro Quote)
+      // ✅ Event Dispatch mit Fehlerbehandlung
       try {
         const ev = new CustomEvent('hero:typingEnd', {
           detail: { text: full, author }

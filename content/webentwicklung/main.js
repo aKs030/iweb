@@ -19,6 +19,16 @@ import {
   SectionTracker
 } from './shared-utilities.js';
 import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
+import { a11y } from './accessibility-manager.js';
+// Ensure the a11y manager is available globally and initialized centrally
+if (typeof window !== 'undefined') {
+  try {
+    window.a11y = a11y;
+    if (typeof a11y?.init === 'function') a11y.init();
+  } catch (e) {
+    /* ignored */
+  }
+}
 import './menu/menu.js';
 
 const log = createLogger('main');
@@ -257,10 +267,21 @@ const SectionLoader = (() => {
   return api;
 })();
 
-if (document.readyState !== 'loading') {
+function _initApp() {
   SectionLoader.init();
+  // Ensure accessibility preferences applied right away
+  try {
+    a11y?.updateAnimations?.();
+    a11y?.updateContrast?.();
+  } catch (e) {
+    /* ignored */
+  }
+}
+
+if (document.readyState !== 'loading') {
+  _initApp();
 } else {
-  document.addEventListener(EVENTS.DOM_READY, SectionLoader.init, { once: true });
+  document.addEventListener(EVENTS.DOM_READY, _initApp, { once: true });
 }
 
 // ===== Scroll Snapping =====
@@ -469,6 +490,48 @@ document.addEventListener(
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
       windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
     });
+
+    // Development: Optional reconnecting test WebSocket (connect to local ws://127.0.0.1:3001)
+    if (ENV.debug) {
+      try {
+        import('./shared/reconnecting-websocket.js')
+          .then(({ ReconnectingWebSocket }) => {
+            try {
+              const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
+              rws.onopen = () => log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001');
+              rws.onmessage = (e) => log.debug('Dev RWS message', e.data);
+              rws.onerror = (e) => log.warn('Dev RWS error', e);
+              rws.onclose = (e) => log.warn('Dev RWS closed', e);
+              window.__rws = rws;
+            } catch (ex) {
+              log.warn('Failed to open Dev ReconnectingWebSocket:', ex);
+            }
+          })
+          .catch((err) => log.warn('Dev RWS import failed:', err));
+      } catch (e) {
+        log.warn('Dev RWS dynamic import error', e);
+      }
+    }
+    // ===== Dev-only WebSocket test (optional) =====
+    // Usage: add ?ws-test to the page URL to enable a reconnecting websocket to ws://127.0.0.1:3001
+    if (!ENV.isTest && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || ENV.debug)) {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.has('ws-test') || ENV.debug) {
+        import('./shared/reconnecting-websocket.js').then((mod) => {
+          const { ReconnectingWebSocket } = mod;
+          const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
+          rws.onopen = () => {
+            console.info('ReconnectingWebSocket open (dev test)');
+            try { rws.send('dev:hello'); } catch (e) { /* ignore */ }
+          };
+          rws.onmessage = (e) => console.debug('[dev-ws]', e.data);
+          rws.onclose = (ev) => console.info('ReconnectingWebSocket closed', ev);
+          rws.onerror = (err) => console.warn('ReconnectingWebSocket error', err);
+          // Attach for debugging
+          if (ENV.debug) window.__devRws = rws;
+        }).catch((e) => console.warn('Failed to import ReconnectingWebSocket', e));
+      }
+    }
   },
   { once: true }
 );
