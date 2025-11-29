@@ -1,11 +1,10 @@
 /**
  * Main Application Entry Point - Optimized
- * * OPTIMIZATIONS v4.0 (Refactored):
- * - Removed global scope pollution where possible.
- * - Improved Headless/Test detection.
- * - Modular architecture support.
- * * @version 4.0.0
- * @last-modified 2025-11-09
+ * * OPTIMIZATIONS v4.1 (Performance):
+ * - Fine-tuned ThreeEarthLoader init
+ * - Ensure proper cleanup references
+ * * @version 4.1.0
+ * @last-modified 2025-11-29
  */
 
 import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';

@@ -1,7 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 9.2.0 - Added Page Visibility API support & Mobile Optimizations
+ * @version 9.3.0 - OPTIMIZED: Added Viewport Pausing to save resources when out of view
  */
 
 import { createLogger, getElementById, onResize, TimerManager } from '../shared-utilities.js';
@@ -39,10 +39,11 @@ let directionalLight, ambientLight;
 let cameraManager, starManager, shootingStarManager, performanceMonitor;
 
 // State
-let sectionObserver, animationFrameId;
+let sectionObserver, viewportObserver, animationFrameId;
 let currentSection = 'hero';
 let currentQualityLevel = 'HIGH';
 let isMobileDevice = false;
+let isSystemVisible = true; // Track if container is in viewport
 // Detected device capabilities for this session
 let deviceCapabilities = null;
 
@@ -63,9 +64,9 @@ const ThreeEarthManager = (() => {
     }
 
     try {
-      log.info('Initializing Three.js Earth System v9.2.0 (Modular)');
+      log.info('Initializing Three.js Earth System v9.3.0 (Optimized)');
 
-      // NEU: Device Detection & optimized config
+      // Device Detection & optimized config
       try {
         deviceCapabilities = detectDeviceCapabilities();
         const optimizedConfig = getOptimizedConfig(deviceCapabilities);
@@ -74,7 +75,6 @@ const ThreeEarthManager = (() => {
         // Apply optimized configuration
         Object.assign(CONFIG, optimizedConfig);
       } catch (e) {
-        // non-fatal: log & continue with defaults
         log.debug('Device detection failed, using defaults', e);
       }
       registerParticleSystem('three-earth', { type: 'three-earth' });
@@ -124,8 +124,7 @@ const ThreeEarthManager = (() => {
       directionalLight = lights.directionalLight;
       ambientLight = lights.ambientLight;
 
-      // Assets - Pass loadingManager to all creators
-      // We use Promise.all to start all loads, but the manager tracks individual texture progress
+      // Assets
       const [earthAssets, moonLOD, cloudObj] = await Promise.all([
         createEarthSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
         createMoonSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
@@ -154,6 +153,9 @@ const ThreeEarthManager = (() => {
 
       setupUserControls(container);
       setupSectionDetection();
+      
+      // OPTIMIZATION: Setup Viewport Observer to pause rendering when out of view
+      setupViewportObserver(container);
 
       performanceMonitor = new PerformanceMonitor(container, renderer, (level) => {
         currentQualityLevel = level;
@@ -182,13 +184,13 @@ const ThreeEarthManager = (() => {
       animationFrameId = null;
     }
 
-    // Removing Visibility Listener
     document.removeEventListener('visibilitychange', handleVisibilityChange);
 
     performanceMonitor?.cleanup();
     shootingStarManager?.cleanup();
     cameraManager?.cleanup();
     sectionObserver?.disconnect();
+    viewportObserver?.disconnect(); // Cleanup viewport observer
     earthTimers.clearAll();
     sharedCleanupManager.cleanupSystem('three-earth');
 
@@ -261,10 +263,6 @@ const ThreeEarthManager = (() => {
 
 // ===== Helpers =====
 
-/**
- * Detect device capabilities for runtime optimizations
- * - Uses UA heuristics and modern APIs when available
- */
 function detectDeviceCapabilities() {
   try {
     const ua = (navigator.userAgent || '').toLowerCase();
@@ -272,8 +270,7 @@ function detectDeviceCapabilities() {
     const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(ua);
     const hasSlowGPU = /mali|adreno\s?[34]|powervr sgx|intel hd/i.test(ua);
 
-    // Detect via Device Memory API and Performance.memory when available
-    const deviceMemory = navigator.deviceMemory || 0; // in GB
+    const deviceMemory = navigator.deviceMemory || 0; 
     const memLimit = (performance && performance.memory && performance.memory.jsHeapSizeLimit) || 0;
     const isLowMemory = (deviceMemory > 0 && deviceMemory < 1) || (memLimit > 0 && memLimit < 1073741824);
 
@@ -290,14 +287,10 @@ function detectDeviceCapabilities() {
       recommendedQuality
     };
   } catch (e) {
-    // Robust fallback: assume medium
     return { isMobile: false, isLowEnd: false, cores: 2, deviceMemoryGB: 0, recommendedQuality: 'MEDIUM' };
   }
 }
 
-/**
- * Based on detected capabilities, return a merged CONFIG used for optimized scene creation
- */
 function getOptimizedConfig(capabilities) {
   const baseConfig = { ...CONFIG };
   if (!capabilities) return baseConfig;
@@ -349,7 +342,6 @@ function getOptimizedConfig(capabilities) {
 
 function setupStarParallax(starField) {
   const parallaxHandler = (progress) => {
-    // FIX: Check if starManager exists and has properties before accessing
     if (!starField || !starManager || (starManager.transition && starManager.transition.active)) return;
     
     starField.rotation.y = progress * Math.PI * 0.2;
@@ -406,6 +398,29 @@ function setupSectionDetection() {
   );
 
   sections.forEach((section) => sectionObserver.observe(section));
+}
+
+// OPTIMIZATION: Pause rendering when container is not in viewport
+function setupViewportObserver(container) {
+  viewportObserver = new IntersectionObserver((entries) => {
+    const entry = entries[0];
+    isSystemVisible = entry.isIntersecting;
+    
+    if (isSystemVisible) {
+      if (!animationFrameId && animate) {
+        log.debug('Container visible: resuming render loop');
+        animate();
+      }
+    } else {
+      if (animationFrameId) {
+        log.debug('Container hidden: pausing render loop');
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    }
+  }, { threshold: 0 }); // Trigger as soon as 1px is visible/hidden
+  
+  viewportObserver.observe(container);
 }
 
 function updateEarthForSection(sectionName, options = {}) {
@@ -500,7 +515,8 @@ function handleVisibilityChange() {
       log.debug('Tab hidden: paused animation loop');
     }
   } else {
-    if (!animationFrameId && animate) {
+    // Only resume if tab is visible AND system is in viewport
+    if (!animationFrameId && animate && isSystemVisible) {
       animate();
       log.debug('Tab visible: resumed animation loop');
     }
@@ -510,21 +526,18 @@ function handleVisibilityChange() {
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
 
-  // Adaptation: frame skipping and conditional updates for low-end devices
   const capabilities = deviceCapabilities || detectDeviceCapabilities();
-  let frameSkip = capabilities.isLowEnd ? 2 : 1; // skip every n-th frame if low-end
+  let frameSkip = capabilities.isLowEnd ? 2 : 1;
   let frameCounter = 0;
 
   animate = () => {
     animationFrameId = requestAnimationFrame(animate);
     frameCounter++;
 
-    // Skip full update/render on low-end devices (adaptive)
     if (frameCounter % frameSkip !== 0) return;
 
     const elapsedTime = clock.getElapsedTime();
 
-    // Conditional rotations and updates
     if (cloudMesh && frameCounter % 2 === 0) {
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
     }
@@ -535,7 +548,6 @@ function startAnimationLoop() {
 
     if (starManager && !capabilities.isLowEnd) starManager.update(elapsedTime);
 
-    // Emissive pulsing only on medium+ devices
     if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd && frameCounter % 2 === 0) {
       const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
       const pulseAmount = Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
@@ -551,10 +563,12 @@ function startAnimationLoop() {
     renderer.render(scene, camera);
   };
 
-  // Add listener for Page Visibility API
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
-  animate();
+  // Start only if currently visible
+  if(document.visibilityState === 'visible') {
+    animate();
+  }
 }
 
 function updateObjectTransforms() {
@@ -646,5 +660,4 @@ export const EarthSystemAPI = {
 
 export default ThreeEarthManager;
 
-// Export for testing and usage
 export { detectDeviceCapabilities, getOptimizedConfig };
