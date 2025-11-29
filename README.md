@@ -20,3 +20,5 @@ npm run format
 ```
 
 Konfigurationsdateien: `.eslintrc.json`, `.prettierrc` und `.eslintignore` wurden hinzugefügt.
+
+pre-commit test
