@@ -113,8 +113,7 @@ const CONFIG = {
         y: 3.0,
         z: 9.5,
         lookAt: { x: 0, y: 0, z: 0 }
-      }
-      ,
+      },
       // Camera preset for the contact/footer zone
       contact: {
         x: -0.5,
@@ -816,10 +815,10 @@ async function createEarthSystem() {
   let dayTexture, nightTexture, normalTexture, bumpTexture;
   try {
     [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
-    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
-    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
-    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
-    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP)
+      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
+      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
+      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
+      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP)
     ]);
   } catch (err) {
     log.error('Texture loading failed:', err);
@@ -1393,7 +1392,10 @@ function showLoadingState(container, progress) {
     log.warn('ThreeEarth: loading did not complete within expected time');
     // If elements are still present, show error state
     try {
-      showErrorState(container, new Error('Ladezeit überschritten. Bitte Seite neu laden oder überprüfe WebGL/Netzwerk.'));
+      showErrorState(
+        container,
+        new Error('Ladezeit überschritten. Bitte Seite neu laden oder überprüfe WebGL/Netzwerk.')
+      );
     } catch (err) {
       log.error('Failed to show error state after loading timeout', err);
     }
@@ -1444,7 +1446,11 @@ function showErrorState(container, error) {
         }
         try {
           // Cleanup previous instance if any
-          try { await cleanup(); } catch (_cleanupErr) { /* ignore */ }
+          try {
+            await cleanup();
+          } catch (_cleanupErr) {
+            /* ignore */
+          }
           // Kick off a fresh initialization
           initThreeEarth();
         } catch (err) {

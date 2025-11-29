@@ -179,14 +179,14 @@ function initializeMenu(container) {
       closeMenu(container);
 
       if (window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')) {
-          // Prevent default to allow smooth close animation then navigate
-          if (!isAnchor) {
-            e.preventDefault();
-            setTimeout(() => {
-              window.location.href = href;
-            }, 160);
-          }
+        // Prevent default to allow smooth close animation then navigate
+        if (!isAnchor) {
+          e.preventDefault();
+          setTimeout(() => {
+            window.location.href = href;
+          }, 160);
         }
+      }
     });
   });
 
@@ -437,17 +437,17 @@ function setActiveMenuLink() {
     const href = a.getAttribute('href');
     if (!href) return;
 
-      if (href.startsWith('#')) {
-        // Only consider in-page anchors active when we're on the index page (where those sections exist)
-        // or when the href matches the current hash exactly.
-        const isIndexPath = path === '/' || path === '/index.html' || path === '';
-        if (href === hash || (isIndexPath && hash === '' && href === '#hero')) {
-          a.classList.add('active');
-        } else {
-          a.classList.remove('active');
-        }
-        return;
+    if (href.startsWith('#')) {
+      // Only consider in-page anchors active when we're on the index page (where those sections exist)
+      // or when the href matches the current hash exactly.
+      const isIndexPath = path === '/' || path === '/index.html' || path === '';
+      if (href === hash || (isIndexPath && hash === '' && href === '#hero')) {
+        a.classList.add('active');
+      } else {
+        a.classList.remove('active');
       }
+      return;
+    }
 
     const norm = href.replace(/index\.html$/, '');
     const linkPath = norm.split('#')[0];
