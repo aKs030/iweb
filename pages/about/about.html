@@ -1,389 +1,70 @@
-<!--
-  Optimierungen:
-  - Die gesamte Sektion ist in ein semantisches `<section>`-Tag mit einer ID gehüllt.
-  - Die Klassen wurden nach der BEM-Methodik (Block__Element--Modifier) umbenannt.
-    Das verbessert die Lesbarkeit, verhindert Stilkonflikte und macht die Struktur klarer.
-    (z.B. `about` ist der Block, `about__title` ist ein Element).
-  - Dem SVG-Icon wurde ein `<title>`-Element für bessere Barrierefreiheit hinzugefügt,
-    damit Screenreader das Icon beschreiben können.
+<!-- 
+  About Section Fragment 
+  Wird dynamisch in die index.html geladen.
 -->
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Über Mich</title>
-  <meta charset="utf-8" />
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-/>
-<meta
-    name="description"
-    content="Abdul aus Berlin - Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte. Abdul aus Tegel bietet professionelle Webentwicklung und Fotografie-Services in Berlin."
-/>
-<meta
-    name="keywords"
-    content="Abdul Berlin, Abdul Tegel, Abdulkerim Sesli, Abdul Webentwickler Berlin, Abdul Fotograf Tegel, Portfolio, Webentwicklung Berlin, Frontend Developer Tegel, Fotografie Berlin, Abdul aus Berlin, Abdul aus Tegel"
-/>
-<meta name="author" content="Abdulkerim Sesli - Abdul aus Berlin" />
-<meta
-    name="google-site-verification"
-    content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs"
-/>
-<!-- Security Headers: Diese müssen serverseitig gesetzt werden -->
-<!-- X-Content-Type-Options: nosniff -->
-<!-- X-Frame-Options: DENY -->
-<!-- Referrer-Policy: strict-origin-when-cross-origin -->
+<div class="about__container">
+  <div class="about__content">
+    <div class="about__text parallax-element" data-parallax-speed="0.1">
+      <h1 id="about-heading">Danke für Ihren Besuch!</h1>
 
-<!-- Performance and Caching -->
-<meta
-    http-equiv="Cache-Control"
-    content="public, max-age=31536000, immutable"
-/>
+      <p>
+        Es freut mich sehr, dass Sie sich die Zeit genommen haben, meine
+        Website zu erkunden. Mein Name ist <strong>Abdulkerim</strong> und ich
+        bin ein leidenschaftlicher Webentwickler aus Berlin, der es liebt,
+        digitale Träume in die Realität umzusetzen.
+      </p>
 
-<!-- Modern Browser Features -->
-<meta name="format-detection" content="telephone=no" />
-<meta name="mobile-web-app-capable" content="yes" />
+      <p>
+        Hinter jedem Projekt steckt eine Geschichte, hinter jedem Code eine
+        Vision. Ich glaube fest daran, dass großartige Websites mehr sind als
+        nur funktionale Tools – sie sind digitale Erlebnisse, die Menschen
+        bewegen und inspirieren.
+      </p>
 
-<!-- Theme Color -->
-<meta
-    name="theme-color"
-    content="#2c2c2e"
-    media="(prefers-color-scheme: dark)"
-/>
-<meta
-    name="theme-color"
-    content="#ffffff"
-    media="(prefers-color-scheme: light)"
-/>
+      <p>
+        Meine Mission ist es, das Web zu einem schöneren und zugänglicheren
+        Ort zu machen. Dabei verbinde ich moderne Technologien mit kreativem
+        Design und stelle den Menschen stets in den Mittelpunkt meiner Arbeit.
+      </p>
 
-<!-- iOS Web App -->
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="Abdulkerim Sesli" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <p>
+        <em>Jede Zeile Code, die ich schreibe, trägt ein Stück meiner
+        Leidenschaft in sich.</em><br />
+        Von der ersten Idee bis zum finalen Launch begleite ich Sie auf Ihrer
+        digitalen Reise.
+      </p>
 
-<!-- Color Scheme -->
-<meta name="color-scheme" content="dark light" />
+      <p>
+        Ich hoffe, meine Arbeit konnte Sie inspirieren und Ihnen einen
+        Einblick in meine Welt der Webentwicklung geben. Es war mir eine wahre
+        Freude, Sie hier zu haben.
+      </p>
 
-<!-- AI Crawler friendly meta tags -->
-<meta
-    name="robots"
-    content="index, follow, max-image-preview:standard, max-snippet:-1, max-video-preview:30"
-/>
-<meta name="revisit-after" content="7 days" />
-<meta
-    name="ai-content-declaration"
-    content="This website was built by human developer Abdulkerim Sesli. Content is original and human-created."
-/>
+      <p class="about__farewell">
+        <strong>Herzlichen Dank für Ihr Interesse und besuchen Sie mich gerne wieder!</strong>
+      </p>
 
-<!-- Performance Hints -->
-<meta name="web-vitals-extension" content="enabled" />
-<link rel="preconnect" href="https://abdulkerimsesli.de" />
-
-<!-- Google Analytics (Consent-gesteuert) -->
-<script type="text/plain" data-consent="required" data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN" async></script>
-<script type="text/plain" data-consent="required">
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-S0587RQ4CN');
-</script>
-
-<!-- Open Graph Meta-Tags -->
-<meta
-    property="og:title"
-    content="Über Mich"
-/>
-<meta
-    property="og:description"
-    content="Abdul aus Tegel/Berlin - Professionelle Webentwicklung und Fotografie von Abdulkerim Sesli."
-/>
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://abdulkerimsesli.de" />
-<meta
-    property="og:image"
-    content="https://abdulkerimsesli.de/content/img/og/og-home.svg"
-/>
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta
-    property="og:image:alt"
-    content="Abdulkerim Sesli Portfolio - Webentwicklung und Fotografie"
-/>
-<meta property="og:locale" content="de_DE" />
-<meta property="og:site_name" content="Abdulkerim Sesli Portfolio" />
-
-<!-- Twitter Card Meta-Tags -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta
-    name="twitter:title"
-    content="Abdul aus Berlin – Webentwicklung &amp; Fotografie"
-/>
-<meta
-    name="twitter:description"
-    content="Abdul aus Tegel/Berlin - Portfolio von Abdulkerim Sesli."
-/>
-<meta
-    name="twitter:image"
-    content="https://abdulkerimsesli.de/content/img/og/og-home.svg"
-/>
-<meta
-    name="twitter:image:alt"
-    content="Abdulkerim Sesli Portfolio Preview"
-/>
-<meta name="twitter:creator" content="@abdulkerimsesli" />
-<meta name="twitter:site" content="@abdulkerimsesli" />
-
-<!-- LinkedIn Meta-Tags -->
-<meta property="article:author" content="Abdulkerim Sesli" />
-<meta property="article:publisher" content="https://abdulkerimsesli.de" />
-
-<!-- WhatsApp/Telegram Sharing -->
-<meta property="og:image:type" content="image/svg+xml" />
-<meta
-    property="og:image:secure_url"
-    content="https://abdulkerimsesli.de/content/img/og/og-home.svg"
-/>
-
-<!-- Open Graph & PWA / Icons / Fonts etc... -->
-<link
-    rel="icon"
-    href="/content/img/icons/favicon.svg"
-    type="image/svg+xml"
-/>
-<link
-    rel="icon"
-    sizes="96x96"
-    href="/content/img/icons/icon-96.png"
-    type="image/png"
-/>
-<link
-    rel="icon"
-    sizes="144x144"
-    href="/content/img/icons/icon-144.png"
-    type="image/png"
-/>
-<link
-    rel="icon"
-    sizes="192x192"
-    href="/content/img/icons/icon-192.png"
-    type="image/png"
-/>
-<link
-    rel="apple-touch-icon"
-    sizes="192x192"
-    href="/content/img/icons/icon-192.png"
-/>
-<link
-    rel="mask-icon"
-    href="/content/img/icons/favicon.svg"
-    color="#07a1ff"
-/>
-
-<!-- Windows Tiles (PWA) -->
-<meta name="msapplication-TileColor" content="#07a1ff" />
-<meta
-    name="msapplication-TileImage"
-    content="/content/img/icons/icon-144.png"
-/>
-
-<link rel="dns-prefetch" href="https://api.github.com" />
-<link rel="dns-prefetch" href="https://linkedin.com" />
-<link rel="preconnect" href="https://github.com" crossorigin />
-
-<!-- Kritische CSS synchron laden -->
-<link rel="stylesheet" href="/content/webentwicklung/root.css" />
-<!-- three-earth.css is loaded non-blocking to avoid render-blocking and improve TTFP -->
-<link rel="preload" href="/content/webentwicklung/particles/three-earth.css" as="style" onload="this.rel='stylesheet'" />
-<noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
-<link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
-<link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
-<link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
-<link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
-<!-- Main application script (loads menu, parallax, and other shared JS) -->
-<script type="module" src="/content/webentwicklung/main.js"></script>
-
-<link rel="manifest" href="/manifest.json"/>
-<meta name="theme-color" content="#0d0d0d"/>
-<link rel="icon" type="image/svg+xml" href="/content/img/icons/favicon.svg"/>
-
-<!-- JSON-LD Structured Data -->
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Abdulkerim Sesli",
-    "alternateName": [
-      "Abdul aus Berlin",
-      "Abdul aus Tegel",
-      "Abdul Berlin",
-      "Abdul Tegel",
-      "Abdul Webentwickler",
-      "Abdul Fotograf"
-    ],
-    "jobTitle": "Web Developer & Photographer",
-    "description": "Abdul aus Berlin-Tegel - Frontend-Entwickler und Fotograf mit Fokus auf moderne Webtechnologien und kreative digitale Projekte. Bekannt als Abdul aus Tegel.",
-    "url": "https://abdulkerimsesli.de",
-"image": "https://abdulkerimsesli.de/content/img/icons/icon-512.png",
-    "sameAs": [
-      "https://github.com/aKs030",
-      "https://linkedin.com/in/abdulkerimsesli"
-    ],
-    "knowsAbout": [
-      "JavaScript",
-      "Frontend Development",
-      "Web Development",
-      "Photography",
-      "HTML/CSS",
-      "Node.js"
-    ],
-    "worksFor": {
-      "@type": "Organization",
-      "name": "Freelance"
-    },
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Berlin",
-      "addressCountry": "DE"
-    }
-  }
-</script>
-
-<!-- Website Schema -->
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Abdulkerim Sesli - Digital Portfolio",
-    "url": "https://abdulkerimsesli.de",
-    "description": "Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte.",
-    "author": {
-      "@type": "Person",
-      "name": "Abdulkerim Sesli"
-    },
-    "inLanguage": "de-DE",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://abdulkerimsesli.de/?search={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    }
-  }
-</script>
-
-<!-- FAQ Schema -->
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Was für Webentwicklungs-Services bietet Abdulkerim Sesli an?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Abdulkerim Sesli ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive Webdesign. Er erstellt professionelle Websites und digitale Projekte."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Wo ist Abdulkerim Sesli als Webentwickler tätig?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Abdulkerim Sesli arbeitet als Freelance-Webentwickler und Fotograf in Berlin, Deutschland und bietet seine Services deutschlandweit an."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Welche Technologien verwendet Abdulkerim Sesli für Webentwicklung?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien. Zusätzlich bietet er auch professionelle Fotografie-Services an."
-        }
-      }
-    ]
-  }
-</script>
-<!-- SHARED_HEAD INJECTED -->
-  <link rel="stylesheet" href="/pages/about/about.css" />
-</head>
-<body>
-    <section class="about-fragment" aria-labelledby="about-heading">
-      <div class="about__container">
-        <div class="about__content">
-          <div class="about__text parallax-element" data-parallax-speed="0.1">
-            <h1 id="about-heading">Danke für Ihren Besuch!</h1>
-
-            <p>
-              Es freut mich sehr, dass Sie sich die Zeit genommen haben, meine
-              Website zu erkunden. Mein Name ist <strong>Abdulkerim</strong> und ich
-              bin ein leidenschaftlicher Webentwickler aus Berlin, der es liebt,
-              digitale Träume in die Realität umzusetzen.
-            </p>
-
-            <p>
-              Hinter jedem Projekt steckt eine Geschichte, hinter jedem Code eine
-              Vision. Ich glaube fest daran, dass großartige Websites mehr sind als
-              nur funktionale Tools – sie sind digitale Erlebnisse, die Menschen
-              bewegen und inspirieren.
-            </p>
-
-            <p>
-              Meine Mission ist es, das Web zu einem schöneren und zugänglicheren
-              Ort zu machen. Dabei verbinde ich moderne Technologien mit kreativem
-              Design und stelle den Menschen stets in den Mittelpunkt meiner Arbeit.
-            </p>
-
-            <p>
-              <em
-                >Jede Zeile Code, die ich schreibe, trägt ein Stück meiner
-                Leidenschaft in sich.</em
-              ><br />
-              Von der ersten Idee bis zum finalen Launch begleiten ich Sie auf Ihrer
-              digitalen Reise.
-            </p>
-
-            <p>
-              Ich hoffe, meine Arbeit konnte Sie inspirieren und Ihnen einen
-              Einblick in meine Welt der Webentwicklung geben. Es war mir eine wahre
-              Freude, Sie hier zu haben.
-            </p>
-
-            <p class="about__farewell">
-              <strong
-                >Herzlichen Dank für Ihr Interesse und besuchen Sie mich gerne
-                wieder!</strong
-              >
-            </p>
-
-            <div class="about__cta">
-          <a href="#hero" class="btn btn-primary">Zur Startseite</a>
-          <!-- REPARIERT: Link zu #site-footer (Kontaktbereich) geändert -->
-          <a href="#site-footer" class="btn btn-secondary">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <title>Lebenslauf herunterladen</title>
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                <span>Lebenslauf</span>
-              </a>
-            </div>
-          </div>
-        </div>
+      <div class="about__cta">
+        <a href="#hero" class="btn btn-primary">Zur Startseite</a>
+        <a href="#site-footer" class="btn btn-secondary">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <title>Lebenslauf herunterladen</title>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Lebenslauf</span>
+        </a>
       </div>
-    </section>
-</body>
-</html>
+    </div>
+  </div>
+</div>
