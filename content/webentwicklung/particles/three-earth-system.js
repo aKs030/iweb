@@ -92,7 +92,7 @@ const ThreeEarthManager = (() => {
       };
 
       // Stars
-      starManager = new StarManager(THREE_INSTANCE, scene, camera);
+      starManager = new StarManager(THREE_INSTANCE, scene, camera, renderer);
       const starField = starManager.createStarField();
       setupStarParallax(starField);
 

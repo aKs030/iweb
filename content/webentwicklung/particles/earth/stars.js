@@ -4,10 +4,11 @@ import { createLogger, getElementById } from '../../shared-utilities.js';
 const log = createLogger('EarthStars');
 
 export class StarManager {
-  constructor(THREE, scene, camera) {
+  constructor(THREE, scene, camera, renderer) {
     this.THREE = THREE;
     this.scene = scene;
     this.camera = camera;
+    this.renderer = renderer;
     this.starField = null;
     
     // Animation State for Shader-Transition
@@ -122,15 +123,15 @@ export class StarManager {
     if (cards.length === 0) return [];
 
     const positions = [];
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const width = this.renderer ? this.renderer.domElement.clientWidth : window.innerWidth;
+    const height = this.renderer ? this.renderer.domElement.clientHeight : window.innerHeight;
 
     cards.forEach((card) => {
       const rect = card.getBoundingClientRect();
       
       // Calculate Normalized Device Coordinates (NDC) for center of card
-      const ndcX = ((rect.left + rect.width / 2) / viewportWidth) * 2 - 1;
-      const ndcY = -(((rect.top + rect.height / 2) / viewportHeight) * 2 - 1);
+      const ndcX = ((rect.left + rect.width / 2) / width) * 2 - 1;
+      const ndcY = -(((rect.top + rect.height / 2) / height) * 2 - 1);
 
       const targetZ = -2; // Distance from camera
       const vector = new this.THREE.Vector3(ndcX, ndcY, 0);
@@ -278,19 +279,23 @@ export class ShootingStarManager {
     this.showerTimer = 0;
     this.showerCooldownTimer = 0;
     this.disabled = false;
+
+    // Shared resources to avoid GC pressure
+    this.sharedGeometry = new this.THREE.SphereGeometry(0.05, 8, 8);
+    this.sharedMaterial = new this.THREE.MeshBasicMaterial({
+      color: 0xfffdef,
+      transparent: true,
+      opacity: 1.0
+    });
   }
 
   createShootingStar() {
     if (this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS) return;
 
     try {
-      const geometry = new this.THREE.SphereGeometry(0.05, 8, 8);
-      const material = new this.THREE.MeshBasicMaterial({
-        color: 0xfffdef,
-        transparent: true,
-        opacity: 1.0
-      });
-      const star = new this.THREE.Mesh(geometry, material);
+      // Use cloned material for individual opacity control, but share geometry
+      const material = this.sharedMaterial.clone();
+      const star = new this.THREE.Mesh(this.sharedGeometry, material);
 
       const startPos = {
         x: (Math.random() - 0.5) * 100,
@@ -361,7 +366,7 @@ export class ShootingStarManager {
       // Remove dead stars
       if (star.age > star.lifetime) {
         this.scene.remove(star.mesh);
-        star.mesh.geometry.dispose();
+        // Only dispose the cloned material
         star.mesh.material.dispose();
         this.activeStars.splice(i, 1);
       }
@@ -378,9 +383,12 @@ export class ShootingStarManager {
   cleanup() {
     this.activeStars.forEach((star) => {
       this.scene.remove(star.mesh);
-      star.mesh.geometry?.dispose();
       star.mesh.material?.dispose();
     });
     this.activeStars = [];
+
+    // Dispose shared resources
+    this.sharedGeometry?.dispose();
+    this.sharedMaterial?.dispose();
   }
 }
