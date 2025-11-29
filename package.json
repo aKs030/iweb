@@ -8,6 +8,7 @@
     "test": "playwright test",
     "lint": "eslint . --ext .js --fix",
     "format": "prettier --write .",
+    "prepare": "husky install",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
   },
@@ -15,6 +16,18 @@
     "@playwright/test": "^1.56.1",
     "eslint": "^8.47.0",
     "http-server": "^14.1.1",
-    "prettier": "^3.2.2"
+    "prettier": "^3.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{css,scss,html,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
