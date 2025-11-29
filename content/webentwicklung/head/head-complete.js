@@ -40,9 +40,10 @@
         document.head.insertBefore(frag, insertBefore);
       }
 
-    console.info('head-complete: shared head injected');
     // mark as loaded for page-level fallbacks
-    try { window.SHARED_HEAD_LOADED = true; } catch (_) {}
+    try { window.SHARED_HEAD_LOADED = true; } catch (_) {
+      // Ignore errors when setting global flag
+    }
   } catch (err) {
     console.error('head-complete: failed to load shared head', err);
   }

@@ -78,8 +78,6 @@ test('SectionTracker should correctly handle partial updates from IntersectionOb
     };
   });
 
-  console.log('Test Result:', result);
-
   // Verification
   expect(result.initial).toBe('hero');
   expect(result.fixedResult).toBe('hero'); // This confirms the fix!
