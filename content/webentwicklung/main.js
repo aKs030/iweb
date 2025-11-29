@@ -1,13 +1,11 @@
 /**
  * Main Application Entry Point - Optimized
- * * OPTIMIZATIONS v3.1:
- * - Removed dead code (LazyModuleLoader)
- * - Streamlined initialization sequence
- * - Better error boundaries
- * - Enhanced performance monitoring
- * - Better cleanup handling
- * * @version 3.1.0
- * @last-modified 2025-11-08
+ * * OPTIMIZATIONS v4.0 (Refactored):
+ * - Removed global scope pollution where possible.
+ * - Improved Headless/Test detection.
+ * - Modular architecture support.
+ * * @version 4.0.0
+ * @last-modified 2025-11-09
  */
 
 import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
@@ -25,6 +23,15 @@ import './menu/menu.js';
 
 const log = createLogger('main');
 
+// ===== Configuration & Environment =====
+const ENV = {
+  isTest:
+    new URLSearchParams(window.location.search).has('test') ||
+    navigator.userAgent.includes('HeadlessChrome') ||
+    window.location.hostname === 'localhost' && window.navigator.webdriver,
+  debug: new URLSearchParams(window.location.search).has('debug')
+};
+
 // ===== Performance Tracking =====
 const perfMarks = {
   start: performance.now(),
@@ -40,7 +47,6 @@ const announce = (() => {
   return (message, { assertive = false, dedupe = false } = {}) => {
     if (!message) return;
 
-    // Prevent duplicate announcements
     if (dedupe && cache.has(message)) return;
     if (dedupe) {
       cache.set(message, true);
@@ -52,7 +58,6 @@ const announce = (() => {
       const region = getElementById(id);
       if (!region) return;
 
-      // Clear and announce
       region.textContent = '';
       requestAnimationFrame(() => {
         region.textContent = message;
@@ -63,15 +68,19 @@ const announce = (() => {
   };
 })();
 
+// Export for other modules if needed, but avoid window global if possible.
+// Legacy support for inline scripts or external dependencies:
 window.announce = announce;
 
 // ===== Section Tracker =====
 const sectionTracker = new SectionTracker();
 sectionTracker.init();
+// Kept for debugging/external access if strictly needed, but marked for review
 window.sectionTracker = sectionTracker;
 
 // ===== Section Loader =====
 const SectionLoader = (() => {
+  // Check if already initialized to prevent double execution
   if (window.SectionLoader) return window.SectionLoader;
 
   const SELECTOR = 'section[data-section-src]';
@@ -132,7 +141,6 @@ const SectionLoader = (() => {
     const sectionName = getSectionName(section);
     const attempts = retryAttempts.get(section) || 0;
 
-    // Prepare section
     section.setAttribute('aria-busy', 'true');
     section.dataset.state = 'loading';
 
@@ -147,27 +155,21 @@ const SectionLoader = (() => {
       }
 
       const html = await response.text();
-
-      // Insert content
       section.insertAdjacentHTML('beforeend', html);
 
-      // Handle templates
       const template = section.querySelector('template');
       if (template) {
         section.appendChild(template.content.cloneNode(true));
       }
 
-      // Remove skeletons
       section.querySelectorAll('.section-skeleton').forEach((el) => el.remove());
 
-      // Mark as loaded
       section.dataset.state = 'loaded';
       section.removeAttribute('aria-busy');
 
       announce(`${sectionName} geladen`, { dedupe: true });
       dispatchEvent('section:loaded', section, { state: 'loaded' });
 
-      // Fire hero event if needed
       if (section.id === 'hero') {
         fire(EVENTS.HERO_LOADED);
       }
@@ -181,14 +183,12 @@ const SectionLoader = (() => {
         retryAttempts.set(section, attempts + 1);
         loadedSections.delete(section);
 
-        // Exponential backoff
         const delay = 300 * Math.pow(2, attempts);
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         return loadSection(section);
       }
 
-      // Final error state
       section.dataset.state = 'error';
       section.removeAttribute('aria-busy');
 
@@ -238,10 +238,8 @@ const SectionLoader = (() => {
       }
     });
 
-    // Load eager sections immediately
     eagerSections.forEach(loadSection);
 
-    // Lazy load other sections
     if (lazySections.length) {
       const observer = createLazyLoadObserver(loadSection);
       lazySections.forEach((section) => observer.observe(section));
@@ -254,11 +252,11 @@ const SectionLoader = (() => {
   }
 
   const api = { init, reinit, loadSection, retrySection };
+  // Export to window for compatibility with inline handlers if any, but prefer ES import
   window.SectionLoader = api;
   return api;
 })();
 
-// Initialize section loader
 if (document.readyState !== 'loading') {
   SectionLoader.init();
 } else {
@@ -346,16 +344,12 @@ const ThreeEarthLoader = (() => {
   let cleanupFn = null;
   let isLoading = false;
 
-  const isLighthouse =
-    navigator.userAgent.includes('Chrome-Lighthouse') ||
-    navigator.userAgent.includes('HeadlessChrome');
-
   async function load() {
     if (isLoading || cleanupFn) return;
-    log.info('ThreeEarthLoader: load() invoked, isLoading:', isLoading, 'cleanupFn:', !!cleanupFn);
 
-    if (isLighthouse) {
-      log.info('Lighthouse detected - skipping Three.js');
+    // Explicitly check env for testing to skip heavy WebGL
+    if (ENV.isTest) {
+      log.info('Test environment detected - skipping Three.js Earth system for performance');
       return;
     }
 
@@ -369,18 +363,15 @@ const ThreeEarthLoader = (() => {
 
     try {
       log.info('Loading Three.js Earth system...');
-      log.info('ThreeEarthLoader: importing module particles/three-earth-system.js');
       const module = await import('./particles/three-earth-system.js');
       const ThreeEarthManager = module.default;
 
       cleanupFn = await ThreeEarthManager.initThreeEarth();
-      log.info(
-        'ThreeEarthLoader: initThreeEarth() returned cleanup function:',
-        typeof cleanupFn === 'function'
-      );
 
       if (typeof cleanupFn === 'function') {
-        window.__threeEarthCleanup = cleanupFn;
+        // We only expose cleanup to window if absolutely needed for debugging
+        if (ENV.debug) window.__threeEarthCleanup = cleanupFn;
+
         log.info('Three.js Earth system initialized');
         perfMarks.threeJsLoaded = performance.now();
       }
@@ -430,12 +421,10 @@ document.addEventListener(
 
     fire(EVENTS.DOM_READY);
 
-    // Initialize TypeWriter registry
     if (!window.TypeWriterRegistry) {
       window.TypeWriterRegistry = TypeWriterRegistry;
     }
 
-    // Track readiness state
     let modulesReady = false;
     let windowLoaded = false;
 
@@ -444,7 +433,6 @@ document.addEventListener(
       LoadingScreenManager.hide();
     };
 
-    // Window load handler
     window.addEventListener(
       'load',
       () => {
@@ -455,23 +443,18 @@ document.addEventListener(
       { once: true }
     );
 
-    // Core initialization
     fire(EVENTS.CORE_INITIALIZED);
 
-    // Initialize hero
     fire(EVENTS.HERO_INIT_READY);
     initHeroFeatureBundle();
 
-    // Initialize Three.js (delayed)
     ThreeEarthLoader.initDelayed();
 
-    // Mark modules as ready
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
     fire(EVENTS.MODULES_READY);
     checkReady();
 
-    // Fallback: Force hide after 5 seconds
     setTimeout(() => {
       if (!windowLoaded) {
         log.warn('Forcing loading screen hide after timeout');
@@ -479,10 +462,8 @@ document.addEventListener(
       }
     }, 5000);
 
-    // Request persistent storage
     schedulePersistentStorageRequest(2200);
 
-    // Log performance metrics
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
