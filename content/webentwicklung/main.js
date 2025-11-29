@@ -28,7 +28,7 @@ const ENV = {
   isTest:
     new URLSearchParams(window.location.search).has('test') ||
     navigator.userAgent.includes('HeadlessChrome') ||
-    window.location.hostname === 'localhost' && window.navigator.webdriver,
+    (window.location.hostname === 'localhost' && window.navigator.webdriver),
   debug: new URLSearchParams(window.location.search).has('debug')
 };
 
