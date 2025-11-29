@@ -1,8 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 9.0.0
- * @last-modified 2025-11-09
+ * @version 9.1.0 - Added real loading progress
  */
 
 import { createLogger, getElementById, onResize, TimerManager } from '../shared-utilities.js';
@@ -45,7 +44,6 @@ let currentSection = 'hero';
 let currentQualityLevel = 'HIGH';
 let isMobileDevice = false;
 let frameCount = 0;
-let _loadingWatchdog = null;
 
 // ===== Main Manager =====
 
@@ -64,7 +62,7 @@ const ThreeEarthManager = (() => {
     }
 
     try {
-      log.info('Initializing Three.js Earth System v9.0.0 (Modular)');
+      log.info('Initializing Three.js Earth System v9.1.0 (Modular)');
       registerParticleSystem('three-earth', { type: 'three-earth' });
 
       THREE_INSTANCE = await loadThreeJS();
@@ -77,6 +75,22 @@ const ThreeEarthManager = (() => {
       camera = sceneObjects.camera;
       renderer = sceneObjects.renderer;
 
+      // Loading Manager Setup
+      const loadingManager = new THREE_INSTANCE.LoadingManager();
+      
+      loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+        const progress = itemsLoaded / itemsTotal;
+        showLoadingState(container, progress);
+      };
+
+      loadingManager.onLoad = () => {
+        hideLoadingState(container);
+      };
+
+      loadingManager.onError = (url) => {
+        log.warn('Error loading texture:', url);
+      };
+
       // Stars
       starManager = new StarManager(THREE_INSTANCE, scene, camera);
       const starField = starManager.createStarField();
@@ -87,18 +101,26 @@ const ThreeEarthManager = (() => {
       directionalLight = lights.directionalLight;
       ambientLight = lights.ambientLight;
 
-      // Assets
-      const earthAssets = await createEarthSystem(THREE_INSTANCE, scene, renderer, isMobileDevice);
+      // Assets - Pass loadingManager to all creators
+      // We use Promise.all to start all loads, but the manager tracks individual texture progress
+      const [earthAssets, moonLOD, cloudObj] = await Promise.all([
+        createEarthSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
+        createMoonSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
+        createCloudLayer(THREE_INSTANCE, renderer, loadingManager)
+      ]);
+
       earthMesh = earthAssets.earthMesh;
       dayMaterial = earthAssets.dayMaterial;
       nightMaterial = earthAssets.nightMaterial;
+      moonMesh = moonLOD;
+      cloudMesh = cloudObj;
 
-      moonMesh = await createMoonSystem(THREE_INSTANCE, scene, renderer, isMobileDevice);
-
-      cloudMesh = await createCloudLayer(THREE_INSTANCE, renderer);
-      cloudMesh.position.copy(earthMesh.position);
-      cloudMesh.scale.copy(earthMesh.scale);
-      scene.add(cloudMesh);
+      // Final Scene Assembly
+      if (cloudMesh) {
+        cloudMesh.position.copy(earthMesh.position);
+        cloudMesh.scale.copy(earthMesh.scale);
+        scene.add(cloudMesh);
+      }
 
       const atmosphereMesh = createAtmosphere(THREE_INSTANCE);
       earthMesh.add(atmosphereMesh);
@@ -118,12 +140,6 @@ const ThreeEarthManager = (() => {
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
 
       startAnimationLoop();
-
-      try {
-        hideLoadingState(container);
-      } catch (err) {
-        log.warn('Failed to hide loading overlay after animation start', err);
-      }
       setupResizeHandler();
 
       log.info('Initialization complete');
@@ -209,7 +225,6 @@ const ThreeEarthManager = (() => {
       log.error('Emergency cleanup failed:', e);
     }
     showErrorState(container, error, () => {
-      // Retry logic handled by UI helper but requires re-init call
       cleanup();
       initThreeEarth();
     });
