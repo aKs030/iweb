@@ -45,7 +45,7 @@ export function setupLighting(THREE, scene) {
   return { directionalLight, ambientLight };
 }
 
-export function createAtmosphere(THREE) {
+export function createAtmosphere(THREE, isMobileDevice = false) {
   const vertexShader = `
     varying vec3 vNormal;
     varying vec3 vPosition;
@@ -100,11 +100,13 @@ export function createAtmosphere(THREE) {
     depthWrite: false
   });
 
+  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+
   const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(
       CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE,
-      CONFIG.EARTH.SEGMENTS,
-      CONFIG.EARTH.SEGMENTS
+      segments,
+      segments
     ),
     atmosphereMaterial
   );
