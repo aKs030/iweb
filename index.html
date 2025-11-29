@@ -210,12 +210,12 @@
     <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
     <link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
 
-    <!-- Preload three-earth.css non-blocking -->
+    <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
     <link
-      rel="preload"
+      rel="stylesheet"
       href="/content/webentwicklung/particles/three-earth.css"
-      as="style"
-      onload="this.rel='stylesheet'"
+      media="print"
+      onload="this.media='all';this.onload=null;"
     />
     <noscript
       ><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css"

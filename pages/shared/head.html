@@ -192,6 +192,41 @@
 <!-- Main application script (loads menu, parallax, and other shared JS) -->
 <script type="module" src="/content/webentwicklung/main.js"></script>
 
+<!-- Ensure footer trigger zone exists early for scripts that query it (e.g., three-earth-system) -->
+<script>
+  (function ensureTrigger() {
+    try {
+      // This function registers a DOMContentLoaded listener that will insert the trigger
+      // zone before the footer container, so modules reading the DOM during DOMContentLoaded
+      // will find it. It is intentionally lightweight.
+      document.addEventListener('DOMContentLoaded', function () {
+        if (document.getElementById('footer-trigger-zone')) return;
+        const footerContainer = document.getElementById('footer-container');
+        const target = footerContainer || document.body || document.documentElement;
+        const trigger = document.createElement('div');
+        trigger.id = 'footer-trigger-zone';
+        trigger.className = 'footer-trigger-zone';
+        trigger.setAttribute('aria-hidden', 'true');
+        try {
+          if (footerContainer && footerContainer.parentNode) {
+            footerContainer.parentNode.insertBefore(trigger, footerContainer);
+          } else if (document.body) {
+            document.body.appendChild(trigger);
+          } else {
+            document.documentElement.appendChild(trigger);
+          }
+        } catch (e) {
+          // Fail silently - not critical
+          /* ignored */
+        }
+      }, { once: true });
+    } catch (e) {
+      // Fail silently for strict CSP or other edge cases
+      /* ignored */
+    }
+  })();
+</script>
+
 <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#0d0d0d"/>
 <link rel="icon" type="image/svg+xml" href="/content/img/icons/favicon.svg"/>
