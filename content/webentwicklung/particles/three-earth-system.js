@@ -1383,7 +1383,8 @@ function showLoadingState(container, progress) {
   try {
     log.debug('Loading state updated', progress);
   } catch (_) {
-    // Ignore logging errors
+    // ignore logging failures in constrained environments
+    void 0;
   }
 
   // Start/Reset watchdog
@@ -1438,7 +1439,8 @@ function showErrorState(container, error) {
           // Show the loading UI again for feedback
           showLoadingState(container, 0);
         } catch (_) {
-          // Ignore state update errors during retry
+          // ignore: best-effort UI update; swallow errors that don't affect restart
+          void 0;
         }
         try {
           // Cleanup previous instance if any

@@ -368,10 +368,11 @@ export async function ensurePersistentStorage() {
 export function schedulePersistentStorageRequest(delay = 2500) {
   try {
     setTimeout(() => {
-      ensurePersistentStorage().catch(() => {});
+      ensurePersistentStorage().catch(() => { /* ignore: persistent storage not available/blocked */ void 0; });
     }, delay);
   } catch {
     // Fail silently
+    void 0;
   }
 }
 

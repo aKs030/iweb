@@ -179,12 +179,14 @@ function initializeMenu(container) {
       closeMenu(container);
 
       if (window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')) {
-        // Prevent default to allow smooth close animation then navigate
-        e.preventDefault();
-        setTimeout(() => {
-          window.location.href = href;
-        }, 160);
-      }
+          // Prevent default to allow smooth close animation then navigate
+          if (!isAnchor) {
+            e.preventDefault();
+            setTimeout(() => {
+              window.location.href = href;
+            }, 160);
+          }
+        }
     });
   });
 

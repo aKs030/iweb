@@ -368,6 +368,7 @@ async function initHeroSubtitleImpl({
       twCfg = mod?.typewriterConfig || {};
     } catch {
       /* ignore: hero data module unavailable — proceed with default typewriter configuration */
+      void 0;
     }
 
     const measurer = makeLineMeasurer(subtitleEl);
