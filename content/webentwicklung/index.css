@@ -1,4 +1,4 @@
-/* ===== OPTIMIZED INDEX.CSS v3.0 ===== */
+/* ===== OPTIMIZED INDEX.CSS v3.1 ===== */
 
 /* Scroll-Snap Container */
 .snap-container {
@@ -11,6 +11,10 @@
   scroll-snap-align: start;
   scroll-snap-stop: always;
   min-height: 100vh;
+  /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
+  content-visibility: auto;
+  /* Fallback size estimation to prevent scrollbar jumping */
+  contain-intrinsic-size: 1px 100vh;
 }
 
 @media (max-width: 768px) {
@@ -453,6 +457,3 @@ html {
     transition: none;
   }
 }
-
-/* NOTE: Section header hiding rules were optimized and are handled via JS
-  (see content/webentwicklung/menu/menu.js). Old duplicate rules removed. */
