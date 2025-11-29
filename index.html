@@ -4,8 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Abdul aus Berlin - Webentwicklung &amp; Fotografie</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
       content="Abdul aus Berlin - Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte. Abdul aus Tegel bietet professionelle Webentwicklung und Fotografie-Services in Berlin."
@@ -54,6 +52,9 @@
     <!-- Performance Hints -->
     <meta name="web-vitals-extension" content="enabled" />
     <link rel="preconnect" href="https://abdulkerimsesli.de" />
+    <link rel="dns-prefetch" href="https://api.github.com" />
+    <link rel="dns-prefetch" href="https://linkedin.com" />
+    <link rel="preconnect" href="https://github.com" crossorigin />
 
     <!-- Google Analytics (Consent-gesteuert) -->
     <script
@@ -122,174 +123,33 @@
     <meta name="msapplication-TileColor" content="#07a1ff" />
     <meta name="msapplication-TileImage" content="/content/img/icons/icon-144.png" />
 
-    <link rel="dns-prefetch" href="https://api.github.com" />
-    <link rel="dns-prefetch" href="https://linkedin.com" />
-    <link rel="preconnect" href="https://github.com" crossorigin />
-
     <!-- Kritische CSS synchron laden -->
     <link rel="stylesheet" href="/content/webentwicklung/root.css" />
-    <!-- three-earth.css is loaded non-blocking to avoid render-blocking and improve TTFP -->
-    <link
-      rel="preload"
-      href="/content/webentwicklung/particles/three-earth.css"
-      as="style"
-      onload="this.rel='stylesheet'"
-    />
-    <noscript
-      ><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css"
-    /></noscript>
+    <link rel="stylesheet" href="/content/webentwicklung/index.css" />
+    <link rel="stylesheet" href="/pages/home/hero.css" />
+    <link rel="stylesheet" href="/content/webentwicklung/TypeWriter/typewriter.css" />
+
+    <!-- Component CSS -->
     <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
     <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
     <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
     <link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
-    <!-- Main application script (loads menu, parallax, and other shared JS) -->
+
+    <!-- Preload three-earth.css non-blocking -->
+    <link
+      rel="preload"
+      href="/content/webentwicklung/particles/three-earth.css"
+      as="style"
+      onload="this.rel='stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css"
+    /></noscript>
+
+    <!-- Main application script -->
     <script type="module" src="/content/webentwicklung/main.js"></script>
 
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0d0d0d" />
-    <link rel="icon" type="image/svg+xml" href="/content/img/icons/favicon.svg" />
-
-    <!-- JSON-LD Structured Data -->
-    <script type="application/ld+json" data-cfasync="false">
-      {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Abdulkerim Sesli",
-        "alternateName": [
-          "Abdul aus Berlin",
-          "Abdul aus Tegel",
-          "Abdul Berlin",
-          "Abdul Tegel",
-          "Abdul Webentwickler",
-          "Abdul Fotograf"
-        ],
-        "jobTitle": "Web Developer & Photographer",
-        "description": "Abdul aus Berlin-Tegel - Frontend-Entwickler und Fotograf mit Fokus auf moderne Webtechnologien und kreative digitale Projekte. Bekannt als Abdul aus Tegel.",
-        "url": "https://abdulkerimsesli.de",
-        "image": "https://abdulkerimsesli.de/content/img/icons/icon-512.png",
-        "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"],
-        "knowsAbout": [
-          "JavaScript",
-          "Frontend Development",
-          "Web Development",
-          "Photography",
-          "HTML/CSS",
-          "Node.js"
-        ],
-        "worksFor": {
-          "@type": "Organization",
-          "name": "Freelance"
-        },
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Berlin",
-          "addressCountry": "DE"
-        }
-      }
-    </script>
-
-    <!-- Website Schema -->
-    <script type="application/ld+json" data-cfasync="false">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Abdulkerim Sesli - Digital Portfolio",
-        "url": "https://abdulkerimsesli.de",
-        "description": "Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte.",
-        "author": {
-          "@type": "Person",
-          "name": "Abdulkerim Sesli"
-        },
-        "inLanguage": "de-DE",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": {
-            "@type": "EntryPoint",
-            "urlTemplate": "https://abdulkerimsesli.de/?search={search_term_string}"
-          },
-          "query-input": "required name=search_term_string"
-        }
-      }
-    </script>
-
-    <!-- FAQ Schema -->
-    <script type="application/ld+json" data-cfasync="false">
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "Was für Webentwicklungs-Services bietet Abdulkerim Sesli an?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Abdulkerim Sesli ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive Webdesign. Er erstellt professionelle Websites und digitale Projekte."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Wo ist Abdulkerim Sesli als Webentwickler tätig?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Abdulkerim Sesli arbeitet als Freelance-Webentwickler und Fotograf in Berlin, Deutschland und bietet seine Services deutschlandweit an."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Welche Technologien verwendet Abdulkerim Sesli für Webentwicklung?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien. Zusätzlich bietet er auch professionelle Fotografie-Services an."
-            }
-          }
-        ]
-      }
-    </script>
-    <!-- SHARED_HEAD INJECTED -->
-    <!-- Per page critical CSS -->
-    <link rel="stylesheet" href="/content/webentwicklung/index.css" />
-    <link rel="stylesheet" href="/pages/home/hero.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/TypeWriter/typewriter.css" />
-    <!-- Per-page critical CSS (global styles are added by shared head) -->
-    <link rel="stylesheet" href="/content/webentwicklung/index.css" />
-    <link rel="stylesheet" href="/pages/home/hero.css" />
-    <link rel="stylesheet" href="/content/webentwicklung/TypeWriter/typewriter.css" />
-
-    <!-- Windows Tiles (PWA) -->
-    <meta name="msapplication-TileColor" content="#07a1ff" />
-    <meta name="msapplication-TileImage" content="/content/img/icons/icon-144.png" />
-
-    <link rel="dns-prefetch" href="https://api.github.com" />
-    <link rel="dns-prefetch" href="https://linkedin.com" />
-    <link rel="preconnect" href="https://github.com" crossorigin />
-
-    <!-- Kritische CSS synchron laden (root.css provided via SHARED_HEAD) -->
-    <!-- Preload for three-earth is handled in shared head in standard path but kept for index fallback -->
-    <link
-      rel="preload"
-      href="/content/webentwicklung/particles/three-earth.css"
-      as="style"
-      onload="this.rel='stylesheet'"
-    />
-    <noscript
-      ><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css"
-    /></noscript>
-
-    <!-- Footer CSS synchron laden (Footer ist immer sichtbar/fixed) -->
-    <!-- footer styles are now included via shared head -->
-
-    <!-- Preload three-earth.css non-blocking for Index page -->
-    <link
-      rel="preload"
-      href="/content/webentwicklung/particles/three-earth.css"
-      as="style"
-      onload="this.rel='stylesheet'"
-    />
-    <noscript
-      ><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css"
-    /></noscript>
-
-    <!-- About Section Styles (Below-the-Fold) -->
+    <!-- Deferred Styles (Below-the-Fold) -->
     <link
       rel="stylesheet"
       href="/pages/about/about.css"
@@ -298,7 +158,6 @@
     />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
-    <!-- Karten Section Styles (Below-the-Fold) -->
     <link
       rel="stylesheet"
       href="/pages/card/karten.css"
@@ -306,6 +165,8 @@
       onload="this.media='all';this.onload=null;"
     />
     <noscript><link rel="stylesheet" href="/pages/card/karten.css" /></noscript>
+
+    <link rel="manifest" href="/manifest.json" />
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json" data-cfasync="false">
@@ -403,12 +264,6 @@
         ]
       }
     </script>
-
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0d0d0d" />
-    <link rel="icon" type="image/svg+xml" href="/content/img/icons/favicon.svg" />
-
-    <!-- Removed duplicate page title (first occurrence retained) -->
   </head>
   <body>
     <!-- Menü (dynamisch geladen) -->
@@ -509,8 +364,7 @@
       <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
     </main>
 
-    <!-- main.js is loaded via shared head -->
-
+    <!-- Footer container -->
     <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
     <script src="/content/webentwicklung/footer/footer-complete.js" type="module"></script>
   </body>

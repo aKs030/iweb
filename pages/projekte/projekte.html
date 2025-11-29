@@ -1,316 +1,48 @@
 <!doctype html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Meine Projekte</title>
-    <meta charset="utf-8" />
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-/>
-<meta
-    name="description"
-    content="Abdul aus Berlin - Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte. Abdul aus Tegel bietet professionelle Webentwicklung und Fotografie-Services in Berlin."
-/>
-<meta
-    name="keywords"
-    content="Abdul Berlin, Abdul Tegel, Abdulkerim Sesli, Abdul Webentwickler Berlin, Abdul Fotograf Tegel, Portfolio, Webentwicklung Berlin, Frontend Developer Tegel, Fotografie Berlin, Abdul aus Berlin, Abdul aus Tegel"
-/>
-<meta name="author" content="Abdulkerim Sesli - Abdul aus Berlin" />
-<meta
-    name="google-site-verification"
-    content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs"
-/>
-<!-- Security Headers: Diese müssen serverseitig gesetzt werden -->
-<!-- X-Content-Type-Options: nosniff -->
-<!-- X-Frame-Options: DENY -->
-<!-- Referrer-Policy: strict-origin-when-cross-origin -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Meine Projekte - Abdulkerim Sesli</title>
 
-<!-- Performance and Caching -->
-<meta
-    http-equiv="Cache-Control"
-    content="public, max-age=31536000, immutable"
-/>
+    <meta
+      name="description"
+      content="Interaktive Web-Projekte und Experimente von Abdulkerim Sesli. Von kleinen JS-Games bis zu React-Apps."
+    />
+    <meta
+      name="keywords"
+      content="Abdul Berlin, Web Projekte, JavaScript Games, React Portfolio, Frontend Development"
+    />
+    <meta name="author" content="Abdulkerim Sesli" />
 
-<!-- Modern Browser Features -->
-<meta name="format-detection" content="telephone=no" />
-<meta name="mobile-web-app-capable" content="yes" />
+    <!-- Security & Performance -->
+    <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="color-scheme" content="dark light" />
 
-<!-- Theme Color -->
-<meta
-    name="theme-color"
-    content="#2c2c2e"
-    media="(prefers-color-scheme: dark)"
-/>
-<meta
-    name="theme-color"
-    content="#ffffff"
-    media="(prefers-color-scheme: light)"
-/>
+    <!-- Favicons -->
+    <link rel="icon" href="/content/img/icons/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" sizes="96x96" href="/content/img/icons/icon-96.png" type="image/png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/content/img/icons/icon-192.png" />
 
-<!-- iOS Web App -->
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="Abdulkerim Sesli" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/content/webentwicklung/root.css" />
+    <link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
+    <link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
+    <link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
+    <link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
 
-<!-- Color Scheme -->
-<meta name="color-scheme" content="dark light" />
+    <!-- Three Earth CSS (Preload) -->
+    <link rel="preload" href="/content/webentwicklung/particles/three-earth.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
 
-<!-- AI Crawler friendly meta tags -->
-<meta
-    name="robots"
-    content="index, follow, max-image-preview:standard, max-snippet:-1, max-video-preview:30"
-/>
-<meta name="revisit-after" content="7 days" />
-<meta
-    name="ai-content-declaration"
-    content="This website was built by human developer Abdulkerim Sesli. Content is original and human-created."
-/>
-
-<!-- Performance Hints -->
-<meta name="web-vitals-extension" content="enabled" />
-<link rel="preconnect" href="https://abdulkerimsesli.de" />
-
-<!-- Google Analytics (Consent-gesteuert) -->
-<script type="text/plain" data-consent="required" data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN" async></script>
-<script type="text/plain" data-consent="required">
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-S0587RQ4CN');
-</script>
-
-<!-- Open Graph Meta-Tags -->
-<meta
-    property="og:title"
-    content="Meine Projekte"
-/>
-<meta
-    property="og:description"
-    content="Abdul aus Tegel/Berlin - Professionelle Webentwicklung und Fotografie von Abdulkerim Sesli."
-/>
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://abdulkerimsesli.de" />
-<meta
-    property="og:image"
-    content="https://abdulkerimsesli.de/content/img/og/og-home.svg"
-/>
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta
-    property="og:image:alt"
-    content="Abdulkerim Sesli Portfolio - Webentwicklung und Fotografie"
-/>
-<meta property="og:locale" content="de_DE" />
-<meta property="og:site_name" content="Abdulkerim Sesli Portfolio" />
-
-<!-- Twitter Card Meta-Tags -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta
-    name="twitter:title"
-    content="Abdul aus Berlin – Webentwicklung &amp; Fotografie"
-/>
-<meta
-    name="twitter:description"
-    content="Abdul aus Tegel/Berlin - Portfolio von Abdulkerim Sesli."
-/>
-<meta
-    name="twitter:image"
-    content="https://abdulkerimsesli.de/content/img/og/og-home.svg"
-/>
-<meta
-    name="twitter:image:alt"
-    content="Abdulkerim Sesli Portfolio Preview"
-/>
-<meta name="twitter:creator" content="@abdulkerimsesli" />
-<meta name="twitter:site" content="@abdulkerimsesli" />
-
-<!-- LinkedIn Meta-Tags -->
-<meta property="article:author" content="Abdulkerim Sesli" />
-<meta property="article:publisher" content="https://abdulkerimsesli.de" />
-
-<!-- WhatsApp/Telegram Sharing -->
-<meta property="og:image:type" content="image/svg+xml" />
-<meta
-    property="og:image:secure_url"
-    content="https://abdulkerimsesli.de/content/img/og/og-home.svg"
-/>
-
-<!-- Open Graph & PWA / Icons / Fonts etc... -->
-<link
-    rel="icon"
-    href="/content/img/icons/favicon.svg"
-    type="image/svg+xml"
-/>
-<link
-    rel="icon"
-    sizes="96x96"
-    href="/content/img/icons/icon-96.png"
-    type="image/png"
-/>
-<link
-    rel="icon"
-    sizes="144x144"
-    href="/content/img/icons/icon-144.png"
-    type="image/png"
-/>
-<link
-    rel="icon"
-    sizes="192x192"
-    href="/content/img/icons/icon-192.png"
-    type="image/png"
-/>
-<link
-    rel="apple-touch-icon"
-    sizes="192x192"
-    href="/content/img/icons/icon-192.png"
-/>
-<link
-    rel="mask-icon"
-    href="/content/img/icons/favicon.svg"
-    color="#07a1ff"
-/>
-
-<!-- Windows Tiles (PWA) -->
-<meta name="msapplication-TileColor" content="#07a1ff" />
-<meta
-    name="msapplication-TileImage"
-    content="/content/img/icons/icon-144.png"
-/>
-
-<link rel="dns-prefetch" href="https://api.github.com" />
-<link rel="dns-prefetch" href="https://linkedin.com" />
-<link rel="preconnect" href="https://github.com" crossorigin />
-
-<!-- Kritische CSS synchron laden -->
-<link rel="stylesheet" href="/content/webentwicklung/root.css" />
-<!-- three-earth.css is loaded non-blocking to avoid render-blocking and improve TTFP -->
-<link rel="preload" href="/content/webentwicklung/particles/three-earth.css" as="style" onload="this.rel='stylesheet'" />
-<noscript><link rel="stylesheet" href="/content/webentwicklung/particles/three-earth.css" /></noscript>
-<link rel="stylesheet" href="/content/webentwicklung/menu/menu.css" />
-<link rel="stylesheet" href="/content/webentwicklung/footer/footer.css" />
-<link rel="stylesheet" href="/content/webentwicklung/footer/day-night-artwork.css" />
-<link rel="stylesheet" href="/content/webentwicklung/footer/cookie-consent.css" />
-<!-- Main application script (loads menu, parallax, and other shared JS) -->
-<script type="module" src="/content/webentwicklung/main.js"></script>
-
-<link rel="manifest" href="/manifest.json"/>
-<meta name="theme-color" content="#0d0d0d"/>
-<link rel="icon" type="image/svg+xml" href="/content/img/icons/favicon.svg"/>
-
-<!-- JSON-LD Structured Data -->
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Abdulkerim Sesli",
-    "alternateName": [
-      "Abdul aus Berlin",
-      "Abdul aus Tegel",
-      "Abdul Berlin",
-      "Abdul Tegel",
-      "Abdul Webentwickler",
-      "Abdul Fotograf"
-    ],
-    "jobTitle": "Web Developer & Photographer",
-    "description": "Abdul aus Berlin-Tegel - Frontend-Entwickler und Fotograf mit Fokus auf moderne Webtechnologien und kreative digitale Projekte. Bekannt als Abdul aus Tegel.",
-    "url": "https://abdulkerimsesli.de",
-"image": "https://abdulkerimsesli.de/content/img/icons/icon-512.png",
-    "sameAs": [
-      "https://github.com/aKs030",
-      "https://linkedin.com/in/abdulkerimsesli"
-    ],
-    "knowsAbout": [
-      "JavaScript",
-      "Frontend Development",
-      "Web Development",
-      "Photography",
-      "HTML/CSS",
-      "Node.js"
-    ],
-    "worksFor": {
-      "@type": "Organization",
-      "name": "Freelance"
-    },
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Berlin",
-      "addressCountry": "DE"
-    }
-  }
-</script>
-
-<!-- Website Schema -->
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Abdulkerim Sesli - Digital Portfolio",
-    "url": "https://abdulkerimsesli.de",
-    "description": "Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte.",
-    "author": {
-      "@type": "Person",
-      "name": "Abdulkerim Sesli"
-    },
-    "inLanguage": "de-DE",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://abdulkerimsesli.de/?search={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    }
-  }
-</script>
-
-<!-- FAQ Schema -->
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Was für Webentwicklungs-Services bietet Abdulkerim Sesli an?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Abdulkerim Sesli ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive Webdesign. Er erstellt professionelle Websites und digitale Projekte."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Wo ist Abdulkerim Sesli als Webentwickler tätig?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Abdulkerim Sesli arbeitet als Freelance-Webentwickler und Fotograf in Berlin, Deutschland und bietet seine Services deutschlandweit an."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Welche Technologien verwendet Abdulkerim Sesli für Webentwicklung?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien. Zusätzlich bietet er auch professionelle Fotografie-Services an."
-        }
-      }
-    ]
-  }
-</script>
-<!-- SHARED_HEAD INJECTED -->
-    <!-- 1. React & ReactDOM (Notwendig für die Logik) -->
+    <!-- React -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-    <!-- KEIN Babel mehr notwendig -->
+    <!-- Main JS -->
+    <script type="module" src="/content/webentwicklung/main.js"></script>
 
-    <!-- Per-page styles only -->
-        <!-- Preload three-earth.css non-blocking for this page (relative path) -->
-        <link rel="preload" href="../../content/webentwicklung/particles/three-earth.css" as="style" onload="this.rel='stylesheet'" />
-        <noscript><link rel="stylesheet" href="../../content/webentwicklung/particles/three-earth.css" /></noscript>
-
-    <!-- Internes CSS -->
     <style>
         :root {
             --bg-color: #0a0a0f;
@@ -326,40 +58,53 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: system-ui, -apple-system, sans-serif;
-            overflow: hidden;
+            /* Restore native scrolling */
+            overflow-x: hidden;
+            overflow-y: auto;
             -webkit-font-smoothing: antialiased;
         }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        /* Adjust global scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
         @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
         @keyframes bounce { 0%, 100% { transform: translateY(-25%); } 50% { transform: none; } }
 
-        #root { position: relative; z-index: 10; height: 100vh; }
-
-        /* Page scroller now transparent so the 3D background remains visible through sections
-           Keep the top-level body color for the page frame but remove opaque layers in the scroller. */
-        .page-scroller {
-            height: 100vh; width: 100%; overflow-y: auto;
-            scroll-snap-type: y mandatory; scroll-behavior: smooth;
-            background-color: transparent;
+        /* Root wrapper for React content - allows flow content */
+        #root {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            /* Ensure footer can sit below */
+            display: flex;
+            flex-direction: column;
         }
 
         .site-header { position: fixed; top: 12px; z-index: 10000; width: 100%; }
 
-          /* Keep the three-earth container behind the page content. A negative z-index
-              helps to avoid unexpected stacking when browsers create new stacking contexts.
-              The component's own css sets it to -5 in the external stylesheet; prefer that
-              value to ensure it remains in the background. */
-          /* put the three-earth canvas above the default body background but behind the React app (#root)
-              so it becomes visible even if the body has a solid background. */
-          .three-earth-container { z-index: 0 !important; opacity: 0.7; position: fixed; inset: 0; pointer-events: none; }
-        .three-earth-loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.8); }
+        /* Earth Background: Fixed position behind content */
+        .three-earth-container {
+            z-index: 0 !important;
+            opacity: 0.7;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+        }
 
-        .bg-orb { position: absolute; border-radius: 9999px; filter: blur(120px); animation: pulse-slow 6s infinite; z-index: -1; }
+        .three-earth-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Decorative Orbs - Fixed background */
+        .bg-orb { position: fixed; border-radius: 9999px; filter: blur(120px); animation: pulse-slow 6s infinite; z-index: -1; pointer-events: none; }
         .orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background-color: rgba(30, 58, 138, 0.1); }
         .orb-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background-color: rgba(49, 46, 129, 0.1); animation-delay: 1s; }
 
@@ -367,7 +112,21 @@
         @media (min-width: 1024px) { .progress-dots { display: flex; } }
         .dot { width: 0.375rem; height: 0.375rem; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.2); }
 
-        .snap-section { scroll-snap-align: start; min-height: 100vh; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; padding: 6rem 1.5rem; border-bottom: 1px solid var(--border-light); box-sizing: border-box; }
+        /* Sections */
+        .snap-section {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            padding: 6rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            box-sizing: border-box;
+        }
+
         .container-center { position: relative; z-index: 10; max-width: 64rem; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; }
 
         .badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #93c5fd; font-size: 0.75rem; font-weight: 500; margin-bottom: 2rem; backdrop-filter: blur(24px); cursor: default; }
@@ -425,15 +184,13 @@
         .back-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; height: 75%; border-radius: 9999px; filter: blur(80px); opacity: 0; transition: opacity 0.7s; pointer-events: none; }
         .group:hover .back-glow { opacity: 0.2; }
     </style>
-</head>
-<body>
-
-    <!-- MENÜ LEISTE -->
+  </head>
+  <body>
     <header class="site-header">
         <div id="menu-container"></div>
     </header>
 
-    <!-- 3D ERDE CONTAINER -->
+    <!-- 3D ERDE -->
     <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
         <div class="three-earth-loading" role="status" aria-live="polite">
             <div class="loading-spinner" aria-hidden="true"></div>
@@ -446,174 +203,87 @@
         <div class="three-earth-error hidden"><p>WebGL Fehler</p></div>
     </div>
 
-    <!-- REACT APP ROOT -->
+    <!-- Orbs behind everything -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <!-- REACT ROOT (Main Content) -->
     <div id="root"></div>
 
-    <!-- REACT CODE (OHNE JSX/BABEL) -->
+    <!-- Footer -->
+    <div id="footer-container" data-footer-src="/content/webentwicklung/footer/footer.html"></div>
+
     <script>
         const e = React.createElement;
 
-        // --- Helper: Icon Component ---
-        const IconBase = ({ children, className, style, ...props }) => {
-            return e('svg', {
-                xmlns: "http://www.w3.org/2000/svg",
-                width: "24", height: "24", viewBox: "0 0 24 24",
-                fill: "none", stroke: "currentColor", strokeWidth: "2",
-                strokeLinecap: "round", strokeLinejoin: "round",
-                className: className,
-                style: style,
-                ...props
-            }, children);
-        };
+        // --- Components ---
+        const IconBase = ({ children, className, style, ...props }) => e('svg', {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24", height: "24", viewBox: "0 0 24 24",
+            fill: "none", stroke: "currentColor", strokeWidth: "2",
+            strokeLinecap: "round", strokeLinejoin: "round",
+            className: className, style: style, ...props
+        }, children);
 
-        // --- Icons ---
-        const ExternalLink = (props) => e(IconBase, props,
-            e('path', { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }),
-            e('polyline', { points: "15 3 21 3 21 9" }),
-            e('line', { x1: "10", x2: "21", y1: "14", y2: "3" })
-        );
-
-        const Github = (props) => e(IconBase, props,
-            e('path', { d: "M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" }),
-            e('path', { d: "M9 18c-4.51 2-5-2-7-2" })
-        );
-
-        const ArrowDown = (props) => e(IconBase, props,
-            e('path', { d: "M12 5v14" }),
-            e('path', { d: "m19 12-7 7-7-7" })
-        );
-
-        const MousePointerClick = (props) => e(IconBase, props,
-            e('path', { d: "M14 4.1 12 6" }),
-            e('path', { d: "m5.1 8-2.9-.8" }),
-            e('path', { d: "m6 12-1.9 2" }),
-            e('path', { d: "M7.2 2.2 8 5.1" }),
-            e('path', { d: "M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" })
-        );
-
-        const Palette = (props) => e(IconBase, props,
-            e('circle', { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }),
-            e('circle', { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }),
-            e('circle', { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }),
-            e('circle', { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }),
-            e('path', { d: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" })
-        );
-
-        const Binary = (props) => e(IconBase, props,
-            e('rect', { x: "14", y: "14", width: "4", height: "6", rx: "2" }),
-            e('rect', { x: "6", y: "4", width: "4", height: "6", rx: "2" }),
-            e('path', { d: "M6 20h4" }),
-            e('path', { d: "M14 10h4" }),
-            e('path', { d: "M6 14h2v6" }),
-            e('path', { d: "M14 4h2v6" })
-        );
-
-        const Gamepad2 = (props) => e(IconBase, props,
-            e('line', { x1: "6", x2: "10", y1: "11", y2: "11" }),
-            e('line', { x1: "8", x2: "8", y1: "9", y2: "13" }),
-            e('line', { x1: "15", x2: "15.01", y1: "12", y2: "12" }),
-            e('line', { x1: "18", x2: "18.01", y1: "10", y2: "10" }),
-            e('path', { d: "M17.3 2.9A2 2 0 0 0 15 2H9a2 2 0 0 0-2.3.9C3.8 5.7 3 9.4 4.2 13c1 3 3.6 5 6.8 5h2c3.2 0 5.8-2 6.8-5 1.2-3.6.4-7.3-2.5-10.1Z" })
-        );
-
-        const ListTodo = (props) => e(IconBase, props,
-            e('rect', { x: "3", y: "5", width: "6", height: "6", rx: "1" }),
-            e('path', { d: "m3 17 2 2 4-4" }),
-            e('path', { d: "M13 6h8" }),
-            e('path', { d: "M13 12h8" }),
-            e('path', { d: "M13 18h8" })
-        );
-
-        const Check = (props) => e(IconBase, props,
-            e('path', { d: "M20 6 9 17l-5-5" })
-        );
+        const ExternalLink = (props) => e(IconBase, props, e('path', { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }), e('polyline', { points: "15 3 21 3 21 9" }), e('line', { x1: "10", x2: "21", y1: "14", y2: "3" }));
+        const Github = (props) => e(IconBase, props, e('path', { d: "M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" }), e('path', { d: "M9 18c-4.51 2-5-2-7-2" }));
+        const ArrowDown = (props) => e(IconBase, props, e('path', { d: "M12 5v14" }), e('path', { d: "m19 12-7 7-7-7" }));
+        const MousePointerClick = (props) => e(IconBase, props, e('path', { d: "M14 4.1 12 6" }), e('path', { d: "m5.1 8-2.9-.8" }), e('path', { d: "m6 12-1.9 2" }), e('path', { d: "M7.2 2.2 8 5.1" }), e('path', { d: "M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" }));
+        const Palette = (props) => e(IconBase, props, e('circle', { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }), e('circle', { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }), e('circle', { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }), e('circle', { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }), e('path', { d: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" }));
+        const Binary = (props) => e(IconBase, props, e('rect', { x: "14", y: "14", width: "4", height: "6", rx: "2" }), e('rect', { x: "6", y: "4", width: "4", height: "6", rx: "2" }), e('path', { d: "M6 20h4" }), e('path', { d: "M14 10h4" }), e('path', { d: "M6 14h2v6" }), e('path', { d: "M14 4h2v6" }));
+        const Gamepad2 = (props) => e(IconBase, props, e('line', { x1: "6", x2: "10", y1: "11", y2: "11" }), e('line', { x1: "8", x2: "8", y1: "9", y2: "13" }), e('line', { x1: "15", x2: "15.01", y1: "12", y2: "12" }), e('line', { x1: "18", x2: "18.01", y1: "10", y2: "10" }), e('path', { d: "M17.3 2.9A2 2 0 0 0 15 2H9a2 2 0 0 0-2.3.9C3.8 5.7 3 9.4 4.2 13c1 3 3.6 5 6.8 5h2c3.2 0 5.8-2 6.8-5 1.2-3.6.4-7.3-2.5-10.1Z" }));
+        const ListTodo = (props) => e(IconBase, props, e('rect', { x: "3", y: "5", width: "6", height: "6", rx: "1" }), e('path', { d: "m3 17 2 2 4-4" }), e('path', { d: "M13 6h8" }), e('path', { d: "M13 12h8" }), e('path', { d: "M13 18h8" }));
+        const Check = (props) => e(IconBase, props, e('path', { d: "M20 6 9 17l-5-5" }));
 
         // --- DATA ---
         const projects = [
             {
                 id: 1,
                 title: "Schere Stein Papier",
-                description: "Der Klassiker gegen den Computer! Hier habe ich gelernt, wie man Zufall (Math.random) nutzt und Gewinner-Logik programmiert.",
-                tags: ["JavaScript Basics", "Logik", "DOM Manipulation"],
-                category: "Game Logic",
+                description: "Der Klassiker gegen den Computer!",
+                tags: ["JavaScript", "Game Logic"],
+                category: "Game",
                 bgStyle: { background: "linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))" },
                 glowColor: "#a855f7",
                 icon: e(Gamepad2, { style: { color: "#c084fc", width: "32px", height: "32px" } }),
                 previewContent: e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%', height: '100%', position: 'relative', zIndex: 10 } },
-                    e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '1rem', borderRadius: '1rem', backgroundColor: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)' } },
-                        e('div', { style: { fontSize: '3rem', animation: 'bounce 2s infinite' } }, "🪨"),
-                        e('span', { style: { fontSize: '0.75rem', fontWeight: 'bold', color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.05em' } }, "Du")
-                    ),
-                    e('div', { style: { fontWeight: '900', fontSize: '1.5rem', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' } }, "VS"),
-                    e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '1rem', borderRadius: '1rem', backgroundColor: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.2)' } },
-                        e('div', { style: { fontSize: '3rem', animation: 'pulse-slow 2s infinite' } }, "✂️"),
-                        e('span', { style: { fontSize: '0.75rem', fontWeight: 'bold', color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: '0.05em' } }, "CPU")
-                    )
+                    e('div', { style: { fontSize: '3rem' } }, "🪨"),
+                    e('div', { style: { fontSize: '1.5rem', opacity: 0.5 } }, "VS"),
+                    e('div', { style: { fontSize: '3rem' } }, "✂️")
                 )
             },
             {
                 id: 2,
                 title: "Zahlen Raten",
-                description: "Finde die geheime Zahl zwischen 1 und 100. Das Programm gibt Hinweise wie 'Zu hoch' oder 'Zu niedrig'.",
-                tags: ["Input Handling", "Vergleiche", "If/Else"],
-                category: "Denkspiel",
+                description: "Finde die geheime Zahl zwischen 1 und 100.",
+                tags: ["Logic", "Input"],
+                category: "Puzzle",
                 bgStyle: { background: "linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))" },
                 glowColor: "#10b981",
                 icon: e(Binary, { style: { color: "#34d399", width: "32px", height: "32px" } }),
-                previewContent: e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', width: '100%', height: '100%', position: 'relative', zIndex: 10 } },
-                    e('div', { style: { position: 'relative' } },
-                        e('div', { style: { fontSize: '5rem', fontWeight: '900', background: 'linear-gradient(to bottom, #6ee7b7, #059669)', WebkitBackgroundClip: 'text', color: 'transparent' } }, "?")
-                    ),
-                    e('div', { style: { display: 'flex', gap: '0.75rem' } },
-                        e('span', { style: { padding: '0.375rem 1rem', borderRadius: '9999px', backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#6ee7b7', fontSize: '0.75rem', fontWeight: '500' } }, "Zu hoch ⬆️"),
-                        e('span', { style: { padding: '0.375rem 1rem', borderRadius: '9999px', backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#6ee7b7', fontSize: '0.75rem', fontWeight: '500' } }, "Zu niedrig ⬇️")
-                    )
-                )
+                previewContent: e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' } }, e('span', { style: { fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold' } }, "?"))
             },
             {
                 id: 3,
-                title: "Bunter Hintergrund",
-                description: "Ein Klick verändert alles! Ein Projekt, um zu verstehen, wie man CSS-Styles direkt per Code (Events) verändert.",
-                tags: ["CSS in JS", "Events", "Hex-Codes"],
-                category: "Interaktion",
+                title: "Color Changer",
+                description: "Dynamische Hintergrundfarben per Klick.",
+                tags: ["DOM", "Events"],
+                category: "UI",
                 bgStyle: { background: "linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))" },
                 glowColor: "#ec4899",
                 icon: e(Palette, { style: { color: "#f472b6", width: "32px", height: "32px" } }),
-                previewContent: e('div', { style: { width: '100%', height: '100%', borderRadius: '0.75rem', background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(249, 115, 22, 0.3))', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' } },
-                    e('div', { style: { position: 'absolute', top: '-20%', left: '-20%', opacity: 0.1, transform: 'rotate(12deg)' } },
-                        e(Palette, { style: { width: '10rem', height: '10rem' } })
-                    ),
-                    e('button', { style: { position: 'relative', zIndex: 10, padding: '0.75rem 1.5rem', backgroundColor: 'rgba(255,255,255,0.9)', color: '#db2777', fontWeight: 'bold', borderRadius: '9999px', border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 10px 20px -5px rgba(236, 72, 153, 0.4)' } },
-                        e(Palette, { style: { width: '1.25rem', height: '1.25rem' } }),
-                        e('span', null, "Farbe ändern")
-                    ),
-                    e('div', { style: { position: 'absolute', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', fontSize: '0.75rem', fontFamily: 'monospace', color: 'rgba(255,255,255,0.6)', backgroundColor: 'rgba(0,0,0,0.2)', padding: '0.25rem 0.75rem', borderRadius: '9999px' } }, "#FF5733")
-                )
+                previewContent: e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' } }, e(Palette, { style: { width: '4rem', height: '4rem', color: '#f472b6' } }))
             },
             {
                 id: 4,
-                title: "Meine To-Do Liste",
-                description: "Nie wieder etwas vergessen. Hier habe ich gelernt, wie man neue HTML-Elemente erstellt und wieder löscht.",
-                tags: ["Arrays", "CreateElement", "Listen"],
-                category: "Productivity",
+                title: "To-Do Liste",
+                description: "Produktivitäts-Tool zum Verwalten von Aufgaben.",
+                tags: ["CRUD", "Arrays"],
+                category: "App",
                 bgStyle: { background: "linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))" },
                 glowColor: "#06b6d4",
                 icon: e(ListTodo, { style: { color: "#22d3ee", width: "32px", height: "32px" } }),
-                previewContent: e('div', { style: { width: '100%', maxWidth: '220px', display: 'flex', flexDirection: 'column', gap: '0.625rem', position: 'relative', zIndex: 10 } },
-                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem', borderRadius: '0.75rem', backgroundColor: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.2)' } },
-                        e('div', { style: { width: '1.5rem', height: '1.5rem', borderRadius: '0.375rem', backgroundColor: '#06b6d4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' } }, e(Check, { style: { width: '0.875rem', height: '0.875rem', strokeWidth: 3 } })),
-                        e('span', { style: { fontSize: '0.875rem', color: 'rgba(165, 243, 252, 0.6)', textDecoration: 'line-through', fontWeight: '500' } }, "HTML Grundlagen")
-                    ),
-                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem', borderRadius: '0.75rem', backgroundColor: 'rgba(6, 182, 212, 0.2)', border: '1px solid rgba(6, 182, 212, 0.3)', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' } },
-                        e('div', { style: { width: '1.5rem', height: '1.5rem', borderRadius: '0.375rem', border: '2px solid rgba(34, 211, 238, 0.5)', backgroundColor: 'rgba(34, 211, 238, 0.1)' } }),
-                        e('span', { style: { fontSize: '0.875rem', color: '#67e8f9', fontWeight: '600' } }, "JS Projekt bauen")
-                    ),
-                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem', borderRadius: '0.75rem', backgroundColor: 'rgba(6, 182, 212, 0.05)', border: '1px solid rgba(6, 182, 212, 0.1)', opacity: 0.6 } },
-                        e('div', { style: { width: '1.5rem', height: '1.5rem', borderRadius: '0.375rem', border: '2px solid rgba(6, 182, 212, 0.2)' } }),
-                        e('span', { style: { fontSize: '0.875rem', color: '#9ca3af', fontWeight: '500' } }, "CSS Animationen")
-                    ),
-                    e('div', { style: { position: 'absolute', bottom: '-1rem', right: '-0.5rem', width: '2.5rem', height: '2.5rem', backgroundColor: '#06b6d4', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 10px 15px -3px rgba(6, 182, 212, 0.3)', fontSize: '1.25rem', fontWeight: 'bold', cursor: 'pointer' } }, "+")
-                )
+                previewContent: e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' } }, e(Check, { style: { width: '4rem', height: '4rem', color: '#22d3ee' } }))
             }
         ];
 
@@ -624,12 +294,8 @@
                 if (firstProject) firstProject.scrollIntoView({ behavior: 'smooth' });
             };
 
-            return e('div', { className: 'page-scroller' },
-                // Background & Dots
-                e('div', { style: { position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' } },
-                    e('div', { className: 'bg-orb orb-1' }),
-                    e('div', { className: 'bg-orb orb-2' })
-                ),
+            return e(React.Fragment, null,
+                // Progress Dots
                 e('div', { className: 'progress-dots' },
                     e('div', { className: 'dot' }),
                     projects.map(p => e('div', { key: p.id, className: 'dot' })),
@@ -637,7 +303,7 @@
                 ),
 
                 // Hero Section
-                e('section', { className: 'snap-section' },
+                e('section', { className: 'snap-section', id: 'hero' },
                     e('div', { className: 'container-center' },
                         e('div', { className: 'badge' },
                             e('span', { className: 'badge-dot-container' },
@@ -651,9 +317,7 @@
                             e('span', { className: 'text-gradient-accent' }, "Projekte.")
                         ),
                         e('p', { className: 'description' },
-                            "Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten ",
-                            e('span', { style: { fontFamily: 'monospace', backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.1rem 0.3rem', borderRadius: '0.2rem' } }, "console.log"),
-                            " bis zu interaktiven Web-Apps."
+                            "Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten console.log bis zu interaktiven Web-Apps."
                         ),
                         e('div', { className: 'btn-group' },
                             e('button', { onClick: scrollToProjects, className: 'btn btn-primary' },
@@ -703,7 +367,7 @@
                 )),
 
                 // Contact Section
-                e('section', { className: 'snap-section contact-section' },
+                e('section', { className: 'snap-section contact-section', id: 'contact' },
                     e('div', { className: 'container-center' },
                         e('div', { style: { marginBottom: '2rem' } },
                             e('div', { className: 'contact-icon-wrapper' },
@@ -714,8 +378,7 @@
                         e('p', { className: 'contact-text' }, "Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?"),
                         e('div', { className: 'btn-group' },
                             e('button', { className: 'btn btn-primary', style: { backgroundColor: '#2563eb', color: 'white' } }, "Schreib mir")
-                        ),
-                        e('div', { className: 'footer-note' }, "Made with React & CSS")
+                        )
                     )
                 )
             );
@@ -725,9 +388,9 @@
         root.render(e(App));
     </script>
 
-    <!-- 5. Initialisierung der 3D Erde -->
+    <!-- Three.js Logic -->
     <script type="module">
-        import { initThreeEarth, EarthSystemAPI } from '../../content/webentwicklung/particles/three-earth-system.js';
+        import { initThreeEarth, EarthSystemAPI } from '/content/webentwicklung/particles/three-earth-system.js';
 
         window.addEventListener('DOMContentLoaded', () => {
             try {
@@ -754,26 +417,6 @@
         });
     </script>
 
-    <!-- Menu & Footer Scripts -->
-    <!-- menu.js is loaded via /content/webentwicklung/main.js to avoid duplicate inclusion -->
-    <script src="../../content/webentwicklung/footer/footer-complete.js" type="module"></script>
-        <script>
-            (function() {
-                const params = new URLSearchParams(window.location.search);
-                if (params.get('debug') === 'true') {
-                    window.addEventListener('load', () => {
-                        const container = document.getElementById('threeEarthContainer');
-                        console.log('DEBUG (pro.html): threeEarthContainer rect:', container?.getBoundingClientRect());
-                        console.log('DEBUG (pro.html): canvas present?', !!container?.querySelector('canvas'));
-                        console.log('DEBUG (pro.html): container computed style', window.getComputedStyle(container));
-                            const menu = document.getElementById('menu-container');
-                            console.log('DEBUG (pro.html): menu-container present?', !!menu, menu);
-                    });
-                }
-            })();
-        </script>
-        <div id="footer-container" data-footer-src="../../content/webentwicklung/footer/footer.html"></div>
-</body>
+    <script src="/content/webentwicklung/footer/footer-complete.js" type="module"></script>
+  </body>
 </html>
-
-

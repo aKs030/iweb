@@ -429,13 +429,25 @@ export class SectionTracker {
     document.addEventListener('section:loaded', () => {
       setTimeout(() => this.refreshSections(), 50);
     });
+
+    // Listen for footer load to track it as a section
+    document.addEventListener('footer:loaded', () => {
+      setTimeout(() => this.refreshSections(), 50);
+    });
   }
 
   setupObserver() {
     this.refreshSections();
 
-    if (!window.IntersectionObserver || this.sections.length === 0) {
-      this.log.warn('IntersectionObserver unavailable or no sections found');
+    if (!window.IntersectionObserver) {
+      this.log.warn('IntersectionObserver unavailable');
+      return;
+    }
+
+    // It is normal for sections to be empty initially (dynamic loading).
+    // Warning removed to reduce noise.
+    if (this.sections.length === 0) {
+      this.log.debug('No sections found to track yet');
       return;
     }
 
