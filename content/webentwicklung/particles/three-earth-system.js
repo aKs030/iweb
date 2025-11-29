@@ -807,6 +807,7 @@ async function createEarthSystem() {
     showLoadingState(document.getElementById('threeEarthContainer'), progress);
   };
   loadingManager.onLoad = () => {
+    // Hide loading screen after small delay
     setTimeout(() => hideLoadingState(document.getElementById('threeEarthContainer')), 500);
   };
 
@@ -1381,7 +1382,9 @@ function showLoadingState(container, progress) {
   if (progressText) progressText.textContent = `${Math.round(progress * 100)}%`;
   try {
     log.debug('Loading state updated', progress);
-  } catch (_) {}
+  } catch (_) {
+    // Ignore logging errors
+  }
 
   // Start/Reset watchdog
   if (_loadingWatchdog) clearTimeout(_loadingWatchdog);
@@ -1434,7 +1437,9 @@ function showErrorState(container, error) {
         try {
           // Show the loading UI again for feedback
           showLoadingState(container, 0);
-        } catch (_) {}
+        } catch (_) {
+          // Ignore state update errors during retry
+        }
         try {
           // Cleanup previous instance if any
           try { await cleanup(); } catch (_cleanupErr) { /* ignore */ }
