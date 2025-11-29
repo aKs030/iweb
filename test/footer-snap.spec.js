@@ -7,7 +7,7 @@ test.describe('Footer expansion behavior', () => {
     // Ensure footer system and site-footer are loaded
     await page.waitForSelector('#site-footer', { state: 'attached', timeout: 5000 });
     await page.waitForFunction(() => !!window.footerScrollHandler, { timeout: 5000 });
-    const trigger = await page.waitForSelector('[data-footer-trigger]', { state: 'visible', timeout: 5000 });
+    const _trigger = await page.waitForSelector('[data-footer-trigger]', { state: 'visible', timeout: 5000 });
     // Click with force to avoid animation stability issues in the hero buttons
     // Use evaluate click to bypass Playwright visibility/intersection constraints
     await page.evaluate((sel) => { const e = document.querySelector(sel); if (e) { e.click(); } }, '[data-footer-trigger]');
@@ -21,5 +21,12 @@ test.describe('Footer expansion behavior', () => {
     await page.waitForTimeout(500);
     const stillExpanded = await page.evaluate(() => document.body.classList.contains('footer-expanded'));
     expect(stillExpanded).toBe(true);
+
+    // Additionally: simulate a user scroll after manual expansion and ensure the
+    // footer does NOT collapse due to scroll if it was manually opened.
+    await page.evaluate(() => window.scrollBy(0, -300));
+    await page.waitForTimeout(300);
+    const stillExpandedAfterScroll = await page.evaluate(() => document.body.classList.contains('footer-expanded'));
+    expect(stillExpandedAfterScroll).toBe(true);
   });
 });
