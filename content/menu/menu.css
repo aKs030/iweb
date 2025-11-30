@@ -14,7 +14,9 @@
  */
 
 /* ===== Dynamic Menu Design Tokens ===== */
+
 /* CSS Custom Properties werden aus root.css geladen */
+
 /* Alle Design Tokens sind in /content/root.css definiert */
 
 /* ===== Skip-Links für Accessibility (WCAG 2.1 Level AA) ===== */
@@ -34,34 +36,35 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 24px;
-  background: var(--glass-bg, rgba(0, 0, 0, 0.95));
-  color: var(--text-primary, #ffffff);
+  background: var(--glass-bg, rgb(0 0 0 / 95%));
+  color: var(--text-primary, #fff);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
   border-radius: 8px;
-  border: 2px solid var(--accent-primary, #00ff88);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--accent-primary, #0f8);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 30%);
   transition:
     clip-path 0.3s ease,
     box-shadow 0.2s ease;
   pointer-events: auto;
   white-space: nowrap;
   z-index: 10001;
+
   /* Versteckt ohne negative Position (für Tap-Target Optimierung) */
   clip-path: inset(0 0 100% 0);
 }
 
 .skip-link:focus {
   clip-path: inset(0);
-  outline: 3px solid var(--accent-primary, #00ff88);
+  outline: 3px solid var(--accent-primary, #0f8);
   outline-offset: 2px;
-  box-shadow: 0 8px 24px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 8px 24px rgb(0 255 136 / 30%);
 }
 
 .skip-link:hover:focus {
-  background: var(--accent-primary, #00ff88);
-  color: var(--bg-primary, #000000);
+  background: var(--accent-primary, #0f8);
+  color: var(--bg-primary, #000);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -71,6 +74,7 @@
 }
 
 /* ===== Light Mode Overrides ===== */
+
 /* Light Mode Anpassungen werden aus root.css geladen */
 
 /* ===== Dynamic Menu Icons System ===== */
@@ -80,10 +84,10 @@
   min-width: 16px;
   min-height: 16px;
   vertical-align: -2px;
-  fill: currentColor;
+  fill: currentcolor;
   flex-shrink: 0;
   margin-right: 8px; /* Einheitlicher Abstand */
-  filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 0.5px 1px rgb(0 0 0 / 15%));
   transition: all 0.2s var(--dynamic-menu-spring-quick);
   opacity: 0.85;
   display: inline-block;
@@ -127,7 +131,7 @@ button.submenu-toggle:hover .icon-fallback,
 button.submenu-toggle:focus .icon-fallback {
   transform: translateY(-1px) scale(1.1);
   opacity: 1;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 25%));
 }
 
 /* ===== Dynamic Menu Base Styles ===== */
@@ -197,6 +201,7 @@ body {
   margin-right: 6px;
   opacity: 0.8;
 }
+
 /* ===== Dynamic Menu Dynamic Header System ===== */
 .site-header {
   position: fixed;
@@ -207,14 +212,10 @@ body {
   min-width: 1000px; /* Ensure minimum width for all 4 menu items */
   height: 52px;
   padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 
   /* Dynamic Menu Glassmorphismus */
   background: var(--dynamic-menu-header-bg);
   backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-  -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
 
   /* Dynamic Island Shape */
   border-radius: var(--dynamic-menu-pill-radius);
@@ -260,6 +261,7 @@ body {
 }
 
 /* AUFGERÄUMT: Redundante/konfliktierende .site-logo-Stile entfernt. */
+
 /* .elegant-logo definiert jetzt das primäre Erscheinungsbild. */
 .site-logo {
   /* Dynamic Menu Micro-Animation */
@@ -376,8 +378,7 @@ body {
   /* Touch & Animation */
   touch-action: manipulation;
   transition: all 0.2s var(--dynamic-menu-spring-quick);
-  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.1);
-  -webkit-user-select: none;
+  -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
   user-select: none;
   white-space: nowrap;
   cursor: pointer;
@@ -421,7 +422,6 @@ body {
   right: 24px;
   transition: all 0.2s var(--dynamic-menu-spring-quick);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .site-menu__toggle:hover {
@@ -450,7 +450,7 @@ body {
 .site-menu__toggle:focus-visible {
   outline: 2px solid var(--dynamic-menu-accent-blue);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+  box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
 }
 
 .site-menu__toggle.active .site-menu__hamburger {
@@ -471,6 +471,7 @@ body {
 .has-submenu > a {
   cursor: pointer;
 }
+
 .site-menu__list .has-submenu {
   position: relative;
 }
@@ -484,13 +485,10 @@ body {
   /* Dynamic Menu Card Design */
   background: var(--dynamic-menu-header-bg);
   backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-  -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-
   min-width: 200px;
   border-radius: var(--dynamic-menu-card-radius);
   border: 1px solid var(--dynamic-menu-separator);
   box-shadow: var(--dynamic-menu-shadow-depth-3);
-
   padding: 8px;
   font-size: 15px;
 
@@ -500,6 +498,7 @@ body {
 }
 
 /* Dynamische Rechts-Positionierung über JavaScript */
+
 /* AUFGERÄUMT: !important entfernt */
 .site-menu__list .has-submenu .submenu.position-right {
   left: auto;
@@ -516,7 +515,7 @@ body {
 }
 
 /* Verhindere Überlauf bei sehr schmalen Bildschirmen */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   /* AUFGERÄUMT: !important entfernt */
   .site-menu.open .site-menu__list .submenu {
     left: -10px;
@@ -527,7 +526,7 @@ body {
 }
 
 /* Desktop Submenu Hover Logic */
-@media (min-width: 769px) {
+@media (width >= 769px) {
   .site-menu__list .has-submenu:hover .submenu,
   .site-menu__list .has-submenu:focus-within .submenu {
     display: block;
@@ -552,7 +551,7 @@ main {
 }
 
 /* ===== Dynamic Menu Mobile Experience ===== */
-@media (max-width: 1000px) {
+@media (width <= 1000px) {
   /* Angepasst von 900px auf 1000px für mehr Desktop-Platz */
   .site-header {
     display: flex;
@@ -602,7 +601,6 @@ main {
     /* Dynamic Menu Card Design */
     background: var(--dynamic-menu-header-bg);
     backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-    -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
     border: 1px solid var(--dynamic-menu-separator);
     border-radius: var(--dynamic-menu-card-radius);
     box-shadow: var(--dynamic-menu-shadow-depth-3);
@@ -649,6 +647,7 @@ main {
   }
 
   /* Dynamic Menu Mobile Submenu */
+
   /* AUFGERÄUMT: !important entfernt */
   .site-menu.open .site-menu__list .submenu {
     display: none;
@@ -701,7 +700,7 @@ main {
 .submenu-toggle:focus-visible {
   outline: 2px solid var(--dynamic-menu-accent-blue);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+  box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
   background: var(--dynamic-menu-fill-primary);
   border-radius: var(--dynamic-menu-micro-radius);
 }

@@ -50,11 +50,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
   // OPTIMIZATION: Reduce segments on mobile
   const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
 
-  const earthGeometry = new THREE.SphereGeometry(
-    CONFIG.EARTH.RADIUS,
-    segments,
-    segments
-  );
+  const earthGeometry = new THREE.SphereGeometry(CONFIG.EARTH.RADIUS, segments, segments);
   const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
   earthMesh.position.set(0, -6.0, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);

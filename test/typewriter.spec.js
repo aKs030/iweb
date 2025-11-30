@@ -30,7 +30,7 @@ test.describe('TypeWriter', () => {
       // Poll until text matches or timeout
       const start = performance.now();
       while (textEl.textContent !== 'Hello' && performance.now() - start < 2000) {
-        await new Promise(r => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 50));
       }
 
       return {
@@ -55,7 +55,7 @@ test.describe('TypeWriter', () => {
         textEl,
         authorEl,
         quotes,
-        wait: 50,      // wait before deleting
+        wait: 50, // wait before deleting
         typeSpeed: 10,
         deleteSpeed: 10,
         shuffle: false,
@@ -68,7 +68,7 @@ test.describe('TypeWriter', () => {
       // 1. Wait for typing
       const start = performance.now();
       while (textEl.textContent !== 'A' && performance.now() - start < 1000) {
-        await new Promise(r => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 50));
       }
 
       if (textEl.textContent !== 'A') return { text: 'TIMEOUT_TYPING' };
@@ -76,7 +76,7 @@ test.describe('TypeWriter', () => {
       // 2. Wait for deletion
       const startDel = performance.now();
       while (textEl.textContent !== '' && performance.now() - startDel < 1000) {
-        await new Promise(r => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 50));
       }
 
       return {
@@ -113,7 +113,7 @@ test.describe('TypeWriter', () => {
       // Poll for event
       const start = performance.now();
       while (!fired && performance.now() - start < 1000) {
-        await new Promise(r => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 50));
       }
 
       return fired;

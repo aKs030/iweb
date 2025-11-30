@@ -17,8 +17,10 @@
   --footer-card-gap: 16px;
   --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --footer-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
   /* Maximum allowed footer height (falls JS nicht setzt) */
   --footer-max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
+
   /* Actual footer height can be set by JS; falls back to --footer-max-height */
   --footer-actual-height: var(--footer-max-height);
 }
@@ -26,8 +28,8 @@
 /* ===== Base Footer Container ===== */
 .site-footer-fixed {
   position: fixed;
+
   /* always sit above interactive page content (avoid hero intercepts) */
-  z-index: 10000;
   bottom: calc(12px + env(safe-area-inset-bottom));
   left: 50%;
   width: calc(100% - var(--footer-horizontal-margin) * 2);
@@ -35,7 +37,6 @@
   min-width: 320px;
   background: var(--dynamic-footer-header-bg);
   backdrop-filter: blur(var(--dynamic-footer-blur-radius));
-  -webkit-backdrop-filter: blur(var(--dynamic-footer-blur-radius));
   border-radius: var(--dynamic-footer-pill-radius);
   border: 1px solid var(--dynamic-footer-separator);
   box-shadow: var(--dynamic-footer-shadow-depth-2);
@@ -52,6 +53,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(20px) scale(0.95);
   }
+
   100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
@@ -143,6 +145,7 @@ body.footer-expanded {
   gap: 3px;
   white-space: nowrap;
   transition: all var(--footer-transition-quick);
+
   /* ensure tappable target size for tests and accessibility */
   min-height: 40px;
   box-sizing: border-box;
@@ -173,12 +176,12 @@ body.footer-expanded {
 .footer-maximized-viewport {
   width: 100%;
   height: auto;
+
   /* Use computed actual height so JS-driven measurements cap the viewport
      instead of a static 75vh which can be too small on some devices. */
   max-height: var(--footer-actual-height, 75vh);
   box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   position: relative;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
@@ -248,7 +251,7 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--footer-text-base);
   font-weight: var(--dynamic-footer-font-weight-medium);
-  margin: 0 0 6px 0;
+  margin: 0 0 6px;
   letter-spacing: -0.01em;
 }
 
@@ -276,20 +279,20 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--footer-text-sm);
   font-weight: var(--dynamic-footer-font-weight-medium);
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
 }
 
 .footer-profile-role {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--footer-text-xs);
-  margin: 0 0 6px 0;
+  margin: 0 0 6px;
   line-height: 1.3;
 }
 
 .footer-profile-location {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--footer-text-xs);
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -371,17 +374,19 @@ body.footer-expanded {
 }
 
 /* Responsive columns: match test breakpoints more deterministically */
-@media (max-width: 420px) {
+@media (width <= 420px) {
   .footer-social-grid {
     grid-template-columns: 1fr;
   }
 }
-@media (min-width: 421px) and (max-width: 700px) {
+
+@media (width >= 421px) and (width <= 700px) {
   .footer-social-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (min-width: 701px) {
+
+@media (width >= 701px) {
   .footer-social-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -467,7 +472,7 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--footer-text-xs);
   line-height: 1.4;
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
 }
 
 .newsletter-form-enhanced {
@@ -633,6 +638,7 @@ body.footer-expanded {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -700,8 +706,8 @@ body.footer-expanded {
 .cookie-category {
   margin-bottom: 6px; /* Noch kleiner */
   padding: 6px 8px; /* Noch kompakter */
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 6px;
 }
 
@@ -729,9 +735,9 @@ body.footer-expanded {
 }
 
 .cookie-status-required {
-  background: rgba(52, 199, 89, 0.2);
+  background: rgb(52 199 89 / 20%);
   color: #34c759;
-  border: 1px solid rgba(52, 199, 89, 0.3);
+  border: 1px solid rgb(52 199 89 / 30%);
 }
 
 .cookie-category-description {
@@ -758,12 +764,12 @@ body.footer-expanded {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgb(255 255 255 / 20%);
   border-radius: 20px;
   transition: 0.3s;
 }
 
-.cookie-toggle-slider:before {
+.cookie-toggle-slider::before {
   position: absolute;
   content: '';
   height: 12px; /* Kleiner */
@@ -779,7 +785,7 @@ body.footer-expanded {
   background-color: #0a84ff;
 }
 
-.cookie-toggle input:checked + .cookie-toggle-slider:before {
+.cookie-toggle input:checked + .cookie-toggle-slider::before {
   transform: translateX(16px); /* Angepasst */
 }
 
@@ -789,7 +795,7 @@ body.footer-expanded {
 
 .cookie-item {
   padding: 4px 6px; /* Noch kompakter */
-  background: rgba(0, 0, 0, 0.2);
+  background: rgb(0 0 0 / 20%);
   border-radius: 4px;
   margin-bottom: 3px; /* Noch kleiner */
 }
@@ -809,14 +815,14 @@ body.footer-expanded {
   font-size: 8px; /* Noch kleiner */
   line-height: 1.2;
   color: var(--dynamic-footer-text-secondary);
-  margin: 0 0 2px 0;
+  margin: 0 0 2px;
 }
 
 .cookie-duration {
   display: inline-block;
   font-size: 7px; /* Noch kleiner */
-  color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.05);
+  color: rgb(255 255 255 / 50%);
+  background: rgb(255 255 255 / 5%);
   padding: 1px 4px;
   border-radius: 3px;
 }
@@ -824,13 +830,13 @@ body.footer-expanded {
 .cookie-privacy-info {
   margin-top: 6px; /* Noch kleiner */
   padding: 6px 8px; /* Noch kompakter */
-  background: rgba(10, 132, 255, 0.1);
-  border: 1px solid rgba(10, 132, 255, 0.3);
+  background: rgb(10 132 255 / 10%);
+  border: 1px solid rgb(10 132 255 / 30%);
   border-radius: 6px;
 }
 
 .cookie-privacy-info h3 {
-  margin: 0 0 3px 0;
+  margin: 0 0 3px;
   font-size: 10px; /* Noch kleiner */
   color: #64d2ff;
   font-weight: 600;
@@ -851,7 +857,7 @@ body.footer-expanded {
   padding-left: 12px;
 }
 
-.cookie-privacy-info li:before {
+.cookie-privacy-info li::before {
   content: '✓';
   position: absolute;
   left: 0;
@@ -892,13 +898,13 @@ body.footer-expanded {
 }
 
 .cookie-settings-btn-primary {
-  background: linear-gradient(135deg, #0a84ff 0%, #0066cc 100%);
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(10, 132, 255, 0.3);
+  background: linear-gradient(135deg, #0a84ff 0%, #06c 100%);
+  color: #fff;
+  box-shadow: 0 2px 6px rgb(10 132 255 / 30%);
 }
 
 .cookie-settings-btn-primary:hover {
-  background: linear-gradient(135deg, #0066cc 0%, #004c99 100%);
+  background: linear-gradient(135deg, #06c 0%, #004c99 100%);
   transform: translateY(-1px);
 }
 
@@ -932,7 +938,7 @@ body.footer-expanded {
 }
 
 /* ===== Mobile Optimierung - 2 Spalten ===== */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   :root {
     --footer-card-gap: 8px;
     --footer-spacing-md: 8px;
@@ -1011,7 +1017,7 @@ body.footer-expanded {
 }
 
 /* ===== Sehr kleine Displays - 1 Spalte ===== */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   :root {
     --footer-card-gap: 6px;
     --footer-spacing-sm: 6px;
@@ -1066,7 +1072,7 @@ body.footer-expanded {
 }
 
 /* ===== Desktop - 3 Spalten, Newsletter 2 Spalten ===== */
-@media (min-width: 769px) and (max-width: 1199px) {
+@media (width >= 769px) and (width <= 1199px) {
   .footer-cards-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -1076,7 +1082,7 @@ body.footer-expanded {
   }
 }
 
-@media (min-width: 1200px) {
+@media (width >= 1200px) {
   .footer-cards-grid {
     grid-template-columns: repeat(3, 1fr);
   }

@@ -13,7 +13,9 @@ wss.on('connection', (ws, req) => {
     console.log('received:', msg);
     ws.send('echo:' + msg);
   });
-  ws.on('close', (code, reason) => console.log('client disconnected, code:', code, 'reason:', reason));
+  ws.on('close', (code, reason) =>
+    console.log('client disconnected, code:', code, 'reason:', reason)
+  );
 });
 
 console.log('ws-test-server running on port', port);

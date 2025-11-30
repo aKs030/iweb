@@ -15,6 +15,7 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
+
   /* Rhythm & leading variables local to About section */
   --leading-lg: 1.65;
   --leading-md: 1.55;
@@ -33,6 +34,7 @@
     min-height: 100dvh;
   }
 }
+
 .about__container {
   max-width: 780px;
   width: 100%;
@@ -59,7 +61,7 @@
   font-size: clamp(0.88rem, 2.1vw, 1.02rem);
   margin-bottom: var(--space-md, 1.1rem);
   max-width: 680px;
-  color: rgba(240, 240, 240, 0.85);
+  color: rgb(240 240 240 / 85%);
   line-height: var(--leading-md);
 }
 
@@ -127,7 +129,7 @@
    - gestapelte Buttons mit vollen Breiten für bessere Tap-Targets
    - Rücksicht auf Safe-Area Inset unten
 --------------------------------------------------------------------------- */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   :where(.section.about, .about-fragment) {
     padding: clamp(1.5rem, 4.75vw, 2.2rem) clamp(1rem, 4vw, 1.45rem);
   }
@@ -137,7 +139,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
   :where(.section.about, .about-fragment) {
     display: flex;
     flex-direction: column;
@@ -201,7 +203,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .about__text h1,
   .about__text h3 {
     font-size: 1.28rem;
@@ -212,7 +214,7 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (width <= 360px) {
   .about__container {
     padding: 1.7rem 0.7rem;
   }
@@ -228,15 +230,14 @@
 }
 
 /* ===== Landscape Mode für About-Sektion ===== */
-@media (max-width: 896px) and (orientation: landscape) {
+@media (width <= 896px) and (orientation: landscape) {
   .about__container {
     padding: 1.5rem 2rem;
     max-width: 90vw;
   }
 
   .about__cta {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     justify-content: center;
   }
 
@@ -250,7 +251,7 @@
 /* ===== Touch-Optimierung für Buttons ===== */
 @media (hover: none) and (pointer: coarse) {
   .about__button {
-    -webkit-tap-highlight-color: rgba(0, 122, 255, 0.2);
+    -webkit-tap-highlight-color: rgb(0 122 255 / 20%);
     touch-action: manipulation;
   }
 

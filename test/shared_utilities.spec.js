@@ -14,7 +14,7 @@ test.describe('Shared Utilities', () => {
       const shuffled = shuffle([...input]);
       return {
         isSameLength: input.length === shuffled.length,
-        hasSameElements: input.every(i => shuffled.includes(i)),
+        hasSameElements: input.every((i) => shuffled.includes(i)),
         input,
         shuffled
       };
@@ -29,11 +29,11 @@ test.describe('Shared Utilities', () => {
       const min = 5;
       const max = 10;
       const results = [];
-      for(let i=0; i<50; i++) {
+      for (let i = 0; i < 50; i++) {
         results.push(randomInt(min, max));
       }
       return {
-        allInRange: results.every(r => r >= min && r <= max),
+        allInRange: results.every((r) => r >= min && r <= max),
         minObserved: Math.min(...results),
         maxObserved: Math.max(...results)
       };
@@ -49,7 +49,7 @@ test.describe('Shared Utilities', () => {
       const manager = new TimerManager();
       let fired = false;
 
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         manager.setTimeout(() => {
           fired = true;
           resolve();
@@ -74,7 +74,7 @@ test.describe('Shared Utilities', () => {
       manager.clearTimeout(id);
 
       // Wait longer than the timeout
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       return fired;
     });
@@ -82,7 +82,7 @@ test.describe('Shared Utilities', () => {
   });
 
   test('TimerManager should clear all timers', async ({ page }) => {
-     const result = await page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
       const { TimerManager } = await import('/content/shared-utilities.js');
       const manager = new TimerManager();
       let count = 0;
@@ -96,7 +96,7 @@ test.describe('Shared Utilities', () => {
 
       const activeAfter = manager.activeCount;
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       return { count, activeBefore, activeAfter };
     });
     expect(result.activeBefore).toBe(2);
@@ -125,7 +125,7 @@ test.describe('Shared Utilities', () => {
 
   test('Logger should respect default log level (warn)', async ({ page }) => {
     const logs = [];
-    page.on('console', msg => logs.push({ type: msg.type(), text: msg.text() }));
+    page.on('console', (msg) => logs.push({ type: msg.type(), text: msg.text() }));
 
     await page.evaluate(async () => {
       const { createLogger } = await import('/content/shared-utilities.js');
@@ -135,11 +135,11 @@ test.describe('Shared Utilities', () => {
       logger.error('Should appear');
     });
 
-    const texts = logs.map(l => l.text);
-    const testLogs = texts.filter(t => t.includes('[TestDefault]'));
+    const texts = logs.map((l) => l.text);
+    const testLogs = texts.filter((t) => t.includes('[TestDefault]'));
 
-    expect(testLogs.some(t => t.includes('Should not appear'))).toBe(false);
-    expect(testLogs.some(t => t.includes('Should appear'))).toBe(true);
+    expect(testLogs.some((t) => t.includes('Should not appear'))).toBe(false);
+    expect(testLogs.some((t) => t.includes('Should appear'))).toBe(true);
   });
 
   test('Logger should respect debug mode', async ({ page }) => {
@@ -147,7 +147,7 @@ test.describe('Shared Utilities', () => {
     await page.goto('/?debug=true');
 
     const logs = [];
-    page.on('console', msg => logs.push({ type: msg.type(), text: msg.text() }));
+    page.on('console', (msg) => logs.push({ type: msg.type(), text: msg.text() }));
 
     await page.evaluate(async () => {
       // Re-import to trigger initialization logic?
@@ -158,9 +158,9 @@ test.describe('Shared Utilities', () => {
       logger.debug('Debug message');
     });
 
-    const texts = logs.map(l => l.text);
-    const testLogs = texts.filter(t => t.includes('[TestDebug]'));
+    const texts = logs.map((l) => l.text);
+    const testLogs = texts.filter((t) => t.includes('[TestDebug]'));
 
-    expect(testLogs.some(t => t.includes('Debug message'))).toBe(true);
+    expect(testLogs.some((t) => t.includes('Debug message'))).toBe(true);
   });
 });

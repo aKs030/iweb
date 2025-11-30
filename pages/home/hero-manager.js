@@ -40,8 +40,8 @@ const HeroManager = (() => {
       if (loaded) return;
       loaded = true;
       // Preload critical hero data parallel to typewriter check
-      ensureHeroData().catch(() => {}); 
-      
+      ensureHeroData().catch(() => {});
+
       await loadTyped();
       setRandomGreetingHTML();
     };

@@ -35,10 +35,10 @@ class TypeWriter {
     }
 
     // ✅ Validiere Quote-Format
-    const invalidQuotes = quotes.filter(q => !q.text || typeof q.text !== 'string');
+    const invalidQuotes = quotes.filter((q) => !q.text || typeof q.text !== 'string');
     if (invalidQuotes.length > 0) {
       log.warn('TypeWriter: Some quotes have invalid format, filtering them out');
-      this.quotes = quotes.filter(q => q.text && typeof q.text === 'string');
+      this.quotes = quotes.filter((q) => q.text && typeof q.text === 'string');
       if (this.quotes.length === 0) {
         log.error('TypeWriter: No valid quotes remaining');
         return;
@@ -173,7 +173,7 @@ class TypeWriter {
       : full.substring(0, Math.min(full.length, this._txt.length + 1));
 
     this._renderText(this._txt);
-    
+
     // ✅ Sichere Author-Anzeige
     if (this.authorEl) {
       try {

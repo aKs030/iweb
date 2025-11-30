@@ -7,7 +7,10 @@ test.describe('Footer trigger zone', () => {
     await page.waitForSelector('#site-footer', { timeout: 10000 });
 
     // Wait for the trigger (auto-inserted if missing). element may be hidden (aria-hidden=true)
-    const trigger = await page.waitForSelector('#footer-trigger-zone', { state: 'attached', timeout: 10000 });
+    const trigger = await page.waitForSelector('#footer-trigger-zone', {
+      state: 'attached',
+      timeout: 10000
+    });
     expect(trigger).not.toBeNull();
 
     // Also ensure that the site-footer exists

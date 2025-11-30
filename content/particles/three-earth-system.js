@@ -83,7 +83,8 @@ const ThreeEarthManager = (() => {
       showLoadingState(container, 0);
 
       // Scene Setup
-      isMobileDevice = !!(deviceCapabilities?.isMobile) || window.matchMedia('(max-width: 768px)').matches;
+      isMobileDevice =
+        !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
       const sceneObjects = setupScene(THREE_INSTANCE, container);
       scene = sceneObjects.scene;
       camera = sceneObjects.camera;
@@ -100,7 +101,7 @@ const ThreeEarthManager = (() => {
 
       // Loading Manager Setup
       const loadingManager = new THREE_INSTANCE.LoadingManager();
-      
+
       loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
         const progress = itemsLoaded / itemsTotal;
         showLoadingState(container, progress);
@@ -153,7 +154,7 @@ const ThreeEarthManager = (() => {
 
       setupUserControls(container);
       setupSectionDetection();
-      
+
       // OPTIMIZATION: Setup Viewport Observer to pause rendering when out of view
       setupViewportObserver(container);
 
@@ -267,17 +268,20 @@ function detectDeviceCapabilities() {
   try {
     const ua = (navigator.userAgent || '').toLowerCase();
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
-    const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(ua);
+    const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(
+      ua
+    );
     const hasSlowGPU = /mali|adreno\s?[34]|powervr sgx|intel hd/i.test(ua);
 
-    const deviceMemory = navigator.deviceMemory || 0; 
+    const deviceMemory = navigator.deviceMemory || 0;
     const memLimit = (performance && performance.memory && performance.memory.jsHeapSizeLimit) || 0;
-    const isLowMemory = (deviceMemory > 0 && deviceMemory < 1) || (memLimit > 0 && memLimit < 1073741824);
+    const isLowMemory =
+      (deviceMemory > 0 && deviceMemory < 1) || (memLimit > 0 && memLimit < 1073741824);
 
     const cores = navigator.hardwareConcurrency || 2;
     const isLowCores = cores <= 2;
 
-    const recommendedQuality = isLowEnd || hasSlowGPU ? 'LOW' : (isMobile ? 'MEDIUM' : 'HIGH');
+    const recommendedQuality = isLowEnd || hasSlowGPU ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH';
 
     return {
       isMobile,
@@ -287,7 +291,13 @@ function detectDeviceCapabilities() {
       recommendedQuality
     };
   } catch (e) {
-    return { isMobile: false, isLowEnd: false, cores: 2, deviceMemoryGB: 0, recommendedQuality: 'MEDIUM' };
+    return {
+      isMobile: false,
+      isLowEnd: false,
+      cores: 2,
+      deviceMemoryGB: 0,
+      recommendedQuality: 'MEDIUM'
+    };
   }
 }
 
@@ -342,8 +352,9 @@ function getOptimizedConfig(capabilities) {
 
 function setupStarParallax(starField) {
   const parallaxHandler = (progress) => {
-    if (!starField || !starManager || (starManager.transition && starManager.transition.active)) return;
-    
+    if (!starField || !starManager || (starManager.transition && starManager.transition.active))
+      return;
+
     starField.rotation.y = progress * Math.PI * 0.2;
     starField.position.z = Math.sin(progress * Math.PI) * 15;
   };
@@ -402,24 +413,27 @@ function setupSectionDetection() {
 
 // OPTIMIZATION: Pause rendering when container is not in viewport
 function setupViewportObserver(container) {
-  viewportObserver = new IntersectionObserver((entries) => {
-    const entry = entries[0];
-    isSystemVisible = entry.isIntersecting;
-    
-    if (isSystemVisible) {
-      if (!animationFrameId && animate) {
-        log.debug('Container visible: resuming render loop');
-        animate();
+  viewportObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+      isSystemVisible = entry.isIntersecting;
+
+      if (isSystemVisible) {
+        if (!animationFrameId && animate) {
+          log.debug('Container visible: resuming render loop');
+          animate();
+        }
+      } else {
+        if (animationFrameId) {
+          log.debug('Container hidden: pausing render loop');
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
       }
-    } else {
-      if (animationFrameId) {
-        log.debug('Container hidden: pausing render loop');
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
-    }
-  }, { threshold: 0 }); // Trigger as soon as 1px is visible/hidden
-  
+    },
+    { threshold: 0 }
+  ); // Trigger as soon as 1px is visible/hidden
+
   viewportObserver.observe(container);
 }
 
@@ -505,7 +519,7 @@ function setupUserControls(container) {
 }
 
 // Global Animation Loop Reference
-let animate; 
+let animate;
 
 function handleVisibilityChange() {
   if (document.hidden) {
@@ -548,9 +562,16 @@ function startAnimationLoop() {
 
     if (starManager && !capabilities.isLowEnd) starManager.update(elapsedTime);
 
-    if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd && frameCounter % 2 === 0) {
+    if (
+      earthMesh?.userData.currentMode === 'night' &&
+      !capabilities.isLowEnd &&
+      frameCounter % 2 === 0
+    ) {
       const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
-      const pulseAmount = Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
+      const pulseAmount =
+        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
+        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
+        2;
       earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
     }
 
@@ -566,7 +587,7 @@ function startAnimationLoop() {
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
   // Start only if currently visible
-  if(document.visibilityState === 'visible') {
+  if (document.visibilityState === 'visible') {
     animate();
   }
 }

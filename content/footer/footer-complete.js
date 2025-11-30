@@ -1,10 +1,12 @@
 /**
  * Footer Complete System - Fully Optimized
- * @version 9.1.0
- * Changes: Removed dead code, fixed index scroll-snap issue, optimized performance.
+ * @version 9.2.0
+ * Changes:
+ * - Removed duplicated CookieManager (now uses shared-utilities)
+ * - Optimized event listeners
  */
 
-import { createLogger } from '../shared-utilities.js';
+import { createLogger, CookieManager } from '../shared-utilities.js';
 import { a11y } from '../accessibility-manager.js';
 
 const log = createLogger('FooterSystem');
@@ -14,43 +16,6 @@ const PROGRAMMATIC_SCROLL_MARK_DURATION = 1000;
 const PROGRAMMATIC_SCROLL_WATCH_TIMEOUT = 5000;
 const PROGRAMMATIC_SCROLL_WATCH_THRESHOLD = 6;
 const PROGRAMMATIC_SCROLL_DEFAULT_DURATION = 600;
-
-// ===== Cookie Utilities =====
-const CookieManager = {
-  set(name, value, days = 365) {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    const expires = `; expires=${date.toUTCString()}`;
-    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
-  },
-
-  get(name) {
-    const nameEQ = `${name}=`;
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(nameEQ)) {
-        return cookie.substring(nameEQ.length);
-      }
-    }
-    return null;
-  },
-
-  delete(name) {
-    const domains = ['', window.location.hostname, `.${window.location.hostname}`];
-    domains.forEach((domain) => {
-      const domainPart = domain ? `; domain=${domain}` : '';
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
-    });
-  },
-
-  deleteAnalytics() {
-    const analyticsCookies = ['_ga', '_gid', '_gat', '_gat_gtag_G_S0587RQ4CN'];
-    analyticsCookies.forEach((name) => this.delete(name));
-    log.info('Analytics cookies deleted');
-  }
-};
 
 // ===== Programmatic Scroll Helper =====
 const ProgrammaticScroll = (() => {
@@ -64,7 +29,9 @@ const ProgrammaticScroll = (() => {
           clearTimeout(timer);
           timer = null;
         }
-      } catch (e) { /* ignored */ }
+      } catch (e) {
+        /* ignored */
+      }
       const token = Symbol('progScroll');
       activeToken = token;
       if (duration > 0) {
@@ -79,13 +46,30 @@ const ProgrammaticScroll = (() => {
       if (!activeToken) return;
       if (!token || activeToken === token) {
         activeToken = null;
-        try { if (timer) clearTimeout(timer); timer = null; } catch (e) { /* ignored */ }
-        
+        try {
+          if (timer) clearTimeout(timer);
+          timer = null;
+        } catch (e) {
+          /* ignored */
+        }
+
         if (watchers.has(token)) {
           const watcher = watchers.get(token);
-          try { if (watcher.listener) window.removeEventListener('scroll', watcher.listener); } catch (e) { /* no-op */ }
-          try { if (watcher.observer) watcher.observer.disconnect(); } catch (e) { /* no-op */ }
-          try { if (watcher.timeoutId) clearTimeout(watcher.timeoutId); } catch (e) { /* no-op */ }
+          try {
+            if (watcher.listener) window.removeEventListener('scroll', watcher.listener);
+          } catch (e) {
+            /* no-op */
+          }
+          try {
+            if (watcher.observer) watcher.observer.disconnect();
+          } catch (e) {
+            /* no-op */
+          }
+          try {
+            if (watcher.timeoutId) clearTimeout(watcher.timeoutId);
+          } catch (e) {
+            /* no-op */
+          }
           watchers.delete(token);
         }
       }
@@ -93,7 +77,12 @@ const ProgrammaticScroll = (() => {
     hasActive() {
       return !!activeToken;
     },
-    watchUntil(token, getTarget, timeout = PROGRAMMATIC_SCROLL_WATCH_TIMEOUT, threshold = PROGRAMMATIC_SCROLL_WATCH_THRESHOLD) {
+    watchUntil(
+      token,
+      getTarget,
+      timeout = PROGRAMMATIC_SCROLL_WATCH_TIMEOUT,
+      threshold = PROGRAMMATIC_SCROLL_WATCH_THRESHOLD
+    ) {
       if (!token) return;
       let finished = false;
 
@@ -102,13 +91,16 @@ const ProgrammaticScroll = (() => {
           if (typeof getTarget === 'function') return getTarget();
           if (typeof getTarget === 'string') return document.querySelector(getTarget);
           return getTarget;
-        } catch (e) { return null; }
+        } catch (e) {
+          return null;
+        }
       };
 
       const resolved = resolve();
 
       if (resolved instanceof Element && 'IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
+        const observer = new IntersectionObserver(
+          (entries) => {
             entries.forEach((entry) => {
               if (finished) return;
               if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
@@ -116,10 +108,12 @@ const ProgrammaticScroll = (() => {
                 ProgrammaticScroll.clear(token);
               }
             });
-          }, { root: null, threshold: [0.5, 0.75, 0.9, 1] });
+          },
+          { root: null, threshold: [0.5, 0.75, 0.9, 1] }
+        );
 
         observer.observe(resolved);
-        
+
         const timeoutId = setTimeout(() => {
           if (!finished) ProgrammaticScroll.clear(token);
           observer.disconnect();
@@ -138,10 +132,14 @@ const ProgrammaticScroll = (() => {
             finished = true;
             ProgrammaticScroll.clear(token);
           }
-        } catch (e) { /* no-op */ }
+        } catch (e) {
+          /* no-op */
+        }
       };
 
-      const listener = () => { if (!finished) check(); };
+      const listener = () => {
+        if (!finished) check();
+      };
       check();
       window.addEventListener('scroll', listener, { passive: true });
       const timeoutId = setTimeout(() => {
@@ -158,7 +156,7 @@ const ProgrammaticScroll = (() => {
 const GlobalClose = (() => {
   let closeHandler = null;
   let bound = false;
-  
+
   const onDocClick = (e) => {
     const footer = document.getElementById('site-footer');
     if (!footer || !footer.classList.contains('footer-expanded')) return;
@@ -174,7 +172,9 @@ const GlobalClose = (() => {
   };
 
   return {
-    setCloseHandler(fn) { closeHandler = fn; },
+    setCloseHandler(fn) {
+      closeHandler = fn;
+    },
     bind() {
       if (bound) return;
       document.addEventListener('click', onDocClick, true);
@@ -197,12 +197,13 @@ const GoogleAnalytics = {
   load() {
     const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
     if (blockedScripts.length === 0) return;
-    
+
     blockedScripts.forEach((script) => {
       const newScript = document.createElement('script');
       Array.from(script.attributes).forEach((attr) => {
         if (attr.name === 'data-src') newScript.setAttribute('src', attr.value);
-        else if (attr.name !== 'data-consent' && attr.name !== 'type') newScript.setAttribute(attr.name, attr.value);
+        else if (attr.name !== 'data-consent' && attr.name !== 'type')
+          newScript.setAttribute(attr.name, attr.value);
       });
       if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
       script.parentNode.replaceChild(newScript, script);
@@ -221,7 +222,7 @@ class ConsentBanner {
 
   init() {
     if (!this.banner || !this.acceptBtn) return;
-    
+
     const consent = CookieManager.get('cookie_consent');
     if (consent === 'accepted') {
       GoogleAnalytics.load();
@@ -231,13 +232,13 @@ class ConsentBanner {
     } else {
       this.banner.classList.remove('hidden');
     }
-    
+
     this.acceptBtn.addEventListener('click', () => {
       this.banner.classList.add('hidden');
       CookieManager.set('cookie_consent', 'accepted');
       GoogleAnalytics.load();
     });
-    
+
     if (this.rejectBtn) {
       this.rejectBtn.addEventListener('click', () => {
         this.banner.classList.add('hidden');
@@ -320,36 +321,44 @@ const CookieSettings = (() => {
     elements.cookieView.classList.remove('hidden');
     if (elements.normalContent) elements.normalContent.style.display = 'none';
 
-    requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' }));
-    
+    requestAnimationFrame(() =>
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' })
+    );
+
     ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION);
     GlobalClose.bind();
     setupButtonHandlers(elements);
-    
+
     // Focus management
     try {
       a11y?.trapFocus(elements.cookieView);
-    } catch (e) { /* ignored */ }
+    } catch (e) {
+      /* ignored */
+    }
   }
 
   function close() {
     const elements = getElements();
     if (!elements.footer) return;
-    
+
     elements.cookieView?.classList.add('hidden');
     elements.footer.classList.remove('footer-expanded');
     document.body.classList.remove('footer-expanded');
     elements.footerMax?.classList.add('footer-hidden');
     elements.footerMin?.classList.remove('footer-hidden');
     if (elements.normalContent) elements.normalContent.style.display = 'block';
-    
+
     // Restore scroll snapping
     document.documentElement.style.removeProperty('scroll-snap-type');
 
     if (window.footerScrollHandler) window.footerScrollHandler.expanded = false;
     GlobalClose.unbind();
-    
-    try { a11y?.releaseFocus(); } catch (e) { /* ignored */ }
+
+    try {
+      a11y?.releaseFocus();
+    } catch (e) {
+      /* ignored */
+    }
   }
   return { open, close };
 })();
@@ -360,20 +369,21 @@ GlobalClose.setCloseHandler(() => CookieSettings.close());
 // ===== Theme System =====
 class ThemeSystem {
   constructor() {
-    this.currentTheme = localStorage.getItem('preferred-theme') || 
+    this.currentTheme =
+      localStorage.getItem('preferred-theme') ||
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   }
-  
+
   applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     this.currentTheme = theme;
     localStorage.setItem('preferred-theme', theme);
   }
-  
+
   toggleTheme() {
     this.applyTheme(this.currentTheme === 'light' ? 'dark' : 'light');
   }
-  
+
   createRipple(button, x, y) {
     const ripple = document.createElement('div');
     ripple.className = 'artwork-ripple';
@@ -382,7 +392,7 @@ class ThemeSystem {
     button.appendChild(ripple);
     setTimeout(() => ripple.remove(), 800);
   }
-  
+
   init() {
     this.applyTheme(this.currentTheme);
     const toggle = document.getElementById('dayNightToggle');
@@ -401,22 +411,24 @@ class FooterLoader {
   async init() {
     const container = document.getElementById('footer-container');
     if (!container) return false;
-    
+
     try {
       const src = container.dataset.footerSrc || '/content/footer/footer.html';
       const response = await fetch(src);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       container.innerHTML = await response.text();
-      
+
       this.updateYears();
       this.setupInteractions();
-      
+
       new ConsentBanner().init();
       new ThemeSystem().init();
       new ScrollHandler().init();
       new FooterResizer().init();
-      
-      document.dispatchEvent(new CustomEvent('footer:loaded', { detail: { footerId: 'site-footer' } }));
+
+      document.dispatchEvent(
+        new CustomEvent('footer:loaded', { detail: { footerId: 'site-footer' } })
+      );
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
@@ -426,7 +438,7 @@ class FooterLoader {
 
   updateYears() {
     const year = new Date().getFullYear();
-    document.querySelectorAll('.current-year').forEach(el => el.textContent = year);
+    document.querySelectorAll('.current-year').forEach((el) => (el.textContent = year));
   }
 
   setupInteractions() {
@@ -440,24 +452,29 @@ class FooterLoader {
           const old = btn.textContent;
           btn.textContent = '✓';
           btn.disabled = true;
-          setTimeout(() => { btn.textContent = old; btn.disabled = false; }, 3000);
+          setTimeout(() => {
+            btn.textContent = old;
+            btn.disabled = false;
+          }, 3000);
         }
         form.reset();
       });
     }
 
     // Cookie Triggers
-    document.querySelectorAll('[data-cookie-trigger]').forEach(trigger => {
+    document.querySelectorAll('[data-cookie-trigger]').forEach((trigger) => {
       trigger.addEventListener('click', (e) => {
-        if (trigger.tagName === 'A' && (!trigger.href || trigger.href.startsWith('#'))) e.preventDefault();
+        if (trigger.tagName === 'A' && (!trigger.href || trigger.href.startsWith('#')))
+          e.preventDefault();
         CookieSettings.open();
       });
     });
 
     // Footer Toggle Triggers
-    document.querySelectorAll('[data-footer-trigger]').forEach(trigger => {
+    document.querySelectorAll('[data-footer-trigger]').forEach((trigger) => {
       trigger.addEventListener('click', (e) => {
-        if (trigger.tagName === 'A' && (!trigger.href || trigger.href.startsWith('#'))) e.preventDefault();
+        if (trigger.tagName === 'A' && (!trigger.href || trigger.href.startsWith('#')))
+          e.preventDefault();
         if (window.footerScrollHandler) {
           window.footerScrollHandler.toggleExpansion(true);
         } else {
@@ -466,7 +483,7 @@ class FooterLoader {
           if (footer) {
             // Force snap disable here too for consistency
             document.documentElement.style.scrollSnapType = 'none';
-            
+
             footer.classList.add('footer-expanded');
             document.body.classList.add('footer-expanded');
             footer.querySelector('.footer-minimized')?.classList.add('footer-hidden');
@@ -488,11 +505,11 @@ class ScrollHandler {
     this.observer = null;
     window.footerScrollHandler = this;
   }
-  
+
   init() {
     const footer = document.getElementById('site-footer');
     const trigger = document.getElementById('footer-trigger-zone');
-    
+
     // Ensure visibility state on init
     if (footer) {
       footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden');
@@ -501,58 +518,59 @@ class ScrollHandler {
 
     if (!footer || !trigger) return;
 
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.target.id === 'footer-trigger-zone') {
-          // If scrolling programmatically, ignore boundary checks
-          if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return;
-          
-          const threshold = this.expanded ? 0.02 : 0.05;
-          const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
-          this.toggleExpansion(shouldExpand);
-        }
-      });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: [0, 0.02, 0.05, 0.1, 0.5, 1] });
-    
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target.id === 'footer-trigger-zone') {
+            // If scrolling programmatically, ignore boundary checks
+            if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return;
+
+            const threshold = this.expanded ? 0.02 : 0.05;
+            const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
+            this.toggleExpansion(shouldExpand);
+          }
+        });
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: [0, 0.02, 0.05, 0.1, 0.5, 1] }
+    );
+
     this.observer.observe(trigger);
   }
-  
+
   toggleExpansion(shouldExpand) {
     const footer = document.getElementById('site-footer');
     if (!footer) return;
-    
+
     const min = footer.querySelector('.footer-minimized');
     const max = footer.querySelector('.footer-maximized');
-    
+
     if (shouldExpand && !this.expanded) {
       ProgrammaticScroll.create(1000);
       GlobalClose.bind();
-      
+
       // CRITICAL FIX: Temporarily disable scroll snapping on HTML/Body
-      // This prevents the browser from forcing the viewport back up to the last section
-      // while trying to expand the footer.
       document.documentElement.style.scrollSnapType = 'none';
-      
+
       footer.classList.add('footer-expanded');
       document.body.classList.add('footer-expanded');
       max?.classList.remove('footer-hidden');
       min?.classList.add('footer-hidden');
-      
+
       this.expanded = true;
     } else if (!shouldExpand && this.expanded) {
       footer.classList.remove('footer-expanded');
       document.body.classList.remove('footer-expanded');
       max?.classList.add('footer-hidden');
       min?.classList.remove('footer-hidden');
-      
+
       // Restore scroll snapping behavior
       document.documentElement.style.removeProperty('scroll-snap-type');
-      
+
       this.expanded = false;
       GlobalClose.unbind();
     }
   }
-  
+
   cleanup() {
     this.observer?.disconnect();
   }
@@ -565,21 +583,18 @@ class FooterResizer {
     window.addEventListener('resize', this.apply, { passive: true });
     this.apply();
   }
-  
+
   apply() {
     const content = document.querySelector('#site-footer .footer-enhanced-content');
     if (!content) return;
-    
-    const height = Math.min(
-      Math.max(0, content.scrollHeight), 
-      window.innerHeight - 24
-    );
-    
+
+    const height = Math.min(Math.max(0, content.scrollHeight), window.innerHeight - 24);
+
     if (height > 0) {
       document.documentElement.style.setProperty('--footer-actual-height', `${height}px`);
     }
   }
-  
+
   cleanup() {
     window.removeEventListener('resize', this.apply);
   }

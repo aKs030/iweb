@@ -7,6 +7,7 @@
   "scripts": {
     "test": "playwright test",
     "lint": "eslint . --ext .js --fix",
+    "lint:css": "stylelint \"**/*.css\" --fix",
     "format": "prettier --write .",
     "prepare": "husky install",
     "test:headed": "playwright test --headed",
@@ -17,13 +18,15 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
+    "concurrently": "^8.2.0",
     "eslint": "^8.47.0",
     "http-server": "^14.1.1",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.1",
     "prettier": "^3.2.2",
-    "ws": "^8.18.3",
-    "concurrently": "^8.2.0"
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^39.0.1",
+    "ws": "^8.18.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
