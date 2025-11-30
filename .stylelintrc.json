@@ -19,6 +19,8 @@
     "color-hex-length": "short",
 
     "shorthand-property-no-redundant-values": true,
+    "selector-max-id": 1,
+    "max-nesting-depth": 3,
     "property-no-deprecated": true,
     "no-duplicate-selectors": true,
     "comment-empty-line-before": [
