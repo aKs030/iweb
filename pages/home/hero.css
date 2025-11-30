@@ -46,6 +46,7 @@ body:not(.hero-active) .hero-title {
   transition:
     text-shadow var(--transition-base),
     filter var(--transition-base);
+  will-change: text-shadow;
 }
 
 .hero-title:hover {
@@ -89,37 +90,57 @@ body:not(.hero-active) .hero-title {
 
 @keyframes pulseGlow {
   0% {
-    filter: drop-shadow(0 1px 10px rgba(37, 99, 235, 0.6));
+    text-shadow:
+      0 0 12px rgba(37, 99, 235, 0.6),
+      0 0 22px rgba(6, 182, 212, 0.35);
   }
   25% {
-    filter: drop-shadow(0 2px 16px rgba(6, 182, 212, 0.65));
+    text-shadow:
+      0 0 18px rgba(6, 182, 212, 0.7),
+      0 0 32px rgba(37, 99, 235, 0.2);
   }
   50% {
-    filter: drop-shadow(0 2px 20px rgba(16, 185, 129, 0.6));
+    text-shadow:
+      0 0 20px rgba(16, 185, 129, 0.6),
+      0 0 36px rgba(6, 182, 212, 0.25);
   }
   75% {
-    filter: drop-shadow(0 2px 18px rgba(99, 102, 241, 0.65));
+    text-shadow:
+      0 0 18px rgba(99, 102, 241, 0.7),
+      0 0 30px rgba(37, 99, 235, 0.25);
   }
   100% {
-    filter: drop-shadow(0 1px 10px rgba(37, 99, 235, 0.6));
+    text-shadow:
+      0 0 12px rgba(37, 99, 235, 0.6),
+      0 0 22px rgba(6, 182, 212, 0.35);
   }
 }
 
 @keyframes pulseGlowHover {
   0% {
-    filter: drop-shadow(0 1px 14px rgba(37, 99, 235, 0.7));
+    text-shadow:
+      0 0 14px rgba(37, 99, 235, 0.7),
+      0 0 28px rgba(6, 182, 212, 0.45);
   }
   25% {
-    filter: drop-shadow(0 2px 22px rgba(6, 182, 212, 0.75));
+    text-shadow:
+      0 0 22px rgba(6, 182, 212, 0.8),
+      0 0 36px rgba(37, 99, 235, 0.35);
   }
   50% {
-    filter: drop-shadow(0 2px 28px rgba(16, 185, 129, 0.7));
+    text-shadow:
+      0 0 28px rgba(16, 185, 129, 0.75),
+      0 0 44px rgba(6, 182, 212, 0.32);
   }
   75% {
-    filter: drop-shadow(0 2px 24px rgba(99, 102, 241, 0.75));
+    text-shadow:
+      0 0 24px rgba(99, 102, 241, 0.8),
+      0 0 40px rgba(37, 99, 235, 0.38);
   }
   100% {
-    filter: drop-shadow(0 1px 14px rgba(37, 99, 235, 0.7));
+    text-shadow:
+      0 0 14px rgba(37, 99, 235, 0.7),
+      0 0 28px rgba(6, 182, 212, 0.45);
   }
 }
 
@@ -142,12 +163,6 @@ body:not(.hero-active) .hero-title {
 
   min-height: 100dvh; /* statt 100vh */
   height: auto; /* keine starre Höhe */
-  /* Reduce aggressive glow on small screens */
-  text-shadow:
-    0 0 6px rgba(37, 99, 235, 0.25),
-    0 0 12px rgba(37, 99, 235, 0.14);
-  filter: drop-shadow(0 1px 8px rgba(37, 99, 235, 0.34));
-  animation: gradientMove var(--greet-anim-grad-dur) linear infinite; /* remove pulse glow */
   padding: 0 var(--spacing-sm);
   box-sizing: border-box; /* wichtig! */
 }
@@ -161,10 +176,6 @@ body:not(.hero-active) .hero-title {
   align-items: center;
   gap: 1.5rem;
   max-width: 800px;
-  /* Further reduce shadows for very small screens */
-  text-shadow: 0 0 4px rgba(37, 99, 235, 0.18);
-  filter: drop-shadow(0 1px 6px rgba(37, 99, 235, 0.28));
-  animation: gradientMove var(--greet-anim-grad-dur) linear infinite; /* keep gradient, remove pulse */
   width: 100%;
 }
 
@@ -317,6 +328,9 @@ body:not(.hero-active) .floating-icon {
     padding: 6px 8px; /* keep the pill visually compact */
     line-height: 1.05;
     font-variation-settings: 'opsz' 14;
+    filter: none !important;
+    -webkit-filter: none !important;
+    will-change: text-shadow;
   }
 }
 
@@ -341,6 +355,9 @@ body:not(.hero-active) .floating-icon {
     padding: 4px 6px;
     line-height: 1.02;
     font-variation-settings: 'opsz' 12;
+    filter: none !important;
+    -webkit-filter: none !important;
+    will-change: text-shadow;
     white-space: normal; /* allow wrapping on tiny screens */
     overflow-wrap: break-word;
   }
