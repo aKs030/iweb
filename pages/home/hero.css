@@ -6,7 +6,8 @@ body:not(.hero-active) .hero-title {
   /* Responsive font sizing for mid-sized viewports */
   position: relative;
   font-family: var(--font-inter);
-  font-size: var(--greet-fs);
+  /* Fluid responsive greeting size: clamp(min, preferred, max) */
+  font-size: clamp(1rem, 6vw, 3.6rem);
   line-height: var(--greet-lh);
   font-weight: var(--greet-weight);
   letter-spacing: var(--greet-letter);
@@ -32,7 +33,7 @@ body:not(.hero-active) .hero-title {
   max-width: var(--greet-max);
   /* ensure a reasonable minimum line length to avoid many short wrapped columns */
   /* Use CSS variable for min-inline-size to make mobile tweaks easier */
-  min-inline-size: var(--greet-min-inline, clamp(18ch, 32vw, 42ch));
+  min-inline-size: var(--greet-min-inline, clamp(12ch, 28vw, 42ch));
   /* keep reasonable vertical space for multi-line hero headings while avoiding excessive height */
   min-height: 2.2em;
   font-variation-settings: 'opsz' 18;
@@ -328,7 +329,6 @@ body:not(.hero-active) .floating-icon {
   }
 
   .hero-title {
-    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important; /* force smaller type on mobile */
     min-inline-size: clamp(10ch, 26vw, 22ch);
     max-width: 100%;
     padding: 6px 8px; /* keep the pill visually compact */
@@ -363,7 +363,6 @@ body:not(.hero-active) .floating-icon {
   }
 
   .hero-title {
-    font-size: clamp(0.95rem, 4.2vw, 1.2rem) !important; /* further reduce type on 360px */
     min-inline-size: clamp(8ch, 22vw, 18ch);
     max-width: 100%;
     padding: 4px 6px;
