@@ -335,14 +335,7 @@ a:hover {
     padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
   }
 
-  /* Make media responsive */
-  .container img,
-  .container svg,
-  .container video {
-    max-width: 100%;
-    height: auto;
-    display: block;
-  }
+  /* Make media responsive - centralized in root.css, remove per-container duplication */
 
   /* Smaller button minimum width */
   .btn,
