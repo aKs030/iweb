@@ -11,7 +11,7 @@
         "ignoreAtRules": ["tailwind", "layer", "apply", "font-face", "supports"]
       }
     ],
-    "no-empty-source": null,
+    "no-empty-source": true,
     "no-descending-specificity": true,
     "media-feature-name-value-no-unknown": null,
     "property-no-deprecated": null,
