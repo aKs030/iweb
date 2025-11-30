@@ -90,6 +90,20 @@
   --line-height-base: 1.7;
   --font-size-h2: 1.5rem;
 
+  /* Typographic design system (headline & body tokens) */
+  --headline-fs: clamp(3rem, 6vw, 4.5rem);
+  --headline-lh: 1.03;
+  --headline-weight: 900;
+  --headline-letter: -0.02em;
+
+  --lead-fs: 1.125rem; /* used for descriptions/lead text */
+  --body-fs: var(--font-size-p);
+  --body-lh: var(--line-height-base);
+  --muted-fs: 0.95rem;
+  /* Project & card text sizes */
+  --project-title-fs: 1.25rem;
+  --project-desc-fs: var(--body-fs);
+
   /* Animation & Transitions - Optimized */
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -141,12 +155,27 @@
   /* Particle */
   --particle-opacity: 0.4;
 
-  /* Greeting Hero */
-  --greet-fs: clamp(1.6rem, 4vw, 2.6rem);
-  --greet-lh: 1.14;
-  --greet-weight: 600;
-  --greet-letter: -0.012em;
-  --greet-max: clamp(20ch, 44vw, 34ch);
+  /* Greeting variables (derived from headline tokens) */
+  /* Greeting size is derived from the headline size; allows consistent headings across pages */
+  --greet-fs: var(--headline-fs);
+  --greet-lh: var(--headline-lh);
+  /* slightly lighter than the page headline for distinction */
+  --greet-weight: 800;
+  --greet-letter: var(--headline-letter);
+  /* Greeting headline width: tighter on mobile to avoid long lines when font is enlarged */
+  --greet-max: clamp(18ch, 44vw, 30ch);
+  /* Minimum inline size for greeting hero text - used to control wrapping on small viewports */
+  --greet-min-inline: clamp(18ch, 32vw, 42ch);
+
+  /* Responsive tweaks: slightly smaller headings on very small viewports to avoid oversizing */
+  @media (max-width: 420px) {
+    :root {
+      --headline-fs: clamp(2.2rem, 8vw, 3rem);
+      --greet-fs: var(--headline-fs);
+      --greet-min-inline: clamp(14ch, 36vw, 28ch);
+      --greet-max: clamp(14ch, 100vw, 26ch);
+    }
+  }
   --greet-grad: linear-gradient(90deg, #2563eb, #06b6d4, #10b981, #6366f1);
   --greet-anim-grad-dur: 28s;
   --greet-anim-pulse-dur: 13.2s;
