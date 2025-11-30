@@ -513,22 +513,33 @@ document.addEventListener(
     }
     // ===== Dev-only WebSocket test (optional) =====
     // Usage: add ?ws-test to the page URL to enable a reconnecting websocket to ws://127.0.0.1:3001
-    if (!ENV.isTest && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || ENV.debug)) {
+    if (
+      !ENV.isTest &&
+      (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        ENV.debug)
+    ) {
       const params = new URLSearchParams(window.location.search || '');
       if (params.has('ws-test') || ENV.debug) {
-        import('./shared/reconnecting-websocket.js').then((mod) => {
-          const { ReconnectingWebSocket } = mod;
-          const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
-          rws.onopen = () => {
-            log.info('ReconnectingWebSocket open (dev test)');
-            try { rws.send('dev:hello'); } catch (e) { /* ignore */ }
-          };
-          rws.onmessage = (e) => log.debug('[dev-ws]', e.data);
-          rws.onclose = (ev) => log.info('ReconnectingWebSocket closed', ev);
-          rws.onerror = (err) => log.warn('ReconnectingWebSocket error', err);
-          // Attach for debugging
-          if (ENV.debug) window.__devRws = rws;
-        }).catch((e) => log.warn('Failed to import ReconnectingWebSocket', e));
+        import('./shared/reconnecting-websocket.js')
+          .then((mod) => {
+            const { ReconnectingWebSocket } = mod;
+            const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
+            rws.onopen = () => {
+              log.info('ReconnectingWebSocket open (dev test)');
+              try {
+                rws.send('dev:hello');
+              } catch (e) {
+                /* ignore */
+              }
+            };
+            rws.onmessage = (e) => log.debug('[dev-ws]', e.data);
+            rws.onclose = (ev) => log.info('ReconnectingWebSocket closed', ev);
+            rws.onerror = (err) => log.warn('ReconnectingWebSocket error', err);
+            // Attach for debugging
+            if (ENV.debug) window.__devRws = rws;
+          })
+          .catch((e) => log.warn('Failed to import ReconnectingWebSocket', e));
       }
     }
   },

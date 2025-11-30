@@ -23,7 +23,7 @@ body {
 h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  color: #ffffff;
+  color: #fff;
 }
 
 h2 {
@@ -31,7 +31,7 @@ h2 {
   margin-top: 2.5rem;
   margin-bottom: 1rem;
   color: #0a84ff;
-  border-bottom: 2px solid rgba(10, 132, 255, 0.3);
+  border-bottom: 2px solid rgb(10 132 255 / 30%);
   padding-bottom: 0.5rem;
 }
 
@@ -83,7 +83,7 @@ a:focus-visible {
 
 /* Components */
 .highlight {
-  background: rgba(10, 132, 255, 0.1);
+  background: rgb(10 132 255 / 10%);
   padding: 1rem;
   border-left: 3px solid #0a84ff;
   border-radius: 4px;
@@ -91,16 +91,16 @@ a:focus-visible {
 }
 
 .contact-box {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 5%);
   padding: 1.5rem;
   border-radius: 8px;
   margin: 2rem 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / 10%);
 }
 
 .disclaimer {
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  background: rgb(255 255 255 / 3%);
+  border-left: 3px solid rgb(255 255 255 / 20%);
   padding: 1rem;
   margin: 1.5rem 0;
   font-size: 0.9rem;
@@ -120,7 +120,7 @@ a:focus-visible {
   margin-top: 2rem;
   padding: 0.75rem 1.5rem;
   min-height: 44px;
-  background: linear-gradient(135deg, #0a84ff 0%, #0066cc 100%);
+  background: linear-gradient(135deg, #0a84ff 0%, #06c 100%);
   color: white;
   border-radius: 6px;
   font-weight: 600;
@@ -129,10 +129,10 @@ a:focus-visible {
 }
 
 .back-link:hover {
-  background: linear-gradient(135deg, #0066cc 0%, #004c99 100%);
+  background: linear-gradient(135deg, #06c 0%, #004c99 100%);
   transform: translateY(-2px);
   text-decoration: none;
-  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+  box-shadow: 0 4px 12px rgb(10 132 255 / 30%);
 }
 
 .back-link:active {
@@ -140,12 +140,12 @@ a:focus-visible {
 }
 
 .back-link:focus-visible {
-  outline: 2px solid rgba(10, 132, 255, 0.8);
+  outline: 2px solid rgb(10 132 255 / 80%);
   outline-offset: 3px;
 }
 
 /* Mobile Responsiveness */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   body {
     padding: 1.5rem 1rem;
   }
@@ -174,7 +174,7 @@ a:focus-visible {
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   body {
     padding: 1rem 0.75rem;
   }
@@ -218,11 +218,11 @@ a:focus-visible {
   .highlight,
   .contact-box,
   .disclaimer {
-    border: 2px solid currentColor;
+    border: 2px solid currentcolor;
   }
 
   .back-link {
-    border: 2px solid currentColor;
+    border: 2px solid currentcolor;
   }
 }
 
@@ -255,16 +255,16 @@ a:focus-visible {
   .disclaimer {
     background: white;
     border: 1px solid #ccc;
-    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   h2,
   h3 {
-    page-break-after: avoid;
+    break-after: avoid;
   }
 
   ul,
   ol {
-    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }

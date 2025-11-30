@@ -6,7 +6,7 @@ const INVALID_URL = 'content/does-not-exist.html';
 test.describe('SectionLoader', () => {
   test.beforeEach(async ({ page }) => {
     // Setup routes before navigation
-    await page.route(TEST_FRAGMENT_URL, async route => {
+    await page.route(TEST_FRAGMENT_URL, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'text/html',
@@ -14,7 +14,7 @@ test.describe('SectionLoader', () => {
       });
     });
 
-    await page.route(INVALID_URL, async route => {
+    await page.route(INVALID_URL, async (route) => {
       await route.fulfill({
         status: 404,
         body: 'Not Found'

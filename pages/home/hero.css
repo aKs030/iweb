@@ -11,35 +11,35 @@ body:not(.hero-active) .hero-title {
   font-weight: var(--greet-weight);
   letter-spacing: var(--greet-letter);
   text-align: center;
-  text-rendering: optimizeLegibility;
+  text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 8px 12px;
   z-index: 2;
   background: var(--greet-grad);
-  -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
   opacity: 1;
-  -webkit-user-select: none;
   user-select: none;
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: normal;
-  -webkit-hyphens: auto;
   hyphens: auto;
   max-width: var(--greet-max);
+
   /* ensure a reasonable minimum line length to avoid many short wrapped columns */
+
   /* Use CSS variable for min-inline-size to make mobile tweaks easier */
   min-inline-size: var(--greet-min-inline, clamp(18ch, 32vw, 42ch));
+
   /* keep reasonable vertical space for multi-line hero headings while avoiding excessive height */
   min-height: 2.2em;
   font-variation-settings: 'opsz' 18;
   font-optical-sizing: auto;
   text-shadow:
-    0 0 18px rgba(37, 99, 235, 0.35),
-    0 0 32px rgba(37, 99, 235, 0.22);
+    0 0 18px rgb(37 99 235 / 35%),
+    0 0 32px rgb(37 99 235 / 22%);
   animation:
     gradientMove var(--greet-anim-grad-dur) linear infinite,
     pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite;
@@ -51,8 +51,8 @@ body:not(.hero-active) .hero-title {
 
 .hero-title:hover {
   text-shadow:
-    0 0 26px rgba(37, 99, 235, 0.45),
-    0 0 52px rgba(37, 99, 235, 0.32);
+    0 0 26px rgb(37 99 235 / 45%),
+    0 0 52px rgb(37 99 235 / 32%);
   animation:
     gradientMove var(--greet-anim-grad-dur) linear infinite,
     pulseGlowHover var(--greet-anim-pulse-dur) ease-in-out infinite;
@@ -83,6 +83,7 @@ body:not(.hero-active) .hero-title {
   0% {
     background-position: 0% 50%;
   }
+
   100% {
     background-position: 200% 50%;
   }
@@ -91,56 +92,64 @@ body:not(.hero-active) .hero-title {
 @keyframes pulseGlow {
   0% {
     text-shadow:
-      0 0 12px rgba(37, 99, 235, 0.6),
-      0 0 22px rgba(6, 182, 212, 0.35);
+      0 0 12px rgb(37 99 235 / 60%),
+      0 0 22px rgb(6 182 212 / 35%);
   }
+
   25% {
     text-shadow:
-      0 0 18px rgba(6, 182, 212, 0.7),
-      0 0 32px rgba(37, 99, 235, 0.2);
+      0 0 18px rgb(6 182 212 / 70%),
+      0 0 32px rgb(37 99 235 / 20%);
   }
+
   50% {
     text-shadow:
-      0 0 20px rgba(16, 185, 129, 0.6),
-      0 0 36px rgba(6, 182, 212, 0.25);
+      0 0 20px rgb(16 185 129 / 60%),
+      0 0 36px rgb(6 182 212 / 25%);
   }
+
   75% {
     text-shadow:
-      0 0 18px rgba(99, 102, 241, 0.7),
-      0 0 30px rgba(37, 99, 235, 0.25);
+      0 0 18px rgb(99 102 241 / 70%),
+      0 0 30px rgb(37 99 235 / 25%);
   }
+
   100% {
     text-shadow:
-      0 0 12px rgba(37, 99, 235, 0.6),
-      0 0 22px rgba(6, 182, 212, 0.35);
+      0 0 12px rgb(37 99 235 / 60%),
+      0 0 22px rgb(6 182 212 / 35%);
   }
 }
 
 @keyframes pulseGlowHover {
   0% {
     text-shadow:
-      0 0 14px rgba(37, 99, 235, 0.7),
-      0 0 28px rgba(6, 182, 212, 0.45);
+      0 0 14px rgb(37 99 235 / 70%),
+      0 0 28px rgb(6 182 212 / 45%);
   }
+
   25% {
     text-shadow:
-      0 0 22px rgba(6, 182, 212, 0.8),
-      0 0 36px rgba(37, 99, 235, 0.35);
+      0 0 22px rgb(6 182 212 / 80%),
+      0 0 36px rgb(37 99 235 / 35%);
   }
+
   50% {
     text-shadow:
-      0 0 28px rgba(16, 185, 129, 0.75),
-      0 0 44px rgba(6, 182, 212, 0.32);
+      0 0 28px rgb(16 185 129 / 75%),
+      0 0 44px rgb(6 182 212 / 32%);
   }
+
   75% {
     text-shadow:
-      0 0 24px rgba(99, 102, 241, 0.8),
-      0 0 40px rgba(37, 99, 235, 0.38);
+      0 0 24px rgb(99 102 241 / 80%),
+      0 0 40px rgb(37 99 235 / 38%);
   }
+
   100% {
     text-shadow:
-      0 0 14px rgba(37, 99, 235, 0.7),
-      0 0 28px rgba(6, 182, 212, 0.45);
+      0 0 14px rgb(37 99 235 / 70%),
+      0 0 28px rgb(6 182 212 / 45%);
   }
 }
 
@@ -160,16 +169,17 @@ body:not(.hero-active) .hero-title {
   align-items: center;
   justify-content: center;
   text-align: center;
-
   min-height: 100dvh; /* statt 100vh */
   height: auto; /* keine starre Höhe */
   padding: 0 var(--spacing-sm);
   box-sizing: border-box; /* wichtig! */
 }
+
 .hero.section {
   justify-content: center;
   padding-bottom: 0;
 }
+
 .hero-content {
   display: flex;
   flex-direction: column;
@@ -182,7 +192,9 @@ body:not(.hero-active) .hero-title {
 /* CRT Power-On Effekt entfernt - Animation-System deaktiviert */
 
 /* Gradient Overlay jetzt global gelöst */
+
 /* (typing area - moved to content/TypeWriter/typewriter.css) */
+
 /* Visual / Greeting */
 .hero-visual {
   position: relative;
@@ -197,48 +209,60 @@ body:not(.hero-active) .hero-title {
   left: 0;
   pointer-events: none;
 }
+
 .floating-icon {
   position: absolute;
   font-size: 2rem;
   animation: float 6s ease-in-out infinite;
 }
+
 .floating-icon.delay-0 {
   animation-delay: var(--delay-0);
 }
+
 .floating-icon.delay-1 {
   animation-delay: var(--delay-1);
 }
+
 .floating-icon.delay-2 {
   animation-delay: var(--delay-2);
 }
+
 .floating-icon.delay-3 {
   animation-delay: var(--delay-3);
 }
+
 .floating-icon:nth-child(1) {
   top: 10%;
   right: -50px;
 }
+
 .floating-icon:nth-child(2) {
   top: 70%;
   right: -40px;
 }
+
 .floating-icon:nth-child(3) {
   bottom: 20%;
   left: -50px;
 }
+
 .floating-icon:nth-child(4) {
   top: 40%;
   left: -40px;
 }
+
 @keyframes float {
   0%,
   100% {
     transform: translateY(0) rotate(0deg);
   }
+
   50% {
     transform: translateY(-20px) rotate(10deg);
   }
 }
+
 .hero-image-container {
   position: relative;
   width: 60vw;
@@ -249,15 +273,18 @@ body:not(.hero-active) .hero-title {
   align-items: center;
   justify-content: center;
 }
+
 .hero-image-container svg {
   position: relative;
   z-index: 1;
   display: block;
   margin: 0 auto;
 }
+
 body:not(.hero-active) .floating-icon {
   animation-play-state: paused;
 }
+
 .spotlight-bg {
   position: absolute;
   top: 50%;
@@ -286,9 +313,9 @@ body:not(.hero-active) .floating-icon {
   border-radius: inherit; /* match pill shape */
   background: radial-gradient(
     ellipse at center,
-    rgba(248, 250, 252, 0.96) 0%,
-    rgba(37, 99, 235, 0.18) 48%,
-    rgba(37, 99, 235, 0.08) 66%,
+    rgb(248 250 252 / 96%) 0%,
+    rgb(37 99 235 / 18%) 48%,
+    rgb(37 99 235 / 8%) 66%,
     transparent 100%
   );
   filter: blur(48px) saturate(1.04) contrast(1.02);
@@ -299,14 +326,14 @@ body:not(.hero-active) .floating-icon {
 }
 
 /* Reduce glow intensity on small screens */
-@media (max-width: 420px) {
+@media (width <= 420px) {
   .spotlight-bg::before {
     filter: blur(32px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.12);
   }
 }
 
-@media (max-width: 360px) {
+@media (width <= 360px) {
   .spotlight-bg::before {
     filter: blur(22px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.08);
@@ -323,10 +350,11 @@ body:not(.hero-active) .floating-icon {
 }
 
 /* Mobile: smaller type, tighter padding and improved wrapping */
-@media (max-width: 420px) {
+@media (width <= 420px) {
   .hero-image-container {
     width: 72vw; /* slightly larger for tiny screens to keep visual balance */
     max-width: 300px; /* reduce max so the hero title wraps more naturally */
+
     /* allow glow to be visible outside the container */
     overflow: visible;
     padding-inline: clamp(6px, 3vw, 12px);
@@ -353,7 +381,6 @@ body:not(.hero-active) .floating-icon {
     line-height: 1.05;
     font-variation-settings: 'opsz' 14;
     filter: none !important;
-    -webkit-filter: none !important;
     will-change: text-shadow;
     word-break: break-word;
     hyphens: auto;
@@ -361,7 +388,7 @@ body:not(.hero-active) .floating-icon {
 }
 
 /* Extra-small mobile breakpoint for very narrow devices (e.g. older phones, compact landscape) */
-@media (max-width: 360px) {
+@media (width <= 360px) {
   .hero-image-container {
     width: 84vw; /* keep large visual but leave margin */
     max-width: 260px; /* reduce max width so everything wraps neatly */
@@ -390,7 +417,6 @@ body:not(.hero-active) .floating-icon {
     line-height: 1.02;
     font-variation-settings: 'opsz' 12;
     filter: none !important;
-    -webkit-filter: none !important;
     will-change: text-shadow;
     white-space: normal; /* allow wrapping on tiny screens */
     overflow-wrap: break-word;
@@ -408,6 +434,7 @@ body:not(.hero-active) .floating-icon {
     opacity: 0.85;
     font-size: 1.6rem;
   }
+
   .floating-icon:nth-child(1),
   .floating-icon:nth-child(3) {
     display: none; /* hide a couple of icons to reduce visual clutter */

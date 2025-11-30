@@ -1,12 +1,10 @@
 /**
  * Shared Utilities - Optimized Core Functions
  *
- * OPTIMIZATIONS v3.1:
- * - Removed deprecated comments and placeholders
- * - SectionTracker query updated to include footer.
+ * OPTIMIZATIONS v3.2:
+ * - Added centralized CookieManager to avoid duplication in footer/main
  *
- * @version 3.1.0
- * @last-modified 2025-11-08
+ * @version 3.2.0
  */
 
 // ===== Logger System =====
@@ -96,6 +94,43 @@ export function getElementById(id, useCache = true) {
 
   return element;
 }
+
+// ===== Cookie Manager (Centralized) =====
+export const CookieManager = {
+  set(name, value, days = 365) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    const expires = `; expires=${date.toUTCString()}`;
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
+  },
+
+  get(name) {
+    const nameEQ = `${name}=`;
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(nameEQ)) {
+        return cookie.substring(nameEQ.length);
+      }
+    }
+    return null;
+  },
+
+  delete(name) {
+    const domains = ['', window.location.hostname, `.${window.location.hostname}`];
+    domains.forEach((domain) => {
+      const domainPart = domain ? `; domain=${domain}` : '';
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
+    });
+  },
+
+  deleteAnalytics() {
+    const analyticsCookies = ['_ga', '_gid', '_gat', '_gat_gtag_G_S0587RQ4CN'];
+    analyticsCookies.forEach((name) => this.delete(name));
+    sharedLogger.info('Analytics cookies deleted');
+  }
+};
 
 // ===== Array Utilities =====
 
@@ -219,7 +254,6 @@ export function fire(type, detail = null, target = document) {
 }
 
 export function on(type, handler, options = {}, target = document) {
-  // Normalize parameters
   let actualTarget = target;
   let actualOptions = options;
 
@@ -369,11 +403,10 @@ export function schedulePersistentStorageRequest(delay = 2500) {
   try {
     setTimeout(() => {
       ensurePersistentStorage().catch(() => {
-        /* ignore: persistent storage not available/blocked */ void 0;
+        /* ignore */ void 0;
       });
     }, delay);
   } catch {
-    // Fail silently
     void 0;
   }
 }
@@ -430,7 +463,6 @@ export class SectionTracker {
       setTimeout(() => this.refreshSections(), 50);
     });
 
-    // Listen for footer load to track it as a section
     document.addEventListener('footer:loaded', () => {
       setTimeout(() => this.refreshSections(), 50);
     });
@@ -444,8 +476,6 @@ export class SectionTracker {
       return;
     }
 
-    // It is normal for sections to be empty initially (dynamic loading).
-    // Warning removed to reduce noise.
     if (this.sections.length === 0) {
       this.log.debug('No sections found to track yet');
       return;
@@ -464,7 +494,6 @@ export class SectionTracker {
   }
 
   refreshSections() {
-    // Selektor für main-Sektionen UND den site-footer
     this.sections = Array.from(
       document.querySelectorAll('main .section[id], footer#site-footer[id]')
     ).filter((section) => section.id);
@@ -479,7 +508,6 @@ export class SectionTracker {
   }
 
   handleIntersections(entries) {
-    // Update ratios for changed entries
     entries.forEach((entry) => {
       if (entry.target?.id) {
         this.sectionRatios.set(entry.target.id, {
@@ -490,7 +518,6 @@ export class SectionTracker {
       }
     });
 
-    // Find best visible section among ALL tracked sections
     let bestEntry = null;
     let bestRatio = 0;
 

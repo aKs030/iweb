@@ -103,11 +103,7 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
   const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
 
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(
-      CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE,
-      segments,
-      segments
-    ),
+    new THREE.SphereGeometry(CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE, segments, segments),
     atmosphereMaterial
   );
 

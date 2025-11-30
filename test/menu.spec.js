@@ -6,7 +6,7 @@ test.describe('Menu System (Mobile)', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    
+
     // CRITICAL FIX: Wait for loading screen to disappear before interacting
     // The loading screen has a high z-index and blocks clicks
     const loader = page.locator('#loadingScreen');
@@ -79,7 +79,7 @@ test.describe('Menu System (General)', () => {
   test('should set active link based on scroll/navigation', async ({ page }) => {
     // Force a hash navigation which is handled by JS without page reload
     await page.goto('/#about');
-    
+
     // Allow small time for IntersectionObserver or hashchange event to fire
     await page.waitForTimeout(300);
 

@@ -8,8 +8,8 @@ test.describe('Application Loading', () => {
     const mainContent = page.locator('#main-content');
 
     // 1. Loader should be visible initially
-    // We rely on the fact that Playwright is fast enough to catch it. 
-    // If the app is too fast (e.g. cached), this might flake, but usually 
+    // We rely on the fact that Playwright is fast enough to catch it.
+    // If the app is too fast (e.g. cached), this might flake, but usually
     // the MIN_DISPLAY_TIME (600ms) in main.js guarantees visibility.
     await expect(loader).toBeVisible();
 
@@ -23,14 +23,14 @@ test.describe('Application Loading', () => {
 
     // 4. Main content should be accessible (no longer inert or covered)
     await expect(mainContent).toBeVisible();
-    
+
     // Check if the "aria-hidden" attribute was correctly toggled on the loader
     await expect(loader).toHaveAttribute('aria-hidden', 'true');
   });
 
   test('should initialize critical globals', async ({ page }) => {
     await page.goto('/');
-    
+
     // Wait for app to settle
     await expect(page.locator('#loadingScreen')).toBeHidden();
 

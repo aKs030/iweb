@@ -206,7 +206,10 @@ class AccessibilityManager {
       }
     }
 
-    const region = priority === 'assertive' ? document.getElementById('live-region-assertive') : document.getElementById('live-region-status');
+    const region =
+      priority === 'assertive'
+        ? document.getElementById('live-region-assertive')
+        : document.getElementById('live-region-status');
     if (!region) return;
 
     if (clearPrevious) {

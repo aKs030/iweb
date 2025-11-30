@@ -25,7 +25,10 @@ export class ReconnectingWebSocket {
 
   _onVisibilityChange() {
     // If page becomes visible and the socket is closed, try reconnect
-    if (document.visibilityState === 'visible' && (!this.ws || this.ws.readyState === WebSocket.CLOSED)) {
+    if (
+      document.visibilityState === 'visible' &&
+      (!this.ws || this.ws.readyState === WebSocket.CLOSED)
+    ) {
       this._connect();
     }
   }
@@ -48,11 +51,20 @@ export class ReconnectingWebSocket {
 
     this.ws.onopen = (e) => {
       this.reconnectAttempts = 0;
-      if (this.onopen) try { this.onopen(e); } catch (err) { console.warn(err); }
+      if (this.onopen)
+        try {
+          this.onopen(e);
+        } catch (err) {
+          console.warn(err);
+        }
     };
 
-    this.ws.onmessage = (e) => { if (this.onmessage) this.onmessage(e); };
-    this.ws.onerror = (e) => { if (this.onerror) this.onerror(e); };
+    this.ws.onmessage = (e) => {
+      if (this.onmessage) this.onmessage(e);
+    };
+    this.ws.onerror = (e) => {
+      if (this.onerror) this.onerror(e);
+    };
     this.ws.onclose = (event) => {
       if (this.onclose) this.onclose(event);
 
