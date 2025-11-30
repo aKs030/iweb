@@ -1,7 +1,7 @@
 /**
  * Footer Complete System - Fully Optimized
- * @version 9.3.0
- * Changes: Robust "Keep Open" logic at page bottom, fixed scroll-snap conflicts.
+ * @version 9.1.0
+ * Changes: Removed dead code, fixed index scroll-snap issue, optimized performance.
  */
 
 import { createLogger } from '../shared-utilities.js';
@@ -10,10 +10,10 @@ import { a11y } from '../accessibility-manager.js';
 const log = createLogger('FooterSystem');
 
 // Tunable constants
-const PROGRAMMATIC_SCROLL_MARK_DURATION = 1200; // Increased for safety
+const PROGRAMMATIC_SCROLL_MARK_DURATION = 1000;
 const PROGRAMMATIC_SCROLL_WATCH_TIMEOUT = 5000;
-const PROGRAMMATIC_SCROLL_WATCH_THRESHOLD = 10;
-const PROGRAMMATIC_SCROLL_DEFAULT_DURATION = 800;
+const PROGRAMMATIC_SCROLL_WATCH_THRESHOLD = 6;
+const PROGRAMMATIC_SCROLL_DEFAULT_DURATION = 600;
 
 // ===== Cookie Utilities =====
 const CookieManager = {
@@ -64,7 +64,7 @@ const ProgrammaticScroll = (() => {
           clearTimeout(timer);
           timer = null;
         }
-      } catch (e) { void e; }
+      } catch (e) { /* ignored */ }
       const token = Symbol('progScroll');
       activeToken = token;
       if (duration > 0) {
@@ -79,13 +79,13 @@ const ProgrammaticScroll = (() => {
       if (!activeToken) return;
       if (!token || activeToken === token) {
         activeToken = null;
-        try { if (timer) clearTimeout(timer); timer = null; } catch (e) { void e; }
+        try { if (timer) clearTimeout(timer); timer = null; } catch (e) { /* ignored */ }
         
         if (watchers.has(token)) {
           const watcher = watchers.get(token);
-          try { if (watcher.listener) window.removeEventListener('scroll', watcher.listener); } catch (e) { void e; }
-          try { if (watcher.observer) watcher.observer.disconnect(); } catch (e) { void e; }
-          try { if (watcher.timeoutId) clearTimeout(watcher.timeoutId); } catch (e) { void e; }
+          try { if (watcher.listener) window.removeEventListener('scroll', watcher.listener); } catch (e) { /* no-op */ }
+          try { if (watcher.observer) watcher.observer.disconnect(); } catch (e) { /* no-op */ }
+          try { if (watcher.timeoutId) clearTimeout(watcher.timeoutId); } catch (e) { /* no-op */ }
           watchers.delete(token);
         }
       }
@@ -138,7 +138,7 @@ const ProgrammaticScroll = (() => {
             finished = true;
             ProgrammaticScroll.clear(token);
           }
-        } catch (e) { void e; }
+        } catch (e) { /* no-op */ }
       };
 
       const listener = () => { if (!finished) check(); };
@@ -168,7 +168,6 @@ const GlobalClose = (() => {
 
   const onUserScroll = () => {
     if (ProgrammaticScroll.hasActive()) return;
-    if (window.footerScrollHandler && window.footerScrollHandler.manual) return;
     const footer = document.getElementById('site-footer');
     if (!footer || !footer.classList.contains('footer-expanded')) return;
     if (typeof closeHandler === 'function') closeHandler();
@@ -326,12 +325,11 @@ const CookieSettings = (() => {
     ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION);
     GlobalClose.bind();
     setupButtonHandlers(elements);
-    if (window.footerScrollHandler) window.footerScrollHandler.manual = true;
     
     // Focus management
     try {
       a11y?.trapFocus(elements.cookieView);
-    } catch (e) { void e; }
+    } catch (e) { /* ignored */ }
   }
 
   function close() {
@@ -348,13 +346,10 @@ const CookieSettings = (() => {
     // Restore scroll snapping
     document.documentElement.style.removeProperty('scroll-snap-type');
 
-    if (window.footerScrollHandler) {
-      window.footerScrollHandler.expanded = false;
-      window.footerScrollHandler.manual = false;
-    }
+    if (window.footerScrollHandler) window.footerScrollHandler.expanded = false;
     GlobalClose.unbind();
     
-    try { a11y?.releaseFocus(); } catch (e) { void e; }
+    try { a11y?.releaseFocus(); } catch (e) { /* ignored */ }
   }
   return { open, close };
 })();
@@ -464,14 +459,12 @@ class FooterLoader {
       trigger.addEventListener('click', (e) => {
         if (trigger.tagName === 'A' && (!trigger.href || trigger.href.startsWith('#'))) e.preventDefault();
         if (window.footerScrollHandler) {
-          // Pass true to indicate this was a user/manual toggle so the handler
-          // avoids automatically collapsing it via the observer.
-          window.footerScrollHandler.toggleExpansion(true, true);
+          window.footerScrollHandler.toggleExpansion(true);
         } else {
           // Fallback logic
           const footer = document.getElementById('site-footer');
           if (footer) {
-            // Disable snap here as well for consistency
+            // Force snap disable here too for consistency
             document.documentElement.style.scrollSnapType = 'none';
             
             footer.classList.add('footer-expanded');
@@ -481,8 +474,6 @@ class FooterLoader {
             const token = ProgrammaticScroll.create();
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport');
-            // Mark manual for fallback path too
-            if (window.footerScrollHandler) window.footerScrollHandler.manual = true;
           }
         }
       });
@@ -495,7 +486,6 @@ class ScrollHandler {
   constructor() {
     this.expanded = false;
     this.observer = null;
-    this.manual = false; // When true, ignore observer-based collapses
     window.footerScrollHandler = this;
   }
   
@@ -511,46 +501,23 @@ class ScrollHandler {
 
     if (!footer || !trigger) return;
 
-    // OPTIMIZATION: Updated threshold and logic to prevent bounce-back
     this.observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.target.id === 'footer-trigger-zone') {
-          // If scrolling programmatically, ignore boundary checks completely
-          if (ProgrammaticScroll.hasActive()) return;
+          // If scrolling programmatically, ignore boundary checks
+          if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return;
           
-          let shouldExpand = entry.isIntersecting;
-          
-          // CRITICAL: If already expanded, only collapse if we are clearly scrolling AWAY (UP)
-          // We check if we are near the bottom of the page. If yes, FORCE expand.
-          // 50px buffer allows for some sub-pixel rounding errors or small overscrolls
-          const isAtBottom = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 50);
-          
-          if (this.expanded && isAtBottom) {
-            shouldExpand = true;
-          } else if (this.expanded) {
-            // Only collapse if the trigger is definitely not intersecting AND we are not at bottom
-            // This provides "stickiness"
-            if (entry.intersectionRatio > 0) shouldExpand = true; 
-          }
-
-          // If the user explicitly opened the footer via a control, do not allow the
-          // observer to collapse it — this preserves 'stickiness' after manual opens.
-          if (this.manual && !shouldExpand) return;
-
+          const threshold = this.expanded ? 0.02 : 0.05;
+          const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
           this.toggleExpansion(shouldExpand);
         }
       });
-    }, { 
-      root: null, 
-      // Adjusted margin to detect trigger slightly earlier/later to smooth transition
-      rootMargin: '0px 0px 50px 0px', 
-      threshold: [0, 0.01, 0.5, 1] 
-    });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: [0, 0.02, 0.05, 0.1, 0.5, 1] });
     
     this.observer.observe(trigger);
   }
   
-  toggleExpansion(shouldExpand, isManual = false) {
+  toggleExpansion(shouldExpand) {
     const footer = document.getElementById('site-footer');
     if (!footer) return;
     
@@ -558,12 +525,12 @@ class ScrollHandler {
     const max = footer.querySelector('.footer-maximized');
     
     if (shouldExpand && !this.expanded) {
-      if (isManual) this.manual = true;
       ProgrammaticScroll.create(1000);
       GlobalClose.bind();
       
       // CRITICAL FIX: Temporarily disable scroll snapping on HTML/Body
-      // This prevents the browser from forcing the viewport back up to the last section.
+      // This prevents the browser from forcing the viewport back up to the last section
+      // while trying to expand the footer.
       document.documentElement.style.scrollSnapType = 'none';
       
       footer.classList.add('footer-expanded');
@@ -572,12 +539,6 @@ class ScrollHandler {
       min?.classList.add('footer-hidden');
       
       this.expanded = true;
-      
-      // FORCE SNAP to bottom: Ensures the view locks to the new expanded footer
-      try {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      } catch (e) { /* ignore */ }
-
     } else if (!shouldExpand && this.expanded) {
       footer.classList.remove('footer-expanded');
       document.body.classList.remove('footer-expanded');
@@ -588,7 +549,6 @@ class ScrollHandler {
       document.documentElement.style.removeProperty('scroll-snap-type');
       
       this.expanded = false;
-      this.manual = false;
       GlobalClose.unbind();
     }
   }
