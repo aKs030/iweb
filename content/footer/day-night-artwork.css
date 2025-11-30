@@ -590,7 +590,7 @@
   }
 }
 
-@media (prefers-contrast: high) {
+@media (prefers-contrast: more) {
   .day-night-artwork {
     border: 2px solid currentcolor;
   }
