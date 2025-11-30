@@ -25,7 +25,6 @@
   --card-shadow-base: 0 10px 40px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
   --card-shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.35), 0 0 40px rgba(7, 161, 255, 0.2);
   --card-glow-color: rgba(7, 161, 255, 0.4);
-  --card-min-width: 280px;
   --card-min-height: 300px;
 }
 
