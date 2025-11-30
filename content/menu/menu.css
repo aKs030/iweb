@@ -105,6 +105,13 @@
 }
 
 /* Wenn SVG funktioniert, verstecke Fallback */
+/* Spezielle Abstände für Buttons */
+button.submenu-toggle .nav-icon,
+button.submenu-toggle .icon-fallback {
+  margin-right: 6px; /* Etwas enger bei Buttons */
+}
+
+/* Wenn SVG funktioniert, verstecke Fallback */
 .nav-icon:not(:empty) + .icon-fallback {
   display: none;
 }
@@ -115,11 +122,7 @@
   display: inline-block;
 }
 
-/* Spezielle Abstände für Buttons */
-button.submenu-toggle .nav-icon,
-button.submenu-toggle .icon-fallback {
-  margin-right: 6px; /* Etwas enger bei Buttons */
-}
+/* removed duplicate Submenu Icon-spezifische Anpassungen (moved earlier) */
 
 .site-menu__list a:hover .nav-icon,
 .site-menu__list a:focus .nav-icon,
@@ -150,9 +153,7 @@ body {
 
 /* ===== Dynamic Menu Typography System ===== */
 .site-menu__list li,
-.site-menu__list li a,
-.site-menu__list .submenu li,
-.site-menu__list .submenu li a {
+.site-menu__list li a {
   font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   font-feature-settings:
     'kern' 1,
@@ -165,18 +166,7 @@ body {
 }
 
 /* Submenu Typography */
-.site-menu__list .submenu li a {
-  color: var(--dynamic-menu-label-secondary);
-  display: block;
-  transition: all 0.2s var(--dynamic-menu-spring-quick);
-  padding: 12px 20px;
-  min-width: 160px;
-  font-size: 15px;
-  font-weight: 450;
-  border-radius: var(--dynamic-menu-micro-radius);
-  margin: 2px 8px;
-  background: transparent;
-}
+/* Submenu Typography moved below base list styles to respect specificity ordering */
 
 .site-menu__list .submenu li a:hover,
 .site-menu__list .submenu li a:focus {
@@ -350,6 +340,21 @@ body {
   display: flex;
   flex-shrink: 0;
   min-width: max-content; /* Verhindert das Schrumpfen der Items */
+}
+
+/* Submenu Typography */
+.site-menu__list .submenu li,
+.site-menu__list .submenu li a {
+  color: var(--dynamic-menu-label-secondary);
+  display: block;
+  transition: all 0.2s var(--dynamic-menu-spring-quick);
+  padding: 12px 20px;
+  min-width: 160px;
+  font-size: 15px;
+  font-weight: 450;
+  border-radius: var(--dynamic-menu-micro-radius);
+  margin: 2px 8px;
+  background: transparent;
 }
 
 .site-menu__list li a,
