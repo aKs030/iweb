@@ -312,13 +312,19 @@ body:not(.hero-active) .floating-icon {
   .hero-image-container {
     width: 72vw; /* slightly larger for tiny screens to keep visual balance */
     max-width: 300px; /* reduce max so the hero title wraps more naturally */
+    overflow: hidden; /* prevent horizontal overflow when pill grows */
   }
 
   .spotlight-bg {
+    position: relative; /* keep pill in flow so it doesn't overflow the container */
+    top: auto;
+    left: auto;
+    transform: none;
     padding-block: clamp(6px, 1.4vw, 10px);
     padding-inline: clamp(8px, 3vw, 16px);
     box-sizing: border-box;
     max-width: 100%;
+    margin-inline: auto; /* center inside container */
   }
 
   .hero-title {
@@ -331,6 +337,8 @@ body:not(.hero-active) .floating-icon {
     filter: none !important;
     -webkit-filter: none !important;
     will-change: text-shadow;
+    word-break: break-word;
+    hyphens: auto;
   }
 }
 
@@ -339,13 +347,19 @@ body:not(.hero-active) .floating-icon {
   .hero-image-container {
     width: 84vw; /* keep large visual but leave margin */
     max-width: 260px; /* reduce max width so everything wraps neatly */
+    overflow: hidden; /* ensure no horizontal overflow */
   }
 
   .spotlight-bg {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
     padding-block: clamp(4px, 1.2vw, 8px);
     padding-inline: clamp(6px, 2.2vw, 12px);
     border-radius: 999px;
     max-width: 100%;
+    margin-inline: auto;
   }
 
   .hero-title {
@@ -360,6 +374,7 @@ body:not(.hero-active) .floating-icon {
     will-change: text-shadow;
     white-space: normal; /* allow wrapping on tiny screens */
     overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   /* reduce and reposition buttons to avoid overlap with hero visuals */
