@@ -16,6 +16,18 @@
     "media-feature-name-value-no-unknown": null,
     "property-no-deprecated": null,
     "no-duplicate-selectors": true,
-    "comment-empty-line-before": null
+    "comment-empty-line-before": [
+      "always",
+      {
+        "except": ["first-nested"],
+        "ignore": ["after-comment", "stylelint-commands"]
+      }
+    ],
+    "declaration-empty-line-before": [
+      "never",
+      {
+        "ignore": ["after-declaration", "first-nested"]
+      }
+    ]
   }
 }
