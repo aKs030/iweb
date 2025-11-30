@@ -7,7 +7,10 @@ test.describe('Menu footer open', () => {
     // Wait for the footer system and contact anchor to be ready
     await page.waitForSelector('#site-footer', { state: 'attached', timeout: 5000 });
     await page.waitForFunction(() => !!window.footerScrollHandler, { timeout: 5000 });
-    await page.waitForSelector('#navigation a[href="#site-footer"]', { state: 'visible', timeout: 5000 });
+    await page.waitForSelector('#navigation a[href="#site-footer"]', {
+      state: 'visible',
+      timeout: 5000
+    });
     // Some layouts may have the header fixed; ensure visible and click reliably
     // Click programmatically to avoid overlay/viewport issues
     await page.evaluate((sel) => {
