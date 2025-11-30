@@ -1,23 +1,15 @@
 /**
  * Dynamic Menu Navigations-System
- * * Features:
+ * Features:
  * - Dynamic Island-inspirierte Navigation
  * - Glassmorphismus 2.0 mit dynamischen Unschärfe-Effekten
  * - SF Pro Typography System
  * - Micro-Animationen und flüssige Übergänge
  * - Card-basierte Mobile Experience
- * - Dynamic Colors mit verbessertem Kontrast
- * - Touch-optimierte Interactions
  * - Skip-Links für WCAG 2.1 Level AA Compliance
- * * @author Abdulkerim Sesli
- * @version 2.0.1 - Cleanup !important
+ * @author Abdulkerim Sesli
+ * @version 2.0.2 - Cleanup
  */
-
-/* ===== Dynamic Menu Design Tokens ===== */
-
-/* CSS Custom Properties werden aus root.css geladen */
-
-/* Alle Design Tokens sind in /content/root.css definiert */
 
 /* ===== Skip-Links für Accessibility (WCAG 2.1 Level AA) ===== */
 .skip-links {
@@ -50,7 +42,6 @@
   pointer-events: auto;
   white-space: nowrap;
   z-index: 10001;
-
   /* Versteckt ohne negative Position (für Tap-Target Optimierung) */
   clip-path: inset(0 0 100% 0);
 }
@@ -72,10 +63,6 @@
     transition: none;
   }
 }
-
-/* ===== Light Mode Overrides ===== */
-
-/* Light Mode Anpassungen werden aus root.css geladen */
 
 /* ===== Dynamic Menu Icons System ===== */
 .nav-icon {
@@ -104,8 +91,6 @@
   vertical-align: -1px; /* Bessere Ausrichtung mit Text */
 }
 
-/* Wenn SVG funktioniert, verstecke Fallback */
-
 /* Spezielle Abstände für Buttons */
 button.submenu-toggle .nav-icon,
 button.submenu-toggle .icon-fallback {
@@ -122,10 +107,6 @@ button.submenu-toggle .icon-fallback {
 .nav-icon[data-broken] + .icon-fallback {
   display: inline-block;
 }
-
-/* removed duplicate Submenu Icon-spezifische Anpassungen (moved earlier) */
-
-/* hover/focus icon transforms moved below base `.site-menu__list` definitions */
 
 /* ===== Dynamic Menu Base Styles ===== */
 *,
@@ -144,6 +125,7 @@ body {
 .has-submenu > a {
   cursor: pointer;
 }
+
 /* ===== Dynamic Menu Typography System ===== */
 .site-menu__list li,
 .site-menu__list li a {
@@ -157,11 +139,6 @@ body {
   line-height: 1.4;
   font-weight: 510; /* Dynamic Menu Medium Weight */
 }
-
-/* Submenu Typography */
-/* Submenu Typography moved below base list styles to respect specificity ordering */
-
-/* Submenu hover/focus will be defined after the base submenu block to avoid specificity issues */
 
 .site-menu__list .submenu .nav-icon {
   width: 14px;
@@ -206,7 +183,7 @@ body {
   align-items: center;
   z-index: 9999;
 
-  /* Animation - kombinierte Transform-Definition */
+  /* Animation */
   animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce) forwards;
   opacity: 0;
   transform: translateX(-50%) translateY(-20px) scale(0.95);
@@ -236,9 +213,6 @@ body {
   left: 24px;
 }
 
-/* AUFGERÄUMT: Redundante/konfliktierende .site-logo-Stile entfernt. */
-
-/* .elegant-logo definiert jetzt das primäre Erscheinungsbild. */
 .site-logo {
   /* Dynamic Menu Micro-Animation */
   transition: all 0.3s var(--dynamic-menu-spring-quick);
@@ -260,14 +234,12 @@ body {
   font-style: normal;
 }
 
-/* moved `.site-logo:hover` above more specific header container rule to satisfy specificity ordering */
 .site-logo:hover {
   transform: scale(1.02);
   color: var(--dynamic-menu-accent-blue);
 }
 
 .site-header .site-logo__container .site-logo {
-  /* AUFGERÄUMT: !important entfernt. Spezifität wird durch .elegant-logo geregelt. */
   font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
   font-weight: 650;
   color: var(--dynamic-menu-label-primary);
@@ -280,7 +252,6 @@ body {
   font-weight: 450; /* Dynamic Menu Regular+ */
   color: var(--dynamic-menu-label-secondary);
   letter-spacing: 0.01em;
-  /* `.has-submenu > a` will be defined above the main menu item base */
   opacity: 0;
   transform: translateY(-4px) scale(0.95);
   transition: all 0.4s var(--dynamic-menu-spring-smooth);
@@ -330,9 +301,7 @@ body {
   min-width: max-content; /* Verhindert das Schrumpfen der Items */
 }
 
-/* Submenu Link behavior (moved earlier) */
-
-/* Main menu item base: moved here to resolve specificity ordering */
+/* Main menu item base */
 .site-menu__list li a,
 .site-menu__list li .submenu-toggle {
   text-decoration: none;
@@ -359,13 +328,7 @@ body {
   cursor: pointer;
 }
 
-/* Consolidated Menu States (ordered for specificity):
-   1) Main hover/focus
-   2) Main active
-   3) Focus-visible
-   4) Submenu base
-   5) Submenu hover/focus
-*/
+/* Consolidated Menu States */
 .site-menu__list li a:hover,
 .site-menu__list li a:focus,
 .site-menu__list li .submenu-toggle:hover,
@@ -384,8 +347,6 @@ body {
   transform: scale(0.98);
 }
 
-/* submenu/element focus-visible (moved below submenu base) */
-
 .site-menu__list .submenu li,
 .site-menu__list .submenu li a {
   color: var(--dynamic-menu-label-secondary);
@@ -400,7 +361,7 @@ body {
   background: transparent;
 }
 
-/* Focus-visible for submenu items (moved below base) */
+/* Focus-visible for submenu items */
 .site-menu__list .submenu li a:focus-visible {
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
@@ -416,26 +377,6 @@ body {
   transform: scale(1.02);
 }
 
-/* main hover consolidated earlier */
-
-/* Removed duplicate submenu typography block (consolidated earlier) */
-/* main base already moved up earlier */
-
-/* Duplicate main hover & focus-visible block removed; consolidated definitions used above. */
-
-/* Consolidated duplicate submenu hover+active+focus blocks removed - single combined block defined earlier */
-
-/* Dynamic Menu Hover States */
-/* main hover removed (consolidated above) */
-
-/* removed placeholder - will reinsert above submenu hover */
-
-/* Dynamic Menu Hover States (reinserted above submenu hover) */
-/* Dynamic Menu Hover States placeholder */
-
-/* Dynamic Menu Hover States */
-/* Dynamic Menu Hover States (moved to ensure main hover appears before submenu hover) */
-
 /* Hover/focus transforms for icons and fallbacks */
 .site-menu__list a:hover .nav-icon,
 .site-menu__list a:focus .nav-icon,
@@ -450,19 +391,9 @@ button.submenu-toggle:focus .icon-fallback {
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 25%));
 }
 
-/* Dynamic Menu Hover States (moved above submenu hover to satisfy specificity ordering) */
-
-/* Dynamic Menu Active/Pressed State */
-/* main active and focus-visible states moved above to avoid specificity issues */
-
-/* Remove old underline system - Dynamic Menu uses background changes */
-/* Desktop submenu indicator defined earlier */
-
 .site-menu__list li a::after {
   display: none;
 }
-/* Move has-submenu pseudo before base ::after definitions */
-/* has-submenu pseudo will be defined above li a::after */
 
 /* ===== Dynamic Menu Hamburger System ===== */
 .site-menu__toggle {
@@ -523,8 +454,6 @@ button.submenu-toggle:focus .icon-fallback {
 }
 
 /* ===== Dynamic Menu Submenu System ===== */
-/* `.has-submenu > a` moved earlier to appear before `.site-menu__list li a` base */
-
 .site-menu__list .has-submenu {
   position: relative;
 }
@@ -550,9 +479,6 @@ button.submenu-toggle:focus .icon-fallback {
   transition: all 0.2s var(--dynamic-menu-spring-quick);
 }
 
-/* Dynamische Rechts-Positionierung über JavaScript */
-
-/* AUFGERÄUMT: !important entfernt */
 .site-menu__list .has-submenu .submenu.position-right {
   left: auto;
   right: 0;
@@ -569,7 +495,6 @@ button.submenu-toggle:focus .icon-fallback {
 
 /* Verhindere Überlauf bei sehr schmalen Bildschirmen */
 @media (width <= 480px) {
-  /* AUFGERÄUMT: !important entfernt */
   .site-menu.open .site-menu__list .submenu {
     left: -10px;
     right: -10px;
@@ -629,8 +554,6 @@ main {
     top: 50%;
     transform: translateY(-50%);
   }
-
-  /* Merged mobile `.site-menu` positioning into the card-based mobile menu block below */
 
   /* Adjust page content for smaller floating header */
   main {
@@ -695,8 +618,6 @@ main {
   }
 
   /* Dynamic Menu Mobile Submenu */
-
-  /* AUFGERÄUMT: !important entfernt */
   .site-menu.open .site-menu__list .submenu {
     display: none;
     position: static;
@@ -727,9 +648,7 @@ main {
     color: var(--dynamic-menu-label-secondary);
   }
 
-  /* Dynamic Menu Mobile Overlay (moved/optimized) */
-
-  /* Mobile submenu indicator - integriert von 768px Media Query */
+  /* Mobile submenu indicator */
   .has-submenu > a::after,
   .has-submenu > .submenu-toggle::after {
     content: '⌄';
@@ -741,9 +660,6 @@ main {
     transform: rotate(0deg);
   }
 }
-
-/* ===== Dynamic Menu Accessibility & Focus States ===== */
-/* Move focus-visible up near hover/active states */
 
 /* ===== Dynamic Menu Active Link States ===== */
 .site-menu__list li a.active {
@@ -773,5 +689,3 @@ main {
   transform: rotate(90deg);
   opacity: 1;
 }
-
-/* ===== Dynamic Menu Overlay States (optimized) ===== */
