@@ -444,7 +444,6 @@ html {
   @supports (scrollbar-width: none) {
     scrollbar-width: none;
   }
-
   -ms-overflow-style: none;
 }
 
