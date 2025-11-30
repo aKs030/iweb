@@ -6,8 +6,7 @@ body:not(.hero-active) .hero-title {
   /* Responsive font sizing for mid-sized viewports */
   position: relative;
   font-family: var(--font-inter);
-  /* Fluid responsive greeting size: clamp(min, preferred, max) */
-  font-size: clamp(1rem, 6vw, 3.6rem);
+  font-size: var(--greet-fs);
   line-height: var(--greet-lh);
   font-weight: var(--greet-weight);
   letter-spacing: var(--greet-letter);
@@ -33,7 +32,7 @@ body:not(.hero-active) .hero-title {
   max-width: var(--greet-max);
   /* ensure a reasonable minimum line length to avoid many short wrapped columns */
   /* Use CSS variable for min-inline-size to make mobile tweaks easier */
-  min-inline-size: var(--greet-min-inline, clamp(12ch, 28vw, 42ch));
+  min-inline-size: var(--greet-min-inline, clamp(18ch, 32vw, 42ch));
   /* keep reasonable vertical space for multi-line hero headings while avoiding excessive height */
   min-height: 2.2em;
   font-variation-settings: 'opsz' 18;
@@ -299,6 +298,21 @@ body:not(.hero-active) .floating-icon {
   pointer-events: none;
 }
 
+/* Reduce the blur and scale of the glow on small devices so it doesn't visually overflow */
+@media (max-width: 420px) {
+  .spotlight-bg::before {
+    filter: blur(32px) saturate(1.04) contrast(1.02);
+    transform: rotate(-8deg) scale(1.12);
+  }
+}
+
+@media (max-width: 360px) {
+  .spotlight-bg::before {
+    filter: blur(22px) saturate(1.04) contrast(1.02);
+    transform: rotate(-8deg) scale(1.08);
+  }
+}
+
 .spotlight-bg > .hero-title {
   z-index: 2;
   position: relative;
@@ -313,7 +327,10 @@ body:not(.hero-active) .floating-icon {
   .hero-image-container {
     width: 72vw; /* slightly larger for tiny screens to keep visual balance */
     max-width: 300px; /* reduce max so the hero title wraps more naturally */
-    overflow: hidden; /* prevent horizontal overflow when pill grows */
+    /* allow overflow for the pill's blurred glow while still keeping content inside */
+    overflow: visible;
+    padding-inline: clamp(6px, 3vw, 12px);
+    box-sizing: border-box;
   }
 
   .spotlight-bg {
@@ -329,6 +346,7 @@ body:not(.hero-active) .floating-icon {
   }
 
   .hero-title {
+    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important; /* force smaller type on mobile */
     min-inline-size: clamp(10ch, 26vw, 22ch);
     max-width: 100%;
     padding: 6px 8px; /* keep the pill visually compact */
@@ -347,7 +365,9 @@ body:not(.hero-active) .floating-icon {
   .hero-image-container {
     width: 84vw; /* keep large visual but leave margin */
     max-width: 260px; /* reduce max width so everything wraps neatly */
-    overflow: hidden; /* ensure no horizontal overflow */
+    overflow: visible; /* we want the blurred glow to not be clipped */
+    padding-inline: clamp(6px, 2.8vw, 10px);
+    box-sizing: border-box;
   }
 
   .spotlight-bg {
@@ -363,6 +383,7 @@ body:not(.hero-active) .floating-icon {
   }
 
   .hero-title {
+    font-size: clamp(0.95rem, 4.2vw, 1.2rem) !important; /* further reduce type on 360px */
     min-inline-size: clamp(8ch, 22vw, 18ch);
     max-width: 100%;
     padding: 4px 6px;

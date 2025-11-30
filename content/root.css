@@ -285,6 +285,24 @@
   --dynamic-footer-font-weight-regular: var(--component-font-weight-regular);
 }
 
+/* Global responsive media elements */
+img,
+svg,
+picture,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Mobile adjustments for components with minimum widths */
+@media (max-width: 420px) {
+  :root {
+    --card-min-width: 0; /* allow cards to shrink on small devices */
+  }
+}
+
 /* =======================
    LIGHT MODE OVERRIDE (Blue Theme)
 ======================= */

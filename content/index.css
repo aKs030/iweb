@@ -331,8 +331,37 @@ a:hover {
 
 @media (max-width: 480px) {
   .container {
-    max-width: 100vw;
+    max-width: 100%;
     padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
+  }
+
+  /* Prevent images, svgs and videos from overflowing viewport on small screens */
+  .container img,
+  .container svg,
+  .container video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Reduce minimum widths that can cause overflow */
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline {
+    min-width: 120px;
+  }
+
+  /* Ensure long lines wrap on small devices */
+  .container p,
+  .container h1,
+  .container h2,
+  .container h3,
+  .container h4,
+  .container h5,
+  .container h6 {
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   body {
