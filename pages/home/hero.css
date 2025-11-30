@@ -426,7 +426,7 @@ body:not(.hero-active) .hero-title {
     will-change: text-shadow;
     white-space: normal; /* allow wrapping on tiny screens */
     overflow-wrap: break-word;
-    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   /* reduce and reposition buttons to avoid overlap with hero visuals */
