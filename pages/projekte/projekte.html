@@ -2,43 +2,16 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Meine Projekte - Abdulkerim Sesli</title>
 
-    <meta
-      name="description"
-      content="Interaktive Web-Projekte und Experimente von Abdulkerim Sesli. Von kleinen JS-Games bis zu React-Apps."
-    />
-    <meta
-      name="keywords"
-      content="Abdul Berlin, Web Projekte, JavaScript Games, React Portfolio, Frontend Development"
-    />
-    <meta name="author" content="Abdulkerim Sesli" />
+    <!-- SHARED_HEAD: Lädt Meta-Tags, CSS (root, menu, footer) und main.js global -->
+    <script src="/content/head/head-complete.js" type="module"></script>
 
-    <!-- Security & Performance -->
-    <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable" />
-    <meta name="theme-color" content="#0a0a0f" />
-    <meta name="color-scheme" content="dark light" />
-
-    <!-- Favicons -->
-    <link rel="icon" href="/content/img/icons/favicon.svg" type="image/svg+xml" />
-    <link rel="icon" sizes="96x96" href="/content/img/icons/icon-96.png" type="image/png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="/content/img/icons/icon-192.png" />
-
-    <!-- Global CSS -->
-    <link rel="stylesheet" href="/content/root.css" />
-    <link rel="stylesheet" href="/content/menu/menu.css" />
-    <link rel="stylesheet" href="/content/footer/footer.css" />
-    <link rel="stylesheet" href="/content/footer/day-night-artwork.css" />
-    <link rel="stylesheet" href="/content/footer/cookie-consent.css" />
-
-    <!-- React -->
+    <!-- React Dependencies (Spezifisch für diese Seite) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-    <!-- Main JS -->
-    <script type="module" src="/content/main.js"></script>
-
+    <!-- Page Specific Styles -->
     <style>
         :root {
             --bg-color: #0a0a0f;
@@ -54,7 +27,6 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: system-ui, -apple-system, sans-serif;
-            /* Restore native scrolling */
             overflow-x: hidden;
             overflow-y: auto;
             -webkit-font-smoothing: antialiased;
@@ -70,19 +42,18 @@
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
         @keyframes bounce { 0%, 100% { transform: translateY(-25%); } 50% { transform: none; } }
 
-        /* Root wrapper for React content - allows flow content */
+        /* Root wrapper for React content */
         #root {
             position: relative;
             z-index: 10;
             min-height: 100vh;
-            /* Ensure footer can sit below */
             display: flex;
             flex-direction: column;
         }
 
         .site-header { position: fixed; top: 12px; z-index: 10000; width: 100%; }
 
-        /* Earth Background: Fixed position behind content */
+        /* Earth Background: Fixed position */
         .three-earth-container {
             z-index: 0 !important;
             opacity: 0.7;
@@ -99,7 +70,7 @@
             color: rgba(255,255,255,0.8);
         }
 
-        /* Decorative Orbs - Fixed background */
+        /* Decorative Orbs */
         .bg-orb { position: fixed; border-radius: 9999px; filter: blur(120px); animation: pulse-slow 6s infinite; z-index: -1; pointer-events: none; }
         .orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background-color: rgba(30, 58, 138, 0.1); }
         .orb-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background-color: rgba(49, 46, 129, 0.1); animation-delay: 1s; }
@@ -205,7 +176,7 @@
     <!-- REACT ROOT (Main Content) -->
     <div id="root"></div>
 
-    <!-- Optional footer trigger zone (used by footer-complete.js to manage expand/collapse behavior) -->
+    <!-- Optional footer trigger zone -->
     <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
     <!-- Footer -->
     <div id="footer-container" data-footer-src="/content/footer/footer.html"></div>
@@ -215,7 +186,7 @@
         import { initProjectsApp } from './projekte-app.js';
         import { initThreeEarth, EarthSystemAPI } from '/content/particles/three-earth-system.js';
 
-        // Load styles
+        // Load styles for Three Earth (Progressive Enhancement)
         async function ensureThreeEarthStyles() {
             const href = '/content/particles/three-earth.css';
             if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
