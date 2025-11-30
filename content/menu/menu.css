@@ -42,6 +42,7 @@
   pointer-events: auto;
   white-space: nowrap;
   z-index: 10001;
+
   /* Versteckt ohne negative Position (für Tap-Target Optimierung) */
   clip-path: inset(0 0 100% 0);
 }
