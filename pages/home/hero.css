@@ -142,6 +142,12 @@ body:not(.hero-active) .hero-title {
 
   min-height: 100dvh; /* statt 100vh */
   height: auto; /* keine starre Höhe */
+  /* Reduce aggressive glow on small screens */
+  text-shadow:
+    0 0 6px rgba(37, 99, 235, 0.25),
+    0 0 12px rgba(37, 99, 235, 0.14);
+  filter: drop-shadow(0 1px 8px rgba(37, 99, 235, 0.34));
+  animation: gradientMove var(--greet-anim-grad-dur) linear infinite; /* remove pulse glow */
   padding: 0 var(--spacing-sm);
   box-sizing: border-box; /* wichtig! */
 }
@@ -155,6 +161,10 @@ body:not(.hero-active) .hero-title {
   align-items: center;
   gap: 1.5rem;
   max-width: 800px;
+  /* Further reduce shadows for very small screens */
+  text-shadow: 0 0 4px rgba(37, 99, 235, 0.18);
+  filter: drop-shadow(0 1px 6px rgba(37, 99, 235, 0.28));
+  animation: gradientMove var(--greet-anim-grad-dur) linear infinite; /* keep gradient, remove pulse */
   width: 100%;
 }
 
