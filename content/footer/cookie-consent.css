@@ -91,9 +91,7 @@
 }
 
 /* Cookies-Link in Navigation - bleibt immer sichtbar */
-.footer-cookies-link {
-  display: inline;
-}
+/* Consolidated into the main footer button block below */
 
 /* ===== ACCEPT BUTTON (COMPACT INLINE) ===== */
 .cookie-accept-btn {
@@ -652,6 +650,7 @@
 
 /* Footer Cookies Link als Button - erbt Styles von .footer-nav-link */
 .footer-cookies-link {
+  display: inline;
   background: transparent;
   border: none;
   cursor: pointer;
