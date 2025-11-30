@@ -335,7 +335,7 @@ a:hover {
     padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
   }
 
-  /* Prevent images, svgs and videos from overflowing viewport on small screens */
+  /* Make media responsive */
   .container img,
   .container svg,
   .container video {
@@ -344,7 +344,7 @@ a:hover {
     display: block;
   }
 
-  /* Reduce minimum widths that can cause overflow */
+  /* Smaller button minimum width */
   .btn,
   .btn-primary,
   .btn-secondary,
@@ -352,7 +352,7 @@ a:hover {
     min-width: 120px;
   }
 
-  /* Ensure long lines wrap on small devices */
+  /* Break long words to avoid overflow */
   .container p,
   .container h1,
   .container h2,
