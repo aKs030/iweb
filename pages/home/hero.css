@@ -255,7 +255,7 @@ body:not(.hero-active) .floating-icon {
   box-sizing: border-box;
   border-radius: 999px; /* pill shape */
   white-space: normal; /* allow wrapping if needed */
-  max-width: 88vw; /* allow pill to grow with text but never exceed viewport comfortably */
+  max-width: 100%; /* do not exceed the hero-image-container width */
 }
 
 .spotlight-bg::before {
@@ -284,6 +284,30 @@ body:not(.hero-active) .floating-icon {
   max-width: 100%;
   text-align: center;
   line-height: var(--greet-lh); /* keep text vertically balanced */
+}
+
+/* Mobile Overrides: reduce font-size, padding and ensure the pill can't overflow tiny viewports */
+@media (max-width: 420px) {
+  .hero-image-container {
+    width: 72vw; /* slightly larger for tiny screens to keep visual balance */
+    max-width: 300px; /* reduce max so the hero title wraps more naturally */
+  }
+
+  .spotlight-bg {
+    padding-block: clamp(6px, 1.4vw, 10px);
+    padding-inline: clamp(8px, 3vw, 16px);
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  .hero-title {
+    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important; /* force smaller type on mobile */
+    min-inline-size: clamp(10ch, 26vw, 22ch);
+    max-width: 100%;
+    padding: 6px 8px; /* keep the pill visually compact */
+    line-height: 1.05;
+    font-variation-settings: 'opsz' 14;
+  }
 }
 
 /* ===== Hero Buttons (aus content/buttons.css verschoben) ===== */
