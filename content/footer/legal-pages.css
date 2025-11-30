@@ -214,7 +214,8 @@ a:focus-visible {
   }
 }
 
-@media (prefers-contrast: high) {
+/* removed prefers-contrast: high (replaced by the more-compliant 'more' value) */
+@media (prefers-contrast: more) {
   .highlight,
   .contact-box,
   .disclaimer {

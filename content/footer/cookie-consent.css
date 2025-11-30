@@ -672,7 +672,7 @@
 }
 
 /* High Contrast */
-@media (prefers-contrast: high) {
+@media (prefers-contrast: more) {
   .cookie-accept-btn {
     border: 2px solid currentcolor;
   }

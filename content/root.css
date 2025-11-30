@@ -206,8 +206,8 @@
   --gap: clamp(0.75rem, 3vw, 1.5rem);
 
   /* Safe-area */
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0);
+  --safe-bottom: env(safe-area-inset-bottom, 0);
 
   /* ===== TypeWriter Custom Properties ===== */
   --typing-target: 28ch;

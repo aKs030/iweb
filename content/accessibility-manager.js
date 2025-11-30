@@ -8,7 +8,7 @@ class AccessibilityManager {
     this.lastFocusedElement = null;
     // resolve MQLs safely
     this.reducedMotionMQL = window.matchMedia('(prefers-reduced-motion: reduce)');
-    this.highContrastMQL = window.matchMedia('(prefers-contrast: high)');
+    this.highContrastMQL = window.matchMedia('(prefers-contrast: more)');
     this.reducedMotion = this.reducedMotionMQL.matches;
     this.highContrast = this.highContrastMQL.matches;
 
