@@ -354,7 +354,7 @@ a:hover {
   .container h4,
   .container h5,
   .container h6 {
-    word-break: break-word;
+    overflow-wrap: break-word;
     overflow-wrap: anywhere;
   }
 

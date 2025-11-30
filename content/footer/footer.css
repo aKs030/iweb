@@ -184,25 +184,13 @@ body.footer-expanded {
   overflow: hidden auto;
   position: relative;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--dynamic-footer-separator) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .footer-maximized-viewport::-webkit-scrollbar {
-  width: 6px;
-}
-
-.footer-maximized-viewport::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.footer-maximized-viewport::-webkit-scrollbar-thumb {
-  background: var(--dynamic-footer-separator);
-  border-radius: 3px;
-}
-
-.footer-maximized-viewport::-webkit-scrollbar-thumb:hover {
-  background: var(--dynamic-footer-accent-blue);
+  width: 0;
+  height: 0;
 }
 
 .footer-enhanced-content {
