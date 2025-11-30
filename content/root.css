@@ -296,7 +296,7 @@ iframe {
   display: block;
 }
 
-/* Mobile adjustments for components with minimum widths */
+/* Mobile: allow cards to shrink */
 @media (max-width: 420px) {
   :root {
     --card-min-width: 0; /* allow cards to shrink on small devices */
