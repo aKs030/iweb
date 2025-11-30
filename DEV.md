@@ -25,8 +25,6 @@ npm run dev
 
 Use the query string `?debug` on any page to enable the development reconnecting WebSocket inside the app:
 
-- Open: http://127.0.0.1:8081/?debug
-
 You should see console logs about the reconnecting WebSocket attempting to open a connection to `ws://127.0.0.1:3001`.
 
 ### Test WebSocket with wscat (optional)
@@ -39,3 +37,14 @@ npx wscat -c ws://127.0.0.1:3001
 ## Notes
 
 The reconnecting WebSocket helper is in `content/shared/reconnecting-websocket.js`. It listens to `visibilitychange` and `online` events to avoid aggressive reconnection when the page is suspended by the browser. Use this class for persistent WebSocket connections in dev or production, but ensure you adjust heartbeat/ping strategy for real-world servers.
+
+## CSS cleanup (completed)
+
+- Summary: Completed stepwise CSS cleanup across `content` and `pages` CSS files. Increased specificity for menu submenu arrow selectors, fixed duplicates, removed deprecated CSS like `word-break: break-word`, updated `prefers-contrast` queries to `more`, and re-enabled stricter stylelint rules progressively.
+- Commit: `0297c63` (final formatting, lint fixes and minor test/format updates)
+- Validation: `npx stylelint "**/*.css" --formatter verbose` => 0 problems; `npm test` => 50/50 passed.
+- Remaining/Manual items:
+  - `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.
+  - If you want stricter policies (BEM enforcement), incrementally enable additional `stylelint` rules and fix files in small batches.
+
+If you'd like, I can open a PR with these changes and include a checklist for follow-up items (e.g., de-duplicate `about.css`, normalize color vars, re-enable `selector-class-pattern` stricter settings).
