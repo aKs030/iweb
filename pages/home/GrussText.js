@@ -55,6 +55,3 @@ export const typewriterConfig = {
   wait: 2000,
   punctuationPause: 300
 };
-
-// Hilfsfunktion um modulare Zusammenstellung zu erleichtern (optional)
-// getHeroConfig entfernt (wurde nicht verwendet; direkte Exporte reichen)
