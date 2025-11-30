@@ -60,6 +60,18 @@ body:not(.hero-active) .hero-title {
     filter var(--transition-base);
 }
 
+/* Respect user prefer-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-title,
+  .floating-icons,
+  .floating-icon,
+  .spotlight-bg,
+  .hero-buttons {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 @supports (text-wrap: balance) {
   .hero-title {
     text-wrap: balance;
