@@ -177,4 +177,42 @@ export function initHeroFeatureBundle() {
 
   // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
+
+  // Attach click handler to in-hero anchor links that target sections by id.
+  // Prevents changing the URL (no fragment) and performs a smooth scroll instead.
+  const handleHeroAnchorClick = (event) => {
+    const link = event.target.closest('.hero-buttons a[href^="#"]');
+    if (!link) return;
+    const href = link.getAttribute('href') || '';
+    if (!href.startsWith('#')) return;
+    event.preventDefault();
+
+    const targetId = href.slice(1);
+    const target = getElementById(targetId) || document.getElementById(targetId);
+    if (!target) return;
+
+    const doScroll = () => {
+      try {
+        target.scrollIntoView({ behavior: 'smooth' });
+      } catch (e) {
+        const top = target.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    };
+
+    try {
+      if (window.SectionLoader && target.dataset && target.dataset.state !== 'loaded') {
+        window.SectionLoader.loadSection(target).finally(() => requestAnimationFrame(doScroll));
+        return;
+      }
+    } catch (e) {
+      /* ignore and fallback to immediate scroll */
+    }
+
+    requestAnimationFrame(doScroll);
+  };
+
+  // Delegated listener: works even if hero buttons are injected later by SectionLoader
+  document.removeEventListener('click', handleHeroAnchorClick);
+  document.addEventListener('click', handleHeroAnchorClick);
 }
