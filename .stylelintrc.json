@@ -17,7 +17,7 @@
 
     "length-zero-no-unit": true,
     "color-hex-length": "short",
-    "color-hex-case": "lower",
+
     "shorthand-property-no-redundant-values": true,
     "property-no-deprecated": true,
     "no-duplicate-selectors": true,
