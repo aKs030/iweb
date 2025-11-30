@@ -1,7 +1,7 @@
 {
   "extends": "stylelint-config-standard",
   "rules": {
-    "selector-class-pattern": null,
+    "selector-class-pattern": "^[a-z0-9_-]+$",
     "keyframes-name-pattern": null,
     "declaration-property-value-keyword-no-deprecated": true,
     "at-rule-descriptor-no-unknown": null,
@@ -14,7 +14,7 @@
     "no-empty-source": true,
     "no-descending-specificity": true,
     "media-feature-name-value-no-unknown": true,
-    "max-empty-lines": 2,
+
     "length-zero-no-unit": true,
     "color-hex-length": "short",
     "property-no-deprecated": true,
