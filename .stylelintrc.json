@@ -12,9 +12,10 @@
       }
     ],
     "no-empty-source": null,
-    "no-descending-specificity": null,
+    "no-descending-specificity": true,
     "media-feature-name-value-no-unknown": null,
     "property-no-deprecated": null,
-    "no-duplicate-selectors": null
+    "no-duplicate-selectors": true,
+    "comment-empty-line-before": null
   }
 }

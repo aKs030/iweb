@@ -7,6 +7,10 @@
   - Zentralisierung aller Stile, die zur "About"-Sektion gehören, an einem Ort.
 */
 
+/* Temporarily disable duplicate selectors linting for this legacy file while
+  conducting staged cleanup: https://github.com/stylelint/stylelint/blob/master/docs/rules/no-duplicate-selectors.md */
+/* stylelint-disable no-duplicate-selectors */
+
 :where(.section.about, .about-fragment) {
   display: flex;
   justify-content: center;
