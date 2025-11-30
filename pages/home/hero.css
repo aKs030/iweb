@@ -31,8 +31,10 @@ body:not(.hero-active) .hero-title {
   hyphens: auto;
   max-width: var(--greet-max);
   /* ensure a reasonable minimum line length to avoid many short wrapped columns */
-  min-inline-size: clamp(28ch, 36vw, 60ch);
-  min-height: 2.6em;
+  /* Use CSS variable for min-inline-size to make mobile tweaks easier */
+  min-inline-size: var(--greet-min-inline, clamp(18ch, 32vw, 42ch));
+  /* keep reasonable vertical space for multi-line hero headings while avoiding excessive height */
+  min-height: 2.2em;
   font-variation-settings: 'opsz' 18;
   font-optical-sizing: auto;
   text-shadow:
@@ -269,7 +271,7 @@ body:not(.hero-active) .floating-icon {
   display: inline-block; /* avoid baseline/flow issues inside flex */
   max-width: 100%;
   text-align: center;
-  line-height: 1.12; /* keep text vertically balanced */
+  line-height: var(--greet-lh); /* keep text vertically balanced */
 }
 
 /* ===== Hero Buttons (aus content/buttons.css verschoben) ===== */
