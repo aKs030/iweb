@@ -105,6 +105,7 @@
 }
 
 /* Wenn SVG funktioniert, verstecke Fallback */
+
 /* Spezielle Abstände für Buttons */
 button.submenu-toggle .nav-icon,
 button.submenu-toggle .icon-fallback {
@@ -582,12 +583,7 @@ main {
     transform: translateY(-50%);
   }
 
-  .site-menu {
-    position: fixed; /* Fixierte Position für Mobile-Menü */
-    left: auto; /* Zurücksetzen der horizontalen Zentrierung */
-    margin: 0; /* Zurücksetzen des Auto-Margins */
-    width: auto;
-  }
+  /* Merged mobile `.site-menu` positioning into the card-based mobile menu block below */
 
   /* Adjust page content for smaller floating header */
   main {

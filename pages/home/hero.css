@@ -1,6 +1,4 @@
-body:not(.hero-active) .hero-title {
-  animation-play-state: paused;
-}
+/* Body-level 'hero is inactive' state is defined lower so base rules are above overrides */
 
 .hero-title {
   /* Responsive font sizing for mid-sized viewports */
@@ -162,6 +160,8 @@ body:not(.hero-active) .hero-title {
   opacity: 1;
   transform: var(--transform-scale-none);
 }
+
+/* paused state for global hero-inactive mode - will be placed below main hero layout */
 
 .hero {
   position: relative;
@@ -349,6 +349,11 @@ body:not(.hero-active) .floating-icon {
   line-height: var(--greet-lh); /* keep text vertically balanced */
 }
 
+/* paused state for global hero-inactive mode */
+body:not(.hero-active) .hero-title {
+  animation-play-state: paused;
+}
+
 /* Mobile: smaller type, tighter padding and improved wrapping */
 @media (width <= 420px) {
   .hero-image-container {
@@ -470,9 +475,7 @@ body:not(.hero-active) .floating-icon {
   color: #fff;
 }
 
-.hero__button--crt.btn-secondary {
-  background: transparent;
-}
+/* Removed duplicate `.hero__button--crt.btn-secondary` definition, consolidated below */
 
 .hero__button--crt:hover::after {
   opacity: 0.4;
