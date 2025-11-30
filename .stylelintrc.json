@@ -13,7 +13,10 @@
     ],
     "no-empty-source": true,
     "no-descending-specificity": true,
-    "media-feature-name-value-no-unknown": null,
+    "media-feature-name-value-no-unknown": true,
+    "max-empty-lines": 2,
+    "length-zero-no-unit": true,
+    "color-hex-length": "short",
     "property-no-deprecated": true,
     "no-duplicate-selectors": true,
     "comment-empty-line-before": [
