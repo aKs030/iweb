@@ -447,6 +447,7 @@ textarea:focus-visible {
 .loading-screen.hide {
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
 }
 
 .loader {
