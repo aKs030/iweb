@@ -599,7 +599,7 @@ body.footer-expanded {
   width: 100%;
   background: var(--dynamic-footer-bg-card);
   border-radius: var(--dynamic-footer-radius-large);
-  z-index: 100;
+  z-index: var(--z-cookie-modal); /* ensure cookie modal floats above all */
   overflow: hidden;
   animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateZ(0);
@@ -635,6 +635,20 @@ body.footer-expanded {
   overflow: visible;
   padding-bottom: var(--footer-spacing-md);
   pointer-events: auto;
+}
+
+/* When footer is expanded, allow the site hero/earth to remain visible
+   by making the footer background more translucent while keeping the
+   cookie settings modal visually strong. */
+body.footer-expanded .site-footer-fixed {
+  background: linear-gradient(rgba(8, 10, 15, 0.48), rgba(8, 10, 15, 0.48));
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+}
+
+/* Ensure cookie settings panel stays above footer and hero */
+body.footer-expanded .footer-cookie-settings {
+  z-index: var(--z-cookie-modal);
 }
 
 /* ===== Responsive Design (Konsolidiert) ===== */
