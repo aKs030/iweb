@@ -14,13 +14,11 @@
   --footer-spacing-xs: calc(var(--footer-unit) * 3);
   --footer-spacing-sm: calc(var(--footer-unit) * 5);
   --footer-spacing-md: calc(var(--footer-unit) * 7);
-  --footer-spacing-lg: calc(var(--footer-unit) * 9);
   
   /* Typography Scale */
   --footer-text-xs: 10px;
   --footer-text-sm: 12px;
   --footer-text-base: 13px;
-  --footer-text-md: 14px;
   
   /* Layout */
   --footer-horizontal-margin: clamp(8px, 2vw, 32px);
@@ -37,14 +35,12 @@
   /* Z-Index Scale */
   --z-footer: 1000;
   --z-cookie-modal: 10000;
+
   /* Icon sizing */
   --footer-icon-size-sm: 12px;
   --footer-icon-size-md: 14px;
-  --footer-icon-size-lg: 20px;
   --footer-icon-gap: 6px;
 }
-
-/* Icon sizing variables are defined in the main :root at the top */
 
 /* ===== Base Footer Container ===== */
 .site-footer-fixed {
@@ -73,6 +69,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(20px) scale(0.95);
   }
+
   100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
@@ -80,6 +77,7 @@
 }
 
 /* ===== Body Padding ===== */
+
 body {
   padding-bottom: calc(70px + env(safe-area-inset-bottom));
   transition: padding-bottom var(--footer-transition-smooth);
@@ -96,10 +94,10 @@ body.footer-expanded {
 
 /* ===== Minimized Footer ===== */
 .footer-minimized {
-  padding: var(--footer-spacing-xs) var(--footer-spacing-sm);
+  padding: 4px var(--footer-spacing-sm);
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 40px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   opacity: 1;
@@ -121,11 +119,14 @@ body.footer-expanded {
   font-size: var(--footer-text-xs);
   font-weight: var(--dynamic-footer-font-weight-regular);
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.2;
   white-space: nowrap;
-  flex-shrink: 1;
+  flex-shrink: 2;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* Shared Link Styles (DRY) */
@@ -153,6 +154,7 @@ body.footer-expanded {
   display: flex;
   gap: var(--footer-spacing-xs);
   align-items: center;
+  flex-wrap: nowrap;
   flex-shrink: 0;
 }
 
@@ -161,9 +163,11 @@ body.footer-expanded {
   font-size: var(--footer-text-xs);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   white-space: nowrap;
-  min-height: 40px;
+  min-height: 32px;
+  padding: 4px 8px;
 }
 
 .footer-nav-link svg {
@@ -188,18 +192,13 @@ body.footer-expanded {
   height: var(--footer-icon-size-md);
 }
 
-.footer-social-card .social-card-icon {
-  width: var(--footer-icon-size-lg);
-  height: var(--footer-icon-size-lg);
-}
-
 /* Ensure icons use currentColor so hover color changes apply */
 .footer-nav-link svg *,
 .footer-legal-link-enhanced svg *,
 .footer-brand-link-enhanced svg *,
 .footer-cookies-link svg * {
-  stroke: currentColor;
-  fill: currentColor;
+  stroke: currentcolor;
+  fill: currentcolor;
 }
 
 /* Slightly increase gap between icon and text */
@@ -250,6 +249,7 @@ body.footer-expanded {
   display: flex;
   flex-direction: column;
   min-height: min-content;
+  align-items: center;
 }
 
 /* ===== Footer Status Bar - Desktop Layout Fix ===== */
@@ -273,6 +273,7 @@ body.footer-expanded {
   padding-left: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
   padding-right: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
   flex-wrap: wrap;
+  text-align: center;
 }
 
 .footer-legal-nav {
@@ -306,10 +307,11 @@ body.footer-expanded {
 /* ===== Card Grid ===== */
 .footer-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: var(--footer-card-gap);
   margin-bottom: var(--footer-spacing-md);
   width: 100%;
+  justify-items: center;
 }
 
 .footer-card {
@@ -320,6 +322,9 @@ body.footer-expanded {
   display: flex;
   flex-direction: column;
   min-height: 100px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   transition: transform var(--footer-transition-quick),
               background-color var(--footer-transition-quick),
               border-color var(--footer-transition-quick);
@@ -382,21 +387,6 @@ body.footer-expanded {
   line-height: 1.3;
 }
 
-.footer-profile-location {
-  color: var(--dynamic-footer-label-secondary);
-  font-size: var(--footer-text-xs);
-  margin: 0 0 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.location-icon {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-
 .footer-contact-cta {
   display: inline-flex;
   align-items: center;
@@ -419,12 +409,6 @@ body.footer-expanded {
   background: var(--dynamic-footer-accent-blue);
   color: white;
   transform: translateY(-1px) translateZ(0);
-}
-
-.contact-icon {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
 }
 
 /* ===== Work Navigation ===== */
@@ -455,94 +439,7 @@ body.footer-expanded {
   transform: translateX(3px) translateZ(0);
 }
 
-.work-icon {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
-/* ===== Social Grid ===== */
-.footer-social-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--footer-spacing-xs);
-  flex: 1;
-}
-
-.footer-social-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px var(--footer-spacing-xs);
-  background: var(--dynamic-footer-fill-secondary);
-  border: 1px solid var(--dynamic-footer-separator);
-  border-radius: var(--dynamic-footer-micro-radius);
-  color: var(--dynamic-footer-label-secondary);
-  text-decoration: none;
-  font-size: var(--footer-text-xs);
-  transition: all var(--footer-transition-quick);
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-.footer-social-card:hover {
-  background: var(--dynamic-footer-fill-primary);
-  border-color: var(--dynamic-footer-accent-blue);
-  color: var(--dynamic-footer-label-primary);
-  transform: translateY(-2px) translateZ(0);
-}
-
-/* ===== Tech Grid ===== */
-.footer-tech-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  flex: 1;
-  align-content: flex-start;
-}
-
-.tech-pill {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: var(--dynamic-footer-font-weight-medium);
-  white-space: nowrap;
-  transition: transform var(--footer-transition-quick);
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-.tech-primary {
-  background: var(--dynamic-footer-accent-blue);
-  color: white;
-}
-
-.tech-secondary {
-  background: var(--dynamic-footer-fill-primary);
-  color: var(--dynamic-footer-label-primary);
-  border: 1px solid var(--dynamic-footer-separator);
-}
-
-.tech-accent {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.tech-pill:hover {
-  transform: translateY(-1px) scale(1.05) translateZ(0);
-}
-
 /* ===== Newsletter Card ===== */
-
-
-.newsletter-description {
-  color: var(--dynamic-footer-label-secondary);
-  font-size: var(--footer-text-xs);
-  line-height: 1.4;
-  margin: 0 0 8px;
-}
 
 .newsletter-form-enhanced {
   display: flex;
@@ -637,6 +534,7 @@ body.footer-expanded {
     opacity: 0;
     transform: translateY(20px) translateZ(0);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) translateZ(0);
@@ -644,6 +542,7 @@ body.footer-expanded {
 }
 
 /* ===== Social Media Links in Status Bar ===== */
+
 .footer-social-links {
   display: flex;
   align-items: center;
@@ -653,8 +552,8 @@ body.footer-expanded {
 .footer-social-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
+  gap: 3px;
+  padding: 4px 6px;
   color: var(--dynamic-footer-label-secondary);
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
@@ -662,6 +561,7 @@ body.footer-expanded {
   text-decoration: none;
   font-size: var(--footer-text-xs);
   font-weight: var(--dynamic-footer-font-weight-medium);
+  white-space: nowrap;
   transition: all var(--footer-transition-quick);
   will-change: transform, background-color;
   transform: translateZ(0);
@@ -696,6 +596,24 @@ body.footer-expanded {
 }
 
 /* ===== Responsive Design (Konsolidiert) ===== */
+
+/* Tablet (landscape and portrait) */
+@media (width <= 1024px) {
+  :root {
+    --footer-card-gap: 12px;
+    --footer-spacing-md: 10px;
+  }
+
+  .footer-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+
+  .footer-status-content {
+    gap: var(--footer-spacing-sm);
+  }
+}
+
+/* Mobile and small tablets */
 @media (width <= 768px) {
   :root {
     --footer-card-gap: 8px;
@@ -708,6 +626,36 @@ body.footer-expanded {
     bottom: 8px;
   }
 
+  .footer-minimal-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    overflow: auto hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .footer-minimal-content::-webkit-scrollbar {
+    display: none;
+  }
+
+  .footer-copyright-text {
+    flex-shrink: 3;
+    order: -1;
+    font-size: 9px;
+  }
+
+  .footer-minimal-nav {
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  .footer-minimal-nav .footer-nav-link {
+    min-height: 32px;
+    padding: 4px 6px;
+  }
+
   .footer-cards-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -717,31 +665,54 @@ body.footer-expanded {
     padding: var(--footer-spacing-xs);
   }
 
-  .footer-card-newsletter {
-    /* Keine spezielle Grid-Spalte mehr */
-  }
-
   .footer-enhanced-content {
     padding: 8px;
   }
 
-  .footer-social-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .footer-status-content {
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
     gap: 4px;
+    overflow: auto hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-left: 4px;
+    padding-right: 4px;
   }
 
-  .footer-status-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+  .footer-status-content::-webkit-scrollbar {
+    display: none;
+  }
+
+  .footer-copyright-enhanced {
+    order: 1;
+    flex-shrink: 2;
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
   
   .footer-social-links {
     order: 2;
+    flex-shrink: 0;
+    gap: 2px;
+    flex-wrap: nowrap;
   }
   
   .footer-legal-nav {
     order: 3;
+    flex-shrink: 0;
+    gap: 2px;
+    flex-wrap: nowrap;
+  }
+
+  .theme-control-floating {
+    order: 4;
+    margin-left: 0;
+    flex-shrink: 0;
   }
 
   .newsletter-form-enhanced,
@@ -754,6 +725,7 @@ body.footer-expanded {
   }
 }
 
+/* Small mobile devices */
 @media (width <= 480px) {
   :root {
     --footer-card-gap: var(--footer-spacing-xs);
@@ -765,17 +737,63 @@ body.footer-expanded {
     gap: var(--footer-spacing-xs);
   }
 
-  .footer-copyright-text,
-  .footer-nav-link {
-    font-size: 9px;
+  .footer-nav-link span:not(.visually-hidden),
+  .footer-legal-link-enhanced span:not(.visually-hidden),
+  .footer-social-btn span:not(.visually-hidden) {
+    display: none;
+  }
+
+  .footer-nav-link,
+  .footer-legal-link-enhanced,
+  .footer-social-btn {
+    padding: 10px;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .footer-nav-link svg,
+  .footer-legal-link-enhanced svg,
+  .footer-social-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .footer-copyright-text {
+    font-size: 10px;
   }
 
   .footer-minimal-nav {
-    gap: 3px;
+    gap: 4px;
+  }
+
+  .footer-status-content {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   body.footer-expanded {
     padding-bottom: var(--footer-actual-height, var(--footer-max-height));
+  }
+}
+
+/* Extra small devices */
+@media (width <= 360px) {
+  .site-footer-fixed {
+    width: calc(100% - 12px);
+    bottom: 6px;
+  }
+
+  .footer-minimal-content {
+    padding: 4px;
+  }
+
+  .footer-copyright-text {
+    font-size: 9px;
+  }
+
+  .footer-card {
+    padding: 8px;
   }
 }
 
@@ -791,15 +809,13 @@ body.footer-expanded {
 
   .footer-card:hover,
   .footer-contact-cta:hover,
-  .footer-work-link:hover,
-  .tech-pill:hover {
+  .footer-work-link:hover {
     transform: none !important;
   }
 }
 
 @media (prefers-contrast: more) {
   .footer-card,
-  .footer-social-card,
   .newsletter-input-enhanced {
     border-width: 2px;
   }
