@@ -148,5 +148,27 @@ export const CONFIG = {
       MOON: '/content/img/earth/textures/moon_texture.webp',
       MOON_BUMP: '/content/img/earth/textures/moon_bump.webp'
     }
+  },
+  SECTIONS: {
+    hero: {
+      earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
+      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+      mode: 'day'
+    },
+    features: {
+      earth: { pos: { x: -7, y: -2, z: -4 }, scale: 0.7, rotation: 0 },
+      moon: { pos: { x: 1, y: 2, z: -5 }, scale: 1.1 },
+      mode: 'day'
+    },
+    about: {
+      earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1.0, rotation: Math.PI },
+      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+      mode: 'night'
+    },
+    contact: {
+      earth: { pos: { x: 0, y: -1.5, z: 0 }, scale: 1.1, rotation: Math.PI / 2 },
+      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
+      mode: 'day'
+    }
   }
 };

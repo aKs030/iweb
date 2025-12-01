@@ -441,32 +441,15 @@ function updateEarthForSection(sectionName, options = {}) {
   if (!earthMesh) return;
   const allowModeSwitch = !!options.allowModeSwitch;
 
-  const configs = {
-    hero: {
-      earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
-      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-      mode: 'day'
-    },
-    features: {
-      earth: { pos: { x: -7, y: -2, z: -4 }, scale: 0.7, rotation: 0 },
-      moon: { pos: { x: 1, y: 2, z: -5 }, scale: 1.1 },
-      mode: 'day'
-    },
-    about: {
-      earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1.0, rotation: Math.PI },
-      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-      mode: 'night'
-    },
-    contact: {
-      earth: { pos: { x: 0, y: -1.5, z: 0 }, scale: 1.1, rotation: Math.PI / 2 },
-      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-      mode: 'day'
-    }
-  };
+  const config =
+    CONFIG.SECTIONS[sectionName === 'site-footer' ? 'contact' : sectionName] ||
+    CONFIG.SECTIONS.hero;
 
-  const config = configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero;
-
-  earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
+  // Reuse existing Vector3 if available to avoid GC
+  if (!earthMesh.userData.targetPosition) {
+    earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3();
+  }
+  earthMesh.userData.targetPosition.set(
     config.earth.pos.x,
     config.earth.pos.y,
     config.earth.pos.z
@@ -475,7 +458,10 @@ function updateEarthForSection(sectionName, options = {}) {
   earthMesh.userData.targetRotation = config.earth.rotation;
 
   if (moonMesh && config.moon) {
-    moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
+    if (!moonMesh.userData.targetPosition) {
+      moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3();
+    }
+    moonMesh.userData.targetPosition.set(
       config.moon.pos.x,
       config.moon.pos.y,
       config.moon.pos.z

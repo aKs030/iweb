@@ -23,9 +23,11 @@ export class StarManager {
 
     this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
     this.scrollUpdateEnabled = false;
-    this.lastScrollUpdate = 0;
-    this.scrollUpdateThrottle = 150;
     this.boundScrollHandler = null;
+    this.needsUpdate = false;
+
+    // Optimization: Reusable temporary vector
+    this.tempVector = new this.THREE.Vector3();
   }
 
   createStarField() {
@@ -36,10 +38,19 @@ export class StarManager {
     const targetPositions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     const sizes = new Float32Array(starCount);
+
+    // Stable offsets for star spread to prevent flickering
+    this.starOffsets = new Float32Array(starCount * 3);
+
     const color = new this.THREE.Color();
 
     for (let i = 0; i < starCount; i++) {
       const i3 = i * 3;
+
+      this.starOffsets[i3] = Math.random() - 0.5;
+      this.starOffsets[i3 + 1] = Math.random() - 0.5;
+      this.starOffsets[i3 + 2] = Math.random() - 0.5;
+
       const radius = 100 + Math.random() * 200;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
@@ -139,15 +150,27 @@ export class StarManager {
   getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ) {
     const positions = [];
     const starsPerEdge = Math.floor(CONFIG.STARS.COUNT / 3 / 4);
-    
+
     const screenToWorld = (x, y) => {
       const ndcX = (x / viewportWidth) * 2 - 1;
       const ndcY = -((y / viewportHeight) * 2 - 1);
-      const vector = new this.THREE.Vector3(ndcX, ndcY, 0);
-      vector.unproject(this.camera);
-      const direction = vector.sub(this.camera.position).normalize();
-      const distance = (targetZ - this.camera.position.z) / direction.z;
-      return this.camera.position.clone().add(direction.multiplyScalar(distance));
+
+      // Reuse tempVector
+      this.tempVector.set(ndcX, ndcY, 0);
+      this.tempVector.unproject(this.camera);
+
+      // direction = vector.sub(camera.position).normalize()
+      this.tempVector.sub(this.camera.position).normalize();
+
+      // distance = (targetZ - camera.z) / direction.z
+      const distance = (targetZ - this.camera.position.z) / this.tempVector.z;
+
+      // result = camera + direction * distance
+      return {
+        x: this.camera.position.x + this.tempVector.x * distance,
+        y: this.camera.position.y + this.tempVector.y * distance,
+        z: targetZ
+      };
     };
 
     for (let i = 0; i < starsPerEdge; i++) {
@@ -225,30 +248,25 @@ export class StarManager {
 
   handleScroll() {
     if (!this.scrollUpdateEnabled || this.isDisposed || this.transition.active) return;
-    
-    const now = performance.now();
-    if (now - this.lastScrollUpdate < this.scrollUpdateThrottle) return;
-    this.lastScrollUpdate = now;
-    
-    const cardPositions = this.getCardPositions();
-    if (cardPositions.length > 0) this.updateTargetBuffer(cardPositions);
+    this.needsUpdate = true;
   }
 
   updateTargetBuffer(cardPositions) {
-    if (this.isDisposed || !this.starField) return;
+    if (this.isDisposed || !this.starField || !this.starOffsets) return;
 
     const attr = this.starField.geometry.attributes.aTargetPosition;
     const array = attr.array;
     const count = array.length / 3;
+    const spreadXY = CONFIG.STARS.ANIMATION.SPREAD_XY;
+    const spreadZ = CONFIG.STARS.ANIMATION.SPREAD_Z;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       const target = cardPositions[i % cardPositions.length];
-      const spreadFactor = 0.15;
 
-      array[i3] = target.x + (Math.random() - 0.5) * spreadFactor;
-      array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor;
-      array[i3 + 2] = target.z + (Math.random() - 0.5) * 0.05;
+      array[i3] = target.x + this.starOffsets[i3] * spreadXY;
+      array[i3 + 1] = target.y + this.starOffsets[i3 + 1] * spreadXY;
+      array[i3 + 2] = target.z + this.starOffsets[i3 + 2] * spreadZ;
     }
 
     attr.needsUpdate = true;
@@ -315,6 +333,12 @@ export class StarManager {
   update(elapsedTime) {
     if (this.starField && !this.isDisposed) {
       this.starField.material.uniforms.time.value = elapsedTime;
+
+      if (this.needsUpdate) {
+        const cardPositions = this.getCardPositions();
+        if (cardPositions.length > 0) this.updateTargetBuffer(cardPositions);
+        this.needsUpdate = false;
+      }
     }
   }
 
@@ -353,40 +377,66 @@ export class ShootingStarManager {
       transparent: true,
       opacity: 1.0
     });
+
+    // Object Pool
+    this.starPool = [];
+    this.maxPoolSize = CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS + 2;
+    this.initializePool();
+  }
+
+  initializePool() {
+    for (let i = 0; i < this.maxPoolSize; i++) {
+      const material = this.sharedMaterial.clone();
+      const mesh = new this.THREE.Mesh(this.sharedGeometry, material);
+      mesh.visible = false;
+      this.scene.add(mesh);
+      this.starPool.push({
+        mesh,
+        active: false,
+        velocity: new this.THREE.Vector3(),
+        lifetime: 0,
+        age: 0
+      });
+    }
   }
 
   createShootingStar() {
-    if (this.isDisposed || this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS) return;
+    if (this.isDisposed) return;
+
+    // Find available star in pool
+    const star = this.starPool.find((s) => !s.active);
+    if (!star) return; // Pool exhausted
 
     try {
-      const material = this.sharedMaterial.clone();
-      const star = new this.THREE.Mesh(this.sharedGeometry, material);
+      star.active = true;
+      star.age = 0;
+      star.lifetime = 300 + Math.random() * 200;
+      star.mesh.material.opacity = 1.0;
+      star.mesh.visible = true;
 
       const startPos = {
         x: (Math.random() - 0.5) * 100,
         y: 20 + Math.random() * 20,
         z: -50 - Math.random() * 50
       };
-      const velocity = new this.THREE.Vector3(
+
+      star.velocity.set(
         (Math.random() - 0.9) * 0.2,
         (Math.random() - 0.6) * -0.2,
         0
       );
 
-      star.position.set(startPos.x, startPos.y, startPos.z);
-      star.scale.set(1, 1, 2 + Math.random() * 3);
-      star.lookAt(star.position.clone().add(velocity));
+      star.mesh.position.set(startPos.x, startPos.y, startPos.z);
+      star.mesh.scale.set(1, 1, 2 + Math.random() * 3);
 
-      this.activeStars.push({
-        mesh: star,
-        velocity,
-        lifetime: 300 + Math.random() * 200,
-        age: 0
-      });
+      // Re-orient mesh
+      const lookTarget = star.mesh.position.clone().add(star.velocity);
+      star.mesh.lookAt(lookTarget);
 
-      this.scene.add(star);
     } catch (error) {
       log.error('Failed to create shooting star:', error);
+      star.active = false;
+      star.mesh.visible = false;
     }
   }
 
@@ -409,21 +459,23 @@ export class ShootingStarManager {
 
     if (Math.random() < spawnChance) this.createShootingStar();
 
-    for (let i = this.activeStars.length - 1; i >= 0; i--) {
-      const star = this.activeStars[i];
+    // Update active stars
+    for (let i = 0; i < this.starPool.length; i++) {
+      const star = this.starPool[i];
+      if (!star.active) continue;
+
       star.age++;
       star.mesh.position.add(star.velocity);
 
       const fadeStart = star.lifetime * 0.7;
       if (star.age > fadeStart) {
         const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
-        star.mesh.material.opacity = 1 - fadeProgress;
+        star.mesh.material.opacity = Math.max(0, 1 - fadeProgress);
       }
 
       if (star.age > star.lifetime) {
-        this.scene.remove(star.mesh);
-        star.mesh.material.dispose();
-        this.activeStars.splice(i, 1);
+        star.active = false;
+        star.mesh.visible = false;
       }
     }
   }
@@ -437,11 +489,17 @@ export class ShootingStarManager {
 
   cleanup() {
     this.isDisposed = true;
-    this.activeStars.forEach((star) => {
-      this.scene.remove(star.mesh);
-      star.mesh.material?.dispose();
-    });
-    this.activeStars = [];
+
+    // Clean up pool
+    if (this.starPool) {
+      this.starPool.forEach((star) => {
+        if (star.mesh) {
+          this.scene.remove(star.mesh);
+          if (star.mesh.material) star.mesh.material.dispose();
+        }
+      });
+      this.starPool = [];
+    }
 
     // Dispose shared resources
     this.sharedGeometry?.dispose();
