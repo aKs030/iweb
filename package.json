@@ -7,8 +7,7 @@
   "scripts": {
     "format": "prettier --write .",
     "serve": "http-server ./ -p 8081",
-    "ws-server": "node scripts/ws-test-server.js",
-    "dev": "concurrently \"npm run serve\" \"npm run ws-server\""
+    "dev": "concurrently \"npm run serve\""
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
@@ -17,8 +16,7 @@
     "lint-staged": "^13.3.0",
     "prettier": "^3.2.2",
     "stylelint": "^16.26.1",
-    "stylelint-config-standard": "^39.0.1",
-    "ws": "^8.18.3"
+    "stylelint-config-standard": "^39.0.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
