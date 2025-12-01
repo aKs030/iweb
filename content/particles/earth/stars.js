@@ -26,6 +26,9 @@ export class StarManager {
     this.lastScrollUpdate = 0;
     this.scrollUpdateThrottle = 150;
     this.boundScrollHandler = null;
+    
+    // Cache for resize calculations
+    this.areStarsFormingCards = false;
   }
 
   createStarField() {
@@ -52,7 +55,7 @@ export class StarManager {
       positions[i3 + 1] = y;
       positions[i3 + 2] = z;
 
-      targetPositions[i3] = x;
+      targetPositions[i3] = x; // Initialize target as current pos
       targetPositions[i3 + 1] = y;
       targetPositions[i3 + 2] = z;
 
@@ -66,10 +69,7 @@ export class StarManager {
 
     const starGeometry = new this.THREE.BufferGeometry();
     starGeometry.setAttribute('position', new this.THREE.BufferAttribute(positions, 3));
-    starGeometry.setAttribute(
-      'aTargetPosition',
-      new this.THREE.BufferAttribute(targetPositions, 3)
-    );
+    starGeometry.setAttribute('aTargetPosition', new this.THREE.BufferAttribute(targetPositions, 3));
     starGeometry.setAttribute('color', new this.THREE.BufferAttribute(colors, 3));
     starGeometry.setAttribute('size', new this.THREE.BufferAttribute(sizes, 1));
 
@@ -113,6 +113,16 @@ export class StarManager {
 
     return this.starField;
   }
+  
+  // NEW: Handle resize to keep stars aligned with DOM elements
+  handleResize(width, height) {
+    if (this.areStarsFormingCards && !this.transition.active) {
+        const cardPositions = this.getCardPositions();
+        if (cardPositions.length > 0) {
+            this.updateTargetBuffer(cardPositions);
+        }
+    }
+  }
 
   getCardPositions() {
     if (!this.camera || this.isDisposed) return [];
@@ -129,8 +139,11 @@ export class StarManager {
 
     cards.forEach((card) => {
       const rect = card.getBoundingClientRect();
-      const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2);
-      positions.push(...perimeterPositions);
+      // Ensure element is actually somewhat visible/valid
+      if (rect.width > 0 && rect.height > 0) {
+        const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2);
+        positions.push(...perimeterPositions);
+      }
     });
 
     return positions;
@@ -138,7 +151,8 @@ export class StarManager {
 
   getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ) {
     const positions = [];
-    const starsPerEdge = Math.floor(CONFIG.STARS.COUNT / 3 / 4);
+    // Recalculate stars per edge dynamically based on current star count config
+    const starsPerEdge = Math.floor((this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4);
     
     const screenToWorld = (x, y) => {
       const ndcX = (x / viewportWidth) * 2 - 1;
@@ -150,35 +164,28 @@ export class StarManager {
       return this.camera.position.clone().add(direction.multiplyScalar(distance));
     };
 
-    for (let i = 0; i < starsPerEdge; i++) {
-      const t = i / Math.max(1, starsPerEdge - 1);
-      const worldPos = screenToWorld(rect.left + t * rect.width, rect.top);
-      positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
-    }
+    // Helper to push positions
+    const addLine = (startX, startY, endX, endY) => {
+        for (let i = 0; i < starsPerEdge; i++) {
+            const t = i / Math.max(1, starsPerEdge - 1);
+            const x = startX + (endX - startX) * t;
+            const y = startY + (endY - startY) * t;
+            const worldPos = screenToWorld(x, y);
+            positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
+        }
+    };
 
-    for (let i = 0; i < starsPerEdge; i++) {
-      const t = i / Math.max(1, starsPerEdge - 1);
-      const worldPos = screenToWorld(rect.right, rect.top + t * rect.height);
-      positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
-    }
-
-    for (let i = 0; i < starsPerEdge; i++) {
-      const t = i / Math.max(1, starsPerEdge - 1);
-      const worldPos = screenToWorld(rect.right - t * rect.width, rect.bottom);
-      positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
-    }
-
-    for (let i = 0; i < starsPerEdge; i++) {
-      const t = i / Math.max(1, starsPerEdge - 1);
-      const worldPos = screenToWorld(rect.left, rect.bottom - t * rect.height);
-      positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
-    }
+    addLine(rect.left, rect.top, rect.right, rect.top); // Top
+    addLine(rect.right, rect.top, rect.right, rect.bottom); // Right
+    addLine(rect.right, rect.bottom, rect.left, rect.bottom); // Bottom
+    addLine(rect.left, rect.bottom, rect.left, rect.top); // Left
 
     return positions;
   }
 
   animateStarsToCards() {
     if (!this.starField || this.isDisposed) return;
+    this.areStarsFormingCards = true;
 
     const cards = document.querySelectorAll('#features .card');
     cards.forEach((card) => {
@@ -195,6 +202,7 @@ export class StarManager {
 
     setTimeout(() => {
       if (!this.isDisposed && this.transition.targetValue === 1.0) {
+        // Refine once settled
         const refinedPositions = this.getCardPositions();
         if (refinedPositions.length > 0) this.updateTargetBuffer(refinedPositions);
       }
@@ -203,6 +211,7 @@ export class StarManager {
 
   resetStarsToOriginal() {
     if (!this.starField || this.isDisposed) return;
+    this.areStarsFormingCards = false;
     this.disableScrollUpdates();
     this.startTransition(0.0);
   }
@@ -230,6 +239,7 @@ export class StarManager {
     if (now - this.lastScrollUpdate < this.scrollUpdateThrottle) return;
     this.lastScrollUpdate = now;
     
+    // Recalculate because scroll changes screen position relative to camera
     const cardPositions = this.getCardPositions();
     if (cardPositions.length > 0) this.updateTargetBuffer(cardPositions);
   }
@@ -243,12 +253,15 @@ export class StarManager {
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
+      // Wrap around if we have more stars than card-points
       const target = cardPositions[i % cardPositions.length];
-      const spreadFactor = 0.15;
-
-      array[i3] = target.x + (Math.random() - 0.5) * spreadFactor;
-      array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor;
-      array[i3 + 2] = target.z + (Math.random() - 0.5) * 0.05;
+      
+      if (target) {
+        const spreadFactor = 0.15;
+        array[i3] = target.x + (Math.random() - 0.5) * spreadFactor;
+        array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor;
+        array[i3 + 2] = target.z + (Math.random() - 0.5) * 0.05;
+      }
     }
 
     attr.needsUpdate = true;
@@ -258,7 +271,7 @@ export class StarManager {
     if (this.isDisposed) return;
 
     const current = this.starField.material.uniforms.uTransition.value;
-    if (current === targetValue) return;
+    if (Math.abs(current - targetValue) < 0.01) return;
 
     this.transition.active = true;
     this.transition.startTime = performance.now();
@@ -322,6 +335,8 @@ export class StarManager {
     this.isDisposed = true;
     this.disableScrollUpdates();
     this.transition.active = false;
+    this.areStarsFormingCards = false;
+    
     if (this.transition.rafId) {
       cancelAnimationFrame(this.transition.rafId);
       this.transition.rafId = null;
@@ -439,12 +454,12 @@ export class ShootingStarManager {
     this.isDisposed = true;
     this.activeStars.forEach((star) => {
       this.scene.remove(star.mesh);
-      star.mesh.material?.dispose();
+      if (star.mesh.material) star.mesh.material.dispose();
     });
     this.activeStars = [];
 
     // Dispose shared resources
-    this.sharedGeometry?.dispose();
-    this.sharedMaterial?.dispose();
+    if (this.sharedGeometry) this.sharedGeometry.dispose();
+    if (this.sharedMaterial) this.sharedMaterial.dispose();
   }
 }
