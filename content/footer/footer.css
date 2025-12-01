@@ -39,6 +39,14 @@
   --z-cookie-modal: 10000;
 }
 
+/* Icon sizing */
+:root {
+  --footer-icon-size-sm: 12px;
+  --footer-icon-size-md: 14px;
+  --footer-icon-size-lg: 20px;
+  --footer-icon-gap: 6px;
+}
+
 /* ===== Base Footer Container ===== */
 .site-footer-fixed {
   position: fixed;
@@ -47,6 +55,7 @@
   width: calc(100% - var(--footer-horizontal-margin) * 2);
   max-width: 1400px;
   min-width: 320px;
+  box-sizing: border-box;
   background: var(--dynamic-footer-header-bg);
   backdrop-filter: blur(var(--dynamic-footer-blur-radius));
   border-radius: var(--dynamic-footer-pill-radius);
@@ -163,6 +172,46 @@ body.footer-expanded {
   opacity: 0.8;
 }
 
+/* Consistent icon sizing and alignment */
+.footer-nav-link svg,
+.footer-legal-link-enhanced svg,
+.footer-brand-link-enhanced svg,
+.footer-cookies-link svg {
+  width: var(--footer-icon-size-sm) !important;
+  height: var(--footer-icon-size-sm) !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.footer-legal-link-enhanced svg,
+.footer-brand-link-enhanced svg {
+  width: var(--footer-icon-size-md) !important;
+  height: var(--footer-icon-size-md) !important;
+}
+
+.footer-social-card .social-card-icon {
+  width: var(--footer-icon-size-lg) !important;
+  height: var(--footer-icon-size-lg) !important;
+}
+
+/* Ensure icons use currentColor so hover color changes apply */
+.footer-nav-link svg *,
+.footer-legal-link-enhanced svg *,
+.footer-brand-link-enhanced svg *,
+.footer-cookies-link svg * {
+  stroke: currentColor !important;
+  fill: currentColor !important;
+}
+
+/* Slightly increase gap between icon and text */
+.footer-nav-link,
+.footer-legal-link-enhanced,
+.footer-brand-link-enhanced {
+  gap: var(--footer-icon-gap);
+  align-items: center;
+  line-height: 1;
+}
+
 .footer-nav-link:hover {
   color: var(--dynamic-footer-label-primary);
   background: var(--dynamic-footer-fill-primary);
@@ -202,6 +251,56 @@ body.footer-expanded {
   display: flex;
   flex-direction: column;
   min-height: min-content;
+}
+
+/* ===== Footer Status Bar - Desktop Layout Fix ===== */
+.footer-status-bar {
+  width: 100%;
+  border-top: 1px solid var(--dynamic-footer-separator);
+  padding-top: var(--footer-spacing-sm);
+  padding-left: var(--footer-horizontal-margin);
+  padding-right: var(--footer-horizontal-margin);
+  box-sizing: border-box;
+}
+
+.footer-status-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--footer-spacing-xs);
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
+  padding-right: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
+}
+
+.footer-legal-nav {
+  display: flex;
+  gap: var(--footer-spacing-xs);
+  align-items: center;
+}
+
+/* Position theme control at the right so it doesn't shift other content */
+.theme-control-floating {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+}
+
+.footer-legal-link-enhanced,
+.footer-brand-link-enhanced {
+  color: var(--dynamic-footer-label-secondary);
+  text-decoration: none;
+  font-size: var(--footer-text-xs);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.footer-legal-link-enhanced:hover,
+.footer-brand-link-enhanced:hover {
+  color: var(--dynamic-footer-label-primary);
 }
 
 /* ===== Card Grid ===== */
@@ -519,6 +618,20 @@ body.footer-expanded {
 
 .footer-cookie-settings.hidden {
   display: none;
+}
+
+/* Cookie settings layout center and constrain width */
+.cookie-settings-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--footer-spacing-md);
+  box-sizing: border-box;
+}
+
+.cookie-settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--footer-spacing-xs);
 }
 
 @keyframes slideUpFade {
