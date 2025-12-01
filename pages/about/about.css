@@ -15,38 +15,38 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--spacing-xl) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-sm);
   box-sizing: border-box;
   width: 100%;
-  min-height: 100vh;
+  min-height: auto;
 
   /* Rhythm & leading variables local to About section */
-  --leading-lg: 1.65;
-  --leading-md: 1.55;
-  --space-lg: 1.75rem;
-  --space-md: 1.1rem;
+  --leading-lg: 1.5;
+  --leading-md: 1.4;
+  --space-lg: 1rem;
+  --space-md: 0.6rem;
 }
 
 @supports (min-height: 100svh) {
   :where(.section.about, .about-fragment) {
-    min-height: 100svh;
+    min-height: auto;
   }
 }
 
 @supports (min-height: 100dvh) {
   :where(.section.about, .about-fragment) {
-    min-height: 100dvh;
+    min-height: auto;
   }
 }
 
 .about__container {
-  max-width: 780px;
+  max-width: min(650px, 85vw);
   width: 100%;
   margin: 0 auto;
-  padding: clamp(3.5rem, 8vw, 5rem) clamp(1.25rem, 5vw, 1.75rem);
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(0.8rem, 3vw, 1.2rem);
   text-align: center;
   color: var(--text-primary);
-  font-size: clamp(0.98rem, 1.5vw, 1.05rem);
+  font-size: clamp(0.78rem, 1vw, 0.88rem);
   box-sizing: border-box;
 }
 
@@ -62,24 +62,24 @@
 }
 
 .about__text p {
-  font-size: clamp(0.88rem, 2.1vw, 1.02rem);
-  margin-bottom: var(--space-md, 1.1rem);
-  max-width: 680px;
+  font-size: clamp(0.72rem, 1.4vw, 0.85rem);
+  margin-bottom: 0.5rem;
+  max-width: min(600px, 100%);
   color: rgb(240 240 240 / 85%);
   line-height: var(--leading-md);
 }
 
 .about__farewell {
-  font-size: 1.1rem;
+  font-size: clamp(0.8rem, 1.2vw, 0.9rem);
   font-weight: bold;
-  margin-top: var(--spacing-lg);
+  margin-top: 0.5rem;
 }
 
 /* Call-to-Action Buttons */
 .about__cta {
-  margin-top: clamp(1.75rem, 4vw, 2rem);
+  margin-top: 0.8rem;
   display: flex;
-  gap: clamp(0.75rem, 2vw, 1rem);
+  gap: 0.5rem;
   flex-wrap: wrap;
   justify-content: flex-start; /* Oder 'center' je nach Design */
 }
@@ -91,8 +91,8 @@
 --------------------------------------------------------------------------- */
 
 .about__text h1 {
-  font-size: clamp(1.4rem, 4.6vw, 2.4rem);
-  margin-bottom: var(--space-lg, 1.75rem);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  margin-bottom: 0.8rem;
   letter-spacing: -0.02em;
   font-weight: 600;
   line-height: var(--leading-lg);
@@ -149,32 +149,32 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 1.35rem 0;
+    padding: 1rem 0;
   }
 
   .about__container {
-    padding: 2.05rem 0.9rem;
-    font-size: 0.92rem; /* etwas kleiner als Desktop */
+    padding: 1.5rem 0.8rem;
+    font-size: 0.85rem; /* etwas kleiner als Desktop */
   }
 
   .about__text {
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
   .about__text h1,
   .about__text h3 {
-    font-size: 1.35rem;
-    margin-bottom: 0.8rem;
+    font-size: 1.15rem;
+    margin-bottom: 0.65rem;
   }
 
   .about__text p {
-    font-size: 0.86rem;
-    margin-bottom: 0.8rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.65rem;
   }
 
   .about__text em {
     display: inline-block;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
   }
 
   /* Buttons: gestapelt, volle Breite, größere Tap-Ziele */
@@ -210,26 +210,26 @@
 @media (width <= 480px) {
   .about__text h1,
   .about__text h3 {
-    font-size: 1.28rem;
+    font-size: 1.05rem;
   }
 
   .about__text p {
-    font-size: 0.82rem;
+    font-size: 0.76rem;
   }
 }
 
 @media (width <= 360px) {
   .about__container {
-    padding: 1.7rem 0.7rem;
+    padding: 1.2rem 0.6rem;
   }
 
   .about__text h1,
   .about__text h3 {
-    font-size: 1.2rem;
+    font-size: 0.98rem;
   }
 
   .about__text p {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
   }
 }
 
@@ -274,3 +274,4 @@
     align-items: stretch;
   }
 }
+
