@@ -1,64 +1,58 @@
-/* Optimierungen:
-  - Verwendung von CSS-Variablen für Farben und Abstände für einfache Wartung.
-  - Umstellung auf die BEM-Klassen aus dem optimierten HTML.
-  - Hinzufügen von Hover- und Fokus-Zuständen für die Buttons, um die Interaktivität
-    und Barrierefreiheit zu verbessern (`:focus-visible` sorgt für einen sichtbaren 
-    Fokus nur bei Tastaturnavigation).
-  - Zentralisierung aller Stile, die zur "About"-Sektion gehören, an einem Ort.
+/* About Section Styles - Optimized Version
+  - Consolidated media queries for better performance
+  - Reduced redundancy and improved maintainability
+  - Enhanced accessibility with focus states
+  - Streamlined responsive design
 */
 
-/* Temporarily disable duplicate selectors linting for this legacy file while
-  conducting staged cleanup: https://github.com/stylelint/stylelint/blob/master/docs/rules/no-duplicate-selectors.md */
-/* stylelint-disable no-duplicate-selectors */
+/* CSS Variables for About Section */
+:root {
+  --about-leading-lg: 1.5;
+  --about-leading-md: 1.4;
+  --about-space-lg: 1rem;
+  --about-space-md: 0.6rem;
+  --about-max-width: min(650px, 85vw);
+}
 
+/* Base About Section */
 :where(.section.about, .about-fragment) {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--spacing-md) var(--spacing-sm);
-  box-sizing: border-box;
+  padding: var(--spacing-md, 2rem) var(--spacing-sm, 1rem);
   width: 100%;
   min-height: auto;
-
-  /* Rhythm & leading variables local to About section */
-  --leading-lg: 1.5;
-  --leading-md: 1.4;
-  --space-lg: 1rem;
-  --space-md: 0.6rem;
+  box-sizing: border-box;
 }
 
-@supports (min-height: 100svh) {
-  :where(.section.about, .about-fragment) {
-    min-height: auto;
-  }
-}
-
-@supports (min-height: 100dvh) {
-  :where(.section.about, .about-fragment) {
-    min-height: auto;
-  }
-}
-
+/* Container */
 .about__container {
-  max-width: min(650px, 85vw);
+  max-width: var(--about-max-width);
   width: 100%;
   margin: 0 auto;
   padding: clamp(1.5rem, 3vw, 2.5rem) clamp(0.8rem, 3vw, 1.2rem);
   text-align: center;
-  color: var(--text-primary);
+  color: var(--text-primary, #f0f0f0);
   font-size: clamp(0.78rem, 1vw, 0.88rem);
   box-sizing: border-box;
 }
 
-/* Haupttext-Bereich */
-
+/* Text Content */
 .about__text {
   text-align: left;
-  line-height: var(--leading-md);
+  line-height: var(--about-leading-md);
+}
+
+.about__text h1 {
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: var(--about-leading-lg);
 }
 
 .about__text h3 {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md, 1rem);
 }
 
 .about__text p {
@@ -66,7 +60,18 @@
   margin-bottom: 0.5rem;
   max-width: min(600px, 100%);
   color: rgb(240 240 240 / 85%);
-  line-height: var(--leading-md);
+  line-height: var(--about-leading-md);
+}
+
+.about__text strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.about__text em {
+  color: #7fc8ff;
+  font-style: normal;
+  font-weight: 500;
 }
 
 .about__farewell {
@@ -81,58 +86,10 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  justify-content: flex-start; /* Oder 'center' je nach Design */
+  justify-content: flex-start;
 }
 
-/* Lokaler Fokus-Stil entfernt: globaler Fokus-Indikator in `root.css` nutzt einheitliches Styling */
-
-/* --------------------------------------------------------------------------
-   Typografie-Optimierungen für die About-Sektion
---------------------------------------------------------------------------- */
-
-.about__text h1 {
-  font-size: clamp(1rem, 2.5vw, 1.5rem);
-  margin-bottom: 0.8rem;
-  letter-spacing: -0.02em;
-  font-weight: 600;
-  line-height: var(--leading-lg);
-}
-
-.about__text strong {
-  color: #fff;
-  font-weight: 600;
-}
-
-.about__text em {
-  color: #7fc8ff;
-  font-style: normal;
-  font-weight: 500;
-}
-
-/* Button group mapping */
-
-.about-no-viewport .about__cta {
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
-}
-
-.about-no-viewport .about__cta .btn {
-  width: 100%;
-  max-width: 100%;
-  padding: 0.9rem 1rem;
-  min-height: 44px;
-  min-width: 0;
-  text-align: center;
-}
-
-/* --------------------------------------------------------------------------
-   Mobile-Optimierungen für die About-Sektion
-   - kompakteres Padding
-   - kleinere / gut lesbare Schriftgrößen
-   - gestapelte Buttons mit vollen Breiten für bessere Tap-Targets
-   - Rücksicht auf Safe-Area Inset unten
---------------------------------------------------------------------------- */
+/* Mobile & Small Screens (≤768px) */
 @media (width <= 768px) {
   :where(.section.about, .about-fragment) {
     padding: clamp(1.5rem, 4.75vw, 2.2rem) clamp(1rem, 4vw, 1.45rem);
@@ -143,18 +100,15 @@
   }
 }
 
+/* Mobile Optimizations (≤600px) */
 @media (width <= 600px) {
   :where(.section.about, .about-fragment) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     padding: 1rem 0;
   }
 
   .about__container {
-    padding: 1.5rem 0.8rem;
-    font-size: 0.85rem; /* etwas kleiner als Desktop */
+    padding: 1.5rem 0.8rem calc(2.25rem + env(safe-area-inset-bottom, 0px));
+    font-size: 0.85rem;
   }
 
   .about__text {
@@ -177,7 +131,7 @@
     font-size: 0.88rem;
   }
 
-  /* Buttons: gestapelt, volle Breite, größere Tap-Ziele */
+  /* Stacked Buttons with Full Width */
   .about__cta {
     flex-direction: column;
     gap: 0.65rem;
@@ -185,28 +139,22 @@
     margin-top: 1.1rem;
   }
 
-  /* Button-Basis: override globale min-width und sorgen für angenehme Höhe */
   .about__cta .btn {
     width: 100%;
     max-width: 100%;
     padding: 0.8rem 0.95rem;
-    min-height: 44px; /* mobile touch target */
-    min-width: 0; /* überschreibt desktop-min-width */
+    min-height: 44px;
+    min-width: 0;
     text-align: center;
   }
 
-  /* Falls Icon + Text in Buttons, Icon kleiner halten */
   .about__cta .btn svg {
     width: 18px;
     height: 18px;
   }
-
-  /* Mehr Platz am unteren Rand für Geräte mit Home-Indikator */
-  .about__container {
-    padding-bottom: calc(2.25rem + env(safe-area-inset-bottom, 0px));
-  }
 }
 
+/* Extra Small Devices (≤480px) */
 @media (width <= 480px) {
   .about__text h1,
   .about__text h3 {
@@ -218,6 +166,7 @@
   }
 }
 
+/* Tiny Devices (≤360px) */
 @media (width <= 360px) {
   .about__container {
     padding: 1.2rem 0.6rem;
@@ -233,7 +182,7 @@
   }
 }
 
-/* ===== Landscape Mode für About-Sektion ===== */
+/* Landscape Mode */
 @media (width <= 896px) and (orientation: landscape) {
   .about__container {
     padding: 1.5rem 2rem;
@@ -252,7 +201,7 @@
   }
 }
 
-/* ===== Touch-Optimierung für Buttons ===== */
+/* Touch Device Optimizations */
 @media (hover: none) and (pointer: coarse) {
   .about__button {
     -webkit-tap-highlight-color: rgb(0 122 255 / 20%);
@@ -264,10 +213,9 @@
   }
 
   .about__button--primary:active {
-    background-color: var(--primary-dark);
+    background-color: var(--primary-dark, #0056b3);
   }
 
-  /* Ensure stacked CTA buttons on touch devices (covers device emulation without meta viewport) */
   .about__cta {
     flex-direction: column;
     gap: 0.65rem;
@@ -275,3 +223,18 @@
   }
 }
 
+/* No Viewport Support (fallback) */
+.about-no-viewport .about__cta {
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.about-no-viewport .about__cta .btn {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.9rem 1rem;
+  min-height: 44px;
+  min-width: 0;
+  text-align: center;
+}
