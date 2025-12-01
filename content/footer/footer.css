@@ -266,12 +266,13 @@ body.footer-expanded {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--footer-spacing-xs);
+  gap: var(--footer-spacing-md);
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   padding-left: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
   padding-right: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
+  flex-wrap: wrap;
 }
 
 .footer-legal-nav {
@@ -534,9 +535,7 @@ body.footer-expanded {
 }
 
 /* ===== Newsletter Card ===== */
-.footer-card-newsletter {
-  grid-column: 1 / -1;
-}
+
 
 .newsletter-description {
   color: var(--dynamic-footer-label-secondary);
@@ -644,6 +643,41 @@ body.footer-expanded {
   }
 }
 
+/* ===== Social Media Links in Status Bar ===== */
+.footer-social-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-social-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  color: var(--dynamic-footer-label-secondary);
+  background: var(--dynamic-footer-fill-secondary);
+  border: 1px solid var(--dynamic-footer-separator);
+  border-radius: var(--dynamic-footer-micro-radius);
+  text-decoration: none;
+  font-size: var(--footer-text-xs);
+  font-weight: var(--dynamic-footer-font-weight-medium);
+  transition: all var(--footer-transition-quick);
+  will-change: transform, background-color;
+  transform: translateZ(0);
+}
+
+.footer-social-btn svg {
+  flex-shrink: 0;
+}
+
+.footer-social-btn:hover {
+  background: var(--dynamic-footer-fill-primary);
+  border-color: var(--dynamic-footer-accent-blue);
+  color: var(--dynamic-footer-label-primary);
+  transform: translateY(-1px) translateZ(0);
+}
+
 /* ===== Footer States ===== */
 .footer-expanded .footer-minimized {
   opacity: 0;
@@ -684,7 +718,7 @@ body.footer-expanded {
   }
 
   .footer-card-newsletter {
-    grid-column: 1 / -1;
+    /* Keine spezielle Grid-Spalte mehr */
   }
 
   .footer-enhanced-content {
@@ -699,7 +733,15 @@ body.footer-expanded {
   .footer-status-content {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 8px;
+  }
+  
+  .footer-social-links {
+    order: 2;
+  }
+  
+  .footer-legal-nav {
+    order: 3;
   }
 
   .newsletter-form-enhanced,
