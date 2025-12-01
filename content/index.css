@@ -270,8 +270,6 @@ a:hover {
   color: var(--primary-light);
 }
 
-
-
 /* Animations */
 /* Loading rules moved to content/root.css to centralize critical/shared styles */
 
