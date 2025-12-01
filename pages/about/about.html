@@ -1,9 +1,10 @@
-<!-- 
-  About Section Fragment 
-  Wird dynamisch in die index.html geladen.
+<!-- About Section Fragment - Optimized Version
+  - Enhanced accessibility with proper ARIA attributes
+  - Improved semantic structure
+  - Optimized SVG with better attributes
 -->
 <div class="about__container">
-  <div class="about__content">
+  <article class="about__content">
     <div class="about__text parallax-element" data-parallax-speed="0.1">
       <h1 id="about-heading">Danke für Ihren Besuch!</h1>
 
@@ -29,7 +30,7 @@
 
       <p>
         <em>Jede Zeile Code, die ich schreibe, trägt ein Stück meiner
-        Leidenschaft in sich.</em><br />
+        Leidenschaft in sich.</em><br>
         Von der ersten Idee bis zum finalen Launch begleite ich Sie auf Ihrer
         digitalen Reise.
       </p>
@@ -44,9 +45,15 @@
         <strong>Herzlichen Dank für Ihr Interesse und besuchen Sie mich gerne wieder!</strong>
       </p>
 
-      <div class="about__cta">
-        <a href="#hero" class="btn btn-primary">Zur Startseite</a>
-        <a href="#site-footer" class="btn btn-secondary">
+      <nav class="about__cta" aria-label="Navigationsoptionen">
+        <a href="#hero" class="btn btn-primary" aria-label="Zurück zur Startseite">
+          Zur Startseite
+        </a>
+        <a 
+          href="#site-footer" 
+          class="btn btn-secondary" 
+          aria-label="Lebenslauf herunterladen"
+        >
           <svg
             width="20"
             height="20"
@@ -54,17 +61,19 @@
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
             aria-hidden="true"
-            focusable="false"
+            role="img"
           >
-            <title>Lebenslauf herunterladen</title>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
+            <title>Download-Symbol</title>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
           <span>Lebenslauf</span>
         </a>
-      </div>
+      </nav>
     </div>
-  </div>
+  </article>
 </div>
