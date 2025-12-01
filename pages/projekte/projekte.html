@@ -56,22 +56,14 @@
             pointer-events: none;
         }
 
-        .three-earth-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255,255,255,0.8);
-        }
+        
 
         /* Decorative Orbs */
         .bg-orb { position: fixed; border-radius: 9999px; filter: blur(120px); animation: pulse-slow 6s infinite; z-index: -1; pointer-events: none; }
         .orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background-color: rgba(30, 58, 138, 0.1); }
         .orb-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background-color: rgba(49, 46, 129, 0.1); animation-delay: 1s; }
 
-        .progress-dots { display: none; position: fixed; right: 2rem; top: 50%; transform: translateY(-50%); z-index: 40; flex-direction: column; gap: 0.75rem; pointer-events: none;}
-        @media (min-width: 1024px) { .progress-dots { display: flex; } }
-        .dot { width: 0.375rem; height: 0.375rem; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.2); }
+        
 
         /* Sections */
         .snap-section {
@@ -152,14 +144,7 @@
 
     <!-- 3D ERDE -->
     <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
-        <div class="three-earth-loading" role="status" aria-live="polite">
-            <div class="loading-spinner" aria-hidden="true"></div>
-            <p class="loading-spinner-text">Lade Planet...</p>
-            <div class="loading-progress-container" aria-hidden="false">
-                <div class="loading-progress-bar"></div>
-            </div>
-            <p class="loading-progress-text">0%</p>
-        </div>
+        
         <div class="three-earth-error hidden"><p>WebGL Fehler</p></div>
     </div>
 

@@ -227,14 +227,7 @@ function App() {
   return e(
     React.Fragment,
     null,
-    // Progress Dots
-    e(
-      'div',
-      { className: 'progress-dots' },
-      e('div', { className: 'dot' }),
-      projects.map((p) => e('div', { key: p.id, className: 'dot' })),
-      e('div', { className: 'dot' })
-    ),
+    
 
     // Hero Section
     e(
