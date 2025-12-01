@@ -1,7 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 9.3.0 - OPTIMIZED: Added Viewport Pausing to save resources when out of view
+ * @version 9.4.0 - OPTIMIZED: Fixed Async Race Conditions & Resize Logic
  */
 
 import { createLogger, getElementById, onResize, TimerManager } from '../shared-utilities.js';
@@ -43,9 +43,11 @@ let sectionObserver, viewportObserver, animationFrameId;
 let currentSection = 'hero';
 let currentQualityLevel = 'HIGH';
 let isMobileDevice = false;
-let isSystemVisible = true; // Track if container is in viewport
-// Detected device capabilities for this session
+let isSystemVisible = true;
 let deviceCapabilities = null;
+
+// Flag to prevent zombie execution after cleanup
+let isSystemActive = false;
 
 // ===== Main Manager =====
 
@@ -63,51 +65,52 @@ const ThreeEarthManager = (() => {
       return () => {};
     }
 
+    // Set Active Flag
+    isSystemActive = true;
+
     try {
-      log.info('Initializing Three.js Earth System v9.3.0 (Optimized)');
+      log.info('Initializing Three.js Earth System v9.4.0 (Fixed)');
 
       // Device Detection & optimized config
       try {
         deviceCapabilities = detectDeviceCapabilities();
         const optimizedConfig = getOptimizedConfig(deviceCapabilities);
-        log.info('Device capabilities:', deviceCapabilities);
-        log.info('Using quality preset:', deviceCapabilities.recommendedQuality);
-        // Apply optimized configuration
+        // Note: Mutating the global CONFIG object works but be aware it persists across re-inits
         Object.assign(CONFIG, optimizedConfig);
       } catch (e) {
         log.debug('Device detection failed, using defaults', e);
       }
+      
       registerParticleSystem('three-earth', { type: 'three-earth' });
 
       THREE_INSTANCE = await loadThreeJS();
+      
+      // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
+      if (!isSystemActive) return cleanup;
+
       showLoadingState(container, 0);
 
       // Scene Setup
-      isMobileDevice =
-        !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
+      isMobileDevice = !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
+      
       const sceneObjects = setupScene(THREE_INSTANCE, container);
       scene = sceneObjects.scene;
       camera = sceneObjects.camera;
       renderer = sceneObjects.renderer;
 
-      // Apply performance pixel ratio from CONFIG when set
-      try {
-        if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
-          renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
-        }
-      } catch (e) {
-        log.debug('Unable to set renderer pixel ratio', e);
+      if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
+        renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
       }
 
-      // Loading Manager Setup
       const loadingManager = new THREE_INSTANCE.LoadingManager();
-
       loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+        if (!isSystemActive) return;
         const progress = itemsLoaded / itemsTotal;
         showLoadingState(container, progress);
       };
 
       loadingManager.onLoad = () => {
+        if (!isSystemActive) return;
         hideLoadingState(container);
       };
 
@@ -125,12 +128,20 @@ const ThreeEarthManager = (() => {
       directionalLight = lights.directionalLight;
       ambientLight = lights.ambientLight;
 
-      // Assets
+      // Assets Loading
       const [earthAssets, moonLOD, cloudObj] = await Promise.all([
         createEarthSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
         createMoonSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
         createCloudLayer(THREE_INSTANCE, renderer, loadingManager, isMobileDevice)
       ]);
+
+      // CRITICAL CHECK: Did cleanup happen while awaiting Assets?
+      if (!isSystemActive) {
+        // Clean up what we just created since the system is dead
+        if(earthAssets.dayMaterial) earthAssets.dayMaterial.dispose();
+        // ... (other disposals implicit in cleanup call)
+        return cleanup;
+      }
 
       earthMesh = earthAssets.earthMesh;
       dayMaterial = earthAssets.dayMaterial;
@@ -154,8 +165,6 @@ const ThreeEarthManager = (() => {
 
       setupUserControls(container);
       setupSectionDetection();
-
-      // OPTIMIZATION: Setup Viewport Observer to pause rendering when out of view
       setupViewportObserver(container);
 
       performanceMonitor = new PerformanceMonitor(container, renderer, (level) => {
@@ -165,6 +174,7 @@ const ThreeEarthManager = (() => {
 
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
 
+      // Start Loops
       startAnimationLoop();
       setupResizeHandler();
 
@@ -178,6 +188,8 @@ const ThreeEarthManager = (() => {
   };
 
   const cleanup = () => {
+    // Set flag immediately to stop any pending awaits
+    isSystemActive = false;
     log.info('Cleaning up Earth system');
 
     if (animationFrameId) {
@@ -190,8 +202,9 @@ const ThreeEarthManager = (() => {
     performanceMonitor?.cleanup();
     shootingStarManager?.cleanup();
     cameraManager?.cleanup();
+    starManager?.cleanup(); // Ensure star manager cleans up
     sectionObserver?.disconnect();
-    viewportObserver?.disconnect(); // Cleanup viewport observer
+    viewportObserver?.disconnect();
     earthTimers.clearAll();
     sharedCleanupManager.cleanupSystem('three-earth');
 
@@ -206,14 +219,13 @@ const ThreeEarthManager = (() => {
           }
         }
       });
-      while (scene.children.length > 0) {
-        scene.remove(scene.children[0]);
-      }
+      scene.clear();
     }
 
     if (renderer) {
       renderer.dispose();
-      renderer.forceContextLoss();
+      // Removed forceContextLoss() as it is too aggressive for shared environments
+      // renderer.forceContextLoss(); 
     }
 
     [dayMaterial, nightMaterial].forEach(disposeMaterial);
@@ -238,23 +250,28 @@ const ThreeEarthManager = (() => {
         material[prop] = null;
       }
     });
+    // Safely dispose uniforms
     if (material.uniforms) {
       Object.values(material.uniforms).forEach((uniform) => {
-        uniform.value?.dispose?.();
+        if (uniform && uniform.value && typeof uniform.value.dispose === 'function') {
+          uniform.value.dispose();
+        }
       });
     }
     material.dispose();
   }
 
   function handleInitializationError(container, error) {
-    try {
-      renderer?.dispose();
-      sharedCleanupManager.cleanupSystem('three-earth');
-    } catch (e) {
-      log.error('Emergency cleanup failed:', e);
+    // Only cleanup if we actually started something
+    if (renderer) {
+        try {
+            renderer.dispose();
+        } catch (e) { /* ignore */ }
     }
+    sharedCleanupManager.cleanupSystem('three-earth');
+    
     showErrorState(container, error, () => {
-      cleanup();
+      cleanup(); // Full cleanup before retry
       initThreeEarth();
     });
   }
@@ -268,86 +285,46 @@ function detectDeviceCapabilities() {
   try {
     const ua = (navigator.userAgent || '').toLowerCase();
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
-    const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(
-      ua
-    );
-    const hasSlowGPU = /mali|adreno\s?[34]|powervr sgx|intel hd/i.test(ua);
-
-    const deviceMemory = navigator.deviceMemory || 0;
-    const memLimit = (performance && performance.memory && performance.memory.jsHeapSizeLimit) || 0;
-    const isLowMemory =
-      (deviceMemory > 0 && deviceMemory < 1) || (memLimit > 0 && memLimit < 1073741824);
-
-    const cores = navigator.hardwareConcurrency || 2;
-    const isLowCores = cores <= 2;
-
-    const recommendedQuality = isLowEnd || hasSlowGPU ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH';
-
+    // Simple heuristic checks
+    const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) || 
+                     (navigator.hardwareConcurrency || 4) <= 2;
+    
     return {
       isMobile,
-      isLowEnd: isLowEnd || hasSlowGPU || isLowMemory || isLowCores,
-      cores,
-      deviceMemoryGB: deviceMemory || Math.round(memLimit / (1024 * 1024 * 1024)),
-      recommendedQuality
+      isLowEnd,
+      recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH'
     };
   } catch (e) {
-    return {
-      isMobile: false,
-      isLowEnd: false,
-      cores: 2,
-      deviceMemoryGB: 0,
-      recommendedQuality: 'MEDIUM'
-    };
+    return { isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM' };
   }
 }
 
 function getOptimizedConfig(capabilities) {
-  const baseConfig = { ...CONFIG };
-  if (!capabilities) return baseConfig;
+  // Return defensive copy
+  const baseConfig = JSON.parse(JSON.stringify(CONFIG)); 
+  // Note: Deep cloning config ensures we don't accidentally mutate defaults if called repeatedly
+  // but logic below uses Object.assign on the live CONFIG anyway.
+
+  if (!capabilities) return {};
 
   if (capabilities.isLowEnd) {
     return {
-      ...baseConfig,
-      EARTH: {
-        ...baseConfig.EARTH,
-        SEGMENTS: 24,
-        SEGMENTS_MOBILE: 16
-      },
-      STARS: {
-        ...baseConfig.STARS,
-        COUNT: 1000
-      },
-      PERFORMANCE: {
-        ...baseConfig.PERFORMANCE,
-        PIXEL_RATIO: 1.0,
-        TARGET_FPS: 30
-      },
-      CLOUDS: {
-        ...baseConfig.CLOUDS,
-        OPACITY: 0
-      }
+        EARTH: { ...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 16 },
+        STARS: { ...CONFIG.STARS, COUNT: 1000 },
+        PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: 1.0, TARGET_FPS: 30 },
+        CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 }
     };
   }
 
   if (capabilities.isMobile) {
     return {
-      ...baseConfig,
-      EARTH: {
-        ...baseConfig.EARTH,
-        SEGMENTS_MOBILE: 32
-      },
-      STARS: {
-        ...baseConfig.STARS,
-        COUNT: 2000
-      },
-      PERFORMANCE: {
-        ...baseConfig.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0)
-      }
+        EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 32 },
+        STARS: { ...CONFIG.STARS, COUNT: 2000 },
+        PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0) }
     };
   }
 
-  return baseConfig;
+  return {};
 }
 
 function setupStarParallax(starField) {
@@ -377,32 +354,28 @@ function setupSectionDetection() {
         }
       }
 
-      if (!best) return;
+      if (!best || !best.isIntersecting) return;
 
-      if (best.isIntersecting) {
-        let newSection = mapId(best.target.id || '');
+      let newSection = mapId(best.target.id || '');
+      if (!newSection) return;
 
-        if (!newSection) return;
+      if (newSection !== currentSection) {
+        const previousSection = currentSection;
+        currentSection = newSection;
 
-        if (newSection !== currentSection) {
-          const previousSection = currentSection;
-          currentSection = newSection;
+        if (cameraManager) cameraManager.updateCameraForSection(newSection);
 
-          if (cameraManager) cameraManager.updateCameraForSection(newSection);
+        const isFeaturesToAbout = previousSection === 'features' && newSection === 'about';
+        updateEarthForSection(newSection, { allowModeSwitch: isFeaturesToAbout });
 
-          const isFeaturesToAbout = previousSection === 'features' && newSection === 'about';
-          updateEarthForSection(newSection, { allowModeSwitch: isFeaturesToAbout });
-
-          if (newSection === 'features' && starManager) {
-            starManager.animateStarsToCards();
-          } else if (previousSection === 'features' && starManager) {
-            starManager.resetStarsToOriginal();
-          }
-
-          document
-            .querySelector('.three-earth-container')
-            ?.setAttribute('data-section', newSection);
+        if (newSection === 'features' && starManager) {
+          starManager.animateStarsToCards();
+        } else if (previousSection === 'features' && starManager) {
+          starManager.resetStarsToOriginal();
         }
+
+        const container = document.querySelector('.three-earth-container');
+        if(container) container.setAttribute('data-section', newSection);
       }
     },
     { rootMargin: '-20% 0px -20% 0px', threshold: OBSERVER_THRESHOLDS }
@@ -411,7 +384,6 @@ function setupSectionDetection() {
   sections.forEach((section) => sectionObserver.observe(section));
 }
 
-// OPTIMIZATION: Pause rendering when container is not in viewport
 function setupViewportObserver(container) {
   viewportObserver = new IntersectionObserver(
     (entries) => {
@@ -432,13 +404,13 @@ function setupViewportObserver(container) {
       }
     },
     { threshold: 0 }
-  ); // Trigger as soon as 1px is visible/hidden
+  );
 
   viewportObserver.observe(container);
 }
 
 function updateEarthForSection(sectionName, options = {}) {
-  if (!earthMesh) return;
+  if (!earthMesh || !isSystemActive) return;
   const allowModeSwitch = !!options.allowModeSwitch;
 
   const configs = {
@@ -467,18 +439,14 @@ function updateEarthForSection(sectionName, options = {}) {
   const config = configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero;
 
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
-    config.earth.pos.x,
-    config.earth.pos.y,
-    config.earth.pos.z
+    config.earth.pos.x, config.earth.pos.y, config.earth.pos.z
   );
   earthMesh.userData.targetScale = config.earth.scale;
   earthMesh.userData.targetRotation = config.earth.rotation;
 
   if (moonMesh && config.moon) {
     moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
-      config.moon.pos.x,
-      config.moon.pos.y,
-      config.moon.pos.z
+      config.moon.pos.x, config.moon.pos.y, config.moon.pos.z
     );
     moonMesh.userData.targetScale = config.moon.scale;
   }
@@ -494,21 +462,17 @@ function updateEarthForSection(sectionName, options = {}) {
 
   if (directionalLight && ambientLight) {
     const mode = earthMesh.userData.currentMode;
-    if (mode === 'day') {
-      directionalLight.intensity = CONFIG.LIGHTING.DAY.SUN_INTENSITY;
-      ambientLight.intensity = CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY;
-      ambientLight.color.setHex(CONFIG.LIGHTING.DAY.AMBIENT_COLOR);
-    } else {
-      directionalLight.intensity = CONFIG.LIGHTING.NIGHT.SUN_INTENSITY;
-      ambientLight.intensity = CONFIG.LIGHTING.NIGHT.AMBIENT_INTENSITY;
-      ambientLight.color.setHex(CONFIG.LIGHTING.NIGHT.AMBIENT_COLOR);
-    }
+    const lightingConfig = mode === 'day' ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
+    
+    directionalLight.intensity = lightingConfig.SUN_INTENSITY;
+    ambientLight.intensity = lightingConfig.AMBIENT_INTENSITY;
+    ambientLight.color.setHex(lightingConfig.AMBIENT_COLOR);
   }
 }
 
 function setupUserControls(container) {
   const onWheel = (e) => {
-    if (cameraManager) cameraManager.handleWheel(e);
+    if (cameraManager && isSystemActive) cameraManager.handleWheel(e);
   };
   container.addEventListener('wheel', onWheel, { passive: true });
   sharedCleanupManager.addCleanupFunction(
@@ -526,25 +490,22 @@ function handleVisibilityChange() {
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
-      log.debug('Tab hidden: paused animation loop');
     }
   } else {
-    // Only resume if tab is visible AND system is in viewport
-    if (!animationFrameId && animate && isSystemVisible) {
+    if (!animationFrameId && animate && isSystemVisible && isSystemActive) {
       animate();
-      log.debug('Tab visible: resumed animation loop');
     }
   }
 }
 
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
-
   const capabilities = deviceCapabilities || detectDeviceCapabilities();
   let frameSkip = capabilities.isLowEnd ? 2 : 1;
   let frameCounter = 0;
 
   animate = () => {
+    if (!isSystemActive) return; // Guard clause
     animationFrameId = requestAnimationFrame(animate);
     frameCounter++;
 
@@ -568,11 +529,8 @@ function startAnimationLoop() {
       frameCounter % 2 === 0
     ) {
       const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
-      const pulseAmount =
-        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
-        2;
-      earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
+      const pulseAmount = Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
+      if(earthMesh.material) earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
     }
 
     if (cameraManager) cameraManager.updateCameraPosition();
@@ -581,12 +539,13 @@ function startAnimationLoop() {
     if (shootingStarManager && !capabilities.isLowEnd) shootingStarManager.update();
     if (performanceMonitor) performanceMonitor.update();
 
-    renderer.render(scene, camera);
+    if(renderer && scene && camera) {
+        renderer.render(scene, camera);
+    }
   };
 
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
-  // Start only if currently visible
   if (document.visibilityState === 'visible') {
     animate();
   }
@@ -599,11 +558,9 @@ function updateObjectTransforms() {
     earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04);
   }
   if (earthMesh.userData.targetScale) {
-    const scaleDiff = earthMesh.userData.targetScale - earthMesh.scale.x;
-    if (Math.abs(scaleDiff) > 0.001) {
-      const newScale = earthMesh.scale.x + scaleDiff * 0.06;
-      earthMesh.scale.set(newScale, newScale, newScale);
-    }
+    // Simple lerp for scalar
+    earthMesh.scale.x += (earthMesh.userData.targetScale - earthMesh.scale.x) * 0.06;
+    earthMesh.scale.y = earthMesh.scale.z = earthMesh.scale.x;
   }
   if (earthMesh.userData.targetRotation !== undefined) {
     const rotDiff = earthMesh.userData.targetRotation - earthMesh.rotation.y;
@@ -622,11 +579,8 @@ function updateObjectTransforms() {
       moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04);
     }
     if (moonMesh.userData.targetScale) {
-      const moonScaleDiff = moonMesh.userData.targetScale - moonMesh.scale.x;
-      if (Math.abs(moonScaleDiff) > 0.001) {
-        const newMoonScale = moonMesh.scale.x + moonScaleDiff * 0.06;
-        moonMesh.scale.set(newMoonScale, newMoonScale, newMoonScale);
-      }
+       moonMesh.scale.x += (moonMesh.userData.targetScale - moonMesh.scale.x) * 0.06;
+       moonMesh.scale.y = moonMesh.scale.z = moonMesh.scale.x;
     }
   }
 }
@@ -656,6 +610,11 @@ function setupResizeHandler() {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
+
+    // FIX: Notify StarManager about resize to update card positions
+    if (starManager) {
+        starManager.handleResize(width, height);
+    }
   };
 
   const resizeCleanup = onResize(handleResize, 100);
