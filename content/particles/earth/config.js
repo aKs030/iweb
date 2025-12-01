@@ -48,15 +48,15 @@ export const CONFIG = {
   },
   STARS: {
     COUNT: 3000,
-    TWINKLE_SPEED: 0.3,
+    TWINKLE_SPEED: 0.2, // Reduziert für subtileren Effekt
     ANIMATION: {
-      DURATION: 3500,
-      CAMERA_SETTLE_DELAY: 2200,
+      DURATION: 2800, // Schnellere Animation
+      CAMERA_SETTLE_DELAY: 1800, // Schnellere Anpassung
       MIN_UPDATE_INTERVAL: 100,
-      CARD_FADE_START: 0.7,
+      CARD_FADE_START: 0.75,
       CARD_FADE_END: 0.95,
-      SPREAD_XY: 0.6,
-      SPREAD_Z: 0.3,
+      SPREAD_XY: 0.15, // Reduziert für Rand-Fokus
+      SPREAD_Z: 0.05, // Minimale Tiefe
       LERP_FACTOR: 0.08
     }
   },

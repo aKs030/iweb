@@ -10,29 +10,30 @@ export class StarManager {
     this.camera = camera;
     this.renderer = renderer;
     this.starField = null;
-    this.isDisposed = false; // Guard flag for cleanup
+    this.isDisposed = false;
 
-    // Animation State for Shader-Transition
     this.transition = {
       active: false,
       startTime: 0,
       duration: CONFIG.STARS.ANIMATION.DURATION,
       startValue: 0,
       targetValue: 0,
-      rafId: null // Track RAF ID for cancellation
+      rafId: null
     };
 
     this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
+    this.scrollUpdateEnabled = false;
+    this.lastScrollUpdate = 0;
+    this.scrollUpdateThrottle = 150;
+    this.boundScrollHandler = null;
   }
 
   createStarField() {
     if (this.isDisposed) return null;
 
     const starCount = this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT;
-
-    // Buffer Arrays
     const positions = new Float32Array(starCount * 3);
-    const targetPositions = new Float32Array(starCount * 3); // New: Target positions for GPU
+    const targetPositions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     const sizes = new Float32Array(starCount);
     const color = new this.THREE.Color();
@@ -43,7 +44,6 @@ export class StarManager {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
 
-      // Spherical distribution (Start)
       const x = radius * Math.sin(phi) * Math.cos(theta);
       const y = radius * Math.sin(phi) * Math.sin(theta);
       const z = radius * Math.cos(phi);
@@ -52,7 +52,6 @@ export class StarManager {
       positions[i3 + 1] = y;
       positions[i3 + 2] = z;
 
-      // Initialize targets to same position to avoid glitches
       targetPositions[i3] = x;
       targetPositions[i3 + 1] = y;
       targetPositions[i3 + 2] = z;
@@ -78,7 +77,7 @@ export class StarManager {
       uniforms: {
         time: { value: 0.0 },
         twinkleSpeed: { value: CONFIG.STARS.TWINKLE_SPEED },
-        uTransition: { value: 0.0 } // 0.0 = Sphere, 1.0 = Cards
+        uTransition: { value: 0.0 }
       },
       vertexShader: `
         attribute float size;
@@ -88,11 +87,7 @@ export class StarManager {
         
         void main() {
           vColor = color;
-          
-          // GPU-based interpolation
-          // mix performs linear interpolation between start (position) and end (aTargetPosition)
           vec3 currentPos = mix(position, aTargetPosition, uTransition);
-          
           vec4 mvPosition = modelViewMatrix * vec4(currentPos, 1.0);
           gl_PointSize = size * (300.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
@@ -125,7 +120,6 @@ export class StarManager {
     const featuresSection = getElementById('features');
     if (!featuresSection) return [];
 
-    // Select actual cards, fallback to empty if none found
     const cards = featuresSection.querySelectorAll('.card');
     if (cards.length === 0) return [];
 
@@ -135,21 +129,50 @@ export class StarManager {
 
     cards.forEach((card) => {
       const rect = card.getBoundingClientRect();
+      const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2);
+      positions.push(...perimeterPositions);
+    });
 
-      // Calculate Normalized Device Coordinates (NDC) for center of card
-      const ndcX = ((rect.left + rect.width / 2) / width) * 2 - 1;
-      const ndcY = -(((rect.top + rect.height / 2) / height) * 2 - 1);
+    return positions;
+  }
 
-      const targetZ = -2; // Distance from camera
+  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ) {
+    const positions = [];
+    const starsPerEdge = Math.floor(CONFIG.STARS.COUNT / 3 / 4);
+    
+    const screenToWorld = (x, y) => {
+      const ndcX = (x / viewportWidth) * 2 - 1;
+      const ndcY = -((y / viewportHeight) * 2 - 1);
       const vector = new this.THREE.Vector3(ndcX, ndcY, 0);
       vector.unproject(this.camera);
-
       const direction = vector.sub(this.camera.position).normalize();
       const distance = (targetZ - this.camera.position.z) / direction.z;
-      const worldPos = this.camera.position.clone().add(direction.multiplyScalar(distance));
+      return this.camera.position.clone().add(direction.multiplyScalar(distance));
+    };
 
+    for (let i = 0; i < starsPerEdge; i++) {
+      const t = i / Math.max(1, starsPerEdge - 1);
+      const worldPos = screenToWorld(rect.left + t * rect.width, rect.top);
       positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
-    });
+    }
+
+    for (let i = 0; i < starsPerEdge; i++) {
+      const t = i / Math.max(1, starsPerEdge - 1);
+      const worldPos = screenToWorld(rect.right, rect.top + t * rect.height);
+      positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
+    }
+
+    for (let i = 0; i < starsPerEdge; i++) {
+      const t = i / Math.max(1, starsPerEdge - 1);
+      const worldPos = screenToWorld(rect.right - t * rect.width, rect.bottom);
+      positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
+    }
+
+    for (let i = 0; i < starsPerEdge; i++) {
+      const t = i / Math.max(1, starsPerEdge - 1);
+      const worldPos = screenToWorld(rect.left, rect.bottom - t * rect.height);
+      positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
+    }
 
     return positions;
   }
@@ -157,24 +180,19 @@ export class StarManager {
   animateStarsToCards() {
     if (!this.starField || this.isDisposed) return;
 
-    // Hide cards initially (they will fade in)
     const cards = document.querySelectorAll('#features .card');
     cards.forEach((card) => {
       card.style.opacity = '0';
       card.style.pointerEvents = 'none';
     });
 
-    // 1. Calculate Targets
     const cardPositions = this.getCardPositions();
     if (cardPositions.length === 0) return;
 
-    // 2. Update GPU Buffer
     this.updateTargetBuffer(cardPositions);
-
-    // 3. Start Transition to 1.0 (Cards)
     this.startTransition(1.0);
+    this.enableScrollUpdates();
 
-    // Optional: Re-calculate once camera settled for precision
     setTimeout(() => {
       if (!this.isDisposed && this.transition.targetValue === 1.0) {
         const refinedPositions = this.getCardPositions();
@@ -185,9 +203,35 @@ export class StarManager {
 
   resetStarsToOriginal() {
     if (!this.starField || this.isDisposed) return;
-
-    // Start Transition to 0.0 (Sphere)
+    this.disableScrollUpdates();
     this.startTransition(0.0);
+  }
+
+  enableScrollUpdates() {
+    if (this.scrollUpdateEnabled || this.isDisposed) return;
+    this.scrollUpdateEnabled = true;
+    this.boundScrollHandler = this.handleScroll.bind(this);
+    window.addEventListener('scroll', this.boundScrollHandler, { passive: true });
+  }
+
+  disableScrollUpdates() {
+    if (!this.scrollUpdateEnabled) return;
+    this.scrollUpdateEnabled = false;
+    if (this.boundScrollHandler) {
+      window.removeEventListener('scroll', this.boundScrollHandler);
+      this.boundScrollHandler = null;
+    }
+  }
+
+  handleScroll() {
+    if (!this.scrollUpdateEnabled || this.isDisposed || this.transition.active) return;
+    
+    const now = performance.now();
+    if (now - this.lastScrollUpdate < this.scrollUpdateThrottle) return;
+    this.lastScrollUpdate = now;
+    
+    const cardPositions = this.getCardPositions();
+    if (cardPositions.length > 0) this.updateTargetBuffer(cardPositions);
   }
 
   updateTargetBuffer(cardPositions) {
@@ -196,16 +240,15 @@ export class StarManager {
     const attr = this.starField.geometry.attributes.aTargetPosition;
     const array = attr.array;
     const count = array.length / 3;
-    const cfg = CONFIG.STARS.ANIMATION;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       const target = cardPositions[i % cardPositions.length];
+      const spreadFactor = 0.15;
 
-      // Add spread to form a cloud around the card
-      array[i3] = target.x + (Math.random() - 0.5) * cfg.SPREAD_XY;
-      array[i3 + 1] = target.y + (Math.random() - 0.5) * cfg.SPREAD_XY;
-      array[i3 + 2] = target.z + (Math.random() - 0.5) * cfg.SPREAD_Z;
+      array[i3] = target.x + (Math.random() - 0.5) * spreadFactor;
+      array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor;
+      array[i3 + 2] = target.z + (Math.random() - 0.5) * 0.05;
     }
 
     attr.needsUpdate = true;
@@ -231,22 +274,16 @@ export class StarManager {
 
     const now = performance.now();
     const elapsed = now - this.transition.startTime;
-    let progress = elapsed / this.transition.duration;
+    let progress = Math.min(elapsed / this.transition.duration, 1);
 
-    if (progress >= 1) {
-      progress = 1;
-      this.transition.active = false;
-    }
+    if (progress >= 1) this.transition.active = false;
 
     const eased = this.easeInOutCubic(progress);
 
-    // Interpolate uniform
     if (this.starField && this.starField.material) {
-      const val =
-        this.transition.startValue +
-        (this.transition.targetValue - this.transition.startValue) * eased;
+      const val = this.transition.startValue + 
+                  (this.transition.targetValue - this.transition.startValue) * eased;
       this.starField.material.uniforms.uTransition.value = val;
-      // Sync DOM Cards Opacity
       this.updateCardOpacity(val);
     }
 
@@ -256,11 +293,9 @@ export class StarManager {
   }
 
   updateCardOpacity(transitionValue) {
-    // Logic: Fade in cards when stars are almost there
     const cfg = CONFIG.STARS.ANIMATION;
-    // If going to cards (1.0), fade in. If going to sphere (0.0), fade out.
-
     let opacity = 0;
+
     if (transitionValue > cfg.CARD_FADE_START) {
       opacity = (transitionValue - cfg.CARD_FADE_START) / (cfg.CARD_FADE_END - cfg.CARD_FADE_START);
       opacity = Math.min(Math.max(opacity, 0), 1);
@@ -285,6 +320,7 @@ export class StarManager {
 
   cleanup() {
     this.isDisposed = true;
+    this.disableScrollUpdates();
     this.transition.active = false;
     if (this.transition.rafId) {
       cancelAnimationFrame(this.transition.rafId);
@@ -311,7 +347,6 @@ export class ShootingStarManager {
     this.disabled = false;
     this.isDisposed = false;
 
-    // Shared resources to avoid GC pressure
     this.sharedGeometry = new this.THREE.SphereGeometry(0.05, 8, 8);
     this.sharedMaterial = new this.THREE.MeshBasicMaterial({
       color: 0xfffdef,
@@ -321,11 +356,9 @@ export class ShootingStarManager {
   }
 
   createShootingStar() {
-    if (this.isDisposed || this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS)
-      return;
+    if (this.isDisposed || this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS) return;
 
     try {
-      // Use cloned material for individual opacity control, but share geometry
       const material = this.sharedMaterial.clone();
       const star = new this.THREE.Mesh(this.sharedGeometry, material);
 
@@ -360,7 +393,6 @@ export class ShootingStarManager {
   update() {
     if (this.disabled || this.isDisposed) return;
 
-    // Shower logic
     if (this.isShowerActive) {
       this.showerTimer++;
       if (this.showerTimer >= CONFIG.SHOOTING_STARS.SHOWER_DURATION) {
@@ -369,36 +401,27 @@ export class ShootingStarManager {
       }
     }
 
-    if (this.showerCooldownTimer > 0) {
-      this.showerCooldownTimer--;
-    }
+    if (this.showerCooldownTimer > 0) this.showerCooldownTimer--;
 
-    // Spawn new stars
     const spawnChance = this.isShowerActive
       ? CONFIG.SHOOTING_STARS.SHOWER_FREQUENCY
       : CONFIG.SHOOTING_STARS.BASE_FREQUENCY;
 
-    if (Math.random() < spawnChance) {
-      this.createShootingStar();
-    }
+    if (Math.random() < spawnChance) this.createShootingStar();
 
-    // Update existing stars
     for (let i = this.activeStars.length - 1; i >= 0; i--) {
       const star = this.activeStars[i];
       star.age++;
       star.mesh.position.add(star.velocity);
 
-      // Fade out
       const fadeStart = star.lifetime * 0.7;
       if (star.age > fadeStart) {
         const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
         star.mesh.material.opacity = 1 - fadeProgress;
       }
 
-      // Remove dead stars
       if (star.age > star.lifetime) {
         this.scene.remove(star.mesh);
-        // Only dispose the cloned material
         star.mesh.material.dispose();
         this.activeStars.splice(i, 1);
       }
