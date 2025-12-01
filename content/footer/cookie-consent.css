@@ -61,7 +61,7 @@
 /* ===== COOKIE TEXT ===== */
 .cookie-text {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   line-height: 1.2;
   color: var(--dynamic-footer-text-primary, #e5e5e7);
   font-family:
@@ -95,12 +95,12 @@
 
 /* ===== ACCEPT BUTTON (COMPACT INLINE) ===== */
 .cookie-accept-btn {
-  padding: 4px 14px;
+  padding: 3px 12px;
   background: linear-gradient(135deg, #0a84ff 0%, #06c 100%);
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -128,12 +128,12 @@
 
 /* ===== REJECT BUTTON (DSGVO-KONFORM) ===== */
 .cookie-reject-btn {
-  padding: 4px 14px;
+  padding: 3px 12px;
   background: transparent;
   color: var(--dynamic-footer-text-primary, #e5e5e7);
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -521,53 +521,7 @@
   border-radius: 4px;
 }
 
-/* Privacy Info */
-.cookie-privacy-info {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: rgb(10 132 255 / 10%);
-  border: 1px solid rgb(10 132 255 / 30%);
-  border-radius: 12px;
-}
-
-.cookie-privacy-info h3 {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-  color: #64d2ff;
-  font-weight: 600;
-}
-
-.cookie-privacy-info ul {
-  margin: 0;
-  padding-left: 1.5rem;
-  list-style: none;
-}
-
-.cookie-privacy-info li {
-  position: relative;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: rgb(255 255 255 / 80%);
-  margin-bottom: 0.5rem;
-  padding-left: 1.5rem;
-}
-
-.cookie-privacy-info li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  color: #34c759;
-  font-weight: bold;
-}
-
-.cookie-privacy-info a {
-  color: #0a84ff;
-  text-decoration: underline;
-}
-
-.cookie-privacy-info a:hover {
-  color: #64d2ff;
-}
+/* Privacy Info removed */
 
 /* Modal Footer */
 .cookie-modal-footer {

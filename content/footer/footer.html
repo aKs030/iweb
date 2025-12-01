@@ -115,7 +115,7 @@
     >
       <div class="cookie-settings-container">
         <div class="cookie-settings-header">
-          <h2 id="cookie-settings-title">🍪 Cookie-Einstellungen</h2>
+          <h2 id="cookie-settings-title">🍪 Cookies</h2>
           <button
             type="button"
             class="cookie-settings-close"
@@ -139,77 +139,57 @@
 
         <div class="cookie-settings-content">
           <p class="cookie-settings-intro">
-            Wir verwenden Cookies zur Verbesserung Ihrer Erfahrung und zur Analyse von
-            Websitebesuchen.
+            Wir nutzen notwendige Cookies und optionale Analyse.
           </p>
 
-          <!-- Essential Cookies -->
+          <!-- Erforderlich -->
           <div class="cookie-category">
             <div class="cookie-category-header">
-              <h3>Essenzielle Cookies</h3>
-              <span class="cookie-status cookie-status-required" role="status">Immer aktiv</span>
+              <h3>Erforderlich</h3>
+              <span class="cookie-status cookie-status-required" role="status">Aktiv</span>
             </div>
-            <p class="cookie-category-description">Für die Grundfunktionen erforderlich.</p>
+            <p class="cookie-category-description">Für Grundfunktionen dieser Seite.</p>
             <div class="cookie-details">
               <div class="cookie-item">
                 <strong>cookie_consent</strong>
-                <p>Speichert Ihre Entscheidung.</p>
+                <p>Merkt sich Ihre Auswahl.</p>
                 <span class="cookie-duration">365 Tage</span>
               </div>
             </div>
           </div>
 
-          <!-- Analytics Cookies -->
+          <!-- Analyse -->
           <div class="cookie-category">
             <div class="cookie-category-header">
-              <h3>Analyse & Performance</h3>
+              <h3>Analyse</h3>
               <label class="cookie-toggle">
                 <span class="visually-hidden">Analyse-Cookies aktivieren</span>
                 <input type="checkbox" id="footer-analytics-toggle" checked />
                 <span class="cookie-toggle-slider" aria-hidden="true"></span>
               </label>
             </div>
-            <p class="cookie-category-description">Hilft uns, die Website zu verbessern.</p>
+            <p class="cookie-category-description">Hilft uns, Inhalte zu verbessern.</p>
             <div class="cookie-details">
               <div class="cookie-item">
                 <strong>Google Analytics</strong>
-                <p>Erfasst anonymisierte Daten über Nutzung.</p>
+                <p>Anonymisierte Nutzungsstatistik.</p>
                 <span class="cookie-duration">2 Jahre</span>
               </div>
             </div>
           </div>
 
-          <div class="cookie-privacy-info">
-            <h3>🔒 Privatsphäre</h3>
-            <ul>
-              <li>Keine Werbe-Cookies</li>
-              <li>IP-Adresse anonymisiert</li>
-              <li><a href="/content/footer/datenschutz.html">Datenschutzerklärung</a></li>
-            </ul>
-          </div>
+          
         </div>
 
         <div class="cookie-settings-footer">
-          <button
-            id="footer-reject-all"
-            type="button"
-            class="cookie-settings-btn cookie-settings-btn-secondary"
-          >
-            Nur Essenzielle
+          <button id="footer-reject-all" type="button" class="cookie-settings-btn cookie-settings-btn-secondary">
+            Nur nötig
           </button>
-          <button
-            id="footer-accept-selected"
-            type="button"
-            class="cookie-settings-btn cookie-settings-btn-primary"
-          >
-            Auswahl speichern
+          <button id="footer-accept-selected" type="button" class="cookie-settings-btn cookie-settings-btn-primary">
+            Speichern
           </button>
-          <button
-            id="footer-accept-all"
-            type="button"
-            class="cookie-settings-btn cookie-settings-btn-primary"
-          >
-            Alle akzeptieren
+          <button id="footer-accept-all" type="button" class="cookie-settings-btn cookie-settings-btn-primary">
+            Alle
           </button>
         </div>
       </div>
