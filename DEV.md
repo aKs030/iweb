@@ -42,7 +42,10 @@ The reconnecting WebSocket helper is in `content/shared/reconnecting-websocket.j
 
 - Summary: Completed stepwise CSS cleanup across `content` and `pages` CSS files. Increased specificity for menu submenu arrow selectors, fixed duplicates, removed deprecated CSS like `word-break: break-word`, updated `prefers-contrast` queries to `more`, and re-enabled stricter stylelint rules progressively.
 - Commit: `0297c63` (final formatting, lint fixes and minor test/format updates)
-- Validation: `npx stylelint "**/*.css" --formatter verbose` => 0 problems; `npm test` => 50/50 passed.
+- Validation: `npx stylelint "**/*.css" --formatter verbose` => 0 problems.
+
+Note: Playwright-based automated tests were removed from this repository. Use the `dev` script for local testing and manual verification.
+
 - Remaining/Manual items:
   - `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.
   - If you want stricter policies (BEM enforcement), incrementally enable additional `stylelint` rules and fix files in small batches.

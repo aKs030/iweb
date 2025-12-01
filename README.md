@@ -51,4 +51,4 @@ Die WebSocket-Reconnect-Logik verwendet eine helper-Klasse unter `content/shared
 
 Konfigurationsdateien: `.eslintrc.json`, `.prettierrc` und `.eslintignore` wurden hinzugefügt.
 
-pre-commit test
+Hinweis: Playwright-basierte Tests wurden entfernt; es gibt keine `npm test` Playwright-Tasks mehr.
