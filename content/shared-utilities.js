@@ -521,8 +521,11 @@ export class SectionTracker {
     let bestEntry = null;
     let bestRatio = 0;
 
-    for (const data of this.sectionRatios.values()) {
-      if (data.isIntersecting && data.ratio > bestRatio) {
+    // Use this.sections to filter out stale entries in sectionRatios
+    // (e.g. removed sections or sections with changed IDs)
+    for (const section of this.sections) {
+      const data = this.sectionRatios.get(section.id);
+      if (data && data.isIntersecting && data.ratio > bestRatio) {
         bestRatio = data.ratio;
         bestEntry = data;
       }
