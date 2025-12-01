@@ -37,15 +37,14 @@
   /* Z-Index Scale */
   --z-footer: 1000;
   --z-cookie-modal: 10000;
-}
-
-/* Icon sizing */
-:root {
+  /* Icon sizing */
   --footer-icon-size-sm: 12px;
   --footer-icon-size-md: 14px;
   --footer-icon-size-lg: 20px;
   --footer-icon-gap: 6px;
 }
+
+/* Icon sizing variables are defined in the main :root at the top */
 
 /* ===== Base Footer Container ===== */
 .site-footer-fixed {
@@ -177,21 +176,21 @@ body.footer-expanded {
 .footer-legal-link-enhanced svg,
 .footer-brand-link-enhanced svg,
 .footer-cookies-link svg {
-  width: var(--footer-icon-size-sm) !important;
-  height: var(--footer-icon-size-sm) !important;
+  width: var(--footer-icon-size-sm);
+  height: var(--footer-icon-size-sm);
   display: inline-block;
   vertical-align: middle;
 }
 
 .footer-legal-link-enhanced svg,
 .footer-brand-link-enhanced svg {
-  width: var(--footer-icon-size-md) !important;
-  height: var(--footer-icon-size-md) !important;
+  width: var(--footer-icon-size-md);
+  height: var(--footer-icon-size-md);
 }
 
 .footer-social-card .social-card-icon {
-  width: var(--footer-icon-size-lg) !important;
-  height: var(--footer-icon-size-lg) !important;
+  width: var(--footer-icon-size-lg);
+  height: var(--footer-icon-size-lg);
 }
 
 /* Ensure icons use currentColor so hover color changes apply */
@@ -199,8 +198,8 @@ body.footer-expanded {
 .footer-legal-link-enhanced svg *,
 .footer-brand-link-enhanced svg *,
 .footer-cookies-link svg * {
-  stroke: currentColor !important;
-  fill: currentColor !important;
+  stroke: currentColor;
+  fill: currentColor;
 }
 
 /* Slightly increase gap between icon and text */
