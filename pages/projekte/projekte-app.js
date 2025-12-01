@@ -227,7 +227,6 @@ function App() {
   return e(
     React.Fragment,
     null,
-    
 
     // Hero Section
     e(

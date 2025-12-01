@@ -1,9 +1,11 @@
 /**
- * Footer Complete System - Fully Optimized
- * @version 9.2.0
- * Changes:
- * - Removed duplicated CookieManager (now uses shared-utilities)
- * - Optimized event listeners
+ * Footer Complete System - Ultra Optimized
+ * @version 10.0.0
+ * ✅ Event Delegation
+ * ✅ DOM Caching
+ * ✅ Debounced Resize
+ * ✅ Memory Leak Prevention
+ * ✅ Performance Monitoring
  */
 
 import { createLogger, CookieManager } from '../shared-utilities.js';
@@ -11,29 +13,81 @@ import { a11y } from '../accessibility-manager.js';
 
 const log = createLogger('FooterSystem');
 
-// Tunable constants
-const PROGRAMMATIC_SCROLL_MARK_DURATION = 1000;
-const PROGRAMMATIC_SCROLL_WATCH_TIMEOUT = 5000;
-const PROGRAMMATIC_SCROLL_WATCH_THRESHOLD = 6;
-const PROGRAMMATIC_SCROLL_DEFAULT_DURATION = 600;
+// ===== Utilities =====
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
 
-// ===== Programmatic Scroll Helper =====
+const memoize = (fn) => {
+  const cache = new Map();
+  return (...args) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+// ===== Constants =====
+const CONSTANTS = {
+  SCROLL_MARK_DURATION: 1000,
+  SCROLL_WATCH_TIMEOUT: 5000,
+  SCROLL_THRESHOLD: 6,
+  RESIZE_DEBOUNCE: 150,
+  ANIMATION_DURATION: 800
+};
+
+// ===== DOM Cache =====
+class DOMCache {
+  constructor() {
+    this.cache = new Map();
+  }
+
+  get(selector, parent = document) {
+    const key = `${selector}-${parent === document ? 'doc' : 'parent'}`;
+    if (!this.cache.has(key)) {
+      this.cache.set(key, parent.querySelector(selector));
+    }
+    return this.cache.get(key);
+  }
+
+  getAll(selector, parent = document) {
+    const key = `all-${selector}`;
+    if (!this.cache.has(key)) {
+      this.cache.set(key, Array.from(parent.querySelectorAll(selector)));
+    }
+    return this.cache.get(key);
+  }
+
+  invalidate(selector) {
+    if (selector) {
+      this.cache.delete(selector);
+    } else {
+      this.cache.clear();
+    }
+  }
+}
+
+const domCache = new DOMCache();
+
+// ===== Programmatic Scroll (Optimized) =====
 const ProgrammaticScroll = (() => {
   let activeToken = null;
   let timer = null;
   const watchers = new Map();
+
   return {
-    create(duration = PROGRAMMATIC_SCROLL_DEFAULT_DURATION) {
-      try {
-        if (timer) {
-          clearTimeout(timer);
-          timer = null;
-        }
-      } catch (e) {
-        /* ignored */
-      }
+    create(duration = CONSTANTS.SCROLL_MARK_DURATION) {
+      if (timer) clearTimeout(timer);
+
       const token = Symbol('progScroll');
       activeToken = token;
+
       if (duration > 0) {
         timer = setTimeout(() => {
           if (activeToken === token) activeToken = null;
@@ -42,80 +96,46 @@ const ProgrammaticScroll = (() => {
       }
       return token;
     },
-    clear(token) {
-      if (!activeToken) return;
-      if (!token || activeToken === token) {
-        activeToken = null;
-        try {
-          if (timer) clearTimeout(timer);
-          timer = null;
-        } catch (e) {
-          /* ignored */
-        }
 
-        if (watchers.has(token)) {
-          const watcher = watchers.get(token);
-          try {
-            if (watcher.listener) window.removeEventListener('scroll', watcher.listener);
-          } catch (e) {
-            /* no-op */
-          }
-          try {
-            if (watcher.observer) watcher.observer.disconnect();
-          } catch (e) {
-            /* no-op */
-          }
-          try {
-            if (watcher.timeoutId) clearTimeout(watcher.timeoutId);
-          } catch (e) {
-            /* no-op */
-          }
-          watchers.delete(token);
+    clear(token) {
+      if (!activeToken || (token && activeToken !== token)) return;
+
+      activeToken = null;
+      if (timer) clearTimeout(timer);
+      timer = null;
+
+      if (watchers.has(token)) {
+        const watcher = watchers.get(token);
+        watcher.observer?.disconnect();
+        if (watcher.listener) {
+          window.removeEventListener('scroll', watcher.listener);
         }
+        if (watcher.timeoutId) clearTimeout(watcher.timeoutId);
+        watchers.delete(token);
       }
     },
-    hasActive() {
-      return !!activeToken;
-    },
-    watchUntil(
-      token,
-      getTarget,
-      timeout = PROGRAMMATIC_SCROLL_WATCH_TIMEOUT,
-      threshold = PROGRAMMATIC_SCROLL_WATCH_THRESHOLD
-    ) {
+
+    hasActive: () => !!activeToken,
+
+    watchUntil(token, target, timeout = CONSTANTS.SCROLL_WATCH_TIMEOUT) {
       if (!token) return;
-      let finished = false;
 
-      const resolve = () => {
-        try {
-          if (typeof getTarget === 'function') return getTarget();
-          if (typeof getTarget === 'string') return document.querySelector(getTarget);
-          return getTarget;
-        } catch (e) {
-          return null;
-        }
-      };
+      const element = typeof target === 'string' ? domCache.get(target) : target;
 
-      const resolved = resolve();
-
-      if (resolved instanceof Element && 'IntersectionObserver' in window) {
+      if (element && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver(
           (entries) => {
-            entries.forEach((entry) => {
-              if (finished) return;
-              if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-                finished = true;
-                ProgrammaticScroll.clear(token);
-              }
-            });
+            const entry = entries[0];
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+              ProgrammaticScroll.clear(token);
+            }
           },
-          { root: null, threshold: [0.5, 0.75, 0.9, 1] }
+          { threshold: [0.5, 1] }
         );
 
-        observer.observe(resolved);
-
+        observer.observe(element);
         const timeoutId = setTimeout(() => {
-          if (!finished) ProgrammaticScroll.clear(token);
+          ProgrammaticScroll.clear(token);
           observer.disconnect();
         }, timeout);
 
@@ -123,65 +143,55 @@ const ProgrammaticScroll = (() => {
         return token;
       }
 
-      // Fallback scroll listener logic
+      // Fallback
       const check = () => {
-        try {
-          const current = window.scrollY || window.pageYOffset || 0;
-          const atBottom = window.innerHeight + current >= document.body.scrollHeight - threshold;
-          if (atBottom) {
-            finished = true;
-            ProgrammaticScroll.clear(token);
-          }
-        } catch (e) {
-          /* no-op */
-        }
+        const current = window.scrollY || window.pageYOffset;
+        const atBottom =
+          window.innerHeight + current >= document.body.scrollHeight - CONSTANTS.SCROLL_THRESHOLD;
+        if (atBottom) ProgrammaticScroll.clear(token);
       };
 
-      const listener = () => {
-        if (!finished) check();
-      };
+      const listener = () => check();
       check();
       window.addEventListener('scroll', listener, { passive: true });
-      const timeoutId = setTimeout(() => {
-        if (!finished) ProgrammaticScroll.clear(token);
-      }, timeout);
 
+      const timeoutId = setTimeout(() => ProgrammaticScroll.clear(token), timeout);
       watchers.set(token, { listener, timeoutId });
       return token;
     }
   };
 })();
 
-// ===== Global Close Handlers =====
+// ===== Global Close Handlers (Optimized) =====
 const GlobalClose = (() => {
   let closeHandler = null;
   let bound = false;
 
   const onDocClick = (e) => {
-    const footer = document.getElementById('site-footer');
-    if (!footer || !footer.classList.contains('footer-expanded')) return;
-    if (e.target.closest && e.target.closest('#site-footer')) return;
-    if (typeof closeHandler === 'function') closeHandler();
+    const footer = domCache.get('#site-footer');
+    if (!footer?.classList.contains('footer-expanded')) return;
+    if (e.target.closest('#site-footer')) return;
+    closeHandler?.();
   };
 
   const onUserScroll = () => {
     if (ProgrammaticScroll.hasActive()) return;
-    const footer = document.getElementById('site-footer');
-    if (!footer || !footer.classList.contains('footer-expanded')) return;
-    if (typeof closeHandler === 'function') closeHandler();
+    const footer = domCache.get('#site-footer');
+    if (!footer?.classList.contains('footer-expanded')) return;
+    closeHandler?.();
   };
 
   return {
-    setCloseHandler(fn) {
-      closeHandler = fn;
-    },
+    setCloseHandler: (fn) => (closeHandler = fn),
+
     bind() {
       if (bound) return;
-      document.addEventListener('click', onDocClick, true);
+      document.addEventListener('click', onDocClick, { capture: true, passive: true });
       window.addEventListener('wheel', onUserScroll, { passive: true });
       window.addEventListener('touchstart', onUserScroll, { passive: true });
       bound = true;
     },
+
     unbind() {
       if (!bound) return;
       document.removeEventListener('click', onDocClick, true);
@@ -195,86 +205,98 @@ const GlobalClose = (() => {
 // ===== Analytics =====
 const GoogleAnalytics = {
   load() {
+    performance.mark('analytics-load-start');
+
     const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
     if (blockedScripts.length === 0) return;
 
     blockedScripts.forEach((script) => {
       const newScript = document.createElement('script');
       Array.from(script.attributes).forEach((attr) => {
-        if (attr.name === 'data-src') newScript.setAttribute('src', attr.value);
-        else if (attr.name !== 'data-consent' && attr.name !== 'type')
+        if (attr.name === 'data-src') {
+          newScript.setAttribute('src', attr.value);
+        } else if (!['data-consent', 'type'].includes(attr.name)) {
           newScript.setAttribute(attr.name, attr.value);
+        }
       });
       if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
       script.parentNode.replaceChild(newScript, script);
     });
+
+    performance.mark('analytics-load-end');
+    performance.measure('analytics-load', 'analytics-load-start', 'analytics-load-end');
     log.info('Google Analytics loaded');
   }
 };
 
-// ===== Consent Banner =====
+// ===== Consent Banner (Optimized) =====
 class ConsentBanner {
   constructor() {
-    this.banner = document.getElementById('cookie-consent-banner');
-    this.acceptBtn = document.getElementById('accept-cookies-btn');
-    this.rejectBtn = document.getElementById('reject-cookies-btn');
-  }
-
-  init() {
-    if (!this.banner || !this.acceptBtn) return;
-
-    const consent = CookieManager.get('cookie_consent');
-    if (consent === 'accepted') {
-      GoogleAnalytics.load();
-      this.banner.classList.add('hidden');
-    } else if (consent === 'rejected') {
-      this.banner.classList.add('hidden');
-    } else {
-      this.banner.classList.remove('hidden');
-    }
-
-    this.acceptBtn.addEventListener('click', () => {
-      this.banner.classList.add('hidden');
-      CookieManager.set('cookie_consent', 'accepted');
-      GoogleAnalytics.load();
-    });
-
-    if (this.rejectBtn) {
-      this.rejectBtn.addEventListener('click', () => {
-        this.banner.classList.add('hidden');
-        CookieManager.set('cookie_consent', 'rejected');
-      });
-    }
-  }
-}
-
-// ===== Cookie Settings =====
-const CookieSettings = (() => {
-  let boundHandlers = new WeakMap();
-
-  function getElements() {
-    return {
-      footer: document.getElementById('site-footer'),
-      footerMin: document.querySelector('.footer-minimized'),
-      footerMax: document.querySelector('.footer-maximized'),
-      cookieView: document.getElementById('footer-cookie-view'),
-      normalContent: document.getElementById('footer-normal-content'),
-      analyticsToggle: document.getElementById('footer-analytics-toggle'),
-      closeBtn: document.getElementById('close-cookie-footer'),
-      rejectAllBtn: document.getElementById('footer-reject-all'),
-      acceptSelectedBtn: document.getElementById('footer-accept-selected'),
-      acceptAllBtn: document.getElementById('footer-accept-all')
+    this.elements = {
+      banner: domCache.get('#cookie-consent-banner'),
+      acceptBtn: domCache.get('#accept-cookies-btn'),
+      rejectBtn: domCache.get('#reject-cookies-btn')
     };
   }
 
-  function setupButtonHandlers(elements) {
-    const handlers = {
+  init() {
+    const { banner, acceptBtn, rejectBtn } = this.elements;
+    if (!banner || !acceptBtn) return;
+
+    const consent = CookieManager.get('cookie_consent');
+
+    if (consent === 'accepted') {
+      GoogleAnalytics.load();
+      banner.classList.add('hidden');
+    } else if (consent === 'rejected') {
+      banner.classList.add('hidden');
+    } else {
+      banner.classList.remove('hidden');
+    }
+
+    // Event Listeners
+    acceptBtn.addEventListener('click', () => this.accept(), { once: false });
+    rejectBtn?.addEventListener('click', () => this.reject(), { once: false });
+  }
+
+  accept() {
+    this.elements.banner.classList.add('hidden');
+    CookieManager.set('cookie_consent', 'accepted');
+    GoogleAnalytics.load();
+  }
+
+  reject() {
+    this.elements.banner.classList.add('hidden');
+    CookieManager.set('cookie_consent', 'rejected');
+  }
+}
+
+// ===== Cookie Settings (Optimized with Caching) =====
+const CookieSettings = (() => {
+  let elements = null;
+  const handlers = new WeakMap();
+
+  const getElements = memoize(() => ({
+    footer: domCache.get('#site-footer'),
+    footerMin: domCache.get('.footer-minimized'),
+    footerMax: domCache.get('.footer-maximized'),
+    cookieView: domCache.get('#footer-cookie-view'),
+    normalContent: domCache.get('#footer-normal-content'),
+    analyticsToggle: domCache.get('#footer-analytics-toggle'),
+    closeBtn: domCache.get('#close-cookie-footer'),
+    rejectAllBtn: domCache.get('#footer-reject-all'),
+    acceptSelectedBtn: domCache.get('#footer-accept-selected'),
+    acceptAllBtn: domCache.get('#footer-accept-all')
+  }));
+
+  const setupHandlers = (elements) => {
+    const handlerMap = {
       closeBtn: () => close(),
       rejectAllBtn: () => {
         CookieManager.set('cookie_consent', 'rejected');
         CookieManager.deleteAnalytics();
         close();
-        document.getElementById('cookie-consent-banner')?.classList.add('hidden');
+        domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
       acceptSelectedBtn: () => {
         if (elements.analyticsToggle?.checked) {
@@ -285,33 +307,36 @@ const CookieSettings = (() => {
           CookieManager.deleteAnalytics();
         }
         close();
-        document.getElementById('cookie-consent-banner')?.classList.add('hidden');
+        domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
       acceptAllBtn: () => {
         CookieManager.set('cookie_consent', 'accepted');
         GoogleAnalytics.load();
         close();
-        document.getElementById('cookie-consent-banner')?.classList.add('hidden');
+        domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       }
     };
 
-    Object.entries(handlers).forEach(([key, handler]) => {
+    Object.entries(handlerMap).forEach(([key, handler]) => {
       const element = elements[key];
-      if (element && !boundHandlers.has(element)) {
+      if (element && !handlers.has(element)) {
         element.addEventListener('click', handler);
-        boundHandlers.set(element, handler);
+        handlers.set(element, handler);
       }
     });
-  }
+  };
 
-  function open() {
-    const elements = getElements();
+  const open = () => {
+    performance.mark('cookie-settings-open-start');
+
+    elements = getElements();
     if (!elements.footer || !elements.cookieView) return;
 
     const consent = CookieManager.get('cookie_consent');
-    if (elements.analyticsToggle) elements.analyticsToggle.checked = consent === 'accepted';
+    if (elements.analyticsToggle) {
+      elements.analyticsToggle.checked = consent === 'accepted';
+    }
 
-    // Temporarily disable scroll snapping to prevent layout fighting
     document.documentElement.style.scrollSnapType = 'none';
 
     elements.footer.classList.add('footer-expanded');
@@ -325,20 +350,26 @@ const CookieSettings = (() => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' })
     );
 
-    ProgrammaticScroll.create(PROGRAMMATIC_SCROLL_MARK_DURATION);
+    ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
     GlobalClose.bind();
-    setupButtonHandlers(elements);
+    setupHandlers(elements);
 
-    // Focus management
     try {
       a11y?.trapFocus(elements.cookieView);
     } catch (e) {
-      /* ignored */
+      log.warn('Focus trap failed', e);
     }
-  }
 
-  function close() {
-    const elements = getElements();
+    performance.mark('cookie-settings-open-end');
+    performance.measure(
+      'cookie-settings-open',
+      'cookie-settings-open-start',
+      'cookie-settings-open-end'
+    );
+  };
+
+  const close = () => {
+    if (!elements) elements = getElements();
     if (!elements.footer) return;
 
     elements.cookieView?.classList.add('hidden');
@@ -348,30 +379,37 @@ const CookieSettings = (() => {
     elements.footerMin?.classList.remove('footer-hidden');
     if (elements.normalContent) elements.normalContent.style.display = 'block';
 
-    // Restore scroll snapping
     document.documentElement.style.removeProperty('scroll-snap-type');
 
-    if (window.footerScrollHandler) window.footerScrollHandler.expanded = false;
+    if (window.footerScrollHandler) {
+      window.footerScrollHandler.expanded = false;
+    }
     GlobalClose.unbind();
 
     try {
       a11y?.releaseFocus();
     } catch (e) {
-      /* ignored */
+      log.warn('Focus release failed', e);
     }
-  }
+  };
+
   return { open, close };
 })();
 
-// Global close glue
 GlobalClose.setCloseHandler(() => CookieSettings.close());
 
-// ===== Theme System =====
+// ===== Theme System (Optimized) =====
 class ThemeSystem {
   constructor() {
-    this.currentTheme =
+    this.currentTheme = this.getStoredTheme();
+    this.ripplePool = [];
+  }
+
+  getStoredTheme() {
+    return (
       localStorage.getItem('preferred-theme') ||
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    );
   }
 
   applyTheme(theme) {
@@ -381,21 +419,29 @@ class ThemeSystem {
   }
 
   toggleTheme() {
+    performance.mark('theme-toggle-start');
     this.applyTheme(this.currentTheme === 'light' ? 'dark' : 'light');
+    performance.mark('theme-toggle-end');
+    performance.measure('theme-toggle', 'theme-toggle-start', 'theme-toggle-end');
   }
 
   createRipple(button, x, y) {
-    const ripple = document.createElement('div');
+    const ripple = this.ripplePool.pop() || document.createElement('div');
     ripple.className = 'artwork-ripple';
     ripple.style.left = `${x}px`;
     ripple.style.top = `${y}px`;
     button.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 800);
+
+    setTimeout(() => {
+      ripple.remove();
+      this.ripplePool.push(ripple);
+    }, CONSTANTS.ANIMATION_DURATION);
   }
 
   init() {
     this.applyTheme(this.currentTheme);
-    const toggle = document.getElementById('dayNightToggle');
+    const toggle = domCache.get('#dayNightToggle');
+
     if (toggle) {
       toggle.addEventListener('click', (e) => {
         const rect = toggle.getBoundingClientRect();
@@ -406,17 +452,22 @@ class ThemeSystem {
   }
 }
 
-// ===== Footer Loader =====
+// ===== Footer Loader (Optimized) =====
 class FooterLoader {
   async init() {
-    const container = document.getElementById('footer-container');
+    performance.mark('footer-load-start');
+
+    const container = domCache.get('#footer-container');
     if (!container) return false;
 
     try {
       const src = container.dataset.footerSrc || '/content/footer/footer.html';
       const response = await fetch(src);
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
       container.innerHTML = await response.text();
+      domCache.invalidate(); // Clear cache after DOM change
 
       this.updateYears();
       this.setupInteractions();
@@ -427,8 +478,14 @@ class FooterLoader {
       new FooterResizer().init();
 
       document.dispatchEvent(
-        new CustomEvent('footer:loaded', { detail: { footerId: 'site-footer' } })
+        new CustomEvent('footer:loaded', {
+          detail: { footerId: 'site-footer', timestamp: Date.now() }
+        })
       );
+
+      performance.mark('footer-load-end');
+      performance.measure('footer-load', 'footer-load-start', 'footer-load-end');
+
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
@@ -438,22 +495,22 @@ class FooterLoader {
 
   updateYears() {
     const year = new Date().getFullYear();
-    document.querySelectorAll('.current-year').forEach((el) => (el.textContent = year));
+    domCache.getAll('.current-year').forEach((el) => (el.textContent = year));
   }
 
   setupInteractions() {
-    // Newsletter
-    const form = document.querySelector('.newsletter-form-enhanced');
+    // Newsletter Form
+    const form = domCache.get('.newsletter-form-enhanced');
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         const btn = form.querySelector('button[type="submit"]');
         if (btn) {
-          const old = btn.textContent;
+          const originalText = btn.textContent;
           btn.textContent = '✓';
           btn.disabled = true;
           setTimeout(() => {
-            btn.textContent = old;
+            btn.textContent = originalText;
             btn.disabled = false;
           }, 3000);
         }
@@ -461,44 +518,49 @@ class FooterLoader {
       });
     }
 
-    // Cookie Triggers
-    document.querySelectorAll('[data-cookie-trigger]').forEach((trigger) => {
-      trigger.addEventListener('click', (e) => {
-        if (trigger.tagName === 'A' && (!trigger.href || trigger.href.startsWith('#')))
-          e.preventDefault();
-        CookieSettings.open();
-      });
-    });
+    // Event Delegation for Cookie & Footer Triggers
+    document.addEventListener(
+      'click',
+      (e) => {
+        const cookieTrigger = e.target.closest('[data-cookie-trigger]');
+        const footerTrigger = e.target.closest('[data-footer-trigger]');
 
-    // Footer Toggle Triggers
-    document.querySelectorAll('[data-footer-trigger]').forEach((trigger) => {
-      trigger.addEventListener('click', (e) => {
-        if (trigger.tagName === 'A' && (!trigger.href || trigger.href.startsWith('#')))
+        if (cookieTrigger) {
           e.preventDefault();
-        if (window.footerScrollHandler) {
-          window.footerScrollHandler.toggleExpansion(true);
-        } else {
-          // Fallback logic
-          const footer = document.getElementById('site-footer');
-          if (footer) {
-            // Force snap disable here too for consistency
-            document.documentElement.style.scrollSnapType = 'none';
-
-            footer.classList.add('footer-expanded');
-            document.body.classList.add('footer-expanded');
-            footer.querySelector('.footer-minimized')?.classList.add('footer-hidden');
-            footer.querySelector('.footer-maximized')?.classList.remove('footer-hidden');
-            const token = ProgrammaticScroll.create();
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport');
-          }
+          CookieSettings.open();
+          return;
         }
-      });
-    });
+
+        if (footerTrigger) {
+          e.preventDefault();
+          this.handleFooterTrigger();
+        }
+      },
+      { passive: false }
+    );
+  }
+
+  handleFooterTrigger() {
+    if (window.footerScrollHandler) {
+      window.footerScrollHandler.toggleExpansion(true);
+    } else {
+      const footer = domCache.get('#site-footer');
+      if (footer) {
+        document.documentElement.style.scrollSnapType = 'none';
+        footer.classList.add('footer-expanded');
+        document.body.classList.add('footer-expanded');
+        footer.querySelector('.footer-minimized')?.classList.add('footer-hidden');
+        footer.querySelector('.footer-maximized')?.classList.remove('footer-hidden');
+
+        const token = ProgrammaticScroll.create();
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport');
+      }
+    }
   }
 }
 
-// ===== Scroll Handler =====
+// ===== Scroll Handler (Optimized) =====
 class ScrollHandler {
   constructor() {
     this.expanded = false;
@@ -507,10 +569,9 @@ class ScrollHandler {
   }
 
   init() {
-    const footer = document.getElementById('site-footer');
-    const trigger = document.getElementById('footer-trigger-zone');
+    const footer = domCache.get('#site-footer');
+    const trigger = domCache.get('#footer-trigger-zone');
 
-    // Ensure visibility state on init
     if (footer) {
       footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden');
       footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
@@ -520,25 +581,23 @@ class ScrollHandler {
 
     this.observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.target.id === 'footer-trigger-zone') {
-            // If scrolling programmatically, ignore boundary checks
-            if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return;
+        const entry = entries[0];
+        if (entry.target.id !== 'footer-trigger-zone') return;
 
-            const threshold = this.expanded ? 0.02 : 0.05;
-            const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
-            this.toggleExpansion(shouldExpand);
-          }
-        });
+        if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return;
+
+        const threshold = this.expanded ? 0.02 : 0.05;
+        const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
+        this.toggleExpansion(shouldExpand);
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: [0, 0.02, 0.05, 0.1, 0.5, 1] }
+      { rootMargin: '0px 0px -10% 0px', threshold: [0.02, 0.05] }
     );
 
     this.observer.observe(trigger);
   }
 
   toggleExpansion(shouldExpand) {
-    const footer = document.getElementById('site-footer');
+    const footer = domCache.get('#site-footer');
     if (!footer) return;
 
     const min = footer.querySelector('.footer-minimized');
@@ -547,8 +606,6 @@ class ScrollHandler {
     if (shouldExpand && !this.expanded) {
       ProgrammaticScroll.create(1000);
       GlobalClose.bind();
-
-      // CRITICAL FIX: Temporarily disable scroll snapping on HTML/Body
       document.documentElement.style.scrollSnapType = 'none';
 
       footer.classList.add('footer-expanded');
@@ -562,8 +619,6 @@ class ScrollHandler {
       document.body.classList.remove('footer-expanded');
       max?.classList.add('footer-hidden');
       min?.classList.remove('footer-hidden');
-
-      // Restore scroll snapping behavior
       document.documentElement.style.removeProperty('scroll-snap-type');
 
       this.expanded = false;
@@ -576,16 +631,20 @@ class ScrollHandler {
   }
 }
 
-// ===== Footer Resizer =====
+// ===== Footer Resizer (Optimized with Debouncing) =====
 class FooterResizer {
-  init() {
+  constructor() {
     this.apply = this.apply.bind(this);
-    window.addEventListener('resize', this.apply, { passive: true });
+    this.debouncedApply = debounce(this.apply, CONSTANTS.RESIZE_DEBOUNCE);
+  }
+
+  init() {
+    window.addEventListener('resize', this.debouncedApply, { passive: true });
     this.apply();
   }
 
   apply() {
-    const content = document.querySelector('#site-footer .footer-enhanced-content');
+    const content = domCache.get('#site-footer .footer-enhanced-content');
     if (!content) return;
 
     const height = Math.min(Math.max(0, content.scrollHeight), window.innerHeight - 24);
@@ -596,15 +655,23 @@ class FooterResizer {
   }
 
   cleanup() {
-    window.removeEventListener('resize', this.apply);
+    window.removeEventListener('resize', this.debouncedApply);
   }
 }
 
 // ===== Auto-Start =====
+const initFooter = () => new FooterLoader().init();
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => new FooterLoader().init(), { once: true });
+  document.addEventListener('DOMContentLoaded', initFooter, { once: true });
 } else {
-  new FooterLoader().init();
+  initFooter();
 }
 
-window.FooterSystem = { FooterLoader, CookieSettings };
+// ===== Public API =====
+window.FooterSystem = {
+  FooterLoader,
+  CookieSettings,
+  ProgrammaticScroll,
+  domCache
+};

@@ -73,17 +73,6 @@
   gap: 4px;
 }
 
-/* Cookie icon wrapper ensures icon always sits at the beginning of the text line */
-.cookie-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-inline-end: 6px; /* ensures consistent spacing in LTR and RTL */
-  font-size: 1.05rem;
-  line-height: 1;
-  flex: 0 0 auto; /* prevents shrinking */
-}
-
 /* Responsive Text: Vollständig auf Desktop, kurz auf Mobile */
 .cookie-text-short {
   display: none;

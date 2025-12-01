@@ -11,7 +11,7 @@
   const FETCH_TIMEOUT = 5000;
 
   let logger;
-  
+
   try {
     const { createLogger } = await import('../../content/shared-utilities.js');
     logger = createLogger('AboutModule');
@@ -25,14 +25,14 @@
   }
 
   const host = document.querySelector('section#about[data-about-src]');
-  
+
   if (!host) {
     logger.warn('About section host not found');
     return;
   }
 
   const src = host.getAttribute('data-about-src');
-  
+
   if (!src) {
     logger.error('data-about-src attribute is missing');
     return;
@@ -68,7 +68,7 @@
       try {
         if (attempt > 0) {
           logger.info(`Retry attempt ${attempt}/${retries}`);
-          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+          await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
         }
 
         const response = await fetchWithTimeout(src);
@@ -84,15 +84,16 @@
         }
 
         host.innerHTML = html;
-        
+
         // Dispatch success event
-        document.dispatchEvent(new CustomEvent('about:loaded', {
-          detail: { success: true, attempts: attempt + 1 }
-        }));
+        document.dispatchEvent(
+          new CustomEvent('about:loaded', {
+            detail: { success: true, attempts: attempt + 1 }
+          })
+        );
 
         logger.info('About content loaded successfully');
         return true;
-
       } catch (err) {
         lastError = err;
         logger.warn(`Load attempt ${attempt + 1} failed:`, err.message);
@@ -101,7 +102,7 @@
 
     // All attempts failed
     logger.error('Failed to load about content after retries', lastError);
-    
+
     // Display fallback content
     host.innerHTML = `
       <div class="about__container">
@@ -115,9 +116,11 @@
     `;
 
     // Dispatch error event
-    document.dispatchEvent(new CustomEvent('about:error', {
-      detail: { error: lastError, attempts: RETRY_ATTEMPTS + 1 }
-    }));
+    document.dispatchEvent(
+      new CustomEvent('about:error', {
+        detail: { error: lastError, attempts: RETRY_ATTEMPTS + 1 }
+      })
+    );
 
     return false;
   }

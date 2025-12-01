@@ -458,11 +458,16 @@ textarea:focus-visible {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Utility class used throughout site */
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
 /* Button Styles */
 .btn {

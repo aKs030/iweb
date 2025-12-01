@@ -89,7 +89,12 @@
         loaderWrapper.appendChild(spinner);
         // Prepend so loader sits above page content
         if (document.body) document.body.prepend(loaderWrapper);
-        else document.addEventListener('DOMContentLoaded', () => document.body.prepend(loaderWrapper), { once: true });
+        else
+          document.addEventListener(
+            'DOMContentLoaded',
+            () => document.body.prepend(loaderWrapper),
+            { once: true }
+          );
       }
     } catch (e) {
       // Non-critical: injection failure shouldn't break the page

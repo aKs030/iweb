@@ -80,19 +80,20 @@ const ThreeEarthManager = (() => {
       } catch (e) {
         log.debug('Device detection failed, using defaults', e);
       }
-      
+
       registerParticleSystem('three-earth', { type: 'three-earth' });
 
       THREE_INSTANCE = await loadThreeJS();
-      
+
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
       if (!isSystemActive) return cleanup;
 
       showLoadingState(container);
 
       // Scene Setup
-      isMobileDevice = !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
-      
+      isMobileDevice =
+        !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
+
       const sceneObjects = setupScene(THREE_INSTANCE, container);
       scene = sceneObjects.scene;
       camera = sceneObjects.camera;
@@ -137,7 +138,7 @@ const ThreeEarthManager = (() => {
       // CRITICAL CHECK: Did cleanup happen while awaiting Assets?
       if (!isSystemActive) {
         // Clean up what we just created since the system is dead
-        if(earthAssets.dayMaterial) earthAssets.dayMaterial.dispose();
+        if (earthAssets.dayMaterial) earthAssets.dayMaterial.dispose();
         // ... (other disposals implicit in cleanup call)
         return cleanup;
       }
@@ -224,7 +225,7 @@ const ThreeEarthManager = (() => {
     if (renderer) {
       renderer.dispose();
       // Removed forceContextLoss() as it is too aggressive for shared environments
-      // renderer.forceContextLoss(); 
+      // renderer.forceContextLoss();
     }
 
     [dayMaterial, nightMaterial].forEach(disposeMaterial);
@@ -263,12 +264,14 @@ const ThreeEarthManager = (() => {
   function handleInitializationError(container, error) {
     // Only cleanup if we actually started something
     if (renderer) {
-        try {
-            renderer.dispose();
-        } catch (e) { /* ignore */ }
+      try {
+        renderer.dispose();
+      } catch (e) {
+        /* ignore */
+      }
     }
     sharedCleanupManager.cleanupSystem('three-earth');
-    
+
     showErrorState(container, error, () => {
       cleanup(); // Full cleanup before retry
       initThreeEarth();
@@ -285,9 +288,10 @@ function detectDeviceCapabilities() {
     const ua = (navigator.userAgent || '').toLowerCase();
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
     // Simple heuristic checks
-    const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) || 
-                     (navigator.hardwareConcurrency || 4) <= 2;
-    
+    const isLowEnd =
+      /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) ||
+      (navigator.hardwareConcurrency || 4) <= 2;
+
     return {
       isMobile,
       isLowEnd,
@@ -300,7 +304,7 @@ function detectDeviceCapabilities() {
 
 function getOptimizedConfig(capabilities) {
   // Return defensive copy
-  const baseConfig = JSON.parse(JSON.stringify(CONFIG)); 
+  const baseConfig = JSON.parse(JSON.stringify(CONFIG));
   // Note: Deep cloning config ensures we don't accidentally mutate defaults if called repeatedly
   // but logic below uses Object.assign on the live CONFIG anyway.
 
@@ -308,18 +312,21 @@ function getOptimizedConfig(capabilities) {
 
   if (capabilities.isLowEnd) {
     return {
-        EARTH: { ...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 16 },
-        STARS: { ...CONFIG.STARS, COUNT: 1000 },
-        PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: 1.0, TARGET_FPS: 30 },
-        CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 }
+      EARTH: { ...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 16 },
+      STARS: { ...CONFIG.STARS, COUNT: 1000 },
+      PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: 1.0, TARGET_FPS: 30 },
+      CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 }
     };
   }
 
   if (capabilities.isMobile) {
     return {
-        EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 32 },
-        STARS: { ...CONFIG.STARS, COUNT: 2000 },
-        PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0) }
+      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 32 },
+      STARS: { ...CONFIG.STARS, COUNT: 2000 },
+      PERFORMANCE: {
+        ...CONFIG.PERFORMANCE,
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0)
+      }
     };
   }
 
@@ -374,7 +381,7 @@ function setupSectionDetection() {
         }
 
         const container = document.querySelector('.three-earth-container');
-        if(container) container.setAttribute('data-section', newSection);
+        if (container) container.setAttribute('data-section', newSection);
       }
     },
     { rootMargin: '-20% 0px -20% 0px', threshold: OBSERVER_THRESHOLDS }
@@ -438,14 +445,18 @@ function updateEarthForSection(sectionName, options = {}) {
   const config = configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero;
 
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
-    config.earth.pos.x, config.earth.pos.y, config.earth.pos.z
+    config.earth.pos.x,
+    config.earth.pos.y,
+    config.earth.pos.z
   );
   earthMesh.userData.targetScale = config.earth.scale;
   earthMesh.userData.targetRotation = config.earth.rotation;
 
   if (moonMesh && config.moon) {
     moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
-      config.moon.pos.x, config.moon.pos.y, config.moon.pos.z
+      config.moon.pos.x,
+      config.moon.pos.y,
+      config.moon.pos.z
     );
     moonMesh.userData.targetScale = config.moon.scale;
   }
@@ -462,7 +473,7 @@ function updateEarthForSection(sectionName, options = {}) {
   if (directionalLight && ambientLight) {
     const mode = earthMesh.userData.currentMode;
     const lightingConfig = mode === 'day' ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
-    
+
     directionalLight.intensity = lightingConfig.SUN_INTENSITY;
     ambientLight.intensity = lightingConfig.AMBIENT_INTENSITY;
     ambientLight.color.setHex(lightingConfig.AMBIENT_COLOR);
@@ -528,8 +539,11 @@ function startAnimationLoop() {
       frameCounter % 2 === 0
     ) {
       const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
-      const pulseAmount = Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
-      if(earthMesh.material) earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
+      const pulseAmount =
+        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
+        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
+        2;
+      if (earthMesh.material) earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
     }
 
     if (cameraManager) cameraManager.updateCameraPosition();
@@ -538,8 +552,8 @@ function startAnimationLoop() {
     if (shootingStarManager && !capabilities.isLowEnd) shootingStarManager.update();
     if (performanceMonitor) performanceMonitor.update();
 
-    if(renderer && scene && camera) {
-        renderer.render(scene, camera);
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
     }
   };
 
@@ -578,8 +592,8 @@ function updateObjectTransforms() {
       moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04);
     }
     if (moonMesh.userData.targetScale) {
-       moonMesh.scale.x += (moonMesh.userData.targetScale - moonMesh.scale.x) * 0.06;
-       moonMesh.scale.y = moonMesh.scale.z = moonMesh.scale.x;
+      moonMesh.scale.x += (moonMesh.userData.targetScale - moonMesh.scale.x) * 0.06;
+      moonMesh.scale.y = moonMesh.scale.z = moonMesh.scale.x;
     }
   }
 }
@@ -612,7 +626,7 @@ function setupResizeHandler() {
 
     // FIX: Notify StarManager about resize to update card positions
     if (starManager) {
-        starManager.handleResize(width, height);
+      starManager.handleResize(width, height);
     }
   };
 

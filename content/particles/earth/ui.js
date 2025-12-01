@@ -21,11 +21,16 @@ export function showLoadingState(container) {
 
   // Prefer the global page loader when available
   const globals = getGlobalLoaderElements();
-    if (globals && globals.screen) {
+  if (globals && globals.screen) {
     globals.screen.classList.remove('hidden');
     globals.screen.classList.remove('hide');
     globals.screen.removeAttribute('aria-hidden');
-    Object.assign(globals.screen.style, { display: 'flex', opacity: '1', pointerEvents: 'auto', visibility: 'visible' });
+    Object.assign(globals.screen.style, {
+      display: 'flex',
+      opacity: '1',
+      pointerEvents: 'auto',
+      visibility: 'visible'
+    });
     // Optionally set an aria message
     globals.screen.setAttribute('aria-live', 'polite');
   } else {
@@ -42,7 +47,11 @@ export function hideLoadingState(container) {
     globals.screen.classList.add('hide');
     globals.screen.setAttribute('aria-hidden', 'true');
     globals.screen.removeAttribute('aria-live');
-    Object.assign(globals.screen.style, { opacity: '0', pointerEvents: 'none', visibility: 'hidden' });
+    Object.assign(globals.screen.style, {
+      opacity: '0',
+      pointerEvents: 'none',
+      visibility: 'hidden'
+    });
     // Reset visuals (after transition)
     setTimeout(() => {
       if (globals.screen) globals.screen.style.display = 'none';
