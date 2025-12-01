@@ -8,7 +8,6 @@
     "lint": "eslint . --ext .js --fix",
     "lint:css": "stylelint \"**/*.css\" --fix",
     "format": "prettier --write .",
-    "prepare": "husky install",
     "serve": "http-server ./ -p 8081",
     "ws-server": "node scripts/ws-test-server.js",
     "dev": "concurrently \"npm run serve\" \"npm run ws-server\""
@@ -17,7 +16,6 @@
     "concurrently": "^8.2.0",
     "eslint": "^8.47.0",
     "http-server": "^14.1.1",
-    "husky": "^8.0.3",
     "lint-staged": "^13.3.0",
     "prettier": "^3.2.2",
     "stylelint": "^16.26.1",
