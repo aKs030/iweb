@@ -118,6 +118,16 @@
   transition: all var(--footer-transition-quick);
 }
 
+/* Ensure SVG icons appear to the left of the label text for legal links
+   and the cookie button. This forces a left-aligned icon (even if DOM
+   order changes) and adds consistent spacing. */
+.footer-legal-link-enhanced svg,
+.footer-cookie-btn svg {
+  order: -1; /* place icon visually before text */
+  flex-shrink: 0;
+  margin-inline-end: 6px; /* support logical property for LTR/RTL */
+}
+
 .footer-legal-link-enhanced:hover,
 .footer-cookie-btn:hover {
   color: var(--dynamic-footer-label-primary);
