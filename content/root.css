@@ -20,14 +20,7 @@
 
 /* three-earth.css is now loaded non-blocking via shared head preload, removed @import to avoid render-blocking */
 
-/* Utility: Hidden Inline SVG Sprite */
-.svg-sprite-hidden {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
+/* NOTE: SVG sprite is embedded inline via JavaScript (menu.js). Removed obsolete .svg-sprite-hidden utility. */
 
 /* =======================
    Global CSS Variables - Dark & Light Mode System
@@ -440,6 +433,37 @@ textarea:focus-visible {
   border: 0 !important;
 }
 
+/* Global Loading Screen */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity var(--transition-slow);
+}
+.loading-screen.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgb(255 255 255 / 10%);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* Utility class used throughout site */
+.hidden { display: none !important; }
+
 /* Button Styles */
 .btn {
   display: inline-flex;
@@ -459,12 +483,7 @@ textarea:focus-visible {
   text-align: center;
 }
 
-/* Loading spinner text utility */
-.loading-spinner-text,
-.loading-progress-text {
-  color: #fff;
-  font-family: var(--font-primary);
-}
+/* Loading UI consolidated — using global spinner only */
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));

@@ -3,33 +3,65 @@ import { createLogger } from '../../shared-utilities.js';
 
 const log = createLogger('EarthUI');
 
-export function showLoadingState(container, progress) {
+/*
+  Earth UI Loader
+  - Uses a single global page loader (id: #loadingScreen) with a spinner.
+  - This module only shows/hides the spinner; progress bars/percent indicators
+    were removed for a simpler, unified loading UX.
+*/
+
+function getGlobalLoaderElements() {
+  const screen = document.getElementById('loadingScreen');
+  if (!screen) return null;
+  return { screen };
+}
+
+export function showLoadingState(container) {
   if (!container) return;
 
-  container.classList.add('loading');
-  const loadingElement = container.querySelector('.three-earth-loading');
-  if (loadingElement) loadingElement.classList.remove('hidden');
-
-  const progressBar = container.querySelector('.loading-progress-bar');
-  const progressText = container.querySelector('.loading-progress-text');
-
-  if (progressBar) progressBar.style.width = `${progress * 100}%`;
-  if (progressText) progressText.textContent = `${Math.round(progress * 100)}%`;
+  // Prefer the global page loader when available
+  const globals = getGlobalLoaderElements();
+    if (globals && globals.screen) {
+    globals.screen.classList.remove('hidden');
+    globals.screen.classList.remove('hide');
+    globals.screen.removeAttribute('aria-hidden');
+    Object.assign(globals.screen.style, { display: 'flex', opacity: '1', pointerEvents: 'auto', visibility: 'visible' });
+    // Optionally set an aria message
+    globals.screen.setAttribute('aria-live', 'polite');
+  } else {
+    // Fallback: no local progress UI; do nothing.
+  }
 }
 
 export function hideLoadingState(container) {
   if (!container) return;
 
-  container.classList.remove('loading');
-  const loadingElement = container.querySelector('.three-earth-loading');
-  if (loadingElement) loadingElement.classList.add('hidden');
+  const globals = getGlobalLoaderElements();
+  if (globals && globals.screen) {
+    // Hide the global loader using the same pattern as the rest of the app
+    globals.screen.classList.add('hide');
+    globals.screen.setAttribute('aria-hidden', 'true');
+    globals.screen.removeAttribute('aria-live');
+    Object.assign(globals.screen.style, { opacity: '0', pointerEvents: 'none', visibility: 'hidden' });
+    // Reset visuals (after transition)
+    setTimeout(() => {
+      if (globals.screen) globals.screen.style.display = 'none';
+    }, 300);
+  } else {
+    // No local progress UI to clear; do nothing.
+  }
 }
 
 export function showErrorState(container, error, retryCallback) {
   if (!container) return;
 
+  // Hide global loader to reveal page error/fallback
+  const globals = getGlobalLoaderElements();
+  if (globals && globals.screen) {
+    globals.screen.classList.add('hidden');
+  }
+
   container.classList.add('error');
-  container.classList.remove('loading');
 
   const errorElement = container.querySelector('.three-earth-error');
   if (errorElement) {

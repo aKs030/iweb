@@ -88,7 +88,7 @@ const ThreeEarthManager = (() => {
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
       if (!isSystemActive) return cleanup;
 
-      showLoadingState(container, 0);
+      showLoadingState(container);
 
       // Scene Setup
       isMobileDevice = !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
@@ -105,8 +105,7 @@ const ThreeEarthManager = (() => {
       const loadingManager = new THREE_INSTANCE.LoadingManager();
       loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
         if (!isSystemActive) return;
-        const progress = itemsLoaded / itemsTotal;
-        showLoadingState(container, progress);
+        showLoadingState(container);
       };
 
       loadingManager.onLoad = () => {

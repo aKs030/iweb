@@ -147,29 +147,8 @@
         color: var(--text-primary);
         overflow-x: hidden;
       }
-      /* Loading Screen Critical */
-      .loading-screen {
-        position: fixed;
-        inset: 0;
-        background: var(--bg-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-      }
-      .loader {
-        width: 60px;
-        height: 60px;
-        border: 3px solid rgba(255, 255, 255, 0.1);
-        border-top-color: var(--primary-color);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+      /* Loading Screen Critical - moved to `content/root.css` */
+      /* Spin keyframes moved to `content/root.css` */
       /* Header Critical */
       .site-header {
         position: fixed;
@@ -344,9 +323,9 @@
       <div id="menu-container"></div>
     </header>
 
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-      <div class="loader"></div>
+    <!-- Global Loading Screen (minimal static fallback for initial paint) -->
+    <div class="loading-screen" id="loadingScreen" aria-hidden="true" aria-label="Seite wird geladen" role="status">
+      <div class="loader" aria-hidden="true"></div>
     </div>
 
     <!-- Advanced Three.js Earth System -->
@@ -368,14 +347,7 @@
         <div>Mode: <span id="mode">--</span></div>
       </div>
 
-      <div class="three-earth-loading" role="status" aria-live="polite">
-        <div class="loading-spinner" aria-hidden="true"></div>
-        <p>3D Earth wird geladen...</p>
-        <div class="loading-progress-container">
-          <div class="loading-progress-bar"></div>
-        </div>
-        <p class="loading-progress-text">0%</p>
-      </div>
+      
       <div class="three-earth-error hidden">
         <div class="error-icon">🌍</div>
         <p>WebGL nicht verfügbar. CSS-Fallback aktiv.</p>

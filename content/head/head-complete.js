@@ -70,6 +70,31 @@
     // 7. Status setzen und Event feuern
     window.SHARED_HEAD_LOADED = true;
     document.dispatchEvent(new CustomEvent('shared-head:loaded'));
+    // 8. Ensure a single global loader exists across pages (for consistent UX)
+    try {
+      // Only inject if not already present in the DOM
+      if (!document.getElementById('loadingScreen')) {
+        const loaderWrapper = document.createElement('div');
+        loaderWrapper.id = 'loadingScreen';
+        loaderWrapper.className = 'loading-screen';
+        loaderWrapper.setAttribute('aria-hidden', 'true');
+        loaderWrapper.setAttribute('aria-label', 'Seite wird geladen');
+        loaderWrapper.setAttribute('role', 'status');
+        loaderWrapper.setAttribute('aria-live', 'polite');
+
+        const spinner = document.createElement('div');
+        spinner.className = 'loader';
+        spinner.setAttribute('aria-hidden', 'true');
+
+        loaderWrapper.appendChild(spinner);
+        // Prepend so loader sits above page content
+        if (document.body) document.body.prepend(loaderWrapper);
+        else document.addEventListener('DOMContentLoaded', () => document.body.prepend(loaderWrapper), { once: true });
+      }
+    } catch (e) {
+      // Non-critical: injection failure shouldn't break the page
+      console.warn('[Head-Loader] Could not ensure global loader element:', e);
+    }
   } catch (err) {
     console.error('[Head-Loader] Fehler beim Laden des Shared Heads:', err);
   }
