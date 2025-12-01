@@ -15,14 +15,6 @@
   },
   "overrides": [
     {
-      "files": ["playwright.config.js", "test/**/*.js"],
-      "env": { "node": true },
-      "rules": {
-        "no-undef": "off",
-        "no-console": "off"
-      }
-    },
-    {
       "files": ["scripts/**/*.js"],
       "env": { "node": true },
       "rules": {
