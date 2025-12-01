@@ -29,6 +29,6 @@ build/
 *.swp
 *.swo
 
-# Playwright
-test-results/
-playwright-report/
+# Playwright (removed tests)
+# test-results/ (removed)
+# playwright-report/ (removed)
