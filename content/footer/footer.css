@@ -1,35 +1,57 @@
 /**
- * Dynamic Footer System - Final Optimized
- * Alle Karten OHNE Scrollen sichtbar auf allen Geräten
- * @version 7.0.0 FINAL
+ * Dynamic Footer System - Ultra Optimized
+ * ✅ Reduzierte Redundanzen
+ * ✅ Bessere CSS Custom Properties
+ * ✅ Hardware-Acceleration
+ * ✅ Zusammengefasste Media Queries
+ * @version 8.0.0 OPTIMIZED
  */
 
-/* ===== CSS Variables ===== */
+/* ===== CSS Variables (Optimiert) ===== */
 :root {
-  --footer-spacing-xs: 6px;
-  --footer-spacing-sm: 10px;
-  --footer-spacing-md: 14px;
-  --footer-spacing-lg: 18px;
+  /* Base Unit System */
+  --footer-unit: 2px;
+  --footer-spacing-xs: calc(var(--footer-unit) * 3);
+  --footer-spacing-sm: calc(var(--footer-unit) * 5);
+  --footer-spacing-md: calc(var(--footer-unit) * 7);
+  --footer-spacing-lg: calc(var(--footer-unit) * 9);
+  
+  /* Typography Scale */
   --footer-text-xs: 10px;
   --footer-text-sm: 12px;
   --footer-text-base: 13px;
+  --footer-text-md: 14px;
+  
+  /* Layout */
   --footer-horizontal-margin: clamp(8px, 2vw, 32px);
   --footer-card-gap: 16px;
+  
+  /* Transitions */
   --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --footer-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* Maximum allowed footer height (falls JS nicht setzt) */
+  
+  /* Heights */
   --footer-max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
-
-  /* Actual footer height can be set by JS; falls back to --footer-max-height */
   --footer-actual-height: var(--footer-max-height);
+  
+  /* Z-Index Scale */
+  --z-footer: 1000;
+  --z-cookie-modal: 10000;
 }
+    /* status bar wrapper: ensure a distinct row that separates footer cards
+      and pins copyright + nav to a single horizontal line */
+    .footer-status-bar {
+     display: block;
+     width: 100%;
+     padding-top: 6px;
+     border-top: 1px solid var(--dynamic-footer-separator);
+     background: transparent;
+     margin-top: var(--footer-spacing-sm);
+    }
 
 /* ===== Base Footer Container ===== */
 .site-footer-fixed {
   position: fixed;
-
-  /* always sit above interactive page content (avoid hero intercepts) */
   bottom: calc(12px + env(safe-area-inset-bottom));
   left: 50%;
   width: calc(100% - var(--footer-horizontal-margin) * 2);
@@ -41,11 +63,11 @@
   border: 1px solid var(--dynamic-footer-separator);
   box-shadow: var(--dynamic-footer-shadow-depth-2);
   font-family: var(--dynamic-footer-font-family);
-  transform: translateX(-50%);
-  z-index: 1000;
+  transform: translateX(-50%) translateZ(0); /* Force GPU */
+  z-index: var(--z-footer);
   animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
-  transition: all var(--footer-transition-smooth);
+  will-change: transform, opacity; /* Performance hint */
 }
 
 @keyframes footerEntrance {
@@ -53,40 +75,80 @@
     opacity: 0;
     transform: translateX(-50%) translateY(20px) scale(0.95);
   }
-
   100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
   }
 }
+  .footer-status-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--footer-spacing-sm);
+    width: 100%;
+  }
+
+  .footer-copyright-enhanced {
+    color: var(--dynamic-footer-label-secondary);
+    font-size: var(--footer-text-xs);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 0 0 auto; /* do not shrink on smaller widths */
+  }
+
+  .footer-legal-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--footer-spacing-sm);
+    flex-wrap: nowrap; /* keep icons/links on one row for large screens */
+    justify-content: flex-end;
+  }
+
+  .footer-legal-link-enhanced,
+  .footer-cookie-btn {
+    color: var(--dynamic-footer-label-secondary);
+    font-size: var(--footer-text-xs);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: var(--dynamic-footer-micro-radius);
+    transition: all var(--footer-transition-quick);
+  }
+
+  .footer-legal-link-enhanced:hover,
+  .footer-cookie-btn:hover {
+    color: var(--dynamic-footer-label-primary);
+    background: var(--dynamic-footer-fill-primary);
+  }
 
 /* ===== Body Padding ===== */
 body {
-  /* include safe-area inset so footer doesn't sit under device UI */
   padding-bottom: calc(70px + env(safe-area-inset-bottom));
   transition: padding-bottom var(--footer-transition-smooth);
 }
 
 body.footer-expanded {
-  /* keep room for expanded footer + safe-area inset */
   padding-bottom: calc(70vh + env(safe-area-inset-bottom));
 }
 
-/* Hidden state for footer elements */
+/* ===== Hidden State ===== */
 .site-footer-fixed .footer-hidden {
   display: none;
 }
 
 /* ===== Minimized Footer ===== */
 .footer-minimized {
-  padding: 6px var(--footer-spacing-sm);
+  padding: var(--footer-spacing-xs) var(--footer-spacing-sm);
   max-width: 1200px;
   margin: 0 auto;
   min-height: 40px;
   display: flex;
   align-items: center;
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) translateZ(0);
   transition: all 0.25s var(--dynamic-footer-spring-quick);
 }
 
@@ -111,20 +173,25 @@ body.footer-expanded {
   align-items: center;
 }
 
+/* Shared Link Styles (DRY) */
+.footer-brand-link,
+.footer-nav-link {
+  padding: 2px 4px;
+  border-radius: var(--dynamic-footer-micro-radius);
+  transition: all var(--footer-transition-quick);
+  text-decoration: none;
+  will-change: transform, background-color;
+}
+
 .footer-brand-link {
   color: var(--dynamic-footer-label-primary);
-  text-decoration: none;
   font-weight: var(--dynamic-footer-font-weight-medium);
   margin-left: 4px;
-  padding: 2px 4px;
-  border-radius: 3px;
-  transition: all var(--footer-transition-quick);
 }
 
 .footer-brand-link:hover {
   color: var(--dynamic-footer-accent-blue);
   background: var(--dynamic-footer-fill-secondary);
-  text-decoration: none;
 }
 
 .footer-minimal-nav {
@@ -136,19 +203,12 @@ body.footer-expanded {
 
 .footer-nav-link {
   color: var(--dynamic-footer-label-secondary);
-  text-decoration: none;
   font-size: var(--footer-text-xs);
-  padding: 2px 4px;
-  border-radius: var(--dynamic-footer-micro-radius);
   display: inline-flex;
   align-items: center;
   gap: 3px;
   white-space: nowrap;
-  transition: all var(--footer-transition-quick);
-
-  /* ensure tappable target size for tests and accessibility */
   min-height: 40px;
-  box-sizing: border-box;
 }
 
 .footer-nav-link svg {
@@ -159,28 +219,24 @@ body.footer-expanded {
 .footer-nav-link:hover {
   color: var(--dynamic-footer-label-primary);
   background: var(--dynamic-footer-fill-primary);
-  text-decoration: none;
+  transform: translateZ(0);
 }
 
-/* ===== Maximized Footer - MIT SCROLL für alle Karten ===== */
+/* ===== Maximized Footer ===== */
 .footer-maximized {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(20px) translateZ(0);
   max-height: 0;
   overflow: hidden;
   pointer-events: none;
   transition: all var(--footer-transition-smooth);
-  position: relative; /* Wichtig für absolute positionierte Kinder */
+  position: relative;
 }
 
 .footer-maximized-viewport {
   width: 100%;
   height: auto;
-
-  /* Use computed actual height so JS-driven measurements cap the viewport
-     instead of a static 75vh which can be too small on some devices. */
   max-height: var(--footer-actual-height, 75vh);
-  box-sizing: border-box;
   overflow: hidden auto;
   position: relative;
   -webkit-overflow-scrolling: touch;
@@ -189,21 +245,19 @@ body.footer-expanded {
 }
 
 .footer-maximized-viewport::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  display: none;
 }
 
 .footer-enhanced-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: var(--footer-spacing-md);
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   min-height: min-content;
 }
 
-/* ===== Kompaktes Card Grid - Alle Karten sichtbar ===== */
+/* ===== Card Grid ===== */
 .footer-cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -220,13 +274,17 @@ body.footer-expanded {
   display: flex;
   flex-direction: column;
   min-height: 100px;
-  transition: all 0.25s var(--dynamic-footer-spring-quick);
+  transition: transform var(--footer-transition-quick),
+              background-color var(--footer-transition-quick),
+              border-color var(--footer-transition-quick);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .footer-card:hover {
   background: var(--dynamic-footer-fill-primary);
   border-color: var(--dynamic-footer-accent-blue);
-  transform: translateY(-2px);
+  transform: translateY(-2px) translateZ(0);
   box-shadow: var(--dynamic-footer-shadow-depth-3);
 }
 
@@ -239,7 +297,7 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--footer-text-base);
   font-weight: var(--dynamic-footer-font-weight-medium);
-  margin: 0 0 6px;
+  margin: 0 0 var(--footer-spacing-xs);
   letter-spacing: -0.01em;
 }
 
@@ -249,6 +307,7 @@ body.footer-expanded {
   background: var(--dynamic-footer-accent-blue);
   border-radius: 2px;
   transition: width var(--footer-transition-smooth);
+  will-change: width;
 }
 
 .footer-card:hover .footer-card-accent {
@@ -273,7 +332,7 @@ body.footer-expanded {
 .footer-profile-role {
   color: var(--dynamic-footer-label-secondary);
   font-size: var(--footer-text-xs);
-  margin: 0 0 6px;
+  margin: 0 0 var(--footer-spacing-xs);
   line-height: 1.3;
 }
 
@@ -295,8 +354,8 @@ body.footer-expanded {
 .footer-contact-cta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: var(--footer-spacing-xs);
+  padding: var(--footer-spacing-xs) 10px;
   color: var(--dynamic-footer-accent-blue);
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid transparent;
@@ -306,12 +365,14 @@ body.footer-expanded {
   font-weight: var(--dynamic-footer-font-weight-medium);
   margin-top: auto;
   transition: all var(--footer-transition-quick);
+  will-change: transform, background-color;
+  transform: translateZ(0);
 }
 
 .footer-contact-cta:hover {
   background: var(--dynamic-footer-accent-blue);
   color: white;
-  text-decoration: none;
+  transform: translateY(-1px) translateZ(0);
 }
 
 .contact-icon {
@@ -332,19 +393,20 @@ body.footer-expanded {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
+  padding: var(--footer-spacing-xs) 8px;
   color: var(--dynamic-footer-label-secondary);
   border-radius: var(--dynamic-footer-micro-radius);
   text-decoration: none;
   font-size: var(--footer-text-xs);
   transition: all var(--footer-transition-quick);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .footer-work-link:hover {
   color: var(--dynamic-footer-label-primary);
   background: var(--dynamic-footer-fill-primary);
-  transform: translateX(3px);
-  text-decoration: none;
+  transform: translateX(3px) translateZ(0);
 }
 
 .work-icon {
@@ -357,27 +419,8 @@ body.footer-expanded {
 .footer-social-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: var(--footer-spacing-xs);
   flex: 1;
-}
-
-/* Responsive columns: match test breakpoints more deterministically */
-@media (width <= 420px) {
-  .footer-social-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (width >= 421px) and (width <= 700px) {
-  .footer-social-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (width >= 701px) {
-  .footer-social-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .footer-social-card {
@@ -386,7 +429,7 @@ body.footer-expanded {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 8px 6px;
+  padding: 8px var(--footer-spacing-xs);
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-micro-radius);
@@ -394,23 +437,15 @@ body.footer-expanded {
   text-decoration: none;
   font-size: var(--footer-text-xs);
   transition: all var(--footer-transition-quick);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .footer-social-card:hover {
   background: var(--dynamic-footer-fill-primary);
   border-color: var(--dynamic-footer-accent-blue);
   color: var(--dynamic-footer-label-primary);
-  transform: translateY(-2px);
-  text-decoration: none;
-}
-
-.social-card-icon {
-  opacity: 0.8;
-  transition: opacity var(--footer-transition-quick);
-}
-
-.footer-social-card:hover .social-card-icon {
-  opacity: 1;
+  transform: translateY(-2px) translateZ(0);
 }
 
 /* ===== Tech Grid ===== */
@@ -428,7 +463,9 @@ body.footer-expanded {
   font-size: 10px;
   font-weight: var(--dynamic-footer-font-weight-medium);
   white-space: nowrap;
-  transition: all var(--footer-transition-quick);
+  transition: transform var(--footer-transition-quick);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .tech-primary {
@@ -448,7 +485,7 @@ body.footer-expanded {
 }
 
 .tech-pill:hover {
-  transform: translateY(-1px) scale(1.05);
+  transform: translateY(-1px) scale(1.05) translateZ(0);
 }
 
 /* ===== Newsletter Card ===== */
@@ -466,13 +503,13 @@ body.footer-expanded {
 .newsletter-form-enhanced {
   display: flex;
   flex-direction: row;
-  gap: 6px;
+  gap: var(--footer-spacing-xs);
   margin-top: auto;
 }
 
 .newsletter-input-wrapper {
   display: flex;
-  gap: 6px;
+  gap: var(--footer-spacing-xs);
   width: 100%;
 }
 
@@ -512,109 +549,25 @@ body.footer-expanded {
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--footer-transition-quick);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .newsletter-submit-enhanced:hover {
   background: var(--dynamic-footer-accent-purple);
-  transform: translateY(-1px);
+  transform: translateY(-1px) translateZ(0);
 }
 
-.submit-icon {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-
-/* ===== Floating Theme Control ===== */
-.theme-control-floating {
-  position: absolute;
-  top: -24px;
-  right: 16px;
-  z-index: 10;
-}
-
-.theme-control-floating .day-night-artwork {
-  width: 42px;
-  height: 42px;
-}
-
-/* ===== Status Bar - Kompakt ===== */
-.footer-status-bar {
-  margin-top: var(--footer-spacing-sm);
-  padding-top: var(--footer-spacing-sm);
-  border-top: 1px solid var(--dynamic-footer-separator);
-}
-
-.footer-status-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--footer-spacing-sm);
-  flex-wrap: wrap;
-}
-
-.footer-copyright-enhanced {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--dynamic-footer-label-tertiary);
-  font-size: var(--footer-text-xs);
-}
-
-.footer-brand-link-enhanced {
-  color: var(--dynamic-footer-label-primary);
-  text-decoration: none;
-  font-weight: var(--dynamic-footer-font-weight-medium);
-  transition: color var(--footer-transition-quick);
-}
-
-.footer-brand-link-enhanced:hover {
-  color: var(--dynamic-footer-accent-blue);
-}
-
-.footer-legal-nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.footer-legal-link-enhanced,
-.footer-cookie-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--dynamic-footer-label-secondary);
-  text-decoration: none;
-  font-size: var(--footer-text-xs);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: color var(--footer-transition-quick);
-}
-
-.footer-legal-link-enhanced:hover,
-.footer-cookie-btn:hover {
-  color: var(--dynamic-footer-accent-blue);
-}
-
-.footer-legal-link-enhanced svg,
-.footer-cookie-btn svg {
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-}
-
-/* ===== Cookie Settings ===== */
+/* ===== Cookie Settings (Kompakter) ===== */
 .footer-cookie-settings {
-  position: relative; /* Geändert von absolute zu relative */
+  position: relative;
   width: 100%;
   background: var(--dynamic-footer-bg-card);
   border-radius: var(--dynamic-footer-radius-large);
   z-index: 100;
   overflow: hidden;
   animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateZ(0);
 }
 
 .footer-cookie-settings.hidden {
@@ -624,315 +577,37 @@ body.footer-expanded {
 @keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px) translateZ(0);
   }
-
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
-}
-
-.cookie-settings-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-height: 50vh; /* Noch kompakter */
-}
-
-.cookie-settings-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px; /* Noch kleiner */
-  border-bottom: 1px solid var(--dynamic-footer-border-card);
-  background: var(--dynamic-footer-bg-elevated);
-  flex-shrink: 0;
-}
-
-.cookie-settings-header h2 {
-  margin: 0;
-  font-size: 13px; /* Noch kleiner */
-  font-weight: 600;
-  color: var(--dynamic-footer-text-primary);
-}
-
-.cookie-settings-close {
-  background: transparent;
-  border: none;
-  color: var(--dynamic-footer-text-secondary);
-  padding: 3px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  transition: all var(--footer-transition-quick);
-}
-
-.cookie-settings-close:hover {
-  background: var(--dynamic-footer-hover-subtle);
-  color: var(--dynamic-footer-text-primary);
-}
-
-.cookie-settings-close svg {
-  width: 14px; /* Noch kleiner */
-  height: 14px;
-}
-
-.cookie-settings-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 12px; /* Noch kleiner */
-}
-
-.cookie-settings-intro {
-  font-size: 9px; /* Noch kleiner */
-  line-height: 1.3;
-  color: var(--dynamic-footer-text-secondary);
-  margin-bottom: 8px;
-}
-
-.cookie-category {
-  margin-bottom: 6px; /* Noch kleiner */
-  padding: 6px 8px; /* Noch kompakter */
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 6px;
-}
-
-.cookie-category-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 3px; /* Noch kleiner */
-}
-
-.cookie-category-header h3 {
-  margin: 0;
-  font-size: 11px; /* Noch kleiner */
-  color: var(--dynamic-footer-text-primary);
-  font-weight: 600;
-}
-
-.cookie-status {
-  padding: 1px 5px; /* Noch kompakter */
-  border-radius: 8px;
-  font-size: 7px; /* Noch kleiner */
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.2px;
-}
-
-.cookie-status-required {
-  background: rgb(52 199 89 / 20%);
-  color: #34c759;
-  border: 1px solid rgb(52 199 89 / 30%);
-}
-
-.cookie-category-description {
-  font-size: 9px; /* Noch kleiner */
-  line-height: 1.2;
-  color: var(--dynamic-footer-text-secondary);
-  margin-bottom: 4px;
-}
-
-.cookie-toggle {
-  position: relative;
-  display: inline-block;
-  width: 34px; /* Kleiner */
-  height: 18px; /* Kleiner */
-}
-
-.cookie-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.cookie-toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: rgb(255 255 255 / 20%);
-  border-radius: 20px;
-  transition: 0.3s;
-}
-
-.cookie-toggle-slider::before {
-  position: absolute;
-  content: '';
-  height: 12px; /* Kleiner */
-  width: 12px; /* Kleiner */
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  border-radius: 50%;
-  transition: 0.3s;
-}
-
-.cookie-toggle input:checked + .cookie-toggle-slider {
-  background-color: #0a84ff;
-}
-
-.cookie-toggle input:checked + .cookie-toggle-slider::before {
-  transform: translateX(16px); /* Angepasst */
-}
-
-.cookie-details {
-  margin-top: 4px; /* Noch kleiner */
-}
-
-.cookie-item {
-  padding: 4px 6px; /* Noch kompakter */
-  background: rgb(0 0 0 / 20%);
-  border-radius: 4px;
-  margin-bottom: 3px; /* Noch kleiner */
-}
-
-.cookie-item:last-child {
-  margin-bottom: 0;
-}
-
-.cookie-item strong {
-  display: block;
-  color: #0a84ff;
-  font-size: 9px; /* Noch kleiner */
-  margin-bottom: 1px;
-}
-
-.cookie-item p {
-  font-size: 8px; /* Noch kleiner */
-  line-height: 1.2;
-  color: var(--dynamic-footer-text-secondary);
-  margin: 0 0 2px;
-}
-
-.cookie-duration {
-  display: inline-block;
-  font-size: 7px; /* Noch kleiner */
-  color: rgb(255 255 255 / 50%);
-  background: rgb(255 255 255 / 5%);
-  padding: 1px 4px;
-  border-radius: 3px;
-}
-
-.cookie-privacy-info {
-  margin-top: 6px; /* Noch kleiner */
-  padding: 6px 8px; /* Noch kompakter */
-  background: rgb(10 132 255 / 10%);
-  border: 1px solid rgb(10 132 255 / 30%);
-  border-radius: 6px;
-}
-
-.cookie-privacy-info h3 {
-  margin: 0 0 3px;
-  font-size: 10px; /* Noch kleiner */
-  color: #64d2ff;
-  font-weight: 600;
-}
-
-.cookie-privacy-info ul {
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
-}
-
-.cookie-privacy-info li {
-  position: relative;
-  font-size: 8px; /* Noch kleiner */
-  line-height: 1.3;
-  color: var(--dynamic-footer-text-secondary);
-  margin-bottom: 2px;
-  padding-left: 12px;
-}
-
-.cookie-privacy-info li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  color: #34c759;
-  font-weight: bold;
-  font-size: 9px;
-}
-
-.cookie-privacy-info a {
-  color: #0a84ff;
-  text-decoration: underline;
-}
-
-.cookie-privacy-info a:hover {
-  color: #64d2ff;
-}
-
-.cookie-settings-footer {
-  display: flex;
-  gap: 4px; /* Kleiner */
-  padding: 6px 10px; /* Noch kompakter */
-  border-top: 1px solid var(--dynamic-footer-border-card);
-  background: var(--dynamic-footer-bg-elevated);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
-.cookie-settings-btn {
-  flex: 1;
-  min-width: 90px; /* Noch kleiner */
-  padding: 6px 8px; /* Noch kompakter */
-  border: none;
-  border-radius: 5px;
-  font-size: 10px; /* Noch kleiner */
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--footer-transition-quick);
-}
-
-.cookie-settings-btn-primary {
-  background: linear-gradient(135deg, #0a84ff 0%, #06c 100%);
-  color: #fff;
-  box-shadow: 0 2px 6px rgb(10 132 255 / 30%);
-}
-
-.cookie-settings-btn-primary:hover {
-  background: linear-gradient(135deg, #06c 0%, #004c99 100%);
-  transform: translateY(-1px);
-}
-
-.cookie-settings-btn-secondary {
-  background: transparent;
-  color: var(--dynamic-footer-text-primary);
-  border: 1px solid var(--dynamic-footer-border-card);
-}
-
-.cookie-settings-btn-secondary:hover {
-  background: var(--dynamic-footer-hover-subtle);
-  border-color: var(--dynamic-footer-accent-blue);
-  transform: translateY(-1px);
 }
 
 /* ===== Footer States ===== */
 .footer-expanded .footer-minimized {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-10px) translateZ(0);
   pointer-events: none;
 }
 
 .footer-expanded .footer-maximized {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) translateZ(0);
   max-height: none;
   height: auto;
   overflow: visible;
-  padding-bottom: 14px;
+  padding-bottom: var(--footer-spacing-md);
   pointer-events: auto;
 }
 
-/* ===== Mobile Optimierung - 2 Spalten ===== */
+/* ===== Responsive Design (Konsolidiert) ===== */
 @media (width <= 768px) {
   :root {
     --footer-card-gap: 8px;
     --footer-spacing-md: 8px;
-    --footer-max-height: calc(
-      80dvh - 24px - env(safe-area-inset-bottom)
-    ); /* Reduziert für mobile, um Überlappung zu vermeiden */
+    --footer-max-height: calc(80dvh - 24px - env(safe-area-inset-bottom));
   }
 
   .site-footer-fixed {
@@ -946,7 +621,7 @@ body.footer-expanded {
   }
 
   .footer-card {
-    padding: 6px;
+    padding: var(--footer-spacing-xs);
   }
 
   .footer-card-newsletter {
@@ -968,65 +643,31 @@ body.footer-expanded {
     gap: 4px;
   }
 
-  .theme-control-floating {
-    top: -20px;
-    right: 10px;
+  .footer-legal-nav {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: var(--footer-spacing-xs);
   }
 
-  .theme-control-floating .day-night-artwork {
-    width: 36px;
-    height: 36px;
-  }
-
-  .newsletter-form-enhanced {
-    flex-direction: column;
-  }
-
+  .newsletter-form-enhanced,
   .newsletter-input-wrapper {
     flex-direction: column;
-    gap: 4px;
-  }
-
-  .cookie-settings-footer {
-    flex-direction: column;
-  }
-
-  .cookie-settings-btn {
-    width: 100%;
-    min-width: unset;
   }
 
   body.footer-expanded {
-    /* Use the computed footer height variable so JS-driven measurements
-       (or the --footer-max-height fallback) control the body padding.
-       This avoids an arbitrary 50vh cap that can hide cards on small viewports. */
     padding-bottom: var(--footer-actual-height, var(--footer-max-height));
   }
 }
 
-/* ===== Sehr kleine Displays - 1 Spalte ===== */
 @media (width <= 480px) {
   :root {
-    --footer-card-gap: 6px;
-    --footer-spacing-sm: 6px;
-    --footer-spacing-md: 6px;
+    --footer-card-gap: var(--footer-spacing-xs);
+    --footer-spacing-sm: var(--footer-spacing-xs);
   }
 
   .footer-cards-grid {
     grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  .footer-card {
-    padding: 6px;
-  }
-
-  .footer-card-newsletter {
-    grid-column: 1 / -1;
-  }
-
-  .footer-enhanced-content {
-    padding: 6px;
+    gap: var(--footer-spacing-xs);
   }
 
   .footer-copyright-text,
@@ -1038,40 +679,40 @@ body.footer-expanded {
     gap: 3px;
   }
 
-  .theme-control-floating {
-    top: -18px;
-    right: 8px;
-  }
-
-  .theme-control-floating .day-night-artwork {
-    width: 32px;
-    height: 32px;
-  }
-
-  .footer-status-bar {
-    margin-top: 6px;
-    padding-top: 6px;
-  }
-
   body.footer-expanded {
-    /* See note above for mobile breakpoint: prefer the computed CSS var */
     padding-bottom: var(--footer-actual-height, var(--footer-max-height));
   }
 }
 
-/* ===== Desktop - 3 Spalten, Newsletter 2 Spalten ===== */
-@media (width >= 769px) and (width <= 1199px) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 
-  .footer-card-newsletter {
-    grid-column: span 2;
+  .footer-card:hover,
+  .footer-contact-cta:hover,
+  .footer-work-link:hover,
+  .tech-pill:hover {
+    transform: none !important;
   }
 }
 
-@media (width >= 1200px) {
-  .footer-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
+@media (prefers-contrast: more) {
+  .footer-card,
+  .footer-social-card,
+  .newsletter-input-enhanced {
+    border-width: 2px;
+  }
+}
+
+/* ===== Print ===== */
+@media print {
+  .site-footer-fixed {
+    display: none;
   }
 }
