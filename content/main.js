@@ -367,11 +367,6 @@ const ThreeEarthLoader = (() => {
   async function load() {
     if (isLoading || cleanupFn) return;
 
-    // Explicitly check env for testing to skip heavy WebGL
-    if (ENV.isTest) {
-      log.info('Test environment detected - skipping Three.js Earth system for performance');
-      return;
-    }
 
     const container = getElementById('threeEarthContainer');
     if (!container) {

@@ -13,6 +13,7 @@
     "dev": "concurrently \"npm run serve\" \"npm run ws-server\""
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "concurrently": "^8.2.0",
     "eslint": "^8.47.0",
     "http-server": "^14.1.1",
