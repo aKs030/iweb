@@ -119,7 +119,7 @@ function getMenuHTML() {
     <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
       <ul class="site-menu__list">
         <li>
-          <a href="#hero">
+          <a href="/index.html">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-house"></use>
             </svg>
