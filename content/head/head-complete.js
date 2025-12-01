@@ -29,6 +29,16 @@
     range.selectNode(document.head);
     const fragment = range.createContextualFragment(html);
 
+    // 4a. Markiere Skripte im Fragment zur späteren erneuten Ausführung
+    const fragmentScripts = Array.from(fragment.querySelectorAll('script'));
+    fragmentScripts.forEach((s, idx) => {
+      // Nicht ausführen, wenn bereits speziell blockiert (z.B. consent-blocked via type="text/plain")
+      // Kennzeichne ansonsten zur gezielten Re-Initialisierung nach dem Einfügen
+      if (s.type && s.type.toLowerCase() === 'text/plain') return;
+      s.setAttribute('data-exec-on-insert', '1');
+      s.setAttribute('data-exec-id', String(idx));
+    });
+
     // 5. Duplikate bereinigen:
     // Wenn das Fragment einen <title> enthält und die Seite auch,
     // entfernen wir den alten Titel der Seite, damit der neue (im Shared Head) gewinnt.
@@ -70,6 +80,28 @@
     // 7. Status setzen und Event feuern
     window.SHARED_HEAD_LOADED = true;
     document.dispatchEvent(new CustomEvent('shared-head:loaded'));
+    
+    // 7a. Skripte aus dem Shared Head sicher ausführen (insb. Module wie /content/main.js)
+    try {
+      const toExec = document.head.querySelectorAll('script[data-exec-on-insert="1"]');
+      toExec.forEach((oldScript) => {
+        const newScript = document.createElement('script');
+        // Attribute kopieren
+        for (const { name, value } of Array.from(oldScript.attributes)) {
+          if (name === 'data-exec-on-insert') continue;
+          newScript.setAttribute(name, value);
+        }
+        if (oldScript.src) {
+          newScript.src = oldScript.src;
+        } else if (oldScript.textContent && oldScript.textContent.trim()) {
+          newScript.textContent = oldScript.textContent;
+        }
+        // Ersetzen, damit der Browser das Skript tatsächlich lädt/ausführt
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      });
+    } catch (e) {
+      console.warn('[Head-Loader] Script execution reinforcement failed:', e);
+    }
     // 8. Ensure a single global loader exists across pages (for consistent UX)
     try {
       // Only inject if not already present in the DOM
@@ -99,6 +131,57 @@
     } catch (e) {
       // Non-critical: injection failure shouldn't break the page
       console.warn('[Head-Loader] Could not ensure global loader element:', e);
+    }
+
+    // 9. Fallback: Loader automatisch ausblenden, falls keine App-Logik (main.js) übernimmt
+    //    Verhindert Hängenbleiben auf simplen statischen Seiten (Legal/Privacy).
+    try {
+      const MIN_DISPLAY_TIME = 400;
+      let start = performance.now();
+
+      const hideLoader = () => {
+        const el = document.getElementById('loadingScreen');
+        if (!el) return;
+        const elapsed = performance.now() - start;
+        const wait = Math.max(0, MIN_DISPLAY_TIME - elapsed);
+        setTimeout(() => {
+          el.classList.add('hide');
+          el.setAttribute('aria-hidden', 'true');
+          Object.assign(el.style, {
+            opacity: '0',
+            pointerEvents: 'none',
+            visibility: 'hidden'
+          });
+          const cleanup = () => {
+            el.style.display = 'none';
+            el.removeEventListener('transitionend', cleanup);
+          };
+          el.addEventListener('transitionend', cleanup);
+          setTimeout(cleanup, 700);
+        }, wait);
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => (start = performance.now()), {
+          once: true
+        });
+      } else {
+        start = performance.now();
+      }
+
+      // Normalfall: sobald alles geladen ist, ausblenden
+      window.addEventListener('load', hideLoader, { once: true });
+      // Früheres Sicherheitsnetz: kurz nach DOMContentLoaded ausblenden (falls main.js nicht greift)
+      const scheduleEarlyHide = () => setTimeout(hideLoader, 1200);
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', scheduleEarlyHide, { once: true });
+      } else {
+        scheduleEarlyHide();
+      }
+      // Spätestes Sicherheitsnetz: nach 5s ausblenden
+      setTimeout(hideLoader, 5000);
+    } catch (e) {
+      console.warn('[Head-Loader] Fallback loader hide failed:', e);
     }
   } catch (err) {
     console.error('[Head-Loader] Fehler beim Laden des Shared Heads:', err);
