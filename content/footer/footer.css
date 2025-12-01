@@ -64,6 +64,16 @@
   will-change: transform, opacity; /* Performance hint */
 }
 
+/* Compact scale inside footer (desktop-first) */
+.site-footer-fixed {
+  --footer-text-xs: 9px;
+  --footer-text-sm: 11px;
+  --footer-text-base: 12px;
+  --footer-card-gap: 12px;
+  --footer-spacing-sm: calc(var(--footer-unit) * 4);
+  --footer-spacing-md: calc(var(--footer-unit) * 6);
+}
+
 @keyframes footerEntrance {
   0% {
     opacity: 0;
@@ -97,7 +107,7 @@ body.footer-expanded {
   padding: 4px var(--footer-spacing-sm);
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 36px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   opacity: 1;
@@ -166,8 +176,8 @@ body.footer-expanded {
   justify-content: center;
   gap: 3px;
   white-space: nowrap;
-  min-height: 32px;
-  padding: 4px 8px;
+  min-height: 28px;
+  padding: 3px 7px;
 }
 
 .footer-nav-link svg {
@@ -266,7 +276,7 @@ body.footer-expanded {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--footer-spacing-md);
+  gap: var(--footer-spacing-sm);
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
@@ -318,7 +328,7 @@ body.footer-expanded {
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-card-radius);
-  padding: var(--footer-spacing-sm);
+  padding: calc(var(--footer-spacing-sm) - 2px);
   display: flex;
   flex-direction: column;
   min-height: 100px;
@@ -527,6 +537,173 @@ body.footer-expanded {
   display: flex;
   flex-direction: column;
   gap: var(--footer-spacing-xs);
+  align-items: center; /* center stack */
+}
+
+/* Compact header + actions */
+.cookie-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--dynamic-footer-separator);
+}
+
+.cookie-settings-header h2 {
+  margin: 0;
+  font-size: var(--footer-text-sm);
+  color: var(--dynamic-footer-label-primary);
+  font-weight: var(--dynamic-footer-font-weight-medium);
+}
+
+.cookie-settings-close {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--dynamic-footer-micro-radius);
+  color: var(--dynamic-footer-label-secondary);
+}
+
+.cookie-settings-close:hover {
+  background: var(--dynamic-footer-fill-primary);
+  color: var(--dynamic-footer-label-primary);
+}
+
+/* Make cookie sections compact within footer view */
+.footer-cookie-settings .cookie-category {
+  margin-bottom: 8px;
+  padding: 8px;
+  background: var(--dynamic-footer-fill-secondary);
+  border: 1px solid var(--dynamic-footer-separator);
+  border-radius: var(--dynamic-footer-micro-radius);
+  width: 100%;
+  max-width: 560px; /* do not stretch full width */
+}
+
+.footer-cookie-settings .cookie-category-header {
+  margin-bottom: 4px;
+}
+
+.footer-cookie-settings .cookie-category-header h3 {
+  font-size: var(--footer-text-sm);
+}
+
+.footer-cookie-settings .cookie-category-description {
+  font-size: var(--footer-text-xs);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.footer-cookie-settings .cookie-item {
+  padding: 6px;
+  margin-bottom: 6px;
+}
+
+.footer-cookie-settings .cookie-item p,
+.footer-cookie-settings .cookie-item strong {
+  font-size: var(--footer-text-xs);
+}
+
+.footer-cookie-settings .cookie-duration {
+  font-size: 10px;
+}
+
+/* Compact intro */
+.footer-cookie-settings .cookie-settings-intro {
+  font-size: var(--footer-text-xs);
+  line-height: 1.4;
+  color: var(--dynamic-footer-label-secondary);
+  margin: 4px 0 6px;
+}
+
+/* Smaller status chip */
+.footer-cookie-settings .cookie-status {
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+/* Smaller toggle within footer cookie view */
+.footer-cookie-settings .cookie-toggle {
+  width: 40px;
+  height: 20px;
+}
+
+.footer-cookie-settings .cookie-toggle-slider::before {
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  bottom: 3px;
+}
+
+.footer-cookie-settings .cookie-toggle input:checked + .cookie-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.footer-cookie-settings .cookie-toggle input:focus + .cookie-toggle-slider {
+  box-shadow: 0 0 0 2px rgb(10 132 255 / 35%);
+}
+
+
+
+/* Footer actions (buttons) */
+.cookie-settings-footer {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.cookie-settings-btn {
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: var(--footer-text-xs);
+  font-weight: var(--dynamic-footer-font-weight-medium);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.cookie-settings-btn-primary {
+  background: var(--dynamic-footer-accent-blue);
+  color: #fff;
+}
+
+.cookie-settings-btn-primary:hover {
+  background: var(--dynamic-footer-accent-purple);
+}
+
+.cookie-settings-btn-secondary {
+  background: var(--dynamic-footer-fill-secondary);
+  color: var(--dynamic-footer-label-primary);
+  border-color: var(--dynamic-footer-separator);
+}
+
+.cookie-settings-btn-secondary:hover {
+  background: var(--dynamic-footer-fill-primary);
+}
+
+/* Keep mobile targets comfortable */
+@media (width <= 768px) {
+  .footer-cookie-settings .cookie-toggle {
+    width: 48px;
+    height: 24px;
+  }
+
+  .footer-cookie-settings .cookie-toggle-slider::before {
+    width: 18px;
+    height: 18px;
+  }
+
+  .footer-cookie-settings .cookie-toggle input:checked + .cookie-toggle-slider::before {
+    transform: translateX(24px);
+  }
+
+  .cookie-settings-footer .cookie-settings-btn {
+    padding: 8px 12px;
+  }
 }
 
 @keyframes slideUpFade {
