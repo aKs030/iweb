@@ -274,3 +274,41 @@
     align-items: stretch;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Large Screen Optimizations
+   - For viewports wider than standard desktops (>= 1200px and >= 1600px)
+   - Increases max-width and font-sizes to better utilize available space
+--------------------------------------------------------------------------- */
+
+@media (min-width: 1200px) {
+  .about__container {
+    max-width: 960px;
+    padding: 6rem 2rem;
+  }
+
+  .about__text p {
+    max-width: 800px;
+    font-size: 1.1rem; /* Increase from ~16.8px */
+  }
+
+  .about__text h1 {
+    font-size: 3rem; /* Increase from ~38px */
+  }
+}
+
+@media (min-width: 1600px) {
+  .about__container {
+    max-width: 1200px;
+    padding: 8rem 3rem;
+  }
+
+  .about__text p {
+    max-width: 900px;
+    font-size: 1.25rem; /* ~20px */
+  }
+
+  .about__text h1 {
+    font-size: 4rem; /* ~64px */
+  }
+}
