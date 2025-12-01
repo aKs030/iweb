@@ -29,6 +29,4 @@ build/
 *.swp
 *.swo
 
-# Playwright (removed tests)
-# test-results/ (removed)
-# playwright-report/ (removed)
+# Playwright artifacts were removed; no active Playwright tests remain
