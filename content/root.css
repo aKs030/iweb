@@ -527,3 +527,13 @@ textarea:focus-visible {
   border-color: var(--primary-color);
   color: var(--primary-color);
 }
+
+@media (width <= 480px) {
+  /* Smaller button minimum width */
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline {
+    min-width: 120px;
+  }
+}

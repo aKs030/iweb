@@ -305,14 +305,6 @@ a:hover {
 
   /* Make media responsive - centralized in root.css, remove per-container duplication */
 
-  /* Smaller button minimum width */
-  .btn,
-  .btn-primary,
-  .btn-secondary,
-  .btn-outline {
-    min-width: 120px;
-  }
-
   /* Break long words to avoid overflow */
   .container p,
   .container h1,
