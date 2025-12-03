@@ -2,14 +2,17 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <title>Meine Projekte</title>
+    <!-- Kritische SEO-Tags als Fallback, falls JS nicht lädt -->
+    <title>Meine Projekte - Abdulkerim Sesli</title>
+    <meta name="description" content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
 
     <!-- SHARED_HEAD: Lädt Meta-Tags, CSS (root, menu, footer) und main.js global -->
     <script src="/content/head/head-complete.js" type="module"></script>
 
-    <!-- React Dependencies (Spezifisch für diese Seite) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- React Dependencies (Production Version für bessere Performance) -->
+    <!-- Load React & ReactDOM from jsDelivr (allowed by CSP in pages/shared/head.html) -->
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
 
     <!-- Page Specific Styles -->
     <style>
@@ -63,14 +66,10 @@
             pointer-events: none;
         }
 
-        
-
         /* Decorative Orbs */
         .bg-orb { position: fixed; border-radius: 9999px; filter: blur(120px); animation: pulse-slow 6s infinite; z-index: -1; pointer-events: none; }
         .orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background-color: rgba(30, 58, 138, 0.1); }
         .orb-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background-color: rgba(49, 46, 129, 0.1); animation-delay: 1s; }
-
-        
 
         /* Sections */
         .snap-section {
@@ -181,7 +180,8 @@
 
     <!-- Logic Script -->
     <script type="module">
-        import { initProjectsApp } from './projekte-app.js';
+        // FIX: Absoluter Pfad, um Resolution-Errors zu vermeiden
+        import { initProjectsApp } from '/pages/projekte/projekte-app.js';
         import { initThreeEarth, EarthSystemAPI } from '/content/particles/three-earth-system.js';
 
         // Load styles for Three Earth (Progressive Enhancement)
