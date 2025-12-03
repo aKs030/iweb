@@ -446,12 +446,24 @@ document.addEventListener(
       { once: true }
     );
 
-    fire(EVENTS.CORE_INITIALIZED);
+    try {
+      fire(EVENTS.CORE_INITIALIZED);
 
-    fire(EVENTS.HERO_INIT_READY);
-    initHeroFeatureBundle();
+      fire(EVENTS.HERO_INIT_READY);
+      try {
+        initHeroFeatureBundle();
+      } catch (err) {
+        log.error('Hero feature init failed:', err);
+      }
 
-    ThreeEarthLoader.initDelayed();
+      try {
+        ThreeEarthLoader.initDelayed();
+      } catch (err) {
+        log.error('ThreeEarth init delayed failed:', err);
+      }
+    } catch (err) {
+      log.error('Core initialization failed:', err);
+    }
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
@@ -513,3 +525,21 @@ document.addEventListener(
   },
   { once: true }
 );
+
+// Global Error Handling (log to console via our logger to make debugging easier)
+window.addEventListener('error', (ev) => {
+  try {
+    log.error('Global unhandled error:', ev.error || ev.message || ev);
+  } catch (e) {
+    // fallback to console
+    console.error('Global unhandled error: ', ev);
+  }
+});
+
+window.addEventListener('unhandledrejection', (ev) => {
+  try {
+    log.error('Unhandled Promise Rejection:', ev.reason || ev);
+  } catch (e) {
+    console.error('Unhandled Promise Rejection:', ev);
+  }
+});
