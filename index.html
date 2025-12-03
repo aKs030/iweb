@@ -4,64 +4,315 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Abdul aus Berlin - Webentwicklung &amp; Fotografie</title>
-    <!-- SHARED_HEAD -->
-    <script src="/content/head/head-complete.js" type="module"></script>
-    <!-- Meta tags (description/keywords/author/verification) centralized in shared head -->
-    <!-- Security headers centralized in shared head. -->
+    <meta
+      name="description"
+      content="Abdul aus Berlin - Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte. Abdul aus Tegel bietet professionelle Webentwicklung und Fotografie-Services in Berlin."
+    />
+    <meta
+      name="keywords"
+      content="Abdul Berlin, Abdul Tegel, Abdulkerim Sesli, Abdul Webentwickler Berlin, Abdul Fotograf Tegel, Portfolio, Webentwicklung Berlin, Frontend Developer Tegel, Fotografie Berlin, Abdul aus Berlin, Abdul aus Tegel"
+    />
+    <meta name="author" content="Abdulkerim Sesli - Abdul aus Berlin" />
+    <meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs" />
+    <!-- Security Headers: Allow scripts from jsDelivr CDN (cdn.jsdelivr.net). Previously used unpkg.com -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://www.google-analytics.com https://api.github.com ws://127.0.0.1:3001 ws://localhost:3001 wss://127.0.0.1:3001 wss://localhost:3001; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+    />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="geolocation=(), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
 
     <!-- Performance and Caching -->
     <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable" />
 
-    <!-- Format-detection & mobile web app meta centralized in shared head -->
+    <!-- Modern Browser Features -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- Theme color meta centralized in shared head -->
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#2c2c2e" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 
-    <!-- iOS web app meta centralized in shared head -->
+    <!-- iOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Abdulkerim Sesli" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-    <!-- Color scheme meta centralized in shared head -->
+    <!-- Color Scheme -->
+    <meta name="color-scheme" content="dark light" />
 
     <!-- AI Crawler friendly meta tags -->
     <meta
       name="robots"
       content="index, follow, max-image-preview:standard, max-snippet:-1, max-video-preview:30"
     />
-    <!-- revisit-after centralized in shared head -->
+    <meta name="revisit-after" content="7 days" />
     <meta
       name="ai-content-declaration"
       content="This website was built by human developer Abdulkerim Sesli. Content is original and human-created."
     />
 
-    <!-- Preconnects and performance hints centralized in shared head -->
-    <!-- Inter font preload & @font-face moved to shared head to centralize resource loading -->
+    <!-- Performance Hints -->
+    <meta name="web-vitals-extension" content="enabled" />
+    <link rel="preconnect" href="https://abdulkerimsesli.de" />
+    <link rel="dns-prefetch" href="https://api.github.com" />
+    <link rel="dns-prefetch" href="https://linkedin.com" />
+    <link rel="preconnect" href="https://github.com" crossorigin />
+    <!-- Google Analytics (Consent-gesteuert) -->
+    <script
+      type="text/plain"
+      data-consent="required"
+      data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN"
+      async
+    ></script>
+    <script type="text/plain" data-consent="required">
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-S0587RQ4CN');
+    </script>
 
-    <!-- Google Analytics scripts centralized in shared head -->
+    <!-- Open Graph Meta-Tags -->
+    <meta property="og:title" content="Abdul aus Berlin - Webentwicklung &amp; Fotografie" />
+    <meta
+      property="og:description"
+      content="Abdul aus Tegel/Berlin - Professionelle Webentwicklung und Fotografie von Abdulkerim Sesli."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://abdulkerimsesli.de" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Abdulkerim Sesli Portfolio - Webentwicklung und Fotografie"
+    />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:site_name" content="Abdulkerim Sesli Portfolio" />
 
-    <!-- Open Graph, Twitter, icons & other head assets centralized in shared head -->
+    <!-- Twitter Card Meta-Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Abdul aus Berlin – Webentwicklung &amp; Fotografie" />
+    <meta
+      name="twitter:description"
+      content="Abdul aus Tegel/Berlin - Portfolio von Abdulkerim Sesli."
+    />
+    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
+    <meta name="twitter:image:alt" content="Abdulkerim Sesli Portfolio Preview" />
+    <meta name="twitter:creator" content="@abdulkerimsesli" />
+    <meta name="twitter:site" content="@abdulkerimsesli" />
 
-    <!-- Open Graph & PWA / Icons / Fonts etc... (centralized in shared head) -->
+    <!-- LinkedIn Meta-Tags -->
+    <meta property="article:author" content="Abdulkerim Sesli" />
+    <meta property="article:publisher" content="https://abdulkerimsesli.de" />
 
-    <!-- main CSS now centralized in shared head -->
+    <!-- WhatsApp/Telegram Sharing -->
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta
+      property="og:image:secure_url"
+      content="https://abdulkerimsesli.de/content/img/og/og-home.svg"
+    />
 
-    <!-- index.css: moved to centralized shared head -->
+    <!-- Open Graph & PWA / Icons / Fonts etc... -->
+    <link rel="icon" href="/content/img/icons/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" sizes="96x96" href="/content/img/icons/icon-96.png" type="image/png" />
+    <link rel="icon" sizes="144x144" href="/content/img/icons/icon-144.png" type="image/png" />
+    <link rel="icon" sizes="192x192" href="/content/img/icons/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/content/img/icons/icon-192.png" />
+    <link rel="mask-icon" href="/content/img/icons/favicon.svg" color="#07a1ff" />
 
-    <!-- Hero and TypeWriter CSS moved to centralized shared head -->
+    <!-- Windows Tiles (PWA) -->
+    <meta name="msapplication-TileColor" content="#07a1ff" />
+    <meta name="msapplication-TileImage" content="/content/img/icons/icon-144.png" />
+
+    <!-- Kritische CSS: inline minimal "above-the-fold" styles to ensure first paint -->
+    <style>
+      /* Minimal critical styles für First Paint */
+      :root {
+        --bg-primary: #0a0a0a;
+        --text-primary: #f5f5f5;
+        --primary-color: #007aff;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        overflow-x: hidden;
+      }
+      /* Loading Screen Critical - moved to `content/root.css` */
+      /* Spin keyframes moved to `content/root.css` */
+      /* Header Critical */
+      .site-header {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: 1400px;
+        height: 52px;
+        z-index: 9999;
+      }
+    </style>
+
+    <!-- Load main CSS files non-blocking with media="print" + onload --- fallback using <noscript> -->
+    <link
+      rel="stylesheet"
+      href="/content/root.css"
+      media="print"
+      onload="this.media='all';this.onload=null;"
+    />
+    <noscript><link rel="stylesheet" href="/content/root.css" /></noscript>
+
+    <link
+      rel="stylesheet"
+      href="/content/index.css"
+      media="print"
+      onload="this.media='all';this.onload=null;"
+    />
+    <noscript><link rel="stylesheet" href="/content/index.css" /></noscript>
+
+    <!-- Critical component CSS that should load synchronously (Hero, TypeWriter) -->
+    <link rel="stylesheet" href="/pages/home/hero.css" />
+    <link rel="stylesheet" href="/content/TypeWriter/typewriter.css" />
 
     <!-- Component CSS -->
-    <!-- Component CSS centralized in shared head (menu, footer) -->
+    <link rel="stylesheet" href="/content/menu/menu.css" />
+    <link rel="stylesheet" href="/content/footer/footer.css" />
+    <link rel="stylesheet" href="/content/footer/day-night-artwork.css" />
+    <link rel="stylesheet" href="/content/footer/cookie-consent.css" />
 
     <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
-    <!-- three-earth styles centralized in shared head -->
+    <link
+      rel="stylesheet"
+      href="/content/particles/three-earth.css"
+      media="print"
+      onload="this.media='all';this.onload=null;"
+    />
+    <noscript><link rel="stylesheet" href="/content/particles/three-earth.css" /></noscript>
 
-    <!-- Main application script (centralized in shared head) -->
+    <!-- Main application script -->
+    <script type="module" src="/content/main.js"></script>
 
     <!-- Deferred Styles (Below-the-Fold) -->
-    <!-- about.css centralized in shared head -->
+    <link
+      rel="stylesheet"
+      href="/pages/about/about.css"
+      media="print"
+      onload="this.media='all';this.onload=null;"
+    />
+    <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
-    <!-- card/karten.css centralized in shared head -->
+    <link
+      rel="stylesheet"
+      href="/pages/card/karten.css"
+      media="print"
+      onload="this.media='all';this.onload=null;"
+    />
+    <noscript><link rel="stylesheet" href="/pages/card/karten.css" /></noscript>
 
-    <!-- manifest centralized in shared head -->
+    <link rel="manifest" href="/manifest.json" />
 
-    <!-- JSON-LD structured data moved to centralized shared head -->
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json" data-cfasync="false">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Abdulkerim Sesli",
+        "alternateName": [
+          "Abdul aus Berlin",
+          "Abdul aus Tegel",
+          "Abdul Berlin",
+          "Abdul Tegel",
+          "Abdul Webentwickler",
+          "Abdul Fotograf"
+        ],
+        "jobTitle": "Web Developer & Photographer",
+        "description": "Abdul aus Berlin-Tegel - Frontend-Entwickler und Fotograf mit Fokus auf moderne Webtechnologien und kreative digitale Projekte. Bekannt als Abdul aus Tegel.",
+        "url": "https://abdulkerimsesli.de",
+        "image": "https://abdulkerimsesli.de/content/img/icons/icon-512.png",
+        "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"],
+        "knowsAbout": [
+          "JavaScript",
+          "Frontend Development",
+          "Web Development",
+          "Photography",
+          "HTML/CSS",
+          "Node.js"
+        ],
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Freelance"
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Berlin",
+          "addressCountry": "DE"
+        }
+      }
+    </script>
+
+    <!-- Website Schema -->
+    <script type="application/ld+json" data-cfasync="false">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Abdulkerim Sesli - Digital Portfolio",
+        "url": "https://abdulkerimsesli.de",
+        "description": "Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte.",
+        "author": {
+          "@type": "Person",
+          "name": "Abdulkerim Sesli"
+        },
+        "inLanguage": "de-DE",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://abdulkerimsesli.de/?search={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+
+    <!-- FAQ Schema -->
+    <script type="application/ld+json" data-cfasync="false">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Was für Webentwicklungs-Services bietet Abdulkerim Sesli an?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Abdulkerim Sesli ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive Webdesign. Er erstellt professionelle Websites und digitale Projekte."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Wo ist Abdulkerim Sesli als Webentwickler tätig?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Abdulkerim Sesli arbeitet als Freelance-Webentwickler und Fotograf in Berlin, Deutschland und bietet seine Services deutschlandweit an."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Welche Technologien verwendet Abdulkerim Sesli für Webentwicklung?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien. Zusätzlich bietet er auch professionelle Fotografie-Services an."
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <!-- Menü (dynamisch geladen) -->

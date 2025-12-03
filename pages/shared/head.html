@@ -6,7 +6,7 @@
 <title>{{PAGE_TITLE}}</title>
 
 <!-- SEO & Metadata -->
-<meta name="description" content="{{PAGE_DESCRIPTION}}" />
+<meta name="description" content="Abdul aus Berlin - Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte. Abdul aus Tegel bietet professionelle Webentwicklung und Fotografie-Services in Berlin." />
 <meta name="keywords" content="Abdul Berlin, Abdul Tegel, Abdulkerim Sesli, Abdul Webentwickler Berlin, Abdul Fotograf Tegel, Portfolio, Webentwicklung Berlin, Frontend Developer Tegel, Fotografie Berlin, Abdul aus Berlin, Abdul aus Tegel" />
 <meta name="author" content="Abdulkerim Sesli - Abdul aus Berlin" />
 <meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs" />
@@ -31,7 +31,6 @@
 <link rel="preconnect" href="https://github.com" crossorigin />
 <link rel="preconnect" href="https://www.googletagmanager.com" />
 <link rel="preconnect" href="https://www.google-analytics.com" />
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
 <!-- PWA & Mobile Experience -->
 <meta name="format-detection" content="telephone=no" />
@@ -77,6 +76,8 @@
 
 <!-- Critical Assets Preload -->
 <link rel="preload" href="/content/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+
+<!-- Inline @font-face for Inter (centralized for all pages) -->
 <style>
   @font-face {
     font-family: 'Inter';
@@ -88,73 +89,13 @@
     unicode-range: U+0000-00FF;
   }
 </style>
-<!-- Minimal Critical Inline CSS for First Paint (centralized) -->
-<style id="critical-css">
-  :root { --bg-primary: #0a0a0a; --text-primary: #f5f5f5; --primary-color: #007aff; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow-x: hidden; }
-  .site-header { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 1400px; height: 52px; z-index: 9999; }
-</style>
 
 <!-- Global CSS -->
-<link rel="stylesheet" href="/content/root.css" media="print" onload="this.media='all';this.onload=null;" />
-<noscript><link rel="stylesheet" href="/content/root.css" /></noscript>
+<link rel="stylesheet" href="/content/root.css" />
 <link rel="stylesheet" href="/content/menu/menu.css" />
 <link rel="stylesheet" href="/content/footer/footer.css" />
 <link rel="stylesheet" href="/content/footer/day-night-artwork.css" />
 <link rel="stylesheet" href="/content/footer/cookie-consent.css" />
-<!-- JSON-LD Structured Data (centralized) -->
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Abdulkerim Sesli",
-    "alternateName": ["Abdul aus Berlin", "Abdul aus Tegel", "Abdul Berlin", "Abdul Tegel", "Abdul Webentwickler", "Abdul Fotograf"],
-    "jobTitle": "Web Developer & Photographer",
-    "description": "Abdul aus Berlin-Tegel - Frontend-Entwickler und Fotograf mit Fokus auf moderne Webtechnologien und kreative digitale Projekte. Bekannt als Abdul aus Tegel.",
-    "url": "https://abdulkerimsesli.de",
-    "image": "https://abdulkerimsesli.de/content/img/icons/icon-512.png",
-    "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"],
-    "knowsAbout": ["JavaScript", "Frontend Development", "Web Development", "Photography", "HTML/CSS", "Node.js"],
-    "worksFor": { "@type": "Organization", "name": "Freelance" },
-    "address": { "@type": "PostalAddress", "addressLocality": "Berlin", "addressCountry": "DE" }
-  }
-</script>
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Abdulkerim Sesli - Digital Portfolio",
-    "url": "https://abdulkerimsesli.de",
-    "description": "Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte.",
-    "author": { "@type": "Person", "name": "Abdulkerim Sesli" },
-    "inLanguage": "de-DE",
-    "potentialAction": { "@type": "SearchAction", "target": { "@type": "EntryPoint", "urlTemplate": "https://abdulkerimsesli.de/?search={search_term_string}" }, "query-input": "required name=search_term_string" }
-  }
-</script>
-<script type="application/ld+json" data-cfasync="false">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      { "@type": "Question", "name": "Was für Webentwicklungs-Services bietet Abdulkerim Sesli an?", "acceptedAnswer": { "@type": "Answer", "text": "Abdulkerim Sesli ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive Webdesign. Er erstellt professionelle Websites und digitale Projekte." } },
-      { "@type": "Question", "name": "Wo ist Abdulkerim Sesli als Webentwickler tätig?", "acceptedAnswer": { "@type": "Answer", "text": "Abdulkerim Sesli arbeitet als Freelance-Webentwickler und Fotograf in Berlin, Deutschland und bietet seine Services deutschlandweit an." } },
-      { "@type": "Question", "name": "Welche Technologien verwendet Abdulkerim Sesli für Webentwicklung?", "acceptedAnswer": { "@type": "Answer", "text": "Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien. Zusätzlich bietet er auch professionelle Fotografie-Services an." } }
-    ]
-  }
-</script>
-<!-- Page-specific styles that should be available globally; loaded non-blocking -->
-<link rel="stylesheet" href="/content/index.css" media="print" onload="this.media='all';this.onload=null;" />
-<noscript><link rel="stylesheet" href="/content/index.css" /></noscript>
-<link rel="stylesheet" href="/pages/home/hero.css" media="print" onload="this.media='all';this.onload=null;" />
-<noscript><link rel="stylesheet" href="/pages/home/hero.css" /></noscript>
-<link rel="stylesheet" href="/content/TypeWriter/typewriter.css" media="print" onload="this.media='all';this.onload=null;" />
-<noscript><link rel="stylesheet" href="/content/TypeWriter/typewriter.css" /></noscript>
-<link rel="stylesheet" href="/content/particles/three-earth.css" media="print" onload="this.media='all';this.onload=null;" />
-<noscript><link rel="stylesheet" href="/content/particles/three-earth.css" /></noscript>
-<link rel="stylesheet" href="/pages/about/about.css" media="print" onload="this.media='all';this.onload=null;" />
-<noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
-<link rel="stylesheet" href="/pages/card/karten.css" media="print" onload="this.media='all';this.onload=null;" />
-<noscript><link rel="stylesheet" href="/pages/card/karten.css" /></noscript>
 
 <!-- Google Analytics (Consent-Controlled) -->
 <script type="text/plain" data-consent="required" data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN" async></script>
@@ -167,9 +108,6 @@
 
 <!-- Main Application Script -->
 <script type="module" src="/content/main.js"></script>
-<!-- Vendor: React & ReactDOM globally provided (UMD builds) -->
-<script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
 
 <!-- Helper: Auto-insert footer trigger zone if missing -->
 <script>
