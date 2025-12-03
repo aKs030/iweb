@@ -71,6 +71,23 @@ if (typeof window !== 'undefined') {
 const elementCache = new Map();
 const CACHE_MAX_SIZE = 20;
 
+export async function fetchWithTimeout(url, timeout = 8000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      credentials: 'same-origin',
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
 export function getElementById(id, useCache = true) {
   if (!id) return null;
 
@@ -250,28 +267,6 @@ export function fire(type, detail = null, target = document) {
     target.dispatchEvent(new CustomEvent(type, { detail }));
   } catch (error) {
     sharedLogger.warn(`Failed to dispatch event: ${type}`, error);
-  }
-}
-
-export function on(type, handler, options = {}, target = document) {
-  let actualTarget = target;
-  let actualOptions = options;
-
-  if (options?.addEventListener) {
-    actualTarget = options;
-    actualOptions = {};
-  }
-
-  if (!actualTarget?.addEventListener) {
-    return () => {};
-  }
-
-  try {
-    actualTarget.addEventListener(type, handler, actualOptions);
-    return () => actualTarget.removeEventListener(type, handler, actualOptions);
-  } catch (error) {
-    sharedLogger.warn(`Failed to add event listener: ${type}`, error);
-    return () => {};
   }
 }
 
