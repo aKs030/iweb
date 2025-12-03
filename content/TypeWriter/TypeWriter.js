@@ -369,6 +369,8 @@ const TypeWriterRegistry = (() => {
 
       // Verwende die lokale initHeroSubtitle Funktion
       return initHeroSubtitleImpl({
+        // Akzeptiere heroDataModule direkt, falls übergeben (Entfernt Abhängigkeit von globalem Getter)
+        heroDataModule: options.heroDataModule,
         ensureHeroDataModule: options.ensureHeroDataModule,
         makeLineMeasurer: modules.makeLineMeasurer,
         quotes: modules.quotes,
@@ -398,6 +400,7 @@ window.TypeWriterRegistry = TypeWriterRegistry;
 
 // Initialisierungsfunktion (intern)
 async function initHeroSubtitleImpl({
+  heroDataModule,
   ensureHeroDataModule,
   makeLineMeasurer,
   quotes,
@@ -420,12 +423,17 @@ async function initHeroSubtitleImpl({
     }
 
     let twCfg = {};
-    try {
-      const mod = await ensureHeroDataModule();
-      twCfg = mod?.typewriterConfig || {};
-    } catch {
-      /* ignore: hero data module unavailable — proceed with default typewriter configuration */
-      void 0;
+    
+    // Config laden: Entweder direktes Modul (bevorzugt) oder via async getter
+    if (heroDataModule) {
+       twCfg = heroDataModule?.typewriterConfig || {};
+    } else if (ensureHeroDataModule) {
+      try {
+        const mod = await ensureHeroDataModule();
+        twCfg = mod?.typewriterConfig || {};
+      } catch {
+        /* ignore */
+      }
     }
 
     const measurer = makeLineMeasurer(subtitleEl);
@@ -452,7 +460,10 @@ async function initHeroSubtitleImpl({
           subtitleEl.style.setProperty('--box-h', `${boxH}px`);
         }
       });
-      window.__typeWriter = _typeWriter;
+      // Optional für Debugging, aber nicht für die Logik erforderlich
+      if (window.location.search.includes('debug')) {
+        window.__typeWriter = _typeWriter;
+      }
     };
 
     const fontsReady = document.fonts?.ready;
@@ -462,35 +473,6 @@ async function initHeroSubtitleImpl({
     return false;
   }
 }
-
-// ===== Externe Typing-Initialisierung =====
-
-// Typing-Initialisierung für externe Verwendung
-window.__initTyping = async () => {
-  try {
-    // Nutze globale TypeWriter Registry
-    if (!window.TypeWriterRegistry) {
-      return false;
-    }
-
-    const registry = window.TypeWriterRegistry;
-    const isReady = await registry.loadModules();
-
-    if (!isReady || !registry.isReady()) {
-      return false;
-    }
-
-    // Nutze die initHeroSubtitle Funktion aus der Registry
-    // ensureHeroDataModule wird vom Hero-Manager bereitgestellt
-    const ensureHeroDataModule = window.__heroEnsureData || (() => Promise.resolve({}));
-    return await registry.initHeroSubtitle({
-      ensureHeroDataModule
-    });
-  } catch {
-    // Silent fail
-    return false;
-  }
-};
 
 // Exports
 export { initHeroSubtitleImpl as initHeroSubtitle, TypeWriter, TypeWriterRegistry };
