@@ -52,13 +52,3 @@ Die WebSocket-Reconnect-Logik verwendet eine helper-Klasse unter `content/shared
 Konfigurationsdateien: `.eslintrc.json`, `.prettierrc` und `.eslintignore` wurden hinzugefügt.
 
 Hinweis: Playwright-basierte Tests wurden entfernt; es gibt keine `npm test` Playwright-Tasks mehr.
-
-## Vendorized dependencies
-
-This project uses a local `content/vendor/` folder to host third-party libraries (React, ReactDOM, HTM, Three.js) to avoid CDN usage and to maintain a strict CSP policy. To fetch or refresh the vendor files, run:
-
-```bash
-bash ./scripts/fetch-vendor.sh
-```
-
-The script will download curated versions of the libraries into `content/vendor/` and ensure they are referenced locally by the project.
