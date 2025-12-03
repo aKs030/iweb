@@ -62,7 +62,19 @@
     <link rel="dns-prefetch" href="https://api.github.com" />
     <link rel="dns-prefetch" href="https://linkedin.com" />
     <link rel="preconnect" href="https://github.com" crossorigin />
-    <!-- Preload critical font moved to shared head for consistent site-wide behavior -->
+    <!-- Preload critical font for index (Inter variable). Keep small inline @font-face for immediate use. -->
+    <link rel="preload" href="/content/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <style>
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        font-synthesis: none;
+        src: local('Inter Variable'), local('Inter'), url('/content/fonts/InterVariable.woff2') format('woff2-variations');
+        unicode-range: U+0000-00FF;
+      }
+    </style>
 
     <!-- Google Analytics (Consent-gesteuert) -->
     <script

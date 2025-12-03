@@ -1,18 +1,8 @@
 /* =============================================
    Self-Hosted Fonts (Inter)
-============================================= */
-@font-face {
-  font-family: Inter;
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  font-synthesis: none;
-  src:
-    local('Inter Variable'),
-    local('Inter'),
-    url('/content/fonts/InterVariable.woff2') format('woff2-variations');
-  unicode-range: U+0000-00FF;
-}
+   Note: @font-face is declared inline in the shared head to ensure the font
+   preload is used immediately; this block remains as a fallback for older pages
+   that may not have the inline declaration yet. */
 
 /* Global import for the Three.js Earth system CSS (canvas and related UI)
   This ensures the background Earth styles are available site-wide even if
