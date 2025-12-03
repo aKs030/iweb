@@ -1,8 +1,8 @@
 /* =============================================
    Self-Hosted Fonts (Inter)
-   Note: @font-face is declared inline in the shared head to ensure the font
-   preload is used immediately; this block remains as a fallback for older pages
-   that may not have the inline declaration yet. */
+   Note: @font-face is declared inline in pages/shared/head.html (centralized)
+   to ensure the font preload is used immediately across all pages.
+============================================= */
 
 /* Global import for the Three.js Earth system CSS (canvas and related UI)
   This ensures the background Earth styles are available site-wide even if
