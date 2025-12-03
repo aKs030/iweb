@@ -231,8 +231,12 @@ export const sharedCleanupManager = new SharedCleanupManager();
 
 // ===== Shared Three.js Loading =====
 
-// AUFGERÄUMT: Lokaler Pfad entfernt, nur noch CDN
-const THREE_PATHS = ['https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js'];
+// Try local vendor first, then CDN. This ensures offline dev environment works
+// and provides a fallback if the CDN is blocked or unavailable.
+const THREE_PATHS = [
+  '/content/vendor/three.module.js',
+  'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js'
+];
 
 let threeLoadingPromise = null;
 
@@ -265,7 +269,9 @@ export async function loadThreeJS() {
         log.info('✅ Three.js loaded successfully');
         return ThreeJS;
       } catch (error) {
-        log.warn(`Failed to load Three.js from ${src}:`, error.message);
+        log.warn(`Failed to load Three.js from ${src}:`, error?.message || error);
+        // Debug info for offline/dev: include ESM origin and path
+        log.debug('Three.js import rejected with error:', error);
 
         // If last attempt, throw error
         if (i === THREE_PATHS.length - 1) {
