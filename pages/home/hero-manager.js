@@ -18,13 +18,20 @@ const HeroManager = (() => {
   let heroData = null;
   let isInitialized = false;
 
-  async function loadTyped() {
+  async function loadTyped(heroDataModule) {
     // Nutze globale TypeWriter Registry
     if (window.TypeWriterRegistry) {
       try {
         await window.TypeWriterRegistry.loadModules();
-        return window.TypeWriterRegistry.isReady();
-      } catch {
+        // Hier übergeben wir das Daten-Modul direkt, statt über window.__heroEnsureData zu gehen
+        if (window.TypeWriterRegistry.initHeroSubtitle) {
+          return window.TypeWriterRegistry.initHeroSubtitle({
+            heroDataModule
+          });
+        }
+        return false;
+      } catch (err) {
+        logger.warn('Failed to load TypeWriter modules', err);
         return false;
       }
     }
@@ -39,10 +46,11 @@ const HeroManager = (() => {
     const triggerLoad = async () => {
       if (loaded) return;
       loaded = true;
-      // Preload critical hero data parallel to typewriter check
-      ensureHeroData().catch(() => {});
-
-      await loadTyped();
+      
+      // Lade Daten und gebe sie weiter
+      const dataModule = await ensureHeroData().catch(() => ({}));
+      await loadTyped(dataModule);
+      
       setRandomGreetingHTML();
     };
 
@@ -72,9 +80,6 @@ const HeroManager = (() => {
       logger.warn('Failed to load GrussText.js', err);
       return {};
     }));
-
-  // Hero Data Module für externe Verwendung (z.B. TypeWriter) bereitstellen
-  window.__heroEnsureData = ensureHeroData;
 
   async function setRandomGreetingHTML(animated = false) {
     const delays = [0, 50, 120, 240, 480];
@@ -129,20 +134,9 @@ export function initHeroFeatureBundle() {
       HeroManager.setRandomGreetingHTML();
       (window.announce || (() => {}))('Hero Bereich bereit.');
     }
-    // Einmalige Typing-Initialisierung starten
-    try {
-      if (!window.__typingStarted) {
-        window.__typingStarted = true;
-        Promise.resolve(window.__initTyping?.()).catch(() => {
-          window.__typingStarted = false;
-        });
-      }
-    } catch (e) {
-      logger.warn('Error during typing initialization.', e);
-    }
   };
 
-  // Event Listener sicher hinzufügen (Remove if existing, though anonymous funcs make this hard, rely on singleton/flags)
+  // Event Listener sicher hinzufügen
   document.removeEventListener(EVENTS.HERO_LOADED, onHeroLoaded);
   document.addEventListener(EVENTS.HERO_LOADED, onHeroLoaded);
 
@@ -154,17 +148,6 @@ export function initHeroFeatureBundle() {
       if (!el) return;
       if (!el.textContent.trim()) {
         HeroManager.setRandomGreetingHTML();
-      }
-      // Fallback: Typing starten, falls hero:loaded noch nicht gefeuert hat
-      try {
-        if (!window.__typingStarted) {
-          window.__typingStarted = true;
-          Promise.resolve(window.__initTyping?.()).catch(() => {
-            window.__typingStarted = false;
-          });
-        }
-      } catch (e) {
-        logger.warn('Error during typing initialization.', e);
       }
     },
     { once: true }
@@ -178,8 +161,7 @@ export function initHeroFeatureBundle() {
   // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
 
-  // Attach click handler to in-hero anchor links that target sections by id.
-  // Prevents changing the URL (no fragment) and performs a smooth scroll instead.
+  // Smooth Scroll Handler für Hero Buttons
   const handleHeroAnchorClick = (event) => {
     const link = event.target.closest('.hero-buttons a[href^="#"]');
     if (!link) return;
@@ -212,7 +194,6 @@ export function initHeroFeatureBundle() {
     requestAnimationFrame(doScroll);
   };
 
-  // Delegated listener: works even if hero buttons are injected later by SectionLoader
   document.removeEventListener('click', handleHeroAnchorClick);
   document.addEventListener('click', handleHeroAnchorClick);
 }
