@@ -12,6 +12,7 @@ import {
   createLazyLoadObserver,
   createLogger,
   EVENTS,
+  fetchWithTimeout,
   fire,
   getElementById,
   schedulePersistentStorageRequest,
@@ -96,7 +97,6 @@ const SectionLoader = (() => {
   const loadedSections = new WeakSet();
   const retryAttempts = new WeakMap();
   const MAX_RETRIES = 2;
-  const FETCH_TIMEOUT = 8000;
 
   function dispatchEvent(type, section, detail = {}) {
     try {
@@ -118,23 +118,6 @@ const SectionLoader = (() => {
       if (text) return text;
     }
     return section.id || 'Abschnitt';
-  }
-
-  async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    try {
-      const response = await fetch(url, {
-        credentials: 'same-origin',
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      return response;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      throw error;
-    }
   }
 
   async function loadSection(section) {
@@ -490,29 +473,8 @@ document.addEventListener(
       windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
     });
 
-    // Development: Optional reconnecting test WebSocket (connect to local ws://127.0.0.1:3001)
-    if (ENV.debug) {
-      try {
-        import('./shared/reconnecting-websocket.js')
-          .then(({ ReconnectingWebSocket }) => {
-            try {
-              const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
-              rws.onopen = () => log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001');
-              rws.onmessage = (e) => log.debug('Dev RWS message', e.data);
-              rws.onerror = (e) => log.warn('Dev RWS error', e);
-              rws.onclose = (e) => log.warn('Dev RWS closed', e);
-              window.__rws = rws;
-            } catch (ex) {
-              log.warn('Failed to open Dev ReconnectingWebSocket:', ex);
-            }
-          })
-          .catch((err) => log.warn('Dev RWS import failed:', err));
-      } catch (e) {
-        log.warn('Dev RWS dynamic import error', e);
-      }
-    }
     // ===== Dev-only WebSocket test (optional) =====
-    // Usage: add ?ws-test to the page URL to enable a reconnecting websocket to ws://127.0.0.1:3001
+    // Usage: add ?ws-test to the page URL or use debug mode to enable a reconnecting websocket to ws://127.0.0.1:3001
     if (
       !ENV.isTest &&
       (window.location.hostname === 'localhost' ||
@@ -524,20 +486,26 @@ document.addEventListener(
         import('./shared/reconnecting-websocket.js')
           .then((mod) => {
             const { ReconnectingWebSocket } = mod;
-            const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
-            rws.onopen = () => {
-              log.info('ReconnectingWebSocket open (dev test)');
-              try {
-                rws.send('dev:hello');
-              } catch (e) {
-                /* ignore */
-              }
-            };
-            rws.onmessage = (e) => log.debug('[dev-ws]', e.data);
-            rws.onclose = (ev) => log.info('ReconnectingWebSocket closed', ev);
-            rws.onerror = (err) => log.warn('ReconnectingWebSocket error', err);
-            // Attach for debugging
-            if (ENV.debug) window.__devRws = rws;
+            try {
+              const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
+              rws.onopen = () => {
+                log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001');
+                try {
+                  rws.send('dev:hello');
+                } catch (e) {
+                  /* ignore */
+                }
+              };
+              rws.onmessage = (e) => log.debug('[dev-ws]', e.data);
+              rws.onclose = (ev) => log.info('Dev RWS closed', ev);
+              rws.onerror = (err) => log.warn('Dev RWS error', err);
+
+              // Attach for debugging
+              window.__rws = rws;
+              if (ENV.debug) window.__devRws = rws;
+            } catch (ex) {
+              log.warn('Failed to open Dev ReconnectingWebSocket:', ex);
+            }
           })
           .catch((e) => log.warn('Failed to import ReconnectingWebSocket', e));
       }
