@@ -4,8 +4,9 @@
 .three-earth-container {
   position: fixed;
   inset: 0;
-  z-index: -5;
-  pointer-events: auto;
+  /* Keep the earth behind content but above body background so it's visible */
+  z-index: 0;
+  pointer-events: none;
   overflow: hidden;
   contain: strict;
   isolation: isolate;
