@@ -9,11 +9,13 @@
   if (window.SHARED_HEAD_LOADED) return;
 
   try {
-    // 1. Titel der aktuellen Seite sichern
+    // 1. Titel und description der aktuellen Seite sichern
     const existingTitleEl = document.querySelector('title');
     const pageTitle = existingTitleEl
       ? existingTitleEl.textContent
       : document.title || 'Abdul aus Berlin';
+    const existingMetaDescription = document.querySelector('meta[name="description"]');
+    const pageDescription = existingMetaDescription ? existingMetaDescription.getAttribute('content') : '';
 
     // 2. Shared Head laden (mit Caching für Performance)
     const resp = await fetch('/pages/shared/head.html', { cache: 'force-cache' });
@@ -21,8 +23,14 @@
 
     let html = await resp.text();
 
-    // 3. Platzhalter {{PAGE_TITLE}} ersetzen
+    // 3. Platzhalter {{PAGE_TITLE}} und {{PAGE_DESCRIPTION}} ersetzen
     html = html.replace(/\{\{PAGE_TITLE}}/g, pageTitle);
+    if (pageDescription && pageDescription.trim()) {
+      html = html.replace(/\{\{PAGE_DESCRIPTION}}/g, pageDescription);
+    } else {
+      // Falls keine page-spezifische Beschreibung vorhanden ist, entferne den Platzhalter
+      html = html.replace(/\{\{PAGE_DESCRIPTION}}/g, 'Abdul aus Berlin - Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte.');
+    }
 
     // 4. HTML in DOM-Knoten umwandeln
     const range = document.createRange();
