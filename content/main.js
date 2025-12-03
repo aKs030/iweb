@@ -379,7 +379,8 @@ const ThreeEarthLoader = (() => {
         perfMarks.threeJsLoaded = performance.now();
       }
     } catch (error) {
-      log.warn('Three.js failed, using CSS fallback:', error);
+      log.error('Three.js failed, using CSS fallback:', error);
+      console.error('[ThreeEarthLoader] Initialization error:', error);
     } finally {
       isLoading = false;
     }
