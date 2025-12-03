@@ -31,6 +31,7 @@
 <link rel="preconnect" href="https://github.com" crossorigin />
 <link rel="preconnect" href="https://www.googletagmanager.com" />
 <link rel="preconnect" href="https://www.google-analytics.com" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
 <!-- PWA & Mobile Experience -->
 <meta name="format-detection" content="telephone=no" />
@@ -75,6 +76,18 @@
 <meta name="msapplication-TileImage" content="/content/img/icons/icon-144.png" />
 
 <!-- Critical Assets Preload -->
+<link rel="preload" href="/content/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+<style>
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    font-synthesis: none;
+    src: local('Inter Variable'), local('Inter'), url('/content/fonts/InterVariable.woff2') format('woff2-variations');
+    unicode-range: U+0000-00FF;
+  }
+</style>
 
 <!-- Global CSS -->
 <link rel="stylesheet" href="/content/root.css" />
