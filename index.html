@@ -14,8 +14,7 @@
     />
     <meta name="author" content="Abdulkerim Sesli - Abdul aus Berlin" />
     <meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs" />
-    <!-- Security Headers: Diese sollten idealerweise serverseitig gesetzt werden. Meta fallbacks für lokale/Dev-Umgebung (verwende Server-Header in Produktion) -->
-    <!-- Note: connect-src additions below are for local development only (Live Preview / Live Server) -->
+    <!-- Security Headers: Allow scripts from jsDelivr CDN (cdn.jsdelivr.net). Previously used unpkg.com -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://www.google-analytics.com https://api.github.com ws://127.0.0.1:3001 ws://localhost:3001 wss://127.0.0.1:3001 wss://localhost:3001; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
