@@ -5,7 +5,7 @@
  * @version 2.0.0
  */
 
-// Use jsDelivr CDN (allowed by CSP in pages/shared/head.html) instead of unpkg
+// Use jsDelivr CDN (allowed by CSP in content/head/head.html) instead of unpkg
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
 
 // Bind htm to React's createElement function
