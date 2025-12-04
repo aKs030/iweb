@@ -1,4 +1,6 @@
 
+import { CONFIG } from './config.js';
+
 // ===== Helper Functions (Pure) =====
 
 export function calculateQualityLevel(fps) {
