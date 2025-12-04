@@ -4,10 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Abdul aus Berlin - Webentwicklung &amp; Fotografie</title>
-    <!-- Per-page meta kept minimal here; shared head will inject canonical meta, icons, GA, and fonts -->
-
-    <!-- SHARED_HEAD -->
+    <!-- SHARED_HEAD: Lädt Meta-Tags, CSS (root, menu, footer) und main.js global -->
     <script src="/content/head/head-complete.js" type="module"></script>
+    
+    <!-- Page-specific critical styles & CSS (kept local to improve first paint) -->
 
     <!-- Kritische CSS: inline minimal "above-the-fold" styles to ensure first paint -->
     <style>
@@ -39,7 +39,8 @@
       }
     </style>
 
-    <!-- index: main CSS files: index-specific remain. global root.css is injected via shared head -->
+    <!-- Load main CSS files non-blocking with media="print" + onload --- fallback using <noscript> -->
+    
 
     <link
       rel="stylesheet"
@@ -53,7 +54,8 @@
     <link rel="stylesheet" href="/pages/home/hero.css" />
     <link rel="stylesheet" href="/content/TypeWriter/typewriter.css" />
 
-    <!-- Component CSS: page-specific kept below; shared menu/footer CSS are loaded by the shared head -->
+    <!-- Component CSS -->
+    
 
     <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
     <link
@@ -64,7 +66,7 @@
     />
     <noscript><link rel="stylesheet" href="/content/particles/three-earth.css" /></noscript>
 
-    <!-- Main application script loaded via shared head -->
+    
 
     <!-- Deferred Styles (Below-the-Fold) -->
     <link
@@ -83,7 +85,7 @@
     />
     <noscript><link rel="stylesheet" href="/pages/card/karten.css" /></noscript>
 
-    <link rel="manifest" href="/manifest.json" />
+    
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json" data-cfasync="false">
