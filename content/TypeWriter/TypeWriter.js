@@ -1,7 +1,7 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById, shuffle, TimerManager } from '../shared-utilities.js';
+import { createLogger, getElementById, shuffle, TimerManager, splitTextIntoLines } from '../shared-utilities.js';
 
 const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
 const log = createLogger('TypeWriter');
@@ -137,18 +137,7 @@ class TypeWriter {
         return;
       }
 
-      const frag = document.createDocumentFragment();
-      const parts = String(text).split(/(, )/);
-
-      for (const part of parts) {
-        if (part === ', ') {
-          frag.appendChild(document.createTextNode(','));
-          frag.appendChild(document.createElement('br'));
-        } else {
-          frag.appendChild(document.createTextNode(part));
-        }
-      }
-
+      const frag = splitTextIntoLines(text);
       this.textEl.appendChild(frag);
     } catch (error) {
       log.warn('TypeWriter: Text rendering failed', error);
