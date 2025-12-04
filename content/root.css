@@ -61,14 +61,12 @@
   --spacing-xl: 3rem;
   --spacing-2xl: 5rem;
 
-  /* Fonts */
-  --font-primary:
-    -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell, sans-serif;
+  /* Fonts - Inter als primäre Schriftart für gesamte Website */
+  --font-primary: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
   --font-mono: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', monospace;
   --font-inter: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
-  --critical-font-stack:
-    -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell, sans-serif;
-  --font-script: 'Lobster', 'Dancing Script', cursive, serif;
+  --critical-font-stack: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  --font-script: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);
@@ -224,7 +222,7 @@
   --component-separator: rgb(255 255 255 / 15%);
   --component-fill-primary: rgb(255 255 255 / 10%);
   --component-fill-secondary: rgb(255 255 255 / 5%);
-  --component-font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  --component-font-family: 'Inter', -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   --component-text-primary: 17px;
   --component-text-secondary: 15px;
   --component-text-small: 13px;
@@ -345,6 +343,7 @@ iframe {
 ======================= */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
+    /* Reuse light mode variables */
     --theme-mode: 'light';
     --bg-primary: #1e3a8a;
     --bg-secondary: #1e40af;

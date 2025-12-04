@@ -16,11 +16,12 @@
     const { createLogger } = await import('../../content/shared-utilities.js');
     logger = createLogger('AboutModule');
   } catch (err) {
-    console.warn('Logger unavailable, using fallback', err);
+    // Fallback to no-op logger if import fails
     logger = {
-      info: console.log.bind(console, '[AboutModule]'),
-      warn: console.warn.bind(console, '[AboutModule]'),
-      error: console.error.bind(console, '[AboutModule]')
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      debug: () => {}
     };
   }
 

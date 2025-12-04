@@ -64,8 +64,7 @@
   font-size: 0.75rem;
   line-height: 1.2;
   color: var(--dynamic-footer-text-primary, #e5e5e7);
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-primary);
   font-weight: 400;
   white-space: nowrap;
   display: inline-flex;
@@ -106,8 +105,7 @@
   white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 4px rgb(10 132 255 / 25%);
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .cookie-accept-btn:hover {
@@ -138,8 +136,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .cookie-reject-btn:hover {
@@ -541,8 +538,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .cookie-modal-btn-primary {
