@@ -45,6 +45,25 @@ Note: Playwright-based automated tests were removed from this repository. Use th
 - `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.
 - If you want stricter policies (BEM enforcement), incrementally enable additional `stylelint` rules and fix files in small batches.
 
+## Shared Head usage
+
+- This project uses a central `content/head/head.html` injected at runtime via `content/head/head-complete.js` (loader).
+- To add page-specific meta data that should override the shared head defaults, place those meta tags BEFORE the loader script in the page's `<head>`:
+	```html
+	<!-- Example - per-page meta overrides -->
+	<meta name="description" content="Project-specific description" />
+	<meta property="og:image" content="https://example.com/content/img/og/og-projects.svg" />
+	<!-- Loader script will pick those up and replace placeholders in the shared head -->
+	<script src="/content/head/head-complete.js" type="module"></script>
+	```
+- Alternatively, use data attributes on `<html>` or `<body>` before the loader:
+	```html
+	<html data-page-description="Project-specific description" data-og-image="/content/img/og/custom-og.png">
+	```
+- Fallback: the loader will also parse JSON-LD (`<script type="application/ld+json">`) for `description` and `image` fields if no meta/data are present.
+
+This lets you centralize global assets (fonts, CSS, analytics) while keeping the ability to override SEO and social previews per page.
+
 If you'd like, I can open a PR with these changes and include a checklist for follow-up items (e.g., de-duplicate `about.css`, normalize color vars, re-enable `selector-class-pattern` stricter settings).
 
 - `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.
