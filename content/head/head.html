@@ -91,7 +91,9 @@
 </style>
 
 <!-- Global CSS -->
-<link rel="stylesheet" href="/content/root.css" />
+<!-- Load root.css non-blocking to preserve first paint optimizations used on Index -->
+<link rel="stylesheet" href="/content/root.css" media="print" onload="this.media='all';this.onload=null;" />
+<noscript><link rel="stylesheet" href="/content/root.css" /></noscript>
 <link rel="stylesheet" href="/content/menu/menu.css" />
 <link rel="stylesheet" href="/content/footer/footer.css" />
 <link rel="stylesheet" href="/content/footer/day-night-artwork.css" />

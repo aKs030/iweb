@@ -46,6 +46,45 @@
       existingTitleEl.remove();
     }
 
+    // 6. Duplikate im Fragment entfernen, wenn die Seite bereits eigene Tags besitzt
+    try {
+      // Entferne meta-tags, falls die Seite bereits einen meta mit gleicher name/property besitzt
+      const fragMetas = Array.from(fragment.querySelectorAll('meta[name], meta[property]'));
+      fragMetas.forEach((m) => {
+        const name = m.getAttribute('name');
+        const prop = m.getAttribute('property');
+        if (name && document.head.querySelector(`meta[name="${name}"]`)) {
+          m.remove();
+        } else if (prop && document.head.querySelector(`meta[property="${prop}"]`)) {
+          m.remove();
+        }
+      });
+
+      // Entferne link-tags (icons, same href) falls vorhanden
+      const fragLinks = Array.from(fragment.querySelectorAll('link[rel]'));
+      fragLinks.forEach((l) => {
+        const rel = l.getAttribute('rel');
+        const href = l.getAttribute('href');
+        if (href && document.head.querySelector(`link[rel="${rel}"][href="${href}"]`)) {
+          l.remove();
+        } else if (rel === 'icon' && document.head.querySelector('link[rel="icon"]')) {
+          // Wenn bereits ein Icon vorhanden ist, entferne das fragment-icon
+          l.remove();
+        }
+      });
+
+      // Entferne script-tags mit gleichen src/data-src
+      const fragScripts = Array.from(fragment.querySelectorAll('script[src], script[data-src]'));
+      fragScripts.forEach((s) => {
+        const src = s.getAttribute('src') || s.getAttribute('data-src');
+        if (src && document.head.querySelector(`script[src="${src}"], script[data-src="${src}"]`)) {
+          s.remove();
+        }
+      });
+    } catch (e) {
+      console.warn('[Head-Loader] Could not prune duplicates from fragment', e);
+    }
+
     // 6. Einfügepunkt finden (<!-- SHARED_HEAD -->)
     let inserted = false;
     const childNodes = Array.from(document.head.childNodes);
