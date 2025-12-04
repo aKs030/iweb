@@ -1,5 +1,6 @@
 import { CONFIG } from './config.js';
-import { createLogger } from '../../shared-utilities.js';
+import { createLogger, throttle } from '../../shared-utilities.js';
+import { calculateQualityLevel, calculateDynamicResolution } from './ui_helpers.js';
 
 const log = createLogger('EarthUI');
 
@@ -114,6 +115,9 @@ export class PerformanceMonitor {
     this.fps = 60;
     this.currentPixelRatio = CONFIG.PERFORMANCE.PIXEL_RATIO;
     this.currentQualityLevel = 'HIGH';
+
+    // Throttled adjustment to avoid rapid fluctuating changes
+    this.throttledAdjustResolution = throttle(() => this.adjustResolution(), 1000);
   }
 
   update() {
@@ -124,7 +128,7 @@ export class PerformanceMonitor {
       this.lastTime = time;
       this.frame = 0;
       this.updateDisplay();
-      this.adjustResolution();
+      this.throttledAdjustResolution();
     }
   }
 
@@ -139,42 +143,23 @@ export class PerformanceMonitor {
   }
 
   adjustResolution() {
-    this.adjustQualityLevel();
-
-    if (this.fps < 10) {
-      this.currentPixelRatio = 0.5;
-      this.renderer.setPixelRatio(this.currentPixelRatio);
-      return;
+    // 1. Quality Level Logic
+    const newQualityLevel = calculateQualityLevel(this.fps);
+    if (newQualityLevel !== this.currentQualityLevel) {
+      this.currentQualityLevel = newQualityLevel;
+      if (this.onQualityChange) this.onQualityChange(this.currentQualityLevel);
     }
 
-    if (this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD && this.currentPixelRatio > 0.5) {
-      this.currentPixelRatio = Math.max(0.5, this.currentPixelRatio - 0.15);
+    // 2. Pixel Ratio Logic
+    const newPixelRatio = calculateDynamicResolution(
+      this.fps,
+      this.currentPixelRatio,
+      CONFIG.PERFORMANCE
+    );
+
+    if (newPixelRatio !== this.currentPixelRatio) {
+      this.currentPixelRatio = newPixelRatio;
       this.renderer.setPixelRatio(this.currentPixelRatio);
-    } else if (
-      this.fps > CONFIG.PERFORMANCE.DRS_UP_THRESHOLD &&
-      this.currentPixelRatio < CONFIG.PERFORMANCE.PIXEL_RATIO
-    ) {
-      this.currentPixelRatio = Math.min(
-        CONFIG.PERFORMANCE.PIXEL_RATIO,
-        this.currentPixelRatio + 0.05
-      );
-      this.renderer.setPixelRatio(this.currentPixelRatio);
-    }
-  }
-
-  adjustQualityLevel() {
-    const prevLevel = this.currentQualityLevel;
-
-    if (this.fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
-      this.currentQualityLevel = 'LOW';
-    } else if (this.fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
-      this.currentQualityLevel = 'MEDIUM';
-    } else {
-      this.currentQualityLevel = 'HIGH';
-    }
-
-    if (prevLevel !== this.currentQualityLevel && this.onQualityChange) {
-      this.onQualityChange(this.currentQualityLevel);
     }
   }
 
