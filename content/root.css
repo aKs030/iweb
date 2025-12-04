@@ -1,6 +1,6 @@
 /* =============================================
    Self-Hosted Fonts (Inter)
-   Note: @font-face is declared inline in pages/shared/head.html (centralized)
+  Note: @font-face is declared inline in content/head/head.html (centralized)
    to ensure the font preload is used immediately across all pages.
 ============================================= */
 
