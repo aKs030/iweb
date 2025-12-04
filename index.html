@@ -183,6 +183,18 @@
         ]
       }
     </script>
+    <script type="module">
+      (function ensureMainFallback() {
+        const WAIT_MS = 400;
+        const loaded = () => !!window.SHARED_HEAD_LOADED;
+        if (loaded()) return;
+        setTimeout(() => {
+          if (!loaded()) {
+            import('/content/main.js').catch((e) => console.warn('Fallback main.js import failed', e));
+          }
+        }, WAIT_MS);
+      })();
+    </script>
   </head>
   <body>
     <!-- Menü (dynamisch geladen) -->
