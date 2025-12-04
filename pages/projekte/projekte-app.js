@@ -287,6 +287,9 @@ export function initProjectsApp() {
     const root = ReactDOM.createRoot(rootEl);
     root.render(html`<${App} />`);
   } else {
-    console.error('React dependencies or root element missing');
+    // React dependencies or root element missing - fail silently in production
+    if (typeof console !== 'undefined' && console.error) {
+      console.error('[ProjectsApp] React dependencies or root element missing');
+    }
   }
 }

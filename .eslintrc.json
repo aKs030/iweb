@@ -5,18 +5,28 @@
   },
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 2022,
+    "ecmaVersion": 2024,
     "sourceType": "module"
   },
   "rules": {
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-unused-vars": ["warn", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
-    "semi": ["warn", "always"]
+    "semi": ["warn", "always"],
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "prefer-const": "warn",
+    "no-var": "warn"
   },
   "overrides": [
     {
       "files": ["scripts/**/*.js"],
       "env": { "node": true },
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["sw.js", "content/main.js"],
       "rules": {
         "no-console": "off"
       }

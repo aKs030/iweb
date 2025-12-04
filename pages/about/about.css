@@ -216,11 +216,7 @@
     background-color: var(--primary-dark, #0056b3);
   }
 
-  .about__cta {
-    flex-direction: column;
-    gap: 0.65rem;
-    align-items: stretch;
-  }
+  /* CTA buttons already handled in mobile breakpoint above */
 }
 
 /* No Viewport Support (fallback) */

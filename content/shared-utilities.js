@@ -257,7 +257,8 @@ export const EVENTS = Object.freeze({
   DOM_READY: 'app:domReady',
   CORE_INITIALIZED: 'app:coreInitialized',
   MODULES_READY: 'app:modulesReady',
-  HERO_INIT_READY: 'app:heroInitReady'
+  HERO_INIT_READY: 'app:heroInitReady',
+  SW_UPDATE_AVAILABLE: 'sw:updateAvailable'
 });
 
 export function fire(type, detail = null, target = document) {

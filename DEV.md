@@ -34,17 +34,79 @@ npx wscat -c ws://127.0.0.1:3001
 # Type some text and you should see the server echo back 'echo:...'
 ```
 
+## Progressive Web App (PWA)
+
+The site includes a Service Worker (`sw.js`) for offline functionality:
+
+- **Offline-First** für statische Assets
+- **Network-First** für HTML-Seiten
+- **Cache-First** für Bilder und Fonts
+- Automatische Cache-Bereinigung
+
+### Service Worker testen
+
+```bash
+# Lokaler Server mit HTTPS (Service Worker benötigt HTTPS oder localhost)
+npm run serve
+
+# Service Worker Status in DevTools:
+# Application > Service Workers
+```
+
+### Service Worker löschen (während Entwicklung)
+
+```javascript
+// In Browser Console:
+navigator.serviceWorker.getRegistrations().then(registrations => {
+  registrations.forEach(registration => registration.unregister());
+});
+```
+
+## Recent Optimizations (2025-12-04)
+
+### ✅ Console-Logs durch Logger ersetzt
+Alle direkten `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt für bessere Kontrolle und Production-Optimierung.
+
+### ✅ CSS-Duplikate entfernt
+- `pages/about/about.css` wurde bereinigt und optimiert
+- Doppelte Selektoren wurden konsolidiert
+
+### ✅ Dependencies aktualisiert
+- ESLint: v8 → v9
+- Concurrently: v8 → v9
+- Lint-staged: v13 → v15
+- Prettier: v3.2 → v3.4
+- Stylelint: v16.26 → v16.11
+
+### ✅ Service Worker hinzugefügt
+PWA-Support mit intelligenten Caching-Strategien implementiert.
+
+### ✅ Security (CSP)
+Siehe `SECURITY-CSP.md` für Content Security Policy Empfehlungen.
+
 ## Notes
 
 The reconnecting WebSocket helper is in `content/shared/reconnecting-websocket.js`. It listens to `visibilitychange` and `online` events to avoid aggressive reconnection when the page is suspended by the browser. Use this class for persistent WebSocket connections in dev or production, but ensure you adjust heartbeat/ping strategy for real-world servers.
 
-## CSS cleanup (completed)
+## Code Quality
 
-Note: Playwright-based automated tests were removed from this repository. Use the `dev` script for local testing and manual verification.
+### Linting
 
-- `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.
-- If you want stricter policies (BEM enforcement), incrementally enable additional `stylelint` rules and fix files in small batches.
+```bash
+# JavaScript
+npx eslint .
 
-If you'd like, I can open a PR with these changes and include a checklist for follow-up items (e.g., de-duplicate `about.css`, normalize color vars, re-enable `selector-class-pattern` stricter settings).
+# CSS
+npx stylelint "**/*.css"
 
-- `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.
+# Format all
+npm run format
+```
+
+### Best Practices
+
+- Verwende das Logger-System (`createLogger`) statt direkter `console.*` Aufrufe
+- Halte CSS-Variablen in `content/root.css` zentralisiert
+- Service Worker Updates erfordern Version-Bump in `sw.js`
+- Teste offline Funktionalität mit DevTools Network Throttling
+

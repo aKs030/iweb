@@ -1,54 +1,174 @@
 # iweb
 
-## Hinweis: Service Worker vollständig entfernt (Nov 2025)
+Modernes Portfolio & Creative Development Platform von Abdulkerim Sesli.
 
-Die Website verwendet keinen Service Worker mehr. Alle Registrierungen und zugehörigen Caches wurden entfernt, und die Datei `sw.js` ist nicht mehr Teil des Repositories.
+## ✨ Features
 
-## Aufräumen und Linting
+- **Progressive Web App (PWA)** mit Offline-Support
+- **Responsive Design** optimiert für alle Geräte
+- **3D Earth Visualization** mit Three.js
+- **TypeWriter-Effekt** für dynamische Texte
+- **Accessibility-First** mit ARIA-Support und Screen Reader Optimierung
+- **Performance-optimiert** mit Lazy Loading und Code Splitting
 
-Für ein sauberes Projekt-Setup kannst du folgende Befehle lokal ausführen:
+## 🚀 Quick Start
 
-```bash
-# Installiere dev-Tools
-npm install
-
-# Linting (ESLint): erkennt mögliche Fehler und Stilprobleme
-npm run lint
-
-# Formatierung (Prettier): formatiert den Code automatisch
-npm run format
-```
-
-## Lokale Entwicklung & WebSocket Debugging
-
-Zum schnellen lokalen Testen ohne VS Code Live Preview kannst du jetzt einen statischen HTTP-Server und einen lokalen WebSocket-Testserver parallel starten:
-
-1. Installiere dev-Abhängigkeiten (falls noch nicht geschehen):
+### Installation
 
 ```bash
+# Installiere Dependencies
 npm install
 ```
 
-2. Starte alles mit einem Befehl:
+### Development Server
 
 ```bash
+# Starte lokalen Entwicklungsserver
 npm run dev
 ```
 
-3. Öffne die Seite im Browser:
+Öffne http://127.0.0.1:8081 im Browser.
 
-```bash
-open http://127.0.0.1:8081
-```
+### WebSocket Debugging
 
-4. Wenn du die lokale WebSocket-Demo aktivieren möchtest (sie verbindet zu `ws://127.0.0.1:3001`), füge `?ws-test` zur URL hinzu oder aktiviere `debug` im Query-String:
+Für lokales WebSocket-Testing füge `?ws-test` zur URL hinzu:
 
 ```bash
 open "http://127.0.0.1:8081/?ws-test"
 ```
 
-Die WebSocket-Reconnect-Logik verwendet eine helper-Klasse unter `content/shared/reconnecting-websocket.js`.
+Die WebSocket-Reconnect-Logik verwendet `content/shared/reconnecting-websocket.js`.
 
-Konfigurationsdateien: `.eslintrc.json`, `.prettierrc` und `.eslintignore` wurden hinzugefügt.
+## 🛠️ Scripts
 
-Hinweis: Playwright-basierte Tests wurden entfernt; es gibt keine `npm test` Playwright-Tasks mehr.
+```bash
+# Code formatieren
+npm run format
+
+# Entwicklungsserver starten
+npm run dev
+
+# Lokaler HTTP-Server
+npm run serve
+```
+
+## 📦 Progressive Web App (PWA)
+
+Die Website ist als PWA installierbar und bietet:
+
+- **Offline-Funktionalität** durch Service Worker
+- **App-Installation** auf Desktop und Mobile
+- **Cache-Strategien**:
+  - Cache-First für Bilder und Fonts
+  - Network-First für HTML
+  - Stale-While-Revalidate für CSS/JS
+
+### Service Worker Management
+
+```javascript
+// Service Worker löschen (Development)
+navigator.serviceWorker.getRegistrations().then(registrations => {
+  registrations.forEach(reg => reg.unregister());
+});
+```
+
+Siehe `sw.js` für Implementierungsdetails.
+
+## 🔒 Sicherheit
+
+Content Security Policy (CSP) Empfehlungen sind in `SECURITY-CSP.md` dokumentiert.
+
+Empfohlene Security Headers:
+- Content-Security-Policy
+- X-Content-Type-Options
+- X-Frame-Options
+- Strict-Transport-Security
+
+## 📁 Projektstruktur
+
+```
+iweb/
+├── content/               # Shared Components & Utilities
+│   ├── main.js           # Haupt-Entry-Point
+│   ├── shared-utilities.js
+│   ├── accessibility-manager.js
+│   ├── menu/
+│   ├── footer/
+│   ├── particles/        # Three.js Earth System
+│   └── TypeWriter/
+├── pages/                # Seiten-spezifische Module
+│   ├── home/
+│   ├── about/
+│   └── projekte/
+├── sw.js                 # Service Worker
+├── offline.html          # Offline-Fallback-Seite
+└── manifest.json         # PWA Manifest
+```
+
+## 🎨 Styling
+
+CSS-Variablen sind in `content/root.css` zentralisiert:
+- Dark/Light Mode Support
+- Responsive Typography
+- Design Tokens für Konsistenz
+
+## 🧪 Code Quality
+
+### Linting
+
+```bash
+# JavaScript linting
+npx eslint .
+
+# CSS linting
+npx stylelint "**/*.css"
+```
+
+### Best Practices
+
+- Verwende `createLogger()` aus `shared-utilities.js` für Logging
+- Halte CSS-Variablen in `content/root.css`
+- Service Worker Version-Bump bei Änderungen an `sw.js`
+- Teste Offline-Funktionalität mit DevTools Network Throttling
+
+## 📝 Recent Updates (Dezember 2025)
+
+### ✅ Console-Logs standardisiert
+Alle `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt.
+
+### ✅ Dependencies aktualisiert
+- ESLint v8 → v9
+- Concurrently v8 → v9
+- Lint-staged v13 → v15
+- Weitere Updates siehe `package.json`
+
+### ✅ CSS optimiert
+- Doppelte Selektoren entfernt
+- about.css bereinigt
+- CSS-Variablen konsolidiert
+
+### ✅ PWA implementiert
+Service Worker mit intelligenten Caching-Strategien hinzugefügt.
+
+## 📚 Dokumentation
+
+- **DEV.md** - Entwickler-Dokumentation und Debugging-Tipps
+- **SECURITY-CSP.md** - Content Security Policy Richtlinien
+- **manifest.json** - PWA-Konfiguration
+
+## 🤝 Entwicklung
+
+Entwickelt mit modernen Web-Standards:
+- ES Modules
+- CSS Custom Properties
+- Intersection Observer API
+- Service Worker API
+- Web Components Patterns
+
+## 📄 Lizenz
+
+MIT
+
+---
+
+**Hinweis:** Diese Website verwendet keine externen Frameworks im Production-Build. React wird nur für die Projekte-Seite verwendet und ist als UMD-Build eingebunden.

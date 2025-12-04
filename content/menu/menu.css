@@ -130,7 +130,7 @@ body {
 /* ===== Dynamic Menu Typography System ===== */
 .site-menu__list li,
 .site-menu__list li a {
-  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  font-family: var(--font-primary);
   font-feature-settings:
     'kern' 1,
     'liga' 1;
@@ -191,7 +191,7 @@ body {
 
   /* Touch Optimization */
   touch-action: pan-y;
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  font-family: var(--font-primary);
   font-weight: 500;
   letter-spacing: -0.02em;
 }
@@ -227,7 +227,7 @@ body {
 }
 
 .site-logo.elegant-logo {
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  font-family: var(--font-primary);
   font-size: clamp(20px, 2.2vw, 24px);
   font-weight: 700; /* Dynamic Menu Bold */
   color: var(--dynamic-menu-label-primary);
@@ -241,14 +241,14 @@ body {
 }
 
 .site-header .site-logo__container .site-logo {
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  font-family: var(--font-primary);
   font-weight: 650;
   color: var(--dynamic-menu-label-primary);
 }
 
 /* ===== Dynamic Menu Subtitle System ===== */
 .site-subtitle {
-  font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+  font-family: var(--font-primary);
   font-size: clamp(11px, 1vw, 13px);
   font-weight: 450; /* Dynamic Menu Regular+ */
   color: var(--dynamic-menu-label-secondary);
@@ -307,7 +307,7 @@ body {
 .site-menu__list li .submenu-toggle {
   text-decoration: none;
   color: var(--dynamic-menu-label-primary);
-  font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  font-family: var(--font-primary);
   font-weight: 510; /* Dynamic Menu Medium */
   position: relative;
   display: flex;

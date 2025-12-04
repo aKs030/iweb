@@ -467,6 +467,38 @@ document.addEventListener(
 
     schedulePersistentStorageRequest(2200);
 
+    // ===== Service Worker Registration =====
+    if ('serviceWorker' in navigator && !ENV.isTest) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js', { scope: '/' })
+          .then((registration) => {
+            log.info('Service Worker registered:', registration.scope);
+
+            // Check for updates periodically
+            if (registration.waiting) {
+              log.info('Service Worker update available');
+            }
+
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    log.info('New Service Worker available - refresh to update');
+                    // Optional: Show update notification to user
+                    fire(EVENTS.SW_UPDATE_AVAILABLE);
+                  }
+                });
+              }
+            });
+          })
+          .catch((error) => {
+            log.warn('Service Worker registration failed:', error);
+          });
+      });
+    }
+
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),

@@ -55,7 +55,7 @@ export class ReconnectingWebSocket {
         try {
           this.onopen(e);
         } catch (err) {
-          console.warn(err);
+          // Swallow errors in user-provided onopen handler
         }
     };
 

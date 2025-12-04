@@ -100,7 +100,10 @@
         oldScript.parentNode.replaceChild(newScript, oldScript);
       });
     } catch (e) {
-      console.warn('[Head-Loader] Script execution reinforcement failed:', e);
+      // Script execution reinforcement failed - non-critical
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[Head-Loader] Script execution reinforcement failed:', e);
+      }
     }
     // 8. Ensure a single global loader exists across pages (for consistent UX)
     try {
@@ -130,7 +133,9 @@
       }
     } catch (e) {
       // Non-critical: injection failure shouldn't break the page
-      console.warn('[Head-Loader] Could not ensure global loader element:', e);
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[Head-Loader] Could not ensure global loader element:', e);
+      }
     }
 
     // 9. Fallback: Loader automatisch ausblenden, falls keine App-Logik (main.js) übernimmt
@@ -181,9 +186,13 @@
       // Spätestes Sicherheitsnetz: nach 5s ausblenden
       setTimeout(hideLoader, 5000);
     } catch (e) {
-      console.warn('[Head-Loader] Fallback loader hide failed:', e);
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[Head-Loader] Fallback loader hide failed:', e);
+      }
     }
   } catch (err) {
-    console.error('[Head-Loader] Fehler beim Laden des Shared Heads:', err);
+    if (typeof console !== 'undefined' && console.error) {
+      console.error('[Head-Loader] Fehler beim Laden des Shared Heads:', err);
+    }
   }
 })();
