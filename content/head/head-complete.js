@@ -21,74 +21,8 @@
 
     let html = await resp.text();
 
-    // 3. Page meta overrides (Title already replaced above) — Description & OG Image
-    // Try find per-page description (meta[name="description"]), og:description, or data attribute
-    const defaultDescription = 'Abdul aus Berlin - Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und kreative digitale Projekte.';
-    const defaultOgImage = 'https://abdulkerimsesli.de/content/img/og/og-home.svg';
-
-    const findFirstMetaContent = (selectorList) => {
-      for (const sel of selectorList) {
-        const el = document.querySelector(sel);
-        if (el && el.getAttribute('content')) return el.getAttribute('content').trim();
-      }
-      return null;
-    };
-
-    let pageDescription = findFirstMetaContent([
-      'meta[name="description"]',
-      'meta[property="og:description"]',
-      'meta[name="twitter:description"]'
-    ]) || document.documentElement?.dataset?.pageDescription || document.body?.dataset?.pageDescription || null;
-
-    let pageOgImage = findFirstMetaContent([
-      'meta[property="og:image"]',
-      'meta[name="twitter:image"]'
-    ]) || document.documentElement?.dataset?.ogImage || document.body?.dataset?.ogImage || null;
-
-    // If meta/data attributes didn't provide a description or OG image, inspect JSON-LD for first usable fields
-    if (!pageDescription || !pageOgImage) {
-      try {
-        const ldScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
-        const pickFromLD = (obj) => {
-          if (!obj || typeof obj !== 'object') return {};
-          if (typeof obj.description === 'string') return { description: obj.description };
-          if (typeof obj.image === 'string') return { image: obj.image };
-          // image can be object { '@type':'ImageObject', 'url': '...' }
-          if (obj.image && typeof obj.image === 'object' && typeof obj.image.url === 'string') return { image: obj.image.url };
-          // '@graph' arrays
-          if (Array.isArray(obj['@graph'])) {
-            for (const g of obj['@graph']) {
-              const r = pickFromLD(g);
-              if (r.description || r.image) return r;
-            }
-          }
-          // fallback: check nested properties
-          for (const k in obj) {
-            if (Object.prototype.hasOwnProperty.call(obj, k) && typeof obj[k] === 'object') {
-              const r = pickFromLD(obj[k]);
-              if (r.description || r.image) return r;
-            }
-          }
-          return {};
-        };
-        for (const s of ldScripts) {
-          try {
-            const parsed = JSON.parse(s.textContent);
-            const res1 = pickFromLD(parsed);
-            if (!pageDescription && res1.description) pageDescription = res1.description;
-            if (!pageOgImage && res1.image) pageOgImage = res1.image;
-            if (pageDescription && pageOgImage) break;
-          } catch (e) {
-            // ignore parse errors
-          }
-        }
-      } catch (e) {}
-    }
-
-    // Replace placeholders if present in the head HTML
+    // 3. Platzhalter {{PAGE_TITLE}} ersetzen
     html = html.replace(/\{\{PAGE_TITLE}}/g, pageTitle);
-    html = html.replace(/\{\{PAGE_DESCRIPTION}}/g, (pageDescription || defaultDescription));
-    html = html.replace(/\{\{PAGE_OG_IMAGE}}/g, (pageOgImage || defaultOgImage));
 
     // 4. HTML in DOM-Knoten umwandeln
     const range = document.createRange();
@@ -110,46 +44,6 @@
     // entfernen wir den alten Titel der Seite, damit der neue (im Shared Head) gewinnt.
     if (fragment.querySelector('title') && existingTitleEl) {
       existingTitleEl.remove();
-    }
-
-    // Entferne existierende Meta/Link-Elemente, die vom Shared Head ersetzt werden (z. B. description, og:image etc.)
-    try {
-      const fragmentAssets = Array.from(fragment.querySelectorAll('meta[name], meta[property], link[rel], link[rel="icon"], link[rel="apple-touch-icon"]'));
-      fragmentAssets.forEach((node) => {
-        const n = node.getAttribute('name');
-        const p = node.getAttribute('property');
-        const r = node.getAttribute('rel');
-        try {
-          if (n) {
-            const existing = document.head.querySelector(`meta[name="${CSS.escape(n)}"]`);
-            if (existing) existing.remove();
-          }
-          if (p) {
-            const existing = document.head.querySelector(`meta[property="${CSS.escape(p)}"]`);
-            if (existing) existing.remove();
-          }
-          if (r) {
-            const existing = document.head.querySelector(`link[rel="${CSS.escape(r)}"]`);
-            if (existing) existing.remove();
-          }
-        } catch (er) {
-          // CSS.escape may not exist in older browser; fallback to string match
-          if (n) {
-            const existing = document.head.querySelector(`meta[name="${n}"]`);
-            if (existing) existing.remove();
-          }
-          if (p) {
-            const existing = document.head.querySelector(`meta[property="${p}"]`);
-            if (existing) existing.remove();
-          }
-          if (r) {
-            const existing = document.head.querySelector(`link[rel="${r}"]`);
-            if (existing) existing.remove();
-          }
-        }
-      });
-    } catch (e) {
-      console.warn('[Head-Loader] Duplicate removal failed:', e);
     }
 
     // 6. Einfügepunkt finden (<!-- SHARED_HEAD -->)
