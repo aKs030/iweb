@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { createLogger } from '../../shared-utilities.js';
+import { createLogger, throttle } from '../../shared-utilities.js';
 
 const log = createLogger('EarthUI');
 
@@ -102,6 +102,12 @@ export function showErrorState(container, error, retryCallback) {
 }
 
 export class PerformanceMonitor {
+  // Pixel ratio adjustment constants
+  static RATIO_CRITICAL_THRESHOLD = 10;
+  static RATIO_MIN = 0.5;
+  static RATIO_STEP_DOWN = 0.15;
+  static RATIO_STEP_UP = 0.05;
+
   constructor(parentContainer, renderer, onQualityChange) {
     this.element = document.createElement('div');
     this.element.className = 'three-earth-performance-overlay';
@@ -114,6 +120,9 @@ export class PerformanceMonitor {
     this.fps = 60;
     this.currentPixelRatio = CONFIG.PERFORMANCE.PIXEL_RATIO;
     this.currentQualityLevel = 'HIGH';
+
+    // Throttle resolution adjustments to prevent rapid changes
+    this._throttledAdjustResolution = throttle(() => this._doAdjustResolution(), 500);
   }
 
   update() {
@@ -124,7 +133,7 @@ export class PerformanceMonitor {
       this.lastTime = time;
       this.frame = 0;
       this.updateDisplay();
-      this.adjustResolution();
+      this._throttledAdjustResolution();
     }
   }
 
@@ -138,40 +147,62 @@ export class PerformanceMonitor {
     `;
   }
 
-  adjustResolution() {
-    this.adjustQualityLevel();
+  /**
+   * Calculate new pixel ratio based on FPS and current ratio
+   * @returns {number|null} New pixel ratio or null if no change needed
+   */
+  _calculateNewPixelRatio() {
+    const { RATIO_CRITICAL_THRESHOLD, RATIO_MIN, RATIO_STEP_DOWN, RATIO_STEP_UP } =
+      PerformanceMonitor;
 
-    if (this.fps < 10) {
-      this.currentPixelRatio = 0.5;
-      this.renderer.setPixelRatio(this.currentPixelRatio);
-      return;
+    // Critical performance - drop to minimum immediately
+    if (this.fps < RATIO_CRITICAL_THRESHOLD) {
+      return RATIO_MIN;
     }
 
-    if (this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD && this.currentPixelRatio > 0.5) {
-      this.currentPixelRatio = Math.max(0.5, this.currentPixelRatio - 0.15);
-      this.renderer.setPixelRatio(this.currentPixelRatio);
-    } else if (
+    // Below threshold - decrease ratio
+    if (this.fps < CONFIG.PERFORMANCE.DRS_DOWN_THRESHOLD && this.currentPixelRatio > RATIO_MIN) {
+      return Math.max(RATIO_MIN, this.currentPixelRatio - RATIO_STEP_DOWN);
+    }
+
+    // Above threshold - increase ratio (if not at max)
+    if (
       this.fps > CONFIG.PERFORMANCE.DRS_UP_THRESHOLD &&
       this.currentPixelRatio < CONFIG.PERFORMANCE.PIXEL_RATIO
     ) {
-      this.currentPixelRatio = Math.min(
-        CONFIG.PERFORMANCE.PIXEL_RATIO,
-        this.currentPixelRatio + 0.05
-      );
+      return Math.min(CONFIG.PERFORMANCE.PIXEL_RATIO, this.currentPixelRatio + RATIO_STEP_UP);
+    }
+
+    return null; // No change needed
+  }
+
+  /**
+   * Determine quality level based on FPS
+   * @returns {string} Quality level: 'LOW', 'MEDIUM', or 'HIGH'
+   */
+  _determineQualityLevel() {
+    if (this.fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
+      return 'LOW';
+    }
+    if (this.fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
+      return 'MEDIUM';
+    }
+    return 'HIGH';
+  }
+
+  _doAdjustResolution() {
+    this._adjustQualityLevel();
+
+    const newRatio = this._calculateNewPixelRatio();
+    if (newRatio !== null && newRatio !== this.currentPixelRatio) {
+      this.currentPixelRatio = newRatio;
       this.renderer.setPixelRatio(this.currentPixelRatio);
     }
   }
 
-  adjustQualityLevel() {
+  _adjustQualityLevel() {
     const prevLevel = this.currentQualityLevel;
-
-    if (this.fps < CONFIG.QUALITY_LEVELS.MEDIUM.minFPS) {
-      this.currentQualityLevel = 'LOW';
-    } else if (this.fps < CONFIG.QUALITY_LEVELS.HIGH.minFPS) {
-      this.currentQualityLevel = 'MEDIUM';
-    } else {
-      this.currentQualityLevel = 'HIGH';
-    }
+    this.currentQualityLevel = this._determineQualityLevel();
 
     if (prevLevel !== this.currentQualityLevel && this.onQualityChange) {
       this.onQualityChange(this.currentQualityLevel);

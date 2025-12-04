@@ -1,4 +1,6 @@
 // ===== Mess-Utility: Höhe VOR dem Tippen bestimmen =====
+import { createSmartBreakFragment } from '../shared-utilities.js';
+
 export function makeLineMeasurer(subtitleEl) {
   const measurer = document.createElement('div');
   measurer.style.cssText = [
@@ -55,16 +57,7 @@ export function makeLineMeasurer(subtitleEl) {
     measurer.innerHTML = '';
     const span = document.createElement('span');
     if (smartBreaks) {
-      const frag = document.createDocumentFragment();
-      const parts = String(text).split(/(, )/);
-      for (const part of parts) {
-        if (part === ', ') {
-          frag.appendChild(document.createTextNode(','));
-          frag.appendChild(document.createElement('br'));
-        } else {
-          frag.appendChild(document.createTextNode(part));
-        }
-      }
+      const frag = createSmartBreakFragment(text);
       span.appendChild(frag);
     } else {
       span.textContent = String(text);

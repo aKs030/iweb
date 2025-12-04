@@ -62,10 +62,8 @@
   animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
   will-change: transform, opacity; /* Performance hint */
-}
 
-/* Compact scale inside footer (desktop-first) */
-.site-footer-fixed {
+  /* Compact scale inside footer (desktop-first) */
   --footer-text-xs: 9px;
   --footer-text-sm: 11px;
   --footer-text-base: 12px;

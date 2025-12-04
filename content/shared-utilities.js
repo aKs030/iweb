@@ -412,6 +412,30 @@ export function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// ===== Text Utilities =====
+
+/**
+ * Creates a DocumentFragment with smart line breaks after commas.
+ * Shared utility for TypeWriter and line measurement logic.
+ * @param {string} text - The text to process
+ * @returns {DocumentFragment} Fragment with text nodes and <br> elements
+ */
+export function createSmartBreakFragment(text) {
+  const frag = document.createDocumentFragment();
+  const parts = String(text).split(/(, )/);
+
+  for (const part of parts) {
+    if (part === ', ') {
+      frag.appendChild(document.createTextNode(','));
+      frag.appendChild(document.createElement('br'));
+    } else {
+      frag.appendChild(document.createTextNode(part));
+    }
+  }
+
+  return frag;
+}
+
 // ===== Unified Event Listener Helper =====
 
 export function addListener(target, event, handler, options = {}) {

@@ -42,9 +42,5 @@ The reconnecting WebSocket helper is in `content/shared/reconnecting-websocket.j
 
 Note: Playwright-based automated tests were removed from this repository. Use the `dev` script for local testing and manual verification.
 
-- `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.
+- CSS duplicate selectors in `content/footer/footer.css` and `content/particles/three-earth.css` have been consolidated.
 - If you want stricter policies (BEM enforcement), incrementally enable additional `stylelint` rules and fix files in small batches.
-
-If you'd like, I can open a PR with these changes and include a checklist for follow-up items (e.g., de-duplicate `about.css`, normalize color vars, re-enable `selector-class-pattern` stricter settings).
-
-- `pages/about/about.css` contains a temporary `/* stylelint-disable no-duplicate-selectors */` directive for staged cleanup; recommended follow-up: remove after a targeted cleanup focusing on deduplication and BEM class normalization.

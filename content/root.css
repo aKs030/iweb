@@ -434,6 +434,7 @@ textarea:focus-visible {
   z-index: 9999;
   transition: opacity var(--transition-slow);
 }
+
 .loading-screen.hide {
   opacity: 0;
   pointer-events: none;
