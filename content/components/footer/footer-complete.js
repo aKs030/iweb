@@ -8,8 +8,8 @@
  * ✅ Performance Monitoring
  */
 
-import { createLogger, CookieManager } from '../shared-utilities.js';
-import { a11y } from '../accessibility-manager.js';
+import { createLogger, CookieManager } from '../../utils/shared-utilities.js';
+import { a11y } from '../../utils/accessibility-manager.js';
 
 const log = createLogger('FooterSystem');
 
@@ -461,7 +461,7 @@ class FooterLoader {
     if (!container) return false;
 
     try {
-      const src = container.dataset.footerSrc || '/content/footer/footer.html';
+      const src = container.dataset.footerSrc || '/content/components/footer/footer.html';
       const response = await fetch(src);
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
