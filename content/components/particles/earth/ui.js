@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { createLogger, throttle } from '../../shared-utilities.js';
+import { createLogger, throttle } from '../../../utils/shared-utilities.js';
 import { calculateQualityLevel, calculateDynamicResolution } from './ui_helpers.js';
 
 const log = createLogger('EarthUI');

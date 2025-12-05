@@ -1,7 +1,7 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById, shuffle, TimerManager, splitTextIntoLines } from '../shared-utilities.js';
+import { createLogger, getElementById, shuffle, TimerManager, splitTextIntoLines } from '../../utils/shared-utilities.js';
 
 const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
 const log = createLogger('TypeWriter');

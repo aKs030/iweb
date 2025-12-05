@@ -4,7 +4,7 @@
  * @version 9.4.0 - OPTIMIZED: Fixed Async Race Conditions & Resize Logic
  */
 
-import { createLogger, getElementById, onResize, TimerManager } from '../shared-utilities.js';
+import { createLogger, getElementById, onResize, TimerManager } from '../../utils/shared-utilities.js';
 import {
   getSharedState,
   loadThreeJS,

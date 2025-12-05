@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { createLogger, TimerManager } from '../../shared-utilities.js';
+import { createLogger, TimerManager } from '../../../utils/shared-utilities.js';
 
 const log = createLogger('EarthCamera');
 const earthTimers = new TimerManager();

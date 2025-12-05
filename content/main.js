@@ -17,9 +17,9 @@ import {
   getElementById,
   schedulePersistentStorageRequest,
   SectionTracker
-} from './shared-utilities.js';
-import TypeWriterRegistry from './TypeWriter/TypeWriter.js';
-import { a11y } from './accessibility-manager.js';
+} from './utils/shared-utilities.js';
+import TypeWriterRegistry from './components/typewriter/TypeWriter.js';
+import { a11y } from './utils/accessibility-manager.js';
 // Ensure the a11y manager is available globally and initialized centrally
 if (typeof window !== 'undefined') {
   try {
@@ -29,7 +29,7 @@ if (typeof window !== 'undefined') {
     /* ignored */
   }
 }
-import './menu/menu.js';
+import './components/menu/menu.js';
 
 const log = createLogger('main');
 
@@ -366,7 +366,7 @@ const ThreeEarthLoader = (() => {
 
     try {
       log.info('Loading Three.js Earth system...');
-      const module = await import('./particles/three-earth-system.js');
+      const module = await import('./components/particles/three-earth-system.js');
       const ThreeEarthManager = module.default;
 
       cleanupFn = await ThreeEarthManager.initThreeEarth();
@@ -515,7 +515,7 @@ document.addEventListener(
     ) {
       const params = new URLSearchParams(window.location.search || '');
       if (params.has('ws-test') || ENV.debug) {
-        import('./shared/reconnecting-websocket.js')
+        import('./utils/reconnecting-websocket.js')
           .then((mod) => {
             const { ReconnectingWebSocket } = mod;
             try {
