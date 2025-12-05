@@ -1,4 +1,4 @@
-import { splitTextIntoLines } from '../shared-utilities.js';
+import { splitTextIntoLines } from '../../utils/shared-utilities.js';
 
 // ===== Mess-Utility: Höhe VOR dem Tippen bestimmen =====
 export function makeLineMeasurer(subtitleEl) {

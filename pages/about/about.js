@@ -13,7 +13,7 @@
   let logger;
 
   try {
-    const { createLogger } = await import('../../content/shared-utilities.js');
+    const { createLogger } = await import('../../content/utils/shared-utilities.js');
     logger = createLogger('AboutModule');
   } catch (err) {
     // Fallback to no-op logger if import fails

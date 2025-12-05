@@ -9,7 +9,7 @@
     <meta property="og:description" content="Eine Auswahl meiner Fotos und visuellen Arbeiten." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/pages/fotos/fotos.html" />
-    <meta property="og:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Abdulkerim Sesli Fotografie" />
@@ -20,16 +20,24 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Fotos - Abdulkerim Sesli" />
     <meta name="twitter:description" content="Eine Auswahl meiner Fotos und visuellen Arbeiten." />
-    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
+    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta name="twitter:image:alt" content="Abdulkerim Sesli Fotografie" />
     <meta name="twitter:creator" content="@abdulkerimsesli" />
     <meta name="twitter:site" content="@abdulkerimsesli" />
 
     <!-- SHARED_HEAD -->
-    <script src="/content/head/head-complete.js" type="module"></script>
+    <script src="/content/components/head/head-complete.js" type="module"></script>
 </head>
 <body>
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
+
     <h1>Fotos</h1>
     <p>Hier finden Sie eine Auswahl meiner Fotos.</p>
+
+    <!-- Footer container -->
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
 </body>
 </html>

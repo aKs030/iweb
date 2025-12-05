@@ -17,7 +17,7 @@
  */
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById, EVENTS } from '../shared-utilities.js';
+import { createLogger, getElementById, EVENTS } from '../../utils/shared-utilities.js';
 
 const _log = createLogger('menu');
 

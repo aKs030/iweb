@@ -98,7 +98,7 @@ export class ReconnectingWebSocket {
 }
 
 // Common use example:
-// import { ReconnectingWebSocket } from '/content/shared/reconnecting-websocket.js';
+// import { ReconnectingWebSocket } from '/content/utils/reconnecting-websocket.js';
 // const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
 // rws.onmessage = e => console.log('msg', e.data);
 // rws.onopen = () => rws.send('hello');

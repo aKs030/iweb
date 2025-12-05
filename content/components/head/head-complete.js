@@ -16,7 +16,7 @@
       : document.title || 'Abdul aus Berlin';
 
     // 2. Shared Head laden (mit Caching für Performance)
-    const resp = await fetch('/content/head/head.html', { cache: 'force-cache' });
+    const resp = await fetch('/content/components/head/head.html', { cache: 'force-cache' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
     let html = await resp.text();
