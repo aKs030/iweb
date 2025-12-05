@@ -137,6 +137,15 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
+          <a href="/pages/fotos/fotos.html">
+            <svg class="nav-icon" aria-hidden="true">
+              <use href="#icon-images"></use>
+            </svg>
+            <span class="icon-fallback" style="display: none">📷</span>
+            <span>Fotos</span>
+          </a>
+        </li>
+        <li>
           <a href="#about">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
@@ -297,7 +306,7 @@ function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
     '/': 'Startseite',
-    '/pages/fotos/fotos.html': 'Album',
+    '/pages/fotos/fotos.html': 'Fotos',
     '/pages/card/karten.html': 'Projekte',
     '/pages/projekte/projekte.html': 'Projekte'
   };
