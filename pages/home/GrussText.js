@@ -33,7 +33,7 @@ export function getGreetingSet(date = new Date()) {
   return greetings.night;
 }
 
-import { randomInt } from '../../content/shared-utilities.js';
+import { randomInt } from '../../content/utils/shared-utilities.js';
 
 export function pickGreeting(lastValue = null, set = getGreetingSet()) {
   if (!Array.isArray(set) || set.length === 0) return '';

@@ -26,5 +26,8 @@
     "*.{css,scss,html,json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "sharp": "^0.34.5"
   }
 }

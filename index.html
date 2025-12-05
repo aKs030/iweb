@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Abdul aus Berlin - Webentwicklung &amp; Fotografie</title>
     <!-- SHARED_HEAD: Lädt Meta-Tags, CSS (root, menu, footer) und main.js global -->
-    <script src="/content/head/head-complete.js" type="module"></script>
+    <script src="/content/components/head/head-complete.js" type="module"></script>
     
     <!-- Page-specific critical styles & CSS (kept local to improve first paint) -->
 
@@ -44,15 +44,15 @@
 
     <link
       rel="stylesheet"
-      href="/content/index.css"
+      href="/content/styles/main.css"
       media="print"
       onload="this.media='all';this.onload=null;"
     />
-    <noscript><link rel="stylesheet" href="/content/index.css" /></noscript>
+    <noscript><link rel="stylesheet" href="/content/styles/main.css" /></noscript>
 
     <!-- Critical component CSS that should load synchronously (Hero, TypeWriter) -->
     <link rel="stylesheet" href="/pages/home/hero.css" />
-    <link rel="stylesheet" href="/content/TypeWriter/typewriter.css" />
+    <link rel="stylesheet" href="/content/components/typewriter/typewriter.css" />
 
     <!-- Component CSS -->
     
@@ -60,11 +60,11 @@
     <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
     <link
       rel="stylesheet"
-      href="/content/particles/three-earth.css"
+      href="/content/components/particles/three-earth.css"
       media="print"
       onload="this.media='all';this.onload=null;"
     />
-    <noscript><link rel="stylesheet" href="/content/particles/three-earth.css" /></noscript>
+    <noscript><link rel="stylesheet" href="/content/components/particles/three-earth.css" /></noscript>
 
         <!-- Main application script -->
     <script type="module" src="/content/main.js"></script>
@@ -81,11 +81,11 @@
 
     <link
       rel="stylesheet"
-      href="/pages/card/karten.css"
+      href="/pages/cards/karten.css"
       media="print"
       onload="this.media='all';this.onload=null;"
     />
-    <noscript><link rel="stylesheet" href="/pages/card/karten.css" /></noscript>
+    <noscript><link rel="stylesheet" href="/pages/cards/karten.css" /></noscript>
 
     
 
@@ -106,7 +106,7 @@
         "jobTitle": "Web Developer & Photographer",
         "description": "Abdul aus Berlin-Tegel - Frontend-Entwickler und Fotograf mit Fokus auf moderne Webtechnologien und kreative digitale Projekte. Bekannt als Abdul aus Tegel.",
         "url": "https://abdulkerimsesli.de",
-        "image": "https://abdulkerimsesli.de/content/img/icons/icon-512.png",
+        "image": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
         "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"],
         "knowsAbout": [
           "JavaScript",
@@ -264,7 +264,7 @@
         id="features"
         class="section features"
         aria-label="Features und Leistungen"
-        data-section-src="/pages/card/karten.html"
+        data-section-src="/pages/cards/karten.html"
         data-eager="true"
       >
         <div class="section-skeleton" aria-hidden="true"></div>
@@ -284,7 +284,7 @@
     </main>
 
     <!-- Footer container -->
-    <div id="footer-container" data-footer-src="/content/footer/footer.html"></div>
-    <script src="/content/footer/footer-complete.js" type="module"></script>
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
   </body>
 </html>

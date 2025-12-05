@@ -1,35 +1,222 @@
 <!doctype html>
 <html lang="de">
-<head>
+  <head>
     <meta charset="utf-8" />
-    <title>Fotos - Abdulkerim Sesli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Fotografie - Abdulkerim Sesli</title>
 
     <!-- Open Graph Meta-Tags -->
-    <meta property="og:title" content="Fotos - Abdulkerim Sesli" />
-    <meta property="og:description" content="Eine Auswahl meiner Fotos und visuellen Arbeiten." />
+    <meta property="og:title" content="Fotografie - Abdulkerim Sesli" />
+    <meta property="og:description" content="Eine Auswahl meiner Fotos und visuellen Arbeiten. Street Photography, Landschaft und Architektur." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/pages/fotos/fotos.html" />
-    <meta property="og:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Abdulkerim Sesli Fotografie" />
+    <meta property="og:image:alt" content="Abdulkerim Sesli Fotografie Portfolio" />
     <meta property="og:locale" content="de_DE" />
     <meta property="og:site_name" content="Abdulkerim Sesli Portfolio" />
 
-    <!-- Twitter Card Meta-Tags -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Fotos - Abdulkerim Sesli" />
+    <meta name="twitter:title" content="Fotografie - Abdulkerim Sesli" />
     <meta name="twitter:description" content="Eine Auswahl meiner Fotos und visuellen Arbeiten." />
-    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
-    <meta name="twitter:image:alt" content="Abdulkerim Sesli Fotografie" />
+    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta name="twitter:creator" content="@abdulkerimsesli" />
-    <meta name="twitter:site" content="@abdulkerimsesli" />
 
     <!-- SHARED_HEAD -->
-    <script src="/content/head/head-complete.js" type="module"></script>
-</head>
-<body>
-    <h1>Fotos</h1>
-    <p>Hier finden Sie eine Auswahl meiner Fotos.</p>
-</body>
+    <script src="/content/components/head/head-complete.js" type="module"></script>
+
+    <style>
+      /* Page Specific Styles */
+      body {
+        background-color: var(--bg-primary, #0a0a0a);
+        color: var(--text-primary, #f5f5f5);
+        overflow-x: hidden;
+      }
+
+      .gallery-header {
+        padding: calc(var(--header-height, 60px) + 4rem) 2rem 3rem;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .gallery-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .gallery-subtitle {
+        color: var(--text-secondary, #a0a0a0);
+        font-size: clamp(1.1rem, 2vw, 1.25rem);
+        line-height: 1.6;
+      }
+
+      /* Grid Layout */
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      /* Placeholder Card */
+      .photo-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        aspect-ratio: 4/5;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .photo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+
+      /* Placeholder Image Area */
+      .photo-placeholder {
+        flex-grow: 1;
+        background: linear-gradient(45deg, #1a1a1a, #222);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .photo-placeholder::after {
+        content: '📷';
+        font-size: 3rem;
+        opacity: 0.2;
+      }
+
+      /* Optional: Overlay info */
+      .photo-info {
+        padding: 1rem;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .photo-card:hover .photo-info {
+        transform: translateY(0);
+      }
+
+      .photo-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .photo-tag {
+        font-size: 0.75rem;
+        color: var(--primary-color, #3b82f6);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      @media (max-width: 600px) {
+        .gallery-grid {
+          grid-template-columns: 1fr;
+          padding: 1rem;
+          gap: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
+
+    <main>
+      <section class="gallery-header">
+        <h1 class="gallery-title">Perspektiven</h1>
+        <p class="gallery-subtitle">
+          Momente eingefangen in Licht und Schatten. Eine Sammlung meiner fotografischen Arbeiten aus Berlin und der Welt.
+        </p>
+      </section>
+
+      <div class="gallery-grid" id="galleryGrid">
+        <!-- Dynamically populated or static placeholders -->
+
+        <!-- Placeholder 1 -->
+        <article class="photo-card">
+          <div class="photo-placeholder"></div>
+          <div class="photo-info">
+            <div class="photo-title">Urbane Stille</div>
+            <div class="photo-tag">Architektur</div>
+          </div>
+        </article>
+
+        <!-- Placeholder 2 -->
+        <article class="photo-card">
+          <div class="photo-placeholder"></div>
+          <div class="photo-info">
+            <div class="photo-title">Nachtlichter</div>
+            <div class="photo-tag">Street</div>
+          </div>
+        </article>
+
+        <!-- Placeholder 3 -->
+        <article class="photo-card">
+          <div class="photo-placeholder"></div>
+          <div class="photo-info">
+            <div class="photo-title">Naturspiel</div>
+            <div class="photo-tag">Landschaft</div>
+          </div>
+        </article>
+
+        <!-- Placeholder 4 -->
+        <article class="photo-card">
+          <div class="photo-placeholder"></div>
+          <div class="photo-info">
+            <div class="photo-title">Metropole</div>
+            <div class="photo-tag">Berlin</div>
+          </div>
+        </article>
+
+        <!-- Placeholder 5 -->
+        <article class="photo-card">
+          <div class="photo-placeholder"></div>
+          <div class="photo-info">
+            <div class="photo-title">Schattenwurf</div>
+            <div class="photo-tag">Schwarz-Weiß</div>
+          </div>
+        </article>
+
+        <!-- Placeholder 6 -->
+        <article class="photo-card">
+          <div class="photo-placeholder"></div>
+          <div class="photo-info">
+            <div class="photo-title">Blaue Stunde</div>
+            <div class="photo-tag">Atmosphäre</div>
+          </div>
+        </article>
+
+      </div>
+    </main>
+
+    <!-- Footer container -->
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
+  </body>
 </html>

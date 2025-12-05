@@ -4,8 +4,8 @@ import {
   EVENTS,
   getElementById,
   TimerManager
-} from '../../content/shared-utilities.js';
-import { createLogger } from '../../content/shared-utilities.js';
+} from '../../content/utils/shared-utilities.js';
+import { createLogger } from '../../content/utils/shared-utilities.js';
 
 // Logger für HeroManager
 const logger = createLogger('HeroManager');

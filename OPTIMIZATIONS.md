@@ -117,6 +117,36 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 
 ---
 
+## ✅ 7. Projektstruktur Optimierung
+
+**Status:** Abgeschlossen am 5. Dezember 2025
+
+**Änderungen:**
+
+- **Assets:** `content/img` → `content/assets/img`, `content/fonts` → `content/assets/fonts`
+- **Components:** UI-Module (`footer`, `menu`, `typewriter`, `particles`, `head`) → `content/components/`
+- **Styles:** Globale CSS (`root.css`, `index.css` → `main.css`) → `content/styles/`
+- **Utils:** Shared Logic → `content/utils/`
+- **Reference Updates:** Alle Importe in HTML, JS, CSS und Configs angepasst.
+
+**Vorteil:** Bessere Wartbarkeit, logische Gruppierung, saubere Architektur.
+
+---
+
+## ✅ 8. Bildoptimierung (WebP)
+
+**Status:** Abgeschlossen am 5. Dezember 2025
+
+**Änderungen:**
+
+- Konvertierung kompatibler Bilder zu WebP (`earth_clouds_1024.png` → `.webp`)
+- Config-Updates für neue Formate
+- Icons und OG-Images als PNG/SVG beibehalten für Kompatibilität
+
+**Vorteil:** Schnellere Ladezeiten, geringere Bandbreite.
+
+---
+
 ## 📊 Weitere Verbesserungen
 
 ### ESLint-Konfiguration aktualisiert
@@ -147,6 +177,8 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 - CSS-Duplikate in about.css
 - Kein Service Worker
 - Keine CSP-Dokumentation
+- Flache Verzeichnisstruktur
+- PNG/JPG Assets
 
 ### Nach Optimierungen:
 
@@ -155,6 +187,8 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 - ✅ Bereinigte CSS-Dateien
 - ✅ PWA mit Service Worker
 - ✅ Vollständige CSP-Dokumentation
+- ✅ Logische Verzeichnisstruktur (assets, components, styles, utils)
+- ✅ WebP Bilder
 - ✅ 0 npm vulnerabilities
 
 ---
@@ -203,10 +237,9 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 ### Weitere Optimierungen:
 
 1. **Nonces für Inline-Scripts** (CSP-Verbesserung)
-2. **Image Optimization** (WebP, AVIF)
-3. **Bundle Size Analysis**
-4. **Performance Monitoring** (Web Vitals)
-5. **E2E Tests** (Playwright wieder hinzufügen)
+2. **Bundle Size Analysis**
+3. **Performance Monitoring** (Web Vitals)
+4. **E2E Tests** (Playwright wieder hinzufügen)
 
 ### Monitoring:
 
@@ -226,5 +259,5 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 ---
 
 **Status:** Alle Optimierungen abgeschlossen ✅
-**Datum:** 4. Dezember 2025
+**Datum:** 5. Dezember 2025
 **Nächster Review:** Nach Deployment
