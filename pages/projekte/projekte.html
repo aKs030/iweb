@@ -11,7 +11,7 @@
     <meta property="og:description" content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/pages/projekte/projekte.html" />
-    <meta property="og:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Abdulkerim Sesli Portfolio - Projekte" />
@@ -22,13 +22,13 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Meine Projekte - Abdulkerim Sesli" />
     <meta name="twitter:description" content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
-    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/img/og/og-home.svg" />
+    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta name="twitter:image:alt" content="Abdulkerim Sesli Portfolio - Projekte" />
     <meta name="twitter:creator" content="@abdulkerimsesli" />
     <meta name="twitter:site" content="@abdulkerimsesli" />
 
     <!-- SHARED_HEAD: Lädt Meta-Tags, CSS (root, menu, footer) und main.js global -->
-    <script src="/content/head/head-complete.js" type="module"></script>
+    <script src="/content/components/head/head-complete.js" type="module"></script>
 
     <!-- React Dependencies (Production Version für bessere Performance) -->
     <!-- Load React & ReactDOM from jsDelivr (allowed by CSP in content/head/head.html) -->
@@ -197,17 +197,17 @@
     <!-- Optional footer trigger zone -->
     <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
     <!-- Footer -->
-    <div id="footer-container" data-footer-src="/content/footer/footer.html"></div>
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
 
     <!-- Logic Script -->
     <script type="module">
         // FIX: Absoluter Pfad, um Resolution-Errors zu vermeiden
         import { initProjectsApp } from '/pages/projekte/projekte-app.js';
-        import { initThreeEarth, EarthSystemAPI } from '/content/particles/three-earth-system.js';
+        import { initThreeEarth, EarthSystemAPI } from '/content/components/particles/three-earth-system.js';
 
         // Load styles for Three Earth (Progressive Enhancement)
         async function ensureThreeEarthStyles() {
-            const href = '/content/particles/three-earth.css';
+            const href = '/content/components/particles/three-earth.css';
             if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
             return new Promise((resolve, reject) => {
                 const link = document.createElement('link');
@@ -256,6 +256,6 @@
         });
     </script>
 
-    <script src="/content/footer/footer-complete.js" type="module"></script>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
   </body>
 </html>
