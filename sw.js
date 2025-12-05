@@ -21,20 +21,20 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/content/root.css',
-  '/content/index.css',
+  '/content/styles/root.css',
+  '/content/styles/main.css',
   '/content/main.js',
-  '/content/shared-utilities.js',
-  '/content/menu/menu.js',
-  '/content/menu/menu.css',
-  '/content/footer/footer-complete.js',
-  '/content/footer/footer.css',
-  '/content/head/head-complete.js',
-  '/content/accessibility-manager.js',
+  '/content/utils/shared-utilities.js',
+  '/content/components/menu/menu.js',
+  '/content/components/menu/menu.css',
+  '/content/components/footer/footer-complete.js',
+  '/content/components/footer/footer.css',
+  '/content/components/head/head-complete.js',
+  '/content/utils/accessibility-manager.js',
   '/pages/home/hero.css',
   '/pages/home/hero-manager.js',
-  '/content/TypeWriter/typewriter.css',
-  '/content/TypeWriter/TypeWriter.js'
+  '/content/components/typewriter/typewriter.css',
+  '/content/components/typewriter/TypeWriter.js'
 ];
 
 // Cache-Größenlimits
