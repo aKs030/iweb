@@ -1,5 +1,5 @@
 /**
- * KI Roboter Begleiter
+ * KI Roboter Begleiter - Extended Edition
  * Eine leichte, interaktive Komponente für die Webseite.
  */
 
@@ -9,31 +9,40 @@ class RobotCompanion {
         this.state = {
             isOpen: false,
             hasGreeted: false,
-            messageDelay: 600 // ms
+            isTyping: false
         };
         
-        // Antworten-Datenbank
+        // Erweiterte Antworten-Datenbank
         this.knowledgeBase = {
             'start': {
                 text: 'Hallo! Ich bin Cyber, dein virtueller Assistent. 🤖 Wie kann ich dir heute helfen?',
                 options: [
-                    { label: 'Über mich', action: 'about' },
+                    { label: 'Was kannst du?', action: 'skills' },
                     { label: 'Projekte zeigen', action: 'projects' },
-                    { label: 'Kontakt', action: 'contact' },
-                    { label: 'Witz erzählen', action: 'joke' }
+                    { label: 'Über den Dev', action: 'about' },
+                    { label: 'Fun & Extras', action: 'extras' }
+                ]
+            },
+            'skills': {
+                text: 'Ich wurde mit HTML, CSS und reinem JavaScript gebaut! Mein Erschaffer beherrscht aber noch viel mehr: React, Node.js, Python und UI/UX Design. Möchtest du Details?',
+                options: [
+                    { label: 'Tech Stack ansehen', url: '/pages/about/about.html#skills' },
+                    { label: 'Zurück', action: 'start' }
                 ]
             },
             'about': {
-                text: 'Das ist eine moderne Web-Portfolio-Seite. Hier findest du Informationen über Entwickler-Skills, kreative Projekte und mehr. Soll ich dich zur "Über mich" Seite bringen?',
+                text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt. 👨‍💻',
                 options: [
-                    { label: 'Ja, bitte!', url: '/pages/about/about.html' },
-                    { label: 'Zurück zum Menü', action: 'start' }
+                    { label: 'Zur Bio', url: '/pages/about/about.html' },
+                    { label: 'Kontakt aufnehmen', action: 'contact' },
+                    { label: 'Zurück', action: 'start' }
                 ]
             },
             'projects': {
                 text: 'Wir haben einige spannende Projekte hier! Von Web-Apps bis zu Design-Experimenten. Wirf einen Blick in die Galerie.',
                 options: [
                     { label: 'Zur Galerie', url: '/pages/projekte/projekte.html' },
+                    { label: 'Ein Zufallsprojekt?', action: 'randomProject' },
                     { label: 'Zurück', action: 'start' }
                 ]
             },
@@ -41,19 +50,54 @@ class RobotCompanion {
                 text: 'Du findest Kontaktmöglichkeiten im Footer der Seite oder im Impressum. Ich kann dich dorthin scrollen!',
                 options: [
                     { label: 'Zum Footer scrollen', action: 'scrollFooter' },
+                    { label: 'Social Media?', action: 'socials' },
                     { label: 'Alles klar', action: 'start' }
+                ]
+            },
+            'socials': {
+                text: 'Vernetze dich gerne! Hier sind die Profile:',
+                options: [
+                    { label: 'GitHub', url: 'https://github.com', target: '_blank' },
+                    { label: 'LinkedIn', url: 'https://linkedin.com', target: '_blank' },
+                    { label: 'Zurück', action: 'contact' }
+                ]
+            },
+            'extras': {
+                text: 'Ein bisschen Spaß muss sein! Was möchtest du?',
+                options: [
+                    { label: 'Witz erzählen', action: 'joke' },
+                    { label: 'Weltraum Fakt', action: 'fact' },
+                    { label: 'Zurück', action: 'start' }
                 ]
             },
             'joke': {
                 text: [
                     'Was macht ein Pirat am Computer? Er drückt die Enter-Taste! 🏴‍☠️',
                     'Warum gehen Geister nicht in den Regen? Damit sie nicht nass werden... nein, damit sie nicht "ge-löscht" werden!',
-                    'Es gibt 10 Arten von Menschen: Die, die Binär verstehen, und die, die es nicht tun.'
+                    'Ein SQL Query kommt in eine Bar, geht zu zwei Tischen und fragt: "Darf ich mich joinen?"',
+                    'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.'
                 ],
                 options: [
                     { label: 'Noch einer!', action: 'joke' },
                     { label: 'Genug gelacht', action: 'start' }
                 ]
+            },
+            'fact': {
+                text: [
+                    'Wusstest du? Ein Tag auf der Venus ist länger als ein Jahr auf der Venus. 🪐',
+                    'Der Weltraum ist völlig still. Es gibt keine Atmosphäre, die Schall überträgt.',
+                    'Neutronensterne sind so dicht, dass ein Teelöffel davon 6 Milliarden Tonnen wiegen würde!',
+                    'Es gibt mehr Sterne im Universum als Sandkörner an allen Stränden der Erde.'
+                ],
+                options: [
+                    { label: 'Wow, noch einer!', action: 'fact' },
+                    { label: 'Zurück', action: 'start' }
+                ]
+            },
+            'randomProject': {
+                // Logik wird unten in handleAction speziell behandelt, dies ist ein Fallback
+                text: 'Ich suche etwas raus...',
+                options: [] 
             }
         };
 
@@ -61,14 +105,11 @@ class RobotCompanion {
     }
 
     init() {
-        // Sicherstellen, dass CSS geladen ist
         this.loadCSS();
-        // HTML Struktur erstellen
         this.createDOM();
-        // Event Listeners
         this.attachEvents();
         
-        // Initiale Begrüßung nach Verzögerung
+        // Initiale Begrüßung
         setTimeout(() => {
             if (!this.state.isOpen) {
                 this.showBubble("Psst! Brauchst du Hilfe? 👋");
@@ -89,40 +130,26 @@ class RobotCompanion {
         const container = document.createElement('div');
         container.id = this.containerId;
 
-        // Roboter SVG (Vollständig inline, keine externen Requests)
         const robotSVG = `
         <svg viewBox="0 0 100 100" class="robot-svg">
-            <!-- Glow Effect -->
             <defs>
                 <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="2" result="blur"/>
                     <feComposite in="SourceGraphic" in2="blur" operator="over"/>
                 </filter>
             </defs>
-            
-            <!-- Antenne -->
             <line x1="50" y1="15" x2="50" y2="25" stroke="#40e0d0" stroke-width="2" />
             <circle cx="50" cy="15" r="3" class="robot-antenna-light" fill="#ff4444" />
-            
-            <!-- Kopf -->
             <path d="M30,40 a20,20 0 0,1 40,0" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
             <rect x="30" y="40" width="40" height="15" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
-            
-            <!-- Augen -->
             <g class="robot-eye">
                 <circle cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
                 <circle cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
             </g>
-            
-            <!-- Körper -->
             <path d="M30,60 L70,60 L65,90 L35,90 Z" fill="#0f172a" stroke="#40e0d0" stroke-width="2" />
-            
-            <!-- Details -->
             <circle cx="50" cy="70" r="5" fill="#2563eb" opacity="0.8">
                 <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" />
             </circle>
-            
-            <!-- Arme -->
             <path d="M28,65 Q20,75 28,85" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
             <path d="M72,65 Q80,75 72,85" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
         </svg>
@@ -153,7 +180,6 @@ class RobotCompanion {
 
         document.body.appendChild(container);
 
-        // Referenzen speichern
         this.dom = {
             window: document.getElementById('robot-chat-window'),
             bubble: document.getElementById('robot-bubble'),
@@ -167,16 +193,11 @@ class RobotCompanion {
     }
 
     attachEvents() {
-        // Avatar Klick -> Chat öffnen/schließen
         this.dom.avatar.addEventListener('click', () => this.toggleChat());
-
-        // Schließen Button im Chat
         this.dom.closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleChat(false);
         });
-
-        // Bubble Schließen
         this.dom.bubbleClose.addEventListener('click', (e) => {
             e.stopPropagation();
             this.hideBubble();
@@ -191,7 +212,6 @@ class RobotCompanion {
             this.state.isOpen = true;
             this.hideBubble();
             
-            // Wenn keine Nachrichten da sind, Startsequenz
             if (this.dom.messages.children.length === 0) {
                 this.handleAction('start');
             }
@@ -211,11 +231,35 @@ class RobotCompanion {
         this.dom.bubble.classList.remove('visible');
     }
 
-    // Chat Logik
-    async addMessage(text, type = 'bot') {
+    // Hilfsfunktion: Typing Indicator anzeigen
+    showTyping() {
+        if (this.state.isTyping) return;
+        this.state.isTyping = true;
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.id = 'robot-typing';
+        typingDiv.innerHTML = `
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+        `;
+        this.dom.messages.appendChild(typingDiv);
+        this.scrollToBottom();
+    }
+
+    removeTyping() {
+        const typingDiv = document.getElementById('robot-typing');
+        if (typingDiv) {
+            typingDiv.remove();
+        }
+        this.state.isTyping = false;
+    }
+
+    addMessage(text, type = 'bot') {
         const msg = document.createElement('div');
         msg.className = `message ${type}`;
-        msg.textContent = text;
+        msg.innerHTML = text; // innerHTML für Links im Text erlaubt
         this.dom.messages.appendChild(msg);
         this.scrollToBottom();
     }
@@ -232,18 +276,19 @@ class RobotCompanion {
             btn.textContent = opt.label;
             
             btn.onclick = () => {
-                // User Auswahl anzeigen
                 this.addMessage(opt.label, 'user');
-                this.clearControls(); // Buttons entfernen
+                this.clearControls();
                 
-                // Bot reagieren lassen
+                // Kurze Verzögerung bevor der Bot "tippt"
                 setTimeout(() => {
                     if (opt.url) {
-                        window.location.href = opt.url;
+                         window.open(opt.url, opt.target || '_self');
+                         // Nach Redirect Optionen wiederherstellen oder zum Start
+                         if(opt.target === '_blank') this.handleAction('start');
                     } else if (opt.action) {
                         this.handleAction(opt.action);
                     }
-                }, 500);
+                }, 300);
             };
             
             this.dom.controls.appendChild(btn);
@@ -251,27 +296,49 @@ class RobotCompanion {
     }
 
     handleAction(actionKey) {
+        // Spezialfälle
         if (actionKey === 'scrollFooter') {
             document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
-            this.addMessage("Ich habe dich nach unten gebracht! 👇", 'bot');
-            // Zurück zum Startmenü nach kurzer Zeit
-            setTimeout(() => this.handleAction('start'), 2000);
+            this.showTyping();
+            setTimeout(() => {
+                this.removeTyping();
+                this.addMessage("Ich habe dich nach unten gebracht! 👇", 'bot');
+                setTimeout(() => this.handleAction('start'), 2000);
+            }, 1000);
+            return;
+        }
+
+        if (actionKey === 'randomProject') {
+            const projects = [
+                '/pages/projekte/projekte.html', 
+                // Hier könnten echte Projekt-URLs stehen, fallback zur Übersicht
+            ];
+            const randomUrl = projects[Math.floor(Math.random() * projects.length)];
+            window.location.href = randomUrl;
             return;
         }
 
         const data = this.knowledgeBase[actionKey];
         if (!data) return;
 
-        // Wenn Text ein Array ist (z.B. Witze), wähle zufällig
-        let textToShow = Array.isArray(data.text) 
+        // Bot "tippt"
+        this.showTyping();
+        
+        // Simuliere Lese-/Tippzeit basierend auf Textlänge
+        const responseText = Array.isArray(data.text) 
             ? data.text[Math.floor(Math.random() * data.text.length)] 
             : data.text;
+            
+        const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
 
-        this.addMessage(textToShow, 'bot');
-        
-        if (data.options) {
-            this.addOptions(data.options);
-        }
+        setTimeout(() => {
+            this.removeTyping();
+            this.addMessage(responseText, 'bot');
+            
+            if (data.options) {
+                this.addOptions(data.options);
+            }
+        }, typingTime);
     }
 
     scrollToBottom() {
@@ -279,7 +346,6 @@ class RobotCompanion {
     }
 }
 
-// Initialisieren, sobald DOM bereit ist
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => new RobotCompanion());
 } else {

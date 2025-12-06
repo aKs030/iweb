@@ -89,13 +89,13 @@
     opacity: 1;
 }
 
-/* Das Chat Fenster (wenn geöffnet) */
+/* Das Chat Fenster (ERWEITERT: Größer & Breiter) */
 .robot-chat-window {
     position: absolute;
     bottom: 100px;
     right: 0;
-    width: 320px;
-    height: 450px;
+    width: 360px; /* Breiter gemacht */
+    height: 500px; /* Höher gemacht */
     background: rgba(10, 10, 20, 0.95);
     border: 1px solid rgba(64, 224, 208, 0.3);
     border-radius: 16px;
@@ -188,6 +188,7 @@
     font-size: 0.9rem;
     line-height: 1.4;
     animation: messageFadeIn 0.3s ease-out;
+    word-wrap: break-word;
 }
 
 .message.bot {
@@ -205,6 +206,33 @@
     border-bottom-right-radius: 2px;
 }
 
+/* NEU: Typing Indicator Animation */
+.typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 12px;
+    border-bottom-left-radius: 2px;
+    align-self: flex-start;
+    border: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 5px;
+    animation: messageFadeIn 0.3s ease-out;
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.typing-dot:nth-child(3) { animation-delay: 0s; }
+
 /* Antwort-Optionen (Chips) */
 .chat-controls {
     padding: 15px;
@@ -219,17 +247,22 @@
     background: transparent;
     border: 1px solid rgba(64, 224, 208, 0.4);
     color: #40e0d0;
-    padding: 6px 12px;
+    padding: 8px 14px; /* Etwas größer für bessere Touch-Bedienung */
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
+    user-select: none;
 }
 
 .chat-option-btn:hover {
     background: rgba(64, 224, 208, 0.1);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(64, 224, 208, 0.2);
+}
+
+.chat-option-btn:active {
+    transform: translateY(0);
 }
 
 /* Keyframe Animationen */
@@ -253,6 +286,11 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes typingBounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
 /* Mobile Anpassung */
 @media (max-width: 480px) {
     #robot-companion-container {
@@ -260,8 +298,10 @@
         right: 15px;
     }
     .robot-chat-window {
-        width: 300px;
+        width: calc(100vw - 40px);
+        max-width: 350px;
         bottom: 90px;
         right: -10px;
+        height: 60vh;
     }
 }
