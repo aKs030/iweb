@@ -131,7 +131,7 @@ class RobotCompanion {
         container.id = this.containerId;
 
         const robotSVG = `
-        <svg viewBox="0 0 100 100" class="robot-svg">
+        <svg viewBox="0 0 100 100" class="robot-svg" aria-hidden="true">
             <defs>
                 <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -156,26 +156,26 @@ class RobotCompanion {
         `;
 
         container.innerHTML = `
-            <div class="robot-chat-window" id="robot-chat-window">
+            <div class="robot-chat-window" id="robot-chat-window" role="dialog" aria-label="Cyber Assistant Chat">
                 <div class="chat-header">
                     <div class="chat-title">
                         <span class="chat-status-dot"></span>
                         Cyber Assistant
                     </div>
-                    <button class="chat-close-btn">&times;</button>
+                    <button class="chat-close-btn" aria-label="Chat schließen">&times;</button>
                 </div>
-                <div class="chat-messages" id="robot-messages"></div>
+                <div class="chat-messages" id="robot-messages" aria-live="polite"></div>
                 <div class="chat-controls" id="robot-controls"></div>
             </div>
             
-            <div class="robot-bubble" id="robot-bubble">
+            <div class="robot-bubble" id="robot-bubble" role="alert">
                 <span id="robot-bubble-text">Hallo!</span>
-                <div class="robot-bubble-close">&times;</div>
+                <button class="robot-bubble-close" aria-label="Hinweis schließen">&times;</button>
             </div>
             
-            <div class="robot-avatar">
+            <button class="robot-avatar" aria-label="Chatbot öffnen">
                 ${robotSVG}
-            </div>
+            </button>
         `;
 
         document.body.appendChild(container);
@@ -197,10 +197,12 @@ class RobotCompanion {
         this.dom.closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleChat(false);
+            this.dom.avatar.focus(); // Focus zurück zum Avatar
         });
         this.dom.bubbleClose.addEventListener('click', (e) => {
             e.stopPropagation();
             this.hideBubble();
+            this.dom.avatar.focus(); // Focus zurück zum Avatar
         });
     }
 
@@ -211,6 +213,7 @@ class RobotCompanion {
             this.dom.window.classList.add('open');
             this.state.isOpen = true;
             this.hideBubble();
+            this.dom.window.setAttribute('aria-hidden', 'false');
             
             if (this.dom.messages.children.length === 0) {
                 this.handleAction('start');
@@ -218,6 +221,7 @@ class RobotCompanion {
         } else {
             this.dom.window.classList.remove('open');
             this.state.isOpen = false;
+            this.dom.window.setAttribute('aria-hidden', 'true');
         }
     }
 
@@ -310,11 +314,22 @@ class RobotCompanion {
 
         if (actionKey === 'randomProject') {
             const projects = [
-                '/pages/projekte/projekte.html', 
-                // Hier könnten echte Projekt-URLs stehen, fallback zur Übersicht
+                '/pages/projekte/projekte.html#project-1',
+                '/pages/projekte/projekte.html#project-2',
+                '/pages/projekte/projekte.html#project-3',
+                '/pages/projekte/projekte.html#project-4'
             ];
             const randomUrl = projects[Math.floor(Math.random() * projects.length)];
-            window.location.href = randomUrl;
+
+            this.showTyping();
+            setTimeout(() => {
+                this.removeTyping();
+                this.addMessage("Gute Wahl! Ich bringe dich hin... 🚀", 'bot');
+                setTimeout(() => {
+                    window.location.href = randomUrl;
+                }, 1000);
+            }, 800);
+
             return;
         }
 
@@ -346,8 +361,5 @@ class RobotCompanion {
     }
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new RobotCompanion());
-} else {
-    new RobotCompanion();
-}
+// Direkte Instanziierung, da type="module" automatisch deferred ist
+new RobotCompanion();
