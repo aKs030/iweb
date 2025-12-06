@@ -19,17 +19,12 @@ const HeroManager = (() => {
   let isInitialized = false;
 
   async function loadTyped(heroDataModule) {
-    // Nutze globale TypeWriter Registry
-    if (window.TypeWriterRegistry) {
+    // Optimized: Use global function exposed by main.js or imported directly
+    if (typeof window.initHeroSubtitle === 'function') {
       try {
-        await window.TypeWriterRegistry.loadModules();
-        // Hier übergeben wir das Daten-Modul direkt, statt über window.__heroEnsureData zu gehen
-        if (window.TypeWriterRegistry.initHeroSubtitle) {
-          return window.TypeWriterRegistry.initHeroSubtitle({
+        return window.initHeroSubtitle({
             heroDataModule
-          });
-        }
-        return false;
+        });
       } catch (err) {
         logger.warn('Failed to load TypeWriter modules', err);
         return false;
