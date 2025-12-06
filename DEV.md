@@ -57,21 +57,24 @@ npm run serve
 
 ```javascript
 // In Browser Console:
-navigator.serviceWorker.getRegistrations().then(registrations => {
-  registrations.forEach(registration => registration.unregister());
+navigator.serviceWorker.getRegistrations().then((registrations) => {
+  registrations.forEach((registration) => registration.unregister());
 });
 ```
 
 ## Recent Optimizations (2025-12-04)
 
 ### ✅ Console-Logs durch Logger ersetzt
+
 Alle direkten `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt für bessere Kontrolle und Production-Optimierung.
 
 ### ✅ CSS-Duplikate entfernt
+
 - `pages/about/about.css` wurde bereinigt und optimiert
 - Doppelte Selektoren wurden konsolidiert
 
 ### ✅ Dependencies aktualisiert
+
 - ESLint: v8 → v9
 - Concurrently: v8 → v9
 - Lint-staged: v13 → v15
@@ -79,9 +82,11 @@ Alle direkten `console.*` Aufrufe wurden durch das zentrale Logger-System ersetz
 - Stylelint: v16.26 → v16.11
 
 ### ✅ Service Worker hinzugefügt
+
 PWA-Support mit intelligenten Caching-Strategien implementiert.
 
 ### ✅ Security (CSP)
+
 Siehe `SECURITY-CSP.md` für Content Security Policy Empfehlungen.
 
 ## Notes
@@ -109,4 +114,3 @@ npm run format
 - Halte CSS-Variablen in `content/root.css` zentralisiert
 - Service Worker Updates erfordern Version-Bump in `sw.js`
 - Teste offline Funktionalität mit DevTools Network Throttling
-

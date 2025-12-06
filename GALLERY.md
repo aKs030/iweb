@@ -16,6 +16,7 @@ Die Photo Gallery ist eine React-basierte, vollständig responsive Fotogalerie m
 ## 🎯 Features
 
 ### Galerie-Funktionen
+
 - ✅ **Filter nach Kategorie**: All, Nature, Urban, Travel, Landscape
 - ✅ **Suchfunktion**: Nach Titel, Tags, Ort (mit 300ms Debounce)
 - ✅ **Sortierung**: Nach Datum, Titel, Beliebtheit
@@ -24,6 +25,7 @@ Die Photo Gallery ist eine React-basierte, vollständig responsive Fotogalerie m
 - ✅ **Favoriten**: Lokale Favoriten-Verwaltung
 
 ### Lightbox-Features
+
 - ✅ **Zoom**: 50% - 300% in 25% Schritten
 - ✅ **Navigation**: Keyboard (← → Pfeile, ESC) und Buttons
 - ✅ **Slideshow**: Auto-Play mit 3s Intervall + Progress-Bar
@@ -62,16 +64,19 @@ Jedes Foto folgt dieser Struktur:
 ## 🚀 Performance-Optimierungen
 
 ### 1. React Optimierungen
+
 - **useMemo**: Filter/Sort-Logik (abhängig von filter, searchQuery, sortBy)
 - **useCallback**: Event-Handler (navigateImage, handleDownload, toggleFavorite)
 - **useDebounce**: Search-Input mit 300ms Debounce zur CPU-Last Reduktion
 
 ### 2. Rendering-Optimierungen
+
 - Icons als inline SVG (keine zusätzlichen HTTP-Requests)
 - React.createElement statt JSX (direktere Compilation)
 - Conditional Rendering für Info-Panel und Lightbox
 
 ### 3. CSS-Optimierungen
+
 - Tailwind Production Build via CDN
 - Keine doppelten Selektoren
 - Hardware-accelerated Animationen (transform, opacity)
@@ -85,9 +90,9 @@ Jedes Foto folgt dieser Struktur:
 3. Füge neuen Foto-Eintrag am Ende hinzu:
 
 ```javascript
-{ 
+{
   id: 13,                              // Neue ID
-  url: 'https://images.unsplash.com/...?w=1200', 
+  url: 'https://images.unsplash.com/...?w=1200',
   category: 'nature',                  // Kategorie
   title: 'Mein neues Foto',           // Deutscher Titel
   tags: ['tag1', 'tag2'],
@@ -137,16 +142,19 @@ Erlaubte Kategorien: `all`, `nature`, `urban`, `travel`, `landscape`
 ## 📝 Debugging-Tipps
 
 ### Performance prüfen
+
 ```javascript
 // DevTools Console
 React.Profiler in DevTools > Profiler Tab
 ```
 
 ### Search nicht funktioniert?
+
 - Prüfe Debounce-Zeit (standardmäßig 300ms)
 - Überprüfe `searchQuery` State
 
 ### Bilder laden nicht?
+
 - Überprüfe Internet-Verbindung (Unsplash URLs brauchen CORS)
 - Überprüfe Browser-Konsole auf Fehler
 

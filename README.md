@@ -50,6 +50,9 @@ npm run dev
 
 # Lokaler HTTP-Server
 npm run serve
+
+# Production Build
+npm run build:prod
 ```
 
 ## 📦 Progressive Web App (PWA)
@@ -67,8 +70,8 @@ Die Website ist als PWA installierbar und bietet:
 
 ```javascript
 // Service Worker löschen (Development)
-navigator.serviceWorker.getRegistrations().then(registrations => {
-  registrations.forEach(reg => reg.unregister());
+navigator.serviceWorker.getRegistrations().then((registrations) => {
+  registrations.forEach((reg) => reg.unregister());
 });
 ```
 
@@ -79,6 +82,7 @@ Siehe `sw.js` für Implementierungsdetails.
 Content Security Policy (CSP) Empfehlungen sind in `SECURITY-CSP.md` dokumentiert.
 
 Empfohlene Security Headers:
+
 - Content-Security-Policy
 - X-Content-Type-Options
 - X-Frame-Options
@@ -111,6 +115,7 @@ iweb/
 ## 🎨 Styling
 
 CSS-Variablen sind in `content/root.css` zentralisiert:
+
 - Dark/Light Mode Support
 - Responsive Typography
 - Design Tokens für Konsistenz
@@ -137,26 +142,31 @@ npx stylelint "**/*.css"
 ## 📝 Recent Updates (Dezember 2025)
 
 ### ✅ React Photo Gallery hinzugefügt
+
 - Neue React-basierte Photo Gallery unter `/pages/fotos/`
 - Features: Filter, Suche, Zoom, Slideshow, Favoriten, Download/Share
 - Nutzt lokale Utility-CSS (`/pages/fotos/gallery-styles.css`) statt Tailwind-CDN
 - Vollständig responsive und PWA-kompatibel
 
 ### ✅ Console-Logs standardisiert
+
 Alle `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt.
 
 ### ✅ Dependencies aktualisiert
+
 - ESLint v8 → v9
 - Concurrently v8 → v9
 - Lint-staged v13 → v15
 - Weitere Updates siehe `package.json`
 
 ### ✅ CSS optimiert
+
 - Doppelte Selektoren entfernt
 - about.css bereinigt
 - CSS-Variablen konsolidiert
 
 ### ✅ PWA implementiert
+
 Service Worker mit intelligenten Caching-Strategien hinzugefügt.
 
 ## 📚 Dokumentation
@@ -168,6 +178,7 @@ Service Worker mit intelligenten Caching-Strategien hinzugefügt.
 ## 🤝 Entwicklung
 
 Entwickelt mit modernen Web-Standards:
+
 - ES Modules
 - CSS Custom Properties
 - Intersection Observer API

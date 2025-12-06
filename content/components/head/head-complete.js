@@ -80,7 +80,7 @@
     // 7. Status setzen und Event feuern
     window.SHARED_HEAD_LOADED = true;
     document.dispatchEvent(new CustomEvent('shared-head:loaded'));
-    
+
     // 7a. Skripte aus dem Shared Head sicher ausführen (insb. Module wie /content/main.js)
     try {
       const toExec = document.head.querySelectorAll('script[data-exec-on-insert="1"]');

@@ -46,11 +46,11 @@ const HeroManager = (() => {
     const triggerLoad = async () => {
       if (loaded) return;
       loaded = true;
-      
+
       // Lade Daten und gebe sie weiter
       const dataModule = await ensureHeroData().catch(() => ({}));
       await loadTyped(dataModule);
-      
+
       setRandomGreetingHTML();
     };
 

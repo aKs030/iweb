@@ -14,24 +14,24 @@
   --footer-spacing-xs: calc(var(--footer-unit) * 3);
   --footer-spacing-sm: calc(var(--footer-unit) * 5);
   --footer-spacing-md: calc(var(--footer-unit) * 7);
-  
+
   /* Typography Scale */
   --footer-text-xs: 10px;
   --footer-text-sm: 12px;
   --footer-text-base: 13px;
-  
+
   /* Layout */
   --footer-horizontal-margin: clamp(8px, 2vw, 32px);
   --footer-card-gap: 16px;
-  
+
   /* Transitions */
   --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --footer-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  
+
   /* Heights */
   --footer-max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
   --footer-actual-height: var(--footer-max-height);
-  
+
   /* Z-Index Scale */
   --z-footer: 1000;
   --z-cookie-modal: 10000;
@@ -62,10 +62,8 @@
   animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
   will-change: transform, opacity; /* Performance hint */
-}
 
-/* Compact scale inside footer (desktop-first) */
-.site-footer-fixed {
+  /* Compact scale for footer variables (desktop-optimized) */
   --footer-text-xs: 9px;
   --footer-text-sm: 11px;
   --footer-text-base: 12px;
@@ -73,6 +71,9 @@
   --footer-spacing-sm: calc(var(--footer-unit) * 4);
   --footer-spacing-md: calc(var(--footer-unit) * 6);
 }
+
+/* Compact scale inside footer (desktop-first) */
+/* Compact scale for footer variables merged into base block to avoid duplicate selector */
 
 @keyframes footerEntrance {
   0% {
@@ -335,9 +336,10 @@ body.footer-expanded {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  transition: transform var(--footer-transition-quick),
-              background-color var(--footer-transition-quick),
-              border-color var(--footer-transition-quick);
+  transition:
+    transform var(--footer-transition-quick),
+    background-color var(--footer-transition-quick),
+    border-color var(--footer-transition-quick);
   will-change: transform;
   transform: translateZ(0);
 }
@@ -647,8 +649,6 @@ body.footer-expanded {
   box-shadow: 0 0 0 2px rgb(10 132 255 / 35%);
 }
 
-
-
 /* Footer actions (buttons) */
 .cookie-settings-footer {
   display: flex;
@@ -874,14 +874,14 @@ body.footer-expanded {
     text-overflow: ellipsis;
     min-width: 0;
   }
-  
+
   .footer-social-links {
     order: 2;
     flex-shrink: 0;
     gap: 2px;
     flex-wrap: nowrap;
   }
-  
+
   .footer-legal-nav {
     order: 3;
     flex-shrink: 0;

@@ -44,7 +44,9 @@ const ExternalLink = (props) => html`
 
 const Github = (props) => html`
   <${IconBase} ...${props}>
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+    <path
+      d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+    />
     <path d="M9 18c-4.51 2-5-2-7-2" />
   <//>
 `;
@@ -62,7 +64,9 @@ const MousePointerClick = (props) => html`
     <path d="m5.1 8-2.9-.8" />
     <path d="m6 12-1.9 2" />
     <path d="M7.2 2.2 8 5.1" />
-    <path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" />
+    <path
+      d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"
+    />
   <//>
 `;
 
@@ -72,7 +76,9 @@ const Palette = (props) => html`
     <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
     <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
     <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
-    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+    <path
+      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
+    />
   <//>
 `;
 
@@ -93,7 +99,9 @@ const Gamepad2 = (props) => html`
     <line x1="8" x2="8" y1="9" y2="13" />
     <line x1="15" x2="15.01" y1="12" y2="12" />
     <line x1="18" x2="18.01" y1="10" y2="10" />
-    <path d="M17.3 2.9A2 2 0 0 0 15 2H9a2 2 0 0 0-2.3.9C3.8 5.7 3 9.4 4.2 13c1 3 3.6 5 6.8 5h2c3.2 0 5.8-2 6.8-5 1.2-3.6.4-7.3-2.5-10.1Z" />
+    <path
+      d="M17.3 2.9A2 2 0 0 0 15 2H9a2 2 0 0 0-2.3.9C3.8 5.7 3 9.4 4.2 13c1 3 3.6 5 6.8 5h2c3.2 0 5.8-2 6.8-5 1.2-3.6.4-7.3-2.5-10.1Z"
+    />
   <//>
 `;
 
@@ -121,11 +129,24 @@ const projects = [
     description: 'Der Klassiker gegen den Computer!',
     tags: ['JavaScript', 'Game Logic'],
     category: 'Game',
-    bgStyle: { background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))' },
+    bgStyle: {
+      background:
+        'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
+    },
     glowColor: '#a855f7',
     icon: html`<${Gamepad2} style=${{ color: '#c084fc', width: '32px', height: '32px' }} />`,
     previewContent: html`
-      <div style=${{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%', height: '100%', position: 'relative', zIndex: 10 }}>
+      <div
+        style=${{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          zIndex: 10
+        }}
+      >
         <div style=${{ fontSize: '3rem' }}>🪨</div>
         <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
         <div style=${{ fontSize: '3rem' }}>✂️</div>
@@ -138,11 +159,22 @@ const projects = [
     description: 'Finde die geheime Zahl zwischen 1 und 100.',
     tags: ['Logic', 'Input'],
     category: 'Puzzle',
-    bgStyle: { background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))' },
+    bgStyle: {
+      background:
+        'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
+    },
     glowColor: '#10b981',
     icon: html`<${Binary} style=${{ color: '#34d399', width: '32px', height: '32px' }} />`,
     previewContent: html`
-      <div style=${{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+      <div
+        style=${{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%'
+        }}
+      >
         <span style=${{ fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold' }}>?</span>
       </div>
     `
@@ -153,11 +185,22 @@ const projects = [
     description: 'Dynamische Hintergrundfarben per Klick.',
     tags: ['DOM', 'Events'],
     category: 'UI',
-    bgStyle: { background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))' },
+    bgStyle: {
+      background:
+        'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
+    },
     glowColor: '#ec4899',
     icon: html`<${Palette} style=${{ color: '#f472b6', width: '32px', height: '32px' }} />`,
     previewContent: html`
-      <div style=${{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+      <div
+        style=${{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%'
+        }}
+      >
         <${Palette} style=${{ width: '4rem', height: '4rem', color: '#f472b6' }} />
       </div>
     `
@@ -168,11 +211,22 @@ const projects = [
     description: 'Produktivitäts-Tool zum Verwalten von Aufgaben.',
     tags: ['CRUD', 'Arrays'],
     category: 'App',
-    bgStyle: { background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))' },
+    bgStyle: {
+      background:
+        'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
+    },
     glowColor: '#06b6d4',
     icon: html`<${ListTodo} style=${{ color: '#22d3ee', width: '32px', height: '32px' }} />`,
     previewContent: html`
-      <div style=${{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+      <div
+        style=${{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%'
+        }}
+      >
         <${Check} style=${{ width: '4rem', height: '4rem', color: '#22d3ee' }} />
       </div>
     `
@@ -203,7 +257,8 @@ function App() {
             <span className="text-gradient-accent"> Projekte.</span>
           </h1>
           <p className="description">
-            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten console.log bis zu interaktiven Web-Apps.
+            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten
+            console.log bis zu interaktiven Web-Apps.
           </p>
           <div className="btn-group">
             <button onClick=${scrollToProjects} className="btn btn-primary">
@@ -215,54 +270,66 @@ function App() {
       </section>
 
       <!-- Project Sections -->
-      ${projects.map((project) => html`
-        <section key=${project.id} id=${`project-${project.id}`} className="snap-section">
-          <div className="glow-bg" style=${project.bgStyle}></div>
-          <div className="project-grid">
-            <!-- Left Side (Mockup) -->
-            <div className="group" style=${{ order: 2, display: 'flex', justifyContent: 'center', position: 'relative' }}>
-              <div className="back-glow" style=${{ backgroundColor: project.glowColor }}></div>
-              <div className="window-mockup">
-                <div className="mockup-content">
-                  <div className="mockup-bg-pattern"></div>
-                  ${project.previewContent}
-                  <div className="mockup-icon">
-                    ${project.icon}
+      ${projects.map(
+        (project) => html`
+          <section key=${project.id} id=${`project-${project.id}`} className="snap-section">
+            <div className="glow-bg" style=${project.bgStyle}></div>
+            <div className="project-grid">
+              <!-- Left Side (Mockup) -->
+              <div
+                className="group"
+                style=${{
+                  order: 2,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  position: 'relative'
+                }}
+              >
+                <div className="back-glow" style=${{ backgroundColor: project.glowColor }}></div>
+                <div className="window-mockup">
+                  <div className="mockup-content">
+                    <div className="mockup-bg-pattern"></div>
+                    ${project.previewContent}
+                    <div className="mockup-icon">${project.icon}</div>
                   </div>
                 </div>
               </div>
+
+              <!-- Right Side (Content) -->
+              <div className="project-info" style=${{ order: 1 }}>
+                <div className="project-header">
+                  <h2 className="project-title">${project.title}</h2>
+                  <div className="divider"></div>
+                  <span className="project-category">${project.category}</span>
+                </div>
+                <p className="project-desc">${project.description}</p>
+                <div className="tags-container">
+                  ${project.tags.map(
+                    (tag, i) => html`<span key=${i} className="tag">${tag}</span>`
+                  )}
+                </div>
+                <div className="project-actions">
+                  <button className="btn btn-primary btn-small" rel="noopener noreferrer">
+                    <${ExternalLink} style=${{ width: '1rem', height: '1rem' }} /> Ansehen
+                  </button>
+                  <button className="btn btn-outline btn-small" rel="noopener noreferrer">
+                    <${Github} style=${{ width: '1rem', height: '1rem' }} /> Code
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            <!-- Right Side (Content) -->
-            <div className="project-info" style=${{ order: 1 }}>
-              <div className="project-header">
-                <h2 className="project-title">${project.title}</h2>
-                <div className="divider"></div>
-                <span className="project-category">${project.category}</span>
-              </div>
-              <p className="project-desc">${project.description}</p>
-              <div className="tags-container">
-                ${project.tags.map((tag, i) => html`<span key=${i} className="tag">${tag}</span>`)}
-              </div>
-              <div className="project-actions">
-                <button className="btn btn-primary btn-small" rel="noopener noreferrer">
-                  <${ExternalLink} style=${{ width: '1rem', height: '1rem' }} /> Ansehen
-                </button>
-                <button className="btn btn-outline btn-small" rel="noopener noreferrer">
-                  <${Github} style=${{ width: '1rem', height: '1rem' }} /> Code
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      `)}
+          </section>
+        `
+      )}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
         <div className="container-center">
           <div style=${{ marginBottom: '2rem' }}>
             <div className="contact-icon-wrapper">
-              <${MousePointerClick} style=${{ width: '2.5rem', height: '2.5rem', color: '#60a5fa' }} />
+              <${MousePointerClick}
+                style=${{ width: '2.5rem', height: '2.5rem', color: '#60a5fa' }}
+              />
             </div>
           </div>
           <h2 className="contact-title">Lust auf ein Spiel?</h2>
@@ -270,7 +337,10 @@ function App() {
             Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?
           </p>
           <div className="btn-group">
-            <button className="btn btn-primary" style=${{ backgroundColor: '#2563eb', color: 'white' }}>
+            <button
+              className="btn btn-primary"
+              style=${{ backgroundColor: '#2563eb', color: 'white' }}
+            >
               Schreib mir
             </button>
           </div>
