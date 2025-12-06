@@ -99,6 +99,10 @@ iweb/
 ├── pages/                # Seiten-spezifische Module
 │   ├── home/
 │   ├── about/
+│   ├── fotos/            # 📸 React Photo Gallery
+│   │   ├── gallery.html
+│   │   ├── gallery-app.js
+│   │   └── fotos.html    # Symlink zu gallery.html
 │   └── projekte/
 ├── sw.js                 # Service Worker
 ├── offline.html          # Offline-Fallback-Seite
@@ -132,6 +136,12 @@ npx stylelint "**/*.css"
 - Teste Offline-Funktionalität mit DevTools Network Throttling
 
 ## 📝 Recent Updates (Dezember 2025)
+
+### ✅ React Photo Gallery hinzugefügt
+- Neue React-basierte Photo Gallery unter `/pages/fotos/`
+- Features: Filter, Suche, Zoom, Slideshow, Favoriten, Download/Share
+- Nutzt lokale Utility-CSS (`/pages/fotos/gallery-styles.css`) statt Tailwind-CDN
+- Vollständig responsive und PWA-kompatibel
 
 ### ✅ Console-Logs standardisiert
 Alle `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt.
