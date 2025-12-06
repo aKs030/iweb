@@ -141,8 +141,6 @@ npx stylelint "**/*.css"
 - Features: Filter, Suche, Zoom, Slideshow, Favoriten, Download/Share
 - Nutzt lokale Utility-CSS (`/pages/fotos/gallery-styles.css`) statt Tailwind-CDN
 - Vollständig responsive und PWA-kompatibel
-### ✅ UI Konsistenz: Projektseite an Galerie angeglichen
-- Projektseite (`/pages/projekte/projekte.html`) verwendet jetzt dieselben Hintergrund- und Textfarben wie die Galerie für ein einheitliches Erscheinungsbild (`--bg-color: #030712`, `--text-main: #e5e7eb`).
 
 ### ✅ Console-Logs standardisiert
 Alle `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt.

@@ -29,16 +29,15 @@
   --success-color: #2d9e47;
 
   /* ===== DARK MODE (Standard) ===== */
-  /* Gallery dark background & text as global defaults for consistent look */
-  --bg-primary: #030712; /* gallery background */
+  --bg-primary: #0a0a0a;
   --bg-secondary: #161616;
   --bg-tertiary: #262626;
   --bg-interactive: #404040;
 
   /* Text Colors - Optimized for Dark Mode */
-  --text-primary: #e5e7eb; /* gallery text */
+  --text-primary: #f5f5f5;
   --text-secondary: #d4d4d4;
-  --text-muted: #cbd5f5; /* gallery muted */
+  --text-muted: #a3a3a3;
   --text-faded: #737373;
 
   /* Particle System - Dark Mode */
