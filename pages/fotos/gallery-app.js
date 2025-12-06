@@ -367,7 +367,7 @@ const PhotoGallery = () => {
   return React.createElement('div', { className: 'min-h-screen p-4 sm:p-8' },
     React.createElement('div', { className: 'max-w-7xl mx-auto mb-8' },
       React.createElement('div', { className: 'text-center mb-8' },
-        React.createElement('h1', { className: 'text-5xl sm:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-3' },
+        React.createElement('h1', { className: 'text-5xl sm:text-6xl font-bold text-transparent bg-clip-text text-gradient mb-3' },
           'Premium Fotogalerie'
         ),
         React.createElement('p', { className: 'text-indigo-200 text-lg' },
@@ -382,7 +382,7 @@ const PhotoGallery = () => {
             placeholder: 'Suche nach Titel, Tags oder Orten...',
             value: searchQuery,
             onChange: (e) => setSearchQuery(e.target.value),
-            className: 'w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all'
+            className: 'w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-primary transition-all'
           })
         )
       ),
@@ -393,10 +393,11 @@ const PhotoGallery = () => {
               key: cat,
               onClick: () => setFilter(cat),
               className: `px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                filter === cat
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/50 scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10'
-              }`
+                  filter === cat
+                    ? 'text-white shadow-lg shadow-primary/50 scale-105'
+                    : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10'
+                }`,
+              style: filter === cat ? { background: 'linear-gradient(135deg, var(--primary-color), var(--primary-dark))' } : undefined
             },
               cat.charAt(0).toUpperCase() + cat.slice(1)
             )
@@ -406,7 +407,7 @@ const PhotoGallery = () => {
           React.createElement('select', {
             value: sortBy,
             onChange: (e) => setSortBy(e.target.value),
-            className: 'px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500'
+            className: 'px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary'
           },
             React.createElement('option', { value: 'date', className: 'bg-slate-900' }, 'Neueste'),
             React.createElement('option', { value: 'title', className: 'bg-slate-900' }, 'Titel'),
@@ -416,7 +417,7 @@ const PhotoGallery = () => {
             React.createElement('button', {
               onClick: () => setGridSize(2),
               className: `p-2 rounded-lg transition-all ${
-                gridSize === 2 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'
+                gridSize === 2 ? 'bg-primary text-white' : 'text-white hover:bg-white/10'
               }`
             },
               Grid2x2({ size: 18 })
@@ -424,7 +425,7 @@ const PhotoGallery = () => {
             React.createElement('button', {
               onClick: () => setGridSize(3),
               className: `p-2 rounded-lg transition-all ${
-                gridSize === 3 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'
+                gridSize === 3 ? 'bg-primary text-white' : 'text-white hover:bg-white/10'
               }`
             },
               Grid3x3({ size: 18 })
@@ -440,7 +441,7 @@ const PhotoGallery = () => {
       filteredPhotos.map((photo, index) =>
         React.createElement('div', {
           key: photo.id,
-          className: 'group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-purple-500/40 hover:z-10',
+          className: 'group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-primary/40 hover:z-10',
           style: {
             animation: `fadeInScale 0.6s ease-out ${index * 0.05}s both`
           },
@@ -484,9 +485,9 @@ const PhotoGallery = () => {
           ),
           !imageLoaded[photo.id] && React.createElement('div', { className: 'absolute inset-0 bg-slate-900 flex items-center justify-center' },
             React.createElement('div', { className: 'relative' },
-              React.createElement('div', { className: 'w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin' }),
+              React.createElement('div', { className: 'w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin' }),
               React.createElement('div', { className: 'absolute inset-0 flex items-center justify-center' },
-                React.createElement('div', { className: 'w-8 h-8 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin', style: { animationDirection: 'reverse' } })
+                React.createElement('div', { className: 'w-8 h-8 border-4 border-accent-secondary/30 border-t-accent-secondary rounded-full animate-spin', style: { animationDirection: 'reverse' } })
               )
             )
           )
@@ -513,7 +514,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 setShowInfo(!showInfo);
               },
-              className: `p-3 rounded-xl transition-all backdrop-blur-md ${showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'}`
+              className: `p-3 rounded-xl transition-all backdrop-blur-md ${showInfo ? 'bg-primary' : 'bg-white/10 hover:bg-white/20'}`
             },
               Info({ size: 20, className: 'text-white' })
             ),
@@ -522,7 +523,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 setIsSlideshow(!isSlideshow);
               },
-              className: `p-3 rounded-xl transition-all backdrop-blur-md ${isSlideshow ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'}`
+              className: `p-3 rounded-xl transition-all backdrop-blur-md ${isSlideshow ? 'bg-primary' : 'bg-white/10 hover:bg-white/20'}`
             },
               isSlideshow ? Pause({ size: 20, className: 'text-white' }) : Play({ size: 20, className: 'text-white' })
             ),
@@ -567,7 +568,7 @@ const PhotoGallery = () => {
             React.createElement('span', { className: 'text-indigo-300 block mb-2' }, 'Tags:'),
             React.createElement('div', { className: 'flex flex-wrap gap-2' },
               selectedImage.tags.map(tag =>
-                React.createElement('span', { key: tag, className: 'px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs' },
+                React.createElement('span', { key: tag, className: 'px-2 py-1 bg-primary/20 text-primary-300 rounded-lg text-xs' },
                   `#${tag}`
                 )
               )
@@ -663,7 +664,8 @@ const PhotoGallery = () => {
       ),
       isSlideshow && React.createElement('div', { className: 'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden' },
         React.createElement('div', {
-          className: 'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
+          className: 'h-full rounded-full',
+          style: { background: 'linear-gradient(90deg, var(--primary-color), var(--accent-secondary))' },
           style: {
             animation: 'progress 3s linear infinite'
           }

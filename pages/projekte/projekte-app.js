@@ -121,9 +121,9 @@ const projects = [
     description: 'Der Klassiker gegen den Computer!',
     tags: ['JavaScript', 'Game Logic'],
     category: 'Game',
-    bgStyle: { background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))' },
-    glowColor: '#a855f7',
-    icon: html`<${Gamepad2} style=${{ color: '#c084fc', width: '32px', height: '32px' }} />`,
+    bgStyle: { background: 'linear-gradient(to bottom right, color-mix(in srgb, var(--primary-color) 20%, transparent), color-mix(in srgb, var(--primary-dark) 20%, transparent))' },
+    glowColor: 'var(--primary-color)',
+    icon: html`<${Gamepad2} style=${{ color: 'var(--primary-light)', width: '32px', height: '32px' }} />`,
     previewContent: html`
       <div style=${{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%', height: '100%', position: 'relative', zIndex: 10 }}>
         <div style=${{ fontSize: '3rem' }}>🪨</div>
@@ -153,12 +153,12 @@ const projects = [
     description: 'Dynamische Hintergrundfarben per Klick.',
     tags: ['DOM', 'Events'],
     category: 'UI',
-    bgStyle: { background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))' },
-    glowColor: '#ec4899',
-    icon: html`<${Palette} style=${{ color: '#f472b6', width: '32px', height: '32px' }} />`,
+    bgStyle: { background: 'linear-gradient(to bottom right, color-mix(in srgb, var(--primary-light) 20%, transparent), color-mix(in srgb, var(--accent-secondary) 20%, transparent))' },
+    glowColor: 'var(--accent-secondary)',
+    icon: html`<${Palette} style=${{ color: 'var(--accent-secondary)', width: '32px', height: '32px' }} />`,
     previewContent: html`
       <div style=${{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
-        <${Palette} style=${{ width: '4rem', height: '4rem', color: '#f472b6' }} />
+        <${Palette} style=${{ width: '4rem', height: '4rem', color: 'var(--accent-secondary)' }} />
       </div>
     `
   },
