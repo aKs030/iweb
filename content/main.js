@@ -7,7 +7,7 @@
  * @last-modified 2025-11-29
  */
 
-import { initHeroFeatureBundle } from '../../pages/home/hero-manager.js';
+import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import {
   createLazyLoadObserver,
   createLogger,

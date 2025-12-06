@@ -1,7 +1,13 @@
 // ===== TypeWriter (mit Reservierung VOR dem Tippen + Lock) =====
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById, shuffle, TimerManager, splitTextIntoLines } from '../../utils/shared-utilities.js';
+import {
+  createLogger,
+  getElementById,
+  shuffle,
+  TimerManager,
+  splitTextIntoLines
+} from '../../utils/shared-utilities.js';
 
 const createShuffledIndices = (length) => shuffle([...Array(length).keys()]);
 const log = createLogger('TypeWriter');
@@ -412,10 +418,10 @@ async function initHeroSubtitleImpl({
     }
 
     let twCfg = {};
-    
+
     // Config laden: Entweder direktes Modul (bevorzugt) oder via async getter
     if (heroDataModule) {
-       twCfg = heroDataModule?.typewriterConfig || {};
+      twCfg = heroDataModule?.typewriterConfig || {};
     } else if (ensureHeroDataModule) {
       try {
         const mod = await ensureHeroDataModule();

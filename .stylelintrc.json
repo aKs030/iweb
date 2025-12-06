@@ -1,7 +1,7 @@
 {
   "extends": "stylelint-config-standard",
   "rules": {
-    "selector-class-pattern": "^[a-z0-9_-]+$",
+    "selector-class-pattern": "^[a-z0-9_\\.\\:\\-\\/\\[\\]]+$",
     "keyframes-name-pattern": null,
     "declaration-property-value-keyword-no-deprecated": true,
     "at-rule-descriptor-no-unknown": null,
