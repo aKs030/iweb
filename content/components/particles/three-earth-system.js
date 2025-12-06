@@ -126,7 +126,15 @@ const ThreeEarthManager = (() => {
       // Stars
       starManager = new StarManager(THREE_INSTANCE, scene, camera, renderer);
       const starField = starManager.createStarField();
-      setupStarParallax(starField);
+      // Inline setupStarParallax
+      const parallaxHandler = (progress) => {
+        if (!starField || !starManager || (starManager.transition && starManager.transition.active))
+          return;
+
+        starField.rotation.y = progress * Math.PI * 0.2;
+        starField.position.z = Math.sin(progress * Math.PI) * 15;
+      };
+      sharedParallaxManager.addHandler(parallaxHandler, 'three-earth-stars');
 
       // Lighting
       const lights = setupLighting(THREE_INSTANCE, scene);
@@ -168,13 +176,32 @@ const ThreeEarthManager = (() => {
       cameraManager = new CameraManager(THREE_INSTANCE, camera);
       cameraManager.setupCameraSystem();
 
-      setupUserControls(container);
+      // Inline setupUserControls to avoid small helper function
+      const onWheel = (e) => {
+        if (cameraManager && isSystemActive) cameraManager.handleWheel(e);
+      };
+      container.addEventListener('wheel', onWheel, { passive: true });
+      sharedCleanupManager.addCleanupFunction(
+        'three-earth',
+        () => container.removeEventListener('wheel', onWheel),
+        'wheel control'
+      );
       setupSectionDetection();
       setupViewportObserver(container);
 
       performanceMonitor = new PerformanceMonitor(container, renderer, (level) => {
         currentQualityLevel = level;
-        applyQualitySettings();
+        // Inline applyQualitySettings - small and only used here
+        const levelCfg = CONFIG.QUALITY_LEVELS[currentQualityLevel];
+        if (cloudMesh) cloudMesh.visible = levelCfg.cloudLayer;
+        if (shootingStarManager) shootingStarManager.disabled = !levelCfg.meteorShowers;
+        try {
+          if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
+            renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
+          }
+        } catch (e) {
+          log.debug('Unable to set PIXEL_RATIO during quality apply', e);
+        }
       });
 
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
@@ -187,7 +214,17 @@ const ThreeEarthManager = (() => {
       return cleanup;
     } catch (error) {
       log.error('Initialization failed:', error);
-      handleInitializationError(container, error);
+      // Inline handleInitializationError
+      try {
+        if (renderer) renderer.dispose();
+      } catch (e) {
+        /* ignore */
+      }
+      sharedCleanupManager.cleanupSystem('three-earth');
+      showErrorState(container, error, () => {
+        cleanup(); // Full cleanup before retry
+        initThreeEarth();
+      });
       return () => {};
     }
   };
@@ -266,22 +303,7 @@ const ThreeEarthManager = (() => {
     material.dispose();
   }
 
-  function handleInitializationError(container, error) {
-    // Only cleanup if we actually started something
-    if (renderer) {
-      try {
-        renderer.dispose();
-      } catch (e) {
-        /* ignore */
-      }
-    }
-    sharedCleanupManager.cleanupSystem('three-earth');
-
-    showErrorState(container, error, () => {
-      cleanup(); // Full cleanup before retry
-      initThreeEarth();
-    });
-  }
+  // handleInitializationError body inlined into the initialization catch block
 
   return { initThreeEarth, cleanup };
 })();
@@ -338,16 +360,7 @@ function getOptimizedConfig(capabilities) {
   return {};
 }
 
-function setupStarParallax(starField) {
-  const parallaxHandler = (progress) => {
-    if (!starField || !starManager || (starManager.transition && starManager.transition.active))
-      return;
-
-    starField.rotation.y = progress * Math.PI * 0.2;
-    starField.position.z = Math.sin(progress * Math.PI) * 15;
-  };
-  sharedParallaxManager.addHandler(parallaxHandler, 'three-earth-stars');
-}
+// setupStarParallax inlined at call site — removed helper
 
 function setupSectionDetection() {
   const sections = Array.from(document.querySelectorAll('section[id], div#footer-trigger-zone'));
@@ -485,17 +498,7 @@ function updateEarthForSection(sectionName, options = {}) {
   }
 }
 
-function setupUserControls(container) {
-  const onWheel = (e) => {
-    if (cameraManager && isSystemActive) cameraManager.handleWheel(e);
-  };
-  container.addEventListener('wheel', onWheel, { passive: true });
-  sharedCleanupManager.addCleanupFunction(
-    'three-earth',
-    () => container.removeEventListener('wheel', onWheel),
-    'wheel control'
-  );
-}
+// setupUserControls inlined into init - removed small helper
 
 // Global Animation Loop Reference
 let animate;
@@ -603,18 +606,7 @@ function updateObjectTransforms() {
   }
 }
 
-function applyQualitySettings() {
-  const level = CONFIG.QUALITY_LEVELS[currentQualityLevel];
-  if (cloudMesh) cloudMesh.visible = level.cloudLayer;
-  if (shootingStarManager) shootingStarManager.disabled = !level.meteorShowers;
-  try {
-    if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
-      renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
-    }
-  } catch (e) {
-    log.debug('Unable to set PIXEL_RATIO during quality apply', e);
-  }
-}
+// applyQualitySettings inlined into PerformanceMonitor callback; removed to reduce small helper functions
 
 function setupResizeHandler() {
   const handleResize = () => {

@@ -110,15 +110,7 @@ const SectionLoader = (() => {
     }
   }
 
-  function getSectionName(section) {
-    const labelId = section.getAttribute('aria-labelledby');
-    if (labelId) {
-      const label = getElementById(labelId);
-      const text = label?.textContent?.trim();
-      if (text) return text;
-    }
-    return section.id || 'Abschnitt';
-  }
+  // getSectionName inlined into loadSection; removed to avoid small helper function proliferation
 
   async function loadSection(section) {
     if (loadedSections.has(section)) return;
@@ -130,7 +122,16 @@ const SectionLoader = (() => {
     }
 
     loadedSections.add(section);
-    const sectionName = getSectionName(section);
+    // Inline getSectionName: avoid small helper function footprint
+    const sectionName = (() => {
+      const labelId = section.getAttribute('aria-labelledby');
+      if (labelId) {
+        const label = getElementById(labelId);
+        const text = label?.textContent?.trim();
+        if (text) return text;
+      }
+      return section.id || 'Abschnitt';
+    })();
     const attempts = retryAttempts.get(section) || 0;
 
     section.setAttribute('aria-busy', 'true');
@@ -187,24 +188,23 @@ const SectionLoader = (() => {
       announce(`Fehler beim Laden von ${sectionName}`, { assertive: true });
       dispatchEvent('section:error', section, { state: 'error' });
 
-      injectRetryUI(section);
+      // Inline injectRetryUI: inject a small retry UI directly
+      if (!section.querySelector('.section-retry')) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'section-retry';
+        button.textContent = 'Erneut laden';
+        button.addEventListener('click', () => retrySection(section), { once: true });
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'section-error-box';
+        wrapper.appendChild(button);
+        section.appendChild(wrapper);
+      }
     }
   }
 
-  function injectRetryUI(section) {
-    if (section.querySelector('.section-retry')) return;
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'section-retry';
-    button.textContent = 'Erneut laden';
-    button.addEventListener('click', () => retrySection(section), { once: true });
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'section-error-box';
-    wrapper.appendChild(button);
-    section.appendChild(wrapper);
-  }
+  // injectRetryUI removed; kept inline in loadSection() to avoid small helper function
 
   async function retrySection(section) {
     section.querySelectorAll('.section-error-box').forEach((el) => el.remove());
