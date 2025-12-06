@@ -18,7 +18,7 @@ import {
   schedulePersistentStorageRequest,
   SectionTracker
 } from './utils/shared-utilities.js';
-import TypeWriterRegistry from './components/typewriter/TypeWriter.js';
+import { initHeroSubtitle } from './components/typewriter/TypeWriter.js';
 import { a11y } from './utils/accessibility-manager.js';
 // Ensure the a11y manager is available globally and initialized centrally
 if (typeof window !== 'undefined') {
@@ -424,9 +424,8 @@ document.addEventListener(
 
     fire(EVENTS.DOM_READY);
 
-    if (!window.TypeWriterRegistry) {
-      window.TypeWriterRegistry = TypeWriterRegistry;
-    }
+    // Simplified TypeWriter Export
+    window.initHeroSubtitle = initHeroSubtitle;
 
     let modulesReady = false;
     let windowLoaded = false;
