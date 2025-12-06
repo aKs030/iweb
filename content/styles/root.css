@@ -29,16 +29,16 @@
   --success-color: #2d9e47;
 
   /* ===== DARK MODE (Standard) ===== */
-  /* Updated global background for a consistent darker tone across the site */
-  --bg-primary: #020617;
-  --bg-secondary: #020617;
+  /* Gallery dark background & text as global defaults for consistent look */
+  --bg-primary: #030712; /* gallery background */
+  --bg-secondary: #161616;
   --bg-tertiary: #262626;
   --bg-interactive: #404040;
 
   /* Text Colors - Optimized for Dark Mode */
-  --text-primary: #f5f5f5;
+  --text-primary: #e5e7eb; /* gallery text */
   --text-secondary: #d4d4d4;
-  --text-muted: #a3a3a3;
+  --text-muted: #cbd5f5; /* gallery muted */
   --text-faded: #737373;
 
   /* Particle System - Dark Mode */
