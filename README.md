@@ -142,6 +142,9 @@ npx stylelint "**/*.css"
 - Nutzt lokale Utility-CSS (`/pages/fotos/gallery-styles.css`) statt Tailwind-CDN
 - Vollständig responsive und PWA-kompatibel
 
+### ✅ Global Theme Update
+- Globales Hintergrund-Theme aktualisiert auf ein tieferes Dunkel (#020617) für konsistente Darstellung über alle Seiten.
+
 ### ✅ Console-Logs standardisiert
 Alle `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt.
 
