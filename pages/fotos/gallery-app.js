@@ -364,7 +364,7 @@ const PhotoGallery = () => {
 
   const gridCols = gridSize === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
-  return React.createElement('div', { className: 'min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 p-4 sm:p-8' },
+  return React.createElement('div', { className: 'min-h-screen p-4 sm:p-8' },
     React.createElement('div', { className: 'max-w-7xl mx-auto mb-8' },
       React.createElement('div', { className: 'text-center mb-8' },
         React.createElement('h1', { className: 'text-5xl sm:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-3' },
