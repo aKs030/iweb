@@ -451,8 +451,27 @@ async function initHeroSubtitleImpl({
           const cs = getComputedStyle(subtitleEl);
           const lh = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
           const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
-          const boxH = 1 * lh + lines * lh + gap;
+          // Berechne die notwendige Box-Höhe: Zeilen * Zeilenhöhe + Zwischenräume (gaps zwischen Zeilen)
+          const linesCount = Math.max(1, Math.round(lines));
+          const boxH = linesCount * lh + Math.max(0, linesCount - 1) * gap;
           subtitleEl.style.setProperty('--box-h', `${boxH}px`);
+          // Debugging: log measurement values when debug flag is present
+          if (window.location.search.includes('debug')) {
+            try {
+              const footer = document.querySelector('#site-footer');
+              const fh = footer ? Math.round(footer.getBoundingClientRect().height) : 0;
+              console.info('TypeWriter: Debug:', {
+                fullText: fullText.slice(0, 48),
+                lines,
+                lh,
+                gap,
+                boxH,
+                footerHeight: fh
+              });
+            } catch (e) {
+              /* ignore */
+            }
+          }
         }
       });
       // Optional für Debugging, aber nicht für die Logik erforderlich

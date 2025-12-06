@@ -90,7 +90,9 @@ export function makeLineMeasurer(subtitleEl) {
       subtitleEl.setAttribute('data-lines', String(lines));
 
       // Dynamische Bottom-Position für mehrzeilige Texte (>3 Zeilen)
-      if (lines > 3 && lh > 0) {
+      // Wenn mehrere Zeilen vor dem Tippen angezeigt werden, verschiebe
+      // den Subtitle zusätzlich nach oben, sodass er über dem Footer bleibt.
+      if (lh > 0) {
         const isFixed = subtitleEl.classList.contains('typewriter-title--fixed');
         const isExpanded = document.body.classList.contains('footer-expanded');
 
@@ -105,10 +107,25 @@ export function makeLineMeasurer(subtitleEl) {
         }
 
         // Minimale zusätzliche Höhe für Mehrzeiler berechnen
-        const extraHeight = Math.round((lines - 3) * lh * 0.3);
+        const gap = parseFloat(cs.getPropertyValue('--gap-px')) || lh * 0.25 || 0;
+        // Geneuere Berechnung: Jede zusätzliche Zeile benötigt die Zeilenhöhe + optionalen gap
+        const lineExtra = lines > 3 ? Math.round((lines - 3) * (lh + gap)) : 0;
 
-        // Neue Bottom-Position setzen
-        subtitleEl.style.setProperty('bottom', `calc(${baseOffset} + ${extraHeight}px)`);
+        // Footer-Höhe ermitteln (sichtbare Höhe des Footer Elements, falls vorhanden)
+        const footerEl = document.querySelector('#site-footer');
+        const footerHeight = footerEl ? Math.round(footerEl.getBoundingClientRect().height) : 0;
+
+        // Sicherheitsabstand (px) zwischen TypeWriter und Footer
+        const safeBottomMargin = 8;
+        const totalExtraPx = lineExtra + footerHeight + safeBottomMargin;
+
+        // Neue Bottom-Position setzen oder zurücksetzen
+        if (totalExtraPx > 0) {
+          // baseOffset ist ein CSS-clamp/var-Ausdruck, daher in calc verwenden
+          subtitleEl.style.setProperty('bottom', `calc(${baseOffset} + ${totalExtraPx}px)`);
+        } else {
+          subtitleEl.style.removeProperty('bottom');
+        }
       }
 
       return lines;
