@@ -29,8 +29,9 @@
   --success-color: #2d9e47;
 
   /* ===== DARK MODE (Standard) ===== */
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #161616;
+  /* Updated global background for a consistent darker tone across the site */
+  --bg-primary: #020617;
+  --bg-secondary: #020617;
   --bg-tertiary: #262626;
   --bg-interactive: #404040;
 
