@@ -353,7 +353,7 @@ export function createTriggerOnceObserver(callback, options = {}) {
 
 let persistPromise = null;
 
-export async function ensurePersistentStorage() {
+async function ensurePersistentStorage() {
   if (persistPromise) return persistPromise;
 
   persistPromise = (async () => {

@@ -93,39 +93,8 @@ export function makeLineMeasurer(subtitleEl) {
       // Wenn mehrere Zeilen vor dem Tippen angezeigt werden, verschiebe
       // den Subtitle zusätzlich nach oben, sodass er über dem Footer bleibt.
       if (lh > 0) {
-        const isFixed = subtitleEl.classList.contains('typewriter-title--fixed');
-        const isExpanded = document.body.classList.contains('footer-expanded');
-
-        // Basis-Abstand je nach Modus bestimmen
-        let baseOffset;
-        if (isExpanded) {
-          baseOffset = 'clamp(8px, 1.5vw, 16px)';
-        } else if (isFixed) {
-          baseOffset = 'clamp(16px, 2.5vw, 32px)';
-        } else {
-          baseOffset = 'clamp(12px, 2vw, 24px)';
-        }
-
-        // Minimale zusätzliche Höhe für Mehrzeiler berechnen
-        const gap = parseFloat(cs.getPropertyValue('--gap-px')) || lh * 0.25 || 0;
-        // Geneuere Berechnung: Jede zusätzliche Zeile benötigt die Zeilenhöhe + optionalen gap
-        const lineExtra = lines > 3 ? Math.round((lines - 3) * (lh + gap)) : 0;
-
-        // Footer-Höhe ermitteln (sichtbare Höhe des Footer Elements, falls vorhanden)
-        const footerEl = document.querySelector('#site-footer');
-        const footerHeight = footerEl ? Math.round(footerEl.getBoundingClientRect().height) : 0;
-
-        // Sicherheitsabstand (px) zwischen TypeWriter und Footer
-        const safeBottomMargin = 8;
-        const totalExtraPx = lineExtra + footerHeight + safeBottomMargin;
-
-        // Neue Bottom-Position setzen oder zurücksetzen
-        if (totalExtraPx > 0) {
-          // baseOffset ist ein CSS-clamp/var-Ausdruck, daher in calc verwenden
-          subtitleEl.style.setProperty('bottom', `calc(${baseOffset} + ${totalExtraPx}px)`);
-        } else {
-          subtitleEl.style.removeProperty('bottom');
-        }
+          // Keine inline-Bottom-Änderung hier — realer Offset wird im TypeWriter.onBeforeType berechnet
+          // und angewendet, um die aktuell berechnete --box-h zu nutzen.
       }
 
       return lines;

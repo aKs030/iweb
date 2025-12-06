@@ -301,8 +301,34 @@ export async function initHeroSubtitle(options = {}) {
           const cs = getComputedStyle(subtitleEl);
           const lh = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
           const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
-          const boxH = 1 * lh + lines * lh + gap;
+          // Correct box height: lines * line-height + (lines - 1) * gap_between_lines
+          const boxH = Math.max(0, lines * lh + Math.max(0, lines - 1) * gap);
           subtitleEl.style.setProperty('--box-h', `${boxH}px`);
+
+          // Recomputed layout, prüfe ob ein Footer vorhanden ist und ob eine Überschneidung besteht
+          try {
+            const rect = subtitleEl.getBoundingClientRect();
+            const footerEl = document.querySelector('#site-footer');
+            const safeMargin = 8; // Mindestabstand in px
+            if (footerEl) {
+              const fRect = footerEl.getBoundingClientRect();
+              const overlap = Math.max(0, rect.bottom - (fRect.top - safeMargin));
+              const isFixed = subtitleEl.classList.contains('typewriter-title--fixed');
+              const isExpanded = document.body.classList.contains('footer-expanded');
+              let baseOffset;
+              if (isExpanded) baseOffset = 'clamp(8px, 1.5vw, 16px)';
+              else if (isFixed) baseOffset = 'clamp(16px, 2.5vw, 32px)';
+              else baseOffset = 'clamp(12px, 2vw, 24px)';
+
+              if (overlap > 0) {
+                subtitleEl.style.setProperty('bottom', `calc(${baseOffset} + ${Math.round(overlap)}px)`);
+              } else {
+                subtitleEl.style.removeProperty('bottom');
+              }
+            }
+          } catch (e) {
+            /* ignore layout errors */
+          }
         }
       });
       
