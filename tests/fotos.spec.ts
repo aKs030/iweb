@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Fotos Page Professional', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the fotos page before each test
-    await page.goto('/pages/fotos/fotos.html');
+    await page.goto('/pages/fotos/gallery.html');
   });
 
   test('should load the page with correct title and hero section', async ({ page }) => {
