@@ -26,7 +26,9 @@
   transition:
     opacity 0.45s ease,
     transform 0.45s ease;
-  z-index: 70; /* above footer */
+  /* Ensure the typewriter is displayed above the footer component (footer z-index is high)
+     Use a higher explicit z-index to keep the text visible above the footer overlay */
+  z-index: calc(var(--z-footer, 1000) + 10);
 }
 
 .typewriter-title--fixed {
@@ -35,7 +37,7 @@
 
   /* Einfache Bottom-Position - wird dynamisch vom lineMeasurer angepasst */
   bottom: clamp(16px, 2.5vw, 32px);
-  z-index: 70;
+  z-index: calc(var(--z-footer, 1000) + 12);
   opacity: 0.92;
   transform: translateY(0);
   pointer-events: auto;
