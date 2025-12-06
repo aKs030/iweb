@@ -101,8 +101,7 @@ iweb/
 │   ├── about/
 │   ├── fotos/            # 📸 React Photo Gallery
 │   │   ├── gallery.html
-│   │   ├── gallery-app.js
-│   │   └── fotos.html    # Symlink zu gallery.html
+│   │   └── gallery-app.js
 │   └── projekte/
 ├── sw.js                 # Service Worker
 ├── offline.html          # Offline-Fallback-Seite

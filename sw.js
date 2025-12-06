@@ -34,7 +34,6 @@ const STATIC_ASSETS = [
   '/pages/home/hero.css',
   '/pages/home/hero-manager.js',
   '/pages/fotos/gallery.html',
-  '/pages/fotos/fotos.html',
   '/pages/fotos/gallery-styles.css',
   '/pages/fotos/gallery-app.js',
   '/content/components/typewriter/typewriter.css',
