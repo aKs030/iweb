@@ -20,6 +20,18 @@
     filter: drop-shadow(0 0 15px rgba(64, 224, 208, 0.4));
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     animation: robotFloat 4s ease-in-out infinite;
+
+    /* Button Reset Styles */
+    background: none;
+    border: none;
+    padding: 0;
+    outline: none;
+    display: block;
+}
+
+.robot-avatar:focus-visible {
+    filter: drop-shadow(0 0 25px rgba(64, 224, 208, 0.8));
+    transform: scale(1.1);
 }
 
 .robot-avatar:hover {
@@ -31,6 +43,7 @@
 .robot-svg {
     width: 100%;
     height: 100%;
+    pointer-events: none; /* Klicks gehen an den Button */
 }
 
 .robot-eye {
@@ -83,6 +96,16 @@
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s;
+
+    /* Button Reset */
+    padding: 0;
+    outline: none;
+}
+
+.robot-bubble-close:focus-visible {
+    opacity: 1;
+    border-color: #64748b;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 .robot-bubble:hover .robot-bubble-close {
@@ -153,6 +176,13 @@
     font-size: 1.2rem;
     padding: 0 5px;
     transition: color 0.2s;
+    outline: none;
+}
+
+.chat-close-btn:focus-visible {
+    color: #fff;
+    outline: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
 }
 
 .chat-close-btn:hover {
@@ -253,6 +283,12 @@
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
+    outline: none;
+}
+
+.chat-option-btn:focus-visible {
+    background: rgba(64, 224, 208, 0.1);
+    box-shadow: 0 0 0 2px rgba(64, 224, 208, 0.5);
 }
 
 .chat-option-btn:hover {
