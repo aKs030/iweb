@@ -102,6 +102,51 @@ class RobotCompanion {
     };
 
     this.init();
+    this.setupFooterOverlapCheck();
+  }
+
+  setupFooterOverlapCheck() {
+    // Use a getter or query inside the check function to ensure we always get the current footer
+    // (Footer might be injected dynamically)
+    
+    const checkOverlap = () => {
+      const container = document.getElementById(this.containerId);
+      const footer = document.querySelector('footer') || document.querySelector('#site-footer');
+      
+      if (!container || !footer) return;
+      
+      // Reset to default to measure natural position
+      container.style.bottom = ''; 
+      
+      const rect = container.getBoundingClientRect();
+      const fRect = footer.getBoundingClientRect();
+      
+      // Calculate overlap: (Container Bottom) - (Footer Top - Margin)
+      // We want at least 30px distance from footer
+      // If footer is minimized (fixed), we need to respect its visual top
+      const overlap = Math.max(0, rect.bottom - fRect.top);
+      
+      if (overlap > 0) {
+        // If overlap is detected, push it up
+        container.style.bottom = `${30 + overlap}px`;
+      } else {
+        // If no overlap (e.g. scrolled back up), ensure we reset to CSS default if needed
+        // But since we reset at start of function, this is implicit.
+      }
+    };
+
+    // Initial check
+    requestAnimationFrame(checkOverlap);
+
+    // Check on scroll and resize
+    window.addEventListener('scroll', () => requestAnimationFrame(checkOverlap), { passive: true });
+    window.addEventListener('resize', () => requestAnimationFrame(checkOverlap), { passive: true });
+    
+    // Check when footer loads
+    document.addEventListener('footer:loaded', checkOverlap);
+    
+    // Polling for robustness
+    setInterval(checkOverlap, 500);
   }
 
   init() {
