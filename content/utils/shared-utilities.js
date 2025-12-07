@@ -414,21 +414,7 @@ export function randomInt(min, max) {
 }
 
 // ===== String Utilities =====
-
-export function splitTextIntoLines(text) {
-  const parts = String(text).split(/(, )/);
-  const frag = document.createDocumentFragment();
-
-  for (const part of parts) {
-    if (part === ', ') {
-      frag.appendChild(document.createTextNode(','));
-      frag.appendChild(document.createElement('br'));
-    } else {
-      frag.appendChild(document.createTextNode(part));
-    }
-  }
-  return frag;
-}
+// (none - removed splitTextIntoLines helper)
 
 // ===== Unified Event Listener Helper =====
 

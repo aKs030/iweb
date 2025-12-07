@@ -3,8 +3,7 @@ import {
   createLogger,
   getElementById,
   shuffle,
-  TimerManager,
-  splitTextIntoLines
+  TimerManager
 } from '../../utils/shared-utilities.js';
 
 const log = createLogger('TypeWriter');
@@ -12,6 +11,33 @@ const log = createLogger('TypeWriter');
 // Helper: CSS Variables setzen
 const setCSSVars = (el, vars) =>
   Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v));
+
+// Helper: Footer Overlap Check
+function checkFooterOverlap(subtitleEl) {
+  try {
+    // Reset bottom first to measure natural position
+    subtitleEl.style.removeProperty('bottom');
+
+    const rect = subtitleEl.getBoundingClientRect();
+    const footer = document.querySelector('#site-footer');
+    if (!footer) return;
+
+    const fRect = footer.getBoundingClientRect();
+    // Ensure at least 24px distance to footer
+    const overlap = Math.max(0, rect.bottom - (fRect.top - 24));
+
+    if (overlap > 0) {
+      const base = document.body.classList.contains('footer-expanded')
+        ? 'clamp(8px,1.5vw,16px)'
+        : subtitleEl.classList.contains('typewriter-title--fixed')
+          ? 'clamp(16px,2.5vw,32px)'
+          : 'clamp(12px,2vw,24px)';
+      setCSSVars(subtitleEl, { bottom: `calc(${base} + ${overlap}px)` });
+    }
+  } catch (e) {
+    // Silent fail
+  }
+}
 
 export class TypeWriter {
   constructor({
@@ -95,16 +121,7 @@ export class TypeWriter {
 
   _renderText(text) {
     if (!this.textEl) return;
-    try {
-      this.textEl.textContent = '';
-      if (this.smartBreaks) {
-        this.textEl.appendChild(splitTextIntoLines(text));
-      } else {
-        this.textEl.textContent = text;
-      }
-    } catch (e) {
-      this.textEl.textContent = text;
-    }
+    this.textEl.textContent = text;
   }
 
   _tick() {
@@ -220,28 +237,7 @@ export async function initHeroSubtitle(options = {}) {
             '--box-h': `${Math.max(0, lines * lh + (lines - 1) * gap)}px`
           });
 
-          // Footer overlap check
-          try {
-            // Reset bottom first to measure natural position
-            subtitleEl.style.removeProperty('bottom');
-
-            const rect = subtitleEl.getBoundingClientRect();
-            const footer = document.querySelector('#site-footer');
-            if (!footer) return;
-
-            const fRect = footer.getBoundingClientRect();
-            // Ensure at least 24px distance to footer
-            const overlap = Math.max(0, rect.bottom - (fRect.top - 24));
-            
-            if (overlap > 0) {
-              const base = document.body.classList.contains('footer-expanded')
-                ? 'clamp(8px,1.5vw,16px)'
-                : subtitleEl.classList.contains('typewriter-title--fixed')
-                  ? 'clamp(16px,2.5vw,32px)'
-                  : 'clamp(12px,2vw,24px)';
-              setCSSVars(subtitleEl, { bottom: `calc(${base} + ${overlap}px)` });
-            }
-          } catch {}
+          checkFooterOverlap(subtitleEl);
         }
       });
 
