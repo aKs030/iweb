@@ -3,11 +3,11 @@
     "browser": true,
     "es2021": true
   },
-  "extends": "eslint:recommended",
-  "parserOptions": {
-    "ecmaVersion": 2024,
-    "sourceType": "module"
-  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended", 
+    "prettier" 
+  ],
   "rules": {
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-unused-vars": ["warn", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
@@ -33,3 +33,4 @@
     }
   ]
 }
+
