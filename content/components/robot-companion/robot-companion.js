@@ -4,133 +4,133 @@
  */
 
 class RobotCompanion {
-    constructor() {
-        this.containerId = 'robot-companion-container';
-        this.state = {
-            isOpen: false,
-            hasGreeted: false,
-            isTyping: false
-        };
-        
-        // Erweiterte Antworten-Datenbank
-        this.knowledgeBase = {
-            'start': {
-                text: 'Hallo! Ich bin Cyber, dein virtueller Assistent. 🤖 Wie kann ich dir heute helfen?',
-                options: [
-                    { label: 'Was kannst du?', action: 'skills' },
-                    { label: 'Projekte zeigen', action: 'projects' },
-                    { label: 'Über den Dev', action: 'about' },
-                    { label: 'Fun & Extras', action: 'extras' }
-                ]
-            },
-            'skills': {
-                text: 'Ich wurde mit HTML, CSS und reinem JavaScript gebaut! Mein Erschaffer beherrscht aber noch viel mehr: React, Node.js, Python und UI/UX Design. Möchtest du Details?',
-                options: [
-                    { label: 'Tech Stack ansehen', url: '/pages/about/about.html#skills' },
-                    { label: 'Zurück', action: 'start' }
-                ]
-            },
-            'about': {
-                text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt. 👨‍💻',
-                options: [
-                    { label: 'Zur Bio', url: '/pages/about/about.html' },
-                    { label: 'Kontakt aufnehmen', action: 'contact' },
-                    { label: 'Zurück', action: 'start' }
-                ]
-            },
-            'projects': {
-                text: 'Wir haben einige spannende Projekte hier! Von Web-Apps bis zu Design-Experimenten. Wirf einen Blick in die Galerie.',
-                options: [
-                    { label: 'Zur Galerie', url: '/pages/projekte/projekte.html' },
-                    { label: 'Ein Zufallsprojekt?', action: 'randomProject' },
-                    { label: 'Zurück', action: 'start' }
-                ]
-            },
-            'contact': {
-                text: 'Du findest Kontaktmöglichkeiten im Footer der Seite oder im Impressum. Ich kann dich dorthin scrollen!',
-                options: [
-                    { label: 'Zum Footer scrollen', action: 'scrollFooter' },
-                    { label: 'Social Media?', action: 'socials' },
-                    { label: 'Alles klar', action: 'start' }
-                ]
-            },
-            'socials': {
-                text: 'Vernetze dich gerne! Hier sind die Profile:',
-                options: [
-                    { label: 'GitHub', url: 'https://github.com', target: '_blank' },
-                    { label: 'LinkedIn', url: 'https://linkedin.com', target: '_blank' },
-                    { label: 'Zurück', action: 'contact' }
-                ]
-            },
-            'extras': {
-                text: 'Ein bisschen Spaß muss sein! Was möchtest du?',
-                options: [
-                    { label: 'Witz erzählen', action: 'joke' },
-                    { label: 'Weltraum Fakt', action: 'fact' },
-                    { label: 'Zurück', action: 'start' }
-                ]
-            },
-            'joke': {
-                text: [
-                    'Was macht ein Pirat am Computer? Er drückt die Enter-Taste! 🏴‍☠️',
-                    'Warum gehen Geister nicht in den Regen? Damit sie nicht nass werden... nein, damit sie nicht "ge-löscht" werden!',
-                    'Ein SQL Query kommt in eine Bar, geht zu zwei Tischen und fragt: "Darf ich mich joinen?"',
-                    'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.'
-                ],
-                options: [
-                    { label: 'Noch einer!', action: 'joke' },
-                    { label: 'Genug gelacht', action: 'start' }
-                ]
-            },
-            'fact': {
-                text: [
-                    'Wusstest du? Ein Tag auf der Venus ist länger als ein Jahr auf der Venus. 🪐',
-                    'Der Weltraum ist völlig still. Es gibt keine Atmosphäre, die Schall überträgt.',
-                    'Neutronensterne sind so dicht, dass ein Teelöffel davon 6 Milliarden Tonnen wiegen würde!',
-                    'Es gibt mehr Sterne im Universum als Sandkörner an allen Stränden der Erde.'
-                ],
-                options: [
-                    { label: 'Wow, noch einer!', action: 'fact' },
-                    { label: 'Zurück', action: 'start' }
-                ]
-            },
-            'randomProject': {
-                // Logik wird unten in handleAction speziell behandelt, dies ist ein Fallback
-                text: 'Ich suche etwas raus...',
-                options: [] 
-            }
-        };
+  constructor() {
+    this.containerId = 'robot-companion-container';
+    this.state = {
+      isOpen: false,
+      hasGreeted: false,
+      isTyping: false
+    };
 
-        this.init();
+    // Erweiterte Antworten-Datenbank
+    this.knowledgeBase = {
+      start: {
+        text: 'Hallo! Ich bin Cyber, dein virtueller Assistent. 🤖 Wie kann ich dir heute helfen?',
+        options: [
+          { label: 'Was kannst du?', action: 'skills' },
+          { label: 'Projekte zeigen', action: 'projects' },
+          { label: 'Über den Dev', action: 'about' },
+          { label: 'Fun & Extras', action: 'extras' }
+        ]
+      },
+      skills: {
+        text: 'Ich wurde mit HTML, CSS und reinem JavaScript gebaut! Mein Erschaffer beherrscht aber noch viel mehr: React, Node.js, Python und UI/UX Design. Möchtest du Details?',
+        options: [
+          { label: 'Tech Stack ansehen', url: '/pages/about/about.html#skills' },
+          { label: 'Zurück', action: 'start' }
+        ]
+      },
+      about: {
+        text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt. 👨‍💻',
+        options: [
+          { label: 'Zur Bio', url: '/pages/about/about.html' },
+          { label: 'Kontakt aufnehmen', action: 'contact' },
+          { label: 'Zurück', action: 'start' }
+        ]
+      },
+      projects: {
+        text: 'Wir haben einige spannende Projekte hier! Von Web-Apps bis zu Design-Experimenten. Wirf einen Blick in die Galerie.',
+        options: [
+          { label: 'Zur Galerie', url: '/pages/projekte/projekte.html' },
+          { label: 'Ein Zufallsprojekt?', action: 'randomProject' },
+          { label: 'Zurück', action: 'start' }
+        ]
+      },
+      contact: {
+        text: 'Du findest Kontaktmöglichkeiten im Footer der Seite oder im Impressum. Ich kann dich dorthin scrollen!',
+        options: [
+          { label: 'Zum Footer scrollen', action: 'scrollFooter' },
+          { label: 'Social Media?', action: 'socials' },
+          { label: 'Alles klar', action: 'start' }
+        ]
+      },
+      socials: {
+        text: 'Vernetze dich gerne! Hier sind die Profile:',
+        options: [
+          { label: 'GitHub', url: 'https://github.com', target: '_blank' },
+          { label: 'LinkedIn', url: 'https://linkedin.com', target: '_blank' },
+          { label: 'Zurück', action: 'contact' }
+        ]
+      },
+      extras: {
+        text: 'Ein bisschen Spaß muss sein! Was möchtest du?',
+        options: [
+          { label: 'Witz erzählen', action: 'joke' },
+          { label: 'Weltraum Fakt', action: 'fact' },
+          { label: 'Zurück', action: 'start' }
+        ]
+      },
+      joke: {
+        text: [
+          'Was macht ein Pirat am Computer? Er drückt die Enter-Taste! 🏴‍☠️',
+          'Warum gehen Geister nicht in den Regen? Damit sie nicht nass werden... nein, damit sie nicht "ge-löscht" werden!',
+          'Ein SQL Query kommt in eine Bar, geht zu zwei Tischen und fragt: "Darf ich mich joinen?"',
+          'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.'
+        ],
+        options: [
+          { label: 'Noch einer!', action: 'joke' },
+          { label: 'Genug gelacht', action: 'start' }
+        ]
+      },
+      fact: {
+        text: [
+          'Wusstest du? Ein Tag auf der Venus ist länger als ein Jahr auf der Venus. 🪐',
+          'Der Weltraum ist völlig still. Es gibt keine Atmosphäre, die Schall überträgt.',
+          'Neutronensterne sind so dicht, dass ein Teelöffel davon 6 Milliarden Tonnen wiegen würde!',
+          'Es gibt mehr Sterne im Universum als Sandkörner an allen Stränden der Erde.'
+        ],
+        options: [
+          { label: 'Wow, noch einer!', action: 'fact' },
+          { label: 'Zurück', action: 'start' }
+        ]
+      },
+      randomProject: {
+        // Logik wird unten in handleAction speziell behandelt, dies ist ein Fallback
+        text: 'Ich suche etwas raus...',
+        options: []
+      }
+    };
+
+    this.init();
+  }
+
+  init() {
+    this.loadCSS();
+    this.createDOM();
+    this.attachEvents();
+
+    // Initiale Begrüßung
+    setTimeout(() => {
+      if (!this.state.isOpen) {
+        this.showBubble('Psst! Brauchst du Hilfe? 👋');
+      }
+    }, 5000);
+  }
+
+  loadCSS() {
+    if (!document.querySelector('link[href*="robot-companion.css"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/content/components/robot-companion/robot-companion.css';
+      document.head.appendChild(link);
     }
+  }
 
-    init() {
-        this.loadCSS();
-        this.createDOM();
-        this.attachEvents();
-        
-        // Initiale Begrüßung
-        setTimeout(() => {
-            if (!this.state.isOpen) {
-                this.showBubble("Psst! Brauchst du Hilfe? 👋");
-            }
-        }, 5000);
-    }
+  createDOM() {
+    const container = document.createElement('div');
+    container.id = this.containerId;
 
-    loadCSS() {
-        if (!document.querySelector('link[href*="robot-companion.css"]')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = '/content/components/robot-companion/robot-companion.css';
-            document.head.appendChild(link);
-        }
-    }
-
-    createDOM() {
-        const container = document.createElement('div');
-        container.id = this.containerId;
-
-        const robotSVG = `
+    const robotSVG = `
         <svg viewBox="0 0 100 100" class="robot-svg">
             <defs>
                 <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -155,7 +155,7 @@ class RobotCompanion {
         </svg>
         `;
 
-        container.innerHTML = `
+    container.innerHTML = `
             <div class="robot-chat-window" id="robot-chat-window">
                 <div class="chat-header">
                     <div class="chat-title">
@@ -178,176 +178,176 @@ class RobotCompanion {
             </div>
         `;
 
-        document.body.appendChild(container);
+    document.body.appendChild(container);
 
-        this.dom = {
-            window: document.getElementById('robot-chat-window'),
-            bubble: document.getElementById('robot-bubble'),
-            bubbleText: document.getElementById('robot-bubble-text'),
-            bubbleClose: container.querySelector('.robot-bubble-close'),
-            messages: document.getElementById('robot-messages'),
-            controls: document.getElementById('robot-controls'),
-            avatar: container.querySelector('.robot-avatar'),
-            closeBtn: container.querySelector('.chat-close-btn')
-        };
+    this.dom = {
+      window: document.getElementById('robot-chat-window'),
+      bubble: document.getElementById('robot-bubble'),
+      bubbleText: document.getElementById('robot-bubble-text'),
+      bubbleClose: container.querySelector('.robot-bubble-close'),
+      messages: document.getElementById('robot-messages'),
+      controls: document.getElementById('robot-controls'),
+      avatar: container.querySelector('.robot-avatar'),
+      closeBtn: container.querySelector('.chat-close-btn')
+    };
+  }
+
+  attachEvents() {
+    this.dom.avatar.addEventListener('click', () => this.toggleChat());
+    this.dom.closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleChat(false);
+    });
+    this.dom.bubbleClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.hideBubble();
+    });
+  }
+
+  toggleChat(forceState) {
+    const newState = forceState !== undefined ? forceState : !this.state.isOpen;
+
+    if (newState) {
+      this.dom.window.classList.add('open');
+      this.state.isOpen = true;
+      this.hideBubble();
+
+      if (this.dom.messages.children.length === 0) {
+        this.handleAction('start');
+      }
+    } else {
+      this.dom.window.classList.remove('open');
+      this.state.isOpen = false;
     }
+  }
 
-    attachEvents() {
-        this.dom.avatar.addEventListener('click', () => this.toggleChat());
-        this.dom.closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleChat(false);
-        });
-        this.dom.bubbleClose.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.hideBubble();
-        });
-    }
+  showBubble(text) {
+    if (this.state.isOpen) return;
+    this.dom.bubbleText.textContent = text;
+    this.dom.bubble.classList.add('visible');
+  }
 
-    toggleChat(forceState) {
-        const newState = forceState !== undefined ? forceState : !this.state.isOpen;
-        
-        if (newState) {
-            this.dom.window.classList.add('open');
-            this.state.isOpen = true;
-            this.hideBubble();
-            
-            if (this.dom.messages.children.length === 0) {
-                this.handleAction('start');
-            }
-        } else {
-            this.dom.window.classList.remove('open');
-            this.state.isOpen = false;
-        }
-    }
+  hideBubble() {
+    this.dom.bubble.classList.remove('visible');
+  }
 
-    showBubble(text) {
-        if (this.state.isOpen) return;
-        this.dom.bubbleText.textContent = text;
-        this.dom.bubble.classList.add('visible');
-    }
+  // Hilfsfunktion: Typing Indicator anzeigen
+  showTyping() {
+    if (this.state.isTyping) return;
+    this.state.isTyping = true;
 
-    hideBubble() {
-        this.dom.bubble.classList.remove('visible');
-    }
-
-    // Hilfsfunktion: Typing Indicator anzeigen
-    showTyping() {
-        if (this.state.isTyping) return;
-        this.state.isTyping = true;
-        
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'typing-indicator';
-        typingDiv.id = 'robot-typing';
-        typingDiv.innerHTML = `
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.id = 'robot-typing';
+    typingDiv.innerHTML = `
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
         `;
-        this.dom.messages.appendChild(typingDiv);
-        this.scrollToBottom();
-    }
+    this.dom.messages.appendChild(typingDiv);
+    this.scrollToBottom();
+  }
 
-    removeTyping() {
-        const typingDiv = document.getElementById('robot-typing');
-        if (typingDiv) {
-            typingDiv.remove();
-        }
-        this.state.isTyping = false;
+  removeTyping() {
+    const typingDiv = document.getElementById('robot-typing');
+    if (typingDiv) {
+      typingDiv.remove();
     }
+    this.state.isTyping = false;
+  }
 
-    addMessage(text, type = 'bot') {
-        const msg = document.createElement('div');
-        msg.className = `message ${type}`;
-        msg.innerHTML = text; // innerHTML für Links im Text erlaubt
-        this.dom.messages.appendChild(msg);
-        this.scrollToBottom();
-    }
+  addMessage(text, type = 'bot') {
+    const msg = document.createElement('div');
+    msg.className = `message ${type}`;
+    msg.innerHTML = text; // innerHTML für Links im Text erlaubt
+    this.dom.messages.appendChild(msg);
+    this.scrollToBottom();
+  }
 
-    clearControls() {
-        this.dom.controls.innerHTML = '';
-    }
+  clearControls() {
+    this.dom.controls.innerHTML = '';
+  }
 
-    addOptions(options) {
+  addOptions(options) {
+    this.clearControls();
+    options.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.className = 'chat-option-btn';
+      btn.textContent = opt.label;
+
+      btn.onclick = () => {
+        this.addMessage(opt.label, 'user');
         this.clearControls();
-        options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'chat-option-btn';
-            btn.textContent = opt.label;
-            
-            btn.onclick = () => {
-                this.addMessage(opt.label, 'user');
-                this.clearControls();
-                
-                // Kurze Verzögerung bevor der Bot "tippt"
-                setTimeout(() => {
-                    if (opt.url) {
-                         window.open(opt.url, opt.target || '_self');
-                         // Nach Redirect Optionen wiederherstellen oder zum Start
-                         if(opt.target === '_blank') this.handleAction('start');
-                    } else if (opt.action) {
-                        this.handleAction(opt.action);
-                    }
-                }, 300);
-            };
-            
-            this.dom.controls.appendChild(btn);
-        });
-    }
 
-    handleAction(actionKey) {
-        // Spezialfälle
-        if (actionKey === 'scrollFooter') {
-            document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
-            this.showTyping();
-            setTimeout(() => {
-                this.removeTyping();
-                this.addMessage("Ich habe dich nach unten gebracht! 👇", 'bot');
-                setTimeout(() => this.handleAction('start'), 2000);
-            }, 1000);
-            return;
-        }
-
-        if (actionKey === 'randomProject') {
-            const projects = [
-                '/pages/projekte/projekte.html', 
-                // Hier könnten echte Projekt-URLs stehen, fallback zur Übersicht
-            ];
-            const randomUrl = projects[Math.floor(Math.random() * projects.length)];
-            window.location.href = randomUrl;
-            return;
-        }
-
-        const data = this.knowledgeBase[actionKey];
-        if (!data) return;
-
-        // Bot "tippt"
-        this.showTyping();
-        
-        // Simuliere Lese-/Tippzeit basierend auf Textlänge
-        const responseText = Array.isArray(data.text) 
-            ? data.text[Math.floor(Math.random() * data.text.length)] 
-            : data.text;
-            
-        const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
-
+        // Kurze Verzögerung bevor der Bot "tippt"
         setTimeout(() => {
-            this.removeTyping();
-            this.addMessage(responseText, 'bot');
-            
-            if (data.options) {
-                this.addOptions(data.options);
-            }
-        }, typingTime);
+          if (opt.url) {
+            window.open(opt.url, opt.target || '_self');
+            // Nach Redirect Optionen wiederherstellen oder zum Start
+            if (opt.target === '_blank') this.handleAction('start');
+          } else if (opt.action) {
+            this.handleAction(opt.action);
+          }
+        }, 300);
+      };
+
+      this.dom.controls.appendChild(btn);
+    });
+  }
+
+  handleAction(actionKey) {
+    // Spezialfälle
+    if (actionKey === 'scrollFooter') {
+      document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
+      this.showTyping();
+      setTimeout(() => {
+        this.removeTyping();
+        this.addMessage('Ich habe dich nach unten gebracht! 👇', 'bot');
+        setTimeout(() => this.handleAction('start'), 2000);
+      }, 1000);
+      return;
     }
 
-    scrollToBottom() {
-        this.dom.messages.scrollTop = this.dom.messages.scrollHeight;
+    if (actionKey === 'randomProject') {
+      const projects = [
+        '/pages/projekte/projekte.html'
+        // Hier könnten echte Projekt-URLs stehen, fallback zur Übersicht
+      ];
+      const randomUrl = projects[Math.floor(Math.random() * projects.length)];
+      window.location.href = randomUrl;
+      return;
     }
+
+    const data = this.knowledgeBase[actionKey];
+    if (!data) return;
+
+    // Bot "tippt"
+    this.showTyping();
+
+    // Simuliere Lese-/Tippzeit basierend auf Textlänge
+    const responseText = Array.isArray(data.text)
+      ? data.text[Math.floor(Math.random() * data.text.length)]
+      : data.text;
+
+    const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
+
+    setTimeout(() => {
+      this.removeTyping();
+      this.addMessage(responseText, 'bot');
+
+      if (data.options) {
+        this.addOptions(data.options);
+      }
+    }, typingTime);
+  }
+
+  scrollToBottom() {
+    this.dom.messages.scrollTop = this.dom.messages.scrollHeight;
+  }
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new RobotCompanion());
+  document.addEventListener('DOMContentLoaded', () => new RobotCompanion());
 } else {
-    new RobotCompanion();
+  new RobotCompanion();
 }
