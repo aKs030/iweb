@@ -88,7 +88,7 @@ function makeLineMeasurer(subtitleEl) {
     words.forEach((word) => {
       const testLine = currentLine.length ? currentLine.join(' ') + ' ' + word : word;
       measurer.textContent = testLine;
-      
+
       if (measurer.getBoundingClientRect().height > lh * 1.1) {
         if (currentLine.length) {
           lines.push(currentLine.join(' '));
@@ -101,11 +101,11 @@ function makeLineMeasurer(subtitleEl) {
         currentLine.push(word);
       }
     });
-    
+
     if (currentLine.length) {
       lines.push(currentLine.join(' '));
     }
-    
+
     return lines.length ? lines : [text];
   };
 
@@ -201,7 +201,7 @@ export class TypeWriter {
 
   _renderText(text) {
     if (!this.textEl) return;
-    
+
     const lines = text.includes('\n') ? text.split('\n') : [text];
     this.textEl.innerHTML = '';
     lines.forEach((line) => {
@@ -335,11 +335,11 @@ export async function initHeroSubtitle(options = {}) {
         ...cfg,
         onBeforeType: (text) => {
           subtitleEl.classList.add('is-locked');
-          
+
           // Calculate lines and format text with newlines
           const linesArr = measurer.getLines(text);
           const formattedText = linesArr.join('\n');
-          
+
           const lines = measurer.reserveFor(text);
           const cs = getComputedStyle(subtitleEl);
           const lh = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
@@ -350,7 +350,7 @@ export async function initHeroSubtitle(options = {}) {
           });
           // Use rAF to ensure layout is updated before measuring
           requestAnimationFrame(() => checkFooterOverlap(subtitleEl));
-          
+
           return formattedText;
         }
       });
@@ -375,7 +375,9 @@ export async function initHeroSubtitle(options = {}) {
       // Also check when footer explicitly reports loaded
       document.addEventListener('footer:loaded', pollOverlap, { once: true });
       // And on resize
-      window.addEventListener('resize', () => requestAnimationFrame(pollOverlap), { passive: true });
+      window.addEventListener('resize', () => requestAnimationFrame(pollOverlap), {
+        passive: true
+      });
 
       if (window.location.search.includes('debug')) window.__typeWriter = tw;
     };

@@ -143,24 +143,24 @@ class RobotCompanion {
   setupFooterOverlapCheck() {
     // Use a getter or query inside the check function to ensure we always get the current footer
     // (Footer might be injected dynamically)
-    
+
     const checkOverlap = () => {
       const container = document.getElementById(this.containerId);
       const footer = document.querySelector('footer') || document.querySelector('#site-footer');
-      
+
       if (!container || !footer) return;
-      
+
       // Reset to default to measure natural position
-      container.style.bottom = ''; 
-      
+      container.style.bottom = '';
+
       const rect = container.getBoundingClientRect();
       const fRect = footer.getBoundingClientRect();
-      
+
       // Calculate overlap: (Container Bottom) - (Footer Top - Margin)
       // We want at least 30px distance from footer
       // If footer is minimized (fixed), we need to respect its visual top
       const overlap = Math.max(0, rect.bottom - fRect.top);
-      
+
       if (overlap > 0) {
         // If overlap is detected, push it up
         container.style.bottom = `${30 + overlap}px`;
@@ -176,10 +176,10 @@ class RobotCompanion {
     // Check on scroll and resize
     window.addEventListener('scroll', () => requestAnimationFrame(checkOverlap), { passive: true });
     window.addEventListener('resize', () => requestAnimationFrame(checkOverlap), { passive: true });
-    
+
     // Check when footer loads
     document.addEventListener('footer:loaded', checkOverlap);
-    
+
     // Polling for robustness
     setInterval(checkOverlap, 500);
   }
@@ -318,7 +318,10 @@ class RobotCompanion {
         this._eyeRAF = requestAnimationFrame(() => this._updateEyeFollow());
       }
     };
-    const prefersCoarse = typeof window !== 'undefined' && (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    const prefersCoarse =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(pointer: coarse)').matches;
     if (!prefersCoarse) {
       document.addEventListener('mousemove', this._mouseMoveHandler);
     } else {
@@ -386,9 +389,9 @@ class RobotCompanion {
     const preferUp = twRect.top > 200; // if typewriter is not close to top, go above
     const vertical = (preferUp ? -1 : 1) * (60 + Math.random() * 30);
     // Controls points offer curve — p1 moves outwards and up, p2 brings it back
-    const p1x = p0x + (advance * 0.35) * dir;
+    const p1x = p0x + advance * 0.35 * dir;
     const p1y = p0y + vertical * 1.1;
-    const p2x = p0x + (advance * 0.75) * dir;
+    const p2x = p0x + advance * 0.75 * dir;
     const p2y = p0y + vertical * 0.55;
 
     this.avoid.p0 = { x: p0x, y: p0y };
@@ -418,12 +421,13 @@ class RobotCompanion {
       container.appendChild(el);
 
       const seed = Math.random();
-      const angleSpread = (Math.PI / 3); // 60deg spread
-      const baseAngle = direction === 0 ? -Math.PI / 2 : (direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4);
+      const angleSpread = Math.PI / 3; // 60deg spread
+      const baseAngle =
+        direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
       const angle = baseAngle + (Math.random() - 0.5) * angleSpread;
       const distance = 40 + Math.random() * 30;
       const dx = Math.cos(angle) * distance * strength;
-      const dy = Math.sin(angle) * distance * strength - (10 * strength);
+      const dy = Math.sin(angle) * distance * strength - 10 * strength;
 
       // position inside container (absolute, using viewport coords), convert to container coords
       const cRect = container.getBoundingClientRect();
@@ -441,9 +445,12 @@ class RobotCompanion {
       }, Math.random() * 80);
 
       // cleanup
-      setTimeout(() => {
-        el.remove();
-      }, 900 + Math.random() * 600);
+      setTimeout(
+        () => {
+          el.remove();
+        },
+        900 + Math.random() * 600
+      );
     }
   }
 
@@ -642,8 +649,16 @@ class RobotCompanion {
 
     // Start avoidance if we are about to hit the TypeWriter area
     const now = performance.now();
-    const approachingLimit = (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) || (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
-    if (typeWriter && twRect && approachingLimit && !this.avoid.active && now > this.avoid.cooldownUntil) {
+    const approachingLimit =
+      (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) ||
+      (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
+    if (
+      typeWriter &&
+      twRect &&
+      approachingLimit &&
+      !this.avoid.active &&
+      now > this.avoid.cooldownUntil
+    ) {
       this.startAvoid(twRect, this.patrol.direction, maxLeft);
     }
 
@@ -694,20 +709,20 @@ class RobotCompanion {
     // direction -1 (Right) -> Tilt right (5deg), Eyes right (3px)
     if (this.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
-      const tiltIntensity = this.avoid.active ? 1.6 : (dashActive ? 1.2 : 1);
+      const tiltIntensity = this.avoid.active ? 1.6 : dashActive ? 1.2 : 1;
       const tilt = baseTilt * tiltIntensity;
       this.dom.svg.style.transform = `rotate(${tilt}deg)`;
       this.dom.svg.style.transition = 'transform 0.4s ease';
     }
     if (this.dom.eyes) {
       const eyeOffset = this.patrol.direction > 0 ? -3 : 3;
-      const eyeIntensity = this.avoid.active ? 1.4 : (dashActive ? 1.2 : 1);
+      const eyeIntensity = this.avoid.active ? 1.4 : dashActive ? 1.2 : 1;
       this.dom.eyes.style.transform = `translateX(${eyeOffset * eyeIntensity}px)`;
       this.dom.eyes.style.transition = 'transform 0.4s ease';
     }
     if (this.dom.flame) {
       // stronger flame during dodge/dash
-      const flameIntensity = this.avoid.active ? 1.1 : (dashActive ? 1 : 0.6);
+      const flameIntensity = this.avoid.active ? 1.1 : dashActive ? 1 : 0.6;
       this.dom.flame.style.opacity = flameIntensity;
       this.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.6) * 0.25})`;
     }
@@ -740,7 +755,15 @@ class RobotCompanion {
       }
     }
 
-    const containerRotation = this.avoid.active ? (this.patrol.direction > 0 ? -6 : 6) : (dashActive ? (this.patrol.direction > 0 ? -4 : 4) : 0);
+    const containerRotation = this.avoid.active
+      ? this.patrol.direction > 0
+        ? -6
+        : 6
+      : dashActive
+        ? this.patrol.direction > 0
+          ? -4
+          : 4
+        : 0;
     container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRotation}deg)`;
     requestAnimationFrame(this.updatePatrol);
   }
