@@ -13,7 +13,7 @@
     const existingTitleEl = document.querySelector('title');
     const pageTitle = existingTitleEl
       ? existingTitleEl.textContent
-      : document.title || 'Abdul aus Berlin';
+      : document.title || 'Abdulkerim — Digital Creator Portfolio';
 
     // 2. Shared Head laden (mit Caching für Performance)
     const resp = await fetch('/content/components/head/head.html', { cache: 'force-cache' });
