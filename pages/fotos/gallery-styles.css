@@ -537,8 +537,6 @@ img {
   padding: 0.75rem;
 }
 
- 
-
 .p-6 {
   padding: 1.5rem;
 }
@@ -649,8 +647,6 @@ img {
   bottom: 8rem;
 }
 
- 
-
 .z-10 {
   z-index: 10;
 }
@@ -733,8 +729,6 @@ img {
 .duration-700 {
   transition-duration: 700ms;
 }
-
- 
 
 .cursor-pointer {
   cursor: pointer;
@@ -908,8 +902,6 @@ img {
   background-color: rgb(168 85 247 / 50%);
 }
 
- 
-
 /* Opacity helpers */
 .opacity-0 {
   opacity: 0;
@@ -986,8 +978,6 @@ img {
 .lightbox-overlay {
   background: rgb(0 0 0 / 98%);
 }
-
- 
 
 /* Negative translations combination helper */
 .-translate-x-1\/2.-translate-y-1\/2 {
