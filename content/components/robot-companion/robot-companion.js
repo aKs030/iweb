@@ -4,51 +4,9 @@
  */
 
 class RobotCompanion {
-  constructor() {
-    this.containerId = 'robot-companion-container';
-    this.state = {
-      isOpen: false,
-      hasGreeted: false,
-      isTyping: false
-    };
-
-    // Patrol State
-    this.patrol = {
-      active: true,
-      x: 0,
-      y: 0,
-      direction: 1,
-      speed: 0.3,
-      isPaused: false,
-      bouncePhase: 0
-    };
-
-    this.motion = {
-      baseSpeed: 0.3,
-      dashSpeed: 1.2,
-      dashChance: 0.0015,
-      dashDuration: 900,
-      dashUntil: 0
-    };
-
-    this.avoid = {
-      active: false,
-      startTime: 0,
-      duration: 650,
-      p0: { x: 0, y: 0 },
-      p1: { x: 0, y: 0 },
-      p2: { x: 0, y: 0 },
-      p3: { x: 0, y: 0 },
-      cooldownUntil: 0
-    };
-
-    this.updatePatrol = this.updatePatrol.bind(this);
-    this.animationState = 'idle'; // idle, moving, thinking, working
-    this._mousePos = { x: 0, y: 0 };
-    this._prevDashActive = false;
-
-    // Erweiterte Antworten-Datenbank
-    this.knowledgeBase = {
+  // --- Static Knowledge Base ---
+  static get KNOWLEDGE_BASE() {
+    return {
       start: {
         text: 'Hallo! Ich bin Cyber, dein virtueller Assistent. 🤖 Wie kann ich dir heute helfen?',
         options: [
@@ -130,20 +88,134 @@ class RobotCompanion {
         ]
       },
       randomProject: {
-        // Logik wird unten in handleAction speziell behandelt, dies ist ein Fallback
         text: 'Ich suche etwas raus...',
         options: []
+      },
+      // Context-specific entries
+      'context:projekte': {
+        text: 'Ah, du schaust dir die Projekte an! Soll ich dir mein Lieblingsprojekt zeigen?',
+        options: [
+          { label: 'Ja, zeig mal!', url: '/pages/projekte/projekte.html#highlight' },
+          { label: 'Nein, ich stöbere selbst', action: 'start' }
+        ]
+      },
+      'context:about': {
+        text: 'Du liest gerade über mich? Frag mich ruhig alles Persönliche! (Also... fast alles 😉)',
+        options: [
+          { label: 'Lebenslauf?', url: '/pages/about/about.html#cv' },
+          { label: 'Tech Stack', action: 'skills' },
+          { label: 'Zurück', action: 'start' }
+        ]
+      },
+      'context:contact': {
+        text: 'Bereit Kontakt aufzunehmen? Ich kann dir helfen, das Formular zu finden.',
+        options: [
+          { label: 'Zum Formular', action: 'scrollFooter' }, // Assuming contact form is near footer or in separate page
+          { label: 'E-Mail kopieren', action: 'copyEmail' },
+          { label: 'Zurück', action: 'start' }
+        ]
       }
     };
+  }
+
+  constructor() {
+    this.containerId = 'robot-companion-container';
+    this.state = {
+      isOpen: false,
+      hasGreeted: false,
+      isTyping: false,
+      currentSection: 'hero'
+    };
+
+    // Patrol State
+    this.patrol = {
+      active: true,
+      x: 0,
+      y: 0,
+      direction: 1,
+      speed: 0.3,
+      isPaused: false,
+      bouncePhase: 0
+    };
+
+    this.motion = {
+      baseSpeed: 0.3,
+      dashSpeed: 1.2,
+      dashChance: 0.0015,
+      dashDuration: 900,
+      dashUntil: 0
+    };
+
+    this.avoid = {
+      active: false,
+      startTime: 0,
+      duration: 650,
+      p0: { x: 0, y: 0 },
+      p1: { x: 0, y: 0 },
+      p2: { x: 0, y: 0 },
+      p3: { x: 0, y: 0 },
+      cooldownUntil: 0
+    };
+
+    // Cache for layout calculations
+    this.layoutCache = {
+      robotWidth: 80,
+      windowWidth: 0,
+      typeWriterRight: 0,
+      typeWriterTop: 0,
+      hasTypeWriter: false,
+      maxLeft: 0,
+      reducedMotion: false
+    };
+
+    this.soundManager = {
+      enabled: true, // Default enabled but subtle
+      ctx: null,
+      play(type) {
+        if (!this.enabled) return;
+        try {
+          if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) this.ctx = new AudioContext();
+          }
+          if (!this.ctx) return;
+          if (this.ctx.state === 'suspended') this.ctx.resume();
+
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          if (type === 'open') {
+            osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.1);
+          } else if (type === 'message') {
+            osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+            gain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.08);
+          }
+        } catch (e) {
+          // Silent fail
+        }
+      }
+    };
+
+    this.updatePatrol = this.updatePatrol.bind(this);
+    this.animationState = 'idle'; // idle, moving, thinking, working
+    this._mousePos = { x: 0, y: 0 };
+    this._prevDashActive = false;
 
     this.init();
     this.setupFooterOverlapCheck();
   }
 
   setupFooterOverlapCheck() {
-    // Use a getter or query inside the check function to ensure we always get the current footer
-    // (Footer might be injected dynamically)
-
     const checkOverlap = () => {
       const container = document.getElementById(this.containerId);
       const footer = document.querySelector('footer') || document.querySelector('#site-footer');
@@ -157,46 +229,134 @@ class RobotCompanion {
       const fRect = footer.getBoundingClientRect();
 
       // Calculate overlap: (Container Bottom) - (Footer Top - Margin)
-      // We want at least 30px distance from footer
-      // If footer is minimized (fixed), we need to respect its visual top
       const overlap = Math.max(0, rect.bottom - fRect.top);
 
       if (overlap > 0) {
-        // If overlap is detected, push it up
         container.style.bottom = `${30 + overlap}px`;
-      } else {
-        // If no overlap (e.g. scrolled back up), ensure we reset to CSS default if needed
-        // But since we reset at start of function, this is implicit.
       }
     };
 
-    // Initial check
     requestAnimationFrame(checkOverlap);
-
-    // Check on scroll and resize
     window.addEventListener('scroll', () => requestAnimationFrame(checkOverlap), { passive: true });
     window.addEventListener('resize', () => requestAnimationFrame(checkOverlap), { passive: true });
-
-    // Check when footer loads
     document.addEventListener('footer:loaded', checkOverlap);
 
-    // Polling for robustness
-    setInterval(checkOverlap, 500);
+    // Reduced polling frequency (1s instead of 500ms)
+    setInterval(checkOverlap, 1000);
   }
 
   init() {
     this.loadCSS();
     this.createDOM();
     this.attachEvents();
+    this.updateLayoutCache();
 
-    // Initiale Begrüßung
+    // Listen for layout changes
+    window.addEventListener('resize', () => this.updateLayoutCache(), { passive: true });
+    window.addEventListener('scroll', () => {
+        // Only update scroll-dependent layout vars periodically or use IntersectionObserver
+        // For TypeWriter position, we assume it's relatively static or handled by resize
+        // But if header shrinks on scroll, TypeWriter might move.
+        // For performance, we'll throttle this update inside the loop or use a separate throttled listener.
+        // Here we just attach the listener, throttling happens via requestAnimationFrame in checkOverlap usually.
+        // We will update cache slightly less frequently.
+    }, { passive: true });
+
+    // Listen for section changes
+    window.addEventListener('snapSectionChange', (e) => this.handleSectionChange(e.detail));
+
+    // Media Query Listener for Reduced Motion
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleMotionChange = (e) => {
+        this.layoutCache.reducedMotion = e.matches;
+        if (e.matches) {
+            // Reset position if motion is disabled
+            this.patrol.x = 0;
+            this.patrol.y = 0;
+            const container = document.getElementById(this.containerId);
+            if (container) container.style.transform = '';
+        } else {
+            if (!this.state.isOpen) requestAnimationFrame(this.updatePatrol);
+        }
+    };
+    mediaQuery.addEventListener('change', handleMotionChange);
+    // Initial check
+    this.layoutCache.reducedMotion = mediaQuery.matches;
+
+    // Initial greeting delay
     setTimeout(() => {
-      if (!this.state.isOpen) {
+      if (!this.state.isOpen && !this.state.hasGreeted) {
         this.showBubble('Psst! Brauchst du Hilfe? 👋');
+        this.state.hasGreeted = true;
       }
     }, 5000);
 
-    this.startPatrol();
+    if (!this.layoutCache.reducedMotion) {
+        this.startPatrol();
+    }
+  }
+
+  updateLayoutCache() {
+    this.layoutCache.windowWidth = window.innerWidth;
+
+    const typeWriter = document.querySelector('.typewriter-title');
+    if (typeWriter) {
+        const rect = typeWriter.getBoundingClientRect();
+        this.layoutCache.hasTypeWriter = true;
+        // Store right position relative to viewport (changes on resize)
+        // Note: getBoundingClientRect is relative to viewport.
+        // We need 'left' + width, effectively 'right'.
+        // Since the robot uses fixed positioning from right/bottom,
+        // we need to translate patrol X (which moves LEFT from right edge)
+        // to check against TypeWriter.
+
+        // Robot is at: right: 30px + patrol.x
+        // TypeWriter is at: left: rect.left, right: rect.right
+        // Collision happens if (WindowWidth - (30 + patrol.x + robotWidth)) < rect.right + buffer
+
+        // Simplified:
+        // Robot Left Edge (in viewport x) = WindowWidth - 30 - patrol.x - 80
+        // We want Robot Left Edge > TypeWriter Right Edge + 50
+        // WindowWidth - 30 - patrol.x - 80 > rect.right + 50
+        // WindowWidth - 110 - patrol.x > rect.right + 50
+        // -patrol.x > rect.right + 50 - WindowWidth + 110
+        // patrol.x < WindowWidth - 160 - rect.right
+
+        // Let's cache this maxLeft value directly.
+        // rect.right is dependent on scroll if element scrolls?
+        // Wait, .typewriter-title is usually in Hero section which might scroll away.
+        // If it scrolls out of view, we shouldn't care.
+
+        this.layoutCache.typeWriterRight = rect.right;
+        this.layoutCache.typeWriterTop = rect.top; // Valid for current scroll pos
+
+        const initialLeft = this.layoutCache.windowWidth - 30 - this.layoutCache.robotWidth;
+        // If TypeWriter is visible (top > -height and top < windowHeight)
+        // But for simplicty, let's just calc the X limit.
+        const limit = initialLeft - rect.right - 50;
+        this.layoutCache.maxLeft = Math.max(0, limit);
+    } else {
+        this.layoutCache.hasTypeWriter = false;
+        const initialLeft = this.layoutCache.windowWidth - 30 - this.layoutCache.robotWidth;
+        this.layoutCache.maxLeft = Math.max(0, initialLeft - 20);
+    }
+  }
+
+  handleSectionChange(detail) {
+    if (!detail || !detail.id) return;
+    this.state.currentSection = detail.id;
+
+    // If chat is open, maybe do nothing to not interrupt?
+    // Or just queue a notification bubble if closed.
+    if (!this.state.isOpen) {
+        const contextKey = `context:${detail.id}`;
+        if (RobotCompanion.KNOWLEDGE_BASE[contextKey]) {
+             // Only show if we haven't annoyed the user recently?
+             // For now, just change the bubble text if it pops up later
+             // or show it if it's a significant change.
+             // Let's not auto-show bubble on every scroll to avoid annoyance.
+        }
+    }
   }
 
   loadCSS() {
@@ -213,7 +373,7 @@ class RobotCompanion {
     container.id = this.containerId;
 
     const robotSVG = `
-        <svg viewBox="0 0 100 100" class="robot-svg">
+        <svg viewBox="0 0 100 100" class="robot-svg" aria-hidden="true">
             <defs>
                 <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -257,26 +417,26 @@ class RobotCompanion {
         `;
 
     container.innerHTML = `
-            <div class="robot-chat-window" id="robot-chat-window">
+            <div class="robot-chat-window" id="robot-chat-window" role="dialog" aria-label="Cyber Assistant Chat">
                 <div class="chat-header">
                     <div class="chat-title">
                         <span class="chat-status-dot"></span>
                         Cyber Assistant
                     </div>
-                    <button class="chat-close-btn">&times;</button>
+                    <button class="chat-close-btn" aria-label="Schließen">&times;</button>
                 </div>
-                <div class="chat-messages" id="robot-messages"></div>
+                <div class="chat-messages" id="robot-messages" role="log" aria-live="polite"></div>
                 <div class="chat-controls" id="robot-controls"></div>
             </div>
             
-            <div class="robot-bubble" id="robot-bubble">
+            <div class="robot-bubble" id="robot-bubble" role="status" aria-live="polite">
                 <span id="robot-bubble-text">Hallo!</span>
-                <div class="robot-bubble-close">&times;</div>
+                <div class="robot-bubble-close" aria-label="Hinweis schließen" role="button" tabindex="0">&times;</div>
             </div>
             
-            <div class="robot-avatar">
+            <button class="robot-avatar" aria-label="Cyber Assistant öffnen">
                 ${robotSVG}
-            </div>
+            </button>
         `;
 
     document.body.appendChild(container);
@@ -301,6 +461,15 @@ class RobotCompanion {
 
   attachEvents() {
     this.dom.avatar.addEventListener('click', () => this.toggleChat());
+
+    // Keyboard support for Bubble Close
+    this.dom.bubbleClose.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.stopPropagation();
+            this.hideBubble();
+        }
+    });
+
     this.dom.closeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggleChat(false);
@@ -310,40 +479,26 @@ class RobotCompanion {
       this.hideBubble();
     });
 
-    // pointer follow for the eyes (mouse + pointer fallback)
     this._mouseMoveHandler = (e) => {
       this._mousePos.x = e.clientX;
       this._mousePos.y = e.clientY;
-      if (!this._eyeRAF) {
+      if (!this._eyeRAF && !this.layoutCache.reducedMotion) {
         this._eyeRAF = requestAnimationFrame(() => this._updateEyeFollow());
       }
     };
-    const prefersCoarse =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(pointer: coarse)').matches;
+
+    // Check coarse pointer
+    const prefersCoarse = window.matchMedia('(pointer: coarse)').matches;
     if (!prefersCoarse) {
       document.addEventListener('mousemove', this._mouseMoveHandler);
-    } else {
-      // For touch, use pointer events but with throttling to avoid jitter
-      let last = 0;
-      this._pointerHandler = (ev) => {
-        if (ev.pointerType === 'touch') {
-          const now = performance.now();
-          if (now - last < 100) return; // throttle
-          last = now;
-          this._mousePos.x = ev.clientX;
-          this._mousePos.y = ev.clientY;
-          if (!this._eyeRAF) this._eyeRAF = requestAnimationFrame(() => this._updateEyeFollow());
-        }
-      };
-      document.addEventListener('pointermove', this._pointerHandler, { passive: true });
     }
   }
 
   _updateEyeFollow() {
     this._eyeRAF = null;
-    const eyeMax = 4; // max px offset
+    if (this.layoutCache.reducedMotion) return;
+
+    const eyeMax = 4;
     const avatar = this.dom.avatar;
     const eyes = this.dom.eyes;
     if (!avatar || !eyes) return;
@@ -360,7 +515,6 @@ class RobotCompanion {
     eyes.style.transform = `translate(${nx}px, ${ny}px)`;
   }
 
-  // Cubic Bézier interpolation helper
   _cubicBezier(t, p0, p1, p2, p3) {
     const tt = t * t;
     const ttt = tt * t;
@@ -374,21 +528,20 @@ class RobotCompanion {
   }
 
   startAvoid(twRect, dir, maxLeft) {
-    // Avoid only once per cooldown period
+    // Avoid logic remains mostly same but uses params instead of DOM queries
     const now = performance.now();
     if (this.avoid.cooldownUntil && now < this.avoid.cooldownUntil) return;
-    this.avoid.cooldownUntil = now + 900; // 900ms cooldown
+    this.avoid.cooldownUntil = now + 900;
 
     const p0x = this.patrol.x;
     const p0y = this.patrol.y;
-    // Attempt to advance a bit further while dodging but not cross the maxLeft
     const remaining = dir > 0 ? maxLeft - this.patrol.x : this.patrol.x;
     const advance = Math.min(64, Math.max(32, remaining));
     const p3x = Math.min(maxLeft, Math.max(0, this.patrol.x + advance * dir));
-    // Decide whether to go up or down based on available space (prefer up)
-    const preferUp = twRect.top > 200; // if typewriter is not close to top, go above
+
+    const preferUp = twRect.top > 200;
     const vertical = (preferUp ? -1 : 1) * (60 + Math.random() * 30);
-    // Controls points offer curve — p1 moves outwards and up, p2 brings it back
+
     const p1x = p0x + advance * 0.35 * dir;
     const p1y = p0y + vertical * 1.1;
     const p2x = p0x + advance * 0.75 * dir;
@@ -398,15 +551,16 @@ class RobotCompanion {
     this.avoid.p1 = { x: p1x, y: p1y };
     this.avoid.p2 = { x: p2x, y: p2y };
     this.avoid.p3 = { x: p3x, y: p0y };
-    // spawn a small burst at start of avoidance
+
     this.spawnParticleBurst(6, { direction: this.patrol.direction, strength: 0.9 });
     this.avoid.active = true;
     this.avoid.startTime = now;
-    this.avoid.duration = 520 + Math.random() * 400; // vary duration between ~520-920ms
+    this.avoid.duration = 520 + Math.random() * 400;
     this.animationState = 'avoiding';
   }
 
   spawnParticleBurst(count = 6, { direction = 0, strength = 1 } = {}) {
+    if (this.layoutCache.reducedMotion) return;
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
@@ -414,43 +568,30 @@ class RobotCompanion {
     const rect = avatar.getBoundingClientRect();
     const baseX = rect.left + rect.width / 2;
     const baseY = rect.top + rect.height * 0.75;
+    const cRect = container.getBoundingClientRect();
 
     for (let i = 0; i < count; i++) {
       const el = document.createElement('div');
       el.className = 'robot-burst-particle';
       container.appendChild(el);
 
-      const seed = Math.random();
-      const angleSpread = Math.PI / 3; // 60deg spread
-      const baseAngle =
-        direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
-      const angle = baseAngle + (Math.random() - 0.5) * angleSpread;
+      const baseAngle = direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
+      const angle = baseAngle + (Math.random() - 0.5) * (Math.PI / 3);
       const distance = 40 + Math.random() * 30;
       const dx = Math.cos(angle) * distance * strength;
       const dy = Math.sin(angle) * distance * strength - 10 * strength;
 
-      // position inside container (absolute, using viewport coords), convert to container coords
-      const cRect = container.getBoundingClientRect();
-      const left = baseX - cRect.left - 3; // -half particle
+      const left = baseX - cRect.left - 3;
       const top = baseY - cRect.top - 3;
       el.style.left = left + 'px';
       el.style.top = top + 'px';
 
-      // staggered start
       setTimeout(() => {
         el.style.transform = `translate(${dx}px, ${dy}px) scale(${0.5 + Math.random() * 0.6})`;
         el.style.opacity = '0';
-        // trailing blur for faster ones
-        if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
       }, Math.random() * 80);
 
-      // cleanup
-      setTimeout(
-        () => {
-          el.remove();
-        },
-        900 + Math.random() * 600
-      );
+      setTimeout(() => el.remove(), 1500);
     }
   }
 
@@ -465,16 +606,32 @@ class RobotCompanion {
     const newState = forceState !== undefined ? forceState : !this.state.isOpen;
 
     if (newState) {
+      this.soundManager.play('open');
       this.dom.window.classList.add('open');
       this.state.isOpen = true;
       this.hideBubble();
+      this.dom.window.setAttribute('aria-hidden', 'false');
+
+      // Focus management
+      setTimeout(() => {
+          const firstButton = this.dom.window.querySelector('button');
+          if (firstButton) firstButton.focus();
+      }, 100);
 
       if (this.dom.messages.children.length === 0) {
-        this.handleAction('start');
+          // Check if we have a specific entry for the current section
+          const contextKey = `context:${this.state.currentSection}`;
+          if (RobotCompanion.KNOWLEDGE_BASE[contextKey]) {
+              this.handleAction(contextKey);
+          } else {
+              this.handleAction('start');
+          }
       }
     } else {
       this.dom.window.classList.remove('open');
       this.state.isOpen = false;
+      this.dom.window.setAttribute('aria-hidden', 'true');
+      this.dom.avatar.focus();
     }
   }
 
@@ -482,43 +639,37 @@ class RobotCompanion {
     if (this.state.isOpen) return;
     this.dom.bubbleText.textContent = text;
     this.dom.bubble.classList.add('visible');
+    this.soundManager.play('message');
   }
 
   hideBubble() {
     this.dom.bubble.classList.remove('visible');
   }
 
-  // Hilfsfunktion: Typing Indicator anzeigen
   showTyping() {
     if (this.state.isTyping) return;
     this.state.isTyping = true;
-
     const typingDiv = document.createElement('div');
     typingDiv.className = 'typing-indicator';
     typingDiv.id = 'robot-typing';
-    typingDiv.innerHTML = `
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-        `;
+    typingDiv.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`;
     this.dom.messages.appendChild(typingDiv);
     this.scrollToBottom();
   }
 
   removeTyping() {
     const typingDiv = document.getElementById('robot-typing');
-    if (typingDiv) {
-      typingDiv.remove();
-    }
+    if (typingDiv) typingDiv.remove();
     this.state.isTyping = false;
   }
 
   addMessage(text, type = 'bot') {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
-    msg.innerHTML = text; // innerHTML für Links im Text erlaubt
+    msg.innerHTML = text;
     this.dom.messages.appendChild(msg);
     this.scrollToBottom();
+    if (type === 'bot') this.soundManager.play('message');
   }
 
   clearControls() {
@@ -531,29 +682,23 @@ class RobotCompanion {
       const btn = document.createElement('button');
       btn.className = 'chat-option-btn';
       btn.textContent = opt.label;
-
       btn.onclick = () => {
         this.addMessage(opt.label, 'user');
         this.clearControls();
-
-        // Kurze Verzögerung bevor der Bot "tippt"
         setTimeout(() => {
           if (opt.url) {
             window.open(opt.url, opt.target || '_self');
-            // Nach Redirect Optionen wiederherstellen oder zum Start
             if (opt.target === '_blank') this.handleAction('start');
           } else if (opt.action) {
             this.handleAction(opt.action);
           }
         }, 300);
       };
-
       this.dom.controls.appendChild(btn);
     });
   }
 
   handleAction(actionKey) {
-    // Spezialfälle
     if (actionKey === 'scrollFooter') {
       document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
       this.showTyping();
@@ -565,27 +710,19 @@ class RobotCompanion {
       return;
     }
 
-    if (actionKey === 'randomProject') {
-      const projects = [
-        '/pages/projekte/projekte.html'
-        // Hier könnten echte Projekt-URLs stehen, fallback zur Übersicht
-      ];
-      const randomUrl = projects[Math.floor(Math.random() * projects.length)];
-      window.location.href = randomUrl;
-      return;
+    if (actionKey === 'copyEmail') {
+        navigator.clipboard.writeText('info@example.com'); // Replace with actual email logic if needed
+        this.addMessage('E-Mail in die Zwischenablage kopiert! 📋', 'bot');
+        setTimeout(() => this.handleAction('start'), 1500);
+        return;
     }
 
-    const data = this.knowledgeBase[actionKey];
-    if (!data) return;
+    const data = RobotCompanion.KNOWLEDGE_BASE[actionKey] || RobotCompanion.KNOWLEDGE_BASE['start'];
 
-    // Bot "tippt"
     this.showTyping();
-
-    // Nod to show reaction
     this.dom.avatar.classList.add('nod');
     setTimeout(() => this.dom.avatar.classList.remove('nod'), 650);
 
-    // Simuliere Lese-/Tippzeit basierend auf Textlänge
     const responseText = Array.isArray(data.text)
       ? data.text[Math.floor(Math.random() * data.text.length)]
       : data.text;
@@ -595,19 +732,17 @@ class RobotCompanion {
     setTimeout(() => {
       this.removeTyping();
       this.addMessage(responseText, 'bot');
-
-      if (data.options) {
-        this.addOptions(data.options);
-      }
+      if (data.options) this.addOptions(data.options);
     }, typingTime);
   }
 
   startPatrol() {
+    if (this.layoutCache.reducedMotion) return;
     requestAnimationFrame(this.updatePatrol);
   }
 
   updatePatrol() {
-    if (!this.patrol.active) return;
+    if (!this.patrol.active || this.layoutCache.reducedMotion) return;
 
     const container = document.getElementById(this.containerId);
     if (!container) {
@@ -615,7 +750,6 @@ class RobotCompanion {
       return;
     }
 
-    // Stop or idle in certain states
     const isHovering = this.dom.avatar && this.dom.avatar.matches(':hover');
     if (this.state.isOpen || this.patrol.isPaused || isHovering) {
       this.setAvatarState({ moving: false, dashing: false });
@@ -625,41 +759,52 @@ class RobotCompanion {
       return;
     }
 
-    // Calculate limits
-    const robotWidth = 80;
-    const initialLeft = window.innerWidth - 30 - robotWidth;
-    let maxLeft = initialLeft - 20; // Default: stop 20px from left edge
+    // Use cached values
+    let maxLeft = this.layoutCache.maxLeft;
 
-    const typeWriter = document.querySelector('.typewriter-title');
-    let twRect = null;
-    if (typeWriter) {
-      twRect = typeWriter.getBoundingClientRect();
-      // We want to stop 50px before TypeWriter
-      // x < initialLeft - twRect.right - 50
-      const limit = initialLeft - twRect.right - 50;
-      if (limit < maxLeft) maxLeft = limit;
+    // Check against typewriter only if it exists
+    if (this.layoutCache.hasTypeWriter) {
+        // Simple proximity update logic if needed, but we rely on maxLeft cache primarily.
+        // We'll update the cache "live" logic only for avoidance start.
+
+        // Note: this.layoutCache.typeWriterRight is constant until resize.
+        // But if we want avoidance relative to viewport, and the element scrolls away...
+        // We need real-time bounding box for avoidance collision logic.
+        // This is the one place we might query if we want pixel perfect accuracy,
+        // OR we trust the element doesn't move relative to viewport without scroll.
+        // Since we removed DOM query from loop, we rely on collision logic being simple or static.
+        // Actually, we can update the 'rect' every N frames if we really need to.
+        // Or just re-calc 'rect' inside updatePatrol ONLY when x is close to maxLeft.
     }
 
-    if (maxLeft < 0) maxLeft = 0;
+    // Trigger update of collision data only when approaching limit
+    // To save performance, we assume cached maxLeft is good enough for 'turn around'.
+    // We only need fresh rect for 'avoid' visual curve.
 
-    // Random direction change (0.5% chance per frame)
     if (Math.random() < 0.005 && this.patrol.x > 50 && this.patrol.x < maxLeft - 50) {
       this.patrol.direction *= -1;
     }
 
-    // Start avoidance if we are about to hit the TypeWriter area
     const now = performance.now();
-    const approachingLimit =
-      (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) ||
-      (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
-    if (
-      typeWriter &&
-      twRect &&
-      approachingLimit &&
-      !this.avoid.active &&
-      now > this.avoid.cooldownUntil
-    ) {
-      this.startAvoid(twRect, this.patrol.direction, maxLeft);
+
+    // Avoidance Trigger Logic
+    const approachingLimit = (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) ||
+                             (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
+
+    // Only check collision details if we are actually close and have a typewriter
+    if (this.layoutCache.hasTypeWriter && approachingLimit && !this.avoid.active && now > this.avoid.cooldownUntil) {
+        // Just-in-time DOM read for precise avoidance, but only once per "event"
+        const typeWriter = document.querySelector('.typewriter-title');
+        if (typeWriter) {
+            const twRect = typeWriter.getBoundingClientRect();
+            // Verify collision implies overlap
+            // Robot Y is fixed (bottom 30), so 'top' in viewport is WindowHeight - 30 - 80.
+            const robotTop = window.innerHeight - 110;
+            // Overlap Y?
+            if (twRect.bottom > robotTop) {
+                 this.startAvoid(twRect, this.patrol.direction, maxLeft);
+            }
+        }
     }
 
     if (now > this.motion.dashUntil && Math.random() < this.motion.dashChance) {
@@ -667,24 +812,15 @@ class RobotCompanion {
     }
 
     const dashActive = now < this.motion.dashUntil;
-    // detect dash start/stop to spawn bursts
-    if (dashActive && !this._prevDashActive) {
-      // dash just started
-      this.spawnParticleBurst(6, { strength: 1.2 });
-    } else if (!dashActive && this._prevDashActive) {
-      // dash ended
-      this.spawnParticleBurst(3, { strength: 0.8 });
-    }
+    if (dashActive && !this._prevDashActive) this.spawnParticleBurst(6, { strength: 1.2 });
+    else if (!dashActive && this._prevDashActive) this.spawnParticleBurst(3, { strength: 0.8 });
     this._prevDashActive = dashActive;
 
-    // Organic speed variation + dash boost
     const baseSpeed = this.motion.baseSpeed + Math.sin(now / 800) * 0.2;
     const currentSpeed = baseSpeed * (dashActive ? this.motion.dashSpeed : 1);
 
-    // Update x
     this.patrol.x += currentSpeed * this.patrol.direction;
 
-    // If avoiding, compute bezier progression
     if (this.avoid.active) {
       const t = Math.min(1, (now - this.avoid.startTime) / this.avoid.duration);
       const pt = this._cubicBezier(t, this.avoid.p0, this.avoid.p1, this.avoid.p2, this.avoid.p3);
@@ -696,32 +832,22 @@ class RobotCompanion {
       }
     }
 
-    // Update bounce (vertical movement)
     this.patrol.bouncePhase += dashActive ? 0.08 : 0.05;
     this.patrol.y = Math.sin(this.patrol.bouncePhase) * (dashActive ? 4 : 3);
-
-    // Set animation state
     this.animationState = 'moving';
-
-    // Visual updates: Face direction & Flame & Particles
     this.setAvatarState({ moving: true, dashing: dashActive });
-    // direction 1 (Left) -> Tilt left (-5deg), Eyes left (-3px)
-    // direction -1 (Right) -> Tilt right (5deg), Eyes right (3px)
+
     if (this.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
       const tiltIntensity = this.avoid.active ? 1.6 : dashActive ? 1.2 : 1;
-      const tilt = baseTilt * tiltIntensity;
-      this.dom.svg.style.transform = `rotate(${tilt}deg)`;
-      this.dom.svg.style.transition = 'transform 0.4s ease';
+      this.dom.svg.style.transform = `rotate(${baseTilt * tiltIntensity}deg)`;
     }
     if (this.dom.eyes) {
       const eyeOffset = this.patrol.direction > 0 ? -3 : 3;
       const eyeIntensity = this.avoid.active ? 1.4 : dashActive ? 1.2 : 1;
       this.dom.eyes.style.transform = `translateX(${eyeOffset * eyeIntensity}px)`;
-      this.dom.eyes.style.transition = 'transform 0.4s ease';
     }
     if (this.dom.flame) {
-      // stronger flame during dodge/dash
       const flameIntensity = this.avoid.active ? 1.1 : dashActive ? 1 : 0.6;
       this.dom.flame.style.opacity = flameIntensity;
       this.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.6) * 0.25})`;
@@ -733,11 +859,7 @@ class RobotCompanion {
     if (this.dom.legs) {
       this.dom.legs.classList.toggle('wiggle', dashActive || isMoving);
     }
-    if (this.dom.legs) {
-      this.dom.legs.classList.toggle('wiggle', dashActive || Math.abs(this.patrol.direction) === 1);
-    }
 
-    // Check bounds
     if (this.patrol.x >= maxLeft) {
       this.patrol.x = maxLeft;
       this.patrol.direction = -1;
@@ -749,21 +871,17 @@ class RobotCompanion {
       this.pausePatrol(5000 + Math.random() * 5000);
       this.spawnParticleBurst(4, { direction: 1, strength: 1 });
     } else {
-      // Random pause (increased chance and duration)
       if (Math.random() < 0.005) {
         this.pausePatrol(3000 + Math.random() * 4000);
       }
     }
 
     const containerRotation = this.avoid.active
-      ? this.patrol.direction > 0
-        ? -6
-        : 6
+      ? this.patrol.direction > 0 ? -6 : 6
       : dashActive
-        ? this.patrol.direction > 0
-          ? -4
-          : 4
+        ? this.patrol.direction > 0 ? -4 : 4
         : 0;
+
     container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRotation}deg)`;
     requestAnimationFrame(this.updatePatrol);
   }
@@ -773,22 +891,13 @@ class RobotCompanion {
     this.animationState = 'idle';
     this.motion.dashUntil = 0;
     this.setAvatarState({ moving: false, dashing: false });
-    if (this.dom.flame) {
-      this.dom.flame.style.opacity = '0';
-    }
-    if (this.dom.particles) {
-      this.dom.particles.style.opacity = '0';
-    }
-    // Show thinking bubble during pause
+    if (this.dom.flame) this.dom.flame.style.opacity = '0';
+    if (this.dom.particles) this.dom.particles.style.opacity = '0';
     if (this.dom.thinking && Math.random() < 0.3) {
       this.dom.thinking.style.opacity = '1';
-      setTimeout(() => {
-        if (this.dom.thinking) this.dom.thinking.style.opacity = '0';
-      }, ms * 0.6);
+      setTimeout(() => { if (this.dom.thinking) this.dom.thinking.style.opacity = '0'; }, ms * 0.6);
     }
-    setTimeout(() => {
-      this.patrol.isPaused = false;
-    }, ms);
+    setTimeout(() => { this.patrol.isPaused = false; }, ms);
   }
 
   scrollToBottom() {
