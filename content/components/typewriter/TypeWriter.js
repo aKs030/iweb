@@ -3,7 +3,7 @@ import {
   createLogger,
   getElementById,
   shuffle,
-  TimerManager
+  TimerManager,
 } from '../../utils/shared-utilities.js';
 
 const log = createLogger('TypeWriter');
@@ -33,7 +33,7 @@ function makeLineMeasurer(subtitleEl) {
     'text-rendering',
     'word-break',
     'overflow-wrap',
-    'hyphens'
+    'hyphens',
   ].forEach((p) => measurer.style.setProperty(p, cs.getPropertyValue(p)));
 
   const getLineHeight = () => {
@@ -119,12 +119,12 @@ function makeLineMeasurer(subtitleEl) {
       setCSSVars(subtitleEl, {
         '--lh-px': lh ? `${lh}px` : '0px',
         '--gap-px': lh ? `${lh * 0.25}px` : '0px',
-        '--lines': String(lines)
+        '--lines': String(lines),
       });
 
       subtitleEl.setAttribute('data-lines', String(lines));
       return lines;
-    }
+    },
   };
 }
 
@@ -138,7 +138,7 @@ export class TypeWriter {
     deleteSpeed = 40,
     shuffle: doShuffle = true,
     loop = true,
-    onBeforeType = null
+    onBeforeType = null,
   }) {
     if (!textEl || !authorEl || !quotes?.length) {
       log.error('TypeWriter: Missing required parameters');
@@ -159,7 +159,7 @@ export class TypeWriter {
       onBeforeType,
       timerManager: new TimerManager(),
       _isDeleting: false,
-      _txt: ''
+      _txt: '',
     });
 
     this._queue = this._createQueue();
@@ -238,7 +238,7 @@ export class TypeWriter {
         ';': 180,
         ':': 180,
         '—': 220,
-        '–': 180
+        '–': 180,
       };
       delay += pauseMap[this._txt.slice(-1)] || 0;
     }
@@ -246,7 +246,7 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(
-          new CustomEvent('hero:typingEnd', { detail: { text: full, author } })
+          new CustomEvent('hero:typingEnd', { detail: { text: full, author } }),
         );
       } catch (e) {}
       delay = this.wait;
@@ -346,13 +346,13 @@ export async function initHeroSubtitle(options = {}) {
           const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
 
           setCSSVars(subtitleEl, {
-            '--box-h': `${Math.max(0, lines * lh + (lines - 1) * gap)}px`
+            '--box-h': `${Math.max(0, lines * lh + (lines - 1) * gap)}px`,
           });
           // Use rAF to ensure layout is updated before measuring
           requestAnimationFrame(() => checkFooterOverlap(subtitleEl));
 
           return formattedText;
-        }
+        },
       });
 
       // Remove lock after typing ends (released for next measure)
@@ -376,7 +376,7 @@ export async function initHeroSubtitle(options = {}) {
       document.addEventListener('footer:loaded', pollOverlap, { once: true });
       // And on resize
       window.addEventListener('resize', () => requestAnimationFrame(pollOverlap), {
-        passive: true
+        passive: true,
       });
 
       if (window.location.search.includes('debug')) window.__typeWriter = tw;

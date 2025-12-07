@@ -131,7 +131,7 @@ const projects = [
     category: 'Game',
     bgStyle: {
       background:
-        'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
+        'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
     },
     glowColor: '#a855f7',
     icon: html`<${Gamepad2} style=${{ color: '#c084fc', width: '32px', height: '32px' }} />`,
@@ -144,14 +144,14 @@ const projects = [
           width: '100%',
           height: '100%',
           position: 'relative',
-          zIndex: 10
+          zIndex: 10,
         }}
       >
         <div style=${{ fontSize: '3rem' }}>🪨</div>
         <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
         <div style=${{ fontSize: '3rem' }}>✂️</div>
       </div>
-    `
+    `,
   },
   {
     id: 2,
@@ -161,7 +161,7 @@ const projects = [
     category: 'Puzzle',
     bgStyle: {
       background:
-        'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
+        'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))',
     },
     glowColor: '#10b981',
     icon: html`<${Binary} style=${{ color: '#34d399', width: '32px', height: '32px' }} />`,
@@ -172,12 +172,12 @@ const projects = [
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          height: '100%'
+          height: '100%',
         }}
       >
         <span style=${{ fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold' }}>?</span>
       </div>
-    `
+    `,
   },
   {
     id: 3,
@@ -187,7 +187,7 @@ const projects = [
     category: 'UI',
     bgStyle: {
       background:
-        'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
+        'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))',
     },
     glowColor: '#ec4899',
     icon: html`<${Palette} style=${{ color: '#f472b6', width: '32px', height: '32px' }} />`,
@@ -198,12 +198,12 @@ const projects = [
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          height: '100%'
+          height: '100%',
         }}
       >
         <${Palette} style=${{ width: '4rem', height: '4rem', color: '#f472b6' }} />
       </div>
-    `
+    `,
   },
   {
     id: 4,
@@ -213,7 +213,7 @@ const projects = [
     category: 'App',
     bgStyle: {
       background:
-        'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
+        'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))',
     },
     glowColor: '#06b6d4',
     icon: html`<${ListTodo} style=${{ color: '#22d3ee', width: '32px', height: '32px' }} />`,
@@ -224,13 +224,13 @@ const projects = [
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          height: '100%'
+          height: '100%',
         }}
       >
         <${Check} style=${{ width: '4rem', height: '4rem', color: '#22d3ee' }} />
       </div>
-    `
-  }
+    `,
+  },
 ];
 
 // --- APP ---
@@ -282,7 +282,7 @@ function App() {
                   order: 2,
                   display: 'flex',
                   justifyContent: 'center',
-                  position: 'relative'
+                  position: 'relative',
                 }}
               >
                 <div className="back-glow" style=${{ backgroundColor: project.glowColor }}></div>
@@ -305,7 +305,7 @@ function App() {
                 <p className="project-desc">${project.description}</p>
                 <div className="tags-container">
                   ${project.tags.map(
-                    (tag, i) => html`<span key=${i} className="tag">${tag}</span>`
+                    (tag, i) => html`<span key=${i} className="tag">${tag}</span>`,
                   )}
                 </div>
                 <div className="project-actions">
@@ -319,7 +319,7 @@ function App() {
               </div>
             </div>
           </section>
-        `
+        `,
       )}
 
       <!-- Contact Section -->

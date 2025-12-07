@@ -282,7 +282,7 @@ function initializeSubmenuLinks() {
             tapped = false;
           }
         },
-        { passive: false }
+        { passive: false },
       );
     });
     document.addEventListener('touchstart', function (e) {
@@ -308,7 +308,7 @@ function setSiteTitle() {
     '/': 'Startseite',
     '/pages/fotos/gallery.html': 'Fotos',
     '/pages/card/karten.html': 'Projekte',
-    '/pages/projekte/projekte.html': 'Projekte'
+    '/pages/projekte/projekte.html': 'Projekte',
   };
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Website';
@@ -325,7 +325,7 @@ function extractSectionInfo(sectionId) {
     hero: { title: 'Startseite', subtitle: '' },
     features: { title: 'Projekte', subtitle: 'Meine Arbeiten' },
     about: { title: 'Über mich', subtitle: 'Lerne mich kennen' },
-    contact: { title: 'Kontakt', subtitle: 'Schreiben Sie mir' }
+    contact: { title: 'Kontakt', subtitle: 'Schreiben Sie mir' },
   };
 
   const section = document.querySelector(`#${sectionId}`);
@@ -414,7 +414,7 @@ function initializeScrollDetection() {
 
       if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
-          document.querySelectorAll('main .section, .section, footer#site-footer')
+          document.querySelectorAll('main .section, .section, footer#site-footer'),
         );
         const section = sections[index];
         sectionId = section?.id;

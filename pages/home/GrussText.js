@@ -3,26 +3,26 @@ const greetings = {
     'Guten Morgen und willkommen auf meiner Website!',
     'Schön, dass du früh vorbeischaust!',
     'Moin! Entdecke meine Projekte.',
-    'Einen erfolgreichen Start in den Tag!'
+    'Einen erfolgreichen Start in den Tag!',
   ],
   day: [
     'Herzlich willkommen auf meiner Website!',
     'Schön, dass du hier bist!',
     'Willkommen – viel Spaß beim Stöbern!',
-    'Entdecke meine Arbeiten und Projekte!'
+    'Entdecke meine Arbeiten und Projekte!',
   ],
   evening: [
     'Guten Abend und willkommen auf meiner Website!',
     'Schön, dass du abends reinschaust!',
     'Genieße den Abend und viel Spaß auf meiner Seite!',
-    'Einen entspannten Abend wünsche ich dir!'
+    'Einen entspannten Abend wünsche ich dir!',
   ],
   night: [
     'Schön, dass du nachts hier bist – willkommen!',
     'Gute Nacht und viel Spaß beim Stöbern!',
     'Späte Besucher sind die besten Besucher!',
-    'Willkommen zu später Stunde auf meiner Website!'
-  ]
+    'Willkommen zu später Stunde auf meiner Website!',
+  ],
 };
 
 export function getGreetingSet(date = new Date()) {

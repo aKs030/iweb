@@ -16,7 +16,7 @@ import {
   fire,
   getElementById,
   schedulePersistentStorageRequest,
-  SectionTracker
+  SectionTracker,
 } from './utils/shared-utilities.js';
 import { initHeroSubtitle } from './components/typewriter/TypeWriter.js';
 import { a11y } from './utils/accessibility-manager.js';
@@ -39,7 +39,7 @@ const ENV = {
     new URLSearchParams(window.location.search).has('test') ||
     navigator.userAgent.includes('HeadlessChrome') ||
     (window.location.hostname === 'localhost' && window.navigator.webdriver),
-  debug: new URLSearchParams(window.location.search).has('debug')
+  debug: new URLSearchParams(window.location.search).has('debug'),
 };
 
 // ===== Performance Tracking =====
@@ -47,7 +47,7 @@ const perfMarks = {
   start: performance.now(),
   domReady: 0,
   modulesReady: 0,
-  windowLoaded: 0
+  windowLoaded: 0,
 };
 
 // ===== Accessibility Announcements =====
@@ -102,8 +102,8 @@ const SectionLoader = (() => {
     try {
       document.dispatchEvent(
         new CustomEvent(type, {
-          detail: { id: section?.id, section, ...detail }
-        })
+          detail: { id: section?.id, section, ...detail },
+        }),
       );
     } catch (error) {
       log.debug(`Event dispatch failed: ${type}`, error);
@@ -317,7 +317,7 @@ const LoadingScreenManager = (() => {
       Object.assign(loadingScreen.style, {
         opacity: '0',
         pointerEvents: 'none',
-        visibility: 'hidden'
+        visibility: 'hidden',
       });
 
       const cleanup = () => {
@@ -398,7 +398,7 @@ const ThreeEarthLoader = (() => {
           }
         }
       },
-      { rootMargin: '300px', threshold: 0.01 }
+      { rootMargin: '300px', threshold: 0.01 },
     );
 
     observer.observe(container);
@@ -442,7 +442,7 @@ document.addEventListener(
         windowLoaded = true;
         checkReady();
       },
-      { once: true }
+      { once: true },
     );
 
     fire(EVENTS.CORE_INITIALIZED);
@@ -501,7 +501,7 @@ document.addEventListener(
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
-      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
+      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start),
     });
 
     // ===== Dev-only WebSocket test (optional) =====
@@ -542,5 +542,5 @@ document.addEventListener(
       }
     }
   },
-  { once: true }
+  { once: true },
 );

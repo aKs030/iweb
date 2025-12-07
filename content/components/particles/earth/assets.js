@@ -14,7 +14,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
-      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP)
+      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
     ]);
   } catch (err) {
     log.error('Texture loading failed:', err);
@@ -32,7 +32,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     roughness: 0.7,
-    metalness: 0.0
+    metalness: 0.0,
   });
 
   const nightMaterial = new THREE.MeshStandardMaterial({
@@ -44,7 +44,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     metalness: 0.0,
     emissive: 0xffcc66,
     emissiveMap: nightTexture,
-    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0
+    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0,
   });
 
   // OPTIMIZATION: Reduce segments on mobile
@@ -69,7 +69,7 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
 
   const [moonTexture, moonBumpTexture] = await Promise.all([
     textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON).catch(() => null),
-    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON_BUMP).catch(() => null)
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON_BUMP).catch(() => null),
   ]);
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
@@ -82,7 +82,7 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
     bumpScale: CONFIG.MOON.BUMP_SCALE,
     roughness: 0.9,
     metalness: 0.0,
-    color: moonTexture ? 0xffffff : 0xaaaaaa
+    color: moonTexture ? 0xffffff : 0xaaaaaa,
   });
 
   const moonLOD = new THREE.LOD();
@@ -91,7 +91,7 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
   const moonGeometryHigh = new THREE.SphereGeometry(
     CONFIG.MOON.RADIUS,
     CONFIG.MOON.SEGMENTS,
-    CONFIG.MOON.SEGMENTS
+    CONFIG.MOON.SEGMENTS,
   );
   moonLOD.addLevel(new THREE.Mesh(moonGeometryHigh, moonMaterial), 0);
 
@@ -125,7 +125,7 @@ export async function createCloudLayer(THREE, renderer, loadingManager, isMobile
       opacity: CONFIG.CLOUDS.OPACITY,
       blending: THREE.NormalBlending,
       depthWrite: false,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
     // OPTIMIZATION: Use same segment reduction for clouds
@@ -134,7 +134,7 @@ export async function createCloudLayer(THREE, renderer, loadingManager, isMobile
     const cloudGeometry = new THREE.SphereGeometry(
       CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE,
       segments,
-      segments
+      segments,
     );
     return new THREE.Mesh(cloudGeometry, cloudMaterial);
   } catch (error) {

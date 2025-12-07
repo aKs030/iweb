@@ -21,7 +21,7 @@
       info: () => {},
       warn: () => {},
       error: () => {},
-      debug: () => {}
+      debug: () => {},
     };
   }
 
@@ -49,7 +49,7 @@
     try {
       const response = await fetch(url, {
         cache: 'no-cache',
-        signal: controller.signal
+        signal: controller.signal,
       });
       clearTimeout(timeoutId);
       return response;
@@ -89,8 +89,8 @@
         // Dispatch success event
         document.dispatchEvent(
           new CustomEvent('about:loaded', {
-            detail: { success: true, attempts: attempt + 1 }
-          })
+            detail: { success: true, attempts: attempt + 1 },
+          }),
         );
 
         logger.info('About content loaded successfully');
@@ -119,8 +119,8 @@
     // Dispatch error event
     document.dispatchEvent(
       new CustomEvent('about:error', {
-        detail: { error: lastError, attempts: RETRY_ATTEMPTS + 1 }
-      })
+        detail: { error: lastError, attempts: RETRY_ATTEMPTS + 1 },
+      }),
     );
 
     return false;

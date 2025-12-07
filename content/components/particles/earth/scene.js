@@ -8,14 +8,14 @@ export function setupScene(THREE, container) {
     CONFIG.CAMERA.FOV,
     aspectRatio,
     CONFIG.CAMERA.NEAR,
-    CONFIG.CAMERA.FAR
+    CONFIG.CAMERA.FAR,
   );
 
   const renderer = new THREE.WebGLRenderer({
     canvas: container.querySelector('canvas') || undefined,
     antialias: true,
     alpha: true,
-    powerPreference: 'high-performance'
+    powerPreference: 'high-performance',
   });
 
   const pixelRatio = Math.min(window.devicePixelRatio, 2.0);
@@ -38,7 +38,7 @@ export function setupLighting(THREE, scene) {
 
   const ambientLight = new THREE.AmbientLight(
     CONFIG.LIGHTING.DAY.AMBIENT_COLOR,
-    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY
+    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY,
   );
   scene.add(ambientLight);
 
@@ -92,19 +92,19 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
       uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER },
       uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY },
       uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY },
-      uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH }
+      uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH },
     },
     blending: THREE.AdditiveBlending,
     transparent: true,
     side: THREE.BackSide,
-    depthWrite: false
+    depthWrite: false,
   });
 
   const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
 
   const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE, segments, segments),
-    atmosphereMaterial
+    atmosphereMaterial,
   );
 
   return atmosphere;

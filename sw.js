@@ -37,13 +37,13 @@ const STATIC_ASSETS = [
   '/pages/fotos/gallery-styles.css',
   '/pages/fotos/gallery-app.js',
   '/content/components/typewriter/typewriter.css',
-  '/content/components/typewriter/TypeWriter.js'
+  '/content/components/typewriter/TypeWriter.js',
 ];
 
 // Cache-Größenlimits
 const CACHE_LIMITS = {
   [DYNAMIC_CACHE]: 50,
-  [IMAGE_CACHE]: 100
+  [IMAGE_CACHE]: 100,
 };
 
 // Installation - Cache statische Assets
@@ -60,7 +60,7 @@ self.addEventListener('install', (event) => {
       .catch((err) => {
         // Fehler beim Cachen nicht blockieren
         console.error('[SW] Installation failed:', err);
-      })
+      }),
   );
 });
 
@@ -76,12 +76,12 @@ self.addEventListener('activate', (event) => {
             if (cacheName.startsWith('iweb-') && !cacheName.startsWith(CACHE_VERSION)) {
               return caches.delete(cacheName);
             }
-          })
+          }),
         );
       })
       .then(() => {
         return self.clients.claim();
-      })
+      }),
   );
 });
 
@@ -235,7 +235,7 @@ self.addEventListener('message', (event) => {
     event.waitUntil(
       caches.keys().then((cacheNames) => {
         return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-      })
+      }),
     );
   }
 });
