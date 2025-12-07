@@ -1,307 +1,345 @@
 /* Container für den Roboter - fixiert unten rechts */
 #robot-companion-container {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 9999;
-    font-family: 'Inter', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    pointer-events: none; /* Klicks durchlassen, wenn nicht auf Roboter */
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none; /* Klicks durchlassen, wenn nicht auf Roboter */
 }
 
 /* Der Roboter selbst */
 .robot-avatar {
-    width: 80px;
-    height: 80px;
-    cursor: pointer;
-    pointer-events: auto;
-    filter: drop-shadow(0 0 15px rgba(64, 224, 208, 0.4));
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    animation: robotFloat 4s ease-in-out infinite;
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  pointer-events: auto;
+  filter: drop-shadow(0 0 15px rgba(64, 224, 208, 0.4));
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: robotFloat 4s ease-in-out infinite;
 }
 
 .robot-avatar:hover {
-    transform: scale(1.1) rotate(-5deg);
-    filter: drop-shadow(0 0 25px rgba(64, 224, 208, 0.8));
+  transform: scale(1.1) rotate(-5deg);
+  filter: drop-shadow(0 0 25px rgba(64, 224, 208, 0.8));
 }
 
 /* SVG Styling */
 .robot-svg {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .robot-eye {
-    animation: blink 4s infinite;
-    transform-origin: center;
+  animation: blink 4s infinite;
+  transform-origin: center;
 }
 
 .robot-antenna-light {
-    animation: pulseRed 2s infinite;
+  animation: pulseRed 2s infinite;
 }
 
 /* Sprechblase (Notification) */
 .robot-bubble {
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid rgba(64, 224, 208, 0.3);
-    color: #e2e8f0;
-    padding: 12px 18px;
-    border-radius: 20px 20px 4px 20px;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    max-width: 250px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transform: translateY(10px) scale(0.9);
-    transition: all 0.4s ease;
-    pointer-events: auto;
-    backdrop-filter: blur(8px);
-    position: relative;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(64, 224, 208, 0.3);
+  color: #e2e8f0;
+  padding: 12px 18px;
+  border-radius: 20px 20px 4px 20px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  max-width: 250px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  transition: all 0.4s ease;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+  position: relative;
 }
 
 .robot-bubble.visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .robot-bubble-close {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #334155;
-    border: 1px solid #475569;
-    color: #fff;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #334155;
+  border: 1px solid #475569;
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 .robot-bubble:hover .robot-bubble-close {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* Das Chat Fenster (ERWEITERT: Größer & Breiter) */
 .robot-chat-window {
-    position: absolute;
-    bottom: 100px;
-    right: 0;
-    width: 360px; /* Breiter gemacht */
-    height: 500px; /* Höher gemacht */
-    background: rgba(10, 10, 20, 0.95);
-    border: 1px solid rgba(64, 224, 208, 0.3);
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-    transform-origin: bottom right;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: auto;
-    backdrop-filter: blur(12px);
-    visibility: hidden;
+  position: absolute;
+  bottom: 100px;
+  right: 0;
+  width: 360px; /* Breiter gemacht */
+  height: 500px; /* Höher gemacht */
+  background: rgba(10, 10, 20, 0.95);
+  border: 1px solid rgba(64, 224, 208, 0.3);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  transform-origin: bottom right;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+  backdrop-filter: blur(12px);
+  visibility: hidden;
 }
 
 .robot-chat-window.open {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    visibility: visible;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
 }
 
 /* Chat Header */
 .chat-header {
-    background: linear-gradient(90deg, #0f172a, #1e293b);
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(90deg, #0f172a, #1e293b);
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-title {
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .chat-status-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #4ade80;
-    border-radius: 50%;
-    box-shadow: 0 0 8px #4ade80;
+  width: 8px;
+  height: 8px;
+  background-color: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #4ade80;
 }
 
 .chat-close-btn {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0 5px;
-    transition: color 0.2s;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0 5px;
+  transition: color 0.2s;
 }
 
 .chat-close-btn:hover {
-    color: #fff;
+  color: #fff;
 }
 
 /* Chat Nachrichten Bereich */
 .chat-messages {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* Scrollbar Styling */
 .chat-messages::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
 .chat-messages::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 .chat-messages::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.2);
-    border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
 
 .message {
-    max-width: 85%;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    animation: messageFadeIn 0.3s ease-out;
-    word-wrap: break-word;
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  animation: messageFadeIn 0.3s ease-out;
+  word-wrap: break-word;
 }
 
 .message.bot {
-    background: rgba(30, 41, 59, 0.8);
-    color: #e2e8f0;
-    align-self: flex-start;
-    border-bottom-left-radius: 2px;
-    border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .message.user {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 2px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
 }
 
 /* NEU: Typing Indicator Animation */
 .typing-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 12px 16px;
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 12px;
-    border-bottom-left-radius: 2px;
-    align-self: flex-start;
-    border: 1px solid rgba(255,255,255,0.05);
-    margin-bottom: 5px;
-    animation: messageFadeIn 0.3s ease-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 12px;
+  border-bottom-left-radius: 2px;
+  align-self: flex-start;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 5px;
+  animation: messageFadeIn 0.3s ease-out;
 }
 
 .typing-dot {
-    width: 6px;
-    height: 6px;
-    background: #94a3b8;
-    border-radius: 50%;
-    animation: typingBounce 1.4s infinite ease-in-out both;
+  width: 6px;
+  height: 6px;
+  background: #94a3b8;
+  border-radius: 50%;
+  animation: typingBounce 1.4s infinite ease-in-out both;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
-.typing-dot:nth-child(3) { animation-delay: 0s; }
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0s;
+}
 
 /* Antwort-Optionen (Chips) */
 .chat-controls {
-    padding: 15px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    background: rgba(15, 23, 42, 0.6);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  padding: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .chat-option-btn {
-    background: transparent;
-    border: 1px solid rgba(64, 224, 208, 0.4);
-    color: #40e0d0;
-    padding: 8px 14px; /* Etwas größer für bessere Touch-Bedienung */
-    border-radius: 20px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
+  background: transparent;
+  border: 1px solid rgba(64, 224, 208, 0.4);
+  color: #40e0d0;
+  padding: 8px 14px; /* Etwas größer für bessere Touch-Bedienung */
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
 }
 
 .chat-option-btn:hover {
-    background: rgba(64, 224, 208, 0.1);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(64, 224, 208, 0.2);
+  background: rgba(64, 224, 208, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(64, 224, 208, 0.2);
 }
 
 .chat-option-btn:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 /* Keyframe Animationen */
 @keyframes robotFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes blink {
-    0%, 48%, 52%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(0.1); }
+  0%,
+  48%,
+  52%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.1);
+  }
 }
 
 @keyframes pulseRed {
-    0%, 100% { opacity: 0.6; fill: #ff4444; }
-    50% { opacity: 1; fill: #ff0000; box-shadow: 0 0 10px red; }
+  0%,
+  100% {
+    opacity: 0.6;
+    fill: #ff4444;
+  }
+  50% {
+    opacity: 1;
+    fill: #ff0000;
+    box-shadow: 0 0 10px red;
+  }
 }
 
 @keyframes messageFadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes typingBounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 /* Mobile Anpassung */
 @media (max-width: 480px) {
-    #robot-companion-container {
-        bottom: 15px;
-        right: 15px;
-    }
-    .robot-chat-window {
-        width: calc(100vw - 40px);
-        max-width: 350px;
-        bottom: 90px;
-        right: -10px;
-        height: 60vh;
-    }
+  #robot-companion-container {
+    bottom: 15px;
+    right: 15px;
+  }
+  .robot-chat-window {
+    width: calc(100vw - 40px);
+    max-width: 350px;
+    bottom: 90px;
+    right: -10px;
+    height: 60vh;
+  }
 }

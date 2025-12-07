@@ -23,7 +23,7 @@ const HeroManager = (() => {
     if (typeof window.initHeroSubtitle === 'function') {
       try {
         return window.initHeroSubtitle({
-            heroDataModule
+          heroDataModule
         });
       } catch (err) {
         logger.warn('Failed to load TypeWriter modules', err);
