@@ -1,4 +1,8 @@
 node_modules
+test-results
 content/img
 content/fonts
-test-results
+coverage
+dist
+build
+.vscode
