@@ -12,6 +12,16 @@ class RobotCompanion {
       isTyping: false
     };
 
+    // Patrol State
+    this.patrol = {
+      active: true,
+      x: 0,
+      direction: 1,
+      speed: 0.3,
+      isPaused: false
+    };
+    this.updatePatrol = this.updatePatrol.bind(this);
+
     // Erweiterte Antworten-Datenbank
     this.knowledgeBase = {
       start: {
@@ -160,6 +170,8 @@ class RobotCompanion {
         this.showBubble('Psst! Brauchst du Hilfe? 👋');
       }
     }, 5000);
+
+    this.startPatrol();
   }
 
   loadCSS() {
@@ -192,6 +204,10 @@ class RobotCompanion {
                 <circle cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
             </g>
             <path d="M30,60 L70,60 L65,90 L35,90 Z" fill="#0f172a" stroke="#40e0d0" stroke-width="2" />
+            <g class="robot-flame" style="opacity: 0;">
+                <path d="M40,90 Q50,120 60,90 Q50,110 40,90" fill="#ff9900" />
+                <path d="M45,90 Q50,110 55,90" fill="#ffff00" />
+            </g>
             <circle cx="50" cy="70" r="5" fill="#2563eb" opacity="0.8">
                 <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" />
             </circle>
@@ -233,6 +249,9 @@ class RobotCompanion {
       messages: document.getElementById('robot-messages'),
       controls: document.getElementById('robot-controls'),
       avatar: container.querySelector('.robot-avatar'),
+      svg: container.querySelector('.robot-svg'),
+      eyes: container.querySelector('.robot-eye'),
+      flame: container.querySelector('.robot-flame'),
       closeBtn: container.querySelector('.chat-close-btn')
     };
   }
@@ -384,6 +403,111 @@ class RobotCompanion {
         this.addOptions(data.options);
       }
     }, typingTime);
+  }
+
+  startPatrol() {
+    requestAnimationFrame(this.updatePatrol);
+  }
+
+  updatePatrol() {
+    if (!this.patrol.active) return;
+
+    const container = document.getElementById(this.containerId);
+    if (!container) {
+      requestAnimationFrame(this.updatePatrol);
+      return;
+    }
+
+    // Stop if chat is open
+    if (this.state.isOpen) {
+      requestAnimationFrame(this.updatePatrol);
+      return;
+    }
+
+    if (this.patrol.isPaused) {
+      requestAnimationFrame(this.updatePatrol);
+      return;
+    }
+
+    // Pause on hover (don't run away when user tries to click)
+    if (this.dom.avatar && this.dom.avatar.matches(':hover')) {
+      requestAnimationFrame(this.updatePatrol);
+      return;
+    }
+
+    // Calculate limits
+    const robotWidth = 80;
+    const initialLeft = window.innerWidth - 30 - robotWidth;
+    let maxLeft = initialLeft - 20; // Default: stop 20px from left edge
+
+    const typeWriter = document.querySelector('.typewriter-title');
+    
+    if (typeWriter) {
+      const twRect = typeWriter.getBoundingClientRect();
+      // We want to stop 50px before TypeWriter
+      // x < initialLeft - twRect.right - 50
+      const limit = initialLeft - twRect.right - 50;
+      if (limit < maxLeft) maxLeft = limit;
+    }
+
+    if (maxLeft < 0) maxLeft = 0;
+
+    // Random direction change (0.5% chance per frame)
+    if (Math.random() < 0.005 && this.patrol.x > 50 && this.patrol.x < maxLeft - 50) {
+      this.patrol.direction *= -1;
+    }
+
+    // Organic speed variation
+    const currentSpeed = this.patrol.speed + Math.sin(Date.now() / 800) * 0.2;
+
+    // Update x
+    this.patrol.x += currentSpeed * this.patrol.direction;
+
+    // Visual updates: Face direction & Flame
+    // direction 1 (Left) -> Tilt left (-5deg), Eyes left (-3px)
+    // direction -1 (Right) -> Tilt right (5deg), Eyes right (3px)
+    if (this.dom.svg) {
+      const tilt = this.patrol.direction > 0 ? -5 : 5;
+      this.dom.svg.style.transform = `rotate(${tilt}deg)`;
+      this.dom.svg.style.transition = 'transform 0.4s ease';
+    }
+    if (this.dom.eyes) {
+      const eyeOffset = this.patrol.direction > 0 ? -3 : 3;
+      this.dom.eyes.style.transform = `translateX(${eyeOffset}px)`;
+      this.dom.eyes.style.transition = 'transform 0.4s ease';
+    }
+    if (this.dom.flame) {
+      this.dom.flame.style.opacity = '1';
+    }
+
+    // Check bounds
+    if (this.patrol.x >= maxLeft) {
+      this.patrol.x = maxLeft;
+      this.patrol.direction = -1;
+      this.pausePatrol(5000 + Math.random() * 5000);
+    } else if (this.patrol.x <= 0) {
+      this.patrol.x = 0;
+      this.patrol.direction = 1;
+      this.pausePatrol(5000 + Math.random() * 5000);
+    } else {
+      // Random pause (increased chance and duration)
+      if (Math.random() < 0.005) {
+        this.pausePatrol(3000 + Math.random() * 4000);
+      }
+    }
+
+    container.style.transform = `translateX(-${this.patrol.x}px)`;
+    requestAnimationFrame(this.updatePatrol);
+  }
+
+  pausePatrol(ms) {
+    this.patrol.isPaused = true;
+    if (this.dom.flame) {
+      this.dom.flame.style.opacity = '0';
+    }
+    setTimeout(() => {
+      this.patrol.isPaused = false;
+    }, ms);
   }
 
   scrollToBottom() {
