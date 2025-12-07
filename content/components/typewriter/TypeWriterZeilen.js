@@ -1,5 +1,4 @@
 // ===== TypeWriter Line Measurer (Final Optimiert) =====
-import { splitTextIntoLines } from '../../utils/shared-utilities.js';
 
 // Helper: CSS Variables setzen
 const setCSSVars = (el, vars) =>
@@ -43,15 +42,10 @@ export function makeLineMeasurer(subtitleEl) {
     return measurer.firstChild.getBoundingClientRect().height || 0;
   };
 
-  const measure = (text, smartBreaks) => {
+  const measure = (text) => {
     measurer.innerHTML = '';
     const span = document.createElement('span');
-
-    if (smartBreaks) {
-      span.appendChild(splitTextIntoLines(text));
-    } else {
-      span.textContent = text;
-    }
+    span.textContent = text;
 
     measurer.appendChild(span);
 
@@ -69,9 +63,9 @@ export function makeLineMeasurer(subtitleEl) {
   };
 
   return {
-    reserveFor(text, smartBreaks = true) {
+    reserveFor(text) {
       const lh = getLineHeight();
-      const lines = measure(text, smartBreaks);
+      const lines = measure(text);
 
       setCSSVars(subtitleEl, {
         '--lh-px': lh ? `${lh}px` : '0px',
