@@ -2,3 +2,4 @@ node_modules
 content/img
 content/fonts
 pages/**/*.html
+test-results

@@ -48,4 +48,3 @@ export function pickGreeting(lastValue = null, set = getGreetingSet()) {
   }
   return candidate;
 }
-

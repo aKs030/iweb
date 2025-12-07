@@ -1,28 +1,53 @@
 // ===== TypeWriter (Final Optimiert) =====
-import { createLogger, getElementById, shuffle, TimerManager, splitTextIntoLines } from '../../utils/shared-utilities.js';
+import {
+  createLogger,
+  getElementById,
+  shuffle,
+  TimerManager,
+  splitTextIntoLines
+} from '../../utils/shared-utilities.js';
 
 const log = createLogger('TypeWriter');
 
 // Helper: CSS Variables setzen
-const setCSSVars = (el, vars) => Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v));
+const setCSSVars = (el, vars) =>
+  Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v));
 
 export class TypeWriter {
-  constructor({ textEl, authorEl, quotes, wait = 2400, typeSpeed = 85, deleteSpeed = 40, 
-                shuffle: doShuffle = true, loop = true, smartBreaks = true, 
-                avoidImmediateRepeat = true, containerEl = null, onBeforeType = null }) {
-    
+  constructor({
+    textEl,
+    authorEl,
+    quotes,
+    wait = 2400,
+    typeSpeed = 85,
+    deleteSpeed = 40,
+    shuffle: doShuffle = true,
+    loop = true,
+    smartBreaks = true,
+    avoidImmediateRepeat = true,
+    containerEl = null,
+    onBeforeType = null
+  }) {
     if (!textEl || !authorEl || !quotes?.length) {
       log.error('TypeWriter: Missing required parameters');
       return;
     }
 
-    this.quotes = quotes.filter(q => q?.text);
+    this.quotes = quotes.filter((q) => q?.text);
     if (!this.quotes.length) return log.error('No valid quotes');
 
     Object.assign(this, {
-      textEl, authorEl, wait, typeSpeed, deleteSpeed, 
-      shuffle: doShuffle, loop, smartBreaks, avoidImmediateRepeat, 
-      containerEl, onBeforeType,
+      textEl,
+      authorEl,
+      wait,
+      typeSpeed,
+      deleteSpeed,
+      shuffle: doShuffle,
+      loop,
+      smartBreaks,
+      avoidImmediateRepeat,
+      containerEl,
+      onBeforeType,
       timerManager: new TimerManager(),
       _isDeleting: false,
       _txt: ''
@@ -43,8 +68,8 @@ export class TypeWriter {
   }
 
   _createQueue() {
-    return this.shuffle 
-      ? shuffle([...Array(this.quotes.length).keys()]) 
+    return this.shuffle
+      ? shuffle([...Array(this.quotes.length).keys()])
       : [...Array(this.quotes.length).keys()];
   }
 
@@ -54,15 +79,17 @@ export class TypeWriter {
       this._queue = this._generateQueue(this._index);
     }
     this._index = this._queue.shift();
-    return this._current = this.quotes[this._index];
+    return (this._current = this.quotes[this._index]);
   }
 
   _generateQueue(lastIndex) {
     if (this.quotes.length <= 1) return [0];
     if (!this.avoidImmediateRepeat) return this._createQueue();
-    
+
     let queue;
-    do { queue = this._createQueue(); } while (queue[0] === lastIndex);
+    do {
+      queue = this._createQueue();
+    } while (queue[0] === lastIndex);
     return queue;
   }
 
@@ -97,13 +124,25 @@ export class TypeWriter {
 
     // Satzzeichen-Pausen
     if (!this._isDeleting && this._txt.length) {
-      const pauseMap = { ',': 120, '.': 300, '…': 400, '!': 250, '?': 250, ';': 180, ':': 180, '—': 220, '–': 180 };
+      const pauseMap = {
+        ',': 120,
+        '.': 300,
+        '…': 400,
+        '!': 250,
+        '?': 250,
+        ';': 180,
+        ':': 180,
+        '—': 220,
+        '–': 180
+      };
       delay += pauseMap[this._txt.slice(-1)] || 0;
     }
 
     if (!this._isDeleting && this._txt === full) {
       try {
-        document.dispatchEvent(new CustomEvent('hero:typingEnd', { detail: { text: full, author } }));
+        document.dispatchEvent(
+          new CustomEvent('hero:typingEnd', { detail: { text: full, author } })
+        );
       } catch (e) {}
       delay = this.wait;
       this._isDeleting = true;
@@ -118,13 +157,13 @@ export class TypeWriter {
   _handleQuoteTransition() {
     this._isDeleting = false;
     this.containerEl?.classList.remove('is-locked');
-    
+
     const next = this._nextQuote();
     if (!next) {
       this.destroy();
       return null;
     }
-    
+
     this.onBeforeType?.(next.text);
     return 600;
   }
@@ -156,7 +195,7 @@ export async function initHeroSubtitle(options = {}) {
     }
 
     const measurer = makeLineMeasurer(subtitleEl);
-    
+
     const start = () => {
       const tw = new TypeWriter({
         textEl: typedText,
@@ -176,7 +215,7 @@ export async function initHeroSubtitle(options = {}) {
           const cs = getComputedStyle(subtitleEl);
           const lh = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
           const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
-          
+
           setCSSVars(subtitleEl, {
             '--box-h': `${Math.max(0, lines * lh + (lines - 1) * gap)}px`
           });
@@ -186,13 +225,13 @@ export async function initHeroSubtitle(options = {}) {
             const rect = subtitleEl.getBoundingClientRect();
             const footer = document.querySelector('#site-footer');
             if (!footer) return;
-            
+
             const fRect = footer.getBoundingClientRect();
             const overlap = Math.max(0, rect.bottom - (fRect.top - 8));
-            
+
             if (overlap > 0) {
-              const base = document.body.classList.contains('footer-expanded') 
-                ? 'clamp(8px,1.5vw,16px)' 
+              const base = document.body.classList.contains('footer-expanded')
+                ? 'clamp(8px,1.5vw,16px)'
                 : subtitleEl.classList.contains('typewriter-title--fixed')
                   ? 'clamp(16px,2.5vw,32px)'
                   : 'clamp(12px,2vw,24px)';
@@ -203,7 +242,7 @@ export async function initHeroSubtitle(options = {}) {
           } catch {}
         }
       });
-      
+
       if (window.location.search.includes('debug')) window.__typeWriter = tw;
     };
 

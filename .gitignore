@@ -29,4 +29,4 @@ build/
 *.swp
 *.swo
 
-# Playwright artifacts were removed; no active Playwright tests remain
+# Playwright artifacts were removed; no active Playwright tests remaintest-results/
