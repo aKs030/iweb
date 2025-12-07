@@ -8,9 +8,7 @@
     "format": "prettier --write .",
     "serve": "http-server ./ -p 8081",
     "dev": "npm run serve",
-    "test": "playwright test",
-    "build": "node ./scripts/build.js",
-    "build:prod": "node ./scripts/build.js --minify"
+    "test": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
