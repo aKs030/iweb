@@ -39,7 +39,7 @@ const CONSTANTS = {
   SCROLL_WATCH_TIMEOUT: 5000,
   SCROLL_THRESHOLD: 6,
   RESIZE_DEBOUNCE: 150,
-  ANIMATION_DURATION: 800
+  ANIMATION_DURATION: 800,
 };
 
 // ===== DOM Cache =====
@@ -130,7 +130,7 @@ const ProgrammaticScroll = (() => {
               ProgrammaticScroll.clear(token);
             }
           },
-          { threshold: [0.5, 1] }
+          { threshold: [0.5, 1] },
         );
 
         observer.observe(element);
@@ -158,7 +158,7 @@ const ProgrammaticScroll = (() => {
       const timeoutId = setTimeout(() => ProgrammaticScroll.clear(token), timeout);
       watchers.set(token, { listener, timeoutId });
       return token;
-    }
+    },
   };
 })();
 
@@ -198,7 +198,7 @@ const GlobalClose = (() => {
       window.removeEventListener('wheel', onUserScroll);
       window.removeEventListener('touchstart', onUserScroll);
       bound = false;
-    }
+    },
   };
 })();
 
@@ -226,7 +226,7 @@ const GoogleAnalytics = {
     performance.mark('analytics-load-end');
     performance.measure('analytics-load', 'analytics-load-start', 'analytics-load-end');
     log.info('Google Analytics loaded');
-  }
+  },
 };
 
 // ===== Consent Banner (Optimized) =====
@@ -235,7 +235,7 @@ class ConsentBanner {
     this.elements = {
       banner: domCache.get('#cookie-consent-banner'),
       acceptBtn: domCache.get('#accept-cookies-btn'),
-      rejectBtn: domCache.get('#reject-cookies-btn')
+      rejectBtn: domCache.get('#reject-cookies-btn'),
     };
   }
 
@@ -286,7 +286,7 @@ const CookieSettings = (() => {
     closeBtn: domCache.get('#close-cookie-footer'),
     rejectAllBtn: domCache.get('#footer-reject-all'),
     acceptSelectedBtn: domCache.get('#footer-accept-selected'),
-    acceptAllBtn: domCache.get('#footer-accept-all')
+    acceptAllBtn: domCache.get('#footer-accept-all'),
   }));
 
   const setupHandlers = (elements) => {
@@ -314,7 +314,7 @@ const CookieSettings = (() => {
         GoogleAnalytics.load();
         close();
         domCache.get('#cookie-consent-banner')?.classList.add('hidden');
-      }
+      },
     };
 
     Object.entries(handlerMap).forEach(([key, handler]) => {
@@ -347,7 +347,7 @@ const CookieSettings = (() => {
     if (elements.normalContent) elements.normalContent.style.display = 'none';
 
     requestAnimationFrame(() =>
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' })
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' }),
     );
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
@@ -364,7 +364,7 @@ const CookieSettings = (() => {
     performance.measure(
       'cookie-settings-open',
       'cookie-settings-open-start',
-      'cookie-settings-open-end'
+      'cookie-settings-open-end',
     );
   };
 
@@ -479,8 +479,8 @@ class FooterLoader {
 
       document.dispatchEvent(
         new CustomEvent('footer:loaded', {
-          detail: { footerId: 'site-footer', timestamp: Date.now() }
-        })
+          detail: { footerId: 'site-footer', timestamp: Date.now() },
+        }),
       );
 
       performance.mark('footer-load-end');
@@ -536,7 +536,7 @@ class FooterLoader {
           this.handleFooterTrigger();
         }
       },
-      { passive: false }
+      { passive: false },
     );
   }
 
@@ -590,7 +590,7 @@ class ScrollHandler {
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
         this.toggleExpansion(shouldExpand);
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: [0.02, 0.05] }
+      { rootMargin: '0px 0px -10% 0px', threshold: [0.02, 0.05] },
     );
 
     this.observer.observe(trigger);
@@ -673,5 +673,5 @@ window.FooterSystem = {
   FooterLoader,
   CookieSettings,
   ProgrammaticScroll,
-  domCache
+  domCache,
 };

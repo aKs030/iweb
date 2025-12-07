@@ -18,7 +18,7 @@ export class StarManager {
       duration: CONFIG.STARS.ANIMATION.DURATION,
       startValue: 0,
       targetValue: 0,
-      rafId: null
+      rafId: null,
     };
 
     this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
@@ -71,7 +71,7 @@ export class StarManager {
     starGeometry.setAttribute('position', new this.THREE.BufferAttribute(positions, 3));
     starGeometry.setAttribute(
       'aTargetPosition',
-      new this.THREE.BufferAttribute(targetPositions, 3)
+      new this.THREE.BufferAttribute(targetPositions, 3),
     );
     starGeometry.setAttribute('color', new this.THREE.BufferAttribute(colors, 3));
     starGeometry.setAttribute('size', new this.THREE.BufferAttribute(sizes, 1));
@@ -80,7 +80,7 @@ export class StarManager {
       uniforms: {
         time: { value: 0.0 },
         twinkleSpeed: { value: CONFIG.STARS.TWINKLE_SPEED },
-        uTransition: { value: 0.0 }
+        uTransition: { value: 0.0 },
       },
       vertexShader: `
         attribute float size;
@@ -108,7 +108,7 @@ export class StarManager {
       blending: this.THREE.AdditiveBlending,
       depthWrite: false,
       transparent: true,
-      vertexColors: true
+      vertexColors: true,
     });
 
     this.starField = new this.THREE.Points(starGeometry, starMaterial);
@@ -156,7 +156,7 @@ export class StarManager {
     const positions = [];
     // Recalculate stars per edge dynamically based on current star count config
     const starsPerEdge = Math.floor(
-      (this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4
+      (this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4,
     );
 
     const screenToWorld = (x, y) => {
@@ -372,7 +372,7 @@ export class ShootingStarManager {
     this.sharedMaterial = new this.THREE.MeshBasicMaterial({
       color: 0xfffdef,
       transparent: true,
-      opacity: 1.0
+      opacity: 1.0,
     });
   }
 
@@ -387,12 +387,12 @@ export class ShootingStarManager {
       const startPos = {
         x: (Math.random() - 0.5) * 100,
         y: 20 + Math.random() * 20,
-        z: -50 - Math.random() * 50
+        z: -50 - Math.random() * 50,
       };
       const velocity = new this.THREE.Vector3(
         (Math.random() - 0.9) * 0.2,
         (Math.random() - 0.6) * -0.2,
-        0
+        0,
       );
 
       star.position.set(startPos.x, startPos.y, startPos.z);
@@ -403,7 +403,7 @@ export class ShootingStarManager {
         mesh: star,
         velocity,
         lifetime: 300 + Math.random() * 200,
-        age: 0
+        age: 0,
       });
 
       this.scene.add(star);

@@ -104,7 +104,7 @@ export class CameraManager {
     this.mouseState.zoom -= e.deltaY * 0.01;
     this.mouseState.zoom = Math.max(
       CONFIG.CAMERA.ZOOM_MIN,
-      Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom)
+      Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom),
     );
   }
 

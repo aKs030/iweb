@@ -30,7 +30,7 @@ export function showLoadingState(container) {
       display: 'flex',
       opacity: '1',
       pointerEvents: 'auto',
-      visibility: 'visible'
+      visibility: 'visible',
     });
     // Optionally set an aria message
     globals.screen.setAttribute('aria-live', 'polite');
@@ -51,7 +51,7 @@ export function hideLoadingState(container) {
     Object.assign(globals.screen.style, {
       opacity: '0',
       pointerEvents: 'none',
-      visibility: 'hidden'
+      visibility: 'hidden',
     });
     // Reset visuals (after transition)
     setTimeout(() => {
@@ -154,7 +154,7 @@ export class PerformanceMonitor {
     const newPixelRatio = calculateDynamicResolution(
       this.fps,
       this.currentPixelRatio,
-      CONFIG.PERFORMANCE
+      CONFIG.PERFORMANCE,
     );
 
     if (newPixelRatio !== this.currentPixelRatio) {

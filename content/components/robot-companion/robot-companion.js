@@ -9,7 +9,7 @@ class RobotCompanion {
     this.state = {
       isOpen: false,
       hasGreeted: false,
-      isTyping: false
+      isTyping: false,
     };
 
     // Patrol State
@@ -20,7 +20,7 @@ class RobotCompanion {
       direction: 1,
       speed: 0.3,
       isPaused: false,
-      bouncePhase: 0
+      bouncePhase: 0,
     };
 
     this.motion = {
@@ -28,7 +28,7 @@ class RobotCompanion {
       dashSpeed: 1.2,
       dashChance: 0.0015,
       dashDuration: 900,
-      dashUntil: 0
+      dashUntil: 0,
     };
 
     this.avoid = {
@@ -39,7 +39,7 @@ class RobotCompanion {
       p1: { x: 0, y: 0 },
       p2: { x: 0, y: 0 },
       p3: { x: 0, y: 0 },
-      cooldownUntil: 0
+      cooldownUntil: 0,
     };
 
     this.updatePatrol = this.updatePatrol.bind(this);
@@ -55,85 +55,85 @@ class RobotCompanion {
           { label: 'Was kannst du?', action: 'skills' },
           { label: 'Projekte zeigen', action: 'projects' },
           { label: 'Über den Dev', action: 'about' },
-          { label: 'Fun & Extras', action: 'extras' }
-        ]
+          { label: 'Fun & Extras', action: 'extras' },
+        ],
       },
       skills: {
         text: 'Ich wurde mit HTML, CSS und reinem JavaScript gebaut! Mein Erschaffer beherrscht aber noch viel mehr: React, Node.js, Python und UI/UX Design. Möchtest du Details?',
         options: [
           { label: 'Tech Stack ansehen', url: '/pages/about/about.html#skills' },
-          { label: 'Zurück', action: 'start' }
-        ]
+          { label: 'Zurück', action: 'start' },
+        ],
       },
       about: {
         text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt. 👨‍💻',
         options: [
           { label: 'Zur Bio', url: '/pages/about/about.html' },
           { label: 'Kontakt aufnehmen', action: 'contact' },
-          { label: 'Zurück', action: 'start' }
-        ]
+          { label: 'Zurück', action: 'start' },
+        ],
       },
       projects: {
         text: 'Wir haben einige spannende Projekte hier! Von Web-Apps bis zu Design-Experimenten. Wirf einen Blick in die Galerie.',
         options: [
           { label: 'Zur Galerie', url: '/pages/projekte/projekte.html' },
           { label: 'Ein Zufallsprojekt?', action: 'randomProject' },
-          { label: 'Zurück', action: 'start' }
-        ]
+          { label: 'Zurück', action: 'start' },
+        ],
       },
       contact: {
         text: 'Du findest Kontaktmöglichkeiten im Footer der Seite oder im Impressum. Ich kann dich dorthin scrollen!',
         options: [
           { label: 'Zum Footer scrollen', action: 'scrollFooter' },
           { label: 'Social Media?', action: 'socials' },
-          { label: 'Alles klar', action: 'start' }
-        ]
+          { label: 'Alles klar', action: 'start' },
+        ],
       },
       socials: {
         text: 'Vernetze dich gerne! Hier sind die Profile:',
         options: [
           { label: 'GitHub', url: 'https://github.com', target: '_blank' },
           { label: 'LinkedIn', url: 'https://linkedin.com', target: '_blank' },
-          { label: 'Zurück', action: 'contact' }
-        ]
+          { label: 'Zurück', action: 'contact' },
+        ],
       },
       extras: {
         text: 'Ein bisschen Spaß muss sein! Was möchtest du?',
         options: [
           { label: 'Witz erzählen', action: 'joke' },
           { label: 'Weltraum Fakt', action: 'fact' },
-          { label: 'Zurück', action: 'start' }
-        ]
+          { label: 'Zurück', action: 'start' },
+        ],
       },
       joke: {
         text: [
           'Was macht ein Pirat am Computer? Er drückt die Enter-Taste! 🏴‍☠️',
           'Warum gehen Geister nicht in den Regen? Damit sie nicht nass werden... nein, damit sie nicht "ge-löscht" werden!',
           'Ein SQL Query kommt in eine Bar, geht zu zwei Tischen und fragt: "Darf ich mich joinen?"',
-          'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.'
+          'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.',
         ],
         options: [
           { label: 'Noch einer!', action: 'joke' },
-          { label: 'Genug gelacht', action: 'start' }
-        ]
+          { label: 'Genug gelacht', action: 'start' },
+        ],
       },
       fact: {
         text: [
           'Wusstest du? Ein Tag auf der Venus ist länger als ein Jahr auf der Venus. 🪐',
           'Der Weltraum ist völlig still. Es gibt keine Atmosphäre, die Schall überträgt.',
           'Neutronensterne sind so dicht, dass ein Teelöffel davon 6 Milliarden Tonnen wiegen würde!',
-          'Es gibt mehr Sterne im Universum als Sandkörner an allen Stränden der Erde.'
+          'Es gibt mehr Sterne im Universum als Sandkörner an allen Stränden der Erde.',
         ],
         options: [
           { label: 'Wow, noch einer!', action: 'fact' },
-          { label: 'Zurück', action: 'start' }
-        ]
+          { label: 'Zurück', action: 'start' },
+        ],
       },
       randomProject: {
         // Logik wird unten in handleAction speziell behandelt, dies ist ein Fallback
         text: 'Ich suche etwas raus...',
-        options: []
-      }
+        options: [],
+      },
     };
 
     this.init();
@@ -295,7 +295,7 @@ class RobotCompanion {
       legs: container.querySelector('.robot-legs'),
       particles: container.querySelector('.robot-particles'),
       thinking: container.querySelector('.robot-thinking'),
-      closeBtn: container.querySelector('.chat-close-btn')
+      closeBtn: container.querySelector('.chat-close-btn'),
     };
   }
 
@@ -369,7 +369,7 @@ class RobotCompanion {
     const uuu = uu * u;
     return {
       x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
-      y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y
+      y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
     };
   }
 
@@ -449,7 +449,7 @@ class RobotCompanion {
         () => {
           el.remove();
         },
-        900 + Math.random() * 600
+        900 + Math.random() * 600,
       );
     }
   }
@@ -567,7 +567,7 @@ class RobotCompanion {
 
     if (actionKey === 'randomProject') {
       const projects = [
-        '/pages/projekte/projekte.html'
+        '/pages/projekte/projekte.html',
         // Hier könnten echte Projekt-URLs stehen, fallback zur Übersicht
       ];
       const randomUrl = projects[Math.floor(Math.random() * projects.length)];

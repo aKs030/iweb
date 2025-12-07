@@ -13,7 +13,7 @@ const LOG_LEVELS = {
   error: 0,
   warn: 1,
   info: 2,
-  debug: 3
+  debug: 3,
 };
 
 let globalLogLevel = LOG_LEVELS.warn;
@@ -49,7 +49,7 @@ export function createLogger(category) {
       if (globalLogLevel >= LOG_LEVELS.debug) {
         (console.debug || console.log || noop)(prefix, message, ...args);
       }
-    }
+    },
   };
 }
 
@@ -78,7 +78,7 @@ export async function fetchWithTimeout(url, timeout = 8000) {
   try {
     const response = await fetch(url, {
       credentials: 'same-origin',
-      signal: controller.signal
+      signal: controller.signal,
     });
     clearTimeout(timeoutId);
     return response;
@@ -146,7 +146,7 @@ export const CookieManager = {
     const analyticsCookies = ['_ga', '_gid', '_gat', '_gat_gtag_G_S0587RQ4CN'];
     analyticsCookies.forEach((name) => this.delete(name));
     sharedLogger.info('Analytics cookies deleted');
-  }
+  },
 };
 
 // ===== Array Utilities =====
@@ -258,7 +258,7 @@ export const EVENTS = Object.freeze({
   CORE_INITIALIZED: 'app:coreInitialized',
   MODULES_READY: 'app:modulesReady',
   HERO_INIT_READY: 'app:heroInitReady',
-  SW_UPDATE_AVAILABLE: 'sw:updateAvailable'
+  SW_UPDATE_AVAILABLE: 'sw:updateAvailable',
 });
 
 export function fire(type, detail = null, target = document) {
@@ -276,12 +276,12 @@ export function fire(type, detail = null, target = document) {
 const OBSERVER_CONFIGS = {
   lazyLoad: {
     threshold: 0.15,
-    rootMargin: '120px 0px'
+    rootMargin: '120px 0px',
   },
   sectionTracking: {
     threshold: [0.1, 0.3, 0.5, 0.7],
-    rootMargin: '-10% 0px -10% 0px'
-  }
+    rootMargin: '-10% 0px -10% 0px',
+  },
 };
 
 function createObserverWrapper(callback, options, triggerOnce = false) {
@@ -296,7 +296,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
           callback(element);
         }
       },
-      disconnect: () => {}
+      disconnect: () => {},
     };
   }
 
@@ -314,7 +314,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
   return {
     observer,
     observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect()
+    disconnect: () => observer.disconnect(),
   };
 }
 
@@ -328,7 +328,7 @@ export function createTriggerOnceObserver(callback, options = {}) {
     return {
       observer: null,
       observe: () => {},
-      disconnect: () => {}
+      disconnect: () => {},
     };
   }
 
@@ -345,7 +345,7 @@ export function createTriggerOnceObserver(callback, options = {}) {
   return {
     observer,
     observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect()
+    disconnect: () => observer.disconnect(),
   };
 }
 
@@ -380,7 +380,7 @@ async function ensurePersistentStorage() {
           quota = {
             quota: estimate.quota,
             usage: estimate.usage,
-            usageDetails: estimate.usageDetails
+            usageDetails: estimate.usageDetails,
           };
         }
       }
@@ -482,7 +482,7 @@ export class SectionTracker {
 
     this.observer = new IntersectionObserver(
       (entries) => this.handleIntersections(entries),
-      OBSERVER_CONFIGS.sectionTracking
+      OBSERVER_CONFIGS.sectionTracking,
     );
 
     this.sections.forEach((section) => {
@@ -494,7 +494,7 @@ export class SectionTracker {
 
   refreshSections() {
     this.sections = Array.from(
-      document.querySelectorAll('main .section[id], footer#site-footer[id]')
+      document.querySelectorAll('main .section[id], footer#site-footer[id]'),
     ).filter((section) => section.id);
 
     if (this.observer) {
@@ -512,7 +512,7 @@ export class SectionTracker {
         this.sectionRatios.set(entry.target.id, {
           ratio: entry.intersectionRatio,
           isIntersecting: entry.isIntersecting,
-          target: entry.target
+          target: entry.target,
         });
       }
     });

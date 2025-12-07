@@ -1,13 +1,11 @@
 {
+  "ignorePatterns": ["node_modules/", "dist/", "build/", "content/vendor/", "public/"],
   "env": {
     "browser": true,
     "es2021": true,
     "node": true
   },
-  "extends": [
-    "eslint:recommended",
-    "prettier"
-  ],
+  "extends": ["eslint:recommended", "prettier"],
   "parserOptions": {
     "ecmaVersion": 2024,
     "sourceType": "module"

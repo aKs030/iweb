@@ -89,7 +89,7 @@ class AccessibilityManager {
               /* ignored */
             }
           },
-          { once: true }
+          { once: true },
         );
       });
     });
@@ -99,7 +99,7 @@ class AccessibilityManager {
     if (!container) return;
 
     const focusableElements = container.querySelectorAll(
-      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
     );
 
     if (!focusableElements || focusableElements.length === 0) return;

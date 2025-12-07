@@ -3,7 +3,7 @@ import {
   createTriggerOnceObserver,
   EVENTS,
   getElementById,
-  TimerManager
+  TimerManager,
 } from '../../content/utils/shared-utilities.js';
 import { createLogger } from '../../content/utils/shared-utilities.js';
 
@@ -23,7 +23,7 @@ const HeroManager = (() => {
     if (typeof window.initHeroSubtitle === 'function') {
       try {
         return window.initHeroSubtitle({
-          heroDataModule
+          heroDataModule,
         });
       } catch (err) {
         logger.warn('Failed to load TypeWriter modules', err);
@@ -145,7 +145,7 @@ export function initHeroFeatureBundle() {
         HeroManager.setRandomGreetingHTML();
       }
     },
-    { once: true }
+    { once: true },
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {

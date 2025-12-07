@@ -6,8 +6,12 @@
   "license": "MIT",
   "scripts": {
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "serve": "http-server ./ -p 8081",
     "dev": "npm run serve",
+    "lint:js": "eslint . --ext .js,.ts",
+    "lint:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --allow-empty-input",
+    "lint": "npm run lint:js && npm run lint:css",
     "test": "playwright test"
   },
   "devDependencies": {

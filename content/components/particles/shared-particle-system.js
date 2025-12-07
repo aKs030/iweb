@@ -21,11 +21,11 @@ const log = createLogger('sharedParticleSystem');
 
 const SHARED_CONFIG = {
   PERFORMANCE: {
-    THROTTLE_MS: 20
+    THROTTLE_MS: 20,
   },
   SCROLL: {
-    CSS_PROPERTY_PREFIX: '--scroll-'
-  }
+    CSS_PROPERTY_PREFIX: '--scroll-',
+  },
 };
 
 // ===== Shared State Management =====
@@ -113,7 +113,7 @@ class SharedParallaxManager {
       // Update CSS variable
       document.documentElement.style.setProperty(
         `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
-        progress.toFixed(4)
+        progress.toFixed(4),
       );
 
       // Call all handlers
@@ -196,7 +196,7 @@ class SharedCleanupManager {
     this.cleanupFunctions.delete(systemName);
 
     log.info(
-      `System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`
+      `System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`,
     );
   }
 

@@ -128,7 +128,7 @@
           document.addEventListener(
             'DOMContentLoaded',
             () => document.body.prepend(loaderWrapper),
-            { once: true }
+            { once: true },
           );
       }
     } catch (e) {
@@ -155,7 +155,7 @@
           Object.assign(el.style, {
             opacity: '0',
             pointerEvents: 'none',
-            visibility: 'hidden'
+            visibility: 'hidden',
           });
           const cleanup = () => {
             el.style.display = 'none';
@@ -168,7 +168,7 @@
 
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => (start = performance.now()), {
-          once: true
+          once: true,
         });
       } else {
         start = performance.now();

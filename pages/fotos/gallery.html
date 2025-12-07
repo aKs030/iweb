@@ -1,34 +1,43 @@
 <!doctype html>
 <html lang="de">
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>Fotogalerie - Abdulkerim Sesli</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Professionelle Fotogalerie mit Landschaften, Urban Photography, Portraits und experimentellen Arbeiten." />
-    
+    <meta
+      name="description"
+      content="Professionelle Fotogalerie mit Landschaften, Urban Photography, Portraits und experimentellen Arbeiten."
+    />
+
     <!-- Open Graph -->
     <meta property="og:title" content="Fotogalerie - Abdulkerim Sesli" />
-    <meta property="og:description" content="Eine kuratierte Sammlung meiner fotografischen Arbeiten." />
+    <meta
+      property="og:description"
+      content="Eine kuratierte Sammlung meiner fotografischen Arbeiten."
+    />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
-    
+    <meta
+      property="og:image"
+      content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg"
+    />
+
     <!-- Local gallery styles (replaces Tailwind CDN) -->
     <link rel="stylesheet" href="/pages/fotos/gallery-styles.css" />
-    
+
     <!-- Shared Head -->
     <script src="/content/components/head/head-complete.js" type="module"></script>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Header -->
     <header class="site-header">
-        <div id="menu-container"></div>
+      <div id="menu-container"></div>
     </header>
 
     <!-- Main Content -->
     <main class="pt-16">
-        <div id="root"></div>
+      <div id="root"></div>
     </main>
 
     <!-- Footer Trigger Zone -->
@@ -37,15 +46,15 @@
     <!-- Footer Container -->
     <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
     <script src="/content/components/footer/footer-complete.js" type="module"></script>
-    
+
     <!-- React & Libraries (Production minified) - local vendor files to improve reliability -->
     <script crossorigin src="/content/vendor/react.production.min.js"></script>
     <script crossorigin src="/content/vendor/react-dom.production.min.js"></script>
-    
+
     <!-- Lucide Icons (Lightweight) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- Gallery Component -->
     <script type="module" src="/pages/fotos/gallery-app.js"></script>
-</body>
+  </body>
 </html>
