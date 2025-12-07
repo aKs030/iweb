@@ -1,4 +1,4 @@
-export const greetings = {
+const greetings = {
   morning: [
     'Guten Morgen und willkommen auf meiner Website!',
     'Schön, dass du früh vorbeischaust!',
@@ -49,9 +49,3 @@ export function pickGreeting(lastValue = null, set = getGreetingSet()) {
   return candidate;
 }
 
-// TypeWriter Konfiguration
-export const typewriterConfig = {
-  speed: 100,
-  wait: 2000,
-  punctuationPause: 300
-};

@@ -273,7 +273,7 @@ export function fire(type, detail = null, target = document) {
 
 // ===== Intersection Observer Utilities =====
 
-export const OBSERVER_CONFIGS = {
+const OBSERVER_CONFIGS = {
   lazyLoad: {
     threshold: 0.15,
     rootMargin: '120px 0px'
