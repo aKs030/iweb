@@ -1,4 +1,3 @@
-// ===== TypeWriter Quotes (German) =====
 
 const quotes = [
   { author: 'Rumi', text: 'Der Schmerz reinigt das Herz.' },
