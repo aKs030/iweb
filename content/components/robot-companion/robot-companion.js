@@ -43,6 +43,10 @@ class RobotCompanion {
     };
 
     this.updatePatrol = this.updatePatrol.bind(this);
+    this._rafId = null; // RAF id so we can cancel on destroy
+    this._pauseTimeout = null; // store pause timeout id
+    this._intervalIds = [];
+    this._cleanupListeners = [];
     this.animationState = 'idle'; // idle, moving, thinking, working
     this._mousePos = { x: 0, y: 0 };
     this._prevDashActive = false;
@@ -173,15 +177,26 @@ class RobotCompanion {
     // Initial check
     requestAnimationFrame(checkOverlap);
 
-    // Check on scroll and resize
-    window.addEventListener('scroll', () => requestAnimationFrame(checkOverlap), { passive: true });
-    window.addEventListener('resize', () => requestAnimationFrame(checkOverlap), { passive: true });
+    // Check on scroll and resize (store handlers for cleanup)
+    this._onWindowScroll = () => requestAnimationFrame(checkOverlap);
+    this._onWindowResize = () => requestAnimationFrame(checkOverlap);
+    window.addEventListener('scroll', this._onWindowScroll, { passive: true });
+    window.addEventListener('resize', this._onWindowResize, { passive: true });
+    this._cleanupListeners.push({ target: window, event: 'scroll', handler: this._onWindowScroll });
+    this._cleanupListeners.push({ target: window, event: 'resize', handler: this._onWindowResize });
 
     // Check when footer loads
-    document.addEventListener('footer:loaded', checkOverlap);
+    this._onFooterLoaded = checkOverlap;
+    document.addEventListener('footer:loaded', this._onFooterLoaded);
+    this._cleanupListeners.push({
+      target: document,
+      event: 'footer:loaded',
+      handler: this._onFooterLoaded
+    });
 
     // Polling for robustness
-    setInterval(checkOverlap, 500);
+    const intervalId = setInterval(checkOverlap, 500);
+    this._intervalIds.push(intervalId);
   }
 
   init() {
@@ -300,15 +315,39 @@ class RobotCompanion {
   }
 
   attachEvents() {
-    this.dom.avatar.addEventListener('click', () => this.toggleChat());
-    this.dom.closeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.toggleChat(false);
-    });
-    this.dom.bubbleClose.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.hideBubble();
-    });
+    if (this.dom.avatar) {
+      this._onAvatarClick = () => this.toggleChat();
+      this.dom.avatar.addEventListener('click', this._onAvatarClick);
+      this._cleanupListeners.push({
+        target: this.dom.avatar,
+        event: 'click',
+        handler: this._onAvatarClick
+      });
+    }
+    if (this.dom.closeBtn) {
+      this._onCloseBtnClick = (e) => {
+        e.stopPropagation();
+        this.toggleChat(false);
+      };
+      this.dom.closeBtn.addEventListener('click', this._onCloseBtnClick);
+      this._cleanupListeners.push({
+        target: this.dom.closeBtn,
+        event: 'click',
+        handler: this._onCloseBtnClick
+      });
+    }
+    if (this.dom.bubbleClose) {
+      this._onBubbleCloseClick = (e) => {
+        e.stopPropagation();
+        this.hideBubble();
+      };
+      this.dom.bubbleClose.addEventListener('click', this._onBubbleCloseClick);
+      this._cleanupListeners.push({
+        target: this.dom.bubbleClose,
+        event: 'click',
+        handler: this._onBubbleCloseClick
+      });
+    }
 
     // pointer follow for the eyes (mouse + pointer fallback)
     this._mouseMoveHandler = (e) => {
@@ -324,6 +363,11 @@ class RobotCompanion {
       window.matchMedia('(pointer: coarse)').matches;
     if (!prefersCoarse) {
       document.addEventListener('mousemove', this._mouseMoveHandler);
+      this._cleanupListeners.push({
+        target: document,
+        event: 'mousemove',
+        handler: this._mouseMoveHandler
+      });
     } else {
       // For touch, use pointer events but with throttling to avoid jitter
       let last = 0;
@@ -338,6 +382,11 @@ class RobotCompanion {
         }
       };
       document.addEventListener('pointermove', this._pointerHandler, { passive: true });
+      this._cleanupListeners.push({
+        target: document,
+        event: 'pointermove',
+        handler: this._pointerHandler
+      });
     }
   }
 
@@ -603,7 +652,8 @@ class RobotCompanion {
   }
 
   startPatrol() {
-    requestAnimationFrame(this.updatePatrol);
+    if (this._rafId) cancelAnimationFrame(this._rafId);
+    this._rafId = requestAnimationFrame(this.updatePatrol);
   }
 
   updatePatrol() {
@@ -765,7 +815,7 @@ class RobotCompanion {
           : 4
         : 0;
     container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRotation}deg)`;
-    requestAnimationFrame(this.updatePatrol);
+    this._rafId = requestAnimationFrame(this.updatePatrol);
   }
 
   pausePatrol(ms) {
@@ -786,9 +836,29 @@ class RobotCompanion {
         if (this.dom.thinking) this.dom.thinking.style.opacity = '0';
       }, ms * 0.6);
     }
-    setTimeout(() => {
+    if (this._pauseTimeout) clearTimeout(this._pauseTimeout);
+    this._pauseTimeout = setTimeout(() => {
       this.patrol.isPaused = false;
+      this._pauseTimeout = null;
     }, ms);
+  }
+
+  destroy() {
+    if (this._rafId) cancelAnimationFrame(this._rafId);
+    if (this._pauseTimeout) clearTimeout(this._pauseTimeout);
+    this._intervalIds.forEach((id) => clearInterval(id));
+    this._cleanupListeners.forEach(({ target, event, handler }) => {
+      try {
+        target.removeEventListener(event, handler);
+      } catch (e) {
+        // ignore
+      }
+    });
+    this._cleanupListeners = [];
+    if (this._mouseMoveHandler) document.removeEventListener('mousemove', this._mouseMoveHandler);
+    if (this._pointerHandler) document.removeEventListener('pointermove', this._pointerHandler);
+    const container = document.getElementById(this.containerId);
+    if (container && container.parentNode) container.parentNode.removeChild(container);
   }
 
   scrollToBottom() {
