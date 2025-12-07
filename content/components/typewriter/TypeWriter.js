@@ -12,31 +12,80 @@ const log = createLogger('TypeWriter');
 const setCSSVars = (el, vars) =>
   Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v));
 
-// Helper: Footer Overlap Check
-function checkFooterOverlap(subtitleEl) {
-  try {
-    // Reset bottom first to measure natural position
-    subtitleEl.style.removeProperty('bottom');
+// Helper: Line Measurer
+function makeLineMeasurer(subtitleEl) {
+  const measurer = document.createElement('div');
+  measurer.style.cssText =
+    'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:normal;pointer-events:none';
+  document.body.appendChild(measurer);
+
+  const cs = getComputedStyle(subtitleEl);
+  [
+    'font-size',
+    'line-height',
+    'font-family',
+    'font-weight',
+    'letter-spacing',
+    'word-spacing',
+    'font-kerning',
+    'font-variant-ligatures',
+    'text-transform',
+    'text-rendering',
+    'word-break',
+    'overflow-wrap',
+    'hyphens'
+  ].forEach((p) => measurer.style.setProperty(p, cs.getPropertyValue(p)));
+
+  const getLineHeight = () => {
+    const lh = cs.lineHeight.trim();
+    if (lh.endsWith('px')) {
+      const v = parseFloat(lh);
+      if (!isNaN(v)) return v;
+    }
+    const num = parseFloat(lh);
+    if (!isNaN(num)) {
+      const fs = parseFloat(cs.fontSize);
+      if (!isNaN(fs)) return num * fs;
+    }
+    measurer.innerHTML = '<span style="display:inline-block">A</span>';
+    return measurer.firstChild.getBoundingClientRect().height || 0;
+  };
+
+  const measure = (text) => {
+    measurer.innerHTML = '';
+    const span = document.createElement('span');
+    span.textContent = text;
+
+    measurer.appendChild(span);
 
     const rect = subtitleEl.getBoundingClientRect();
-    const footer = document.querySelector('#site-footer');
-    if (!footer) return;
+    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
+    const cap = Math.min(window.innerWidth * 0.92, 820);
+    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + 'px';
 
-    const fRect = footer.getBoundingClientRect();
-    // Ensure at least 24px distance to footer
-    const overlap = Math.max(0, rect.bottom - (fRect.top - 24));
+    const lh = getLineHeight();
+    const h = span.getBoundingClientRect().height;
+    if (!lh || !h) return 1;
 
-    if (overlap > 0) {
-      const base = document.body.classList.contains('footer-expanded')
-        ? 'clamp(8px,1.5vw,16px)'
-        : subtitleEl.classList.contains('typewriter-title--fixed')
-          ? 'clamp(16px,2.5vw,32px)'
-          : 'clamp(12px,2vw,24px)';
-      setCSSVars(subtitleEl, { bottom: `calc(${base} + ${overlap}px)` });
+    const max = parseInt(cs.getPropertyValue('--reserve-lines')) || 6;
+    return Math.max(1, Math.min(max, Math.round(h / lh)));
+  };
+
+  return {
+    reserveFor(text) {
+      const lh = getLineHeight();
+      const lines = measure(text);
+
+      setCSSVars(subtitleEl, {
+        '--lh-px': lh ? `${lh}px` : '0px',
+        '--gap-px': lh ? `${lh * 0.25}px` : '0px',
+        '--lines': String(lines)
+      });
+
+      subtitleEl.setAttribute('data-lines', String(lines));
+      return lines;
     }
-  } catch (e) {
-    // Silent fail
-  }
+  };
 }
 
 export class TypeWriter {
@@ -49,9 +98,6 @@ export class TypeWriter {
     deleteSpeed = 40,
     shuffle: doShuffle = true,
     loop = true,
-    smartBreaks = true,
-    avoidImmediateRepeat = true,
-    containerEl = null,
     onBeforeType = null
   }) {
     if (!textEl || !authorEl || !quotes?.length) {
@@ -70,9 +116,6 @@ export class TypeWriter {
       deleteSpeed,
       shuffle: doShuffle,
       loop,
-      smartBreaks,
-      avoidImmediateRepeat,
-      containerEl,
       onBeforeType,
       timerManager: new TimerManager(),
       _isDeleting: false,
@@ -110,13 +153,7 @@ export class TypeWriter {
 
   _generateQueue(lastIndex) {
     if (this.quotes.length <= 1) return [0];
-    if (!this.avoidImmediateRepeat) return this._createQueue();
-
-    let queue;
-    do {
-      queue = this._createQueue();
-    } while (queue[0] === lastIndex);
-    return queue;
+    return this._createQueue();
   }
 
   _renderText(text) {
@@ -173,7 +210,7 @@ export class TypeWriter {
 
   _handleQuoteTransition() {
     this._isDeleting = false;
-    this.containerEl?.classList.remove('is-locked');
+    // minimal: no container locking
 
     const next = this._nextQuote();
     if (!next) {
@@ -195,12 +232,9 @@ export async function initHeroSubtitle(options = {}) {
 
     if (!subtitleEl || !typedText || !typedAuthor) return false;
 
-    const [{ makeLineMeasurer }, { default: quotes }] = await Promise.all([
-      import('./TypeWriterZeilen.js'),
-      import('./TypeWriterText.js')
-    ]);
+    const { default: quotes } = await import('./TypeWriterText.js');
 
-    if (!makeLineMeasurer || !quotes?.length) return false;
+    if (!quotes?.length) return false;
 
     let cfg = {};
     if (options.heroDataModule?.typewriterConfig) {
@@ -213,6 +247,26 @@ export async function initHeroSubtitle(options = {}) {
 
     const measurer = makeLineMeasurer(subtitleEl);
 
+    // Local helper to check and adjust bottom spacing to prevent footer overlap
+    const checkFooterOverlap = (el) => {
+      try {
+        el.style.removeProperty('bottom');
+        const rect = el.getBoundingClientRect();
+        const footer = document.querySelector('#site-footer');
+        if (!footer) return;
+        const fRect = footer.getBoundingClientRect();
+        const overlap = Math.max(0, rect.bottom - (fRect.top - 24));
+        if (overlap > 0) {
+          const base = document.body.classList.contains('footer-expanded')
+            ? 'clamp(8px,1.5vw,16px)'
+            : el.classList.contains('typewriter-title--fixed')
+              ? 'clamp(16px,2.5vw,32px)'
+              : 'clamp(12px,2vw,24px)';
+          setCSSVars(el, { bottom: `calc(${base} + ${overlap}px)` });
+        }
+      } catch (e) {}
+    };
+
     const start = () => {
       const tw = new TypeWriter({
         textEl: typedText,
@@ -223,12 +277,11 @@ export async function initHeroSubtitle(options = {}) {
         deleteSpeed: 40,
         shuffle: true,
         loop: true,
-        smartBreaks: true,
+        // minimal: don't use smart breaks here
         ...cfg,
-        containerEl: subtitleEl,
         onBeforeType: (text) => {
           subtitleEl.classList.add('is-locked');
-          const lines = measurer.reserveFor(text, true);
+          const lines = measurer.reserveFor(text);
           const cs = getComputedStyle(subtitleEl);
           const lh = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
           const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
@@ -236,10 +289,32 @@ export async function initHeroSubtitle(options = {}) {
           setCSSVars(subtitleEl, {
             '--box-h': `${Math.max(0, lines * lh + (lines - 1) * gap)}px`
           });
-
-          checkFooterOverlap(subtitleEl);
+          // Use rAF to ensure layout is updated before measuring
+          requestAnimationFrame(() => checkFooterOverlap(subtitleEl));
         }
       });
+
+      // Remove lock after typing ends (released for next measure)
+      document.addEventListener('hero:typingEnd', () => {
+        try {
+          subtitleEl.classList.remove('is-locked');
+        } catch (e) {}
+      });
+
+      // Robust polling to fix race conditions on initial load
+      const pollOverlap = () => {
+        checkFooterOverlap(subtitleEl);
+      };
+
+      // Check immediately, then poll for a short duration
+      pollOverlap();
+      const pollInterval = setInterval(pollOverlap, 100);
+      setTimeout(() => clearInterval(pollInterval), 2000);
+
+      // Also check when footer explicitly reports loaded
+      document.addEventListener('footer:loaded', pollOverlap, { once: true });
+      // And on resize
+      window.addEventListener('resize', () => requestAnimationFrame(pollOverlap), { passive: true });
 
       if (window.location.search.includes('debug')) window.__typeWriter = tw;
     };
