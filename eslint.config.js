@@ -26,6 +26,12 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/**', 'content/img/**', 'content/fonts/**', 'pages/**/*.html', 'content/vendor/**'],
+    ignores: [
+      'node_modules/**',
+      'content/img/**',
+      'content/fonts/**',
+      'pages/**/*.html',
+      'content/vendor/**',
+    ],
   },
 ];
