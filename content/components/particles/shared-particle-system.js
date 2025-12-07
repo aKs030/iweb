@@ -19,7 +19,7 @@ const log = createLogger('sharedParticleSystem');
 
 // ===== Shared Configuration =====
 
-export const SHARED_CONFIG = {
+const SHARED_CONFIG = {
   PERFORMANCE: {
     THROTTLE_MS: 20
   },
@@ -67,7 +67,7 @@ const sharedState = new SharedParticleState();
 
 // ===== Parallax Manager =====
 
-export class SharedParallaxManager {
+class SharedParallaxManager {
   constructor() {
     this.isActive = false;
     this.handlers = new Set();
@@ -152,7 +152,7 @@ export class SharedParallaxManager {
 
 // ===== Cleanup Manager =====
 
-export class SharedCleanupManager {
+class SharedCleanupManager {
   constructor() {
     this.cleanupFunctions = new Map();
   }
