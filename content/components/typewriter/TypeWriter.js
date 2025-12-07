@@ -33,7 +33,13 @@ function makeLineMeasurer(subtitleEl) {
     'text-rendering',
     'word-break',
     'overflow-wrap',
-    'hyphens'
+    'hyphens',
+    'max-width',
+    'padding-left',
+    'padding-right',
+    'border-left-width',
+    'border-right-width',
+    'box-sizing'
   ].forEach((p) => measurer.style.setProperty(p, cs.getPropertyValue(p)));
 
   const getLineHeight = () => {
@@ -51,17 +57,27 @@ function makeLineMeasurer(subtitleEl) {
     return measurer.firstChild.getBoundingClientRect().height || 0;
   };
 
+  const getAvailableWidth = () => {
+    const rect = subtitleEl.getBoundingClientRect();
+    // Calculate space from left edge to right edge of screen (minus margin)
+    const screenAvailable = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
+    
+    // Get CSS max-width (resolved to px)
+    const cssMax = parseFloat(cs.maxWidth);
+    const maxWidth = isNaN(cssMax) ? 820 : cssMax;
+    
+    // Use the smaller of screen availability or CSS max-width
+    // Subtract 2px for safety against rounding errors
+    return Math.max(1, Math.min(screenAvailable, maxWidth) - 2);
+  };
+
   const measure = (text) => {
     measurer.innerHTML = '';
     const span = document.createElement('span');
     span.textContent = text;
 
     measurer.appendChild(span);
-
-    const rect = subtitleEl.getBoundingClientRect();
-    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
-    const cap = Math.min(window.innerWidth * 0.92, 820);
-    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + 'px';
+    measurer.style.width = getAvailableWidth() + 'px';
 
     const lh = getLineHeight();
     const h = span.getBoundingClientRect().height;
@@ -71,10 +87,47 @@ function makeLineMeasurer(subtitleEl) {
     return Math.max(1, Math.min(max, Math.round(h / lh)));
   };
 
+  const getLines = (text) => {
+    measurer.innerHTML = '';
+    const words = text.split(' ');
+    let lines = [];
+    let currentLine = [];
+
+    measurer.style.width = getAvailableWidth() + 'px';
+
+    const lh = getLineHeight();
+    if (!lh) return [text];
+
+    words.forEach((word) => {
+      const testLine = currentLine.length ? currentLine.join(' ') + ' ' + word : word;
+      measurer.textContent = testLine;
+      
+      if (measurer.getBoundingClientRect().height > lh * 1.1) {
+        if (currentLine.length) {
+          lines.push(currentLine.join(' '));
+          currentLine = [word];
+        } else {
+          lines.push(word);
+          currentLine = [];
+        }
+      } else {
+        currentLine.push(word);
+      }
+    });
+    
+    if (currentLine.length) {
+      lines.push(currentLine.join(' '));
+    }
+    
+    return lines.length ? lines : [text];
+  };
+
   return {
+    getLines,
     reserveFor(text) {
       const lh = getLineHeight();
-      const lines = measure(text);
+      const linesArr = getLines(text);
+      const lines = linesArr.length;
 
       setCSSVars(subtitleEl, {
         '--lh-px': lh ? `${lh}px` : '0px',
@@ -127,7 +180,10 @@ export class TypeWriter {
     this._current = this.quotes[this._index];
 
     document.body.classList.add('has-typingjs');
-    this.onBeforeType?.(this._current.text);
+    if (this.onBeforeType) {
+      const res = this.onBeforeType(this._current.text);
+      if (typeof res === 'string') this._current.text = res;
+    }
     this._tick();
   }
 
@@ -158,7 +214,15 @@ export class TypeWriter {
 
   _renderText(text) {
     if (!this.textEl) return;
-    this.textEl.textContent = text;
+    
+    const lines = text.includes('\n') ? text.split('\n') : [text];
+    this.textEl.innerHTML = '';
+    lines.forEach((line) => {
+      const span = document.createElement('span');
+      span.textContent = line;
+      span.className = 'typed-line';
+      this.textEl.appendChild(span);
+    });
   }
 
   _tick() {
@@ -218,7 +282,10 @@ export class TypeWriter {
       return null;
     }
 
-    this.onBeforeType?.(next.text);
+    if (this.onBeforeType) {
+      const res = this.onBeforeType(next.text);
+      if (typeof res === 'string') next.text = res;
+    }
     return 600;
   }
 }
@@ -281,6 +348,11 @@ export async function initHeroSubtitle(options = {}) {
         ...cfg,
         onBeforeType: (text) => {
           subtitleEl.classList.add('is-locked');
+          
+          // Calculate lines and format text with newlines
+          const linesArr = measurer.getLines(text);
+          const formattedText = linesArr.join('\n');
+          
           const lines = measurer.reserveFor(text);
           const cs = getComputedStyle(subtitleEl);
           const lh = parseFloat(cs.getPropertyValue('--lh-px')) || 0;
@@ -291,6 +363,8 @@ export async function initHeroSubtitle(options = {}) {
           });
           // Use rAF to ensure layout is updated before measuring
           requestAnimationFrame(() => checkFooterOverlap(subtitleEl));
+          
+          return formattedText;
         }
       });
 
