@@ -26,6 +26,7 @@
   transition:
     opacity 0.45s ease,
     transform 0.45s ease;
+
   /* Ensure the typewriter is displayed above the footer component (footer z-index is high)
      Use a higher explicit z-index to keep the text visible above the footer overlay */
   z-index: calc(var(--z-footer, 1000) + 10);
