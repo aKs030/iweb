@@ -67,7 +67,9 @@
   font-weight: 300;
   font-size: 0.82em;
   line-height: 1.18;
-  display: inline;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-px);
   color: var(--text-secondary, #b0b0b0);
   text-shadow: none;
   white-space: normal;
@@ -85,7 +87,7 @@
 }
 
 /* TypeWriter Cursor Animation */
-.typewriter-title .typed-text::after {
+.typewriter-title .typed-text .typed-line:last-child::after {
   content: '';
   display: inline-block;
   width: 0;
