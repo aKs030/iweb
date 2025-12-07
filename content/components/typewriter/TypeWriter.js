@@ -222,13 +222,17 @@ export async function initHeroSubtitle(options = {}) {
 
           // Footer overlap check
           try {
+            // Reset bottom first to measure natural position
+            subtitleEl.style.removeProperty('bottom');
+
             const rect = subtitleEl.getBoundingClientRect();
             const footer = document.querySelector('#site-footer');
             if (!footer) return;
 
             const fRect = footer.getBoundingClientRect();
-            const overlap = Math.max(0, rect.bottom - (fRect.top - 8));
-
+            // Ensure at least 24px distance to footer
+            const overlap = Math.max(0, rect.bottom - (fRect.top - 24));
+            
             if (overlap > 0) {
               const base = document.body.classList.contains('footer-expanded')
                 ? 'clamp(8px,1.5vw,16px)'
@@ -236,8 +240,6 @@ export async function initHeroSubtitle(options = {}) {
                   ? 'clamp(16px,2.5vw,32px)'
                   : 'clamp(12px,2vw,24px)';
               setCSSVars(subtitleEl, { bottom: `calc(${base} + ${overlap}px)` });
-            } else {
-              subtitleEl.style.removeProperty('bottom');
             }
           } catch {}
         }
