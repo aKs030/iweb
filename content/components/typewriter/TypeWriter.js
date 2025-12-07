@@ -33,13 +33,7 @@ function makeLineMeasurer(subtitleEl) {
     'text-rendering',
     'word-break',
     'overflow-wrap',
-    'hyphens',
-    'max-width',
-    'padding-left',
-    'padding-right',
-    'border-left-width',
-    'border-right-width',
-    'box-sizing'
+    'hyphens'
   ].forEach((p) => measurer.style.setProperty(p, cs.getPropertyValue(p)));
 
   const getLineHeight = () => {
@@ -57,27 +51,17 @@ function makeLineMeasurer(subtitleEl) {
     return measurer.firstChild.getBoundingClientRect().height || 0;
   };
 
-  const getAvailableWidth = () => {
-    const rect = subtitleEl.getBoundingClientRect();
-    // Calculate space from left edge to right edge of screen (minus margin)
-    const screenAvailable = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
-    
-    // Get CSS max-width (resolved to px)
-    const cssMax = parseFloat(cs.maxWidth);
-    const maxWidth = isNaN(cssMax) ? 820 : cssMax;
-    
-    // Use the smaller of screen availability or CSS max-width
-    // Subtract 2px for safety against rounding errors
-    return Math.max(1, Math.min(screenAvailable, maxWidth) - 2);
-  };
-
   const measure = (text) => {
     measurer.innerHTML = '';
     const span = document.createElement('span');
     span.textContent = text;
 
     measurer.appendChild(span);
-    measurer.style.width = getAvailableWidth() + 'px';
+
+    const rect = subtitleEl.getBoundingClientRect();
+    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
+    const cap = Math.min(window.innerWidth * 0.92, 820);
+    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + 'px';
 
     const lh = getLineHeight();
     const h = span.getBoundingClientRect().height;
@@ -93,7 +77,10 @@ function makeLineMeasurer(subtitleEl) {
     let lines = [];
     let currentLine = [];
 
-    measurer.style.width = getAvailableWidth() + 'px';
+    const rect = subtitleEl.getBoundingClientRect();
+    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
+    const cap = Math.min(window.innerWidth * 0.92, 820);
+    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + 'px';
 
     const lh = getLineHeight();
     if (!lh) return [text];
