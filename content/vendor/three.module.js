@@ -524,7 +524,7 @@ const _lut = [
   'fc',
   'fd',
   'fe',
-  'ff'
+  'ff',
 ];
 
 let _seed = 1234567;
@@ -721,7 +721,7 @@ function setQuaternionFromProperEuler(q, a, b, c, order) {
 
     default:
       console.warn(
-        'THREE.MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: ' + order
+        'THREE.MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: ' + order,
       );
   }
 }
@@ -806,7 +806,7 @@ const MathUtils = {
   floorPowerOfTwo: floorPowerOfTwo,
   setQuaternionFromProperEuler: setQuaternionFromProperEuler,
   normalize: normalize,
-  denormalize: denormalize
+  denormalize: denormalize,
 };
 
 class Vector2 {
@@ -1410,7 +1410,7 @@ class Matrix3 {
       -sy * (-s * cx + c * cy) + cy + ty,
       0,
       0,
-      1
+      1,
     );
 
     return this;
@@ -1530,7 +1530,7 @@ const TYPED_ARRAYS = {
   Int32Array: Int32Array,
   Uint32Array: Uint32Array,
   Float32Array: Float32Array,
-  Float64Array: Float64Array
+  Float64Array: Float64Array,
 };
 
 function getTypedArray(type, buffer) {
@@ -1572,11 +1572,11 @@ function LinearToSRGB(c) {
  */
 
 const LINEAR_SRGB_TO_LINEAR_DISPLAY_P3 = /*@__PURE__*/ new Matrix3().fromArray([
-  0.8224621, 0.0331941, 0.0170827, 0.177538, 0.9668058, 0.0723974, -0.0000001, 0.0000001, 0.9105199
+  0.8224621, 0.0331941, 0.0170827, 0.177538, 0.9668058, 0.0723974, -0.0000001, 0.0000001, 0.9105199,
 ]);
 
 const LINEAR_DISPLAY_P3_TO_LINEAR_SRGB = /*@__PURE__*/ new Matrix3().fromArray([
-  1.2249401, -0.0420569, -0.0196376, -0.2249404, 1.0420571, -0.0786361, 0.0000001, 0.0, 1.0982735
+  1.2249401, -0.0420569, -0.0196376, -0.2249404, 1.0420571, -0.0786361, 0.0000001, 0.0, 1.0982735,
 ]);
 
 function DisplayP3ToLinearSRGB(color) {
@@ -1593,14 +1593,14 @@ function LinearSRGBToDisplayP3(color) {
 const TO_LINEAR = {
   [LinearSRGBColorSpace]: (color) => color,
   [SRGBColorSpace]: (color) => color.convertSRGBToLinear(),
-  [DisplayP3ColorSpace]: DisplayP3ToLinearSRGB
+  [DisplayP3ColorSpace]: DisplayP3ToLinearSRGB,
 };
 
 // Conversions to <target> from Linear-sRGB reference space.
 const FROM_LINEAR = {
   [LinearSRGBColorSpace]: (color) => color,
   [SRGBColorSpace]: (color) => color.convertLinearToSRGB(),
-  [DisplayP3ColorSpace]: LinearSRGBToDisplayP3
+  [DisplayP3ColorSpace]: LinearSRGBToDisplayP3,
 };
 
 const ColorManagement = {
@@ -1641,7 +1641,7 @@ const ColorManagement = {
 
     if (sourceToLinear === undefined || targetFromLinear === undefined) {
       throw new Error(
-        `Unsupported color space conversion, "${sourceColorSpace}" to "${targetColorSpace}".`
+        `Unsupported color space conversion, "${sourceColorSpace}" to "${targetColorSpace}".`,
       );
     }
 
@@ -1654,7 +1654,7 @@ const ColorManagement = {
 
   toWorkingColorSpace: function (color, sourceColorSpace) {
     return this.convert(color, sourceColorSpace, this.workingColorSpace);
-  }
+  },
 };
 
 let _canvas;
@@ -1693,7 +1693,7 @@ class ImageUtils {
     if (canvas.width > 2048 || canvas.height > 2048) {
       console.warn(
         'THREE.ImageUtils.getDataURL: Image converted to jpg for performance reasons',
-        image
+        image,
       );
 
       return canvas.toDataURL('image/jpeg', 0.6);
@@ -1742,11 +1742,11 @@ class ImageUtils {
       return {
         data: data,
         width: image.width,
-        height: image.height
+        height: image.height,
       };
     } else {
       console.warn(
-        'THREE.ImageUtils.sRGBToLinear(): Unsupported image type. No color space conversion applied.'
+        'THREE.ImageUtils.sRGBToLinear(): Unsupported image type. No color space conversion applied.',
       );
       return image;
     }
@@ -1781,7 +1781,7 @@ class Source {
 
     const output = {
       uuid: this.uuid,
-      url: ''
+      url: '',
     };
 
     const data = this.data;
@@ -1835,7 +1835,7 @@ function serializeImage(image) {
         data: Array.from(image.data),
         width: image.width,
         height: image.height,
-        type: image.data.constructor.name
+        type: image.data.constructor.name,
       };
     } else {
       console.warn('THREE.Texture: Unable to serialize Texture.');
@@ -1857,7 +1857,7 @@ class Texture extends EventDispatcher {
     format = RGBAFormat,
     type = UnsignedByteType,
     anisotropy = Texture.DEFAULT_ANISOTROPY,
-    colorSpace = NoColorSpace
+    colorSpace = NoColorSpace,
   ) {
     super();
 
@@ -1934,7 +1934,7 @@ class Texture extends EventDispatcher {
       this.repeat.y,
       this.rotation,
       this.center.x,
-      this.center.y
+      this.center.y,
     );
   }
 
@@ -1995,7 +1995,7 @@ class Texture extends EventDispatcher {
       metadata: {
         version: 4.6,
         type: 'Texture',
-        generator: 'Texture.toJSON'
+        generator: 'Texture.toJSON',
       },
 
       uuid: this.uuid,
@@ -2026,7 +2026,7 @@ class Texture extends EventDispatcher {
 
       generateMipmaps: this.generateMipmaps,
       premultiplyAlpha: this.premultiplyAlpha,
-      unpackAlignment: this.unpackAlignment
+      unpackAlignment: this.unpackAlignment,
     };
 
     if (Object.keys(this.userData).length > 0) output.userData = this.userData;
@@ -2459,7 +2459,7 @@ class Vector4 {
     // as we have reached here there are no singularities so we can handle normally
 
     let s = Math.sqrt(
-      (m32 - m23) * (m32 - m23) + (m13 - m31) * (m13 - m31) + (m21 - m12) * (m21 - m12)
+      (m32 - m23) * (m32 - m23) + (m13 - m31) * (m13 - m31) + (m21 - m12) * (m21 - m12),
     ); // used to normalize
 
     if (Math.abs(s) < 0.001) s = 1;
@@ -2692,7 +2692,7 @@ class RenderTarget extends EventDispatcher {
       options.format,
       options.type,
       options.anisotropy,
-      options.colorSpace
+      options.colorSpace,
     );
     this.texture.isRenderTargetTexture = true;
 
@@ -3429,7 +3429,7 @@ class Quaternion {
       sqrt1u1 * Math.cos(u2),
       sqrtu1 * Math.sin(u3),
       sqrtu1 * Math.cos(u3),
-      sqrt1u1 * Math.sin(u2)
+      sqrt1u1 * Math.sin(u2),
     );
   }
 
@@ -4087,7 +4087,7 @@ const _quaternion$4 = /*@__PURE__*/ new Quaternion();
 class Box3 {
   constructor(
     min = new Vector3(+Infinity, +Infinity, +Infinity),
-    max = new Vector3(-Infinity, -Infinity, -Infinity)
+    max = new Vector3(-Infinity, -Infinity, -Infinity),
   ) {
     this.isBox3 = true;
 
@@ -4282,7 +4282,7 @@ class Box3 {
     return target.set(
       (point.x - this.min.x) / (this.max.x - this.min.x),
       (point.y - this.min.y) / (this.max.y - this.min.y),
-      (point.z - this.min.z) / (this.max.z - this.min.z)
+      (point.z - this.min.z) / (this.max.z - this.min.z),
     );
   }
 
@@ -4388,7 +4388,7 @@ class Box3 {
       0,
       -_f2.y,
       _f2.x,
-      0
+      0,
     ];
     if (!satForAxes(axes, _v0$2, _v1$7, _v2$4, _extents)) {
       return false;
@@ -4484,7 +4484,7 @@ const _points = [
   /*@__PURE__*/ new Vector3(),
   /*@__PURE__*/ new Vector3(),
   /*@__PURE__*/ new Vector3(),
-  /*@__PURE__*/ new Vector3()
+  /*@__PURE__*/ new Vector3(),
 ];
 
 const _vector$a = /*@__PURE__*/ new Vector3();
@@ -5200,7 +5200,7 @@ class Matrix4 {
       0,
       0,
       0,
-      1
+      1,
     );
 
     return this;
@@ -5866,7 +5866,7 @@ class Matrix4 {
       0,
       0,
       0,
-      1
+      1,
     );
 
     return this;
@@ -5992,7 +5992,7 @@ class Matrix4 {
       d = (-far * near) / (far - near);
     } else {
       throw new Error(
-        'THREE.Matrix4.makePerspective(): Invalid coordinate system: ' + coordinateSystem
+        'THREE.Matrix4.makePerspective(): Invalid coordinate system: ' + coordinateSystem,
       );
     }
 
@@ -6035,7 +6035,7 @@ class Matrix4 {
       zInv = -1 * p;
     } else {
       throw new Error(
-        'THREE.Matrix4.makeOrthographic(): Invalid coordinate system: ' + coordinateSystem
+        'THREE.Matrix4.makeOrthographic(): Invalid coordinate system: ' + coordinateSystem,
       );
     }
 
@@ -6283,7 +6283,7 @@ class Euler {
 
       default:
         console.warn(
-          'THREE.Euler: .setFromRotationMatrix() encountered an unknown order: ' + order
+          'THREE.Euler: .setFromRotationMatrix() encountered an unknown order: ' + order,
         );
     }
 
@@ -6453,29 +6453,29 @@ class Object3D extends EventDispatcher {
       position: {
         configurable: true,
         enumerable: true,
-        value: position
+        value: position,
       },
       rotation: {
         configurable: true,
         enumerable: true,
-        value: rotation
+        value: rotation,
       },
       quaternion: {
         configurable: true,
         enumerable: true,
-        value: quaternion
+        value: quaternion,
       },
       scale: {
         configurable: true,
         enumerable: true,
-        value: scale
+        value: scale,
       },
       modelViewMatrix: {
-        value: new Matrix4()
+        value: new Matrix4(),
       },
       normalMatrix: {
-        value: new Matrix3()
-      }
+        value: new Matrix3(),
+      },
     });
 
     this.matrix = new Matrix4();
@@ -6925,13 +6925,13 @@ class Object3D extends EventDispatcher {
         shapes: {},
         skeletons: {},
         animations: {},
-        nodes: {}
+        nodes: {},
       };
 
       output.metadata = {
         version: 4.6,
         type: 'Object',
-        generator: 'Object3D.toJSON'
+        generator: 'Object3D.toJSON',
       };
     }
 
@@ -7542,7 +7542,7 @@ class Material extends EventDispatcher {
     if (isRootObject) {
       meta = {
         textures: {},
-        images: {}
+        images: {},
       };
     }
 
@@ -7550,8 +7550,8 @@ class Material extends EventDispatcher {
       metadata: {
         version: 4.6,
         type: 'Material',
-        generator: 'Material.toJSON'
-      }
+        generator: 'Material.toJSON',
+      },
     };
 
     // standard Material serialization
@@ -8001,7 +8001,7 @@ const _colorKeywords = {
   white: 0xffffff,
   whitesmoke: 0xf5f5f5,
   yellow: 0xffff00,
-  yellowgreen: 0x9acd32
+  yellowgreen: 0x9acd32,
 };
 
 const _hslA = { h: 0, s: 0, l: 0 };
@@ -8122,7 +8122,7 @@ class Color {
         case 'rgba':
           if (
             (color = /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(
-              components
+              components,
             ))
           ) {
             // rgb(255,0,0) rgba(255,0,0,0.5)
@@ -8133,13 +8133,13 @@ class Color {
               Math.min(255, parseInt(color[1], 10)) / 255,
               Math.min(255, parseInt(color[2], 10)) / 255,
               Math.min(255, parseInt(color[3], 10)) / 255,
-              colorSpace
+              colorSpace,
             );
           }
 
           if (
             (color = /^\s*(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(
-              components
+              components,
             ))
           ) {
             // rgb(100%,0%,0%) rgba(100%,0%,0%,0.5)
@@ -8150,7 +8150,7 @@ class Color {
               Math.min(100, parseInt(color[1], 10)) / 100,
               Math.min(100, parseInt(color[2], 10)) / 100,
               Math.min(100, parseInt(color[3], 10)) / 100,
-              colorSpace
+              colorSpace,
             );
           }
 
@@ -8161,7 +8161,7 @@ class Color {
           if (
             (color =
               /^\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)\%\s*,\s*(\d*\.?\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(
-                components
+                components,
               ))
           ) {
             // hsl(120,50%,50%) hsla(120,50%,50%,0.5)
@@ -8172,7 +8172,7 @@ class Color {
               parseFloat(color[1]) / 360,
               parseFloat(color[2]) / 100,
               parseFloat(color[3]) / 100,
-              colorSpace
+              colorSpace,
             );
           }
 
@@ -8193,7 +8193,7 @@ class Color {
           parseInt(hex.charAt(0), 16) / 15,
           parseInt(hex.charAt(1), 16) / 15,
           parseInt(hex.charAt(2), 16) / 15,
-          colorSpace
+          colorSpace,
         );
       } else if (size === 6) {
         // #ff0000
@@ -8677,7 +8677,7 @@ function _generateTables() {
     shiftTable: shiftTable,
     mantissaTable: mantissaTable,
     exponentTable: exponentTable,
-    offsetTable: offsetTable
+    offsetTable: offsetTable,
   };
 }
 
@@ -8705,7 +8705,7 @@ function fromHalfFloat(val) {
 
 const DataUtils = {
   toHalfFloat: toHalfFloat,
-  fromHalfFloat: fromHalfFloat
+  fromHalfFloat: fromHalfFloat,
 };
 
 const _vector$8 = /*@__PURE__*/ new Vector3();
@@ -8981,7 +8981,7 @@ class BufferAttribute {
       itemSize: this.itemSize,
       type: this.array.constructor.name,
       array: Array.from(this.array),
-      normalized: this.normalized
+      normalized: this.normalized,
     };
 
     if (this.name !== '') data.name = this.name;
@@ -9215,7 +9215,7 @@ class BufferGeometry extends EventDispatcher {
     if (Array.isArray(index)) {
       this.index = new (arrayNeedsUint32(index) ? Uint32BufferAttribute : Uint16BufferAttribute)(
         index,
-        1
+        1,
       );
     } else {
       this.index = index;
@@ -9248,7 +9248,7 @@ class BufferGeometry extends EventDispatcher {
     this.groups.push({
       start: start,
       count: count,
-      materialIndex: materialIndex
+      materialIndex: materialIndex,
     });
   }
 
@@ -9401,12 +9401,12 @@ class BufferGeometry extends EventDispatcher {
     if (position && position.isGLBufferAttribute) {
       console.error(
         'THREE.BufferGeometry.computeBoundingBox(): GLBufferAttribute requires a manual bounding box. Alternatively set "mesh.frustumCulled" to "false".',
-        this
+        this,
       );
 
       this.boundingBox.set(
         new Vector3(-Infinity, -Infinity, -Infinity),
-        new Vector3(+Infinity, +Infinity, +Infinity)
+        new Vector3(+Infinity, +Infinity, +Infinity),
       );
 
       return;
@@ -9445,7 +9445,7 @@ class BufferGeometry extends EventDispatcher {
     ) {
       console.error(
         'THREE.BufferGeometry.computeBoundingBox(): Computed min/max have NaN values. The "position" attribute is likely to have NaN values.',
-        this
+        this,
       );
     }
   }
@@ -9461,7 +9461,7 @@ class BufferGeometry extends EventDispatcher {
     if (position && position.isGLBufferAttribute) {
       console.error(
         'THREE.BufferGeometry.computeBoundingSphere(): GLBufferAttribute requires a manual bounding sphere. Alternatively set "mesh.frustumCulled" to "false".',
-        this
+        this,
       );
 
       this.boundingSphere.set(new Vector3(), Infinity);
@@ -9534,7 +9534,7 @@ class BufferGeometry extends EventDispatcher {
       if (isNaN(this.boundingSphere.radius)) {
         console.error(
           'THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The "position" attribute is likely to have NaN values.',
-          this
+          this,
         );
       }
     }
@@ -9554,7 +9554,7 @@ class BufferGeometry extends EventDispatcher {
       attributes.uv === undefined
     ) {
       console.error(
-        'THREE.BufferGeometry: .computeTangents() failed. Missing required attributes (index, position, normal or uv)'
+        'THREE.BufferGeometry: .computeTangents() failed. Missing required attributes (index, position, normal or uv)',
       );
       return;
     }
@@ -9628,8 +9628,8 @@ class BufferGeometry extends EventDispatcher {
       groups = [
         {
           start: 0,
-          count: indices.length
-        }
+          count: indices.length,
+        },
       ];
     }
 
@@ -9863,8 +9863,8 @@ class BufferGeometry extends EventDispatcher {
       metadata: {
         version: 4.6,
         type: 'BufferGeometry',
-        generator: 'BufferGeometry.toJSON'
-      }
+        generator: 'BufferGeometry.toJSON',
+      },
     };
 
     // standard BufferGeometry serialization
@@ -9893,7 +9893,7 @@ class BufferGeometry extends EventDispatcher {
     if (index !== null) {
       data.data.index = {
         type: index.array.constructor.name,
-        array: Array.prototype.slice.call(index.array)
+        array: Array.prototype.slice.call(index.array),
       };
     }
 
@@ -9942,7 +9942,7 @@ class BufferGeometry extends EventDispatcher {
     if (boundingSphere !== null) {
       data.data.boundingSphere = {
         center: boundingSphere.center.toArray(),
-        radius: boundingSphere.radius
+        radius: boundingSphere.radius,
       };
     }
 
@@ -10224,7 +10224,7 @@ class Mesh extends Object3D {
           const start = Math.max(group.start, drawRange.start);
           const end = Math.min(
             index.count,
-            Math.min(group.start + group.count, drawRange.start + drawRange.count)
+            Math.min(group.start + group.count, drawRange.start + drawRange.count),
           );
 
           for (let j = start, jl = end; j < jl; j += 3) {
@@ -10242,7 +10242,7 @@ class Mesh extends Object3D {
               normal,
               a,
               b,
-              c
+              c,
             );
 
             if (intersection) {
@@ -10271,7 +10271,7 @@ class Mesh extends Object3D {
             normal,
             a,
             b,
-            c
+            c,
           );
 
           if (intersection) {
@@ -10291,7 +10291,7 @@ class Mesh extends Object3D {
           const start = Math.max(group.start, drawRange.start);
           const end = Math.min(
             position.count,
-            Math.min(group.start + group.count, drawRange.start + drawRange.count)
+            Math.min(group.start + group.count, drawRange.start + drawRange.count),
           );
 
           for (let j = start, jl = end; j < jl; j += 3) {
@@ -10309,7 +10309,7 @@ class Mesh extends Object3D {
               normal,
               a,
               b,
-              c
+              c,
             );
 
             if (intersection) {
@@ -10338,7 +10338,7 @@ class Mesh extends Object3D {
             normal,
             a,
             b,
-            c
+            c,
           );
 
           if (intersection) {
@@ -10372,7 +10372,7 @@ function checkIntersection(object, material, raycaster, ray, pA, pB, pC, point) 
   return {
     distance: distance,
     point: _intersectionPointWorld.clone(),
-    object: object
+    object: object,
   };
 }
 
@@ -10389,7 +10389,7 @@ function checkGeometryIntersection(object, material, raycaster, ray, uv, uv1, no
     _vA$1,
     _vB$1,
     _vC$1,
-    _intersectionPoint
+    _intersectionPoint,
   );
 
   if (intersection) {
@@ -10406,7 +10406,7 @@ function checkGeometryIntersection(object, material, raycaster, ray, uv, uv1, no
         _uvA$1,
         _uvB$1,
         _uvC$1,
-        new Vector2()
+        new Vector2(),
       );
     }
 
@@ -10423,7 +10423,7 @@ function checkGeometryIntersection(object, material, raycaster, ray, uv, uv1, no
         _uvA$1,
         _uvB$1,
         _uvC$1,
-        new Vector2()
+        new Vector2(),
       );
       intersection.uv2 = intersection.uv1; // @deprecated, r152
     }
@@ -10441,7 +10441,7 @@ function checkGeometryIntersection(object, material, raycaster, ray, uv, uv1, no
         _normalA,
         _normalB,
         _normalC,
-        new Vector3()
+        new Vector3(),
       );
 
       if (intersection.normal.dot(ray.direction) > 0) {
@@ -10454,7 +10454,7 @@ function checkGeometryIntersection(object, material, raycaster, ray, uv, uv1, no
       b: b,
       c: c,
       normal: new Vector3(),
-      materialIndex: 0
+      materialIndex: 0,
     };
 
     Triangle.getNormal(_vA$1, _vB$1, _vC$1, face.normal);
@@ -10472,7 +10472,7 @@ class BoxGeometry extends BufferGeometry {
     depth = 1,
     widthSegments = 1,
     heightSegments = 1,
-    depthSegments = 1
+    depthSegments = 1,
   ) {
     super();
 
@@ -10484,7 +10484,7 @@ class BoxGeometry extends BufferGeometry {
       depth: depth,
       widthSegments: widthSegments,
       heightSegments: heightSegments,
-      depthSegments: depthSegments
+      depthSegments: depthSegments,
     };
 
     const scope = this;
@@ -10631,7 +10631,7 @@ class BoxGeometry extends BufferGeometry {
       data.depth,
       data.widthSegments,
       data.heightSegments,
-      data.depthSegments
+      data.depthSegments,
     );
   }
 }
@@ -10662,7 +10662,7 @@ function cloneUniforms(src) {
       ) {
         if (property.isRenderTargetTexture) {
           console.warn(
-            'UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().'
+            'UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().',
           );
           dst[u][p] = null;
         } else {
@@ -10751,7 +10751,7 @@ class ShaderMaterial extends Material {
       derivatives: false, // set to use derivatives
       fragDepth: false, // set to use fragment depth values
       drawBuffers: false, // set to use draw buffers
-      shaderTextureLOD: false // set to use shader texture LOD
+      shaderTextureLOD: false, // set to use shader texture LOD
     };
 
     // When rendered geometry doesn't include these attributes but the material does,
@@ -10759,7 +10759,7 @@ class ShaderMaterial extends Material {
     this.defaultAttributeValues = {
       color: [1, 1, 1],
       uv: [0, 0],
-      uv1: [0, 0]
+      uv1: [0, 0],
     };
 
     this.index0AttributeName = undefined;
@@ -10810,41 +10810,41 @@ class ShaderMaterial extends Material {
       if (value && value.isTexture) {
         data.uniforms[name] = {
           type: 't',
-          value: value.toJSON(meta).uuid
+          value: value.toJSON(meta).uuid,
         };
       } else if (value && value.isColor) {
         data.uniforms[name] = {
           type: 'c',
-          value: value.getHex()
+          value: value.getHex(),
         };
       } else if (value && value.isVector2) {
         data.uniforms[name] = {
           type: 'v2',
-          value: value.toArray()
+          value: value.toArray(),
         };
       } else if (value && value.isVector3) {
         data.uniforms[name] = {
           type: 'v3',
-          value: value.toArray()
+          value: value.toArray(),
         };
       } else if (value && value.isVector4) {
         data.uniforms[name] = {
           type: 'v4',
-          value: value.toArray()
+          value: value.toArray(),
         };
       } else if (value && value.isMatrix3) {
         data.uniforms[name] = {
           type: 'm3',
-          value: value.toArray()
+          value: value.toArray(),
         };
       } else if (value && value.isMatrix4) {
         data.uniforms[name] = {
           type: 'm4',
-          value: value.toArray()
+          value: value.toArray(),
         };
       } else {
         data.uniforms[name] = {
-          value: value
+          value: value,
         };
 
         // note: the array variants v2v, v3v, v4v, m4v and tv are not supported so far
@@ -11053,7 +11053,7 @@ class PerspectiveCamera extends Camera {
         offsetX: 0,
         offsetY: 0,
         width: 1,
-        height: 1
+        height: 1,
       };
     }
 
@@ -11104,7 +11104,7 @@ class PerspectiveCamera extends Camera {
       top - height,
       near,
       this.far,
-      this.coordinateSystem
+      this.coordinateSystem,
     );
 
     this.projectionMatrixInverse.copy(this.projectionMatrix).invert();
@@ -11215,7 +11215,7 @@ class CubeCamera extends Object3D {
       cameraNZ.lookAt(0, 0, -1);
     } else {
       throw new Error(
-        'THREE.CubeCamera.updateCoordinateSystem(): Invalid coordinate system: ' + coordinateSystem
+        'THREE.CubeCamera.updateCoordinateSystem(): Invalid coordinate system: ' + coordinateSystem,
       );
     }
 
@@ -11288,7 +11288,7 @@ class CubeTexture extends Texture {
     format,
     type,
     anisotropy,
-    colorSpace
+    colorSpace,
   ) {
     images = images !== undefined ? images : [];
     mapping = mapping !== undefined ? mapping : CubeReflectionMapping;
@@ -11303,7 +11303,7 @@ class CubeTexture extends Texture {
       format,
       type,
       anisotropy,
-      colorSpace
+      colorSpace,
     );
 
     this.isCubeTexture = true;
@@ -11332,7 +11332,7 @@ class WebGLCubeRenderTarget extends WebGLRenderTarget {
     if (options.encoding !== undefined) {
       // @deprecated, r152
       warnOnce(
-        'THREE.WebGLCubeRenderTarget: option.encoding has been replaced by option.colorSpace.'
+        'THREE.WebGLCubeRenderTarget: option.encoding has been replaced by option.colorSpace.',
       );
       options.colorSpace = options.encoding === sRGBEncoding ? SRGBColorSpace : NoColorSpace;
     }
@@ -11347,7 +11347,7 @@ class WebGLCubeRenderTarget extends WebGLRenderTarget {
       options.format,
       options.type,
       options.anisotropy,
-      options.colorSpace
+      options.colorSpace,
     );
 
     // By convention -- likely based on the RenderMan spec from the 1990's -- cube maps are specified by WebGL (and three.js)
@@ -11375,7 +11375,7 @@ class WebGLCubeRenderTarget extends WebGLRenderTarget {
 
     const shader = {
       uniforms: {
-        tEquirect: { value: null }
+        tEquirect: { value: null },
       },
 
       vertexShader: /* glsl */ `
@@ -11415,7 +11415,7 @@ class WebGLCubeRenderTarget extends WebGLRenderTarget {
 					gl_FragColor = texture2D( tEquirect, sampleUV );
 
 				}
-			`
+			`,
     };
 
     const geometry = new BoxGeometry(5, 5, 5);
@@ -11427,7 +11427,7 @@ class WebGLCubeRenderTarget extends WebGLRenderTarget {
       vertexShader: shader.vertexShader,
       fragmentShader: shader.fragmentShader,
       side: BackSide,
-      blending: NoBlending
+      blending: NoBlending,
     });
 
     material.uniforms.tEquirect.value = texture;
@@ -11626,7 +11626,7 @@ class Frustum {
     p2 = new Plane(),
     p3 = new Plane(),
     p4 = new Plane(),
-    p5 = new Plane()
+    p5 = new Plane(),
   ) {
     this.planes = [p0, p1, p2, p3, p4, p5];
   }
@@ -11686,7 +11686,7 @@ class Frustum {
       planes[5].setComponents(me2, me6, me10, me14).normalize();
     } else {
       throw new Error(
-        'THREE.Frustum.setFromProjectionMatrix(): Invalid coordinate system: ' + coordinateSystem
+        'THREE.Frustum.setFromProjectionMatrix(): Invalid coordinate system: ' + coordinateSystem,
       );
     }
 
@@ -11804,7 +11804,7 @@ function WebGLAnimation() {
 
     setContext: function (value) {
       context = value;
-    }
+    },
   };
 }
 
@@ -11834,7 +11834,7 @@ function WebGLAttributes(gl, capabilities) {
           type = gl.HALF_FLOAT;
         } else {
           throw new Error(
-            'THREE.WebGLAttributes: Usage of Float16BufferAttribute requires WebGL2.'
+            'THREE.WebGLAttributes: Usage of Float16BufferAttribute requires WebGL2.',
           );
         }
       } else {
@@ -11860,7 +11860,7 @@ function WebGLAttributes(gl, capabilities) {
       buffer: buffer,
       type: type,
       bytesPerElement: array.BYTES_PER_ELEMENT,
-      version: attribute.version
+      version: attribute.version,
     };
   }
 
@@ -11881,13 +11881,13 @@ function WebGLAttributes(gl, capabilities) {
           updateRange.offset * array.BYTES_PER_ELEMENT,
           array,
           updateRange.offset,
-          updateRange.count
+          updateRange.count,
         );
       } else {
         gl.bufferSubData(
           bufferType,
           updateRange.offset * array.BYTES_PER_ELEMENT,
-          array.subarray(updateRange.offset, updateRange.offset + updateRange.count)
+          array.subarray(updateRange.offset, updateRange.offset + updateRange.count),
         );
       }
 
@@ -11926,7 +11926,7 @@ function WebGLAttributes(gl, capabilities) {
           buffer: attribute.buffer,
           type: attribute.type,
           bytesPerElement: attribute.elementSize,
-          version: attribute.version
+          version: attribute.version,
         });
       }
 
@@ -11949,7 +11949,7 @@ function WebGLAttributes(gl, capabilities) {
   return {
     get: get,
     remove: remove,
-    update: update
+    update: update,
   };
 }
 
@@ -11963,7 +11963,7 @@ class PlaneGeometry extends BufferGeometry {
       width: width,
       height: height,
       widthSegments: widthSegments,
-      heightSegments: heightSegments
+      heightSegments: heightSegments,
     };
 
     const width_half = width / 2;
@@ -12578,7 +12578,7 @@ const ShaderChunk = {
   shadow_vert: vertex$2,
   shadow_frag: fragment$2,
   sprite_vert: vertex$1,
-  sprite_frag: fragment$1
+  sprite_frag: fragment$1,
 };
 
 /**
@@ -12596,12 +12596,12 @@ const UniformsLib = {
     alphaMap: { value: null },
     alphaMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 
-    alphaTest: { value: 0 }
+    alphaTest: { value: 0 },
   },
 
   specularmap: {
     specularMap: { value: null },
-    specularMapTransform: { value: /*@__PURE__*/ new Matrix3() }
+    specularMapTransform: { value: /*@__PURE__*/ new Matrix3() },
   },
 
   envmap: {
@@ -12609,64 +12609,64 @@ const UniformsLib = {
     flipEnvMap: { value: -1 },
     reflectivity: { value: 1.0 }, // basic, lambert, phong
     ior: { value: 1.5 }, // physical
-    refractionRatio: { value: 0.98 } // basic, lambert, phong
+    refractionRatio: { value: 0.98 }, // basic, lambert, phong
   },
 
   aomap: {
     aoMap: { value: null },
     aoMapIntensity: { value: 1 },
-    aoMapTransform: { value: /*@__PURE__*/ new Matrix3() }
+    aoMapTransform: { value: /*@__PURE__*/ new Matrix3() },
   },
 
   lightmap: {
     lightMap: { value: null },
     lightMapIntensity: { value: 1 },
-    lightMapTransform: { value: /*@__PURE__*/ new Matrix3() }
+    lightMapTransform: { value: /*@__PURE__*/ new Matrix3() },
   },
 
   bumpmap: {
     bumpMap: { value: null },
     bumpMapTransform: { value: /*@__PURE__*/ new Matrix3() },
-    bumpScale: { value: 1 }
+    bumpScale: { value: 1 },
   },
 
   normalmap: {
     normalMap: { value: null },
     normalMapTransform: { value: /*@__PURE__*/ new Matrix3() },
-    normalScale: { value: /*@__PURE__*/ new Vector2(1, 1) }
+    normalScale: { value: /*@__PURE__*/ new Vector2(1, 1) },
   },
 
   displacementmap: {
     displacementMap: { value: null },
     displacementMapTransform: { value: /*@__PURE__*/ new Matrix3() },
     displacementScale: { value: 1 },
-    displacementBias: { value: 0 }
+    displacementBias: { value: 0 },
   },
 
   emissivemap: {
     emissiveMap: { value: null },
-    emissiveMapTransform: { value: /*@__PURE__*/ new Matrix3() }
+    emissiveMapTransform: { value: /*@__PURE__*/ new Matrix3() },
   },
 
   metalnessmap: {
     metalnessMap: { value: null },
-    metalnessMapTransform: { value: /*@__PURE__*/ new Matrix3() }
+    metalnessMapTransform: { value: /*@__PURE__*/ new Matrix3() },
   },
 
   roughnessmap: {
     roughnessMap: { value: null },
-    roughnessMapTransform: { value: /*@__PURE__*/ new Matrix3() }
+    roughnessMapTransform: { value: /*@__PURE__*/ new Matrix3() },
   },
 
   gradientmap: {
-    gradientMap: { value: null }
+    gradientMap: { value: null },
   },
 
   fog: {
     fogDensity: { value: 0.00025 },
     fogNear: { value: 1 },
     fogFar: { value: 2000 },
-    fogColor: { value: /*@__PURE__*/ new Color(0xffffff) }
+    fogColor: { value: /*@__PURE__*/ new Color(0xffffff) },
   },
 
   lights: {
@@ -12678,8 +12678,8 @@ const UniformsLib = {
       value: [],
       properties: {
         direction: {},
-        color: {}
-      }
+        color: {},
+      },
     },
 
     directionalLightShadows: {
@@ -12688,8 +12688,8 @@ const UniformsLib = {
         shadowBias: {},
         shadowNormalBias: {},
         shadowRadius: {},
-        shadowMapSize: {}
-      }
+        shadowMapSize: {},
+      },
     },
 
     directionalShadowMap: { value: [] },
@@ -12704,8 +12704,8 @@ const UniformsLib = {
         distance: {},
         coneCos: {},
         penumbraCos: {},
-        decay: {}
-      }
+        decay: {},
+      },
     },
 
     spotLightShadows: {
@@ -12714,8 +12714,8 @@ const UniformsLib = {
         shadowBias: {},
         shadowNormalBias: {},
         shadowRadius: {},
-        shadowMapSize: {}
-      }
+        shadowMapSize: {},
+      },
     },
 
     spotLightMap: { value: [] },
@@ -12728,8 +12728,8 @@ const UniformsLib = {
         color: {},
         position: {},
         decay: {},
-        distance: {}
-      }
+        distance: {},
+      },
     },
 
     pointLightShadows: {
@@ -12740,8 +12740,8 @@ const UniformsLib = {
         shadowRadius: {},
         shadowMapSize: {},
         shadowCameraNear: {},
-        shadowCameraFar: {}
-      }
+        shadowCameraFar: {},
+      },
     },
 
     pointShadowMap: { value: [] },
@@ -12752,8 +12752,8 @@ const UniformsLib = {
       properties: {
         direction: {},
         skyColor: {},
-        groundColor: {}
-      }
+        groundColor: {},
+      },
     },
 
     // TODO (abelnation): RectAreaLight BRDF data needs to be moved from example to main src
@@ -12763,12 +12763,12 @@ const UniformsLib = {
         color: {},
         position: {},
         width: {},
-        height: {}
-      }
+        height: {},
+      },
     },
 
     ltc_1: { value: null },
-    ltc_2: { value: null }
+    ltc_2: { value: null },
   },
 
   points: {
@@ -12780,7 +12780,7 @@ const UniformsLib = {
     alphaMap: { value: null },
     alphaMapTransform: { value: /*@__PURE__*/ new Matrix3() },
     alphaTest: { value: 0 },
-    uvTransform: { value: /*@__PURE__*/ new Matrix3() }
+    uvTransform: { value: /*@__PURE__*/ new Matrix3() },
   },
 
   sprite: {
@@ -12792,8 +12792,8 @@ const UniformsLib = {
     mapTransform: { value: /*@__PURE__*/ new Matrix3() },
     alphaMap: { value: null },
     alphaMapTransform: { value: /*@__PURE__*/ new Matrix3() },
-    alphaTest: { value: 0 }
-  }
+    alphaTest: { value: 0 },
+  },
 };
 
 const ShaderLib = {
@@ -12804,11 +12804,11 @@ const ShaderLib = {
       UniformsLib.envmap,
       UniformsLib.aomap,
       UniformsLib.lightmap,
-      UniformsLib.fog
+      UniformsLib.fog,
     ]),
 
     vertexShader: ShaderChunk.meshbasic_vert,
-    fragmentShader: ShaderChunk.meshbasic_frag
+    fragmentShader: ShaderChunk.meshbasic_frag,
   },
 
   lambert: {
@@ -12825,12 +12825,12 @@ const ShaderLib = {
       UniformsLib.fog,
       UniformsLib.lights,
       {
-        emissive: { value: /*@__PURE__*/ new Color(0x000000) }
-      }
+        emissive: { value: /*@__PURE__*/ new Color(0x000000) },
+      },
     ]),
 
     vertexShader: ShaderChunk.meshlambert_vert,
-    fragmentShader: ShaderChunk.meshlambert_frag
+    fragmentShader: ShaderChunk.meshlambert_frag,
   },
 
   phong: {
@@ -12849,12 +12849,12 @@ const ShaderLib = {
       {
         emissive: { value: /*@__PURE__*/ new Color(0x000000) },
         specular: { value: /*@__PURE__*/ new Color(0x111111) },
-        shininess: { value: 30 }
-      }
+        shininess: { value: 30 },
+      },
     ]),
 
     vertexShader: ShaderChunk.meshphong_vert,
-    fragmentShader: ShaderChunk.meshphong_frag
+    fragmentShader: ShaderChunk.meshphong_frag,
   },
 
   standard: {
@@ -12875,12 +12875,12 @@ const ShaderLib = {
         emissive: { value: /*@__PURE__*/ new Color(0x000000) },
         roughness: { value: 1.0 },
         metalness: { value: 0.0 },
-        envMapIntensity: { value: 1 } // temporary
-      }
+        envMapIntensity: { value: 1 }, // temporary
+      },
     ]),
 
     vertexShader: ShaderChunk.meshphysical_vert,
-    fragmentShader: ShaderChunk.meshphysical_frag
+    fragmentShader: ShaderChunk.meshphysical_frag,
   },
 
   toon: {
@@ -12896,12 +12896,12 @@ const ShaderLib = {
       UniformsLib.fog,
       UniformsLib.lights,
       {
-        emissive: { value: /*@__PURE__*/ new Color(0x000000) }
-      }
+        emissive: { value: /*@__PURE__*/ new Color(0x000000) },
+      },
     ]),
 
     vertexShader: ShaderChunk.meshtoon_vert,
-    fragmentShader: ShaderChunk.meshtoon_frag
+    fragmentShader: ShaderChunk.meshtoon_frag,
   },
 
   matcap: {
@@ -12912,19 +12912,19 @@ const ShaderLib = {
       UniformsLib.displacementmap,
       UniformsLib.fog,
       {
-        matcap: { value: null }
-      }
+        matcap: { value: null },
+      },
     ]),
 
     vertexShader: ShaderChunk.meshmatcap_vert,
-    fragmentShader: ShaderChunk.meshmatcap_frag
+    fragmentShader: ShaderChunk.meshmatcap_frag,
   },
 
   points: {
     uniforms: /*@__PURE__*/ mergeUniforms([UniformsLib.points, UniformsLib.fog]),
 
     vertexShader: ShaderChunk.points_vert,
-    fragmentShader: ShaderChunk.points_frag
+    fragmentShader: ShaderChunk.points_frag,
   },
 
   dashed: {
@@ -12934,19 +12934,19 @@ const ShaderLib = {
       {
         scale: { value: 1 },
         dashSize: { value: 1 },
-        totalSize: { value: 2 }
-      }
+        totalSize: { value: 2 },
+      },
     ]),
 
     vertexShader: ShaderChunk.linedashed_vert,
-    fragmentShader: ShaderChunk.linedashed_frag
+    fragmentShader: ShaderChunk.linedashed_frag,
   },
 
   depth: {
     uniforms: /*@__PURE__*/ mergeUniforms([UniformsLib.common, UniformsLib.displacementmap]),
 
     vertexShader: ShaderChunk.depth_vert,
-    fragmentShader: ShaderChunk.depth_frag
+    fragmentShader: ShaderChunk.depth_frag,
   },
 
   normal: {
@@ -12956,30 +12956,30 @@ const ShaderLib = {
       UniformsLib.normalmap,
       UniformsLib.displacementmap,
       {
-        opacity: { value: 1.0 }
-      }
+        opacity: { value: 1.0 },
+      },
     ]),
 
     vertexShader: ShaderChunk.meshnormal_vert,
-    fragmentShader: ShaderChunk.meshnormal_frag
+    fragmentShader: ShaderChunk.meshnormal_frag,
   },
 
   sprite: {
     uniforms: /*@__PURE__*/ mergeUniforms([UniformsLib.sprite, UniformsLib.fog]),
 
     vertexShader: ShaderChunk.sprite_vert,
-    fragmentShader: ShaderChunk.sprite_frag
+    fragmentShader: ShaderChunk.sprite_frag,
   },
 
   background: {
     uniforms: {
       uvTransform: { value: /*@__PURE__*/ new Matrix3() },
       t2D: { value: null },
-      backgroundIntensity: { value: 1 }
+      backgroundIntensity: { value: 1 },
     },
 
     vertexShader: ShaderChunk.background_vert,
-    fragmentShader: ShaderChunk.background_frag
+    fragmentShader: ShaderChunk.background_frag,
   },
 
   backgroundCube: {
@@ -12987,31 +12987,31 @@ const ShaderLib = {
       envMap: { value: null },
       flipEnvMap: { value: -1 },
       backgroundBlurriness: { value: 0 },
-      backgroundIntensity: { value: 1 }
+      backgroundIntensity: { value: 1 },
     },
 
     vertexShader: ShaderChunk.backgroundCube_vert,
-    fragmentShader: ShaderChunk.backgroundCube_frag
+    fragmentShader: ShaderChunk.backgroundCube_frag,
   },
 
   cube: {
     uniforms: {
       tCube: { value: null },
       tFlip: { value: -1 },
-      opacity: { value: 1.0 }
+      opacity: { value: 1.0 },
     },
 
     vertexShader: ShaderChunk.cube_vert,
-    fragmentShader: ShaderChunk.cube_frag
+    fragmentShader: ShaderChunk.cube_frag,
   },
 
   equirect: {
     uniforms: {
-      tEquirect: { value: null }
+      tEquirect: { value: null },
     },
 
     vertexShader: ShaderChunk.equirect_vert,
-    fragmentShader: ShaderChunk.equirect_frag
+    fragmentShader: ShaderChunk.equirect_frag,
   },
 
   distanceRGBA: {
@@ -13021,12 +13021,12 @@ const ShaderLib = {
       {
         referencePosition: { value: /*@__PURE__*/ new Vector3() },
         nearDistance: { value: 1 },
-        farDistance: { value: 1000 }
-      }
+        farDistance: { value: 1000 },
+      },
     ]),
 
     vertexShader: ShaderChunk.distanceRGBA_vert,
-    fragmentShader: ShaderChunk.distanceRGBA_frag
+    fragmentShader: ShaderChunk.distanceRGBA_frag,
   },
 
   shadow: {
@@ -13035,13 +13035,13 @@ const ShaderLib = {
       UniformsLib.fog,
       {
         color: { value: /*@__PURE__*/ new Color(0x00000) },
-        opacity: { value: 1.0 }
-      }
+        opacity: { value: 1.0 },
+      },
     ]),
 
     vertexShader: ShaderChunk.shadow_vert,
-    fragmentShader: ShaderChunk.shadow_frag
-  }
+    fragmentShader: ShaderChunk.shadow_frag,
+  },
 };
 
 ShaderLib.physical = {
@@ -13090,12 +13090,12 @@ ShaderLib.physical = {
       specularIntensityMapTransform: { value: /*@__PURE__*/ new Matrix3() },
       anisotropyVector: { value: /*@__PURE__*/ new Vector2() },
       anisotropyMap: { value: null },
-      anisotropyMapTransform: { value: /*@__PURE__*/ new Matrix3() }
-    }
+      anisotropyMapTransform: { value: /*@__PURE__*/ new Matrix3() },
+    },
   ]),
 
   vertexShader: ShaderChunk.meshphysical_vert,
-  fragmentShader: ShaderChunk.meshphysical_frag
+  fragmentShader: ShaderChunk.meshphysical_frag,
 };
 
 const _rgb = { r: 0, b: 0, g: 0 };
@@ -13107,7 +13107,7 @@ function WebGLBackground(
   state,
   objects,
   alpha,
-  premultipliedAlpha
+  premultipliedAlpha,
 ) {
   const clearColor = new Color(0x000000);
   let clearAlpha = alpha === true ? 0 : 1;
@@ -13173,8 +13173,8 @@ function WebGLBackground(
             side: BackSide,
             depthTest: false,
             depthWrite: false,
-            fog: false
-          })
+            fog: false,
+          }),
         );
 
         boxMesh.geometry.deleteAttribute('normal');
@@ -13188,7 +13188,7 @@ function WebGLBackground(
         Object.defineProperty(boxMesh.material, 'envMap', {
           get: function () {
             return this.uniforms.envMap.value;
-          }
+          },
         });
 
         objects.update(boxMesh);
@@ -13229,8 +13229,8 @@ function WebGLBackground(
             side: FrontSide,
             depthTest: false,
             depthWrite: false,
-            fog: false
-          })
+            fog: false,
+          }),
         );
 
         planeMesh.geometry.deleteAttribute('normal');
@@ -13239,7 +13239,7 @@ function WebGLBackground(
         Object.defineProperty(planeMesh.material, 'map', {
           get: function () {
             return this.uniforms.t2D.value;
-          }
+          },
         });
 
         objects.update(planeMesh);
@@ -13296,7 +13296,7 @@ function WebGLBackground(
       clearAlpha = alpha;
       setClear(clearColor, clearAlpha);
     },
-    render: render
+    render: render,
   };
 }
 
@@ -13424,7 +13424,7 @@ function WebGLBindingStates(gl, extensions, attributes, capabilities) {
       attributeDivisors: attributeDivisors,
       object: vao,
       attributes: {},
-      index: null
+      index: null,
     };
   }
 
@@ -13533,7 +13533,7 @@ function WebGLBindingStates(gl, extensions, attributes, capabilities) {
 
       extension[capabilities.isWebGL2 ? 'vertexAttribDivisor' : 'vertexAttribDivisorANGLE'](
         attribute,
-        meshPerAttribute
+        meshPerAttribute,
       );
       attributeDivisors[attribute] = meshPerAttribute;
     }
@@ -13637,7 +13637,7 @@ function WebGLBindingStates(gl, extensions, attributes, capabilities) {
                 normalized,
                 stride * bytesPerElement,
                 (offset + (size / programAttribute.locationSize) * i) * bytesPerElement,
-                integer
+                integer,
               );
             }
           } else {
@@ -13645,7 +13645,7 @@ function WebGLBindingStates(gl, extensions, attributes, capabilities) {
               for (let i = 0; i < programAttribute.locationSize; i++) {
                 enableAttributeAndDivisor(
                   programAttribute.location + i,
-                  geometryAttribute.meshPerAttribute
+                  geometryAttribute.meshPerAttribute,
                 );
               }
 
@@ -13669,7 +13669,7 @@ function WebGLBindingStates(gl, extensions, attributes, capabilities) {
                 normalized,
                 size * bytesPerElement,
                 (size / programAttribute.locationSize) * i * bytesPerElement,
-                integer
+                integer,
               );
             }
           }
@@ -13789,7 +13789,7 @@ function WebGLBindingStates(gl, extensions, attributes, capabilities) {
 
     initAttributes: initAttributes,
     enableAttribute: enableAttribute,
-    disableUnusedAttributes: disableUnusedAttributes
+    disableUnusedAttributes: disableUnusedAttributes,
   };
 }
 
@@ -13822,7 +13822,7 @@ function WebGLBufferRenderer(gl, extensions, info, capabilities) {
 
       if (extension === null) {
         console.error(
-          'THREE.WebGLBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.'
+          'THREE.WebGLBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.',
         );
         return;
       }
@@ -13894,7 +13894,7 @@ function WebGLCapabilities(gl, extensions, parameters) {
       precision,
       'not supported, using',
       maxPrecision,
-      'instead.'
+      'instead.',
     );
     precision = maxPrecision;
   }
@@ -13944,7 +13944,7 @@ function WebGLCapabilities(gl, extensions, parameters) {
     floatFragmentTextures: floatFragmentTextures,
     floatVertexTextures: floatVertexTextures,
 
-    maxSamples: maxSamples
+    maxSamples: maxSamples,
   };
 }
 
@@ -14147,7 +14147,7 @@ function WebGLCubeMaps(renderer) {
 
   return {
     get: get,
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -14198,7 +14198,7 @@ class OrthographicCamera extends Camera {
         offsetX: 0,
         offsetY: 0,
         width: 1,
-        height: 1
+        height: 1,
       };
     }
 
@@ -14249,7 +14249,7 @@ class OrthographicCamera extends Camera {
       bottom,
       this.near,
       this.far,
-      this.coordinateSystem
+      this.coordinateSystem,
     );
 
     this.projectionMatrixInverse.copy(this.projectionMatrix).invert();
@@ -14304,7 +14304,7 @@ const _axisDirections = [
   /*@__PURE__*/ new Vector3(INV_PHI, 0, PHI),
   /*@__PURE__*/ new Vector3(-INV_PHI, 0, PHI),
   /*@__PURE__*/ new Vector3(PHI, INV_PHI, 0),
-  /*@__PURE__*/ new Vector3(-PHI, INV_PHI, 0)
+  /*@__PURE__*/ new Vector3(-PHI, INV_PHI, 0),
 ];
 
 /**
@@ -14445,7 +14445,7 @@ class PMREMGenerator {
   _fromTexture(texture, renderTarget) {
     if (texture.mapping === CubeReflectionMapping || texture.mapping === CubeRefractionMapping) {
       this._setSize(
-        texture.image.length === 0 ? 16 : texture.image[0].width || texture.image[0].image.width
+        texture.image.length === 0 ? 16 : texture.image[0].width || texture.image[0].image.width,
       );
     } else {
       // Equirectangular
@@ -14474,7 +14474,7 @@ class PMREMGenerator {
       type: HalfFloatType,
       format: RGBAFormat,
       colorSpace: LinearSRGBColorSpace,
-      depthBuffer: false
+      depthBuffer: false,
     };
 
     const cubeUVRenderTarget = _createRenderTarget(width, height, params);
@@ -14494,7 +14494,7 @@ class PMREMGenerator {
       ({
         sizeLods: this._sizeLods,
         lodPlanes: this._lodPlanes,
-        sigmas: this._sigmas
+        sigmas: this._sigmas,
       } = _createPlanes(_lodMax));
 
       this._blurMaterial = _getBlurShader(_lodMax, width, height);
@@ -14527,7 +14527,7 @@ class PMREMGenerator {
       name: 'PMREM.Background',
       side: BackSide,
       depthWrite: false,
-      depthTest: false
+      depthTest: false,
     });
 
     const backgroundBox = new Mesh(new BoxGeometry(), backgroundMaterial);
@@ -14622,7 +14622,7 @@ class PMREMGenerator {
 
     for (let i = 1; i < this._lodPlanes.length; i++) {
       const sigma = Math.sqrt(
-        this._sigmas[i] * this._sigmas[i] - this._sigmas[i - 1] * this._sigmas[i - 1]
+        this._sigmas[i] * this._sigmas[i] - this._sigmas[i - 1] * this._sigmas[i - 1],
       );
 
       const poleAxis = _axisDirections[(i - 1) % _axisDirections.length];
@@ -14650,7 +14650,7 @@ class PMREMGenerator {
       lodOut,
       sigma,
       'latitudinal',
-      poleAxis
+      poleAxis,
     );
 
     this._halfBlur(
@@ -14660,7 +14660,7 @@ class PMREMGenerator {
       lodOut,
       sigma,
       'longitudinal',
-      poleAxis
+      poleAxis,
     );
   }
 
@@ -14691,7 +14691,7 @@ class PMREMGenerator {
       console.warn(
         `sigmaRadians, ${sigmaRadians}, is too large and will clip, as it requested ${
           samples
-        } samples when the maximum is set to ${MAX_SAMPLES}`
+        } samples when the maximum is set to ${MAX_SAMPLES}`,
       );
     }
 
@@ -14795,7 +14795,7 @@ function _createPlanes(lodMax) {
         0,
         x,
         y + 1,
-        0
+        0,
       ];
       position.set(coordinates, positionSize * vertices * face);
       uv.set(uv1, uvSize * vertices * face);
@@ -14840,7 +14840,7 @@ function _getBlurShader(lodMax, width, height) {
       n: MAX_SAMPLES,
       CUBEUV_TEXEL_WIDTH: 1.0 / width,
       CUBEUV_TEXEL_HEIGHT: 1.0 / height,
-      CUBEUV_MAX_MIP: `${lodMax}.0`
+      CUBEUV_MAX_MIP: `${lodMax}.0`,
     },
 
     uniforms: {
@@ -14850,7 +14850,7 @@ function _getBlurShader(lodMax, width, height) {
       latitudinal: { value: false },
       dTheta: { value: 0 },
       mipInt: { value: 0 },
-      poleAxis: { value: poleAxis }
+      poleAxis: { value: poleAxis },
     },
 
     vertexShader: _getCommonVertexShader(),
@@ -14919,7 +14919,7 @@ function _getBlurShader(lodMax, width, height) {
 
     blending: NoBlending,
     depthTest: false,
-    depthWrite: false
+    depthWrite: false,
   });
 
   return shaderMaterial;
@@ -14930,7 +14930,7 @@ function _getEquirectMaterial() {
     name: 'EquirectangularToCubeUV',
 
     uniforms: {
-      envMap: { value: null }
+      envMap: { value: null },
     },
 
     vertexShader: _getCommonVertexShader(),
@@ -14958,7 +14958,7 @@ function _getEquirectMaterial() {
 
     blending: NoBlending,
     depthTest: false,
-    depthWrite: false
+    depthWrite: false,
   });
 }
 
@@ -14968,7 +14968,7 @@ function _getCubemapMaterial() {
 
     uniforms: {
       envMap: { value: null },
-      flipEnvMap: { value: -1 }
+      flipEnvMap: { value: -1 },
     },
 
     vertexShader: _getCommonVertexShader(),
@@ -14993,7 +14993,7 @@ function _getCubemapMaterial() {
 
     blending: NoBlending,
     depthTest: false,
-    depthWrite: false
+    depthWrite: false,
   });
 }
 
@@ -15154,7 +15154,7 @@ function WebGLCubeUVMaps(renderer) {
 
   return {
     get: get,
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -15237,7 +15237,7 @@ function WebGLExtensions(gl) {
       }
 
       return extension;
-    }
+    },
   };
 }
 
@@ -15395,7 +15395,7 @@ function WebGLGeometries(gl, attributes, info, bindingStates) {
     get: get,
     update: update,
 
-    getWireframeAttribute: getWireframeAttribute
+    getWireframeAttribute: getWireframeAttribute,
   };
 }
 
@@ -15435,7 +15435,7 @@ function WebGLIndexedBufferRenderer(gl, extensions, info, capabilities) {
 
       if (extension === null) {
         console.error(
-          'THREE.WebGLIndexedBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.'
+          'THREE.WebGLIndexedBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.',
         );
         return;
       }
@@ -15457,7 +15457,7 @@ function WebGLIndexedBufferRenderer(gl, extensions, info, capabilities) {
 function WebGLInfo(gl) {
   const memory = {
     geometries: 0,
-    textures: 0
+    textures: 0,
   };
 
   const render = {
@@ -15465,7 +15465,7 @@ function WebGLInfo(gl) {
     calls: 0,
     triangles: 0,
     points: 0,
-    lines: 0
+    lines: 0,
   };
 
   function update(count, mode, instanceCount) {
@@ -15511,7 +15511,7 @@ function WebGLInfo(gl) {
     programs: null,
     autoReset: true,
     reset: reset,
-    update: update
+    update: update,
   };
 }
 
@@ -15627,7 +15627,7 @@ function WebGLMorphtargets(gl, capabilities, textures) {
         entry = {
           count: morphTargetsCount,
           texture: texture,
-          size: new Vector2(width, height)
+          size: new Vector2(width, height),
         };
 
         morphTextures.set(geometry, entry);
@@ -15746,7 +15746,7 @@ function WebGLMorphtargets(gl, capabilities, textures) {
   }
 
   return {
-    update: update
+    update: update,
   };
 }
 
@@ -15812,7 +15812,7 @@ function WebGLObjects(gl, geometries, attributes, info) {
 
   return {
     update: update,
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -16672,7 +16672,7 @@ function parseUniform(activeInfo, addr, container) {
         container,
         subscript === undefined
           ? new SingleUniform(id, activeInfo, addr)
-          : new PureArrayUniform(id, activeInfo, addr)
+          : new PureArrayUniform(id, activeInfo, addr),
       );
 
       break;
@@ -16878,7 +16878,7 @@ function generateExtensions(parameters) {
     (parameters.extensionShaderTextureLOD || parameters.envMap || parameters.transmission) &&
     parameters.rendererExtensionShaderTextureLod
       ? '#extension GL_EXT_shader_texture_lod : enable'
-      : ''
+      : '',
   ];
 
   return chunks.filter(filterEmptyLine).join('\n');
@@ -16917,7 +16917,7 @@ function fetchAttributeLocations(gl, program) {
     attributes[name] = {
       type: info.type,
       location: gl.getAttribLocation(program, name),
-      locationSize: locationSize
+      locationSize: locationSize,
     };
   }
 
@@ -16953,7 +16953,7 @@ function replaceClippingPlaneNums(string, parameters) {
     .replace(/NUM_CLIPPING_PLANES/g, parameters.numClippingPlanes)
     .replace(
       /UNION_CLIPPING_PLANES/g,
-      parameters.numClippingPlanes - parameters.numClipIntersection
+      parameters.numClippingPlanes - parameters.numClipIntersection,
     );
 }
 
@@ -16968,7 +16968,7 @@ function resolveIncludes(string) {
 const shaderChunkMap = new Map([
   ['encodings_fragment', 'colorspace_fragment'], // @deprecated, r154
   ['encodings_pars_fragment', 'colorspace_pars_fragment'], // @deprecated, r154
-  ['output_fragment', 'opaque_fragment'] // @deprecated, r154
+  ['output_fragment', 'opaque_fragment'], // @deprecated, r154
 ]);
 
 function includeReplacer(match, include) {
@@ -16982,7 +16982,7 @@ function includeReplacer(match, include) {
       console.warn(
         'THREE.WebGLRenderer: Shader chunk "%s" has been deprecated. Use "%s" instead.',
         include,
-        newInclude
+        newInclude,
       );
     } else {
       throw new Error('Can not resolve #include <' + include + '>');
@@ -17142,7 +17142,7 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
       '#define SHADER_TYPE ' + parameters.shaderType,
       '#define SHADER_NAME ' + parameters.shaderName,
 
-      customDefines
+      customDefines,
     ]
       .filter(filterEmptyLine)
       .join('\n');
@@ -17157,7 +17157,7 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
       '#define SHADER_TYPE ' + parameters.shaderType,
       '#define SHADER_NAME ' + parameters.shaderName,
 
-      customDefines
+      customDefines,
     ]
       .filter(filterEmptyLine)
       .join('\n');
@@ -17396,7 +17396,7 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
 
       '#endif',
 
-      '\n'
+      '\n',
     ]
       .filter(filterEmptyLine)
       .join('\n');
@@ -17508,7 +17508,7 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
 
       parameters.useDepthPacking ? '#define DEPTH_PACKING ' + parameters.depthPacking : '',
 
-      '\n'
+      '\n',
     ]
       .filter(filterEmptyLine)
       .join('\n');
@@ -17535,7 +17535,7 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
         'precision mediump sampler2DArray;',
         '#define attribute in',
         '#define varying out',
-        '#define texture2D texture'
+        '#define texture2D texture',
       ].join('\n') +
       '\n' +
       prefixVertex;
@@ -17554,7 +17554,7 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
         '#define textureCubeLodEXT textureLod',
         '#define texture2DGradEXT textureGrad',
         '#define texture2DProjGradEXT textureProjGrad',
-        '#define textureCubeGradEXT textureGrad'
+        '#define textureCubeGradEXT textureGrad',
       ].join('\n') +
       '\n' +
       prefixFragment;
@@ -17615,7 +17615,7 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
             '\n' +
             vertexErrors +
             '\n' +
-            fragmentErrors
+            fragmentErrors,
         );
       }
     } else if (programLog !== '') {
@@ -17632,13 +17632,13 @@ function WebGLProgram(renderer, cacheKey, parameters, bindingStates) {
 
         vertexShader: {
           log: vertexLog,
-          prefix: prefixVertex
+          prefix: prefixVertex,
         },
 
         fragmentShader: {
           log: fragmentLog,
-          prefix: prefixFragment
-        }
+          prefix: prefixFragment,
+        },
       };
     }
   }
@@ -17797,7 +17797,7 @@ function WebGLPrograms(
   extensions,
   capabilities,
   bindingStates,
-  clipping
+  clipping,
 ) {
   const _programLayers = new Layers();
   const _customShaders = new WebGLShaderCache();
@@ -17824,7 +17824,7 @@ function WebGLPrograms(
     LineDashedMaterial: 'dashed',
     PointsMaterial: 'points',
     ShadowMaterial: 'shadow',
-    SpriteMaterial: 'sprite'
+    SpriteMaterial: 'sprite',
   };
 
   function getChannel(value) {
@@ -17839,7 +17839,7 @@ function WebGLPrograms(
     const environment = material.isMeshStandardMaterial ? scene.environment : null;
 
     const envMap = (material.isMeshStandardMaterial ? cubeuvmaps : cubemaps).get(
-      material.envMap || environment
+      material.envMap || environment,
     );
     const envMapCubeUVHeight =
       !!envMap && envMap.mapping === CubeUVReflectionMapping ? envMap.image.height : null;
@@ -17858,7 +17858,7 @@ function WebGLPrograms(
           material.precision,
           'not supported, using',
           precision,
-          'instead.'
+          'instead.',
         );
       }
     }
@@ -18154,7 +18154,7 @@ function WebGLPrograms(
       rendererExtensionDrawBuffers: IS_WEBGL2 || extensions.has('WEBGL_draw_buffers'),
       rendererExtensionShaderTextureLod: IS_WEBGL2 || extensions.has('EXT_shader_texture_lod'),
 
-      customProgramCacheKey: material.customProgramCacheKey()
+      customProgramCacheKey: material.customProgramCacheKey(),
     };
 
     return parameters;
@@ -18352,7 +18352,7 @@ function WebGLPrograms(
     releaseShaderCache: releaseShaderCache,
     // Exposed for resource monitoring & error feedback via renderer.info:
     programs: programs,
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -18386,7 +18386,7 @@ function WebGLProperties() {
     get: get,
     remove: remove,
     update: update,
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -18444,7 +18444,7 @@ function WebGLRenderList() {
         groupOrder: groupOrder,
         renderOrder: object.renderOrder,
         z: z,
-        group: group
+        group: group,
       };
 
       renderItems[renderItemsIndex] = renderItem;
@@ -18521,7 +18521,7 @@ function WebGLRenderList() {
     unshift: unshift,
     finish: finish,
 
-    sort: sort
+    sort: sort,
   };
 }
 
@@ -18553,7 +18553,7 @@ function WebGLRenderLists() {
 
   return {
     get: get,
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -18572,7 +18572,7 @@ function UniformsCache() {
         case 'DirectionalLight':
           uniforms = {
             direction: new Vector3(),
-            color: new Color()
+            color: new Color(),
           };
           break;
 
@@ -18584,7 +18584,7 @@ function UniformsCache() {
             distance: 0,
             coneCos: 0,
             penumbraCos: 0,
-            decay: 0
+            decay: 0,
           };
           break;
 
@@ -18593,7 +18593,7 @@ function UniformsCache() {
             position: new Vector3(),
             color: new Color(),
             distance: 0,
-            decay: 0
+            decay: 0,
           };
           break;
 
@@ -18601,7 +18601,7 @@ function UniformsCache() {
           uniforms = {
             direction: new Vector3(),
             skyColor: new Color(),
-            groundColor: new Color()
+            groundColor: new Color(),
           };
           break;
 
@@ -18610,7 +18610,7 @@ function UniformsCache() {
             color: new Color(),
             position: new Vector3(),
             halfWidth: new Vector3(),
-            halfHeight: new Vector3()
+            halfHeight: new Vector3(),
           };
           break;
       }
@@ -18618,7 +18618,7 @@ function UniformsCache() {
       lights[light.id] = uniforms;
 
       return uniforms;
-    }
+    },
   };
 }
 
@@ -18639,7 +18639,7 @@ function ShadowUniformsCache() {
             shadowBias: 0,
             shadowNormalBias: 0,
             shadowRadius: 1,
-            shadowMapSize: new Vector2()
+            shadowMapSize: new Vector2(),
           };
           break;
 
@@ -18648,7 +18648,7 @@ function ShadowUniformsCache() {
             shadowBias: 0,
             shadowNormalBias: 0,
             shadowRadius: 1,
-            shadowMapSize: new Vector2()
+            shadowMapSize: new Vector2(),
           };
           break;
 
@@ -18659,7 +18659,7 @@ function ShadowUniformsCache() {
             shadowRadius: 1,
             shadowMapSize: new Vector2(),
             shadowCameraNear: 1,
-            shadowCameraFar: 1000
+            shadowCameraFar: 1000,
           };
           break;
 
@@ -18669,7 +18669,7 @@ function ShadowUniformsCache() {
       lights[light.id] = uniforms;
 
       return uniforms;
-    }
+    },
   };
 }
 
@@ -18702,7 +18702,7 @@ function WebGLLights(extensions, capabilities) {
       numDirectionalShadows: -1,
       numPointShadows: -1,
       numSpotShadows: -1,
-      numSpotMaps: -1
+      numSpotMaps: -1,
     },
 
     ambient: [0, 0, 0],
@@ -18724,7 +18724,7 @@ function WebGLLights(extensions, capabilities) {
     pointShadowMap: [],
     pointShadowMatrix: [],
     hemi: [],
-    numSpotLightShadowsWithMaps: 0
+    numSpotLightShadowsWithMaps: 0,
   };
 
   for (let i = 0; i < 9; i++) state.probe.push(new Vector3());
@@ -18913,7 +18913,7 @@ function WebGLLights(extensions, capabilities) {
           state.rectAreaLTC2 = UniformsLib.LTC_HALF_2;
         } else {
           console.error(
-            'THREE.WebGLRenderer: Unable to use RectAreaLight. Missing WebGL extensions.'
+            'THREE.WebGLRenderer: Unable to use RectAreaLight. Missing WebGL extensions.',
           );
         }
       }
@@ -19042,7 +19042,7 @@ function WebGLLights(extensions, capabilities) {
   return {
     setup: setup,
     setupView: setupView,
-    state: state
+    state: state,
   };
 }
 
@@ -19077,7 +19077,7 @@ function WebGLRenderState(extensions, capabilities) {
     lightsArray: lightsArray,
     shadowsArray: shadowsArray,
 
-    lights: lights
+    lights: lights,
   };
 
   return {
@@ -19087,7 +19087,7 @@ function WebGLRenderState(extensions, capabilities) {
     setupLightsView: setupLightsView,
 
     pushLight: pushLight,
-    pushShadow: pushShadow
+    pushShadow: pushShadow,
   };
 }
 
@@ -19119,7 +19119,7 @@ function WebGLRenderStates(extensions, capabilities) {
 
   return {
     get: get,
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -19221,16 +19221,16 @@ function WebGLShadowMap(_renderer, _objects, _capabilities) {
 
   const shadowMaterialVertical = new ShaderMaterial({
     defines: {
-      VSM_SAMPLES: 8
+      VSM_SAMPLES: 8,
     },
     uniforms: {
       shadow_pass: { value: null },
       resolution: { value: new Vector2() },
-      radius: { value: 4.0 }
+      radius: { value: 4.0 },
     },
 
     vertexShader: vertex,
-    fragmentShader: fragment
+    fragmentShader: fragment,
   });
 
   const shadowMaterialHorizontal = shadowMaterialVertical.clone();
@@ -19239,7 +19239,7 @@ function WebGLShadowMap(_renderer, _objects, _capabilities) {
   const fullScreenTri = new BufferGeometry();
   fullScreenTri.setAttribute(
     'position',
-    new BufferAttribute(new Float32Array([-1, -1, 0.5, 3, -1, 0.5, -1, 3, 0.5]), 3)
+    new BufferAttribute(new Float32Array([-1, -1, 0.5, 3, -1, 0.5, -1, 3, 0.5]), 3),
   );
 
   const fullScreenMesh = new Mesh(fullScreenTri, shadowMaterialVertical);
@@ -19338,7 +19338,7 @@ function WebGLShadowMap(_renderer, _objects, _capabilities) {
           _viewportSize.x * viewport.x,
           _viewportSize.y * viewport.y,
           _viewportSize.x * viewport.z,
-          _viewportSize.y * viewport.w
+          _viewportSize.y * viewport.w,
         );
 
         _state.viewport(_viewport);
@@ -19394,7 +19394,7 @@ function WebGLShadowMap(_renderer, _objects, _capabilities) {
       geometry,
       shadowMaterialVertical,
       fullScreenMesh,
-      null
+      null,
     );
 
     // horizontal pass
@@ -19410,7 +19410,7 @@ function WebGLShadowMap(_renderer, _objects, _capabilities) {
       geometry,
       shadowMaterialHorizontal,
       fullScreenMesh,
-      null
+      null,
     );
   }
 
@@ -19502,7 +19502,7 @@ function WebGLShadowMap(_renderer, _objects, _capabilities) {
       ) {
         object.modelViewMatrix.multiplyMatrices(
           shadowCamera.matrixWorldInverse,
-          object.matrixWorld
+          object.matrixWorld,
         );
 
         const geometry = _objects.update(object);
@@ -19524,7 +19524,7 @@ function WebGLShadowMap(_renderer, _objects, _capabilities) {
                 geometry,
                 depthMaterial,
                 object,
-                group
+                group,
               );
             }
           }
@@ -19586,7 +19586,7 @@ function WebGLState(gl, extensions, capabilities) {
 
         currentColorMask = null;
         currentColorClear.set(-1, 0, 0, 0); // set to invalid state
-      }
+      },
     };
   }
 
@@ -19673,7 +19673,7 @@ function WebGLState(gl, extensions, capabilities) {
         currentDepthMask = null;
         currentDepthFunc = null;
         currentDepthClear = null;
-      }
+      },
     };
   }
 
@@ -19757,7 +19757,7 @@ function WebGLState(gl, extensions, capabilities) {
         currentStencilZFail = null;
         currentStencilZPass = null;
         currentStencilClear = null;
-      }
+      },
     };
   }
 
@@ -19843,7 +19843,7 @@ function WebGLState(gl, extensions, capabilities) {
   emptyTextures[gl.TEXTURE_CUBE_MAP] = createTexture(
     gl.TEXTURE_CUBE_MAP,
     gl.TEXTURE_CUBE_MAP_POSITIVE_X,
-    6
+    6,
   );
 
   if (isWebGL2) {
@@ -19851,7 +19851,7 @@ function WebGLState(gl, extensions, capabilities) {
       gl.TEXTURE_2D_ARRAY,
       gl.TEXTURE_2D_ARRAY,
       1,
-      1
+      1,
     );
     emptyTextures[gl.TEXTURE_3D] = createTexture(gl.TEXTURE_3D, gl.TEXTURE_3D, 1, 1);
   }
@@ -19975,7 +19975,7 @@ function WebGLState(gl, extensions, capabilities) {
   const equationToGL = {
     [AddEquation]: gl.FUNC_ADD,
     [SubtractEquation]: gl.FUNC_SUBTRACT,
-    [ReverseSubtractEquation]: gl.FUNC_REVERSE_SUBTRACT
+    [ReverseSubtractEquation]: gl.FUNC_REVERSE_SUBTRACT,
   };
 
   if (isWebGL2) {
@@ -20001,7 +20001,7 @@ function WebGLState(gl, extensions, capabilities) {
     [OneMinusSrcColorFactor]: gl.ONE_MINUS_SRC_COLOR,
     [OneMinusSrcAlphaFactor]: gl.ONE_MINUS_SRC_ALPHA,
     [OneMinusDstColorFactor]: gl.ONE_MINUS_DST_COLOR,
-    [OneMinusDstAlphaFactor]: gl.ONE_MINUS_DST_ALPHA
+    [OneMinusDstAlphaFactor]: gl.ONE_MINUS_DST_ALPHA,
   };
 
   function setBlending(
@@ -20012,7 +20012,7 @@ function WebGLState(gl, extensions, capabilities) {
     blendEquationAlpha,
     blendSrcAlpha,
     blendDstAlpha,
-    premultipliedAlpha
+    premultipliedAlpha,
   ) {
     if (blending === NoBlending) {
       if (currentBlendingEnabled === true) {
@@ -20066,7 +20066,7 @@ function WebGLState(gl, extensions, capabilities) {
                 gl.SRC_ALPHA,
                 gl.ONE_MINUS_SRC_ALPHA,
                 gl.ONE,
-                gl.ONE_MINUS_SRC_ALPHA
+                gl.ONE_MINUS_SRC_ALPHA,
               );
               break;
 
@@ -20126,7 +20126,7 @@ function WebGLState(gl, extensions, capabilities) {
         factorToGL[blendSrc],
         factorToGL[blendDst],
         factorToGL[blendSrcAlpha],
-        factorToGL[blendDstAlpha]
+        factorToGL[blendDstAlpha],
       );
 
       currentBlendSrc = blendSrc;
@@ -20157,7 +20157,7 @@ function WebGLState(gl, extensions, capabilities) {
           material.blendEquationAlpha,
           material.blendSrcAlpha,
           material.blendDstAlpha,
-          material.premultipliedAlpha
+          material.premultipliedAlpha,
         );
 
     depthBuffer.setFunc(material.depthFunc);
@@ -20176,7 +20176,7 @@ function WebGLState(gl, extensions, capabilities) {
     setPolygonOffset(
       material.polygonOffset,
       material.polygonOffsetFactor,
-      material.polygonOffsetUnits
+      material.polygonOffsetUnits,
     );
 
     material.alphaToCoverage === true
@@ -20519,7 +20519,7 @@ function WebGLState(gl, extensions, capabilities) {
     buffers: {
       color: colorBuffer,
       depth: depthBuffer,
-      stencil: stencilBuffer
+      stencil: stencilBuffer,
     },
 
     enable: enable,
@@ -20562,7 +20562,7 @@ function WebGLState(gl, extensions, capabilities) {
     scissor: scissor,
     viewport: viewport,
 
-    reset: reset
+    reset: reset,
   };
 }
 
@@ -20652,7 +20652,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             width +
             'x' +
             height +
-            ').'
+            ').',
         );
 
         return canvas;
@@ -20663,7 +20663,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               image.width +
               'x' +
               image.height +
-              ').'
+              ').',
           );
         }
 
@@ -20706,7 +20706,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
     glFormat,
     glType,
     colorSpace,
-    forceLinearTransfer = false
+    forceLinearTransfer = false,
   ) {
     if (isWebGL2 === false) return glFormat;
 
@@ -20716,7 +20716,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
       console.warn(
         "THREE.WebGLRenderer: Attempt to use non-existing WebGL internal format '" +
           internalFormatName +
-          "'"
+          "'",
       );
     }
 
@@ -20955,7 +20955,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         'THREE.WebGLTextures: Trying to use ' +
           textureUnit +
           ' texture units while this GPU supports only ' +
-          maxTextures
+          maxTextures,
       );
     }
 
@@ -21048,7 +21048,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
   const wrappingToGL = {
     [RepeatWrapping]: _gl.REPEAT,
     [ClampToEdgeWrapping]: _gl.CLAMP_TO_EDGE,
-    [MirroredRepeatWrapping]: _gl.MIRRORED_REPEAT
+    [MirroredRepeatWrapping]: _gl.MIRRORED_REPEAT,
   };
 
   const filterToGL = {
@@ -21058,7 +21058,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 
     [LinearFilter]: _gl.LINEAR,
     [LinearMipmapNearestFilter]: _gl.LINEAR_MIPMAP_NEAREST,
-    [LinearMipmapLinearFilter]: _gl.LINEAR_MIPMAP_LINEAR
+    [LinearMipmapLinearFilter]: _gl.LINEAR_MIPMAP_LINEAR,
   };
 
   const compareToGL = {
@@ -21069,7 +21069,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
     [EqualCompare]: _gl.EQUAL,
     [GreaterEqualCompare]: _gl.GEQUAL,
     [GreaterCompare]: _gl.GREATER,
-    [NotEqualCompare]: _gl.NOTEQUAL
+    [NotEqualCompare]: _gl.NOTEQUAL,
   };
 
   function setTextureParameters(textureType, texture, supportsMips) {
@@ -21093,7 +21093,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 
       if (texture.wrapS !== ClampToEdgeWrapping || texture.wrapT !== ClampToEdgeWrapping) {
         console.warn(
-          'THREE.WebGLRenderer: Texture is not power of two. Texture.wrapS and Texture.wrapT should be set to THREE.ClampToEdgeWrapping.'
+          'THREE.WebGLRenderer: Texture is not power of two. Texture.wrapS and Texture.wrapT should be set to THREE.ClampToEdgeWrapping.',
         );
       }
 
@@ -21102,7 +21102,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 
       if (texture.minFilter !== NearestFilter && texture.minFilter !== LinearFilter) {
         console.warn(
-          'THREE.WebGLRenderer: Texture is not power of two. Texture.minFilter should be set to THREE.NearestFilter or THREE.LinearFilter.'
+          'THREE.WebGLRenderer: Texture is not power of two. Texture.minFilter should be set to THREE.NearestFilter or THREE.LinearFilter.',
         );
       }
     }
@@ -21112,7 +21112,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
       _gl.texParameteri(
         textureType,
         _gl.TEXTURE_COMPARE_FUNC,
-        compareToGL[texture.compareFunction]
+        compareToGL[texture.compareFunction],
       );
     }
 
@@ -21138,7 +21138,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         _gl.texParameterf(
           textureType,
           extension.TEXTURE_MAX_ANISOTROPY_EXT,
-          Math.min(texture.anisotropy, capabilities.getMaxAnisotropy())
+          Math.min(texture.anisotropy, capabilities.getMaxAnisotropy()),
         );
         properties.get(texture).__currentAnisotropy = texture.anisotropy;
       }
@@ -21176,7 +21176,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 
         webglTextures[textureCacheKey] = {
           texture: _gl.createTexture(),
-          usedTimes: 0
+          usedTimes: 0,
         };
 
         info.memory.textures++;
@@ -21246,7 +21246,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           texture.internalFormat,
           glFormat,
           glType,
-          texture.colorSpace
+          texture.colorSpace,
         );
 
       setTextureParameters(textureType, texture, supportsMips);
@@ -21287,7 +21287,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           // (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
           if (texture.type !== UnsignedShortType && texture.type !== UnsignedIntType) {
             console.warn(
-              'THREE.WebGLRenderer: Use UnsignedShortType or UnsignedIntType for DepthFormat DepthTexture.'
+              'THREE.WebGLRenderer: Use UnsignedShortType or UnsignedIntType for DepthFormat DepthTexture.',
             );
 
             texture.type = UnsignedIntType;
@@ -21305,7 +21305,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           // (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
           if (texture.type !== UnsignedInt248Type) {
             console.warn(
-              'THREE.WebGLRenderer: Use UnsignedInt248Type for DepthStencilFormat DepthTexture.'
+              'THREE.WebGLRenderer: Use UnsignedInt248Type for DepthStencilFormat DepthTexture.',
             );
 
             texture.type = UnsignedInt248Type;
@@ -21328,7 +21328,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               0,
               glFormat,
               glType,
-              null
+              null,
             );
           }
         }
@@ -21344,7 +21344,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               levels,
               glInternalFormat,
               mipmaps[0].width,
-              mipmaps[0].height
+              mipmaps[0].height,
             );
           }
 
@@ -21361,7 +21361,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 mipmap.height,
                 glFormat,
                 glType,
-                mipmap.data
+                mipmap.data,
               );
             } else {
               state.texImage2D(
@@ -21373,7 +21373,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 0,
                 glFormat,
                 glType,
-                mipmap.data
+                mipmap.data,
               );
             }
           }
@@ -21387,7 +21387,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 levels,
                 glInternalFormat,
                 image.width,
-                image.height
+                image.height,
               );
             }
 
@@ -21400,7 +21400,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               image.height,
               glFormat,
               glType,
-              image.data
+              image.data,
             );
           } else {
             state.texImage2D(
@@ -21412,7 +21412,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               0,
               glFormat,
               glType,
-              image.data
+              image.data,
             );
           }
         }
@@ -21425,7 +21425,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               glInternalFormat,
               mipmaps[0].width,
               mipmaps[0].height,
-              image.depth
+              image.depth,
             );
           }
 
@@ -21447,7 +21447,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                     glFormat,
                     mipmap.data,
                     0,
-                    0
+                    0,
                   );
                 } else {
                   state.compressedTexImage3D(
@@ -21460,12 +21460,12 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                     0,
                     mipmap.data,
                     0,
-                    0
+                    0,
                   );
                 }
               } else {
                 console.warn(
-                  'THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()'
+                  'THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()',
                 );
               }
             } else {
@@ -21481,7 +21481,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   image.depth,
                   glFormat,
                   glType,
-                  mipmap.data
+                  mipmap.data,
                 );
               } else {
                 state.texImage3D(
@@ -21494,7 +21494,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   0,
                   glFormat,
                   glType,
-                  mipmap.data
+                  mipmap.data,
                 );
               }
             }
@@ -21506,7 +21506,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               levels,
               glInternalFormat,
               mipmaps[0].width,
-              mipmaps[0].height
+              mipmaps[0].height,
             );
           }
 
@@ -21524,7 +21524,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                     mipmap.width,
                     mipmap.height,
                     glFormat,
-                    mipmap.data
+                    mipmap.data,
                   );
                 } else {
                   state.compressedTexImage2D(
@@ -21534,12 +21534,12 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                     mipmap.width,
                     mipmap.height,
                     0,
-                    mipmap.data
+                    mipmap.data,
                   );
                 }
               } else {
                 console.warn(
-                  'THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()'
+                  'THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()',
                 );
               }
             } else {
@@ -21553,7 +21553,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   mipmap.height,
                   glFormat,
                   glType,
-                  mipmap.data
+                  mipmap.data,
                 );
               } else {
                 state.texImage2D(
@@ -21565,7 +21565,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   0,
                   glFormat,
                   glType,
-                  mipmap.data
+                  mipmap.data,
                 );
               }
             }
@@ -21580,7 +21580,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               glInternalFormat,
               image.width,
               image.height,
-              image.depth
+              image.depth,
             );
           }
 
@@ -21595,7 +21595,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             image.depth,
             glFormat,
             glType,
-            image.data
+            image.data,
           );
         } else {
           state.texImage3D(
@@ -21608,7 +21608,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             0,
             glFormat,
             glType,
-            image.data
+            image.data,
           );
         }
       } else if (texture.isData3DTexture) {
@@ -21620,7 +21620,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               glInternalFormat,
               image.width,
               image.height,
-              image.depth
+              image.depth,
             );
           }
 
@@ -21635,7 +21635,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             image.depth,
             glFormat,
             glType,
-            image.data
+            image.data,
           );
         } else {
           state.texImage3D(
@@ -21648,7 +21648,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             0,
             glFormat,
             glType,
-            image.data
+            image.data,
           );
         }
       } else if (texture.isFramebufferTexture) {
@@ -21669,7 +21669,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 0,
                 glFormat,
                 glType,
-                null
+                null,
               );
 
               width >>= 1;
@@ -21691,7 +21691,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               levels,
               glInternalFormat,
               mipmaps[0].width,
-              mipmaps[0].height
+              mipmaps[0].height,
             );
           }
 
@@ -21714,7 +21714,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 levels,
                 glInternalFormat,
                 image.width,
-                image.height
+                image.height,
               );
             }
 
@@ -21778,7 +21778,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           texture.internalFormat,
           glFormat,
           glType,
-          texture.colorSpace
+          texture.colorSpace,
         );
 
       const useTexStorage = isWebGL2 && texture.isVideoTexture !== true;
@@ -21796,7 +21796,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             levels,
             glInternalFormat,
             image.width,
-            image.height
+            image.height,
           );
         }
 
@@ -21817,7 +21817,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                     mipmap.width,
                     mipmap.height,
                     glFormat,
-                    mipmap.data
+                    mipmap.data,
                   );
                 } else {
                   state.compressedTexImage2D(
@@ -21827,12 +21827,12 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                     mipmap.width,
                     mipmap.height,
                     0,
-                    mipmap.data
+                    mipmap.data,
                   );
                 }
               } else {
                 console.warn(
-                  'THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .setTextureCube()'
+                  'THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .setTextureCube()',
                 );
               }
             } else {
@@ -21846,7 +21846,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   mipmap.height,
                   glFormat,
                   glType,
-                  mipmap.data
+                  mipmap.data,
                 );
               } else {
                 state.texImage2D(
@@ -21858,7 +21858,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   0,
                   glFormat,
                   glType,
-                  mipmap.data
+                  mipmap.data,
                 );
               }
             }
@@ -21879,7 +21879,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             levels,
             glInternalFormat,
             cubeImage[0].width,
-            cubeImage[0].height
+            cubeImage[0].height,
           );
         }
 
@@ -21895,7 +21895,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 cubeImage[i].height,
                 glFormat,
                 glType,
-                cubeImage[i].data
+                cubeImage[i].data,
               );
             } else {
               state.texImage2D(
@@ -21907,7 +21907,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 0,
                 glFormat,
                 glType,
-                cubeImage[i].data
+                cubeImage[i].data,
               );
             }
 
@@ -21925,7 +21925,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   mipmapImage.height,
                   glFormat,
                   glType,
-                  mipmapImage.data
+                  mipmapImage.data,
                 );
               } else {
                 state.texImage2D(
@@ -21937,7 +21937,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   0,
                   glFormat,
                   glType,
-                  mipmapImage.data
+                  mipmapImage.data,
                 );
               }
             }
@@ -21950,7 +21950,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 0,
                 glFormat,
                 glType,
-                cubeImage[i]
+                cubeImage[i],
               );
             } else {
               state.texImage2D(
@@ -21959,7 +21959,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                 glInternalFormat,
                 glFormat,
                 glType,
-                cubeImage[i]
+                cubeImage[i],
               );
             }
 
@@ -21974,7 +21974,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   0,
                   glFormat,
                   glType,
-                  mipmap.image[i]
+                  mipmap.image[i],
                 );
               } else {
                 state.texImage2D(
@@ -21983,7 +21983,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
                   glInternalFormat,
                   glFormat,
                   glType,
-                  mipmap.image[i]
+                  mipmap.image[i],
                 );
               }
             }
@@ -22013,7 +22013,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
     texture,
     attachment,
     textureTarget,
-    level
+    level,
   ) {
     const glFormat = utils.convert(texture.format, texture.colorSpace);
     const glType = utils.convert(texture.type);
@@ -22021,7 +22021,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
       texture.internalFormat,
       glFormat,
       glType,
-      texture.colorSpace
+      texture.colorSpace,
     );
     const renderTargetProperties = properties.get(renderTarget);
 
@@ -22040,7 +22040,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           0,
           glFormat,
           glType,
-          null
+          null,
         );
       } else {
         state.texImage2D(
@@ -22052,7 +22052,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           0,
           glFormat,
           glType,
-          null
+          null,
         );
       }
     }
@@ -22066,7 +22066,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         textureTarget,
         properties.get(texture).__webglTexture,
         0,
-        getRenderTargetSamples(renderTarget)
+        getRenderTargetSamples(renderTarget),
       );
     } else if (
       textureTarget === _gl.TEXTURE_2D ||
@@ -22080,7 +22080,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         attachment,
         textureTarget,
         properties.get(texture).__webglTexture,
-        level
+        level,
       );
     }
 
@@ -22113,7 +22113,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             samples,
             glInternalFormat,
             renderTarget.width,
-            renderTarget.height
+            renderTarget.height,
           );
         } else {
           _gl.renderbufferStorageMultisample(
@@ -22121,7 +22121,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             samples,
             glInternalFormat,
             renderTarget.width,
-            renderTarget.height
+            renderTarget.height,
           );
         }
       } else {
@@ -22129,7 +22129,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           _gl.RENDERBUFFER,
           glInternalFormat,
           renderTarget.width,
-          renderTarget.height
+          renderTarget.height,
         );
       }
 
@@ -22137,7 +22137,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         _gl.FRAMEBUFFER,
         _gl.DEPTH_ATTACHMENT,
         _gl.RENDERBUFFER,
-        renderbuffer
+        renderbuffer,
       );
     } else if (renderTarget.depthBuffer && renderTarget.stencilBuffer) {
       const samples = getRenderTargetSamples(renderTarget);
@@ -22148,7 +22148,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           samples,
           _gl.DEPTH24_STENCIL8,
           renderTarget.width,
-          renderTarget.height
+          renderTarget.height,
         );
       } else if (useMultisampledRTT(renderTarget)) {
         multisampledRTTExt.renderbufferStorageMultisampleEXT(
@@ -22156,14 +22156,14 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           samples,
           _gl.DEPTH24_STENCIL8,
           renderTarget.width,
-          renderTarget.height
+          renderTarget.height,
         );
       } else {
         _gl.renderbufferStorage(
           _gl.RENDERBUFFER,
           _gl.DEPTH_STENCIL,
           renderTarget.width,
-          renderTarget.height
+          renderTarget.height,
         );
       }
 
@@ -22171,7 +22171,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         _gl.FRAMEBUFFER,
         _gl.DEPTH_STENCIL_ATTACHMENT,
         _gl.RENDERBUFFER,
-        renderbuffer
+        renderbuffer,
       );
     } else {
       const textures =
@@ -22188,7 +22188,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           texture.internalFormat,
           glFormat,
           glType,
-          texture.colorSpace
+          texture.colorSpace,
         );
         const samples = getRenderTargetSamples(renderTarget);
 
@@ -22198,7 +22198,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             samples,
             glInternalFormat,
             renderTarget.width,
-            renderTarget.height
+            renderTarget.height,
           );
         } else if (useMultisampledRTT(renderTarget)) {
           multisampledRTTExt.renderbufferStorageMultisampleEXT(
@@ -22206,14 +22206,14 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             samples,
             glInternalFormat,
             renderTarget.width,
-            renderTarget.height
+            renderTarget.height,
           );
         } else {
           _gl.renderbufferStorage(
             _gl.RENDERBUFFER,
             glInternalFormat,
             renderTarget.width,
-            renderTarget.height
+            renderTarget.height,
           );
         }
       }
@@ -22257,7 +22257,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           _gl.TEXTURE_2D,
           webglDepthTexture,
           0,
-          samples
+          samples,
         );
       } else {
         _gl.framebufferTexture2D(
@@ -22265,7 +22265,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           _gl.DEPTH_ATTACHMENT,
           _gl.TEXTURE_2D,
           webglDepthTexture,
-          0
+          0,
         );
       }
     } else if (renderTarget.depthTexture.format === DepthStencilFormat) {
@@ -22276,7 +22276,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           _gl.TEXTURE_2D,
           webglDepthTexture,
           0,
-          samples
+          samples,
         );
       } else {
         _gl.framebufferTexture2D(
@@ -22284,7 +22284,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           _gl.DEPTH_STENCIL_ATTACHMENT,
           _gl.TEXTURE_2D,
           webglDepthTexture,
-          0
+          0,
         );
       }
     } else {
@@ -22311,7 +22311,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           setupRenderBufferStorage(
             renderTargetProperties.__webglDepthbuffer[i],
             renderTarget,
-            false
+            false,
           );
         }
       } else {
@@ -22335,7 +22335,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         renderTarget.texture,
         _gl.COLOR_ATTACHMENT0,
         _gl.TEXTURE_2D,
-        0
+        0,
       );
     }
 
@@ -22408,7 +22408,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           }
         } else {
           console.warn(
-            'THREE.WebGLRenderer: WebGLMultipleRenderTargets can only be used with WebGL2 or WEBGL_draw_buffers extension.'
+            'THREE.WebGLRenderer: WebGLMultipleRenderTargets can only be used with WebGL2 or WEBGL_draw_buffers extension.',
           );
         }
       }
@@ -22421,7 +22421,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 
         state.bindFramebuffer(
           _gl.FRAMEBUFFER,
-          renderTargetProperties.__webglMultisampledFramebuffer
+          renderTargetProperties.__webglMultisampledFramebuffer,
         );
 
         for (let i = 0; i < textures.length; i++) {
@@ -22430,7 +22430,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 
           _gl.bindRenderbuffer(
             _gl.RENDERBUFFER,
-            renderTargetProperties.__webglColorRenderbuffer[i]
+            renderTargetProperties.__webglColorRenderbuffer[i],
           );
 
           const glFormat = utils.convert(texture.format, texture.colorSpace);
@@ -22440,7 +22440,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             glFormat,
             glType,
             texture.colorSpace,
-            renderTarget.isXRRenderTarget === true
+            renderTarget.isXRRenderTarget === true,
           );
           const samples = getRenderTargetSamples(renderTarget);
           _gl.renderbufferStorageMultisample(
@@ -22448,14 +22448,14 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             samples,
             glInternalFormat,
             renderTarget.width,
-            renderTarget.height
+            renderTarget.height,
           );
 
           _gl.framebufferRenderbuffer(
             _gl.FRAMEBUFFER,
             _gl.COLOR_ATTACHMENT0 + i,
             _gl.RENDERBUFFER,
-            renderTargetProperties.__webglColorRenderbuffer[i]
+            renderTargetProperties.__webglColorRenderbuffer[i],
           );
         }
 
@@ -22466,7 +22466,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           setupRenderBufferStorage(
             renderTargetProperties.__webglDepthRenderbuffer,
             renderTarget,
-            true
+            true,
           );
         }
 
@@ -22489,7 +22489,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
               texture,
               _gl.COLOR_ATTACHMENT0,
               _gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
-              level
+              level,
             );
           }
         } else {
@@ -22499,7 +22499,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             texture,
             _gl.COLOR_ATTACHMENT0,
             _gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
-            0
+            0,
           );
         }
       }
@@ -22524,7 +22524,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           attachment,
           _gl.COLOR_ATTACHMENT0 + i,
           _gl.TEXTURE_2D,
-          0
+          0,
         );
 
         if (textureNeedsGenerateMipmaps(attachment, supportsMips)) {
@@ -22543,7 +22543,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             : _gl.TEXTURE_2D_ARRAY;
         } else {
           console.error(
-            'THREE.WebGLTextures: THREE.Data3DTexture and THREE.DataArrayTexture only supported with WebGL2.'
+            'THREE.WebGLTextures: THREE.Data3DTexture and THREE.DataArrayTexture only supported with WebGL2.',
           );
         }
       }
@@ -22559,7 +22559,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             texture,
             _gl.COLOR_ATTACHMENT0,
             glTextureType,
-            level
+            level,
           );
         }
       } else {
@@ -22569,7 +22569,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
           texture,
           _gl.COLOR_ATTACHMENT0,
           glTextureType,
-          0
+          0,
         );
       }
 
@@ -22629,13 +22629,13 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         for (let i = 0; i < textures.length; i++) {
           state.bindFramebuffer(
             _gl.FRAMEBUFFER,
-            renderTargetProperties.__webglMultisampledFramebuffer
+            renderTargetProperties.__webglMultisampledFramebuffer,
           );
           _gl.framebufferRenderbuffer(
             _gl.FRAMEBUFFER,
             _gl.COLOR_ATTACHMENT0 + i,
             _gl.RENDERBUFFER,
-            null
+            null,
           );
 
           state.bindFramebuffer(_gl.FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
@@ -22644,14 +22644,14 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             _gl.COLOR_ATTACHMENT0 + i,
             _gl.TEXTURE_2D,
             null,
-            0
+            0,
           );
         }
       }
 
       state.bindFramebuffer(
         _gl.READ_FRAMEBUFFER,
-        renderTargetProperties.__webglMultisampledFramebuffer
+        renderTargetProperties.__webglMultisampledFramebuffer,
       );
       state.bindFramebuffer(_gl.DRAW_FRAMEBUFFER, renderTargetProperties.__webglFramebuffer);
 
@@ -22677,7 +22677,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             _gl.READ_FRAMEBUFFER,
             _gl.COLOR_ATTACHMENT0,
             _gl.RENDERBUFFER,
-            renderTargetProperties.__webglColorRenderbuffer[i]
+            renderTargetProperties.__webglColorRenderbuffer[i],
           );
         }
 
@@ -22693,7 +22693,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             _gl.COLOR_ATTACHMENT0,
             _gl.TEXTURE_2D,
             webglTexture,
-            0
+            0,
           );
         }
 
@@ -22712,13 +22712,13 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
         for (let i = 0; i < textures.length; i++) {
           state.bindFramebuffer(
             _gl.FRAMEBUFFER,
-            renderTargetProperties.__webglMultisampledFramebuffer
+            renderTargetProperties.__webglMultisampledFramebuffer,
           );
           _gl.framebufferRenderbuffer(
             _gl.FRAMEBUFFER,
             _gl.COLOR_ATTACHMENT0 + i,
             _gl.RENDERBUFFER,
-            renderTargetProperties.__webglColorRenderbuffer[i]
+            renderTargetProperties.__webglColorRenderbuffer[i],
           );
 
           const webglTexture = properties.get(textures[i]).__webglTexture;
@@ -22729,14 +22729,14 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
             _gl.COLOR_ATTACHMENT0 + i,
             _gl.TEXTURE_2D,
             webglTexture,
-            0
+            0,
           );
         }
       }
 
       state.bindFramebuffer(
         _gl.DRAW_FRAMEBUFFER,
-        renderTargetProperties.__webglMultisampledFramebuffer
+        renderTargetProperties.__webglMultisampledFramebuffer,
       );
     }
   }
@@ -22798,7 +22798,7 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 
           if (format !== RGBAFormat || type !== UnsignedByteType) {
             console.warn(
-              'THREE.WebGLTextures: sRGB encoded textures have to use RGBAFormat and UnsignedByteType.'
+              'THREE.WebGLTextures: sRGB encoded textures have to use RGBAFormat and UnsignedByteType.',
             );
           }
         }
@@ -23274,14 +23274,14 @@ class WebXRController {
           this.dispatchEvent({
             type: 'pinchend',
             handedness: inputSource.handedness,
-            target: this
+            target: this,
           });
         } else if (!hand.inputState.pinching && distance <= distanceToPinch - threshold) {
           hand.inputState.pinching = true;
           this.dispatchEvent({
             type: 'pinchstart',
             handedness: inputSource.handedness,
-            target: this
+            target: this,
           });
         }
       } else {
@@ -23384,13 +23384,13 @@ class DepthTexture extends Texture {
     magFilter,
     minFilter,
     anisotropy,
-    format
+    format,
   ) {
     format = format !== undefined ? format : DepthFormat;
 
     if (format !== DepthFormat && format !== DepthStencilFormat) {
       throw new Error(
-        'DepthTexture format must be either THREE.DepthFormat or THREE.DepthStencilFormat'
+        'DepthTexture format must be either THREE.DepthFormat or THREE.DepthStencilFormat',
       );
     }
 
@@ -23640,7 +23640,7 @@ class WebXRManager extends EventDispatcher {
             alpha: true,
             depth: attributes.depth,
             stencil: attributes.stencil,
-            framebufferScaleFactor: framebufferScaleFactor
+            framebufferScaleFactor: framebufferScaleFactor,
           };
 
           glBaseLayer = new XRWebGLLayer(session, gl, layerInit);
@@ -23654,8 +23654,8 @@ class WebXRManager extends EventDispatcher {
               format: RGBAFormat,
               type: UnsignedByteType,
               colorSpace: renderer.outputColorSpace,
-              stencilBuffer: attributes.stencil
-            }
+              stencilBuffer: attributes.stencil,
+            },
           );
         } else {
           let depthFormat = null;
@@ -23671,7 +23671,7 @@ class WebXRManager extends EventDispatcher {
           const projectionlayerInit = {
             colorFormat: gl.RGBA8,
             depthFormat: glDepthFormat,
-            scaleFactor: framebufferScaleFactor
+            scaleFactor: framebufferScaleFactor,
           };
 
           glBinding = new XRWebGLBinding(session, gl);
@@ -23696,12 +23696,12 @@ class WebXRManager extends EventDispatcher {
                 undefined,
                 undefined,
                 undefined,
-                depthFormat
+                depthFormat,
               ),
               stencilBuffer: attributes.stencil,
               colorSpace: renderer.outputColorSpace,
-              samples: attributes.antialias ? 4 : 0
-            }
+              samples: attributes.antialias ? 4 : 0,
+            },
           );
 
           const renderTargetProperties = renderer.properties.get(newRenderTarget);
@@ -23858,7 +23858,7 @@ class WebXRManager extends EventDispatcher {
 
         session.updateRenderState({
           depthNear: cameraXR.near,
-          depthFar: cameraXR.far
+          depthFar: cameraXR.far,
         });
 
         _currentDepthNear = cameraXR.near;
@@ -23984,7 +23984,7 @@ class WebXRManager extends EventDispatcher {
               renderer.setRenderTargetTextures(
                 newRenderTarget,
                 glSubImage.colorTexture,
-                glProjLayer.ignoreDepthValues ? undefined : glSubImage.depthStencilTexture
+                glProjLayer.ignoreDepthValues ? undefined : glSubImage.depthStencilTexture,
               );
 
               renderer.setRenderTarget(newRenderTarget);
@@ -24074,7 +24074,7 @@ function WebGLMaterials(renderer, properties) {
     material,
     pixelRatio,
     height,
-    transmissionRenderTarget
+    transmissionRenderTarget,
   ) {
     if (material.isMeshBasicMaterial) {
       refreshUniformsCommon(uniforms, material);
@@ -24359,7 +24359,7 @@ function WebGLMaterials(renderer, properties) {
 
         refreshTransformUniform(
           material.clearcoatRoughnessMap,
-          uniforms.clearcoatRoughnessMapTransform
+          uniforms.clearcoatRoughnessMapTransform,
         );
       }
 
@@ -24393,7 +24393,7 @@ function WebGLMaterials(renderer, properties) {
 
         refreshTransformUniform(
           material.iridescenceThicknessMap,
-          uniforms.iridescenceThicknessMapTransform
+          uniforms.iridescenceThicknessMapTransform,
         );
       }
     }
@@ -24403,7 +24403,7 @@ function WebGLMaterials(renderer, properties) {
       uniforms.transmissionSamplerMap.value = transmissionRenderTarget.texture;
       uniforms.transmissionSamplerSize.value.set(
         transmissionRenderTarget.width,
-        transmissionRenderTarget.height
+        transmissionRenderTarget.height,
       );
 
       if (material.transmissionMap) {
@@ -24427,7 +24427,7 @@ function WebGLMaterials(renderer, properties) {
     if (material.anisotropy > 0) {
       uniforms.anisotropyVector.value.set(
         material.anisotropy * Math.cos(material.anisotropyRotation),
-        material.anisotropy * Math.sin(material.anisotropyRotation)
+        material.anisotropy * Math.sin(material.anisotropyRotation),
       );
 
       if (material.anisotropyMap) {
@@ -24451,7 +24451,7 @@ function WebGLMaterials(renderer, properties) {
 
       refreshTransformUniform(
         material.specularIntensityMap,
-        uniforms.specularIntensityMapTransform
+        uniforms.specularIntensityMapTransform,
       );
     }
   }
@@ -24472,7 +24472,7 @@ function WebGLMaterials(renderer, properties) {
 
   return {
     refreshFogUniforms: refreshFogUniforms,
-    refreshMaterialUniforms: refreshMaterialUniforms
+    refreshMaterialUniforms: refreshMaterialUniforms,
   };
 }
 
@@ -24545,7 +24545,7 @@ function WebGLUniformsGroups(gl, info, capabilities, state) {
     }
 
     console.error(
-      'THREE.WebGLRenderer: Maximum number of simultaneously usable uniforms groups reached.'
+      'THREE.WebGLRenderer: Maximum number of simultaneously usable uniforms groups reached.',
     );
 
     return 0;
@@ -24669,7 +24669,7 @@ function WebGLUniformsGroups(gl, info, capabilities, state) {
 
       const infos = {
         boundary: 0, // bytes
-        storage: 0 // bytes
+        storage: 0, // bytes
       };
 
       const values = Array.isArray(uniform.value) ? uniform.value : [uniform.value];
@@ -24725,7 +24725,7 @@ function WebGLUniformsGroups(gl, info, capabilities, state) {
   function getUniformSize(value) {
     const info = {
       boundary: 0, // bytes
-      storage: 0 // bytes
+      storage: 0, // bytes
     };
 
     // determine sizes according to STD140
@@ -24797,7 +24797,7 @@ function WebGLUniformsGroups(gl, info, capabilities, state) {
     bind: bind,
     update: update,
 
-    dispose: dispose
+    dispose: dispose,
   };
 }
 
@@ -24819,7 +24819,7 @@ class WebGLRenderer {
       premultipliedAlpha = true,
       preserveDrawingBuffer = false,
       powerPreference = 'default',
-      failIfMajorPerformanceCaveat = false
+      failIfMajorPerformanceCaveat = false,
     } = parameters;
 
     this.isWebGLRenderer = true;
@@ -24859,7 +24859,7 @@ class WebGLRenderer {
        * Callback for custom error reporting.
        * @type {?Function}
        */
-      onShaderError: null
+      onShaderError: null,
     };
 
     // clearing
@@ -24951,7 +24951,7 @@ class WebGLRenderer {
       fog: null,
       environment: null,
       overrideMaterial: null,
-      isScene: true
+      isScene: true,
     };
 
     function getTargetPixelRatio() {
@@ -24981,7 +24981,7 @@ class WebGLRenderer {
         premultipliedAlpha,
         preserveDrawingBuffer,
         powerPreference,
-        failIfMajorPerformanceCaveat
+        failIfMajorPerformanceCaveat,
       };
 
       // OffscreenCanvas does not have setAttribute, see #22811
@@ -25014,7 +25014,7 @@ class WebGLRenderer {
         // @deprecated, r153
 
         console.warn(
-          'THREE.WebGLRenderer: WebGL 1 support was deprecated in r153 and will be removed in r163.'
+          'THREE.WebGLRenderer: WebGL 1 support was deprecated in r153 and will be removed in r163.',
         );
       }
 
@@ -25067,7 +25067,7 @@ class WebGLRenderer {
         extensions,
         capabilities,
         bindingStates,
-        clipping
+        clipping,
       );
       materials = new WebGLMaterials(_this, properties);
       renderLists = new WebGLRenderLists();
@@ -25079,7 +25079,7 @@ class WebGLRenderer {
         state,
         objects,
         _alpha,
-        premultipliedAlpha
+        premultipliedAlpha,
       );
       shadowMap = new WebGLShadowMap(_this, objects, capabilities);
       uniformsGroups = new WebGLUniformsGroups(_gl, info, capabilities, state);
@@ -25375,7 +25375,7 @@ class WebGLRenderer {
     function onContextCreationError(event) {
       console.error(
         'THREE.WebGLRenderer: A WebGL context could not be created. Reason: ',
-        event.statusMessage
+        event.statusMessage,
       );
     }
 
@@ -25792,7 +25792,7 @@ class WebGLRenderer {
                     groupMaterial,
                     groupOrder,
                     _vector3.z,
-                    group
+                    group,
                   );
                 }
               }
@@ -25845,7 +25845,7 @@ class WebGLRenderer {
           generateMipmaps: true,
           type: extensions.has('EXT_color_buffer_half_float') ? HalfFloatType : UnsignedByteType,
           minFilter: LinearMipmapLinearFilter,
-          samples: isWebGL2 ? 4 : 0
+          samples: isWebGL2 ? 4 : 0,
         });
 
         // debug
@@ -25986,7 +25986,7 @@ class WebGLRenderer {
         lights.state,
         shadowsArray,
         scene,
-        object
+        object,
       );
       const programCacheKey = programCache.getProgramCacheKey(parameters);
 
@@ -25997,7 +25997,7 @@ class WebGLRenderer {
       materialProperties.environment = material.isMeshStandardMaterial ? scene.environment : null;
       materialProperties.fog = scene.fog;
       materialProperties.envMap = (material.isMeshStandardMaterial ? cubeuvmaps : cubemaps).get(
-        material.envMap || materialProperties.environment
+        material.envMap || materialProperties.environment,
       );
 
       if (programs === undefined) {
@@ -26118,7 +26118,7 @@ class WebGLRenderer {
             ? _currentRenderTarget.texture.colorSpace
             : LinearSRGBColorSpace;
       const envMap = (material.isMeshStandardMaterial ? cubeuvmaps : cubemaps).get(
-        material.envMap || environment
+        material.envMap || environment,
       );
       const vertexAlphas =
         material.vertexColors === true &&
@@ -26328,7 +26328,7 @@ class WebGLRenderer {
             p_uniforms.setValue(_gl, 'boneTextureSize', skeleton.boneTextureSize);
           } else {
             console.warn(
-              'THREE.WebGLRenderer: SkinnedMesh can only be used with WebGL 2. With WebGL 1 OES_texture_float and vertex textures support is required.'
+              'THREE.WebGLRenderer: SkinnedMesh can only be used with WebGL 2. With WebGL 1 OES_texture_float and vertex textures support is required.',
             );
           }
         }
@@ -26385,7 +26385,7 @@ class WebGLRenderer {
           material,
           _pixelRatio,
           _height,
-          _transmissionRenderTarget
+          _transmissionRenderTarget,
         );
 
         WebGLUniforms.upload(_gl, materialProperties.uniformsList, m_uniforms, textures);
@@ -26419,7 +26419,7 @@ class WebGLRenderer {
             uniformsGroups.bind(group, program);
           } else {
             console.warn(
-              'THREE.WebGLRenderer: Uniform Buffer Objects can only be used with WebGL 2.'
+              'THREE.WebGLRenderer: Uniform Buffer Objects can only be used with WebGL 2.',
             );
           }
         }
@@ -26482,7 +26482,7 @@ class WebGLRenderer {
           // are midframe flushes and an external depth buffer. Disable use of the extension.
           if (extensions.has('WEBGL_multisampled_render_to_texture') === true) {
             console.warn(
-              'THREE.WebGLRenderer: Render-to-texture extension was disabled because an external texture was provided'
+              'THREE.WebGLRenderer: Render-to-texture extension was disabled because an external texture was provided',
             );
             renderTargetProperties.__useRenderToTexture = false;
           }
@@ -26520,7 +26520,7 @@ class WebGLRenderer {
           textures.rebindTextures(
             renderTarget,
             properties.get(renderTarget.texture).__webglTexture,
-            properties.get(renderTarget.depthTexture).__webglTexture
+            properties.get(renderTarget.depthTexture).__webglTexture,
           );
         }
 
@@ -26584,7 +26584,7 @@ class WebGLRenderer {
           _gl.COLOR_ATTACHMENT0,
           _gl.TEXTURE_CUBE_MAP_POSITIVE_X + activeCubeFace,
           textureProperties.__webglTexture,
-          activeMipmapLevel
+          activeMipmapLevel,
         );
       } else if (isRenderTarget3D) {
         const textureProperties = properties.get(renderTarget.texture);
@@ -26594,7 +26594,7 @@ class WebGLRenderer {
           _gl.COLOR_ATTACHMENT0,
           textureProperties.__webglTexture,
           activeMipmapLevel || 0,
-          layer
+          layer,
         );
       }
 
@@ -26608,11 +26608,11 @@ class WebGLRenderer {
       width,
       height,
       buffer,
-      activeCubeFaceIndex
+      activeCubeFaceIndex,
     ) {
       if (!(renderTarget && renderTarget.isWebGLRenderTarget)) {
         console.error(
-          'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not THREE.WebGLRenderTarget.'
+          'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not THREE.WebGLRenderTarget.',
         );
         return;
       }
@@ -26636,7 +26636,7 @@ class WebGLRenderer {
             utils.convert(textureFormat) !== _gl.getParameter(_gl.IMPLEMENTATION_COLOR_READ_FORMAT)
           ) {
             console.error(
-              'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in RGBA or implementation defined format.'
+              'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in RGBA or implementation defined format.',
             );
             return;
           }
@@ -26658,7 +26658,7 @@ class WebGLRenderer {
             !halfFloatSupportedByExt
           ) {
             console.error(
-              'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in UnsignedByteType or implementation defined type.'
+              'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in UnsignedByteType or implementation defined type.',
             );
             return;
           }
@@ -26678,7 +26678,7 @@ class WebGLRenderer {
               height,
               utils.convert(textureFormat),
               utils.convert(textureType),
-              buffer
+              buffer,
             );
           }
         } finally {
@@ -26729,7 +26729,7 @@ class WebGLRenderer {
           height,
           glFormat,
           glType,
-          srcTexture.image.data
+          srcTexture.image.data,
         );
       } else {
         if (srcTexture.isCompressedTexture) {
@@ -26741,7 +26741,7 @@ class WebGLRenderer {
             srcTexture.mipmaps[0].width,
             srcTexture.mipmaps[0].height,
             glFormat,
-            srcTexture.mipmaps[0].data
+            srcTexture.mipmaps[0].data,
           );
         } else {
           _gl.texSubImage2D(
@@ -26751,7 +26751,7 @@ class WebGLRenderer {
             position.y,
             glFormat,
             glType,
-            srcTexture.image
+            srcTexture.image,
           );
         }
       }
@@ -26767,7 +26767,7 @@ class WebGLRenderer {
       position,
       srcTexture,
       dstTexture,
-      level = 0
+      level = 0,
     ) {
       if (_this.isWebGL1Renderer) {
         console.warn('THREE.WebGLRenderer.copyTextureToTexture3D: can only be used with WebGL2.');
@@ -26789,7 +26789,7 @@ class WebGLRenderer {
         glTarget = _gl.TEXTURE_2D_ARRAY;
       } else {
         console.warn(
-          'THREE.WebGLRenderer.copyTextureToTexture3D: only supports THREE.DataTexture3D and THREE.DataTexture2DArray.'
+          'THREE.WebGLRenderer.copyTextureToTexture3D: only supports THREE.DataTexture3D and THREE.DataTexture2DArray.',
         );
         return;
       }
@@ -26824,12 +26824,12 @@ class WebGLRenderer {
           depth,
           glFormat,
           glType,
-          image.data
+          image.data,
         );
       } else {
         if (srcTexture.isCompressedArrayTexture) {
           console.warn(
-            'THREE.WebGLRenderer.copyTextureToTexture3D: untested support for compressed srcTexture.'
+            'THREE.WebGLRenderer.copyTextureToTexture3D: untested support for compressed srcTexture.',
           );
           _gl.compressedTexSubImage3D(
             glTarget,
@@ -26841,7 +26841,7 @@ class WebGLRenderer {
             height,
             depth,
             glFormat,
-            image.data
+            image.data,
           );
         } else {
           _gl.texSubImage3D(
@@ -26855,7 +26855,7 @@ class WebGLRenderer {
             depth,
             glFormat,
             glType,
-            image
+            image,
           );
         }
       }
@@ -26908,7 +26908,7 @@ class WebGLRenderer {
     // @deprecated, r150
 
     console.warn(
-      'THREE.WebGLRenderer: The property .physicallyCorrectLights has been removed. Set renderer.useLegacyLights instead.'
+      'THREE.WebGLRenderer: The property .physicallyCorrectLights has been removed. Set renderer.useLegacyLights instead.',
     );
     return !this.useLegacyLights;
   }
@@ -26917,7 +26917,7 @@ class WebGLRenderer {
     // @deprecated, r150
 
     console.warn(
-      'THREE.WebGLRenderer: The property .physicallyCorrectLights has been removed. Set renderer.useLegacyLights instead.'
+      'THREE.WebGLRenderer: The property .physicallyCorrectLights has been removed. Set renderer.useLegacyLights instead.',
     );
     this.useLegacyLights = !value;
   }
@@ -26926,7 +26926,7 @@ class WebGLRenderer {
     // @deprecated, r152
 
     console.warn(
-      'THREE.WebGLRenderer: Property .outputEncoding has been removed. Use .outputColorSpace instead.'
+      'THREE.WebGLRenderer: Property .outputEncoding has been removed. Use .outputColorSpace instead.',
     );
     return this.outputColorSpace === SRGBColorSpace ? sRGBEncoding : LinearEncoding;
   }
@@ -26935,7 +26935,7 @@ class WebGLRenderer {
     // @deprecated, r152
 
     console.warn(
-      'THREE.WebGLRenderer: Property .outputEncoding has been removed. Use .outputColorSpace instead.'
+      'THREE.WebGLRenderer: Property .outputEncoding has been removed. Use .outputColorSpace instead.',
     );
     this.outputColorSpace = encoding === sRGBEncoding ? SRGBColorSpace : LinearSRGBColorSpace;
   }
@@ -26944,7 +26944,7 @@ class WebGLRenderer {
     // @deprecated, r155
 
     console.warn(
-      'THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.'
+      'THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.',
     );
     return this._useLegacyLights;
   }
@@ -26953,7 +26953,7 @@ class WebGLRenderer {
     // @deprecated, r155
 
     console.warn(
-      'THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.'
+      'THREE.WebGLRenderer: The property .useLegacyLights has been deprecated. Migrate your lighting according to the following guide: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733.',
     );
     this._useLegacyLights = value;
   }
@@ -26981,7 +26981,7 @@ class FogExp2 {
     return {
       type: 'FogExp2',
       color: this.color.getHex(),
-      density: this.density
+      density: this.density,
     };
   }
 }
@@ -27007,7 +27007,7 @@ class Fog {
       type: 'Fog',
       color: this.color.getHex(),
       near: this.near,
-      far: this.far
+      far: this.far,
     };
   }
 }
@@ -27164,7 +27164,7 @@ class InterleavedBuffer {
       uuid: this.uuid,
       buffer: this.array.buffer._uuid,
       type: this.array.constructor.name,
-      stride: this.stride
+      stride: this.stride,
     };
   }
 }
@@ -27347,7 +27347,7 @@ class InterleavedBufferAttribute {
   clone(data) {
     if (data === undefined) {
       console.log(
-        'THREE.InterleavedBufferAttribute.clone(): Cloning an interleaved buffer attribute will de-interleave buffer data.'
+        'THREE.InterleavedBufferAttribute.clone(): Cloning an interleaved buffer attribute will de-interleave buffer data.',
       );
 
       const array = [];
@@ -27374,7 +27374,7 @@ class InterleavedBufferAttribute {
         data.interleavedBuffers[this.data.uuid],
         this.itemSize,
         this.offset,
-        this.normalized
+        this.normalized,
       );
     }
   }
@@ -27382,7 +27382,7 @@ class InterleavedBufferAttribute {
   toJSON(data) {
     if (data === undefined) {
       console.log(
-        'THREE.InterleavedBufferAttribute.toJSON(): Serializing an interleaved buffer attribute will de-interleave buffer data.'
+        'THREE.InterleavedBufferAttribute.toJSON(): Serializing an interleaved buffer attribute will de-interleave buffer data.',
       );
 
       const array = [];
@@ -27401,7 +27401,7 @@ class InterleavedBufferAttribute {
         itemSize: this.itemSize,
         type: this.array.constructor.name,
         array: array,
-        normalized: this.normalized
+        normalized: this.normalized,
       };
     } else {
       // save as true interleaved attribute
@@ -27419,7 +27419,7 @@ class InterleavedBufferAttribute {
         itemSize: this.itemSize,
         data: this.data.uuid,
         offset: this.offset,
-        normalized: this.normalized
+        normalized: this.normalized,
       };
     }
   }
@@ -27499,7 +27499,7 @@ class Sprite extends Object3D {
       _geometry = new BufferGeometry();
 
       const float32Array = new Float32Array([
-        -0.5, -0.5, 0, 0, 0, 0.5, -0.5, 0, 1, 0, 0.5, 0.5, 0, 1, 1, -0.5, 0.5, 0, 0, 1
+        -0.5, -0.5, 0, 0, 0, 0.5, -0.5, 0, 1, 0, 0.5, 0.5, 0, 1, 1, -0.5, 0.5, 0, 0, 1,
       ]);
 
       const interleavedBuffer = new InterleavedBuffer(float32Array, 5);
@@ -27507,7 +27507,7 @@ class Sprite extends Object3D {
       _geometry.setIndex([0, 1, 2, 0, 2, 3]);
       _geometry.setAttribute(
         'position',
-        new InterleavedBufferAttribute(interleavedBuffer, 3, 0, false)
+        new InterleavedBufferAttribute(interleavedBuffer, 3, 0, false),
       );
       _geometry.setAttribute('uv', new InterleavedBufferAttribute(interleavedBuffer, 2, 3, false));
     }
@@ -27521,7 +27521,7 @@ class Sprite extends Object3D {
   raycast(raycaster, intersects) {
     if (raycaster.camera === null) {
       console.error(
-        'THREE.Sprite: "Raycaster.camera" needs to be set in order to raycast against sprites.'
+        'THREE.Sprite: "Raycaster.camera" needs to be set in order to raycast against sprites.',
       );
     }
 
@@ -27583,10 +27583,10 @@ class Sprite extends Object3D {
         _uvA,
         _uvB,
         _uvC,
-        new Vector2()
+        new Vector2(),
       ),
       face: null,
-      object: this
+      object: this,
     });
   }
 
@@ -27635,11 +27635,11 @@ class LOD extends Object3D {
     Object.defineProperties(this, {
       levels: {
         enumerable: true,
-        value: []
+        value: [],
       },
       isLOD: {
-        value: true
-      }
+        value: true,
+      },
     });
 
     this.autoUpdate = true;
@@ -27772,7 +27772,7 @@ class LOD extends Object3D {
       data.object.levels.push({
         object: level.object.uuid,
         distance: level.distance,
-        hysteresis: level.hysteresis
+        hysteresis: level.hysteresis,
       });
     }
 
@@ -27969,7 +27969,7 @@ class SkinnedMesh extends Mesh {
 
         _matrix4.multiplyMatrices(
           skeleton.bones[boneIndex].matrixWorld,
-          skeleton.boneInverses[boneIndex]
+          skeleton.boneInverses[boneIndex],
         );
 
         vector.addScaledVector(_vector3.copy(_basePosition).applyMatrix4(_matrix4), weight);
@@ -27983,7 +27983,7 @@ class SkinnedMesh extends Mesh {
     // @deprecated, r151
 
     console.warn(
-      'THREE.SkinnedMesh: .boneTransform() was renamed to .applyBoneTransform() in r151.'
+      'THREE.SkinnedMesh: .boneTransform() was renamed to .applyBoneTransform() in r151.',
     );
     return this.applyBoneTransform(index, vector);
   }
@@ -28012,7 +28012,7 @@ class DataTexture extends Texture {
     magFilter = NearestFilter,
     minFilter = NearestFilter,
     anisotropy,
-    colorSpace
+    colorSpace,
   ) {
     super(null, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy, colorSpace);
 
@@ -28058,7 +28058,7 @@ class Skeleton {
 
       if (bones.length !== boneInverses.length) {
         console.warn(
-          'THREE.Skeleton: Number of inverse bone matrices does not match amount of bones.'
+          'THREE.Skeleton: Number of inverse bone matrices does not match amount of bones.',
         );
 
         this.boneInverses = [];
@@ -28210,10 +28210,10 @@ class Skeleton {
       metadata: {
         version: 4.6,
         type: 'Skeleton',
-        generator: 'Skeleton.toJSON'
+        generator: 'Skeleton.toJSON',
       },
       bones: [],
-      boneInverses: []
+      boneInverses: [],
     };
 
     data.uuid = this.uuid;
@@ -28409,7 +28409,7 @@ class InstancedMesh extends Mesh {
     if (this.instanceColor === null) {
       this.instanceColor = new InstancedBufferAttribute(
         new Float32Array(this.instanceMatrix.count * 3),
-        3
+        3,
       );
     }
 
@@ -28514,7 +28514,7 @@ class Line extends Object3D {
       geometry.setAttribute('lineDistance', new Float32BufferAttribute(lineDistances, 1));
     } else {
       console.warn(
-        'THREE.Line.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.'
+        'THREE.Line.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.',
       );
     }
 
@@ -28584,7 +28584,7 @@ class Line extends Object3D {
           index: i,
           face: null,
           faceIndex: null,
-          object: this
+          object: this,
         });
       }
     } else {
@@ -28613,7 +28613,7 @@ class Line extends Object3D {
           index: i,
           face: null,
           faceIndex: null,
-          object: this
+          object: this,
         });
       }
     }
@@ -28675,7 +28675,7 @@ class LineSegments extends Line {
       geometry.setAttribute('lineDistance', new Float32BufferAttribute(lineDistances, 1));
     } else {
       console.warn(
-        'THREE.LineSegments.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.'
+        'THREE.LineSegments.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.',
       );
     }
 
@@ -28855,7 +28855,7 @@ function testPoint(point, index, localThresholdSq, matrixWorld, raycaster, inter
       point: intersectPoint,
       index: index,
       face: null,
-      object: object
+      object: object,
     });
   }
 }
@@ -28925,7 +28925,7 @@ class CompressedTexture extends Texture {
     magFilter,
     minFilter,
     anisotropy,
-    colorSpace
+    colorSpace,
   ) {
     super(null, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy, colorSpace);
 
@@ -29280,7 +29280,7 @@ class Curve {
     return {
       tangents: tangents,
       normals: normals,
-      binormals: binormals
+      binormals: binormals,
     };
   }
 
@@ -29299,8 +29299,8 @@ class Curve {
       metadata: {
         version: 4.6,
         type: 'Curve',
-        generator: 'Curve.toJSON'
-      }
+        generator: 'Curve.toJSON',
+      },
     };
 
     data.arcLengthDivisions = this.arcLengthDivisions;
@@ -29325,7 +29325,7 @@ class EllipseCurve extends Curve {
     aStartAngle = 0,
     aEndAngle = Math.PI * 2,
     aClockwise = false,
-    aRotation = 0
+    aRotation = 0,
   ) {
     super();
 
@@ -29522,7 +29522,7 @@ function CubicPoly() {
       const t2 = t * t;
       const t3 = t2 * t;
       return c0 + c1 * t + c2 * t2 + c3 * t3;
-    }
+    },
   };
 }
 
@@ -29806,7 +29806,7 @@ class CubicBezierCurve3 extends Curve {
     point.set(
       CubicBezier(t, v0.x, v1.x, v2.x, v3.x),
       CubicBezier(t, v0.y, v1.y, v2.y, v3.y),
-      CubicBezier(t, v0.z, v1.z, v2.z, v3.z)
+      CubicBezier(t, v0.z, v1.z, v2.z, v3.z),
     );
 
     return point;
@@ -30053,7 +30053,7 @@ class QuadraticBezierCurve3 extends Curve {
     point.set(
       QuadraticBezier(t, v0.x, v1.x, v2.x),
       QuadraticBezier(t, v0.y, v1.y, v2.y),
-      QuadraticBezier(t, v0.z, v1.z, v2.z)
+      QuadraticBezier(t, v0.z, v1.z, v2.z),
     );
 
     return point;
@@ -30117,7 +30117,7 @@ class SplineCurve extends Curve {
 
     point.set(
       CatmullRom(weight, p0.x, p1.x, p2.x, p3.x),
-      CatmullRom(weight, p0.y, p1.y, p2.y, p3.y)
+      CatmullRom(weight, p0.y, p1.y, p2.y, p3.y),
     );
 
     return point;
@@ -30175,7 +30175,7 @@ var Curves = /*#__PURE__*/ Object.freeze({
   LineCurve3: LineCurve3,
   QuadraticBezierCurve: QuadraticBezierCurve,
   QuadraticBezierCurve3: QuadraticBezierCurve3,
-  SplineCurve: SplineCurve
+  SplineCurve: SplineCurve,
 });
 
 /**************************************************************
@@ -30418,7 +30418,7 @@ class Path extends CurvePath {
     const curve = new QuadraticBezierCurve(
       this.currentPoint.clone(),
       new Vector2(aCPx, aCPy),
-      new Vector2(aX, aY)
+      new Vector2(aX, aY),
     );
 
     this.curves.push(curve);
@@ -30433,7 +30433,7 @@ class Path extends CurvePath {
       this.currentPoint.clone(),
       new Vector2(aCP1x, aCP1y),
       new Vector2(aCP2x, aCP2y),
-      new Vector2(aX, aY)
+      new Vector2(aX, aY),
     );
 
     this.curves.push(curve);
@@ -30481,7 +30481,7 @@ class Path extends CurvePath {
       aStartAngle,
       aEndAngle,
       aClockwise,
-      aRotation
+      aRotation,
     );
 
     return this;
@@ -30496,7 +30496,7 @@ class Path extends CurvePath {
       aStartAngle,
       aEndAngle,
       aClockwise,
-      aRotation
+      aRotation,
     );
 
     if (this.curves.length > 0) {
@@ -30546,7 +30546,7 @@ class LatheGeometry extends BufferGeometry {
     points = [new Vector2(0, -0.5), new Vector2(0.5, 0), new Vector2(0, 0.5)],
     segments = 12,
     phiStart = 0,
-    phiLength = Math.PI * 2
+    phiLength = Math.PI * 2,
   ) {
     super();
 
@@ -30556,7 +30556,7 @@ class LatheGeometry extends BufferGeometry {
       points: points,
       segments: segments,
       phiStart: phiStart,
-      phiLength: phiLength
+      phiLength: phiLength,
     };
 
     segments = Math.floor(segments);
@@ -30718,7 +30718,7 @@ class CapsuleGeometry extends LatheGeometry {
       radius: radius,
       length: length,
       capSegments: capSegments,
-      radialSegments: radialSegments
+      radialSegments: radialSegments,
     };
   }
 
@@ -30737,7 +30737,7 @@ class CircleGeometry extends BufferGeometry {
       radius: radius,
       segments: segments,
       thetaStart: thetaStart,
-      thetaLength: thetaLength
+      thetaLength: thetaLength,
     };
 
     segments = Math.max(3, segments);
@@ -30818,7 +30818,7 @@ class CylinderGeometry extends BufferGeometry {
     heightSegments = 1,
     openEnded = false,
     thetaStart = 0,
-    thetaLength = Math.PI * 2
+    thetaLength = Math.PI * 2,
   ) {
     super();
 
@@ -30832,7 +30832,7 @@ class CylinderGeometry extends BufferGeometry {
       heightSegments: heightSegments,
       openEnded: openEnded,
       thetaStart: thetaStart,
-      thetaLength: thetaLength
+      thetaLength: thetaLength,
     };
 
     const scope = this;
@@ -31069,7 +31069,7 @@ class CylinderGeometry extends BufferGeometry {
       data.heightSegments,
       data.openEnded,
       data.thetaStart,
-      data.thetaLength
+      data.thetaLength,
     );
   }
 }
@@ -31082,7 +31082,7 @@ class ConeGeometry extends CylinderGeometry {
     heightSegments = 1,
     openEnded = false,
     thetaStart = 0,
-    thetaLength = Math.PI * 2
+    thetaLength = Math.PI * 2,
   ) {
     super(0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength);
 
@@ -31095,7 +31095,7 @@ class ConeGeometry extends CylinderGeometry {
       heightSegments: heightSegments,
       openEnded: openEnded,
       thetaStart: thetaStart,
-      thetaLength: thetaLength
+      thetaLength: thetaLength,
     };
   }
 
@@ -31107,7 +31107,7 @@ class ConeGeometry extends CylinderGeometry {
       data.heightSegments,
       data.openEnded,
       data.thetaStart,
-      data.thetaLength
+      data.thetaLength,
     );
   }
 }
@@ -31122,7 +31122,7 @@ class PolyhedronGeometry extends BufferGeometry {
       vertices: vertices,
       indices: indices,
       radius: radius,
-      detail: detail
+      detail: detail,
     };
 
     // default buffer data
@@ -31430,14 +31430,14 @@ class DodecahedronGeometry extends PolyhedronGeometry {
       r,
       t,
       0,
-      r
+      r,
     ];
 
     const indices = [
       3, 11, 7, 3, 7, 15, 3, 15, 13, 7, 19, 17, 7, 17, 6, 7, 6, 15, 17, 4, 8, 17, 8, 10, 17, 10, 6,
       8, 0, 16, 8, 16, 2, 8, 2, 10, 0, 12, 1, 0, 1, 18, 0, 18, 16, 6, 10, 2, 6, 2, 13, 6, 13, 15, 2,
       16, 18, 2, 18, 3, 2, 3, 13, 18, 1, 9, 18, 9, 11, 18, 11, 3, 4, 14, 12, 4, 12, 0, 4, 0, 8, 11,
-      9, 5, 11, 5, 19, 11, 19, 7, 19, 5, 14, 19, 14, 4, 19, 4, 17, 1, 12, 14, 1, 14, 5, 1, 5, 9
+      9, 5, 11, 5, 19, 11, 19, 7, 19, 5, 14, 19, 14, 4, 19, 4, 17, 1, 12, 14, 1, 14, 5, 1, 5, 9,
     ];
 
     super(vertices, indices, radius, detail);
@@ -31446,7 +31446,7 @@ class DodecahedronGeometry extends PolyhedronGeometry {
 
     this.parameters = {
       radius: radius,
-      detail: detail
+      detail: detail,
     };
   }
 
@@ -31468,7 +31468,7 @@ class EdgesGeometry extends BufferGeometry {
 
     this.parameters = {
       geometry: geometry,
-      thresholdAngle: thresholdAngle
+      thresholdAngle: thresholdAngle,
     };
 
     if (geometry !== null) {
@@ -31539,7 +31539,7 @@ class EdgesGeometry extends BufferGeometry {
             edgeData[hash] = {
               index0: indexArr[j],
               index1: indexArr[jNext],
-              normal: _normal.clone()
+              normal: _normal.clone(),
             };
           }
         }
@@ -31596,7 +31596,7 @@ class Shape extends Path {
   extractPoints(divisions) {
     return {
       shape: this.getPoints(divisions),
-      holes: this.getPointsHoles(divisions)
+      holes: this.getPointsHoles(divisions),
     };
   }
 
@@ -31682,7 +31682,7 @@ const Earcut = {
     earcutLinked(outerNode, triangles, dim, minX, minY, invSize, 0);
 
     return triangles;
-  }
+  },
 };
 
 // create a circular doubly linked list from polygon points in the specified winding order
@@ -32467,9 +32467,9 @@ class ExtrudeGeometry extends BufferGeometry {
       new Vector2(0.5, 0.5),
       new Vector2(-0.5, 0.5),
       new Vector2(-0.5, -0.5),
-      new Vector2(0.5, -0.5)
+      new Vector2(0.5, -0.5),
     ]),
-    options = {}
+    options = {},
   ) {
     super();
 
@@ -32477,7 +32477,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
     this.parameters = {
       shapes: shapes,
-      options: options
+      options: options,
     };
 
     shapes = Array.isArray(shapes) ? shapes : [shapes];
@@ -32950,7 +32950,7 @@ class ExtrudeGeometry extends BufferGeometry {
           verticesArray,
           nextIndex - 3,
           nextIndex - 2,
-          nextIndex - 1
+          nextIndex - 1,
         );
 
         addUV(uvs[0]);
@@ -32974,7 +32974,7 @@ class ExtrudeGeometry extends BufferGeometry {
           nextIndex - 6,
           nextIndex - 3,
           nextIndex - 2,
-          nextIndex - 1
+          nextIndex - 1,
         );
 
         addUV(uvs[0]);
@@ -33066,17 +33066,17 @@ const WorldUVGenerator = {
         new Vector2(a_x, 1 - a_z),
         new Vector2(b_x, 1 - b_z),
         new Vector2(c_x, 1 - c_z),
-        new Vector2(d_x, 1 - d_z)
+        new Vector2(d_x, 1 - d_z),
       ];
     } else {
       return [
         new Vector2(a_y, 1 - a_z),
         new Vector2(b_y, 1 - b_z),
         new Vector2(c_y, 1 - c_z),
-        new Vector2(d_y, 1 - d_z)
+        new Vector2(d_y, 1 - d_z),
       ];
     }
-  }
+  },
 };
 
 function toJSON$1(shapes, options, data) {
@@ -33139,12 +33139,12 @@ class IcosahedronGeometry extends PolyhedronGeometry {
       -1,
       -t,
       0,
-      1
+      1,
     ];
 
     const indices = [
       0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11, 1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1,
-      8, 3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9, 4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1
+      8, 3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9, 4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1,
     ];
 
     super(vertices, indices, radius, detail);
@@ -33153,7 +33153,7 @@ class IcosahedronGeometry extends PolyhedronGeometry {
 
     this.parameters = {
       radius: radius,
-      detail: detail
+      detail: detail,
     };
   }
 
@@ -33174,7 +33174,7 @@ class OctahedronGeometry extends PolyhedronGeometry {
 
     this.parameters = {
       radius: radius,
-      detail: detail
+      detail: detail,
     };
   }
 
@@ -33190,7 +33190,7 @@ class RingGeometry extends BufferGeometry {
     thetaSegments = 32,
     phiSegments = 1,
     thetaStart = 0,
-    thetaLength = Math.PI * 2
+    thetaLength = Math.PI * 2,
   ) {
     super();
 
@@ -33202,7 +33202,7 @@ class RingGeometry extends BufferGeometry {
       thetaSegments: thetaSegments,
       phiSegments: phiSegments,
       thetaStart: thetaStart,
-      thetaLength: thetaLength
+      thetaLength: thetaLength,
     };
 
     thetaSegments = Math.max(3, thetaSegments);
@@ -33297,7 +33297,7 @@ class RingGeometry extends BufferGeometry {
       data.thetaSegments,
       data.phiSegments,
       data.thetaStart,
-      data.thetaLength
+      data.thetaLength,
     );
   }
 }
@@ -33305,7 +33305,7 @@ class RingGeometry extends BufferGeometry {
 class ShapeGeometry extends BufferGeometry {
   constructor(
     shapes = new Shape([new Vector2(0, 0.5), new Vector2(-0.5, -0.5), new Vector2(0.5, -0.5)]),
-    curveSegments = 12
+    curveSegments = 12,
   ) {
     super();
 
@@ -33313,7 +33313,7 @@ class ShapeGeometry extends BufferGeometry {
 
     this.parameters = {
       shapes: shapes,
-      curveSegments: curveSegments
+      curveSegments: curveSegments,
     };
 
     // buffers
@@ -33460,7 +33460,7 @@ class SphereGeometry extends BufferGeometry {
     phiStart = 0,
     phiLength = Math.PI * 2,
     thetaStart = 0,
-    thetaLength = Math.PI
+    thetaLength = Math.PI,
   ) {
     super();
 
@@ -33473,7 +33473,7 @@ class SphereGeometry extends BufferGeometry {
       phiStart: phiStart,
       phiLength: phiLength,
       thetaStart: thetaStart,
-      thetaLength: thetaLength
+      thetaLength: thetaLength,
     };
 
     widthSegments = Math.max(3, Math.floor(widthSegments));
@@ -33577,7 +33577,7 @@ class SphereGeometry extends BufferGeometry {
       data.phiStart,
       data.phiLength,
       data.thetaStart,
-      data.thetaLength
+      data.thetaLength,
     );
   }
 }
@@ -33594,7 +33594,7 @@ class TetrahedronGeometry extends PolyhedronGeometry {
 
     this.parameters = {
       radius: radius,
-      detail: detail
+      detail: detail,
     };
   }
 
@@ -33609,7 +33609,7 @@ class TorusGeometry extends BufferGeometry {
     tube = 0.4,
     radialSegments = 12,
     tubularSegments = 48,
-    arc = Math.PI * 2
+    arc = Math.PI * 2,
   ) {
     super();
 
@@ -33620,7 +33620,7 @@ class TorusGeometry extends BufferGeometry {
       tube: tube,
       radialSegments: radialSegments,
       tubularSegments: tubularSegments,
-      arc: arc
+      arc: arc,
     };
 
     radialSegments = Math.floor(radialSegments);
@@ -33709,7 +33709,7 @@ class TorusGeometry extends BufferGeometry {
       data.tube,
       data.radialSegments,
       data.tubularSegments,
-      data.arc
+      data.arc,
     );
   }
 }
@@ -33726,7 +33726,7 @@ class TorusKnotGeometry extends BufferGeometry {
       tubularSegments: tubularSegments,
       radialSegments: radialSegments,
       p: p,
-      q: q
+      q: q,
     };
 
     tubularSegments = Math.floor(tubularSegments);
@@ -33860,7 +33860,7 @@ class TorusKnotGeometry extends BufferGeometry {
       data.tubularSegments,
       data.radialSegments,
       data.p,
-      data.q
+      data.q,
     );
   }
 }
@@ -33870,12 +33870,12 @@ class TubeGeometry extends BufferGeometry {
     path = new QuadraticBezierCurve3(
       new Vector3(-1, -1, 0),
       new Vector3(-1, 1, 0),
-      new Vector3(1, 1, 0)
+      new Vector3(1, 1, 0),
     ),
     tubularSegments = 64,
     radius = 1,
     radialSegments = 8,
-    closed = false
+    closed = false,
   ) {
     super();
 
@@ -33886,7 +33886,7 @@ class TubeGeometry extends BufferGeometry {
       tubularSegments: tubularSegments,
       radius: radius,
       radialSegments: radialSegments,
-      closed: closed
+      closed: closed,
     };
 
     const frames = path.computeFrenetFrames(tubularSegments, closed);
@@ -34035,7 +34035,7 @@ class TubeGeometry extends BufferGeometry {
       data.tubularSegments,
       data.radius,
       data.radialSegments,
-      data.closed
+      data.closed,
     );
   }
 }
@@ -34047,7 +34047,7 @@ class WireframeGeometry extends BufferGeometry {
     this.type = 'WireframeGeometry';
 
     this.parameters = {
-      geometry: geometry
+      geometry: geometry,
     };
 
     if (geometry !== null) {
@@ -34169,7 +34169,7 @@ var Geometries = /*#__PURE__*/ Object.freeze({
   TorusGeometry: TorusGeometry,
   TorusKnotGeometry: TorusKnotGeometry,
   TubeGeometry: TubeGeometry,
-  WireframeGeometry: WireframeGeometry
+  WireframeGeometry: WireframeGeometry,
 });
 
 class ShadowMaterial extends Material {
@@ -34329,7 +34329,7 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
 
     this.defines = {
       STANDARD: '',
-      PHYSICAL: ''
+      PHYSICAL: '',
     };
 
     this.type = 'MeshPhysicalMaterial';
@@ -34351,7 +34351,7 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
       },
       set: function (reflectivity) {
         this.ior = (1 + 0.4 * reflectivity) / (1 - 0.4 * reflectivity);
-      }
+      },
     });
 
     this.iridescenceMap = null;
@@ -34450,7 +34450,7 @@ class MeshPhysicalMaterial extends MeshStandardMaterial {
 
     this.defines = {
       STANDARD: '',
-      PHYSICAL: ''
+      PHYSICAL: '',
     };
 
     this.anisotropy = source.anisotropy;
@@ -35191,7 +35191,7 @@ function makeClipAdditive(targetClip, referenceFrame = 0, referenceClip = target
           referenceValue,
           0,
           targetTrack.values,
-          valueStart
+          valueStart,
         );
       } else {
         const valueEnd = targetValueSize - targetOffset * 2;
@@ -35217,7 +35217,7 @@ const AnimationUtils = {
   sortedArray: sortedArray,
   flattenJSON: flattenJSON,
   subclip: subclip,
-  makeClipAdditive: makeClipAdditive
+  makeClipAdditive: makeClipAdditive,
 };
 
 /**
@@ -35429,7 +35429,7 @@ class CubicInterpolant extends Interpolant {
 
     this.DefaultSettings_ = {
       endingStart: ZeroCurvatureEnding,
-      endingEnd: ZeroCurvatureEnding
+      endingEnd: ZeroCurvatureEnding,
     };
   }
 
@@ -35595,7 +35595,7 @@ class KeyframeTrack {
       json = {
         name: track.name,
         times: convertArray(track.times, Array),
-        values: convertArray(track.values, Array)
+        values: convertArray(track.values, Array),
       };
 
       const interpolation = track.getInterpolation();
@@ -36025,7 +36025,7 @@ class AnimationClip {
       duration: clip.duration,
       tracks: tracks,
       uuid: clip.uuid,
-      blendMode: clip.blendMode
+      blendMode: clip.blendMode,
     };
 
     for (let i = 0, n = clipTracks.length; i !== n; ++i) {
@@ -36062,8 +36062,8 @@ class AnimationClip {
         new NumberKeyframeTrack(
           '.morphTargetInfluences[' + morphTargetSequence[i].name + ']',
           times,
-          values
-        ).scale(1.0 / fps)
+          values,
+        ).scale(1.0 / fps),
       );
     }
 
@@ -36117,7 +36117,7 @@ class AnimationClip {
 
     for (const name in animationToMorphTargets) {
       clips.push(
-        this.CreateFromMorphTargetSequence(name, animationToMorphTargets[name], fps, noLoop)
+        this.CreateFromMorphTargetSequence(name, animationToMorphTargets[name], fps, noLoop),
       );
     }
 
@@ -36136,7 +36136,7 @@ class AnimationClip {
       trackName,
       animationKeys,
       propertyName,
-      destTracks
+      destTracks,
     ) {
       // only return track if there are actually keys.
       if (animationKeys.length !== 0) {
@@ -36199,7 +36199,11 @@ class AnimationClip {
           }
 
           tracks.push(
-            new NumberKeyframeTrack('.morphTargetInfluence[' + morphTargetName + ']', times, values)
+            new NumberKeyframeTrack(
+              '.morphTargetInfluence[' + morphTargetName + ']',
+              times,
+              values,
+            ),
           );
         }
 
@@ -36216,7 +36220,7 @@ class AnimationClip {
           boneName + '.quaternion',
           animationKeys,
           'rot',
-          tracks
+          tracks,
         );
 
         addNonemptyTrack(VectorKeyframeTrack, boneName + '.scale', animationKeys, 'scl', tracks);
@@ -36373,7 +36377,7 @@ const Cache = {
 
   clear: function () {
     this.files = {};
-  }
+  },
 };
 
 class LoadingManager {
@@ -36569,7 +36573,7 @@ class FileLoader extends Loader {
       loading[url].push({
         onLoad: onLoad,
         onProgress: onProgress,
-        onError: onError
+        onError: onError,
       });
 
       return;
@@ -36581,13 +36585,13 @@ class FileLoader extends Loader {
     loading[url].push({
       onLoad: onLoad,
       onProgress: onProgress,
-      onError: onError
+      onError: onError,
     });
 
     // create request
     const req = new Request(url, {
       headers: new Headers(this.requestHeader),
-      credentials: this.withCredentials ? 'include' : 'same-origin'
+      credentials: this.withCredentials ? 'include' : 'same-origin',
       // An abort controller could be added within a future PR
     });
 
@@ -36642,7 +36646,7 @@ class FileLoader extends Loader {
                     const event = new ProgressEvent('progress', {
                       lengthComputable,
                       loaded,
-                      total
+                      total,
                     });
                     for (let i = 0, il = callbacks.length; i < il; i++) {
                       const callback = callbacks[i];
@@ -36654,14 +36658,14 @@ class FileLoader extends Loader {
                   }
                 });
               }
-            }
+            },
           });
 
           return new Response(stream);
         } else {
           throw new HttpError(
             `fetch for "${response.url}" responded with ${response.status}: ${response.statusText}`,
-            response
+            response,
           );
         }
       })
@@ -36774,7 +36778,7 @@ class AnimationLoader extends Loader {
         }
       },
       onProgress,
-      onError
+      onError,
     );
   }
 
@@ -36827,7 +36831,7 @@ class CompressedTextureLoader extends Loader {
             width: texDatas.width,
             height: texDatas.height,
             format: texDatas.format,
-            mipmaps: texDatas.mipmaps
+            mipmaps: texDatas.mipmaps,
           };
 
           loaded += 1;
@@ -36843,7 +36847,7 @@ class CompressedTextureLoader extends Loader {
           }
         },
         onProgress,
-        onError
+        onError,
       );
     }
 
@@ -36890,7 +36894,7 @@ class CompressedTextureLoader extends Loader {
           if (onLoad) onLoad(texture);
         },
         onProgress,
-        onError
+        onError,
       );
     }
 
@@ -36995,7 +36999,7 @@ class CubeTextureLoader extends Loader {
           }
         },
         undefined,
-        onError
+        onError,
       );
     }
 
@@ -37100,7 +37104,7 @@ class DataTextureLoader extends Loader {
         if (onLoad) onLoad(texture, texData);
       },
       onProgress,
-      onError
+      onError,
     );
 
     return texture;
@@ -37130,7 +37134,7 @@ class TextureLoader extends Loader {
         }
       },
       onProgress,
-      onError
+      onError,
     );
 
     return texture;
@@ -37255,7 +37259,7 @@ class LightShadow {
 
     _projScreenMatrix$1.multiplyMatrices(
       shadowCamera.projectionMatrix,
-      shadowCamera.matrixWorldInverse
+      shadowCamera.matrixWorldInverse,
     );
     this._frustum.setFromProjectionMatrix(_projScreenMatrix$1);
 
@@ -37275,7 +37279,7 @@ class LightShadow {
       0.0,
       0.0,
       0.0,
-      1.0
+      1.0,
     );
 
     shadowMatrix.multiply(_projScreenMatrix$1);
@@ -37457,7 +37461,7 @@ class PointLightShadow extends LightShadow {
       // positive Y
       new Vector4(3, 0, 1, 1),
       // negative Y
-      new Vector4(1, 0, 1, 1)
+      new Vector4(1, 0, 1, 1),
     ];
 
     this._cubeDirections = [
@@ -37466,7 +37470,7 @@ class PointLightShadow extends LightShadow {
       new Vector3(0, 0, 1),
       new Vector3(0, 0, -1),
       new Vector3(0, 1, 0),
-      new Vector3(0, -1, 0)
+      new Vector3(0, -1, 0),
     ];
 
     this._cubeUps = [
@@ -37475,7 +37479,7 @@ class PointLightShadow extends LightShadow {
       new Vector3(0, 1, 0),
       new Vector3(0, 1, 0),
       new Vector3(0, 0, 1),
-      new Vector3(0, 0, -1)
+      new Vector3(0, 0, -1),
     ];
   }
 
@@ -37502,7 +37506,7 @@ class PointLightShadow extends LightShadow {
     shadowMatrix.makeTranslation(
       -_lightPositionWorld.x,
       -_lightPositionWorld.y,
-      -_lightPositionWorld.z
+      -_lightPositionWorld.z,
     );
 
     _projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
@@ -37894,7 +37898,7 @@ class MaterialLoader extends Loader {
         }
       },
       onProgress,
-      onError
+      onError,
     );
   }
 
@@ -38173,7 +38177,7 @@ class MaterialLoader extends Loader {
       MeshMatcapMaterial,
       LineDashedMaterial,
       LineBasicMaterial,
-      Material
+      Material,
     };
 
     return new materialLib[type]();
@@ -38295,7 +38299,7 @@ class BufferGeometryLoader extends Loader {
         }
       },
       onProgress,
-      onError
+      onError,
     );
   }
 
@@ -38356,7 +38360,7 @@ class BufferGeometryLoader extends Loader {
           interleavedBuffer,
           attribute.itemSize,
           attribute.offset,
-          attribute.normalized
+          attribute.normalized,
         );
       } else {
         const typedArray = getTypedArray(attribute.type, attribute.array);
@@ -38366,7 +38370,7 @@ class BufferGeometryLoader extends Loader {
         bufferAttribute = new bufferAttributeConstr(
           typedArray,
           attribute.itemSize,
-          attribute.normalized
+          attribute.normalized,
         );
       }
 
@@ -38399,14 +38403,14 @@ class BufferGeometryLoader extends Loader {
               interleavedBuffer,
               attribute.itemSize,
               attribute.offset,
-              attribute.normalized
+              attribute.normalized,
             );
           } else {
             const typedArray = getTypedArray(attribute.type, attribute.array);
             bufferAttribute = new BufferAttribute(
               typedArray,
               attribute.itemSize,
-              attribute.normalized
+              attribute.normalized,
             );
           }
 
@@ -38499,7 +38503,7 @@ class ObjectLoader extends Loader {
         scope.parse(json, onLoad);
       },
       onProgress,
-      onError
+      onError,
     );
   }
 
@@ -38713,7 +38717,7 @@ class ObjectLoader extends Loader {
         function () {
           scope.manager.itemError(url);
           scope.manager.itemEnd(url);
-        }
+        },
       );
     }
 
@@ -38729,7 +38733,7 @@ class ObjectLoader extends Loader {
           return {
             data: getTypedArray(image.type, image.data),
             width: image.width,
-            height: image.height
+            height: image.height,
           };
         } else {
           return null;
@@ -38767,8 +38771,8 @@ class ObjectLoader extends Loader {
                   new DataTexture(
                     deserializedImage.data,
                     deserializedImage.width,
-                    deserializedImage.height
-                  )
+                    deserializedImage.height,
+                  ),
                 );
               }
             }
@@ -38805,7 +38809,7 @@ class ObjectLoader extends Loader {
           return {
             data: getTypedArray(image.type, image.data),
             width: image.width,
-            height: image.height
+            height: image.height,
           };
         } else {
           return null;
@@ -38841,8 +38845,8 @@ class ObjectLoader extends Loader {
                   new DataTexture(
                     deserializedImage.data,
                     deserializedImage.width,
-                    deserializedImage.height
-                  )
+                    deserializedImage.height,
+                  ),
                 );
               }
             }
@@ -39047,7 +39051,7 @@ class ObjectLoader extends Loader {
           data.top,
           data.bottom,
           data.near,
-          data.far
+          data.far,
         );
 
         if (data.zoom !== undefined) object.zoom = data.zoom;
@@ -39082,7 +39086,7 @@ class ObjectLoader extends Loader {
           data.distance,
           data.angle,
           data.penumbra,
-          data.decay
+          data.decay,
         );
 
         break;
@@ -39127,12 +39131,12 @@ class ObjectLoader extends Loader {
         object = new InstancedMesh(geometry, material, count);
         object.instanceMatrix = new InstancedBufferAttribute(
           new Float32Array(instanceMatrix.array),
-          16
+          16,
         );
         if (instanceColor !== undefined)
           object.instanceColor = new InstancedBufferAttribute(
             new Float32Array(instanceColor.array),
-            instanceColor.itemSize
+            instanceColor.itemSize,
           );
 
         break;
@@ -39278,13 +39282,13 @@ const TEXTURE_MAPPING = {
   CubeRefractionMapping: CubeRefractionMapping,
   EquirectangularReflectionMapping: EquirectangularReflectionMapping,
   EquirectangularRefractionMapping: EquirectangularRefractionMapping,
-  CubeUVReflectionMapping: CubeUVReflectionMapping
+  CubeUVReflectionMapping: CubeUVReflectionMapping,
 };
 
 const TEXTURE_WRAPPING = {
   RepeatWrapping: RepeatWrapping,
   ClampToEdgeWrapping: ClampToEdgeWrapping,
-  MirroredRepeatWrapping: MirroredRepeatWrapping
+  MirroredRepeatWrapping: MirroredRepeatWrapping,
 };
 
 const TEXTURE_FILTER = {
@@ -39293,7 +39297,7 @@ const TEXTURE_FILTER = {
   NearestMipmapLinearFilter: NearestMipmapLinearFilter,
   LinearFilter: LinearFilter,
   LinearMipmapNearestFilter: LinearMipmapNearestFilter,
-  LinearMipmapLinearFilter: LinearMipmapLinearFilter
+  LinearMipmapLinearFilter: LinearMipmapLinearFilter,
 };
 
 class ImageBitmapLoader extends Loader {
@@ -39353,7 +39357,7 @@ class ImageBitmapLoader extends Loader {
       .then(function (blob) {
         return createImageBitmap(
           blob,
-          Object.assign(scope.options, { colorSpaceConversion: 'none' })
+          Object.assign(scope.options, { colorSpaceConversion: 'none' }),
         );
       })
       .then(function (imageBitmap) {
@@ -39417,14 +39421,14 @@ class AudioLoader extends Loader {
             function (audioBuffer) {
               onLoad(audioBuffer);
             },
-            handleError
+            handleError,
           );
         } catch (e) {
           handleError(e);
         }
       },
       onProgress,
-      onError
+      onError,
     );
 
     function handleError(e) {
@@ -39502,7 +39506,7 @@ class StereoCamera {
       near: null,
       far: null,
       zoom: null,
-      eyeSep: null
+      eyeSep: null,
     };
   }
 
@@ -39725,7 +39729,7 @@ class AudioListener extends Object3D {
         _orientation$1.z,
         up.x,
         up.y,
-        up.z
+        up.z,
       );
     }
   }
@@ -40531,7 +40535,7 @@ class PropertyBinding {
       objectName: matches[3],
       objectIndex: matches[4],
       propertyName: matches[5], // required
-      propertyIndex: matches[6]
+      propertyIndex: matches[6],
     };
 
     const lastDot = results.nodeName && results.nodeName.lastIndexOf('.');
@@ -40753,7 +40757,7 @@ class PropertyBinding {
           if (!targetObject.material) {
             console.error(
               'THREE.PropertyBinding: Can not bind to material as node does not have a material.',
-              this
+              this,
             );
             return;
           }
@@ -40761,7 +40765,7 @@ class PropertyBinding {
           if (!targetObject.material.materials) {
             console.error(
               'THREE.PropertyBinding: Can not bind to material.materials as node.material does not have a materials array.',
-              this
+              this,
             );
             return;
           }
@@ -40774,7 +40778,7 @@ class PropertyBinding {
           if (!targetObject.skeleton) {
             console.error(
               'THREE.PropertyBinding: Can not bind to bones as node does not have a skeleton.',
-              this
+              this,
             );
             return;
           }
@@ -40803,7 +40807,7 @@ class PropertyBinding {
           if (!targetObject.material) {
             console.error(
               'THREE.PropertyBinding: Can not bind to material as node does not have a material.',
-              this
+              this,
             );
             return;
           }
@@ -40811,7 +40815,7 @@ class PropertyBinding {
           if (!targetObject.material.map) {
             console.error(
               'THREE.PropertyBinding: Can not bind to material.map as node.material does not have a map.',
-              this
+              this,
             );
             return;
           }
@@ -40823,7 +40827,7 @@ class PropertyBinding {
           if (targetObject[objectName] === undefined) {
             console.error(
               'THREE.PropertyBinding: Can not bind to objectName of node undefined.',
-              this
+              this,
             );
             return;
           }
@@ -40836,7 +40840,7 @@ class PropertyBinding {
           console.error(
             'THREE.PropertyBinding: Trying to bind to objectIndex of objectName, but is undefined.',
             this,
-            targetObject
+            targetObject,
           );
           return;
         }
@@ -40857,7 +40861,7 @@ class PropertyBinding {
           '.' +
           propertyName +
           " but it wasn't found.",
-        targetObject
+        targetObject,
       );
       return;
     }
@@ -40890,7 +40894,7 @@ class PropertyBinding {
         if (!targetObject.geometry) {
           console.error(
             'THREE.PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.',
-            this
+            this,
           );
           return;
         }
@@ -40898,7 +40902,7 @@ class PropertyBinding {
         if (!targetObject.geometry.morphAttributes) {
           console.error(
             'THREE.PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.morphAttributes.',
-            this
+            this,
           );
           return;
         }
@@ -40947,20 +40951,20 @@ PropertyBinding.prototype.BindingType = {
   Direct: 0,
   EntireArray: 1,
   ArrayElement: 2,
-  HasFromToArray: 3
+  HasFromToArray: 3,
 };
 
 PropertyBinding.prototype.Versioning = {
   None: 0,
   NeedsUpdate: 1,
-  MatrixWorldNeedsUpdate: 2
+  MatrixWorldNeedsUpdate: 2,
 };
 
 PropertyBinding.prototype.GetterByBindingType = [
   PropertyBinding.prototype._getValue_direct,
   PropertyBinding.prototype._getValue_array,
   PropertyBinding.prototype._getValue_arrayElement,
-  PropertyBinding.prototype._getValue_toArray
+  PropertyBinding.prototype._getValue_toArray,
 ];
 
 PropertyBinding.prototype.SetterByBindingTypeAndVersioning = [
@@ -40968,27 +40972,27 @@ PropertyBinding.prototype.SetterByBindingTypeAndVersioning = [
     // Direct
     PropertyBinding.prototype._setValue_direct,
     PropertyBinding.prototype._setValue_direct_setNeedsUpdate,
-    PropertyBinding.prototype._setValue_direct_setMatrixWorldNeedsUpdate
+    PropertyBinding.prototype._setValue_direct_setMatrixWorldNeedsUpdate,
   ],
   [
     // EntireArray
 
     PropertyBinding.prototype._setValue_array,
     PropertyBinding.prototype._setValue_array_setNeedsUpdate,
-    PropertyBinding.prototype._setValue_array_setMatrixWorldNeedsUpdate
+    PropertyBinding.prototype._setValue_array_setMatrixWorldNeedsUpdate,
   ],
   [
     // ArrayElement
     PropertyBinding.prototype._setValue_arrayElement,
     PropertyBinding.prototype._setValue_arrayElement_setNeedsUpdate,
-    PropertyBinding.prototype._setValue_arrayElement_setMatrixWorldNeedsUpdate
+    PropertyBinding.prototype._setValue_arrayElement_setMatrixWorldNeedsUpdate,
   ],
   [
     // HasToFromArray
     PropertyBinding.prototype._setValue_fromArray,
     PropertyBinding.prototype._setValue_fromArray_setNeedsUpdate,
-    PropertyBinding.prototype._setValue_fromArray_setMatrixWorldNeedsUpdate
-  ]
+    PropertyBinding.prototype._setValue_fromArray_setMatrixWorldNeedsUpdate,
+  ],
 ];
 
 /**
@@ -41053,11 +41057,11 @@ class AnimationObjectGroup {
         },
         get inUse() {
           return this.total - scope.nCachedObjects_;
-        }
+        },
       },
       get bindingsPerObject() {
         return scope._bindings.length;
-      }
+      },
     };
   }
 
@@ -41127,7 +41131,7 @@ class AnimationObjectGroup {
       } else if (objects[index] !== knownObject) {
         console.error(
           'THREE.AnimationObjectGroup: Different objects with the same UUID ' +
-            'detected. Clean the caches or recreate your infrastructure when reloading scenes.'
+            'detected. Clean the caches or recreate your infrastructure when reloading scenes.',
         );
       } // else the object is already where we want it to be
     } // for arguments
@@ -41327,7 +41331,7 @@ class AnimationAction {
 
     const interpolantSettings = {
       endingStart: ZeroCurvatureEnding,
-      endingEnd: ZeroCurvatureEnding
+      endingEnd: ZeroCurvatureEnding,
     };
 
     for (let i = 0; i !== nTracks; ++i) {
@@ -41731,7 +41735,7 @@ class AnimationAction {
         this._mixer.dispatchEvent({
           type: 'finished',
           action: this,
-          direction: deltaTime < 0 ? -1 : 1
+          direction: deltaTime < 0 ? -1 : 1,
         });
       }
     } else {
@@ -41776,7 +41780,7 @@ class AnimationAction {
           this._mixer.dispatchEvent({
             type: 'finished',
             action: this,
-            direction: deltaTime > 0 ? 1 : -1
+            direction: deltaTime > 0 ? 1 : -1,
           });
         } else {
           // keep running
@@ -41797,7 +41801,7 @@ class AnimationAction {
           this._mixer.dispatchEvent({
             type: 'loop',
             action: this,
-            loopDelta: loopDelta
+            loopDelta: loopDelta,
           });
         }
       } else {
@@ -41916,7 +41920,7 @@ class AnimationMixer extends EventDispatcher {
         binding = new PropertyMixer(
           PropertyBinding.create(root, trackName, path),
           track.ValueTypeName,
-          track.getValueSize()
+          track.getValueSize(),
         );
 
         ++binding.referenceCount;
@@ -42008,7 +42012,7 @@ class AnimationMixer extends EventDispatcher {
         },
         get inUse() {
           return scope._nActiveActions;
-        }
+        },
       },
       bindings: {
         get total() {
@@ -42016,7 +42020,7 @@ class AnimationMixer extends EventDispatcher {
         },
         get inUse() {
           return scope._nActiveBindings;
-        }
+        },
       },
       controlInterpolants: {
         get total() {
@@ -42024,8 +42028,8 @@ class AnimationMixer extends EventDispatcher {
         },
         get inUse() {
           return scope._nActiveControlInterpolants;
-        }
-      }
+        },
+      },
     };
   }
 
@@ -42045,7 +42049,7 @@ class AnimationMixer extends EventDispatcher {
     if (actionsForClip === undefined) {
       actionsForClip = {
         knownActions: [action],
-        actionByRoot: {}
+        actionByRoot: {},
       };
 
       action._byClipCacheIndex = 0;
@@ -42229,7 +42233,7 @@ class AnimationMixer extends EventDispatcher {
         new Float32Array(2),
         new Float32Array(2),
         1,
-        _controlInterpolantsResultBuffer
+        _controlInterpolantsResultBuffer,
       );
 
       interpolant.__cacheIndex = lastActiveIndex;
@@ -42622,7 +42626,7 @@ class Raycaster {
       Line: { threshold: 1 },
       LOD: {},
       Points: { threshold: 1 },
-      Sprite: {}
+      Sprite: {},
     };
   }
 
@@ -42912,7 +42916,7 @@ class Box2 {
 
     return target.set(
       (point.x - this.min.x) / (this.max.x - this.min.x),
-      (point.y - this.min.y) / (this.max.y - this.min.y)
+      (point.y - this.min.y) / (this.max.y - this.min.y),
     );
   }
 
@@ -43062,7 +43066,7 @@ class SpotLightHelper extends Object3D {
     const geometry = new BufferGeometry();
 
     const positions = [
-      0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1, 1
+      0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1, 1,
     ];
 
     for (let i = 0, j = 1, l = 32; i < l; i++, j++) {
@@ -43143,7 +43147,7 @@ class SkeletonHelper extends LineSegments {
       depthTest: false,
       depthWrite: false,
       toneMapped: false,
-      transparent: true
+      transparent: true,
     });
 
     super(geometry, material);
@@ -43397,7 +43401,7 @@ class PolarGridHelper extends LineSegments {
     rings = 8,
     divisions = 64,
     color1 = 0x444444,
-    color2 = 0x888888
+    color2 = 0x888888,
   ) {
     color1 = new Color(color1);
     color2 = new Color(color2);
@@ -43495,8 +43499,8 @@ class DirectionalLightHelper extends Object3D {
       'position',
       new Float32BufferAttribute(
         [-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0, -size, size, 0],
-        3
-      )
+        3,
+      ),
     );
 
     const material = new LineBasicMaterial({ fog: false, toneMapped: false });
@@ -43559,7 +43563,7 @@ class CameraHelper extends LineSegments {
     const material = new LineBasicMaterial({
       color: 0xffffff,
       vertexColors: true,
-      toneMapped: false
+      toneMapped: false,
     });
 
     const vertices = [];
@@ -43815,7 +43819,7 @@ const _box = /*@__PURE__*/ new Box3();
 class BoxHelper extends LineSegments {
   constructor(object, color = 0xffff00) {
     const indices = new Uint16Array([
-      0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7
+      0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7,
     ]);
     const positions = new Float32Array(8 * 3);
 
@@ -43920,11 +43924,11 @@ class BoxHelper extends LineSegments {
 class Box3Helper extends LineSegments {
   constructor(box, color = 0xffff00) {
     const indices = new Uint16Array([
-      0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7
+      0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7,
     ]);
 
     const positions = [
-      1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1
+      1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1,
     ];
 
     const geometry = new BufferGeometry();
@@ -43967,7 +43971,7 @@ class PlaneHelper extends Line {
     const color = hex;
 
     const positions = [
-      1, -1, 0, -1, 1, 0, -1, -1, 0, 1, 1, 0, -1, 1, 0, -1, -1, 0, 1, -1, 0, 1, 1, 0
+      1, -1, 0, -1, 1, 0, -1, -1, 0, 1, 1, 0, -1, 1, 0, -1, -1, 0, 1, -1, 0, 1, 1, 0,
     ];
 
     const geometry = new BufferGeometry();
@@ -43996,9 +44000,9 @@ class PlaneHelper extends Line {
           opacity: 0.2,
           transparent: true,
           depthWrite: false,
-          toneMapped: false
-        })
-      )
+          toneMapped: false,
+        }),
+      ),
     );
   }
 
@@ -44034,7 +44038,7 @@ class ArrowHelper extends Object3D {
     length = 1,
     color = 0xffff00,
     headLength = length * 0.2,
-    headWidth = headLength * 0.2
+    headWidth = headLength * 0.2,
   ) {
     super();
 
@@ -44379,9 +44383,9 @@ if (typeof __THREE_DEVTOOLS__ !== 'undefined') {
   __THREE_DEVTOOLS__.dispatchEvent(
     new CustomEvent('register', {
       detail: {
-        revision: REVISION
-      }
-    })
+        revision: REVISION,
+      },
+    }),
   );
 }
 
@@ -44795,5 +44799,5 @@ export {
   ZeroSlopeEnding,
   ZeroStencilOp,
   _SRGBAFormat,
-  sRGBEncoding
+  sRGBEncoding,
 };

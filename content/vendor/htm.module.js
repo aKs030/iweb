@@ -90,11 +90,11 @@ export default function (s) {
                   3 === r && '!--' === e && ((r = 4), (h = h[0])));
             }
             return (p(), h);
-          })(s))
+          })(s)),
         ),
         r),
       arguments,
-      []
+      [],
     )).length > 1
       ? r
       : r[0]
