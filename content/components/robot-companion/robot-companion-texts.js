@@ -140,11 +140,7 @@ window.robotCompanionTexts = {
       'Yeah! So viele Interaktionen - ich LIEBE es!',
       'Du bist ja Power-User! Respekt!',
     ],
-    'normal': [
-      'Hey! Wie kann ich helfen?',
-      'Hi! Was brauchst du?',
-      'Hallo! Ready für Action!',
-    ],
+    'normal': ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?', 'Hallo! Ready für Action!'],
   },
 
   initialBubblePools: [

@@ -647,7 +647,10 @@ class RobotCompanion {
     const maxSteps = this.initialBubbleSequenceConfig.steps || 3;
 
     // Sicherstellen, dass Cursor-Liste zur Pool-Länge passt
-    if (!Array.isArray(this.initialBubblePoolCursor) || this.initialBubblePoolCursor.length !== pools.length) {
+    if (
+      !Array.isArray(this.initialBubblePoolCursor) ||
+      this.initialBubblePoolCursor.length !== pools.length
+    ) {
       this.initialBubblePoolCursor = new Array(pools.length).fill(0);
     }
 
