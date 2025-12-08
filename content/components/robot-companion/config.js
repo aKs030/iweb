@@ -4,7 +4,7 @@
 // For production, consider using a backend proxy or environment variables if supported.
 
 export const config = {
-    geminiApiKey: 'AIzaSyBnXWMuuYmG-jw40r3Xjc7psSI1dMqLYFM', // User needs to fill this in
-    model: 'gemini-flash-latest',
-    apiBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/models'
+  geminiApiKey: 'AIzaSyBnXWMuuYmG-jw40r3Xjc7psSI1dMqLYFM', // User needs to fill this in
+  model: 'gemini-flash-latest',
+  apiBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
 };

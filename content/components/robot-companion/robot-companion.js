@@ -10,7 +10,7 @@ class RobotCompanion {
     this.containerId = 'robot-companion-container';
     // Referenz auf globale Texte sicherstellen
     this.texts = (window && window.robotCompanionTexts) || {};
-    
+
     this.gemini = new GeminiService();
 
     this.state = {
@@ -37,7 +37,7 @@ class RobotCompanion {
     this.cacheConfig = {
       lastTypeWriterCheck: 0,
       typeWriterCheckInterval: 2000, // Nur alle 2 Sekunden nach dem Titel suchen, statt 60x pro Sekunde
-      typeWriterRect: null
+      typeWriterRect: null,
     };
 
     this.motion = {
@@ -91,19 +91,19 @@ class RobotCompanion {
       this.applyTexts();
       // Falls noch nicht initialisiert (Race Condition Prevention)
       if (!this.dom.container) this.init();
-      
+
       // AI suggestion disabled to save API quota
       // setTimeout(() => this.fetchAndShowSuggestion(), 5000);
     });
 
     // Fallback init, falls loadTexts hängt oder Texte schon da sind
     if (window.robotCompanionTexts) {
-        this.init();
+      this.init();
     } else {
-        // Kurzer Timeout als Fallback, damit der Bot auch ohne externe Texte erscheint
-        setTimeout(() => {
-            if (!this.dom.container) this.init();
-        }, 500);
+      // Kurzer Timeout als Fallback, damit der Bot auch ohne externe Texte erscheint
+      setTimeout(() => {
+        if (!this.dom.container) this.init();
+      }, 500);
     }
   }
 
@@ -111,16 +111,19 @@ class RobotCompanion {
     // Falls window.robotCompanionTexts inzwischen geladen wurde, nutze es
     const src = (window && window.robotCompanionTexts) || this.texts || {};
 
-    this.knowledgeBase = src.knowledgeBase || this.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
+    this.knowledgeBase = src.knowledgeBase ||
+      this.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
     this.contextGreetings = src.contextGreetings || this.contextGreetings || { default: [] };
     this.startMessageSuffix = src.startMessageSuffix || this.startMessageSuffix || {};
-    this.initialBubbleGreetings = src.initialBubbleGreetings || this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
+    this.initialBubbleGreetings = src.initialBubbleGreetings ||
+      this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
     this.initialBubblePools = src.initialBubblePools || this.initialBubblePools || [];
-    this.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig || this.initialBubbleSequenceConfig || {
+    this.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
+      this.initialBubbleSequenceConfig || {
         steps: 4,
         displayDuration: 10000,
         pausesAfter: [0, 20000, 20000, 0],
-    };
+      };
   }
 
   loadTexts() {
@@ -133,8 +136,8 @@ class RobotCompanion {
 
       // Prüfen ob Script schon existiert
       if (document.querySelector('script[src*="robot-companion-texts.js"]')) {
-          resolve();
-          return;
+        resolve();
+        return;
       }
 
       const script = document.createElement('script');
@@ -161,7 +164,8 @@ class RobotCompanion {
 
       // Cache Footer lookup (assuming footer doesn't change often)
       if (!this.dom.footer) {
-          this.dom.footer = document.querySelector('footer') || document.querySelector('#site-footer');
+        this.dom.footer =
+          document.querySelector('footer') || document.querySelector('#site-footer');
       }
 
       const footer = this.dom.footer;
@@ -183,10 +187,10 @@ class RobotCompanion {
     };
 
     const requestTick = () => {
-        if (!ticking) {
-            requestAnimationFrame(checkOverlap);
-            ticking = true;
-        }
+      if (!ticking) {
+        requestAnimationFrame(checkOverlap);
+        ticking = true;
+      }
     };
 
     // Listener
@@ -213,10 +217,17 @@ class RobotCompanion {
     setTimeout(() => {
       if (!this.state.isOpen && !this.state.hasGreeted) {
         const showSequenceChance = 0.9;
-        if (this.initialBubblePools && this.initialBubblePools.length > 0 && Math.random() < showSequenceChance) {
+        if (
+          this.initialBubblePools &&
+          this.initialBubblePools.length > 0 &&
+          Math.random() < showSequenceChance
+        ) {
           this.startInitialBubbleSequence();
         } else {
-          const greet = this.initialBubbleGreetings[Math.floor(Math.random() * this.initialBubbleGreetings.length)];
+          const greet =
+            this.initialBubbleGreetings[
+              Math.floor(Math.random() * this.initialBubbleGreetings.length)
+            ];
           const ctx = this.getPageContext();
           const ctxArr = this.contextGreetings[ctx] || this.contextGreetings.default || [];
           let finalGreet = greet;
@@ -352,13 +363,13 @@ class RobotCompanion {
     });
 
     if (this.dom.sendBtn) {
-        this.dom.sendBtn.addEventListener('click', () => this.handleUserMessage());
+      this.dom.sendBtn.addEventListener('click', () => this.handleUserMessage());
     }
 
     if (this.dom.input) {
-        this.dom.input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleUserMessage();
-        });
+      this.dom.input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') this.handleUserMessage();
+      });
     }
   }
 
@@ -388,15 +399,24 @@ class RobotCompanion {
   }
 
   stopIdleEyeMovement() {
-    if (this._eyeIdleTimer) { clearTimeout(this._eyeIdleTimer); this._eyeIdleTimer = null; }
-    this.eyeIdleOffset.x = 0; this.eyeIdleOffset.y = 0;
+    if (this._eyeIdleTimer) {
+      clearTimeout(this._eyeIdleTimer);
+      this._eyeIdleTimer = null;
+    }
+    this.eyeIdleOffset.x = 0;
+    this.eyeIdleOffset.y = 0;
     this.updateEyesTransform();
   }
 
   updateEyesTransform() {
     if (!this.dom || !this.dom.eyes) return;
-    let eyeOffset = (typeof this.patrol !== 'undefined' && this.patrol.direction > 0) ? -3 : 3;
-    const eyeIntensity = (this.avoid && this.avoid.active) ? 1.4 : (this.motion && this.motion.dashUntil > performance.now()) ? 1.2 : 1;
+    let eyeOffset = typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
+    const eyeIntensity =
+      this.avoid && this.avoid.active
+        ? 1.4
+        : this.motion && this.motion.dashUntil > performance.now()
+          ? 1.2
+          : 1;
     const baseX = eyeOffset * eyeIntensity;
     const totalX = baseX + (this.eyeIdleOffset.x || 0);
     const totalY = this.eyeIdleOffset.y || 0;
@@ -408,14 +428,22 @@ class RobotCompanion {
   startBlinkLoop() {
     this.stopBlinkLoop();
     const schedule = () => {
-      const delay = this.blinkConfig.intervalMin + Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
-      this._blinkTimer = setTimeout(() => { this.doBlink(); schedule(); }, delay);
+      const delay =
+        this.blinkConfig.intervalMin +
+        Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
+      this._blinkTimer = setTimeout(() => {
+        this.doBlink();
+        schedule();
+      }, delay);
     };
     schedule();
   }
 
   stopBlinkLoop() {
-    if (this._blinkTimer) { clearTimeout(this._blinkTimer); this._blinkTimer = null; }
+    if (this._blinkTimer) {
+      clearTimeout(this._blinkTimer);
+      this._blinkTimer = null;
+    }
   }
 
   doBlink() {
@@ -423,12 +451,17 @@ class RobotCompanion {
     const lids = this.dom.eyes.querySelectorAll('.robot-lid');
     if (!lids.length) return;
     lids.forEach((l) => l.classList.add('is-blink'));
-    setTimeout(() => { lids.forEach((l) => l.classList.remove('is-blink')); }, (this.blinkConfig.duration || 120) + 20);
+    setTimeout(
+      () => {
+        lids.forEach((l) => l.classList.remove('is-blink'));
+      },
+      (this.blinkConfig.duration || 120) + 20,
+    );
   }
 
   clearBubbleSequence() {
     if (!this._bubbleSequenceTimers) return;
-    this._bubbleSequenceTimers.forEach(t => clearTimeout(t));
+    this._bubbleSequenceTimers.forEach((t) => clearTimeout(t));
     this._bubbleSequenceTimers = [];
   }
 
@@ -455,7 +488,10 @@ class RobotCompanion {
 
     const schedule = (index) => {
       if (this.state.isOpen) return;
-      if (index >= picks.length) { this.state.hasGreeted = true; return; }
+      if (index >= picks.length) {
+        this.state.hasGreeted = true;
+        return;
+      }
 
       this.showBubble(picks[index]);
       const t1 = setTimeout(() => {
@@ -471,29 +507,31 @@ class RobotCompanion {
   }
 
   async fetchAndShowSuggestion() {
-      if (this.state.hasGreeted || this.state.isOpen) return;
-      
-      const ctx = this.getPageContext();
-      const behavior = {
-          page: ctx,
-          interests: [ctx]
-      };
+    if (this.state.hasGreeted || this.state.isOpen) return;
 
-      try {
-          const suggestion = await this.gemini.getSuggestion(behavior);
-          if (suggestion && !this.state.isOpen) {
-              this.showBubble(suggestion);
-              setTimeout(() => this.hideBubble(), 8000);
-          }
-      } catch (e) {
-          // Silent fail
+    const ctx = this.getPageContext();
+    const behavior = {
+      page: ctx,
+      interests: [ctx],
+    };
+
+    try {
+      const suggestion = await this.gemini.getSuggestion(behavior);
+      if (suggestion && !this.state.isOpen) {
+        this.showBubble(suggestion);
+        setTimeout(() => this.hideBubble(), 8000);
       }
+    } catch (e) {
+      // Silent fail
+    }
   }
 
   _cubicBezier(t, p0, p1, p2, p3) {
     const u = 1 - t;
-    const tt = t * t, uu = u * u;
-    const uuu = uu * u, ttt = tt * t;
+    const tt = t * t,
+      uu = u * u;
+    const uuu = uu * u,
+      ttt = tt * t;
     return {
       x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
       y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
@@ -528,7 +566,7 @@ class RobotCompanion {
   }
 
   getPageContext() {
-     // ... logic stays same, it's efficient enough as it runs rarely ...
+    // ... logic stays same, it's efficient enough as it runs rarely ...
     try {
       const path = (window.location && window.location.pathname) || '';
       const file = path.split('/').pop() || '';
@@ -540,7 +578,9 @@ class RobotCompanion {
           if (!el) return false;
           const r = el.getBoundingClientRect();
           return r.top <= midY && r.bottom >= midY;
-        } catch (x) { return false; }
+        } catch (x) {
+          return false;
+        }
       };
 
       if (sectionCheck('#hero')) return 'hero';
@@ -555,13 +595,15 @@ class RobotCompanion {
 
       const h1 = document.querySelector('h1');
       if (h1) {
-          const h1Text = (h1.textContent || '').toLowerCase();
-          if (h1Text.includes('projekt')) return 'projects';
-          if (h1Text.includes('foto') || h1Text.includes('galerie')) return 'gallery';
-          if (h1Text.includes('über') || h1Text.includes('about')) return 'about';
+        const h1Text = (h1.textContent || '').toLowerCase();
+        if (h1Text.includes('projekt')) return 'projects';
+        if (h1Text.includes('foto') || h1Text.includes('galerie')) return 'gallery';
+        if (h1Text.includes('über') || h1Text.includes('about')) return 'about';
       }
       return 'default';
-    } catch (e) { return 'default'; }
+    } catch (e) {
+      return 'default';
+    }
   }
 
   spawnParticleBurst(count = 6, { direction = 0, strength = 1 } = {}) {
@@ -577,19 +619,20 @@ class RobotCompanion {
       this.dom.container.appendChild(el); // Append cached container
 
       const angleSpread = Math.PI / 3;
-      const baseAngle = direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
+      const baseAngle =
+        direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
       const angle = baseAngle + (Math.random() - 0.5) * angleSpread;
       const distance = 40 + Math.random() * 30;
       const dx = Math.cos(angle) * distance * strength;
       const dy = Math.sin(angle) * distance * strength - 10 * strength;
 
-      el.style.left = (baseX - cRect.left - 3) + 'px';
-      el.style.top = (baseY - cRect.top - 3) + 'px';
+      el.style.left = baseX - cRect.left - 3 + 'px';
+      el.style.top = baseY - cRect.top - 3 + 'px';
 
       requestAnimationFrame(() => {
-          el.style.transform = `translate(${dx}px, ${dy}px) scale(${0.5 + Math.random() * 0.6})`;
-          el.style.opacity = '0';
-          if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
+        el.style.transform = `translate(${dx}px, ${dy}px) scale(${0.5 + Math.random() * 0.6})`;
+        el.style.opacity = '0';
+        if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
       });
 
       setTimeout(() => el.remove(), 900 + Math.random() * 600);
@@ -623,35 +666,35 @@ class RobotCompanion {
   }
 
   async handleUserMessage() {
-      const text = this.dom.input.value.trim();
-      if (!text) return;
+    const text = this.dom.input.value.trim();
+    if (!text) return;
 
-      this.addMessage(text, 'user');
-      this.dom.input.value = '';
-      this.showTyping();
+    this.addMessage(text, 'user');
+    this.dom.input.value = '';
+    this.showTyping();
 
-      try {
-          // Collect context (last 5 messages)
-          const history = []; 
-          // Simple history extraction could be added here if needed
-          
-          const response = await this.gemini.generateResponse(text, history);
-          this.removeTyping();
-          this.addMessage(response, 'bot');
-      } catch (e) {
-          this.removeTyping();
-          this.addMessage("Fehler bei der Verbindung.", 'bot');
-      }
+    try {
+      // Collect context (last 5 messages)
+      const history = [];
+      // Simple history extraction could be added here if needed
+
+      const response = await this.gemini.generateResponse(text, history);
+      this.removeTyping();
+      this.addMessage(response, 'bot');
+    } catch (e) {
+      this.removeTyping();
+      this.addMessage('Fehler bei der Verbindung.', 'bot');
+    }
   }
 
   async handleSummarize() {
-      this.toggleChat(true);
-      this.showTyping();
-      const content = document.body.innerText;
-      const summary = await this.gemini.summarizePage(content);
-      this.removeTyping();
-      this.addMessage("Zusammenfassung dieser Seite:", 'bot');
-      this.addMessage(summary, 'bot');
+    this.toggleChat(true);
+    this.showTyping();
+    const content = document.body.innerText;
+    const summary = await this.gemini.summarizePage(content);
+    this.removeTyping();
+    this.addMessage('Zusammenfassung dieser Seite:', 'bot');
+    this.addMessage(summary, 'bot');
   }
 
   showBubble(text) {
@@ -717,8 +760,8 @@ class RobotCompanion {
 
   handleAction(actionKey) {
     if (actionKey === 'summarizePage') {
-        this.handleSummarize();
-        return;
+      this.handleSummarize();
+      return;
     }
     if (actionKey === 'scrollFooter') {
       this.dom.footer?.scrollIntoView({ behavior: 'smooth' });
@@ -731,9 +774,9 @@ class RobotCompanion {
       return;
     }
     if (actionKey === 'randomProject') {
-        // Fallback or logic
-        this.addMessage("Ich suche ein Projekt...", 'bot');
-        return;
+      // Fallback or logic
+      this.addMessage('Ich suche ein Projekt...', 'bot');
+      return;
     }
 
     const data = this.knowledgeBase[actionKey];
@@ -743,7 +786,9 @@ class RobotCompanion {
     this.dom.avatar.classList.add('nod');
     setTimeout(() => this.dom.avatar.classList.remove('nod'), 650);
 
-    let responseText = Array.isArray(data.text) ? data.text[Math.floor(Math.random() * data.text.length)] : data.text;
+    let responseText = Array.isArray(data.text)
+      ? data.text[Math.floor(Math.random() * data.text.length)]
+      : data.text;
     if (actionKey === 'start') {
       const ctx = this.getPageContext();
       const suffix = String(this.startMessageSuffix[ctx] || '').trim();
@@ -765,20 +810,20 @@ class RobotCompanion {
   updatePatrol() {
     if (!this.patrol.active) return;
     if (!this.dom.container) {
-        requestAnimationFrame(this.updatePatrol);
-        return;
+      requestAnimationFrame(this.updatePatrol);
+      return;
     }
 
     // Optimization: Don't query typeWriter every frame.
     const now = performance.now();
     if (now - this.cacheConfig.lastTypeWriterCheck > this.cacheConfig.typeWriterCheckInterval) {
-        this.dom.typeWriter = document.querySelector('.typewriter-title');
-        this.cacheConfig.lastTypeWriterCheck = now;
-        if (this.dom.typeWriter) {
-            // Optional: Cache rect too if it doesn't move often,
-            // but getting rect is usually necessary if layout changes
-            // this.cacheConfig.typeWriterRect = this.dom.typeWriter.getBoundingClientRect();
-        }
+      this.dom.typeWriter = document.querySelector('.typewriter-title');
+      this.cacheConfig.lastTypeWriterCheck = now;
+      if (this.dom.typeWriter) {
+        // Optional: Cache rect too if it doesn't move often,
+        // but getting rect is usually necessary if layout changes
+        // this.cacheConfig.typeWriterRect = this.dom.typeWriter.getBoundingClientRect();
+      }
     }
 
     // Stop or idle in certain states
@@ -808,10 +853,17 @@ class RobotCompanion {
       this.patrol.direction *= -1;
     }
 
-    const approachingLimit = (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) ||
-                             (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
+    const approachingLimit =
+      (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) ||
+      (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
 
-    if (this.dom.typeWriter && twRect && approachingLimit && !this.avoid.active && now > this.avoid.cooldownUntil) {
+    if (
+      this.dom.typeWriter &&
+      twRect &&
+      approachingLimit &&
+      !this.avoid.active &&
+      now > this.avoid.cooldownUntil
+    ) {
       this.startAvoid(twRect, this.patrol.direction, maxLeft);
     }
 
@@ -867,11 +919,11 @@ class RobotCompanion {
 
     const isMoving = Math.abs(currentSpeed) > 0.02;
     if (this.dom.legs) {
-        // Toggle wiggle class based on state (efficient)
-        const shouldWiggle = dashActive || Math.abs(this.patrol.direction) === 1;
-        if (this.dom.legs.classList.contains('wiggle') !== shouldWiggle) {
-             this.dom.legs.classList.toggle('wiggle', shouldWiggle);
-        }
+      // Toggle wiggle class based on state (efficient)
+      const shouldWiggle = dashActive || Math.abs(this.patrol.direction) === 1;
+      if (this.dom.legs.classList.contains('wiggle') !== shouldWiggle) {
+        this.dom.legs.classList.toggle('wiggle', shouldWiggle);
+      }
     }
 
     if (this.patrol.x >= maxLeft) {
@@ -890,7 +942,15 @@ class RobotCompanion {
       }
     }
 
-    const containerRotation = this.avoid.active ? (this.patrol.direction > 0 ? -6 : 6) : (dashActive ? (this.patrol.direction > 0 ? -4 : 4) : 0);
+    const containerRotation = this.avoid.active
+      ? this.patrol.direction > 0
+        ? -6
+        : 6
+      : dashActive
+        ? this.patrol.direction > 0
+          ? -4
+          : 4
+        : 0;
 
     // Efficient transform update
     this.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRotation}deg)`;
@@ -907,9 +967,13 @@ class RobotCompanion {
     if (this.dom.particles) this.dom.particles.style.opacity = '0';
     if (this.dom.thinking && Math.random() < 0.3) {
       this.dom.thinking.style.opacity = '1';
-      setTimeout(() => { if (this.dom.thinking) this.dom.thinking.style.opacity = '0'; }, ms * 0.6);
+      setTimeout(() => {
+        if (this.dom.thinking) this.dom.thinking.style.opacity = '0';
+      }, ms * 0.6);
     }
-    setTimeout(() => { this.patrol.isPaused = false; }, ms);
+    setTimeout(() => {
+      this.patrol.isPaused = false;
+    }, ms);
   }
 
   scrollToBottom() {
