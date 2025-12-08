@@ -443,3 +443,60 @@
     height: 60vh;
   }
 }
+
+/* AI Chat Extensions */
+.chat-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-mode-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+}
+
+.chat-mode-btn:hover, .chat-mode-btn.active {
+    color: #40e0d0;
+}
+
+.chat-input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid rgba(64, 224, 208, 0.2);
+    gap: 8px;
+}
+
+#robot-chat-input {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    border-radius: 15px;
+    padding: 8px 12px;
+    color: #e2e8f0;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+#robot-chat-input:focus {
+    border-color: #40e0d0;
+}
+
+#robot-chat-send {
+    background: none;
+    border: none;
+    color: #40e0d0;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: transform 0.2s;
+}
+
+#robot-chat-send:hover {
+    transform: scale(1.1);
+}

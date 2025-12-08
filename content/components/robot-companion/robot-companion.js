@@ -3,11 +3,15 @@
  * Performance-Optimierungen: DOM-Caching, RequestAnimationFrame-Nutzung, Refactoring.
  */
 
+import { GeminiService } from './gemini-service.js';
+
 class RobotCompanion {
   constructor() {
     this.containerId = 'robot-companion-container';
     // Referenz auf globale Texte sicherstellen
     this.texts = (window && window.robotCompanionTexts) || {};
+    
+    this.gemini = new GeminiService();
 
     this.state = {
       isOpen: false,
@@ -87,6 +91,9 @@ class RobotCompanion {
       this.applyTexts();
       // Falls noch nicht initialisiert (Race Condition Prevention)
       if (!this.dom.container) this.init();
+      
+      // AI suggestion disabled to save API quota
+      // setTimeout(() => this.fetchAndShowSuggestion(), 5000);
     });
 
     // Fallback init, falls loadTexts hängt oder Texte schon da sind
@@ -294,6 +301,10 @@ class RobotCompanion {
                 </div>
                 <div class="chat-messages" id="robot-messages"></div>
                 <div class="chat-controls" id="robot-controls"></div>
+                <div class="chat-input-area" id="robot-input-area">
+                    <input type="text" id="robot-chat-input" placeholder="Frag mich etwas oder wähle eine Option..." />
+                    <button id="robot-chat-send">➤</button>
+                </div>
             </div>
             <div class="robot-bubble" id="robot-bubble">
                 <span id="robot-bubble-text">Hallo!</span>
@@ -312,6 +323,9 @@ class RobotCompanion {
     this.dom.bubbleClose = container.querySelector('.robot-bubble-close');
     this.dom.messages = document.getElementById('robot-messages');
     this.dom.controls = document.getElementById('robot-controls');
+    this.dom.inputArea = document.getElementById('robot-input-area');
+    this.dom.input = document.getElementById('robot-chat-input');
+    this.dom.sendBtn = document.getElementById('robot-chat-send');
     this.dom.avatar = container.querySelector('.robot-avatar');
     this.dom.svg = container.querySelector('.robot-svg');
     this.dom.eyes = container.querySelector('.robot-eye');
@@ -336,6 +350,16 @@ class RobotCompanion {
       this.clearBubbleSequence();
       this.hideBubble();
     });
+
+    if (this.dom.sendBtn) {
+        this.dom.sendBtn.addEventListener('click', () => this.handleUserMessage());
+    }
+
+    if (this.dom.input) {
+        this.dom.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.handleUserMessage();
+        });
+    }
   }
 
   // ... (startIdleEyeMovement, stopIdleEyeMovement, updateEyesTransform, startBlinkLoop, stopBlinkLoop, doBlink, clearBubbleSequence, startInitialBubbleSequence - diese sind meist okay, nur DOM Zugriff ist jetzt via this.dom.x) ...
@@ -444,6 +468,26 @@ class RobotCompanion {
       this._bubbleSequenceTimers.push(t1);
     };
     schedule(0);
+  }
+
+  async fetchAndShowSuggestion() {
+      if (this.state.hasGreeted || this.state.isOpen) return;
+      
+      const ctx = this.getPageContext();
+      const behavior = {
+          page: ctx,
+          interests: [ctx]
+      };
+
+      try {
+          const suggestion = await this.gemini.getSuggestion(behavior);
+          if (suggestion && !this.state.isOpen) {
+              this.showBubble(suggestion);
+              setTimeout(() => this.hideBubble(), 8000);
+          }
+      } catch (e) {
+          // Silent fail
+      }
   }
 
   _cubicBezier(t, p0, p1, p2, p3) {
@@ -578,6 +622,38 @@ class RobotCompanion {
     }
   }
 
+  async handleUserMessage() {
+      const text = this.dom.input.value.trim();
+      if (!text) return;
+
+      this.addMessage(text, 'user');
+      this.dom.input.value = '';
+      this.showTyping();
+
+      try {
+          // Collect context (last 5 messages)
+          const history = []; 
+          // Simple history extraction could be added here if needed
+          
+          const response = await this.gemini.generateResponse(text, history);
+          this.removeTyping();
+          this.addMessage(response, 'bot');
+      } catch (e) {
+          this.removeTyping();
+          this.addMessage("Fehler bei der Verbindung.", 'bot');
+      }
+  }
+
+  async handleSummarize() {
+      this.toggleChat(true);
+      this.showTyping();
+      const content = document.body.innerText;
+      const summary = await this.gemini.summarizePage(content);
+      this.removeTyping();
+      this.addMessage("Zusammenfassung dieser Seite:", 'bot');
+      this.addMessage(summary, 'bot');
+  }
+
   showBubble(text) {
     if (this.state.isOpen) return;
     if (!this.dom.bubble || !this.dom.bubbleText) return;
@@ -626,7 +702,6 @@ class RobotCompanion {
       btn.textContent = opt.label;
       btn.onclick = () => {
         this.addMessage(opt.label, 'user');
-        this.clearControls();
         setTimeout(() => {
           if (opt.url) {
             window.open(opt.url, opt.target || '_self');
@@ -641,6 +716,10 @@ class RobotCompanion {
   }
 
   handleAction(actionKey) {
+    if (actionKey === 'summarizePage') {
+        this.handleSummarize();
+        return;
+    }
     if (actionKey === 'scrollFooter') {
       this.dom.footer?.scrollIntoView({ behavior: 'smooth' });
       this.showTyping();
