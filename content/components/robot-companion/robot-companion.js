@@ -362,7 +362,10 @@ class RobotCompanion {
 
   getMoodGreeting() {
     // Ensure we use the latest loaded texts
-    const greetings = this.moodGreetings || (window.robotCompanionTexts && window.robotCompanionTexts.moodGreetings) || {};
+    const greetings =
+      this.moodGreetings ||
+      (window.robotCompanionTexts && window.robotCompanionTexts.moodGreetings) ||
+      {};
     const moodGreets = greetings[this.mood] || greetings['normal'] || ['Hey! Wie kann ich helfen?'];
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
