@@ -145,10 +145,13 @@ class RobotCompanion {
     this.knowledgeBase = src.knowledgeBase ||
       this.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
     this.contextGreetings = src.contextGreetings || this.contextGreetings || { default: [] };
-    this.moodGreetings = src.moodGreetings || this.moodGreetings || {};
+    this.moodGreetings = src.moodGreetings ||
+      this.moodGreetings || {
+        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+      };
     this.startMessageSuffix = src.startMessageSuffix || this.startMessageSuffix || {};
     this.initialBubbleGreetings = src.initialBubbleGreetings ||
-      this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
+      this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
     this.initialBubblePools = src.initialBubblePools || this.initialBubblePools || [];
     this.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       this.initialBubbleSequenceConfig || {
@@ -359,7 +362,7 @@ class RobotCompanion {
 
   getMoodGreeting() {
     const greetings = this.moodGreetings || {};
-    const moodGreets = greetings[this.mood] || greetings.normal || ['Hey! Wie kann ich helfen? 👋'];
+    const moodGreets = greetings[this.mood] || greetings.normal || ['Hey! Wie kann ich helfen?'];
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
