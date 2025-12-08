@@ -361,8 +361,9 @@ class RobotCompanion {
   }
 
   getMoodGreeting() {
-    const greetings = this.moodGreetings || {};
-    const moodGreets = greetings[this.mood] || greetings.normal || ['Hey! Wie kann ich helfen?'];
+    // Ensure we use the latest loaded texts
+    const greetings = this.moodGreetings || (window.robotCompanionTexts && window.robotCompanionTexts.moodGreetings) || {};
+    const moodGreets = greetings[this.mood] || greetings['normal'] || ['Hey! Wie kann ich helfen?'];
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
@@ -681,6 +682,12 @@ class RobotCompanion {
         if (candidate) picks.push(candidate);
       }
     };
+
+    // 40% Chance: Start mit Mood Greeting als erstes Element
+    if (Math.random() < 0.4) {
+      const moodGreet = this.getMoodGreeting();
+      if (moodGreet) picks.push(moodGreet);
+    }
 
     if (ctxArr.length > 0) {
       const ctxPick = this.getContextGreetingForContext(ctxArr, ctx);
