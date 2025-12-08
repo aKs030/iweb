@@ -362,6 +362,7 @@ export class ShootingStarManager {
     this.scene = scene;
     this.THREE = THREE;
     this.activeStars = [];
+    this.pool = []; // Object pool for meshes
     this.isShowerActive = false;
     this.showerTimer = 0;
     this.showerCooldownTimer = 0;
@@ -381,8 +382,15 @@ export class ShootingStarManager {
       return;
 
     try {
-      const material = this.sharedMaterial.clone();
-      const star = new this.THREE.Mesh(this.sharedGeometry, material);
+      let star;
+      if (this.pool.length > 0) {
+        star = this.pool.pop();
+        star.material.opacity = 1.0;
+        star.visible = true;
+      } else {
+        const material = this.sharedMaterial.clone();
+        star = new this.THREE.Mesh(this.sharedGeometry, material);
+      }
 
       const startPos = {
         x: (Math.random() - 0.5) * 100,
@@ -444,7 +452,8 @@ export class ShootingStarManager {
 
       if (star.age > star.lifetime) {
         this.scene.remove(star.mesh);
-        star.mesh.material.dispose();
+        // star.mesh.material.dispose(); // Don't dispose, reuse!
+        this.pool.push(star.mesh);
         this.activeStars.splice(i, 1);
       }
     }
@@ -464,6 +473,12 @@ export class ShootingStarManager {
       if (star.mesh.material) star.mesh.material.dispose();
     });
     this.activeStars = [];
+
+    // Dispose pooled stars
+    this.pool.forEach((mesh) => {
+      if (mesh.material) mesh.material.dispose();
+    });
+    this.pool = [];
 
     // Dispose shared resources
     if (this.sharedGeometry) this.sharedGeometry.dispose();
