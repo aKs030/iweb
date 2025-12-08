@@ -14,6 +14,7 @@ window.robotCompanionTexts = {
       options: [
         { label: 'Was kannst du?', action: 'skills' },
         { label: 'Projekte zeigen', action: 'projects' },
+        { label: 'Seite zusammenfassen', action: 'summarizePage' },
         { label: 'Über den Dev', action: 'about' },
         { label: 'Fun & Extras', action: 'extras' },
       ],
