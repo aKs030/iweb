@@ -15,8 +15,34 @@ class RobotCompanion {
 
     this.state = {
       isOpen: false,
-      hasGreeted: false,
+      lastGreetedContext: null,
       isTyping: false,
+    };
+
+    // Context greeting dedupe & observed section tracking
+    this.contextGreetingHistory = {}; // ctx -> Set of used greetings
+    this.currentObservedContext = null; // from IntersectionObserver
+
+    // Observer handle
+    this._sectionObserver = null;
+
+    // Mood & Analytics System
+    this.analytics = {
+      sessions: parseInt(localStorage.getItem('robot-sessions') || '0') + 1,
+      sectionsVisited: [],
+      interactions: parseInt(localStorage.getItem('robot-interactions') || '0'),
+      lastVisit: localStorage.getItem('robot-last-visit') || new Date().toISOString(),
+    };
+    localStorage.setItem('robot-sessions', this.analytics.sessions);
+    localStorage.setItem('robot-last-visit', new Date().toISOString());
+
+    this.mood = this.calculateMood();
+    this.easterEggFound = new Set(JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'));
+
+    // Mini-Games State
+    this.games = {
+      ticTacToe: { board: Array(9).fill(null), playerSymbol: 'X', botSymbol: 'O' },
+      triviaScore: parseInt(localStorage.getItem('robot-trivia-score') || '0'),
     };
 
     // DOM Cache Struktur initialisieren
@@ -62,6 +88,9 @@ class RobotCompanion {
     this.updatePatrol = this.updatePatrol.bind(this);
     this._prevDashActive = false;
 
+    // Tracking für deterministische Bubble-Reihenfolge (Pool-Rotation)
+    this.initialBubblePoolCursor = [];
+
     // Idle eye animation
     this.eyeIdleOffset = { x: 0, y: 0 };
     this._eyeIdleTimer = null;
@@ -85,6 +114,8 @@ class RobotCompanion {
     this.applyTexts();
 
     this._bubbleSequenceTimers = [];
+    this._sectionCheckInterval = null;
+    this._scrollListener = null;
 
     // Laden, Anwenden, Starten
     this.loadTexts().then(() => {
@@ -114,6 +145,7 @@ class RobotCompanion {
     this.knowledgeBase = src.knowledgeBase ||
       this.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
     this.contextGreetings = src.contextGreetings || this.contextGreetings || { default: [] };
+    this.moodGreetings = src.moodGreetings || this.moodGreetings || {};
     this.startMessageSuffix = src.startMessageSuffix || this.startMessageSuffix || {};
     this.initialBubbleGreetings = src.initialBubbleGreetings ||
       this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
@@ -213,9 +245,10 @@ class RobotCompanion {
     this.attachEvents();
     this.setupFooterOverlapCheck();
 
-    // Begrüßungslogik
+    // Begrüßungslogik - only once on page load
     setTimeout(() => {
-      if (!this.state.isOpen && !this.state.hasGreeted) {
+      const ctx = this.getPageContext();
+      if (!this.state.isOpen && !this.state.lastGreetedContext) {
         const showSequenceChance = 0.9;
         if (
           this.initialBubblePools &&
@@ -228,21 +261,145 @@ class RobotCompanion {
             this.initialBubbleGreetings[
               Math.floor(Math.random() * this.initialBubbleGreetings.length)
             ];
-          const ctx = this.getPageContext();
           const ctxArr = this.contextGreetings[ctx] || this.contextGreetings.default || [];
           let finalGreet = greet;
 
           if (ctxArr.length && Math.random() < 0.7) {
             const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
-            finalGreet = `${String(greet || '').trim()} ${ctxMsg}`.trim();
+            finalGreet = ctxMsg; // Use context greeting directly
           }
           this.showBubble(finalGreet);
-          this.state.hasGreeted = true;
+          this.state.lastGreetedContext = ctx;
         }
       }
     }, 5000);
 
+    // Section change detection
+    this.setupSectionChangeDetection();
+
     this.startPatrol();
+  }
+
+  setupSectionChangeDetection() {
+    this.setupSectionObservers();
+    let lastContext = this.getPageContext();
+
+    const checkContextChange = () => {
+      if (this.state.isOpen) return; // Don't greet if chat is open
+
+      const currentContext = this.getPageContext();
+      if (currentContext !== lastContext && currentContext !== this.state.lastGreetedContext) {
+        lastContext = currentContext;
+
+        // Wait a bit before greeting (user needs to settle in new section)
+        setTimeout(() => {
+          if (this.getPageContext() === currentContext && !this.state.isOpen) {
+            this.startInitialBubbleSequence();
+          }
+        }, 2000);
+      }
+    };
+
+    // Check on scroll with debounce
+    let scrollTimeout;
+    this._scrollListener = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(checkContextChange, 500);
+    };
+    window.addEventListener('scroll', this._scrollListener, { passive: true });
+
+    // Check periodically (backup)
+    this._sectionCheckInterval = setInterval(checkContextChange, 3000);
+  }
+
+  destroy() {
+    // Cleanup method to prevent memory leaks
+    this.clearBubbleSequence();
+    this.stopIdleEyeMovement();
+    this.stopBlinkLoop();
+    if (this._sectionObserver) {
+      this._sectionObserver.disconnect();
+      this._sectionObserver = null;
+    }
+
+    // Remove event listeners
+    if (this._scrollListener) {
+      window.removeEventListener('scroll', this._scrollListener);
+      this._scrollListener = null;
+    }
+
+    // Clear intervals
+    if (this._sectionCheckInterval) {
+      clearInterval(this._sectionCheckInterval);
+      this._sectionCheckInterval = null;
+    }
+
+    // Remove DOM
+    if (this.dom.container && this.dom.container.parentNode) {
+      this.dom.container.parentNode.removeChild(this.dom.container);
+    }
+  }
+
+  calculateMood() {
+    const hour = new Date().getHours();
+    const { sessions, interactions } = this.analytics;
+
+    // Special moods based on time
+    if (hour >= 0 && hour < 6) return 'night-owl'; // 🦉 Nachteule
+    if (hour >= 6 && hour < 10) return 'sleepy'; // 😴 Verschlafen
+    if (hour >= 10 && hour < 17) return 'energetic'; // ⚡ Energiegeladen
+    if (hour >= 17 && hour < 22) return 'relaxed'; // 😊 Entspannt
+    if (hour >= 22) return 'night-owl';
+
+    // Enthusiastic after many interactions
+    if (sessions > 10 || interactions > 50) return 'enthusiastic'; // 🤩
+
+    return 'normal';
+  }
+
+  getMoodGreeting() {
+    const greetings = this.moodGreetings || {};
+    const moodGreets = greetings[this.mood] || greetings.normal || ['Hey! Wie kann ich helfen? 👋'];
+    return moodGreets[Math.floor(Math.random() * moodGreets.length)];
+  }
+
+  trackInteraction(type = 'general') {
+    this.analytics.interactions++;
+    localStorage.setItem('robot-interactions', this.analytics.interactions);
+
+    // Check for easter eggs
+    if (this.analytics.interactions === 10 && !this.easterEggFound.has('first-10')) {
+      this.unlockEasterEgg(
+        'first-10',
+        '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮',
+      );
+    }
+    if (this.analytics.interactions === 50 && !this.easterEggFound.has('first-50')) {
+      this.unlockEasterEgg(
+        'first-50',
+        '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪',
+      );
+    }
+  }
+
+  unlockEasterEgg(id, message) {
+    this.easterEggFound.add(id);
+    localStorage.setItem('robot-easter-eggs', JSON.stringify([...this.easterEggFound]));
+    this.showBubble(message);
+    setTimeout(() => this.hideBubble(), 10000);
+  }
+
+  trackSectionVisit(context) {
+    if (!this.analytics.sectionsVisited.includes(context)) {
+      this.analytics.sectionsVisited.push(context);
+
+      // Easter egg: Visited all sections
+      const allSections = ['hero', 'features', 'about', 'projects', 'gallery', 'footer'];
+      const visitedAll = allSections.every((s) => this.analytics.sectionsVisited.includes(s));
+      if (visitedAll && !this.easterEggFound.has('explorer')) {
+        this.unlockEasterEgg('explorer', '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭');
+      }
+    }
   }
 
   loadCSS() {
@@ -317,11 +474,13 @@ class RobotCompanion {
                     <button id="robot-chat-send">➤</button>
                 </div>
             </div>
-            <div class="robot-bubble" id="robot-bubble">
-                <span id="robot-bubble-text">Hallo!</span>
-                <div class="robot-bubble-close">&times;</div>
+            <div class="robot-float-wrapper">
+                <div class="robot-bubble" id="robot-bubble">
+                    <span id="robot-bubble-text">Hallo!</span>
+                    <div class="robot-bubble-close">&times;</div>
+                </div>
+                <div class="robot-avatar">${robotSVG}</div>
             </div>
-            <div class="robot-avatar">${robotSVG}</div>
         `;
 
     document.body.appendChild(container);
@@ -357,7 +516,8 @@ class RobotCompanion {
     });
     this.dom.bubbleClose.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.state.hasGreeted = true;
+      const ctx = this.getPageContext();
+      this.state.lastGreetedContext = ctx;
       this.clearBubbleSequence();
       this.hideBubble();
     });
@@ -410,7 +570,7 @@ class RobotCompanion {
 
   updateEyesTransform() {
     if (!this.dom || !this.dom.eyes) return;
-    let eyeOffset = typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
+    const eyeOffset = typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
     const eyeIntensity =
       this.avoid && this.avoid.active
         ? 1.4
@@ -465,31 +625,86 @@ class RobotCompanion {
     this._bubbleSequenceTimers = [];
   }
 
+  getContextGreetingForContext(ctxArr, ctxKey) {
+    if (!ctxArr || ctxArr.length === 0) return null;
+    if (!this.contextGreetingHistory[ctxKey]) this.contextGreetingHistory[ctxKey] = new Set();
+    const used = this.contextGreetingHistory[ctxKey];
+    let candidates = ctxArr.filter((g) => !used.has(g));
+    if (candidates.length === 0) {
+      used.clear();
+      candidates = ctxArr.slice();
+    }
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    used.add(pick);
+    return pick;
+  }
+
   startInitialBubbleSequence() {
     this.clearBubbleSequence();
-    const pools = this.initialBubblePools || [];
-    const steps = Math.min(pools.length, this.initialBubbleSequenceConfig.steps || pools.length);
-    if (!steps) return;
-
-    const picks = [];
     const ctx = this.getPageContext();
     const ctxArr = (this.contextGreetings && this.contextGreetings[ctx]) || [];
+    const pools = this.initialBubblePools || [];
+    const maxSteps = this.initialBubbleSequenceConfig.steps || 3;
 
-    for (let i = 0; i < steps; i++) {
-      let pool = pools[i] && pools[i].length ? [...pools[i]] : [...this.initialBubbleGreetings];
-      if (ctxArr.length > 0 && Math.random() < 0.6) pool = pool.concat(ctxArr);
-      const pick = pool[Math.floor(Math.random() * pool.length)];
-      picks.push(String(pick || '').trim());
+    // Sicherstellen, dass Cursor-Liste zur Pool-Länge passt
+    if (!Array.isArray(this.initialBubblePoolCursor) || this.initialBubblePoolCursor.length !== pools.length) {
+      this.initialBubblePoolCursor = new Array(pools.length).fill(0);
     }
+
+    const picks = [];
+
+    // Strategy: Immer Kontext-Gruß, wenn vorhanden; Pools zyklisch auffüllen
+    const nextFromPool = (poolIdx) => {
+      if (!pools.length) return null;
+      const idx = poolIdx % pools.length;
+      const pool = pools[idx];
+      if (!pool || pool.length === 0) return null;
+      const cursor = this.initialBubblePoolCursor[idx] || 0;
+      const pick = pool[cursor % pool.length];
+      this.initialBubblePoolCursor[idx] = (cursor + 1) % pool.length;
+      return String(pick || '').trim();
+    };
+
+    const fillFromPools = (startIndex = 0) => {
+      let poolIndex = startIndex;
+      let attempts = 0;
+      while (picks.length < maxSteps && attempts < maxSteps * 4) {
+        const candidate = nextFromPool(poolIndex);
+        poolIndex++;
+        attempts++;
+        if (candidate) picks.push(candidate);
+      }
+    };
+
+    if (ctxArr.length > 0) {
+      const ctxPick = this.getContextGreetingForContext(ctxArr, ctx);
+      if (ctxPick) picks.push(String(ctxPick || '').trim());
+      fillFromPools(0);
+    } else {
+      // Kein Kontext-Gruß: Pools zyklisch füllen
+      fillFromPools(0);
+    }
+
+    // Fallback: if no picks, use one initialBubbleGreeting
+    if (
+      picks.length === 0 &&
+      this.initialBubbleGreetings &&
+      this.initialBubbleGreetings.length > 0
+    ) {
+      const fallback =
+        this.initialBubbleGreetings[Math.floor(Math.random() * this.initialBubbleGreetings.length)];
+      picks.push(String(fallback || '').trim());
+    }
+
     if (picks.length === 0) return;
 
-    const showMs = this.initialBubbleSequenceConfig.displayDuration || 10000;
+    const showMs = this.initialBubbleSequenceConfig.displayDuration || 8000;
     const pauses = this.initialBubbleSequenceConfig.pausesAfter || [];
 
     const schedule = (index) => {
       if (this.state.isOpen) return;
       if (index >= picks.length) {
-        this.state.hasGreeted = true;
+        this.state.lastGreetedContext = ctx;
         return;
       }
 
@@ -507,7 +722,7 @@ class RobotCompanion {
   }
 
   async fetchAndShowSuggestion() {
-    if (this.state.hasGreeted || this.state.isOpen) return;
+    if (this.state.lastGreetedContext || this.state.isOpen) return;
 
     const ctx = this.getPageContext();
     const behavior = {
@@ -521,11 +736,10 @@ class RobotCompanion {
         this.showBubble(suggestion);
         setTimeout(() => this.hideBubble(), 8000);
       }
-    } catch (e) {
+    } catch {
       // Silent fail
     }
   }
-
   _cubicBezier(t, p0, p1, p2, p3) {
     const u = 1 - t;
     const tt = t * t,
@@ -566,44 +780,87 @@ class RobotCompanion {
   }
 
   getPageContext() {
-    // ... logic stays same, it's efficient enough as it runs rarely ...
     try {
+      // First priority: IntersectionObserver hint
+      if (this.currentObservedContext) return this.currentObservedContext;
+
       const path = (window.location && window.location.pathname) || '';
       const file = path.split('/').pop() || '';
       const lower = path.toLowerCase();
       const midY = (window.innerHeight || 0) / 2;
+
       const sectionCheck = (selector) => {
         try {
           const el = document.querySelector(selector);
           if (!el) return false;
           const r = el.getBoundingClientRect();
           return r.top <= midY && r.bottom >= midY;
-        } catch (x) {
+        } catch {
           return false;
         }
       };
 
-      if (sectionCheck('#hero')) return 'hero';
-      if (sectionCheck('#features')) return 'features';
-      if (sectionCheck('#about')) return 'about';
-      if (sectionCheck('#footer-container') || sectionCheck('footer')) return 'footer';
-      if (lower.includes('projekte') || file.includes('projekte')) return 'projects';
-      if (lower.includes('gallery') || file.includes('gallery')) return 'gallery';
-      if (lower.includes('about') || file.includes('about')) return 'about';
-      if (lower.includes('karten') || file.includes('cards')) return 'cards';
-      if (lower === '/' || file === 'index.html' || lower.includes('home')) return 'home';
+      let context = 'default';
 
-      const h1 = document.querySelector('h1');
-      if (h1) {
-        const h1Text = (h1.textContent || '').toLowerCase();
-        if (h1Text.includes('projekt')) return 'projects';
-        if (h1Text.includes('foto') || h1Text.includes('galerie')) return 'gallery';
-        if (h1Text.includes('über') || h1Text.includes('about')) return 'about';
+      // Priority 1: Check visible sections on page (for index.html)
+      if (sectionCheck('#hero')) context = 'hero';
+      else if (sectionCheck('#features')) context = 'features';
+      else if (sectionCheck('#about')) context = 'about';
+      else if (sectionCheck('#footer-container') || sectionCheck('footer')) context = 'footer';
+      // Priority 2: Check URL path for specific pages
+      else if (lower.includes('projekte')) context = 'projects';
+      else if (lower.includes('gallery') || lower.includes('fotos')) context = 'gallery';
+      else if (lower.includes('about') && file !== 'index.html') context = 'about';
+      else if (lower.includes('karten') || file === 'karten.html') context = 'cards';
+      // Priority 3: Homepage detection
+      else if (lower === '/' || file === 'index.html' || file === '') context = 'home';
+      else {
+        // Priority 4: Fallback - check h1
+        const h1 = document.querySelector('h1');
+        if (h1) {
+          const h1Text = (h1.textContent || '').toLowerCase();
+          if (h1Text.includes('projekt')) context = 'projects';
+          else if (h1Text.includes('foto') || h1Text.includes('galerie')) context = 'gallery';
+        }
       }
-      return 'default';
-    } catch (e) {
+
+      // Track section visit for analytics
+      this.trackSectionVisit(context);
+
+      return context;
+    } catch {
       return 'default';
     }
+  }
+
+  setupSectionObservers() {
+    if (this._sectionObserver) return;
+    const sectionMap = [
+      { selector: '#hero', ctx: 'hero' },
+      { selector: '#features', ctx: 'features' },
+      { selector: '#about', ctx: 'about' },
+      { selector: '#footer-container', ctx: 'footer' },
+      { selector: 'footer', ctx: 'footer' },
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
+            const match = sectionMap.find((s) => entry.target.matches(s.selector));
+            if (match) this.currentObservedContext = match.ctx;
+          }
+        });
+      },
+      { threshold: [0.35, 0.5, 0.75] },
+    );
+
+    sectionMap.forEach((s) => {
+      const el = document.querySelector(s.selector);
+      if (el) observer.observe(el);
+    });
+
+    this._sectionObserver = observer;
   }
 
   spawnParticleBurst(count = 6, { direction = 0, strength = 1 } = {}) {
@@ -655,7 +912,8 @@ class RobotCompanion {
       this.hideBubble();
       this.stopIdleEyeMovement();
       this.stopBlinkLoop();
-      this.state.hasGreeted = true;
+      const ctx = this.getPageContext();
+      this.state.lastGreetedContext = ctx;
       if (this.dom.messages.children.length === 0) this.handleAction('start');
     } else {
       this.dom.window.classList.remove('open');
@@ -671,7 +929,22 @@ class RobotCompanion {
 
     this.addMessage(text, 'user');
     this.dom.input.value = '';
+
+    // Check for active mini-games
+    if (this.games.guessNumberActive) {
+      this.handleGuessNumber(text);
+      return;
+    }
+
+    // Check for trivia answer
+    if (text.startsWith('triviaAnswer_')) {
+      const answerIdx = parseInt(text.split('_')[1]);
+      this.handleTriviaAnswer(answerIdx);
+      return;
+    }
+
     this.showTyping();
+    this.trackInteraction('message');
 
     try {
       // Collect context (last 5 messages)
@@ -681,7 +954,7 @@ class RobotCompanion {
       const response = await this.gemini.generateResponse(text, history);
       this.removeTyping();
       this.addMessage(response, 'bot');
-    } catch (e) {
+    } catch {
       this.removeTyping();
       this.addMessage('Fehler bei der Verbindung.', 'bot');
     }
@@ -750,7 +1023,13 @@ class RobotCompanion {
             window.open(opt.url, opt.target || '_self');
             if (opt.target === '_blank') this.handleAction('start');
           } else if (opt.action) {
-            this.handleAction(opt.action);
+            // Check for trivia answers
+            if (opt.action.startsWith('triviaAnswer_')) {
+              const answerIdx = parseInt(opt.action.split('_')[1]);
+              this.handleTriviaAnswer(answerIdx);
+            } else {
+              this.handleAction(opt.action);
+            }
           }
         }, 300);
       };
@@ -759,6 +1038,8 @@ class RobotCompanion {
   }
 
   handleAction(actionKey) {
+    this.trackInteraction('action');
+
     if (actionKey === 'summarizePage') {
       this.handleSummarize();
       return;
@@ -774,8 +1055,25 @@ class RobotCompanion {
       return;
     }
     if (actionKey === 'randomProject') {
-      // Fallback or logic
       this.addMessage('Ich suche ein Projekt...', 'bot');
+      return;
+    }
+
+    // Mini-Games
+    if (actionKey === 'playTicTacToe') {
+      this.startTicTacToe();
+      return;
+    }
+    if (actionKey === 'playTrivia') {
+      this.startTrivia();
+      return;
+    }
+    if (actionKey === 'playGuessNumber') {
+      this.startGuessNumber();
+      return;
+    }
+    if (actionKey === 'showMood') {
+      this.showMoodInfo();
       return;
     }
 
@@ -789,7 +1087,11 @@ class RobotCompanion {
     let responseText = Array.isArray(data.text)
       ? data.text[Math.floor(Math.random() * data.text.length)]
       : data.text;
-    if (actionKey === 'start') {
+
+    // Inject mood greeting for start action
+    if (actionKey === 'start' && Math.random() < 0.3) {
+      responseText = this.getMoodGreeting();
+    } else if (actionKey === 'start') {
       const ctx = this.getPageContext();
       const suffix = String(this.startMessageSuffix[ctx] || '').trim();
       if (suffix) responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
@@ -917,7 +1219,6 @@ class RobotCompanion {
       this.dom.particles.style.opacity = dashActive || this.avoid.active ? '0.9' : '0.5';
     }
 
-    const isMoving = Math.abs(currentSpeed) > 0.02;
     if (this.dom.legs) {
       // Toggle wiggle class based on state (efficient)
       const shouldWiggle = dashActive || Math.abs(this.patrol.direction) === 1;
@@ -978,6 +1279,311 @@ class RobotCompanion {
 
   scrollToBottom() {
     this.dom.messages.scrollTop = this.dom.messages.scrollHeight;
+  }
+
+  // ========== MINI-GAMES ==========
+
+  showMoodInfo() {
+    const moodEmojis = {
+      'night-owl': '🦉',
+      'sleepy': '😴',
+      'energetic': '⚡',
+      'relaxed': '😊',
+      'enthusiastic': '🤩',
+      'normal': '🤖',
+    };
+
+    const moodDescriptions = {
+      'night-owl': 'Nachteule-Modus aktiv! Ich bin hellwach! 🌙',
+      'sleepy': 'Etwas verschlafen heute... ☕',
+      'energetic': 'Voller Energie und bereit für Action! 💪',
+      'relaxed': 'Entspannt und gelassen unterwegs! 🌅',
+      'enthusiastic': 'Super enthusiastisch - du bist ja Power-User! 🎉',
+      'normal': 'Ganz normaler Roboter-Modus! 🤖',
+    };
+
+    const emoji = moodEmojis[this.mood] || '🤖';
+    const desc = moodDescriptions[this.mood] || 'Normaler Modus';
+    const stats = `
+      📊 Deine Stats:
+      • Sessions: ${this.analytics.sessions}
+      • Interaktionen: ${this.analytics.interactions}
+      • Easter Eggs: ${this.easterEggFound.size}
+      • Mood: ${emoji} ${this.mood}
+    `;
+
+    this.addMessage(desc, 'bot');
+    this.addMessage(stats, 'bot');
+    setTimeout(() => this.handleAction('start'), 2000);
+  }
+
+  startTicTacToe() {
+    this.games.ticTacToe.board = Array(9).fill(null);
+    this.addMessage('🎮 Tic-Tac-Toe! Du bist X, ich bin O. Viel Glück! 😎', 'bot');
+
+    const gameContainer = document.createElement('div');
+    gameContainer.className = 'tic-tac-toe-game';
+    gameContainer.style.cssText = `
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+      max-width: 200px;
+    `;
+
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('button');
+      cell.className = 'ttt-cell';
+      cell.style.cssText = `
+        aspect-ratio: 1;
+        font-size: 24px;
+        background: var(--robot-bg-secondary, #1e293b);
+        border: 2px solid var(--robot-color, #40e0d0);
+        border-radius: 8px;
+        color: var(--robot-color, #40e0d0);
+        cursor: pointer;
+        transition: all 0.2s;
+      `;
+      cell.onclick = () => this.playTicTacToeMove(i, gameContainer);
+      gameContainer.appendChild(cell);
+    }
+
+    this.dom.messages.appendChild(gameContainer);
+    this.scrollToBottom();
+  }
+
+  playTicTacToeMove(index, gameContainer) {
+    if (this.games.ticTacToe.board[index]) return;
+
+    // Player move
+    this.games.ticTacToe.board[index] = 'X';
+    gameContainer.children[index].textContent = 'X';
+    gameContainer.children[index].style.cursor = 'not-allowed';
+
+    if (this.checkTicTacToeWin('X')) {
+      this.addMessage('🏆 Du hast gewonnen! Glückwunsch! 🎉', 'bot');
+      this.disableTicTacToeBoard(gameContainer);
+      setTimeout(() => this.handleAction('games'), 2000);
+      return;
+    }
+
+    if (this.games.ticTacToe.board.every((cell) => cell !== null)) {
+      this.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
+      setTimeout(() => this.handleAction('games'), 2000);
+      return;
+    }
+
+    // Bot move
+    setTimeout(() => {
+      const botMove = this.getBotTicTacToeMove();
+      if (botMove !== -1) {
+        this.games.ticTacToe.board[botMove] = 'O';
+        gameContainer.children[botMove].textContent = 'O';
+        gameContainer.children[botMove].style.cursor = 'not-allowed';
+
+        if (this.checkTicTacToeWin('O')) {
+          this.addMessage('🤖 Ich habe gewonnen! Nochmal versuchen? 😏', 'bot');
+          this.disableTicTacToeBoard(gameContainer);
+          setTimeout(() => this.handleAction('games'), 2000);
+          return;
+        }
+
+        if (this.games.ticTacToe.board.every((cell) => cell !== null)) {
+          this.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
+          setTimeout(() => this.handleAction('games'), 2000);
+        }
+      }
+    }, 500);
+  }
+
+  getBotTicTacToeMove() {
+    const board = this.games.ticTacToe.board;
+
+    // Check for winning move
+    for (let i = 0; i < 9; i++) {
+      if (!board[i]) {
+        board[i] = 'O';
+        if (this.checkTicTacToeWin('O')) {
+          board[i] = null;
+          return i;
+        }
+        board[i] = null;
+      }
+    }
+
+    // Block player winning move
+    for (let i = 0; i < 9; i++) {
+      if (!board[i]) {
+        board[i] = 'X';
+        if (this.checkTicTacToeWin('X')) {
+          board[i] = null;
+          return i;
+        }
+        board[i] = null;
+      }
+    }
+
+    // Take center if available
+    if (!board[4]) return 4;
+
+    // Take random available spot
+    const available = board
+      .map((cell, idx) => (cell === null ? idx : null))
+      .filter((idx) => idx !== null);
+    return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : -1;
+  }
+
+  checkTicTacToeWin(symbol) {
+    const board = this.games.ticTacToe.board;
+    const winPatterns = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+
+    return winPatterns.some((pattern) => pattern.every((idx) => board[idx] === symbol));
+  }
+
+  disableTicTacToeBoard(gameContainer) {
+    Array.from(gameContainer.children).forEach((cell) => {
+      cell.style.cursor = 'not-allowed';
+      cell.onclick = null;
+    });
+  }
+
+  startTrivia() {
+    const questions = [
+      {
+        q: 'Welches Jahr wurde JavaScript veröffentlicht?',
+        options: ['1995', '1999', '2005', '1991'],
+        answer: 0,
+      },
+      {
+        q: 'Was bedeutet HTML?',
+        options: [
+          'Hyper Text Markup Language',
+          'High Tech Modern Language',
+          'Home Tool Markup Language',
+          'Hyperlinks and Text Markup Language',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'Welcher Planet ist der größte im Sonnensystem?',
+        options: ['Saturn', 'Jupiter', 'Uranus', 'Neptun'],
+        answer: 1,
+      },
+      {
+        q: 'In welchem Jahr fiel die Berliner Mauer?',
+        options: ['1987', '1989', '1991', '1985'],
+        answer: 1,
+      },
+      {
+        q: 'Was ist die Geschwindigkeit des Lichts?',
+        options: ['300.000 km/s', '150.000 km/s', '450.000 km/s', '200.000 km/s'],
+        answer: 0,
+      },
+    ];
+
+    const question = questions[Math.floor(Math.random() * questions.length)];
+    this.games.currentTrivia = question;
+
+    this.addMessage(`🧠 Trivia-Quiz! Score: ${this.games.triviaScore}`, 'bot');
+    this.addMessage(question.q, 'bot');
+
+    const options = question.options.map((opt, idx) => ({
+      label: opt,
+      action: `triviaAnswer_${idx}`,
+    }));
+
+    this.addOptions(options);
+  }
+
+  handleTriviaAnswer(answerIdx) {
+    const correct = answerIdx === this.games.currentTrivia.answer;
+
+    if (correct) {
+      this.games.triviaScore++;
+      localStorage.setItem('robot-trivia-score', this.games.triviaScore);
+      this.addMessage('✅ Richtig! Sehr gut! 🎉', 'bot');
+
+      if (this.games.triviaScore === 5 && !this.easterEggFound.has('trivia-master')) {
+        this.unlockEasterEgg(
+          'trivia-master',
+          '🧠 Trivia-Master! 5 richtige Antworten! Du bist ein Genie! 🏆',
+        );
+      }
+    } else {
+      this.addMessage(
+        `❌ Leider falsch! Die richtige Antwort war: ${this.games.currentTrivia.options[this.games.currentTrivia.answer]}`,
+        'bot',
+      );
+    }
+
+    setTimeout(() => {
+      this.addMessage('Noch eine Frage?', 'bot');
+      this.addOptions([
+        { label: 'Ja, weiter!', action: 'playTrivia' },
+        { label: 'Zurück', action: 'games' },
+      ]);
+    }, 1500);
+  }
+
+  startGuessNumber() {
+    this.games.guessNumber = {
+      target: Math.floor(Math.random() * 100) + 1,
+      attempts: 0,
+      maxAttempts: 7,
+    };
+
+    this.addMessage(
+      '🎲 Zahlenraten! Ich denke an eine Zahl zwischen 1 und 100. Du hast 7 Versuche!',
+      'bot',
+    );
+    this.addMessage('Gib eine Zahl ein:', 'bot');
+
+    // Override next input
+    this.games.guessNumberActive = true;
+  }
+
+  handleGuessNumber(guess) {
+    const num = parseInt(guess);
+    if (isNaN(num) || num < 1 || num > 100) {
+      this.addMessage('⚠️ Bitte eine Zahl zwischen 1 und 100 eingeben!', 'bot');
+      return;
+    }
+
+    this.games.guessNumber.attempts++;
+    const { target, attempts, maxAttempts } = this.games.guessNumber;
+
+    if (num === target) {
+      this.addMessage(
+        `🎉 Richtig! Die Zahl war ${target}! Du hast ${attempts} Versuche gebraucht! 🏆`,
+        'bot',
+      );
+      this.games.guessNumberActive = false;
+
+      if (attempts <= 3 && !this.easterEggFound.has('lucky-guesser')) {
+        this.unlockEasterEgg(
+          'lucky-guesser',
+          '🍀 Lucky Guesser! In 3 oder weniger Versuchen! Unglaublich! 🎯',
+        );
+      }
+
+      setTimeout(() => this.handleAction('games'), 2000);
+    } else if (attempts >= maxAttempts) {
+      this.addMessage(`😅 Keine Versuche mehr! Die Zahl war ${target}. Nochmal?`, 'bot');
+      this.games.guessNumberActive = false;
+      setTimeout(() => this.handleAction('games'), 2000);
+    } else {
+      const hint = num < target ? '📈 Zu niedrig!' : '📉 Zu hoch!';
+      this.addMessage(`${hint} Versuche übrig: ${maxAttempts - attempts}`, 'bot');
+    }
   }
 }
 

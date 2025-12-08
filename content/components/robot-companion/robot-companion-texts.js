@@ -5,11 +5,11 @@ window.robotCompanionTexts = {
   knowledgeBase: {
     start: {
       text: [
-        'Hallo! Ich bin Cyber, dein virtueller Assistent. 🤖 Wie kann ich dir heute helfen?',
+        'Hallo! Ich bin Cyber, dein virtueller Assistent. Wie kann ich dir heute helfen?',
         'Hi! Cyber hier — möchtest du Projekte anschauen oder etwas über den Entwickler erfahren?',
         'Grüß dich! Brauchst du Hilfe oder willst du einfach die Galerie durchstöbern?',
         'Servus! Ich kann dir Projekte, Skills und Kontaktinfos zeigen. Soll ich beginnen?',
-        'Hey! Ich bin Cyber — tippe auf mich, um loszulegen! 👋',
+        'Hey! Ich bin Cyber — tippe auf mich, um loszulegen!',
       ],
       options: [
         { label: 'Was kannst du?', action: 'skills' },
@@ -27,7 +27,7 @@ window.robotCompanionTexts = {
       ],
     },
     about: {
-      text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt. 👨‍💻',
+      text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt.',
       options: [
         { label: 'Zur Bio', url: '/pages/about/about.html' },
         { label: 'Kontakt aufnehmen', action: 'contact' },
@@ -63,12 +63,23 @@ window.robotCompanionTexts = {
       options: [
         { label: 'Witz erzählen', action: 'joke' },
         { label: 'Weltraum Fakt', action: 'fact' },
+        { label: 'Mini-Games', action: 'games' },
+        { label: 'Meine Stimmung', action: 'showMood' },
         { label: 'Zurück', action: 'start' },
+      ],
+    },
+    games: {
+      text: 'Welches Spiel möchtest du spielen?',
+      options: [
+        { label: 'Tic-Tac-Toe', action: 'playTicTacToe' },
+        { label: 'Trivia Quiz', action: 'playTrivia' },
+        { label: 'Zahlenraten', action: 'playGuessNumber' },
+        { label: 'Zurück', action: 'extras' },
       ],
     },
     joke: {
       text: [
-        'Was macht ein Pirat am Computer? Er drückt die Enter-Taste! 🏴‍☠️',
+        'Was macht ein Pirat am Computer? Er drückt die Enter-Taste!',
         'Warum gehen Geister nicht in den Regen? Damit sie nicht nass werden... nein, damit sie nicht "ge-löscht" werden!',
         'Ein SQL Query kommt in eine Bar, geht zu zwei Tischen und fragt: "Darf ich mich joinen?"',
         'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.',
@@ -80,7 +91,7 @@ window.robotCompanionTexts = {
     },
     fact: {
       text: [
-        'Wusstest du? Ein Tag auf der Venus ist länger als ein Jahr auf der Venus. 🪐',
+        'Wusstest du? Ein Tag auf der Venus ist länger als ein Jahr auf der Venus.',
         'Der Weltraum ist völlig still. Es gibt keine Atmosphäre, die Schall überträgt.',
         'Neutronensterne sind so dicht, dass ein Teelöffel davon 6 Milliarden Tonnen wiegen würde!',
         'Es gibt mehr Sterne im Universum als Sandkörner an allen Stränden der Erde.',
@@ -97,66 +108,93 @@ window.robotCompanionTexts = {
   },
 
   initialBubbleGreetings: [
-    'Psst! Brauchst du Hilfe? 👋',
-    'Hallo! Ich bin Cyber — möchtest du etwas sehen? 👀',
-    'Hey! Hier, wenn du Fragen hast. 🤖',
-    'Grüße! Benötigst du Hilfe oder einen Rundgang?',
-    'Tippe auf mich, um die Galerie oder Projekte zu sehen!',
+    'Psst! Brauchst du Hilfe?',
+    'Hi! Ich bin Cyber',
+    'Hey! Fragen? Ich bin für dich da!',
+    'Klick mich für einen Rundgang!',
   ],
+
+  moodGreetings: {
+    'night-owl': [
+      'Noch wach um diese Uhrzeit? Ich auch!',
+      'Nachtschicht? Ich bin für dich da!',
+      'Die Nacht ist jung! Was kann ich tun?',
+    ],
+    'sleepy': [
+      '*gähn* Guten Morgen! Noch etwas müde...',
+      "Morgens geht's langsam los... Wie kann ich helfen?",
+      'Kaffee wäre jetzt nice... Aber ich bin wach genug für dich!',
+    ],
+    'energetic': [
+      'Volle Power! Was kann ich für dich tun?',
+      "Let's go! Ich bin bereit!",
+      'Energie-Level: Maximum! Lass uns loslegen!',
+    ],
+    'relaxed': [
+      'Schöner Abend! Wie kann ich helfen?',
+      'Entspannt unterwegs... Was brauchst du?',
+      'Feierabend-Vibes! Zeit zum Chillen!',
+    ],
+    'enthusiastic': [
+      'Wow, schon wieder hier! Du bist mein Lieblingsbesucher!',
+      'Yeah! So viele Interaktionen - ich LIEBE es!',
+      'Du bist ja Power-User! Respekt!',
+    ],
+    'normal': [
+      'Hey! Wie kann ich helfen?',
+      'Hi! Was brauchst du?',
+      'Hallo! Ready für Action!',
+    ],
+  },
 
   initialBubblePools: [
     ['Hey!', 'Hi!', 'Hallo!', 'Servus!'],
-    [
-      'Hier, wenn du Fragen hast. 🤖',
-      'Ich bin hier, falls du Hilfe brauchst.',
-      'Sag Bescheid, wenn du etwas sehen willst.',
-      'Klick mich an, um mehr zu erfahren.',
-    ],
-    [
-      'Schön, dass du hier auf der Startseite bist!',
-      'Toll, dass du vorbeischaust!',
-      'Willkommen — schön, dich da zu haben.',
-    ],
-    [
-      'Möchtest du einen Rundgang?',
-      'Soll ich dir ein paar Highlights zeigen?',
-      'Willst du die Projekte oder die Galerie sehen?',
-    ],
+    ['Ich bin Cyber, dein Assistent.', 'Brauchst du Hilfe?', 'Fragen? Ich bin hier!'],
+    ['Toll, dass du vorbeischaust!', 'Willkommen auf der Seite!', 'Schön, dich zu sehen!'],
+    ['Soll ich dir was zeigen?', 'Lust auf einen Rundgang?', 'Projekte oder Galerie ansehen?'],
+    ['Klick auf mich für mehr!', 'Ich helfe dir gern weiter!', 'Lass uns loslegen!'],
   ],
 
   contextGreetings: {
     home: [
-      'Schön, dass du hier auf der Startseite bist! Möchtest du einen Rundgang?',
-      'Startseite-Check: Soll ich dir die Highlights zeigen?',
-    ],
-    projects: [
-      'Neugierig auf Projekte? Ich kann dir ein zufälliges zeigen!',
-      'Auf der Projektseite — soll ich ein Projekt hervorheben?',
-    ],
-    gallery: [
-      'In der Galerie — ich zeige dir gern Bilder und Highlights!',
-      'Galerie-Modus: Schön, lass uns ein paar Fotos ansehen.',
-      'Fotos erkunden? Ich zeige gern Galerien und Highlights!',
-    ],
-    about: [
-      'Hier geht es um den Entwickler — neugierig auf die Bio?',
-      'Über-Seite: Möchtest du mehr über den Entwickler erfahren?',
-    ],
-    cards: [
-      'Das Karten-Board zeigt kompakt alle Features — brauchst du eine Übersicht?',
-      'Auf den Karten findest du Details zu den einzelnen Inhalten. Soll ich dir helfen?',
+      'Willkommen! Möchtest du einen Rundgang?',
+      'Schön, dass du da bist! Soll ich dir die Highlights zeigen?',
+      'Hey! Bereit, die Seite zu erkunden?',
     ],
     hero: [
-      'Willkommen auf der Startseite! Möchtest du die Highlights sehen?',
-      'Schöner erster Eindruck! Soll ich dich rumführen?',
+      'Hey! Bereit für den Einstieg?',
+      'Willkommen im Hero-Bereich! Soll ich dich rumführen?',
+      'Los geht es! Was möchtest du sehen?',
     ],
     features: [
-      'Hier findest du die wichtigsten Features. Brauchst du eine kurze Übersicht?',
-      'Kurz und knackig: Hier sind unsere Leistungen und Feature-Highlights.',
+      'Features entdecken? Ich zeige dir gern die Highlights!',
+      'Hier sind die Leistungen — brauchst du eine Übersicht?',
+      'Wow, viele coole Features hier! Soll ich erklären?',
+    ],
+    about: [
+      'Neugierig auf den Entwickler?',
+      'Hier erfährst du mehr über den Creator!',
+      'Die Story dahinter interessiert dich? Lass uns reden!',
+    ],
+    projects: [
+      'Projekte erkunden? Ich zeige dir was Cooles!',
+      'Lust auf ein zufälliges Projekt?',
+      'So viele spannende Arbeiten! Wo soll ich anfangen?',
+    ],
+    gallery: [
+      'Galerie-Zeit! Lass uns Bilder ansehen!',
+      'Fotos durchstöbern? Ich zeige dir die Favoriten!',
+      'Schöne Bilder hier! Magst du eine Tour?',
+    ],
+    cards: [
+      'Alle Features auf einen Blick!',
+      'Brauchst du eine Übersicht über die Karten?',
+      'Die Karten-Ansicht ist super übersichtlich! Hilfe?',
     ],
     footer: [
-      'Im Footer findest du Kontakt, Impressum und Social Links — soll ich nach unten scrollen?',
-      'Benötigst du Kontaktinfos oder rechtliche Hinweise? Ich helfe dir zum Footer.',
+      'Kontakt oder Impressum gesucht?',
+      'Im Footer findest du alle wichtigen Links!',
+      'Ganz unten gibts die Infos! Soll ich scrollen?',
     ],
     default: [],
   },
@@ -172,8 +210,8 @@ window.robotCompanionTexts = {
   },
 
   initialBubbleSequenceConfig: {
-    steps: 4,
-    displayDuration: 10000, // ms
-    pausesAfter: [0, 20000, 20000, 0],
+    steps: 5,
+    displayDuration: 6000, // ms - schnellerer Flow
+    pausesAfter: [0, 8000, 10000, 8000, 0], // Variierte Pausen für natürlicheren Rhythmus
   },
 };
