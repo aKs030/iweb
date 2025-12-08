@@ -70,7 +70,9 @@ class RobotCompanion {
     // Startnachrichten-Kontext-Suffix (wird an die zufällige Startnachricht angehängt)
     this.startMessageSuffix = this.texts.startMessageSuffix || {};
     // Kleine Sammlung von Texten für die kleine Begrüßungs-Blase
-    this.initialBubbleGreetings = this.texts.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
+    this.initialBubbleGreetings = this.texts.initialBubbleGreetings || [
+      'Psst! Brauchst du Hilfe? 👋',
+    ];
 
     // Optional: Pools for multi-message bubble sequences. We pick one from each step's pool.
     this.initialBubblePools = this.texts.initialBubblePools || [];
@@ -96,12 +98,19 @@ class RobotCompanion {
 
   applyTexts() {
     this.texts = (window && window.robotCompanionTexts) || this.texts || {};
-    this.knowledgeBase = this.texts.knowledgeBase || this.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
+    this.knowledgeBase = this.texts.knowledgeBase ||
+      this.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
     this.contextGreetings = this.texts.contextGreetings || this.contextGreetings || { default: [] };
     this.startMessageSuffix = this.texts.startMessageSuffix || this.startMessageSuffix || {};
-    this.initialBubbleGreetings = this.texts.initialBubbleGreetings || this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
+    this.initialBubbleGreetings = this.texts.initialBubbleGreetings ||
+      this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
     this.initialBubblePools = this.texts.initialBubblePools || this.initialBubblePools || [];
-    this.initialBubbleSequenceConfig = this.texts.initialBubbleSequenceConfig || this.initialBubbleSequenceConfig || { steps: 4, displayDuration: 10000, pausesAfter: [0, 20000, 20000, 0] };
+    this.initialBubbleSequenceConfig = this.texts.initialBubbleSequenceConfig ||
+      this.initialBubbleSequenceConfig || {
+        steps: 4,
+        displayDuration: 10000,
+        pausesAfter: [0, 20000, 20000, 0],
+      };
 
     // Canonical keys only: texts must use 'gallery', 'cards', etc.
   }
@@ -183,26 +192,26 @@ class RobotCompanion {
     this.loadTexts().then(() => {
       setTimeout(() => {
         if (!this.state.isOpen && !this.state.hasGreeted) {
-        // By default we show either a quick single greet or a multi-message sequence
-        const showSequenceChance = 0.9; // choose sequence most times
-        if (this.initialBubblePools && Math.random() < showSequenceChance) {
-          this.startInitialBubbleSequence();
-        } else {
-          const greet =
-            this.initialBubbleGreetings[
-              Math.floor(Math.random() * this.initialBubbleGreetings.length)
-            ];
-          const ctx = this.getPageContext();
-          const ctxArr = this.contextGreetings[ctx] || this.contextGreetings.default || [];
-          let finalGreet = greet;
-          if (ctxArr.length && Math.random() < 0.7) {
-            const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
-            finalGreet = `${String(greet || '').trim()} ${ctxMsg}`.trim();
+          // By default we show either a quick single greet or a multi-message sequence
+          const showSequenceChance = 0.9; // choose sequence most times
+          if (this.initialBubblePools && Math.random() < showSequenceChance) {
+            this.startInitialBubbleSequence();
+          } else {
+            const greet =
+              this.initialBubbleGreetings[
+                Math.floor(Math.random() * this.initialBubbleGreetings.length)
+              ];
+            const ctx = this.getPageContext();
+            const ctxArr = this.contextGreetings[ctx] || this.contextGreetings.default || [];
+            let finalGreet = greet;
+            if (ctxArr.length && Math.random() < 0.7) {
+              const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
+              finalGreet = `${String(greet || '').trim()} ${ctxMsg}`.trim();
+            }
+            this.showBubble(finalGreet);
+            this.state.hasGreeted = true;
           }
-          this.showBubble(finalGreet);
-          this.state.hasGreeted = true;
         }
-      }
       }, 5000);
     });
 
@@ -289,12 +298,12 @@ class RobotCompanion {
                 <div class="chat-messages" id="robot-messages"></div>
                 <div class="chat-controls" id="robot-controls"></div>
             </div>
-            
+
             <div class="robot-bubble" id="robot-bubble">
                 <span id="robot-bubble-text">Hallo!</span>
                 <div class="robot-bubble-close">&times;</div>
             </div>
-            
+
             <div class="robot-avatar">
                 ${robotSVG}
             </div>
@@ -385,7 +394,12 @@ class RobotCompanion {
     if (typeof this.patrol !== 'undefined') {
       eyeOffset = this.patrol.direction > 0 ? -3 : 3;
     }
-    const eyeIntensity = this.avoid && this.avoid.active ? 1.4 : this.motion && (this.motion.dashUntil > performance.now()) ? 1.2 : 1;
+    const eyeIntensity =
+      this.avoid && this.avoid.active
+        ? 1.4
+        : this.motion && this.motion.dashUntil > performance.now()
+          ? 1.2
+          : 1;
     const baseX = eyeOffset * eyeIntensity;
     const totalX = baseX + (this.eyeIdleOffset.x || 0);
     const totalY = this.eyeIdleOffset.y || 0;
@@ -397,7 +411,9 @@ class RobotCompanion {
     // stop if already running
     this.stopBlinkLoop();
     const schedule = () => {
-      const delay = this.blinkConfig.intervalMin + Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
+      const delay =
+        this.blinkConfig.intervalMin +
+        Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
       this._blinkTimer = setTimeout(() => {
         this.doBlink();
         schedule();
@@ -447,7 +463,7 @@ class RobotCompanion {
         pool = pool.concat(ctxArr);
       }
       const pick = pool[Math.floor(Math.random() * pool.length)];
-        picks.push(String(pick || '').trim());
+      picks.push(String(pick || '').trim());
     }
     // If no picks, bail
     if (picks.length === 0) return;
@@ -501,8 +517,6 @@ class RobotCompanion {
       x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
       y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
     };
-    // Start blink loop
-    requestAnimationFrame(() => this.startBlinkLoop());
   }
 
   startAvoid(twRect, dir, maxLeft) {
@@ -564,11 +578,17 @@ class RobotCompanion {
       // footer may be detected by container id or native footer tag
       if (sectionCheck('#footer-container') || sectionCheck('footer')) return 'footer';
 
-
       if (lower.includes('/pages/projekte') || file.includes('projekte')) return 'projects';
-      if (lower.includes('/pages/gallery') || lower.includes('/gallery') || file.includes('gallery')) return 'gallery';
-      if (lower.includes('/pages/about') || file.includes('about') || lower.includes('/about')) return 'about';
-      if (lower.includes('/pages/cards') || file.includes('karten') || lower.includes('/karten')) return 'cards';
+      if (
+        lower.includes('/pages/gallery') ||
+        lower.includes('/gallery') ||
+        file.includes('gallery')
+      )
+        return 'gallery';
+      if (lower.includes('/pages/about') || file.includes('about') || lower.includes('/about'))
+        return 'about';
+      if (lower.includes('/pages/cards') || file.includes('karten') || lower.includes('/karten'))
+        return 'cards';
       if (lower === '/' || file === 'index.html' || lower.includes('/home')) return 'home';
 
       // Fallback auf Überschrift-Erkennung
