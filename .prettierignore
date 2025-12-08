@@ -1,12 +1,2 @@
 node_modules
 test-results
-content/img
-content/fonts
-coverage
-dist
-build
-.vscode
-content/vendor
-**/*.min.js
-**/*.min.css
-public

@@ -33,9 +33,9 @@ const STATIC_ASSETS = [
   '/content/utils/accessibility-manager.js',
   '/pages/home/hero.css',
   '/pages/home/hero-manager.js',
-  '/pages/fotos/gallery.html',
-  '/pages/fotos/gallery-styles.css',
-  '/pages/fotos/gallery-app.js',
+  '/pages/gallery/gallery.html',
+  '/pages/gallery/gallery-styles.css',
+  '/pages/gallery/gallery-app.js',
   '/content/components/typewriter/typewriter.css',
   '/content/components/typewriter/TypeWriter.js',
 ];
