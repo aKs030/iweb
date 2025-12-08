@@ -104,12 +104,7 @@ window.robotCompanionTexts = {
   ],
 
   initialBubblePools: [
-    [
-      'Hey!',
-      'Hi!',
-      'Hallo!',
-      'Servus!',
-    ],
+    ['Hey!', 'Hi!', 'Hallo!', 'Servus!'],
     [
       'Hier, wenn du Fragen hast. 🤖',
       'Ich bin hier, falls du Hilfe brauchst.',
@@ -131,11 +126,11 @@ window.robotCompanionTexts = {
   contextGreetings: {
     home: [
       'Schön, dass du hier auf der Startseite bist! Möchtest du einen Rundgang?',
-      'Startseite-Check: Soll ich dir die Highlights zeigen?'
+      'Startseite-Check: Soll ich dir die Highlights zeigen?',
     ],
     projects: [
       'Neugierig auf Projekte? Ich kann dir ein zufälliges zeigen!',
-      'Auf der Projektseite — soll ich ein Projekt hervorheben?'
+      'Auf der Projektseite — soll ich ein Projekt hervorheben?',
     ],
     gallery: [
       'In der Galerie — ich zeige dir gern Bilder und Highlights!',
@@ -144,7 +139,7 @@ window.robotCompanionTexts = {
     ],
     about: [
       'Hier geht es um den Entwickler — neugierig auf die Bio?',
-      'Über-Seite: Möchtest du mehr über den Entwickler erfahren?'
+      'Über-Seite: Möchtest du mehr über den Entwickler erfahren?',
     ],
     cards: [
       'Das Karten-Board zeigt kompakt alle Features — brauchst du eine Übersicht?',
@@ -152,15 +147,15 @@ window.robotCompanionTexts = {
     ],
     hero: [
       'Willkommen auf der Startseite! Möchtest du die Highlights sehen?',
-      'Schöner erster Eindruck! Soll ich dich rumführen?'
+      'Schöner erster Eindruck! Soll ich dich rumführen?',
     ],
     features: [
       'Hier findest du die wichtigsten Features. Brauchst du eine kurze Übersicht?',
-      'Kurz und knackig: Hier sind unsere Leistungen und Feature-Highlights.'
+      'Kurz und knackig: Hier sind unsere Leistungen und Feature-Highlights.',
     ],
     footer: [
       'Im Footer findest du Kontakt, Impressum und Social Links — soll ich nach unten scrollen?',
-      'Benötigst du Kontaktinfos oder rechtliche Hinweise? Ich helfe dir zum Footer.'
+      'Benötigst du Kontaktinfos oder rechtliche Hinweise? Ich helfe dir zum Footer.',
     ],
     default: [],
   },
