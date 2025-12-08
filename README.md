@@ -103,7 +103,7 @@ iweb/
 ├── pages/                # Seiten-spezifische Module
 │   ├── home/
 │   ├── about/
-│   ├── fotos/            # 📸 React Photo Gallery
+│   ├── gallery/          # 📸 React Photo Gallery (renamed from fotos/)
 │   │   ├── gallery.html
 │   │   └── gallery-app.js
 │   └── projekte/
@@ -143,9 +143,9 @@ npx stylelint "**/*.css"
 
 ### ✅ React Photo Gallery hinzugefügt
 
-- Neue React-basierte Photo Gallery unter `/pages/fotos/`
+- Neue React-basierte Photo Gallery unter `/pages/gallery/`
 - Features: Filter, Suche, Zoom, Slideshow, Favoriten, Download/Share
-- Nutzt lokale Utility-CSS (`/pages/fotos/gallery-styles.css`) statt Tailwind-CDN
+- Nutzt lokale Utility-CSS (`/pages/gallery/gallery-styles.css`) statt Tailwind-CDN
 - Vollständig responsive und PWA-kompatibel
 
 ### ✅ Console-Logs standardisiert

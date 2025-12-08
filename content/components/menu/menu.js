@@ -137,7 +137,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="/pages/fotos/gallery.html">
+          <a href="/pages/gallery/gallery.html">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-images"></use>
             </svg>
@@ -306,8 +306,8 @@ function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
     '/': 'Startseite',
-    '/pages/fotos/gallery.html': 'Fotos',
-    '/pages/card/karten.html': 'Projekte',
+    '/pages/gallery/gallery.html': 'Fotos',
+    '/pages/cards/karten.html': 'Projekte',
     '/pages/projekte/projekte.html': 'Projekte',
   };
   const path = window.location.pathname;

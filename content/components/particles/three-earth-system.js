@@ -646,6 +646,10 @@ export const EarthSystemAPI = {
   updateConfig: (updates) => {
     Object.assign(CONFIG, updates);
   },
+  // Exposed for testing purposes
+  get shootingStarManager() {
+    return shootingStarManager;
+  },
 };
 
 export default ThreeEarthManager;

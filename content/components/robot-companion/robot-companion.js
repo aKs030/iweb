@@ -6,6 +6,8 @@
 class RobotCompanion {
   constructor() {
     this.containerId = 'robot-companion-container';
+    // Ensure texts object exists early to avoid access errors before loading remote texts
+    this.texts = (window && window.robotCompanionTexts) || {};
     this.state = {
       isOpen: false,
       hasGreeted: false,
@@ -43,101 +45,89 @@ class RobotCompanion {
     };
 
     this.updatePatrol = this.updatePatrol.bind(this);
-    this.animationState = 'idle'; // idle, moving, thinking, working
-    this._mousePos = { x: 0, y: 0 };
     this._prevDashActive = false;
+    // Idle eye animation data (replaces mouse-follow)
+    this.eyeIdleOffset = { x: 0, y: 0 };
+    this._eyeIdleTimer = null;
+    this.eyeIdleConfig = {
+      intervalMin: 3000,
+      intervalMax: 8000,
+      amplitudeX: 1.5,
+      amplitudeY: 0.8,
+      moveDuration: 800,
+    };
+    // Blinking config
+    this.blinkConfig = {
+      intervalMin: 2500,
+      intervalMax: 7000,
+      duration: 120,
+    };
+    this._blinkTimer = null;
 
-    // Erweiterte Antworten-Datenbank
-    this.knowledgeBase = {
-      start: {
-        text: 'Hallo! Ich bin Cyber, dein virtueller Assistent. 🤖 Wie kann ich dir heute helfen?',
-        options: [
-          { label: 'Was kannst du?', action: 'skills' },
-          { label: 'Projekte zeigen', action: 'projects' },
-          { label: 'Über den Dev', action: 'about' },
-          { label: 'Fun & Extras', action: 'extras' },
-        ],
-      },
-      skills: {
-        text: 'Ich wurde mit HTML, CSS und reinem JavaScript gebaut! Mein Erschaffer beherrscht aber noch viel mehr: React, Node.js, Python und UI/UX Design. Möchtest du Details?',
-        options: [
-          { label: 'Tech Stack ansehen', url: '/pages/about/about.html#skills' },
-          { label: 'Zurück', action: 'start' },
-        ],
-      },
-      about: {
-        text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt. 👨‍💻',
-        options: [
-          { label: 'Zur Bio', url: '/pages/about/about.html' },
-          { label: 'Kontakt aufnehmen', action: 'contact' },
-          { label: 'Zurück', action: 'start' },
-        ],
-      },
-      projects: {
-        text: 'Wir haben einige spannende Projekte hier! Von Web-Apps bis zu Design-Experimenten. Wirf einen Blick in die Galerie.',
-        options: [
-          { label: 'Zur Galerie', url: '/pages/projekte/projekte.html' },
-          { label: 'Ein Zufallsprojekt?', action: 'randomProject' },
-          { label: 'Zurück', action: 'start' },
-        ],
-      },
-      contact: {
-        text: 'Du findest Kontaktmöglichkeiten im Footer der Seite oder im Impressum. Ich kann dich dorthin scrollen!',
-        options: [
-          { label: 'Zum Footer scrollen', action: 'scrollFooter' },
-          { label: 'Social Media?', action: 'socials' },
-          { label: 'Alles klar', action: 'start' },
-        ],
-      },
-      socials: {
-        text: 'Vernetze dich gerne! Hier sind die Profile:',
-        options: [
-          { label: 'GitHub', url: 'https://github.com', target: '_blank' },
-          { label: 'LinkedIn', url: 'https://linkedin.com', target: '_blank' },
-          { label: 'Zurück', action: 'contact' },
-        ],
-      },
-      extras: {
-        text: 'Ein bisschen Spaß muss sein! Was möchtest du?',
-        options: [
-          { label: 'Witz erzählen', action: 'joke' },
-          { label: 'Weltraum Fakt', action: 'fact' },
-          { label: 'Zurück', action: 'start' },
-        ],
-      },
-      joke: {
-        text: [
-          'Was macht ein Pirat am Computer? Er drückt die Enter-Taste! 🏴‍☠️',
-          'Warum gehen Geister nicht in den Regen? Damit sie nicht nass werden... nein, damit sie nicht "ge-löscht" werden!',
-          'Ein SQL Query kommt in eine Bar, geht zu zwei Tischen und fragt: "Darf ich mich joinen?"',
-          'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.',
-        ],
-        options: [
-          { label: 'Noch einer!', action: 'joke' },
-          { label: 'Genug gelacht', action: 'start' },
-        ],
-      },
-      fact: {
-        text: [
-          'Wusstest du? Ein Tag auf der Venus ist länger als ein Jahr auf der Venus. 🪐',
-          'Der Weltraum ist völlig still. Es gibt keine Atmosphäre, die Schall überträgt.',
-          'Neutronensterne sind so dicht, dass ein Teelöffel davon 6 Milliarden Tonnen wiegen würde!',
-          'Es gibt mehr Sterne im Universum als Sandkörner an allen Stränden der Erde.',
-        ],
-        options: [
-          { label: 'Wow, noch einer!', action: 'fact' },
-          { label: 'Zurück', action: 'start' },
-        ],
-      },
-      randomProject: {
-        // Logik wird unten in handleAction speziell behandelt, dies ist ein Fallback
-        text: 'Ich suche etwas raus...',
-        options: [],
-      },
+    // Kontext-basierte Begrüßungen (optional je Seite) — aus externen Texten oder Fallback
+    this.contextGreetings = this.texts.contextGreetings || { default: [] };
+
+    // Startnachrichten-Kontext-Suffix (wird an die zufällige Startnachricht angehängt)
+    this.startMessageSuffix = this.texts.startMessageSuffix || {};
+    // Kleine Sammlung von Texten für die kleine Begrüßungs-Blase
+    this.initialBubbleGreetings = this.texts.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
+
+    // Optional: Pools for multi-message bubble sequences. We pick one from each step's pool.
+    this.initialBubblePools = this.texts.initialBubblePools || [];
+
+    // Config for multi-message bubble sequences: display time per step and pauses after each
+    this.initialBubbleSequenceConfig = this.texts.initialBubbleSequenceConfig || {
+      steps: 4,
+      displayDuration: 10000, // ms - default display time per message
+      pausesAfter: [0, 20000, 20000, 0], // ms - pause AFTER each message, pause after step 2 and 3
     };
 
+    // Store timers for sequence so we can clear them
+    this._bubbleSequenceTimers = [];
+
+    // Load/assign texts and then initialize
+    this.applyTexts();
+    this.loadTexts().then(() => {
+      this.applyTexts();
+    });
     this.init();
     this.setupFooterOverlapCheck();
+  }
+
+  applyTexts() {
+    this.texts = (window && window.robotCompanionTexts) || this.texts || {};
+    this.knowledgeBase = this.texts.knowledgeBase || this.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
+    this.contextGreetings = this.texts.contextGreetings || this.contextGreetings || { default: [] };
+    this.startMessageSuffix = this.texts.startMessageSuffix || this.startMessageSuffix || {};
+    this.initialBubbleGreetings = this.texts.initialBubbleGreetings || this.initialBubbleGreetings || ['Psst! Brauchst du Hilfe? 👋'];
+    this.initialBubblePools = this.texts.initialBubblePools || this.initialBubblePools || [];
+    this.initialBubbleSequenceConfig = this.texts.initialBubbleSequenceConfig || this.initialBubbleSequenceConfig || { steps: 4, displayDuration: 10000, pausesAfter: [0, 20000, 20000, 0] };
+
+    // Canonical keys only: texts must use 'gallery', 'cards', etc.
+  }
+
+  loadTexts() {
+    return new Promise((resolve) => {
+      if (window && window.robotCompanionTexts) {
+        this.texts = window.robotCompanionTexts;
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = '/content/components/robot-companion/robot-companion-texts.js';
+      script.async = true;
+      const done = () => {
+        this.texts = (window && window.robotCompanionTexts) || {};
+        resolve();
+      };
+      script.onload = done;
+      script.onerror = () => {
+        // If it fails, we'll continue with fallback texts
+        done();
+      };
+      document.head.appendChild(script);
+    });
   }
 
   setupFooterOverlapCheck() {
@@ -189,12 +179,32 @@ class RobotCompanion {
     this.createDOM();
     this.attachEvents();
 
-    // Initiale Begrüßung
-    setTimeout(() => {
-      if (!this.state.isOpen) {
-        this.showBubble('Psst! Brauchst du Hilfe? 👋');
+    // Initiale Begrüßung (zufällig, ggf. als Sequenz, wird nur einmal pro Session gezeigt)
+    this.loadTexts().then(() => {
+      setTimeout(() => {
+        if (!this.state.isOpen && !this.state.hasGreeted) {
+        // By default we show either a quick single greet or a multi-message sequence
+        const showSequenceChance = 0.9; // choose sequence most times
+        if (this.initialBubblePools && Math.random() < showSequenceChance) {
+          this.startInitialBubbleSequence();
+        } else {
+          const greet =
+            this.initialBubbleGreetings[
+              Math.floor(Math.random() * this.initialBubbleGreetings.length)
+            ];
+          const ctx = this.getPageContext();
+          const ctxArr = this.contextGreetings[ctx] || this.contextGreetings.default || [];
+          let finalGreet = greet;
+          if (ctxArr.length && Math.random() < 0.7) {
+            const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
+            finalGreet = `${String(greet || '').trim()} ${ctxMsg}`.trim();
+          }
+          this.showBubble(finalGreet);
+          this.state.hasGreeted = true;
+        }
       }
-    }, 5000);
+      }, 5000);
+    });
 
     this.startPatrol();
   }
@@ -215,18 +225,29 @@ class RobotCompanion {
     const robotSVG = `
         <svg viewBox="0 0 100 100" class="robot-svg">
             <defs>
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="2" result="blur"/>
-                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-                </filter>
+              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+              <!-- Lid shadow filter -->
+              <filter id="lidShadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.35" />
+              </filter>
+              <!-- subtle gradient for lids (optional) -->
+              <linearGradient id="lidGradient" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#0b1220" stop-opacity="0.95" />
+                <stop offset="100%" stop-color="#0f172a" stop-opacity="1" />
+              </linearGradient>
             </defs>
             <line x1="50" y1="15" x2="50" y2="25" stroke="#40e0d0" stroke-width="2" />
             <circle cx="50" cy="15" r="3" class="robot-antenna-light" fill="#ff4444" />
             <path d="M30,40 a20,20 0 0,1 40,0" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
             <rect x="30" y="40" width="40" height="15" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
             <g class="robot-eye">
-                <circle cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-                <circle cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
+              <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
+              <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
+              <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
+              <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
             </g>
             <path class="robot-legs" d="M30,60 L70,60 L65,90 L35,90 Z" fill="#0f172a" stroke="#40e0d0" stroke-width="2" />
             <g class="robot-flame" style="opacity: 0;">
@@ -297,6 +318,8 @@ class RobotCompanion {
       thinking: container.querySelector('.robot-thinking'),
       closeBtn: container.querySelector('.chat-close-btn'),
     };
+    // start subtle idle eye movement after DOM is created
+    requestAnimationFrame(() => this.startIdleEyeMovement());
   }
 
   attachEvents() {
@@ -307,58 +330,165 @@ class RobotCompanion {
     });
     this.dom.bubbleClose.addEventListener('click', (e) => {
       e.stopPropagation();
+      // Mark greeted and stop any active bubble sequence
+      this.state.hasGreeted = true;
+      this.clearBubbleSequence();
       this.hideBubble();
     });
 
-    // pointer follow for the eyes (mouse + pointer fallback)
-    this._mouseMoveHandler = (e) => {
-      this._mousePos.x = e.clientX;
-      this._mousePos.y = e.clientY;
-      if (!this._eyeRAF) {
-        this._eyeRAF = requestAnimationFrame(() => this._updateEyeFollow());
-      }
+    // Mouse/pointer follow for the eyes removed — static eyes are used instead.
+  }
+
+  startIdleEyeMovement() {
+    // stop if already running
+    this.stopIdleEyeMovement();
+    const cfg = this.eyeIdleConfig;
+
+    const scheduleNext = () => {
+      const delay = cfg.intervalMin + Math.random() * (cfg.intervalMax - cfg.intervalMin);
+      this._eyeIdleTimer = setTimeout(() => {
+        // choose a subtle random offset
+        const targetX = (Math.random() * 2 - 1) * cfg.amplitudeX; // between -amplitude..amplitude
+        const targetY = (Math.random() * 2 - 1) * cfg.amplitudeY; // small vertical float
+        this.eyeIdleOffset.x = targetX;
+        this.eyeIdleOffset.y = targetY;
+        // apply transform immediately (updatePatrol will also consider this, but call explicitly)
+        this.updateEyesTransform();
+        // after moveDuration, return slowly to neutral
+        const t = setTimeout(() => {
+          this.eyeIdleOffset.x = 0;
+          this.eyeIdleOffset.y = 0;
+          this.updateEyesTransform();
+          scheduleNext();
+        }, cfg.moveDuration);
+        this._eyeIdleTimer = t || this._eyeIdleTimer;
+      }, delay);
     };
-    const prefersCoarse =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(pointer: coarse)').matches;
-    if (!prefersCoarse) {
-      document.addEventListener('mousemove', this._mouseMoveHandler);
-    } else {
-      // For touch, use pointer events but with throttling to avoid jitter
-      let last = 0;
-      this._pointerHandler = (ev) => {
-        if (ev.pointerType === 'touch') {
-          const now = performance.now();
-          if (now - last < 100) return; // throttle
-          last = now;
-          this._mousePos.x = ev.clientX;
-          this._mousePos.y = ev.clientY;
-          if (!this._eyeRAF) this._eyeRAF = requestAnimationFrame(() => this._updateEyeFollow());
-        }
-      };
-      document.addEventListener('pointermove', this._pointerHandler, { passive: true });
+
+    scheduleNext();
+  }
+
+  stopIdleEyeMovement() {
+    if (this._eyeIdleTimer) {
+      clearTimeout(this._eyeIdleTimer);
+      this._eyeIdleTimer = null;
+    }
+    this.eyeIdleOffset.x = 0;
+    this.eyeIdleOffset.y = 0;
+    this.updateEyesTransform();
+  }
+
+  updateEyesTransform() {
+    if (!this.dom || !this.dom.eyes) return;
+    // Compute base X offset based on patrol direction (keeps previous behavior)
+    let eyeOffset = 0;
+    if (typeof this.patrol !== 'undefined') {
+      eyeOffset = this.patrol.direction > 0 ? -3 : 3;
+    }
+    const eyeIntensity = this.avoid && this.avoid.active ? 1.4 : this.motion && (this.motion.dashUntil > performance.now()) ? 1.2 : 1;
+    const baseX = eyeOffset * eyeIntensity;
+    const totalX = baseX + (this.eyeIdleOffset.x || 0);
+    const totalY = this.eyeIdleOffset.y || 0;
+    this.dom.eyes.style.transform = `translate(${totalX}px, ${totalY}px)`;
+    this.dom.eyes.style.transition = 'transform 0.6s ease';
+  }
+
+  startBlinkLoop() {
+    // stop if already running
+    this.stopBlinkLoop();
+    const schedule = () => {
+      const delay = this.blinkConfig.intervalMin + Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
+      this._blinkTimer = setTimeout(() => {
+        this.doBlink();
+        schedule();
+      }, delay);
+    };
+    schedule();
+  }
+
+  stopBlinkLoop() {
+    if (this._blinkTimer) {
+      clearTimeout(this._blinkTimer);
+      this._blinkTimer = null;
     }
   }
 
-  _updateEyeFollow() {
-    this._eyeRAF = null;
-    const eyeMax = 4; // max px offset
-    const avatar = this.dom.avatar;
-    const eyes = this.dom.eyes;
-    if (!avatar || !eyes) return;
-
-    const rect = avatar.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = this._mousePos.x - cx;
-    const dy = this._mousePos.y - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const nx = (dx / dist) * Math.min(Math.abs(dx), eyeMax);
-    const ny = (dy / dist) * Math.min(Math.abs(dy), eyeMax * 0.6);
-
-    eyes.style.transform = `translate(${nx}px, ${ny}px)`;
+  doBlink() {
+    if (!this.dom || !this.dom.eyes) return;
+    const lids = this.dom.eyes.querySelectorAll('.robot-lid');
+    if (!lids || lids.length === 0) return;
+    lids.forEach((l) => l.classList.add('is-blink'));
+    const dur = this.blinkConfig.duration || 120;
+    setTimeout(() => {
+      lids.forEach((l) => l.classList.remove('is-blink'));
+    }, dur + 20);
   }
+
+  clearBubbleSequence() {
+    if (!this._bubbleSequenceTimers) return;
+    for (const t of this._bubbleSequenceTimers) {
+      clearTimeout(t);
+    }
+    this._bubbleSequenceTimers = [];
+  }
+
+  startInitialBubbleSequence() {
+    // Stop any currently running sequence
+    this.clearBubbleSequence();
+    const pools = this.initialBubblePools || [];
+    const steps = Math.min(pools.length, this.initialBubbleSequenceConfig.steps || pools.length);
+    const picks = [];
+    const ctx = this.getPageContext();
+    const ctxArr = (this.contextGreetings && this.contextGreetings[ctx]) || [];
+    for (let i = 0; i < steps; i++) {
+      let pool = pools[i] && pools[i].length ? [...pools[i]] : [...this.initialBubbleGreetings];
+      // Sometimes add a contextual variant to the pool to make some steps feel tailored
+      if (ctxArr.length > 0 && Math.random() < 0.6) {
+        pool = pool.concat(ctxArr);
+      }
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+        picks.push(String(pick || '').trim());
+    }
+    // If no picks, bail
+    if (picks.length === 0) return;
+
+    const showMs = this.initialBubbleSequenceConfig.displayDuration || 10000;
+    const pauses = this.initialBubbleSequenceConfig.pausesAfter || [];
+    let elapsed = 0;
+
+    const schedule = (index) => {
+      if (this.state.isOpen) return; // don't show sequence while chat is open
+      if (index >= picks.length) {
+        // mark greeted at end
+        this.state.hasGreeted = true;
+        return;
+      }
+
+      // show the bubble text for showMs
+      this.showBubble(picks[index]);
+      const t1 = setTimeout(() => {
+        this.hideBubble();
+        // After hide, wait pause then show next
+        const pause = pauses[index] || 0;
+        if (pause > 0) {
+          const t2 = setTimeout(() => {
+            schedule(index + 1);
+          }, pause);
+          this._bubbleSequenceTimers.push(t2);
+        } else {
+          // slight delay between messages for natural feeling
+          const t3 = setTimeout(() => schedule(index + 1), 300);
+          this._bubbleSequenceTimers.push(t3);
+        }
+      }, showMs);
+      this._bubbleSequenceTimers.push(t1);
+    };
+
+    // Start sequence with step 0
+    schedule(0);
+  }
+
+  // Eye follow removed; eye movement controlled by patrol animation
 
   // Cubic Bézier interpolation helper
   _cubicBezier(t, p0, p1, p2, p3) {
@@ -371,6 +501,8 @@ class RobotCompanion {
       x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
       y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
     };
+    // Start blink loop
+    requestAnimationFrame(() => this.startBlinkLoop());
   }
 
   startAvoid(twRect, dir, maxLeft) {
@@ -404,6 +536,52 @@ class RobotCompanion {
     this.avoid.startTime = now;
     this.avoid.duration = 520 + Math.random() * 400; // vary duration between ~520-920ms
     this.animationState = 'avoiding';
+  }
+
+  // Ermittelt den aktuellen Seitentyp/Context (home, projects, gallery, about) basierend auf URL oder h1
+  getPageContext() {
+    try {
+      const path = (window.location && window.location.pathname) || '';
+      const file = path.split('/').pop() || '';
+      const lower = path.toLowerCase();
+
+      // If sections are present on the page, try to determine current visible section
+      // by looking at the viewport center point.
+      const midY = (window.innerHeight || 0) / 2;
+      const sectionCheck = (selector) => {
+        try {
+          const el = document.querySelector(selector);
+          if (!el) return false;
+          const r = el.getBoundingClientRect();
+          return r.top <= midY && r.bottom >= midY;
+        } catch (x) {
+          return false;
+        }
+      };
+      if (sectionCheck('#hero')) return 'hero';
+      if (sectionCheck('#features')) return 'features';
+      if (sectionCheck('#about')) return 'about';
+      // footer may be detected by container id or native footer tag
+      if (sectionCheck('#footer-container') || sectionCheck('footer')) return 'footer';
+
+
+      if (lower.includes('/pages/projekte') || file.includes('projekte')) return 'projects';
+      if (lower.includes('/pages/gallery') || lower.includes('/gallery') || file.includes('gallery')) return 'gallery';
+      if (lower.includes('/pages/about') || file.includes('about') || lower.includes('/about')) return 'about';
+      if (lower.includes('/pages/cards') || file.includes('karten') || lower.includes('/karten')) return 'cards';
+      if (lower === '/' || file === 'index.html' || lower.includes('/home')) return 'home';
+
+      // Fallback auf Überschrift-Erkennung
+      const h1 = document.querySelector('h1');
+      const h1Text = h1 ? (h1.textContent || '').toLowerCase() : '';
+      if (h1Text.includes('projekt') || h1Text.includes('projekte')) return 'projects';
+      if (h1Text.includes('foto') || h1Text.includes('galerie')) return 'gallery';
+      if (h1Text.includes('über') || h1Text.includes('about')) return 'about';
+
+      return 'default';
+    } catch (e) {
+      return 'default';
+    }
   }
 
   spawnParticleBurst(count = 6, { direction = 0, strength = 1 } = {}) {
@@ -467,7 +645,14 @@ class RobotCompanion {
     if (newState) {
       this.dom.window.classList.add('open');
       this.state.isOpen = true;
+      // clear any running bubble sequence and hide bubble
+      this.clearBubbleSequence();
       this.hideBubble();
+      // stop idle eye movement and blinking while chat is open
+      this.stopIdleEyeMovement();
+      this.stopBlinkLoop();
+      // mark greeted to avoid showing the initial bubble later
+      this.state.hasGreeted = true;
 
       if (this.dom.messages.children.length === 0) {
         this.handleAction('start');
@@ -475,16 +660,22 @@ class RobotCompanion {
     } else {
       this.dom.window.classList.remove('open');
       this.state.isOpen = false;
+      // resume idle eye movement and blinking when chat closes
+      this.startIdleEyeMovement();
+      this.startBlinkLoop();
     }
   }
 
   showBubble(text) {
     if (this.state.isOpen) return;
-    this.dom.bubbleText.textContent = text;
+    if (!this.dom || !this.dom.bubble || !this.dom.bubbleText) return;
+    const safe = String(text || '').trim();
+    this.dom.bubbleText.textContent = safe;
     this.dom.bubble.classList.add('visible');
   }
 
   hideBubble() {
+    if (!this.dom || !this.dom.bubble) return;
     this.dom.bubble.classList.remove('visible');
   }
 
@@ -516,7 +707,7 @@ class RobotCompanion {
   addMessage(text, type = 'bot') {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
-    msg.innerHTML = text; // innerHTML für Links im Text erlaubt
+    msg.innerHTML = String(text || ''); // innerHTML für Links im Text erlaubt
     this.dom.messages.appendChild(msg);
     this.scrollToBottom();
   }
@@ -586,9 +777,18 @@ class RobotCompanion {
     setTimeout(() => this.dom.avatar.classList.remove('nod'), 650);
 
     // Simuliere Lese-/Tippzeit basierend auf Textlänge
-    const responseText = Array.isArray(data.text)
+    let responseText = Array.isArray(data.text)
       ? data.text[Math.floor(Math.random() * data.text.length)]
       : data.text;
+
+    // Wenn wir die start Aktion zeigen, klemme ggf. einen kontextbezogenen Zusatz an
+    if (actionKey === 'start') {
+      const ctx = this.getPageContext();
+      const suffix = String(this.startMessageSuffix[ctx] || '').trim();
+      if (suffix) {
+        responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
+      }
+    }
 
     const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
 
@@ -715,10 +915,8 @@ class RobotCompanion {
       this.dom.svg.style.transition = 'transform 0.4s ease';
     }
     if (this.dom.eyes) {
-      const eyeOffset = this.patrol.direction > 0 ? -3 : 3;
-      const eyeIntensity = this.avoid.active ? 1.4 : dashActive ? 1.2 : 1;
-      this.dom.eyes.style.transform = `translateX(${eyeOffset * eyeIntensity}px)`;
-      this.dom.eyes.style.transition = 'transform 0.4s ease';
+      // Use updateEyesTransform, which composes base direction with idle offsets
+      this.updateEyesTransform();
     }
     if (this.dom.flame) {
       // stronger flame during dodge/dash
