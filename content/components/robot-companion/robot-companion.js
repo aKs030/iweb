@@ -272,7 +272,9 @@ class RobotCompanion {
         } else {
           const greet =
             this.initialBubbleGreetings && this.initialBubbleGreetings.length > 0
-              ? this.initialBubbleGreetings[Math.floor(Math.random() * this.initialBubbleGreetings.length)]
+              ? this.initialBubbleGreetings[
+                  Math.floor(Math.random() * this.initialBubbleGreetings.length)
+                ]
               : 'Hallo!';
           const ctxArr = this.contextGreetings[ctx] || this.contextGreetings.default || [];
           let finalGreet = greet;
@@ -295,7 +297,7 @@ class RobotCompanion {
     }, 1500);
 
     // Listen for TypeWriter typing end events so we can detect close-by typing and trigger collisions
-    this._onHeroTypingEnd = (_ev) => {
+    this._onHeroTypingEnd = (ev) => {
       try {
         const typeWriter = document.querySelector('.typewriter-title');
         if (!typeWriter || !this.dom || !this.dom.container) return;
@@ -305,9 +307,7 @@ class RobotCompanion {
         const maxLeft = initialLeft - 20;
         // If the typed line overlaps the robot, trigger the dedicated collision response
         this.checkForTypewriterCollision(twRect, maxLeft);
-      } catch {
-        /* ignored */
-      }
+      } catch (e) {}
     };
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd);
   }
@@ -348,9 +348,7 @@ class RobotCompanion {
             const maxLeft = initialLeft - 20;
             this.checkForTypewriterCollision(twRect, maxLeft);
           }
-        } catch {
-          /* ignored */
-        }
+        } catch (e) {}
       }, 500);
     };
     window.addEventListener('scroll', this._scrollListener, { passive: true });
@@ -420,7 +418,7 @@ class RobotCompanion {
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
-  trackInteraction(_type = 'general') {
+  trackInteraction(type = 'general') {
     this.analytics.interactions++;
     localStorage.setItem('robot-interactions', this.analytics.interactions);
 
@@ -824,6 +822,7 @@ class RobotCompanion {
   // Avoidance logic removed — the robot turns and pauses at section limits now.
 
   checkForTypewriterCollision(twRect, maxLeft) {
+    const now = performance.now();
     if (!twRect) return false;
     // Allow collisions even if the robot recently changed direction.
     if (this.startAnimation && this.startAnimation.active) return false;
@@ -842,9 +841,14 @@ class RobotCompanion {
         top: rRectRaw.top + shrinkY,
         bottom: rRectRaw.bottom - shrinkY,
       };
-      const intersects = !(twRect.right < rRect.left || twRect.left > rRect.right || twRect.bottom < rRect.top || twRect.top > rRect.bottom);
+      const intersects = !(
+        twRect.right < rRect.left ||
+        twRect.left > rRect.right ||
+        twRect.bottom < rRect.top ||
+        twRect.top > rRect.bottom
+      );
       if (!intersects) return false;
-        // Require a minimal overlap in px so the robot and text truly touch (prevents early triggers)
+      // Require a minimal overlap in px so the robot and text truly touch (prevents early triggers)
       const overlapX = Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
       const overlapY = Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
       if (overlapX < 6 || overlapY < 6) return false;
@@ -868,16 +872,16 @@ class RobotCompanion {
       // Große Partikel-Explosion
       this.spawnParticleBurst(18, { strength: 2.0, spread: 180 });
       // Trigger the dedicated typewriter collision knockback
-      this.startTypewriterCollisionResponse(twRect, maxLeft, dir);
+      this.startTypewriterCollisionResponse(twRect, maxLeft);
       return true;
-    } catch {
+    } catch (e) {
       return false;
     }
   }
 
   // A dedicated response for collisions with the TypeWriter text.
   // This function triggers an immediate knockback animation, large particle burst and a tilt flip.
-  startTypewriterCollisionResponse(twRect, maxLeft, dir = 1) {
+  startTypewriterCollisionResponse(twRect, maxLeft) {
     if (!this.dom || !this.dom.container) return;
     // Prevent overlapping animations
     if (this.startAnimation && this.startAnimation.active) return;
@@ -889,7 +893,6 @@ class RobotCompanion {
     this.startAnimation.knockbackStartTime = now;
     this.startAnimation.knockbackDuration = 700; // slightly longer for drama
     this.startAnimation.knockbackStartX = this.patrol.x;
-    this.startAnimation.knockbackDir = dir;
     this.startAnimation.knockbackStartY = this.patrol.y;
 
     // Kick off the animation loop
@@ -1017,8 +1020,8 @@ class RobotCompanion {
       const dx = Math.cos(angle) * distance * strength;
       const dy = Math.sin(angle) * distance * strength - 10 * strength;
 
-      el.style.left = baseX - cRect.left - (size / 2) + 'px';
-      el.style.top = baseY - cRect.top - (size / 2) + 'px';
+      el.style.left = baseX - cRect.left - size / 2 + 'px';
+      el.style.top = baseY - cRect.top - size / 2 + 'px';
 
       requestAnimationFrame(() => {
         el.style.transform = `translate(${dx}px, ${dy}px) scale(${0.5 + Math.random() * 0.6})`;
@@ -1271,7 +1274,7 @@ class RobotCompanion {
 
     // Start a bit to the right of target (closer to the page edge), but not beyond initial left
     const startOffset = 80; // px starting further right than target (not ganz rechts)
-    const startLeft = Math.min(initialLeft, targetLeft + startOffset);
+    let startLeft = Math.min(initialLeft, targetLeft + startOffset);
 
     // Convert to patrol.x (translate amount)
     const startX = Math.max(0, Math.round(initialLeft - startLeft));
@@ -1311,14 +1314,16 @@ class RobotCompanion {
       const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
       // Position interpolieren
-      this.patrol.x = this.startAnimation.startX + (this.startAnimation.targetX - this.startAnimation.startX) * eased;
+      this.patrol.x =
+        this.startAnimation.startX +
+        (this.startAnimation.targetX - this.startAnimation.startX) * eased;
 
       // Bounce während der Fahrt
       this.patrol.bouncePhase += 0.08;
       this.patrol.y = Math.sin(this.patrol.bouncePhase) * 4;
 
       // Flammen werden stärker
-      const flameIntensity = 0.8 + (0.6 * eased);
+      const flameIntensity = 0.8 + 0.6 * eased;
       if (this.dom.flame) {
         this.dom.flame.style.opacity = flameIntensity;
         this.dom.flame.style.transform = `scale(${1 + flameIntensity * 0.3})`;
@@ -1360,7 +1365,7 @@ class RobotCompanion {
           'Autsch! 😵',
           'Ups! Das war hart! 💥',
           'Whoa! 😲',
-          'Hey! Nicht schubsen! 😠'
+          'Hey! Nicht schubsen! 😠',
         ];
         const reaction = reactions[Math.floor(Math.random() * reactions.length)];
         this.showBubble(reaction);
@@ -1390,11 +1395,10 @@ class RobotCompanion {
 
       // 200px Rückprall nach rechts
       const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-      const kdir = this.startAnimation.knockbackDir || 1;
-      this.patrol.x = this.startAnimation.knockbackStartX - (200 * kdir * eased);
+      this.patrol.x = this.startAnimation.knockbackStartX - 200 * eased;
 
       // Kippt während des Flugs
-      const rotation = -20 + (t * 40); // von -20 bis +20 Grad
+      const rotation = -20 + t * 40; // von -20 bis +20 Grad
       if (this.dom.svg) {
         this.dom.svg.style.transform = `rotate(${rotation}deg)`;
       }
@@ -1544,18 +1548,21 @@ class RobotCompanion {
 
     if (this.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
-      const tiltIntensity = (this.startAnimation && this.startAnimation.active) ? 1.6 : dashActive ? 1.2 : 1;
+      const tiltIntensity =
+        this.startAnimation && this.startAnimation.active ? 1.6 : dashActive ? 1.2 : 1;
       this.dom.svg.style.transform = `rotate(${baseTilt * tiltIntensity}deg)`;
       // Optimization: Inline style is fine here, class transition handles smoothness
     }
     if (this.dom.eyes) this.updateEyesTransform();
     if (this.dom.flame) {
-      const flameIntensity = (this.startAnimation && this.startAnimation.active) ? 1.4 : dashActive ? 1.2 : 0.85;
+      const flameIntensity =
+        this.startAnimation && this.startAnimation.active ? 1.4 : dashActive ? 1.2 : 0.85;
       this.dom.flame.style.opacity = flameIntensity;
       this.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.7) * 0.4})`;
     }
     if (this.dom.particles) {
-      this.dom.particles.style.opacity = (dashActive || (this.startAnimation && this.startAnimation.active)) ? '0.9' : '0.5';
+      this.dom.particles.style.opacity =
+        dashActive || (this.startAnimation && this.startAnimation.active) ? '0.9' : '0.5';
     }
 
     if (this.dom.legs) {
@@ -1582,15 +1589,16 @@ class RobotCompanion {
       }
     }
 
-    const containerRotation = (this.startAnimation && this.startAnimation.active)
-      ? this.patrol.direction > 0
-        ? -6
-        : 6
-      : dashActive
+    const containerRotation =
+      this.startAnimation && this.startAnimation.active
         ? this.patrol.direction > 0
-          ? -4
-          : 4
-        : 0;
+          ? -6
+          : 6
+        : dashActive
+          ? this.patrol.direction > 0
+            ? -4
+            : 4
+          : 0;
 
     // Efficient transform update
     this.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRotation}deg)`;
