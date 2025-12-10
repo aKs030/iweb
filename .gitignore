@@ -29,8 +29,5 @@ build/
 *.swp
 *.swo
 
-# Local robot companion config (developer only)
-content/local-robot-config.js
-
 # Playwright artifacts were removed; no active Playwright tests remain
 test-results/
