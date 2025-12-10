@@ -50,13 +50,28 @@ class RobotCompanion {
 
     // Patrol State
     this.patrol = {
-      active: true,
+      active: false,
       x: 0,
       y: 0,
       direction: 1,
       speed: 0.3,
       isPaused: false,
       bouncePhase: 0,
+    };
+
+    // Start Animation State
+    this.startAnimation = {
+      active: false,
+      phase: 'idle', // idle, approach, pause, knockback, landing
+      startTime: 0,
+      startX: 0,
+      targetX: 0,
+      duration: 1000,
+      pauseUntil: 0,
+      knockbackStartTime: 0,
+      knockbackDuration: 600,
+      knockbackStartX: 0,
+      knockbackStartY: 0,
     };
 
     // Performance & Caching Konfiguration
@@ -74,16 +89,11 @@ class RobotCompanion {
       dashUntil: 0,
     };
 
-    this.avoid = {
-      active: false,
-      startTime: 0,
-      duration: 650,
-      p0: { x: 0, y: 0 },
-      p1: { x: 0, y: 0 },
-      p2: { x: 0, y: 0 },
-      p3: { x: 0, y: 0 },
-      cooldownUntil: 0,
-    };
+    // Avoidance movement removed to favor collisions and landing knockback animations.
+    // Kept no extra state; show/hide animations will use startAnimation and patrol state.
+
+    // Collision cooldown for typewriter interactions
+    // Removed global cooldown for typewriter collision to allow every typing-end to trigger a reaction
 
     this.updatePatrol = this.updatePatrol.bind(this);
     this._prevDashActive = false;
@@ -261,15 +271,14 @@ class RobotCompanion {
           this.startInitialBubbleSequence();
         } else {
           const greet =
-            this.initialBubbleGreetings[
-              Math.floor(Math.random() * this.initialBubbleGreetings.length)
-            ];
+            this.initialBubbleGreetings && this.initialBubbleGreetings.length > 0
+              ? this.initialBubbleGreetings[Math.floor(Math.random() * this.initialBubbleGreetings.length)]
+              : 'Hallo!';
           const ctxArr = this.contextGreetings[ctx] || this.contextGreetings.default || [];
           let finalGreet = greet;
-
           if (ctxArr.length && Math.random() < 0.7) {
             const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
-            finalGreet = ctxMsg; // Use context greeting directly
+            finalGreet = ctxMsg; // Use context greeting directly if chosen
           }
           this.showBubble(finalGreet);
           this.state.lastGreetedContext = ctx;
@@ -280,7 +289,27 @@ class RobotCompanion {
     // Section change detection
     this.setupSectionChangeDetection();
 
-    this.startPatrol();
+    // Start with dramatic animation if TypeWriter exists
+    setTimeout(() => {
+      this.startTypeWriterKnockbackAnimation();
+    }, 1500);
+
+    // Listen for TypeWriter typing end events so we can detect close-by typing and trigger collisions
+    this._onHeroTypingEnd = (_ev) => {
+      try {
+        const typeWriter = document.querySelector('.typewriter-title');
+        if (!typeWriter || !this.dom || !this.dom.container) return;
+        const twRect = typeWriter.getBoundingClientRect();
+        const robotWidth = 80;
+        const initialLeft = window.innerWidth - 30 - robotWidth;
+        const maxLeft = initialLeft - 20;
+        // If the typed line overlaps the robot, trigger the dedicated collision response
+        this.checkForTypewriterCollision(twRect, maxLeft);
+      } catch {
+        /* ignored */
+      }
+    };
+    document.addEventListener('hero:typingEnd', this._onHeroTypingEnd);
   }
 
   setupSectionChangeDetection() {
@@ -307,7 +336,22 @@ class RobotCompanion {
     let scrollTimeout;
     this._scrollListener = () => {
       clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(checkContextChange, 500);
+      scrollTimeout = setTimeout(() => {
+        checkContextChange();
+        // Also check for collisions when user scrolls
+        try {
+          const tw = document.querySelector('.typewriter-title');
+          if (tw && this.dom.container) {
+            const twRect = tw.getBoundingClientRect();
+            const robotWidth = 80;
+            const initialLeft = window.innerWidth - 30 - robotWidth;
+            const maxLeft = initialLeft - 20;
+            this.checkForTypewriterCollision(twRect, maxLeft);
+          }
+        } catch {
+          /* ignored */
+        }
+      }, 500);
     };
     window.addEventListener('scroll', this._scrollListener, { passive: true });
 
@@ -329,6 +373,12 @@ class RobotCompanion {
     if (this._scrollListener) {
       window.removeEventListener('scroll', this._scrollListener);
       this._scrollListener = null;
+    }
+
+    // Remove TypeWriter typing end listener
+    if (this._onHeroTypingEnd) {
+      document.removeEventListener('hero:typingEnd', this._onHeroTypingEnd);
+      this._onHeroTypingEnd = null;
     }
 
     // Clear intervals
@@ -370,7 +420,7 @@ class RobotCompanion {
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
-  trackInteraction(type = 'general') {
+  trackInteraction(_type = 'general') {
     this.analytics.interactions++;
     localStorage.setItem('robot-interactions', this.analytics.interactions);
 
@@ -490,6 +540,9 @@ class RobotCompanion {
             </div>
         `;
 
+    // Initially hide the container to avoid flash at default right position
+    container.style.opacity = '0';
+    container.style.transition = 'opacity 220ms ease';
     document.body.appendChild(container);
 
     // Cache DOM Elements einmalig
@@ -579,7 +632,7 @@ class RobotCompanion {
     if (!this.dom || !this.dom.eyes) return;
     const eyeOffset = typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
     const eyeIntensity =
-      this.avoid && this.avoid.active
+      (this.startAnimation && this.startAnimation.active) || this.patrol.isPaused
         ? 1.4
         : this.motion && this.motion.dashUntil > performance.now()
           ? 1.2
@@ -768,31 +821,79 @@ class RobotCompanion {
     };
   }
 
-  startAvoid(twRect, dir, maxLeft) {
+  // Avoidance logic removed — the robot turns and pauses at section limits now.
+
+  checkForTypewriterCollision(twRect, maxLeft) {
+    if (!twRect) return false;
+    // Allow collisions even if the robot recently changed direction.
+    if (this.startAnimation && this.startAnimation.active) return false;
+    if (!this.dom || !this.dom.container) return false;
+    try {
+      // Use the robot avatar or svg bounding box instead of the full container
+      const sourceEl = this.dom.svg || this.dom.avatar || this.dom.container;
+      const rRectRaw = sourceEl.getBoundingClientRect();
+      // Shrink the rect slightly so the collision triggers only when the visible robot
+      // (not the container/bubble) is actually overlapping the text
+      const shrinkX = 10; // px horizontally
+      const shrinkY = 6; // px vertically
+      const rRect = {
+        left: rRectRaw.left + shrinkX,
+        right: rRectRaw.right - shrinkX,
+        top: rRectRaw.top + shrinkY,
+        bottom: rRectRaw.bottom - shrinkY,
+      };
+      const intersects = !(twRect.right < rRect.left || twRect.left > rRect.right || twRect.bottom < rRect.top || twRect.top > rRect.bottom);
+      if (!intersects) return false;
+        // Require a minimal overlap in px so the robot and text truly touch (prevents early triggers)
+      const overlapX = Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
+      const overlapY = Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
+      if (overlapX < 6 || overlapY < 6) return false;
+      // Clamp maxLeft fallback
+      const robotWidth = 80;
+      const initialLeft = window.innerWidth - 30 - robotWidth;
+      maxLeft = typeof maxLeft === 'number' ? maxLeft : initialLeft - 20;
+
+      // Collision reaction: show bubble, particle burst and dramatic knockback movement
+      const dir = rRect.left > twRect.right ? 1 : -1;
+      const reactions = [
+        'Autsch! 😵',
+        'Ups! Das war hart! 💥',
+        'Whoa! 😲',
+        'Hey! Nicht schubsen! 😠',
+      ];
+      const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+      // Sprechblase mit dramatischer Reaktion
+      this.showBubble(reaction);
+      setTimeout(() => this.hideBubble(), 2500);
+      // Große Partikel-Explosion
+      this.spawnParticleBurst(18, { strength: 2.0, spread: 180 });
+      // Trigger the dedicated typewriter collision knockback
+      this.startTypewriterCollisionResponse(twRect, maxLeft, dir);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // A dedicated response for collisions with the TypeWriter text.
+  // This function triggers an immediate knockback animation, large particle burst and a tilt flip.
+  startTypewriterCollisionResponse(twRect, maxLeft, dir = 1) {
+    if (!this.dom || !this.dom.container) return;
+    // Prevent overlapping animations
+    if (this.startAnimation && this.startAnimation.active) return;
     const now = performance.now();
-    if (this.avoid.cooldownUntil && now < this.avoid.cooldownUntil) return;
-    this.avoid.cooldownUntil = now + 900;
 
-    const p0x = this.patrol.x;
-    const p0y = this.patrol.y;
-    const remaining = dir > 0 ? maxLeft - this.patrol.x : this.patrol.x;
-    const advance = Math.min(64, Math.max(32, remaining));
-    const p3x = Math.min(maxLeft, Math.max(0, this.patrol.x + advance * dir));
+    // Setup knockback animation parameters (re-use existing startAnimation workflow)
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'knockback';
+    this.startAnimation.knockbackStartTime = now;
+    this.startAnimation.knockbackDuration = 700; // slightly longer for drama
+    this.startAnimation.knockbackStartX = this.patrol.x;
+    this.startAnimation.knockbackDir = dir;
+    this.startAnimation.knockbackStartY = this.patrol.y;
 
-    // Safety check for twRect
-    const topSafe = twRect ? twRect.top > 200 : true;
-    const vertical = (topSafe ? -1 : 1) * (60 + Math.random() * 30);
-
-    this.avoid.p0 = { x: p0x, y: p0y };
-    this.avoid.p1 = { x: p0x + advance * 0.35 * dir, y: p0y + vertical * 1.1 };
-    this.avoid.p2 = { x: p0x + advance * 0.75 * dir, y: p0y + vertical * 0.55 };
-    this.avoid.p3 = { x: p3x, y: p0y };
-
-    this.spawnParticleBurst(6, { direction: this.patrol.direction, strength: 0.9 });
-    this.avoid.active = true;
-    this.avoid.startTime = now;
-    this.avoid.duration = 520 + Math.random() * 400;
-    this.animationState = 'avoiding';
+    // Kick off the animation loop
+    requestAnimationFrame(this.updateStartAnimation.bind(this));
   }
 
   getPageContext() {
@@ -879,7 +980,7 @@ class RobotCompanion {
     this._sectionObserver = observer;
   }
 
-  spawnParticleBurst(count = 6, { direction = 0, strength = 1 } = {}) {
+  spawnParticleBurst(count = 6, { direction = 0, strength = 1, spread = null } = {}) {
     if (!this.dom.container) return;
     const rect = this.dom.avatar.getBoundingClientRect();
     const baseX = rect.left + rect.width / 2;
@@ -889,18 +990,35 @@ class RobotCompanion {
     for (let i = 0; i < count; i++) {
       const el = document.createElement('div');
       el.className = 'robot-burst-particle';
+      // Size scale based on strength
+      const size = 4 + Math.round(3 + Math.random() * 4) * Math.min(1.2, strength);
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+      if (strength > 1.5 && Math.random() < 0.35) {
+        el.style.filter = 'blur(0.9px)';
+        el.style.opacity = '0.9';
+      }
       this.dom.container.appendChild(el); // Append cached container
 
-      const angleSpread = Math.PI / 3;
-      const baseAngle =
-        direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
-      const angle = baseAngle + (Math.random() - 0.5) * angleSpread;
+      // Wenn spread gegeben ist (in Grad), verwende 360° Explosion
+      let angle;
+      if (spread !== null) {
+        const spreadRad = (spread * Math.PI) / 180;
+        const baseAngle = -Math.PI / 2; // Nach oben
+        angle = baseAngle + (Math.random() - 0.5) * spreadRad;
+      } else {
+        const angleSpread = Math.PI / 3;
+        const baseAngle =
+          direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
+        angle = baseAngle + (Math.random() - 0.5) * angleSpread;
+      }
+
       const distance = 40 + Math.random() * 30;
       const dx = Math.cos(angle) * distance * strength;
       const dy = Math.sin(angle) * distance * strength - 10 * strength;
 
-      el.style.left = baseX - cRect.left - 3 + 'px';
-      el.style.top = baseY - cRect.top - 3 + 'px';
+      el.style.left = baseX - cRect.left - (size / 2) + 'px';
+      el.style.top = baseY - cRect.top - (size / 2) + 'px';
 
       requestAnimationFrame(() => {
         el.style.transform = `translate(${dx}px, ${dy}px) scale(${0.5 + Math.random() * 0.6})`;
@@ -1121,12 +1239,221 @@ class RobotCompanion {
     }, typingTime);
   }
 
+  startTypeWriterKnockbackAnimation() {
+    // Check if TypeWriter exists
+    const typeWriter = document.querySelector('.typewriter-title');
+    if (!typeWriter || !this.dom.container) {
+      // No TypeWriter, start normal patrol
+      this.startPatrol();
+      return;
+    }
+
+    const twRect = typeWriter.getBoundingClientRect();
+    const robotWidth = 80;
+    const windowWidth = window.innerWidth;
+
+    // Compute absolute coordinates for robot left edge (in px from left)
+    const initialLeft = windowWidth - 30 - robotWidth; // container right:30 (CSS)
+
+    // Desired left near the TypeWriter's right edge + gap, clamped
+    const gap = 24; // px gap between TypeWriter and robot
+    let targetLeft;
+    const spaceRight = windowWidth - twRect.right - 30; // space between TypeWriter right and container right
+    if (spaceRight >= robotWidth + gap) {
+      // Enough room to place robot to the right of the TypeWriter
+      targetLeft = twRect.right + gap;
+    } else {
+      // Not enough room on the right -> place robot to the left of the TypeWriter
+      targetLeft = twRect.left - robotWidth - gap;
+    }
+    // Ensure targetLeft is within visible area and not beyond initial left
+    targetLeft = Math.max(8, Math.min(initialLeft - 20, targetLeft));
+
+    // Start a bit to the right of target (closer to the page edge), but not beyond initial left
+    const startOffset = 80; // px starting further right than target (not ganz rechts)
+    const startLeft = Math.min(initialLeft, targetLeft + startOffset);
+
+    // Convert to patrol.x (translate amount)
+    const startX = Math.max(0, Math.round(initialLeft - startLeft));
+    const targetX = Math.max(0, Math.round(initialLeft - targetLeft));
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'approach';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.startX = startX;
+    this.startAnimation.targetX = targetX;
+    this.startAnimation.duration = 1000;
+
+    this.patrol.x = startX;
+    this.patrol.direction = 1;
+    this.patrol.bouncePhase = 0;
+
+    // Set initial transform immediately to avoid flash at right
+    this.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(0deg)`;
+    // Reveal container once we've set starting transform
+    this.dom.container.style.opacity = '1';
+    requestAnimationFrame(this.updateStartAnimation.bind(this));
+  }
+
+  updateStartAnimation() {
+    if (!this.startAnimation.active || !this.dom.container) {
+      requestAnimationFrame(this.updateStartAnimation.bind(this));
+      return;
+    }
+
+    const now = performance.now();
+
+    if (this.startAnimation.phase === 'approach') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      // Ease-in-out für flüssige Beschleunigung
+      const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+      // Position interpolieren
+      this.patrol.x = this.startAnimation.startX + (this.startAnimation.targetX - this.startAnimation.startX) * eased;
+
+      // Bounce während der Fahrt
+      this.patrol.bouncePhase += 0.08;
+      this.patrol.y = Math.sin(this.patrol.bouncePhase) * 4;
+
+      // Flammen werden stärker
+      const flameIntensity = 0.8 + (0.6 * eased);
+      if (this.dom.flame) {
+        this.dom.flame.style.opacity = flameIntensity;
+        this.dom.flame.style.transform = `scale(${1 + flameIntensity * 0.3})`;
+      }
+
+      // Dashing-Effekt ab 30%
+      const isDashing = t > 0.3;
+      if (isDashing && this.dom.particles) {
+        this.dom.particles.style.opacity = '0.9';
+      }
+
+      // Animation state setzen
+      this.setAvatarState({ moving: true, dashing: isDashing });
+
+      // Leichte Neigung
+      if (this.dom.svg) {
+        this.dom.svg.style.transform = `rotate(-5deg)`;
+      }
+
+      // Container transform
+      this.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(-4deg)`;
+
+      // Phase wechseln wenn angekommen
+      if (t >= 1) {
+        this.startAnimation.phase = 'pause';
+        this.startAnimation.pauseUntil = now + 200;
+        this.setAvatarState({ moving: false, dashing: false });
+      }
+
+      requestAnimationFrame(this.updateStartAnimation.bind(this));
+      return;
+    }
+
+    if (this.startAnimation.phase === 'pause') {
+      // Kurze Pause
+      if (now >= this.startAnimation.pauseUntil) {
+        // Sprechblase mit Reaktion
+        const reactions = [
+          'Autsch! 😵',
+          'Ups! Das war hart! 💥',
+          'Whoa! 😲',
+          'Hey! Nicht schubsen! 😠'
+        ];
+        const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+        this.showBubble(reaction);
+        setTimeout(() => this.hideBubble(), 2500);
+
+        // Große Partikel-Explosion
+        this.spawnParticleBurst(15, { strength: 2, spread: 180 });
+
+        // Starte Knockback
+        this.startAnimation.phase = 'knockback';
+        this.startAnimation.knockbackStartTime = now;
+        this.startAnimation.knockbackStartX = this.patrol.x;
+        this.startAnimation.knockbackStartY = this.patrol.y;
+      }
+
+      requestAnimationFrame(this.updateStartAnimation.bind(this));
+      return;
+    }
+
+    if (this.startAnimation.phase === 'knockback') {
+      const elapsed = now - this.startAnimation.knockbackStartTime;
+      const t = Math.min(1, elapsed / this.startAnimation.knockbackDuration);
+
+      // Parabolischer Bogen für y (Höhe 50px)
+      const arc = Math.sin(t * Math.PI) * 50;
+      this.patrol.y = this.startAnimation.knockbackStartY - arc;
+
+      // 200px Rückprall nach rechts
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const kdir = this.startAnimation.knockbackDir || 1;
+      this.patrol.x = this.startAnimation.knockbackStartX - (200 * kdir * eased);
+
+      // Kippt während des Flugs
+      const rotation = -20 + (t * 40); // von -20 bis +20 Grad
+      if (this.dom.svg) {
+        this.dom.svg.style.transform = `rotate(${rotation}deg)`;
+      }
+
+      // Container rotation für dramatischen Effekt
+      const containerRot = 15 * Math.sin(t * Math.PI * 2);
+      this.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRot}deg)`;
+
+      // Flammen aus während Flug
+      if (this.dom.flame) {
+        this.dom.flame.style.opacity = '0.2';
+      }
+
+      // Partikel während Flug
+      if (t < 0.3 && this.dom.particles) {
+        this.dom.particles.style.opacity = '1';
+      }
+
+      if (t >= 1) {
+        // Landung
+        this.startAnimation.phase = 'landing';
+        this.spawnParticleBurst(8, { strength: 1.5 });
+
+        // Reset to normal state
+        setTimeout(() => {
+          this.startAnimation.active = false;
+          this.patrol.active = true;
+          this.patrol.y = 0;
+          if (this.dom.svg) {
+            this.dom.svg.style.transform = 'rotate(0deg)';
+          }
+          this.startPatrol();
+        }, 300);
+      }
+
+      requestAnimationFrame(this.updateStartAnimation.bind(this));
+      return;
+    }
+
+    if (this.startAnimation.phase === 'landing') {
+      // Warte auf normale Patrol
+      if (!this.startAnimation.active) return;
+      requestAnimationFrame(this.updateStartAnimation.bind(this));
+    }
+  }
+
   startPatrol() {
+    this.patrol.active = true;
+    if (this.dom && this.dom.container) this.dom.container.style.opacity = '1';
     requestAnimationFrame(this.updatePatrol);
   }
 
   updatePatrol() {
-    if (!this.patrol.active) return;
+    if (!this.patrol.active || this.startAnimation.active) {
+      if (!this.startAnimation.active) {
+        requestAnimationFrame(this.updatePatrol);
+      }
+      return;
+    }
     if (!this.dom.container) {
       requestAnimationFrame(this.updatePatrol);
       return;
@@ -1175,15 +1502,20 @@ class RobotCompanion {
       (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) ||
       (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
 
-    if (
-      this.dom.typeWriter &&
-      twRect &&
-      approachingLimit &&
-      !this.avoid.active &&
-      now > this.avoid.cooldownUntil
-    ) {
-      this.startAvoid(twRect, this.patrol.direction, maxLeft);
+    // Avoidance movement should not trigger for TypeWriter presence; collisions are handled directly.
+    if (!this.dom.typeWriter && approachingLimit) {
+      // Simple reaction: turn around and emit a small burst & pause
+      this.patrol.direction *= -1;
+      this.spawnParticleBurst(4, { direction: -this.patrol.direction, strength: 0.9 });
+      this.pausePatrol(3000 + Math.random() * 3000);
     }
+
+    // Also run collision detection each frame update, to detect overlaps while moving
+    if (this.dom.typeWriter && twRect) {
+      this.checkForTypewriterCollision(twRect, maxLeft);
+    }
+
+    // Collision detection is handled by checkForTypewriterCollision() to prevent duplicate handling
 
     if (now > this.motion.dashUntil && Math.random() < this.motion.dashChance) {
       this.motion.dashUntil = now + this.motion.dashDuration;
@@ -1202,16 +1534,7 @@ class RobotCompanion {
 
     this.patrol.x += currentSpeed * this.patrol.direction;
 
-    if (this.avoid.active) {
-      const t = Math.min(1, (now - this.avoid.startTime) / this.avoid.duration);
-      const pt = this._cubicBezier(t, this.avoid.p0, this.avoid.p1, this.avoid.p2, this.avoid.p3);
-      this.patrol.x = pt.x;
-      this.patrol.y = pt.y;
-      if (t >= 1) {
-        this.avoid.active = false;
-        this.animationState = 'moving';
-      }
-    }
+    // No path-based sidestep anymore; keep `patrol.x`/`patrol.y` handled by main movement logic and pause behavior.
 
     this.patrol.bouncePhase += dashActive ? 0.08 : 0.05;
     this.patrol.y = Math.sin(this.patrol.bouncePhase) * (dashActive ? 4 : 3);
@@ -1221,18 +1544,18 @@ class RobotCompanion {
 
     if (this.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
-      const tiltIntensity = this.avoid.active ? 1.6 : dashActive ? 1.2 : 1;
+      const tiltIntensity = (this.startAnimation && this.startAnimation.active) ? 1.6 : dashActive ? 1.2 : 1;
       this.dom.svg.style.transform = `rotate(${baseTilt * tiltIntensity}deg)`;
       // Optimization: Inline style is fine here, class transition handles smoothness
     }
     if (this.dom.eyes) this.updateEyesTransform();
     if (this.dom.flame) {
-      const flameIntensity = this.avoid.active ? 1.1 : dashActive ? 1 : 0.6;
+      const flameIntensity = (this.startAnimation && this.startAnimation.active) ? 1.4 : dashActive ? 1.2 : 0.85;
       this.dom.flame.style.opacity = flameIntensity;
-      this.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.6) * 0.25})`;
+      this.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.7) * 0.4})`;
     }
     if (this.dom.particles) {
-      this.dom.particles.style.opacity = dashActive || this.avoid.active ? '0.9' : '0.5';
+      this.dom.particles.style.opacity = (dashActive || (this.startAnimation && this.startAnimation.active)) ? '0.9' : '0.5';
     }
 
     if (this.dom.legs) {
@@ -1259,7 +1582,7 @@ class RobotCompanion {
       }
     }
 
-    const containerRotation = this.avoid.active
+    const containerRotation = (this.startAnimation && this.startAnimation.active)
       ? this.patrol.direction > 0
         ? -6
         : 6
