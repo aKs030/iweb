@@ -284,8 +284,11 @@ class RobotCompanion {
         this.dom.window.style.bottom = '';
         this.dom.window.style.maxHeight = '';
 
-        // Show controls again
-        if (this.dom.controls) {
+        // Only unhide if input is NOT focused
+        // This prevents race condition where 'focus' event hides it,
+        // but this resize handler unhides it because layout resized successfully.
+        const isInputFocused = document.activeElement === this.dom.input;
+        if (this.dom.controls && !isInputFocused) {
           this.dom.controls.classList.remove('hide-controls-mobile');
         }
       }
@@ -651,6 +654,22 @@ class RobotCompanion {
     if (this.dom.input) {
       this.dom.input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') this.handleUserMessage();
+      });
+
+      // Mobile Optimization: Hide controls when typing to save space
+      this.dom.input.addEventListener('focus', () => {
+        if (this.dom.controls) {
+          this.dom.controls.classList.add('hide-controls-mobile');
+        }
+      });
+
+      this.dom.input.addEventListener('blur', () => {
+        // Slight delay to allow clicks on controls if valid
+        setTimeout(() => {
+          if (this.dom.controls) {
+            this.dom.controls.classList.remove('hide-controls-mobile');
+          }
+        }, 200);
       });
     }
   }
