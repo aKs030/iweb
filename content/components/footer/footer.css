@@ -903,6 +903,11 @@ body.footer-expanded {
   body.footer-expanded {
     padding-bottom: var(--footer-actual-height, var(--footer-max-height));
   }
+
+  /* Prevent iOS zoom on focus */
+  .newsletter-input-enhanced {
+    font-size: 16px;
+  }
 }
 
 /* Small mobile devices */
