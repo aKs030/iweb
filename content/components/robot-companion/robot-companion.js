@@ -4,6 +4,7 @@
  */
 
 import { GeminiService } from './gemini-service.js';
+import { RobotGames } from './robot-games.js';
 
 class RobotCompanion {
   constructor() {
@@ -12,6 +13,7 @@ class RobotCompanion {
     this.texts = (window && window.robotCompanionTexts) || {};
 
     this.gemini = new GeminiService();
+    this.gameModule = new RobotGames(this); // Initialize games module
 
     this.state = {
       isOpen: false,
@@ -38,12 +40,6 @@ class RobotCompanion {
 
     this.mood = this.calculateMood();
     this.easterEggFound = new Set(JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'));
-
-    // Mini-Games State
-    this.games = {
-      ticTacToe: { board: Array(9).fill(null), playerSymbol: 'X', botSymbol: 'O' },
-      triviaScore: parseInt(localStorage.getItem('robot-trivia-score') || '0'),
-    };
 
     // DOM Cache Struktur initialisieren
     this.dom = {};
@@ -89,12 +85,6 @@ class RobotCompanion {
       dashUntil: 0,
     };
 
-    // Avoidance movement removed to favor collisions and landing knockback animations.
-    // Kept no extra state; show/hide animations will use startAnimation and patrol state.
-
-    // Collision cooldown for typewriter interactions
-    // Removed global cooldown for typewriter collision to allow every typing-end to trigger a reaction
-
     this.updatePatrol = this.updatePatrol.bind(this);
     this._prevDashActive = false;
 
@@ -132,9 +122,6 @@ class RobotCompanion {
       this.applyTexts();
       // Falls noch nicht initialisiert (Race Condition Prevention)
       if (!this.dom.container) this.init();
-
-      // AI suggestion disabled to save API quota
-      // setTimeout(() => this.fetchAndShowSuggestion(), 5000);
     });
 
     // Fallback init, falls loadTexts hängt oder Texte schon da sind
@@ -590,8 +577,6 @@ class RobotCompanion {
       });
     }
   }
-
-  // ... (startIdleEyeMovement, stopIdleEyeMovement, updateEyesTransform, startBlinkLoop, stopBlinkLoop, doBlink, clearBubbleSequence, startInitialBubbleSequence - diese sind meist okay, nur DOM Zugriff ist jetzt via this.dom.x) ...
 
   startIdleEyeMovement() {
     this.stopIdleEyeMovement();
@@ -1068,15 +1053,15 @@ class RobotCompanion {
     this.dom.input.value = '';
 
     // Check for active mini-games
-    if (this.games.guessNumberActive) {
-      this.handleGuessNumber(text);
+    if (this.gameModule.state.guessNumberActive) {
+      this.gameModule.handleGuessNumber(text);
       return;
     }
 
     // Check for trivia answer
     if (text.startsWith('triviaAnswer_')) {
       const answerIdx = parseInt(text.split('_')[1]);
-      this.handleTriviaAnswer(answerIdx);
+      this.gameModule.handleTriviaAnswer(answerIdx);
       return;
     }
 
@@ -1163,7 +1148,7 @@ class RobotCompanion {
             // Check for trivia answers
             if (opt.action.startsWith('triviaAnswer_')) {
               const answerIdx = parseInt(opt.action.split('_')[1]);
-              this.handleTriviaAnswer(answerIdx);
+              this.gameModule.handleTriviaAnswer(answerIdx);
             } else {
               this.handleAction(opt.action);
             }
@@ -1198,15 +1183,15 @@ class RobotCompanion {
 
     // Mini-Games
     if (actionKey === 'playTicTacToe') {
-      this.startTicTacToe();
+      this.gameModule.startTicTacToe();
       return;
     }
     if (actionKey === 'playTrivia') {
-      this.startTrivia();
+      this.gameModule.startTrivia();
       return;
     }
     if (actionKey === 'playGuessNumber') {
-      this.startGuessNumber();
+      this.gameModule.startGuessNumber();
       return;
     }
     if (actionKey === 'showMood') {
@@ -1452,6 +1437,12 @@ class RobotCompanion {
   }
 
   updatePatrol() {
+    // Optimization: Pause loop if tab is not visible
+    if (document.hidden) {
+       setTimeout(() => requestAnimationFrame(this.updatePatrol), 500);
+       return;
+    }
+
     if (!this.patrol.active || this.startAnimation.active) {
       if (!this.startAnimation.active) {
         requestAnimationFrame(this.updatePatrol);
@@ -1662,275 +1653,6 @@ class RobotCompanion {
     this.addMessage(desc, 'bot');
     this.addMessage(stats, 'bot');
     setTimeout(() => this.handleAction('start'), 2000);
-  }
-
-  startTicTacToe() {
-    this.games.ticTacToe.board = Array(9).fill(null);
-    this.addMessage('🎮 Tic-Tac-Toe! Du bist X, ich bin O. Viel Glück! 😎', 'bot');
-
-    const gameContainer = document.createElement('div');
-    gameContainer.className = 'tic-tac-toe-game';
-    gameContainer.style.cssText = `
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 10px 0;
-      max-width: 200px;
-    `;
-
-    for (let i = 0; i < 9; i++) {
-      const cell = document.createElement('button');
-      cell.className = 'ttt-cell';
-      cell.style.cssText = `
-        aspect-ratio: 1;
-        font-size: 24px;
-        background: var(--robot-bg-secondary, #1e293b);
-        border: 2px solid var(--robot-color, #40e0d0);
-        border-radius: 8px;
-        color: var(--robot-color, #40e0d0);
-        cursor: pointer;
-        transition: all 0.2s;
-      `;
-      cell.onclick = () => this.playTicTacToeMove(i, gameContainer);
-      gameContainer.appendChild(cell);
-    }
-
-    this.dom.messages.appendChild(gameContainer);
-    this.scrollToBottom();
-  }
-
-  playTicTacToeMove(index, gameContainer) {
-    if (this.games.ticTacToe.board[index]) return;
-
-    // Player move
-    this.games.ticTacToe.board[index] = 'X';
-    gameContainer.children[index].textContent = 'X';
-    gameContainer.children[index].style.cursor = 'not-allowed';
-
-    if (this.checkTicTacToeWin('X')) {
-      this.addMessage('🏆 Du hast gewonnen! Glückwunsch! 🎉', 'bot');
-      this.disableTicTacToeBoard(gameContainer);
-      setTimeout(() => this.handleAction('games'), 2000);
-      return;
-    }
-
-    if (this.games.ticTacToe.board.every((cell) => cell !== null)) {
-      this.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
-      setTimeout(() => this.handleAction('games'), 2000);
-      return;
-    }
-
-    // Bot move
-    setTimeout(() => {
-      const botMove = this.getBotTicTacToeMove();
-      if (botMove !== -1) {
-        this.games.ticTacToe.board[botMove] = 'O';
-        gameContainer.children[botMove].textContent = 'O';
-        gameContainer.children[botMove].style.cursor = 'not-allowed';
-
-        if (this.checkTicTacToeWin('O')) {
-          this.addMessage('🤖 Ich habe gewonnen! Nochmal versuchen? 😏', 'bot');
-          this.disableTicTacToeBoard(gameContainer);
-          setTimeout(() => this.handleAction('games'), 2000);
-          return;
-        }
-
-        if (this.games.ticTacToe.board.every((cell) => cell !== null)) {
-          this.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
-          setTimeout(() => this.handleAction('games'), 2000);
-        }
-      }
-    }, 500);
-  }
-
-  getBotTicTacToeMove() {
-    const board = this.games.ticTacToe.board;
-
-    // Check for winning move
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        board[i] = 'O';
-        if (this.checkTicTacToeWin('O')) {
-          board[i] = null;
-          return i;
-        }
-        board[i] = null;
-      }
-    }
-
-    // Block player winning move
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        board[i] = 'X';
-        if (this.checkTicTacToeWin('X')) {
-          board[i] = null;
-          return i;
-        }
-        board[i] = null;
-      }
-    }
-
-    // Take center if available
-    if (!board[4]) return 4;
-
-    // Take random available spot
-    const available = board
-      .map((cell, idx) => (cell === null ? idx : null))
-      .filter((idx) => idx !== null);
-    return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : -1;
-  }
-
-  checkTicTacToeWin(symbol) {
-    const board = this.games.ticTacToe.board;
-    const winPatterns = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-
-    return winPatterns.some((pattern) => pattern.every((idx) => board[idx] === symbol));
-  }
-
-  disableTicTacToeBoard(gameContainer) {
-    Array.from(gameContainer.children).forEach((cell) => {
-      cell.style.cursor = 'not-allowed';
-      cell.onclick = null;
-    });
-  }
-
-  startTrivia() {
-    const questions = [
-      {
-        q: 'Welches Jahr wurde JavaScript veröffentlicht?',
-        options: ['1995', '1999', '2005', '1991'],
-        answer: 0,
-      },
-      {
-        q: 'Was bedeutet HTML?',
-        options: [
-          'Hyper Text Markup Language',
-          'High Tech Modern Language',
-          'Home Tool Markup Language',
-          'Hyperlinks and Text Markup Language',
-        ],
-        answer: 0,
-      },
-      {
-        q: 'Welcher Planet ist der größte im Sonnensystem?',
-        options: ['Saturn', 'Jupiter', 'Uranus', 'Neptun'],
-        answer: 1,
-      },
-      {
-        q: 'In welchem Jahr fiel die Berliner Mauer?',
-        options: ['1987', '1989', '1991', '1985'],
-        answer: 1,
-      },
-      {
-        q: 'Was ist die Geschwindigkeit des Lichts?',
-        options: ['300.000 km/s', '150.000 km/s', '450.000 km/s', '200.000 km/s'],
-        answer: 0,
-      },
-    ];
-
-    const question = questions[Math.floor(Math.random() * questions.length)];
-    this.games.currentTrivia = question;
-
-    this.addMessage(`🧠 Trivia-Quiz! Score: ${this.games.triviaScore}`, 'bot');
-    this.addMessage(question.q, 'bot');
-
-    const options = question.options.map((opt, idx) => ({
-      label: opt,
-      action: `triviaAnswer_${idx}`,
-    }));
-
-    this.addOptions(options);
-  }
-
-  handleTriviaAnswer(answerIdx) {
-    const correct = answerIdx === this.games.currentTrivia.answer;
-
-    if (correct) {
-      this.games.triviaScore++;
-      localStorage.setItem('robot-trivia-score', this.games.triviaScore);
-      this.addMessage('✅ Richtig! Sehr gut! 🎉', 'bot');
-
-      if (this.games.triviaScore === 5 && !this.easterEggFound.has('trivia-master')) {
-        this.unlockEasterEgg(
-          'trivia-master',
-          '🧠 Trivia-Master! 5 richtige Antworten! Du bist ein Genie! 🏆',
-        );
-      }
-    } else {
-      this.addMessage(
-        `❌ Leider falsch! Die richtige Antwort war: ${this.games.currentTrivia.options[this.games.currentTrivia.answer]}`,
-        'bot',
-      );
-    }
-
-    setTimeout(() => {
-      this.addMessage('Noch eine Frage?', 'bot');
-      this.addOptions([
-        { label: 'Ja, weiter!', action: 'playTrivia' },
-        { label: 'Zurück', action: 'games' },
-      ]);
-    }, 1500);
-  }
-
-  startGuessNumber() {
-    this.games.guessNumber = {
-      target: Math.floor(Math.random() * 100) + 1,
-      attempts: 0,
-      maxAttempts: 7,
-    };
-
-    this.addMessage(
-      '🎲 Zahlenraten! Ich denke an eine Zahl zwischen 1 und 100. Du hast 7 Versuche!',
-      'bot',
-    );
-    this.addMessage('Gib eine Zahl ein:', 'bot');
-
-    // Override next input
-    this.games.guessNumberActive = true;
-  }
-
-  handleGuessNumber(guess) {
-    const num = parseInt(guess);
-    if (isNaN(num) || num < 1 || num > 100) {
-      this.addMessage('⚠️ Bitte eine Zahl zwischen 1 und 100 eingeben!', 'bot');
-      return;
-    }
-
-    this.games.guessNumber.attempts++;
-    const { target, attempts, maxAttempts } = this.games.guessNumber;
-
-    if (num === target) {
-      this.addMessage(
-        `🎉 Richtig! Die Zahl war ${target}! Du hast ${attempts} Versuche gebraucht! 🏆`,
-        'bot',
-      );
-      this.games.guessNumberActive = false;
-
-      if (attempts <= 3 && !this.easterEggFound.has('lucky-guesser')) {
-        this.unlockEasterEgg(
-          'lucky-guesser',
-          '🍀 Lucky Guesser! In 3 oder weniger Versuchen! Unglaublich! 🎯',
-        );
-      }
-
-      setTimeout(() => this.handleAction('games'), 2000);
-    } else if (attempts >= maxAttempts) {
-      this.addMessage(`😅 Keine Versuche mehr! Die Zahl war ${target}. Nochmal?`, 'bot');
-      this.games.guessNumberActive = false;
-      setTimeout(() => this.handleAction('games'), 2000);
-    } else {
-      const hint = num < target ? '📈 Zu niedrig!' : '📉 Zu hoch!';
-      this.addMessage(`${hint} Versuche übrig: ${maxAttempts - attempts}`, 'bot');
-    }
   }
 }
 
