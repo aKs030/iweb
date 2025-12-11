@@ -834,4 +834,9 @@
   #robot-chat-input {
     font-size: 16px !important;
   }
+
+  /* Hide controls when keyboard is open (toggled by JS) */
+  .chat-controls.hide-controls-mobile {
+    display: none !important;
+  }
 }
