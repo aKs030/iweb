@@ -39,8 +39,8 @@ export class GeminiService {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        // Force the browser to send the full URL as referrer (Agresseive Debugging)
-        referrerPolicy: 'unsafe-url',
+        // Send origin/referrer safely to satisfy Google's domain check
+        referrerPolicy: 'strict-origin-when-cross-origin',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -56,15 +56,22 @@ export class GeminiService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
 
+        // Log detailed error for debugging (internal only)
+        if (errorData.error && errorData.error.message) {
+             console.warn('Gemini API Warning:', errorData.error.message);
+        }
+
         // DEBUG MODE: Return exact error to user
         const debugMsg = errorData.error && errorData.error.message
             ? `API Error (${response.status}): ${errorData.error.message}`
             : `API Error (${response.status}): Unknown error`;
 
-        console.error(debugMsg);
+        if (response.status === 403) {
+             console.warn('Gemini API Key blocked or restricted.');
+             return this.fallbackResponse(prompt);
+        }
 
-        // Return raw error to chat for debugging
-        return `⚠️ DEBUG MODE: ${debugMsg} \n\n (Bitte Screenshot machen!)`;
+        return this.fallbackResponse(prompt);
       }
 
       const data = await response.json();
@@ -82,11 +89,11 @@ export class GeminiService {
 
   fallbackResponse(prompt) {
       const lower = prompt.toLowerCase();
-      if (lower.includes('hallo') || lower.includes('hi')) return 'Hallo! Mein Gehirn ist gerade offline, aber ich bin trotzdem für dich da. 😊';
-      if (lower.includes('wer bist du')) return 'Ich bin dein virtueller Assistent auf dieser Webseite!';
-      if (lower.includes('hilfe')) return 'Ich kann dir helfen, dich zurechtzufinden. Klicke einfach auf die Optionen unten.';
-      if (lower.includes('witz')) return 'Warum können Geister so schlecht lügen? Weil man durch sie hindurchsehen kann! 👻 (Sorry, Offline-Modus Witz)';
-      return 'Ich habe gerade keine Verbindung zu meinem Sprachzentrum. Bitte nutze die Buttons unten für die Navigation!';
+      if (lower.includes('hallo') || lower.includes('hi')) return 'Hallo! Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
+      if (lower.includes('wer bist du')) return 'Ich bin ein virtueller Assistent. Momentan kann ich leider keine weiteren Informationen bereitstellen.';
+      if (lower.includes('hilfe')) return 'Der Assistent ist aktuell nicht erreichbar. Bitte nutzen Sie die verfügbaren Optionen zur Navigation.';
+      if (lower.includes('witz')) return 'Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
+      return 'Der Assistent ist momentan nicht erreichbar. Bitte nutzen Sie die Navigationsoptionen oder versuchen Sie es später erneut.';
   }
 
   async summarizePage(pageContent) {
