@@ -89,11 +89,11 @@ export class GeminiService {
 
   fallbackResponse(prompt) {
       const lower = prompt.toLowerCase();
-      if (lower.includes('hallo') || lower.includes('hi')) return 'Hallo! Mein Gehirn ist gerade offline, aber ich bin trotzdem für dich da. 😊';
-      if (lower.includes('wer bist du')) return 'Ich bin dein virtueller Assistent auf dieser Webseite!';
-      if (lower.includes('hilfe')) return 'Ich kann dir helfen, dich zurechtzufinden. Klicke einfach auf die Optionen unten.';
-      if (lower.includes('witz')) return 'Warum können Geister so schlecht lügen? Weil man durch sie hindurchsehen kann! 👻 (Sorry, Offline-Modus Witz)';
-      return 'Ich habe gerade keine Verbindung zu meinem Sprachzentrum. Bitte nutze die Buttons unten für die Navigation!';
+      if (lower.includes('hallo') || lower.includes('hi')) return 'Hallo! Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
+      if (lower.includes('wer bist du')) return 'Ich bin ein virtueller Assistent. Momentan kann ich leider keine weiteren Informationen bereitstellen.';
+      if (lower.includes('hilfe')) return 'Der Assistent ist aktuell nicht erreichbar. Bitte nutzen Sie die verfügbaren Optionen zur Navigation.';
+      if (lower.includes('witz')) return 'Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
+      return 'Der Assistent ist momentan nicht erreichbar. Bitte nutzen Sie die Navigationsoptionen oder versuchen Sie es später erneut.';
   }
 
   async summarizePage(pageContent) {
