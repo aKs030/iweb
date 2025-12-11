@@ -274,10 +274,20 @@ class RobotCompanion {
         // The available space is visualHeight.
         // Let's cap max-height to visualHeight - 20px.
         this.dom.window.style.maxHeight = `${visualHeight - 20}px`;
+
+        // Hide controls to save space
+        if (this.dom.controls) {
+          this.dom.controls.classList.add('hide-controls-mobile');
+        }
       } else {
         // Reset to CSS defaults
         this.dom.window.style.bottom = '';
         this.dom.window.style.maxHeight = '';
+
+        // Show controls again
+        if (this.dom.controls) {
+          this.dom.controls.classList.remove('hide-controls-mobile');
+        }
       }
     };
 
