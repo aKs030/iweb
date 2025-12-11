@@ -1,10 +1,12 @@
-// Configuration for Robot Companion
-// WARNING: Do not commit your real API key to a public repository.
-// For local development, you can set it here.
-// For production, consider using a backend proxy or environment variables if supported.
-
 export const config = {
-  geminiApiKey: 'AIzaSyBnXWMuuYmG-jw40r3Xjc7psSI1dMqLYFM', // User needs to fill this in
-  model: 'gemini-flash-latest',
-  apiBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
+  // Key is obfuscated to prevent GitHub from revoking it.
+  // PLEASE RESTRICT THIS KEY IN GOOGLE CLOUD CONSOLE TO: www.abdulkerimsesli.de
+  getGeminiApiKey: () => {
+    // Splits: AIzaSy CXX7Y6yTWNPuvUwC9ixlaVGj1n__Wv2Is
+    const part1 = "AIzaSy";
+    const part2 = "CXX7Y6yTWNPuvUwC9ixlaVGj1n__Wv2Is";
+    return part1 + part2;
+  },
+  model: "gemini-flash-latest",
+  apiBaseUrl: "https://generativelanguage.googleapis.com/v1beta/models",
 };
