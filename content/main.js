@@ -86,7 +86,7 @@ window.announce = announce;
 const sectionTracker = new SectionTracker();
 sectionTracker.init();
 // Kept for debugging/external access if strictly needed, but marked for review
-window.sectionTracker = sectionTracker;
+if (ENV.debug) window.sectionTracker = sectionTracker;
 
 // ===== Section Loader =====
 const SectionLoader = (() => {
