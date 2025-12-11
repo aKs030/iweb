@@ -236,6 +236,72 @@ class RobotCompanion {
     setInterval(requestTick, 1000);
   }
 
+  // Mobile Keyboard Handling (Virtual Viewport API)
+  setupMobileViewportHandler() {
+    // If Visual Viewport API is not supported, we can't do much
+    if (!window.visualViewport) return;
+
+    const handleResize = () => {
+      // Only act if chat is open
+      if (!this.state.isOpen || !this.dom.window) return;
+
+      // Detection Strategy:
+      // If the keyboard is overlaying content (not resizing layout),
+      // the layout viewport (window.innerHeight) remains large (e.g. 800px),
+      // but the visual viewport shrinks (e.g. 500px).
+      // We check for a significant discrepancy.
+      const layoutHeight = window.innerHeight;
+      const visualHeight = window.visualViewport.height;
+      const heightDiff = layoutHeight - visualHeight;
+
+      // Threshold: 150px (typical keyboard is >250px)
+      const isKeyboardOverlay = heightDiff > 150;
+
+      if (isKeyboardOverlay) {
+        // Keyboard is open and overlaying. We must push the chat window up.
+        // Standard mobile bottom is ~90px. We add the hidden height.
+        // We use Math.max to prevent negative bottom if something is weird.
+        const baseBottom = 90;
+        const newBottom = baseBottom + heightDiff;
+
+        this.dom.window.style.bottom = `${newBottom}px`;
+
+        // Also ensure the window fits in the remaining space
+        // visualHeight is the visible space.
+        // We leave 10px margin top.
+        // The effective available height for the chat window is visualHeight - 10 (top) - 90 (bottom space reserved).
+        // However, since we pushed bottom up by heightDiff, the window is now sitting 'on' the keyboard.
+        // The available space is visualHeight.
+        // Let's cap max-height to visualHeight - 20px.
+        this.dom.window.style.maxHeight = `${visualHeight - 20}px`;
+      } else {
+        // Reset to CSS defaults
+        this.dom.window.style.bottom = '';
+        this.dom.window.style.maxHeight = '';
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+
+    // Also trigger update when chat opens
+    const originalToggle = this.toggleChat.bind(this);
+    this.toggleChat = (forceState) => {
+        originalToggle(forceState);
+        if (this.state.isOpen) {
+             // Delay slightly to allow keyboard animation / layout settle
+             setTimeout(handleResize, 100);
+             setTimeout(handleResize, 300);
+        } else {
+            // Reset when closing
+            if (this.dom.window) {
+                this.dom.window.style.bottom = '';
+                this.dom.window.style.maxHeight = '';
+            }
+        }
+    };
+  }
+
   init() {
     // Verhindert mehrfache Initialisierung
     if (this.dom.container) return;
@@ -244,6 +310,7 @@ class RobotCompanion {
     this.createDOM();
     this.attachEvents();
     this.setupFooterOverlapCheck();
+    this.setupMobileViewportHandler();
 
     // Begrüßungslogik - only once on page load
     setTimeout(() => {
