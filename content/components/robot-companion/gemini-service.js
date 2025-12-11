@@ -61,10 +61,10 @@ export class GeminiService {
              console.warn('Gemini API Warning:', errorData.error.message);
         }
 
-        if (response.status === 429) {
-          console.warn('Gemini API Rate Limit Hit (429)');
-          return 'Ich bin gerade etwas überlastet (zu viele Anfragen). Bitte versuche es in ein paar Sekunden noch einmal. 🤯';
-        }
+        // DEBUG MODE: Return exact error to user
+        const debugMsg = errorData.error && errorData.error.message
+            ? `API Error (${response.status}): ${errorData.error.message}`
+            : `API Error (${response.status}): Unknown error`;
 
         if (response.status === 403) {
              console.warn('Gemini API Key blocked or restricted.');
