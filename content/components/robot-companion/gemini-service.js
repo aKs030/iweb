@@ -39,8 +39,8 @@ export class GeminiService {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        // Force the browser to send the Origin/Referer header to satisfy Google's restrictions
-        referrerPolicy: 'strict-origin-when-cross-origin',
+        // Force the browser to send the full URL as referrer (Agresseive Debugging)
+        referrerPolicy: 'unsafe-url',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -56,23 +56,15 @@ export class GeminiService {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
 
-        // Log detailed error for debugging if available
-        if (errorData.error && errorData.error.message) {
-             console.error('Gemini API Detailed Error:', errorData.error.message);
-        }
+        // DEBUG MODE: Return exact error to user
+        const debugMsg = errorData.error && errorData.error.message
+            ? `API Error (${response.status}): ${errorData.error.message}`
+            : `API Error (${response.status}): Unknown error`;
 
-        if (response.status === 429) {
-          console.warn('Gemini API Rate Limit Hit (429)');
-          return 'Ich bin gerade etwas überlastet (zu viele Anfragen). Bitte versuche es in ein paar Sekunden noch einmal. 🤯';
-        }
+        console.error(debugMsg);
 
-        if (response.status === 403) {
-             console.warn('Gemini API Key blocked or restricted incorrectly.');
-             return this.fallbackResponse(prompt);
-        }
-
-        console.error('Gemini API Error:', errorData);
-        return this.fallbackResponse(prompt);
+        // Return raw error to chat for debugging
+        return `⚠️ DEBUG MODE: ${debugMsg} \n\n (Bitte Screenshot machen!)`;
       }
 
       const data = await response.json();
