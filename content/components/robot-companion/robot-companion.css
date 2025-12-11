@@ -828,3 +828,10 @@
   background: linear-gradient(135deg, rgba(64, 224, 208, 0.3), rgba(64, 224, 208, 0.1));
   box-shadow: 0 0 15px rgba(64, 224, 208, 0.4);
 }
+
+/* Mobile Optimization: Prevent iOS Zoom on Input Focus */
+@media (width <= 480px) {
+  #robot-chat-input {
+    font-size: 16px !important;
+  }
+}
