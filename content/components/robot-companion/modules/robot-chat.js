@@ -8,6 +8,7 @@ export class RobotChat {
     this._bubbleSequenceTimers = [];
     this.contextGreetingHistory = {};
     this.initialBubblePoolCursor = [];
+    this.history = [];
   }
 
   toggleChat(forceState) {
@@ -71,8 +72,7 @@ export class RobotChat {
     this.robot.trackInteraction('message');
 
     try {
-      const history = [];
-      const response = await this.robot.gemini.generateResponse(text, history);
+      const response = await this.robot.gemini.generateResponse(text, this.history);
       this.removeTyping();
       this.addMessage(response, 'bot');
     } catch {
@@ -125,6 +125,18 @@ export class RobotChat {
     msg.innerHTML = String(text || '');
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
+
+    // Sound effect
+    if (this.robot.soundModule) {
+        if (type === 'bot') this.robot.soundModule.playMessage();
+        else this.robot.soundModule.playBeep();
+    }
+
+    // Update history
+    this.history.push({ role: type === 'user' ? 'user' : 'model', text: String(text || '') });
+    if (this.history.length > 20) {
+        this.history = this.history.slice(this.history.length - 20);
+    }
   }
 
   clearControls() {
