@@ -9,6 +9,7 @@ import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
+import { RobotSound } from './modules/robot-sound.js';
 
 class RobotCompanion {
   constructor() {
@@ -21,6 +22,7 @@ class RobotCompanion {
     this.collisionModule = new RobotCollision(this);
     this.chatModule = new RobotChat(this);
     this.intelligenceModule = new RobotIntelligence(this);
+    this.soundModule = new RobotSound(this);
 
     // State
     this.state = {};

@@ -19,27 +19,10 @@ export class RobotGames {
 
     const gameContainer = document.createElement('div');
     gameContainer.className = 'tic-tac-toe-game';
-    gameContainer.style.cssText = `
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 10px 0;
-      max-width: 200px;
-    `;
 
     for (let i = 0; i < 9; i++) {
       const cell = document.createElement('button');
       cell.className = 'ttt-cell';
-      cell.style.cssText = `
-        aspect-ratio: 1;
-        font-size: 24px;
-        background: var(--robot-bg-secondary, #1e293b);
-        border: 2px solid var(--robot-color, #40e0d0);
-        border-radius: 8px;
-        color: var(--robot-color, #40e0d0);
-        cursor: pointer;
-        transition: all 0.2s;
-      `;
       cell.onclick = () => this.playTicTacToeMove(i, gameContainer);
       gameContainer.appendChild(cell);
     }
