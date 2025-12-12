@@ -175,15 +175,15 @@
   will-change: transform;
 }
 
-.robot-eye {
+.robot-eyes {
   transform-origin: center;
   will-change: transform;
 }
-.robot-eye .robot-pupil {
+.robot-eyes .robot-pupil {
   transform-origin: center;
 }
 
-.robot-eye .robot-lid {
+.robot-eyes .robot-lid {
   transform-origin: 50% 10%;
   -webkit-transform-box: fill-box;
   transform-box: fill-box;
@@ -195,7 +195,7 @@
   opacity: 1;
 }
 
-.robot-eye .robot-lid.is-blink {
+.robot-eyes .robot-lid.is-blink {
   transform: translateY(6px) scaleY(1.6);
 }
 
@@ -257,6 +257,36 @@
   100% {
     transform: rotate(0deg);
   }
+}
+
+/* Arms Styling */
+.robot-arm {
+  transform-origin: 20% 20%; /* Pivot at shoulder */
+  transition: transform 0.4s ease;
+  will-change: transform;
+}
+
+.robot-arm.left {
+  transform-origin: 30px 62px;
+}
+.robot-arm.right {
+  transform-origin: 70px 62px;
+}
+
+.robot-avatar.waving .robot-arm.right {
+  animation: armWave 1.2s ease-in-out infinite;
+}
+
+.robot-avatar.check-watch .robot-arm.left {
+  transform: rotate(-30deg) translateY(-5px);
+}
+
+@keyframes armWave {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-40deg); }
+  50% { transform: rotate(10deg); }
+  75% { transform: rotate(-40deg); }
+  100% { transform: rotate(0deg); }
 }
 
 .robot-particles {
