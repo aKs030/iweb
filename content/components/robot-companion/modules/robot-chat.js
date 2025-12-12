@@ -22,11 +22,17 @@ export class RobotChat {
       const ctx = this.robot.getPageContext();
       this.lastGreetedContext = ctx;
       if (this.robot.dom.messages.children.length === 0) this.handleAction('start');
+
+      // Focus Trap
+      if (window.a11y) window.a11y.trapFocus(this.robot.dom.window);
     } else {
       this.robot.dom.window.classList.remove('open');
       this.isOpen = false;
       this.robot.animationModule.startIdleEyeMovement();
       this.robot.animationModule.startBlinkLoop();
+
+      // Release Focus
+      if (window.a11y) window.a11y.releaseFocus();
     }
   }
 
