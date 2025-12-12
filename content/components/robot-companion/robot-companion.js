@@ -154,20 +154,40 @@ class RobotCompanion {
       const layoutHeight = window.innerHeight;
       const visualHeight = window.visualViewport.height;
       const heightDiff = layoutHeight - visualHeight;
-      const isKeyboardOverlay = heightDiff > 150;
+      const isInputFocused = document.activeElement === this.dom.input;
+
+      // Consider overlay if diff > 150 OR if input is focused and diff is at least 50
+      const isKeyboardOverlay = heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
+        // Disable transition for instant snap
+        this.dom.window.style.transition = 'none';
+
         const baseBottom = 90;
-        const newBottom = baseBottom + heightDiff;
+        const safeBuffer = 10;
+        const newBottom = baseBottom + heightDiff + safeBuffer;
+
         this.dom.window.style.bottom = `${newBottom}px`;
         this.dom.window.style.maxHeight = `${visualHeight - 20}px`;
+
         if (this.dom.controls) {
           this.dom.controls.classList.add('hide-controls-mobile');
         }
+
+        // Restore transition after a delay
+        requestAnimationFrame(() => {
+             // Force reflow
+            void this.dom.window.offsetHeight;
+            setTimeout(() => {
+                if (this.dom.window) this.dom.window.style.transition = '';
+            }, 300);
+        });
+
       } else {
         this.dom.window.style.bottom = '';
         this.dom.window.style.maxHeight = '';
-        const isInputFocused = document.activeElement === this.dom.input;
+        this.dom.window.style.transition = '';
+
         if (this.dom.controls && !isInputFocused) {
           this.dom.controls.classList.remove('hide-controls-mobile');
         }
@@ -176,6 +196,20 @@ class RobotCompanion {
 
     window.visualViewport.addEventListener('resize', handleResize);
     window.visualViewport.addEventListener('scroll', handleResize);
+
+    // Add explicit focus listeners to input
+    if (this.dom.input) {
+        this.dom.input.addEventListener('focus', () => {
+             handleResize();
+             // Polling to catch delayed viewport updates
+             setTimeout(handleResize, 100);
+             setTimeout(handleResize, 300);
+             setTimeout(handleResize, 600);
+        });
+        this.dom.input.addEventListener('blur', () => {
+             setTimeout(handleResize, 200);
+        });
+    }
 
     const originalToggle = this.toggleChat.bind(this);
     this.toggleChat = (forceState) => {
