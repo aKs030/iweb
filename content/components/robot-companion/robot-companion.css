@@ -23,6 +23,10 @@
 
 /* Der Roboter selbst */
 .robot-avatar {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
   width: 80px;
   height: 80px;
   cursor: pointer;
