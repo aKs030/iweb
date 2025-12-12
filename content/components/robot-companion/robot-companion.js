@@ -570,8 +570,8 @@ class RobotCompanion {
             </g>
             <path class="robot-legs" d="M30,60 L70,60 L65,90 L35,90 Z" fill="#0f172a" stroke="#40e0d0" stroke-width="2" />
             <g class="robot-arms">
-                <path class="robot-arm left" d="M30,50 Q20,55 25,65" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
-                <path class="robot-arm right" d="M70,50 Q80,55 75,65" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
+                <path class="robot-arm left" d="M30,62 Q20,70 25,80" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
+                <path class="robot-arm right" d="M70,62 Q80,70 75,80" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
             </g>
             <g class="robot-flame" style="opacity: 0;">
                 <path d="M40,90 Q50,120 60,90 Q50,110 40,90" fill="#ff9900" />
