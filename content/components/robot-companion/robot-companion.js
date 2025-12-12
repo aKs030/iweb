@@ -215,6 +215,11 @@ class RobotCompanion {
         this.dom.container.style.bottom = `${30 + overlap}px`;
       }
 
+      // Also check if collisions need to be updated due to layout shift
+      if (!this.state.isOpen) {
+         this.scanForCollisions();
+      }
+
       ticking = false;
     };
 
@@ -564,6 +569,10 @@ class RobotCompanion {
               <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
             </g>
             <path class="robot-legs" d="M30,60 L70,60 L65,90 L35,90 Z" fill="#0f172a" stroke="#40e0d0" stroke-width="2" />
+            <g class="robot-arms">
+                <path class="robot-arm left" d="M30,50 Q20,55 25,65" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
+                <path class="robot-arm right" d="M70,50 Q80,55 75,65" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
+            </g>
             <g class="robot-flame" style="opacity: 0;">
                 <path d="M40,90 Q50,120 60,90 Q50,110 40,90" fill="#ff9900" />
                 <path d="M45,90 Q50,110 55,90" fill="#ffff00" />
@@ -626,6 +635,10 @@ class RobotCompanion {
     this.dom.eyes = container.querySelector('.robot-eye');
     this.dom.flame = container.querySelector('.robot-flame');
     this.dom.legs = container.querySelector('.robot-legs');
+    this.dom.arms = {
+        left: container.querySelector('.robot-arm.left'),
+        right: container.querySelector('.robot-arm.right')
+    };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
     this.dom.closeBtn = container.querySelector('.chat-close-btn');
@@ -634,7 +647,7 @@ class RobotCompanion {
   }
 
   attachEvents() {
-    this.dom.avatar.addEventListener('click', () => this.toggleChat());
+    this.dom.avatar.addEventListener('click', () => this.handleAvatarClick());
     this.dom.closeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggleChat(false);
@@ -889,7 +902,146 @@ class RobotCompanion {
     }
   }
 
-  // Avoidance logic removed — the robot turns and pauses at section limits now.
+  // Generic Collision Detection
+  scanForCollisions() {
+    if (!this.dom.avatar || this.state.isOpen || (this.startAnimation && this.startAnimation.active)) return;
+
+    // Throttling: only check every 200ms
+    const now = performance.now();
+    if (this._lastCollisionCheck && now - this._lastCollisionCheck < 200) return;
+    this._lastCollisionCheck = now;
+
+    const robotRect = this.dom.avatar.getBoundingClientRect();
+
+    // Select relevant obstacles in viewport
+    // Optimization: limit scope? For now, simple querySelectorAll on common interactive elements
+    const obstacles = document.querySelectorAll('img, .card, button.btn, h2, .gallery-item');
+
+    for (const obs of obstacles) {
+        // Skip hidden or tiny elements
+        if (obs.offsetParent === null) continue;
+
+        // Skip self (just in case) or children
+        if (this.dom.container.contains(obs)) continue;
+
+        const obsRect = obs.getBoundingClientRect();
+
+        // Viewport check (optimization)
+        if (obsRect.bottom < 0 || obsRect.top > window.innerHeight) continue;
+
+        // Intersection check
+        // Robot is roughly 80x80. We use a smaller hitbox.
+        const hitBox = {
+            left: robotRect.left + 15,
+            right: robotRect.right - 15,
+            top: robotRect.top + 10,
+            bottom: robotRect.bottom - 10
+        };
+
+        const intersect = !(
+            obsRect.right < hitBox.left ||
+            obsRect.left > hitBox.right ||
+            obsRect.bottom < hitBox.top ||
+            obsRect.top > hitBox.bottom
+        );
+
+        if (intersect) {
+             // Check if we already collided with this recently
+             if (this._recentCollisions && this._recentCollisions.has(obs)) continue;
+
+             this.triggerCollisionReaction(obs, obsRect);
+
+             // Cooldown for this specific object
+             if (!this._recentCollisions) this._recentCollisions = new WeakSet();
+             this._recentCollisions.add(obs);
+             setTimeout(() => {
+                 if (this._recentCollisions) this._recentCollisions.delete(obs);
+             }, 5000);
+
+             // Only one collision at a time
+             return;
+        }
+    }
+  }
+
+  triggerCollisionReaction(obs, obsRect) {
+      // Reactions: Knockback, Dizzy, Short Circuit, Bounce
+      const reactions = ['knockback', 'dizzy', 'short_circuit', 'bounce'];
+      // Weigh reactions: Bounce is common, others rarer
+      const r = Math.random();
+      let type = 'bounce';
+      if (r < 0.2) type = 'dizzy';
+      else if (r < 0.4) type = 'short_circuit';
+      else if (r < 0.6) type = 'knockback';
+
+      // Determine direction relative to object center
+      const robotCenter = this.patrol.x; // Patrol X is strictly translation.
+      // Need visual center. Robot X increases to LEFT.
+      // patrol.x = 0 means far right. patrol.x = max means far left.
+      // Wait, let's use screen coordinates for simplicity
+      const robotRect = this.dom.avatar.getBoundingClientRect();
+      const robotCX = robotRect.left + robotRect.width/2;
+      const obsCX = obsRect.left + obsRect.width/2;
+
+      const hitFromRight = robotCX > obsCX; // Robot is to the right of object center
+
+      // Show bubble
+      const texts = ['Huch!', 'Oha!', 'Eng hier!', 'Platz da!'];
+      this.showBubble(texts[Math.floor(Math.random() * texts.length)]);
+      setTimeout(() => this.hideBubble(), 1500);
+
+      if (type === 'dizzy') {
+          this.pausePatrol(2000);
+          this.dom.svg.style.transition = 'transform 1s ease';
+          this.dom.svg.style.transform = 'rotate(720deg)';
+          if (this.dom.eyes) {
+              this.dom.eyes.innerHTML = `
+                <path d="M35,38 L45,46 M45,38 L35,46" stroke="#40e0d0" stroke-width="3" />
+                <path d="M55,38 L65,46 M65,38 L55,46" stroke="#40e0d0" stroke-width="3" />
+              `;
+              setTimeout(() => {
+                  // Restore eyes (simplified re-render or just hardcode restore)
+                  if (this.dom.eyes) this.dom.eyes.innerHTML = `
+                    <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
+                    <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
+                    <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
+                    <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
+                  `;
+                  this.dom.svg.style.transform = '';
+              }, 2000);
+          }
+      } else if (type === 'short_circuit') {
+          this.pausePatrol(1500);
+          this.spawnParticleBurst(10, { spread: 360, strength: 1.5 });
+          this.dom.avatar.style.animation = 'none'; // reset
+          // Trigger CSS jitter
+          this.dom.avatar.animate([
+              { transform: 'translate(2px, 2px)' },
+              { transform: 'translate(-2px, -2px)' },
+              { transform: 'translate(2px, -2px)' },
+              { transform: 'translate(-2px, 2px)' }
+          ], { duration: 100, iterations: 10 });
+      } else if (type === 'knockback') {
+          // Push away
+          this.patrol.direction = hitFromRight ? -1 : 1;
+          // If hitFromRight (robot is right), we want to move further right (decrease x)
+          // Wait, x is offset from right. So increasing X moves LEFT. Decreasing X moves RIGHT.
+          // If robot is RIGHT of object, it should move RIGHT (decrease X).
+          // direction 1 increases X (moves left). direction -1 decreases X (moves right).
+          // So if hitFromRight is true, we want direction -1.
+
+          this.patrol.direction = hitFromRight ? -1 : 1;
+          this.spawnParticleBurst(5, { direction: this.patrol.direction });
+          // Force move immediately
+          this.patrol.x += this.patrol.direction * 50;
+          this.patrol.x = Math.max(0, this.patrol.x); // Clamp
+      } else {
+          // Bounce
+          this.patrol.direction *= -1;
+          this.patrol.x += this.patrol.direction * 20; // Clear collision
+          this.spawnParticleBurst(3);
+      }
+  }
 
   checkForTypewriterCollision(twRect, maxLeft) {
     const now = performance.now();
@@ -1128,6 +1280,52 @@ class RobotCompanion {
       this.startIdleEyeMovement();
       this.startBlinkLoop();
     }
+  }
+
+  handleAvatarClick() {
+    if (this.state.isOpen) return; // If open, do nothing or maybe close? Standard is toggle via X
+
+    this.playPokeAnimation().then(() => {
+        this.toggleChat(true);
+    });
+  }
+
+  playPokeAnimation() {
+      return new Promise((resolve) => {
+          if (!this.dom.avatar) {
+              resolve();
+              return;
+          }
+
+          // Random startle effect
+          const effects = ['jump', 'shake', 'flash'];
+          const effect = effects[Math.floor(Math.random() * effects.length)];
+
+          if (effect === 'jump') {
+              this.dom.avatar.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+              this.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
+              setTimeout(() => {
+                  this.dom.avatar.style.transform = '';
+                  setTimeout(resolve, 200);
+              }, 200);
+          } else if (effect === 'shake') {
+               this.dom.avatar.animate([
+                   { transform: 'translateX(0)' },
+                   { transform: 'translateX(-5px) rotate(-5deg)' },
+                   { transform: 'translateX(5px) rotate(5deg)' },
+                   { transform: 'translateX(-5px) rotate(-5deg)' },
+                   { transform: 'translateX(0)' }
+               ], { duration: 300 });
+               setTimeout(resolve, 350);
+          } else {
+              // flash
+              this.dom.svg.style.filter = 'brightness(2) drop-shadow(0 0 10px #fff)';
+              setTimeout(() => {
+                  this.dom.svg.style.filter = '';
+                  setTimeout(resolve, 100);
+              }, 150);
+          }
+      });
   }
 
   async handleUserMessage() {
@@ -1582,6 +1780,9 @@ class RobotCompanion {
       (this.patrol.direction > 0 && this.patrol.x + 10 >= maxLeft - 20) ||
       (this.patrol.direction < 0 && this.patrol.x - 10 <= 20);
 
+    // Run generic collision check
+    this.scanForCollisions();
+
     // Avoidance movement should not trigger for TypeWriter presence; collisions are handled directly.
     if (!this.dom.typeWriter && approachingLimit) {
       // Simple reaction: turn around and emit a small burst & pause
@@ -1689,6 +1890,10 @@ class RobotCompanion {
     this.setAvatarState({ moving: false, dashing: false });
     if (this.dom.flame) this.dom.flame.style.opacity = '0';
     if (this.dom.particles) this.dom.particles.style.opacity = '0';
+
+    // Trigger random idle animation
+    this.triggerRandomIdleAnimation(ms);
+
     if (this.dom.thinking && Math.random() < 0.3) {
       this.dom.thinking.style.opacity = '1';
       setTimeout(() => {
@@ -1697,7 +1902,35 @@ class RobotCompanion {
     }
     setTimeout(() => {
       this.patrol.isPaused = false;
+      this.resetIdleAnimations();
     }, ms);
+  }
+
+  triggerRandomIdleAnimation(duration) {
+    const r = Math.random();
+    // 30% chance to wave, 30% chance to check watch, 40% chance just idle look around (default)
+    if (r < 0.3) {
+      this.dom.avatar.classList.add('waving');
+    } else if (r < 0.6) {
+      this.dom.avatar.classList.add('check-watch');
+      // Look down
+      if (this.dom.eyes) {
+         this.dom.eyes.style.transform = 'translate(-2px, 4px)';
+      }
+    } else {
+        // Just look around extensively (handled by eye loop mostly, but we can force a look)
+        if (this.dom.eyes) {
+             this.dom.eyes.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 2 - 1}px)`;
+        }
+    }
+  }
+
+  resetIdleAnimations() {
+    if (this.dom.avatar) {
+      this.dom.avatar.classList.remove('waving');
+      this.dom.avatar.classList.remove('check-watch');
+    }
+    // Eyes reset handled by main loop
   }
 
   scrollToBottom() {
