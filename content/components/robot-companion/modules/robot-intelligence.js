@@ -4,15 +4,51 @@ export class RobotIntelligence {
     this.mouse = { x: 0, y: 0, lastX: 0, lastY: 0, speed: 0 };
     this.lastMoveTime = Date.now();
 
+    this.scroll = { lastY: 0, speed: 0 };
+    this.lastScrollTime = Date.now();
+
+    this.lastInteractionTime = Date.now();
+    this.isIdle = false;
+
     this.setupListeners();
+
+    // Check idle state every 10 seconds
+    setInterval(() => this.checkIdle(), 10000);
   }
 
   setupListeners() {
     // Passive listener for performance
     document.addEventListener('mousemove', (e) => this.handleMouseMove(e), { passive: true });
+    document.addEventListener('scroll', () => this.handleScroll(), { passive: true });
+
+    ['mousedown', 'keydown', 'touchstart'].forEach(evt => {
+        document.addEventListener(evt, () => this.resetIdle(), { passive: true });
+    });
+  }
+
+  resetIdle() {
+      this.lastInteractionTime = Date.now();
+      if (this.isIdle) {
+          this.isIdle = false;
+          // Optional: Wake up reaction?
+      }
+  }
+
+  checkIdle() {
+      if (this.robot.chatModule.isOpen) return;
+
+      const now = Date.now();
+      const idleTime = now - this.lastInteractionTime;
+
+      // If idle for > 60 seconds
+      if (idleTime > 60000 && !this.isIdle) {
+          this.isIdle = true;
+          this.triggerIdleReaction();
+      }
   }
 
   handleMouseMove(e) {
+    this.resetIdle();
     const now = Date.now();
     const dt = now - this.lastMoveTime;
 
@@ -32,8 +68,27 @@ export class RobotIntelligence {
     }
   }
 
+  handleScroll() {
+      this.resetIdle();
+      const now = Date.now();
+      const dt = now - this.lastScrollTime;
+
+      if (dt > 100) {
+          const scrollY = window.scrollY;
+          const dist = Math.abs(scrollY - this.scroll.lastY);
+          const speed = dist / dt;
+
+          this.scroll.lastY = scrollY;
+          this.scroll.lastScrollTime = now;
+
+          if (speed > 5) {
+              this.triggerScrollReaction();
+          }
+      }
+  }
+
   triggerHecticReaction() {
-    if (this.robot.chatModule.isOpen || Math.random() > 0.02) return; // Low chance to not annoy
+    if (this.robot.chatModule.isOpen || Math.random() > 0.05) return; // Low chance
 
     const texts = [
       "Whoa, nicht so schnell! 🏎️",
@@ -45,5 +100,37 @@ export class RobotIntelligence {
     const text = texts[Math.floor(Math.random() * texts.length)];
     this.robot.chatModule.showBubble(text);
     setTimeout(() => this.robot.chatModule.hideBubble(), 2500);
+  }
+
+  triggerScrollReaction() {
+      if (this.robot.chatModule.isOpen || Math.random() > 0.1) return;
+
+      const texts = [
+          "Wuiiii! 🎢",
+          "Abwärts! 👇",
+          "Nicht so schnell scrollen! 📄",
+          "Habe ich etwas verpasst? 👀"
+      ];
+      const text = texts[Math.floor(Math.random() * texts.length)];
+      this.robot.chatModule.showBubble(text);
+      setTimeout(() => this.robot.chatModule.hideBubble(), 2000);
+  }
+
+  triggerIdleReaction() {
+      // 30% chance to react on idle
+      if (Math.random() > 0.3) return;
+
+      const texts = [
+          "Bist du noch da? 😴",
+          "Langweilig... 🎵",
+          "Brauchst du Hilfe? 👋",
+          "Psst... ich bin noch hier! 🤖"
+      ];
+      const text = texts[Math.floor(Math.random() * texts.length)];
+      this.robot.chatModule.showBubble(text);
+      setTimeout(() => this.robot.chatModule.hideBubble(), 4000);
+
+      // Maybe look at user
+      this.robot.animationModule.triggerRandomIdleAnimation();
   }
 }

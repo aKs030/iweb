@@ -587,6 +587,40 @@ class RobotCompanion {
     this._sectionObserver = observer;
   }
 
+  showMoodInfo() {
+    const moodEmojis = {
+      'night-owl': '🦉',
+      'sleepy': '😴',
+      'energetic': '⚡',
+      'relaxed': '😊',
+      'enthusiastic': '🤩',
+      'normal': '🤖',
+    };
+
+    const moodDescriptions = {
+      'night-owl': 'Nachteule-Modus aktiv! Ich bin hellwach! 🌙',
+      'sleepy': 'Etwas verschlafen heute... ☕',
+      'energetic': 'Voller Energie und bereit für Action! 💪',
+      'relaxed': 'Entspannt und gelassen unterwegs! 🌅',
+      'enthusiastic': 'Super enthusiastisch - du bist ja Power-User! 🎉',
+      'normal': 'Ganz normaler Roboter-Modus! 🤖',
+    };
+
+    const emoji = moodEmojis[this.mood] || '🤖';
+    const desc = moodDescriptions[this.mood] || 'Normaler Modus';
+    const stats = `
+      📊 Deine Stats:
+      • Sessions: ${this.analytics.sessions}
+      • Interaktionen: ${this.analytics.interactions}
+      • Easter Eggs: ${this.easterEggFound.size}
+      • Mood: ${emoji} ${this.mood}
+    `;
+
+    this.chatModule.addMessage(desc, 'bot');
+    this.chatModule.addMessage(stats, 'bot');
+    setTimeout(() => this.chatModule.handleAction('start'), 2000);
+  }
+
   // Delegated methods
   fetchAndShowSuggestion() { return this.chatModule.fetchAndShowSuggestion(); }
   toggleChat(force) { return this.chatModule.toggleChat(force); }
