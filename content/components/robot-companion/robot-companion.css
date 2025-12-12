@@ -267,10 +267,10 @@
 }
 
 .robot-arm.left {
-  transform-origin: 30px 50px;
+  transform-origin: 30px 62px;
 }
 .robot-arm.right {
-  transform-origin: 70px 50px;
+  transform-origin: 70px 62px;
 }
 
 .robot-avatar.waving .robot-arm.right {
