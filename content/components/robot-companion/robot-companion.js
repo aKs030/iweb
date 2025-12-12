@@ -562,7 +562,7 @@ class RobotCompanion {
             <circle cx="50" cy="15" r="3" class="robot-antenna-light" fill="#ff4444" />
             <path d="M30,40 a20,20 0 0,1 40,0" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
             <rect x="30" y="40" width="40" height="15" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
-            <g class="robot-eye">
+            <g class="robot-eyes">
               <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
               <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
               <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
@@ -587,8 +587,6 @@ class RobotCompanion {
                 <text x="70" y="25" font-size="12" fill="#40e0d0" text-anchor="middle">?</text>
             </g>
             <circle cx="50" cy="70" r="5" fill="#2563eb" opacity="0.8"><animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" /></circle>
-            <path d="M28,65 Q20,75 28,85" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
-            <path d="M72,65 Q80,75 72,85" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
         </svg>
     `;
 
@@ -632,7 +630,7 @@ class RobotCompanion {
     this.dom.sendBtn = document.getElementById('robot-chat-send');
     this.dom.avatar = container.querySelector('.robot-avatar');
     this.dom.svg = container.querySelector('.robot-svg');
-    this.dom.eyes = container.querySelector('.robot-eye');
+    this.dom.eyes = container.querySelector('.robot-eyes');
     this.dom.flame = container.querySelector('.robot-flame');
     this.dom.legs = container.querySelector('.robot-legs');
     this.dom.arms = {
@@ -903,6 +901,18 @@ class RobotCompanion {
   }
 
   // Generic Collision Detection
+  updateObstacleCache() {
+    // Update cache every 2 seconds or so
+    const now = performance.now();
+    if (this._lastObstacleUpdate && now - this._lastObstacleUpdate < 2000) return;
+    this._lastObstacleUpdate = now;
+
+    // Cache relevant elements
+    // Note: querySelectorAll is fast enough for this frequency
+    this._obstacleCache = Array.from(document.querySelectorAll('img, .card, button.btn, h2, .gallery-item'));
+  }
+
+  // Generic Collision Detection
   scanForCollisions() {
     if (!this.dom.avatar || this.state.isOpen || (this.startAnimation && this.startAnimation.active)) return;
 
@@ -911,14 +921,16 @@ class RobotCompanion {
     if (this._lastCollisionCheck && now - this._lastCollisionCheck < 200) return;
     this._lastCollisionCheck = now;
 
+    // Update obstacle cache periodically
+    this.updateObstacleCache();
+
     const robotRect = this.dom.avatar.getBoundingClientRect();
 
-    // Select relevant obstacles in viewport
-    // Optimization: limit scope? For now, simple querySelectorAll on common interactive elements
-    const obstacles = document.querySelectorAll('img, .card, button.btn, h2, .gallery-item');
+    // Use cached obstacles
+    const obstacles = this._obstacleCache || [];
 
     for (const obs of obstacles) {
-        // Skip hidden or tiny elements
+        // Skip hidden or tiny elements (re-check visibility as they might have changed)
         if (obs.offsetParent === null) continue;
 
         // Skip self (just in case) or children
@@ -992,8 +1004,10 @@ class RobotCompanion {
 
       if (type === 'dizzy') {
           this.pausePatrol(2000);
-          this.dom.svg.style.transition = 'transform 1s ease';
-          this.dom.svg.style.transform = 'rotate(720deg)';
+          if (this.dom.svg) {
+            this.dom.svg.style.transition = 'transform 1s ease';
+            this.dom.svg.style.transform = 'rotate(720deg)';
+          }
           if (this.dom.eyes) {
               this.dom.eyes.innerHTML = `
                 <path d="M35,38 L45,46 M45,38 L35,46" stroke="#40e0d0" stroke-width="3" />
@@ -1007,7 +1021,7 @@ class RobotCompanion {
                     <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
                     <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
                   `;
-                  this.dom.svg.style.transform = '';
+                  if (this.dom.svg) this.dom.svg.style.transform = '';
               }, 2000);
           }
       } else if (type === 'short_circuit') {
@@ -1283,7 +1297,10 @@ class RobotCompanion {
   }
 
   handleAvatarClick() {
-    if (this.state.isOpen) return; // If open, do nothing or maybe close? Standard is toggle via X
+    if (this.state.isOpen) {
+        this.toggleChat(false);
+        return;
+    }
 
     this.playPokeAnimation().then(() => {
         this.toggleChat(true);
@@ -1319,9 +1336,11 @@ class RobotCompanion {
                setTimeout(resolve, 350);
           } else {
               // flash
-              this.dom.svg.style.filter = 'brightness(2) drop-shadow(0 0 10px #fff)';
+              if (this.dom.svg) {
+                this.dom.svg.style.filter = 'brightness(2) drop-shadow(0 0 10px #fff)';
+              }
               setTimeout(() => {
-                  this.dom.svg.style.filter = '';
+                  if (this.dom.svg) this.dom.svg.style.filter = '';
                   setTimeout(resolve, 100);
               }, 150);
           }

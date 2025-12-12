@@ -175,15 +175,15 @@
   will-change: transform;
 }
 
-.robot-eye {
+.robot-eyes {
   transform-origin: center;
   will-change: transform;
 }
-.robot-eye .robot-pupil {
+.robot-eyes .robot-pupil {
   transform-origin: center;
 }
 
-.robot-eye .robot-lid {
+.robot-eyes .robot-lid {
   transform-origin: 50% 10%;
   -webkit-transform-box: fill-box;
   transform-box: fill-box;
@@ -195,7 +195,7 @@
   opacity: 1;
 }
 
-.robot-eye .robot-lid.is-blink {
+.robot-eyes .robot-lid.is-blink {
   transform: translateY(6px) scaleY(1.6);
 }
 
