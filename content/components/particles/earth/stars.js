@@ -137,11 +137,13 @@ export class StarManager {
     const width = this.renderer ? this.renderer.domElement.clientWidth : window.innerWidth
     const height = this.renderer ? this.renderer.domElement.clientHeight : window.innerHeight
 
+    const cardCount = cards.length
+
     cards.forEach(card => {
       const rect = card.getBoundingClientRect()
       // Ensure element is actually somewhat visible/valid
       if (rect.width > 0 && rect.height > 0) {
-        const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2)
+        const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2, cardCount)
         positions.push(...perimeterPositions)
       }
     })
@@ -149,10 +151,10 @@ export class StarManager {
     return positions
   }
 
-  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ) {
+  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ, cardCount = 3) {
     const positions = []
     // Recalculate stars per edge dynamically based on current star count config
-    const starsPerEdge = Math.floor((this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4)
+    const starsPerEdge = Math.floor((this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / cardCount / 4)
 
     const screenToWorld = (x, y) => {
       const ndcX = (x / viewportWidth) * 2 - 1
@@ -257,10 +259,10 @@ export class StarManager {
       const target = cardPositions[i % cardPositions.length]
 
       if (target) {
-        const spreadFactor = 0.15
+        const spreadFactor = CONFIG.STARS.ANIMATION.SPREAD_XY
         array[i3] = target.x + (Math.random() - 0.5) * spreadFactor
         array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor
-        array[i3 + 2] = target.z + (Math.random() - 0.5) * 0.05
+        array[i3 + 2] = target.z + (Math.random() - 0.5) * CONFIG.STARS.ANIMATION.SPREAD_Z
       }
     }
 
