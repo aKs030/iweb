@@ -6,21 +6,16 @@
     <title>Meine Projekte</title>
     <meta
       name="description"
-      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React."
-    />
+      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
 
     <!-- Open Graph Meta-Tags -->
     <meta property="og:title" content="Meine Projekte" />
     <meta
       property="og:description"
-      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React."
-    />
+      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/pages/projekte/projekte.html" />
-    <meta
-      property="og:image"
-      content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg"
-    />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Abdulkerim — Digital Creator Portfolio" />
@@ -32,12 +27,8 @@
     <meta name="twitter:title" content="Meine Projekte" />
     <meta
       name="twitter:description"
-      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React."
-    />
-    <meta
-      name="twitter:image"
-      content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg"
-    />
+      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
+    <meta name="twitter:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta name="twitter:image:alt" content="Abdulkerim — Digital Creator Portfolio" />
     <meta name="twitter:creator" content="@abdulkerimsesli" />
     <meta name="twitter:site" content="@abdulkerimsesli" />
@@ -47,14 +38,8 @@
 
     <!-- React Dependencies (Production Version für bessere Performance) -->
     <!-- Load React & ReactDOM from jsDelivr (allowed by CSP in content/head/head.html) -->
-    <script
-      crossorigin
-      src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"
-    ></script>
-    <script
-      crossorigin
-      src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"
-    ></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
 
     <!-- Page Specific Styles -->
     <style>
@@ -546,11 +531,8 @@
     <!-- Logic Script -->
     <script type="module">
       // FIX: Absoluter Pfad, um Resolution-Errors zu vermeiden
-      import { initProjectsApp } from '/pages/projekte/projekte-app.js';
-      import {
-        initThreeEarth,
-        EarthSystemAPI,
-      } from '/content/components/particles/three-earth-system.js';
+      import {initProjectsApp} from '/pages/projekte/projekte-app.js';
+      import {initThreeEarth, EarthSystemAPI} from '/content/components/particles/three-earth-system.js';
 
       // Load styles for Three Earth (Progressive Enhancement)
       async function ensureThreeEarthStyles() {
@@ -569,7 +551,7 @@
               resolve();
             }
           };
-          link.onerror = (e) => reject(e);
+          link.onerror = e => reject(e);
           document.head.appendChild(link);
         });
       }
@@ -592,7 +574,7 @@
                 x: Math.sin(angle) * baseRadius,
                 z: Math.cos(angle) * baseRadius,
                 y: Math.max(2, (basePreset.y || 5) + Math.sin(i * 1.5) * 3),
-                lookAt: basePreset.lookAt,
+                lookAt: basePreset.lookAt
               };
             }
           }

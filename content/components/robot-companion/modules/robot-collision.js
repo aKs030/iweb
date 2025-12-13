@@ -9,8 +9,8 @@ export class RobotCollision {
     this._trackedObstacles = new WeakSet();
 
     this.obstacleObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             this.visibleObstacles.add(entry.target);
           } else {
@@ -18,7 +18,7 @@ export class RobotCollision {
           }
         });
       },
-      { rootMargin: '50px' },
+      {rootMargin: '50px'}
     );
   }
 
@@ -31,7 +31,7 @@ export class RobotCollision {
     // Cache relevant elements
     const currentObstacles = document.querySelectorAll('img, .card, button.btn, h2, .gallery-item');
 
-    currentObstacles.forEach((el) => {
+    currentObstacles.forEach(el => {
       if (!this._trackedObstacles.has(el)) {
         this.obstacleObserver.observe(el);
         this._trackedObstacles.add(el);
@@ -43,8 +43,7 @@ export class RobotCollision {
     if (
       !this.robot.dom.avatar ||
       this.robot.chatModule.isOpen ||
-      (this.robot.animationModule.startAnimation &&
-        this.robot.animationModule.startAnimation.active)
+      (this.robot.animationModule.startAnimation && this.robot.animationModule.startAnimation.active)
     )
       return;
 
@@ -74,7 +73,7 @@ export class RobotCollision {
         left: robotRect.left + 15,
         right: robotRect.right - 15,
         top: robotRect.top + 10,
-        bottom: robotRect.bottom - 10,
+        bottom: robotRect.bottom - 10
       };
 
       const intersect = !(
@@ -153,22 +152,22 @@ export class RobotCollision {
       }
     } else if (type === 'short_circuit') {
       anim.pausePatrol(1500);
-      anim.spawnParticleBurst(10, { spread: 360, strength: 1.5 });
+      anim.spawnParticleBurst(10, {spread: 360, strength: 1.5});
       this.robot.dom.avatar.style.animation = 'none'; // reset
       // Trigger CSS jitter
       this.robot.dom.avatar.animate(
         [
-          { transform: 'translate(2px, 2px)' },
-          { transform: 'translate(-2px, -2px)' },
-          { transform: 'translate(2px, -2px)' },
-          { transform: 'translate(-2px, 2px)' },
+          {transform: 'translate(2px, 2px)'},
+          {transform: 'translate(-2px, -2px)'},
+          {transform: 'translate(2px, -2px)'},
+          {transform: 'translate(-2px, 2px)'}
         ],
-        { duration: 100, iterations: 10 },
+        {duration: 100, iterations: 10}
       );
     } else if (type === 'knockback') {
       // Push away
       anim.patrol.direction = hitFromRight ? -1 : 1;
-      anim.spawnParticleBurst(5, { direction: anim.patrol.direction });
+      anim.spawnParticleBurst(5, {direction: anim.patrol.direction});
       // Force move immediately
       anim.patrol.x += anim.patrol.direction * 50;
       anim.patrol.x = Math.max(0, anim.patrol.x); // Clamp
@@ -183,11 +182,7 @@ export class RobotCollision {
   checkForTypewriterCollision(twRect, maxLeft) {
     if (!twRect) return false;
     // Allow collisions even if the robot recently changed direction.
-    if (
-      this.robot.animationModule.startAnimation &&
-      this.robot.animationModule.startAnimation.active
-    )
-      return false;
+    if (this.robot.animationModule.startAnimation && this.robot.animationModule.startAnimation.active) return false;
     if (!this.robot.dom || !this.robot.dom.container) return false;
     try {
       // Use the robot avatar or svg bounding box instead of the full container
@@ -201,7 +196,7 @@ export class RobotCollision {
         left: rRectRaw.left + shrinkX,
         right: rRectRaw.right - shrinkX,
         top: rRectRaw.top + shrinkY,
-        bottom: rRectRaw.bottom - shrinkY,
+        bottom: rRectRaw.bottom - shrinkY
       };
       const intersects = !(
         twRect.right < rRect.left ||
@@ -220,18 +215,13 @@ export class RobotCollision {
       maxLeft = typeof maxLeft === 'number' ? maxLeft : initialLeft - 20;
 
       // Collision reaction: show bubble, particle burst and dramatic knockback movement
-      const reactions = [
-        'Autsch! 😵',
-        'Ups! Das war hart! 💥',
-        'Whoa! 😲',
-        'Hey! Nicht schubsen! 😠',
-      ];
+      const reactions = ['Autsch! 😵', 'Ups! Das war hart! 💥', 'Whoa! 😲', 'Hey! Nicht schubsen! 😠'];
       const reaction = reactions[Math.floor(Math.random() * reactions.length)];
       // Sprechblase mit dramatischer Reaktion
       this.robot.showBubble(reaction);
       setTimeout(() => this.robot.hideBubble(), 2500);
       // Große Partikel-Explosion
-      this.robot.animationModule.spawnParticleBurst(18, { strength: 2.0, spread: 180 });
+      this.robot.animationModule.spawnParticleBurst(18, {strength: 2.0, spread: 180});
       // Trigger the dedicated typewriter collision knockback
       this.startTypewriterCollisionResponse(twRect, maxLeft);
       return true;

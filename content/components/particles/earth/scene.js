@@ -1,21 +1,16 @@
-import { CONFIG } from './config.js';
+import {CONFIG} from './config.js';
 
 export function setupScene(THREE, container) {
   const scene = new THREE.Scene();
 
   const aspectRatio = container.clientWidth / container.clientHeight;
-  const camera = new THREE.PerspectiveCamera(
-    CONFIG.CAMERA.FOV,
-    aspectRatio,
-    CONFIG.CAMERA.NEAR,
-    CONFIG.CAMERA.FAR,
-  );
+  const camera = new THREE.PerspectiveCamera(CONFIG.CAMERA.FOV, aspectRatio, CONFIG.CAMERA.NEAR, CONFIG.CAMERA.FAR);
 
   const renderer = new THREE.WebGLRenderer({
     canvas: container.querySelector('canvas') || undefined,
     antialias: true,
     alpha: true,
-    powerPreference: 'high-performance',
+    powerPreference: 'high-performance'
   });
 
   const pixelRatio = Math.min(window.devicePixelRatio, 2.0);
@@ -28,7 +23,7 @@ export function setupScene(THREE, container) {
 
   container.appendChild(renderer.domElement);
 
-  return { scene, camera, renderer };
+  return {scene, camera, renderer};
 }
 
 export function setupLighting(THREE, scene) {
@@ -36,13 +31,10 @@ export function setupLighting(THREE, scene) {
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
-  const ambientLight = new THREE.AmbientLight(
-    CONFIG.LIGHTING.DAY.AMBIENT_COLOR,
-    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY,
-  );
+  const ambientLight = new THREE.AmbientLight(CONFIG.LIGHTING.DAY.AMBIENT_COLOR, CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY);
   scene.add(ambientLight);
 
-  return { directionalLight, ambientLight };
+  return {directionalLight, ambientLight};
 }
 
 export function createAtmosphere(THREE, isMobileDevice = false) {
@@ -87,24 +79,24 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
     vertexShader,
     fragmentShader,
     uniforms: {
-      uRayleighColor: { value: new THREE.Color(CONFIG.ATMOSPHERE.RAYLEIGH_COLOR) },
-      uMieColor: { value: new THREE.Color(CONFIG.ATMOSPHERE.MIE_COLOR) },
-      uPower: { value: CONFIG.ATMOSPHERE.FRESNEL_POWER },
-      uRayleighIntensity: { value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY },
-      uMieIntensity: { value: CONFIG.ATMOSPHERE.MIE_INTENSITY },
-      uScatteringStrength: { value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH },
+      uRayleighColor: {value: new THREE.Color(CONFIG.ATMOSPHERE.RAYLEIGH_COLOR)},
+      uMieColor: {value: new THREE.Color(CONFIG.ATMOSPHERE.MIE_COLOR)},
+      uPower: {value: CONFIG.ATMOSPHERE.FRESNEL_POWER},
+      uRayleighIntensity: {value: CONFIG.ATMOSPHERE.RAYLEIGH_INTENSITY},
+      uMieIntensity: {value: CONFIG.ATMOSPHERE.MIE_INTENSITY},
+      uScatteringStrength: {value: CONFIG.ATMOSPHERE.SCATTERING_STRENGTH}
     },
     blending: THREE.AdditiveBlending,
     transparent: true,
     side: THREE.BackSide,
-    depthWrite: false,
+    depthWrite: false
   });
 
   const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
 
   const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE, segments, segments),
-    atmosphereMaterial,
+    atmosphereMaterial
   );
 
   return atmosphere;

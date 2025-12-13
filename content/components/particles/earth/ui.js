@@ -1,6 +1,6 @@
-import { CONFIG } from './config.js';
-import { createLogger, throttle } from '../../../utils/shared-utilities.js';
-import { calculateQualityLevel, calculateDynamicResolution } from './ui_helpers.js';
+import {CONFIG} from './config.js';
+import {createLogger, throttle} from '../../../utils/shared-utilities.js';
+import {calculateQualityLevel, calculateDynamicResolution} from './ui_helpers.js';
 
 const log = createLogger('EarthUI');
 
@@ -14,7 +14,7 @@ const log = createLogger('EarthUI');
 function getGlobalLoaderElements() {
   const screen = document.getElementById('loadingScreen');
   if (!screen) return null;
-  return { screen };
+  return {screen};
 }
 
 export function showLoadingState(container) {
@@ -30,7 +30,7 @@ export function showLoadingState(container) {
       display: 'flex',
       opacity: '1',
       pointerEvents: 'auto',
-      visibility: 'visible',
+      visibility: 'visible'
     });
     // Optionally set an aria message
     globals.screen.setAttribute('aria-live', 'polite');
@@ -51,7 +51,7 @@ export function hideLoadingState(container) {
     Object.assign(globals.screen.style, {
       opacity: '0',
       pointerEvents: 'none',
-      visibility: 'hidden',
+      visibility: 'hidden'
     });
     // Reset visuals (after transition)
     setTimeout(() => {
@@ -151,11 +151,7 @@ export class PerformanceMonitor {
     }
 
     // 2. Pixel Ratio Logic
-    const newPixelRatio = calculateDynamicResolution(
-      this.fps,
-      this.currentPixelRatio,
-      CONFIG.PERFORMANCE,
-    );
+    const newPixelRatio = calculateDynamicResolution(this.fps, this.currentPixelRatio, CONFIG.PERFORMANCE);
 
     if (newPixelRatio !== this.currentPixelRatio) {
       this.currentPixelRatio = newPixelRatio;

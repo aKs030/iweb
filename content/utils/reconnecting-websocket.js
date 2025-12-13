@@ -25,10 +25,7 @@ export class ReconnectingWebSocket {
 
   _onVisibilityChange() {
     // If page becomes visible and the socket is closed, try reconnect
-    if (
-      document.visibilityState === 'visible' &&
-      (!this.ws || this.ws.readyState === WebSocket.CLOSED)
-    ) {
+    if (document.visibilityState === 'visible' && (!this.ws || this.ws.readyState === WebSocket.CLOSED)) {
       this._connect();
     }
   }
@@ -49,7 +46,7 @@ export class ReconnectingWebSocket {
       return;
     }
 
-    this.ws.onopen = (e) => {
+    this.ws.onopen = e => {
       this.reconnectAttempts = 0;
       if (this.onopen)
         try {
@@ -59,13 +56,13 @@ export class ReconnectingWebSocket {
         }
     };
 
-    this.ws.onmessage = (e) => {
+    this.ws.onmessage = e => {
       if (this.onmessage) this.onmessage(e);
     };
-    this.ws.onerror = (e) => {
+    this.ws.onerror = e => {
       if (this.onerror) this.onerror(e);
     };
-    this.ws.onclose = (event) => {
+    this.ws.onclose = event => {
       if (this.onclose) this.onclose(event);
 
       // If client closed manually, don't try to reconnect

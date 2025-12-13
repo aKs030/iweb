@@ -2,11 +2,11 @@ export class RobotGames {
   constructor(robot) {
     this.robot = robot;
     this.state = {
-      ticTacToe: { board: Array(9).fill(null), playerSymbol: 'X', botSymbol: 'O' },
+      ticTacToe: {board: Array(9).fill(null), playerSymbol: 'X', botSymbol: 'O'},
       triviaScore: parseInt(localStorage.getItem('robot-trivia-score') || '0'),
       guessNumber: null,
       guessNumberActive: false,
-      currentTrivia: null,
+      currentTrivia: null
     };
   }
 
@@ -45,7 +45,7 @@ export class RobotGames {
       return;
     }
 
-    if (this.state.ticTacToe.board.every((cell) => cell !== null)) {
+    if (this.state.ticTacToe.board.every(cell => cell !== null)) {
       this.robot.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
       setTimeout(() => this.robot.handleAction('games'), 2000);
       return;
@@ -66,7 +66,7 @@ export class RobotGames {
           return;
         }
 
-        if (this.state.ticTacToe.board.every((cell) => cell !== null)) {
+        if (this.state.ticTacToe.board.every(cell => cell !== null)) {
           this.robot.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
           setTimeout(() => this.robot.handleAction('games'), 2000);
         }
@@ -105,9 +105,7 @@ export class RobotGames {
     if (!board[4]) return 4;
 
     // Take random available spot
-    const available = board
-      .map((cell, idx) => (cell === null ? idx : null))
-      .filter((idx) => idx !== null);
+    const available = board.map((cell, idx) => (cell === null ? idx : null)).filter(idx => idx !== null);
     return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : -1;
   }
 
@@ -121,14 +119,14 @@ export class RobotGames {
       [1, 4, 7],
       [2, 5, 8],
       [0, 4, 8],
-      [2, 4, 6],
+      [2, 4, 6]
     ];
 
-    return winPatterns.some((pattern) => pattern.every((idx) => board[idx] === symbol));
+    return winPatterns.some(pattern => pattern.every(idx => board[idx] === symbol));
   }
 
   disableTicTacToeBoard(gameContainer) {
-    Array.from(gameContainer.children).forEach((cell) => {
+    Array.from(gameContainer.children).forEach(cell => {
       cell.style.cursor = 'not-allowed';
       cell.onclick = null;
     });
@@ -141,7 +139,7 @@ export class RobotGames {
       {
         q: 'Welches Jahr wurde JavaScript veröffentlicht?',
         options: ['1995', '1999', '2005', '1991'],
-        answer: 0,
+        answer: 0
       },
       {
         q: 'Was bedeutet HTML?',
@@ -149,25 +147,25 @@ export class RobotGames {
           'Hyper Text Markup Language',
           'High Tech Modern Language',
           'Home Tool Markup Language',
-          'Hyperlinks and Text Markup Language',
+          'Hyperlinks and Text Markup Language'
         ],
-        answer: 0,
+        answer: 0
       },
       {
         q: 'Welcher Planet ist der größte im Sonnensystem?',
         options: ['Saturn', 'Jupiter', 'Uranus', 'Neptun'],
-        answer: 1,
+        answer: 1
       },
       {
         q: 'In welchem Jahr fiel die Berliner Mauer?',
         options: ['1987', '1989', '1991', '1985'],
-        answer: 1,
+        answer: 1
       },
       {
         q: 'Was ist die Geschwindigkeit des Lichts?',
         options: ['300.000 km/s', '150.000 km/s', '450.000 km/s', '200.000 km/s'],
-        answer: 0,
-      },
+        answer: 0
+      }
     ];
 
     const question = questions[Math.floor(Math.random() * questions.length)];
@@ -178,7 +176,7 @@ export class RobotGames {
 
     const options = question.options.map((opt, idx) => ({
       label: opt,
-      action: `triviaAnswer_${idx}`,
+      action: `triviaAnswer_${idx}`
     }));
 
     this.robot.addOptions(options);
@@ -195,23 +193,20 @@ export class RobotGames {
       this.robot.addMessage('✅ Richtig! Sehr gut! 🎉', 'bot');
 
       if (this.state.triviaScore === 5 && !this.robot.easterEggFound.has('trivia-master')) {
-        this.robot.unlockEasterEgg(
-          'trivia-master',
-          '🧠 Trivia-Master! 5 richtige Antworten! Du bist ein Genie! 🏆',
-        );
+        this.robot.unlockEasterEgg('trivia-master', '🧠 Trivia-Master! 5 richtige Antworten! Du bist ein Genie! 🏆');
       }
     } else {
       this.robot.addMessage(
         `❌ Leider falsch! Die richtige Antwort war: ${this.state.currentTrivia.options[this.state.currentTrivia.answer]}`,
-        'bot',
+        'bot'
       );
     }
 
     setTimeout(() => {
       this.robot.addMessage('Noch eine Frage?', 'bot');
       this.robot.addOptions([
-        { label: 'Ja, weiter!', action: 'playTrivia' },
-        { label: 'Zurück', action: 'games' },
+        {label: 'Ja, weiter!', action: 'playTrivia'},
+        {label: 'Zurück', action: 'games'}
       ]);
     }, 1500);
   }
@@ -222,13 +217,10 @@ export class RobotGames {
     this.state.guessNumber = {
       target: Math.floor(Math.random() * 100) + 1,
       attempts: 0,
-      maxAttempts: 7,
+      maxAttempts: 7
     };
 
-    this.robot.addMessage(
-      '🎲 Zahlenraten! Ich denke an eine Zahl zwischen 1 und 100. Du hast 7 Versuche!',
-      'bot',
-    );
+    this.robot.addMessage('🎲 Zahlenraten! Ich denke an eine Zahl zwischen 1 und 100. Du hast 7 Versuche!', 'bot');
     this.robot.addMessage('Gib eine Zahl ein:', 'bot');
 
     // Override next input
@@ -245,20 +237,14 @@ export class RobotGames {
     }
 
     this.state.guessNumber.attempts++;
-    const { target, attempts, maxAttempts } = this.state.guessNumber;
+    const {target, attempts, maxAttempts} = this.state.guessNumber;
 
     if (num === target) {
-      this.robot.addMessage(
-        `🎉 Richtig! Die Zahl war ${target}! Du hast ${attempts} Versuche gebraucht! 🏆`,
-        'bot',
-      );
+      this.robot.addMessage(`🎉 Richtig! Die Zahl war ${target}! Du hast ${attempts} Versuche gebraucht! 🏆`, 'bot');
       this.state.guessNumberActive = false;
 
       if (attempts <= 3 && !this.robot.easterEggFound.has('lucky-guesser')) {
-        this.robot.unlockEasterEgg(
-          'lucky-guesser',
-          '🍀 Lucky Guesser! In 3 oder weniger Versuchen! Unglaublich! 🎯',
-        );
+        this.robot.unlockEasterEgg('lucky-guesser', '🍀 Lucky Guesser! In 3 oder weniger Versuchen! Unglaublich! 🎯');
       }
 
       setTimeout(() => this.robot.handleAction('games'), 2000);

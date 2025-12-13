@@ -1,4 +1,4 @@
-import { config } from './config.js';
+import {config} from './config.js';
 
 export class GeminiService {
   constructor() {
@@ -25,15 +25,15 @@ export class GeminiService {
 
     // Construct the conversation history for the API
     // Gemini expects: { contents: [{ role: "user", parts: [{ text: "..." }] }, { role: "model", parts: ... }] }
-    const contents = context.map((msg) => ({
+    const contents = context.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }],
+      parts: [{text: msg.text}]
     }));
 
     // Add the current prompt
     contents.push({
       role: 'user',
-      parts: [{ text: prompt }],
+      parts: [{text: prompt}]
     });
 
     try {
@@ -42,15 +42,15 @@ export class GeminiService {
         // Send origin/referrer safely to satisfy Google's domain check
         referrerPolicy: 'strict-origin-when-cross-origin',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           contents: contents,
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 200,
-          },
-        }),
+            maxOutputTokens: 200
+          }
+        })
       });
 
       if (!response.ok) {
@@ -58,17 +58,18 @@ export class GeminiService {
 
         // Log detailed error for debugging (internal only)
         if (errorData.error && errorData.error.message) {
-             console.warn('Gemini API Warning:', errorData.error.message);
+          console.warn('Gemini API Warning:', errorData.error.message);
         }
 
         // DEBUG MODE: Return exact error to user
-        const debugMsg = errorData.error && errorData.error.message
+        const debugMsg =
+          errorData.error && errorData.error.message
             ? `API Error (${response.status}): ${errorData.error.message}`
             : `API Error (${response.status}): Unknown error`;
 
         if (response.status === 403) {
-             console.warn('Gemini API Key blocked or restricted.');
-             return this.fallbackResponse(prompt);
+          console.warn('Gemini API Key blocked or restricted.');
+          return this.fallbackResponse(prompt);
         }
 
         return this.fallbackResponse(prompt);
@@ -88,12 +89,15 @@ export class GeminiService {
   }
 
   fallbackResponse(prompt) {
-      const lower = prompt.toLowerCase();
-      if (lower.includes('hallo') || lower.includes('hi')) return 'Hallo! Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
-      if (lower.includes('wer bist du')) return 'Ich bin ein virtueller Assistent. Momentan kann ich leider keine weiteren Informationen bereitstellen.';
-      if (lower.includes('hilfe')) return 'Der Assistent ist aktuell nicht erreichbar. Bitte nutzen Sie die verfügbaren Optionen zur Navigation.';
-      if (lower.includes('witz')) return 'Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
-      return 'Der Assistent ist momentan nicht erreichbar. Bitte nutzen Sie die Navigationsoptionen oder versuchen Sie es später erneut.';
+    const lower = prompt.toLowerCase();
+    if (lower.includes('hallo') || lower.includes('hi'))
+      return 'Hallo! Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
+    if (lower.includes('wer bist du'))
+      return 'Ich bin ein virtueller Assistent. Momentan kann ich leider keine weiteren Informationen bereitstellen.';
+    if (lower.includes('hilfe'))
+      return 'Der Assistent ist aktuell nicht erreichbar. Bitte nutzen Sie die verfügbaren Optionen zur Navigation.';
+    if (lower.includes('witz')) return 'Der Service ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
+    return 'Der Assistent ist momentan nicht erreichbar. Bitte nutzen Sie die Navigationsoptionen oder versuchen Sie es später erneut.';
   }
 
   async summarizePage(pageContent) {
