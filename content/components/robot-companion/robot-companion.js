@@ -190,12 +190,49 @@ class RobotCompanion {
 
         // Manually lift the container to be above the keyboard
         // We use visualViewport height to determine the safe area
-        const bottomOffset = heightDiff + 15; // 15px margin
-        this.dom.container.style.bottom = `${bottomOffset}px`;
 
-        // Constrain height to fit visible area
-        const maxWindowHeight = visualHeight - 120; // Room for robot header/footer
+        // Calculate vertical centering in the available space above keyboard
+        // Available space = visualHeight
+        // Desired window height = min(visualHeight - 20, 500) (approx)
+        // But we are setting 'bottom'.
+
+        // Let's assume max window height is constrained.
+        const safeMargin = 10;
+        const maxWindowHeight = visualHeight - (safeMargin * 2); // Top and bottom margin
         this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
+
+        // To center it:
+        // The space occupied by keyboard is 'heightDiff'.
+        // The space remaining is 'visualHeight'.
+        // We want the window to be centered in 'visualHeight'.
+        // Bottom position relative to layout viewport = heightDiff + (visualHeight - actualWindowHeight) / 2
+
+        // However, actualWindowHeight is dynamic.
+        // Simplified centering:
+        // Position bottom at: heightDiff + (visualHeight / 2) - (windowHeight / 2)
+        // Better: Use flexbox or CSS transform?
+        // No, we are using absolute/fixed positioning.
+
+        // Let's rely on CSS 'bottom' relative to the visual viewport being 'heightDiff'.
+        // Then add padding to center.
+
+        // Actually, easiest way to center vertically in the available space:
+        // bottom = heightDiff + (visualHeight - this.dom.window.offsetHeight) / 2
+        // We need to read offsetHeight.
+
+        requestAnimationFrame(() => {
+            if (!this.dom.window) return;
+            const currentHeight = this.dom.window.offsetHeight;
+            const spaceAboveKeyboard = visualHeight;
+            const freeSpace = Math.max(0, spaceAboveKeyboard - currentHeight);
+            const verticalPadding = freeSpace / 2;
+
+            const centeredBottom = heightDiff + verticalPadding;
+            this.dom.container.style.bottom = `${centeredBottom}px`;
+        });
+
+        // Fallback initial set to ensure it jumps up immediately
+        this.dom.container.style.bottom = `${heightDiff + 10}px`;
 
       } else {
         // Keyboard is closed
