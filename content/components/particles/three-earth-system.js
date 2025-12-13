@@ -1,7 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 9.4.0 - OPTIMIZED: Fixed Async Race Conditions & Resize Logic
+ * @version 9.5.0 - OPTIMIZED: Star Alignment Fixed (Virtual Camera)
  */
 
 import {createLogger, getElementById, onResize, TimerManager} from '../../utils/shared-utilities.js'
@@ -64,7 +64,7 @@ const ThreeEarthManager = (() => {
     isSystemActive = true
 
     try {
-      log.info('Initializing Three.js Earth System v9.4.0 (Fixed)')
+      log.info('Initializing Three.js Earth System v9.5.0 (Optimized)')
 
       // Device Detection & optimized config
       try {
@@ -117,7 +117,7 @@ const ThreeEarthManager = (() => {
       const starField = starManager.createStarField()
       // Inline setupStarParallax
       const parallaxHandler = progress => {
-        if (!starField || !starManager || (starManager.transition && starManager.transition.active)) return
+        if (!starField || !starManager || starManager.areStarsFormingCards || (starManager.transition && starManager.transition.active)) return
 
         starField.rotation.y = progress * Math.PI * 0.2
         starField.position.z = Math.sin(progress * Math.PI) * 15
@@ -458,8 +458,14 @@ function updateEarthForSection(sectionName, options = {}) {
     earthMesh.material = newMode === 'day' ? dayMaterial : nightMaterial
     earthMesh.material.needsUpdate = true
     earthMesh.userData.currentMode = newMode
+  }
 
-    if (cameraManager) cameraManager.setTargetOrbitAngle(newMode === 'day' ? 0 : Math.PI)
+  // Always enforce the correct orbit angle for the section
+  // Features/Hero/Contact = Day = 0
+  // About = Night = PI
+  if (cameraManager) {
+    const mode = config.mode || 'day'
+    cameraManager.setTargetOrbitAngle(mode === 'day' ? 0 : Math.PI)
   }
 
   if (directionalLight && ambientLight) {
@@ -616,9 +622,17 @@ export const EarthSystemAPI = {
   // Exposed for testing purposes
   get shootingStarManager() {
     return shootingStarManager
+  },
+  get starManager() {
+    return starManager
   }
 }
 
 export default ThreeEarthManager
 
 export {detectDeviceCapabilities, getOptimizedConfig}
+
+// Expose for testing if requested (only in local or debug/test environments)
+if (typeof window !== 'undefined' && (window.location.search.includes('test') || window.location.search.includes('debug') || window.location.hostname === 'localhost')) {
+  window.threeEarthSystem = { EarthSystemAPI, initThreeEarth, cleanup };
+}
