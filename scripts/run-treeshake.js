@@ -92,7 +92,7 @@ const path = require('path');
     const tmpDir = path.join(root, 'tmp');
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, {recursive: true});
     fs.writeFileSync(path.join(tmpDir, 'treeshake-report.json'), JSON.stringify(out, null, 2));
-    console.log('\nWrote tmp/treeshake-report.json');
+    console.warn('\nWrote tmp/treeshake-report.json');
 
     // Cleanup esbuild result
     if (typeof result.stop === 'function') await result.stop();
