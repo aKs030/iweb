@@ -286,11 +286,21 @@
 }
 
 @keyframes armWave {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-40deg); }
-  50% { transform: rotate(10deg); }
-  75% { transform: rotate(-40deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-40deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  75% {
+    transform: rotate(-40deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .robot-particles {
@@ -862,5 +872,40 @@
 @media (width <= 480px) {
   #robot-chat-input {
     font-size: 16px !important;
+  }
+}
+.robot-eyes.is-thinking .robot-pupil {
+  animation: thinkingPupil 1s infinite alternate ease-in-out;
+}
+
+@keyframes thinkingPupil {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 1;
+    fill: #ffff00;
+    filter: drop-shadow(0 0 6px #ffff00);
+  }
+}
+
+.robot-thinking.is-visible {
+  opacity: 1;
+}
+
+.robot-antenna-light.is-thinking {
+  animation: thinkingAntenna 0.5s infinite alternate;
+}
+
+@keyframes thinkingAntenna {
+  from {
+    fill: #ff4444;
+    filter: drop-shadow(0 0 2px #ff4444);
+  }
+  to {
+    fill: #ffff00;
+    filter: drop-shadow(0 0 8px #ffff00);
   }
 }

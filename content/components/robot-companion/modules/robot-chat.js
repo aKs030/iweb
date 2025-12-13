@@ -39,12 +39,12 @@ export class RobotChat {
 
   handleAvatarClick() {
     if (this.isOpen) {
-        this.toggleChat(false);
-        return;
+      this.toggleChat(false);
+      return;
     }
 
     this.robot.animationModule.playPokeAnimation().then(() => {
-        this.toggleChat(true);
+      this.toggleChat(true);
     });
   }
 
@@ -69,14 +69,17 @@ export class RobotChat {
     }
 
     this.showTyping();
+    this.robot.animationModule.startThinking();
     this.robot.trackInteraction('message');
 
     try {
       const response = await this.robot.gemini.generateResponse(text, this.history);
       this.removeTyping();
+      this.robot.animationModule.stopThinking();
       this.addMessage(response, 'bot');
     } catch {
       this.removeTyping();
+      this.robot.animationModule.stopThinking();
       this.addMessage('Fehler bei der Verbindung.', 'bot');
     }
   }
@@ -128,14 +131,14 @@ export class RobotChat {
 
     // Sound effect
     if (this.robot.soundModule) {
-        if (type === 'bot') this.robot.soundModule.playMessage();
-        else this.robot.soundModule.playBeep();
+      if (type === 'bot') this.robot.soundModule.playMessage();
+      else this.robot.soundModule.playBeep();
     }
 
     // Update history
     this.history.push({ role: type === 'user' ? 'user' : 'model', text: String(text || '') });
     if (this.history.length > 20) {
-        this.history = this.history.slice(this.history.length - 20);
+      this.history = this.history.slice(this.history.length - 20);
     }
   }
 
@@ -223,7 +226,10 @@ export class RobotChat {
       responseText = this.robot.getMoodGreeting();
     } else if (actionKey === 'start') {
       const ctx = this.robot.getPageContext();
-      const suffix = (this.startMessageSuffix && this.startMessageSuffix[ctx]) ? String(this.startMessageSuffix[ctx]).trim() : '';
+      const suffix =
+        this.startMessageSuffix && this.startMessageSuffix[ctx]
+          ? String(this.startMessageSuffix[ctx]).trim()
+          : '';
       if (suffix) responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
     }
 
@@ -265,7 +271,8 @@ export class RobotChat {
     const ctx = this.robot.getPageContext();
     const ctxArr = (this.contextGreetings && this.contextGreetings[ctx]) || [];
     const pools = this.initialBubblePools || [];
-    const maxSteps = (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.steps) || 3;
+    const maxSteps =
+      (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.steps) || 3;
 
     if (
       !Array.isArray(this.initialBubblePoolCursor) ||
@@ -323,8 +330,11 @@ export class RobotChat {
 
     if (picks.length === 0) return;
 
-    const showMs = (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.displayDuration) || 8000;
-    const pauses = (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.pausesAfter) || [];
+    const showMs =
+      (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.displayDuration) ||
+      8000;
+    const pauses =
+      (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.pausesAfter) || [];
 
     const schedule = (index) => {
       if (this.isOpen) return;
