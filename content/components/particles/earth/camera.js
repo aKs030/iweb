@@ -68,10 +68,28 @@ export class CameraManager {
       } else {
         this.cameraTransition = null
         if (this.camera) this.camera.userData.currentLookAt = endLookAt.clone()
+        // Snap to target to prevent drift
+        this.snapToTarget()
       }
     }
 
     transitionStep()
+  }
+
+  snapToTarget() {
+    if (!this.camera) return
+    const radius = this.mouseState.zoom
+    const finalX = this.cameraTarget.x + Math.sin(this.targetOrbitAngle) * radius * 0.75
+    const finalY = this.cameraTarget.y
+    const finalZ = Math.cos(this.targetOrbitAngle) * radius
+
+    this.cameraPosition.x = finalX
+    this.cameraPosition.y = finalY
+    this.cameraPosition.z = finalZ
+    this.camera.position.set(finalX, finalY, finalZ)
+
+    // Also snap orbit angle
+    this.cameraOrbitAngle = this.targetOrbitAngle
   }
 
   updateCameraPosition() {

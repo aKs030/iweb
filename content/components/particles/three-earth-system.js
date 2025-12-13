@@ -458,8 +458,14 @@ function updateEarthForSection(sectionName, options = {}) {
     earthMesh.material = newMode === 'day' ? dayMaterial : nightMaterial
     earthMesh.material.needsUpdate = true
     earthMesh.userData.currentMode = newMode
+  }
 
-    if (cameraManager) cameraManager.setTargetOrbitAngle(newMode === 'day' ? 0 : Math.PI)
+  // Always enforce the correct orbit angle for the section
+  // Features/Hero/Contact = Day = 0
+  // About = Night = PI
+  if (cameraManager) {
+    const mode = config.mode || 'day'
+    cameraManager.setTargetOrbitAngle(mode === 'day' ? 0 : Math.PI)
   }
 
   if (directionalLight && ambientLight) {
