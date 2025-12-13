@@ -81,6 +81,7 @@ Alle direkten `console.*` Aufrufe wurden durch das zentrale Logger-System ersetz
 - Prettier: v3.2 → v3.4
 - Stylelint: v16.26 → v16.11
 
+
 ### ✅ Service Worker hinzugefügt
 
 PWA-Support mit intelligenten Caching-Strategien implementiert.
@@ -101,11 +102,7 @@ The reconnecting WebSocket helper is in `content/shared/reconnecting-websocket.j
 # JavaScript
 npx eslint .
 
-# CSS
-npx stylelint "**/*.css"
-
-# Format all
-npm run format
+# (CSS linting / formatting tools were removed from devDependencies)
 ```
 
 ### Best Practices
