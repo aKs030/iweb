@@ -27,6 +27,12 @@ class RobotCompanion {
     // State
     this.state = {};
 
+    // Flag to prevent footer overlap check from overriding keyboard adjustment
+    this.isKeyboardAdjustmentActive = false;
+
+    // Store initial layout height for detecting keyboard even when layout viewport shrinks
+    this.initialLayoutHeight = window.innerHeight;
+
     // Context greeting dedupe & observed section tracking
     this.currentObservedContext = null;
     this._sectionObserver = null;
@@ -113,6 +119,12 @@ class RobotCompanion {
   setupFooterOverlapCheck() {
     let ticking = false;
     const checkOverlap = () => {
+      // If keyboard adjustment is active, skip overlap check to prevent overriding style.bottom
+      if (this.isKeyboardAdjustmentActive) {
+        ticking = false;
+        return;
+      }
+
       if (!this.dom.container) return;
       if (!this.dom.footer) {
         this.dom.footer = document.querySelector('footer') || document.querySelector('#site-footer');
@@ -151,26 +163,94 @@ class RobotCompanion {
   setupMobileViewportHandler() {
     if (!window.visualViewport) return;
 
-    // Simplified handler: rely on interactive-widget=resizes-content for layout
-    // Only toggle control visibility to save space
     const handleResize = () => {
-      if (!this.chatModule.isOpen || !this.dom.window) return;
+      if (!this.dom.window || !this.dom.container) return;
 
-      const layoutHeight = window.innerHeight;
+      // If chat is closed, ensure we clean up state and do nothing else
+      if (!this.chatModule.isOpen) {
+        if (this.isKeyboardAdjustmentActive) {
+          this.isKeyboardAdjustmentActive = false;
+          this.dom.container.style.bottom = '';
+          this.dom.window.style.maxHeight = '';
+        }
+        return;
+      }
+
+      // Use initialLayoutHeight if available to detect shrink-resize behaviors
+      const referenceHeight = this.initialLayoutHeight || window.innerHeight;
       const visualHeight = window.visualViewport.height;
-      const heightDiff = layoutHeight - visualHeight;
+      const heightDiff = referenceHeight - visualHeight;
       const isInputFocused = document.activeElement === this.dom.input;
 
+      // Threshold: > 150px difference usually implies keyboard.
+      // Also trigger if input is focused and difference is measurable (>50px).
       const isKeyboardOverlay = heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
+        // Keyboard is open (overlay mode or partial resize)
+        this.isKeyboardAdjustmentActive = true;
+
         if (this.dom.controls) {
           this.dom.controls.classList.add('hide-controls-mobile');
         }
+
+        // Manually lift the container to be above the keyboard
+        // We use visualViewport height to determine the safe area
+
+        // Calculate vertical centering in the available space above keyboard
+        // Available space = visualHeight
+        // Desired window height = min(visualHeight - 20, 500) (approx)
+        // But we are setting 'bottom'.
+
+        // Let's assume max window height is constrained.
+        const safeMargin = 10;
+        const maxWindowHeight = visualHeight - (safeMargin * 2); // Top and bottom margin
+        this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
+
+        // To center it:
+        // The space occupied by keyboard is 'heightDiff'.
+        // The space remaining is 'visualHeight'.
+        // We want the window to be centered in 'visualHeight'.
+        // Bottom position relative to layout viewport = heightDiff + (visualHeight - actualWindowHeight) / 2
+
+        // However, actualWindowHeight is dynamic.
+        // Simplified centering:
+        // Position bottom at: heightDiff + (visualHeight / 2) - (windowHeight / 2)
+        // Better: Use flexbox or CSS transform?
+        // No, we are using absolute/fixed positioning.
+
+        // Let's rely on CSS 'bottom' relative to the visual viewport being 'heightDiff'.
+        // Then add padding to center.
+
+        // Actually, easiest way to center vertically in the available space:
+        // bottom = heightDiff + (visualHeight - this.dom.window.offsetHeight) / 2
+        // We need to read offsetHeight.
+
+        requestAnimationFrame(() => {
+            if (!this.dom.window) return;
+            const currentHeight = this.dom.window.offsetHeight;
+            const spaceAboveKeyboard = visualHeight;
+            const freeSpace = Math.max(0, spaceAboveKeyboard - currentHeight);
+            const verticalPadding = freeSpace / 2;
+
+            const centeredBottom = heightDiff + verticalPadding;
+            this.dom.container.style.bottom = `${centeredBottom}px`;
+        });
+
+        // Fallback initial set to ensure it jumps up immediately
+        this.dom.container.style.bottom = `${heightDiff + 10}px`;
+
       } else {
+        // Keyboard is closed
+        this.isKeyboardAdjustmentActive = false;
+
         if (this.dom.controls && !isInputFocused) {
           this.dom.controls.classList.remove('hide-controls-mobile');
         }
+
+        // Reset styles to allow CSS / footer overlap logic to take over
+        this.dom.container.style.bottom = '';
+        this.dom.window.style.maxHeight = '';
       }
     };
 
