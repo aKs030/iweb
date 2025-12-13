@@ -55,8 +55,8 @@ export const CONFIG = {
       MIN_UPDATE_INTERVAL: 100,
       CARD_FADE_START: 0.75,
       CARD_FADE_END: 0.95,
-      SPREAD_XY: 0.15, // Reduziert für Rand-Fokus
-      SPREAD_Z: 0.05, // Minimale Tiefe
+      SPREAD_XY: 0.02, // Extrem fein für exakte Rand-Linien
+      SPREAD_Z: 0.01, // Minimale Tiefe
       LERP_FACTOR: 0.08
     }
   },
