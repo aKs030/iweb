@@ -58,9 +58,9 @@ function mergeCoverage(coverageEntries) {
 }
 
 (async () => {
-  console.log('Starting local server...');
+  console.warn('Starting local server...');
   const server = await startServer();
-  console.log('Server started. Launching browser...');
+  console.warn('Server started. Launching browser...');
 
   const browser = await chromium.launch();
   const context = await browser.newContext();
@@ -76,7 +76,7 @@ function mergeCoverage(coverageEntries) {
 
   for (const p of pagesToVisit) {
     const url = new URL(p, SERVER_URL).toString();
-    console.log('Navigating to', url);
+    console.warn('Navigating to', url);
     await page.goto(url, { waitUntil: 'load', timeout: 30000 }).catch(err => {
       console.warn('Navigation error', err.message);
     });
@@ -133,7 +133,7 @@ function mergeCoverage(coverageEntries) {
 
   // Merge and print
   const summary = mergeCoverage(coverageEntries);
-  console.log('\nCoverage summary (sorted by % used ascending):');
+  console.warn('\nCoverage summary (sorted by % used ascending):');
   summary.forEach(s => {
     console.log(`${s.pct.toFixed(2).padStart(6)}%  ${s.used}/${s.total}  ${s.url}`);
   });
@@ -141,10 +141,10 @@ function mergeCoverage(coverageEntries) {
   // Filter coarse candidates: low usage and not vendor
   const candidates = summary.filter(s => s.pct < 20 && !s.url.includes('/content/vendor/') && s.total > 200);
   if (candidates.length) {
-    console.log('\nPotential dead-code candidates (low usage <20% and >200 bytes):');
-    candidates.forEach(s => console.log(`- ${s.url} (${s.pct}% used)`));
+    console.warn('\nPotential dead-code candidates (low usage <20% and >200 bytes):');
+    candidates.forEach(s => console.warn(`- ${s.url} (${s.pct}% used)`));
   } else {
-    console.log('\nNo obvious dead-code candidates found by coverage heuristic.');
+    console.warn('\nNo obvious dead-code candidates found by coverage heuristic.');
   }
 
   await browser.close();
