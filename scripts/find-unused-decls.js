@@ -4,7 +4,7 @@ const _path = require('path');
 function walk(dir, files = []) {
   const entries = fs.readdirSync(dir, {withFileTypes: true});
   for (const e of entries) {
-    const full = path.join(dir, e.name);
+    const full = _path.join(dir, e.name);
     if (e.isDirectory()) {
       if (['node_modules', 'content/vendor', 'tests', '.git'].includes(e.name)) continue;
       walk(full, files);
