@@ -62,7 +62,7 @@ const path = require('path');
 
     // Map allFiles to relative paths for nice output and pick those under content/pages
     const candidates = allFiles
-      .filter(f => (f.includes(path.sep + 'content' + path.sep) || f.includes(path.sep + 'pages' + path.sep)))
+      .filter(f => f.includes(path.sep + 'content' + path.sep) || f.includes(path.sep + 'pages' + path.sep))
       .filter(f => !f.includes(path.sep + 'content' + path.sep + 'vendor' + path.sep))
       .map(f => path.resolve(f))
       .filter(f => !includedInputs.has(f));
@@ -87,7 +87,10 @@ const path = require('path');
     }
 
     // Write short JSON for inspection
-    const out = {entries: entryCandidates.map(p => path.relative(root, p)), excluded: filtered.map(f => path.relative(root, f))};
+    const out = {
+      entries: entryCandidates.map(p => path.relative(root, p)),
+      excluded: filtered.map(f => path.relative(root, f))
+    };
     const fs = require('fs');
     const tmpDir = path.join(root, 'tmp');
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, {recursive: true});

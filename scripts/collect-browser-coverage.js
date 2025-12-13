@@ -6,8 +6,8 @@ Usage: node scripts/collect-browser-coverage.js
 This script starts a local http-server, opens several pages, interacts minimally,
 collects precise coverage via CDP Profiler and prints a per-file coverage summary.
 */
-const { chromium } = require('playwright');
-const { spawn } = require('child_process');
+const {chromium} = require('playwright');
+const {spawn} = require('child_process');
 // path not required in this script
 
 const SERVER_PORT = 8081;
@@ -38,7 +38,7 @@ function mergeCoverage(coverageEntries) {
   const map = new Map();
   for (const entry of coverageEntries) {
     if (!entry.url) continue;
-    const prev = map.get(entry.url) || { url: entry.url, total: 0, used: 0 };
+    const prev = map.get(entry.url) || {url: entry.url, total: 0, used: 0};
     // each function has ranges with count
     for (const f of entry.functions || []) {
       for (const r of f.ranges || []) {
@@ -51,7 +51,12 @@ function mergeCoverage(coverageEntries) {
   }
   const results = [];
   for (const v of map.values()) {
-    results.push({ url: v.url, total: v.total, used: v.used, pct: v.total ? Math.round((v.used / v.total) * 10000) / 100 : 0 });
+    results.push({
+      url: v.url,
+      total: v.total,
+      used: v.used,
+      pct: v.total ? Math.round((v.used / v.total) * 10000) / 100 : 0
+    });
   }
   results.sort((a, b) => a.pct - b.pct);
   return results;
@@ -69,25 +74,33 @@ function mergeCoverage(coverageEntries) {
   // Attach CDP session
   const client = await context.newCDPSession(page);
   await client.send('Profiler.enable');
-  await client.send('Profiler.startPreciseCoverage', { callCount: true, detailed: true });
+  await client.send('Profiler.startPreciseCoverage', {callCount: true, detailed: true});
 
-  const pagesToVisit = ['/', '/pages/gallery/gallery.html', '/pages/projekte/projekte.html', '/pages/fotos/gallery.html', '/about/'];
+  const pagesToVisit = [
+    '/',
+    '/pages/gallery/gallery.html',
+    '/pages/projekte/projekte.html',
+    '/pages/fotos/gallery.html',
+    '/about/'
+  ];
   const coverageEntries = [];
 
   for (const p of pagesToVisit) {
     const url = new URL(p, SERVER_URL).toString();
     console.warn('Navigating to', url);
-    await page.goto(url, { waitUntil: 'load', timeout: 30000 }).catch(err => {
+    await page.goto(url, {waitUntil: 'load', timeout: 30000}).catch(err => {
       console.warn('Navigation error', err.message);
     });
 
     // Try some lightweight interactions where applicable
     try {
       // Open robot chat and interact where possible
-      await page.evaluate(() => {
-        const avatar = document.querySelector('.robot-avatar');
-        if (avatar && avatar.click) avatar.click();
-      }).catch(() => {});
+      await page
+        .evaluate(() => {
+          const avatar = document.querySelector('.robot-avatar');
+          if (avatar && avatar.click) avatar.click();
+        })
+        .catch(() => {});
 
       // If chat input exists, send a greeting and trigger some actions/games
       if (await page.$('#robot-chat-input')) {
@@ -112,10 +125,12 @@ function mergeCoverage(coverageEntries) {
       }
 
       // trigger a generic click to encourage lazy-loaded code to run
-      await page.evaluate(() => {
-        const el = document.querySelector('button, a');
-        if (el && el.click) el.click();
-      }).catch(() => {});
+      await page
+        .evaluate(() => {
+          const el = document.querySelector('button, a');
+          if (el && el.click) el.click();
+        })
+        .catch(() => {});
     } catch {
       // ignore
     }
