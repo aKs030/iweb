@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js';
-import { createLogger, getElementById } from '../../../utils/shared-utilities.js';
+import {CONFIG} from './config.js';
+import {createLogger, getElementById} from '../../../utils/shared-utilities.js';
 
 const log = createLogger('EarthStars');
 
@@ -18,7 +18,7 @@ export class StarManager {
       duration: CONFIG.STARS.ANIMATION.DURATION,
       startValue: 0,
       targetValue: 0,
-      rafId: null,
+      rafId: null
     };
 
     this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
@@ -69,18 +69,15 @@ export class StarManager {
 
     const starGeometry = new this.THREE.BufferGeometry();
     starGeometry.setAttribute('position', new this.THREE.BufferAttribute(positions, 3));
-    starGeometry.setAttribute(
-      'aTargetPosition',
-      new this.THREE.BufferAttribute(targetPositions, 3),
-    );
+    starGeometry.setAttribute('aTargetPosition', new this.THREE.BufferAttribute(targetPositions, 3));
     starGeometry.setAttribute('color', new this.THREE.BufferAttribute(colors, 3));
     starGeometry.setAttribute('size', new this.THREE.BufferAttribute(sizes, 1));
 
     const starMaterial = new this.THREE.ShaderMaterial({
       uniforms: {
-        time: { value: 0.0 },
-        twinkleSpeed: { value: CONFIG.STARS.TWINKLE_SPEED },
-        uTransition: { value: 0.0 },
+        time: {value: 0.0},
+        twinkleSpeed: {value: CONFIG.STARS.TWINKLE_SPEED},
+        uTransition: {value: 0.0}
       },
       vertexShader: `
         attribute float size;
@@ -108,7 +105,7 @@ export class StarManager {
       blending: this.THREE.AdditiveBlending,
       depthWrite: false,
       transparent: true,
-      vertexColors: true,
+      vertexColors: true
     });
 
     this.starField = new this.THREE.Points(starGeometry, starMaterial);
@@ -140,7 +137,7 @@ export class StarManager {
     const width = this.renderer ? this.renderer.domElement.clientWidth : window.innerWidth;
     const height = this.renderer ? this.renderer.domElement.clientHeight : window.innerHeight;
 
-    cards.forEach((card) => {
+    cards.forEach(card => {
       const rect = card.getBoundingClientRect();
       // Ensure element is actually somewhat visible/valid
       if (rect.width > 0 && rect.height > 0) {
@@ -155,9 +152,7 @@ export class StarManager {
   getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ) {
     const positions = [];
     // Recalculate stars per edge dynamically based on current star count config
-    const starsPerEdge = Math.floor(
-      (this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4,
-    );
+    const starsPerEdge = Math.floor((this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4);
 
     const screenToWorld = (x, y) => {
       const ndcX = (x / viewportWidth) * 2 - 1;
@@ -176,7 +171,7 @@ export class StarManager {
         const x = startX + (endX - startX) * t;
         const y = startY + (endY - startY) * t;
         const worldPos = screenToWorld(x, y);
-        positions.push({ x: worldPos.x, y: worldPos.y, z: targetZ });
+        positions.push({x: worldPos.x, y: worldPos.y, z: targetZ});
       }
     };
 
@@ -193,7 +188,7 @@ export class StarManager {
     this.areStarsFormingCards = true;
 
     const cards = document.querySelectorAll('#features .card');
-    cards.forEach((card) => {
+    cards.forEach(card => {
       card.style.opacity = '0';
       card.style.pointerEvents = 'none';
     });
@@ -225,7 +220,7 @@ export class StarManager {
     if (this.scrollUpdateEnabled || this.isDisposed) return;
     this.scrollUpdateEnabled = true;
     this.boundScrollHandler = this.handleScroll.bind(this);
-    window.addEventListener('scroll', this.boundScrollHandler, { passive: true });
+    window.addEventListener('scroll', this.boundScrollHandler, {passive: true});
   }
 
   disableScrollUpdates() {
@@ -299,9 +294,7 @@ export class StarManager {
     const eased = this.easeInOutCubic(progress);
 
     if (this.starField && this.starField.material) {
-      const val =
-        this.transition.startValue +
-        (this.transition.targetValue - this.transition.startValue) * eased;
+      const val = this.transition.startValue + (this.transition.targetValue - this.transition.startValue) * eased;
       this.starField.material.uniforms.uTransition.value = val;
       this.updateCardOpacity(val);
     }
@@ -321,7 +314,7 @@ export class StarManager {
     }
 
     const cards = document.querySelectorAll('#features .card');
-    cards.forEach((card) => {
+    cards.forEach(card => {
       card.style.opacity = opacity.toString();
       card.style.pointerEvents = opacity > 0.8 ? 'auto' : 'none';
     });
@@ -373,13 +366,12 @@ export class ShootingStarManager {
     this.sharedMaterial = new this.THREE.MeshBasicMaterial({
       color: 0xfffdef,
       transparent: true,
-      opacity: 1.0,
+      opacity: 1.0
     });
   }
 
   createShootingStar() {
-    if (this.isDisposed || this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS)
-      return;
+    if (this.isDisposed || this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS) return;
 
     try {
       let star;
@@ -395,13 +387,9 @@ export class ShootingStarManager {
       const startPos = {
         x: (Math.random() - 0.5) * 100,
         y: 20 + Math.random() * 20,
-        z: -50 - Math.random() * 50,
+        z: -50 - Math.random() * 50
       };
-      const velocity = new this.THREE.Vector3(
-        (Math.random() - 0.9) * 0.2,
-        (Math.random() - 0.6) * -0.2,
-        0,
-      );
+      const velocity = new this.THREE.Vector3((Math.random() - 0.9) * 0.2, (Math.random() - 0.6) * -0.2, 0);
 
       star.position.set(startPos.x, startPos.y, startPos.z);
       star.scale.set(1, 1, 2 + Math.random() * 3);
@@ -411,7 +399,7 @@ export class ShootingStarManager {
         mesh: star,
         velocity,
         lifetime: 300 + Math.random() * 200,
-        age: 0,
+        age: 0
       });
 
       this.scene.add(star);
@@ -468,14 +456,14 @@ export class ShootingStarManager {
 
   cleanup() {
     this.isDisposed = true;
-    this.activeStars.forEach((star) => {
+    this.activeStars.forEach(star => {
       this.scene.remove(star.mesh);
       if (star.mesh.material) star.mesh.material.dispose();
     });
     this.activeStars = [];
 
     // Dispose pooled stars
-    this.pool.forEach((mesh) => {
+    this.pool.forEach(mesh => {
       if (mesh.material) mesh.material.dispose();
     });
     this.pool = [];

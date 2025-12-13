@@ -2,24 +2,24 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    node: true,
+    node: true
   },
   ignorePatterns: ['node_modules/', 'dist/', 'build/', 'content/vendor/', 'public/'],
   extends: ['eslint:recommended', 'prettier'],
   parserOptions: {
     ecmaVersion: 2024,
-    sourceType: 'module',
+    sourceType: 'module'
   },
   rules: {
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
-    'no-unused-vars': ['warn', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+    'no-console': ['warn', {allow: ['warn', 'error']}],
+    'no-unused-vars': ['warn', {varsIgnorePattern: '^_', argsIgnorePattern: '^_'}],
     'no-eval': 'error',
     'no-implied-eval': 'error',
     'prefer-const': 'warn',
-    'no-var': 'warn',
+    'no-var': 'warn'
   },
   overrides: [
-    { files: ['scripts/**/*.js'], rules: { 'no-console': 'off' } },
-    { files: ['sw.js', 'content/main.js'], rules: { 'no-console': 'off' } },
-  ],
+    {files: ['scripts/**/*.js'], rules: {'no-console': 'off'}},
+    {files: ['sw.js', 'content/main.js'], rules: {'no-console': 'off'}}
+  ]
 };

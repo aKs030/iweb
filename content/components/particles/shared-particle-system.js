@@ -13,7 +13,7 @@
  * @last-modified 2025-11-08
  */
 
-import { createLogger, throttle } from '../../utils/shared-utilities.js';
+import {createLogger, throttle} from '../../utils/shared-utilities.js';
 
 const log = createLogger('sharedParticleSystem');
 
@@ -21,11 +21,11 @@ const log = createLogger('sharedParticleSystem');
 
 const SHARED_CONFIG = {
   PERFORMANCE: {
-    THROTTLE_MS: 20,
+    THROTTLE_MS: 20
   },
   SCROLL: {
-    CSS_PROPERTY_PREFIX: '--scroll-',
-  },
+    CSS_PROPERTY_PREFIX: '--scroll-'
+  }
 };
 
 // ===== Shared State Management =====
@@ -80,7 +80,7 @@ class SharedParallaxManager {
       return;
     }
 
-    this.handlers.add({ handler, name });
+    this.handlers.add({handler, name});
     log.debug(`Parallax handler '${name}' added`);
 
     if (!this.isActive) {
@@ -89,7 +89,7 @@ class SharedParallaxManager {
   }
 
   removeHandler(handler) {
-    const handlerObj = Array.from(this.handlers).find((h) => h.handler === handler);
+    const handlerObj = Array.from(this.handlers).find(h => h.handler === handler);
     if (handlerObj) {
       this.handlers.delete(handlerObj);
       log.debug(`Parallax handler '${handlerObj.name}' removed`);
@@ -113,11 +113,11 @@ class SharedParallaxManager {
       // Update CSS variable
       document.documentElement.style.setProperty(
         `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
-        progress.toFixed(4),
+        progress.toFixed(4)
       );
 
       // Call all handlers
-      this.handlers.forEach(({ handler, name }) => {
+      this.handlers.forEach(({handler, name}) => {
         try {
           handler(progress);
         } catch (error) {
@@ -126,7 +126,7 @@ class SharedParallaxManager {
       });
     }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS);
 
-    window.addEventListener('scroll', this.scrollHandler, { passive: true });
+    window.addEventListener('scroll', this.scrollHandler, {passive: true});
     this.isActive = true;
 
     // Initial call
@@ -167,7 +167,7 @@ class SharedCleanupManager {
       this.cleanupFunctions.set(systemName, []);
     }
 
-    this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
+    this.cleanupFunctions.get(systemName).push({fn: cleanupFn, description});
     log.debug(`Cleanup function '${description}' registered for '${systemName}'`);
   }
 
@@ -183,7 +183,7 @@ class SharedCleanupManager {
     let successCount = 0;
     let errorCount = 0;
 
-    systemCleanups.forEach(({ fn, description }) => {
+    systemCleanups.forEach(({fn, description}) => {
       try {
         fn();
         successCount++;
@@ -195,16 +195,14 @@ class SharedCleanupManager {
 
     this.cleanupFunctions.delete(systemName);
 
-    log.info(
-      `System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`,
-    );
+    log.info(`System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`);
   }
 
   cleanupAll() {
     log.info('Starting global cleanup of all systems');
 
     const systemNames = Array.from(this.cleanupFunctions.keys());
-    systemNames.forEach((systemName) => this.cleanupSystem(systemName));
+    systemNames.forEach(systemName => this.cleanupSystem(systemName));
 
     // Deactivate parallax
     sharedParallaxManager.deactivate();

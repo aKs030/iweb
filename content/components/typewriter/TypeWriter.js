@@ -1,16 +1,10 @@
 // ===== TypeWriter (Final Optimiert) =====
-import {
-  createLogger,
-  getElementById,
-  shuffle,
-  TimerManager,
-} from '../../utils/shared-utilities.js';
+import {createLogger, getElementById, shuffle, TimerManager} from '../../utils/shared-utilities.js';
 
 const log = createLogger('TypeWriter');
 
 // Helper: CSS Variables setzen
-const setCSSVars = (el, vars) =>
-  Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v));
+const setCSSVars = (el, vars) => Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v));
 
 // Helper: Line Measurer
 function makeLineMeasurer(subtitleEl) {
@@ -33,8 +27,8 @@ function makeLineMeasurer(subtitleEl) {
     'text-rendering',
     'word-break',
     'overflow-wrap',
-    'hyphens',
-  ].forEach((p) => measurer.style.setProperty(p, cs.getPropertyValue(p)));
+    'hyphens'
+  ].forEach(p => measurer.style.setProperty(p, cs.getPropertyValue(p)));
 
   const getLineHeight = () => {
     const lh = cs.lineHeight.trim();
@@ -51,7 +45,7 @@ function makeLineMeasurer(subtitleEl) {
     return measurer.firstChild.getBoundingClientRect().height || 0;
   };
 
-  const measure = (text) => {
+  const measure = text => {
     measurer.innerHTML = '';
     const span = document.createElement('span');
     span.textContent = text;
@@ -71,7 +65,7 @@ function makeLineMeasurer(subtitleEl) {
     return Math.max(1, Math.min(max, Math.round(h / lh)));
   };
 
-  const getLines = (text) => {
+  const getLines = text => {
     measurer.innerHTML = '';
     const words = text.split(' ');
     let lines = [];
@@ -85,7 +79,7 @@ function makeLineMeasurer(subtitleEl) {
     const lh = getLineHeight();
     if (!lh) return [text];
 
-    words.forEach((word) => {
+    words.forEach(word => {
       const testLine = currentLine.length ? currentLine.join(' ') + ' ' + word : word;
       measurer.textContent = testLine;
 
@@ -119,12 +113,12 @@ function makeLineMeasurer(subtitleEl) {
       setCSSVars(subtitleEl, {
         '--lh-px': lh ? `${lh}px` : '0px',
         '--gap-px': lh ? `${lh * 0.25}px` : '0px',
-        '--lines': String(lines),
+        '--lines': String(lines)
       });
 
       subtitleEl.setAttribute('data-lines', String(lines));
       return lines;
-    },
+    }
   };
 }
 
@@ -138,14 +132,14 @@ export class TypeWriter {
     deleteSpeed = 40,
     shuffle: doShuffle = true,
     loop = true,
-    onBeforeType = null,
+    onBeforeType = null
   }) {
     if (!textEl || !authorEl || !quotes?.length) {
       log.error('TypeWriter: Missing required parameters');
       return;
     }
 
-    this.quotes = quotes.filter((q) => q?.text);
+    this.quotes = quotes.filter(q => q?.text);
     if (!this.quotes.length) return log.error('No valid quotes');
 
     Object.assign(this, {
@@ -159,7 +153,7 @@ export class TypeWriter {
       onBeforeType,
       timerManager: new TimerManager(),
       _isDeleting: false,
-      _txt: '',
+      _txt: ''
     });
 
     this._queue = this._createQueue();
@@ -180,9 +174,7 @@ export class TypeWriter {
   }
 
   _createQueue() {
-    return this.shuffle
-      ? shuffle([...Array(this.quotes.length).keys()])
-      : [...Array(this.quotes.length).keys()];
+    return this.shuffle ? shuffle([...Array(this.quotes.length).keys()]) : [...Array(this.quotes.length).keys()];
   }
 
   _nextQuote() {
@@ -204,7 +196,7 @@ export class TypeWriter {
 
     const lines = text.includes('\n') ? text.split('\n') : [text];
     this.textEl.innerHTML = '';
-    lines.forEach((line) => {
+    lines.forEach(line => {
       const span = document.createElement('span');
       span.textContent = line;
       span.className = 'typed-line';
@@ -238,16 +230,14 @@ export class TypeWriter {
         ';': 180,
         ':': 180,
         '—': 220,
-        '–': 180,
+        '–': 180
       };
       delay += pauseMap[this._txt.slice(-1)] || 0;
     }
 
     if (!this._isDeleting && this._txt === full) {
       try {
-        document.dispatchEvent(
-          new CustomEvent('hero:typingEnd', { detail: { text: full, author } }),
-        );
+        document.dispatchEvent(new CustomEvent('hero:typingEnd', {detail: {text: full, author}}));
       } catch (e) {}
       delay = this.wait;
       this._isDeleting = true;
@@ -286,7 +276,7 @@ export async function initHeroSubtitle(options = {}) {
 
     if (!subtitleEl || !typedText || !typedAuthor) return false;
 
-    const { default: quotes } = await import('./TypeWriterText.js');
+    const {default: quotes} = await import('./TypeWriterText.js');
 
     if (!quotes?.length) return false;
 
@@ -302,7 +292,7 @@ export async function initHeroSubtitle(options = {}) {
     const measurer = makeLineMeasurer(subtitleEl);
 
     // Local helper to check and adjust bottom spacing to prevent footer overlap
-    const checkFooterOverlap = (el) => {
+    const checkFooterOverlap = el => {
       try {
         el.style.removeProperty('bottom');
         const rect = el.getBoundingClientRect();
@@ -316,7 +306,7 @@ export async function initHeroSubtitle(options = {}) {
             : el.classList.contains('typewriter-title--fixed')
               ? 'clamp(16px,2.5vw,32px)'
               : 'clamp(12px,2vw,24px)';
-          setCSSVars(el, { bottom: `calc(${base} + ${overlap}px)` });
+          setCSSVars(el, {bottom: `calc(${base} + ${overlap}px)`});
         }
       } catch (e) {}
     };
@@ -333,7 +323,7 @@ export async function initHeroSubtitle(options = {}) {
         loop: true,
         // minimal: don't use smart breaks here
         ...cfg,
-        onBeforeType: (text) => {
+        onBeforeType: text => {
           subtitleEl.classList.add('is-locked');
 
           // Calculate lines and format text with newlines
@@ -346,13 +336,13 @@ export async function initHeroSubtitle(options = {}) {
           const gap = parseFloat(cs.getPropertyValue('--gap-px')) || 0;
 
           setCSSVars(subtitleEl, {
-            '--box-h': `${Math.max(0, lines * lh + (lines - 1) * gap)}px`,
+            '--box-h': `${Math.max(0, lines * lh + (lines - 1) * gap)}px`
           });
           // Use rAF to ensure layout is updated before measuring
           requestAnimationFrame(() => checkFooterOverlap(subtitleEl));
 
           return formattedText;
-        },
+        }
       });
 
       // Remove lock after typing ends (released for next measure)
@@ -373,10 +363,10 @@ export async function initHeroSubtitle(options = {}) {
       setTimeout(() => clearInterval(pollInterval), 2000);
 
       // Also check when footer explicitly reports loaded
-      document.addEventListener('footer:loaded', pollOverlap, { once: true });
+      document.addEventListener('footer:loaded', pollOverlap, {once: true});
       // And on resize
       window.addEventListener('resize', () => requestAnimationFrame(pollOverlap), {
-        passive: true,
+        passive: true
       });
 
       if (window.location.search.includes('debug')) window.__typeWriter = tw;

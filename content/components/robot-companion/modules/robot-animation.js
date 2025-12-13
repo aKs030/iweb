@@ -10,7 +10,7 @@ export class RobotAnimation {
       direction: 1,
       speed: 0.3,
       isPaused: false,
-      bouncePhase: 0,
+      bouncePhase: 0
     };
 
     // Start Animation State
@@ -25,14 +25,14 @@ export class RobotAnimation {
       knockbackStartTime: 0,
       knockbackDuration: 600,
       knockbackStartX: 0,
-      knockbackStartY: 0,
+      knockbackStartY: 0
     };
 
     // Performance & Caching Config
     this.cacheConfig = {
       lastTypeWriterCheck: 0,
       typeWriterCheckInterval: 2000,
-      typeWriterRect: null,
+      typeWriterRect: null
     };
 
     this.motion = {
@@ -40,27 +40,27 @@ export class RobotAnimation {
       dashSpeed: 1.2,
       dashChance: 0.0015,
       dashDuration: 900,
-      dashUntil: 0,
+      dashUntil: 0
     };
 
     this._prevDashActive = false;
 
     // Idle eye animation
-    this.eyeIdleOffset = { x: 0, y: 0 };
+    this.eyeIdleOffset = {x: 0, y: 0};
     this._eyeIdleTimer = null;
     this.eyeIdleConfig = {
       intervalMin: 3000,
       intervalMax: 8000,
       amplitudeX: 1.5,
       amplitudeY: 0.8,
-      moveDuration: 800,
+      moveDuration: 800
     };
 
     // Blinking config
     this.blinkConfig = {
       intervalMin: 2500,
       intervalMax: 7000,
-      duration: 120,
+      duration: 120
     };
     this._blinkTimer = null;
 
@@ -162,9 +162,7 @@ export class RobotAnimation {
       const t = Math.min(1, elapsed / this.startAnimation.duration);
       const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
-      this.patrol.x =
-        this.startAnimation.startX +
-        (this.startAnimation.targetX - this.startAnimation.startX) * eased;
+      this.patrol.x = this.startAnimation.startX + (this.startAnimation.targetX - this.startAnimation.startX) * eased;
 
       this.patrol.bouncePhase += 0.08;
       this.patrol.y = Math.sin(this.patrol.bouncePhase) * 4;
@@ -181,7 +179,7 @@ export class RobotAnimation {
         this.robot.dom.particles.style.opacity = '0.9';
       }
 
-      this.setAvatarState({ moving: true, dashing: isDashing });
+      this.setAvatarState({moving: true, dashing: isDashing});
 
       if (this.robot.dom.svg) {
         this.robot.dom.svg.style.transform = `rotate(-5deg)`;
@@ -192,7 +190,7 @@ export class RobotAnimation {
       if (t >= 1) {
         this.startAnimation.phase = 'pause';
         this.startAnimation.pauseUntil = now + 200;
-        this.setAvatarState({ moving: false, dashing: false });
+        this.setAvatarState({moving: false, dashing: false});
       }
 
       requestAnimationFrame(this.updateStartAnimation);
@@ -201,17 +199,12 @@ export class RobotAnimation {
 
     if (this.startAnimation.phase === 'pause') {
       if (now >= this.startAnimation.pauseUntil) {
-        const reactions = [
-          'Autsch! 😵',
-          'Ups! Das war hart! 💥',
-          'Whoa! 😲',
-          'Hey! Nicht schubsen! 😠',
-        ];
+        const reactions = ['Autsch! 😵', 'Ups! Das war hart! 💥', 'Whoa! 😲', 'Hey! Nicht schubsen! 😠'];
         const reaction = reactions[Math.floor(Math.random() * reactions.length)];
         this.robot.showBubble(reaction);
         setTimeout(() => this.robot.hideBubble(), 2500);
 
-        this.spawnParticleBurst(15, { strength: 2, spread: 180 });
+        this.spawnParticleBurst(15, {strength: 2, spread: 180});
 
         this.startAnimation.phase = 'knockback';
         this.startAnimation.knockbackStartTime = now;
@@ -251,7 +244,7 @@ export class RobotAnimation {
 
       if (t >= 1) {
         this.startAnimation.phase = 'landing';
-        this.spawnParticleBurst(8, { strength: 1.5 });
+        this.spawnParticleBurst(8, {strength: 1.5});
 
         setTimeout(() => {
           this.startAnimation.active = false;
@@ -305,7 +298,7 @@ export class RobotAnimation {
 
     const isHovering = this.robot.dom.avatar && this.robot.dom.avatar.matches(':hover');
     if (this.robot.chatModule.isOpen || this.patrol.isPaused || isHovering) {
-      this.setAvatarState({ moving: false, dashing: false });
+      this.setAvatarState({moving: false, dashing: false});
       if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
       if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = '0';
       requestAnimationFrame(this.updatePatrol);
@@ -338,7 +331,7 @@ export class RobotAnimation {
 
     if (!this.robot.dom.typeWriter && approachingLimit) {
       this.patrol.direction *= -1;
-      this.spawnParticleBurst(4, { direction: -this.patrol.direction, strength: 0.9 });
+      this.spawnParticleBurst(4, {direction: -this.patrol.direction, strength: 0.9});
       this.pausePatrol(3000 + Math.random() * 3000);
     }
 
@@ -352,9 +345,9 @@ export class RobotAnimation {
 
     const dashActive = now < this.motion.dashUntil;
     if (dashActive && !this._prevDashActive) {
-      this.spawnParticleBurst(6, { strength: 1.2 });
+      this.spawnParticleBurst(6, {strength: 1.2});
     } else if (!dashActive && this._prevDashActive) {
-      this.spawnParticleBurst(3, { strength: 0.8 });
+      this.spawnParticleBurst(3, {strength: 0.8});
     }
     this._prevDashActive = dashActive;
 
@@ -367,18 +360,16 @@ export class RobotAnimation {
     this.patrol.y = Math.sin(this.patrol.bouncePhase) * (dashActive ? 4 : 3);
     this.robot.animationState = 'moving';
 
-    this.setAvatarState({ moving: true, dashing: dashActive });
+    this.setAvatarState({moving: true, dashing: dashActive});
 
     if (this.robot.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
-      const tiltIntensity =
-        this.startAnimation && this.startAnimation.active ? 1.6 : dashActive ? 1.2 : 1;
+      const tiltIntensity = this.startAnimation && this.startAnimation.active ? 1.6 : dashActive ? 1.2 : 1;
       this.robot.dom.svg.style.transform = `rotate(${baseTilt * tiltIntensity}deg)`;
     }
     if (this.robot.dom.eyes) this.updateEyesTransform();
     if (this.robot.dom.flame) {
-      const flameIntensity =
-        this.startAnimation && this.startAnimation.active ? 1.4 : dashActive ? 1.2 : 0.85;
+      const flameIntensity = this.startAnimation && this.startAnimation.active ? 1.4 : dashActive ? 1.2 : 0.85;
       this.robot.dom.flame.style.opacity = flameIntensity;
       this.robot.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.7) * 0.4})`;
     }
@@ -398,12 +389,12 @@ export class RobotAnimation {
       this.patrol.x = maxLeft;
       this.patrol.direction = -1;
       this.pausePatrol(5000 + Math.random() * 5000);
-      this.spawnParticleBurst(4, { direction: -1, strength: 1 });
+      this.spawnParticleBurst(4, {direction: -1, strength: 1});
     } else if (this.patrol.x <= 0) {
       this.patrol.x = 0;
       this.patrol.direction = 1;
       this.pausePatrol(5000 + Math.random() * 5000);
-      this.spawnParticleBurst(4, { direction: 1, strength: 1 });
+      this.spawnParticleBurst(4, {direction: 1, strength: 1});
     } else {
       if (Math.random() < 0.005) {
         this.pausePatrol(3000 + Math.random() * 4000);
@@ -430,7 +421,7 @@ export class RobotAnimation {
     this.patrol.isPaused = true;
     this.robot.animationState = 'idle';
     this.motion.dashUntil = 0;
-    this.setAvatarState({ moving: false, dashing: false });
+    this.setAvatarState({moving: false, dashing: false});
     if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
     if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = '0';
 
@@ -471,7 +462,7 @@ export class RobotAnimation {
     }
   }
 
-  spawnParticleBurst(count = 6, { direction = 0, strength = 1, spread = null } = {}) {
+  spawnParticleBurst(count = 6, {direction = 0, strength = 1, spread = null} = {}) {
     if (!this.robot.dom.container) return;
     const rect = this.robot.dom.avatar.getBoundingClientRect();
     const baseX = rect.left + rect.width / 2;
@@ -497,8 +488,7 @@ export class RobotAnimation {
         angle = baseAngle + (Math.random() - 0.5) * spreadRad;
       } else {
         const angleSpread = Math.PI / 3;
-        const baseAngle =
-          direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
+        const baseAngle = direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
         angle = baseAngle + (Math.random() - 0.5) * angleSpread;
       }
 
@@ -519,7 +509,7 @@ export class RobotAnimation {
     }
   }
 
-  setAvatarState({ moving = false, dashing = false } = {}) {
+  setAvatarState({moving = false, dashing = false} = {}) {
     if (!this.robot.dom.avatar) return;
     this.robot.dom.avatar.classList.toggle('is-moving', moving);
     this.robot.dom.avatar.classList.toggle('is-dashing', dashing);
@@ -562,7 +552,7 @@ export class RobotAnimation {
   }
 
   playPokeAnimation() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.robot.dom.avatar) {
         resolve();
         return;
@@ -572,8 +562,7 @@ export class RobotAnimation {
       const effect = effects[Math.floor(Math.random() * effects.length)];
 
       if (effect === 'jump') {
-        this.robot.dom.avatar.style.transition =
-          'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        this.robot.dom.avatar.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
         setTimeout(() => {
           this.robot.dom.avatar.style.transform = '';
@@ -582,13 +571,13 @@ export class RobotAnimation {
       } else if (effect === 'shake') {
         this.robot.dom.avatar.animate(
           [
-            { transform: 'translateX(0)' },
-            { transform: 'translateX(-5px) rotate(-5deg)' },
-            { transform: 'translateX(5px) rotate(5deg)' },
-            { transform: 'translateX(-5px) rotate(-5deg)' },
-            { transform: 'translateX(0)' },
+            {transform: 'translateX(0)'},
+            {transform: 'translateX(-5px) rotate(-5deg)'},
+            {transform: 'translateX(5px) rotate(5deg)'},
+            {transform: 'translateX(-5px) rotate(-5deg)'},
+            {transform: 'translateX(0)'}
           ],
-          { duration: 300 },
+          {duration: 300}
         );
         setTimeout(resolve, 350);
       } else {
@@ -656,8 +645,7 @@ export class RobotAnimation {
     this.stopBlinkLoop();
     const schedule = () => {
       const delay =
-        this.blinkConfig.intervalMin +
-        Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
+        this.blinkConfig.intervalMin + Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
       this._blinkTimer = setTimeout(() => {
         this.doBlink();
         schedule();
@@ -677,12 +665,12 @@ export class RobotAnimation {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
     const lids = this.robot.dom.eyes.querySelectorAll('.robot-lid');
     if (!lids.length) return;
-    lids.forEach((l) => l.classList.add('is-blink'));
+    lids.forEach(l => l.classList.add('is-blink'));
     setTimeout(
       () => {
-        lids.forEach((l) => l.classList.remove('is-blink'));
+        lids.forEach(l => l.classList.remove('is-blink'));
       },
-      (this.blinkConfig.duration || 120) + 20,
+      (this.blinkConfig.duration || 120) + 20
     );
   }
 }

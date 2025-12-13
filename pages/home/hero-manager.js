@@ -1,11 +1,6 @@
 // ===== Shared Utilities Import =====
-import {
-  createTriggerOnceObserver,
-  EVENTS,
-  getElementById,
-  TimerManager,
-} from '../../content/utils/shared-utilities.js';
-import { createLogger } from '../../content/utils/shared-utilities.js';
+import {createTriggerOnceObserver, EVENTS, getElementById, TimerManager} from '../../content/utils/shared-utilities.js';
+import {createLogger} from '../../content/utils/shared-utilities.js';
 
 // Logger für HeroManager
 const logger = createLogger('HeroManager');
@@ -23,7 +18,7 @@ const HeroManager = (() => {
     if (typeof window.initHeroSubtitle === 'function') {
       try {
         return window.initHeroSubtitle({
-          heroDataModule,
+          heroDataModule
         });
       } catch (err) {
         logger.warn('Failed to load TypeWriter modules', err);
@@ -71,7 +66,7 @@ const HeroManager = (() => {
 
   const ensureHeroData = async () =>
     heroData ||
-    (heroData = await import('./GrussText.js').catch((err) => {
+    (heroData = await import('./GrussText.js').catch(err => {
       logger.warn('Failed to load GrussText.js', err);
       return {};
     }));
@@ -113,7 +108,7 @@ const HeroManager = (() => {
     isInitialized = false;
   }
 
-  return { initLazyHeroModules, setRandomGreetingHTML, ensureHeroData, cleanup };
+  return {initLazyHeroModules, setRandomGreetingHTML, ensureHeroData, cleanup};
 })();
 
 // ===== Public API =====
@@ -145,10 +140,10 @@ export function initHeroFeatureBundle() {
         HeroManager.setRandomGreetingHTML();
       }
     },
-    { once: true },
+    {once: true}
   );
 
-  document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
+  document.addEventListener(EVENTS.HERO_TYPING_END, e => {
     const text = e.detail?.text || 'Text';
     (window.announce || (() => {}))(`Zitat vollständig: ${text}`);
   });
@@ -157,7 +152,7 @@ export function initHeroFeatureBundle() {
   HeroManager.initLazyHeroModules();
 
   // Smooth Scroll Handler für Hero Buttons
-  const handleHeroAnchorClick = (event) => {
+  const handleHeroAnchorClick = event => {
     const link = event.target.closest('.hero-buttons a[href^="#"]');
     if (!link) return;
     const href = link.getAttribute('href') || '';
@@ -170,10 +165,10 @@ export function initHeroFeatureBundle() {
 
     const doScroll = () => {
       try {
-        target.scrollIntoView({ behavior: 'smooth' });
+        target.scrollIntoView({behavior: 'smooth'});
       } catch (e) {
         const top = target.getBoundingClientRect().top + window.pageYOffset;
-        window.scrollTo({ top, behavior: 'smooth' });
+        window.scrollTo({top, behavior: 'smooth'});
       }
     };
 

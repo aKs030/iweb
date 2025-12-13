@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js';
-import { createLogger } from '../../../utils/shared-utilities.js';
+import {CONFIG} from './config.js';
+import {createLogger} from '../../../utils/shared-utilities.js';
 
 const log = createLogger('EarthAssets');
 
@@ -14,7 +14,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
-      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
+      textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP)
     ]);
   } catch (err) {
     log.error('Texture loading failed:', err);
@@ -22,7 +22,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
   }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
-  [dayTexture, nightTexture, normalTexture, bumpTexture].forEach((tex) => {
+  [dayTexture, nightTexture, normalTexture, bumpTexture].forEach(tex => {
     if (tex) tex.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
   });
 
@@ -32,7 +32,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     roughness: 0.7,
-    metalness: 0.0,
+    metalness: 0.0
   });
 
   const nightMaterial = new THREE.MeshStandardMaterial({
@@ -44,7 +44,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
     metalness: 0.0,
     emissive: 0xffcc66,
     emissiveMap: nightTexture,
-    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0,
+    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0
   });
 
   // OPTIMIZATION: Reduce segments on mobile
@@ -61,7 +61,7 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
 
   scene.add(earthMesh);
 
-  return { earthMesh, dayMaterial, nightMaterial };
+  return {earthMesh, dayMaterial, nightMaterial};
 }
 
 export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
@@ -69,7 +69,7 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
 
   const [moonTexture, moonBumpTexture] = await Promise.all([
     textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON).catch(() => null),
-    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON_BUMP).catch(() => null),
+    textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.MOON_BUMP).catch(() => null)
   ]);
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
@@ -82,17 +82,13 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
     bumpScale: CONFIG.MOON.BUMP_SCALE,
     roughness: 0.9,
     metalness: 0.0,
-    color: moonTexture ? 0xffffff : 0xaaaaaa,
+    color: moonTexture ? 0xffffff : 0xaaaaaa
   });
 
   const moonLOD = new THREE.LOD();
 
   // High detail
-  const moonGeometryHigh = new THREE.SphereGeometry(
-    CONFIG.MOON.RADIUS,
-    CONFIG.MOON.SEGMENTS,
-    CONFIG.MOON.SEGMENTS,
-  );
+  const moonGeometryHigh = new THREE.SphereGeometry(CONFIG.MOON.RADIUS, CONFIG.MOON.SEGMENTS, CONFIG.MOON.SEGMENTS);
   moonLOD.addLevel(new THREE.Mesh(moonGeometryHigh, moonMaterial), 0);
 
   // Medium detail
@@ -125,17 +121,13 @@ export async function createCloudLayer(THREE, renderer, loadingManager, isMobile
       opacity: CONFIG.CLOUDS.OPACITY,
       blending: THREE.NormalBlending,
       depthWrite: false,
-      side: THREE.DoubleSide,
+      side: THREE.DoubleSide
     });
 
     // OPTIMIZATION: Use same segment reduction for clouds
     const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
 
-    const cloudGeometry = new THREE.SphereGeometry(
-      CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE,
-      segments,
-      segments,
-    );
+    const cloudGeometry = new THREE.SphereGeometry(CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE, segments, segments);
     return new THREE.Mesh(cloudGeometry, cloudMaterial);
   } catch (error) {
     log.warn('Cloud texture failed to load:', error);

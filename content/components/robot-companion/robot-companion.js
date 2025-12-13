@@ -3,13 +3,13 @@
  * Performance-Optimierungen: DOM-Caching, RequestAnimationFrame-Nutzung, Refactoring.
  */
 
-import { GeminiService } from './gemini-service.js';
-import { RobotGames } from './robot-games.js';
-import { RobotCollision } from './modules/robot-collision.js';
-import { RobotAnimation } from './modules/robot-animation.js';
-import { RobotChat } from './modules/robot-chat.js';
-import { RobotIntelligence } from './modules/robot-intelligence.js';
-import { RobotSound } from './modules/robot-sound.js';
+import {GeminiService} from './gemini-service.js';
+import {RobotGames} from './robot-games.js';
+import {RobotCollision} from './modules/robot-collision.js';
+import {RobotAnimation} from './modules/robot-animation.js';
+import {RobotChat} from './modules/robot-chat.js';
+import {RobotIntelligence} from './modules/robot-intelligence.js';
+import {RobotSound} from './modules/robot-sound.js';
 
 class RobotCompanion {
   constructor() {
@@ -36,7 +36,7 @@ class RobotCompanion {
       sessions: parseInt(localStorage.getItem('robot-sessions') || '0') + 1,
       sectionsVisited: [],
       interactions: parseInt(localStorage.getItem('robot-interactions') || '0'),
-      lastVisit: localStorage.getItem('robot-last-visit') || new Date().toISOString(),
+      lastVisit: localStorage.getItem('robot-last-visit') || new Date().toISOString()
     };
     localStorage.setItem('robot-sessions', this.analytics.sessions);
     localStorage.setItem('robot-last-visit', new Date().toISOString());
@@ -69,12 +69,11 @@ class RobotCompanion {
     const src = (window && window.robotCompanionTexts) || this.texts || {};
     const chat = this.chatModule;
 
-    chat.knowledgeBase = src.knowledgeBase ||
-      chat.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
-    chat.contextGreetings = src.contextGreetings || chat.contextGreetings || { default: [] };
+    chat.knowledgeBase = src.knowledgeBase || chat.knowledgeBase || {start: {text: 'Hallo!', options: []}};
+    chat.contextGreetings = src.contextGreetings || chat.contextGreetings || {default: []};
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
-        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?']
       };
     chat.startMessageSuffix = src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
@@ -84,12 +83,12 @@ class RobotCompanion {
       chat.initialBubbleSequenceConfig || {
         steps: 4,
         displayDuration: 10000,
-        pausesAfter: [0, 20000, 20000, 0],
+        pausesAfter: [0, 20000, 20000, 0]
       };
   }
 
   loadTexts() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (window && window.robotCompanionTexts) {
         this.texts = window.robotCompanionTexts;
         resolve();
@@ -116,8 +115,7 @@ class RobotCompanion {
     const checkOverlap = () => {
       if (!this.dom.container) return;
       if (!this.dom.footer) {
-        this.dom.footer =
-          document.querySelector('footer') || document.querySelector('#site-footer');
+        this.dom.footer = document.querySelector('footer') || document.querySelector('#site-footer');
       }
       const footer = this.dom.footer;
       if (!footer) return;
@@ -144,8 +142,8 @@ class RobotCompanion {
       }
     };
 
-    window.addEventListener('scroll', requestTick, { passive: true });
-    window.addEventListener('resize', requestTick, { passive: true });
+    window.addEventListener('scroll', requestTick, {passive: true});
+    window.addEventListener('resize', requestTick, {passive: true});
     requestAnimationFrame(checkOverlap);
     setInterval(requestTick, 1000);
   }
@@ -206,14 +204,12 @@ class RobotCompanion {
           this.chatModule.startInitialBubbleSequence();
         } else {
           const greet =
-            this.chatModule.initialBubbleGreetings &&
-            this.chatModule.initialBubbleGreetings.length > 0
+            this.chatModule.initialBubbleGreetings && this.chatModule.initialBubbleGreetings.length > 0
               ? this.chatModule.initialBubbleGreetings[
                   Math.floor(Math.random() * this.chatModule.initialBubbleGreetings.length)
                 ]
               : 'Hallo!';
-          const ctxArr =
-            this.chatModule.contextGreetings[ctx] || this.chatModule.contextGreetings.default || [];
+          const ctxArr = this.chatModule.contextGreetings[ctx] || this.chatModule.contextGreetings.default || [];
           let finalGreet = greet;
           if (ctxArr.length && Math.random() < 0.7) {
             const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
@@ -231,7 +227,7 @@ class RobotCompanion {
       this.animationModule.startTypeWriterKnockbackAnimation();
     }, 1500);
 
-    this._onHeroTypingEnd = (ev) => {
+    this._onHeroTypingEnd = ev => {
       try {
         const typeWriter = document.querySelector('.typewriter-title');
         if (!typeWriter || !this.dom || !this.dom.container) return;
@@ -280,7 +276,7 @@ class RobotCompanion {
         } catch (e) {}
       }, 500);
     };
-    window.addEventListener('scroll', this._scrollListener, { passive: true });
+    window.addEventListener('scroll', this._scrollListener, {passive: true});
     this._sectionCheckInterval = setInterval(checkContextChange, 3000);
   }
 
@@ -311,7 +307,7 @@ class RobotCompanion {
 
   calculateMood() {
     const hour = new Date().getHours();
-    const { sessions, interactions } = this.analytics;
+    const {sessions, interactions} = this.analytics;
     if (hour >= 0 && hour < 6) return 'night-owl';
     if (hour >= 6 && hour < 10) return 'sleepy';
     if (hour >= 10 && hour < 17) return 'energetic';
@@ -323,9 +319,7 @@ class RobotCompanion {
 
   getMoodGreeting() {
     const greetings =
-      this.chatModule.moodGreetings ||
-      (window.robotCompanionTexts && window.robotCompanionTexts.moodGreetings) ||
-      {};
+      this.chatModule.moodGreetings || (window.robotCompanionTexts && window.robotCompanionTexts.moodGreetings) || {};
     const moodGreets = greetings[this.mood] || greetings['normal'] || ['Hey! Wie kann ich helfen?'];
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
@@ -336,14 +330,11 @@ class RobotCompanion {
     if (this.analytics.interactions === 10 && !this.easterEggFound.has('first-10')) {
       this.unlockEasterEgg(
         'first-10',
-        '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮',
+        '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮'
       );
     }
     if (this.analytics.interactions === 50 && !this.easterEggFound.has('first-50')) {
-      this.unlockEasterEgg(
-        'first-50',
-        '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪',
-      );
+      this.unlockEasterEgg('first-50', '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪');
     }
   }
 
@@ -358,7 +349,7 @@ class RobotCompanion {
     if (!this.analytics.sectionsVisited.includes(context)) {
       this.analytics.sectionsVisited.push(context);
       const allSections = ['hero', 'features', 'about', 'projects', 'gallery', 'footer'];
-      const visitedAll = allSections.every((s) => this.analytics.sectionsVisited.includes(s));
+      const visitedAll = allSections.every(s => this.analytics.sectionsVisited.includes(s));
       if (visitedAll && !this.easterEggFound.has('explorer')) {
         this.unlockEasterEgg('explorer', '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭');
       }
@@ -468,7 +459,7 @@ class RobotCompanion {
     this.dom.legs = container.querySelector('.robot-legs');
     this.dom.arms = {
       left: container.querySelector('.robot-arm.left'),
-      right: container.querySelector('.robot-arm.right'),
+      right: container.querySelector('.robot-arm.right')
     };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
@@ -479,11 +470,11 @@ class RobotCompanion {
 
   attachEvents() {
     this.dom.avatar.addEventListener('click', () => this.handleAvatarClick());
-    this.dom.closeBtn.addEventListener('click', (e) => {
+    this.dom.closeBtn.addEventListener('click', e => {
       e.stopPropagation();
       this.toggleChat(false);
     });
-    this.dom.bubbleClose.addEventListener('click', (e) => {
+    this.dom.bubbleClose.addEventListener('click', e => {
       e.stopPropagation();
       const ctx = this.getPageContext();
       this.chatModule.lastGreetedContext = ctx;
@@ -496,7 +487,7 @@ class RobotCompanion {
     }
 
     if (this.dom.input) {
-      this.dom.input.addEventListener('keypress', (e) => {
+      this.dom.input.addEventListener('keypress', e => {
         if (e.key === 'Enter') this.handleUserMessage();
       });
 
@@ -525,7 +516,7 @@ class RobotCompanion {
       const lower = path.toLowerCase();
       const midY = (window.innerHeight || 0) / 2;
 
-      const sectionCheck = (selector) => {
+      const sectionCheck = selector => {
         try {
           const el = document.querySelector(selector);
           if (!el) return false;
@@ -566,26 +557,26 @@ class RobotCompanion {
   setupSectionObservers() {
     if (this._sectionObserver) return;
     const sectionMap = [
-      { selector: '#hero', ctx: 'hero' },
-      { selector: '#features', ctx: 'features' },
-      { selector: '#about', ctx: 'about' },
-      { selector: '#footer-container', ctx: 'footer' },
-      { selector: 'footer', ctx: 'footer' },
+      {selector: '#hero', ctx: 'hero'},
+      {selector: '#features', ctx: 'features'},
+      {selector: '#about', ctx: 'about'},
+      {selector: '#footer-container', ctx: 'footer'},
+      {selector: 'footer', ctx: 'footer'}
     ];
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
-            const match = sectionMap.find((s) => entry.target.matches(s.selector));
+            const match = sectionMap.find(s => entry.target.matches(s.selector));
             if (match) this.currentObservedContext = match.ctx;
           }
         });
       },
-      { threshold: [0.35, 0.5, 0.75] },
+      {threshold: [0.35, 0.5, 0.75]}
     );
 
-    sectionMap.forEach((s) => {
+    sectionMap.forEach(s => {
       const el = document.querySelector(s.selector);
       if (el) observer.observe(el);
     });
@@ -596,20 +587,20 @@ class RobotCompanion {
   showMoodInfo() {
     const moodEmojis = {
       'night-owl': '🦉',
-      'sleepy': '😴',
-      'energetic': '⚡',
-      'relaxed': '😊',
-      'enthusiastic': '🤩',
-      'normal': '🤖',
+      sleepy: '😴',
+      energetic: '⚡',
+      relaxed: '😊',
+      enthusiastic: '🤩',
+      normal: '🤖'
     };
 
     const moodDescriptions = {
       'night-owl': 'Nachteule-Modus aktiv! Ich bin hellwach! 🌙',
-      'sleepy': 'Etwas verschlafen heute... ☕',
-      'energetic': 'Voller Energie und bereit für Action! 💪',
-      'relaxed': 'Entspannt und gelassen unterwegs! 🌅',
-      'enthusiastic': 'Super enthusiastisch - du bist ja Power-User! 🎉',
-      'normal': 'Ganz normaler Roboter-Modus! 🤖',
+      sleepy: 'Etwas verschlafen heute... ☕',
+      energetic: 'Voller Energie und bereit für Action! 💪',
+      relaxed: 'Entspannt und gelassen unterwegs! 🌅',
+      enthusiastic: 'Super enthusiastisch - du bist ja Power-User! 🎉',
+      normal: 'Ganz normaler Roboter-Modus! 🤖'
     };
 
     const emoji = moodEmojis[this.mood] || '🤖';
