@@ -1,7 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 9.4.0 - OPTIMIZED: Fixed Async Race Conditions & Resize Logic
+ * @version 10.0.0 - HYBRID: CSS3DRenderer Implementation
  */
 
 import {createLogger, getElementById, onResize, TimerManager} from '../../utils/shared-utilities.js'
@@ -27,6 +27,7 @@ const earthTimers = new TimerManager()
 
 // Global instances for this module scope
 let scene, camera, renderer, THREE_INSTANCE
+let cssRenderer, cssScene
 let earthMesh, moonMesh, cloudMesh
 let dayMaterial, nightMaterial
 let directionalLight, ambientLight
@@ -65,13 +66,12 @@ const ThreeEarthManager = (() => {
     isSystemActive = true
 
     try {
-      log.info('Initializing Three.js Earth System v9.4.0 (Fixed)')
+      log.info('Initializing Three.js Earth System v10.0.0 (Hybrid CSS3D)')
 
       // Device Detection & optimized config
       try {
         deviceCapabilities = detectDeviceCapabilities()
         const optimizedConfig = getOptimizedConfig(deviceCapabilities)
-        // Note: Mutating the global CONFIG object works but be aware it persists across re-inits
         Object.assign(CONFIG, optimizedConfig)
       } catch (e) {
         log.debug('Device detection failed, using defaults', e)
@@ -79,7 +79,18 @@ const ThreeEarthManager = (() => {
 
       registerParticleSystem('three-earth', {type: 'three-earth'})
 
+      // Load Three.js
       THREE_INSTANCE = await loadThreeJS()
+
+      // Load CSS3DRenderer via Import Map (Dynamic Import)
+      let CSS3DRendererModule
+      try {
+         CSS3DRendererModule = await import('three/addons/renderers/CSS3DRenderer.js')
+      } catch (e) {
+         log.error('Failed to load CSS3DRenderer. Ensure Import Map is present.', e)
+         throw e
+      }
+      const { CSS3DRenderer } = CSS3DRendererModule
 
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
       if (!isSystemActive) return cleanup
@@ -93,6 +104,15 @@ const ThreeEarthManager = (() => {
       scene = sceneObjects.scene
       camera = sceneObjects.camera
       renderer = sceneObjects.renderer
+
+      // CSS3D Setup
+      cssScene = new THREE_INSTANCE.Scene()
+      cssRenderer = new CSS3DRenderer()
+      cssRenderer.setSize(container.clientWidth, container.clientHeight)
+      cssRenderer.domElement.style.position = 'absolute'
+      cssRenderer.domElement.style.top = '0'
+      cssRenderer.domElement.style.pointerEvents = 'none' // Allow clicks to pass through to WebGL
+      container.appendChild(cssRenderer.domElement)
 
       if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
         renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO)
@@ -116,10 +136,8 @@ const ThreeEarthManager = (() => {
       // Stars
       starManager = new StarManager(THREE_INSTANCE, scene, camera, renderer)
       const starField = starManager.createStarField()
-      // Inline setupStarParallax
       const parallaxHandler = progress => {
         if (!starField || !starManager || (starManager.transition && starManager.transition.active)) return
-
         starField.rotation.y = progress * Math.PI * 0.2
         starField.position.z = Math.sin(progress * Math.PI) * 15
       }
@@ -137,11 +155,9 @@ const ThreeEarthManager = (() => {
         createCloudLayer(THREE_INSTANCE, renderer, loadingManager, isMobileDevice)
       ])
 
-      // CRITICAL CHECK: Did cleanup happen while awaiting Assets?
+      // CRITICAL CHECK
       if (!isSystemActive) {
-        // Clean up what we just created since the system is dead
         if (earthAssets.dayMaterial) earthAssets.dayMaterial.dispose()
-        // ... (other disposals implicit in cleanup call)
         return cleanup
       }
 
@@ -165,7 +181,6 @@ const ThreeEarthManager = (() => {
       cameraManager = new CameraManager(THREE_INSTANCE, camera)
       cameraManager.setupCameraSystem()
 
-      // Inline setupUserControls to avoid small helper function
       const onWheel = e => {
         if (cameraManager && isSystemActive) cameraManager.handleWheel(e)
       }
@@ -179,7 +194,6 @@ const ThreeEarthManager = (() => {
 
       performanceMonitor = new PerformanceMonitor(container, renderer, level => {
         currentQualityLevel = level
-        // Inline applyQualitySettings - small and only used here
         const levelCfg = CONFIG.QUALITY_LEVELS[currentQualityLevel]
         if (cloudMesh) cloudMesh.visible = levelCfg.cloudLayer
         if (shootingStarManager) shootingStarManager.disabled = !levelCfg.meteorShowers
@@ -194,27 +208,42 @@ const ThreeEarthManager = (() => {
 
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE)
 
-      // Cards
-      cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer)
+      // Cards (CSS3D) - pass CSS Scene and Import Maps CSS3DObject if needed,
+      // but CardManager should handle the object creation if we pass the constructor/module?
+      // Actually CardManager imports things. We'll let it import CSS3DObject via map too.
+      // But we pass cssScene.
+      cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer, cssScene)
+
+      // Listen for dynamic section loading to init cards
+      const onSectionLoaded = (e) => {
+          if (e.detail?.id === 'features' && cardManager) {
+              cardManager.initFromDOM(e.detail.section)
+          }
+      }
+      document.addEventListener('section:loaded', onSectionLoaded)
+      sharedCleanupManager.addCleanupFunction('three-earth', () => document.removeEventListener('section:loaded', onSectionLoaded), 'section listener')
+
+      // Check if already loaded
+      const featuresSection = document.getElementById('features')
+      if (featuresSection && featuresSection.dataset.state === 'loaded') {
+          cardManager.initFromDOM(featuresSection)
+      }
 
       // Start Loops
       startAnimationLoop()
       setupResizeHandler()
-      setupInteraction()
+      // setupInteraction() // Removed: CSS3D handles interaction natively!
 
       log.info('Initialization complete')
       return cleanup
     } catch (error) {
       log.error('Initialization failed:', error)
-      // Inline handleInitializationError
       try {
         if (renderer) renderer.dispose()
-      } catch {
-        /* ignore */
-      }
+      } catch { /* ignore */ }
       sharedCleanupManager.cleanupSystem('three-earth')
       showErrorState(container, error, () => {
-        cleanup() // Full cleanup before retry
+        cleanup()
         initThreeEarth()
       })
       return () => {}
@@ -222,7 +251,6 @@ const ThreeEarthManager = (() => {
   }
 
   const cleanup = () => {
-    // Set flag immediately to stop any pending awaits
     isSystemActive = false
     log.info('Cleaning up Earth system')
 
@@ -236,7 +264,7 @@ const ThreeEarthManager = (() => {
     performanceMonitor?.cleanup()
     shootingStarManager?.cleanup()
     cameraManager?.cleanup()
-    starManager?.cleanup() // Ensure star manager cleans up
+    starManager?.cleanup()
     sectionObserver?.disconnect()
     viewportObserver?.disconnect()
     earthTimers.clearAll()
@@ -256,15 +284,22 @@ const ThreeEarthManager = (() => {
       scene.clear()
     }
 
+    // CSS Scene Cleanup
+    if (cssScene) {
+        cssScene.clear()
+    }
+    if (cssRenderer) {
+        cssRenderer.domElement.remove()
+    }
+
     if (renderer) {
       renderer.dispose()
-      // Removed forceContextLoss() as it is too aggressive for shared environments
-      // renderer.forceContextLoss();
     }
 
     ;[dayMaterial, nightMaterial].forEach(disposeMaterial)
 
     scene = camera = renderer = null
+    cssRenderer = cssScene = null
     earthMesh = moonMesh = cloudMesh = null
     dayMaterial = nightMaterial = null
     directionalLight = ambientLight = null
@@ -287,7 +322,6 @@ const ThreeEarthManager = (() => {
         material[prop] = null
       }
     })
-    // Safely dispose uniforms
     if (material.uniforms) {
       Object.values(material.uniforms).forEach(uniform => {
         if (uniform && uniform.value && typeof uniform.value.dispose === 'function') {
@@ -298,8 +332,6 @@ const ThreeEarthManager = (() => {
     material.dispose()
   }
 
-  // handleInitializationError body inlined into the initialization catch block
-
   return {initThreeEarth, cleanup}
 })()
 
@@ -309,27 +341,15 @@ function detectDeviceCapabilities() {
   try {
     const ua = (navigator.userAgent || '').toLowerCase()
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua)
-    // Simple heuristic checks
     const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) || (navigator.hardwareConcurrency || 4) <= 2
-
-    return {
-      isMobile,
-      isLowEnd,
-      recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH'
-    }
+    return { isMobile, isLowEnd, recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH' }
   } catch {
     return {isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM'}
   }
 }
 
 function getOptimizedConfig(capabilities) {
-  // Return defensive copy
-  const _baseConfig = JSON.parse(JSON.stringify(CONFIG))
-  // Note: Deep cloning config ensures we don't accidentally mutate defaults if called repeatedly
-  // but logic below uses Object.assign on the live CONFIG anyway.
-
   if (!capabilities) return {}
-
   if (capabilities.isLowEnd) {
     return {
       EARTH: {...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 16},
@@ -338,22 +358,15 @@ function getOptimizedConfig(capabilities) {
       CLOUDS: {...CONFIG.CLOUDS, OPACITY: 0}
     }
   }
-
   if (capabilities.isMobile) {
     return {
       EARTH: {...CONFIG.EARTH, SEGMENTS_MOBILE: 32},
       STARS: {...CONFIG.STARS, COUNT: 2000},
-      PERFORMANCE: {
-        ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0)
-      }
+      PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0) }
     }
   }
-
   return {}
 }
-
-// setupStarParallax inlined at call site — removed helper
 
 function setupSectionDetection() {
   const sections = Array.from(document.querySelectorAll('section[id], div#footer-trigger-zone'))
@@ -386,12 +399,10 @@ function setupSectionDetection() {
         updateEarthForSection(newSection, {allowModeSwitch: isFeaturesToAbout})
 
         if (newSection === 'features') {
-          // Optimized: Disable star alignment to HTML cards as we now use 3D cards
-          // if (starManager) starManager.animateStarsToCards()
+          // Disable star alignment as CSS3D cards are used
           if (cardManager) cardManager.setVisible(true)
         } else {
            if (previousSection === 'features') {
-              // if (starManager) starManager.resetStarsToOriginal()
               if (cardManager) cardManager.setVisible(false)
            }
         }
@@ -411,7 +422,6 @@ function setupViewportObserver(container) {
     entries => {
       const entry = entries[0]
       isSystemVisible = entry.isIntersecting
-
       if (isSystemVisible) {
         if (!animationFrameId && animate) {
           log.debug('Container visible: resuming render loop')
@@ -427,37 +437,19 @@ function setupViewportObserver(container) {
     },
     {threshold: 0}
   )
-
   viewportObserver.observe(container)
 }
 
 function updateEarthForSection(sectionName, options = {}) {
   if (!earthMesh || !isSystemActive) return
   const allowModeSwitch = !!options.allowModeSwitch
-
+  // Configs maintained as original
   const configs = {
-    hero: {
-      earth: {pos: {x: 1, y: -2.5, z: -1}, scale: 1.3, rotation: 0},
-      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
-      mode: 'day'
-    },
-    features: {
-      earth: {pos: {x: -7, y: -2, z: -4}, scale: 0.7, rotation: 0},
-      moon: {pos: {x: 1, y: 2, z: -5}, scale: 1.1},
-      mode: 'day'
-    },
-    about: {
-      earth: {pos: {x: -1, y: -0.5, z: -1}, scale: 1.0, rotation: Math.PI},
-      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
-      mode: 'night'
-    },
-    contact: {
-      earth: {pos: {x: 0, y: -1.5, z: 0}, scale: 1.1, rotation: Math.PI / 2},
-      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
-      mode: 'day'
-    }
+    hero: { earth: {pos: {x: 1, y: -2.5, z: -1}, scale: 1.3, rotation: 0}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'day' },
+    features: { earth: {pos: {x: -7, y: -2, z: -4}, scale: 0.7, rotation: 0}, moon: {pos: {x: 1, y: 2, z: -5}, scale: 1.1}, mode: 'day' },
+    about: { earth: {pos: {x: -1, y: -0.5, z: -1}, scale: 1.0, rotation: Math.PI}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'night' },
+    contact: { earth: {pos: {x: 0, y: -1.5, z: 0}, scale: 1.1, rotation: Math.PI / 2}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'day' }
   }
-
   const config = configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero
 
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(config.earth.pos.x, config.earth.pos.y, config.earth.pos.z)
@@ -474,21 +466,17 @@ function updateEarthForSection(sectionName, options = {}) {
     earthMesh.material = newMode === 'day' ? dayMaterial : nightMaterial
     earthMesh.material.needsUpdate = true
     earthMesh.userData.currentMode = newMode
-
     if (cameraManager) cameraManager.setTargetOrbitAngle(newMode === 'day' ? 0 : Math.PI)
   }
 
   if (directionalLight && ambientLight) {
     const mode = earthMesh.userData.currentMode
     const lightingConfig = mode === 'day' ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT
-
     directionalLight.intensity = lightingConfig.SUN_INTENSITY
     ambientLight.intensity = lightingConfig.AMBIENT_INTENSITY
     ambientLight.color.setHex(lightingConfig.AMBIENT_COLOR)
   }
 }
-
-// setupUserControls inlined into init - removed small helper
 
 // Global Animation Loop Reference
 let animate
@@ -513,7 +501,7 @@ function startAnimationLoop() {
   let frameCounter = 0
 
   animate = () => {
-    if (!isSystemActive) return // Guard clause
+    if (!isSystemActive) return
     animationFrameId = requestAnimationFrame(animate)
     frameCounter++
 
@@ -524,11 +512,9 @@ function startAnimationLoop() {
     if (cloudMesh && frameCounter % 2 === 0) {
       cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED
     }
-
     if (moonMesh && frameCounter % 3 === 0) {
       moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED
     }
-
     if (starManager && !capabilities.isLowEnd) starManager.update(elapsedTime)
 
     if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd && frameCounter % 2 === 0) {
@@ -540,11 +526,9 @@ function startAnimationLoop() {
     if (cameraManager) cameraManager.updateCameraPosition()
     updateObjectTransforms()
 
-    // Pass mouse pos from where ever it's tracked, or setup tracker
-    // For now we assume a global mouse tracker or pass empty
-    // Actually we need to add interaction logic
-    if (cardManager && window.lastMousePos) {
-       cardManager.update(elapsedTime * 1000, window.lastMousePos)
+    // Card update (no raycasting needed anymore, just float animation)
+    if (cardManager) {
+       cardManager.update(elapsedTime * 1000)
     }
 
     if (shootingStarManager && !capabilities.isLowEnd) shootingStarManager.update()
@@ -553,69 +537,35 @@ function startAnimationLoop() {
     if (renderer && scene && camera) {
       renderer.render(scene, camera)
     }
+    // Render CSS Scene
+    if (cssRenderer && cssScene && camera) {
+        cssRenderer.render(cssScene, camera)
+    }
   }
 
   document.addEventListener('visibilitychange', handleVisibilityChange)
-
-  if (document.visibilityState === 'visible') {
-    animate()
-  }
+  if (document.visibilityState === 'visible') animate()
 }
 
-function setupInteraction() {
-   window.lastMousePos = new THREE_INSTANCE.Vector2(-999, -999) // Default off-screen
-
-   const onMove = (event) => {
-       if (!isSystemActive) return
-       window.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1
-       window.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1
-   }
-
-   const onClick = (event) => {
-       if (!isSystemActive || !cardManager) return
-       // Recalculate mouse pos for click accuracy
-       const mouse = new THREE_INSTANCE.Vector2()
-       mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-       cardManager.handleClick(mouse)
-   }
-
-   window.addEventListener('mousemove', onMove)
-   window.addEventListener('click', onClick)
-
-   sharedCleanupManager.addCleanupFunction('three-earth', () => {
-       window.removeEventListener('mousemove', onMove)
-       window.removeEventListener('click', onClick)
-   }, 'interaction')
-}
+// setupInteraction removed (CSS handles it)
 
 function updateObjectTransforms() {
   if (!earthMesh) return
-
-  if (earthMesh.userData.targetPosition) {
-    earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04)
-  }
+  if (earthMesh.userData.targetPosition) earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04)
   if (earthMesh.userData.targetScale) {
-    // Simple lerp for scalar
     earthMesh.scale.x += (earthMesh.userData.targetScale - earthMesh.scale.x) * 0.06
     earthMesh.scale.y = earthMesh.scale.z = earthMesh.scale.x
   }
   if (earthMesh.userData.targetRotation !== undefined) {
     const rotDiff = earthMesh.userData.targetRotation - earthMesh.rotation.y
-    if (Math.abs(rotDiff) > 0.001) {
-      earthMesh.rotation.y += rotDiff * 0.06
-    }
+    if (Math.abs(rotDiff) > 0.001) earthMesh.rotation.y += rotDiff * 0.06
   }
-
   if (cloudMesh && earthMesh) {
     cloudMesh.position.copy(earthMesh.position)
     cloudMesh.scale.copy(earthMesh.scale)
   }
-
   if (moonMesh) {
-    if (moonMesh.userData.targetPosition) {
-      moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04)
-    }
+    if (moonMesh.userData.targetPosition) moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04)
     if (moonMesh.userData.targetScale) {
       moonMesh.scale.x += (moonMesh.userData.targetScale - moonMesh.scale.x) * 0.06
       moonMesh.scale.y = moonMesh.scale.z = moonMesh.scale.x
@@ -623,13 +573,10 @@ function updateObjectTransforms() {
   }
 }
 
-// applyQualitySettings inlined into PerformanceMonitor callback; removed to reduce small helper functions
-
 function setupResizeHandler() {
   const handleResize = () => {
     const container = getElementById('threeEarthContainer')
     if (!container || !camera || !renderer) return
-
     const width = container.clientWidth
     const height = container.clientHeight
     isMobileDevice = window.matchMedia('(max-width: 768px)').matches
@@ -637,13 +584,12 @@ function setupResizeHandler() {
     camera.aspect = width / height
     camera.updateProjectionMatrix()
     renderer.setSize(width, height)
-
-    // FIX: Notify StarManager about resize to update card positions
-    if (starManager) {
-      starManager.handleResize(width, height)
+    if (cssRenderer) {
+        cssRenderer.setSize(width, height)
     }
-  }
 
+    if (starManager) starManager.handleResize(width, height)
+  }
   const resizeCleanup = onResize(handleResize, 100)
   sharedCleanupManager.addCleanupFunction('three-earth', resizeCleanup, 'resize handler')
 }
@@ -651,24 +597,12 @@ function setupResizeHandler() {
 // ===== Public API =====
 
 export const {initThreeEarth, cleanup} = ThreeEarthManager
-
 export const EarthSystemAPI = {
-  flyToPreset: presetName => {
-    if (cameraManager) cameraManager.flyToPreset(presetName)
-  },
-  triggerMeteorShower: () => {
-    shootingStarManager?.triggerShower()
-  },
+  flyToPreset: presetName => { if (cameraManager) cameraManager.flyToPreset(presetName) },
+  triggerMeteorShower: () => { shootingStarManager?.triggerShower() },
   getConfig: () => CONFIG,
-  updateConfig: updates => {
-    Object.assign(CONFIG, updates)
-  },
-  // Exposed for testing purposes
-  get shootingStarManager() {
-    return shootingStarManager
-  }
+  updateConfig: updates => { Object.assign(CONFIG, updates) },
+  get shootingStarManager() { return shootingStarManager }
 }
-
 export default ThreeEarthManager
-
 export {detectDeviceCapabilities, getOptimizedConfig}
