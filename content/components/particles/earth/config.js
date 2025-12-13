@@ -149,4 +149,4 @@ export const CONFIG = {
       MOON_BUMP: '/content/assets/img/earth/textures/moon_bump.webp'
     }
   }
-};
+}
