@@ -4,32 +4,22 @@
  * @version 9.4.0 - OPTIMIZED: Fixed Async Race Conditions & Resize Logic
  */
 
-import {
-  createLogger,
-  getElementById,
-  onResize,
-  TimerManager,
-} from '../../utils/shared-utilities.js';
+import {createLogger, getElementById, onResize, TimerManager} from '../../utils/shared-utilities.js';
 import {
   getSharedState,
   loadThreeJS,
   registerParticleSystem,
   unregisterParticleSystem,
   sharedCleanupManager,
-  sharedParallaxManager,
+  sharedParallaxManager
 } from './shared-particle-system.js';
 
-import { CONFIG } from './earth/config.js';
-import { setupScene, setupLighting, createAtmosphere } from './earth/scene.js';
-import { createEarthSystem, createMoonSystem, createCloudLayer } from './earth/assets.js';
-import { CameraManager } from './earth/camera.js';
-import { StarManager, ShootingStarManager } from './earth/stars.js';
-import {
-  showLoadingState,
-  hideLoadingState,
-  showErrorState,
-  PerformanceMonitor,
-} from './earth/ui.js';
+import {CONFIG} from './earth/config.js';
+import {setupScene, setupLighting, createAtmosphere} from './earth/scene.js';
+import {createEarthSystem, createMoonSystem, createCloudLayer} from './earth/assets.js';
+import {CameraManager} from './earth/camera.js';
+import {StarManager, ShootingStarManager} from './earth/stars.js';
+import {showLoadingState, hideLoadingState, showErrorState, PerformanceMonitor} from './earth/ui.js';
 
 const log = createLogger('ThreeEarthSystem');
 const earthTimers = new TimerManager();
@@ -86,7 +76,7 @@ const ThreeEarthManager = (() => {
         log.debug('Device detection failed, using defaults', e);
       }
 
-      registerParticleSystem('three-earth', { type: 'three-earth' });
+      registerParticleSystem('three-earth', {type: 'three-earth'});
 
       THREE_INSTANCE = await loadThreeJS();
 
@@ -96,8 +86,7 @@ const ThreeEarthManager = (() => {
       showLoadingState(container);
 
       // Scene Setup
-      isMobileDevice =
-        !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
+      isMobileDevice = !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches;
 
       const sceneObjects = setupScene(THREE_INSTANCE, container);
       scene = sceneObjects.scene;
@@ -119,7 +108,7 @@ const ThreeEarthManager = (() => {
         hideLoadingState(container);
       };
 
-      loadingManager.onError = (url) => {
+      loadingManager.onError = url => {
         log.warn('Error loading texture:', url);
       };
 
@@ -127,9 +116,8 @@ const ThreeEarthManager = (() => {
       starManager = new StarManager(THREE_INSTANCE, scene, camera, renderer);
       const starField = starManager.createStarField();
       // Inline setupStarParallax
-      const parallaxHandler = (progress) => {
-        if (!starField || !starManager || (starManager.transition && starManager.transition.active))
-          return;
+      const parallaxHandler = progress => {
+        if (!starField || !starManager || (starManager.transition && starManager.transition.active)) return;
 
         starField.rotation.y = progress * Math.PI * 0.2;
         starField.position.z = Math.sin(progress * Math.PI) * 15;
@@ -145,7 +133,7 @@ const ThreeEarthManager = (() => {
       const [earthAssets, moonLOD, cloudObj] = await Promise.all([
         createEarthSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
         createMoonSystem(THREE_INSTANCE, scene, renderer, isMobileDevice, loadingManager),
-        createCloudLayer(THREE_INSTANCE, renderer, loadingManager, isMobileDevice),
+        createCloudLayer(THREE_INSTANCE, renderer, loadingManager, isMobileDevice)
       ]);
 
       // CRITICAL CHECK: Did cleanup happen while awaiting Assets?
@@ -177,19 +165,19 @@ const ThreeEarthManager = (() => {
       cameraManager.setupCameraSystem();
 
       // Inline setupUserControls to avoid small helper function
-      const onWheel = (e) => {
+      const onWheel = e => {
         if (cameraManager && isSystemActive) cameraManager.handleWheel(e);
       };
-      container.addEventListener('wheel', onWheel, { passive: true });
+      container.addEventListener('wheel', onWheel, {passive: true});
       sharedCleanupManager.addCleanupFunction(
         'three-earth',
         () => container.removeEventListener('wheel', onWheel),
-        'wheel control',
+        'wheel control'
       );
       setupSectionDetection();
       setupViewportObserver(container);
 
-      performanceMonitor = new PerformanceMonitor(container, renderer, (level) => {
+      performanceMonitor = new PerformanceMonitor(container, renderer, level => {
         currentQualityLevel = level;
         // Inline applyQualitySettings - small and only used here
         const levelCfg = CONFIG.QUALITY_LEVELS[currentQualityLevel];
@@ -251,11 +239,11 @@ const ThreeEarthManager = (() => {
     sharedCleanupManager.cleanupSystem('three-earth');
 
     if (scene) {
-      scene.traverse((obj) => {
+      scene.traverse(obj => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
           if (Array.isArray(obj.material)) {
-            obj.material.forEach((m) => disposeMaterial(m));
+            obj.material.forEach(m => disposeMaterial(m));
           } else {
             disposeMaterial(obj.material);
           }
@@ -286,7 +274,7 @@ const ThreeEarthManager = (() => {
   function disposeMaterial(material) {
     if (!material) return;
     const textureProps = ['map', 'normalMap', 'bumpMap', 'envMap', 'emissiveMap', 'alphaMap'];
-    textureProps.forEach((prop) => {
+    textureProps.forEach(prop => {
       if (material[prop]?.dispose) {
         material[prop].dispose();
         material[prop] = null;
@@ -294,7 +282,7 @@ const ThreeEarthManager = (() => {
     });
     // Safely dispose uniforms
     if (material.uniforms) {
-      Object.values(material.uniforms).forEach((uniform) => {
+      Object.values(material.uniforms).forEach(uniform => {
         if (uniform && uniform.value && typeof uniform.value.dispose === 'function') {
           uniform.value.dispose();
         }
@@ -305,7 +293,7 @@ const ThreeEarthManager = (() => {
 
   // handleInitializationError body inlined into the initialization catch block
 
-  return { initThreeEarth, cleanup };
+  return {initThreeEarth, cleanup};
 })();
 
 // ===== Helpers =====
@@ -316,16 +304,15 @@ function detectDeviceCapabilities() {
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
     // Simple heuristic checks
     const isLowEnd =
-      /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) ||
-      (navigator.hardwareConcurrency || 4) <= 2;
+      /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) || (navigator.hardwareConcurrency || 4) <= 2;
 
     return {
       isMobile,
       isLowEnd,
-      recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH',
+      recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH'
     };
   } catch (e) {
-    return { isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM' };
+    return {isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM'};
   }
 }
 
@@ -339,21 +326,21 @@ function getOptimizedConfig(capabilities) {
 
   if (capabilities.isLowEnd) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 16 },
-      STARS: { ...CONFIG.STARS, COUNT: 1000 },
-      PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: 1.0, TARGET_FPS: 30 },
-      CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 },
+      EARTH: {...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 16},
+      STARS: {...CONFIG.STARS, COUNT: 1000},
+      PERFORMANCE: {...CONFIG.PERFORMANCE, PIXEL_RATIO: 1.0, TARGET_FPS: 30},
+      CLOUDS: {...CONFIG.CLOUDS, OPACITY: 0}
     };
   }
 
   if (capabilities.isMobile) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 32 },
-      STARS: { ...CONFIG.STARS, COUNT: 2000 },
+      EARTH: {...CONFIG.EARTH, SEGMENTS_MOBILE: 32},
+      STARS: {...CONFIG.STARS, COUNT: 2000},
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0),
-      },
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0)
+      }
     };
   }
 
@@ -366,11 +353,11 @@ function setupSectionDetection() {
   const sections = Array.from(document.querySelectorAll('section[id], div#footer-trigger-zone'));
   if (sections.length === 0) return;
 
-  const mapId = (id) => (id === 'footer-trigger-zone' ? 'site-footer' : id);
-  const OBSERVER_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i / 20);
+  const mapId = id => (id === 'footer-trigger-zone' ? 'site-footer' : id);
+  const OBSERVER_THRESHOLDS = Array.from({length: 21}, (_, i) => i / 20);
 
   sectionObserver = new IntersectionObserver(
-    (entries) => {
+    entries => {
       let best = null;
       for (const entry of entries) {
         if (!best || entry.intersectionRatio > best.intersectionRatio) {
@@ -390,7 +377,7 @@ function setupSectionDetection() {
         if (cameraManager) cameraManager.updateCameraForSection(newSection);
 
         const isFeaturesToAbout = previousSection === 'features' && newSection === 'about';
-        updateEarthForSection(newSection, { allowModeSwitch: isFeaturesToAbout });
+        updateEarthForSection(newSection, {allowModeSwitch: isFeaturesToAbout});
 
         if (newSection === 'features' && starManager) {
           starManager.animateStarsToCards();
@@ -402,15 +389,15 @@ function setupSectionDetection() {
         if (container) container.setAttribute('data-section', newSection);
       }
     },
-    { rootMargin: '-20% 0px -20% 0px', threshold: OBSERVER_THRESHOLDS },
+    {rootMargin: '-20% 0px -20% 0px', threshold: OBSERVER_THRESHOLDS}
   );
 
-  sections.forEach((section) => sectionObserver.observe(section));
+  sections.forEach(section => sectionObserver.observe(section));
 }
 
 function setupViewportObserver(container) {
   viewportObserver = new IntersectionObserver(
-    (entries) => {
+    entries => {
       const entry = entries[0];
       isSystemVisible = entry.isIntersecting;
 
@@ -427,7 +414,7 @@ function setupViewportObserver(container) {
         }
       }
     },
-    { threshold: 0 },
+    {threshold: 0}
   );
 
   viewportObserver.observe(container);
@@ -439,25 +426,25 @@ function updateEarthForSection(sectionName, options = {}) {
 
   const configs = {
     hero: {
-      earth: { pos: { x: 1, y: -2.5, z: -1 }, scale: 1.3, rotation: 0 },
-      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-      mode: 'day',
+      earth: {pos: {x: 1, y: -2.5, z: -1}, scale: 1.3, rotation: 0},
+      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
+      mode: 'day'
     },
     features: {
-      earth: { pos: { x: -7, y: -2, z: -4 }, scale: 0.7, rotation: 0 },
-      moon: { pos: { x: 1, y: 2, z: -5 }, scale: 1.1 },
-      mode: 'day',
+      earth: {pos: {x: -7, y: -2, z: -4}, scale: 0.7, rotation: 0},
+      moon: {pos: {x: 1, y: 2, z: -5}, scale: 1.1},
+      mode: 'day'
     },
     about: {
-      earth: { pos: { x: -1, y: -0.5, z: -1 }, scale: 1.0, rotation: Math.PI },
-      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-      mode: 'night',
+      earth: {pos: {x: -1, y: -0.5, z: -1}, scale: 1.0, rotation: Math.PI},
+      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
+      mode: 'night'
     },
     contact: {
-      earth: { pos: { x: 0, y: -1.5, z: 0 }, scale: 1.1, rotation: Math.PI / 2 },
-      moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
-      mode: 'day',
-    },
+      earth: {pos: {x: 0, y: -1.5, z: 0}, scale: 1.1, rotation: Math.PI / 2},
+      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
+      mode: 'day'
+    }
   };
 
   const config = configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero;
@@ -465,7 +452,7 @@ function updateEarthForSection(sectionName, options = {}) {
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
     config.earth.pos.x,
     config.earth.pos.y,
-    config.earth.pos.z,
+    config.earth.pos.z
   );
   earthMesh.userData.targetScale = config.earth.scale;
   earthMesh.userData.targetRotation = config.earth.rotation;
@@ -474,7 +461,7 @@ function updateEarthForSection(sectionName, options = {}) {
     moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
       config.moon.pos.x,
       config.moon.pos.y,
-      config.moon.pos.z,
+      config.moon.pos.z
     );
     moonMesh.userData.targetScale = config.moon.scale;
   }
@@ -541,16 +528,10 @@ function startAnimationLoop() {
 
     if (starManager && !capabilities.isLowEnd) starManager.update(elapsedTime);
 
-    if (
-      earthMesh?.userData.currentMode === 'night' &&
-      !capabilities.isLowEnd &&
-      frameCounter % 2 === 0
-    ) {
+    if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd && frameCounter % 2 === 0) {
       const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0;
       const pulseAmount =
-        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
-        2;
+        Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
       if (earthMesh.material) earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
     }
 
@@ -633,25 +614,25 @@ function setupResizeHandler() {
 
 // ===== Public API =====
 
-export const { initThreeEarth, cleanup } = ThreeEarthManager;
+export const {initThreeEarth, cleanup} = ThreeEarthManager;
 
 export const EarthSystemAPI = {
-  flyToPreset: (presetName) => {
+  flyToPreset: presetName => {
     if (cameraManager) cameraManager.flyToPreset(presetName);
   },
   triggerMeteorShower: () => {
     shootingStarManager?.triggerShower();
   },
   getConfig: () => CONFIG,
-  updateConfig: (updates) => {
+  updateConfig: updates => {
     Object.assign(CONFIG, updates);
   },
   // Exposed for testing purposes
   get shootingStarManager() {
     return shootingStarManager;
-  },
+  }
 };
 
 export default ThreeEarthManager;
 
-export { detectDeviceCapabilities, getOptimizedConfig };
+export {detectDeviceCapabilities, getOptimizedConfig};

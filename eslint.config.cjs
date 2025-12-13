@@ -2,21 +2,21 @@
 // This avoids mixed-config detection issues across different Node/ESLint environments.
 module.exports = [
   {
-    ignores: ['node_modules/**', 'dist/**', 'build/**', 'content/vendor/**', 'public/**'],
+    ignores: ['node_modules/**', 'dist/**', 'build/**', 'content/vendor/**', 'public/**']
   },
   {
     files: ['**/*.js'],
     languageOptions: {
       sourceType: 'module',
-      ecmaVersion: 2024,
+      ecmaVersion: 2024
     },
     rules: {
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-unused-vars': ['warn', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+      'no-console': ['warn', {allow: ['warn', 'error']}],
+      'no-unused-vars': ['warn', {varsIgnorePattern: '^_', argsIgnorePattern: '^_'}],
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'prefer-const': 'warn',
-      'no-var': 'warn',
-    },
-  },
+      'no-var': 'warn'
+    }
+  }
 ];

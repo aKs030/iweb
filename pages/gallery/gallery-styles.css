@@ -338,39 +338,19 @@ img {
 
 /* Backgrounds & gradients */
 .bg-gradient-to-br {
-  background-image: linear-gradient(
-    to bottom right,
-    var(--from-color),
-    var(--via-color, transparent),
-    var(--to-color)
-  );
+  background-image: linear-gradient(to bottom right, var(--from-color), var(--via-color, transparent), var(--to-color));
 }
 
 .bg-gradient-to-r {
-  background-image: linear-gradient(
-    to right,
-    var(--from-color),
-    var(--via-color, transparent),
-    var(--to-color)
-  );
+  background-image: linear-gradient(to right, var(--from-color), var(--via-color, transparent), var(--to-color));
 }
 
 .bg-gradient-to-t {
-  background-image: linear-gradient(
-    to top,
-    var(--from-color),
-    var(--via-color, transparent),
-    var(--to-color)
-  );
+  background-image: linear-gradient(to top, var(--from-color), var(--via-color, transparent), var(--to-color));
 }
 
 .bg-gradient-to-b {
-  background-image: linear-gradient(
-    to bottom,
-    var(--from-color),
-    var(--via-color, transparent),
-    var(--to-color)
-  );
+  background-image: linear-gradient(to bottom, var(--from-color), var(--via-color, transparent), var(--to-color));
 }
 
 .from-slate-950 {

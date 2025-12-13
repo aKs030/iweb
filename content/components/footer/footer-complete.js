@@ -8,8 +8,8 @@
  * ✅ Performance Monitoring
  */
 
-import { createLogger, CookieManager } from '../../utils/shared-utilities.js';
-import { a11y } from '../../utils/accessibility-manager.js';
+import {createLogger, CookieManager} from '../../utils/shared-utilities.js';
+import {a11y} from '../../utils/accessibility-manager.js';
 
 const log = createLogger('FooterSystem');
 
@@ -22,7 +22,7 @@ const debounce = (func, wait) => {
   };
 };
 
-const memoize = (fn) => {
+const memoize = fn => {
   const cache = new Map();
   return (...args) => {
     const key = JSON.stringify(args);
@@ -39,7 +39,7 @@ const CONSTANTS = {
   SCROLL_WATCH_TIMEOUT: 5000,
   SCROLL_THRESHOLD: 6,
   RESIZE_DEBOUNCE: 150,
-  ANIMATION_DURATION: 800,
+  ANIMATION_DURATION: 800
 };
 
 // ===== DOM Cache =====
@@ -124,13 +124,13 @@ const ProgrammaticScroll = (() => {
 
       if (element && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver(
-          (entries) => {
+          entries => {
             const entry = entries[0];
             if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
               ProgrammaticScroll.clear(token);
             }
           },
-          { threshold: [0.5, 1] },
+          {threshold: [0.5, 1]}
         );
 
         observer.observe(element);
@@ -139,26 +139,25 @@ const ProgrammaticScroll = (() => {
           observer.disconnect();
         }, timeout);
 
-        watchers.set(token, { observer, timeoutId });
+        watchers.set(token, {observer, timeoutId});
         return token;
       }
 
       // Fallback
       const check = () => {
         const current = window.scrollY || window.pageYOffset;
-        const atBottom =
-          window.innerHeight + current >= document.body.scrollHeight - CONSTANTS.SCROLL_THRESHOLD;
+        const atBottom = window.innerHeight + current >= document.body.scrollHeight - CONSTANTS.SCROLL_THRESHOLD;
         if (atBottom) ProgrammaticScroll.clear(token);
       };
 
       const listener = () => check();
       check();
-      window.addEventListener('scroll', listener, { passive: true });
+      window.addEventListener('scroll', listener, {passive: true});
 
       const timeoutId = setTimeout(() => ProgrammaticScroll.clear(token), timeout);
-      watchers.set(token, { listener, timeoutId });
+      watchers.set(token, {listener, timeoutId});
       return token;
-    },
+    }
   };
 })();
 
@@ -167,7 +166,7 @@ const GlobalClose = (() => {
   let closeHandler = null;
   let bound = false;
 
-  const onDocClick = (e) => {
+  const onDocClick = e => {
     const footer = domCache.get('#site-footer');
     if (!footer?.classList.contains('footer-expanded')) return;
     if (e.target.closest('#site-footer')) return;
@@ -182,13 +181,13 @@ const GlobalClose = (() => {
   };
 
   return {
-    setCloseHandler: (fn) => (closeHandler = fn),
+    setCloseHandler: fn => (closeHandler = fn),
 
     bind() {
       if (bound) return;
-      document.addEventListener('click', onDocClick, { capture: true, passive: true });
-      window.addEventListener('wheel', onUserScroll, { passive: true });
-      window.addEventListener('touchstart', onUserScroll, { passive: true });
+      document.addEventListener('click', onDocClick, {capture: true, passive: true});
+      window.addEventListener('wheel', onUserScroll, {passive: true});
+      window.addEventListener('touchstart', onUserScroll, {passive: true});
       bound = true;
     },
 
@@ -198,7 +197,7 @@ const GlobalClose = (() => {
       window.removeEventListener('wheel', onUserScroll);
       window.removeEventListener('touchstart', onUserScroll);
       bound = false;
-    },
+    }
   };
 })();
 
@@ -210,9 +209,9 @@ const GoogleAnalytics = {
     const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
     if (blockedScripts.length === 0) return;
 
-    blockedScripts.forEach((script) => {
+    blockedScripts.forEach(script => {
       const newScript = document.createElement('script');
-      Array.from(script.attributes).forEach((attr) => {
+      Array.from(script.attributes).forEach(attr => {
         if (attr.name === 'data-src') {
           newScript.setAttribute('src', attr.value);
         } else if (!['data-consent', 'type'].includes(attr.name)) {
@@ -226,7 +225,7 @@ const GoogleAnalytics = {
     performance.mark('analytics-load-end');
     performance.measure('analytics-load', 'analytics-load-start', 'analytics-load-end');
     log.info('Google Analytics loaded');
-  },
+  }
 };
 
 // ===== Consent Banner (Optimized) =====
@@ -235,12 +234,12 @@ class ConsentBanner {
     this.elements = {
       banner: domCache.get('#cookie-consent-banner'),
       acceptBtn: domCache.get('#accept-cookies-btn'),
-      rejectBtn: domCache.get('#reject-cookies-btn'),
+      rejectBtn: domCache.get('#reject-cookies-btn')
     };
   }
 
   init() {
-    const { banner, acceptBtn, rejectBtn } = this.elements;
+    const {banner, acceptBtn, rejectBtn} = this.elements;
     if (!banner || !acceptBtn) return;
 
     const consent = CookieManager.get('cookie_consent');
@@ -255,8 +254,8 @@ class ConsentBanner {
     }
 
     // Event Listeners
-    acceptBtn.addEventListener('click', () => this.accept(), { once: false });
-    rejectBtn?.addEventListener('click', () => this.reject(), { once: false });
+    acceptBtn.addEventListener('click', () => this.accept(), {once: false});
+    rejectBtn?.addEventListener('click', () => this.reject(), {once: false});
   }
 
   accept() {
@@ -286,10 +285,10 @@ const CookieSettings = (() => {
     closeBtn: domCache.get('#close-cookie-footer'),
     rejectAllBtn: domCache.get('#footer-reject-all'),
     acceptSelectedBtn: domCache.get('#footer-accept-selected'),
-    acceptAllBtn: domCache.get('#footer-accept-all'),
+    acceptAllBtn: domCache.get('#footer-accept-all')
   }));
 
-  const setupHandlers = (elements) => {
+  const setupHandlers = elements => {
     const handlerMap = {
       closeBtn: () => close(),
       rejectAllBtn: () => {
@@ -314,7 +313,7 @@ const CookieSettings = (() => {
         GoogleAnalytics.load();
         close();
         domCache.get('#cookie-consent-banner')?.classList.add('hidden');
-      },
+      }
     };
 
     Object.entries(handlerMap).forEach(([key, handler]) => {
@@ -346,9 +345,7 @@ const CookieSettings = (() => {
     elements.cookieView.classList.remove('hidden');
     if (elements.normalContent) elements.normalContent.style.display = 'none';
 
-    requestAnimationFrame(() =>
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' }),
-    );
+    requestAnimationFrame(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'auto'}));
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
     GlobalClose.bind();
@@ -361,11 +358,7 @@ const CookieSettings = (() => {
     }
 
     performance.mark('cookie-settings-open-end');
-    performance.measure(
-      'cookie-settings-open',
-      'cookie-settings-open-start',
-      'cookie-settings-open-end',
-    );
+    performance.measure('cookie-settings-open', 'cookie-settings-open-start', 'cookie-settings-open-end');
   };
 
   const close = () => {
@@ -393,7 +386,7 @@ const CookieSettings = (() => {
     }
   };
 
-  return { open, close };
+  return {open, close};
 })();
 
 GlobalClose.setCloseHandler(() => CookieSettings.close());
@@ -443,7 +436,7 @@ class ThemeSystem {
     const toggle = domCache.get('#dayNightToggle');
 
     if (toggle) {
-      toggle.addEventListener('click', (e) => {
+      toggle.addEventListener('click', e => {
         const rect = toggle.getBoundingClientRect();
         this.createRipple(toggle, e.clientX - rect.left, e.clientY - rect.top);
         this.toggleTheme();
@@ -479,8 +472,8 @@ class FooterLoader {
 
       document.dispatchEvent(
         new CustomEvent('footer:loaded', {
-          detail: { footerId: 'site-footer', timestamp: Date.now() },
-        }),
+          detail: {footerId: 'site-footer', timestamp: Date.now()}
+        })
       );
 
       performance.mark('footer-load-end');
@@ -495,14 +488,14 @@ class FooterLoader {
 
   updateYears() {
     const year = new Date().getFullYear();
-    domCache.getAll('.current-year').forEach((el) => (el.textContent = year));
+    domCache.getAll('.current-year').forEach(el => (el.textContent = year));
   }
 
   setupInteractions() {
     // Newsletter Form
     const form = domCache.get('.newsletter-form-enhanced');
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', e => {
         e.preventDefault();
         const btn = form.querySelector('button[type="submit"]');
         if (btn) {
@@ -521,7 +514,7 @@ class FooterLoader {
     // Event Delegation for Cookie & Footer Triggers
     document.addEventListener(
       'click',
-      (e) => {
+      e => {
         const cookieTrigger = e.target.closest('[data-cookie-trigger]');
         const footerTrigger = e.target.closest('[data-footer-trigger]');
 
@@ -536,7 +529,7 @@ class FooterLoader {
           this.handleFooterTrigger();
         }
       },
-      { passive: false },
+      {passive: false}
     );
   }
 
@@ -553,7 +546,7 @@ class FooterLoader {
         footer.querySelector('.footer-maximized')?.classList.remove('footer-hidden');
 
         const token = ProgrammaticScroll.create();
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
         ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport');
       }
     }
@@ -580,7 +573,7 @@ class ScrollHandler {
     if (!footer || !trigger) return;
 
     this.observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const entry = entries[0];
         if (entry.target.id !== 'footer-trigger-zone') return;
 
@@ -590,7 +583,7 @@ class ScrollHandler {
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold;
         this.toggleExpansion(shouldExpand);
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: [0.02, 0.05] },
+      {rootMargin: '0px 0px -10% 0px', threshold: [0.02, 0.05]}
     );
 
     this.observer.observe(trigger);
@@ -639,7 +632,7 @@ class FooterResizer {
   }
 
   init() {
-    window.addEventListener('resize', this.debouncedApply, { passive: true });
+    window.addEventListener('resize', this.debouncedApply, {passive: true});
     this.apply();
   }
 
@@ -663,7 +656,7 @@ class FooterResizer {
 const initFooter = () => new FooterLoader().init();
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initFooter, { once: true });
+  document.addEventListener('DOMContentLoaded', initFooter, {once: true});
 } else {
   initFooter();
 }
@@ -673,5 +666,5 @@ window.FooterSystem = {
   FooterLoader,
   CookieSettings,
   ProgrammaticScroll,
-  domCache,
+  domCache
 };

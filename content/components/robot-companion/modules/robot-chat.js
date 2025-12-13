@@ -136,7 +136,7 @@ export class RobotChat {
     }
 
     // Update history
-    this.history.push({ role: type === 'user' ? 'user' : 'model', text: String(text || '') });
+    this.history.push({role: type === 'user' ? 'user' : 'model', text: String(text || '')});
     if (this.history.length > 20) {
       this.history = this.history.slice(this.history.length - 20);
     }
@@ -148,7 +148,7 @@ export class RobotChat {
 
   addOptions(options) {
     this.clearControls();
-    options.forEach((opt) => {
+    options.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'chat-option-btn';
       btn.textContent = opt.label;
@@ -180,7 +180,7 @@ export class RobotChat {
       return;
     }
     if (actionKey === 'scrollFooter') {
-      this.robot.dom.footer?.scrollIntoView({ behavior: 'smooth' });
+      this.robot.dom.footer?.scrollIntoView({behavior: 'smooth'});
       this.showTyping();
       setTimeout(() => {
         this.removeTyping();
@@ -218,18 +218,14 @@ export class RobotChat {
     this.robot.dom.avatar.classList.add('nod');
     setTimeout(() => this.robot.dom.avatar.classList.remove('nod'), 650);
 
-    let responseText = Array.isArray(data.text)
-      ? data.text[Math.floor(Math.random() * data.text.length)]
-      : data.text;
+    let responseText = Array.isArray(data.text) ? data.text[Math.floor(Math.random() * data.text.length)] : data.text;
 
     if (actionKey === 'start' && Math.random() < 0.3) {
       responseText = this.robot.getMoodGreeting();
     } else if (actionKey === 'start') {
       const ctx = this.robot.getPageContext();
       const suffix =
-        this.startMessageSuffix && this.startMessageSuffix[ctx]
-          ? String(this.startMessageSuffix[ctx]).trim()
-          : '';
+        this.startMessageSuffix && this.startMessageSuffix[ctx] ? String(this.startMessageSuffix[ctx]).trim() : '';
       if (suffix) responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
     }
 
@@ -248,7 +244,7 @@ export class RobotChat {
   // Bubble Sequence Logic
   clearBubbleSequence() {
     if (!this._bubbleSequenceTimers) return;
-    this._bubbleSequenceTimers.forEach((t) => clearTimeout(t));
+    this._bubbleSequenceTimers.forEach(t => clearTimeout(t));
     this._bubbleSequenceTimers = [];
   }
 
@@ -256,7 +252,7 @@ export class RobotChat {
     if (!ctxArr || ctxArr.length === 0) return null;
     if (!this.contextGreetingHistory[ctxKey]) this.contextGreetingHistory[ctxKey] = new Set();
     const used = this.contextGreetingHistory[ctxKey];
-    let candidates = ctxArr.filter((g) => !used.has(g));
+    let candidates = ctxArr.filter(g => !used.has(g));
     if (candidates.length === 0) {
       used.clear();
       candidates = ctxArr.slice();
@@ -271,19 +267,15 @@ export class RobotChat {
     const ctx = this.robot.getPageContext();
     const ctxArr = (this.contextGreetings && this.contextGreetings[ctx]) || [];
     const pools = this.initialBubblePools || [];
-    const maxSteps =
-      (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.steps) || 3;
+    const maxSteps = (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.steps) || 3;
 
-    if (
-      !Array.isArray(this.initialBubblePoolCursor) ||
-      this.initialBubblePoolCursor.length !== pools.length
-    ) {
+    if (!Array.isArray(this.initialBubblePoolCursor) || this.initialBubblePoolCursor.length !== pools.length) {
       this.initialBubblePoolCursor = new Array(pools.length).fill(0);
     }
 
     const picks = [];
 
-    const nextFromPool = (poolIdx) => {
+    const nextFromPool = poolIdx => {
       if (!pools.length) return null;
       const idx = poolIdx % pools.length;
       const pool = pools[idx];
@@ -318,25 +310,17 @@ export class RobotChat {
       fillFromPools(0);
     }
 
-    if (
-      picks.length === 0 &&
-      this.initialBubbleGreetings &&
-      this.initialBubbleGreetings.length > 0
-    ) {
-      const fallback =
-        this.initialBubbleGreetings[Math.floor(Math.random() * this.initialBubbleGreetings.length)];
+    if (picks.length === 0 && this.initialBubbleGreetings && this.initialBubbleGreetings.length > 0) {
+      const fallback = this.initialBubbleGreetings[Math.floor(Math.random() * this.initialBubbleGreetings.length)];
       picks.push(String(fallback || '').trim());
     }
 
     if (picks.length === 0) return;
 
-    const showMs =
-      (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.displayDuration) ||
-      8000;
-    const pauses =
-      (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.pausesAfter) || [];
+    const showMs = (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.displayDuration) || 8000;
+    const pauses = (this.initialBubbleSequenceConfig && this.initialBubbleSequenceConfig.pausesAfter) || [];
 
-    const schedule = (index) => {
+    const schedule = index => {
       if (this.isOpen) return;
       if (index >= picks.length) {
         this.lastGreetedContext = ctx;
@@ -362,7 +346,7 @@ export class RobotChat {
     const ctx = this.robot.getPageContext();
     const behavior = {
       page: ctx,
-      interests: [ctx],
+      interests: [ctx]
     };
 
     try {

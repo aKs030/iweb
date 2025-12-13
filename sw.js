@@ -37,57 +37,57 @@ const STATIC_ASSETS = [
   '/pages/gallery/gallery-styles.css',
   '/pages/gallery/gallery-app.js',
   '/content/components/typewriter/typewriter.css',
-  '/content/components/typewriter/TypeWriter.js',
+  '/content/components/typewriter/TypeWriter.js'
 ];
 
 // Cache-Größenlimits
 const CACHE_LIMITS = {
   [DYNAMIC_CACHE]: 50,
-  [IMAGE_CACHE]: 100,
+  [IMAGE_CACHE]: 100
 };
 
 // Installation - Cache statische Assets
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
-      .then((cache) => {
+      .then(cache => {
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
         return self.skipWaiting();
       })
-      .catch((err) => {
+      .catch(err => {
         // Fehler beim Cachen nicht blockieren
         console.error('[SW] Installation failed:', err);
-      }),
+      })
   );
 });
 
 // Aktivierung - Bereinige alte Caches
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
     caches
       .keys()
-      .then((cacheNames) => {
+      .then(cacheNames => {
         return Promise.all(
-          cacheNames.map((cacheName) => {
+          cacheNames.map(cacheName => {
             // Lösche alle Caches die nicht zur aktuellen Version gehören
             if (cacheName.startsWith('iweb-') && !cacheName.startsWith(CACHE_VERSION)) {
               return caches.delete(cacheName);
             }
-          }),
+          })
         );
       })
       .then(() => {
         return self.clients.claim();
-      }),
+      })
   );
 });
 
 // Fetch - Intelligente Caching-Strategien
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
+self.addEventListener('fetch', event => {
+  const {request} = event;
   const url = new URL(request.url);
 
   // Ignoriere Chrome Extension Requests
@@ -157,7 +157,7 @@ async function cacheFirst(request, cacheName) {
     return response;
   } catch (error) {
     // Network failed, return cached offline page if available
-    return caches.match('/offline.html') || new Response('Offline', { status: 503 });
+    return caches.match('/offline.html') || new Response('Offline', {status: 503});
   }
 }
 
@@ -180,7 +180,7 @@ async function networkFirst(request, cacheName) {
     }
     // Fallback für HTML-Seiten
     if (request.destination === 'document') {
-      return caches.match('/offline.html') || new Response('Offline', { status: 503 });
+      return caches.match('/offline.html') || new Response('Offline', {status: 503});
     }
     throw error;
   }
@@ -193,10 +193,10 @@ async function staleWhileRevalidate(request, cacheName) {
   const cached = await caches.match(request);
 
   const fetchPromise = fetch(request)
-    .then((response) => {
+    .then(response => {
       if (response && response.status === 200) {
         const cache = caches.open(cacheName);
-        cache.then((c) => c.put(request, response.clone()));
+        cache.then(c => c.put(request, response.clone()));
       }
       return response;
     })
@@ -226,16 +226,16 @@ async function limitCacheSize(cacheName, maxItems) {
 /**
  * Message Handler für Kommunikation mit der App
  */
-self.addEventListener('message', (event) => {
+self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 
   if (event.data && event.data.type === 'CLEAR_CACHE') {
     event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-      }),
+      caches.keys().then(cacheNames => {
+        return Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+      })
     );
   }
 });

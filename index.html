@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <script src="/content/components/head/head-complete.js" type="module"></script>
 
-    <link
-      rel="stylesheet"
-      href="/content/styles/main.css"
-      media="print"
-      onload="this.media='all';this.onload=null;"
-    />
+    <link rel="stylesheet" href="/content/styles/main.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/content/styles/main.css" /></noscript>
 
     <!-- Critical component CSS that should load synchronously (Hero, TypeWriter) -->
@@ -22,30 +17,17 @@
       rel="stylesheet"
       href="/content/components/particles/three-earth.css"
       media="print"
-      onload="this.media='all';this.onload=null;"
-    />
-    <noscript
-      ><link rel="stylesheet" href="/content/components/particles/three-earth.css"
-    /></noscript>
+      onload="this.media='all';this.onload=null;" />
+    <noscript><link rel="stylesheet" href="/content/components/particles/three-earth.css" /></noscript>
 
     <!-- Main application script -->
     <script type="module" src="/content/main.js"></script>
 
     <!-- Deferred Styles (Below-the-Fold) -->
-    <link
-      rel="stylesheet"
-      href="/pages/about/about.css"
-      media="print"
-      onload="this.media='all';this.onload=null;"
-    />
+    <link rel="stylesheet" href="/pages/about/about.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
-    <link
-      rel="stylesheet"
-      href="/pages/cards/karten.css"
-      media="print"
-      onload="this.media='all';this.onload=null;"
-    />
+    <link rel="stylesheet" href="/pages/cards/karten.css" media="print" onload="this.media='all';this.onload=null;" />
     <noscript><link rel="stylesheet" href="/pages/cards/karten.css" /></noscript>
 
     <script src="/content/components/robot-companion/robot-companion.js" type="module"></script>
@@ -57,13 +39,7 @@
     </header>
 
     <!-- Global Loading Screen (minimal static fallback for initial paint) -->
-    <div
-      class="loading-screen"
-      id="loadingScreen"
-      aria-hidden="true"
-      aria-label="Seite wird geladen"
-      role="status"
-    >
+    <div class="loading-screen" id="loadingScreen" aria-hidden="true" aria-label="Seite wird geladen" role="status">
       <div class="loader" aria-hidden="true"></div>
     </div>
 
@@ -72,12 +48,11 @@
       id="threeEarthContainer"
       class="three-earth-container"
       data-section="hero"
-      aria-describedby="earth-description"
-    >
+      aria-describedby="earth-description">
       <!-- Hidden description for screen readers -->
       <div id="earth-description" class="visually-hidden">
-        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen.
-        Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
+        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. Verwenden Sie die
+        Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
       </div>
 
       <div class="three-earth-performance-overlay" id="threeEarthPerformance">
@@ -94,18 +69,8 @@
     </div>
 
     <!-- ARIA Live Regions -->
-    <div
-      id="live-region-status"
-      class="visually-hidden"
-      aria-live="polite"
-      aria-atomic="true"
-    ></div>
-    <div
-      id="live-region-assertive"
-      class="visually-hidden"
-      aria-live="assertive"
-      aria-atomic="true"
-    ></div>
+    <div id="live-region-status" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+    <div id="live-region-assertive" class="visually-hidden" aria-live="assertive" aria-atomic="true"></div>
 
     <p class="typewriter-title typewriter-title--fixed" data-offset-mode="full">
       <span id="typedAuthor" class="typed-author"></span>
@@ -118,8 +83,7 @@
         class="section hero"
         aria-label="Abdulkerim — Digital Creator Portfolio"
         data-section-src="/pages/home/hero.html"
-        data-eager="true"
-      >
+        data-eager="true">
         <div class="section-skeleton" aria-hidden="true"></div>
       </section>
 
@@ -129,8 +93,7 @@
         class="section features"
         aria-label="Features und Leistungen"
         data-section-src="/pages/cards/karten.html"
-        data-eager="true"
-      >
+        data-eager="true">
         <div class="section-skeleton" aria-hidden="true"></div>
       </section>
 
@@ -139,8 +102,7 @@
         id="about"
         class="section about"
         aria-labelledby="about-heading"
-        data-section-src="/pages/about/about.html"
-      >
+        data-section-src="/pages/about/about.html">
         <div class="section-skeleton" aria-hidden="true"></div>
       </section>
 

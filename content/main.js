@@ -7,7 +7,7 @@
  * @last-modified 2025-11-29
  */
 
-import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
+import {initHeroFeatureBundle} from '../pages/home/hero-manager.js';
 import {
   createLazyLoadObserver,
   createLogger,
@@ -16,10 +16,10 @@ import {
   fire,
   getElementById,
   schedulePersistentStorageRequest,
-  SectionTracker,
+  SectionTracker
 } from './utils/shared-utilities.js';
-import { initHeroSubtitle } from './components/typewriter/TypeWriter.js';
-import { a11y } from './utils/accessibility-manager.js';
+import {initHeroSubtitle} from './components/typewriter/TypeWriter.js';
+import {a11y} from './utils/accessibility-manager.js';
 // Ensure the a11y manager is available globally and initialized centrally
 if (typeof window !== 'undefined') {
   try {
@@ -39,7 +39,7 @@ const ENV = {
     new URLSearchParams(window.location.search).has('test') ||
     navigator.userAgent.includes('HeadlessChrome') ||
     (window.location.hostname === 'localhost' && window.navigator.webdriver),
-  debug: new URLSearchParams(window.location.search).has('debug'),
+  debug: new URLSearchParams(window.location.search).has('debug')
 };
 
 // ===== Performance Tracking =====
@@ -47,14 +47,14 @@ const perfMarks = {
   start: performance.now(),
   domReady: 0,
   modulesReady: 0,
-  windowLoaded: 0,
+  windowLoaded: 0
 };
 
 // ===== Accessibility Announcements =====
 const announce = (() => {
   const cache = new Map();
 
-  return (message, { assertive = false, dedupe = false } = {}) => {
+  return (message, {assertive = false, dedupe = false} = {}) => {
     if (!message) return;
 
     if (dedupe && cache.has(message)) return;
@@ -102,8 +102,8 @@ const SectionLoader = (() => {
     try {
       document.dispatchEvent(
         new CustomEvent(type, {
-          detail: { id: section?.id, section, ...detail },
-        }),
+          detail: {id: section?.id, section, ...detail}
+        })
       );
     } catch (error) {
       log.debug(`Event dispatch failed: ${type}`, error);
@@ -137,8 +137,8 @@ const SectionLoader = (() => {
     section.setAttribute('aria-busy', 'true');
     section.dataset.state = 'loading';
 
-    announce(`Lade ${sectionName}…`, { dedupe: true });
-    dispatchEvent('section:will-load', section, { url });
+    announce(`Lade ${sectionName}…`, {dedupe: true});
+    dispatchEvent('section:will-load', section, {url});
 
     try {
       const response = await fetchWithTimeout(url);
@@ -155,13 +155,13 @@ const SectionLoader = (() => {
         section.appendChild(template.content.cloneNode(true));
       }
 
-      section.querySelectorAll('.section-skeleton').forEach((el) => el.remove());
+      section.querySelectorAll('.section-skeleton').forEach(el => el.remove());
 
       section.dataset.state = 'loaded';
       section.removeAttribute('aria-busy');
 
-      announce(`${sectionName} geladen`, { dedupe: true });
-      dispatchEvent('section:loaded', section, { state: 'loaded' });
+      announce(`${sectionName} geladen`, {dedupe: true});
+      dispatchEvent('section:loaded', section, {state: 'loaded'});
 
       if (section.id === 'hero') {
         fire(EVENTS.HERO_LOADED);
@@ -177,7 +177,7 @@ const SectionLoader = (() => {
         loadedSections.delete(section);
 
         const delay = 300 * Math.pow(2, attempts);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
 
         return loadSection(section);
       }
@@ -185,8 +185,8 @@ const SectionLoader = (() => {
       section.dataset.state = 'error';
       section.removeAttribute('aria-busy');
 
-      announce(`Fehler beim Laden von ${sectionName}`, { assertive: true });
-      dispatchEvent('section:error', section, { state: 'error' });
+      announce(`Fehler beim Laden von ${sectionName}`, {assertive: true});
+      dispatchEvent('section:error', section, {state: 'error'});
 
       // Inline injectRetryUI: inject a small retry UI directly
       if (!section.querySelector('.section-retry')) {
@@ -194,7 +194,7 @@ const SectionLoader = (() => {
         button.type = 'button';
         button.className = 'section-retry';
         button.textContent = 'Erneut laden';
-        button.addEventListener('click', () => retrySection(section), { once: true });
+        button.addEventListener('click', () => retrySection(section), {once: true});
 
         const wrapper = document.createElement('div');
         wrapper.className = 'section-error-box';
@@ -207,7 +207,7 @@ const SectionLoader = (() => {
   // injectRetryUI removed; kept inline in loadSection() to avoid small helper function
 
   async function retrySection(section) {
-    section.querySelectorAll('.section-error-box').forEach((el) => el.remove());
+    section.querySelectorAll('.section-error-box').forEach(el => el.remove());
     section.dataset.state = '';
     loadedSections.delete(section);
     retryAttempts.delete(section);
@@ -222,7 +222,7 @@ const SectionLoader = (() => {
     const eagerSections = [];
     const lazySections = [];
 
-    sections.forEach((section) => {
+    sections.forEach(section => {
       if (section.hasAttribute('data-eager')) {
         eagerSections.push(section);
       } else {
@@ -234,7 +234,7 @@ const SectionLoader = (() => {
 
     if (lazySections.length) {
       const observer = createLazyLoadObserver(loadSection);
-      lazySections.forEach((section) => observer.observe(section));
+      lazySections.forEach(section => observer.observe(section));
     }
   }
 
@@ -243,7 +243,7 @@ const SectionLoader = (() => {
     init();
   }
 
-  const api = { init, reinit, loadSection, retrySection };
+  const api = {init, reinit, loadSection, retrySection};
   // Export to window for compatibility with inline handlers if any, but prefer ES import
   window.SectionLoader = api;
   return api;
@@ -263,7 +263,7 @@ function _initApp() {
 if (document.readyState !== 'loading') {
   _initApp();
 } else {
-  document.addEventListener(EVENTS.DOM_READY, _initApp, { once: true });
+  document.addEventListener(EVENTS.DOM_READY, _initApp, {once: true});
 }
 
 // ===== Scroll Snapping =====
@@ -288,12 +288,12 @@ const ScrollSnapping = (() => {
   }
 
   function init() {
-    window.addEventListener('wheel', handleScroll, { passive: true });
-    window.addEventListener('touchmove', handleScroll, { passive: true });
-    window.addEventListener('keydown', handleKey, { passive: true });
+    window.addEventListener('wheel', handleScroll, {passive: true});
+    window.addEventListener('touchmove', handleScroll, {passive: true});
+    window.addEventListener('keydown', handleKey, {passive: true});
   }
 
-  return { init };
+  return {init};
 })();
 
 ScrollSnapping.init();
@@ -317,7 +317,7 @@ const LoadingScreenManager = (() => {
       Object.assign(loadingScreen.style, {
         opacity: '0',
         pointerEvents: 'none',
-        visibility: 'hidden',
+        visibility: 'hidden'
       });
 
       const cleanup = () => {
@@ -328,7 +328,7 @@ const LoadingScreenManager = (() => {
       loadingScreen.addEventListener('transitionend', cleanup);
       setTimeout(cleanup, 700);
 
-      announce('Anwendung geladen', { dedupe: true });
+      announce('Anwendung geladen', {dedupe: true});
 
       perfMarks.loadingHidden = performance.now();
       log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`);
@@ -339,7 +339,7 @@ const LoadingScreenManager = (() => {
     startTime = performance.now();
   }
 
-  return { init, hide };
+  return {init, hide};
 })();
 
 // ===== Three.js Earth System Loader =====
@@ -390,7 +390,7 @@ const ThreeEarthLoader = (() => {
     if (!container) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             observer.disconnect();
@@ -398,7 +398,7 @@ const ThreeEarthLoader = (() => {
           }
         }
       },
-      { rootMargin: '300px', threshold: 0.01 },
+      {rootMargin: '300px', threshold: 0.01}
     );
 
     observer.observe(container);
@@ -406,13 +406,13 @@ const ThreeEarthLoader = (() => {
 
   function initDelayed() {
     if (window.requestIdleCallback) {
-      requestIdleCallback(init, { timeout: 2000 });
+      requestIdleCallback(init, {timeout: 2000});
     } else {
       setTimeout(init, 1000);
     }
   }
 
-  return { initDelayed };
+  return {initDelayed};
 })();
 
 // ===== Application Bootstrap =====
@@ -442,7 +442,7 @@ document.addEventListener(
         windowLoaded = true;
         checkReady();
       },
-      { once: true },
+      {once: true}
     );
 
     fire(EVENTS.CORE_INITIALIZED);
@@ -470,8 +470,8 @@ document.addEventListener(
     if ('serviceWorker' in navigator && !ENV.isTest) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('/sw.js', { scope: '/' })
-          .then((registration) => {
+          .register('/sw.js', {scope: '/'})
+          .then(registration => {
             log.info('Service Worker registered:', registration.scope);
 
             // Check for updates periodically
@@ -492,7 +492,7 @@ document.addEventListener(
               }
             });
           })
-          .catch((error) => {
+          .catch(error => {
             log.warn('Service Worker registration failed:', error);
           });
       });
@@ -501,22 +501,20 @@ document.addEventListener(
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
-      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start),
+      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
     });
 
     // ===== Dev-only WebSocket test (optional) =====
     // Usage: add ?ws-test to the page URL or use debug mode to enable a reconnecting websocket to ws://127.0.0.1:3001
     if (
       !ENV.isTest &&
-      (window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1' ||
-        ENV.debug)
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || ENV.debug)
     ) {
       const params = new URLSearchParams(window.location.search || '');
       if (params.has('ws-test') || ENV.debug) {
         import('./utils/reconnecting-websocket.js')
-          .then((mod) => {
-            const { ReconnectingWebSocket } = mod;
+          .then(mod => {
+            const {ReconnectingWebSocket} = mod;
             try {
               const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001');
               rws.onopen = () => {
@@ -527,9 +525,9 @@ document.addEventListener(
                   /* ignore */
                 }
               };
-              rws.onmessage = (e) => log.debug('[dev-ws]', e.data);
-              rws.onclose = (ev) => log.info('Dev RWS closed', ev);
-              rws.onerror = (err) => log.warn('Dev RWS error', err);
+              rws.onmessage = e => log.debug('[dev-ws]', e.data);
+              rws.onclose = ev => log.info('Dev RWS closed', ev);
+              rws.onerror = err => log.warn('Dev RWS error', err);
 
               // Attach for debugging
               window.__rws = rws;
@@ -538,9 +536,9 @@ document.addEventListener(
               log.warn('Failed to open Dev ReconnectingWebSocket:', ex);
             }
           })
-          .catch((e) => log.warn('Failed to import ReconnectingWebSocket', e));
+          .catch(e => log.warn('Failed to import ReconnectingWebSocket', e));
       }
     }
   },
-  { once: true },
+  {once: true}
 );

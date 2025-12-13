@@ -17,7 +17,7 @@
  */
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById, EVENTS } from '../../utils/shared-utilities.js';
+import {createLogger, getElementById, EVENTS} from '../../utils/shared-utilities.js';
 
 const _log = createLogger('menu');
 
@@ -46,7 +46,7 @@ const initMenu = () => {
   window.addEventListener('hashchange', setActiveMenuLink);
   window.addEventListener('popstate', setActiveMenuLink);
 
-  document.addEventListener('click', (event) => {
+  document.addEventListener('click', event => {
     const isClickInside = menuContainer.contains(event.target);
     const isMenuToggle = event.target.closest('.site-menu__toggle');
     if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
@@ -57,7 +57,7 @@ const initMenu = () => {
 if (document.readyState !== 'loading') {
   initMenu();
 } else {
-  document.addEventListener('DOMContentLoaded', initMenu, { once: true });
+  document.addEventListener('DOMContentLoaded', initMenu, {once: true});
 }
 
 function getMenuHTML() {
@@ -177,7 +177,7 @@ function initializeMenu(container) {
     menuToggle.setAttribute('aria-expanded', 'false');
     menu.setAttribute('aria-hidden', 'true');
 
-    const setState = (open) => {
+    const setState = open => {
       menu.classList.toggle('open', open);
       menuToggle.classList.toggle('active', open);
       menuToggle.setAttribute('aria-expanded', String(!!open));
@@ -185,14 +185,14 @@ function initializeMenu(container) {
     };
     const toggle = () => setState(!menu.classList.contains('open'));
     menuToggle.addEventListener('click', toggle);
-    menuToggle.addEventListener('keydown', (event) => {
+    menuToggle.addEventListener('keydown', event => {
       if (event.key === 'Enter') toggle();
     });
   }
 
   // Close the mobile menu when any navigation link is clicked
-  container.querySelectorAll('.site-menu a[href]').forEach((a) => {
-    a.addEventListener('click', (e) => {
+  container.querySelectorAll('.site-menu a[href]').forEach(a => {
+    a.addEventListener('click', e => {
       // Close the menu on mobile/compact view and delay navigation slightly so the close animation is visible
       const href = a.getAttribute('href');
       const isExternal = /^https?:\/\//i.test(href);
@@ -217,7 +217,7 @@ function initializeMenu(container) {
 function initializeIcons() {
   const checkIcons = () => {
     const icons = document.querySelectorAll('.nav-icon use');
-    icons.forEach((use) => {
+    icons.forEach(use => {
       const href = use.getAttribute('href');
       if (!href) return;
 
@@ -248,11 +248,11 @@ function initializeLogo(container) {
 
 function initializeSubmenuLinks() {
   const submenuButtons = document.querySelectorAll('.has-submenu > .submenu-toggle');
-  submenuButtons.forEach((btn) => {
+  submenuButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const submenu = btn.nextElementSibling;
       const open = submenu.style.display === 'block';
-      document.querySelectorAll('.submenu').forEach((sm) => {
+      document.querySelectorAll('.submenu').forEach(sm => {
         if (sm !== submenu) sm.style.display = 'none';
       });
       submenu.style.display = open ? 'none' : 'block';
@@ -262,7 +262,7 @@ function initializeSubmenuLinks() {
 
   const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   if (isTouch) {
-    document.querySelectorAll('.has-submenu > a').forEach((link) => {
+    document.querySelectorAll('.has-submenu > a').forEach(link => {
       let tapped = false;
       link.addEventListener(
         'touchend',
@@ -270,7 +270,7 @@ function initializeSubmenuLinks() {
           const parent = link.parentElement;
           if (!parent.classList.contains('open')) {
             e.preventDefault();
-            document.querySelectorAll('.has-submenu.open').forEach((el) => {
+            document.querySelectorAll('.has-submenu.open').forEach(el => {
               if (el !== parent) el.classList.remove('open');
             });
             parent.classList.add('open');
@@ -282,12 +282,12 @@ function initializeSubmenuLinks() {
             tapped = false;
           }
         },
-        { passive: false },
+        {passive: false}
       );
     });
     document.addEventListener('touchstart', function (e) {
       if (!e.target.closest('.site-menu')) {
-        document.querySelectorAll('.has-submenu.open').forEach((el) => el.classList.remove('open'));
+        document.querySelectorAll('.has-submenu.open').forEach(el => el.classList.remove('open'));
       }
     });
   }
@@ -308,7 +308,7 @@ function setSiteTitle() {
     '/': 'Startseite',
     '/pages/gallery/gallery.html': 'Fotos',
     '/pages/cards/karten.html': 'Projekte',
-    '/pages/projekte/projekte.html': 'Projekte',
+    '/pages/projekte/projekte.html': 'Projekte'
   };
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Website';
@@ -322,32 +322,32 @@ function setSiteTitle() {
 
 function extractSectionInfo(sectionId) {
   const fallbackTitleMap = {
-    hero: { title: 'Startseite', subtitle: '' },
-    features: { title: 'Projekte', subtitle: 'Meine Arbeiten' },
-    about: { title: 'Über mich', subtitle: 'Lerne mich kennen' },
-    contact: { title: 'Kontakt', subtitle: 'Schreiben Sie mir' },
+    hero: {title: 'Startseite', subtitle: ''},
+    features: {title: 'Projekte', subtitle: 'Meine Arbeiten'},
+    about: {title: 'Über mich', subtitle: 'Lerne mich kennen'},
+    contact: {title: 'Kontakt', subtitle: 'Schreiben Sie mir'}
   };
 
   const section = document.querySelector(`#${sectionId}`);
   if (!section) {
-    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
+    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''};
   }
 
   if (['hero', 'features', 'about', 'contact'].includes(sectionId)) {
     const sectionElement = document.querySelector(`#${sectionId}`);
     if (sectionElement) {
       const headers = sectionElement.querySelectorAll('.section-header, .section-subtitle');
-      headers.forEach((header) => {
+      headers.forEach(header => {
         header.style.display = 'none';
         header.style.visibility = 'hidden';
       });
     }
-    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
+    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''};
   }
 
   const header = section.querySelector('.section-header');
   if (!header) {
-    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
+    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''};
   }
 
   const titleEl = header.querySelector('.section-title, h1, h2, h3');
@@ -356,7 +356,7 @@ function extractSectionInfo(sectionId) {
   const title = titleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.title || 'Startseite';
   const subtitle = subtitleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.subtitle || '';
 
-  return { title, subtitle };
+  return {title, subtitle};
 }
 
 /**
@@ -404,8 +404,8 @@ function initializeScrollDetection() {
       window.removeEventListener('snapSectionChange', snapEventListener);
     }
 
-    snapEventListener = (event) => {
-      const { index, id } = event.detail || {};
+    snapEventListener = event => {
+      const {index, id} = event.detail || {};
       let sectionId = id;
 
       if (sectionId === 'site-footer') {
@@ -413,9 +413,7 @@ function initializeScrollDetection() {
       }
 
       if (!sectionId && typeof index === 'number') {
-        const sections = Array.from(
-          document.querySelectorAll('main .section, .section, footer#site-footer'),
-        );
+        const sections = Array.from(document.querySelectorAll('main .section, .section, footer#site-footer'));
         const section = sections[index];
         sectionId = section?.id;
         if (sectionId === 'site-footer') {
@@ -424,7 +422,7 @@ function initializeScrollDetection() {
       }
 
       if (sectionId) {
-        const { title, subtitle } = extractSectionInfo(sectionId);
+        const {title, subtitle} = extractSectionInfo(sectionId);
         updateTitleAndSubtitle(title, subtitle);
       }
     };
@@ -435,7 +433,7 @@ function initializeScrollDetection() {
   // Optimized: Wait for modules ready event instead of polling
   const start = () => {
     initSnapEventListener();
-    const { title, subtitle } = extractSectionInfo('hero');
+    const {title, subtitle} = extractSectionInfo('hero');
     updateTitleAndSubtitle(title, subtitle);
   };
 
@@ -444,9 +442,9 @@ function initializeScrollDetection() {
     start();
   } else {
     // Listen for the ready event
-    document.addEventListener(EVENTS.MODULES_READY, start, { once: true });
+    document.addEventListener(EVENTS.MODULES_READY, start, {once: true});
     // Backup listener in case footer loads late
-    document.addEventListener('footer:loaded', start, { once: true });
+    document.addEventListener('footer:loaded', start, {once: true});
   }
 }
 
@@ -454,7 +452,7 @@ function setActiveMenuLink() {
   const path = window.location.pathname.replace(/index\.html$/, '');
   const hash = window.location.hash;
 
-  document.querySelectorAll('.site-menu a[href]').forEach((a) => {
+  document.querySelectorAll('.site-menu a[href]').forEach(a => {
     const href = a.getAttribute('href');
     if (!href) return;
 

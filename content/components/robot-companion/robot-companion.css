@@ -60,12 +60,7 @@
 }
 
 .robot-avatar::before {
-  background: radial-gradient(
-    circle,
-    rgb(255 255 255 / 90%) 0%,
-    rgb(64 224 208 / 45%) 30%,
-    transparent 60%
-  );
+  background: radial-gradient(circle, rgb(255 255 255 / 90%) 0%, rgb(64 224 208 / 45%) 30%, transparent 60%);
   filter: blur(3px);
   mix-blend-mode: screen;
   transform: translateY(16px) scale(0.6, 1.3);

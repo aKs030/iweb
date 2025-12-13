@@ -14,7 +14,7 @@ const html = htm.bind(React.createElement);
 // --- Components ---
 
 // Base Icon Component
-const IconBase = ({ children, className, style, ...props }) => html`
+const IconBase = ({children, className, style, ...props}) => html`
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
@@ -27,14 +27,13 @@ const IconBase = ({ children, className, style, ...props }) => html`
     stroke-linejoin="round"
     className=${className}
     style=${style}
-    ...${props}
-  >
+    ...${props}>
     ${children}
   </svg>
 `;
 
 // Icons
-const ExternalLink = (props) => html`
+const ExternalLink = props => html`
   <${IconBase} ...${props}>
     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
     <polyline points="15 3 21 3 21 9" />
@@ -42,47 +41,44 @@ const ExternalLink = (props) => html`
   <//>
 `;
 
-const Github = (props) => html`
+const Github = props => html`
   <${IconBase} ...${props}>
     <path
-      d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
-    />
+      d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
     <path d="M9 18c-4.51 2-5-2-7-2" />
   <//>
 `;
 
-const ArrowDown = (props) => html`
+const ArrowDown = props => html`
   <${IconBase} ...${props}>
     <path d="M12 5v14" />
     <path d="m19 12-7 7-7-7" />
   <//>
 `;
 
-const MousePointerClick = (props) => html`
+const MousePointerClick = props => html`
   <${IconBase} ...${props}>
     <path d="M14 4.1 12 6" />
     <path d="m5.1 8-2.9-.8" />
     <path d="m6 12-1.9 2" />
     <path d="M7.2 2.2 8 5.1" />
     <path
-      d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"
-    />
+      d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" />
   <//>
 `;
 
-const Palette = (props) => html`
+const Palette = props => html`
   <${IconBase} ...${props}>
     <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
     <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
     <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
     <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
     <path
-      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
-    />
+      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
   <//>
 `;
 
-const Binary = (props) => html`
+const Binary = props => html`
   <${IconBase} ...${props}>
     <rect x="14" y="14" width="4" height="6" rx="2" />
     <rect x="6" y="4" width="4" height="6" rx="2" />
@@ -93,19 +89,18 @@ const Binary = (props) => html`
   <//>
 `;
 
-const Gamepad2 = (props) => html`
+const Gamepad2 = props => html`
   <${IconBase} ...${props}>
     <line x1="6" x2="10" y1="11" y2="11" />
     <line x1="8" x2="8" y1="9" y2="13" />
     <line x1="15" x2="15.01" y1="12" y2="12" />
     <line x1="18" x2="18.01" y1="10" y2="10" />
     <path
-      d="M17.3 2.9A2 2 0 0 0 15 2H9a2 2 0 0 0-2.3.9C3.8 5.7 3 9.4 4.2 13c1 3 3.6 5 6.8 5h2c3.2 0 5.8-2 6.8-5 1.2-3.6.4-7.3-2.5-10.1Z"
-    />
+      d="M17.3 2.9A2 2 0 0 0 15 2H9a2 2 0 0 0-2.3.9C3.8 5.7 3 9.4 4.2 13c1 3 3.6 5 6.8 5h2c3.2 0 5.8-2 6.8-5 1.2-3.6.4-7.3-2.5-10.1Z" />
   <//>
 `;
 
-const ListTodo = (props) => html`
+const ListTodo = props => html`
   <${IconBase} ...${props}>
     <rect x="3" y="5" width="6" height="6" rx="1" />
     <path d="m3 17 2 2 4-4" />
@@ -115,7 +110,7 @@ const ListTodo = (props) => html`
   <//>
 `;
 
-const Check = (props) => html`
+const Check = props => html`
   <${IconBase} ...${props}>
     <path d="M20 6 9 17l-5-5" />
   <//>
@@ -130,11 +125,10 @@ const projects = [
     tags: ['JavaScript', 'Game Logic'],
     category: 'Game',
     bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
+      background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
     glowColor: '#a855f7',
-    icon: html`<${Gamepad2} style=${{ color: '#c084fc', width: '32px', height: '32px' }} />`,
+    icon: html`<${Gamepad2} style=${{color: '#c084fc', width: '32px', height: '32px'}} />`,
     previewContent: html`
       <div
         style=${{
@@ -144,14 +138,13 @@ const projects = [
           width: '100%',
           height: '100%',
           position: 'relative',
-          zIndex: 10,
-        }}
-      >
-        <div style=${{ fontSize: '3rem' }}>🪨</div>
-        <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
-        <div style=${{ fontSize: '3rem' }}>✂️</div>
+          zIndex: 10
+        }}>
+        <div style=${{fontSize: '3rem'}}>🪨</div>
+        <div style=${{fontSize: '1.5rem', opacity: 0.5}}>VS</div>
+        <div style=${{fontSize: '3rem'}}>✂️</div>
       </div>
-    `,
+    `
   },
   {
     id: 2,
@@ -160,11 +153,10 @@ const projects = [
     tags: ['Logic', 'Input'],
     category: 'Puzzle',
     bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))',
+      background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
     glowColor: '#10b981',
-    icon: html`<${Binary} style=${{ color: '#34d399', width: '32px', height: '32px' }} />`,
+    icon: html`<${Binary} style=${{color: '#34d399', width: '32px', height: '32px'}} />`,
     previewContent: html`
       <div
         style=${{
@@ -172,12 +164,11 @@ const projects = [
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          height: '100%',
-        }}
-      >
-        <span style=${{ fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold' }}>?</span>
+          height: '100%'
+        }}>
+        <span style=${{fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold'}}>?</span>
       </div>
-    `,
+    `
   },
   {
     id: 3,
@@ -186,11 +177,10 @@ const projects = [
     tags: ['DOM', 'Events'],
     category: 'UI',
     bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))',
+      background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
     glowColor: '#ec4899',
-    icon: html`<${Palette} style=${{ color: '#f472b6', width: '32px', height: '32px' }} />`,
+    icon: html`<${Palette} style=${{color: '#f472b6', width: '32px', height: '32px'}} />`,
     previewContent: html`
       <div
         style=${{
@@ -198,12 +188,11 @@ const projects = [
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          height: '100%',
-        }}
-      >
-        <${Palette} style=${{ width: '4rem', height: '4rem', color: '#f472b6' }} />
+          height: '100%'
+        }}>
+        <${Palette} style=${{width: '4rem', height: '4rem', color: '#f472b6'}} />
       </div>
-    `,
+    `
   },
   {
     id: 4,
@@ -212,11 +201,10 @@ const projects = [
     tags: ['CRUD', 'Arrays'],
     category: 'App',
     bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))',
+      background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
     glowColor: '#06b6d4',
-    icon: html`<${ListTodo} style=${{ color: '#22d3ee', width: '32px', height: '32px' }} />`,
+    icon: html`<${ListTodo} style=${{color: '#22d3ee', width: '32px', height: '32px'}} />`,
     previewContent: html`
       <div
         style=${{
@@ -224,20 +212,19 @@ const projects = [
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          height: '100%',
-        }}
-      >
-        <${Check} style=${{ width: '4rem', height: '4rem', color: '#22d3ee' }} />
+          height: '100%'
+        }}>
+        <${Check} style=${{width: '4rem', height: '4rem', color: '#22d3ee'}} />
       </div>
-    `,
-  },
+    `
+  }
 ];
 
 // --- APP ---
 function App() {
   const scrollToProjects = () => {
     const firstProject = document.getElementById('project-1');
-    if (firstProject) firstProject.scrollIntoView({ behavior: 'smooth' });
+    if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'});
   };
 
   return html`
@@ -257,13 +244,13 @@ function App() {
             <span className="text-gradient-accent"> Projekte.</span>
           </h1>
           <p className="description">
-            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten
-            console.log bis zu interaktiven Web-Apps.
+            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten console.log bis zu
+            interaktiven Web-Apps.
           </p>
           <div className="btn-group">
             <button onClick=${scrollToProjects} className="btn btn-primary">
               Los geht's
-              <${ArrowDown} style=${{ width: '1rem', height: '1rem' }} />
+              <${ArrowDown} style=${{width: '1rem', height: '1rem'}} />
             </button>
           </div>
         </div>
@@ -271,7 +258,7 @@ function App() {
 
       <!-- Project Sections -->
       ${projects.map(
-        (project) => html`
+        project => html`
           <section key=${project.id} id=${`project-${project.id}`} className="snap-section">
             <div className="glow-bg" style=${project.bgStyle}></div>
             <div className="project-grid">
@@ -282,10 +269,9 @@ function App() {
                   order: 2,
                   display: 'flex',
                   justifyContent: 'center',
-                  position: 'relative',
-                }}
-              >
-                <div className="back-glow" style=${{ backgroundColor: project.glowColor }}></div>
+                  position: 'relative'
+                }}>
+                <div className="back-glow" style=${{backgroundColor: project.glowColor}}></div>
                 <div className="window-mockup">
                   <div className="mockup-content">
                     <div className="mockup-bg-pattern"></div>
@@ -296,7 +282,7 @@ function App() {
               </div>
 
               <!-- Right Side (Content) -->
-              <div className="project-info" style=${{ order: 1 }}>
+              <div className="project-info" style=${{order: 1}}>
                 <div className="project-header">
                   <h2 className="project-title">${project.title}</h2>
                   <div className="divider"></div>
@@ -304,43 +290,34 @@ function App() {
                 </div>
                 <p className="project-desc">${project.description}</p>
                 <div className="tags-container">
-                  ${project.tags.map(
-                    (tag, i) => html`<span key=${i} className="tag">${tag}</span>`,
-                  )}
+                  ${project.tags.map((tag, i) => html`<span key=${i} className="tag">${tag}</span>`)}
                 </div>
                 <div className="project-actions">
                   <button className="btn btn-primary btn-small" rel="noopener noreferrer">
-                    <${ExternalLink} style=${{ width: '1rem', height: '1rem' }} /> Ansehen
+                    <${ExternalLink} style=${{width: '1rem', height: '1rem'}} /> Ansehen
                   </button>
                   <button className="btn btn-outline btn-small" rel="noopener noreferrer">
-                    <${Github} style=${{ width: '1rem', height: '1rem' }} /> Code
+                    <${Github} style=${{width: '1rem', height: '1rem'}} /> Code
                   </button>
                 </div>
               </div>
             </div>
           </section>
-        `,
+        `
       )}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
         <div className="container-center">
-          <div style=${{ marginBottom: '2rem' }}>
+          <div style=${{marginBottom: '2rem'}}>
             <div className="contact-icon-wrapper">
-              <${MousePointerClick}
-                style=${{ width: '2.5rem', height: '2.5rem', color: '#60a5fa' }}
-              />
+              <${MousePointerClick} style=${{width: '2.5rem', height: '2.5rem', color: '#60a5fa'}} />
             </div>
           </div>
           <h2 className="contact-title">Lust auf ein Spiel?</h2>
-          <p className="contact-text">
-            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?
-          </p>
+          <p className="contact-text">Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?</p>
           <div className="btn-group">
-            <button
-              className="btn btn-primary"
-              style=${{ backgroundColor: '#2563eb', color: 'white' }}
-            >
+            <button className="btn btn-primary" style=${{backgroundColor: '#2563eb', color: 'white'}}>
               Schreib mir
             </button>
           </div>

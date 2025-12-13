@@ -16,7 +16,7 @@
       : document.title || 'Abdulkerim — Digital Creator Portfolio';
 
     // 2. Shared Head laden (mit Caching für Performance)
-    const resp = await fetch('/content/components/head/head.html', { cache: 'force-cache' });
+    const resp = await fetch('/content/components/head/head.html', {cache: 'force-cache'});
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
     let html = await resp.text();
@@ -61,8 +61,7 @@
     // Fallback: Wenn kein Kommentar gefunden wurde, intelligent einfügen
     if (!inserted) {
       // Das Loader-Skript selbst finden, um davor einzufügen (verhindert FOUC besser)
-      const loaderScript =
-        document.currentScript || document.querySelector('script[src*="head-complete.js"]');
+      const loaderScript = document.currentScript || document.querySelector('script[src*="head-complete.js"]');
 
       if (loaderScript && loaderScript.parentNode === document.head) {
         loaderScript.parentNode.insertBefore(fragment, loaderScript);
@@ -84,10 +83,10 @@
     // 7a. Skripte aus dem Shared Head sicher ausführen (insb. Module wie /content/main.js)
     try {
       const toExec = document.head.querySelectorAll('script[data-exec-on-insert="1"]');
-      toExec.forEach((oldScript) => {
+      toExec.forEach(oldScript => {
         const newScript = document.createElement('script');
         // Attribute kopieren
-        for (const { name, value } of Array.from(oldScript.attributes)) {
+        for (const {name, value} of Array.from(oldScript.attributes)) {
           if (name === 'data-exec-on-insert') continue;
           newScript.setAttribute(name, value);
         }
@@ -124,12 +123,7 @@
         loaderWrapper.appendChild(spinner);
         // Prepend so loader sits above page content
         if (document.body) document.body.prepend(loaderWrapper);
-        else
-          document.addEventListener(
-            'DOMContentLoaded',
-            () => document.body.prepend(loaderWrapper),
-            { once: true },
-          );
+        else document.addEventListener('DOMContentLoaded', () => document.body.prepend(loaderWrapper), {once: true});
       }
     } catch (e) {
       // Non-critical: injection failure shouldn't break the page
@@ -155,7 +149,7 @@
           Object.assign(el.style, {
             opacity: '0',
             pointerEvents: 'none',
-            visibility: 'hidden',
+            visibility: 'hidden'
           });
           const cleanup = () => {
             el.style.display = 'none';
@@ -168,18 +162,18 @@
 
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => (start = performance.now()), {
-          once: true,
+          once: true
         });
       } else {
         start = performance.now();
       }
 
       // Normalfall: sobald alles geladen ist, ausblenden
-      window.addEventListener('load', hideLoader, { once: true });
+      window.addEventListener('load', hideLoader, {once: true});
       // Früheres Sicherheitsnetz: kurz nach DOMContentLoaded ausblenden (falls main.js nicht greift)
       const scheduleEarlyHide = () => setTimeout(hideLoader, 1200);
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', scheduleEarlyHide, { once: true });
+        document.addEventListener('DOMContentLoaded', scheduleEarlyHide, {once: true});
       } else {
         scheduleEarlyHide();
       }

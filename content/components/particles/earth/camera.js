@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js';
-import { createLogger, TimerManager } from '../../../utils/shared-utilities.js';
+import {CONFIG} from './config.js';
+import {createLogger, TimerManager} from '../../../utils/shared-utilities.js';
 
 const log = createLogger('EarthCamera');
 const earthTimers = new TimerManager();
@@ -8,9 +8,9 @@ export class CameraManager {
   constructor(THREE, camera) {
     this.THREE = THREE;
     this.camera = camera;
-    this.cameraTarget = { x: 0, y: 0, z: 10 };
-    this.cameraPosition = { x: 0, y: 0, z: 10 };
-    this.mouseState = { zoom: 10 };
+    this.cameraTarget = {x: 0, y: 0, z: 10};
+    this.cameraPosition = {x: 0, y: 0, z: 10};
+    this.mouseState = {zoom: 10};
     this.cameraOrbitAngle = 0;
     this.targetOrbitAngle = 0;
     this.cameraTransition = null;
@@ -40,7 +40,7 @@ export class CameraManager {
       this.cameraTransition = null;
     }
 
-    const startPos = { ...this.cameraTarget };
+    const startPos = {...this.cameraTarget};
     const startZoom = this.mouseState.zoom;
     const startLookAt = this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
     const endLookAt = new this.THREE.Vector3(preset.lookAt.x, preset.lookAt.y, preset.lookAt.z);
@@ -52,9 +52,7 @@ export class CameraManager {
       const elapsed = performance.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased =
-        progress < 0.5
-          ? 8 * progress * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 4) / 2;
+        progress < 0.5 ? 8 * progress * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 4) / 2;
 
       this.cameraTarget.x = startPos.x + (preset.x - startPos.x) * eased;
       this.cameraTarget.y = startPos.y + (preset.y - startPos.y) * eased;
@@ -102,10 +100,7 @@ export class CameraManager {
 
   handleWheel(e) {
     this.mouseState.zoom -= e.deltaY * 0.01;
-    this.mouseState.zoom = Math.max(
-      CONFIG.CAMERA.ZOOM_MIN,
-      Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom),
-    );
+    this.mouseState.zoom = Math.max(CONFIG.CAMERA.ZOOM_MIN, Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom));
   }
 
   setTargetOrbitAngle(angle) {

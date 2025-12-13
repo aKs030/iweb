@@ -23,22 +23,22 @@ class AccessibilityManager {
 
     // Listen for preference changes (modern browsers support addEventListener on MediaQueryList)
     try {
-      this.reducedMotionMQL.addEventListener('change', (e) => {
+      this.reducedMotionMQL.addEventListener('change', e => {
         this.reducedMotion = e.matches;
         this.updateAnimations();
       });
-      this.highContrastMQL.addEventListener('change', (e) => {
+      this.highContrastMQL.addEventListener('change', e => {
         this.highContrast = e.matches;
         this.updateContrast();
       });
     } catch (e) {
       // Fallback for older browsers
       try {
-        this.reducedMotionMQL.addListener((e) => {
+        this.reducedMotionMQL.addListener(e => {
           this.reducedMotion = e.matches;
           this.updateAnimations();
         });
-        this.highContrastMQL.addListener((e) => {
+        this.highContrastMQL.addListener(e => {
           this.highContrast = e.matches;
           this.updateContrast();
         });
@@ -58,7 +58,7 @@ class AccessibilityManager {
   }
 
   setupKeyboardNav() {
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         this.handleEscape();
       }
@@ -71,8 +71,8 @@ class AccessibilityManager {
 
   setupSkipLinks() {
     const skipLinks = document.querySelectorAll('.skip-link');
-    skipLinks.forEach((link) => {
-      link.addEventListener('click', (e) => {
+    skipLinks.forEach(link => {
+      link.addEventListener('click', e => {
         e.preventDefault();
         const href = link.getAttribute('href');
         if (!href) return;
@@ -89,7 +89,7 @@ class AccessibilityManager {
               /* ignored */
             }
           },
-          { once: true },
+          {once: true}
         );
       });
     });
@@ -99,7 +99,7 @@ class AccessibilityManager {
     if (!container) return;
 
     const focusableElements = container.querySelectorAll(
-      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     );
 
     if (!focusableElements || focusableElements.length === 0) return;
@@ -109,12 +109,12 @@ class AccessibilityManager {
 
     this.lastFocusedElement = document.activeElement;
 
-    const trap = { container, firstFocusable, lastFocusable };
+    const trap = {container, firstFocusable, lastFocusable};
     this.focusTrapStack.push(trap);
 
     // Focus first focusable element
     try {
-      firstFocusable.focus({ preventScroll: true });
+      firstFocusable.focus({preventScroll: true});
     } catch (e) {
       try {
         firstFocusable.focus();
@@ -128,7 +128,7 @@ class AccessibilityManager {
     const trap = this.focusTrapStack.pop();
     if (trap && this.lastFocusedElement) {
       try {
-        this.lastFocusedElement.focus({ preventScroll: true });
+        this.lastFocusedElement.focus({preventScroll: true});
       } catch (e) {
         try {
           this.lastFocusedElement.focus();
@@ -194,12 +194,12 @@ class AccessibilityManager {
   }
 
   // Announce method — accepts priority: 'polite' | 'assertive'
-  announce(message, { priority = 'polite', clearPrevious = true } = {}) {
+  announce(message, {priority = 'polite', clearPrevious = true} = {}) {
     if (!message) return;
     // If a global announce helper exists, prefer it (keeps dedupe/assertive behaviours centralized)
     if (typeof window?.announce === 'function') {
       try {
-        window.announce(message, { assertive: priority === 'assertive' });
+        window.announce(message, {assertive: priority === 'assertive'});
         return;
       } catch (e) {
         /* continue fallback */
@@ -229,4 +229,4 @@ class AccessibilityManager {
 // Global instance
 const a11y = new AccessibilityManager();
 window.a11y = a11y;
-export { AccessibilityManager, a11y };
+export {AccessibilityManager, a11y};

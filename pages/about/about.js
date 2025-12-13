@@ -13,7 +13,7 @@
   let logger;
 
   try {
-    const { createLogger } = await import('../../content/utils/shared-utilities.js');
+    const {createLogger} = await import('../../content/utils/shared-utilities.js');
     logger = createLogger('AboutModule');
   } catch (err) {
     // Fallback to no-op logger if import fails
@@ -21,7 +21,7 @@
       info: () => {},
       warn: () => {},
       error: () => {},
-      debug: () => {},
+      debug: () => {}
     };
   }
 
@@ -49,7 +49,7 @@
     try {
       const response = await fetch(url, {
         cache: 'no-cache',
-        signal: controller.signal,
+        signal: controller.signal
       });
       clearTimeout(timeoutId);
       return response;
@@ -69,7 +69,7 @@
       try {
         if (attempt > 0) {
           logger.info(`Retry attempt ${attempt}/${retries}`);
-          await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
         }
 
         const response = await fetchWithTimeout(src);
@@ -89,8 +89,8 @@
         // Dispatch success event
         document.dispatchEvent(
           new CustomEvent('about:loaded', {
-            detail: { success: true, attempts: attempt + 1 },
-          }),
+            detail: {success: true, attempts: attempt + 1}
+          })
         );
 
         logger.info('About content loaded successfully');
@@ -119,8 +119,8 @@
     // Dispatch error event
     document.dispatchEvent(
       new CustomEvent('about:error', {
-        detail: { error: lastError, attempts: RETRY_ATTEMPTS + 1 },
-      }),
+        detail: {error: lastError, attempts: RETRY_ATTEMPTS + 1}
+      })
     );
 
     return false;

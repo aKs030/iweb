@@ -70,8 +70,8 @@ Die Website ist als PWA installierbar und bietet:
 
 ```javascript
 // Service Worker löschen (Development)
-navigator.serviceWorker.getRegistrations().then((registrations) => {
-  registrations.forEach((reg) => reg.unregister());
+navigator.serviceWorker.getRegistrations().then(registrations => {
+  registrations.forEach(reg => reg.unregister());
 });
 ```
 

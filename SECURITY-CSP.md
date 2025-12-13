@@ -89,8 +89,7 @@ Füge im `<head>` Bereich jeder HTML-Seite hinzu:
 ```html
 <meta
   http-equiv="Content-Security-Policy"
-  content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
-/>
+  content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;" />
 ```
 
 **Hinweis:** Meta-Tags unterstützen nicht alle CSP-Direktiven (z.B. `frame-ancestors`, `report-uri`).

@@ -57,8 +57,8 @@ npm run serve
 
 ```javascript
 // In Browser Console:
-navigator.serviceWorker.getRegistrations().then((registrations) => {
-  registrations.forEach((registration) => registration.unregister());
+navigator.serviceWorker.getRegistrations().then(registrations => {
+  registrations.forEach(registration => registration.unregister());
 });
 ```
 

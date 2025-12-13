@@ -13,7 +13,7 @@ const LOG_LEVELS = {
   error: 0,
   warn: 1,
   info: 2,
-  debug: 3,
+  debug: 3
 };
 
 let globalLogLevel = LOG_LEVELS.warn;
@@ -49,7 +49,7 @@ export function createLogger(category) {
       if (globalLogLevel >= LOG_LEVELS.debug) {
         (console.debug || console.log || noop)(prefix, message, ...args);
       }
-    },
+    }
   };
 }
 
@@ -78,7 +78,7 @@ export async function fetchWithTimeout(url, timeout = 8000) {
   try {
     const response = await fetch(url, {
       credentials: 'same-origin',
-      signal: controller.signal,
+      signal: controller.signal
     });
     clearTimeout(timeoutId);
     return response;
@@ -136,7 +136,7 @@ export const CookieManager = {
 
   delete(name) {
     const domains = ['', window.location.hostname, `.${window.location.hostname}`];
-    domains.forEach((domain) => {
+    domains.forEach(domain => {
       const domainPart = domain ? `; domain=${domain}` : '';
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
     });
@@ -144,9 +144,9 @@ export const CookieManager = {
 
   deleteAnalytics() {
     const analyticsCookies = ['_ga', '_gid', '_gat', '_gat_gtag_G_S0587RQ4CN'];
-    analyticsCookies.forEach((name) => this.delete(name));
+    analyticsCookies.forEach(name => this.delete(name));
     sharedLogger.info('Analytics cookies deleted');
-  },
+  }
 };
 
 // ===== Array Utilities =====
@@ -222,7 +222,7 @@ export class TimerManager {
   }
 
   sleep(ms) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this.setTimeout(resolve, ms);
     });
   }
@@ -258,14 +258,14 @@ export const EVENTS = Object.freeze({
   CORE_INITIALIZED: 'app:coreInitialized',
   MODULES_READY: 'app:modulesReady',
   HERO_INIT_READY: 'app:heroInitReady',
-  SW_UPDATE_AVAILABLE: 'sw:updateAvailable',
+  SW_UPDATE_AVAILABLE: 'sw:updateAvailable'
 });
 
 export function fire(type, detail = null, target = document) {
   if (!target?.dispatchEvent) return;
 
   try {
-    target.dispatchEvent(new CustomEvent(type, { detail }));
+    target.dispatchEvent(new CustomEvent(type, {detail}));
   } catch (error) {
     sharedLogger.warn(`Failed to dispatch event: ${type}`, error);
   }
@@ -276,12 +276,12 @@ export function fire(type, detail = null, target = document) {
 const OBSERVER_CONFIGS = {
   lazyLoad: {
     threshold: 0.15,
-    rootMargin: '120px 0px',
+    rootMargin: '120px 0px'
   },
   sectionTracking: {
     threshold: [0.1, 0.3, 0.5, 0.7],
-    rootMargin: '-10% 0px -10% 0px',
-  },
+    rootMargin: '-10% 0px -10% 0px'
+  }
 };
 
 function createObserverWrapper(callback, options, triggerOnce = false) {
@@ -289,19 +289,19 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
     sharedLogger.warn('IntersectionObserver not available - using fallback');
     return {
       observer: null,
-      observe: (element) => {
+      observe: element => {
         if (triggerOnce) {
           setTimeout(() => callback(element), 0);
         } else {
           callback(element);
         }
       },
-      disconnect: () => {},
+      disconnect: () => {}
     };
   }
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
       if (entry.isIntersecting) {
         if (triggerOnce) {
           observer.unobserve(entry.target);
@@ -313,8 +313,8 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
 
   return {
     observer,
-    observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect(),
+    observe: element => observer.observe(element),
+    disconnect: () => observer.disconnect()
   };
 }
 
@@ -328,11 +328,11 @@ export function createTriggerOnceObserver(callback, options = {}) {
     return {
       observer: null,
       observe: () => {},
-      disconnect: () => {},
+      disconnect: () => {}
     };
   }
 
-  const observer = new IntersectionObserver((entries) => {
+  const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {
       if (entry.isIntersecting) {
         observer.disconnect();
@@ -344,8 +344,8 @@ export function createTriggerOnceObserver(callback, options = {}) {
 
   return {
     observer,
-    observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect(),
+    observe: element => observer.observe(element),
+    disconnect: () => observer.disconnect()
   };
 }
 
@@ -358,7 +358,7 @@ async function ensurePersistentStorage() {
 
   persistPromise = (async () => {
     if (!navigator?.storage) {
-      return { supported: false, persisted: false };
+      return {supported: false, persisted: false};
     }
 
     const storage = navigator.storage;
@@ -380,15 +380,15 @@ async function ensurePersistentStorage() {
           quota = {
             quota: estimate.quota,
             usage: estimate.usage,
-            usageDetails: estimate.usageDetails,
+            usageDetails: estimate.usageDetails
           };
         }
       }
 
-      return { supported: true, persisted, quota };
+      return {supported: true, persisted, quota};
     } catch (error) {
       sharedLogger.warn('Persistent storage check failed:', error);
-      return { supported: false, persisted: false };
+      return {supported: false, persisted: false};
     }
   })();
 
@@ -421,7 +421,7 @@ export function randomInt(min, max) {
 export function addListener(target, event, handler, options = {}) {
   if (!target?.addEventListener) return () => {};
 
-  const finalOptions = { passive: true, ...options };
+  const finalOptions = {passive: true, ...options};
 
   try {
     target.addEventListener(event, handler, finalOptions);
@@ -453,7 +453,7 @@ export class SectionTracker {
 
   init() {
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setupObserver(), { once: true });
+      document.addEventListener('DOMContentLoaded', () => this.setupObserver(), {once: true});
     } else {
       setTimeout(() => this.setupObserver(), 100);
     }
@@ -481,11 +481,11 @@ export class SectionTracker {
     }
 
     this.observer = new IntersectionObserver(
-      (entries) => this.handleIntersections(entries),
-      OBSERVER_CONFIGS.sectionTracking,
+      entries => this.handleIntersections(entries),
+      OBSERVER_CONFIGS.sectionTracking
     );
 
-    this.sections.forEach((section) => {
+    this.sections.forEach(section => {
       this.observer.observe(section);
     });
 
@@ -493,12 +493,12 @@ export class SectionTracker {
   }
 
   refreshSections() {
-    this.sections = Array.from(
-      document.querySelectorAll('main .section[id], footer#site-footer[id]'),
-    ).filter((section) => section.id);
+    this.sections = Array.from(document.querySelectorAll('main .section[id], footer#site-footer[id]')).filter(
+      section => section.id
+    );
 
     if (this.observer) {
-      this.sections.forEach((section) => {
+      this.sections.forEach(section => {
         this.observer.observe(section);
       });
     }
@@ -507,12 +507,12 @@ export class SectionTracker {
   }
 
   handleIntersections(entries) {
-    entries.forEach((entry) => {
+    entries.forEach(entry => {
       if (entry.target?.id) {
         this.sectionRatios.set(entry.target.id, {
           ratio: entry.intersectionRatio,
           isIntersecting: entry.isIntersecting,
-          target: entry.target,
+          target: entry.target
         });
       }
     });
@@ -544,7 +544,7 @@ export class SectionTracker {
     let activeSection = null;
     let bestDistance = Infinity;
 
-    this.sections.forEach((section) => {
+    this.sections.forEach(section => {
       const rect = section.getBoundingClientRect();
       const sectionCenter = rect.top + rect.height / 2;
       const distance = Math.abs(sectionCenter - viewportCenter);
@@ -563,11 +563,11 @@ export class SectionTracker {
 
   dispatchSectionChange(sectionId) {
     try {
-      const sectionIndex = this.sections.findIndex((s) => s.id === sectionId);
+      const sectionIndex = this.sections.findIndex(s => s.id === sectionId);
       const section = getElementById(sectionId);
 
-      const detail = { id: sectionId, index: sectionIndex, section };
-      window.dispatchEvent(new CustomEvent('snapSectionChange', { detail }));
+      const detail = {id: sectionId, index: sectionIndex, section};
+      window.dispatchEvent(new CustomEvent('snapSectionChange', {detail}));
 
       this.log.debug(`Section changed: ${sectionId}`);
     } catch (error) {
@@ -576,7 +576,7 @@ export class SectionTracker {
   }
 
   updateCurrentSection(sectionId) {
-    if (this.sections.find((s) => s.id === sectionId)) {
+    if (this.sections.find(s => s.id === sectionId)) {
       this.currentSectionId = sectionId;
       this.dispatchSectionChange(sectionId);
     }
