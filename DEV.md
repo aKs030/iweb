@@ -110,3 +110,14 @@ npx eslint .
 - Halte CSS-Variablen in `content/root.css` zentralisiert
 - Service Worker Updates erfordern Version-Bump in `sw.js`
 - Teste offline Funktionalität mit DevTools Network Throttling
+
+### Formatting
+
+- **Standardformatierer:** Diese Workspace-Konfiguration setzt Prettier als Standardformatierer für JavaScript/HTML/CSS/JSON. Nutze `npm run format` oder aktiviere "Format on Save" in VS Code (die Workspace-Einstellungen sind bereits konfiguriert).
+- **Empfohlene VS Code-Extensions:** `esbenp.prettier-vscode` (Prettier) und `dbaeumer.vscode-eslint` (ESLint).
+
+```bash
+# Optional: Installiere empfohlene VS Code-Extensions
+code --install-extension esbenp.prettier-vscode
+code --install-extension dbaeumer.vscode-eslint
+```
