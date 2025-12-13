@@ -1,4 +1,3 @@
-
 export class RobotGames {
   constructor(robot) {
     this.robot = robot;
@@ -7,7 +6,7 @@ export class RobotGames {
       triviaScore: parseInt(localStorage.getItem('robot-trivia-score') || '0'),
       guessNumber: null,
       guessNumberActive: false,
-      currentTrivia: null
+      currentTrivia: null,
     };
   }
 

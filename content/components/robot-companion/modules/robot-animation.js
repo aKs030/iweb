@@ -67,6 +67,42 @@ export class RobotAnimation {
     // Bind loop
     this.updatePatrol = this.updatePatrol.bind(this);
     this.updateStartAnimation = this.updateStartAnimation.bind(this);
+
+    this.thinkingActive = false;
+  }
+
+  startThinking() {
+    if (this.thinkingActive) return;
+    this.thinkingActive = true;
+
+    if (this.robot.dom.svg) {
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) {
+        antenna.classList.add('is-thinking');
+      }
+    }
+
+    if (this.robot.dom.eyes) {
+      this.stopIdleEyeMovement();
+      this.robot.dom.eyes.classList.add('is-thinking');
+    }
+  }
+
+  stopThinking() {
+    if (!this.thinkingActive) return;
+    this.thinkingActive = false;
+
+    if (this.robot.dom.svg) {
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) {
+        antenna.classList.remove('is-thinking');
+      }
+    }
+
+    if (this.robot.dom.eyes) {
+      this.robot.dom.eyes.classList.remove('is-thinking');
+      this.startIdleEyeMovement();
+    }
   }
 
   startTypeWriterKnockbackAnimation() {
@@ -246,8 +282,8 @@ export class RobotAnimation {
 
   updatePatrol() {
     if (document.hidden) {
-       setTimeout(() => requestAnimationFrame(this.updatePatrol), 500);
-       return;
+      setTimeout(() => requestAnimationFrame(this.updatePatrol), 500);
+      return;
     }
 
     if (!this.patrol.active || this.startAnimation.active) {
@@ -419,12 +455,12 @@ export class RobotAnimation {
     } else if (r < 0.6) {
       this.robot.dom.avatar.classList.add('check-watch');
       if (this.robot.dom.eyes) {
-         this.robot.dom.eyes.style.transform = 'translate(-2px, 4px)';
+        this.robot.dom.eyes.style.transform = 'translate(-2px, 4px)';
       }
     } else {
-        if (this.robot.dom.eyes) {
-             this.robot.dom.eyes.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 2 - 1}px)`;
-        }
+      if (this.robot.dom.eyes) {
+        this.robot.dom.eyes.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 2 - 1}px)`;
+      }
     }
   }
 
@@ -507,60 +543,64 @@ export class RobotAnimation {
     const rect = this.robot.dom.avatar.getBoundingClientRect();
     const cRect = this.robot.dom.container.getBoundingClientRect();
     // Center bottom of avatar
-    const startX = (rect.left + rect.width / 2) - cRect.left;
-    const startY = (rect.top + rect.height - 15) - cRect.top;
+    const startX = rect.left + rect.width / 2 - cRect.left;
+    const startY = rect.top + rect.height - 15 - cRect.top;
 
-    el.style.left = (startX - 2) + 'px';
+    el.style.left = startX - 2 + 'px';
     el.style.top = startY + 'px';
 
     this.robot.dom.container.appendChild(el);
 
     requestAnimationFrame(() => {
-        const dx = (Math.random() - 0.5) * 10;
-        const dy = 15 + Math.random() * 15;
-        el.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
-        el.style.opacity = '0';
+      const dx = (Math.random() - 0.5) * 10;
+      const dy = 15 + Math.random() * 15;
+      el.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
+      el.style.opacity = '0';
     });
 
     setTimeout(() => el.remove(), 600);
   }
 
   playPokeAnimation() {
-      return new Promise((resolve) => {
-          if (!this.robot.dom.avatar) {
-              resolve();
-              return;
-          }
+    return new Promise((resolve) => {
+      if (!this.robot.dom.avatar) {
+        resolve();
+        return;
+      }
 
-          const effects = ['jump', 'shake', 'flash'];
-          const effect = effects[Math.floor(Math.random() * effects.length)];
+      const effects = ['jump', 'shake', 'flash'];
+      const effect = effects[Math.floor(Math.random() * effects.length)];
 
-          if (effect === 'jump') {
-              this.robot.dom.avatar.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-              this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
-              setTimeout(() => {
-                  this.robot.dom.avatar.style.transform = '';
-                  setTimeout(resolve, 200);
-              }, 200);
-          } else if (effect === 'shake') {
-               this.robot.dom.avatar.animate([
-                   { transform: 'translateX(0)' },
-                   { transform: 'translateX(-5px) rotate(-5deg)' },
-                   { transform: 'translateX(5px) rotate(5deg)' },
-                   { transform: 'translateX(-5px) rotate(-5deg)' },
-                   { transform: 'translateX(0)' }
-               ], { duration: 300 });
-               setTimeout(resolve, 350);
-          } else {
-              if (this.robot.dom.svg) {
-                this.robot.dom.svg.style.filter = 'brightness(2) drop-shadow(0 0 10px #fff)';
-              }
-              setTimeout(() => {
-                  if (this.robot.dom.svg) this.robot.dom.svg.style.filter = '';
-                  setTimeout(resolve, 100);
-              }, 150);
-          }
-      });
+      if (effect === 'jump') {
+        this.robot.dom.avatar.style.transition =
+          'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
+        setTimeout(() => {
+          this.robot.dom.avatar.style.transform = '';
+          setTimeout(resolve, 200);
+        }, 200);
+      } else if (effect === 'shake') {
+        this.robot.dom.avatar.animate(
+          [
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(-5px) rotate(-5deg)' },
+            { transform: 'translateX(5px) rotate(5deg)' },
+            { transform: 'translateX(-5px) rotate(-5deg)' },
+            { transform: 'translateX(0)' },
+          ],
+          { duration: 300 },
+        );
+        setTimeout(resolve, 350);
+      } else {
+        if (this.robot.dom.svg) {
+          this.robot.dom.svg.style.filter = 'brightness(2) drop-shadow(0 0 10px #fff)';
+        }
+        setTimeout(() => {
+          if (this.robot.dom.svg) this.robot.dom.svg.style.filter = '';
+          setTimeout(resolve, 100);
+        }, 150);
+      }
+    });
   }
 
   startIdleEyeMovement() {

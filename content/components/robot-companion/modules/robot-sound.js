@@ -66,12 +66,12 @@ export class RobotSound {
   }
 
   playMessage() {
-      // Two tones
-      this.playTone(600, 'sine', 0.1);
-      setTimeout(() => this.playTone(800, 'sine', 0.1), 100);
+    // Two tones
+    this.playTone(600, 'sine', 0.1);
+    setTimeout(() => this.playTone(800, 'sine', 0.1), 100);
   }
 
   playError() {
-      this.playTone(150, 'sawtooth', 0.3, 0.04);
+    this.playTone(150, 'sawtooth', 0.3, 0.04);
   }
 }

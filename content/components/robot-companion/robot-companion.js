@@ -69,19 +69,23 @@ class RobotCompanion {
     const src = (window && window.robotCompanionTexts) || this.texts || {};
     const chat = this.chatModule;
 
-    chat.knowledgeBase = src.knowledgeBase || chat.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
+    chat.knowledgeBase = src.knowledgeBase ||
+      chat.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
     chat.contextGreetings = src.contextGreetings || chat.contextGreetings || { default: [] };
-    chat.moodGreetings = src.moodGreetings || chat.moodGreetings || {
-      normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
-    };
+    chat.moodGreetings = src.moodGreetings ||
+      chat.moodGreetings || {
+        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+      };
     chat.startMessageSuffix = src.startMessageSuffix || chat.startMessageSuffix || {};
-    chat.initialBubbleGreetings = src.initialBubbleGreetings || chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
+    chat.initialBubbleGreetings = src.initialBubbleGreetings ||
+      chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
     chat.initialBubblePools = src.initialBubblePools || chat.initialBubblePools || [];
-    chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig || chat.initialBubbleSequenceConfig || {
-      steps: 4,
-      displayDuration: 10000,
-      pausesAfter: [0, 20000, 20000, 0],
-    };
+    chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
+      chat.initialBubbleSequenceConfig || {
+        steps: 4,
+        displayDuration: 10000,
+        pausesAfter: [0, 20000, 20000, 0],
+      };
   }
 
   loadTexts() {
@@ -112,7 +116,8 @@ class RobotCompanion {
     const checkOverlap = () => {
       if (!this.dom.container) return;
       if (!this.dom.footer) {
-        this.dom.footer = document.querySelector('footer') || document.querySelector('#site-footer');
+        this.dom.footer =
+          document.querySelector('footer') || document.querySelector('#site-footer');
       }
       const footer = this.dom.footer;
       if (!footer) return;
@@ -127,7 +132,7 @@ class RobotCompanion {
       }
 
       if (!this.chatModule.isOpen) {
-         this.collisionModule.scanForCollisions();
+        this.collisionModule.scanForCollisions();
       }
       ticking = false;
     };
@@ -148,6 +153,8 @@ class RobotCompanion {
   setupMobileViewportHandler() {
     if (!window.visualViewport) return;
 
+    // Simplified handler: rely on interactive-widget=resizes-content for layout
+    // Only toggle control visibility to save space
     const handleResize = () => {
       if (!this.chatModule.isOpen || !this.dom.window) return;
 
@@ -156,38 +163,13 @@ class RobotCompanion {
       const heightDiff = layoutHeight - visualHeight;
       const isInputFocused = document.activeElement === this.dom.input;
 
-      // Consider overlay if diff > 150 OR if input is focused and diff is at least 50
       const isKeyboardOverlay = heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
-        // Disable transition for instant snap
-        this.dom.window.style.transition = 'none';
-
-        const baseBottom = 90;
-        const safeBuffer = 10;
-        const newBottom = baseBottom + heightDiff + safeBuffer;
-
-        this.dom.window.style.bottom = `${newBottom}px`;
-        this.dom.window.style.maxHeight = `${visualHeight - 20}px`;
-
         if (this.dom.controls) {
           this.dom.controls.classList.add('hide-controls-mobile');
         }
-
-        // Restore transition after a delay
-        requestAnimationFrame(() => {
-             // Force reflow
-            void this.dom.window.offsetHeight;
-            setTimeout(() => {
-                if (this.dom.window) this.dom.window.style.transition = '';
-            }, 300);
-        });
-
       } else {
-        this.dom.window.style.bottom = '';
-        this.dom.window.style.maxHeight = '';
-        this.dom.window.style.transition = '';
-
         if (this.dom.controls && !isInputFocused) {
           this.dom.controls.classList.remove('hide-controls-mobile');
         }
@@ -197,33 +179,10 @@ class RobotCompanion {
     window.visualViewport.addEventListener('resize', handleResize);
     window.visualViewport.addEventListener('scroll', handleResize);
 
-    // Add explicit focus listeners to input
     if (this.dom.input) {
-        this.dom.input.addEventListener('focus', () => {
-             handleResize();
-             // Polling to catch delayed viewport updates
-             setTimeout(handleResize, 100);
-             setTimeout(handleResize, 300);
-             setTimeout(handleResize, 600);
-        });
-        this.dom.input.addEventListener('blur', () => {
-             setTimeout(handleResize, 200);
-        });
+      this.dom.input.addEventListener('focus', handleResize);
+      this.dom.input.addEventListener('blur', () => setTimeout(handleResize, 200));
     }
-
-    const originalToggle = this.toggleChat.bind(this);
-    this.toggleChat = (forceState) => {
-        originalToggle(forceState);
-        if (this.chatModule.isOpen) {
-             setTimeout(handleResize, 100);
-             setTimeout(handleResize, 300);
-        } else {
-            if (this.dom.window) {
-                this.dom.window.style.bottom = '';
-                this.dom.window.style.maxHeight = '';
-            }
-        }
-    };
   }
 
   init() {
@@ -247,12 +206,14 @@ class RobotCompanion {
           this.chatModule.startInitialBubbleSequence();
         } else {
           const greet =
-            this.chatModule.initialBubbleGreetings && this.chatModule.initialBubbleGreetings.length > 0
+            this.chatModule.initialBubbleGreetings &&
+            this.chatModule.initialBubbleGreetings.length > 0
               ? this.chatModule.initialBubbleGreetings[
                   Math.floor(Math.random() * this.chatModule.initialBubbleGreetings.length)
                 ]
               : 'Hallo!';
-          const ctxArr = this.chatModule.contextGreetings[ctx] || this.chatModule.contextGreetings.default || [];
+          const ctxArr =
+            this.chatModule.contextGreetings[ctx] || this.chatModule.contextGreetings.default || [];
           let finalGreet = greet;
           if (ctxArr.length && Math.random() < 0.7) {
             const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
@@ -361,7 +322,10 @@ class RobotCompanion {
   }
 
   getMoodGreeting() {
-    const greetings = this.chatModule.moodGreetings || (window.robotCompanionTexts && window.robotCompanionTexts.moodGreetings) || {};
+    const greetings =
+      this.chatModule.moodGreetings ||
+      (window.robotCompanionTexts && window.robotCompanionTexts.moodGreetings) ||
+      {};
     const moodGreets = greetings[this.mood] || greetings['normal'] || ['Hey! Wie kann ich helfen?'];
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
@@ -370,10 +334,16 @@ class RobotCompanion {
     this.analytics.interactions++;
     localStorage.setItem('robot-interactions', this.analytics.interactions);
     if (this.analytics.interactions === 10 && !this.easterEggFound.has('first-10')) {
-      this.unlockEasterEgg('first-10', '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮');
+      this.unlockEasterEgg(
+        'first-10',
+        '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮',
+      );
     }
     if (this.analytics.interactions === 50 && !this.easterEggFound.has('first-50')) {
-      this.unlockEasterEgg('first-50', '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪');
+      this.unlockEasterEgg(
+        'first-50',
+        '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪',
+      );
     }
   }
 
@@ -497,8 +467,8 @@ class RobotCompanion {
     this.dom.flame = container.querySelector('.robot-flame');
     this.dom.legs = container.querySelector('.robot-legs');
     this.dom.arms = {
-        left: container.querySelector('.robot-arm.left'),
-        right: container.querySelector('.robot-arm.right')
+      left: container.querySelector('.robot-arm.left'),
+      right: container.querySelector('.robot-arm.right'),
     };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
@@ -658,18 +628,42 @@ class RobotCompanion {
   }
 
   // Delegated methods
-  fetchAndShowSuggestion() { return this.chatModule.fetchAndShowSuggestion(); }
-  toggleChat(force) { return this.chatModule.toggleChat(force); }
-  handleAvatarClick() { return this.chatModule.handleAvatarClick(); }
-  handleUserMessage() { return this.chatModule.handleUserMessage(); }
-  addMessage(text, type) { return this.chatModule.addMessage(text, type); }
-  addOptions(options) { return this.chatModule.addOptions(options); }
-  handleAction(action) { return this.chatModule.handleAction(action); }
-  showBubble(text) { return this.chatModule.showBubble(text); }
-  hideBubble() { return this.chatModule.hideBubble(); }
-  scrollToBottom() { return this.chatModule.scrollToBottom(); }
-  startInitialBubbleSequence() { return this.chatModule.startInitialBubbleSequence(); }
-  clearBubbleSequence() { return this.chatModule.clearBubbleSequence(); }
+  fetchAndShowSuggestion() {
+    return this.chatModule.fetchAndShowSuggestion();
+  }
+  toggleChat(force) {
+    return this.chatModule.toggleChat(force);
+  }
+  handleAvatarClick() {
+    return this.chatModule.handleAvatarClick();
+  }
+  handleUserMessage() {
+    return this.chatModule.handleUserMessage();
+  }
+  addMessage(text, type) {
+    return this.chatModule.addMessage(text, type);
+  }
+  addOptions(options) {
+    return this.chatModule.addOptions(options);
+  }
+  handleAction(action) {
+    return this.chatModule.handleAction(action);
+  }
+  showBubble(text) {
+    return this.chatModule.showBubble(text);
+  }
+  hideBubble() {
+    return this.chatModule.hideBubble();
+  }
+  scrollToBottom() {
+    return this.chatModule.scrollToBottom();
+  }
+  startInitialBubbleSequence() {
+    return this.chatModule.startInitialBubbleSequence();
+  }
+  clearBubbleSequence() {
+    return this.chatModule.clearBubbleSequence();
+  }
 }
 
 if (document.readyState === 'loading') {

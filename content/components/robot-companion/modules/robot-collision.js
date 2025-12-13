@@ -8,15 +8,18 @@ export class RobotCollision {
     this.visibleObstacles = new Set();
     this._trackedObstacles = new WeakSet();
 
-    this.obstacleObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                this.visibleObstacles.add(entry.target);
-            } else {
-                this.visibleObstacles.delete(entry.target);
-            }
+    this.obstacleObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            this.visibleObstacles.add(entry.target);
+          } else {
+            this.visibleObstacles.delete(entry.target);
+          }
         });
-    }, { rootMargin: '50px' });
+      },
+      { rootMargin: '50px' },
+    );
   }
 
   updateObstacleCache() {
@@ -28,16 +31,22 @@ export class RobotCollision {
     // Cache relevant elements
     const currentObstacles = document.querySelectorAll('img, .card, button.btn, h2, .gallery-item');
 
-    currentObstacles.forEach(el => {
-        if (!this._trackedObstacles.has(el)) {
-            this.obstacleObserver.observe(el);
-            this._trackedObstacles.add(el);
-        }
+    currentObstacles.forEach((el) => {
+      if (!this._trackedObstacles.has(el)) {
+        this.obstacleObserver.observe(el);
+        this._trackedObstacles.add(el);
+      }
     });
   }
 
   scanForCollisions() {
-    if (!this.robot.dom.avatar || this.robot.chatModule.isOpen || (this.robot.animationModule.startAnimation && this.robot.animationModule.startAnimation.active)) return;
+    if (
+      !this.robot.dom.avatar ||
+      this.robot.chatModule.isOpen ||
+      (this.robot.animationModule.startAnimation &&
+        this.robot.animationModule.startAnimation.active)
+    )
+      return;
 
     // Throttling: only check every 200ms
     const now = performance.now();
@@ -65,7 +74,7 @@ export class RobotCollision {
         left: robotRect.left + 15,
         right: robotRect.right - 15,
         top: robotRect.top + 10,
-        bottom: robotRect.bottom - 10
+        bottom: robotRect.bottom - 10,
       };
 
       const intersect = !(
@@ -132,7 +141,7 @@ export class RobotCollision {
         setTimeout(() => {
           // Restore eyes
           if (this.robot.dom.eyes) {
-             this.robot.dom.eyes.innerHTML = `
+            this.robot.dom.eyes.innerHTML = `
                 <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
                 <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
                 <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
@@ -147,12 +156,15 @@ export class RobotCollision {
       anim.spawnParticleBurst(10, { spread: 360, strength: 1.5 });
       this.robot.dom.avatar.style.animation = 'none'; // reset
       // Trigger CSS jitter
-      this.robot.dom.avatar.animate([
-        { transform: 'translate(2px, 2px)' },
-        { transform: 'translate(-2px, -2px)' },
-        { transform: 'translate(2px, -2px)' },
-        { transform: 'translate(-2px, 2px)' }
-      ], { duration: 100, iterations: 10 });
+      this.robot.dom.avatar.animate(
+        [
+          { transform: 'translate(2px, 2px)' },
+          { transform: 'translate(-2px, -2px)' },
+          { transform: 'translate(2px, -2px)' },
+          { transform: 'translate(-2px, 2px)' },
+        ],
+        { duration: 100, iterations: 10 },
+      );
     } else if (type === 'knockback') {
       // Push away
       anim.patrol.direction = hitFromRight ? -1 : 1;
@@ -171,7 +183,11 @@ export class RobotCollision {
   checkForTypewriterCollision(twRect, maxLeft) {
     if (!twRect) return false;
     // Allow collisions even if the robot recently changed direction.
-    if (this.robot.animationModule.startAnimation && this.robot.animationModule.startAnimation.active) return false;
+    if (
+      this.robot.animationModule.startAnimation &&
+      this.robot.animationModule.startAnimation.active
+    )
+      return false;
     if (!this.robot.dom || !this.robot.dom.container) return false;
     try {
       // Use the robot avatar or svg bounding box instead of the full container
