@@ -7,13 +7,23 @@ const path = require('path');
 const glob = require('glob');
 
 const root = process.cwd();
-const files = glob.sync('**/*.js', {cwd: root, absolute: true, ignore: ['**/node_modules/**', '**/content/vendor/**', '**/tmp/**', '**/dist/**']});
+const files = glob.sync('**/*.js', {
+  cwd: root,
+  absolute: true,
+  ignore: ['**/node_modules/**', '**/content/vendor/**', '**/tmp/**', '**/dist/**']
+});
 
 const candidates = [];
 
-const allTextFiles = glob.sync('**/*.{js,ts,html,css}', {cwd: root, absolute: true, ignore: ['**/node_modules/**', '**/content/vendor/**', '**/tmp/**', '**/dist/**']});
+const allTextFiles = glob.sync('**/*.{js,ts,html,css}', {
+  cwd: root,
+  absolute: true,
+  ignore: ['**/node_modules/**', '**/content/vendor/**', '**/tmp/**', '**/dist/**']
+});
 const texts = {};
-allTextFiles.forEach(f => { texts[f] = fs.readFileSync(f, 'utf8'); });
+allTextFiles.forEach(f => {
+  texts[f] = fs.readFileSync(f, 'utf8');
+});
 
 files.forEach(f => {
   if (!(f.includes(path.sep + 'content' + path.sep) || f.includes(path.sep + 'pages' + path.sep))) return;
@@ -22,7 +32,12 @@ files.forEach(f => {
   let found = 0;
   for (const [file, content] of Object.entries(texts)) {
     if (file === f) continue;
-    if (content.includes(rel) || content.includes('/' + rel) || content.includes(basename) || content.includes(rel.replace(/\\.js$/, ''))) {
+    if (
+      content.includes(rel) ||
+      content.includes('/' + rel) ||
+      content.includes(basename) ||
+      content.includes(rel.replace(/\\.js$/, ''))
+    ) {
       found++;
       break;
     }
