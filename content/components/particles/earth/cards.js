@@ -42,6 +42,7 @@ export class CardManager {
 
       // Add necessary styles for 3D representation
       clone.style.pointerEvents = 'auto' // Re-enable interaction
+      clone.style.opacity = '1' // Force visibility (original might be hidden)
       clone.classList.add('card-3d') // For specific styling
 
       // Ensure the clone has dimensions (CSS3D needs layout)
