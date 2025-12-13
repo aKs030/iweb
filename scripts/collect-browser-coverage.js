@@ -8,7 +8,7 @@ collects precise coverage via CDP Profiler and prints a per-file coverage summar
 */
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
-const path = require('path');
+// path not required in this script
 
 const SERVER_PORT = 8081;
 const SERVER_URL = `http://127.0.0.1:${SERVER_PORT}`;
@@ -116,7 +116,7 @@ function mergeCoverage(coverageEntries) {
         const el = document.querySelector('button, a');
         if (el && el.click) el.click();
       }).catch(() => {});
-    } catch (e) {
+    } catch {
       // ignore
     }
 
@@ -135,7 +135,7 @@ function mergeCoverage(coverageEntries) {
   const summary = mergeCoverage(coverageEntries);
   console.warn('\nCoverage summary (sorted by % used ascending):');
   summary.forEach(s => {
-    console.log(`${s.pct.toFixed(2).padStart(6)}%  ${s.used}/${s.total}  ${s.url}`);
+    console.warn(`${s.pct.toFixed(2).padStart(6)}%  ${s.used}/${s.total}  ${s.url}`);
   });
 
   // Filter coarse candidates: low usage and not vendor
