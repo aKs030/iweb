@@ -1,19 +1,19 @@
-const {useState, useEffect, useRef, useMemo, useCallback} = React;
+const {useState, useEffect, useRef, useMemo, useCallback} = React
 
 // Utility für Debouncing
 const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+      setDebouncedValue(value)
+    }, delay)
 
-    return () => clearTimeout(handler);
-  }, [value, delay]);
+    return () => clearTimeout(handler)
+  }, [value, delay])
 
-  return debouncedValue;
-};
+  return debouncedValue
+}
 
 // Lucide Icon Components (simplified inline versions)
 const createIcon =
@@ -31,7 +31,7 @@ const createIcon =
         className
       },
       paths
-    );
+    )
 
 const Heart = createIcon(
   React.createElement(
@@ -41,7 +41,7 @@ const Heart = createIcon(
       d: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'
     })
   )
-);
+)
 
 const X_Icon = createIcon(
   React.createElement(
@@ -50,15 +50,11 @@ const X_Icon = createIcon(
     React.createElement('line', {x1: '18', y1: '6', x2: '6', y2: '18'}),
     React.createElement('line', {x1: '6', y1: '6', x2: '18', y2: '18'})
   )
-);
+)
 
-const ChevronLeft = createIcon(
-  React.createElement(React.Fragment, null, React.createElement('polyline', {points: '15 18 9 12 15 6'}))
-);
+const ChevronLeft = createIcon(React.createElement(React.Fragment, null, React.createElement('polyline', {points: '15 18 9 12 15 6'})))
 
-const ChevronRight = createIcon(
-  React.createElement(React.Fragment, null, React.createElement('polyline', {points: '9 18 15 12 9 6'}))
-);
+const ChevronRight = createIcon(React.createElement(React.Fragment, null, React.createElement('polyline', {points: '9 18 15 12 9 6'})))
 
 const ZoomIn = createIcon(
   React.createElement(
@@ -69,7 +65,7 @@ const ZoomIn = createIcon(
     React.createElement('line', {x1: '11', y1: '8', x2: '11', y2: '14'}),
     React.createElement('line', {x1: '8', y1: '11', x2: '14', y2: '11'})
   )
-);
+)
 
 const ZoomOut = createIcon(
   React.createElement(
@@ -79,7 +75,7 @@ const ZoomOut = createIcon(
     React.createElement('line', {x1: '21', y1: '21', x2: '16.65', y2: '16.65'}),
     React.createElement('line', {x1: '8', y1: '11', x2: '14', y2: '11'})
   )
-);
+)
 
 const Download = createIcon(
   React.createElement(
@@ -89,7 +85,7 @@ const Download = createIcon(
     React.createElement('polyline', {points: '7 10 12 15 17 10'}),
     React.createElement('line', {x1: '12', y1: '15', x2: '12', y2: '3'})
   )
-);
+)
 
 const Grid2x2 = createIcon(
   React.createElement(
@@ -100,7 +96,7 @@ const Grid2x2 = createIcon(
     React.createElement('rect', {x: '14', y: '14', width: '7', height: '7'}),
     React.createElement('rect', {x: '3', y: '14', width: '7', height: '7'})
   )
-);
+)
 
 const Grid3x3 = createIcon(
   React.createElement(
@@ -116,7 +112,7 @@ const Grid3x3 = createIcon(
     React.createElement('rect', {x: '10', y: '17', width: '5', height: '5'}),
     React.createElement('rect', {x: '17', y: '17', width: '5', height: '5'})
   )
-);
+)
 
 const Search = createIcon(
   React.createElement(
@@ -125,7 +121,7 @@ const Search = createIcon(
     React.createElement('circle', {cx: '11', cy: '11', r: '8'}),
     React.createElement('line', {x1: '21', y1: '21', x2: '16.65', y2: '16.65'})
   )
-);
+)
 
 const Share2 = createIcon(
   React.createElement(
@@ -137,11 +133,9 @@ const Share2 = createIcon(
     React.createElement('line', {x1: '8.59', y1: '13.51', x2: '15.42', y2: '17.49'}),
     React.createElement('line', {x1: '15.41', y1: '6.51', x2: '8.59', y2: '10.49'})
   )
-);
+)
 
-const Play = createIcon(
-  React.createElement(React.Fragment, null, React.createElement('polygon', {points: '5 3 19 12 5 21 5 3'}))
-);
+const Play = createIcon(React.createElement(React.Fragment, null, React.createElement('polygon', {points: '5 3 19 12 5 21 5 3'})))
 
 const Pause = createIcon(
   React.createElement(
@@ -150,7 +144,7 @@ const Pause = createIcon(
     React.createElement('rect', {x: '6', y: '4', width: '4', height: '16'}),
     React.createElement('rect', {x: '14', y: '4', width: '4', height: '16'})
   )
-);
+)
 
 const Info = createIcon(
   React.createElement(
@@ -160,20 +154,20 @@ const Info = createIcon(
     React.createElement('line', {x1: '12', y1: '16', x2: '12', y2: '12'}),
     React.createElement('line', {x1: '12', y1: '8', x2: '12.01', y2: '8'})
   )
-);
+)
 
 const PhotoGallery = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [zoom, setZoom] = useState(1);
-  const [gridSize, setGridSize] = useState(3);
-  const [imageLoaded, setImageLoaded] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [favorites, setFavorites] = useState([]);
-  const [isSlideshow, setIsSlideshow] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-  const [sortBy, setSortBy] = useState('date');
-  const slideshowRef = useRef(null);
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [filter, setFilter] = useState('all')
+  const [zoom, setZoom] = useState(1)
+  const [gridSize, setGridSize] = useState(3)
+  const [imageLoaded, setImageLoaded] = useState({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [favorites, setFavorites] = useState([])
+  const [isSlideshow, setIsSlideshow] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
+  const [sortBy, setSortBy] = useState('date')
+  const slideshowRef = useRef(null)
 
   const photos = [
     {
@@ -320,16 +314,16 @@ const PhotoGallery = () => {
       iso: '3200',
       location: 'Hamburg'
     }
-  ];
+  ]
 
-  const categories = ['all', 'nature', 'urban', 'travel', 'landscape'];
+  const categories = ['all', 'nature', 'urban', 'travel', 'landscape']
 
   // Debounce search query für bessere Performance
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
 
   // Memoize gefilterte Fotos für bessere Performance
   const filteredPhotos = useMemo(() => {
-    let result = filter === 'all' ? photos : photos.filter(photo => photo.category === filter);
+    let result = filter === 'all' ? photos : photos.filter(photo => photo.category === filter)
 
     if (debouncedSearchQuery) {
       result = result.filter(
@@ -337,140 +331,140 @@ const PhotoGallery = () => {
           photo.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
           photo.tags.some(tag => tag.toLowerCase().includes(debouncedSearchQuery.toLowerCase())) ||
           photo.location.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-      );
+      )
     }
 
     return [...result].sort((a, b) => {
-      if (sortBy === 'date') return new Date(b.date) - new Date(a.date);
-      if (sortBy === 'title') return a.title.localeCompare(b.title);
-      if (sortBy === 'popular') return favorites.includes(b.id) ? 1 : -1;
-      return 0;
-    });
-  }, [filter, debouncedSearchQuery, sortBy, favorites]);
+      if (sortBy === 'date') return new Date(b.date) - new Date(a.date)
+      if (sortBy === 'title') return a.title.localeCompare(b.title)
+      if (sortBy === 'popular') return favorites.includes(b.id) ? 1 : -1
+      return 0
+    })
+  }, [filter, debouncedSearchQuery, sortBy, favorites])
 
   useEffect(() => {
     const handleKeyDown = e => {
-      if (!selectedImage) return;
+      if (!selectedImage) return
 
       if (e.key === 'Escape') {
-        setSelectedImage(null);
-        setZoom(1);
-        setIsSlideshow(false);
+        setSelectedImage(null)
+        setZoom(1)
+        setIsSlideshow(false)
       } else if (e.key === 'ArrowLeft') {
-        navigateImage(-1);
+        navigateImage(-1)
       } else if (e.key === 'ArrowRight') {
-        navigateImage(1);
+        navigateImage(1)
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedImage]);
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedImage])
 
   useEffect(() => {
     if (isSlideshow && selectedImage) {
       slideshowRef.current = setTimeout(() => {
-        navigateImage(1);
-      }, 3000);
+        navigateImage(1)
+      }, 3000)
     }
     return () => {
-      if (slideshowRef.current) clearTimeout(slideshowRef.current);
-    };
-  }, [isSlideshow, selectedImage]);
+      if (slideshowRef.current) clearTimeout(slideshowRef.current)
+    }
+  }, [isSlideshow, selectedImage])
 
   // Focus trap for the lightbox modal
   useEffect(() => {
-    let prevActive = null;
+    let prevActive = null
     const focusableSelector =
-      'a[href], area[href], input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]), [contenteditable]';
+      'a[href], area[href], input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]), [contenteditable]'
 
     function getFocusableElements(modal) {
-      const nodes = modal.querySelectorAll(focusableSelector);
-      return Array.prototype.slice.call(nodes);
+      const nodes = modal.querySelectorAll(focusableSelector)
+      return Array.prototype.slice.call(nodes)
     }
 
     function handleKeyTrap(e) {
       if (e.key === 'Escape') {
-        setSelectedImage(null);
+        setSelectedImage(null)
       }
       if (e.key === 'Tab') {
-        const modal = document.getElementById('lightbox');
-        if (!modal) return;
-        const focusable = getFocusableElements(modal);
+        const modal = document.getElementById('lightbox')
+        if (!modal) return
+        const focusable = getFocusableElements(modal)
         if (focusable.length === 0) {
-          e.preventDefault();
-          return;
+          e.preventDefault()
+          return
         }
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
         if (!modal.contains(document.activeElement)) {
-          first.focus();
-          e.preventDefault();
-          return;
+          first.focus()
+          e.preventDefault()
+          return
         }
         if (e.shiftKey && document.activeElement === first) {
-          last.focus();
-          e.preventDefault();
-          return;
+          last.focus()
+          e.preventDefault()
+          return
         }
         if (!e.shiftKey && document.activeElement === last) {
-          first.focus();
-          e.preventDefault();
-          return;
+          first.focus()
+          e.preventDefault()
+          return
         }
       }
     }
 
     if (selectedImage) {
-      prevActive = document.activeElement;
-      const closeBtn = document.getElementById('lightbox-close');
-      const mainEl = document.querySelector('main');
-      if (mainEl) mainEl.setAttribute('aria-hidden', 'true');
+      prevActive = document.activeElement
+      const closeBtn = document.getElementById('lightbox-close')
+      const mainEl = document.querySelector('main')
+      if (mainEl) mainEl.setAttribute('aria-hidden', 'true')
       setTimeout(() => {
-        if (closeBtn) closeBtn.focus();
-      }, 0);
-      document.addEventListener('keydown', handleKeyTrap);
+        if (closeBtn) closeBtn.focus()
+      }, 0)
+      document.addEventListener('keydown', handleKeyTrap)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyTrap);
-      const mainEl = document.querySelector('main');
-      if (mainEl) mainEl.removeAttribute('aria-hidden');
+      document.removeEventListener('keydown', handleKeyTrap)
+      const mainEl = document.querySelector('main')
+      if (mainEl) mainEl.removeAttribute('aria-hidden')
       setTimeout(() => {
         try {
-          if (prevActive && typeof prevActive.focus === 'function') prevActive.focus();
+          if (prevActive && typeof prevActive.focus === 'function') prevActive.focus()
         } catch {
           /* ignore */
         }
-      }, 0);
-    };
-  }, [selectedImage]);
+      }, 0)
+    }
+  }, [selectedImage])
 
   const navigateImage = useCallback(
     direction => {
-      const currentIndex = filteredPhotos.findIndex(p => p.id === selectedImage.id);
-      const newIndex = (currentIndex + direction + filteredPhotos.length) % filteredPhotos.length;
-      setSelectedImage(filteredPhotos[newIndex]);
-      setZoom(1);
+      const currentIndex = filteredPhotos.findIndex(p => p.id === selectedImage.id)
+      const newIndex = (currentIndex + direction + filteredPhotos.length) % filteredPhotos.length
+      setSelectedImage(filteredPhotos[newIndex])
+      setZoom(1)
     },
     [selectedImage, filteredPhotos]
-  );
+  )
 
   const handleZoom = useCallback(delta => {
-    setZoom(prev => Math.max(0.5, Math.min(3, prev + delta)));
-  }, []);
+    setZoom(prev => Math.max(0.5, Math.min(3, prev + delta)))
+  }, [])
 
   const handleDownload = useCallback(() => {
-    const link = document.createElement('a');
-    link.href = selectedImage.url;
-    link.download = `${selectedImage.title}.jpg`;
-    link.click();
-  }, [selectedImage]);
+    const link = document.createElement('a')
+    link.href = selectedImage.url
+    link.download = `${selectedImage.title}.jpg`
+    link.click()
+  }, [selectedImage])
 
   const toggleFavorite = useCallback((id, e) => {
-    e.stopPropagation();
-    setFavorites(prev => (prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]));
-  }, []);
+    e.stopPropagation()
+    setFavorites(prev => (prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]))
+  }, [])
 
   const handleShare = useCallback(() => {
     if (navigator.share) {
@@ -478,11 +472,11 @@ const PhotoGallery = () => {
         title: selectedImage.title,
         text: `Schau dir dieses tolle Foto an: ${selectedImage.title}`,
         url: selectedImage.url
-      });
+      })
     }
-  }, [selectedImage]);
+  }, [selectedImage])
 
-  const gridCols = gridSize === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+  const gridCols = gridSize === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
 
   return React.createElement(
     'div',
@@ -501,11 +495,7 @@ const PhotoGallery = () => {
           },
           'Premium Fotogalerie'
         ),
-        React.createElement(
-          'p',
-          {className: 'text-indigo-200 text-lg'},
-          'Professionelle Fotografie in höchster Qualität'
-        )
+        React.createElement('p', {className: 'text-indigo-200 text-lg'}, 'Professionelle Fotografie in höchster Qualität')
       ),
       React.createElement(
         'div',
@@ -537,10 +527,10 @@ const PhotoGallery = () => {
             React.createElement(
               'button',
               {
-                key: cat,
-                onClick: () => setFilter(cat),
+                'key': cat,
+                'onClick': () => setFilter(cat),
                 'data-filter': cat,
-                className: `px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                'className': `px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
                   filter === cat
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/50 scale-105'
                     : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10'
@@ -574,9 +564,7 @@ const PhotoGallery = () => {
               'button',
               {
                 onClick: () => setGridSize(2),
-                className: `p-2 rounded-lg transition-all ${
-                  gridSize === 2 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'
-                }`
+                className: `p-2 rounded-lg transition-all ${gridSize === 2 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'}`
               },
               Grid2x2({size: 18})
             ),
@@ -584,9 +572,7 @@ const PhotoGallery = () => {
               'button',
               {
                 onClick: () => setGridSize(3),
-                className: `p-2 rounded-lg transition-all ${
-                  gridSize === 3 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'
-                }`
+                className: `p-2 rounded-lg transition-all ${gridSize === 3 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'}`
               },
               Grid3x3({size: 18})
             )
@@ -607,24 +593,24 @@ const PhotoGallery = () => {
         React.createElement(
           'div',
           {
-            key: photo.id,
+            'key': photo.id,
             'data-test': 'photo-card',
-            className:
+            'className':
               'group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-purple-500/40 hover:z-10',
-            style: {
+            'style': {
               animation: `fadeInScale 0.6s ease-out ${index * 0.05}s both`
             },
-            role: 'button',
-            tabIndex: 0,
-            onClick: () => {
-              setSelectedImage(photo);
-              setZoom(1);
+            'role': 'button',
+            'tabIndex': 0,
+            'onClick': () => {
+              setSelectedImage(photo)
+              setZoom(1)
             },
-            onKeyDown: e => {
+            'onKeyDown': e => {
               if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setSelectedImage(photo);
-                setZoom(1);
+                e.preventDefault()
+                setSelectedImage(photo)
+                setZoom(1)
               }
             }
           },
@@ -636,8 +622,7 @@ const PhotoGallery = () => {
               alt: photo.title,
               loading: 'lazy',
               decoding: 'async',
-              className:
-                'w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110',
+              className: 'w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110',
               onLoad: () => setImageLoaded(prev => ({...prev, [photo.id]: true}))
             }),
             React.createElement('div', {
@@ -656,8 +641,7 @@ const PhotoGallery = () => {
               React.createElement(
                 'span',
                 {
-                  className:
-                    'px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-medium border border-white/30'
+                  className: 'px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-medium border border-white/30'
                 },
                 photo.category
               ),
@@ -713,16 +697,16 @@ const PhotoGallery = () => {
       React.createElement(
         'div',
         {
-          id: 'lightbox',
+          'id': 'lightbox',
           'data-test': 'lightbox',
-          role: 'dialog',
+          'role': 'dialog',
           'aria-modal': 'true',
           'aria-labelledby': 'lightbox-title',
-          className: 'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 flex items-center justify-center',
-          onClick: () => {
-            setSelectedImage(null);
-            setZoom(1);
-            setIsSlideshow(false);
+          'className': 'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 flex items-center justify-center',
+          'onClick': () => {
+            setSelectedImage(null)
+            setZoom(1)
+            setIsSlideshow(false)
           }
         },
         React.createElement(
@@ -736,11 +720,7 @@ const PhotoGallery = () => {
             React.createElement(
               'div',
               {className: 'text-white'},
-              React.createElement(
-                'h2',
-                {id: 'lightbox-title', className: 'text-2xl font-bold mb-1'},
-                selectedImage.title
-              ),
+              React.createElement('h2', {id: 'lightbox-title', className: 'text-2xl font-bold mb-1'}, selectedImage.title),
               React.createElement(
                 'p',
                 {className: 'text-indigo-300'},
@@ -754,8 +734,8 @@ const PhotoGallery = () => {
                 'button',
                 {
                   onClick: e => {
-                    e.stopPropagation();
-                    setShowInfo(!showInfo);
+                    e.stopPropagation()
+                    setShowInfo(!showInfo)
                   },
                   className: `p-3 rounded-xl transition-all backdrop-blur-md ${showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'}`
                 },
@@ -765,8 +745,8 @@ const PhotoGallery = () => {
                 'button',
                 {
                   onClick: e => {
-                    e.stopPropagation();
-                    setIsSlideshow(!isSlideshow);
+                    e.stopPropagation()
+                    setIsSlideshow(!isSlideshow)
                   },
                   className: `p-3 rounded-xl transition-all backdrop-blur-md ${isSlideshow ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'}`
                 },
@@ -777,10 +757,10 @@ const PhotoGallery = () => {
                 {
                   id: 'lightbox-close',
                   onClick: e => {
-                    e.stopPropagation();
-                    setSelectedImage(null);
-                    setZoom(1);
-                    setIsSlideshow(false);
+                    e.stopPropagation()
+                    setSelectedImage(null)
+                    setZoom(1)
+                    setIsSlideshow(false)
                   },
                   className: 'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md'
                 },
@@ -793,8 +773,7 @@ const PhotoGallery = () => {
           React.createElement(
             'div',
             {
-              className:
-                'absolute top-24 right-6 w-80 bg-black/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 z-10'
+              className: 'absolute top-24 right-6 w-80 bg-black/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 z-10'
             },
             React.createElement('h3', {className: 'text-white font-bold text-lg mb-4'}, 'Foto-Details'),
             React.createElement(
@@ -828,11 +807,7 @@ const PhotoGallery = () => {
                 'div',
                 {className: 'flex justify-between'},
                 React.createElement('span', {className: 'text-indigo-300'}, 'Datum:'),
-                React.createElement(
-                  'span',
-                  {className: 'text-white font-medium'},
-                  new Date(selectedImage.date).toLocaleDateString('de-DE')
-                )
+                React.createElement('span', {className: 'text-white font-medium'}, new Date(selectedImage.date).toLocaleDateString('de-DE'))
               ),
               React.createElement(
                 'div',
@@ -859,8 +834,8 @@ const PhotoGallery = () => {
           'button',
           {
             onClick: e => {
-              e.stopPropagation();
-              navigateImage(-1);
+              e.stopPropagation()
+              navigateImage(-1)
             },
             className:
               'absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group'
@@ -874,8 +849,8 @@ const PhotoGallery = () => {
           'button',
           {
             onClick: e => {
-              e.stopPropagation();
-              navigateImage(1);
+              e.stopPropagation()
+              navigateImage(1)
             },
             className:
               'absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group'
@@ -895,8 +870,8 @@ const PhotoGallery = () => {
             'button',
             {
               onClick: e => {
-                e.stopPropagation();
-                handleZoom(-0.25);
+                e.stopPropagation()
+                handleZoom(-0.25)
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all'
             },
@@ -913,8 +888,8 @@ const PhotoGallery = () => {
             'button',
             {
               onClick: e => {
-                e.stopPropagation();
-                handleZoom(0.25);
+                e.stopPropagation()
+                handleZoom(0.25)
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all'
             },
@@ -925,8 +900,8 @@ const PhotoGallery = () => {
             'button',
             {
               onClick: e => {
-                e.stopPropagation();
-                toggleFavorite(selectedImage.id, e);
+                e.stopPropagation()
+                toggleFavorite(selectedImage.id, e)
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all'
             },
@@ -939,8 +914,8 @@ const PhotoGallery = () => {
             'button',
             {
               onClick: e => {
-                e.stopPropagation();
-                handleShare();
+                e.stopPropagation()
+                handleShare()
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all'
             },
@@ -950,8 +925,8 @@ const PhotoGallery = () => {
             'button',
             {
               onClick: e => {
-                e.stopPropagation();
-                handleDownload();
+                e.stopPropagation()
+                handleDownload()
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all'
             },
@@ -978,8 +953,7 @@ const PhotoGallery = () => {
           React.createElement(
             'div',
             {
-              className:
-                'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden'
+              className: 'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden'
             },
             React.createElement('div', {
               className: 'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
@@ -1014,8 +988,8 @@ const PhotoGallery = () => {
       `
         )
       )
-  );
-};
+  )
+}
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(PhotoGallery));
+const root = ReactDOM.createRoot(document.getElementById('root'))
+root.render(React.createElement(PhotoGallery))

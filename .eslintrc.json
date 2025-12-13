@@ -16,7 +16,9 @@
     "no-eval": "error",
     "no-implied-eval": "error",
     "prefer-const": "warn",
-    "no-var": "warn"
+    "no-var": "warn",
+    "semi": ["error", "never"],
+    "comma-dangle": ["error", "never"]
   },
   "overrides": [
     {

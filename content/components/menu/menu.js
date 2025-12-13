@@ -17,47 +17,47 @@
  */
 
 // ===== Shared Utilities Import =====
-import {createLogger, getElementById, EVENTS} from '../../utils/shared-utilities.js';
+import {createLogger, getElementById, EVENTS} from '../../utils/shared-utilities.js'
 
-const _log = createLogger('menu');
+const _log = createLogger('menu')
 
 const initMenu = () => {
-  const menuContainer = getElementById('menu-container');
+  const menuContainer = getElementById('menu-container')
   if (!menuContainer) {
-    return;
+    return
   }
 
   // Prevent double initialization
-  if (menuContainer.dataset.initialized === 'true') return;
-  menuContainer.dataset.initialized = 'true';
+  if (menuContainer.dataset.initialized === 'true') return
+  menuContainer.dataset.initialized = 'true'
 
-  menuContainer.innerHTML = getMenuHTML();
-  _log.info('Menu: injected into #menu-container');
+  menuContainer.innerHTML = getMenuHTML()
+  _log.info('Menu: injected into #menu-container')
 
-  const yearEl = getElementById('current-year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  const yearEl = getElementById('current-year')
+  if (yearEl) yearEl.textContent = new Date().getFullYear()
 
-  initializeMenu(menuContainer);
-  initializeLogo(menuContainer);
-  initializeSubmenuLinks();
-  setSiteTitle();
-  setActiveMenuLink();
+  initializeMenu(menuContainer)
+  initializeLogo(menuContainer)
+  initializeSubmenuLinks()
+  setSiteTitle()
+  setActiveMenuLink()
   // Keep menu active state in sync when hash or history changes
-  window.addEventListener('hashchange', setActiveMenuLink);
-  window.addEventListener('popstate', setActiveMenuLink);
+  window.addEventListener('hashchange', setActiveMenuLink)
+  window.addEventListener('popstate', setActiveMenuLink)
 
   document.addEventListener('click', event => {
-    const isClickInside = menuContainer.contains(event.target);
-    const isMenuToggle = event.target.closest('.site-menu__toggle');
-    if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
-  });
-};
+    const isClickInside = menuContainer.contains(event.target)
+    const isMenuToggle = event.target.closest('.site-menu__toggle')
+    if (!isClickInside && !isMenuToggle) closeMenu(menuContainer)
+  })
+}
 
 // Use shared EVENTS.DOM_READY or fallback to DOMContentLoaded
 if (document.readyState !== 'loading') {
-  initMenu();
+  initMenu()
 } else {
-  document.addEventListener('DOMContentLoaded', initMenu, {once: true});
+  document.addEventListener('DOMContentLoaded', initMenu, {once: true})
 }
 
 function getMenuHTML() {
@@ -165,140 +165,140 @@ function getMenuHTML() {
         </li>
       </ul>
     </nav>
-  `;
+  `
 }
 
 function initializeMenu(container) {
-  const menuToggle = container.querySelector('.site-menu__toggle');
-  const menu = container.querySelector('.site-menu');
+  const menuToggle = container.querySelector('.site-menu__toggle')
+  const menu = container.querySelector('.site-menu')
   if (menuToggle && menu) {
-    menu.setAttribute('role', 'navigation');
-    menuToggle.setAttribute('aria-controls', menu.id || 'navigation');
-    menuToggle.setAttribute('aria-expanded', 'false');
-    menu.setAttribute('aria-hidden', 'true');
+    menu.setAttribute('role', 'navigation')
+    menuToggle.setAttribute('aria-controls', menu.id || 'navigation')
+    menuToggle.setAttribute('aria-expanded', 'false')
+    menu.setAttribute('aria-hidden', 'true')
 
     const setState = open => {
-      menu.classList.toggle('open', open);
-      menuToggle.classList.toggle('active', open);
-      menuToggle.setAttribute('aria-expanded', String(!!open));
-      menu.setAttribute('aria-hidden', String(!open));
-    };
-    const toggle = () => setState(!menu.classList.contains('open'));
-    menuToggle.addEventListener('click', toggle);
+      menu.classList.toggle('open', open)
+      menuToggle.classList.toggle('active', open)
+      menuToggle.setAttribute('aria-expanded', String(!!open))
+      menu.setAttribute('aria-hidden', String(!open))
+    }
+    const toggle = () => setState(!menu.classList.contains('open'))
+    menuToggle.addEventListener('click', toggle)
     menuToggle.addEventListener('keydown', event => {
-      if (event.key === 'Enter') toggle();
-    });
+      if (event.key === 'Enter') toggle()
+    })
   }
 
   // Close the mobile menu when any navigation link is clicked
   container.querySelectorAll('.site-menu a[href]').forEach(a => {
     a.addEventListener('click', e => {
       // Close the menu on mobile/compact view and delay navigation slightly so the close animation is visible
-      const href = a.getAttribute('href');
-      const isExternal = /^https?:\/\//i.test(href);
-      const isAnchor = href && href.startsWith('#');
-      closeMenu(container);
+      const href = a.getAttribute('href')
+      const isExternal = /^https?:\/\//i.test(href)
+      const isAnchor = href && href.startsWith('#')
+      closeMenu(container)
 
       if (window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')) {
         // Prevent default to allow smooth close animation then navigate
         if (!isAnchor) {
-          e.preventDefault();
+          e.preventDefault()
           setTimeout(() => {
-            window.location.href = href;
-          }, 160);
+            window.location.href = href
+          }, 160)
         }
       }
-    });
-  });
+    })
+  })
 
-  initializeIcons();
+  initializeIcons()
 }
 
 function initializeIcons() {
   const checkIcons = () => {
-    const icons = document.querySelectorAll('.nav-icon use');
+    const icons = document.querySelectorAll('.nav-icon use')
     icons.forEach(use => {
-      const href = use.getAttribute('href');
-      if (!href) return;
+      const href = use.getAttribute('href')
+      if (!href) return
 
-      const targetId = href.substring(1);
-      const target = document.getElementById(targetId);
-      const svg = use.closest('svg');
-      const fallback = svg?.nextElementSibling;
+      const targetId = href.substring(1)
+      const target = document.getElementById(targetId)
+      const svg = use.closest('svg')
+      const fallback = svg?.nextElementSibling
 
       if (!target && fallback?.classList.contains('icon-fallback')) {
-        svg.style.display = 'none';
-        fallback.style.display = 'inline-block';
+        svg.style.display = 'none'
+        fallback.style.display = 'inline-block'
       }
-    });
-  };
+    })
+  }
 
-  checkIcons();
-  setTimeout(checkIcons, 200);
+  checkIcons()
+  setTimeout(checkIcons, 200)
 }
 
 function initializeLogo(container) {
-  const logoContainer = container.querySelector('.site-logo__container');
+  const logoContainer = container.querySelector('.site-logo__container')
   if (logoContainer) {
     logoContainer.addEventListener('contextmenu', () => {
-      window.location.href = '/index.html';
-    });
+      window.location.href = '/index.html'
+    })
   }
 }
 
 function initializeSubmenuLinks() {
-  const submenuButtons = document.querySelectorAll('.has-submenu > .submenu-toggle');
+  const submenuButtons = document.querySelectorAll('.has-submenu > .submenu-toggle')
   submenuButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const submenu = btn.nextElementSibling;
-      const open = submenu.style.display === 'block';
+      const submenu = btn.nextElementSibling
+      const open = submenu.style.display === 'block'
       document.querySelectorAll('.submenu').forEach(sm => {
-        if (sm !== submenu) sm.style.display = 'none';
-      });
-      submenu.style.display = open ? 'none' : 'block';
-      btn.setAttribute('aria-expanded', String(!open));
-    });
-  });
+        if (sm !== submenu) sm.style.display = 'none'
+      })
+      submenu.style.display = open ? 'none' : 'block'
+      btn.setAttribute('aria-expanded', String(!open))
+    })
+  })
 
-  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
   if (isTouch) {
     document.querySelectorAll('.has-submenu > a').forEach(link => {
-      let tapped = false;
+      let tapped = false
       link.addEventListener(
         'touchend',
         function (e) {
-          const parent = link.parentElement;
+          const parent = link.parentElement
           if (!parent.classList.contains('open')) {
-            e.preventDefault();
+            e.preventDefault()
             document.querySelectorAll('.has-submenu.open').forEach(el => {
-              if (el !== parent) el.classList.remove('open');
-            });
-            parent.classList.add('open');
-            tapped = true;
+              if (el !== parent) el.classList.remove('open')
+            })
+            parent.classList.add('open')
+            tapped = true
             setTimeout(() => {
-              tapped = false;
-            }, 600);
+              tapped = false
+            }, 600)
           } else if (!tapped) {
-            tapped = false;
+            tapped = false
           }
         },
         {passive: false}
-      );
-    });
+      )
+    })
     document.addEventListener('touchstart', function (e) {
       if (!e.target.closest('.site-menu')) {
-        document.querySelectorAll('.has-submenu.open').forEach(el => el.classList.remove('open'));
+        document.querySelectorAll('.has-submenu.open').forEach(el => el.classList.remove('open'))
       }
-    });
+    })
   }
 }
 
 function closeMenu(container) {
-  const menuToggle = container.querySelector('.site-menu__toggle');
-  const menu = container.querySelector('.site-menu');
+  const menuToggle = container.querySelector('.site-menu__toggle')
+  const menu = container.querySelector('.site-menu')
   if (menuToggle && menu) {
-    menu.classList.remove('open');
-    menuToggle.classList.remove('active');
+    menu.classList.remove('open')
+    menuToggle.classList.remove('active')
   }
 }
 
@@ -309,14 +309,14 @@ function setSiteTitle() {
     '/pages/gallery/gallery.html': 'Fotos',
     '/pages/cards/karten.html': 'Projekte',
     '/pages/projekte/projekte.html': 'Projekte'
-  };
-  const path = window.location.pathname;
-  const pageTitle = titleMap[path] || document.title || 'Website';
-  const siteTitleEl = getElementById('site-title');
-  if (siteTitleEl) siteTitleEl.textContent = pageTitle;
+  }
+  const path = window.location.pathname
+  const pageTitle = titleMap[path] || document.title || 'Website'
+  const siteTitleEl = getElementById('site-title')
+  if (siteTitleEl) siteTitleEl.textContent = pageTitle
 
   if (path === '/' || path === '/index.html') {
-    initializeScrollDetection();
+    initializeScrollDetection()
   }
 }
 
@@ -326,37 +326,37 @@ function extractSectionInfo(sectionId) {
     features: {title: 'Projekte', subtitle: 'Meine Arbeiten'},
     about: {title: 'Über mich', subtitle: 'Lerne mich kennen'},
     contact: {title: 'Kontakt', subtitle: 'Schreiben Sie mir'}
-  };
+  }
 
-  const section = document.querySelector(`#${sectionId}`);
+  const section = document.querySelector(`#${sectionId}`)
   if (!section) {
-    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''};
+    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''}
   }
 
   if (['hero', 'features', 'about', 'contact'].includes(sectionId)) {
-    const sectionElement = document.querySelector(`#${sectionId}`);
+    const sectionElement = document.querySelector(`#${sectionId}`)
     if (sectionElement) {
-      const headers = sectionElement.querySelectorAll('.section-header, .section-subtitle');
+      const headers = sectionElement.querySelectorAll('.section-header, .section-subtitle')
       headers.forEach(header => {
-        header.style.display = 'none';
-        header.style.visibility = 'hidden';
-      });
+        header.style.display = 'none'
+        header.style.visibility = 'hidden'
+      })
     }
-    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''};
+    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''}
   }
 
-  const header = section.querySelector('.section-header');
+  const header = section.querySelector('.section-header')
   if (!header) {
-    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''};
+    return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''}
   }
 
-  const titleEl = header.querySelector('.section-title, h1, h2, h3');
-  const subtitleEl = header.querySelector('.section-subtitle');
+  const titleEl = header.querySelector('.section-title, h1, h2, h3')
+  const subtitleEl = header.querySelector('.section-subtitle')
 
-  const title = titleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.title || 'Startseite';
-  const subtitle = subtitleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.subtitle || '';
+  const title = titleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.title || 'Startseite'
+  const subtitle = subtitleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.subtitle || ''
 
-  return {title, subtitle};
+  return {title, subtitle}
 }
 
 /**
@@ -364,118 +364,118 @@ function extractSectionInfo(sectionId) {
  * OPTIMIZED: Verwendet Event-Listeners statt Polling und Events Constant
  */
 function initializeScrollDetection() {
-  let snapEventListener = null;
+  let snapEventListener = null
 
   function updateTitleAndSubtitle(newTitle, newSubtitle = '') {
-    const siteTitleEl = getElementById('site-title');
-    const siteSubtitleEl = getElementById('site-subtitle');
+    const siteTitleEl = getElementById('site-title')
+    const siteSubtitleEl = getElementById('site-subtitle')
 
-    if (!siteTitleEl) return;
+    if (!siteTitleEl) return
 
-    const currentTitle = siteTitleEl.textContent;
-    const currentSubtitle = siteSubtitleEl?.textContent || '';
+    const currentTitle = siteTitleEl.textContent
+    const currentSubtitle = siteSubtitleEl?.textContent || ''
 
-    if (currentTitle === newTitle && currentSubtitle === newSubtitle) return;
+    if (currentTitle === newTitle && currentSubtitle === newSubtitle) return
 
-    siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-    siteTitleEl.style.opacity = '0.6';
-    siteTitleEl.style.transform = 'scale(0.95)';
+    siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease'
+    siteTitleEl.style.opacity = '0.6'
+    siteTitleEl.style.transform = 'scale(0.95)'
 
     if (siteSubtitleEl) {
-      siteSubtitleEl.classList.remove('show');
+      siteSubtitleEl.classList.remove('show')
     }
 
     setTimeout(() => {
-      siteTitleEl.textContent = newTitle;
-      siteTitleEl.style.opacity = '1';
-      siteTitleEl.style.transform = 'scale(1)';
+      siteTitleEl.textContent = newTitle
+      siteTitleEl.style.opacity = '1'
+      siteTitleEl.style.transform = 'scale(1)'
 
       if (siteSubtitleEl && newSubtitle) {
-        siteSubtitleEl.textContent = newSubtitle;
+        siteSubtitleEl.textContent = newSubtitle
         setTimeout(() => {
-          siteSubtitleEl.classList.add('show');
-        }, 100);
+          siteSubtitleEl.classList.add('show')
+        }, 100)
       }
-    }, 200);
+    }, 200)
   }
 
   function initSnapEventListener() {
     if (snapEventListener) {
-      window.removeEventListener('snapSectionChange', snapEventListener);
+      window.removeEventListener('snapSectionChange', snapEventListener)
     }
 
     snapEventListener = event => {
-      const {index, id} = event.detail || {};
-      let sectionId = id;
+      const {index, id} = event.detail || {}
+      let sectionId = id
 
       if (sectionId === 'site-footer') {
-        sectionId = 'contact';
+        sectionId = 'contact'
       }
 
       if (!sectionId && typeof index === 'number') {
-        const sections = Array.from(document.querySelectorAll('main .section, .section, footer#site-footer'));
-        const section = sections[index];
-        sectionId = section?.id;
+        const sections = Array.from(document.querySelectorAll('main .section, .section, footer#site-footer'))
+        const section = sections[index]
+        sectionId = section?.id
         if (sectionId === 'site-footer') {
-          sectionId = 'contact';
+          sectionId = 'contact'
         }
       }
 
       if (sectionId) {
-        const {title, subtitle} = extractSectionInfo(sectionId);
-        updateTitleAndSubtitle(title, subtitle);
+        const {title, subtitle} = extractSectionInfo(sectionId)
+        updateTitleAndSubtitle(title, subtitle)
       }
-    };
+    }
 
-    window.addEventListener('snapSectionChange', snapEventListener);
+    window.addEventListener('snapSectionChange', snapEventListener)
   }
 
   // Optimized: Wait for modules ready event instead of polling
   const start = () => {
-    initSnapEventListener();
-    const {title, subtitle} = extractSectionInfo('hero');
-    updateTitleAndSubtitle(title, subtitle);
-  };
+    initSnapEventListener()
+    const {title, subtitle} = extractSectionInfo('hero')
+    updateTitleAndSubtitle(title, subtitle)
+  }
 
   // Check if already ready
   if (document.querySelector('#hero') && document.querySelector('#site-footer')) {
-    start();
+    start()
   } else {
     // Listen for the ready event
-    document.addEventListener(EVENTS.MODULES_READY, start, {once: true});
+    document.addEventListener(EVENTS.MODULES_READY, start, {once: true})
     // Backup listener in case footer loads late
-    document.addEventListener('footer:loaded', start, {once: true});
+    document.addEventListener('footer:loaded', start, {once: true})
   }
 }
 
 function setActiveMenuLink() {
-  const path = window.location.pathname.replace(/index\.html$/, '');
-  const hash = window.location.hash;
+  const path = window.location.pathname.replace(/index\.html$/, '')
+  const hash = window.location.hash
 
   document.querySelectorAll('.site-menu a[href]').forEach(a => {
-    const href = a.getAttribute('href');
-    if (!href) return;
+    const href = a.getAttribute('href')
+    if (!href) return
 
     if (href.startsWith('#')) {
       // Only consider in-page anchors active when we're on the index page (where those sections exist)
       // or when the href matches the current hash exactly.
-      const isIndexPath = path === '/' || path === '/index.html' || path === '';
+      const isIndexPath = path === '/' || path === '/index.html' || path === ''
       if (href === hash || (isIndexPath && hash === '' && href === '#hero')) {
-        a.classList.add('active');
+        a.classList.add('active')
       } else {
-        a.classList.remove('active');
+        a.classList.remove('active')
       }
-      return;
+      return
     }
 
-    const norm = href.replace(/index\.html$/, '');
-    const linkPath = norm.split('#')[0];
-    const linkHash = a.hash;
+    const norm = href.replace(/index\.html$/, '')
+    const linkPath = norm.split('#')[0]
+    const linkHash = a.hash
 
     if (norm === path || (linkPath === path && linkHash === hash)) {
-      a.classList.add('active');
+      a.classList.add('active')
     } else {
-      a.classList.remove('active');
+      a.classList.remove('active')
     }
-  });
+  })
 }

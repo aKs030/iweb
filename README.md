@@ -71,8 +71,8 @@ Die Website ist als PWA installierbar und bietet:
 ```javascript
 // Service Worker löschen (Development)
 navigator.serviceWorker.getRegistrations().then(registrations => {
-  registrations.forEach(reg => reg.unregister());
-});
+  registrations.forEach(reg => reg.unregister())
+})
 ```
 
 Siehe `sw.js` für Implementierungsdetails.

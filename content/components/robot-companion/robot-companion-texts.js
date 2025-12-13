@@ -115,32 +115,20 @@ window.robotCompanionTexts = {
   ],
 
   moodGreetings: {
-    'night-owl': [
-      'Noch wach um diese Uhrzeit? Ich auch!',
-      'Nachtschicht? Ich bin für dich da!',
-      'Die Nacht ist jung! Was kann ich tun?'
-    ],
-    sleepy: [
+    'night-owl': ['Noch wach um diese Uhrzeit? Ich auch!', 'Nachtschicht? Ich bin für dich da!', 'Die Nacht ist jung! Was kann ich tun?'],
+    'sleepy': [
       '*gähn* Guten Morgen! Noch etwas müde...',
       "Morgens geht's langsam los... Wie kann ich helfen?",
       'Kaffee wäre jetzt nice... Aber ich bin wach genug für dich!'
     ],
-    energetic: [
-      'Volle Power! Was kann ich für dich tun?',
-      "Let's go! Ich bin bereit!",
-      'Energie-Level: Maximum! Lass uns loslegen!'
-    ],
-    relaxed: [
-      'Schöner Abend! Wie kann ich helfen?',
-      'Entspannt unterwegs... Was brauchst du?',
-      'Feierabend-Vibes! Zeit zum Chillen!'
-    ],
-    enthusiastic: [
+    'energetic': ['Volle Power! Was kann ich für dich tun?', "Let's go! Ich bin bereit!", 'Energie-Level: Maximum! Lass uns loslegen!'],
+    'relaxed': ['Schöner Abend! Wie kann ich helfen?', 'Entspannt unterwegs... Was brauchst du?', 'Feierabend-Vibes! Zeit zum Chillen!'],
+    'enthusiastic': [
       'Wow, schon wieder hier! Du bist mein Lieblingsbesucher!',
       'Yeah! So viele Interaktionen - ich LIEBE es!',
       'Du bist ja Power-User! Respekt!'
     ],
-    normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?', 'Hallo! Ready für Action!']
+    'normal': ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?', 'Hallo! Ready für Action!']
   },
 
   initialBubblePools: [
@@ -157,11 +145,7 @@ window.robotCompanionTexts = {
       'Schön, dass du da bist! Soll ich dir die Highlights zeigen?',
       'Hey! Bereit, die Seite zu erkunden?'
     ],
-    hero: [
-      'Hey! Bereit für den Einstieg?',
-      'Willkommen im Hero-Bereich! Soll ich dich rumführen?',
-      'Los geht es! Was möchtest du sehen?'
-    ],
+    hero: ['Hey! Bereit für den Einstieg?', 'Willkommen im Hero-Bereich! Soll ich dich rumführen?', 'Los geht es! Was möchtest du sehen?'],
     features: [
       'Features entdecken? Ich zeige dir gern die Highlights!',
       'Hier sind die Leistungen — brauchst du eine Übersicht?',
@@ -210,4 +194,4 @@ window.robotCompanionTexts = {
     displayDuration: 6000, // ms - schnellerer Flow
     pausesAfter: [0, 8000, 10000, 8000, 0] // Variierte Pausen für natürlicheren Rhythmus
   }
-};
+}

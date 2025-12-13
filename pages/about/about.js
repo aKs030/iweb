@@ -6,15 +6,15 @@
  * - Improved code structure
  */
 
-(async function () {
-  const RETRY_ATTEMPTS = 2;
-  const FETCH_TIMEOUT = 5000;
+;(async function () {
+  const RETRY_ATTEMPTS = 2
+  const FETCH_TIMEOUT = 5000
 
-  let logger;
+  let logger
 
   try {
-    const {createLogger} = await import('../../content/utils/shared-utilities.js');
-    logger = createLogger('AboutModule');
+    const {createLogger} = await import('../../content/utils/shared-utilities.js')
+    logger = createLogger('AboutModule')
   } catch {
     // Fallback to no-op logger if import fails
     logger = {
@@ -22,40 +22,40 @@
       warn: () => {},
       error: () => {},
       debug: () => {}
-    };
+    }
   }
 
-  const host = document.querySelector('section#about[data-about-src]');
+  const host = document.querySelector('section#about[data-about-src]')
 
   if (!host) {
-    logger.warn('About section host not found');
-    return;
+    logger.warn('About section host not found')
+    return
   }
 
-  const src = host.getAttribute('data-about-src');
+  const src = host.getAttribute('data-about-src')
 
   if (!src) {
-    logger.error('data-about-src attribute is missing');
-    return;
+    logger.error('data-about-src attribute is missing')
+    return
   }
 
   /**
    * Fetch with timeout
    */
   async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
 
     try {
       const response = await fetch(url, {
         cache: 'no-cache',
         signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      return response;
+      })
+      clearTimeout(timeoutId)
+      return response
     } catch (err) {
-      clearTimeout(timeoutId);
-      throw err;
+      clearTimeout(timeoutId)
+      throw err
     }
   }
 
@@ -63,46 +63,46 @@
    * Load about content with retry logic
    */
   async function loadAboutContent(retries = RETRY_ATTEMPTS) {
-    let lastError;
+    let lastError
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         if (attempt > 0) {
-          logger.info(`Retry attempt ${attempt}/${retries}`);
-          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+          logger.info(`Retry attempt ${attempt}/${retries}`)
+          await new Promise(resolve => setTimeout(resolve, 500 * attempt))
         }
 
-        const response = await fetchWithTimeout(src);
+        const response = await fetchWithTimeout(src)
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
 
-        const html = await response.text();
+        const html = await response.text()
 
         if (!html.trim()) {
-          throw new Error('Empty response received');
+          throw new Error('Empty response received')
         }
 
-        host.innerHTML = html;
+        host.innerHTML = html
 
         // Dispatch success event
         document.dispatchEvent(
           new CustomEvent('about:loaded', {
             detail: {success: true, attempts: attempt + 1}
           })
-        );
+        )
 
-        logger.info('About content loaded successfully');
-        return true;
+        logger.info('About content loaded successfully')
+        return true
       } catch (err) {
-        lastError = err;
-        logger.warn(`Load attempt ${attempt + 1} failed:`, err.message);
+        lastError = err
+        logger.warn(`Load attempt ${attempt + 1} failed:`, err.message)
       }
     }
 
     // All attempts failed
-    logger.error('Failed to load about content after retries', lastError);
+    logger.error('Failed to load about content after retries', lastError)
 
     // Display fallback content
     host.innerHTML = `
@@ -114,18 +114,18 @@
           </button>
         </div>
       </div>
-    `;
+    `
 
     // Dispatch error event
     document.dispatchEvent(
       new CustomEvent('about:error', {
         detail: {error: lastError, attempts: RETRY_ATTEMPTS + 1}
       })
-    );
+    )
 
-    return false;
+    return false
   }
 
   // Start loading
-  await loadAboutContent();
-})();
+  await loadAboutContent()
+})()

@@ -1,40 +1,40 @@
-import {CONFIG} from './config.js';
+import {CONFIG} from './config.js'
 
 export function setupScene(THREE, container) {
-  const scene = new THREE.Scene();
+  const scene = new THREE.Scene()
 
-  const aspectRatio = container.clientWidth / container.clientHeight;
-  const camera = new THREE.PerspectiveCamera(CONFIG.CAMERA.FOV, aspectRatio, CONFIG.CAMERA.NEAR, CONFIG.CAMERA.FAR);
+  const aspectRatio = container.clientWidth / container.clientHeight
+  const camera = new THREE.PerspectiveCamera(CONFIG.CAMERA.FOV, aspectRatio, CONFIG.CAMERA.NEAR, CONFIG.CAMERA.FAR)
 
   const renderer = new THREE.WebGLRenderer({
     canvas: container.querySelector('canvas') || undefined,
     antialias: true,
     alpha: true,
     powerPreference: 'high-performance'
-  });
+  })
 
-  const pixelRatio = Math.min(window.devicePixelRatio, 2.0);
-  renderer.setPixelRatio(pixelRatio);
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.8;
+  const pixelRatio = Math.min(window.devicePixelRatio, 2.0)
+  renderer.setPixelRatio(pixelRatio)
+  renderer.setSize(container.clientWidth, container.clientHeight)
+  renderer.setClearColor(0x000000, 0)
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 0.8
 
-  container.appendChild(renderer.domElement);
+  container.appendChild(renderer.domElement)
 
-  return {scene, camera, renderer};
+  return {scene, camera, renderer}
 }
 
 export function setupLighting(THREE, scene) {
-  const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY);
-  directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
-  scene.add(directionalLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY)
+  directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0)
+  scene.add(directionalLight)
 
-  const ambientLight = new THREE.AmbientLight(CONFIG.LIGHTING.DAY.AMBIENT_COLOR, CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY);
-  scene.add(ambientLight);
+  const ambientLight = new THREE.AmbientLight(CONFIG.LIGHTING.DAY.AMBIENT_COLOR, CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY)
+  scene.add(ambientLight)
 
-  return {directionalLight, ambientLight};
+  return {directionalLight, ambientLight}
 }
 
 export function createAtmosphere(THREE, isMobileDevice = false) {
@@ -49,7 +49,7 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
       vWorldPosition = worldPosition.xyz;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
-  `;
+  `
 
   const fragmentShader = `
     varying vec3 vNormal;
@@ -73,7 +73,7 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
 
       gl_FragColor = vec4(finalColor, alpha);
     }
-  `;
+  `
 
   const atmosphereMaterial = new THREE.ShaderMaterial({
     vertexShader,
@@ -90,14 +90,14 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
     transparent: true,
     side: THREE.BackSide,
     depthWrite: false
-  });
+  })
 
-  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS
 
   const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE, segments, segments),
     atmosphereMaterial
-  );
+  )
 
-  return atmosphere;
+  return atmosphere
 }

@@ -16,10 +16,12 @@ module.exports = {
     'no-eval': 'error',
     'no-implied-eval': 'error',
     'prefer-const': 'warn',
-    'no-var': 'warn'
+    'no-var': 'warn',
+    'semi': ['error', 'never'],
+    'comma-dangle': ['error', 'never']
   },
   overrides: [
     {files: ['scripts/**/*.js'], rules: {'no-console': 'off'}},
     {files: ['sw.js', 'content/main.js'], rules: {'no-console': 'off'}}
   ]
-};
+}
