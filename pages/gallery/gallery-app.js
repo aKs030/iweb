@@ -423,7 +423,6 @@ const PhotoGallery = () => {
 
     if (selectedImage) {
       prevActive = document.activeElement;
-      const modal = document.getElementById('lightbox');
       const closeBtn = document.getElementById('lightbox-close');
       const mainEl = document.querySelector('main');
       if (mainEl) mainEl.setAttribute('aria-hidden', 'true');
@@ -440,7 +439,7 @@ const PhotoGallery = () => {
       setTimeout(() => {
         try {
           if (prevActive && typeof prevActive.focus === 'function') prevActive.focus();
-        } catch (e) {
+        } catch {
           /* ignore */
         }
       }, 0);

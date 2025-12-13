@@ -62,10 +62,10 @@ export class GeminiService {
         }
 
         // DEBUG MODE: Return exact error to user
-        const debugMsg =
+        const _debugMsg =
           errorData.error && errorData.error.message
             ? `API Error (${response.status}): ${errorData.error.message}`
-            : `API Error (${response.status}): Unknown error`;
+            : `API Error (${response.status}): Unknown error`; 
 
         if (response.status === 403) {
           console.warn('Gemini API Key blocked or restricted.');

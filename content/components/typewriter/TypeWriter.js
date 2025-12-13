@@ -45,7 +45,7 @@ function makeLineMeasurer(subtitleEl) {
     return measurer.firstChild.getBoundingClientRect().height || 0;
   };
 
-  const measure = text => {
+  const _measure = text => {
     measurer.innerHTML = '';
     const span = document.createElement('span');
     span.textContent = text;
@@ -186,7 +186,7 @@ export class TypeWriter {
     return (this._current = this.quotes[this._index]);
   }
 
-  _generateQueue(lastIndex) {
+  _generateQueue(_lastIndex) {
     if (this.quotes.length <= 1) return [0];
     return this._createQueue();
   }
@@ -238,7 +238,7 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(new CustomEvent('hero:typingEnd', {detail: {text: full, author}}));
-      } catch (e) {}
+      } catch {}
       delay = this.wait;
       this._isDeleting = true;
     } else if (this._isDeleting && !this._txt) {
@@ -308,7 +308,7 @@ export async function initHeroSubtitle(options = {}) {
               : 'clamp(12px,2vw,24px)';
           setCSSVars(el, {bottom: `calc(${base} + ${overlap}px)`});
         }
-      } catch (e) {}
+      } catch {}
     };
 
     const start = () => {
@@ -349,7 +349,7 @@ export async function initHeroSubtitle(options = {}) {
       document.addEventListener('hero:typingEnd', () => {
         try {
           subtitleEl.classList.remove('is-locked');
-        } catch (e) {}
+        } catch {}
       });
 
       // Robust polling to fix race conditions on initial load
