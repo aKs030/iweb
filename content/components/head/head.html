@@ -1,8 +1,6 @@
 <!-- Base Meta -->
 <meta charset="utf-8" />
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 
 <!-- Dynamic Title (replaced by head-complete.js) -->
 <title>{{PAGE_TITLE}}</title>
@@ -58,9 +56,7 @@
 
 <!-- Open Graph / Social Media -->
 <meta property="og:title" content="{{PAGE_TITLE}}" />
-<meta
-  property="og:description"
-  content="Digital Creator Portfolio von Abdulkerim Sesli — Webentwicklung und kreative digitale Projekte." />
+<meta property="og:description" content="Digital Creator Portfolio von Abdulkerim Sesli — Webentwicklung und kreative digitale Projekte." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://abdulkerimsesli.de" />
 <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
@@ -205,11 +201,7 @@
 <link rel="stylesheet" href="/content/components/footer/cookie-consent.css" />
 
 <!-- Google Analytics (Consent-Controlled) -->
-<script
-  type="text/plain"
-  data-consent="required"
-  data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN"
-  async></script>
+<script type="text/plain" data-consent="required" data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN" async></script>
 <script type="text/plain" data-consent="required">
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -222,25 +214,25 @@
 
 <!-- Helper: Auto-insert footer trigger zone if missing -->
 <script>
-  (function ensureTrigger() {
+  ;(function ensureTrigger() {
     try {
       document.addEventListener(
         'DOMContentLoaded',
         function () {
-          if (document.getElementById('footer-trigger-zone')) return;
-          const footerContainer = document.getElementById('footer-container');
-          const trigger = document.createElement('div');
-          trigger.id = 'footer-trigger-zone';
-          trigger.className = 'footer-trigger-zone';
-          trigger.setAttribute('aria-hidden', 'true');
+          if (document.getElementById('footer-trigger-zone')) return
+          const footerContainer = document.getElementById('footer-container')
+          const trigger = document.createElement('div')
+          trigger.id = 'footer-trigger-zone'
+          trigger.className = 'footer-trigger-zone'
+          trigger.setAttribute('aria-hidden', 'true')
           if (footerContainer && footerContainer.parentNode) {
-            footerContainer.parentNode.insertBefore(trigger, footerContainer);
+            footerContainer.parentNode.insertBefore(trigger, footerContainer)
           } else {
-            document.body.appendChild(trigger);
+            document.body.appendChild(trigger)
           }
         },
         {once: true}
-      );
+      )
     } catch (e) {}
-  })();
+  })()
 </script>

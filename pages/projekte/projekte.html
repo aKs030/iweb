@@ -4,15 +4,11 @@
     <meta charset="UTF-8" />
 
     <title>Meine Projekte</title>
-    <meta
-      name="description"
-      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
+    <meta name="description" content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
 
     <!-- Open Graph Meta-Tags -->
     <meta property="og:title" content="Meine Projekte" />
-    <meta
-      property="og:description"
-      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
+    <meta property="og:description" content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/pages/projekte/projekte.html" />
     <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
@@ -25,9 +21,7 @@
     <!-- Twitter Card Meta-Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Meine Projekte" />
-    <meta
-      name="twitter:description"
-      content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
+    <meta name="twitter:description" content="Entdecke meine Webentwicklungs-Projekte und Experimente mit JavaScript und React." />
     <meta name="twitter:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
     <meta name="twitter:image:alt" content="Abdulkerim — Digital Creator Portfolio" />
     <meta name="twitter:creator" content="@abdulkerimsesli" />
@@ -531,65 +525,65 @@
     <!-- Logic Script -->
     <script type="module">
       // FIX: Absoluter Pfad, um Resolution-Errors zu vermeiden
-      import {initProjectsApp} from '/pages/projekte/projekte-app.js';
-      import {initThreeEarth, EarthSystemAPI} from '/content/components/particles/three-earth-system.js';
+      import {initProjectsApp} from '/pages/projekte/projekte-app.js'
+      import {initThreeEarth, EarthSystemAPI} from '/content/components/particles/three-earth-system.js'
 
       // Load styles for Three Earth (Progressive Enhancement)
       async function ensureThreeEarthStyles() {
-        const href = '/content/components/particles/three-earth.css';
-        if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
+        const href = '/content/components/particles/three-earth.css'
+        if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve()
         return new Promise((resolve, reject) => {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = href;
-          link.media = 'print';
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = href
+          link.media = 'print'
           link.onload = () => {
             try {
-              link.media = 'all';
-              resolve();
+              link.media = 'all'
+              resolve()
             } catch (e) {
-              resolve();
+              resolve()
             }
-          };
-          link.onerror = e => reject(e);
-          document.head.appendChild(link);
-        });
+          }
+          link.onerror = e => reject(e)
+          document.head.appendChild(link)
+        })
       }
 
       window.addEventListener('DOMContentLoaded', async () => {
         // 1. React App starten
-        initProjectsApp();
+        initProjectsApp()
 
         // 2. Three.js Config für Projekte anpassen
         try {
-          const config = EarthSystemAPI.getConfig();
-          const basePreset = config.CAMERA.PRESETS.features || config.CAMERA.PRESETS.hero;
+          const config = EarthSystemAPI.getConfig()
+          const basePreset = config.CAMERA.PRESETS.features || config.CAMERA.PRESETS.hero
 
           if (basePreset) {
-            const baseRadius = Math.sqrt((basePreset.x || 0) ** 2 + (basePreset.z || 0) ** 2) || 12;
+            const baseRadius = Math.sqrt((basePreset.x || 0) ** 2 + (basePreset.z || 0) ** 2) || 12
             for (let i = 1; i <= 10; i++) {
-              const angle = i * 0.8;
+              const angle = i * 0.8
               config.CAMERA.PRESETS[`project-${i}`] = {
                 ...basePreset,
                 x: Math.sin(angle) * baseRadius,
                 z: Math.cos(angle) * baseRadius,
                 y: Math.max(2, (basePreset.y || 5) + Math.sin(i * 1.5) * 3),
                 lookAt: basePreset.lookAt
-              };
+              }
             }
           }
         } catch (err) {
-          console.warn('Konnte Projekt-Presets nicht automatisch setzen:', err);
+          console.warn('Konnte Projekt-Presets nicht automatisch setzen:', err)
         }
 
         // 3. Styles und Earth laden
         try {
-          await ensureThreeEarthStyles();
+          await ensureThreeEarthStyles()
         } catch (e) {
-          console.warn('three-earth stylesheet preload failed:', e);
+          console.warn('three-earth stylesheet preload failed:', e)
         }
-        initThreeEarth();
-      });
+        initThreeEarth()
+      })
     </script>
 
     <script src="/content/components/footer/footer-complete.js" type="module"></script>

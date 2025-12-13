@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <script src="/content/components/head/head-complete.js" type="module"></script>
 
-    <link rel="stylesheet" href="/content/styles/main.css" media="print" onload="this.media='all';this.onload=null;" />
+    <link
+      rel="stylesheet"
+      href="/content/styles/main.css"
+      media="print"
+      onload="
+        this.media = 'all'
+        this.onload = null
+      " />
     <noscript><link rel="stylesheet" href="/content/styles/main.css" /></noscript>
 
     <!-- Critical component CSS that should load synchronously (Hero, TypeWriter) -->
@@ -17,17 +24,34 @@
       rel="stylesheet"
       href="/content/components/particles/three-earth.css"
       media="print"
-      onload="this.media='all';this.onload=null;" />
+      onload="
+        this.media = 'all'
+        this.onload = null
+      " />
     <noscript><link rel="stylesheet" href="/content/components/particles/three-earth.css" /></noscript>
 
     <!-- Main application script -->
     <script type="module" src="/content/main.js"></script>
 
     <!-- Deferred Styles (Below-the-Fold) -->
-    <link rel="stylesheet" href="/pages/about/about.css" media="print" onload="this.media='all';this.onload=null;" />
+    <link
+      rel="stylesheet"
+      href="/pages/about/about.css"
+      media="print"
+      onload="
+        this.media = 'all'
+        this.onload = null
+      " />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
-    <link rel="stylesheet" href="/pages/cards/karten.css" media="print" onload="this.media='all';this.onload=null;" />
+    <link
+      rel="stylesheet"
+      href="/pages/cards/karten.css"
+      media="print"
+      onload="
+        this.media = 'all'
+        this.onload = null
+      " />
     <noscript><link rel="stylesheet" href="/pages/cards/karten.css" /></noscript>
 
     <script src="/content/components/robot-companion/robot-companion.js" type="module"></script>
@@ -44,21 +68,26 @@
     </div>
 
     <!-- Advanced Three.js Earth System -->
-    <div
-      id="threeEarthContainer"
-      class="three-earth-container"
-      data-section="hero"
-      aria-describedby="earth-description">
+    <div id="threeEarthContainer" class="three-earth-container" data-section="hero" aria-describedby="earth-description">
       <!-- Hidden description for screen readers -->
       <div id="earth-description" class="visually-hidden">
-        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. Verwenden Sie die
-        Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
+        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. Verwenden Sie die Steuerungstasten zum Zoomen
+        und Wechseln zwischen Kamera-Modi.
       </div>
 
       <div class="three-earth-performance-overlay" id="threeEarthPerformance">
-        <div>FPS: <span id="fps">--</span></div>
-        <div>LOD: <span id="lod">--</span></div>
-        <div>Mode: <span id="mode">--</span></div>
+        <div>
+          FPS:
+          <span id="fps">--</span>
+        </div>
+        <div>
+          LOD:
+          <span id="lod">--</span>
+        </div>
+        <div>
+          Mode:
+          <span id="mode">--</span>
+        </div>
       </div>
 
       <div class="three-earth-error hidden">
@@ -98,11 +127,7 @@
       </section>
 
       <!-- About Section -->
-      <section
-        id="about"
-        class="section about"
-        aria-labelledby="about-heading"
-        data-section-src="/pages/about/about.html">
+      <section id="about" class="section about" aria-labelledby="about-heading" data-section-src="/pages/about/about.html">
         <div class="section-skeleton" aria-hidden="true"></div>
       </section>
 

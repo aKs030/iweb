@@ -54,6 +54,6 @@ const quotes = [
   {author: 'Montaigne', text: 'Wer für alles offen ist, kann nichts festhalten.'},
   {author: 'Thoreau', text: 'Gehe selbstbewusst in die Richtung deiner Träume.'},
   {author: 'Frankl', text: 'Zwischen Reiz und Reaktion liegt unsere Freiheit.'}
-];
+]
 
-export default quotes;
+export default quotes

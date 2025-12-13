@@ -19,4 +19,4 @@ module.exports = [
       'no-var': 'warn'
     }
   }
-];
+]

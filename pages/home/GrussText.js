@@ -23,28 +23,28 @@ const greetings = {
     'Späte Besucher sind die besten Besucher!',
     'Willkommen zu später Stunde auf meiner Website!'
   ]
-};
-
-export function getGreetingSet(date = new Date()) {
-  const hour = date.getHours();
-  if (hour >= 5 && hour < 11) return greetings.morning;
-  if (hour >= 11 && hour < 17) return greetings.day;
-  if (hour >= 17 && hour < 22) return greetings.evening;
-  return greetings.night;
 }
 
-import {randomInt} from '../../content/utils/shared-utilities.js';
+export function getGreetingSet(date = new Date()) {
+  const hour = date.getHours()
+  if (hour >= 5 && hour < 11) return greetings.morning
+  if (hour >= 11 && hour < 17) return greetings.day
+  if (hour >= 17 && hour < 22) return greetings.evening
+  return greetings.night
+}
+
+import {randomInt} from '../../content/utils/shared-utilities.js'
 
 export function pickGreeting(lastValue = null, set = getGreetingSet()) {
-  if (!Array.isArray(set) || set.length === 0) return '';
-  if (set.length === 1) return set[0];
-  let candidate = set[randomInt(0, set.length - 1)];
+  if (!Array.isArray(set) || set.length === 0) return ''
+  if (set.length === 1) return set[0]
+  let candidate = set[randomInt(0, set.length - 1)]
   if (lastValue && set.length > 1) {
-    let guard = 0;
+    let guard = 0
     while (candidate === lastValue && guard < 10) {
-      candidate = set[randomInt(0, set.length - 1)];
-      guard++;
+      candidate = set[randomInt(0, set.length - 1)]
+      guard++
     }
   }
-  return candidate;
+  return candidate
 }

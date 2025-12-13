@@ -167,7 +167,7 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 
    ```javascript
    // In sw.js - Version erhöhen bei Änderungen
-   const CACHE_VERSION = 'iweb-v1.0.0';
+   const CACHE_VERSION = 'iweb-v1.0.0'
    ```
 
 2. **CSP-Header konfigurieren**

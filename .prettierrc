@@ -1,17 +1,17 @@
 {
-  "printWidth": 120,
+  "printWidth": 140,
   "tabWidth": 2,
   "useTabs": false,
-  "semi": true,
+  "semi": false,
   "singleQuote": true,
   "jsxSingleQuote": true,
   "trailingComma": "none",
   "bracketSpacing": false,
+  "bracketSameLine": true,
   "arrowParens": "avoid",
   "endOfLine": "lf",
-  "quoteProps": "as-needed",
-  "htmlWhitespaceSensitivity": "css",
-  "embeddedLanguageFormatting": "auto",
-  "bracketSameLine": true,
-  "proseWrap": "never"
+  "quoteProps": "consistent",
+  "htmlWhitespaceSensitivity": "ignore",
+  "proseWrap": "never",
+  "embeddedLanguageFormatting": "auto"
 }

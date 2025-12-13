@@ -58,8 +58,8 @@ npm run serve
 ```javascript
 // In Browser Console:
 navigator.serviceWorker.getRegistrations().then(registrations => {
-  registrations.forEach(registration => registration.unregister());
-});
+  registrations.forEach(registration => registration.unregister())
+})
 ```
 
 ## Recent Optimizations (2025-12-04)
@@ -80,7 +80,6 @@ Alle direkten `console.*` Aufrufe wurden durch das zentrale Logger-System ersetz
 - Lint-staged: v13 → v15
 - Prettier: v3.2 → v3.4
 - Stylelint: v16.26 → v16.11
-
 
 ### ✅ Service Worker hinzugefügt
 

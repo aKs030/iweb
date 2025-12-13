@@ -203,10 +203,10 @@ connect-src 'self' ws://localhost:* ws://127.0.0.1:*;
 
 ```javascript
 // Test CSP violations in console
-console.log('CSP Test: Inline script executed');
+console.log('CSP Test: Inline script executed')
 
 // Dies sollte blockiert werden bei strikter CSP:
-eval('console.log("eval test")');
+eval('console.log("eval test")')
 ```
 
 ## Best Practices

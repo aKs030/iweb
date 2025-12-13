@@ -92,12 +92,7 @@
   border: none;
   cursor: pointer;
   overflow: hidden;
-  background: linear-gradient(
-    180deg,
-    #87ceeb 0%,
-    /* Sky blue */ #ffe4b5 45%,
-    /* Sunset orange */ #98fb98 100% /* Soft green */
-  );
+  background: linear-gradient(180deg, #87ceeb 0%, /* Sky blue */ #ffe4b5 45%, /* Sunset orange */ #98fb98 100% /* Soft green */);
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
     0 4px 20px rgb(0 0 0 / 15%),
