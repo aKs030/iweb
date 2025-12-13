@@ -127,9 +127,6 @@ CSS-Variablen sind in `content/root.css` zentralisiert:
 ```bash
 # JavaScript linting
 npx eslint .
-
-# CSS linting
-npx stylelint "**/*.css"
 ```
 
 ### Best Practices
@@ -156,7 +153,6 @@ Alle `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt.
 
 - ESLint v8 → v9
 - Concurrently v8 → v9
-- Lint-staged v13 → v15
 - Weitere Updates siehe `package.json`
 
 ### ✅ CSS optimiert
