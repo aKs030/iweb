@@ -166,7 +166,7 @@ export function initHeroFeatureBundle() {
     const doScroll = () => {
       try {
         target.scrollIntoView({behavior: 'smooth'});
-      } catch (e) {
+      } catch {
         const top = target.getBoundingClientRect().top + window.pageYOffset;
         window.scrollTo({top, behavior: 'smooth'});
       }
@@ -177,7 +177,7 @@ export function initHeroFeatureBundle() {
         window.SectionLoader.loadSection(target).finally(() => requestAnimationFrame(doScroll));
         return;
       }
-    } catch (e) {
+    } catch {
       /* ignore and fallback to immediate scroll */
     }
 

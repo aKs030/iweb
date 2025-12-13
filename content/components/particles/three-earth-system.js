@@ -98,10 +98,10 @@ const ThreeEarthManager = (() => {
       }
 
       const loadingManager = new THREE_INSTANCE.LoadingManager();
-      loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+      loadingManager.onProgress = (_url, _itemsLoaded, _itemsTotal) => {
         if (!isSystemActive) return;
         showLoadingState(container);
-      };
+      }; 
 
       loadingManager.onLoad = () => {
         if (!isSystemActive) return;
@@ -205,7 +205,7 @@ const ThreeEarthManager = (() => {
       // Inline handleInitializationError
       try {
         if (renderer) renderer.dispose();
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       sharedCleanupManager.cleanupSystem('three-earth');
@@ -311,14 +311,14 @@ function detectDeviceCapabilities() {
       isLowEnd,
       recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH'
     };
-  } catch (e) {
+  } catch {
     return {isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM'};
   }
 }
 
 function getOptimizedConfig(capabilities) {
   // Return defensive copy
-  const baseConfig = JSON.parse(JSON.stringify(CONFIG));
+  const _baseConfig = JSON.parse(JSON.stringify(CONFIG));
   // Note: Deep cloning config ensures we don't accidentally mutate defaults if called repeatedly
   // but logic below uses Object.assign on the live CONFIG anyway.
 
