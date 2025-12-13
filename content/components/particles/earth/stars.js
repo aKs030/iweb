@@ -115,7 +115,7 @@ export class StarManager {
   }
 
   // NEW: Handle resize to keep stars aligned with DOM elements
-  handleResize(width, height) {
+  handleResize(_width, _height) {
     if (this.areStarsFormingCards && !this.transition.active) {
       const cardPositions = this.getCardPositions();
       if (cardPositions.length > 0) {

@@ -155,7 +155,7 @@ async function cacheFirst(request, cacheName) {
       limitCacheSize(cacheName, CACHE_LIMITS[cacheName]);
     }
     return response;
-  } catch (error) {
+  } catch {
     // Network failed, return cached offline page if available
     return caches.match('/offline.html') || new Response('Offline', {status: 503});
   }

@@ -227,7 +227,7 @@ class RobotCompanion {
       this.animationModule.startTypeWriterKnockbackAnimation();
     }, 1500);
 
-    this._onHeroTypingEnd = ev => {
+    this._onHeroTypingEnd = _ev => {
       try {
         const typeWriter = document.querySelector('.typewriter-title');
         if (!typeWriter || !this.dom || !this.dom.container) return;
@@ -236,7 +236,7 @@ class RobotCompanion {
         const initialLeft = window.innerWidth - 30 - robotWidth;
         const maxLeft = initialLeft - 20;
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
-      } catch (e) {}
+      } catch {}
     };
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd);
   }
@@ -273,7 +273,7 @@ class RobotCompanion {
             const maxLeft = initialLeft - 20;
             this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
           }
-        } catch (e) {}
+        } catch {}
       }, 500);
     };
     window.addEventListener('scroll', this._scrollListener, {passive: true});
@@ -324,8 +324,8 @@ class RobotCompanion {
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
-  trackInteraction(type = 'general') {
-    this.analytics.interactions++;
+  trackInteraction(_type = 'general') {
+    this.analytics.interactions++; 
     localStorage.setItem('robot-interactions', this.analytics.interactions);
     if (this.analytics.interactions === 10 && !this.easterEggFound.has('first-10')) {
       this.unlockEasterEgg(

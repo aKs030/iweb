@@ -179,7 +179,7 @@ export class RobotCollision {
     }
   }
 
-  checkForTypewriterCollision(twRect, maxLeft) {
+  checkForTypewriterCollision(twRect, _maxLeft) {
     if (!twRect) return false;
     // Allow collisions even if the robot recently changed direction.
     if (this.robot.animationModule.startAnimation && this.robot.animationModule.startAnimation.active) return false;
@@ -212,7 +212,7 @@ export class RobotCollision {
       // Clamp maxLeft fallback
       const robotWidth = 80;
       const initialLeft = window.innerWidth - 30 - robotWidth;
-      maxLeft = typeof maxLeft === 'number' ? maxLeft : initialLeft - 20;
+      _maxLeft = typeof _maxLeft === 'number' ? _maxLeft : initialLeft - 20;
 
       // Collision reaction: show bubble, particle burst and dramatic knockback movement
       const reactions = ['Autsch! 😵', 'Ups! Das war hart! 💥', 'Whoa! 😲', 'Hey! Nicht schubsen! 😠'];
@@ -223,14 +223,14 @@ export class RobotCollision {
       // Große Partikel-Explosion
       this.robot.animationModule.spawnParticleBurst(18, {strength: 2.0, spread: 180});
       // Trigger the dedicated typewriter collision knockback
-      this.startTypewriterCollisionResponse(twRect, maxLeft);
+      this.startTypewriterCollisionResponse(_twRect, _maxLeft);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
 
-  startTypewriterCollisionResponse(twRect, maxLeft) {
+  startTypewriterCollisionResponse(_twRect, _maxLeft) {
     if (!this.robot.dom || !this.robot.dom.container) return;
     const anim = this.robot.animationModule;
     // Prevent overlapping animations

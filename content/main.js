@@ -25,7 +25,7 @@ if (typeof window !== 'undefined') {
   try {
     window.a11y = a11y;
     if (typeof a11y?.init === 'function') a11y.init();
-  } catch (e) {
+  } catch {
     /* ignored */
   }
 }
@@ -255,7 +255,7 @@ function _initApp() {
   try {
     a11y?.updateAnimations?.();
     a11y?.updateContrast?.();
-  } catch (e) {
+  } catch {
     /* ignored */
   }
 }
@@ -521,7 +521,7 @@ document.addEventListener(
                 log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001');
                 try {
                   rws.send('dev:hello');
-                } catch (e) {
+                } catch {
                   /* ignore */
                 }
               };

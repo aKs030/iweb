@@ -439,7 +439,7 @@ export class RobotAnimation {
     }, ms);
   }
 
-  triggerRandomIdleAnimation(duration) {
+  triggerRandomIdleAnimation(_duration) {
     const r = Math.random();
     if (r < 0.3) {
       this.robot.dom.avatar.classList.add('waving');

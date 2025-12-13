@@ -15,7 +15,7 @@
   try {
     const {createLogger} = await import('../../content/utils/shared-utilities.js');
     logger = createLogger('AboutModule');
-  } catch (err) {
+  } catch {
     // Fallback to no-op logger if import fails
     logger = {
       info: () => {},
