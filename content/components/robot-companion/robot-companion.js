@@ -325,7 +325,7 @@ class RobotCompanion {
   }
 
   trackInteraction(_type = 'general') {
-    this.analytics.interactions++; 
+    this.analytics.interactions++;
     localStorage.setItem('robot-interactions', this.analytics.interactions);
     if (this.analytics.interactions === 10 && !this.easterEggFound.has('first-10')) {
       this.unlockEasterEgg(

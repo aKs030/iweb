@@ -3,7 +3,7 @@ const _path = require('path');
 const glob = require('glob');
 
 const _root = process.cwd();
-const files = glob.sync('**/*.js', {ignore: ['node_modules/**','content/vendor/**','tests/**','dist/**']});
+const files = glob.sync('**/*.js', {ignore: ['node_modules/**', 'content/vendor/**', 'tests/**', 'dist/**']});
 
 const functionDecl = /(?:function)\s+([A-Za-z0-9_]+)\s*\(/g;
 const exportFunc = /export\s+function\s+([A-Za-z0-9_]+)\s*\(/g;
@@ -11,7 +11,7 @@ const exportFunc = /export\s+function\s+([A-Za-z0-9_]+)\s*\(/g;
 const candidates = [];
 
 files.forEach(file => {
-  const code = fs.readFileSync(file,'utf8');
+  const code = fs.readFileSync(file, 'utf8');
   let m;
   const names = new Set();
   while ((m = functionDecl.exec(code))) {
@@ -24,8 +24,8 @@ files.forEach(file => {
     // Count occurrences across all files
     let count = 0;
     files.forEach(f2 => {
-      const content = fs.readFileSync(f2,'utf8');
-      const re = new RegExp('\\b'+name+'\\b','g');
+      const content = fs.readFileSync(f2, 'utf8');
+      const re = new RegExp('\\b' + name + '\\b', 'g');
       const matches = content.match(re);
       if (matches) count += matches.length;
     });
@@ -41,5 +41,5 @@ candidates.forEach(c => {
   if (!byName[c.name] || byName[c.name].count > c.count) byName[c.name] = c;
 });
 
-const result = Object.values(byName).sort((a,b) => a.name.localeCompare(b.name));
+const result = Object.values(byName).sort((a, b) => a.name.localeCompare(b.name));
 console.warn(JSON.stringify(result, null, 2));
