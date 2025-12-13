@@ -40,8 +40,8 @@ const path = require('path');
       process.exit(1);
     }
 
-    console.log('Using entry points:');
-    entryCandidates.forEach(e => console.log(' -', path.relative(root, e)));
+    console.warn('Using entry points:');
+    entryCandidates.forEach(e => console.warn(' -', path.relative(root, e)));
 
     // Build with esbuild, write=false to avoid disk output, request metafile
     // esbuild requires an outdir when multiple entryPoints are used in this mode
@@ -79,11 +79,11 @@ const path = require('path');
 
     const filtered = candidates.filter(f => !heuristicsExcluded.includes(f));
 
-    console.log('\nPotential treeshake candidates (files not included in the bundle):');
+    console.warn('\nPotential treeshake candidates (files not included in the bundle):');
     if (filtered.length === 0) {
-      console.log(' - None: bundler includes all JS under content/pages for the selected entry points.');
+      console.warn(' - None: bundler includes all JS under content/pages for the selected entry points.');
     } else {
-      filtered.forEach(f => console.log(' -', path.relative(root, f)));
+      filtered.forEach(f => console.warn(' -', path.relative(root, f)));
     }
 
     // Write short JSON for inspection
