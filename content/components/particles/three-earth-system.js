@@ -101,7 +101,7 @@ const ThreeEarthManager = (() => {
       loadingManager.onProgress = (_url, _itemsLoaded, _itemsTotal) => {
         if (!isSystemActive) return;
         showLoadingState(container);
-      }; 
+      };
 
       loadingManager.onLoad = () => {
         if (!isSystemActive) return;
