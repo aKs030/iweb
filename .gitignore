@@ -31,3 +31,5 @@ build/
 
 # Playwright artifacts were removed; no active Playwright tests remain
 test-results/
+# Temporary generated files
+tmp/
