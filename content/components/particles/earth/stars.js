@@ -408,6 +408,12 @@ export class StarManager {
     })
   }
 
+  update(elapsedTime) {
+    if (this.starField && !this.isDisposed) {
+      this.starField.material.uniforms.time.value = elapsedTime
+    }
+  }
+
   cleanup() {
     this.isDisposed = true
     this.disableScrollUpdates()
