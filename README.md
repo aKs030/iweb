@@ -188,3 +188,38 @@ MIT
 ---
 
 **Hinweis:** Diese Website verwendet keine externen Frameworks im Production-Build. React wird nur für die Projekte-Seite verwendet und ist als UMD-Build eingebunden.
+
+## 🧩 Entwickler-Setup & Hooks
+
+Kurze Hinweise für Contributor und Entwickler-Workflows:
+
+- Installation:
+
+```bash
+# Installiere Dependencies und aktiviere Husky-Hooks
+npm install
+npm run prepare
+```
+
+- Formatierung + Linting (lokal oder CI):
+
+```bash
+# Formatieren (Prettier + ESLint auto-fix via lint-staged on commit)
+npm run format
+
+# Format-Check (CI-friendly)
+npm run format:check
+
+# Linten
+npm run lint
+```
+
+- Husky / lint-staged:
+  - Vor jedem Commit laufen `prettier` und `eslint --fix` auf gestagten Dateien.
+  - Wenn Du Hooks temporär deaktivieren willst: `HUSKY=0 git commit -m "..."`.
+
+- Wenn Du Regeln änderst:
+  - Passe `.prettierrc` und `.eslintrc.cjs` / `.eslintrc.json` an.
+  - Teste mit `npm run format:check` und `npm run lint`.
+
+Danke für Deinen Beitrag! Bitte achte auf konsistente Formatierung und das Hinzufügen/Anpassen von Tests, wenn Du Verhalten änderst.
