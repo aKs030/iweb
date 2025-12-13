@@ -367,7 +367,7 @@ function setupSectionDetection() {
 
       if (!best || !best.isIntersecting) return;
 
-      let newSection = mapId(best.target.id || '');
+      const newSection = mapId(best.target.id || '');
       if (!newSection) return;
 
       if (newSection !== currentSection) {
@@ -506,7 +506,7 @@ function handleVisibilityChange() {
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
   const capabilities = deviceCapabilities || detectDeviceCapabilities();
-  let frameSkip = capabilities.isLowEnd ? 2 : 1;
+  const frameSkip = capabilities.isLowEnd ? 2 : 1;
   let frameCounter = 0;
 
   animate = () => {
