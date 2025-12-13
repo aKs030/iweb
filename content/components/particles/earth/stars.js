@@ -29,6 +29,9 @@ export class StarManager {
 
     // Cache for resize calculations
     this.areStarsFormingCards = false
+
+    // Virtual Camera for calculating stable target positions
+    this.virtualCamera = new this.THREE.PerspectiveCamera(CONFIG.CAMERA.FOV, 1, CONFIG.CAMERA.NEAR, CONFIG.CAMERA.FAR)
   }
 
   createStarField() {
@@ -87,7 +90,11 @@ export class StarManager {
 
         void main() {
           vColor = color;
-          vec3 currentPos = mix(position, aTargetPosition, uTransition);
+          // Cubic ease-out for smoother arrival
+          float t = uTransition;
+          float ease = 1.0 - pow(1.0 - t, 3.0);
+
+          vec3 currentPos = mix(position, aTargetPosition, ease);
           vec4 mvPosition = modelViewMatrix * vec4(currentPos, 1.0);
           gl_PointSize = size * (300.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
@@ -114,9 +121,10 @@ export class StarManager {
     return this.starField
   }
 
-  // NEW: Handle resize to keep stars aligned with DOM elements
+  // Handle resize to keep stars aligned with DOM elements
   handleResize(_width, _height) {
     if (this.areStarsFormingCards && !this.transition.active) {
+      // Re-calculate using virtual camera to ensure stability
       const cardPositions = this.getCardPositions()
       if (cardPositions.length > 0) {
         this.updateTargetBuffer(cardPositions)
@@ -124,8 +132,45 @@ export class StarManager {
     }
   }
 
+  updateVirtualCamera() {
+    if (!this.renderer || !this.virtualCamera) return
+
+    // Ensure virtual camera matches current viewport aspect ratio
+    const aspect = this.renderer.domElement.clientWidth / this.renderer.domElement.clientHeight
+    this.virtualCamera.aspect = aspect
+    this.virtualCamera.updateProjectionMatrix()
+
+    // Set virtual camera to the "Features" preset destination
+    // Logic must match CameraManager.updateCameraPosition for the 'features' preset (day mode/angle 0)
+    const preset = CONFIG.CAMERA.PRESETS.features
+
+    // In 'features' (Day mode), orbitAngle is 0
+    // x = target.x + sin(0)*radius*0.75 = target.x
+    // z = cos(0)*radius = radius
+
+    const targetPos = new this.THREE.Vector3(
+      preset.x,
+      preset.y,
+      preset.z // This serves as the radius/Z in the orbit logic
+    )
+
+    this.virtualCamera.position.copy(targetPos)
+
+    const lookAtPos = new this.THREE.Vector3(
+      preset.lookAt.x,
+      preset.lookAt.y,
+      preset.lookAt.z
+    )
+    this.virtualCamera.lookAt(lookAtPos)
+
+    this.virtualCamera.updateMatrixWorld(true)
+  }
+
   getCardPositions() {
-    if (!this.camera || this.isDisposed) return []
+    if (!this.virtualCamera || this.isDisposed) return []
+
+    // Ensure virtual camera is up to date with screen size and target position
+    this.updateVirtualCamera()
 
     const featuresSection = getElementById('features')
     if (!featuresSection) return []
@@ -134,14 +179,15 @@ export class StarManager {
     if (cards.length === 0) return []
 
     const positions = []
-    const width = this.renderer ? this.renderer.domElement.clientWidth : window.innerWidth
-    const height = this.renderer ? this.renderer.domElement.clientHeight : window.innerHeight
+    const width = this.renderer.domElement.clientWidth
+    const height = this.renderer.domElement.clientHeight
 
     cards.forEach(card => {
       const rect = card.getBoundingClientRect()
       // Ensure element is actually somewhat visible/valid
       if (rect.width > 0 && rect.height > 0) {
-        const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2)
+        // Use virtual camera for projection
+        const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2, this.virtualCamera)
         positions.push(...perimeterPositions)
       }
     })
@@ -149,36 +195,76 @@ export class StarManager {
     return positions
   }
 
-  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ) {
+  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ, camera) {
     const positions = []
-    // Recalculate stars per edge dynamically based on current star count config
-    const starsPerEdge = Math.floor((this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4)
+
+    // VISUAL STYLE: Optimized Distribution & Jitter
+    // We want a constant density of stars regardless of card size
+    const perimeterLength = (rect.width + rect.height) * 2
+    const starDensity = 0.6 // Stars per pixel (tune this for density)
+    const totalStarsForCard = Math.floor(perimeterLength * starDensity)
+
+    // Avoid having too many stars on one card if card is huge
+    const maxStarsPerCard = this.isMobileDevice ? 400 : 800
+    const finalStarCount = Math.min(totalStarsForCard, maxStarsPerCard)
 
     const screenToWorld = (x, y) => {
+      // Standard NDC calculation
       const ndcX = (x / viewportWidth) * 2 - 1
       const ndcY = -((y / viewportHeight) * 2 - 1)
       const vector = new this.THREE.Vector3(ndcX, ndcY, 0)
-      vector.unproject(this.camera)
-      const direction = vector.sub(this.camera.position).normalize()
-      const distance = (targetZ - this.camera.position.z) / direction.z
-      return this.camera.position.clone().add(direction.multiplyScalar(distance))
+
+      // Unproject using the VIRTUAL CAMERA
+      vector.unproject(camera)
+
+      const direction = vector.sub(camera.position).normalize()
+      const distance = (targetZ - camera.position.z) / direction.z
+      return camera.position.clone().add(direction.multiplyScalar(distance))
     }
 
-    // Helper to push positions
-    const addLine = (startX, startY, endX, endY) => {
-      for (let i = 0; i < starsPerEdge; i++) {
-        const t = i / Math.max(1, starsPerEdge - 1)
-        const x = startX + (endX - startX) * t
-        const y = startY + (endY - startY) * t
-        const worldPos = screenToWorld(x, y)
-        positions.push({x: worldPos.x, y: worldPos.y, z: targetZ})
-      }
+    // Helper to interpolate along the perimeter
+    const getPointOnPerimeter = (t) => {
+        // t is 0..1 representing position along total perimeter (Top -> Right -> Bottom -> Left)
+        const totalLen = (rect.width + rect.height) * 2
+        const p = t * totalLen
+
+        if (p < rect.width) {
+            // Top edge
+            return { x: rect.left + p, y: rect.top }
+        } else if (p < rect.width + rect.height) {
+            // Right edge
+            return { x: rect.right, y: rect.top + (p - rect.width) }
+        } else if (p < rect.width * 2 + rect.height) {
+            // Bottom edge
+            return { x: rect.right - (p - (rect.width + rect.height)), y: rect.bottom }
+        } else {
+            // Left edge
+            return { x: rect.left, y: rect.bottom - (p - (rect.width * 2 + rect.height)) }
+        }
     }
 
-    addLine(rect.left, rect.top, rect.right, rect.top) // Top
-    addLine(rect.right, rect.top, rect.right, rect.bottom) // Right
-    addLine(rect.right, rect.bottom, rect.left, rect.bottom) // Bottom
-    addLine(rect.left, rect.bottom, rect.left, rect.top) // Left
+    for (let i = 0; i < finalStarCount; i++) {
+        // Uniform distribution along perimeter
+        const t = i / finalStarCount
+        const point = getPointOnPerimeter(t)
+
+        // VISUAL STYLE: Add random jitter for "magic dust" effect
+        // Jitter should be in screen space to look consistent
+        const jitterAmount = 4.0 // pixels
+        const jX = (Math.random() - 0.5) * jitterAmount
+        const jY = (Math.random() - 0.5) * jitterAmount
+
+        const worldPos = screenToWorld(point.x + jX, point.y + jY)
+
+        // Add slight depth variation for volumetric feel
+        const zVar = (Math.random() - 0.5) * 0.15
+
+        positions.push({
+            x: worldPos.x,
+            y: worldPos.y,
+            z: targetZ + zVar
+        })
+    }
 
     return positions
   }
@@ -189,7 +275,9 @@ export class StarManager {
 
     const cards = document.querySelectorAll('#features .card')
     cards.forEach(card => {
-      card.style.opacity = '0'
+      // Delay opacity change slightly to allow stars to arrive
+      // card.style.opacity = '0'
+      // Handled by updateCardOpacity
       card.style.pointerEvents = 'none'
     })
 
@@ -198,15 +286,12 @@ export class StarManager {
 
     this.updateTargetBuffer(cardPositions)
     this.startTransition(1.0)
+    // No need for scroll updates if we use Virtual Camera (it's static relative to layout)!
+    // Actually, we still need it if the user SCROLLS while in the section,
+    // because the card DOM positions change on screen, so world positions must update.
     this.enableScrollUpdates()
 
-    setTimeout(() => {
-      if (!this.isDisposed && this.transition.targetValue === 1.0) {
-        // Refine once settled
-        const refinedPositions = this.getCardPositions()
-        if (refinedPositions.length > 0) this.updateTargetBuffer(refinedPositions)
-      }
-    }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY)
+    // Removed the setTimeout since Virtual Camera eliminates the drift wait time!
   }
 
   resetStarsToOriginal() {
@@ -239,7 +324,7 @@ export class StarManager {
     if (now - this.lastScrollUpdate < this.scrollUpdateThrottle) return
     this.lastScrollUpdate = now
 
-    // Recalculate because scroll changes screen position relative to camera
+    // Recalculate using virtual camera to match new DOM positions
     const cardPositions = this.getCardPositions()
     if (cardPositions.length > 0) this.updateTargetBuffer(cardPositions)
   }
@@ -250,17 +335,19 @@ export class StarManager {
     const attr = this.starField.geometry.attributes.aTargetPosition
     const array = attr.array
     const count = array.length / 3
+    const posCount = cardPositions.length
+
+    if (posCount === 0) return
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3
-      // Wrap around if we have more stars than card-points
-      const target = cardPositions[i % cardPositions.length]
+      // Distribute stars evenly across available card positions
+      const target = cardPositions[i % posCount]
 
       if (target) {
-        const spreadFactor = 0.15
-        array[i3] = target.x + (Math.random() - 0.5) * spreadFactor
-        array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor
-        array[i3 + 2] = target.z + (Math.random() - 0.5) * 0.05
+        array[i3] = target.x
+        array[i3 + 1] = target.y
+        array[i3 + 2] = target.z
       }
     }
 
@@ -291,7 +378,8 @@ export class StarManager {
 
     if (progress >= 1) this.transition.active = false
 
-    const eased = this.easeInOutCubic(progress)
+    // Standard easeInOutCubic
+    const eased = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2
 
     if (this.starField && this.starField.material) {
       const val = this.transition.startValue + (this.transition.targetValue - this.transition.startValue) * eased
@@ -320,16 +408,6 @@ export class StarManager {
     })
   }
 
-  easeInOutCubic(t) {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-  }
-
-  update(elapsedTime) {
-    if (this.starField && !this.isDisposed) {
-      this.starField.material.uniforms.time.value = elapsedTime
-    }
-  }
-
   cleanup() {
     this.isDisposed = true
     this.disableScrollUpdates()
@@ -347,6 +425,9 @@ export class StarManager {
       if (this.starField.material) this.starField.material.dispose()
       this.starField = null
     }
+
+    // Dispose virtual camera
+    this.virtualCamera = null
   }
 }
 

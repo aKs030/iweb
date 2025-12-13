@@ -1,7 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 9.4.0 - OPTIMIZED: Fixed Async Race Conditions & Resize Logic
+ * @version 9.5.0 - OPTIMIZED: Star Alignment Fixed (Virtual Camera)
  */
 
 import {createLogger, getElementById, onResize, TimerManager} from '../../utils/shared-utilities.js'
@@ -64,7 +64,7 @@ const ThreeEarthManager = (() => {
     isSystemActive = true
 
     try {
-      log.info('Initializing Three.js Earth System v9.4.0 (Fixed)')
+      log.info('Initializing Three.js Earth System v9.5.0 (Optimized)')
 
       // Device Detection & optimized config
       try {
@@ -616,9 +616,17 @@ export const EarthSystemAPI = {
   // Exposed for testing purposes
   get shootingStarManager() {
     return shootingStarManager
+  },
+  get starManager() {
+    return starManager
   }
 }
 
 export default ThreeEarthManager
 
 export {detectDeviceCapabilities, getOptimizedConfig}
+
+// Expose for testing if requested (only in local or debug/test environments)
+if (typeof window !== 'undefined' && (window.location.search.includes('test') || window.location.search.includes('debug') || window.location.hostname === 'localhost')) {
+  window.threeEarthSystem = { EarthSystemAPI, initThreeEarth, cleanup };
+}
