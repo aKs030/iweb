@@ -287,7 +287,7 @@ export class StarManager {
 
     const now = performance.now();
     const elapsed = now - this.transition.startTime;
-    let progress = Math.min(elapsed / this.transition.duration, 1);
+    const progress = Math.min(elapsed / this.transition.duration, 1);
 
     if (progress >= 1) this.transition.active = false;
 

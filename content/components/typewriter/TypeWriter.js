@@ -68,7 +68,7 @@ function makeLineMeasurer(subtitleEl) {
   const getLines = text => {
     measurer.innerHTML = '';
     const words = text.split(' ');
-    let lines = [];
+    const lines = [];
     let currentLine = [];
 
     const rect = subtitleEl.getBoundingClientRect();
