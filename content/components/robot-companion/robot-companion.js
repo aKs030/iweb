@@ -30,6 +30,9 @@ class RobotCompanion {
     // Flag to prevent footer overlap check from overriding keyboard adjustment
     this.isKeyboardAdjustmentActive = false;
 
+    // Store initial layout height for detecting keyboard even when layout viewport shrinks
+    this.initialLayoutHeight = window.innerHeight;
+
     // Context greeting dedupe & observed section tracking
     this.currentObservedContext = null;
     this._sectionObserver = null;
@@ -173,11 +176,14 @@ class RobotCompanion {
         return;
       }
 
-      const layoutHeight = window.innerHeight;
+      // Use initialLayoutHeight if available to detect shrink-resize behaviors
+      const referenceHeight = this.initialLayoutHeight || window.innerHeight;
       const visualHeight = window.visualViewport.height;
-      const heightDiff = layoutHeight - visualHeight;
+      const heightDiff = referenceHeight - visualHeight;
       const isInputFocused = document.activeElement === this.dom.input;
 
+      // Threshold: > 150px difference usually implies keyboard.
+      // Also trigger if input is focused and difference is measurable (>50px).
       const isKeyboardOverlay = heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
