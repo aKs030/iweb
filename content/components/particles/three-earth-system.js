@@ -19,6 +19,7 @@ import {setupScene, setupLighting, createAtmosphere} from './earth/scene.js'
 import {createEarthSystem, createMoonSystem, createCloudLayer} from './earth/assets.js'
 import {CameraManager} from './earth/camera.js'
 import {StarManager, ShootingStarManager} from './earth/stars.js'
+import {CardManager} from './earth/cards.js'
 import {showLoadingState, hideLoadingState, showErrorState, PerformanceMonitor} from './earth/ui.js'
 
 const log = createLogger('ThreeEarthSystem')
@@ -31,7 +32,7 @@ let dayMaterial, nightMaterial
 let directionalLight, ambientLight
 
 // Sub-systems
-let cameraManager, starManager, shootingStarManager, performanceMonitor
+let cameraManager, starManager, shootingStarManager, performanceMonitor, cardManager
 
 // State
 let sectionObserver, viewportObserver, animationFrameId
@@ -173,6 +174,9 @@ const ThreeEarthManager = (() => {
       setupSectionDetection()
       setupViewportObserver(container)
 
+      // Mark system as active for CSS
+      document.body.classList.add('three-earth-active')
+
       performanceMonitor = new PerformanceMonitor(container, renderer, level => {
         currentQualityLevel = level
         // Inline applyQualitySettings - small and only used here
@@ -190,9 +194,13 @@ const ThreeEarthManager = (() => {
 
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE)
 
+      // Cards
+      cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer)
+
       // Start Loops
       startAnimationLoop()
       setupResizeHandler()
+      setupInteraction()
 
       log.info('Initialization complete')
       return cleanup
@@ -261,9 +269,12 @@ const ThreeEarthManager = (() => {
     dayMaterial = nightMaterial = null
     directionalLight = ambientLight = null
 
-    cameraManager = starManager = shootingStarManager = performanceMonitor = null
+    if (cardManager) cardManager.cleanup()
+    cardManager = starManager = shootingStarManager = performanceMonitor = null
+    cameraManager = null
 
     unregisterParticleSystem('three-earth')
+    document.body.classList.remove('three-earth-active')
     log.info('Cleanup complete')
   }
 
@@ -374,10 +385,15 @@ function setupSectionDetection() {
         const isFeaturesToAbout = previousSection === 'features' && newSection === 'about'
         updateEarthForSection(newSection, {allowModeSwitch: isFeaturesToAbout})
 
-        if (newSection === 'features' && starManager) {
-          starManager.animateStarsToCards()
-        } else if (previousSection === 'features' && starManager) {
-          starManager.resetStarsToOriginal()
+        if (newSection === 'features') {
+          // Optimized: Disable star alignment to HTML cards as we now use 3D cards
+          // if (starManager) starManager.animateStarsToCards()
+          if (cardManager) cardManager.setVisible(true)
+        } else {
+           if (previousSection === 'features') {
+              // if (starManager) starManager.resetStarsToOriginal()
+              if (cardManager) cardManager.setVisible(false)
+           }
         }
 
         const container = document.querySelector('.three-earth-container')
@@ -524,6 +540,13 @@ function startAnimationLoop() {
     if (cameraManager) cameraManager.updateCameraPosition()
     updateObjectTransforms()
 
+    // Pass mouse pos from where ever it's tracked, or setup tracker
+    // For now we assume a global mouse tracker or pass empty
+    // Actually we need to add interaction logic
+    if (cardManager && window.lastMousePos) {
+       cardManager.update(elapsedTime * 1000, window.lastMousePos)
+    }
+
     if (shootingStarManager && !capabilities.isLowEnd) shootingStarManager.update()
     if (performanceMonitor) performanceMonitor.update()
 
@@ -537,6 +560,33 @@ function startAnimationLoop() {
   if (document.visibilityState === 'visible') {
     animate()
   }
+}
+
+function setupInteraction() {
+   window.lastMousePos = new THREE_INSTANCE.Vector2(-999, -999) // Default off-screen
+
+   const onMove = (event) => {
+       if (!isSystemActive) return
+       window.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1
+       window.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1
+   }
+
+   const onClick = (event) => {
+       if (!isSystemActive || !cardManager) return
+       // Recalculate mouse pos for click accuracy
+       const mouse = new THREE_INSTANCE.Vector2()
+       mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+       cardManager.handleClick(mouse)
+   }
+
+   window.addEventListener('mousemove', onMove)
+   window.addEventListener('click', onClick)
+
+   sharedCleanupManager.addCleanupFunction('three-earth', () => {
+       window.removeEventListener('mousemove', onMove)
+       window.removeEventListener('click', onClick)
+   }, 'interaction')
 }
 
 function updateObjectTransforms() {
