@@ -105,8 +105,15 @@ export class StarManager {
         uniform float twinkleSpeed;
         varying vec3 vColor;
         void main() {
+          // Circular particle shape with soft edge
+          vec2 coord = gl_PointCoord - vec2(0.5);
+          float dist = length(coord);
+          if (dist > 0.5) discard;
+
+          float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
+
           float strength = (sin(time * twinkleSpeed + gl_FragCoord.x * 0.5) + 1.0) / 2.0 * 0.5 + 0.5;
-          gl_FragColor = vec4(vColor, strength);
+          gl_FragColor = vec4(vColor, strength * alpha);
         }
       `,
       blending: this.THREE.AdditiveBlending,
@@ -272,6 +279,15 @@ export class StarManager {
   animateStarsToCards() {
     if (!this.starField || this.isDisposed) return
     this.areStarsFormingCards = true
+
+    // FORCE RESET TRANSFORM to ensure alignment matches Virtual Camera calculation
+    // This removes any parallax offsets that might be present
+    if (this.starField) {
+      this.starField.position.set(0, 0, 0)
+      this.starField.rotation.set(0, 0, 0)
+      this.starField.scale.set(1, 1, 1)
+      this.starField.updateMatrixWorld(true)
+    }
 
     const cards = document.querySelectorAll('#features .card')
     cards.forEach(card => {

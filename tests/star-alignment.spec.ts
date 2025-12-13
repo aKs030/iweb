@@ -3,67 +3,68 @@ import { test, expect } from '@playwright/test';
 
 test.use({
   baseURL: 'http://localhost:8081',
-  // Mask headless nature to avoid application entering "Test Mode" which disables WebGL
   userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   contextOptions: {
     permissions: [],
   }
 });
 
-test('verify virtual camera alignment logic', async ({ page, context }) => {
-  // Override navigator.webdriver to false
+test('verify virtual camera alignment and transform reset', async ({ page, context }) => {
   await context.addInitScript(() => {
-    Object.defineProperty(navigator, 'webdriver', {
-      get: () => false,
-    });
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
   });
 
-  // 1. Go to the page
-  await page.goto('/?debug=true'); // Enable debug to ensure window.threeEarthSystem is exposed
-
-  // 2. Wait for system to load
+  await page.goto('/?debug=true');
   await page.waitForSelector('#threeEarthContainer', { state: 'visible' });
 
-  // Wait for starManager to be initialized
   await page.waitForFunction(() => {
     const sys = window.threeEarthSystem;
     return sys && sys.EarthSystemAPI && sys.EarthSystemAPI.starManager;
   }, null, { timeout: 15000 });
 
-  // 3. Evaluate the star manager logic
   const result = await page.evaluate(async () => {
     const api = window.threeEarthSystem.EarthSystemAPI;
     const sm = api.starManager;
 
-    // Manually trigger the virtual camera update
+    // 1. Simulate Parallax (dirty state)
+    if (sm.starField) {
+        sm.starField.rotation.y = 1.5;
+        sm.starField.position.z = 10;
+        sm.starField.updateMatrixWorld(true);
+    }
+
+    // 2. Trigger "Features" mode (which calls animateStarsToCards)
+    sm.animateStarsToCards();
+
+    // 3. Verify Virtual Camera Update
     if (!sm.virtualCamera) return { error: 'VirtualCamera not initialized' };
-
-    sm.updateVirtualCamera();
-
     const cam = sm.virtualCamera;
-    const pos = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
-    const rot = { x: cam.rotation.x, y: cam.rotation.y, z: cam.rotation.z };
+    const camPos = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
+
+    // 4. Verify Transform Reset
+    const sf = sm.starField;
+    const sfRot = { x: sf.rotation.x, y: sf.rotation.y, z: sf.rotation.z };
+    const sfPos = { x: sf.position.x, y: sf.position.y, z: sf.position.z };
 
     return {
-      position: pos,
-      rotation: rot,
-      hasStarField: !!sm.starField,
-      aspect: cam.aspect
+      cameraPosition: camPos,
+      starFieldRotation: sfRot,
+      starFieldPosition: sfPos,
+      areStarsFormingCards: sm.areStarsFormingCards
     };
   });
 
-  if (result.error) {
-    throw new Error(result.error);
-  }
+  if (result.error) throw new Error(result.error);
 
-  console.log('Virtual Camera State:', result);
+  console.log('System State:', result);
 
-  // Assertions based on "features" preset logic
-  // x = 7.0, y = 5.5, z = 7.5
-  expect(result.position.x).toBeCloseTo(7.0, 1);
-  expect(result.position.y).toBeCloseTo(5.5, 1);
-  expect(result.position.z).toBeCloseTo(7.5, 1);
+  // Assertions
+  expect(result.cameraPosition.x).toBeCloseTo(7.0, 1);
+  expect(result.cameraPosition.y).toBeCloseTo(5.5, 1);
+  expect(result.cameraPosition.z).toBeCloseTo(7.5, 1);
 
-  // Verify star field exists
-  expect(result.hasStarField).toBe(true);
+  // CRITICAL: Verify StarField was reset to identity
+  expect(result.starFieldRotation.y).toBe(0);
+  expect(result.starFieldPosition.z).toBe(0);
+  expect(result.areStarsFormingCards).toBe(true);
 });

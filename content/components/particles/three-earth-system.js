@@ -117,7 +117,7 @@ const ThreeEarthManager = (() => {
       const starField = starManager.createStarField()
       // Inline setupStarParallax
       const parallaxHandler = progress => {
-        if (!starField || !starManager || (starManager.transition && starManager.transition.active)) return
+        if (!starField || !starManager || starManager.areStarsFormingCards || (starManager.transition && starManager.transition.active)) return
 
         starField.rotation.y = progress * Math.PI * 0.2
         starField.position.z = Math.sin(progress * Math.PI) * 15
