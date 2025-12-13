@@ -128,7 +128,7 @@ export class RobotAnimation {
     targetLeft = Math.max(8, Math.min(initialLeft - 20, targetLeft));
 
     const startOffset = 80;
-    let startLeft = Math.min(initialLeft, targetLeft + startOffset);
+    const startLeft = Math.min(initialLeft, targetLeft + startOffset);
 
     const startX = Math.max(0, Math.round(initialLeft - startLeft));
     const targetX = Math.max(0, Math.round(initialLeft - targetLeft));
