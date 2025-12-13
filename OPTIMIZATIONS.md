@@ -206,7 +206,7 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 2. **Image Optimization** (WebP, AVIF)
 3. **Bundle Size Analysis**
 4. **Performance Monitoring** (Web Vitals)
-5. **E2E Tests** (Playwright wieder hinzufügen)
+5. **E2E Tests** (Playwright tests removed from repository)
 
 ### Monitoring:
 
