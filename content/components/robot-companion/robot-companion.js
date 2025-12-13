@@ -27,6 +27,9 @@ class RobotCompanion {
     // State
     this.state = {};
 
+    // Flag to prevent footer overlap check from overriding keyboard adjustment
+    this.isKeyboardAdjustmentActive = false;
+
     // Context greeting dedupe & observed section tracking
     this.currentObservedContext = null;
     this._sectionObserver = null;
@@ -113,6 +116,12 @@ class RobotCompanion {
   setupFooterOverlapCheck() {
     let ticking = false;
     const checkOverlap = () => {
+      // If keyboard adjustment is active, skip overlap check to prevent overriding style.bottom
+      if (this.isKeyboardAdjustmentActive) {
+        ticking = false;
+        return;
+      }
+
       if (!this.dom.container) return;
       if (!this.dom.footer) {
         this.dom.footer = document.querySelector('footer') || document.querySelector('#site-footer');
@@ -151,10 +160,18 @@ class RobotCompanion {
   setupMobileViewportHandler() {
     if (!window.visualViewport) return;
 
-    // Simplified handler: rely on interactive-widget=resizes-content for layout
-    // Only toggle control visibility to save space
     const handleResize = () => {
-      if (!this.chatModule.isOpen || !this.dom.window) return;
+      if (!this.dom.window || !this.dom.container) return;
+
+      // If chat is closed, ensure we clean up state and do nothing else
+      if (!this.chatModule.isOpen) {
+        if (this.isKeyboardAdjustmentActive) {
+          this.isKeyboardAdjustmentActive = false;
+          this.dom.container.style.bottom = '';
+          this.dom.window.style.maxHeight = '';
+        }
+        return;
+      }
 
       const layoutHeight = window.innerHeight;
       const visualHeight = window.visualViewport.height;
@@ -164,13 +181,33 @@ class RobotCompanion {
       const isKeyboardOverlay = heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
+        // Keyboard is open (overlay mode or partial resize)
+        this.isKeyboardAdjustmentActive = true;
+
         if (this.dom.controls) {
           this.dom.controls.classList.add('hide-controls-mobile');
         }
+
+        // Manually lift the container to be above the keyboard
+        // We use visualViewport height to determine the safe area
+        const bottomOffset = heightDiff + 15; // 15px margin
+        this.dom.container.style.bottom = `${bottomOffset}px`;
+
+        // Constrain height to fit visible area
+        const maxWindowHeight = visualHeight - 120; // Room for robot header/footer
+        this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
+
       } else {
+        // Keyboard is closed
+        this.isKeyboardAdjustmentActive = false;
+
         if (this.dom.controls && !isInputFocused) {
           this.dom.controls.classList.remove('hide-controls-mobile');
         }
+
+        // Reset styles to allow CSS / footer overlap logic to take over
+        this.dom.container.style.bottom = '';
+        this.dom.window.style.maxHeight = '';
       }
     };
 
