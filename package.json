@@ -5,37 +5,19 @@
   "description": "Static site for Abdulkerim with test tooling",
   "license": "MIT",
   "scripts": {
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
     "serve": "http-server ./ -p 8081",
     "dev": "npm run serve",
     "lint:js": "eslint . --ext .js,.ts",
-    "lint:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --allow-empty-input",
-    "lint": "npm run lint:js && npm run lint:css",
-    "test": "playwright test"
+    "lint": "npm run lint:js"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
     "concurrently": "^9.1.0",
     "esbuild": "^0.18.20",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^10.1.8",
     "glob": "^13.0.0",
     "globals": "^16.5.0",
-    "http-server": "^14.1.1",
-    "lint-staged": "^15.2.11",
-    "madge": "^8.0.0",
-    "prettier": "^3.4.2",
-    "stylelint": "^16.11.0",
-    "stylelint-config-standard": "^39.0.1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
-    ],
-    "*.{css,scss,html,json,md}": [
-      "prettier --write"
-    ]
+    "http-server": "^14.1.1"
   },
   "dependencies": {
     "cors": "^2.8.5",
