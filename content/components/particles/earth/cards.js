@@ -80,55 +80,63 @@ export class CardManager {
   }
 
   createCardTexture(data) {
+    const S = 2 // Scaling factor for high DPI
+    const W = 512 * S
+    const H = 700 * S
+
     const canvas = document.createElement('canvas')
-    canvas.width = 512
-    canvas.height = 700
+    canvas.width = W
+    canvas.height = H
     const ctx = canvas.getContext('2d')
 
     // 1. Background (Glass effect simulation)
-    const gradient = ctx.createLinearGradient(0, 0, 512, 700)
+    const gradient = ctx.createLinearGradient(0, 0, W, H)
     gradient.addColorStop(0, 'rgba(20, 30, 60, 0.9)')
     gradient.addColorStop(1, 'rgba(10, 15, 30, 0.95)')
     ctx.fillStyle = gradient
 
-    this.roundRect(ctx, 0, 0, 512, 700, 40)
+    const R = 40 * S
+    this.roundRect(ctx, 0, 0, W, H, R)
     ctx.fill()
 
     // 2. Star Border (Fine line + Dots)
-    this.drawStarBorder(ctx, 0, 0, 512, 700, 40, data.color)
+    this.drawStarBorder(ctx, 0, 0, W, H, R, data.color, S)
 
     // 3. Icon Circle
-    const iconY = 150
+    const iconY = 150 * S
+    const iconCenterX = 256 * S
+    const iconRadius = 60 * S
+
     ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
     ctx.beginPath()
-    ctx.arc(256, iconY, 60, 0, Math.PI * 2)
+    ctx.arc(iconCenterX, iconY, iconRadius, 0, Math.PI * 2)
     ctx.fill()
     ctx.strokeStyle = data.color
-    ctx.lineWidth = 2
+    ctx.lineWidth = 2 * S
     ctx.stroke()
 
     // 4. Icon Text (Emoji/Char)
     ctx.fillStyle = '#ffffff'
-    ctx.font = '60px Arial'
+    ctx.font = `${60 * S}px Arial`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(data.iconChar, 256, iconY + 5) // +5 vertical adjustment
+    ctx.fillText(data.iconChar, iconCenterX, iconY + (5 * S))
 
     // 5. Subtitle
     ctx.fillStyle = data.color
-    ctx.font = 'bold 24px Arial'
-    ctx.letterSpacing = '4px'
-    ctx.fillText(data.subtitle, 256, 280)
+    ctx.font = `bold ${24 * S}px Arial`
+    ctx.letterSpacing = `${4 * S}px`
+    ctx.fillText(data.subtitle, iconCenterX, 280 * S)
 
     // 6. Title
     ctx.fillStyle = '#ffffff'
-    ctx.font = 'bold 48px Arial'
-    ctx.fillText(data.title, 256, 350)
+    ctx.font = `bold ${48 * S}px Arial`
+    ctx.fillText(data.title, iconCenterX, 350 * S)
 
     // 7. Text (Wrapped)
     ctx.fillStyle = '#cccccc'
-    ctx.font = '30px Arial'
-    this.wrapText(ctx, data.text, 256, 450, 400, 40)
+    ctx.font = `${30 * S}px Arial`
+    this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, 40 * S)
 
     const texture = new this.THREE.CanvasTexture(canvas)
     texture.minFilter = this.THREE.LinearFilter
@@ -149,19 +157,21 @@ export class CardManager {
     ctx.closePath()
   }
 
-  drawStarBorder(ctx, x, y, w, h, r, color) {
-    // Fine line
+  drawStarBorder(ctx, x, y, w, h, r, color, scale) {
+    // Fine line - keeping it thin relative to the scaled size to appear "finer"
+    // Using 1.5 * scale would be proportional. Using just 1.5 or 2 makes it very thin on high res.
+    // Let's go with 1.5 pixels absolute thickness on the scaled canvas.
+    // Since we scale by 2, a 1.5px line is effectively 0.75px on the original geometry.
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
-    ctx.lineWidth = 1
+    ctx.lineWidth = 1.5
     this.roundRect(ctx, x, y, w, h, r)
     ctx.stroke()
 
     // Dots
-    const numStars = 60
+    const numStars = 120 // Increased count for better distribution
     ctx.save()
     for (let i = 0; i < numStars; i++) {
         // Random position along perimeter approximation
-        // Simplified: Random points on border rect
         const side = Math.floor(Math.random() * 4)
         let px, py
         if (side === 0) { px = x + Math.random() * w; py = y; }
@@ -169,7 +179,12 @@ export class CardManager {
         else if (side === 2) { px = x + Math.random() * w; py = y + h; }
         else { px = x; py = y + Math.random() * h; }
 
-        const size = Math.random() * 2 + 0.5
+        // Smaller size for "finer" look.
+        // Original was: Math.random() * 2 + 0.5 (relative to 1x scale)
+        // We want it smaller.
+        // Let's try 0.5 to 2.0 pixels on the 2x canvas (0.25 to 1.0 effective).
+        const size = Math.random() * 1.5 + 0.5
+
         ctx.fillStyle = Math.random() > 0.7 ? color : '#ffffff'
         ctx.globalAlpha = Math.random() * 0.8 + 0.2
         ctx.beginPath()
@@ -226,11 +241,7 @@ export class CardManager {
     if (hoveredCard) {
         document.body.style.cursor = 'pointer'
     } else if (this.isVisible) {
-        // Only reset if we are the reason for pointer
-        // document.body.style.cursor = 'default'
-        // Better: ThreeEarthSystem handles global cursor or we leave it?
-        // Let's reset if we don't hover anything but cards are visible
-        // Actually, shared logic is better. For now simple:
+        // Logic for cursor reset is handled elsewhere or implicitly
     }
 
     this.cards.forEach(card => {
@@ -251,10 +262,9 @@ export class CardManager {
         card.position.y += (targetY + floatY - card.position.y) * 0.1
         card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.1)
 
-        // 3. Face Camera (Billboarding or slight tilt?)
-        // Let's make them look at camera but lock X axis?
-        // card.lookAt(this.camera.position) // Full lookat
-        // Maybe just static orientation is fine for readability.
+        // 3. Face Camera
+        // Ensure the cards always face the camera to prevent skewing
+        card.lookAt(this.camera.position)
     })
 
     if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
