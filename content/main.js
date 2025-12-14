@@ -351,7 +351,8 @@ const ThreeEarthLoader = (() => {
     if (isLoading || cleanupFn) return
 
     // Explicitly check env for testing to skip heavy WebGL
-    if (ENV.isTest) {
+    // ALLOW for specific verification script if requested via global override
+    if (ENV.isTest && !window.__FORCE_THREE_EARTH) {
       log.info('Test environment detected - skipping Three.js Earth system for performance')
       return
     }

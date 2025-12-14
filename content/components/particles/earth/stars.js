@@ -137,11 +137,13 @@ export class StarManager {
     const width = this.renderer ? this.renderer.domElement.clientWidth : window.innerWidth
     const height = this.renderer ? this.renderer.domElement.clientHeight : window.innerHeight
 
+    const cardCount = cards.length
+
     cards.forEach(card => {
       const rect = card.getBoundingClientRect()
       // Ensure element is actually somewhat visible/valid
       if (rect.width > 0 && rect.height > 0) {
-        const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2)
+        const perimeterPositions = this.getCardPerimeterPositions(rect, width, height, -2, cardCount)
         positions.push(...perimeterPositions)
       }
     })
@@ -149,10 +151,15 @@ export class StarManager {
     return positions
   }
 
-  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ) {
+  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ, cardCount = 3) {
     const positions = []
-    // Recalculate stars per edge dynamically based on current star count config
-    const starsPerEdge = Math.floor((this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT) / 3 / 4)
+    const totalStars = this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT
+    const starsPerCard = Math.floor(totalStars / cardCount)
+
+    // Calculate distributions: 20% on perimeter, 80% inside
+    const perimeterStars = Math.floor(starsPerCard * 0.2)
+    const surfaceStars = starsPerCard - perimeterStars
+    const starsPerEdge = Math.floor(perimeterStars / 4)
 
     const screenToWorld = (x, y) => {
       const ndcX = (x / viewportWidth) * 2 - 1
@@ -164,7 +171,7 @@ export class StarManager {
       return this.camera.position.clone().add(direction.multiplyScalar(distance))
     }
 
-    // Helper to push positions
+    // 1. Perimeter (Border)
     const addLine = (startX, startY, endX, endY) => {
       for (let i = 0; i < starsPerEdge; i++) {
         const t = i / Math.max(1, starsPerEdge - 1)
@@ -175,10 +182,18 @@ export class StarManager {
       }
     }
 
-    addLine(rect.left, rect.top, rect.right, rect.top) // Top
-    addLine(rect.right, rect.top, rect.right, rect.bottom) // Right
-    addLine(rect.right, rect.bottom, rect.left, rect.bottom) // Bottom
-    addLine(rect.left, rect.bottom, rect.left, rect.top) // Left
+    addLine(rect.left, rect.top, rect.right, rect.top)
+    addLine(rect.right, rect.top, rect.right, rect.bottom)
+    addLine(rect.right, rect.bottom, rect.left, rect.bottom)
+    addLine(rect.left, rect.bottom, rect.left, rect.top)
+
+    // 2. Surface (Inside)
+    for (let i = 0; i < surfaceStars; i++) {
+      const x = rect.left + Math.random() * rect.width
+      const y = rect.top + Math.random() * rect.height
+      const worldPos = screenToWorld(x, y)
+      positions.push({x: worldPos.x, y: worldPos.y, z: targetZ})
+    }
 
     return positions
   }
@@ -191,6 +206,7 @@ export class StarManager {
     cards.forEach(card => {
       card.style.opacity = '0'
       card.style.pointerEvents = 'none'
+      card.classList.remove('flash-active') // Reset previous flash
     })
 
     const cardPositions = this.getCardPositions()
@@ -214,6 +230,11 @@ export class StarManager {
     this.areStarsFormingCards = false
     this.disableScrollUpdates()
     this.startTransition(0.0)
+
+    const cards = document.querySelectorAll('#features .card')
+    cards.forEach(card => {
+      card.classList.remove('flash-active')
+    })
   }
 
   enableScrollUpdates() {
@@ -257,10 +278,10 @@ export class StarManager {
       const target = cardPositions[i % cardPositions.length]
 
       if (target) {
-        const spreadFactor = 0.15
+        const spreadFactor = CONFIG.STARS.ANIMATION.SPREAD_XY
         array[i3] = target.x + (Math.random() - 0.5) * spreadFactor
         array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor
-        array[i3 + 2] = target.z + (Math.random() - 0.5) * 0.05
+        array[i3 + 2] = target.z + (Math.random() - 0.5) * CONFIG.STARS.ANIMATION.SPREAD_Z
       }
     }
 
@@ -305,19 +326,27 @@ export class StarManager {
   }
 
   updateCardOpacity(transitionValue) {
-    const cfg = CONFIG.STARS.ANIMATION
-    let opacity = 0
-
-    if (transitionValue > cfg.CARD_FADE_START) {
-      opacity = (transitionValue - cfg.CARD_FADE_START) / (cfg.CARD_FADE_END - cfg.CARD_FADE_START)
-      opacity = Math.min(Math.max(opacity, 0), 1)
-    }
-
     const cards = document.querySelectorAll('#features .card')
-    cards.forEach(card => {
-      card.style.opacity = opacity.toString()
-      card.style.pointerEvents = opacity > 0.8 ? 'auto' : 'none'
-    })
+
+    // Trigger flash when stars are gathered (transitionValue > 0.85)
+    // Only trigger once when passing the threshold
+    if (transitionValue > 0.85) {
+      cards.forEach(card => {
+        if (!card.classList.contains('flash-active') && this.areStarsFormingCards) {
+          card.classList.add('flash-active')
+          // Set final state directly (animation handles visual entry)
+          card.style.opacity = '1'
+          card.style.pointerEvents = 'auto'
+        }
+      })
+    } else if (transitionValue < 0.1) {
+      // Reset when transitioning back to stars
+      cards.forEach(card => {
+        card.style.opacity = '0'
+        card.style.pointerEvents = 'none'
+        card.classList.remove('flash-active')
+      })
+    }
   }
 
   easeInOutCubic(t) {
