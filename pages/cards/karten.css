@@ -579,7 +579,7 @@
   }
   30% {
     opacity: 1;
-    filter: brightness(2.0) blur(4px);
+    filter: brightness(2) blur(4px);
     transform: scale(1.02);
   }
   100% {
@@ -601,12 +601,12 @@
  */
 
 body.three-earth-active #features .features-cards {
-    opacity: 0;
-    pointer-events: none;
-    height: 100vh;
+  opacity: 0;
+  pointer-events: none;
+  height: 100vh;
 }
 
 /* Hide ambient glow as it might conflict with 3D scene */
 body.three-earth-active .features-content::before {
-    display: none;
+  display: none;
 }
