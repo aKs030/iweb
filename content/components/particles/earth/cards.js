@@ -1,5 +1,4 @@
-
-import { createLogger } from '../../../utils/shared-utilities.js'
+import {createLogger} from '../../../utils/shared-utilities.js'
 
 const log = createLogger('CardManager')
 
@@ -36,7 +35,7 @@ export class CardManager {
     const spacing = baseW * (cardCount > 2 ? 1.4 : 1.25)
     const centerOffset = (cardCount - 1) / 2
 
-    const positions = Array.from({ length: cardCount }).map((_, i) => {
+    const positions = Array.from({length: cardCount}).map((_, i) => {
       return {
         x: (i - centerOffset) * spacing,
         y: 0,
@@ -46,60 +45,64 @@ export class CardManager {
     })
 
     originalCards.forEach((cardEl, index) => {
-        // Extract Data
-        const title = cardEl.querySelector('.card-title')?.innerText || 'Title'
-        const subtitle = cardEl.querySelector('.card-title')?.getAttribute('data-eyebrow') || 'INFO'
-        const text = cardEl.querySelector('.card-text')?.innerText || ''
-        const link = cardEl.querySelector('.card-link')?.getAttribute('href') || '#'
-        const iconChar = cardEl.querySelector('.icon-wrapper i')?.innerText || ''
+      // Extract Data
+      const title = cardEl.querySelector('.card-title')?.innerText || 'Title'
+      const subtitle = cardEl.querySelector('.card-title')?.getAttribute('data-eyebrow') || 'INFO'
+      const text = cardEl.querySelector('.card-text')?.innerText || ''
+      const link = cardEl.querySelector('.card-link')?.getAttribute('href') || '#'
+      const iconChar = cardEl.querySelector('.icon-wrapper i')?.innerText || ''
 
-        const data = {
-            id: index,
-            title, subtitle, text, link, iconChar,
-            color: positions[index]?.color || '#ffffff',
-            position: positions[index] || {x:0, y:0, z:0}
-        }
+      const data = {
+        id: index,
+        title,
+        subtitle,
+        text,
+        link,
+        iconChar,
+        color: positions[index]?.color || '#ffffff',
+        position: positions[index] || {x: 0, y: 0, z: 0}
+      }
 
-        const texture = this.createCardTexture(data)
-        // Use a smaller plane geometry to reduce overlap risk
-        const geometry = new this.THREE.PlaneGeometry(baseW, baseH)
-        const material = new this.THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            side: this.THREE.DoubleSide,
-            opacity: 0, // Animate in
-            depthWrite: false // For transparency sorting issues
-        })
+      const texture = this.createCardTexture(data)
+      // Use a smaller plane geometry to reduce overlap risk
+      const geometry = new this.THREE.PlaneGeometry(baseW, baseH)
+      const material = new this.THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        side: this.THREE.DoubleSide,
+        opacity: 0, // Animate in
+        depthWrite: false // For transparency sorting issues
+      })
 
-        const mesh = new this.THREE.Mesh(geometry, material)
-        mesh.position.set(data.position.x, data.position.y, data.position.z)
+      const mesh = new this.THREE.Mesh(geometry, material)
+      mesh.position.set(data.position.x, data.position.y, data.position.z)
 
-        // Initial scale adjustment for small viewports
-        const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
-        mesh.scale.setScalar(0.95 * Math.max(0.7, viewportScale))
+      // Initial scale adjustment for small viewports
+      const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
+      mesh.scale.setScalar(0.95 * Math.max(0.7, viewportScale))
 
-        mesh.userData = {
-            isCard: true,
-            link: data.link,
-            originalY: data.position.y,
-            hoverY: data.position.y + 0.5,
-            targetOpacity: 1,
-            id: data.id
-        }
+      mesh.userData = {
+        isCard: true,
+        link: data.link,
+        originalY: data.position.y,
+        hoverY: data.position.y + 0.5,
+        targetOpacity: 1,
+        id: data.id
+      }
 
-        this.cardGroup.add(mesh)
-        this.cards.push(mesh)
+      this.cardGroup.add(mesh)
+      this.cards.push(mesh)
     })
 
     if (this.isVisible) {
-        this.cardGroup.visible = true
+      this.cardGroup.visible = true
     }
 
     // Recompute positions on resize to maintain spacing and fit
-  this._onResize = () => {
+    this._onResize = () => {
       const vw = window.innerWidth
       const adaptiveScale = Math.min(1, vw / 1200)
-    const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+      const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
       this.cards.forEach((card, idx) => {
         const x = (idx - centerOffset) * newSpacing
         // Keep Z the same but nudge slightly to preserve depth order without overlap
@@ -115,7 +118,7 @@ export class CardManager {
 
   createCardTexture(data) {
     // Determine a scaling factor based on device pixel ratio to keep text crisp
-    const DPR = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1
+    const DPR = typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1
     // Scale aggressively on high-DPI displays for crisper text, clamped for performance
     const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4)
     const W = 512 * S
@@ -157,7 +160,7 @@ export class CardManager {
     ctx.font = `${60 * S}px Arial`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(data.iconChar, iconCenterX, iconY + (5 * S))
+    ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S)
 
     // 5. Subtitle
     ctx.fillStyle = data.color
@@ -211,25 +214,34 @@ export class CardManager {
     const numStars = 120 // Increased count for better distribution
     ctx.save()
     for (let i = 0; i < numStars; i++) {
-        // Random position along perimeter approximation
-        const side = Math.floor(Math.random() * 4)
-        let px, py
-        if (side === 0) { px = x + Math.random() * w; py = y; }
-        else if (side === 1) { px = x + w; py = y + Math.random() * h; }
-        else if (side === 2) { px = x + Math.random() * w; py = y + h; }
-        else { px = x; py = y + Math.random() * h; }
+      // Random position along perimeter approximation
+      const side = Math.floor(Math.random() * 4)
+      let px, py
+      if (side === 0) {
+        px = x + Math.random() * w
+        py = y
+      } else if (side === 1) {
+        px = x + w
+        py = y + Math.random() * h
+      } else if (side === 2) {
+        px = x + Math.random() * w
+        py = y + h
+      } else {
+        px = x
+        py = y + Math.random() * h
+      }
 
-        // Smaller size for "finer" look.
-        // Original was: Math.random() * 2 + 0.5 (relative to 1x scale)
-        // We want it smaller.
-        // Let's try 0.5 to 2.0 pixels on the 2x canvas (0.25 to 1.0 effective).
-        const size = Math.random() * 1.5 + 0.5
+      // Smaller size for "finer" look.
+      // Original was: Math.random() * 2 + 0.5 (relative to 1x scale)
+      // We want it smaller.
+      // Let's try 0.5 to 2.0 pixels on the 2x canvas (0.25 to 1.0 effective).
+      const size = Math.random() * 1.5 + 0.5
 
-        ctx.fillStyle = Math.random() > 0.7 ? color : '#ffffff'
-        ctx.globalAlpha = Math.random() * 0.8 + 0.2
-        ctx.beginPath()
-        ctx.arc(px, py, size, 0, Math.PI * 2)
-        ctx.fill()
+      ctx.fillStyle = Math.random() > 0.7 ? color : '#ffffff'
+      ctx.globalAlpha = Math.random() * 0.8 + 0.2
+      ctx.beginPath()
+      ctx.arc(px, py, size, 0, Math.PI * 2)
+      ctx.fill()
     }
     ctx.restore()
   }
@@ -250,8 +262,8 @@ export class CardManager {
         y += lineHeight
         lineCount++
         if (lineCount >= maxLines) {
-            line += '...'
-            break
+          line += '...'
+          break
         }
       } else {
         line = testLine
@@ -266,7 +278,7 @@ export class CardManager {
 
     const targetOpacity = visible ? 1 : 0
     this.cards.forEach(card => {
-        card.userData.targetOpacity = targetOpacity
+      card.userData.targetOpacity = targetOpacity
     })
   }
 
@@ -279,36 +291,36 @@ export class CardManager {
 
     // Cursor handling
     if (hoveredCard) {
-        document.body.style.cursor = 'pointer'
+      document.body.style.cursor = 'pointer'
     } else if (this.isVisible) {
-        // Logic for cursor reset is handled elsewhere or implicitly
+      // Logic for cursor reset is handled elsewhere or implicitly
     }
 
     this.cards.forEach(card => {
-        // 1. Opacity Animation
-        card.material.opacity += (card.userData.targetOpacity - card.material.opacity) * 0.05
+      // 1. Opacity Animation
+      card.material.opacity += (card.userData.targetOpacity - card.material.opacity) * 0.05
 
-        // 2. Float Animation
-        const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.1
+      // 2. Float Animation
+      const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.1
 
-        let targetY = card.userData.originalY
-        let targetScale = 1.0
+      let targetY = card.userData.originalY
+      let targetScale = 1.0
 
-        if (card === hoveredCard) {
-            targetY = card.userData.hoverY
-            targetScale = 1.05
-        }
+      if (card === hoveredCard) {
+        targetY = card.userData.hoverY
+        targetScale = 1.05
+      }
 
-        card.position.y += (targetY + floatY - card.position.y) * 0.1
-        card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.1)
+      card.position.y += (targetY + floatY - card.position.y) * 0.1
+      card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.1)
 
-        // 3. Face Camera
-        // Ensure the cards always face the camera to prevent skewing
-        card.lookAt(this.camera.position)
+      // 3. Face Camera
+      // Ensure the cards always face the camera to prevent skewing
+      card.lookAt(this.camera.position)
     })
 
     if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
-        this.cardGroup.visible = false
+      this.cardGroup.visible = false
     }
   }
 
@@ -319,24 +331,24 @@ export class CardManager {
     const intersects = this.raycaster.intersectObjects(this.cards)
 
     if (intersects.length > 0) {
-        const link = intersects[0].object.userData.link
-        if (link) {
-            window.location.href = link
-        }
+      const link = intersects[0].object.userData.link
+      if (link) {
+        window.location.href = link
+      }
     }
   }
 
   cleanup() {
     this.scene.remove(this.cardGroup)
     this.cards.forEach(card => {
-        card.geometry.dispose()
-        card.material.map.dispose()
-        card.material.dispose()
+      card.geometry.dispose()
+      card.material.map.dispose()
+      card.material.dispose()
     })
     this.cards = []
     if (typeof window !== 'undefined' && this._onResize) {
-        window.removeEventListener('resize', this._onResize)
-        this._onResize = null
+      window.removeEventListener('resize', this._onResize)
+      this._onResize = null
     }
   }
 }
