@@ -27,11 +27,23 @@ export class CardManager {
 
     log.debug(`Found ${originalCards.length} cards to convert to WebGL`)
 
-    const positions = [
-        { x: -4, y: 0, z: 0, color: '#07a1ff' },
-        { x: 0, y: 0, z: 2, color: '#a107ff' },
-        { x: 4, y: 0, z: 0, color: '#ff07a1' }
-    ]
+    // Compute positions dynamically so cards fit the viewport and don't overlap
+    const cardCount = originalCards.length
+    // Base geometry width/height in world units (smaller than before)
+    const baseW = 2.2
+    const baseH = 2.8
+    // Spacing between card centers (proportional to width)
+    const spacing = baseW * (cardCount > 2 ? 1.4 : 1.25)
+    const centerOffset = (cardCount - 1) / 2
+
+    const positions = Array.from({ length: cardCount }).map((_, i) => {
+      return {
+        x: (i - centerOffset) * spacing,
+        y: 0,
+        z: 0,
+        color: ['#07a1ff', '#a107ff', '#ff07a1'][i] || '#ffffff'
+      }
+    })
 
     originalCards.forEach((cardEl, index) => {
         // Extract Data
@@ -49,7 +61,8 @@ export class CardManager {
         }
 
         const texture = this.createCardTexture(data)
-        const geometry = new this.THREE.PlaneGeometry(3.5, 4.5)
+        // Use a smaller plane geometry to reduce overlap risk
+        const geometry = new this.THREE.PlaneGeometry(baseW, baseH)
         const material = new this.THREE.MeshBasicMaterial({
             map: texture,
             transparent: true,
@@ -60,6 +73,10 @@ export class CardManager {
 
         const mesh = new this.THREE.Mesh(geometry, material)
         mesh.position.set(data.position.x, data.position.y, data.position.z)
+
+        // Initial scale adjustment for small viewports
+        const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
+        mesh.scale.setScalar(0.95 * Math.max(0.7, viewportScale))
 
         mesh.userData = {
             isCard: true,
@@ -77,10 +94,30 @@ export class CardManager {
     if (this.isVisible) {
         this.cardGroup.visible = true
     }
+
+    // Recompute positions on resize to maintain spacing and fit
+  this._onResize = () => {
+      const vw = window.innerWidth
+      const adaptiveScale = Math.min(1, vw / 1200)
+    const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+      this.cards.forEach((card, idx) => {
+        const x = (idx - centerOffset) * newSpacing
+        // Keep Z the same but nudge slightly to preserve depth order without overlap
+        card.position.x = x
+        card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+      })
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this._onResize)
+    }
   }
 
   createCardTexture(data) {
-    const S = 2 // Scaling factor for high DPI
+    // Determine a scaling factor based on device pixel ratio to keep text crisp
+    const DPR = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1
+    // Scale aggressively on high-DPI displays for crisper text, clamped for performance
+    const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4)
     const W = 512 * S
     const H = 700 * S
 
@@ -139,9 +176,12 @@ export class CardManager {
     this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, 40 * S)
 
     const texture = new this.THREE.CanvasTexture(canvas)
-    texture.minFilter = this.THREE.LinearFilter
-    texture.magFilter = this.THREE.LinearFilter // Better for text
+    // Use mipmaps + linear mipmap filtering for crisper downscaled rendering
+    texture.generateMipmaps = true
+    texture.minFilter = this.THREE.LinearMipmapLinearFilter
+    texture.magFilter = this.THREE.LinearFilter
     texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
+    texture.needsUpdate = true
     return texture
   }
 
@@ -294,5 +334,9 @@ export class CardManager {
         card.material.dispose()
     })
     this.cards = []
+    if (typeof window !== 'undefined' && this._onResize) {
+        window.removeEventListener('resize', this._onResize)
+        this._onResize = null
+    }
   }
 }
