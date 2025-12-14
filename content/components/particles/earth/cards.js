@@ -68,6 +68,7 @@ export class CardManager {
             link: data.link,
             originalX: data.position.x,
             originalY: data.position.y,
+            originalZ: data.position.z,
             hoverY: data.position.y + 0.5,
             targetOpacity: 1,
             id: data.id
@@ -112,9 +113,16 @@ export class CardManager {
         if (card.userData.originalX !== undefined) {
             card.position.x = card.userData.originalX * spacingFactor
         }
-        // Force immediate scale update to avoid animation jump
-        // We set the current scale close to target so it settles
-        // But let's just let the update loop handle the smoothing to target
+
+        // Flatten Z-axis on mobile to prevent overlap
+        // The middle card is at Z=2, others at Z=0. On mobile, this depth causes occlusion when squeezed.
+        if (isMobile) {
+            card.position.z = 0
+        } else {
+            if (card.userData.originalZ !== undefined) {
+                card.position.z = card.userData.originalZ
+            }
+        }
     })
   }
 
