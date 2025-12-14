@@ -187,11 +187,8 @@ export class StarManager {
     if (!this.starField || this.isDisposed) return
     this.areStarsFormingCards = true
 
-    const cards = document.querySelectorAll('#features .card')
-    cards.forEach(card => {
-      card.style.opacity = '0'
-      card.style.pointerEvents = 'none'
-    })
+    // Note: DOM visibility is handled by global CSS class .three-earth-active
+    // and CardManager, so we don't manually touch opacity here.
 
     const cardPositions = this.getCardPositions()
     if (cardPositions.length === 0) return
@@ -305,19 +302,7 @@ export class StarManager {
   }
 
   updateCardOpacity(transitionValue) {
-    const cfg = CONFIG.STARS.ANIMATION
-    let opacity = 0
-
-    if (transitionValue > cfg.CARD_FADE_START) {
-      opacity = (transitionValue - cfg.CARD_FADE_START) / (cfg.CARD_FADE_END - cfg.CARD_FADE_START)
-      opacity = Math.min(Math.max(opacity, 0), 1)
-    }
-
-    const cards = document.querySelectorAll('#features .card')
-    cards.forEach(card => {
-      card.style.opacity = opacity.toString()
-      card.style.pointerEvents = opacity > 0.8 ? 'auto' : 'none'
-    })
+    // Opacity handling is now delegated to CardManager and CSS
   }
 
   easeInOutCubic(t) {

@@ -521,6 +521,26 @@
 }
 
 /* ========================================
+   Three.js Integration (Hides HTML Content)
+======================================== */
+body.three-earth-active #features .card {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+body.three-earth-active #features .card > * {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Ensure the cards are still blocking layout flow */
+body.three-earth-active #features .card {
+  pointer-events: none; /* Let clicks pass through to canvas if needed, but CardManager handles it */
+}
+
+/* ========================================
    Print Styles
 ======================================== */
 @media print {

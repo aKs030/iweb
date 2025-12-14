@@ -19,6 +19,7 @@ import {setupScene, setupLighting, createAtmosphere} from './earth/scene.js'
 import {createEarthSystem, createMoonSystem, createCloudLayer} from './earth/assets.js'
 import {CameraManager} from './earth/camera.js'
 import {StarManager, ShootingStarManager} from './earth/stars.js'
+import {CardManager} from './earth/cards.js'
 import {showLoadingState, hideLoadingState, showErrorState, PerformanceMonitor} from './earth/ui.js'
 
 const log = createLogger('ThreeEarthSystem')
@@ -31,7 +32,7 @@ let dayMaterial, nightMaterial
 let directionalLight, ambientLight
 
 // Sub-systems
-let cameraManager, starManager, shootingStarManager, performanceMonitor
+let cameraManager, starManager, shootingStarManager, performanceMonitor, cardManager
 
 // State
 let sectionObserver, viewportObserver, animationFrameId
@@ -62,6 +63,7 @@ const ThreeEarthManager = (() => {
 
     // Set Active Flag
     isSystemActive = true
+    document.body.classList.add('three-earth-active')
 
     try {
       log.info('Initializing Three.js Earth System v9.4.0 (Fixed)')
@@ -190,6 +192,12 @@ const ThreeEarthManager = (() => {
 
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE)
 
+      // Card Manager
+      cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer)
+      // Note: We initialize cardManager *after* loading assets, but we could do it earlier.
+      // However, we need the DOM elements to be ready.
+      cardManager.init()
+
       // Start Loops
       startAnimationLoop()
       setupResizeHandler()
@@ -216,6 +224,7 @@ const ThreeEarthManager = (() => {
   const cleanup = () => {
     // Set flag immediately to stop any pending awaits
     isSystemActive = false
+    document.body.classList.remove('three-earth-active')
     log.info('Cleaning up Earth system')
 
     if (animationFrameId) {
@@ -229,6 +238,7 @@ const ThreeEarthManager = (() => {
     shootingStarManager?.cleanup()
     cameraManager?.cleanup()
     starManager?.cleanup() // Ensure star manager cleans up
+    cardManager?.cleanup()
     sectionObserver?.disconnect()
     viewportObserver?.disconnect()
     earthTimers.clearAll()
@@ -261,7 +271,7 @@ const ThreeEarthManager = (() => {
     dayMaterial = nightMaterial = null
     directionalLight = ambientLight = null
 
-    cameraManager = starManager = shootingStarManager = performanceMonitor = null
+    cameraManager = starManager = shootingStarManager = performanceMonitor = cardManager = null
 
     unregisterParticleSystem('three-earth')
     log.info('Cleanup complete')
@@ -376,8 +386,22 @@ function setupSectionDetection() {
 
         if (newSection === 'features' && starManager) {
           starManager.animateStarsToCards()
-        } else if (previousSection === 'features' && starManager) {
-          starManager.resetStarsToOriginal()
+          // Trigger cards after delay or coordinate via StarManager?
+          // Let's trigger it directly for now, but starManager.animateStarsToCards has a delay built-in for the stars.
+          // Ideally CardManager.showCards() should be called when stars are in position.
+          // Let's rely on StarManager to trigger it if we pass it, OR utilize the same delay.
+          // Better: expose cardManager to StarManager? No, better to keep them loosely coupled.
+          // We will use a timer here.
+
+          setTimeout(() => {
+             if (cardManager && isSystemActive && currentSection === 'features') {
+                 cardManager.showCards()
+             }
+          }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY) // Sync with star movement
+
+        } else if (previousSection === 'features') {
+          if (starManager) starManager.resetStarsToOriginal()
+          if (cardManager) cardManager.hideCards()
         }
 
         const container = document.querySelector('.three-earth-container')
@@ -515,6 +539,8 @@ function startAnimationLoop() {
 
     if (starManager && !capabilities.isLowEnd) starManager.update(elapsedTime)
 
+    if (cardManager) cardManager.update(elapsedTime)
+
     if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd && frameCounter % 2 === 0) {
       const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0
       const pulseAmount = Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) * CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2
@@ -591,6 +617,10 @@ function setupResizeHandler() {
     // FIX: Notify StarManager about resize to update card positions
     if (starManager) {
       starManager.handleResize(width, height)
+    }
+
+    if (cardManager) {
+        cardManager.updatePositions()
     }
   }
 

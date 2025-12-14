@@ -57,7 +57,12 @@ export const CONFIG = {
       CARD_FADE_END: 0.95,
       SPREAD_XY: 0.15, // Reduziert für Rand-Fokus
       SPREAD_Z: 0.05, // Minimale Tiefe
-      LERP_FACTOR: 0.08
+      LERP_FACTOR: 0.08,
+      CARDS: {
+        GLOW_COLOR: 0x07a1ff,
+        HOVER_TILT: 0.1,
+        ANIMATION_SPEED: 0.02
+      }
     }
   },
   MOON: {
