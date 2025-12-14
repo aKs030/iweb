@@ -450,10 +450,6 @@ export class CardManager {
     if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
       this.cardGroup.visible = false
     }
-
-    if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
-      this.cardGroup.visible = false
-    }
   }
 
   handleClick(mousePos) {
@@ -472,34 +468,41 @@ export class CardManager {
 
   cleanup() {
     this.scene.remove(this.cardGroup)
+
+    // Dispose each card's resources (geometry, textures, materials, glow)
     this.cards.forEach(card => {
-      if (card.geometry && card.geometry.dispose) card.geometry.dispose()
-      if (card.material) {
-        if (card.material.map && card.material.map.dispose) card.material.map.dispose()
-        card.material.map = null
-        if (card.material.dispose) card.material.dispose()
+      try {
+        if (card.geometry && card.geometry.dispose) card.geometry.dispose()
+
+        if (card.material) {
+          if (card.material.map && card.material.map.dispose) card.material.map.dispose()
+          card.material.map = null
+          if (card.material.dispose) card.material.dispose()
+        }
+
+        const glow = card.userData && card.userData.glow
+        if (glow && glow.material) {
+          if (glow.material.map && glow.material.map.dispose) glow.material.map.dispose()
+          if (glow.material.dispose) glow.material.dispose()
+        }
+      } catch {
+        // Defensive: ignore disposal errors to avoid blocking cleanup
       }
     })
-    this.cards = []
+
+    // Dispose shared geometry and textures
     if (this._sharedGeometry) {
       this._sharedGeometry.dispose()
       this._sharedGeometry = null
     }
 
-    // Dispose shared glow texture
     if (this._sharedGlowTexture && this._sharedGlowTexture.dispose) {
       this._sharedGlowTexture.dispose()
       this._sharedGlowTexture = null
     }
 
-    // Dispose sprite materials
-    this.cards.forEach(card => {
-      const glow = card.userData && card.userData.glow
-      if (glow && glow.material) {
-        if (glow.material.map && glow.material.map.dispose) glow.material.map.dispose()
-        if (glow.material.dispose) glow.material.dispose()
-      }
-    })
+    // Clear card references
+    this.cards = []
 
     if (typeof window !== 'undefined' && this._onResize) {
       window.removeEventListener('resize', this._onResize)
