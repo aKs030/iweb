@@ -12,6 +12,16 @@ export class CardManager {
     this.raycaster = new THREE.Raycaster()
     this.isVisible = false
 
+    // Internal state
+    this._hovered = null
+    this._resizeRAF = null
+    this._sharedGeometry = null
+    this._sharedGlowTexture = null
+    this._tempCanvas = null
+    this._tmpVec = new THREE.Vector3()
+    this._tmpQuat = new THREE.Quaternion()
+    this._orientDummy = new THREE.Object3D()
+
     // Group to hold all cards
     this.cardGroup = new THREE.Group()
     this.scene.add(this.cardGroup)
@@ -44,13 +54,19 @@ export class CardManager {
       }
     })
 
+    // Shared geometry reused across cards to reduce memory / GC churn
+    this._sharedGeometry = new this.THREE.PlaneGeometry(baseW, baseH)
+
+    // Prepare shared glow texture (small radial gradient) once
+    if (!this._sharedGlowTexture) this._sharedGlowTexture = this.createGlowTexture()
+
     originalCards.forEach((cardEl, index) => {
       // Extract Data
       const title = cardEl.querySelector('.card-title')?.innerText || 'Title'
       const subtitle = cardEl.querySelector('.card-title')?.getAttribute('data-eyebrow') || 'INFO'
       const text = cardEl.querySelector('.card-text')?.innerText || ''
       const link = cardEl.querySelector('.card-link')?.getAttribute('href') || '#'
-      const iconChar = cardEl.querySelector('.icon-wrapper i')?.innerText || ''
+      const iconChar = (cardEl.querySelector('.icon-wrapper i')?.innerText || '').trim()
 
       const data = {
         id: index,
@@ -64,8 +80,6 @@ export class CardManager {
       }
 
       const texture = this.createCardTexture(data)
-      // Use a smaller plane geometry to reduce overlap risk
-      const geometry = new this.THREE.PlaneGeometry(baseW, baseH)
       const material = new this.THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
@@ -74,8 +88,9 @@ export class CardManager {
         depthWrite: false // For transparency sorting issues
       })
 
-      const mesh = new this.THREE.Mesh(geometry, material)
-      mesh.position.set(data.position.x, data.position.y, data.position.z)
+      const mesh = new this.THREE.Mesh(this._sharedGeometry, material)
+      // Start slightly lower for entrance animation
+      mesh.position.set(data.position.x, data.position.y - 0.8, data.position.z)
 
       // Initial scale adjustment for small viewports
       const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
@@ -87,8 +102,26 @@ export class CardManager {
         originalY: data.position.y,
         hoverY: data.position.y + 0.5,
         targetOpacity: 1,
-        id: data.id
+        id: data.id,
+        entranceDelay: index * 80, // ms
+        entranceProgress: 0,
+        hoverProgress: 0,
+        parallaxStrength: 0.14
       }
+
+      // Glow sprite with shared texture, tinted per card
+      const glowMat = new this.THREE.SpriteMaterial({
+        map: this._sharedGlowTexture,
+        color: data.color,
+        transparent: true,
+        blending: this.THREE.AdditiveBlending,
+        depthWrite: false
+      })
+      const glow = new this.THREE.Sprite(glowMat)
+      glow.scale.set(baseW * 0.95, baseH * 0.45, 1)
+      glow.position.set(0, -0.12, -0.01)
+      mesh.add(glow)
+      mesh.userData.glow = glow
 
       this.cardGroup.add(mesh)
       this.cards.push(mesh)
@@ -98,16 +131,20 @@ export class CardManager {
       this.cardGroup.visible = true
     }
 
-    // Recompute positions on resize to maintain spacing and fit
+    // Recompute positions on resize to maintain spacing and fit (throttled via rAF)
     this._onResize = () => {
-      const vw = window.innerWidth
-      const adaptiveScale = Math.min(1, vw / 1200)
-      const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
-      this.cards.forEach((card, idx) => {
-        const x = (idx - centerOffset) * newSpacing
-        // Keep Z the same but nudge slightly to preserve depth order without overlap
-        card.position.x = x
-        card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+      if (this._resizeRAF) cancelAnimationFrame(this._resizeRAF)
+      this._resizeRAF = requestAnimationFrame(() => {
+        const vw = window.innerWidth
+        const adaptiveScale = Math.min(1, vw / 1200)
+        const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+        this.cards.forEach((card, idx) => {
+          const x = (idx - centerOffset) * newSpacing
+          // Keep Z the same but nudge slightly to preserve depth order without overlap
+          card.position.x = x
+          card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+        })
+        this._resizeRAF = null
       })
     }
 
@@ -124,9 +161,11 @@ export class CardManager {
     const W = 512 * S
     const H = 700 * S
 
-    const canvas = document.createElement('canvas')
-    canvas.width = W
-    canvas.height = H
+    const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(W, H) : document.createElement('canvas')
+    if (typeof OffscreenCanvas === 'undefined') {
+      canvas.width = W
+      canvas.height = H
+    }
     const ctx = canvas.getContext('2d')
 
     // 1. Background (Glass effect simulation)
@@ -165,8 +204,7 @@ export class CardManager {
     // 5. Subtitle
     ctx.fillStyle = data.color
     ctx.font = `bold ${24 * S}px Arial`
-    ctx.letterSpacing = `${4 * S}px`
-    ctx.fillText(data.subtitle, iconCenterX, 280 * S)
+    ctx.fillText((data.subtitle || '').trim(), iconCenterX, 280 * S)
 
     // 6. Title
     ctx.fillStyle = '#ffffff'
@@ -186,6 +224,37 @@ export class CardManager {
     texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
     texture.needsUpdate = true
     return texture
+  }
+
+  createGlowTexture() {
+    const DPR = typeof window !== 'undefined' && window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1
+    const size = Math.floor(128 * DPR)
+    const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(size, size) : document.createElement('canvas')
+    if (typeof OffscreenCanvas === 'undefined') {
+      canvas.width = size
+      canvas.height = size
+    }
+    const ctx = canvas.getContext('2d')
+
+    const cx = size / 2
+    const cy = size / 2
+    const r = size * 0.45
+    const grad = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r)
+    grad.addColorStop(0, 'rgba(255,255,255,0.9)')
+    grad.addColorStop(0.3, 'rgba(255,255,255,0.45)')
+    grad.addColorStop(1, 'rgba(255,255,255,0)')
+
+    ctx.fillStyle = grad
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, 0, Math.PI * 2)
+    ctx.fill()
+
+    const tex = new this.THREE.CanvasTexture(canvas)
+    tex.generateMipmaps = true
+    tex.minFilter = this.THREE.LinearMipmapLinearFilter
+    tex.magFilter = this.THREE.LinearFilter
+    tex.needsUpdate = true
+    return tex
   }
 
   roundRect(ctx, x, y, w, h, r) {
@@ -211,7 +280,7 @@ export class CardManager {
     ctx.stroke()
 
     // Dots
-    const numStars = 120 // Increased count for better distribution
+    const numStars = Math.min(200, Math.max(20, Math.floor(60 * scale))) // scale-dependent density
     ctx.save()
     for (let i = 0; i < numStars; i++) {
       // Random position along perimeter approximation
@@ -247,7 +316,7 @@ export class CardManager {
   }
 
   wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(' ')
+    const words = (text || '').split(' ')
     let line = ''
     let lineCount = 0
     const maxLines = 4
@@ -273,12 +342,21 @@ export class CardManager {
   }
 
   setVisible(visible) {
+    // Backwards-compatible: map visible boolean to progress target
     this.isVisible = visible
-    this.cardGroup.visible = true
+    this.setProgress(visible ? 1 : 0)
+  }
 
-    const targetOpacity = visible ? 1 : 0
+  setProgress(progress) {
+    const p = Math.max(0, Math.min(1, progress || 0))
+    this.cardGroup.visible = p > 0.01
     this.cards.forEach(card => {
-      card.userData.targetOpacity = targetOpacity
+      // account for per-card stagger using entranceDelay
+      const stagger = (card.userData.entranceDelay || 0) / 800
+      const local = Math.max(0, Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger)))
+      card.userData.entranceTarget = local
+      // Also map opacity target so the material fades out gracefully
+      card.userData.targetOpacity = local > 0 ? 1 : 0
     })
   }
 
@@ -289,35 +367,67 @@ export class CardManager {
     const intersects = this.raycaster.intersectObjects(this.cards)
     const hoveredCard = intersects.length > 0 ? intersects[0].object : null
 
-    // Cursor handling
-    if (hoveredCard) {
-      document.body.style.cursor = 'pointer'
-    } else if (this.isVisible) {
-      // Logic for cursor reset is handled elsewhere or implicitly
+    // Cursor handling - avoid redundant style writes
+    if (hoveredCard !== this._hovered) {
+      this._hovered = hoveredCard
+      document.body.style.cursor = hoveredCard ? 'pointer' : ''
     }
 
     this.cards.forEach(card => {
-      // 1. Opacity Animation
-      card.material.opacity += (card.userData.targetOpacity - card.material.opacity) * 0.05
+      // Entrance progress (staggered)
+      const targetEntrance = typeof card.userData.entranceTarget === 'number' ? card.userData.entranceTarget : this.isVisible ? 1 : 0
+      card.userData.entranceProgress += (targetEntrance - card.userData.entranceProgress) * 0.06
+
+      // 1. Opacity Animation influenced by entrance progress
+      const baseOpacity = card.userData.targetOpacity || 1
+      card.material.opacity = baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress)
 
       // 2. Float Animation
-      const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.1
+      const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.06
 
+      // Hover progress smoothing
+      const hoverTarget = card === hoveredCard ? 1 : 0
+      card.userData.hoverProgress += (hoverTarget - card.userData.hoverProgress) * 0.12
+
+      // Parallax tilt based on mouse position when hovered
+      const parallax = card.userData.parallaxStrength || 0.12
+      const tiltX = -mousePos.y * parallax * card.userData.hoverProgress
+      const tiltY = mousePos.x * parallax * card.userData.hoverProgress * 0.8
+
+      // Compute target values
       let targetY = card.userData.originalY
       let targetScale = 1.0
-
       if (card === hoveredCard) {
         targetY = card.userData.hoverY
         targetScale = 1.05
       }
 
-      card.position.y += (targetY + floatY - card.position.y) * 0.1
-      card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.1)
+      // Apply position and scale easing
+      card.position.y += (targetY + floatY - card.position.y) * 0.12
+      card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.12)
 
-      // 3. Face Camera
-      // Ensure the cards always face the camera to prevent skewing
-      card.lookAt(this.camera.position)
+      // Smooth rotation/tilt
+      card.rotation.x += (tiltX - card.rotation.x) * 0.12
+      card.rotation.y += (tiltY - card.rotation.y) * 0.12
+
+      // Ensure the cards generally face the camera (soft lookAt via rotation lerp)
+      this.camera.getWorldPosition(this._tmpVec)
+      this._orientDummy.position.copy(card.position)
+      this._orientDummy.lookAt(this._tmpVec)
+      this._tmpQuat.copy(this._orientDummy.quaternion)
+      card.quaternion.slerp(this._tmpQuat, 0.08)
+
+      // Glow pulsing
+      if (card.userData.glow && card.userData.glow.material) {
+        const glow = card.userData.glow
+        glow.material.opacity =
+          Math.max(0.06, 0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id))) * card.userData.entranceProgress
+      }
     })
+
+    if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
+      this.cardGroup.visible = false
+    }
 
     if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
       this.cardGroup.visible = false
@@ -341,14 +451,41 @@ export class CardManager {
   cleanup() {
     this.scene.remove(this.cardGroup)
     this.cards.forEach(card => {
-      card.geometry.dispose()
-      card.material.map.dispose()
-      card.material.dispose()
+      if (card.geometry && card.geometry.dispose) card.geometry.dispose()
+      if (card.material) {
+        if (card.material.map && card.material.map.dispose) card.material.map.dispose()
+        card.material.map = null
+        if (card.material.dispose) card.material.dispose()
+      }
     })
     this.cards = []
+    if (this._sharedGeometry) {
+      this._sharedGeometry.dispose()
+      this._sharedGeometry = null
+    }
+
+    // Dispose shared glow texture
+    if (this._sharedGlowTexture && this._sharedGlowTexture.dispose) {
+      this._sharedGlowTexture.dispose()
+      this._sharedGlowTexture = null
+    }
+
+    // Dispose sprite materials
+    this.cards.forEach(card => {
+      const glow = card.userData && card.userData.glow
+      if (glow && glow.material) {
+        if (glow.material.map && glow.material.map.dispose) glow.material.map.dispose()
+        if (glow.material.dispose) glow.material.dispose()
+      }
+    })
+
     if (typeof window !== 'undefined' && this._onResize) {
       window.removeEventListener('resize', this._onResize)
       this._onResize = null
+    }
+    if (this._resizeRAF) {
+      cancelAnimationFrame(this._resizeRAF)
+      this._resizeRAF = null
     }
   }
 }
