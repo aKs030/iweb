@@ -104,10 +104,6 @@ export function showErrorState(container, error, retryCallback) {
 
 export class PerformanceMonitor {
   constructor(parentContainer, renderer, onQualityChange) {
-    this.element = document.createElement('div')
-    this.element.className = 'three-earth-performance-overlay'
-    parentContainer.appendChild(this.element)
-
     this.renderer = renderer
     this.onQualityChange = onQualityChange
     this.frame = 0
@@ -127,19 +123,8 @@ export class PerformanceMonitor {
       this.fps = (this.frame * 1000) / (time - this.lastTime)
       this.lastTime = time
       this.frame = 0
-      this.updateDisplay()
       this.throttledAdjustResolution()
     }
-  }
-
-  updateDisplay() {
-    if (!this.renderer) return
-    const render = this.renderer.info.render
-    this.element.innerHTML = `
-      FPS: ${Math.round(this.fps)} |
-      Calls: ${render.calls} | Tris: ${(render.triangles / 1000).toFixed(1)}k |
-      PR: ${this.currentPixelRatio.toFixed(2)}
-    `
   }
 
   adjustResolution() {
@@ -160,6 +145,6 @@ export class PerformanceMonitor {
   }
 
   cleanup() {
-    this.element?.parentNode?.removeChild(this.element)
+    // Nothing to clean up since overlay was removed
   }
 }
