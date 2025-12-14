@@ -47,9 +47,9 @@ export class RobotCollision {
     )
       return
 
-    // Throttling: only check every 200ms
+    // Throttling: check frequently (30ms ~ 33fps) for low latency
     const now = performance.now()
-    if (this._lastCollisionCheck && now - this._lastCollisionCheck < 200) return
+    if (this._lastCollisionCheck && now - this._lastCollisionCheck < 30) return
     this._lastCollisionCheck = now
 
     // Update obstacle cache periodically
