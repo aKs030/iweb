@@ -17,6 +17,8 @@ export class CardManager {
     this.cardGroup = new THREE.Group()
     this.scene.add(this.cardGroup)
     this.cardGroup.visible = false
+
+    this.responsiveScale = 1.0
   }
 
   initFromDOM(sectionElement) {
@@ -64,6 +66,7 @@ export class CardManager {
         mesh.userData = {
             isCard: true,
             link: data.link,
+            originalX: data.position.x,
             originalY: data.position.y,
             hoverY: data.position.y + 0.5,
             targetOpacity: 1,
@@ -74,9 +77,45 @@ export class CardManager {
         this.cards.push(mesh)
     })
 
+    // Apply initial responsive state
+    const container = this.renderer.domElement.parentElement
+    if (container) {
+        this.handleResize(container.clientWidth, container.clientHeight)
+    }
+
     if (this.isVisible) {
         this.cardGroup.visible = true
     }
+  }
+
+  handleResize(width, height) {
+    if (!this.cards.length) return
+
+    const isSmallMobile = width < 480
+    const isMobile = width < 768
+
+    let scaleFactor = 1.0
+    let spacingFactor = 1.0
+
+    if (isSmallMobile) {
+        scaleFactor = 0.45
+        spacingFactor = 0.5
+    } else if (isMobile) {
+        scaleFactor = 0.6
+        spacingFactor = 0.65
+    }
+
+    this.responsiveScale = scaleFactor
+
+    this.cards.forEach(card => {
+        // Update horizontal position based on spacing
+        if (card.userData.originalX !== undefined) {
+            card.position.x = card.userData.originalX * spacingFactor
+        }
+        // Force immediate scale update to avoid animation jump
+        // We set the current scale close to target so it settles
+        // But let's just let the update loop handle the smoothing to target
+    })
   }
 
   createCardTexture(data) {
@@ -252,11 +291,12 @@ export class CardManager {
         const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.1
 
         let targetY = card.userData.originalY
-        let targetScale = 1.0
+        // Use the responsive scale as the base
+        let targetScale = this.responsiveScale || 1.0
 
         if (card === hoveredCard) {
             targetY = card.userData.hoverY
-            targetScale = 1.05
+            targetScale = targetScale * 1.05
         }
 
         card.position.y += (targetY + floatY - card.position.y) * 0.1

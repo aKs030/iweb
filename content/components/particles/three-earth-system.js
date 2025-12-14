@@ -572,6 +572,7 @@ function setupResizeHandler() {
     renderer.setSize(width, height)
 
     if (starManager) starManager.handleResize(width, height)
+    if (cardManager) cardManager.handleResize(width, height)
   }
   const resizeCleanup = onResize(handleResize, 100)
   sharedCleanupManager.addCleanupFunction('three-earth', resizeCleanup, 'resize handler')
