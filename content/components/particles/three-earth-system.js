@@ -360,6 +360,11 @@ function setupSectionDetection() {
 
       if (!best || !best.isIntersecting) return
 
+      // Sync feature cards entrance progress to how much the section intersects
+      if (best.target.id === 'features' && cardManager) {
+        cardManager.setProgress(best.intersectionRatio || 0)
+      }
+
       const newSection = mapId(best.target.id || '')
       if (!newSection) return
 
@@ -373,10 +378,10 @@ function setupSectionDetection() {
         updateEarthForSection(newSection, {allowModeSwitch: isFeaturesToAbout})
 
         if (newSection === 'features') {
-          if (cardManager) cardManager.setVisible(true)
+          if (cardManager) cardManager.setProgress(1)
         } else {
           if (previousSection === 'features') {
-            if (cardManager) cardManager.setVisible(false)
+            if (cardManager) cardManager.setProgress(0)
           }
         }
 
