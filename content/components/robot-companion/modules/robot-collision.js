@@ -93,7 +93,7 @@ export class RobotCollision {
         this._recentCollisions.add(obs)
         setTimeout(() => {
           this._recentCollisions.delete(obs)
-        }, 5000)
+        }, 500)
 
         // Only one collision at a time
         return
