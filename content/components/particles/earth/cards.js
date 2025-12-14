@@ -2,6 +2,16 @@ import {createLogger} from '../../../utils/shared-utilities.js'
 
 const log = createLogger('CardManager')
 
+// SVG Paths (viewBox 0 0 24 24 assumed)
+const ICON_PATHS = {
+  profile:
+    'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
+  rocket:
+    'M12 2.5s-2 2-2 7c0 2 1 4 2 4s2-2 2-4c0-5-2-7-2-7zm-4 8c-2 0-3.5 1.5-3.5 3.5 0 2.2 1.3 4.2 3.5 5.2V22l3-1 3 1v-2.8c2.2-1 3.5-3 3.5-5.2 0-2-1.5-3.5-3.5-3.5H8z',
+  camera:
+    'M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z M12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'
+}
+
 export class CardManager {
   constructor(THREE, scene, camera, renderer) {
     this.THREE = THREE
@@ -69,6 +79,7 @@ export class CardManager {
       const subtitle = rawSubtitle.replace(/\s+/g, ' ').trim()
       const text = rawText.replace(/\s+/g, ' ').trim()
       const link = cardEl.querySelector('.card-link')?.getAttribute('href') || '#'
+      const iconKey = cardEl.querySelector('.icon-wrapper')?.getAttribute('data-icon') || ''
       const iconChar = (cardEl.querySelector('.icon-wrapper i')?.innerText || '').trim()
 
       const data = {
@@ -77,6 +88,7 @@ export class CardManager {
         subtitle,
         text,
         link,
+        iconKey,
         iconChar,
         color: positions[index]?.color || '#ffffff',
         position: positions[index] || {x: 0, y: 0, z: 0}
@@ -197,12 +209,17 @@ export class CardManager {
     ctx.lineWidth = 2 * S
     ctx.stroke()
 
-    // 4. Icon Text (Emoji/Char)
-    ctx.fillStyle = '#ffffff'
-    ctx.font = `${60 * S}px Arial`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S)
+    // 4. Icon Drawing (SVG Path or fallback Emoji)
+    if (data.iconKey && ICON_PATHS[data.iconKey]) {
+      this.drawIcon(ctx, data.iconKey, iconCenterX, iconY, 60 * S, '#ffffff')
+    } else {
+      // Fallback
+      ctx.fillStyle = '#ffffff'
+      ctx.font = `${60 * S}px Arial`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S)
+    }
 
     // 5. Subtitle (fit to width)
     ctx.fillStyle = data.color
@@ -232,6 +249,24 @@ export class CardManager {
     texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
     texture.needsUpdate = true
     return texture
+  }
+
+  drawIcon(ctx, iconKey, x, y, size, color) {
+    const pathStr = ICON_PATHS[iconKey]
+    if (!pathStr) return
+
+    ctx.save()
+    ctx.fillStyle = color
+    // Center the icon. Assuming standard 24x24 viewBox for the paths
+    // Scale factor: size / 24
+    const scale = size / 24
+    // Translate to center position (x,y) minus half the scaled size
+    ctx.translate(x - (24 * scale) / 2, y - (24 * scale) / 2)
+    ctx.scale(scale, scale)
+
+    const path = new Path2D(pathStr)
+    ctx.fill(path)
+    ctx.restore()
   }
 
   createGlowTexture() {
