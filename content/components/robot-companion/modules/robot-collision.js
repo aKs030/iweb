@@ -179,7 +179,7 @@ export class RobotCollision {
     }
   }
 
-  checkForTypewriterCollision(twRect, maxLeft) {
+  checkForTypewriterCollision(twRect, _maxLeft) {
     if (!twRect) return false
     // Allow collisions even if the robot recently changed direction.
     // Previously this returned early when a startAnimation was active which
@@ -210,7 +210,7 @@ export class RobotCollision {
       // Clamp maxLeft fallback
       const robotWidth = 80
       const initialLeft = window.innerWidth - 30 - robotWidth
-      maxLeft = typeof maxLeft === 'number' ? maxLeft : initialLeft - 20
+      _maxLeft = typeof _maxLeft === 'number' ? _maxLeft : initialLeft - 20
 
       // Collision reaction: show bubble and particle burst. If there's no
       // existing startAnimation active, trigger the dedicated knockback.
@@ -223,7 +223,7 @@ export class RobotCollision {
       const anim = this.robot.animationModule
       if (!anim.startAnimation || !anim.startAnimation.active) {
         // Pass the actual typewriter rect so the response can compute safely
-        this.startTypewriterCollisionResponse(twRect, maxLeft)
+        this.startTypewriterCollisionResponse(twRect, _maxLeft)
       }
 
       return true
@@ -232,8 +232,6 @@ export class RobotCollision {
     }
   }
 
-  // Parameters are accepted for future use; currently unused by this
-  // function's knockback logic but kept for API consistency.
   startTypewriterCollisionResponse(_twRect, _maxLeft) {
     if (!this.robot.dom || !this.robot.dom.container) return
     const anim = this.robot.animationModule
