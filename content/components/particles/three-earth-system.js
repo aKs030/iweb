@@ -192,18 +192,22 @@ const ThreeEarthManager = (() => {
       cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer)
 
       // Listen for dynamic section loading to init cards (read DOM for content)
-      const onSectionLoaded = (e) => {
-          if (e.detail?.id === 'features' && cardManager) {
-              cardManager.initFromDOM(e.detail.section)
-          }
+      const onSectionLoaded = e => {
+        if (e.detail?.id === 'features' && cardManager) {
+          cardManager.initFromDOM(e.detail.section)
+        }
       }
       document.addEventListener('section:loaded', onSectionLoaded)
-      sharedCleanupManager.addCleanupFunction('three-earth', () => document.removeEventListener('section:loaded', onSectionLoaded), 'section listener')
+      sharedCleanupManager.addCleanupFunction(
+        'three-earth',
+        () => document.removeEventListener('section:loaded', onSectionLoaded),
+        'section listener'
+      )
 
       // Check if already loaded
       const featuresSection = document.getElementById('features')
       if (featuresSection && featuresSection.dataset.state === 'loaded') {
-          cardManager.initFromDOM(featuresSection)
+        cardManager.initFromDOM(featuresSection)
       }
 
       // Start Loops
@@ -217,7 +221,9 @@ const ThreeEarthManager = (() => {
       log.error('Initialization failed:', error)
       try {
         if (renderer) renderer.dispose()
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       sharedCleanupManager.cleanupSystem('three-earth')
       showErrorState(container, error, () => {
         cleanup()
@@ -310,7 +316,7 @@ function detectDeviceCapabilities() {
     const ua = (navigator.userAgent || '').toLowerCase()
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua)
     const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) || (navigator.hardwareConcurrency || 4) <= 2
-    return { isMobile, isLowEnd, recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH' }
+    return {isMobile, isLowEnd, recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH'}
   } catch {
     return {isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM'}
   }
@@ -330,7 +336,7 @@ function getOptimizedConfig(capabilities) {
     return {
       EARTH: {...CONFIG.EARTH, SEGMENTS_MOBILE: 32},
       STARS: {...CONFIG.STARS, COUNT: 2000},
-      PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0) }
+      PERFORMANCE: {...CONFIG.PERFORMANCE, PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2.0)}
     }
   }
   return {}
@@ -369,9 +375,9 @@ function setupSectionDetection() {
         if (newSection === 'features') {
           if (cardManager) cardManager.setVisible(true)
         } else {
-           if (previousSection === 'features') {
-              if (cardManager) cardManager.setVisible(false)
-           }
+          if (previousSection === 'features') {
+            if (cardManager) cardManager.setVisible(false)
+          }
         }
 
         const container = document.querySelector('.three-earth-container')
@@ -411,10 +417,18 @@ function updateEarthForSection(sectionName, options = {}) {
   if (!earthMesh || !isSystemActive) return
   const allowModeSwitch = !!options.allowModeSwitch
   const configs = {
-    hero: { earth: {pos: {x: 1, y: -2.5, z: -1}, scale: 1.3, rotation: 0}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'day' },
-    features: { earth: {pos: {x: -7, y: -2, z: -4}, scale: 0.7, rotation: 0}, moon: {pos: {x: 1, y: 2, z: -5}, scale: 1.1}, mode: 'day' },
-    about: { earth: {pos: {x: -1, y: -0.5, z: -1}, scale: 1.0, rotation: Math.PI}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'night' },
-    contact: { earth: {pos: {x: 0, y: -1.5, z: 0}, scale: 1.1, rotation: Math.PI / 2}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'day' }
+    hero: {earth: {pos: {x: 1, y: -2.5, z: -1}, scale: 1.3, rotation: 0}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'day'},
+    features: {earth: {pos: {x: -7, y: -2, z: -4}, scale: 0.7, rotation: 0}, moon: {pos: {x: 1, y: 2, z: -5}, scale: 1.1}, mode: 'day'},
+    about: {
+      earth: {pos: {x: -1, y: -0.5, z: -1}, scale: 1.0, rotation: Math.PI},
+      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
+      mode: 'night'
+    },
+    contact: {
+      earth: {pos: {x: 0, y: -1.5, z: 0}, scale: 1.1, rotation: Math.PI / 2},
+      moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4},
+      mode: 'day'
+    }
   }
   const config = configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero
 
@@ -494,7 +508,7 @@ function startAnimationLoop() {
 
     // Card update (Raycasting restored via window.lastMousePos)
     if (cardManager && window.lastMousePos) {
-       cardManager.update(elapsedTime * 1000, window.lastMousePos)
+      cardManager.update(elapsedTime * 1000, window.lastMousePos)
     }
 
     if (shootingStarManager && !capabilities.isLowEnd) shootingStarManager.update()
@@ -510,29 +524,33 @@ function startAnimationLoop() {
 }
 
 function setupInteraction() {
-   window.lastMousePos = new THREE_INSTANCE.Vector2(-999, -999) // Default off-screen
+  window.lastMousePos = new THREE_INSTANCE.Vector2(-999, -999) // Default off-screen
 
-   const onMove = (event) => {
-       if (!isSystemActive) return
-       window.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1
-       window.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1
-   }
+  const onMove = event => {
+    if (!isSystemActive) return
+    window.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1
+    window.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1
+  }
 
-   const onClick = (event) => {
-       if (!isSystemActive || !cardManager) return
-       const mouse = new THREE_INSTANCE.Vector2()
-       mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-       cardManager.handleClick(mouse)
-   }
+  const onClick = event => {
+    if (!isSystemActive || !cardManager) return
+    const mouse = new THREE_INSTANCE.Vector2()
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+    cardManager.handleClick(mouse)
+  }
 
-   window.addEventListener('mousemove', onMove)
-   window.addEventListener('click', onClick)
+  window.addEventListener('mousemove', onMove)
+  window.addEventListener('click', onClick)
 
-   sharedCleanupManager.addCleanupFunction('three-earth', () => {
-       window.removeEventListener('mousemove', onMove)
-       window.removeEventListener('click', onClick)
-   }, 'interaction')
+  sharedCleanupManager.addCleanupFunction(
+    'three-earth',
+    () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('click', onClick)
+    },
+    'interaction'
+  )
 }
 
 function updateObjectTransforms() {
@@ -581,11 +599,19 @@ function setupResizeHandler() {
 
 export const {initThreeEarth, cleanup} = ThreeEarthManager
 export const EarthSystemAPI = {
-  flyToPreset: presetName => { if (cameraManager) cameraManager.flyToPreset(presetName) },
-  triggerMeteorShower: () => { shootingStarManager?.triggerShower() },
+  flyToPreset: presetName => {
+    if (cameraManager) cameraManager.flyToPreset(presetName)
+  },
+  triggerMeteorShower: () => {
+    shootingStarManager?.triggerShower()
+  },
   getConfig: () => CONFIG,
-  updateConfig: updates => { Object.assign(CONFIG, updates) },
-  get shootingStarManager() { return shootingStarManager }
+  updateConfig: updates => {
+    Object.assign(CONFIG, updates)
+  },
+  get shootingStarManager() {
+    return shootingStarManager
+  }
 }
 export default ThreeEarthManager
 export {detectDeviceCapabilities, getOptimizedConfig}

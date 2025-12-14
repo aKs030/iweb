@@ -29,5 +29,5 @@ test('3D Cards should be active and HTML cards hidden in Features section', asyn
   await expect(htmlCards).toHaveCSS('opacity', '0')
   await expect(htmlCards).toHaveCSS('pointer-events', 'none')
 
-  console.warn('3D Cards verification passed')
+  console.log('3D Cards verification passed')
 })

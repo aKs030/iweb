@@ -200,7 +200,7 @@ export class CardManager {
     ctx.closePath()
   }
 
-  drawStarBorder(ctx, x, y, w, h, r, color, _scale) {
+  drawStarBorder(ctx, x, y, w, h, r, color, scale) {
     // Fine line - keeping it thin relative to the scaled size to appear "finer"
     // Using 1.5 * scale would be proportional. Using just 1.5 or 2 makes it very thin on high res.
     // Let's go with 1.5 pixels absolute thickness on the scaled canvas.

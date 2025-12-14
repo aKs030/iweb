@@ -4,14 +4,6 @@
    to ensure the font preload is used immediately across all pages.
 ============================================= */
 
-/* Global import for the Three.js Earth system CSS (canvas and related UI)
-  This ensures the background Earth styles are available site-wide even if
-  some pages don't individually include the three-earth stylesheet. */
-
-/* three-earth.css is now loaded non-blocking via shared head preload, removed @import to avoid render-blocking */
-
-/* NOTE: SVG sprite is embedded inline via JavaScript (menu.js). Removed obsolete .svg-sprite-hidden utility. */
-
 /* =======================
    Global CSS Variables - Dark & Light Mode System
 ======================= */
