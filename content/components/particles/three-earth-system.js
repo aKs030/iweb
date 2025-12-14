@@ -367,10 +367,23 @@ function setupSectionDetection() {
         updateEarthForSection(newSection, {allowModeSwitch: isFeaturesToAbout})
 
         if (newSection === 'features') {
-          if (cardManager) cardManager.setVisible(true)
+          if (cardManager) {
+            // Determine direction
+            // If coming from 'hero' (above) -> Scrolling DOWN -> animateIn('down')
+            // If coming from 'about' (below) -> Scrolling UP -> animateIn('up')
+            // Default to 'down' if unknown
+            const direction = previousSection === 'about' ? 'up' : 'down'
+            cardManager.animateIn(direction)
+          }
         } else {
            if (previousSection === 'features') {
-              if (cardManager) cardManager.setVisible(false)
+              if (cardManager) {
+                // Determine exit direction
+                // If going to 'about' (below) -> Scrolling DOWN -> animateOut('down')
+                // If going to 'hero' (above) -> Scrolling UP -> animateOut('up')
+                const direction = newSection === 'about' ? 'down' : 'up'
+                cardManager.animateOut(direction)
+              }
            }
         }
 
