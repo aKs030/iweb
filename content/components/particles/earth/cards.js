@@ -62,9 +62,12 @@ export class CardManager {
 
     originalCards.forEach((cardEl, index) => {
       // Extract Data
-      const title = cardEl.querySelector('.card-title')?.innerText || 'Title'
-      const subtitle = cardEl.querySelector('.card-title')?.getAttribute('data-eyebrow') || 'INFO'
-      const text = cardEl.querySelector('.card-text')?.innerText || ''
+      const rawTitle = cardEl.querySelector('.card-title')?.innerText || 'Title'
+      const rawSubtitle = cardEl.querySelector('.card-title')?.getAttribute('data-eyebrow') || 'INFO'
+      const rawText = cardEl.querySelector('.card-text')?.innerText || ''
+      const title = rawTitle.replace(/\s+/g, ' ').trim()
+      const subtitle = rawSubtitle.replace(/\s+/g, ' ').trim()
+      const text = rawText.replace(/\s+/g, ' ').trim()
       const link = cardEl.querySelector('.card-link')?.getAttribute('href') || '#'
       const iconChar = (cardEl.querySelector('.icon-wrapper i')?.innerText || '').trim()
 
@@ -201,20 +204,25 @@ export class CardManager {
     ctx.textBaseline = 'middle'
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S)
 
-    // 5. Subtitle
+    // 5. Subtitle (fit to width)
     ctx.fillStyle = data.color
-    ctx.font = `bold ${24 * S}px Arial`
-    ctx.fillText((data.subtitle || '').trim(), iconCenterX, 280 * S)
+    const subtitleText = (data.subtitle || '').trim()
+    const subtitleSize = this.fitTextToWidth(ctx, subtitleText, 420 * S, 'bold', 24 * S, 12 * S)
+    ctx.font = `bold ${subtitleSize}px Arial`
+    ctx.fillText(subtitleText, iconCenterX, 280 * S)
 
-    // 6. Title
+    // 6. Title (fit to width, prefer single line)
     ctx.fillStyle = '#ffffff'
-    ctx.font = `bold ${48 * S}px Arial`
-    ctx.fillText(data.title, iconCenterX, 350 * S)
+    const titleText = (data.title || '').trim()
+    const titleSize = this.fitTextToWidth(ctx, titleText, 420 * S, 'bold', 48 * S, 20 * S)
+    ctx.font = `bold ${titleSize}px Arial`
+    ctx.fillText(titleText, iconCenterX, 350 * S)
 
-    // 7. Text (Wrapped)
+    // 7. Text (Wrapped) - reduce size slightly for long text
     ctx.fillStyle = '#cccccc'
-    ctx.font = `${30 * S}px Arial`
-    this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, 40 * S)
+    const baseTextSize = data.text && data.text.length > 160 ? Math.max(18 * S, 22 * S) : 30 * S
+    ctx.font = `${baseTextSize}px Arial`
+    this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, Math.round(40 * S))
 
     const texture = new this.THREE.CanvasTexture(canvas)
     // Use mipmaps + linear mipmap filtering for crisper downscaled rendering
@@ -339,6 +347,20 @@ export class CardManager {
       }
     }
     ctx.fillText(line, x, y)
+  }
+
+  fitTextToWidth(ctx, text, maxWidth, fontWeight = 'normal', initialSize = 24, minSize = 12) {
+    if (!text) return initialSize
+    let size = initialSize
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    while (size >= minSize) {
+      ctx.font = `${fontWeight} ${Math.round(size)}px Arial`
+      const w = ctx.measureText(text).width
+      if (w <= maxWidth) break
+      size -= 1
+    }
+    return Math.max(minSize, Math.round(size))
   }
 
   setVisible(visible) {
