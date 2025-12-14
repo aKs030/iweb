@@ -29,6 +29,7 @@ export class StarManager {
 
     // Cache for resize calculations
     this.areStarsFormingCards = false
+    this.tempVector = new this.THREE.Vector3() // Reuse for calculations
   }
 
   createStarField() {
@@ -164,11 +165,18 @@ export class StarManager {
     const screenToWorld = (x, y) => {
       const ndcX = (x / viewportWidth) * 2 - 1
       const ndcY = -((y / viewportHeight) * 2 - 1)
-      const vector = new this.THREE.Vector3(ndcX, ndcY, 0)
-      vector.unproject(this.camera)
-      const direction = vector.sub(this.camera.position).normalize()
-      const distance = (targetZ - this.camera.position.z) / direction.z
-      return this.camera.position.clone().add(direction.multiplyScalar(distance))
+
+      // Reuse tempVector to avoid GC
+      this.tempVector.set(ndcX, ndcY, 0)
+      this.tempVector.unproject(this.camera)
+      this.tempVector.sub(this.camera.position).normalize()
+
+      const distance = (targetZ - this.camera.position.z) / this.tempVector.z
+      // Return a plain object to avoid creating Vector3 clones
+      const px = this.camera.position.x + this.tempVector.x * distance
+      const py = this.camera.position.y + this.tempVector.y * distance
+      const pz = this.camera.position.z + this.tempVector.z * distance
+      return {x: px, y: py, z: pz}
     }
 
     // 1. Perimeter (Border)
@@ -178,7 +186,7 @@ export class StarManager {
         const x = startX + (endX - startX) * t
         const y = startY + (endY - startY) * t
         const worldPos = screenToWorld(x, y)
-        positions.push({x: worldPos.x, y: worldPos.y, z: targetZ})
+        positions.push(worldPos)
       }
     }
 
@@ -192,7 +200,7 @@ export class StarManager {
       const x = rect.left + Math.random() * rect.width
       const y = rect.top + Math.random() * rect.height
       const worldPos = screenToWorld(x, y)
-      positions.push({x: worldPos.x, y: worldPos.y, z: targetZ})
+      positions.push(worldPos)
     }
 
     return positions

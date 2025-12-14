@@ -52,4 +52,3 @@ app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.log(`Gemini proxy server listening at http://127.0.0.1:${port}`)
 })
-
