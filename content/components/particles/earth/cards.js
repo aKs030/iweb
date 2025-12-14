@@ -92,36 +92,37 @@ export class CardManager {
   handleResize(width, height) {
     if (!this.cards.length) return
 
-    const isSmallMobile = width < 480
     const isMobile = width < 768
+    // Reduce scale to 0.5 to fit 3 cards vertically in the limited FOV
+    this.responsiveScale = isMobile ? 0.5 : 1.0
 
-    let scaleFactor = 1.0
-    let spacingFactor = 1.0
-
-    if (isSmallMobile) {
-        scaleFactor = 0.45
-        spacingFactor = 0.5
-    } else if (isMobile) {
-        scaleFactor = 0.6
-        spacingFactor = 0.65
-    }
-
-    this.responsiveScale = scaleFactor
-
-    this.cards.forEach(card => {
-        // Update horizontal position based on spacing
-        if (card.userData.originalX !== undefined) {
-            card.position.x = card.userData.originalX * spacingFactor
-        }
-
-        // Flatten Z-axis on mobile to prevent overlap
-        // The middle card is at Z=2, others at Z=0. On mobile, this depth causes occlusion when squeezed.
+    this.cards.forEach((card, index) => {
         if (isMobile) {
-            card.position.z = 0
+            // Vertical Stack Layout
+            card.position.x = 0
+            // Slight Z-offset per card to ensure consistent rendering order if they overlap vertically
+            // (Though they shouldn't overlap much visually, this prevents Z-fighting)
+            card.position.z = 0.05 * (3 - index)
+
+            // Stack: Top (0), Middle (1), Bottom (2)
+            // Spacing: 1.8 units (Card height 2.25 at 0.5 scale. 1.8 spacing means slight overlap/tight fit)
+            // Center Offset: Camera looks at y=0.5 in 'features' preset.
+            const centerOffset = 0.5
+            const spacing = 1.8
+
+            if (index === 0) card.userData.responsiveBaseY = centerOffset + spacing
+            else if (index === 1) card.userData.responsiveBaseY = centerOffset
+            else if (index === 2) card.userData.responsiveBaseY = centerOffset - spacing
+
+            card.position.y = card.userData.responsiveBaseY
+
         } else {
-            if (card.userData.originalZ !== undefined) {
-                card.position.z = card.userData.originalZ
-            }
+            // Desktop Layout (Restore originals)
+            card.userData.responsiveBaseY = undefined // Clear mobile override
+
+            if (card.userData.originalX !== undefined) card.position.x = card.userData.originalX
+            if (card.userData.originalY !== undefined) card.position.y = card.userData.originalY
+            if (card.userData.originalZ !== undefined) card.position.z = card.userData.originalZ
         }
     })
   }
@@ -298,12 +299,34 @@ export class CardManager {
         // 2. Float Animation
         const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.1
 
-        let targetY = card.userData.originalY
-        // Use the responsive scale as the base
+        // Use current position logic (which might be the stacked Y) as the base,
+        // but we need to know the 'base' Y for the animation to oscillate around.
+        // Since we modify position.y in handleResize, we can't just use originalY.
+        // We need to track the 'currentBaseY' which handleResize sets.
+        // FIX: In handleResize, we set position.y. Let's assume that is the base.
+        // However, this update loop runs every frame.
+        // If we want to animate around the stack position, we need to respect it.
+
+        // Simple approach: Calculate targetY based on layout mode
+        let baseLayoutY = card.userData.originalY // Default desktop
+
+        // Check if we are in mobile stack mode based on X position (heuristic)
+        // Or better, re-calculate the target base Y here or store it in userData during resize.
+        // Let's rely on the fact that handleResize sets the initial Y.
+        // But we need a stable reference.
+
+        // To avoid complex state, let's just add the float to the current position logic
+        // But card.position.y is accumulating changes.
+        // We need a stable anchor.
+
+        // Let's verify if 'responsiveBaseY' exists, else use originalY.
+        const baseY = (card.userData.responsiveBaseY !== undefined) ? card.userData.responsiveBaseY : card.userData.originalY
+
+        let targetY = baseY
         let targetScale = this.responsiveScale || 1.0
 
         if (card === hoveredCard) {
-            targetY = card.userData.hoverY
+            targetY = baseY + 0.5 // Hover up relative to base
             targetScale = targetScale * 1.05
         }
 
