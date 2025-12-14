@@ -1,7 +1,7 @@
 /**
  * Three.js Earth System - Orchestrator
  * Modularized architecture for better maintainability.
- * @version 10.0.0 - HYBRID: CSS3DRenderer Implementation
+ * @version 11.0.0 - REFACTOR: Pure WebGL Implementation
  */
 
 import {createLogger, getElementById, onResize, TimerManager} from '../../utils/shared-utilities.js'
@@ -27,7 +27,6 @@ const earthTimers = new TimerManager()
 
 // Global instances for this module scope
 let scene, camera, renderer, THREE_INSTANCE
-let cssRenderer, cssScene
 let earthMesh, moonMesh, cloudMesh
 let dayMaterial, nightMaterial
 let directionalLight, ambientLight
@@ -66,7 +65,7 @@ const ThreeEarthManager = (() => {
     isSystemActive = true
 
     try {
-      log.info('Initializing Three.js Earth System v10.0.0 (Hybrid CSS3D)')
+      log.info('Initializing Three.js Earth System v11.0.0 (Pure WebGL)')
 
       // Device Detection & optimized config
       try {
@@ -82,16 +81,6 @@ const ThreeEarthManager = (() => {
       // Load Three.js
       THREE_INSTANCE = await loadThreeJS()
 
-      // Load CSS3DRenderer via Import Map (Dynamic Import)
-      let CSS3DRendererModule
-      try {
-         CSS3DRendererModule = await import('three/addons/renderers/CSS3DRenderer.js')
-      } catch (e) {
-         log.error('Failed to load CSS3DRenderer. Ensure Import Map is present.', e)
-         throw e
-      }
-      const { CSS3DRenderer } = CSS3DRendererModule
-
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
       if (!isSystemActive) return cleanup
 
@@ -104,15 +93,6 @@ const ThreeEarthManager = (() => {
       scene = sceneObjects.scene
       camera = sceneObjects.camera
       renderer = sceneObjects.renderer
-
-      // CSS3D Setup
-      cssScene = new THREE_INSTANCE.Scene()
-      cssRenderer = new CSS3DRenderer()
-      cssRenderer.setSize(container.clientWidth, container.clientHeight)
-      cssRenderer.domElement.style.position = 'absolute'
-      cssRenderer.domElement.style.top = '0'
-      cssRenderer.domElement.style.pointerEvents = 'none' // Allow clicks to pass through to WebGL
-      container.appendChild(cssRenderer.domElement)
 
       if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
         renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO)
@@ -208,13 +188,10 @@ const ThreeEarthManager = (() => {
 
       shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE)
 
-      // Cards (CSS3D) - pass CSS Scene and Import Maps CSS3DObject if needed,
-      // but CardManager should handle the object creation if we pass the constructor/module?
-      // Actually CardManager imports things. We'll let it import CSS3DObject via map too.
-      // But we pass cssScene.
-      cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer, cssScene)
+      // Cards (Pure WebGL)
+      cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer)
 
-      // Listen for dynamic section loading to init cards
+      // Listen for dynamic section loading to init cards (read DOM for content)
       const onSectionLoaded = (e) => {
           if (e.detail?.id === 'features' && cardManager) {
               cardManager.initFromDOM(e.detail.section)
@@ -232,7 +209,7 @@ const ThreeEarthManager = (() => {
       // Start Loops
       startAnimationLoop()
       setupResizeHandler()
-      // setupInteraction() // Removed: CSS3D handles interaction natively!
+      setupInteraction()
 
       log.info('Initialization complete')
       return cleanup
@@ -284,14 +261,6 @@ const ThreeEarthManager = (() => {
       scene.clear()
     }
 
-    // CSS Scene Cleanup
-    if (cssScene) {
-        cssScene.clear()
-    }
-    if (cssRenderer) {
-        cssRenderer.domElement.remove()
-    }
-
     if (renderer) {
       renderer.dispose()
     }
@@ -299,7 +268,6 @@ const ThreeEarthManager = (() => {
     ;[dayMaterial, nightMaterial].forEach(disposeMaterial)
 
     scene = camera = renderer = null
-    cssRenderer = cssScene = null
     earthMesh = moonMesh = cloudMesh = null
     dayMaterial = nightMaterial = null
     directionalLight = ambientLight = null
@@ -399,7 +367,6 @@ function setupSectionDetection() {
         updateEarthForSection(newSection, {allowModeSwitch: isFeaturesToAbout})
 
         if (newSection === 'features') {
-          // Disable star alignment as CSS3D cards are used
           if (cardManager) cardManager.setVisible(true)
         } else {
            if (previousSection === 'features') {
@@ -443,7 +410,6 @@ function setupViewportObserver(container) {
 function updateEarthForSection(sectionName, options = {}) {
   if (!earthMesh || !isSystemActive) return
   const allowModeSwitch = !!options.allowModeSwitch
-  // Configs maintained as original
   const configs = {
     hero: { earth: {pos: {x: 1, y: -2.5, z: -1}, scale: 1.3, rotation: 0}, moon: {pos: {x: -45, y: -45, z: -90}, scale: 0.4}, mode: 'day' },
     features: { earth: {pos: {x: -7, y: -2, z: -4}, scale: 0.7, rotation: 0}, moon: {pos: {x: 1, y: 2, z: -5}, scale: 1.1}, mode: 'day' },
@@ -526,9 +492,9 @@ function startAnimationLoop() {
     if (cameraManager) cameraManager.updateCameraPosition()
     updateObjectTransforms()
 
-    // Card update (no raycasting needed anymore, just float animation)
-    if (cardManager) {
-       cardManager.update(elapsedTime * 1000)
+    // Card update (Raycasting restored via window.lastMousePos)
+    if (cardManager && window.lastMousePos) {
+       cardManager.update(elapsedTime * 1000, window.lastMousePos)
     }
 
     if (shootingStarManager && !capabilities.isLowEnd) shootingStarManager.update()
@@ -537,17 +503,37 @@ function startAnimationLoop() {
     if (renderer && scene && camera) {
       renderer.render(scene, camera)
     }
-    // Render CSS Scene
-    if (cssRenderer && cssScene && camera) {
-        cssRenderer.render(cssScene, camera)
-    }
   }
 
   document.addEventListener('visibilitychange', handleVisibilityChange)
   if (document.visibilityState === 'visible') animate()
 }
 
-// setupInteraction removed (CSS handles it)
+function setupInteraction() {
+   window.lastMousePos = new THREE_INSTANCE.Vector2(-999, -999) // Default off-screen
+
+   const onMove = (event) => {
+       if (!isSystemActive) return
+       window.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1
+       window.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1
+   }
+
+   const onClick = (event) => {
+       if (!isSystemActive || !cardManager) return
+       const mouse = new THREE_INSTANCE.Vector2()
+       mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+       cardManager.handleClick(mouse)
+   }
+
+   window.addEventListener('mousemove', onMove)
+   window.addEventListener('click', onClick)
+
+   sharedCleanupManager.addCleanupFunction('three-earth', () => {
+       window.removeEventListener('mousemove', onMove)
+       window.removeEventListener('click', onClick)
+   }, 'interaction')
+}
 
 function updateObjectTransforms() {
   if (!earthMesh) return
@@ -584,9 +570,6 @@ function setupResizeHandler() {
     camera.aspect = width / height
     camera.updateProjectionMatrix()
     renderer.setSize(width, height)
-    if (cssRenderer) {
-        cssRenderer.setSize(width, height)
-    }
 
     if (starManager) starManager.handleResize(width, height)
   }
