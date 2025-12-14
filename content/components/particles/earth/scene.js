@@ -13,7 +13,9 @@ export function setupScene(THREE, container) {
     powerPreference: 'high-performance'
   })
 
-  const pixelRatio = Math.min(window.devicePixelRatio, 2.0)
+  // Allow a higher pixel ratio on large screens to improve texture/sharpness
+  const maxAllowedPR = container.clientWidth > 1200 ? 3.0 : 2.0
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, maxAllowedPR)
   renderer.setPixelRatio(pixelRatio)
   renderer.setSize(container.clientWidth, container.clientHeight)
   renderer.setClearColor(0x000000, 0)
