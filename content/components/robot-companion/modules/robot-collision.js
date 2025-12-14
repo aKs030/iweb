@@ -47,9 +47,9 @@ export class RobotCollision {
     )
       return
 
-    // Throttling: only check every 200ms
+    // Throttling: check frequently (30ms ~ 33fps) for low latency
     const now = performance.now()
-    if (this._lastCollisionCheck && now - this._lastCollisionCheck < 200) return
+    if (this._lastCollisionCheck && now - this._lastCollisionCheck < 30) return
     this._lastCollisionCheck = now
 
     // Update obstacle cache periodically
@@ -93,7 +93,7 @@ export class RobotCollision {
         this._recentCollisions.add(obs)
         setTimeout(() => {
           this._recentCollisions.delete(obs)
-        }, 5000)
+        }, 500)
 
         // Only one collision at a time
         return
@@ -179,10 +179,13 @@ export class RobotCollision {
     }
   }
 
-  checkForTypewriterCollision(twRect, _maxLeft) {
+  checkForTypewriterCollision(twRect, maxLeft) {
     if (!twRect) return false
     // Allow collisions even if the robot recently changed direction.
-    if (this.robot.animationModule.startAnimation && this.robot.animationModule.startAnimation.active) return false
+    // Previously this returned early when a startAnimation was active which
+    // prevented showing the bubble/particles for subsequent quick collisions.
+    // Instead: always show the reaction (bubble + particles) but only
+    // trigger the knockback/startAnimation when it's not already active.
     if (!this.robot.dom || !this.robot.dom.container) return false
     try {
       // Use the robot avatar or svg bounding box instead of the full container
@@ -207,24 +210,30 @@ export class RobotCollision {
       // Clamp maxLeft fallback
       const robotWidth = 80
       const initialLeft = window.innerWidth - 30 - robotWidth
-      _maxLeft = typeof _maxLeft === 'number' ? _maxLeft : initialLeft - 20
+      maxLeft = typeof maxLeft === 'number' ? maxLeft : initialLeft - 20
 
-      // Collision reaction: show bubble, particle burst and dramatic knockback movement
+      // Collision reaction: show bubble and particle burst. If there's no
+      // existing startAnimation active, trigger the dedicated knockback.
       const reactions = ['Autsch! 😵', 'Ups! Das war hart! 💥', 'Whoa! 😲', 'Hey! Nicht schubsen! 😠']
       const reaction = reactions[Math.floor(Math.random() * reactions.length)]
-      // Sprechblase mit dramatischer Reaktion
       this.robot.showBubble(reaction)
       setTimeout(() => this.robot.hideBubble(), 2500)
-      // Große Partikel-Explosion
       this.robot.animationModule.spawnParticleBurst(18, {strength: 2.0, spread: 180})
-      // Trigger the dedicated typewriter collision knockback
-      this.startTypewriterCollisionResponse(_twRect, _maxLeft)
+
+      const anim = this.robot.animationModule
+      if (!anim.startAnimation || !anim.startAnimation.active) {
+        // Pass the actual typewriter rect so the response can compute safely
+        this.startTypewriterCollisionResponse(twRect, maxLeft)
+      }
+
       return true
     } catch {
       return false
     }
   }
 
+  // Parameters are accepted for future use; currently unused by this
+  // function's knockback logic but kept for API consistency.
   startTypewriterCollisionResponse(_twRect, _maxLeft) {
     if (!this.robot.dom || !this.robot.dom.container) return
     const anim = this.robot.animationModule
