@@ -395,6 +395,8 @@ export class CardManager {
       document.body.style.cursor = hoveredCard ? 'pointer' : ''
     }
 
+    this.camera.getWorldPosition(this._tmpVec)
+
     this.cards.forEach(card => {
       // Entrance progress (staggered)
       const targetEntrance = typeof card.userData.entranceTarget === 'number' ? card.userData.entranceTarget : this.isVisible ? 1 : 0
@@ -428,14 +430,14 @@ export class CardManager {
       card.position.y += (targetY + floatY - card.position.y) * 0.12
       card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.12)
 
-      // Smooth rotation/tilt
-      card.rotation.x += (tiltX - card.rotation.x) * 0.12
-      card.rotation.y += (tiltY - card.rotation.y) * 0.12
-
       // Ensure the cards generally face the camera (soft lookAt via rotation lerp)
-      this.camera.getWorldPosition(this._tmpVec)
       this._orientDummy.position.copy(card.position)
       this._orientDummy.lookAt(this._tmpVec)
+
+      // Apply tilt relative to camera-facing orientation
+      this._orientDummy.rotateX(tiltX)
+      this._orientDummy.rotateY(tiltY)
+
       this._tmpQuat.copy(this._orientDummy.quaternion)
       card.quaternion.slerp(this._tmpQuat, 0.08)
 
