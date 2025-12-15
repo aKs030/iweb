@@ -158,7 +158,7 @@ export class CardManager {
     if (isMobile) {
       // Mobile: Vertical Stack (vary Y)
       // Generous vertical spacing to prevent overlap
-      const spacingY = 3.2
+      const spacingY = 2.2
 
       this.cards.forEach((card, idx) => {
         // Center horizontally
@@ -167,7 +167,7 @@ export class CardManager {
         // Stack vertically: Index 0 at top, increasing indices go down
         // Camera looks at Y=0.5, so we center the stack roughly there.
         // If centerOffset is 1 (3 cards), idx=1 is center.
-        card.userData.originalY = 0.5 + (centerOffset - idx) * spacingY
+        card.userData.originalY = -0.5 + (centerOffset - idx) * spacingY
 
         // Fixed scale for mobile readability
         card.userData.baseScale = 0.75
