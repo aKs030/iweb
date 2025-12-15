@@ -36,29 +36,19 @@ export class CardManager {
 
     log.debug(`Found ${originalCards.length} cards to convert to WebGL`)
 
-    // Compute positions dynamically so cards fit the viewport and don't overlap
-    const cardCount = originalCards.length
     // Base geometry width/height in world units (smaller than before)
     const baseW = 2.2
     const baseH = 2.8
-    // Spacing between card centers (proportional to width)
-    const spacing = baseW * (cardCount > 2 ? 1.4 : 1.25)
-    const centerOffset = (cardCount - 1) / 2
-
-    const positions = Array.from({length: cardCount}).map((_, i) => {
-      return {
-        x: (i - centerOffset) * spacing,
-        y: 0,
-        z: 0,
-        color: ['#07a1ff', '#a107ff', '#ff07a1'][i] || '#ffffff'
-      }
-    })
+    const cardCount = originalCards.length
 
     // Shared geometry reused across cards to reduce memory / GC churn
     this._sharedGeometry = new this.THREE.PlaneGeometry(baseW, baseH)
 
     // Prepare shared glow texture (small radial gradient) once
     if (!this._sharedGlowTexture) this._sharedGlowTexture = this.createGlowTexture()
+
+    // Color palette matching the CSS or design
+    const colors = ['#07a1ff', '#a107ff', '#ff07a1']
 
     originalCards.forEach((cardEl, index) => {
       // Extract Data
@@ -70,6 +60,7 @@ export class CardManager {
       const text = rawText.replace(/\s+/g, ' ').trim()
       const link = cardEl.querySelector('.card-link')?.getAttribute('href') || '#'
       const iconChar = (cardEl.querySelector('.icon-wrapper i')?.innerText || '').trim()
+      const color = colors[index] || '#ffffff'
 
       const data = {
         id: index,
@@ -78,8 +69,7 @@ export class CardManager {
         text,
         link,
         iconChar,
-        color: positions[index]?.color || '#ffffff',
-        position: positions[index] || {x: 0, y: 0, z: 0}
+        color
       }
 
       const texture = this.createCardTexture(data)
@@ -92,18 +82,14 @@ export class CardManager {
       })
 
       const mesh = new this.THREE.Mesh(this._sharedGeometry, material)
-      // Start slightly lower for entrance animation
-      mesh.position.set(data.position.x, data.position.y - 0.8, data.position.z)
 
-      // Initial scale adjustment for small viewports
-      const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
-      mesh.scale.setScalar(0.95 * Math.max(0.4, viewportScale))
-
+      // Initial User Data
       mesh.userData = {
         isCard: true,
         link: data.link,
-        originalY: data.position.y,
-        hoverY: data.position.y + 0.5,
+        originalY: 0, // Will be set by updateLayout
+        baseScale: 1, // Will be set by updateLayout
+        hoverY: 0,    // Calculated dynamically in update relative to originalY
         targetOpacity: 1,
         id: data.id,
         entranceDelay: index * 80, // ms
@@ -130,33 +116,71 @@ export class CardManager {
       this.cards.push(mesh)
     })
 
+    // Perform initial layout calculation
+    if (typeof window !== 'undefined') {
+      this.updateLayout(window.innerWidth)
+    }
+
+    // Apply initial vertical offset for entrance animation
+    this.cards.forEach(card => {
+        card.position.y = card.userData.originalY - 0.8
+        // Initialize scale to avoid jump
+        card.scale.setScalar(card.userData.baseScale)
+    })
+
     if (this.isVisible) {
       this.cardGroup.visible = true
     }
 
-    // Recompute positions on resize to maintain spacing and fit (throttled via rAF)
+    // Recompute positions on resize (throttled via rAF)
     this._onResize = () => {
       if (this._resizeRAF) cancelAnimationFrame(this._resizeRAF)
       this._resizeRAF = requestAnimationFrame(() => {
-        const vw = window.innerWidth
-        const adaptiveScale = Math.min(1, vw / 1200)
-        // Allow tighter spacing on mobile (removed 0.85 floor)
-        const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.5, adaptiveScale)
-        this.cards.forEach((card, idx) => {
-          const x = (idx - centerOffset) * newSpacing
-          // Keep Z the same but nudge slightly to preserve depth order without overlap
-          card.position.x = x
-          // Allow smaller scale on mobile (removed 0.65 floor)
-          card.scale.setScalar(0.95 * Math.max(0.4, adaptiveScale))
-        })
+        this.updateLayout(window.innerWidth)
         this._resizeRAF = null
       })
     }
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this._onResize)
-      // Force initial layout update to ensure correct mobile spacing immediately
-      this._onResize()
+    }
+  }
+
+  updateLayout(vw) {
+    if (this.cards.length === 0) return
+
+    const isMobile = vw < 768
+    const cardCount = this.cards.length
+    const baseW = 2.2
+    const adaptiveScale = Math.min(1, vw / 1200)
+    const centerOffset = (cardCount - 1) / 2
+
+    if (isMobile) {
+      // Mobile: Vertical Stack (vary Y)
+      // Generous vertical spacing to prevent overlap
+      const spacingY = 3.2
+
+      this.cards.forEach((card, idx) => {
+        // Center horizontally
+        card.position.x = 0
+
+        // Stack vertically: Index 0 at top, increasing indices go down
+        // Camera looks at Y=0.5, so we center the stack roughly there.
+        // If centerOffset is 1 (3 cards), idx=1 is center.
+        card.userData.originalY = 0.5 + (centerOffset - idx) * spacingY
+
+        // Fixed scale for mobile readability
+        card.userData.baseScale = 0.75
+      })
+    } else {
+      // Desktop: Horizontal Row (vary X)
+      const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.5, adaptiveScale)
+
+      this.cards.forEach((card, idx) => {
+        card.position.x = (idx - centerOffset) * newSpacing
+        card.userData.originalY = 0
+        card.userData.baseScale = 0.95 * Math.max(0.4, adaptiveScale)
+      })
     }
   }
 
@@ -424,10 +448,18 @@ export class CardManager {
 
       // Compute target values
       let targetY = card.userData.originalY
-      let targetScale = 1.0
+
+      // Calculate hover lift relative to the original Y
+      card.userData.hoverY = card.userData.originalY + 0.5
       if (card === hoveredCard) {
         targetY = card.userData.hoverY
-        targetScale = 1.05
+      }
+
+      // Base scale logic (responsive)
+      const baseScale = card.userData.baseScale || 1.0
+      let targetScale = baseScale
+      if (card === hoveredCard) {
+        targetScale = baseScale * 1.05
       }
 
       // Apply position and scale easing
@@ -443,7 +475,8 @@ export class CardManager {
       this._orientDummy.rotateY(tiltY)
 
       this._tmpQuat.copy(this._orientDummy.quaternion)
-      card.quaternion.slerp(this._tmpQuat, 0.08)
+      // Faster lerp to track camera transitions (e.g. section change)
+      card.quaternion.slerp(this._tmpQuat, 0.20)
 
       // Glow pulsing
       if (card.userData.glow && card.userData.glow.material) {
