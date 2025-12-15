@@ -157,20 +157,24 @@ export class CardManager {
 
     if (isMobile) {
       // Mobile: Vertical Stack (vary Y)
-      // Generous vertical spacing to prevent overlap
-      const spacingY = 2.2
+      // Increased vertical spacing to prevent overlap and create gaps (requested ~2.6)
+      const spacingY = 2.6
 
       this.cards.forEach((card, idx) => {
         // Center horizontally
         card.position.x = 0
 
         // Stack vertically: Index 0 at top, increasing indices go down
-        // Camera looks at Y=0.5, so we center the stack roughly there.
-        // If centerOffset is 1 (3 cards), idx=1 is center.
-        card.userData.originalY = -0.5 + (centerOffset - idx) * spacingY
+        // Camera looks at Y=0.5. We center the stack slightly differently now
+        // to accommodate the larger spacing.
+        // centerOffset is 1 (for 3 cards).
+        // idx=0 -> Y = 0.5 + 2.6 = 3.1
+        // idx=1 -> Y = 0.5 + 0 = 0.5
+        // idx=2 -> Y = 0.5 - 2.6 = -2.1
+        card.userData.originalY = 0.5 + (centerOffset - idx) * spacingY
 
-        // Fixed scale for mobile readability
-        card.userData.baseScale = 0.75
+        // Reduced scale to fit the larger spacing within the viewport
+        card.userData.baseScale = 0.65
       })
     } else {
       // Desktop: Horizontal Row (vary X)
