@@ -174,7 +174,8 @@ export class CardManager {
         card.userData.originalY = 0.5 + (centerOffset - idx) * spacingY
 
         // Reduced scale to fit the larger spacing within the viewport
-        card.userData.baseScale = 0.65
+        // Slightly increased from 0.65 to 0.72 per user request ("wider")
+        card.userData.baseScale = 0.72
       })
     } else {
       // Desktop: Horizontal Row (vary X)
