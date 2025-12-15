@@ -616,7 +616,21 @@ export const EarthSystemAPI = {
   },
   get shootingStarManager() {
     return shootingStarManager
+  },
+  get cardManager() {
+    return cardManager
   }
 }
 export default ThreeEarthManager
 export {detectDeviceCapabilities, getOptimizedConfig}
+
+if (
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || new URLSearchParams(window.location.search).has('debug'))
+) {
+  window.threeEarthSystem = {
+    ...EarthSystemAPI,
+    initThreeEarth,
+    cleanup
+  }
+}

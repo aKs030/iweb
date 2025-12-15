@@ -97,7 +97,7 @@ export class CardManager {
 
       // Initial scale adjustment for small viewports
       const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
-      mesh.scale.setScalar(0.95 * Math.max(0.7, viewportScale))
+      mesh.scale.setScalar(0.95 * Math.max(0.4, viewportScale))
 
       mesh.userData = {
         isCard: true,
@@ -140,12 +140,14 @@ export class CardManager {
       this._resizeRAF = requestAnimationFrame(() => {
         const vw = window.innerWidth
         const adaptiveScale = Math.min(1, vw / 1200)
-        const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+        // Allow tighter spacing on mobile (removed 0.85 floor)
+        const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.5, adaptiveScale)
         this.cards.forEach((card, idx) => {
           const x = (idx - centerOffset) * newSpacing
           // Keep Z the same but nudge slightly to preserve depth order without overlap
           card.position.x = x
-          card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+          // Allow smaller scale on mobile (removed 0.65 floor)
+          card.scale.setScalar(0.95 * Math.max(0.4, adaptiveScale))
         })
         this._resizeRAF = null
       })
@@ -153,6 +155,8 @@ export class CardManager {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this._onResize)
+      // Force initial layout update to ensure correct mobile spacing immediately
+      this._onResize()
     }
   }
 
