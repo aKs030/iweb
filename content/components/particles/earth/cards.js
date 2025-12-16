@@ -36,8 +36,9 @@ export class CardManager {
 
     log.debug(`Found ${originalCards.length} cards to convert to WebGL`)
 
-    // Base geometry width/height in world units (smaller than before)
-    const baseW = 2.2
+    // Base geometry width/height in world units
+    // Increased width to 2.6 for a wider aspect ratio (less vertically stretched)
+    const baseW = 2.6
     const baseH = 2.8
     const cardCount = originalCards.length
 
@@ -151,31 +152,29 @@ export class CardManager {
 
     const isMobile = vw < 768
     const cardCount = this.cards.length
-    const baseW = 2.2
+    const baseW = 2.6 // Must match initFromDOM
     const adaptiveScale = Math.min(1, vw / 1200)
     const centerOffset = (cardCount - 1) / 2
 
     if (isMobile) {
       // Mobile: Vertical Stack (vary Y)
-      // Increased vertical spacing to prevent overlap and create gaps
+      // Spacing 2.75 fits the 2.8 height comfortably with small overlap/gap
       const spacingY = 2.75
 
       this.cards.forEach((card, idx) => {
         // Center horizontally
         card.position.x = 0
 
-        // Stack vertically: Index 0 at top, increasing indices go down
-        // Camera looks at Y=0.5. We center the stack slightly differently now
-        // to accommodate the larger spacing.
-        // centerOffset is 1 (for 3 cards).
+        // Stack vertically
         card.userData.originalY = 0.5 + (centerOffset - idx) * spacingY
 
-        // Increased scale to make cards horizontally wider on mobile
+        // Scale 0.82 ensures good width utilization on mobile with the wider aspect ratio
         card.userData.baseScale = 0.82
       })
     } else {
       // Desktop: Horizontal Row (vary X)
-      const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.5, adaptiveScale)
+      // Reduced multiplier slightly (1.4->1.3, 1.25->1.15) because cards are physically wider now
+      const newSpacing = baseW * (cardCount > 2 ? 1.3 : 1.15) * Math.max(0.5, adaptiveScale)
 
       this.cards.forEach((card, idx) => {
         card.position.x = (idx - centerOffset) * newSpacing
@@ -190,8 +189,12 @@ export class CardManager {
     const DPR = typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1
     // Scale aggressively on high-DPI displays for crisper text, clamped for performance
     const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4)
-    const W = 512 * S
+
+    // Updated resolution to match ~2.6 / 2.8 aspect ratio
+    // 640 / 700 = 0.914. Geometry 2.6 / 2.8 = 0.928. Close enough.
+    const W = 640 * S
     const H = 700 * S
+    const centerX = W / 2
 
     const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(W, H) : document.createElement('canvas')
     if (typeof OffscreenCanvas === 'undefined') {
@@ -215,12 +218,11 @@ export class CardManager {
 
     // 3. Icon Circle
     const iconY = 150 * S
-    const iconCenterX = 256 * S
     const iconRadius = 60 * S
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
     ctx.beginPath()
-    ctx.arc(iconCenterX, iconY, iconRadius, 0, Math.PI * 2)
+    ctx.arc(centerX, iconY, iconRadius, 0, Math.PI * 2)
     ctx.fill()
     ctx.strokeStyle = data.color
     ctx.lineWidth = 2 * S
@@ -231,27 +233,30 @@ export class CardManager {
     ctx.font = `${60 * S}px Arial`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S)
+    ctx.fillText(data.iconChar, centerX, iconY + 5 * S)
 
     // 5. Subtitle (fit to width)
     ctx.fillStyle = data.color
     const subtitleText = (data.subtitle || '').trim()
-    const subtitleSize = this.fitTextToWidth(ctx, subtitleText, 420 * S, 'bold', 24 * S, 12 * S)
+    // Increased max width for subtitle (W - 140*S padding)
+    const subtitleSize = this.fitTextToWidth(ctx, subtitleText, W - 140 * S, 'bold', 24 * S, 12 * S)
     ctx.font = `bold ${subtitleSize}px Arial`
-    ctx.fillText(subtitleText, iconCenterX, 280 * S)
+    ctx.fillText(subtitleText, centerX, 280 * S)
 
     // 6. Title (fit to width, prefer single line)
     ctx.fillStyle = '#ffffff'
     const titleText = (data.title || '').trim()
-    const titleSize = this.fitTextToWidth(ctx, titleText, 420 * S, 'bold', 48 * S, 20 * S)
+    // Increased max width for title
+    const titleSize = this.fitTextToWidth(ctx, titleText, W - 140 * S, 'bold', 48 * S, 20 * S)
     ctx.font = `bold ${titleSize}px Arial`
-    ctx.fillText(titleText, iconCenterX, 350 * S)
+    ctx.fillText(titleText, centerX, 350 * S)
 
-    // 7. Text (Wrapped) - reduce size slightly for long text
+    // 7. Text (Wrapped)
     ctx.fillStyle = '#cccccc'
     const baseTextSize = data.text && data.text.length > 160 ? Math.max(18 * S, 22 * S) : 30 * S
     ctx.font = `${baseTextSize}px Arial`
-    this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, Math.round(40 * S))
+    // Increased wrap width (W - 110*S padding)
+    this.wrapText(ctx, data.text, centerX, 450 * S, W - 110 * S, Math.round(40 * S))
 
     const texture = new this.THREE.CanvasTexture(canvas)
     // Use mipmaps + linear mipmap filtering for crisper downscaled rendering
@@ -307,10 +312,7 @@ export class CardManager {
   }
 
   drawStarBorder(ctx, x, y, w, h, r, color, scale) {
-    // Fine line - keeping it thin relative to the scaled size to appear "finer"
-    // Using 1.5 * scale would be proportional. Using just 1.5 or 2 makes it very thin on high res.
-    // Let's go with 1.5 pixels absolute thickness on the scaled canvas.
-    // Since we scale by 2, a 1.5px line is effectively 0.75px on the original geometry.
+    // Fine line
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
     ctx.lineWidth = 1.5
     this.roundRect(ctx, x, y, w, h, r)
@@ -338,9 +340,6 @@ export class CardManager {
       }
 
       // Smaller size for "finer" look.
-      // Original was: Math.random() * 2 + 0.5 (relative to 1x scale)
-      // We want it smaller.
-      // Let's try 0.5 to 2.0 pixels on the 2x canvas (0.25 to 1.0 effective).
       const size = Math.random() * 1.5 + 0.5
 
       ctx.fillStyle = Math.random() > 0.7 ? color : '#ffffff'
