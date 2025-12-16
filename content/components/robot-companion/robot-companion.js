@@ -510,10 +510,24 @@ class RobotCompanion {
         `
 
     container.style.opacity = '0'
+    container.style.visibility = 'hidden'
     container.style.transition = 'opacity 220ms ease'
     document.body.appendChild(container)
 
     this.dom.container = container
+
+    // Visibility Check: Ensure Robot is only shown after Loading Screen is gone
+    const checkLoadingScreen = () => {
+      const loader = document.getElementById('loadingScreen')
+      if (!loader || loader.classList.contains('hide') || getComputedStyle(loader).display === 'none') {
+        container.style.visibility = 'visible'
+        container.style.opacity = '1'
+      } else {
+        requestAnimationFrame(checkLoadingScreen)
+      }
+    }
+    // Start checking after a short delay to allow initial paint
+    setTimeout(checkLoadingScreen, 100)
     this.dom.window = document.getElementById('robot-chat-window')
     this.dom.bubble = document.getElementById('robot-bubble')
     this.dom.bubbleText = document.getElementById('robot-bubble-text')
