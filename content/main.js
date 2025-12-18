@@ -330,6 +330,12 @@ const LoadingScreenManager = (() => {
 
       announce('Anwendung geladen', {dedupe: true})
 
+      try {
+        document.body.classList.remove('global-loading-visible')
+      } catch {
+        /* ignore */
+      }
+
       perfMarks.loadingHidden = performance.now()
       log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`)
     }, delay)
@@ -457,13 +463,39 @@ document.addEventListener(
     perfMarks.modulesReady = performance.now()
     fire(EVENTS.MODULES_READY)
     checkReady()
+    ;(function scheduleSmartForceHide(attempt = 1) {
+      const INITIAL_DELAY = 5000
+      const RETRY_DELAY = 5000
+      const MAX_ATTEMPTS = 3
 
-    setTimeout(() => {
-      if (!windowLoaded) {
-        log.warn('Forcing loading screen hide after timeout')
-        LoadingScreenManager.hide()
-      }
-    }, 5000)
+      setTimeout(
+        () => {
+          if (windowLoaded) return
+
+          // If other modules registered as blocking, defer forced hide and retry
+          try {
+            if (AppLoadManager && typeof AppLoadManager.isBlocked === 'function' && AppLoadManager.isBlocked()) {
+              log.warn(
+                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${AppLoadManager.getPending().join(', ')}`
+              )
+
+              if (attempt < MAX_ATTEMPTS) {
+                scheduleSmartForceHide(attempt + 1)
+                return
+              }
+              log.warn('Max attempts reached - forcing hide despite blocking modules')
+            }
+          } catch (e) {
+            log.debug('AppLoadManager check failed:', e)
+          }
+
+          log.warn('Forcing loading screen hide after timeout')
+          // Force-hide now
+          LoadingScreenManager.hide()
+        },
+        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
+      )
+    })()
 
     schedulePersistentStorageRequest(2200)
 

@@ -34,6 +34,11 @@ export function showLoadingState(container) {
     })
     // Optionally set an aria message
     globals.screen.setAttribute('aria-live', 'polite')
+    try {
+      document.body.classList.add('global-loading-visible')
+    } catch {
+      /* ignore */
+    }
   } else {
     // Fallback: no local progress UI; do nothing.
   }
@@ -56,6 +61,11 @@ export function hideLoadingState(container) {
     // Reset visuals (after transition)
     setTimeout(() => {
       if (globals.screen) globals.screen.style.display = 'none'
+      try {
+        document.body.classList.remove('global-loading-visible')
+      } catch {
+        /* ignore */
+      }
     }, 300)
   } else {
     // No local progress UI to clear; do nothing.

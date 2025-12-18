@@ -120,8 +120,27 @@
 
         loaderWrapper.appendChild(spinner)
         // Prepend so loader sits above page content
-        if (document.body) document.body.prepend(loaderWrapper)
-        else document.addEventListener('DOMContentLoaded', () => document.body.prepend(loaderWrapper), {once: true})
+        if (document.body) {
+          document.body.prepend(loaderWrapper)
+          try {
+            document.body.classList.add('global-loading-visible')
+          } catch {
+            /* ignore */
+          }
+        } else {
+          document.addEventListener(
+            'DOMContentLoaded',
+            () => {
+              document.body.prepend(loaderWrapper)
+              try {
+                document.body.classList.add('global-loading-visible')
+              } catch {
+                /* ignore */
+              }
+            },
+            {once: true}
+          )
+        }
       }
     } catch (e) {
       // Non-critical: injection failure shouldn't break the page

@@ -1,30 +1,46 @@
-<div id="cards-container">
-  <!--
-    Pure HTML-only placeholder for the 3D cards.
-    The Three.js CardManager will read elements from here to create textures.
-  -->
+<!--
+  Card Templates - Ready for 3D Star Integration
+  Version 3.3.0
+-->
 
-  <!-- Card 1: Web Entwicklung -->
-  <div class="card-source" data-icon="code">
-    <h3>Web Entwicklung</h3>
-    <p>Experimente mit React, Three.js und modernen Web-Standards.</p>
-  </div>
+<!-- Template 1: Persönlicher Stil -->
+<template id="kart-1">
+  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+    <div class="features-content">
+      <ul class="features-cards">
+        <!-- Card 1: Über mich -->
+        <li class="card">
+          <a href="#about" class="card-link">
+            <div class="icon-wrapper" aria-hidden="true">
+              <i>👨‍💻</i>
+            </div>
+            <h3 class="card-title" data-eyebrow="ÜBER MICH">Über mich</h3>
+            <p class="card-text">Kurz &amp; knapp: Wer ich bin, was mich antreibt und meine Vision.</p>
+          </a>
+        </li>
 
-  <!-- Card 2: Interface Design -->
-  <div class="card-source" data-icon="palette">
-    <h3>Interface Design</h3>
-    <p>Gestaltung von intuitiven Benutzeroberflächen als Hobby.</p>
-  </div>
+        <!-- Card 2: Projekte -->
+        <li class="card">
+          <a href="/pages/projekte/projekte.html#project-1" class="card-link">
+            <div class="icon-wrapper" aria-hidden="true">
+              <i>🚀</i>
+            </div>
+            <h3 class="card-title" data-eyebrow="PROJEKTE">Projekte</h3>
+            <p class="card-text">Auswahl an Projekten Konzept, Umsetzung und Ergebnis.</p>
+          </a>
+        </li>
 
-  <!-- Card 3: 3D Experimente -->
-  <div class="card-source" data-icon="box">
-    <h3>3D Experimente</h3>
-    <p>Interaktive Welten im Browser. Shader-Spielereien und WebGL.</p>
+        <!-- Card 3: Fotos -->
+        <li class="card">
+          <a href="/pages/gallery/gallery.html" class="card-link">
+            <div class="icon-wrapper" aria-hidden="true">
+              <i>📸</i>
+            </div>
+            <h3 class="card-title" data-eyebrow="FOTOS">Fotos</h3>
+            <p class="card-text">Kurz gefasst: Ausschnitte aus meiner Sicht der Welt.</p>
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
-
-  <!-- Card 4: Hobby Fotografie -->
-  <div class="card-source" data-icon="camera">
-    <h3>Hobby Fotografie</h3>
-    <p>Meine Sicht der Welt durch die Linse festgehalten.</p>
-  </div>
-</div>
+</template>
