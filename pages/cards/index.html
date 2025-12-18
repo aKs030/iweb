@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Leistungen & Features — Abdulkerim Sesli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO Meta Tags -->
+    <meta
+      name="description"
+      content="Meine Leistungen: Creative Development, UI/UX Design, 3D Visualisierung und Fotografie." />
+    <meta name="keywords" content="Leistungen, Web Development, UI/UX, 3D Design, Fotografie, Abdulkerim Sesli" />
+    <link rel="canonical" href="https://abdulkerimsesli.de/pages/cards/index.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Leistungen & Features" />
+    <meta property="og:description" content="Übersicht meiner professionellen Dienstleistungen." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://abdulkerimsesli.de/pages/cards/index.html" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
+
+    <!-- Shared Head -->
+    <script src="/content/components/head/head-complete.js" type="module"></script>
+    <link rel="stylesheet" href="/pages/cards/karten.css" />
+
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .standalone-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 6rem 1.5rem;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(to right, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Override karten.css logic for standalone view if necessary */
+        #cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            width: 100%;
+        }
+        .card-source {
+            background: #111;
+            border: 1px solid #333;
+            padding: 2rem;
+            border-radius: 12px;
+            display: block !important; /* Force visibility */
+            position: relative !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        .card-source h3 {
+            color: #60a5fa;
+            font-size: 1.5rem;
+            margin-top: 0;
+        }
+        .card-source p {
+            color: #9ca3af;
+            line-height: 1.6;
+        }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
+
+    <main class="standalone-container">
+        <h1>Kompetenzen</h1>
+
+        <!-- Inject the partial content -->
+        <div id="cards-wrapper">
+             <!-- Content will be loaded dynamically or duplicated.
+                  For SEO, duplication here is better than JS loading if we want crawlers to see it immediately.
+                  I will duplicate the content from karten.html here for the standalone page.
+             -->
+            <div id="cards-container">
+              <div class="card-source" data-icon="code">
+                <h3>Creative Development</h3>
+                <p>Performante Web-Anwendungen mit React, Three.js und modernen Standards.</p>
+              </div>
+
+              <div class="card-source" data-icon="palette">
+                <h3>UI/UX Design</h3>
+                <p>Benutzerzentrierte Interfaces mit Fokus auf Barrierefreiheit und Ästhetik.</p>
+              </div>
+
+              <div class="card-source" data-icon="box">
+                <h3>3D Visualisierung</h3>
+                <p>Interaktive Welten im Browser. Shader-Programmierung und WebGL-Optimierung.</p>
+              </div>
+
+              <div class="card-source" data-icon="camera">
+                <h3>Fotografie</h3>
+                <p>Visuelles Storytelling durch professionelle Bildkomposition und Bearbeitung.</p>
+              </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Container -->
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
+  </body>
+</html>
