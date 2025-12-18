@@ -26,8 +26,9 @@
     <script src="/content/components/head/head-complete.js" type="module"></script>
 
     <!-- React & Libraries (Production) -->
-    <script crossorigin src="/content/vendor/react.production.min.js"></script>
-    <script crossorigin src="/content/vendor/react-dom.production.min.js"></script>
+    <!-- Use CDN to ensure reliable loading in all environments -->
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   </head>
   <body>
     <!-- Header -->
