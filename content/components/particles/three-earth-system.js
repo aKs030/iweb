@@ -78,8 +78,48 @@ const ThreeEarthManager = (() => {
 
       registerParticleSystem('three-earth', {type: 'three-earth'})
 
+      // Register as a potentially blocking module while initializing
+      try {
+        AppLoadManager.block('three-earth')
+      } catch {
+        /* ignore */
+      }
+
+      // Watchdog: if Three.js doesn't load within this time, unblock to avoid blocking page loader
+      const THREE_LOAD_WATCH = 8000
+      let threeLoadWatchTimer = null
+      try {
+        threeLoadWatchTimer = earthTimers.setTimeout(() => {
+          if (!THREE_INSTANCE) {
+            log.warn('Three.js load taking too long — unblocking three-earth to avoid blocking global loader')
+            try {
+              AppLoadManager.unblock('three-earth')
+            } catch {
+              /* ignore */
+            }
+            try {
+              showErrorState(container, new Error('Three.js load timeout'), () => {
+                cleanup()
+                initThreeEarth()
+              })
+            } catch {
+              /* ignore */
+            }
+          }
+        }, THREE_LOAD_WATCH)
+      } catch {
+        /* ignore */
+      }
+
       // Load Three.js
       THREE_INSTANCE = await loadThreeJS()
+
+      // Clear watchdog if load completed
+      try {
+        if (threeLoadWatchTimer) earthTimers.clearTimeout(threeLoadWatchTimer)
+      } catch {
+        /* ignore */
+      }
 
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
       if (!isSystemActive) return cleanup
@@ -106,11 +146,21 @@ const ThreeEarthManager = (() => {
 
       loadingManager.onLoad = () => {
         if (!isSystemActive) return
+        try {
+          AppLoadManager.unblock('three-earth')
+        } catch {
+          /* ignore */
+        }
         hideLoadingState(container)
       }
 
       loadingManager.onError = url => {
         log.warn('Error loading texture:', url)
+        try {
+          AppLoadManager.unblock('three-earth')
+        } catch {
+          /* ignore */
+        }
       }
 
       // Stars
