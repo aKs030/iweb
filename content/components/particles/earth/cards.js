@@ -371,7 +371,15 @@ export class CardManager {
 
   setProgress(progress) {
     const p = Math.max(0, Math.min(1, progress || 0))
+    const wasVisible = this.cardGroup.visible
     this.cardGroup.visible = p > 0.01
+
+    // If becoming visible right now, snap cards to face the camera to avoid
+    // a brief incorrect orientation during the entrance animation.
+    if (this.cardGroup.visible && !wasVisible) {
+      this.alignCardsToCameraImmediate()
+    }
+
     this.cards.forEach(card => {
       // account for per-card stagger using entranceDelay
       const stagger = (card.userData.entranceDelay || 0) / 800
@@ -432,7 +440,7 @@ export class CardManager {
       card.rotation.x += (tiltX - card.rotation.x) * 0.12
       card.rotation.y += (tiltY - card.rotation.y) * 0.12
 
-      // Ensure the cards generally face the camera (soft lookAt via rotation lerp)
+        // Ensure the cards generally face the camera (soft lookAt via rotation lerp)
       this.camera.getWorldPosition(this._tmpVec)
       this._orientDummy.position.copy(card.position)
       this._orientDummy.lookAt(this._tmpVec)
@@ -464,6 +472,19 @@ export class CardManager {
         window.location.href = link
       }
     }
+  }
+
+  alignCardsToCameraImmediate() {
+    // Immediately orient all cards to face the current camera position. This
+    // avoids a brief flash where cards look in the wrong direction when they
+    // become visible while the camera orients during section transitions.
+    if (!this.camera) return
+    this.camera.getWorldPosition(this._tmpVec)
+    this.cards.forEach(card => {
+      this._orientDummy.position.copy(card.position)
+      this._orientDummy.lookAt(this._tmpVec)
+      card.quaternion.copy(this._orientDummy.quaternion)
+    })
   }
 
   cleanup() {
