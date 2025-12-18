@@ -440,12 +440,20 @@ export class CardManager {
       card.rotation.x += (tiltX - card.rotation.x) * 0.12
       card.rotation.y += (tiltY - card.rotation.y) * 0.12
 
-        // Ensure the cards generally face the camera (soft lookAt via rotation lerp)
+        // Ensure the cards face the camera horizontally (no pitch) to avoid
+      // them tilting up/down during rapid camera transitions.
       this.camera.getWorldPosition(this._tmpVec)
+
+      // Create a flattened camera position that preserves the card's Y (height)
+      // so lookAt only rotates around the vertical axis (yaw).
+      const camFlat = new this.THREE.Vector3(this._tmpVec.x, card.position.y, this._tmpVec.z)
+
       this._orientDummy.position.copy(card.position)
-      this._orientDummy.lookAt(this._tmpVec)
+      this._orientDummy.lookAt(camFlat)
       this._tmpQuat.copy(this._orientDummy.quaternion)
-      card.quaternion.slerp(this._tmpQuat, 0.08)
+
+      // Slightly snappier slerp to reduce visible lag during repeated section switches
+      card.quaternion.slerp(this._tmpQuat, 0.12)
 
       // Glow pulsing
       if (card.userData.glow && card.userData.glow.material) {
@@ -482,7 +490,8 @@ export class CardManager {
     this.camera.getWorldPosition(this._tmpVec)
     this.cards.forEach(card => {
       this._orientDummy.position.copy(card.position)
-      this._orientDummy.lookAt(this._tmpVec)
+      const camFlat = new this.THREE.Vector3(this._tmpVec.x, card.position.y, this._tmpVec.z)
+      this._orientDummy.lookAt(camFlat)
       card.quaternion.copy(this._orientDummy.quaternion)
     })
   }
