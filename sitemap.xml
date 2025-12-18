@@ -11,10 +11,49 @@
       <image:title>Abdulkerim — Digital Creator Portfolio</image:title>
       <image:caption>Web Developer and Photographer Portfolio</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://abdulkerimsesli.de/pages/blog/</loc>
+    <lastmod>2025-12-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
     <image:image>
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.svg</image:loc>
-      <image:title>Abdulkerim — Digital Creator Profile</image:title>
-      <image:caption>Professional profile photo</image:caption>
+      <image:title>Blog — Abdulkerim Sesli</image:title>
+      <image:caption>Einblicke in Web-Entwicklung und Design</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://abdulkerimsesli.de/pages/projekte/projekte.html</loc>
+    <lastmod>2025-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.svg</image:loc>
+      <image:title>Projekte — Abdulkerim Sesli</image:title>
+      <image:caption>Meine aktuellen Software-Projekte</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://abdulkerimsesli.de/pages/gallery/gallery.html</loc>
+    <lastmod>2025-11-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.svg</image:loc>
+      <image:title>Fotogalerie — Abdulkerim Sesli</image:title>
+      <image:caption>Urban Photography und Landschaften</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://abdulkerimsesli.de/pages/cards/index.html</loc>
+    <lastmod>2025-11-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.svg</image:loc>
+      <image:title>Interessen & Skills — Abdulkerim Sesli</image:title>
+      <image:caption>Meine technischen Interessen</image:caption>
     </image:image>
   </url>
 </urlset>
