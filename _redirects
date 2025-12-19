@@ -1,0 +1,33 @@
+# Cloudflare Pages / Netlify style redirects
+# Purpose: canonicalize folder URLs, remove index.html and .html endings where desired
+# All redirects are permanent (301)
+
+# Remove index.html explicit mappings
+/index.html          /              301
+/blog/index.html     /blog/         301
+/projekte/index.html /projekte/     301
+/gallery/index.html  /gallery/      301
+
+# Remove specific HTML pages under /pages to clean folder URLs
+/pages/projekte/projekte.html   /projekte/    301
+/pages/gallery/gallery.html     /gallery/     301
+/pages/blog/index.html          /blog/        301
+
+# Generic: normalize any /something/index.html -> /something/
+# :splat captures the folder path (may be empty for root, handled above)
+/:splat/index.html  /:splat/  301
+
+# Optional: normalize domain and protocol to https://abdulkerimsesli.de
+http://abdulkerimsesli.de/*           https://abdulkerimsesli.de/:splat   301
+https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
+
+# Optional: remove .html suffix site-wide (use with caution)
+# Uncomment if you want every /foo.html -> /foo/ permanent redirect
+/:splat.html  /:splat/  301
+
+# Explicit mappings to ensure safe global .html removal
+/pages/about/about.html        /about/      301
+/pages/cards/karten.html       /karten/     301
+/pages/gallery/gallery.html    /gallery/    301
+/pages/home/hero.html          /            301
+/pages/projekte/projekte.html  /projekte/   301
