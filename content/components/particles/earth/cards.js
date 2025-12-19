@@ -97,7 +97,8 @@ export class CardManager {
 
       // Initial scale adjustment for small viewports
       const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
-      mesh.scale.setScalar(0.95 * Math.max(0.7, viewportScale))
+      // Increased minimum scale from 0.7 to 0.85 for better legibility on mobile
+      mesh.scale.setScalar(0.95 * Math.max(0.85, viewportScale))
 
       mesh.userData = {
         isCard: true,
@@ -109,7 +110,10 @@ export class CardManager {
         entranceDelay: index * 80, // ms
         entranceProgress: 0,
         hoverProgress: 0,
-        parallaxStrength: 0.14
+        parallaxStrength: 0.14,
+        // Rotation State for smooth composition
+        currentTiltX: 0,
+        currentTiltY: 0
       }
 
       // Glow sprite with shared texture, tinted per card
@@ -139,13 +143,38 @@ export class CardManager {
       if (this._resizeRAF) cancelAnimationFrame(this._resizeRAF)
       this._resizeRAF = requestAnimationFrame(() => {
         const vw = window.innerWidth
-        const adaptiveScale = Math.min(1, vw / 1200)
-        const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+        const isMobile = vw < 768
+
         this.cards.forEach((card, idx) => {
-          const x = (idx - centerOffset) * newSpacing
-          // Keep Z the same but nudge slightly to preserve depth order without overlap
-          card.position.x = x
-          card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+          if (isMobile) {
+            // Mobile: Vertical Stack
+            const scale = 0.82
+            // Increased spacing slightly for cleaner layout (2.75 -> 2.9)
+            const spacingY = 2.9
+            // Stack from top to bottom
+            const y = (centerOffset - idx) * spacingY
+
+            card.scale.setScalar(scale)
+            card.position.x = 0
+            card.position.y = y
+
+            // Update metadata for animation loop
+            card.userData.originalY = y
+            card.userData.hoverY = y + 0.2 // Reduced hover lift on mobile
+          } else {
+             // Desktop: Horizontal Row
+             const adaptiveScale = Math.min(1, vw / 1200)
+             const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+             const x = (idx - centerOffset) * newSpacing
+
+             card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+             card.position.x = x
+             card.position.y = 0
+
+             // Reset metadata
+             card.userData.originalY = 0
+             card.userData.hoverY = 0.5
+          }
         })
         this._resizeRAF = null
       })
@@ -153,6 +182,8 @@ export class CardManager {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this._onResize)
+      // Force initial layout
+      this._onResize()
     }
   }
 
@@ -403,6 +434,8 @@ export class CardManager {
       document.body.style.cursor = hoveredCard ? 'pointer' : ''
     }
 
+    this.camera.getWorldPosition(this._tmpVec)
+
     this.cards.forEach(card => {
       // Entrance progress (staggered)
       const targetEntrance = typeof card.userData.entranceTarget === 'number' ? card.userData.entranceTarget : this.isVisible ? 1 : 0
@@ -421,10 +454,14 @@ export class CardManager {
 
       // Parallax tilt based on mouse position when hovered
       const parallax = card.userData.parallaxStrength || 0.12
-      const tiltX = -mousePos.y * parallax * card.userData.hoverProgress
-      const tiltY = mousePos.x * parallax * card.userData.hoverProgress * 0.8
+      const targetTiltX = -mousePos.y * parallax * card.userData.hoverProgress
+      const targetTiltY = mousePos.x * parallax * card.userData.hoverProgress * 0.8
 
-      // Compute target values
+      // Smoothly update tilt state (Euler angles)
+      card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.12
+      card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.12
+
+      // Compute target values for Position/Scale
       let targetY = card.userData.originalY
       let targetScale = 1.0
       if (card === hoveredCard) {
@@ -436,24 +473,25 @@ export class CardManager {
       card.position.y += (targetY + floatY - card.position.y) * 0.12
       card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.12)
 
-      // Smooth rotation/tilt
-      card.rotation.x += (tiltX - card.rotation.x) * 0.12
-      card.rotation.y += (tiltY - card.rotation.y) * 0.12
+      // --- Orientation Logic ---
 
-        // Ensure the cards face the camera horizontally (no pitch) to avoid
-      // them tilting up/down during rapid camera transitions.
-      this.camera.getWorldPosition(this._tmpVec)
-
-      // Create a flattened camera position that preserves the card's Y (height)
-      // so lookAt only rotates around the vertical axis (yaw).
-      const camFlat = new this.THREE.Vector3(this._tmpVec.x, card.position.y, this._tmpVec.z)
-
+      // 1. Calculate Base Rotation (Upright / Billboard on Y-axis)
+      // Project camera position to the card's horizontal plane
       this._orientDummy.position.copy(card.position)
-      this._orientDummy.lookAt(camFlat)
-      this._tmpQuat.copy(this._orientDummy.quaternion)
+      // Look at camera x/z but same y as card to stay vertical
+      this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z)
+      const qBase = this._orientDummy.quaternion.clone()
 
-      // Slightly snappier slerp to reduce visible lag during repeated section switches
-      card.quaternion.slerp(this._tmpQuat, 0.12)
+      // 2. Calculate Tilt Rotation (Local perturbation from mouse)
+      // Create a quaternion representing the local tilt
+      const qTilt = new this.THREE.Quaternion()
+      qTilt.setFromEuler(new this.THREE.Euler(card.userData.currentTiltX, card.userData.currentTiltY, 0, 'XYZ'))
+
+      // 3. Combine: Base * Tilt
+      qBase.multiply(qTilt)
+
+      // 4. Smoothly interpolate current quaternion to target
+      card.quaternion.slerp(qBase, 0.12)
 
       // Glow pulsing
       if (card.userData.glow && card.userData.glow.material) {
@@ -483,16 +521,16 @@ export class CardManager {
   }
 
   alignCardsToCameraImmediate() {
-    // Immediately orient all cards to face the current camera position. This
-    // avoids a brief flash where cards look in the wrong direction when they
-    // become visible while the camera orients during section transitions.
+    // Immediately orient all cards to face the current camera position (projected upright).
     if (!this.camera) return
     this.camera.getWorldPosition(this._tmpVec)
     this.cards.forEach(card => {
       this._orientDummy.position.copy(card.position)
-      const camFlat = new this.THREE.Vector3(this._tmpVec.x, card.position.y, this._tmpVec.z)
-      this._orientDummy.lookAt(camFlat)
+      this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z)
       card.quaternion.copy(this._orientDummy.quaternion)
+      // Reset tilt state
+      card.userData.currentTiltX = 0
+      card.userData.currentTiltY = 0
     })
   }
 
