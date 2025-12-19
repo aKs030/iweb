@@ -97,7 +97,8 @@ export class CardManager {
 
       // Initial scale adjustment for small viewports
       const viewportScale = Math.min(1, (typeof window !== 'undefined' ? window.innerWidth : 1200) / 1200)
-      mesh.scale.setScalar(0.95 * Math.max(0.7, viewportScale))
+      // Increased minimum scale from 0.7 to 0.85 for better legibility on mobile
+      mesh.scale.setScalar(0.95 * Math.max(0.85, viewportScale))
 
       mesh.userData = {
         isCard: true,
@@ -139,13 +140,37 @@ export class CardManager {
       if (this._resizeRAF) cancelAnimationFrame(this._resizeRAF)
       this._resizeRAF = requestAnimationFrame(() => {
         const vw = window.innerWidth
-        const adaptiveScale = Math.min(1, vw / 1200)
-        const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+        const isMobile = vw < 768
+
         this.cards.forEach((card, idx) => {
-          const x = (idx - centerOffset) * newSpacing
-          // Keep Z the same but nudge slightly to preserve depth order without overlap
-          card.position.x = x
-          card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+          if (isMobile) {
+            // Mobile: Vertical Stack
+            const scale = 0.82
+            const spacingY = 2.75
+            // Stack from top to bottom
+            const y = (centerOffset - idx) * spacingY
+
+            card.scale.setScalar(scale)
+            card.position.x = 0
+            card.position.y = y
+
+            // Update metadata for animation loop
+            card.userData.originalY = y
+            card.userData.hoverY = y + 0.2 // Reduced hover lift on mobile
+          } else {
+             // Desktop: Horizontal Row
+             const adaptiveScale = Math.min(1, vw / 1200)
+             const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+             const x = (idx - centerOffset) * newSpacing
+
+             card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+             card.position.x = x
+             card.position.y = 0
+
+             // Reset metadata
+             card.userData.originalY = 0
+             card.userData.hoverY = 0.5
+          }
         })
         this._resizeRAF = null
       })
@@ -153,6 +178,8 @@ export class CardManager {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', this._onResize)
+      // Force initial layout
+      this._onResize()
     }
   }
 
@@ -440,16 +467,11 @@ export class CardManager {
       card.rotation.x += (tiltX - card.rotation.x) * 0.12
       card.rotation.y += (tiltY - card.rotation.y) * 0.12
 
-        // Ensure the cards face the camera horizontally (no pitch) to avoid
-      // them tilting up/down during rapid camera transitions.
+      // Ensure the cards face the camera directly (including pitch)
       this.camera.getWorldPosition(this._tmpVec)
 
-      // Create a flattened camera position that preserves the card's Y (height)
-      // so lookAt only rotates around the vertical axis (yaw).
-      const camFlat = new this.THREE.Vector3(this._tmpVec.x, card.position.y, this._tmpVec.z)
-
       this._orientDummy.position.copy(card.position)
-      this._orientDummy.lookAt(camFlat)
+      this._orientDummy.lookAt(this._tmpVec)
       this._tmpQuat.copy(this._orientDummy.quaternion)
 
       // Slightly snappier slerp to reduce visible lag during repeated section switches
@@ -490,8 +512,7 @@ export class CardManager {
     this.camera.getWorldPosition(this._tmpVec)
     this.cards.forEach(card => {
       this._orientDummy.position.copy(card.position)
-      const camFlat = new this.THREE.Vector3(this._tmpVec.x, card.position.y, this._tmpVec.z)
-      this._orientDummy.lookAt(camFlat)
+      this._orientDummy.lookAt(this._tmpVec)
       card.quaternion.copy(this._orientDummy.quaternion)
     })
   }
