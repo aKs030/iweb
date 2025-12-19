@@ -441,8 +441,7 @@ export class CardManager {
       const projectedHeight = (2.8 / distance) * Math.tan(fovRad / 2) * 2 * 1.2 // Base height with buffer
 
       // Check if mouse is within card rectangle
-      if (Math.abs(mousePos.x - screenPos.x) < projectedWidth / 2 &&
-          Math.abs(mousePos.y - screenPos.y) < projectedHeight / 2) {
+      if (Math.abs(mousePos.x - screenPos.x) < projectedWidth / 2 && Math.abs(mousePos.y - screenPos.y) < projectedHeight / 2) {
         // Calculate distance from center
         const distanceToMouse = Math.sqrt((mousePos.x - screenPos.x) ** 2 + (mousePos.y - screenPos.y) ** 2)
         if (distanceToMouse < minDistance) {
@@ -464,7 +463,8 @@ export class CardManager {
     // Debounce hover to prevent flickering from rapid mouse movements
     if (candidate === this._hoverCandidate) {
       this._hoverFrames++
-      if (this._hoverFrames >= 3) { // Stable for 3 frames
+      if (this._hoverFrames >= 3) {
+        // Stable for 3 frames
         if (candidate !== this._hovered) {
           this._hovered = candidate
           document.body.style.cursor = candidate ? 'pointer' : ''
