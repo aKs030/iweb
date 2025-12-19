@@ -162,18 +162,18 @@ export class CardManager {
             card.userData.originalY = y
             card.userData.hoverY = y + 0.2 // Reduced hover lift on mobile
           } else {
-             // Desktop: Horizontal Row
-             const adaptiveScale = Math.min(1, vw / 1200)
-             const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
-             const x = (idx - centerOffset) * newSpacing
+            // Desktop: Horizontal Row
+            const adaptiveScale = Math.min(1, vw / 1200)
+            const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale)
+            const x = (idx - centerOffset) * newSpacing
 
-             card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
-             card.position.x = x
-             card.position.y = 0
+            card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale))
+            card.position.x = x
+            card.position.y = 0
 
-             // Reset metadata
-             card.userData.originalY = 0
-             card.userData.hoverY = 0.5
+            // Reset metadata
+            card.userData.originalY = 0
+            card.userData.hoverY = 0.5
           }
         })
         this._resizeRAF = null
