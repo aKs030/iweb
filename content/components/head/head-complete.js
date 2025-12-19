@@ -44,6 +44,31 @@
       existingTitleEl.remove()
     }
 
+    // 5b. Meta-Tags Deduplizierung:
+    // Wenn die Seite bereits spezifische Meta-Tags hat (z.B. description, keywords),
+    // sollen diese NICHT durch die generischen aus head.html überschrieben/gedoppelt werden.
+    const fragmentMetas = Array.from(fragment.querySelectorAll('meta'))
+    fragmentMetas.forEach(meta => {
+      const name = meta.getAttribute('name')
+      const property = meta.getAttribute('property')
+
+      // Check name (description, keywords, author, etc.)
+      if (name) {
+        // Exclude viewport/charset as they are standard
+        if (['viewport', 'charset'].includes(name)) return
+
+        if (document.querySelector(`meta[name="${name}"]`)) {
+          meta.remove() // Behalte das existierende Tag der Seite
+        }
+      }
+      // Check property (OG tags)
+      else if (property) {
+        if (document.querySelector(`meta[property="${property}"]`)) {
+          meta.remove()
+        }
+      }
+    })
+
     // 6. Einfügepunkt finden (<!-- SHARED_HEAD -->)
     let inserted = false
     const childNodes = Array.from(document.head.childNodes)
