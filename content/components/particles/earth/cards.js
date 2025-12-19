@@ -14,6 +14,8 @@ export class CardManager {
 
     // Internal state
     this._hovered = null
+    this._hoverCandidate = null
+    this._hoverFrames = 0
     this._resizeRAF = null
     this._sharedGeometry = null
     this._sharedGlowTexture = null
@@ -422,36 +424,80 @@ export class CardManager {
     })
   }
 
+  // New robust hover detection based on projected screen rectangles
+  getHoveredCardFromScreen(mousePos) {
+    let closestCard = null
+    let minDistance = Infinity
+
+    this.cards.forEach(card => {
+      // Project card position to screen space
+      const screenPos = card.position.clone()
+      screenPos.project(this.camera)
+
+      // Calculate dynamic card dimensions based on distance
+      const distance = this.camera.position.distanceTo(card.position)
+      const fovRad = (this.camera.fov * Math.PI) / 180
+      const projectedWidth = (2.2 / distance) * Math.tan(fovRad / 2) * 2 * 1.2 // Base width with buffer
+      const projectedHeight = (2.8 / distance) * Math.tan(fovRad / 2) * 2 * 1.2 // Base height with buffer
+
+      // Check if mouse is within card rectangle
+      if (Math.abs(mousePos.x - screenPos.x) < projectedWidth / 2 &&
+          Math.abs(mousePos.y - screenPos.y) < projectedHeight / 2) {
+        // Calculate distance from center
+        const distanceToMouse = Math.sqrt((mousePos.x - screenPos.x) ** 2 + (mousePos.y - screenPos.y) ** 2)
+        if (distanceToMouse < minDistance) {
+          minDistance = distanceToMouse
+          closestCard = card
+        }
+      }
+    })
+
+    return closestCard
+  }
+
   update(time, mousePos) {
     if (!this.cardGroup.visible) return
 
-    this.raycaster.setFromCamera(mousePos, this.camera)
-    const intersects = this.raycaster.intersectObjects(this.cards)
-    const hoveredCard = intersects.length > 0 ? intersects[0].object : null
+    // Use new screen-based hover detection instead of raycaster
+    const candidate = this.getHoveredCardFromScreen(mousePos)
 
-    // Cursor handling - avoid redundant style writes
-    if (hoveredCard !== this._hovered) {
-      this._hovered = hoveredCard
-      document.body.style.cursor = hoveredCard ? 'pointer' : ''
+    // Debounce hover to prevent flickering from rapid mouse movements
+    if (candidate === this._hoverCandidate) {
+      this._hoverFrames++
+      if (this._hoverFrames >= 3) { // Stable for 3 frames
+        if (candidate !== this._hovered) {
+          this._hovered = candidate
+          document.body.style.cursor = candidate ? 'pointer' : ''
+        }
+      }
+    } else {
+      this._hoverCandidate = candidate
+      this._hoverFrames = 0
     }
+
+    const hoveredCard = this._hovered
 
     this.camera.getWorldPosition(this._tmpVec)
 
     this.cards.forEach(card => {
       // Entrance progress (staggered)
       const targetEntrance = typeof card.userData.entranceTarget === 'number' ? card.userData.entranceTarget : this.isVisible ? 1 : 0
-      card.userData.entranceProgress += (targetEntrance - card.userData.entranceProgress) * 0.06
+      card.userData.entranceProgress += (targetEntrance - card.userData.entranceProgress) * 0.02
 
       // 1. Opacity Animation influenced by entrance progress
       const baseOpacity = card.userData.targetOpacity || 1
       card.material.opacity = baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress)
 
-      // 2. Float Animation
-      const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.06
+      // 2. Float Animation (reduced when hovered to prevent interference)
+      const floatY = Math.sin(time * 0.001 + card.userData.id) * 0.06 * (1 - card.userData.hoverProgress * 0.7)
 
-      // Hover progress smoothing
-      const hoverTarget = card === hoveredCard ? 1 : 0
-      card.userData.hoverProgress += (hoverTarget - card.userData.hoverProgress) * 0.12
+      // Hover progress smoothing with hysteresis to prevent flickering
+      const isHovered = card === hoveredCard
+      let hoverTarget = isHovered ? 1 : 0
+      if (!isHovered && card.userData.hoverProgress > 0.5) {
+        hoverTarget = card.userData.hoverProgress // Maintain current progress to avoid sudden drops
+      }
+      card.userData.hoverProgress += (hoverTarget - card.userData.hoverProgress) * 0.04
 
       // Parallax tilt based on mouse position when hovered
       const parallax = card.userData.parallaxStrength || 0.12
@@ -459,8 +505,8 @@ export class CardManager {
       const targetTiltY = mousePos.x * parallax * card.userData.hoverProgress * 0.8
 
       // Smoothly update tilt state (Euler angles)
-      card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.12
-      card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.12
+      card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.04
+      card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.04
 
       // Compute target values for Position/Scale
       let targetY = card.userData.originalY
@@ -471,8 +517,8 @@ export class CardManager {
       }
 
       // Apply position and scale easing
-      card.position.y += (targetY + floatY - card.position.y) * 0.12
-      card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.12)
+      card.position.y += (targetY + floatY - card.position.y) * 0.04
+      card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.04)
 
       // --- Orientation Logic ---
 
@@ -493,7 +539,7 @@ export class CardManager {
       this._tmpQuat.multiply(this._tmpQuat2)
 
       // 4. Smoothly interpolate current quaternion to target
-      card.quaternion.slerp(this._tmpQuat, 0.12)
+      card.quaternion.slerp(this._tmpQuat, 0.04)
 
       // Glow pulsing
       if (card.userData.glow && card.userData.glow.material) {
@@ -511,11 +557,11 @@ export class CardManager {
   handleClick(mousePos) {
     if (!this.isVisible) return
 
-    this.raycaster.setFromCamera(mousePos, this.camera)
-    const intersects = this.raycaster.intersectObjects(this.cards)
+    // Use the same screen-based detection as hover
+    const clickedCard = this.getHoveredCardFromScreen(mousePos)
 
-    if (intersects.length > 0) {
-      const link = intersects[0].object.userData.link
+    if (clickedCard) {
+      const link = clickedCard.userData.link
       if (link) {
         window.location.href = link
       }
