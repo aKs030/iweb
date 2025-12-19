@@ -17,9 +17,10 @@ export class CardManager {
     this._resizeRAF = null
     this._sharedGeometry = null
     this._sharedGlowTexture = null
-    this._tempCanvas = null
     this._tmpVec = new THREE.Vector3()
     this._tmpQuat = new THREE.Quaternion()
+    this._tmpQuat2 = new THREE.Quaternion()
+    this._tmpEuler = new THREE.Euler()
     this._orientDummy = new THREE.Object3D()
 
     // Group to hold all cards
@@ -480,18 +481,19 @@ export class CardManager {
       this._orientDummy.position.copy(card.position)
       // Look at camera x/z but same y as card to stay vertical
       this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z)
-      const qBase = this._orientDummy.quaternion.clone()
+      // Reuse this._tmpQuat for the base rotation
+      this._tmpQuat.copy(this._orientDummy.quaternion)
 
       // 2. Calculate Tilt Rotation (Local perturbation from mouse)
-      // Create a quaternion representing the local tilt
-      const qTilt = new this.THREE.Quaternion()
-      qTilt.setFromEuler(new this.THREE.Euler(card.userData.currentTiltX, card.userData.currentTiltY, 0, 'XYZ'))
+      // Use re-usable Euler and Quaternion to avoid garbage
+      this._tmpEuler.set(card.userData.currentTiltX, card.userData.currentTiltY, 0, 'XYZ')
+      this._tmpQuat2.setFromEuler(this._tmpEuler)
 
       // 3. Combine: Base * Tilt
-      qBase.multiply(qTilt)
+      this._tmpQuat.multiply(this._tmpQuat2)
 
       // 4. Smoothly interpolate current quaternion to target
-      card.quaternion.slerp(qBase, 0.12)
+      card.quaternion.slerp(this._tmpQuat, 0.12)
 
       // Glow pulsing
       if (card.userData.glow && card.userData.glow.material) {
