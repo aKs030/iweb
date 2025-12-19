@@ -1,46 +1,100 @@
-<!--
-  Card Templates - Ready for 3D Star Integration
-  Version 3.3.0
--->
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Interessen & Skills</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Übersicht meiner Interessen und Skills. Erfahre mehr über meine Projekte, Fotografie und mich persönlich. Privates Portfolio von Abdulkerim Sesli." />
+    <meta
+      name="keywords"
+      content="Interessen, Skills, Über mich, Projekte, Fotografie, Abdulkerim Sesli, Abdul Berlin, Portfolio" />
+    <link rel="canonical" href="https://abdulkerimsesli.de/pages/cards/index.html" />
 
-<!-- Template 1: Persönlicher Stil -->
-<template id="kart-1">
-  <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="features-content">
-      <ul class="features-cards">
-        <!-- Card 1: Über mich -->
-        <li class="card">
-          <a href="#about" class="card-link">
-            <div class="icon-wrapper" aria-hidden="true">
-              <i>👨‍💻</i>
-            </div>
-            <h3 class="card-title" data-eyebrow="ÜBER MICH">Über mich</h3>
-            <p class="card-text">Kurz &amp; knapp: Wer ich bin, was mich antreibt und meine Vision.</p>
-          </a>
-        </li>
+    <!-- Open Graph -->
+    <meta property="og:title" content="Interessen & Skills" />
+    <meta
+      property="og:description"
+      content="Übersicht meiner Interessen und Skills. Erfahre mehr über meine Projekte, Fotografie und mich persönlich." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.svg" />
 
-        <!-- Card 2: Projekte -->
-        <li class="card">
-          <a href="/pages/projekte/projekte.html#project-1" class="card-link">
-            <div class="icon-wrapper" aria-hidden="true">
-              <i>🚀</i>
-            </div>
-            <h3 class="card-title" data-eyebrow="PROJEKTE">Projekte</h3>
-            <p class="card-text">Auswahl an Projekten Konzept, Umsetzung und Ergebnis.</p>
-          </a>
-        </li>
+    <!-- Shared Head -->
+    <script src="/content/components/head/head-complete.js" type="module"></script>
 
-        <!-- Card 3: Fotos -->
-        <li class="card">
-          <a href="/pages/gallery/gallery.html" class="card-link">
-            <div class="icon-wrapper" aria-hidden="true">
-              <i>📸</i>
-            </div>
-            <h3 class="card-title" data-eyebrow="FOTOS">Fotos</h3>
-            <p class="card-text">Kurz gefasst: Ausschnitte aus meiner Sicht der Welt.</p>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</template>
+    <!-- Page Specific Styles -->
+    <link rel="stylesheet" href="/pages/cards/karten.css" />
+    <style>
+      /* Ensure readable contrast on standalone page */
+      body {
+        background-color: #0a0a0f;
+        color: #fff;
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+      }
+      /* Adjust layout for standalone view */
+      .full-screen-section {
+        min-height: calc(100vh - 80px); /* Account for header/footer */
+        padding-top: 100px;
+      }
+      /* Ensure links work clearly */
+      .card-link {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
+
+    <main>
+      <!-- Content extracted from karten.html template -->
+      <div class="full-screen-section d-flex flex-column justify-content-center align-items-center text-center">
+        <div class="features-content">
+          <ul class="features-cards">
+            <!-- Card 1: Über mich -->
+            <li class="card">
+              <a href="/index.html#about" class="card-link">
+                <div class="icon-wrapper" aria-hidden="true">
+                  <i>👨‍💻</i>
+                </div>
+                <h3 class="card-title" data-eyebrow="ÜBER MICH">Über mich</h3>
+                <p class="card-text">Kurz &amp; knapp: Wer ich bin, was mich antreibt und meine Vision.</p>
+              </a>
+            </li>
+
+            <!-- Card 2: Projekte -->
+            <li class="card">
+              <a href="/pages/projekte/projekte.html" class="card-link">
+                <div class="icon-wrapper" aria-hidden="true">
+                  <i>🚀</i>
+                </div>
+                <h3 class="card-title" data-eyebrow="PROJEKTE">Projekte</h3>
+                <p class="card-text">Auswahl an Projekten: Konzept, Umsetzung und Ergebnis.</p>
+              </a>
+            </li>
+
+            <!-- Card 3: Fotos -->
+            <li class="card">
+              <a href="/pages/gallery/gallery.html" class="card-link">
+                <div class="icon-wrapper" aria-hidden="true">
+                  <i>📸</i>
+                </div>
+                <h3 class="card-title" data-eyebrow="FOTOS">Fotos</h3>
+                <p class="card-text">Kurz gefasst: Ausschnitte aus meiner Sicht der Welt.</p>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <div id="footer-trigger-zone" class="footer-trigger-zone"></div>
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
+  </body>
+</html>
