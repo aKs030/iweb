@@ -609,15 +609,18 @@
 
         // If IntersectionObserver is available, init when container gets close to viewport
         if ('IntersectionObserver' in window && threeContainer) {
-          const io = new IntersectionObserver((entries, obs) => {
-            for (const entry of entries) {
-              if (entry.isIntersecting) {
-                loadThreeEarth()
-                obs.disconnect()
-                break
+          const io = new IntersectionObserver(
+            (entries, obs) => {
+              for (const entry of entries) {
+                if (entry.isIntersecting) {
+                  loadThreeEarth()
+                  obs.disconnect()
+                  break
+                }
               }
-            }
-          }, {root: null, rootMargin: '200px', threshold: 0.05})
+            },
+            {root: null, rootMargin: '200px', threshold: 0.05}
+          )
           io.observe(threeContainer)
         } else {
           // Fallback: load after a short idle period
