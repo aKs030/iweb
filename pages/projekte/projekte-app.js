@@ -247,7 +247,7 @@ function App() {
             JavaScript & React
           </div>
           <h1 className="headline">
-            <span className="text-gradient-main">Meine</span>
+            <span className="text-gradient-main">Meine </span>
             <span className="text-gradient-accent">Projekte.</span>
           </h1>
           <p className="description">
