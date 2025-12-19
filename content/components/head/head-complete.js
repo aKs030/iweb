@@ -27,7 +27,89 @@
     range.selectNode(document.head)
     const fragment = range.createContextualFragment(html)
 
-    // 4a. Markiere Skripte im Fragment zur späteren erneuten Ausführung
+    const escAttr = value => {
+      try {
+        if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value)
+      } catch {
+        /* ignore */
+      }
+      return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+    }
+
+    // 4a. Dedupe Links & Scripts to avoid double-loading (performance + SEO)
+    try {
+      const existingStyles = new Set(
+        Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
+          .map(l => {
+            try {
+              return new URL(l.getAttribute('href'), window.location.origin).href
+            } catch {
+              return l.getAttribute('href')
+            }
+          })
+          .filter(Boolean)
+      )
+
+      const existingScripts = new Set(
+        Array.from(document.querySelectorAll('script[src]'))
+          .map(s => {
+            try {
+              return new URL(s.getAttribute('src'), window.location.origin).href
+            } catch {
+              return s.getAttribute('src')
+            }
+          })
+          .filter(Boolean)
+      )
+
+      const hasCanonical = !!document.querySelector('link[rel="canonical"]')
+
+      Array.from(fragment.querySelectorAll('link[rel][href]')).forEach(link => {
+        const rel = (link.getAttribute('rel') || '').toLowerCase()
+        const href = link.getAttribute('href')
+        if (!rel || !href) return
+
+        if (rel === 'canonical') {
+          if (hasCanonical) link.remove()
+          return
+        }
+
+        if (rel === 'stylesheet') {
+          let abs
+          try {
+            abs = new URL(href, window.location.origin).href
+          } catch {
+            abs = href
+          }
+          if (existingStyles.has(abs)) link.remove()
+          return
+        }
+
+        const relEsc = escAttr(rel)
+        const hrefEsc = escAttr(href)
+        if (document.querySelector(`link[rel="${relEsc}"][href="${hrefEsc}"]`)) {
+          link.remove()
+        }
+      })
+
+      Array.from(fragment.querySelectorAll('script[src]')).forEach(script => {
+        const src = script.getAttribute('src')
+        if (!src) return
+        let abs
+        try {
+          abs = new URL(src, window.location.origin).href
+        } catch {
+          abs = src
+        }
+        if (existingScripts.has(abs)) script.remove()
+      })
+    } catch (e) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[Head-Loader] Dedupe failed:', e)
+      }
+    }
+
+    // 4b. Markiere Skripte im Fragment zur späteren erneuten Ausführung
     const fragmentScripts = Array.from(fragment.querySelectorAll('script'))
     fragmentScripts.forEach((s, idx) => {
       // Nicht ausführen, wenn bereits speziell blockiert (z.B. consent-blocked via type="text/plain")
@@ -102,6 +184,30 @@
     // 7. Status setzen und Event feuern
     window.SHARED_HEAD_LOADED = true
     document.dispatchEvent(new CustomEvent('shared-head:loaded'))
+
+    // 7b. Canonical / OG URL (only for shared-generated tags)
+    try {
+      const url = new URL(window.location.href)
+      url.hash = ''
+      url.search = ''
+      if (url.pathname.endsWith('/index.html')) {
+        url.pathname = url.pathname.slice(0, -'/index.html'.length) + '/'
+      }
+      const canonicalUrl = url.href
+
+      const canonicalEl = document.querySelector('link[rel="canonical"][data-shared-head="1"]')
+      if (canonicalEl) canonicalEl.setAttribute('href', canonicalUrl)
+
+      const ogUrlEl = document.querySelector('meta[property="og:url"][data-shared-head="1"]')
+      if (ogUrlEl) ogUrlEl.setAttribute('content', canonicalUrl)
+
+      const twitterUrlEl = document.querySelector('meta[name="twitter:url"][data-shared-head="1"]')
+      if (twitterUrlEl) twitterUrlEl.setAttribute('content', canonicalUrl)
+    } catch (e) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[Head-Loader] Could not set canonical/og:url:', e)
+      }
+    }
 
     // 7a. Skripte aus dem Shared Head sicher ausführen (insb. Module wie /content/main.js)
     try {
