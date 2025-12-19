@@ -110,7 +110,10 @@ export class CardManager {
         entranceDelay: index * 80, // ms
         entranceProgress: 0,
         hoverProgress: 0,
-        parallaxStrength: 0.14
+        parallaxStrength: 0.14,
+        // Rotation State for smooth composition
+        currentTiltX: 0,
+        currentTiltY: 0
       }
 
       // Glow sprite with shared texture, tinted per card
@@ -146,7 +149,8 @@ export class CardManager {
           if (isMobile) {
             // Mobile: Vertical Stack
             const scale = 0.82
-            const spacingY = 2.75
+            // Increased spacing slightly for cleaner layout (2.75 -> 2.9)
+            const spacingY = 2.9
             // Stack from top to bottom
             const y = (centerOffset - idx) * spacingY
 
@@ -430,6 +434,8 @@ export class CardManager {
       document.body.style.cursor = hoveredCard ? 'pointer' : ''
     }
 
+    this.camera.getWorldPosition(this._tmpVec)
+
     this.cards.forEach(card => {
       // Entrance progress (staggered)
       const targetEntrance = typeof card.userData.entranceTarget === 'number' ? card.userData.entranceTarget : this.isVisible ? 1 : 0
@@ -448,10 +454,14 @@ export class CardManager {
 
       // Parallax tilt based on mouse position when hovered
       const parallax = card.userData.parallaxStrength || 0.12
-      const tiltX = -mousePos.y * parallax * card.userData.hoverProgress
-      const tiltY = mousePos.x * parallax * card.userData.hoverProgress * 0.8
+      const targetTiltX = -mousePos.y * parallax * card.userData.hoverProgress
+      const targetTiltY = mousePos.x * parallax * card.userData.hoverProgress * 0.8
 
-      // Compute target values
+      // Smoothly update tilt state (Euler angles)
+      card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.12
+      card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.12
+
+      // Compute target values for Position/Scale
       let targetY = card.userData.originalY
       let targetScale = 1.0
       if (card === hoveredCard) {
@@ -463,19 +473,25 @@ export class CardManager {
       card.position.y += (targetY + floatY - card.position.y) * 0.12
       card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.12)
 
-      // Smooth rotation/tilt
-      card.rotation.x += (tiltX - card.rotation.x) * 0.12
-      card.rotation.y += (tiltY - card.rotation.y) * 0.12
+      // --- Orientation Logic ---
 
-      // Ensure the cards face the camera directly (including pitch)
-      this.camera.getWorldPosition(this._tmpVec)
-
+      // 1. Calculate Base Rotation (Upright / Billboard on Y-axis)
+      // Project camera position to the card's horizontal plane
       this._orientDummy.position.copy(card.position)
-      this._orientDummy.lookAt(this._tmpVec)
-      this._tmpQuat.copy(this._orientDummy.quaternion)
+      // Look at camera x/z but same y as card to stay vertical
+      this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z)
+      const qBase = this._orientDummy.quaternion.clone()
 
-      // Slightly snappier slerp to reduce visible lag during repeated section switches
-      card.quaternion.slerp(this._tmpQuat, 0.12)
+      // 2. Calculate Tilt Rotation (Local perturbation from mouse)
+      // Create a quaternion representing the local tilt
+      const qTilt = new this.THREE.Quaternion()
+      qTilt.setFromEuler(new this.THREE.Euler(card.userData.currentTiltX, card.userData.currentTiltY, 0, 'XYZ'))
+
+      // 3. Combine: Base * Tilt
+      qBase.multiply(qTilt)
+
+      // 4. Smoothly interpolate current quaternion to target
+      card.quaternion.slerp(qBase, 0.12)
 
       // Glow pulsing
       if (card.userData.glow && card.userData.glow.material) {
@@ -505,15 +521,16 @@ export class CardManager {
   }
 
   alignCardsToCameraImmediate() {
-    // Immediately orient all cards to face the current camera position. This
-    // avoids a brief flash where cards look in the wrong direction when they
-    // become visible while the camera orients during section transitions.
+    // Immediately orient all cards to face the current camera position (projected upright).
     if (!this.camera) return
     this.camera.getWorldPosition(this._tmpVec)
     this.cards.forEach(card => {
       this._orientDummy.position.copy(card.position)
-      this._orientDummy.lookAt(this._tmpVec)
+      this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z)
       card.quaternion.copy(this._orientDummy.quaternion)
+      // Reset tilt state
+      card.userData.currentTiltX = 0
+      card.userData.currentTiltY = 0
     })
   }
 
