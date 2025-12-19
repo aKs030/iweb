@@ -30,6 +30,8 @@
   /* Ensure the typewriter is displayed above the footer component (footer z-index is high)
      Use a higher explicit z-index to keep the text visible above the footer overlay */
   z-index: calc(var(--z-footer, 1000) + 10);
+  /* Reserve vertical space to prevent layout shifts while JS computes sizes */
+  min-height: 3.2rem;
 }
 
 .typewriter-title--fixed {
@@ -42,6 +44,8 @@
   opacity: 0.92;
   transform: translateY(0);
   pointer-events: auto;
+  /* Fixed variant also reserves space to avoid CLS when toggling modes */
+  min-height: 3.2rem;
 }
 
 /* TypeWriter Text Elements */
@@ -79,6 +83,8 @@
   word-break: normal;
   hyphens: auto;
   opacity: 0.8;
+  /* Reserve at least two lines to avoid layout shift when text is typed */
+  min-height: calc(1.18em * 2);
 }
 
 @supports (text-wrap: balance) {

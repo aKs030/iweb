@@ -11,6 +11,9 @@
   pointer-events: none;
   /* PERFORMANCE OPTIMIERUNG: Eigene Ebene für Transform */
   will-change: transform;
+  /* Reserve explicit space to avoid layout shifts when interactive UI appears */
+  width: 80px;
+  height: 80px;
 }
 
 /* Wrapper für synchrones Schweben von Avatar und Bubble */
@@ -410,7 +413,6 @@
   color: #e2e8f0;
   padding: 6px 10px;
   border-radius: 12px;
-  margin-bottom: 10px;
   font-size: 0.8rem;
   min-width: 60px;
   max-width: 160px;
@@ -423,7 +425,9 @@
     transform 0.3s ease;
   pointer-events: auto;
   backdrop-filter: blur(8px);
-  position: relative;
+  position: absolute; /* avoid affecting document flow */
+  right: 0;
+  bottom: calc(100% + 8px);
   line-height: 1.25;
 }
 
@@ -431,7 +435,7 @@
   content: '';
   position: absolute;
   bottom: -6px;
-  right: 34px;
+  right: 20px;
   width: 12px;
   height: 12px;
   background: rgb(15 23 42);
