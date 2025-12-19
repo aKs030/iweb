@@ -71,10 +71,13 @@
 <!-- Icons -->
 <link rel="icon" href="/content/assets/img/icons/favicon.svg" type="image/svg+xml" />
 <link rel="icon" sizes="96x96" href="/content/assets/img/icons/icon-96.png" type="image/png" />
+<link rel="icon" sizes="32x32" href="/content/assets/img/icons/icon-32.png" type="image/png" />
 <link rel="icon" sizes="144x144" href="/content/assets/img/icons/icon-144.png" type="image/png" />
 <link rel="icon" sizes="192x192" href="/content/assets/img/icons/icon-192.png" type="image/png" />
 <link rel="apple-touch-icon" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
 <link rel="mask-icon" href="/content/assets/img/icons/favicon.svg" color="#07a1ff" />
+<!-- Fallback favicon for older browsers -->
+<link rel="icon" href="/content/assets/img/icons/favicon.ico" sizes="any" />
 <meta name="msapplication-TileColor" content="#07a1ff" />
 <meta name="msapplication-TileImage" content="/content/assets/img/icons/icon-144.png" />
 
@@ -113,6 +116,23 @@
       "name": "Abdulkerim Sesli"
     },
     "inLanguage": "de-DE"
+  }
+</script>
+
+<!-- Organization Schema (for Search results logo) -->
+<script type="application/ld+json" data-cfasync="false">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Abdulkerim — Digital Creator Portfolio",
+    "url": "https://abdulkerimsesli.de",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+      "width": 512,
+      "height": 512
+    },
+    "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"]
   }
 </script>
 
