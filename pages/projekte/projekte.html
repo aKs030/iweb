@@ -534,7 +534,6 @@
     <script type="module">
       // FIX: Absoluter Pfad, um Resolution-Errors zu vermeiden
       import {initProjectsApp} from '/pages/projekte/projekte-app.js'
-      import {initThreeEarth, EarthSystemAPI} from '/content/components/particles/three-earth-system.js'
 
       // Load styles for Three Earth (Progressive Enhancement)
       async function ensureThreeEarthStyles() {
@@ -562,35 +561,79 @@
         // 1. React App starten
         initProjectsApp()
 
-        // 2. Three.js Config für Projekte anpassen
-        try {
-          const config = EarthSystemAPI.getConfig()
-          const basePreset = config.CAMERA.PRESETS.features || config.CAMERA.PRESETS.hero
+        // Lazy-load Three-Earth only when needed: on visibility or user interaction
+        const threeContainer = document.getElementById('threeEarthContainer')
 
-          if (basePreset) {
-            const baseRadius = Math.sqrt((basePreset.x || 0) ** 2 + (basePreset.z || 0) ** 2) || 12
-            for (let i = 1; i <= 10; i++) {
-              const angle = i * 0.8
-              config.CAMERA.PRESETS[`project-${i}`] = {
-                ...basePreset,
-                x: Math.sin(angle) * baseRadius,
-                z: Math.cos(angle) * baseRadius,
-                y: Math.max(2, (basePreset.y || 5) + Math.sin(i * 1.5) * 3),
-                lookAt: basePreset.lookAt
+        const loadThreeEarth = async () => {
+          if (window.__threeEarthLoaded) return
+          window.__threeEarthLoaded = true
+          try {
+            const mod = await import('/content/components/particles/three-earth-system.js')
+
+            // Allow module to expose API and adjust presets before init
+            try {
+              const config = mod?.EarthSystemAPI?.getConfig?.()
+              const basePreset = config?.CAMERA?.PRESETS?.features || config?.CAMERA?.PRESETS?.hero
+              if (basePreset) {
+                const baseRadius = Math.sqrt((basePreset.x || 0) ** 2 + (basePreset.z || 0) ** 2) || 12
+                for (let i = 1; i <= 10; i++) {
+                  const angle = i * 0.8
+                  config.CAMERA.PRESETS[`project-${i}`] = {
+                    ...basePreset,
+                    x: Math.sin(angle) * baseRadius,
+                    z: Math.cos(angle) * baseRadius,
+                    y: Math.max(2, (basePreset.y || 5) + Math.sin(i * 1.5) * 3),
+                    lookAt: basePreset.lookAt
+                  }
+                }
+              }
+            } catch (err) {
+              console.warn('Konnte Projekt-Presets nicht automatisch setzen:', err)
+            }
+
+            try {
+              await ensureThreeEarthStyles()
+            } catch (e) {
+              console.warn('three-earth stylesheet preload failed:', e)
+            }
+
+            try {
+              mod.initThreeEarth()
+            } catch (e) {
+              console.warn('three-earth init failed:', e)
+            }
+          } catch (e) {
+            console.warn('Failed to import three-earth module:', e)
+          }
+        }
+
+        // If IntersectionObserver is available, init when container gets close to viewport
+        if ('IntersectionObserver' in window && threeContainer) {
+          const io = new IntersectionObserver((entries, obs) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                loadThreeEarth()
+                obs.disconnect()
+                break
               }
             }
-          }
-        } catch (err) {
-          console.warn('Konnte Projekt-Presets nicht automatisch setzen:', err)
+          }, {root: null, rootMargin: '200px', threshold: 0.05})
+          io.observe(threeContainer)
+        } else {
+          // Fallback: load after a short idle period
+          setTimeout(loadThreeEarth, 3000)
         }
 
-        // 3. Styles und Earth laden
-        try {
-          await ensureThreeEarthStyles()
-        } catch (e) {
-          console.warn('three-earth stylesheet preload failed:', e)
+        // Also trigger on first user interaction to prioritise UX
+        const userTrigger = () => {
+          loadThreeEarth()
+          window.removeEventListener('scroll', userTrigger)
+          window.removeEventListener('touchstart', userTrigger)
+          window.removeEventListener('pointerdown', userTrigger)
         }
-        initThreeEarth()
+        window.addEventListener('scroll', userTrigger, {passive: true})
+        window.addEventListener('touchstart', userTrigger, {passive: true})
+        window.addEventListener('pointerdown', userTrigger, {passive: true})
       })
     </script>
 
