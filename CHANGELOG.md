@@ -10,5 +10,6 @@ All notable changes to this project will be documented in this file.
 
 - Extracted cards styles to `content/styles/components/cards.css` and lazy-loaded it from `index.html` to improve modularity and maintainability. ✅
 - Removed the `karten` path detection from `robot-companion` and consolidated all ‘cards’ responses into the `features` intent for clearer conversational behavior. ✅
-- Removed redundant duplicated rules from `content/styles/main.css` and centralized DOM fallback styles in the new component file. ✅
-- Ran formatting and fixed leftover artifacts; the codebase is tidy. ✅
+- Extracted all features/cards responsive & DOM rules from `content/styles/main.css` into `content/styles/components/cards.css` and removed duplications. ✅
+- Consolidated card tokens in `content/styles/root.css` and removed historical references. ✅
+- Ran formatting and final cleanup; the codebase is tidy. ✅
