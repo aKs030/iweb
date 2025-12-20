@@ -607,7 +607,6 @@ class RobotCompanion {
       else if (lower.includes('projekte')) context = 'projects'
       else if (lower.includes('gallery') || lower.includes('fotos')) context = 'gallery'
       else if (lower.includes('about') && file !== 'index.html') context = 'about'
-      else if (lower.includes('karten') || file === 'karten.html') context = 'cards'
       else if (lower === '/' || file === 'index.html' || file === '') context = 'home'
       else {
         const h1 = document.querySelector('h1')

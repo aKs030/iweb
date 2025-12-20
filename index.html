@@ -52,15 +52,7 @@
       " />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
-    <link
-      rel="stylesheet"
-      href="/pages/cards/karten.css"
-      media="print"
-      onload="
-        this.media = 'all'
-        this.onload = null
-      " />
-    <noscript><link rel="stylesheet" href="/pages/cards/karten.css" /></noscript>
+
 
     <script src="/content/components/robot-companion/robot-companion.js" type="module"></script>
   </head>
@@ -114,9 +106,37 @@
         id="features"
         class="section features"
         aria-label="Features und Leistungen"
-        data-section-src="/pages/cards/karten.html"
-        data-eager="true">
+        data-eager="true"
+        data-state="loaded">
         <div class="section-skeleton" aria-hidden="true"></div>
+
+        <div class="features-content">
+          <ul class="features-cards">
+            <li class="card">
+              <a href="#about" class="card-link">
+                <div class="icon-wrapper" aria-hidden="true"><i>👨‍💻</i></div>
+                <h3 class="card-title" data-eyebrow="ÜBER MICH">Über mich</h3>
+                <p class="card-text">Kurz &amp; knapp: Wer ich bin, was mich antreibt und meine Vision.</p>
+              </a>
+            </li>
+
+            <li class="card">
+              <a href="/pages/projekte/projekte.html#project-1" class="card-link">
+                <div class="icon-wrapper" aria-hidden="true"><i>🚀</i></div>
+                <h3 class="card-title" data-eyebrow="PROJEKTE">Projekte</h3>
+                <p class="card-text">Auswahl an Projekten Konzept, Umsetzung und Ergebnis.</p>
+              </a>
+            </li>
+
+            <li class="card">
+              <a href="/pages/gallery/gallery.html" class="card-link">
+                <div class="icon-wrapper" aria-hidden="true"><i>📸</i></div>
+                <h3 class="card-title" data-eyebrow="FOTOS">Fotos</h3>
+                <p class="card-text">Kurz gefasst: Ausschnitte aus meiner Sicht der Welt.</p>
+              </a>
+            </li>
+          </ul>
+        </div>
       </section>
 
       <!-- About Section -->
