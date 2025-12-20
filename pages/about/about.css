@@ -234,3 +234,41 @@
   min-width: 0;
   text-align: center;
 }
+
+/* Author card styles */
+.about__meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.about__figure img {
+  border-radius: 12px;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.about__card-body .about__role {
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.about__card-body .about__links a {
+  margin-right: 0.6rem;
+  color: var(--link, #07a1ff);
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .about__meta {
+    flex-direction: row;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: flex-start;
+  }
+}
