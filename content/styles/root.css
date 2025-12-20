@@ -423,36 +423,46 @@ textarea:focus-visible {
   border: 0 !important;
 }
 
-/* Global Loading Screen */
-.loading-screen {
+/* Global Loading Screen - Robot Edition */
+#loader-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg-primary);
+  background: #0b1220; /* Dark navy */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  transition: opacity var(--transition-slow);
+  z-index: 10000;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none; /* Let clicks pass once hidden, though visibility will handle it */
 }
 
-.loading-screen.hide {
+#loader-overlay.hide {
   opacity: 0;
-  pointer-events: none;
   visibility: hidden;
 }
 
-.loader {
-  width: 60px;
-  height: 60px;
-  border: 3px solid rgb(255 255 255 / 10%);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.robot-loader-centered {
+  width: 120px;
+  height: 120px;
+  animation: robotHover 3s ease-in-out infinite;
+  will-change: transform;
+  /* Ensure it sits above background */
+  position: relative;
+  z-index: 10001;
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+.robot-loader-centered .robot-antenna-light {
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes robotHover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
   }
 }
 

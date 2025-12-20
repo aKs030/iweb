@@ -298,55 +298,8 @@ const ScrollSnapping = (() => {
 
 ScrollSnapping.init()
 
-// ===== Loading Screen Manager =====
-const LoadingScreenManager = (() => {
-  const MIN_DISPLAY_TIME = 600
-  let startTime = 0
-
-  function hide() {
-    const loadingScreen = getElementById('loadingScreen')
-    if (!loadingScreen) return
-
-    const elapsed = performance.now() - startTime
-    const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed)
-
-    setTimeout(() => {
-      loadingScreen.classList.add('hide')
-      loadingScreen.setAttribute('aria-hidden', 'true')
-
-      Object.assign(loadingScreen.style, {
-        opacity: '0',
-        pointerEvents: 'none',
-        visibility: 'hidden'
-      })
-
-      const cleanup = () => {
-        loadingScreen.style.display = 'none'
-        loadingScreen.removeEventListener('transitionend', cleanup)
-      }
-
-      loadingScreen.addEventListener('transitionend', cleanup)
-      setTimeout(cleanup, 700)
-
-      announce('Anwendung geladen', {dedupe: true})
-
-      try {
-        document.body.classList.remove('global-loading-visible')
-      } catch {
-        /* ignore */
-      }
-
-      perfMarks.loadingHidden = performance.now()
-      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`)
-    }, delay)
-  }
-
-  function init() {
-    startTime = performance.now()
-  }
-
-  return {init, hide}
-})()
+// ===== Loading Screen Manager (Replaced by Robot Loader) =====
+// The robot loader is handled by robot-companion.js via 'app-ready' event
 
 // ===== Three.js Earth System Loader =====
 const ThreeEarthLoader = (() => {
@@ -427,7 +380,7 @@ document.addEventListener(
   'DOMContentLoaded',
   async () => {
     perfMarks.domReady = performance.now()
-    LoadingScreenManager.init()
+    // LoadingScreenManager.init() - Removed
 
     fire(EVENTS.DOM_READY)
 
@@ -439,7 +392,16 @@ document.addEventListener(
 
     const checkReady = () => {
       if (!modulesReady || !windowLoaded) return
-      LoadingScreenManager.hide()
+      // Signal that the app is ready for the Robot to fly
+      // We add a small delay to ensure the visual impact of the robot hovering is felt
+      const MIN_DISPLAY_TIME = 800
+      const elapsed = performance.now() - perfMarks.start
+      const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed)
+
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('app-ready'))
+        announce('Anwendung geladen', {dedupe: true})
+      }, delay)
     }
 
     window.addEventListener(
@@ -491,7 +453,7 @@ document.addEventListener(
 
           log.warn('Forcing loading screen hide after timeout')
           // Force-hide now
-          LoadingScreenManager.hide()
+          window.dispatchEvent(new CustomEvent('app-ready'))
         },
         attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
       )

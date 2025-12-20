@@ -69,6 +69,70 @@ class RobotCompanion {
         if (!this.dom.container) this.init()
       }, 500)
     }
+
+    // Listener for the global loader transition
+    window.addEventListener('app-ready', () => this.handleLoaderTransition(), {once: true})
+  }
+
+  handleLoaderTransition() {
+    const loaderOverlay = document.getElementById('loader-overlay')
+    const staticRobot = document.getElementById('static-loader-robot')
+
+    // If no static loader found, just ensure we are visible
+    if (!loaderOverlay || !staticRobot) {
+      if (this.dom.container) {
+        this.dom.container.style.opacity = '1'
+        this.dom.container.style.visibility = 'visible'
+      }
+      return
+    }
+
+    // Ensure our real DOM is created before we fly
+    if (!this.dom.container) {
+      this.init()
+    }
+
+    // Force real robot to be initially invisible but layout-ready
+    // Note: createDOM sets opacity: 0 by default.
+    // We need to calculate where to fly TO.
+
+    // We must wait for next frame to ensure this.dom.container is in DOM
+    requestAnimationFrame(() => {
+        const targetRect = this.dom.avatar.getBoundingClientRect()
+        const startRect = staticRobot.getBoundingClientRect()
+
+        const deltaX = targetRect.left - startRect.left + (targetRect.width / 2 - startRect.width / 2)
+        const deltaY = targetRect.top - startRect.top + (targetRect.height / 2 - startRect.height / 2)
+
+        // Apply FLIP-like transition to the static robot
+        staticRobot.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.6)` // scale down slightly to match button size if needed
+
+        // Fade out the overlay background, but keep the robot visible
+        // We do this by making the overlay background transparent
+        loaderOverlay.style.backgroundColor = 'transparent'
+
+        const cleanup = () => {
+            // Show real robot
+            if (this.dom.container) {
+                this.dom.container.style.opacity = '1'
+                this.dom.container.style.visibility = 'visible'
+            }
+
+            // Remove loader
+            if (loaderOverlay) {
+                loaderOverlay.classList.add('hide')
+                setTimeout(() => {
+                    if (loaderOverlay.parentNode) loaderOverlay.remove()
+                }, 500)
+            }
+        }
+
+        // After transition completes:
+        staticRobot.addEventListener('transitionend', cleanup, {once: true})
+
+        // Safety fallback in case transition doesn't fire (e.g. tab backgrounded)
+        setTimeout(cleanup, 1400)
+    })
   }
 
   applyTexts() {
