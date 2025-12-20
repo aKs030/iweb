@@ -1,27 +1,28 @@
 Entwurf für Artikel: „Abdulkerim Sesli“ (Deutsch)
 
-Hinweis: Erstelle einen neutralen, gut belegten Artikel nur, wenn unabhängige, zuverlässige Quellen vorhanden sind (z. B. Zeitungsartikel, Interviews, Magazin‑Features). Selbstverfasste Texte oder alleinige Quellen von der eigenen Website gelten nicht als ausreichend.
+=== Anmerkung zur Quellenlage ===
+Die folgenden Vorlagen basieren vorwiegend auf primären Quellen (eigene Website, Social‑Profiles). Bei fehlenden unabhängigen, zuverlässigen Sekundärquellen besteht ein hohes Risiko, dass ein Artikel zur Löschung vorgeschlagen wird. Ich empfehle, vor Veröffentlichung nach Presse‑Erwähnungen, Interviews oder anderen unabhängig geprüften Quellen zu suchen.
 
 == Abdulkerim Sesli ==
-'''Abdulkerim Sesli''' (*[Geburtsjahr optional]) ist ein deutscher Webentwickler, Fotograf und Digital Creator aus Berlin. Er ist bekannt für seine privaten Webprojekte, Experimente mit Three.js und seine fotografischen Arbeiten.
+'''Abdulkerim Sesli''' (*1991 in Berlin) ist ein deutscher Webentwickler, Fotograf und Betreiber einer privaten Portfolio‑Website. Seine Website dient primär als digitale Visitenkarte.
 
 === Leben und Werdegang ===
-Kurzer Abschnitt über Ausbildung, Wohnort (Berlin), relevante Stationen (Arbeit/Projekte).
+Abdulkerim Sesli wurde 1991 in Berlin geboren und lebt in Berlin. Er beschäftigt sich mit Webentwicklung, kreativen Web‑Projekten und Fotografie.<ref>{{cite web |title=Über mich |url=https://abdulkerimsesli.de/pages/about/about.html |website=abdulkerimsesli.de |accessdate=20. Dezember 2025}}</ref>
 
 === Werk und Projekte ===
-Beschreibe markante Projekte, Publikationen und Ausstellungen (sofern vorhanden). Jede Aussage sollte mit zuverlässigen Quellen belegt sein.
+Sesli veröffentlicht auf seiner Website persönliche Projekte, Beispiele seiner Fotografie und Experimente mit modernen Webtechnologien wie Three.js und React. Er betreibt ein GitHub‑Profil, auf dem Open‑Source‑Projekte oder Quellcode‑Beispiele zu finden sind.<ref>{{cite web |title=aKs030 (GitHub) |url=https://github.com/aKs030 |website=github.com |accessdate=20. Dezember 2025}}</ref>
 
-=== Rezeption und Auszeichnungen ===
-Auflistung von relevanten Erwähnungen in Presse, Auszeichnungen etc. (QUELLEN: Verlinken!)
+=== Rezeption ===
+Bislang liegen (Stand: 20. Dezember 2025) keine umfangreichen unabhängigen Sekundärquellen vor, die eine umfangreiche Rezeption in Fach‑ oder Publikumsmedien belegen.
 
 === Weblinks ===
 * Offizielle Website: https://abdulkerimsesli.de
 * GitHub: https://github.com/aKs030
-* LinkedIn: https://linkedin.com/in/abdulkerimsesli
+* LinkedIn: https://www.linkedin.com/in/abdulkerim-s/
+* X (Twitter): https://x.com/kRm_030
 
 === Einzelnachweise ===
 <references />
 
----
-
-Wenn du möchtest, formatiere ich den Entwurf vollständig mit verfügbaren Presse‑Quellen und erstelle dann das Wikipedia‑Projekt in deinem Account (oder ich bereite dir den Quelltext vor, den du in deinen Benutzernamensraum einfügst).
+=== Hinweis ===
+Wenn du möchtest, übernehme ich das Erstellen der Seite in deinem Wikipedia‑Benutzerkonto (ich bereite den Edit‑Text vor). Alternativ kann ich weiter nach unabhängigen Presse‑Quellen suchen und den Artikel mit mehr Sekundärquellen anreichern, bevor wir ihn veröffentlichen.
