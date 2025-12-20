@@ -67,7 +67,14 @@ h1 {
   background: #f9fafb;
   border-left: 4px solid #e5e7eb;
 }
-
+.video-error{
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #fff4f4;
+  border-left: 4px solid #f87171;
+  color: #7f1d1d;
+  border-radius: 6px;
+}
 @media (min-width: 760px) {
   .video-grid {
     grid-template-columns: 1fr 1fr;
