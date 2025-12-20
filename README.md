@@ -1,4 +1,4 @@
-# Abdulkerim — Digital Creator Portfolio 🚀
+# Abdulkerim — Digital Portfolio 🚀
 
 [![Wikidata](https://img.shields.io/badge/Wikidata-Q137477849-006699?logo=wikidata)](https://www.wikidata.org/wiki/Q137477849) [![LinkedIn](https://img.shields.io/badge/LinkedIn-abdulkerim--s-0077B5?logo=linkedin)](https://linkedin.com/in/abdulkerim-s) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
