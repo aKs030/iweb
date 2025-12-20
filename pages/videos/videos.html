@@ -48,7 +48,7 @@
               "name": "Interaktive Erde – Abdulkerim Sesli",
               "description": "Projektvorstellung: Interaktive 3D-Erde mit WebGL und Partikelsystemen.",
               "thumbnailUrl": "https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg",
-              "uploadDate": "2025-01-01",
+              "uploadDate": "2025-12-20",
               "contentUrl": "https://youtu.be/1bL8bZd6cpY",
               "embedUrl": "https://www.youtube.com/embed/1bL8bZd6cpY",
               "publisher": {
@@ -74,7 +74,7 @@
               "name": "Making-of Fotoshooting – Abdulkerim Sesli",
               "description": "Making-of: Bildkomposition, Beleuchtung und Nachbearbeitung.",
               "thumbnailUrl": "https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg",
-              "uploadDate": "2025-02-01",
+              "uploadDate": "2011-01-18",
               "contentUrl": "https://youtu.be/rXMLVt9vhxQ",
               "embedUrl": "https://www.youtube.com/embed/rXMLVt9vhxQ",
               "publisher": {
@@ -92,84 +92,18 @@
         </aside>
       </div>
     </main>
-    </main>
 
-    <!-- Optional: Auto-load latest 2 videos using YouTube Data API v3
-         To enable, set these globals BEFORE this script runs:
-         <script>window.YOUTUBE_API_KEY = 'YOUR_API_KEY'; window.YOUTUBE_CHANNEL_HANDLE = 'aks.030';</script>
-    -->
+        <!-- Optional: Auto-load latest 2 videos using YouTube Data API v3
+          To enable, set these globals BEFORE this script runs (example):
+          &lt;script&gt;window.YOUTUBE_API_KEY = 'YOUR_API_KEY'; window.YOUTUBE_CHANNEL_HANDLE = 'aks.030';&lt;/script&gt;
+        -->
     <script>
       // NOTE: API key provided by user. Consider moving to server-side or env for security.
       window.YOUTUBE_API_KEY = 'AIzaSyA1uN-8I94wyGRSA9WylFetW9PaUehgTcY';
       window.YOUTUBE_CHANNEL_HANDLE = 'aks.030';
     </script>
-    <script>
-    (async function(){
-      const apiKey = window.YOUTUBE_API_KEY
-      const handle = (window.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '')
-      if (!apiKey) return
 
-      const log = msg => console.info('[videos] ', msg)
-
-      try {
-        // Resolve channelId via search
-        const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=1&key=${apiKey}`)
-        const searchJson = await searchRes.json()
-        const channelId = searchJson?.items?.[0]?.snippet?.channelId || searchJson?.items?.[0]?.id?.channelId
-        if (!channelId) { log('Channel ID not found'); return }
-
-        // Get uploads playlist
-        const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`)
-        const chJson = await chRes.json()
-        const uploads = chJson?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads
-        if (!uploads) { log('Uploads playlist not found'); return }
-
-        // Get latest 2 videos
-        const plRes = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=2&key=${apiKey}`)
-        const plJson = await plRes.json()
-        const items = plJson.items || []
-        if (!items.length) { log('Keine Videos gefunden'); return }
-
-        const grid = document.querySelector('.video-grid')
-        if (!grid) return
-        grid.innerHTML = ''
-
-        items.forEach(it => {
-          const vid = it.snippet.resourceId.videoId
-          const title = it.snippet.title
-          const desc = it.snippet.description || ''
-          const thumb = it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url
-          const pub = it.snippet.publishedAt ? it.snippet.publishedAt.split('T')[0] : ''
-
-          const article = document.createElement('article')
-          article.className = 'video-card'
-          article.innerHTML = `
-            <h2>${escapeHtml(title)} — Abdulkerim Sesli</h2>
-            <div class="embed"><iframe width="560" height="315" src="https://www.youtube.com/embed/${vid}" title="${escapeHtml(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
-            <p class="video-desc">${escapeHtml(desc)}</p>
-            <script type="application/ld+json">${JSON.stringify({
-              '@context':'https://schema.org',
-              '@type':'VideoObject',
-              name: title + ' – Abdulkerim Sesli',
-              description: desc,
-              thumbnailUrl: thumb,
-              uploadDate: pub || new Date().toISOString().split('T')[0],
-              contentUrl: `https://youtu.be/${vid}`,
-              embedUrl: `https://www.youtube.com/embed/${vid}`,
-              publisher: { '@type':'Person', name: 'Abdulkerim Sesli' }
-            })}</script>
-          `
-
-          grid.appendChild(article)
-        })
-
-        function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]) }
-
-      } catch (err) {
-        console.error('[videos] Fehler beim Laden der Videos', err)
-      }
-    })()
-    </script>
+    <script type="module" src="/pages/videos/videos.js"></script>
 
     <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
     <script src="/content/components/footer/footer-complete.js" type="module"></script>
