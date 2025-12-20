@@ -46,18 +46,7 @@
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
     </image:image>
   </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/pages/cards/</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/karten/</loc>
-    <lastmod>2025-12-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
+
   <url>
     <loc>https://abdulkerimsesli.de/pages/gallery/gallery.html</loc>
     <lastmod>2025-12-19</lastmod>

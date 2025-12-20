@@ -307,7 +307,6 @@ function setSiteTitle() {
     '/index.html': 'Startseite',
     '/': 'Startseite',
     '/pages/gallery/gallery.html': 'Fotos',
-    '/pages/cards/karten.html': 'Projekte',
     '/pages/projekte/projekte.html': 'Projekte'
   }
   const path = window.location.pathname

@@ -137,7 +137,7 @@ Erlaubte Kategorien: `all`, `nature`, `urban`, `travel`, `landscape`
 - Menu: Via `head-complete.js` geladen
 - Footer: Via `footer-complete.js` geladen
 - Links: `/pages/gallery/gallery.html`
-- Card-Link: Updated in `pages/cards/karten.html`
+- Card-Link: Updated in `content/components/particles/earth/cards.js`
 
 ## 📝 Debugging-Tipps
 

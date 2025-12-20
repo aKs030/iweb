@@ -27,7 +27,6 @@ https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 
 # Explicit mappings to ensure safe global .html removal
 /pages/about/about.html        /about/      301
-/pages/cards/karten.html       /karten/     301
 /pages/gallery/gallery.html    /gallery/    301
 /pages/home/hero.html          /            301
 /pages/projekte/projekte.html  /projekte/   301
