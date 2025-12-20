@@ -146,6 +146,15 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
+          <a href="/videos/">
+            <svg class="nav-icon" aria-hidden="true">
+              <use href="#icon-images"></use>
+            </svg>
+            <span class="icon-fallback" style="display: none">🎬</span>
+            <span>Videos</span>
+          </a>
+        </li>
+        <li>
           <a href="#about">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
@@ -307,7 +316,8 @@ function setSiteTitle() {
     '/index.html': 'Startseite',
     '/': 'Startseite',
     '/gallery/': 'Fotos',
-    '/projekte/': 'Projekte'
+    '/projekte/': 'Projekte',
+    '/videos/': 'Videos'
   }
   const path = window.location.pathname
   const pageTitle = titleMap[path] || document.title || 'Website'
