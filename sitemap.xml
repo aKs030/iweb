@@ -38,7 +38,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/blog/</loc>
+    <loc>https://abdulkerimsesli.de/blog/</loc>
     <lastmod>2025-12-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -48,7 +48,7 @@
   </url>
 
   <url>
-    <loc>https://abdulkerimsesli.de/pages/gallery/gallery.html</loc>
+    <loc>https://abdulkerimsesli.de/gallery/</loc>
     <lastmod>2025-12-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
