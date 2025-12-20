@@ -66,4 +66,18 @@
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://abdulkerimsesli.de/videos/</loc>
+    <lastmod>2025-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg</image:loc>
+      <image:title>Interaktive Erde – Abdulkerim Sesli</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg</image:loc>
+      <image:title>Making-of Fotoshooting – Abdulkerim Sesli</image:title>
+    </image:image>
+  </url>
 </urlset>

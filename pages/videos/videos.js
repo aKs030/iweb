@@ -1,3 +1,23 @@
+// Share function for YouTube channel
+function shareChannel() {
+  const url = 'https://www.youtube.com/@aks.030';
+  const title = 'Abdulkerim Sesli - YouTube Kanal';
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      url: url
+    });
+  } else {
+    // Fallback: copy to clipboard
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link kopiert: ' + url);
+    }).catch(() => {
+      // Fallback: open share dialog or just alert
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    });
+  }
+}
+
 // Videos page loader (moved from inline to avoid HTML parsing issues)
 ;(async function loadLatestVideos() {
   const apiKey = window.YOUTUBE_API_KEY
@@ -5,6 +25,50 @@
   if (!apiKey) return
 
   const log = msg => console.info('[videos] ', msg)
+  const setStatus = msg => {
+    try {
+      const el = document.getElementById('videos-status')
+      if (el) el.textContent = msg || ''
+    } catch (e) { }
+  }
+
+  // Replace a thumbnail button with an autoplaying iframe (available globally so static thumbs work)
+  function activateThumb(btn) {
+    if (!btn || btn.dataset.loaded) return
+    const vid = btn.dataset.videoId
+    const title = btn.getAttribute('aria-label') || ''
+    const wrapper = document.createElement('div')
+    wrapper.className = 'embed'
+    const iframe = document.createElement('iframe')
+    iframe.width = '560'
+    iframe.height = '315'
+    iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`
+    iframe.title = title
+    iframe.setAttribute('frameborder', '0')
+    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture')
+    iframe.setAttribute('allowfullscreen', '')
+    wrapper.appendChild(iframe)
+    btn.replaceWith(wrapper)
+    try { iframe.focus() } catch (e) { /* ignore */ }
+    btn.dataset.loaded = '1'
+  }
+
+  // Attach handlers for any static thumbnails (works even if API fetch doesn't run)
+  function attachStaticThumbsStandalone() {
+    try {
+      document.querySelectorAll('.video-thumb').forEach(b => {
+        if (b.dataset.bound) return
+        b.addEventListener('click', () => activateThumb(b))
+        b.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateThumb(b) }
+        })
+        b.dataset.bound = '1'
+      })
+    } catch (e) { /* ignore */ }
+  }
+
+  // Run asap so static page thumbnails are interactive even without API
+  attachStaticThumbsStandalone()
 
   try {
     if (location.protocol === 'file:') {
@@ -34,6 +98,7 @@
     }
 
     // Resolve channelId via search
+    setStatus('Videos werden geladen…')
     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=1&key=${apiKey}`
     const searchJson = await fetchJson(searchUrl)
     const channelId = searchJson?.items?.[0]?.snippet?.channelId || searchJson?.items?.[0]?.id?.channelId
@@ -75,28 +140,69 @@
       article.className = 'video-card'
       article.innerHTML = `
         <h2>${escapeHtml(title)} — Abdulkerim Sesli</h2>
-        <div class="embed"><iframe width="560" height="315" src="https://www.youtube.com/embed/${vid}" title="${escapeHtml(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
         <p class="video-desc">${escapeHtml(desc)}</p>
       `
 
-      // Create JSON-LD script element via DOM to avoid embedding </script> inside a JS template literal
+      // Create thumbnail placeholder (click to load iframe)
+      const thumbBtn = document.createElement('button')
+      thumbBtn.className = 'video-thumb'
+      thumbBtn.setAttribute('aria-label', `Play ${title} — Abdulkerim`)
+      thumbBtn.dataset.videoId = vid
+      thumbBtn.style.backgroundImage = `url('${thumb}')`
+      thumbBtn.innerHTML = '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>'
+
+      // Meta row
+      const meta = document.createElement('div')
+      meta.className = 'video-meta'
+      meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`
+
+      // JSON-LD script
       const ld = document.createElement('script')
       ld.type = 'application/ld+json'
       ld.textContent = JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
-        'name': title + ' – Abdulkerim Sesli',
-        'description': desc,
-        'thumbnailUrl': thumb,
-        'uploadDate': pub || new Date().toISOString().split('T')[0],
-        'contentUrl': `https://youtu.be/${vid}`,
-        'embedUrl': `https://www.youtube.com/embed/${vid}`,
-        'publisher': {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
+        name: title + ' – Abdulkerim Sesli',
+        description: desc,
+        thumbnailUrl: thumb,
+        uploadDate: pub || new Date().toISOString().split('T')[0],
+        contentUrl: `https://youtu.be/${vid}`,
+        embedUrl: `https://www.youtube.com/embed/${vid}`,
+        publisher: {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
       })
 
       grid.appendChild(article)
+      article.appendChild(thumbBtn)
+      article.appendChild(meta)
       article.appendChild(ld)
+
+      // Activate thumb handlers
+      thumbBtn.addEventListener('click', () => activateThumb(thumbBtn))
+      thumbBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          activateThumb(thumbBtn)
+        }
+      })
     })
+
+    // Attach handlers for static thumbnails already in the DOM
+    function initStaticThumbs() {
+      document.querySelectorAll('.video-thumb').forEach(b => {
+        if (b.dataset.bound) return
+        b.addEventListener('click', () => activateThumb(b))
+        b.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault(); activateThumb(b)
+          }
+        })
+        b.dataset.bound = '1'
+      })
+    }
+
+    // Ensure static thumbs work even if API fetch replaced content
+    initStaticThumbs()
+    setStatus('')
 
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c])
@@ -120,6 +226,7 @@
       }
       el.textContent = message
       container.insertBefore(el, container.firstChild)
+      try { setStatus(el.textContent) } catch (e) { /* ignore */ }
     } catch (e) {
       // ignore UI errors
     }
