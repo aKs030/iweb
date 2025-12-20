@@ -1,225 +1,142 @@
-# Abdulkerim — Digital Creator Portfolio
+# Abdulkerim — Digital Creator Portfolio 🚀
 
-Digital Creator Portfolio von Abdulkerim Sesli.
+[![Wikidata](https://img.shields.io/badge/Wikidata-Q137477849-006699?logo=wikidata)](https://www.wikidata.org/wiki/Q137477849) [![LinkedIn](https://img.shields.io/badge/LinkedIn-abdulkerim--s-0077B5?logo=linkedin)](https://linkedin.com/in/abdulkerim-s) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## ✨ Features
-
-- **Progressive Web App (PWA)** mit Offline-Support
-- **Responsive Design** optimiert für alle Geräte
-- **3D Earth Visualization** mit Three.js
-- **TypeWriter-Effekt** für dynamische Texte
-- **Accessibility-First** mit ARIA-Support und Screen Reader Optimierung
-- **Performance-optimiert** mit Lazy Loading und Code Splitting
-
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-# Installiere Dependencies
-npm install
-```
-
-### Development Server
-
-```bash
-# Starte lokalen Entwicklungsserver
-npm run dev
-```
-
-Öffne http://127.0.0.1:8081 im Browser.
-
-### WebSocket Debugging
-
-Für lokales WebSocket-Testing füge `?ws-test` zur URL hinzu:
-
-```bash
-open "http://127.0.0.1:8081/?ws-test"
-```
-
-Die WebSocket-Reconnect-Logik verwendet `content/shared/reconnecting-websocket.js`.
-
-## 🛠️ Scripts
-
-```bash
-# Code formatieren
-npm run format
-
-# Entwicklungsserver starten
-npm run dev
-
-# Lokaler HTTP-Server
-npm run serve
-
-# Production Build
-npm run build:prod
-```
-
-## 📦 Progressive Web App (PWA)
-
-Die Website ist als PWA installierbar und bietet:
-
-- **Offline-Funktionalität** durch Service Worker
-- **App-Installation** auf Desktop und Mobile
-- **Cache-Strategien**:
-  - Cache-First für Bilder und Fonts
-  - Network-First für HTML
-  - Stale-While-Revalidate für CSS/JS
-
-### Service Worker Management
-
-```javascript
-// Service Worker löschen (Development)
-navigator.serviceWorker.getRegistrations().then(registrations => {
-  registrations.forEach(reg => reg.unregister())
-})
-```
-
-Siehe `sw.js` für Implementierungsdetails.
-
-## 🔒 Sicherheit
-
-Content Security Policy (CSP) Empfehlungen sind in `SECURITY-CSP.md` dokumentiert.
-
-Empfohlene Security Headers:
-
-- Content-Security-Policy
-- X-Content-Type-Options
-- X-Frame-Options
-- Strict-Transport-Security
-
-## 📁 Projektstruktur
-
-```
-iweb/
-├── content/               # Shared Components & Utilities
-│   ├── main.js           # Haupt-Entry-Point
-│   ├── shared-utilities.js
-│   ├── accessibility-manager.js
-│   ├── menu/
-│   ├── footer/
-│   ├── particles/        # Three.js Earth System
-│   └── TypeWriter/
-├── pages/                # Seiten-spezifische Module
-│   ├── home/
-│   ├── about/
-│   ├── gallery/          # 📸 React Photo Gallery (renamed from fotos/)
-│   │   ├── gallery.html
-│   │   └── gallery-app.js
-│   └── projekte/
-├── sw.js                 # Service Worker
-├── offline.html          # Offline-Fallback-Seite
-└── manifest.json         # PWA Manifest
-```
-
-## 🎨 Styling
-
-CSS-Variablen sind in `content/root.css` zentralisiert:
-
-- Dark/Light Mode Support
-- Responsive Typography
-- Design Tokens für Konsistenz
-
-## 🧪 Code Quality
-
-### Linting
-
-```bash
-# JavaScript linting
-npx eslint .
-```
-
-### Best Practices
-
-- Verwende `createLogger()` aus `shared-utilities.js` für Logging
-- Halte CSS-Variablen in `content/root.css`
-- Service Worker Version-Bump bei Änderungen an `sw.js`
-- Teste Offline-Funktionalität mit DevTools Network Throttling
-
-## 📝 Recent Updates (Dezember 2025)
-
-### ✅ React Photo Gallery hinzugefügt
-
-- Neue React-basierte Photo Gallery unter `/pages/gallery/`
-- Features: Filter, Suche, Zoom, Slideshow, Favoriten, Download/Share
-- Nutzt lokale Utility-CSS (`/pages/gallery/gallery-styles.css`) statt Tailwind-CDN
-- Vollständig responsive und PWA-kompatibel
-
-### ✅ Console-Logs standardisiert
-
-Alle `console.*` Aufrufe wurden durch das zentrale Logger-System ersetzt.
-
-### ✅ Dependencies aktualisiert
-
-- ESLint v8 → v9
-- Concurrently v8 → v9
-- Weitere Updates siehe `package.json`
-
-### ✅ CSS optimiert
-
-- Doppelte Selektoren entfernt
-- about.css bereinigt
-- CSS-Variablen konsolidiert
-
-### ✅ PWA implementiert
-
-Service Worker mit intelligenten Caching-Strategien hinzugefügt.
-
-## 📚 Dokumentation
-
-- **DEV.md** - Entwickler-Dokumentation und Debugging-Tipps
-- **SECURITY-CSP.md** - Content Security Policy Richtlinien
-- **manifest.json** - PWA-Konfiguration
-
-## 🤝 Entwicklung
-
-Entwickelt mit modernen Web-Standards:
-
-- ES Modules
-- CSS Custom Properties
-- Intersection Observer API
-- Service Worker API
-- Web Components Patterns
-
-## 📄 Lizenz
-
-MIT
+**Modernes, hochperformantes Portfolio-Framework von Abdulkerim Sesli — PWA-fähig, barrierearm und mit interaktiven Visualisierungen.**
 
 ---
 
-**Hinweis:** Diese Website verwendet keine externen Frameworks im Production-Build. React wird nur für die Projekte-Seite verwendet und ist als UMD-Build eingebunden.
+## Inhaltsverzeichnis
+- [Linked Data & Identität](#-linked-data--identit%C3%A4t)
+- [Funktionen](#-funktionen)
+- [Installation](#-installation)
+- [Skripte](#-skripte)
+- [Projektstruktur](#-projektstruktur)
+- [PWA & Service Worker](#-pwa--service-worker)
+- [Aktuelle Änderungen](#-aktuelle-%C3%A4nderungen)
+- [Mitmachen (Contributing)](#-mitmachen-contributing)
+- [CI & Badges](#-ci--badges)
+- [Demo / Screenshots](#-demo--screenshots)
+- [Lizenz](#-lizenz)
 
-## 🧩 Entwickler-Setup & Hooks
+---
 
-Kurze Hinweise für Contributor und Entwickler-Workflows:
+## 🌐 Linked Data & Identität
+Dieses Projekt ist Teil eines vernetzten Wissensgraphen. Zur Verifizierung und für KI-basierte Suchanfragen sind folgende Einträge hinterlegt:
 
-- Installation:
+- **Projekt-Entität (Wikidata):** [Q137477849](https://www.wikidata.org/wiki/Q137477849)
+- **Creator-Profil (Wikidata):** [Q137477188](https://www.wikidata.org/wiki/Q137477188)
+- **Offizielle Website:** [abdulkerimsesli.de](https://abdulkerimsesli.de)
 
+---
+
+## ✨ Funktionen
+- Progressive Web App (PWA) mit Offline-Support und Installation
+- Echtzeit Earth-Visualisierung mit **Three.js**
+- Core Web Vitals-fokussierte Performance (Lazy Loading, Code Splitting)
+- Accessibility-First: ARIA & Screen Reader Optimierungen
+- Dynamische UI: Custom TypeWriter-Effekt und Responsive Design Tokens
+
+---
+
+## 🛠️ Installation
 ```bash
-# Installiere Dependencies und aktiviere Husky-Hooks
+# Dependencies installieren
 npm install
+# Husky-Hooks installieren
 npm run prepare
+# Lokalen Server starten
+npm run dev
 ```
 
-- Formatierung + Linting (lokal oder CI):
+---
 
-```bash
-# Formatieren (Prettier + ESLint auto-fix via lint-staged on commit)
-npm run format
+## 📦 Skripte
+| Befehl | Beschreibung |
+|---|---|
+| `npm run dev` | Startet lokalen HTTP-Server (http-server auf Port 8081) |
+| `npm run serve` | Startet `http-server` (gleich wie `dev`) |
+| `npm run format` | Formatiert Code mit Prettier |
+| `npm run format:check` | Überprüft Format mit Prettier |
+| `npm run prepare` | Installiert Husky-Git-Hooks |
+| `npm run lint` | Führt ESLint aus (`lint:js` für .js/.ts Dateien) |
 
-# Format-Check (CI-friendly)
-npm run format:check
+> Hinweis: In älteren Dokumenten wird `npm run build:prod` erwähnt — aktuell existiert kein `build`-Skript in `package.json`. Wenn du ein Production-Build-Setup möchtest, kann ich ein `build`-Script (z.B. mit `esbuild`) ergänzen.
 
-# Linten
-npm run lint
+---
+
+## 📂 Projektstruktur
+```
+iweb/
+├── content/               # Shared Components & Utilities (Core Logic)
+│   ├── particles/         # Three.js Earth System
+│   ├── accessibility/     # A11y Manager
+│   └── TypeWriter/        # Dynamische Text-Effekte
+├── pages/                 # Modulare Seiten-Struktur
+│   ├── gallery/           # React-basierte Foto-Galerie (Lazy Loaded)
+│   └── projekte/          # Projekt-Showcase
+├── sw.js                  # Service Worker (Stale-While-Revalidate Strategie)
+└── manifest.json          # PWA Konfiguration
 ```
 
-- Husky / lint-staged:
-  - Vor jedem Commit laufen `prettier` und `eslint --fix` auf gestagten Dateien.
-  - Wenn Du Hooks temporär deaktivieren willst: `HUSKY=0 git commit -m "..."`.
+---
 
-- Wenn Du Regeln änderst:
-  - Passe `.prettierrc` und `.eslintrc.cjs` / `.eslintrc.json` an.
-  - Teste mit `npm run format:check` und `npm run lint`.
+## 🔧 PWA & Service Worker
+Smartes Caching:
+- **Cache-First**: Assets, Bilder & Fonts
+- **Network-First**: Kritische HTML-Dokumente
+- **Offline-Fallback**: Automatisches Routing zur `offline.html`
 
-Danke für Deinen Beitrag! Bitte achte auf konsistente Formatierung und das Hinzufügen/Anpassen von Tests, wenn Du Verhalten änderst.
+Siehe `sw.js` für Implementierungsdetails.
+
+---
+
+## 📝 Aktuelle Änderungen (Dezember 2025)
+- ✅ **React Photo Gallery**: Performante Galerie mit Filter & Zoom
+- ✅ **Logger-System**: Zentralisiertes Logging via `shared-utilities.js`
+- ✅ **ESM Migration**: Vollständige Umstellung auf ES Modules
+- ✅ **Dependency Update**: ESLint v9, Concurrently v9
+
+---
+
+## 🤝 Mitmachen (Contributing)
+Kurz-Checklist für Beiträge:
+- Fork → Branch → Commit → PR
+- Vor Commit: `npm run format` und `npm run lint`
+- Husky-Hooks sind aktiv (`prepare`/`install`) — Commit wird formatiert und gelinted
+- Schreibe kurze, aussagekräftige PR-Titel und beschreibe Änderungen im PR-Body
+
+Für grössere Änderungen: Öffne bitte zuerst ein Issue zur Diskussion.
+
+---
+
+## 📊 CI & Badges
+Aktuell ist kein CI-Workflow im Repo gefunden. Empfohlen:
+- GitHub Actions für Build, Lint und Tests
+- Coverage (z.B. Codecov) falls Tests hinzugefügt werden
+
+Badge-Template (ersetze `OWNER/REPO` und `workflow.yml`):
+
+`![CI](https://github.com/OWNER/REPO/actions/workflows/workflow.yml/badge.svg)`
+
+Wenn du möchtest, richte ich ein Beispiel-Workflow ein und füge ein aktives Badge hinzu.
+
+---
+
+## 🎞️ Demo / Screenshots
+Füge kurze Vorschau-Bilder in `assets/` hinzu und verlinke sie hier:
+
+```markdown
+![Preview](assets/preview.png)
+```
+
+Wenn du mir 1–2 Screenshots gibst, füge ich sie gern direkt ein.
+
+---
+
+## 📄 Lizenz
+Dieses Projekt ist unter der **MIT-Lizenz** lizenziert.
+
+---
+
+Weitere Details: `CHANGELOG.md`, `DEV.md` und `SECURITY-CSP.md` enthalten ergänzende Informationen für Entwickler.
