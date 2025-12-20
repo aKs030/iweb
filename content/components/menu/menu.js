@@ -199,15 +199,9 @@ function initializeMenu(container) {
       const isAnchor = href && href.startsWith('#')
       closeMenu(container)
 
-      if (window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')) {
-        // Prevent default to allow smooth close animation then navigate
-        if (!isAnchor) {
-          e.preventDefault()
-          setTimeout(() => {
-            window.location.href = href
-          }, 160)
-        }
-      }
+      // Robustness: Removed preventDefault/setTimeout navigation hack.
+      // Allow native browser navigation to ensure links always work.
+      // The menu will close immediately via closeMenu() above.
     })
   })
 
