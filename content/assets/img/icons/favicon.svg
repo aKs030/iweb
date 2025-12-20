@@ -1,26 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
-    </linearGradient>
-  </defs>
+  <!--
+    Professional High-Contrast Icon
+    Strategy:
+    1. Solid Dark Background (No rounded corners in source) -> Maximize dark area.
+    2. Pure White Text -> Maximize contrast.
+    3. No decoration -> Maximize legibility.
+  -->
 
-  <!-- Background -->
-  <rect width="512" height="512" rx="128" ry="128" fill="url(#bg)"/>
+  <!-- Solid Deep Navy Background -->
+  <rect width="512" height="512" fill="#0b1121"/>
 
-  <!-- Orbital Ring -->
-  <circle cx="256" cy="256" r="190" fill="none" stroke="#38bdf8" stroke-width="24" opacity="0.9"/>
-
-  <!-- Text -->
+  <!-- Text: AKS -->
+  <!-- Using a slightly wider sans-serif and generous spacing for readbility -->
   <text
     x="50%"
-    y="54%"
+    y="55%"
     dominant-baseline="middle"
     text-anchor="middle"
-    font-family="system-ui, -apple-system, sans-serif"
+    font-family="Arial, Helvetica, sans-serif"
     font-weight="900"
-    font-size="220"
+    font-size="240"
     fill="#ffffff"
-    letter-spacing="-10">AKS</text>
+    letter-spacing="-5">AKS</text>
 </svg>
