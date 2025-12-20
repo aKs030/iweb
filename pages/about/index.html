@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Über mich — Abdulkerim Sesli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO Meta Tags -->
+    <meta
+      name="description"
+      content="Mein Werdegang, meine Vision und was mich als Webentwickler und Creator antreibt. Abdulkerim Sesli aus Berlin." />
+    <meta name="keywords" content="Über mich, Abdulkerim Sesli, Web Developer, Berlin, Biografie, Vision, Skills" />
+    <link rel="canonical" href="https://abdulkerimsesli.de/about/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Über mich — Abdulkerim Sesli" />
+    <meta property="og:description" content="Digital Creator, Entwickler und kreativer Kopf aus Berlin." />
+    <meta property="og:type" content="profile" />
+    <meta property="og:url" content="https://abdulkerimsesli.de/about/" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.png" />
+
+    <!-- Shared Head -->
+    <script src="/content/components/head/head-complete.js" type="module"></script>
+
+    <!-- Specific Styles -->
+    <link rel="stylesheet" href="/pages/about/about.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 min-h-screen container-center">
+      <div id="about-content-wrapper" aria-busy="true">
+        <div class="loader" style="margin: 4rem auto;"></div>
+      </div>
+    </main>
+
+    <!-- Footer Trigger Zone -->
+    <div id="footer-trigger-zone" class="footer-trigger-zone"></div>
+
+    <!-- Footer Container -->
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
+
+    <!-- Load Content Script -->
+    <script>
+      (async function loadAboutContent() {
+        const wrapper = document.getElementById('about-content-wrapper')
+        try {
+          const response = await fetch('/pages/about/about-content.html')
+          if (!response.ok) throw new Error('Content not found')
+          const html = await response.text()
+          wrapper.innerHTML = html
+          wrapper.removeAttribute('aria-busy')
+
+          // Adjust links for standalone context if needed
+          const homeLink = wrapper.querySelector('a[href="#hero"]')
+          if (homeLink) homeLink.href = '/'
+        } catch (e) {
+          console.error('Failed to load about content', e)
+          wrapper.innerHTML = '<p style="text-align:center; padding: 2rem;">Inhalt konnte nicht geladen werden.</p>'
+        }
+      })()
+    </script>
+  </body>
+</html>

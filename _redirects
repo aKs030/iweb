@@ -1,32 +1,40 @@
 # Cloudflare Pages / Netlify style redirects
 # Purpose: canonicalize folder URLs, remove index.html and .html endings where desired
-# All redirects are permanent (301)
+# All redirects are permanent (301) unless specified as Rewrite (200)
 
-# Remove index.html explicit mappings
+# === Clean URL Rewrites (200 OK) ===
+# Serve the content from /pages/x/index.html when user visits /x
+/projekte   /pages/projekte/index.html   200
+/gallery    /pages/gallery/index.html    200
+/blog       /pages/blog/index.html       200
+/about      /pages/about/index.html      200
+
+# Support trailing slash versions as well (Rewrite to same content)
+/projekte/   /pages/projekte/index.html   200
+/gallery/    /pages/gallery/index.html    200
+/blog/       /pages/blog/index.html       200
+/about/      /pages/about/index.html      200
+
+# === Redirects (301 Moved Permanently) ===
+
+# Redirect direct access to /pages/x/index.html to the clean URL /x/
+/pages/projekte/index.html   /projekte/   301
+/pages/gallery/index.html    /gallery/    301
+/pages/blog/index.html       /blog/       301
+/pages/about/index.html      /about/      301
+
+# Legacy redirects for old .html filenames
+/pages/projekte/projekte.html   /projekte/   301
+/pages/gallery/gallery.html     /gallery/    301
+/projekte.html                  /projekte/   301
+/gallery.html                   /gallery/    301
+
+# Redirect standalone /index.html to root
 /index.html          /              301
-/blog/index.html     /blog/         301
-/projekte/index.html /projekte/     301
-/gallery/index.html  /gallery/      301
 
-# Remove specific HTML pages under /pages to clean folder URLs
-/pages/projekte/projekte.html   /projekte/    301
-/pages/gallery/gallery.html     /gallery/     301
-/pages/blog/index.html          /blog/        301
-
-# Generic: normalize any /something/index.html -> /something/
-# :splat captures the folder path (may be empty for root, handled above)
+# Generic fallbacks
 /:splat/index.html  /:splat/  301
 
-# Optional: normalize domain and protocol to https://abdulkerimsesli.de
+# Optional: ensure https
 http://abdulkerimsesli.de/*           https://abdulkerimsesli.de/:splat   301
 https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
-
-# Optional: remove .html suffix site-wide (use with caution)
-# Uncomment if you want every /foo.html -> /foo/ permanent redirect
-/:splat.html  /:splat/  301
-
-# Explicit mappings to ensure safe global .html removal
-/pages/about/about.html        /about/      301
-/pages/gallery/gallery.html    /gallery/    301
-/pages/home/hero.html          /            301
-/pages/projekte/projekte.html  /projekte/   301
