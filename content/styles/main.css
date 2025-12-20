@@ -316,21 +316,6 @@ a:hover {
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
   }
 
-  .features-content {
-    padding: 0 var(--spacing-sm);
-  }
-
-  .card {
-    padding: calc(var(--spacing-sm) * 0.9);
-  }
-
-  .card .icon-wrapper {
-    width: 45px;
-    height: 45px;
-    font-size: 1.8rem;
-  }
-}
-
 @media (width <= 375px) {
   html {
     font-size: 14px;
@@ -432,7 +417,3 @@ html {
     transition: none;
   }
 }
-
-/* Features/Card rules moved to component: `/content/styles/components/cards.css`. */
-
-/* For compatibility, the cards component provides the DOM fallback & responsive rules. */
