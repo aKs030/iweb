@@ -1,39 +1,32 @@
 Ziel: Wikidata‑Item für Abdulkerim Sesli anlegen und mit deinen Profilen + Website verbinden.
 
-Kurzanleitung (QuickStatements v1):
-1. Geh zu https://quickstatements.toolforge.org/ und melde dich mit deinem Wikidata‑Account an.
-2. Füge die folgenden Zeilen (angepasst falls nötig) ein und führe sie aus:
+Fertige QuickStatements (zum Einfügen in https://quickstatements.toolforge.org/):
 
 CREATE
 LAST|Len|"Abdulkerim Sesli"
-LAST|Den|"Digital Creator und Webentwickler aus Berlin"@de
+LAST|Lde|"Abdulkerim Sesli"
+LAST|Den|"Privat‑Website dient als Visitenkarte"@de
 LAST|P31|Q5
 LAST|P106|Q6859454
 LAST|P106|Q33231
+LAST|P569|+1991-00-00T00:00:00Z/9
+LAST|P19|Q64
+LAST|P551|Q64
 LAST|P27|Q183
 LAST|P856|"https://abdulkerimsesli.de"
-LAST|P2037|"aKs030"  # GitHub username (P2037) — ändere falls nötig
-LAST|P2002|"abdulkerim_twitter"  # optional: Twitter handle (P2002)
+LAST|P2037|"aKs030"
+LAST|P6634|"abdulkerim-s"
+LAST|P2002|"kRm_030"
 
-Hinweise:
-- P31 = instance of (verwende Q5 = human)
-- P106 = occupation (Q6859454 = web developer, Q33231 = photographer)
-- P27 = country of citizenship (Q183 = Germany)
-- P856 = official website
-- P2037 = GitHub username (external-id)
-- P2002 = Twitter username (external-id)
+Wichtige Hinweise zur Ausführung:
+- Melde dich bei QuickStatements mit deinem Wikidata‑Account an. Kopiere die obenstehenden Zeilen in das Eingabefeld und führe sie in einem Schritt aus.
+- Ich habe **kein Porträtbild (P18)** hinzugefügt, weil das Bild derzeit nicht auf Wikimedia Commons liegt. Wenn du ein Bild hochlädst (Commons), kann ich die QuickStatements um `LAST|P18|"Dateiname.jpg"` ergänzen.
+- QuickStatements erstellt dann das Item mit den angegebenen Labels, Beschreibungen und Statements.
 
-Wenn du ein Profilbild auf Wikimedia Commons hast, kannst du zusätzlich P18|"Dateiname.jpg" setzen.
+Quellenlage (wichtig für Wikipedia):
+- Bei einer kurzen Recherche wurden **hauptsächlich selbstverwaltete Quellen** gefunden (offizielle Website, GitHub, LinkedIn, X). Es wurden keine klar unabhängigen Presseartikel oder Interviews entdeckt. Das bedeutet: Ein Wikipedia‑Artikel hat ein erhöhtes Risiko, wegen mangelnder Relevanz/Quellen abgelehnt oder gelöscht zu werden. Ich empfehle, vor der Erstellung des Wikipedia‑Artikels nach unabhängigen, zuverlässigen Quellen zu suchen oder Presse‑Erwähnungen zu sammeln.
 
-Was ich für dich vorbereitet habe:
-- Eine kurze QuickStatements‑Vorlage (oben) — du musst sie nur in QuickStatements einfügen und ausführen.
-- Ein Wikipedia‑Stub (siehe `WIKIPEDIA-STUB.de.md`) als Entwurfstext.
+Was ich als Nächstes für dich tun kann:
+- Falls gewünscht, führe ich die QuickStatements in deinem Namen aus (wenn du mir dazu explizit sagst, dass ich in deinem Account arbeiten soll) — oder ich bereite die Schritte vor, die du selbst ausführst.
+- Ich kann außerdem nach weiteren externen Quellen suchen und den Wikipedia‑Artikel so anreichern, dass er besser die Relevanzkriterien erfüllt.
 
-Wichtig: Wikipedia verlangt unabhängige, zuverlässige Sekundärquellen (z. B. Presseartikel, Interviews, Magazin‑Features). Ein eigener Webseiten‑Eintrag ohne solche Quellen wird sehr wahrscheinlich abgelehnt.
-
-Wenn du möchtest, kann ich:
-- die QuickStatements für dich anpassen (z. B. Twitter‑Handle, Geburtsdatum, weitere Occupations)
-- prüfen, ob es Presse‑Quellen gibt, die als Referenzen für einen Wikipedia‑Artikel taugen
-- nach dem Erstellen dein `content/components/head/head.html` automatisch mit der neuen Wikidata‑URL und ggf. der Wikipedia‑URL in `sameAs` ergänzen
-
-Sag Bescheid, wie du fortfahren möchtest.
