@@ -193,15 +193,16 @@ function initializeMenu(container) {
   // Close the mobile menu when any navigation link is clicked
   container.querySelectorAll('.site-menu a[href]').forEach(a => {
     a.addEventListener('click', e => {
-      // Close the menu on mobile/compact view and delay navigation slightly so the close animation is visible
       const href = a.getAttribute('href')
-      const isExternal = /^https?:\/\//i.test(href)
       const isAnchor = href && href.startsWith('#')
-      closeMenu(container)
 
-      // Robustness: Removed preventDefault/setTimeout navigation hack.
-      // Allow native browser navigation to ensure links always work.
-      // The menu will close immediately via closeMenu() above.
+      // Only close explicitly if it's an anchor (in-page navigation).
+      // For real page navigation, let the browser handle it. Closing the menu
+      // immediately might interfere with the click event on some touch devices.
+      // The menu will naturally be closed when the new page loads.
+      if (isAnchor) {
+        closeMenu(container)
+      }
     })
   })
 
