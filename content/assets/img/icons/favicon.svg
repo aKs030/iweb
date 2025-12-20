@@ -6,14 +6,14 @@
       <stop offset="50%" style="stop-color:#0f172a;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
     </linearGradient>
-    
+
     <!-- Radial Glow -->
     <radialGradient id="glowGradient" cx="50%" cy="40%">
       <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:0.6" />
       <stop offset="50%" style="stop-color:#007aff;stop-opacity:0.3" />
       <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:0" />
     </radialGradient>
-    
+
     <!-- Text Glow -->
     <filter id="textGlow">
       <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
@@ -24,7 +24,7 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    
+
     <!-- Schatten -->
     <filter id="shadow">
       <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
@@ -37,25 +37,25 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    
+
     <!-- Ring Glow -->
     <filter id="ringGlow">
       <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
     </filter>
-    
+
     <!-- Vignette -->
     <radialGradient id="vignette" cx="50%" cy="50%">
       <stop offset="60%" style="stop-color:#000000;stop-opacity:0" />
       <stop offset="100%" style="stop-color:#000000;stop-opacity:0.4" />
     </radialGradient>
   </defs>
-  
+
   <!-- Hintergrund Gradient -->
   <rect width="512" height="512" fill="url(#bgGradient)"/>
-  
+
   <!-- Radial Glow Overlay -->
   <circle cx="256" cy="200" r="350" fill="url(#glowGradient)" opacity="0.7"/>
-  
+
   <!-- Diagonale Lichtstrahlen -->
   <g opacity="0.15">
     <rect x="-100" y="0" width="30" height="512" fill="#007aff" transform="rotate(-10 256 256)"/>
@@ -64,7 +64,7 @@
     <rect x="350" y="0" width="25" height="512" fill="#007aff" transform="rotate(-10 256 256)"/>
     <rect x="500" y="0" width="30" height="512" fill="#007aff" transform="rotate(-10 256 256)"/>
   </g>
-  
+
   <!-- Shimmer Partikel -->
   <g opacity="0.4">
     <circle cx="120" cy="80" r="3" fill="#93c5fd"/>
@@ -76,39 +76,39 @@
     <circle cx="200" cy="450" r="2.5" fill="#93c5fd"/>
     <circle cx="300" cy="90" r="2" fill="#93c5fd"/>
   </g>
-  
+
   <!-- Ringe -->
   <g filter="url(#ringGlow)">
     <circle cx="256" cy="256" r="180" fill="none" stroke="#60a5fa" stroke-width="8" opacity="0.7"/>
     <circle cx="256" cy="256" r="200" fill="none" stroke="#34aadc" stroke-width="6" opacity="0.5"/>
   </g>
-  
+
   <!-- AKS Text -->
   <g filter="url(#shadow)">
-    <text 
-      x="256" 
-      y="290" 
-      font-family="system-ui, -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" 
-      font-size="180" 
+    <text
+      x="256"
+      y="290"
+      font-family="system-ui, -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif"
+      font-size="180"
       font-weight="900"
-      text-anchor="middle" 
+      text-anchor="middle"
       fill="#ffffff"
       filter="url(#textGlow)"
       letter-spacing="-5">AKS</text>
   </g>
-  
+
   <!-- Highlight oben auf Text -->
-  <text 
-    x="256" 
-    y="287" 
-    font-family="system-ui, -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" 
-    font-size="180" 
+  <text
+    x="256"
+    y="287"
+    font-family="system-ui, -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif"
+    font-size="180"
     font-weight="900"
-    text-anchor="middle" 
+    text-anchor="middle"
     fill="#ffffff"
     opacity="0.3"
     letter-spacing="-5">AKS</text>
-  
+
   <!-- Vignette Overlay -->
   <rect width="512" height="512" fill="url(#vignette)"/>
 </svg>
