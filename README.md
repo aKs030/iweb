@@ -7,6 +7,7 @@
 ---
 
 ## Inhaltsverzeichnis
+
 - [Linked Data & Identität](#-linked-data--identit%C3%A4t)
 - [Funktionen](#-funktionen)
 - [Installation](#-installation)
@@ -22,6 +23,7 @@
 ---
 
 ## 🌐 Linked Data & Identität
+
 Dieses Projekt ist Teil eines vernetzten Wissensgraphen. Zur Verifizierung und für KI-basierte Suchanfragen sind folgende Einträge hinterlegt:
 
 - **Projekt-Entität (Wikidata):** [Q137477849](https://www.wikidata.org/wiki/Q137477849)
@@ -31,6 +33,7 @@ Dieses Projekt ist Teil eines vernetzten Wissensgraphen. Zur Verifizierung und f
 ---
 
 ## ✨ Funktionen
+
 - Progressive Web App (PWA) mit Offline-Support und Installation
 - Echtzeit Earth-Visualisierung mit **Three.js**
 - Core Web Vitals-fokussierte Performance (Lazy Loading, Code Splitting)
@@ -40,6 +43,7 @@ Dieses Projekt ist Teil eines vernetzten Wissensgraphen. Zur Verifizierung und f
 ---
 
 ## 🛠️ Installation
+
 ```bash
 # Dependencies installieren
 npm install
@@ -52,20 +56,22 @@ npm run dev
 ---
 
 ## 📦 Skripte
-| Befehl | Beschreibung |
-|---|---|
-| `npm run dev` | Startet lokalen HTTP-Server (http-server auf Port 8081) |
-| `npm run serve` | Startet `http-server` (gleich wie `dev`) |
-| `npm run format` | Formatiert Code mit Prettier |
-| `npm run format:check` | Überprüft Format mit Prettier |
-| `npm run prepare` | Installiert Husky-Git-Hooks |
-| `npm run lint` | Führt ESLint aus (`lint:js` für .js/.ts Dateien) |
+
+| Befehl                 | Beschreibung                                            |
+| ---------------------- | ------------------------------------------------------- |
+| `npm run dev`          | Startet lokalen HTTP-Server (http-server auf Port 8081) |
+| `npm run serve`        | Startet `http-server` (gleich wie `dev`)                |
+| `npm run format`       | Formatiert Code mit Prettier                            |
+| `npm run format:check` | Überprüft Format mit Prettier                           |
+| `npm run prepare`      | Installiert Husky-Git-Hooks                             |
+| `npm run lint`         | Führt ESLint aus (`lint:js` für .js/.ts Dateien)        |
 
 > Hinweis: In älteren Dokumenten wird `npm run build:prod` erwähnt — aktuell existiert kein `build`-Skript in `package.json`. Wenn du ein Production-Build-Setup möchtest, kann ich ein `build`-Script (z.B. mit `esbuild`) ergänzen.
 
 ---
 
 ## 📂 Projektstruktur
+
 ```
 iweb/
 ├── content/               # Shared Components & Utilities (Core Logic)
@@ -82,7 +88,9 @@ iweb/
 ---
 
 ## 🔧 PWA & Service Worker
+
 Smartes Caching:
+
 - **Cache-First**: Assets, Bilder & Fonts
 - **Network-First**: Kritische HTML-Dokumente
 - **Offline-Fallback**: Automatisches Routing zur `offline.html`
@@ -92,6 +100,7 @@ Siehe `sw.js` für Implementierungsdetails.
 ---
 
 ## 📝 Aktuelle Änderungen (Dezember 2025)
+
 - ✅ **React Photo Gallery**: Performante Galerie mit Filter & Zoom
 - ✅ **Logger-System**: Zentralisiertes Logging via `shared-utilities.js`
 - ✅ **ESM Migration**: Vollständige Umstellung auf ES Modules
@@ -100,7 +109,9 @@ Siehe `sw.js` für Implementierungsdetails.
 ---
 
 ## 🤝 Mitmachen (Contributing)
+
 Kurz-Checklist für Beiträge:
+
 - Fork → Branch → Commit → PR
 - Vor Commit: `npm run format` und `npm run lint`
 - Husky-Hooks sind aktiv (`prepare`/`install`) — Commit wird formatiert und gelinted
@@ -111,7 +122,9 @@ Für grössere Änderungen: Öffne bitte zuerst ein Issue zur Diskussion.
 ---
 
 ## 📊 CI & Badges
+
 Aktuell ist kein CI-Workflow im Repo gefunden. Empfohlen:
+
 - GitHub Actions für Build, Lint und Tests
 - Coverage (z.B. Codecov) falls Tests hinzugefügt werden
 
@@ -124,6 +137,7 @@ Wenn du möchtest, richte ich ein Beispiel-Workflow ein und füge ein aktives Ba
 ---
 
 ## 🎞️ Demo / Screenshots
+
 Füge kurze Vorschau-Bilder in `assets/` hinzu und verlinke sie hier:
 
 ```markdown
@@ -135,6 +149,7 @@ Wenn du mir 1–2 Screenshots gibst, füge ich sie gern direkt ein.
 ---
 
 ## 📄 Lizenz
+
 Dieses Projekt ist unter der **MIT-Lizenz** lizenziert.
 
 ---
