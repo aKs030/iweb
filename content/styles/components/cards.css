@@ -232,3 +232,333 @@ body.three-earth-active #features .features-cards {
 body.three-earth-active .features-content::before {
   display: none;
 }
+
+/* Features / Cards responsive rules (moved from `main.css`) */
+@media (width >= 769px) and (width <= 1024px) {
+  .features-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.75rem, 2.5vw, 2.25rem);
+    max-width: 900px;
+  }
+
+  .features-content {
+    padding: 0 clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .card {
+    padding: clamp(1.5rem, 2.5vw, 1.875rem);
+  }
+
+  .card:hover {
+    transform: translateY(-6px) scale(1.015);
+  }
+}
+
+@media (max-width: 1200px) {
+  .features-content {
+    min-height: 60vh;
+    padding: 0 clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .features-cards {
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .card {
+    padding: clamp(1rem, 2.5vw, 1.25rem);
+    min-height: 200px;
+  }
+}
+
+@media (width <= 768px) {
+  :root {
+    --card-min-width: 0;
+    --card-min-height: 0;
+  }
+
+  #features.section {
+    padding: clamp(0.75rem, 2.5vw, 1.25rem) 0;
+  }
+
+  .full-screen-section {
+    min-height: 100svh;
+    padding: clamp(1.5rem, 7vw, 2.75rem) 0;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @supports (min-height: 100dvh) {
+    .full-screen-section {
+      min-height: 100dvh;
+    }
+  }
+
+  .features-content {
+    min-height: auto;
+    padding: 0 clamp(0.75rem, 4vw, 1.25rem);
+  }
+
+  .features-cards {
+    grid-template-columns: 1fr;
+    gap: clamp(0.85rem, 3vw, 1.35rem);
+    margin-top: clamp(0.6rem, 2.5vw, 1.05rem);
+    padding: 0 clamp(0.45rem, 2.5vw, 0.75rem);
+  }
+
+  .card {
+    height: auto;
+    padding: clamp(0.85rem, 3.6vw, 1.35rem);
+    transition:
+      transform 0.3s ease,
+      background 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.3s ease,
+      opacity 0.4s ease-out;
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(44px, 10vw, 52px);
+    height: clamp(44px, 10vw, 52px);
+    font-size: clamp(1.45rem, 4vw, 1.9rem);
+    margin-bottom: clamp(0.65rem, 2.75vw, 1rem);
+  }
+
+  .card:hover .icon-wrapper {
+    transform: scale(1.08) rotate(-3deg);
+  }
+
+  .card-title {
+    font-size: clamp(0.9rem, 3.4vw, 1.05rem);
+    line-height: 1.22;
+    margin-bottom: clamp(0.45rem, 2.2vw, 0.65rem);
+  }
+
+  .card-title[data-eyebrow]::before {
+    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+    margin-bottom: clamp(0.35rem, 2vw, 0.6rem);
+    letter-spacing: 0.1em;
+  }
+
+  .card-text {
+    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+    line-height: 1.55;
+  }
+}
+
+@media (width <= 480px) {
+  .features-cards {
+    gap: clamp(0.7rem, 3.8vw, 1rem);
+  }
+
+  .card {
+    padding: clamp(0.75rem, 4.6vw, 1.1rem);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(40px, 12vw, 46px);
+    height: clamp(40px, 12vw, 46px);
+    font-size: clamp(1.3rem, 5vw, 1.7rem);
+  }
+
+  .card-title {
+    font-size: clamp(0.86rem, 4vw, 0.98rem);
+  }
+
+  .card-text {
+    font-size: clamp(0.74rem, 3.8vw, 0.84rem);
+  }
+}
+
+@media (width <= 360px) {
+  .features-cards {
+    gap: 0.65rem;
+  }
+
+  .card {
+    padding: 0.7rem 0.85rem;
+  }
+
+  .card .icon-wrapper {
+    width: 38px;
+    height: 38px;
+    font-size: 1.4rem;
+  }
+
+  .card-title {
+    font-size: 0.84rem;
+  }
+
+  .card-text {
+    font-size: 0.72rem;
+  }
+}
+
+/* Features / Cards responsive rules (moved from `main.css`) */
+@media (width >= 769px) and (width <= 1024px) {
+  .features-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.75rem, 2.5vw, 2.25rem);
+    max-width: 900px;
+  }
+
+  .features-content {
+    padding: 0 clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .card {
+    padding: clamp(1.5rem, 2.5vw, 1.875rem);
+  }
+
+  .card:hover {
+    transform: translateY(-6px) scale(1.015);
+  }
+}
+
+@media (max-width: 1200px) {
+  .features-content {
+    min-height: 60vh;
+    padding: 0 clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .features-cards {
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .card {
+    padding: clamp(1rem, 2.5vw, 1.25rem);
+    min-height: 200px;
+  }
+}
+
+@media (width <= 768px) {
+  :root {
+    --card-min-width: 0;
+    --card-min-height: 0;
+  }
+
+  #features.section {
+    padding: clamp(0.75rem, 2.5vw, 1.25rem) 0;
+  }
+
+  .full-screen-section {
+    min-height: 100svh;
+    padding: clamp(1.5rem, 7vw, 2.75rem) 0;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @supports (min-height: 100dvh) {
+    .full-screen-section {
+      min-height: 100dvh;
+    }
+  }
+
+  .features-content {
+    min-height: auto;
+    padding: 0 clamp(0.75rem, 4vw, 1.25rem);
+  }
+
+  .features-cards {
+    grid-template-columns: 1fr;
+    gap: clamp(0.85rem, 3vw, 1.35rem);
+    margin-top: clamp(0.6rem, 2.5vw, 1.05rem);
+    padding: 0 clamp(0.45rem, 2.5vw, 0.75rem);
+  }
+
+  .card {
+    height: auto;
+    padding: clamp(0.85rem, 3.6vw, 1.35rem);
+    transition:
+      transform 0.3s ease,
+      background 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.3s ease,
+      opacity 0.4s ease-out;
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(44px, 10vw, 52px);
+    height: clamp(44px, 10vw, 52px);
+    font-size: clamp(1.45rem, 4vw, 1.9rem);
+    margin-bottom: clamp(0.65rem, 2.75vw, 1rem);
+  }
+
+  .card:hover .icon-wrapper {
+    transform: scale(1.08) rotate(-3deg);
+  }
+
+  .card-title {
+    font-size: clamp(0.9rem, 3.4vw, 1.05rem);
+    line-height: 1.22;
+    margin-bottom: clamp(0.45rem, 2.2vw, 0.65rem);
+  }
+
+  .card-title[data-eyebrow]::before {
+    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+    margin-bottom: clamp(0.35rem, 2vw, 0.6rem);
+    letter-spacing: 0.1em;
+  }
+
+  .card-text {
+    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+    line-height: 1.55;
+  }
+}
+
+@media (width <= 480px) {
+  .features-cards {
+    gap: clamp(0.7rem, 3.8vw, 1rem);
+  }
+
+  .card {
+    padding: clamp(0.75rem, 4.6vw, 1.1rem);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(40px, 12vw, 46px);
+    height: clamp(40px, 12vw, 46px);
+    font-size: clamp(1.3rem, 5vw, 1.7rem);
+  }
+
+  .card-title {
+    font-size: clamp(0.86rem, 4vw, 0.98rem);
+  }
+
+  .card-text {
+    font-size: clamp(0.74rem, 3.8vw, 0.84rem);
+  }
+}
+
+@media (width <= 360px) {
+  .features-cards {
+    gap: 0.65rem;
+  }
+
+  .card {
+    padding: 0.7rem 0.85rem;
+  }
+
+  .card .icon-wrapper {
+    width: 38px;
+    height: 38px;
+    font-size: 1.4rem;
+  }
+
+  .card-title {
+    font-size: 0.84rem;
+  }
+
+  .card-text {
+    font-size: 0.72rem;
+  }
+}
