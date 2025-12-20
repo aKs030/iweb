@@ -433,11 +433,7 @@ html {
   }
 }
 
-/* ==================================================
-   Cards (merged from /pages/cards/karten.css)
-   Purpose: provide fallback DOM styles for the features/cards
-   when the Three.js (WebGL) card renderer is not available.
-   ==================================================*/
+/* Cards styles extracted to `/content/styles/components/cards.css` — moved for modularity */
 
 /* Full Screen Section Layout */
 .full-screen-section {

@@ -149,7 +149,10 @@ window.robotCompanionTexts = {
     features: [
       'Features entdecken? Ich zeige dir gern die Highlights!',
       'Hier sind die Leistungen — brauchst du eine Übersicht?',
-      'Wow, viele coole Features hier! Soll ich erklären?'
+      'Wow, viele coole Features hier! Soll ich erklären?',
+      'Alle Features auf einen Blick!',
+      'Brauchst du eine Übersicht über die Features?',
+      'Die Übersicht hier ist sehr übersichtlich — soll ich helfen?'
     ],
     about: [
       'Neugierig auf den Entwickler?',
@@ -166,11 +169,7 @@ window.robotCompanionTexts = {
       'Fotos durchstöbern? Ich zeige dir die Favoriten!',
       'Schöne Bilder hier! Magst du eine Tour?'
     ],
-    cards: [
-      'Alle Features auf einen Blick!',
-      'Brauchst du eine Übersicht über die Karten?',
-      'Die Karten-Ansicht ist super übersichtlich! Hilfe?'
-    ],
+
     footer: [
       'Kontakt oder Impressum gesucht?',
       'Im Footer findest du alle wichtigen Links!',
@@ -186,7 +185,7 @@ window.robotCompanionTexts = {
     hero: 'Auf der Startseite? Ich kann dir die Highlights zeigen!',
     features: 'Auf der Feature-Übersicht — interessiert an Details zu einem bestimmten Feature?',
     footer: 'Im Footer findest du Kontakt & Impressum — soll ich dich dorthin bringen?',
-    cards: 'Auf den Karten? Ich kann dir gern die Übersicht anzeigen!'
+    // 'cards' intent deprecated — mapped into 'features' intent
   },
 
   initialBubbleSequenceConfig: {
