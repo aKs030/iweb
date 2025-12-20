@@ -184,7 +184,7 @@ window.robotCompanionTexts = {
     about: 'Auf der Über-Seite — ich kann dir die Bio und den Tech-Stack zeigen!',
     hero: 'Auf der Startseite? Ich kann dir die Highlights zeigen!',
     features: 'Auf der Feature-Übersicht — interessiert an Details zu einem bestimmten Feature?',
-    footer: 'Im Footer findest du Kontakt & Impressum — soll ich dich dorthin bringen?',
+    footer: 'Im Footer findest du Kontakt & Impressum — soll ich dich dorthin bringen?'
     // 'cards' intent deprecated — mapped into 'features' intent
   },
 
