@@ -1,5 +1,5 @@
 // Videos page loader (moved from inline to avoid HTML parsing issues)
-;(async function loadLatestVideos(){
+;(async function loadLatestVideos() {
   const apiKey = window.YOUTUBE_API_KEY
   const handle = (window.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '')
   if (!apiKey) return
@@ -19,8 +19,12 @@
       const res = await fetch(url, {credentials: 'omit', mode: 'cors'})
       if (!res.ok) {
         let text = ''
-        try { text = await res.text() } catch (e) { /* noop */ }
-        const err = new Error(`Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0,200)}`)
+        try {
+          text = await res.text()
+        } catch (e) {
+          /* noop */
+        }
+        const err = new Error(`Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`)
         err.status = res.status
         err.statusText = res.statusText
         err.body = text
@@ -33,19 +37,28 @@
     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=1&key=${apiKey}`
     const searchJson = await fetchJson(searchUrl)
     const channelId = searchJson?.items?.[0]?.snippet?.channelId || searchJson?.items?.[0]?.id?.channelId
-    if (!channelId) { log('Channel ID not found'); return }
+    if (!channelId) {
+      log('Channel ID not found')
+      return
+    }
 
     // Get uploads playlist
     const chUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`
     const chJson = await fetchJson(chUrl)
     const uploads = chJson?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads
-    if (!uploads) { log('Uploads playlist not found'); return }
+    if (!uploads) {
+      log('Uploads playlist not found')
+      return
+    }
 
     // Get latest 2 videos
     const plUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=2&key=${apiKey}`
     const plJson = await fetchJson(plUrl)
     const items = plJson.items || []
-    if (!items.length) { log('Keine Videos gefunden'); return }
+    if (!items.length) {
+      log('Keine Videos gefunden')
+      return
+    }
 
     const grid = document.querySelector('.video-grid')
     if (!grid) return
@@ -72,21 +85,22 @@
       ld.textContent = JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
-        name: title + ' – Abdulkerim Sesli',
-        description: desc,
-        thumbnailUrl: thumb,
-        uploadDate: pub || new Date().toISOString().split('T')[0],
-        contentUrl: `https://youtu.be/${vid}`,
-        embedUrl: `https://www.youtube.com/embed/${vid}`,
-        publisher: { '@type': 'Person', name: 'Abdulkerim Sesli' }
+        'name': title + ' – Abdulkerim Sesli',
+        'description': desc,
+        'thumbnailUrl': thumb,
+        'uploadDate': pub || new Date().toISOString().split('T')[0],
+        'contentUrl': `https://youtu.be/${vid}`,
+        'embedUrl': `https://www.youtube.com/embed/${vid}`,
+        'publisher': {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
       })
 
       grid.appendChild(article)
       article.appendChild(ld)
     })
 
-    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]) }
-
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c])
+    }
   } catch (err) {
     console.error('[videos] Fehler beim Laden der Videos', err)
 
@@ -102,7 +116,7 @@
           message += ' Hinweis: Requests mit leerem Referer werden geblockt.'
         }
       } else if (err && err.message) {
-        message += ' ' + String(err.message).slice(0,200)
+        message += ' ' + String(err.message).slice(0, 200)
       }
       el.textContent = message
       container.insertBefore(el, container.firstChild)
