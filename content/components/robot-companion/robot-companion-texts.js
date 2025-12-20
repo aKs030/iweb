@@ -37,7 +37,7 @@ window.robotCompanionTexts = {
     projects: {
       text: 'Wir haben einige spannende Projekte hier! Von Web-Apps bis zu Design-Experimenten. Wirf einen Blick in die Galerie.',
       options: [
-        {label: 'Zur Galerie', url: '/pages/projekte/projekte.html'},
+        {label: 'Zur Galerie', url: '/projekte/'},
         {label: 'Ein Zufallsprojekt?', action: 'randomProject'},
         {label: 'Zurück', action: 'start'}
       ]

@@ -128,7 +128,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="/pages/projekte/projekte.html">
+          <a href="/projekte/">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-images"></use>
             </svg>
@@ -137,7 +137,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="/pages/gallery/gallery.html">
+          <a href="/gallery/">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-images"></use>
             </svg>
@@ -306,8 +306,8 @@ function setSiteTitle() {
   const titleMap = {
     '/index.html': 'Startseite',
     '/': 'Startseite',
-    '/pages/gallery/gallery.html': 'Fotos',
-    '/pages/projekte/projekte.html': 'Projekte'
+    '/gallery/': 'Fotos',
+    '/projekte/': 'Projekte'
   }
   const path = window.location.pathname
   const pageTitle = titleMap[path] || document.title || 'Website'
