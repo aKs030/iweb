@@ -1,62 +1,75 @@
 /* Simple styles for the videos page */
-:root{
+:root {
   --container-width: 1080px;
   --gap: 1.25rem;
 }
-.videos-main{
+.videos-main {
   padding: 3rem 1rem;
-  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial;
   color: #111;
 }
-.container{
+.container {
   max-width: var(--container-width);
   margin: 0 auto;
 }
-h1{
+h1 {
   font-size: 2rem;
-  margin-bottom: .25rem;
+  margin-bottom: 0.25rem;
 }
-.lead{
-  color:#444;
+.lead {
+  color: #444;
   margin-bottom: 1.5rem;
 }
-.video-grid{
+.video-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--gap);
 }
-.video-card{
+.video-card {
   background: #fff;
   border-radius: 8px;
   padding: 1rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
-.video-card h2{
+.video-card h2 {
   font-size: 1.125rem;
-  margin: 0 0 .5rem 0;
+  margin: 0 0 0.5rem 0;
 }
-.embed{
+.embed {
   position: relative;
   padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
   border-radius: 6px;
 }
-.embed iframe{
+.embed iframe {
   position: absolute;
-  top:0;left:0;width:100%;height:100%;border:0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
-.video-desc{
-  margin-top: .75rem;
-  color:#333;
+.video-desc {
+  margin-top: 0.75rem;
+  color: #333;
 }
-.gmb-note{
+.gmb-note {
   margin-top: 2rem;
   padding: 1rem;
   background: #f9fafb;
   border-left: 4px solid #e5e7eb;
 }
 
-@media(min-width:760px){
-  .video-grid{ grid-template-columns: 1fr 1fr; }
+@media (min-width: 760px) {
+  .video-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
