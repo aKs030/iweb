@@ -160,7 +160,10 @@ body {
 .site-header {
   position: fixed;
   top: 12px;
-  left: 50%;
+  /* Centering without transform to avoid stacking context issues for children */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   width: calc(100% - 32px);
   max-width: 1400px; /* Increased for more menu space */
   min-width: 1000px; /* Ensure minimum width for all 4 menu items */
@@ -187,7 +190,7 @@ body {
   /* Animation */
   animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce) forwards;
   opacity: 0;
-  transform: translateX(-50%) translateY(-20px) scale(0.95);
+  transform: translateY(-20px) scale(0.95);
 
   /* Touch Optimization */
   touch-action: pan-y;
@@ -199,7 +202,7 @@ body {
 @keyframes dynamicMenuHeaderAppear {
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
