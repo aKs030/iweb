@@ -119,7 +119,7 @@ function getMenuHTML() {
     <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
       <ul class="site-menu__list">
         <li>
-          <a href="/index.html">
+          <a href="/">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-house"></use>
             </svg>
@@ -146,7 +146,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="#about">
+          <a href="/about/">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
             </svg>
@@ -307,7 +307,8 @@ function setSiteTitle() {
     '/index.html': 'Startseite',
     '/': 'Startseite',
     '/gallery/': 'Fotos',
-    '/projekte/': 'Projekte'
+    '/projekte/': 'Projekte',
+    '/about/': 'Über mich'
   }
   const path = window.location.pathname
   const pageTitle = titleMap[path] || document.title || 'Website'
