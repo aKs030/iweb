@@ -267,11 +267,16 @@ export class TypeWriter {
 // ===== Hero Init Helper =====
 export async function initHeroSubtitle(options = {}) {
   try {
+    // Idempotency check
+    if (window.__typeWriterInitialized) return true
+
     const subtitleEl = document.querySelector('.typewriter-title')
     const typedText = getElementById('typedText')
     const typedAuthor = getElementById('typedAuthor')
 
     if (!subtitleEl || !typedText || !typedAuthor) return false
+
+    window.__typeWriterInitialized = true
 
     const {default: quotes} = await import('./TypeWriterText.js')
 

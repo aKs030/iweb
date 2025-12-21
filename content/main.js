@@ -532,6 +532,9 @@ document.addEventListener(
     // Simplified TypeWriter Export
     window.initHeroSubtitle = initHeroSubtitle
 
+    // Initialize TypeWriter immediately (independent of Hero section visibility)
+    initHeroSubtitle().catch(err => log.warn('TypeWriter init failed:', err))
+
     // Expose LoadingScreen for modules (e.g. legacy/inline scripts)
     window.LoadingScreen = LoadingScreenManager
 

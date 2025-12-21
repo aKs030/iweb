@@ -13,21 +13,6 @@ const HeroManager = (() => {
   let heroData = null
   let isInitialized = false
 
-  async function loadTyped(heroDataModule) {
-    // Optimized: Use global function exposed by main.js or imported directly
-    if (typeof window.initHeroSubtitle === 'function') {
-      try {
-        return window.initHeroSubtitle({
-          heroDataModule
-        })
-      } catch (err) {
-        logger.warn('Failed to load TypeWriter modules', err)
-        return false
-      }
-    }
-    return false
-  }
-
   function initLazyHeroModules() {
     if (isInitialized) return
     isInitialized = true
@@ -37,9 +22,10 @@ const HeroManager = (() => {
       if (loaded) return
       loaded = true
 
-      // Lade Daten und gebe sie weiter
-      const dataModule = await ensureHeroData().catch(() => ({}))
-      await loadTyped(dataModule)
+      // Ensure TypeWriter is initialized (redundant check if main.js did it, but safe)
+      if (typeof window.initHeroSubtitle === 'function') {
+        window.initHeroSubtitle().catch(() => {})
+      }
 
       setRandomGreetingHTML()
     }
