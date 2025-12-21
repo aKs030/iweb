@@ -95,8 +95,7 @@ const SectionLoader = (() => {
 
   const SELECTOR = 'section[data-section-src]'
   const loadedSections = new WeakSet()
-  const retryAttempts = new WeakMap()
-  const MAX_RETRIES = 2
+  // Retry logic removed: we do not perform automatic retry attempts for section loads
 
   function dispatchEvent(type, section, detail = {}) {
     try {
@@ -171,36 +170,20 @@ const SectionLoader = (() => {
     } catch (error) {
       log.warn(`Section load failed: ${sectionName}`, error)
 
-      const isTransient = /5\d\d/.test(String(error)) || !navigator.onLine
-      const shouldRetry = isTransient && attempts < MAX_RETRIES
-
-      if (shouldRetry) {
-        retryAttempts.set(section, attempts + 1)
-        loadedSections.delete(section)
-
-        const delay = 300 * Math.pow(2, attempts)
-        await new Promise(resolve => setTimeout(resolve, delay))
-
-        return loadSection(section)
-      }
-
+      // No automatic retries: mark section error and dispatch
       section.dataset.state = 'error'
       section.removeAttribute('aria-busy')
 
       announce(`Fehler beim Laden von ${sectionName}`, {assertive: true})
       dispatchEvent('section:error', section, {state: 'error'})
 
-      // Inline injectRetryUI: inject a small retry UI directly
-      if (!section.querySelector('.section-retry')) {
-        const button = document.createElement('button')
-        button.type = 'button'
-        button.className = 'section-retry'
-        button.textContent = 'Erneut laden'
-        button.addEventListener('click', () => retrySection(section), {once: true})
-
+      // Instead of injecting a retry button, we leave a simple error box (no retry control)
+      if (!section.querySelector('.section-error-box')) {
         const wrapper = document.createElement('div')
         wrapper.className = 'section-error-box'
-        wrapper.appendChild(button)
+        const p = document.createElement('p')
+        p.textContent = 'Inhalt konnte nicht geladen werden.'
+        wrapper.appendChild(p)
         section.appendChild(wrapper)
       }
     } finally {
@@ -210,13 +193,6 @@ const SectionLoader = (() => {
 
   // injectRetryUI removed; kept inline in loadSection() to avoid small helper function
 
-  async function retrySection(section) {
-    section.querySelectorAll('.section-error-box').forEach(el => el.remove())
-    section.dataset.state = ''
-    loadedSections.delete(section)
-    retryAttempts.delete(section)
-    await loadSection(section)
-  }
 
   function init() {
     if (init._initialized) return

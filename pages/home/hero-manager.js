@@ -46,8 +46,8 @@ const HeroManager = (() => {
 
     const heroEl = getElementById('hero') || document.querySelector('section#hero')
     if (!heroEl) {
-      // Retry or fallback if hero element missing momentarily
-      heroTimers.setTimeout(triggerLoad, 2500)
+      // Hero element missing — do not retry automatically
+      logger.warn('Hero element not found; skipping lazy init')
       return
     }
 
@@ -60,8 +60,7 @@ const HeroManager = (() => {
     const obs = createTriggerOnceObserver(triggerLoad)
     obs.observe(heroEl)
 
-    // Fallback load just in case observer fails or is delayed too long
-    heroTimers.setTimeout(triggerLoad, 6000)
+    // Fallback removed — rely on observer or manual init
   }
 
   const ensureHeroData = async () =>

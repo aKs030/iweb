@@ -153,40 +153,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-.section-retry {
-  appearance: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem 0.9rem;
-  font: inherit;
-  border-radius: var(--radius-sm);
-  background: var(--primary-color);
-  color: #fff;
-  line-height: 1.1;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-weight: 500;
-  box-shadow: var(--shadow-sm);
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
 
-.section-retry:hover {
-  background: var(--primary-dark, #0051d5);
-}
-
-.section-retry:active {
-  transform: translateY(1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.section-retry:focus-visible {
-  outline: 2px solid var(--primary-light, #34aadc);
-  outline-offset: 2px;
-}
 
 /* Typography */
 h1,

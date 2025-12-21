@@ -59,36 +59,14 @@
         color: rgb(245 245 245 / 80%);
         margin-bottom: 2rem;
       }
-      .retry-btn {
-        display: inline-block;
-        padding: 0.875rem 2rem;
-        background: var(--primary-color);
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 600;
-        transition:
-          transform 0.2s,
-          opacity 0.2s;
-        cursor: pointer;
-        border: none;
-        font-size: 1rem;
-      }
-      .retry-btn:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
-      }
-      .retry-btn:active {
-        transform: translateY(0);
-      }
+
     </style>
   </head>
   <body>
     <div class="offline-container">
       <div class="offline-icon" aria-hidden="true">📡</div>
       <h1>Du bist offline</h1>
-      <p>Es scheint, als hättest du keine Internetverbindung. Bitte überprüfe deine Verbindung und versuche es erneut.</p>
-      <button class="retry-btn" onclick="window.location.reload()">Erneut versuchen</button>
+      <p>Es scheint, als hättest du keine Internetverbindung. Bitte überprüfe deine Verbindung und lade die Seite neu, sobald du wieder online bist.</p>
     </div>
   </body>
 </html>
