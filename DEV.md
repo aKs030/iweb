@@ -113,6 +113,22 @@ npx eslint .
 
 - Hinweis: Das zentrale `LoadingScreen`-Utility wurde entfernt. Bitte implementiere komponentenspezifische Ladezustände (lokale Spinner oder Inline-Placeholder) oder verwende das `SectionLoader`-Signal (`section:will-load` / `section:loaded`) für Statusmeldungen.
 
+#### Retry-Policy (heute)
+- **Automatische Retries wurden entfernt.** Section‑ oder Page‑Lader versuchen Inhalte nicht mehr automatisch erneut nach einem Fehler.
+- **Manueller Retry:** Wenn du einen erneuten Ladevorgang auslösen willst, kannst du die Section gezielt erneut laden:
+
+```javascript
+// Beispiel: bestimme das Section-Element und rufe den Loader auf
+const heroSection = document.querySelector('#hero')
+if (heroSection && window.SectionLoader && typeof window.SectionLoader.loadSection === 'function') {
+  window.SectionLoader.loadSection(heroSection)
+}
+```
+
+- **Warum:** Automatische Retries können zu unnötigem Netzwerkverkehr oder fragilen retry‑Loops führen. Die App zeigt jetzt eine einfache Fehleranzeige und überlässt erneute Ladeversuche der Nutzeroberfläche oder einem expliziten Entwickler‑Call.
+
+- **Hinweis:** `SectionLoader.loadSection(section)` kann erneut aufgerufen werden; die Implementierung hebt die interne Lade‑Markierung auf, wenn ein vorheriger Versuch fehlgeschlagen ist, damit ein manueller Retry funktioniert.
+
 
 ### Formatting
 

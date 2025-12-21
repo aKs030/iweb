@@ -186,6 +186,13 @@ const SectionLoader = (() => {
         wrapper.appendChild(p)
         section.appendChild(wrapper)
       }
+
+      // Allow manual retry: clear loaded mark so `loadSection(section)` can be called again
+      try {
+        loadedSections.delete(section)
+      } catch (e) {
+        /* ignore */
+      }
     } finally {
       // Loading screen removed — no global owner to release
     }
