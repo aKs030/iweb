@@ -12,6 +12,7 @@ let startTime = 0
 let cleanupScheduled = false
 let hideTimeout = null
 let element = null
+let createdByScript = false
 
 function ensureElement() {
   if (element) return element
@@ -46,6 +47,15 @@ function ensureElement() {
 function showImmediate() {
   const el = ensureElement()
   if (!el) return
+
+  // Cancel any pending hide to avoid races where a scheduled hide
+  // runs after a new show request arrives.
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+    hideTimeout = null
+  }
+  cleanupScheduled = false
+
   el.classList.remove('hide')
   el.classList.remove('hidden')
   el.removeAttribute('aria-hidden')
@@ -66,8 +76,16 @@ function showImmediate() {
 function scheduleHide(delay = 0) {
   if (hideTimeout) clearTimeout(hideTimeout)
   hideTimeout = setTimeout(() => {
+    // If an owner re-appeared during the delay, cancel hide
+    if (owners.size > 0) {
+      hideTimeout = null
+      cleanupScheduled = false
+      return
+    }
+
     const el = element || document.getElementById('loadingScreen')
     if (!el) return
+
     el.classList.add('hide')
     el.setAttribute('aria-hidden', 'true')
     el.removeAttribute('aria-live')
@@ -77,9 +95,20 @@ function scheduleHide(delay = 0) {
       visibility: 'hidden'
     })
 
-    // Ensure cleanup runs once after transition
+    // Ensure cleanup runs once after transition, but only if still no owners
     cleanupScheduled = true
     const cleanup = () => {
+      // If a new owner registered, abort cleanup to keep loader visible
+      if (owners.size > 0) {
+        cleanupScheduled = false
+        el.removeEventListener('transitionend', cleanup)
+        if (hideTimeout) {
+          clearTimeout(hideTimeout)
+          hideTimeout = null
+        }
+        return
+      }
+
       if (!cleanupScheduled) return
       cleanupScheduled = false
       el.style.display = 'none'
