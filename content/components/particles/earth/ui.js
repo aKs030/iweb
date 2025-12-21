@@ -4,101 +4,21 @@ import {calculateQualityLevel, calculateDynamicResolution} from './ui_helpers.js
 
 const log = createLogger('EarthUI')
 
-import LoadingScreenDefault, {LoadingScreen as LoadingScreenNamed} from '../../../utils/loading-screen.js'
-const LoadingScreen = typeof LoadingScreenNamed !== 'undefined' ? LoadingScreenNamed : LoadingScreenDefault
-
-/*
-  Earth UI Loader
-  - Uses a single global page loader (id: #loadingScreen) with a spinner.
-  - This module only shows/hides the spinner; progress bars/percent indicators
-    were removed for a simpler, unified loading UX.
-*/
-
-function getGlobalLoaderElements() {
-  const screen = document.getElementById('loadingScreen')
-  if (!screen) return null
-  return {screen}
-}
+/* Loading screen removed — functions are now no-ops for compatibility */
 
 export function showLoadingState(container) {
   if (!container) return
-
-  // Prefer the centralized loading API
-  try {
-    if (LoadingScreen && typeof LoadingScreen.requestShow === 'function') {
-      LoadingScreen.requestShow('three-earth')
-      return
-    }
-  } catch (e) {
-    /* fallthrough to legacy behavior */
-  }
-
-  // Fallback: manipulate global loader directly
-  const globals = getGlobalLoaderElements()
-  if (globals && globals.screen) {
-    globals.screen.classList.remove('hidden')
-    globals.screen.classList.remove('hide')
-    globals.screen.removeAttribute('aria-hidden')
-    Object.assign(globals.screen.style, {
-      display: 'flex',
-      opacity: '1',
-      pointerEvents: 'auto',
-      visibility: 'visible'
-    })
-    // Optionally set an aria message
-    globals.screen.setAttribute('aria-live', 'polite')
-    try {
-      document.body.classList.add('global-loading-visible')
-    } catch {
-      /* ignore */
-    }
-  }
+  // No global loading screen available — this function intentionally does nothing.
 }
 
 export function hideLoadingState(container) {
   if (!container) return
-
-  // Prefer the centralized loading API
-  try {
-    if (LoadingScreen && typeof LoadingScreen.release === 'function') {
-      LoadingScreen.release('three-earth')
-      return
-    }
-  } catch (e) {
-    /* fallthrough to legacy behavior */
-  }
-
-  const globals = getGlobalLoaderElements()
-  if (globals && globals.screen) {
-    // Hide the global loader using the same pattern as the rest of the app
-    globals.screen.classList.add('hide')
-    globals.screen.setAttribute('aria-hidden', 'true')
-    globals.screen.removeAttribute('aria-live')
-    Object.assign(globals.screen.style, {
-      opacity: '0',
-      pointerEvents: 'none',
-      visibility: 'hidden'
-    })
-    // Reset visuals (after transition)
-    setTimeout(() => {
-      if (globals.screen) globals.screen.style.display = 'none'
-      try {
-        document.body.classList.remove('global-loading-visible')
-      } catch {
-        /* ignore */
-      }
-    }, 300)
-  }
+  // No global loading screen available — this function intentionally does nothing.
 }
 
 export function showErrorState(container, error, retryCallback) {
   if (!container) return
 
-  // Hide global loader to reveal page error/fallback
-  const globals = getGlobalLoaderElements()
-  if (globals && globals.screen) {
-    globals.screen.classList.add('hidden')
-  }
 
   container.classList.add('error')
 

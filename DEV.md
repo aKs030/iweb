@@ -111,22 +111,8 @@ npx eslint .
 - Service Worker Updates erfordern Version-Bump in `sw.js`
 - Teste offline Funktionalität mit DevTools Network Throttling
 
-- Verwende das zentrale `LoadingScreen`-Utility (`content/utils/loading-screen.js`) für globale Ladezustände. API:
-  - `LoadingScreen.requestShow(ownerId)` — zeigt den Loader und registriert einen Besitzer
-  - `LoadingScreen.release(ownerId)` — gibt den Besitzer frei; der Loader verschwindet erst, wenn keine Owner mehr vorhanden sind (Min-Display-Time wird beachtet)
-  - `LoadingScreen.forceHide()` — sofortiges Verstecken (für Watchdogs/Fallbacks)
+- Hinweis: Das zentrale `LoadingScreen`-Utility wurde entfernt. Bitte implementiere komponentenspezifische Ladezustände (lokale Spinner oder Inline-Placeholder) oder verwende das `SectionLoader`-Signal (`section:will-load` / `section:loaded`) für Statusmeldungen.
 
-  Beispiel:
-
-```javascript
-import LoadingScreen from './content/utils/loading-screen.js'
-
-LoadingScreen.requestShow('my-module')
-// ... Modul lädt etwas
-LoadingScreen.release('my-module')
-```
-
-Owner-Id: kurze, eindeutige Bezeichner verwenden (z. B. `main`, `three-earth`, `footer`).
 
 ### Formatting
 

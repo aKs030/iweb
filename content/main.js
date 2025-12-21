@@ -137,13 +137,7 @@ const SectionLoader = (() => {
     section.setAttribute('aria-busy', 'true')
     section.dataset.state = 'loading'
 
-    // Show global loader for this section load (owner id: section:<id>)
-    try {
-      const sectionOwner = `section:${section.id || sectionName}`
-      if (LoadingScreen && typeof LoadingScreen.requestShow === 'function') LoadingScreen.requestShow(sectionOwner)
-    } catch (e) {
-      /* ignore - fallback for pages without LoadingScreen */
-    }
+    // Loading screen removed — no global loader to request
 
     announce(`Lade ${sectionName}…`, {dedupe: true})
     dispatchEvent('section:will-load', section, {url})
@@ -210,13 +204,7 @@ const SectionLoader = (() => {
         section.appendChild(wrapper)
       }
     } finally {
-      // Ensure we always release the section owner
-      try {
-        const sectionOwner = `section:${section.id || sectionName}`
-        if (LoadingScreen && typeof LoadingScreen.release === 'function') LoadingScreen.release(sectionOwner)
-      } catch (e) {
-        /* ignore */
-      }
+      // Loading screen removed — no global owner to release
     }
   }
 
@@ -314,17 +302,10 @@ const ScrollSnapping = (() => {
 
 ScrollSnapping.init()
 
-// ===== Loading Screen Manager (centralized) =====
-import LoadingScreenDefault, {LoadingScreen as LoadingScreenNamed} from './utils/loading-screen.js'
-const LoadingScreen = typeof LoadingScreenNamed !== 'undefined' ? LoadingScreenNamed : LoadingScreenDefault
-
-// Initialize and claim the loader for the main app context
-LoadingScreen.init()
-LoadingScreen.requestShow('main')
-
+// Loading screen removed — provide stub manager for compatibility
 const LoadingScreenManager = {
-  init: () => LoadingScreen.init(),
-  hide: () => LoadingScreen.release('main')
+  init: () => {},
+  hide: () => {}
 }
 
 // ===== Three.js Earth System Loader =====
@@ -468,14 +449,8 @@ document.addEventListener(
             log.debug('AppLoadManager check failed:', e)
           }
 
-          log.warn('Forcing loading screen hide after timeout')
-          // Force-hide now (use centralized forceHide)
-          try {
-            LoadingScreen.forceHide()
-          } catch (e) {
-            // Fallback to previous API if missing
-            LoadingScreenManager.hide()
-          }
+          log.warn('Forcing loading screen hide after timeout (loading screen removed)')
+          LoadingScreenManager.hide()
         },
         attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
       )

@@ -423,38 +423,6 @@ textarea:focus-visible {
   border: 0 !important;
 }
 
-/* Global Loading Screen */
-.loading-screen {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  transition: opacity var(--transition-slow);
-}
-
-.loading-screen.hide {
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.loader {
-  width: 60px;
-  height: 60px;
-  border: 3px solid rgb(255 255 255 / 10%);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 /* Utility class used throughout site */
 .hidden {
