@@ -20,7 +20,7 @@ import {createEarthSystem, createMoonSystem, createCloudLayer} from './earth/ass
 import {CameraManager} from './earth/camera.js'
 import {StarManager, ShootingStarManager} from './earth/stars.js'
 import {CardManager} from './earth/cards.js'
-import {showLoadingState, hideLoadingState, showErrorState, PerformanceMonitor} from './earth/ui.js'
+import {showErrorState, PerformanceMonitor} from './earth/ui.js'
 
 const log = createLogger('ThreeEarthSystem')
 const earthTimers = new TimerManager()
@@ -124,7 +124,8 @@ const ThreeEarthManager = (() => {
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
       if (!isSystemActive) return cleanup
 
-      showLoadingState(container)
+      // Loading UI removed — set non-visual diagnostic flag for external UIs
+      if (container) container.dataset.threeEarthLoading = 'true'
 
       // Scene Setup
       isMobileDevice = !!deviceCapabilities?.isMobile || window.matchMedia('(max-width: 768px)').matches
@@ -141,7 +142,7 @@ const ThreeEarthManager = (() => {
       const loadingManager = new THREE_INSTANCE.LoadingManager()
       loadingManager.onProgress = (_url, _itemsLoaded, _itemsTotal) => {
         if (!isSystemActive) return
-        showLoadingState(container)
+        if (container) container.dataset.threeEarthLoading = 'true'
       }
 
       loadingManager.onLoad = () => {
@@ -151,7 +152,7 @@ const ThreeEarthManager = (() => {
         } catch {
           /* ignore */
         }
-        hideLoadingState(container)
+        if (container) delete container.dataset.threeEarthLoading
       }
 
       loadingManager.onError = url => {

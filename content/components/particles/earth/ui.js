@@ -4,19 +4,9 @@ import {calculateQualityLevel, calculateDynamicResolution} from './ui_helpers.js
 
 const log = createLogger('EarthUI')
 
-/* Loading screen removed — functions are now no-ops for compatibility */
+/* Loading screen functions removed. Use `container.dataset` or external UI for loading indicators. */
 
-export function showLoadingState(container) {
-  if (!container) return
-  // No global loading screen available — this function intentionally does nothing.
-}
-
-export function hideLoadingState(container) {
-  if (!container) return
-  // No global loading screen available — this function intentionally does nothing.
-}
-
-export function showErrorState(container, error, retryCallback) {
+export function showErrorState(container, error, _retryCallback) {
   if (!container) return
 
   // Mark the container as errored and record a short message for debugging or external UI
@@ -26,12 +16,12 @@ export function showErrorState(container, error, retryCallback) {
     // Keep a non-visual diagnostic on the DOM for other scripts to consume if needed
     container.dataset.threeEarthError = msg
     log.warn('ThreeEarth error:', msg)
-  } catch (e) {
+  } catch {
     /* ignore */
   }
 
   // The component no longer injects fallback DOM UI. If a retry is desired, callers may
-  // register their own UI and call `retryCallback()` as needed.
+  // register their own UI and call `_retryCallback()` as needed.
 }
 
 export class PerformanceMonitor {
