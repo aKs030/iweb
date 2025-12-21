@@ -1,120 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://abdulkerimsesli.de/content/components/footer/datenschutz.html</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/content/components/footer/footer.html</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/content/components/footer/impressum.html</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/content/components/head/head.html</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <image:image>
-      <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/datenschutz/</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <image:image>
-      <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/impressum/</loc>
-    <lastmod>2025-12-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <image:image>
-      <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://abdulkerimsesli.de/</loc>
-    <lastmod>2025-12-20</lastmod>
+    <lastmod>2025-12-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/offline.html</loc>
-    <lastmod>2025-12-20</lastmod>
+    <loc>https://abdulkerimsesli.de/projekte/</loc>
+    <lastmod>2025-12-21</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/pages/about/about.html</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/pages/blog/</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
     <image:image>
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/gallery/gallery.html</loc>
-    <lastmod>2025-12-19</lastmod>
+    <loc>https://abdulkerimsesli.de/gallery/</loc>
+    <lastmod>2025-12-21</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
     <image:image>
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
     </image:image>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/home/hero.html</loc>
-    <lastmod>2025-12-14</lastmod>
+    <loc>https://abdulkerimsesli.de/about/</loc>
+    <lastmod>2025-12-21</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/projekte/projekte.html</loc>
-    <lastmod>2025-12-20</lastmod>
+    <loc>https://abdulkerimsesli.de/blog/</loc>
+    <lastmod>2025-12-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-    <image:image>
-      <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/pages/videos/</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/pages/videos/videos.html</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <image:image>
-      <image:loc>https://i.ytimg.com/vi/1bL8bZd6cpY/maxresdefault.jpg</image:loc>
-    </image:image>
   </url>
   <url>
     <loc>https://abdulkerimsesli.de/videos/</loc>
-    <lastmod>2025-12-20</lastmod>
+    <lastmod>2025-12-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://abdulkerimsesli.de/datenschutz/</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://abdulkerimsesli.de/impressum/</loc>
+    <lastmod>2025-12-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>
