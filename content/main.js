@@ -200,7 +200,6 @@ const SectionLoader = (() => {
 
   // injectRetryUI removed; kept inline in loadSection() to avoid small helper function
 
-
   function init() {
     if (init._initialized) return
     init._initialized = true

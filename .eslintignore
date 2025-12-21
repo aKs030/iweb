@@ -1,0 +1,7 @@
+.venv
+node_modules
+build
+dist
+public
+test-results
+content/vendor

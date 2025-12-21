@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Ran formatting and final cleanup; the codebase is tidy. ✅
 
 ### 2025-12-20 — Videos page finalization
+
 - Komplette Neugestaltung der Videos-Seite (dunkles Theme, animierter Titel, Karten mit Hover-Glow) ✅
 - Play-Button mit Lazy-Load (Click-to-Play), YouTube Abonnieren- und Teilen-Buttons hinzugefügt ✅
 - JSON-LD: `VideoObject` & `VideoGallery` Markup hinzugefügt/validiert ✅

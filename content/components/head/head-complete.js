@@ -240,7 +240,6 @@
     }
     // Global page loader removed — no DOM-injection or fallback hide logic
     // The application now relies on component-local loading indicators and SectionLoader events.
-
   } catch (err) {
     if (typeof console !== 'undefined' && console.error) {
       console.error('[Head-Loader] Fehler beim Laden des Shared Heads:', err)

@@ -153,8 +153,6 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-
-
 /* Typography */
 h1,
 h2,
@@ -236,7 +234,7 @@ a:hover {
 /* Loading rules moved to content/root.css to centralize critical/shared styles */
 
 /* Mobile Layout */
-@media (width <= 768px) {
+@media (max-width: 768px) {
   html {
     font-size: 15px;
   }
@@ -259,7 +257,7 @@ a:hover {
   }
 }
 
-@media (width <= 480px) {
+@media (max-width: 480px) {
   .container {
     max-width: 100%;
     padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
@@ -282,8 +280,9 @@ a:hover {
   body {
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
   }
+}
 
-@media (width <= 375px) {
+@media (max-width: 375px) {
   html {
     font-size: 14px;
   }

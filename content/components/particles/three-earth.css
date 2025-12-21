@@ -28,7 +28,6 @@
 
 /* Error UI removed — ThreeEarth now relies on container state and external handlers for error presentation */
 
-
 /* Section-based Opacity Transitions */
 .three-earth-container[data-section='hero'] {
   opacity: 1;

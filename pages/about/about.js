@@ -83,8 +83,7 @@
       ;(function setAboutPageMeta() {
         try {
           const pageTitle = 'Über mich — Abdulkerim — Digital Creator Portfolio'
-          const description =
-            'Über mich — Abdulkerim Sesli, Webentwickler aus Berlin. Portfolio, Projekte und persönliche Hintergründe.'
+          const description = 'Über mich — Abdulkerim Sesli, Webentwickler aus Berlin. Portfolio, Projekte und persönliche Hintergründe.'
           const canonical = new URL(window.location.origin + '/about/').href
           document.title = pageTitle
 

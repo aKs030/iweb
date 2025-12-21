@@ -1,20 +1,23 @@
 // Share function for YouTube channel
 function shareChannel() {
-  const url = 'https://www.youtube.com/@aks.030';
-  const title = 'Abdulkerim Sesli - YouTube Kanal';
+  const url = 'https://www.youtube.com/@aks.030'
+  const title = 'Abdulkerim Sesli - YouTube Kanal'
   if (navigator.share) {
     navigator.share({
       title: title,
       url: url
-    });
+    })
   } else {
     // Fallback: copy to clipboard
-    navigator.clipboard.writeText(url).then(() => {
-      alert('Link kopiert: ' + url);
-    }).catch(() => {
-      // Fallback: open share dialog or just alert
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-    });
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        alert('Link kopiert: ' + url)
+      })
+      .catch(() => {
+        // Fallback: open share dialog or just alert
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
+      })
   }
 }
 
@@ -29,7 +32,7 @@ function shareChannel() {
     try {
       const el = document.getElementById('videos-status')
       if (el) el.textContent = msg || ''
-    } catch (e) { }
+    } catch (e) {}
   }
 
   // Replace a thumbnail button with an autoplaying iframe (available globally so static thumbs work)
@@ -49,7 +52,11 @@ function shareChannel() {
     iframe.setAttribute('allowfullscreen', '')
     wrapper.appendChild(iframe)
     btn.replaceWith(wrapper)
-    try { iframe.focus() } catch (e) { /* ignore */ }
+    try {
+      iframe.focus()
+    } catch (e) {
+      /* ignore */
+    }
     btn.dataset.loaded = '1'
   }
 
@@ -59,12 +66,17 @@ function shareChannel() {
       document.querySelectorAll('.video-thumb').forEach(b => {
         if (b.dataset.bound) return
         b.addEventListener('click', () => activateThumb(b))
-        b.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateThumb(b) }
+        b.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            activateThumb(b)
+          }
         })
         b.dataset.bound = '1'
       })
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
   }
 
   // Run asap so static page thumbnails are interactive even without API
@@ -149,7 +161,8 @@ function shareChannel() {
       thumbBtn.setAttribute('aria-label', `Play ${title} — Abdulkerim`)
       thumbBtn.dataset.videoId = vid
       thumbBtn.style.backgroundImage = `url('${thumb}')`
-      thumbBtn.innerHTML = '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>'
+      thumbBtn.innerHTML =
+        '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>'
 
       // Meta row
       const meta = document.createElement('div')
@@ -162,13 +175,13 @@ function shareChannel() {
       ld.textContent = JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
-        name: title + ' – Abdulkerim Sesli',
-        description: desc,
-        thumbnailUrl: thumb,
-        uploadDate: pub || new Date().toISOString().split('T')[0],
-        contentUrl: `https://youtu.be/${vid}`,
-        embedUrl: `https://www.youtube.com/embed/${vid}`,
-        publisher: {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
+        'name': title + ' – Abdulkerim Sesli',
+        'description': desc,
+        'thumbnailUrl': thumb,
+        'uploadDate': pub || new Date().toISOString().split('T')[0],
+        'contentUrl': `https://youtu.be/${vid}`,
+        'embedUrl': `https://www.youtube.com/embed/${vid}`,
+        'publisher': {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
       })
 
       grid.appendChild(article)
@@ -178,7 +191,7 @@ function shareChannel() {
 
       // Activate thumb handlers
       thumbBtn.addEventListener('click', () => activateThumb(thumbBtn))
-      thumbBtn.addEventListener('keydown', (e) => {
+      thumbBtn.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           activateThumb(thumbBtn)
@@ -191,9 +204,10 @@ function shareChannel() {
       document.querySelectorAll('.video-thumb').forEach(b => {
         if (b.dataset.bound) return
         b.addEventListener('click', () => activateThumb(b))
-        b.addEventListener('keydown', (e) => {
+        b.addEventListener('keydown', e => {
           if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault(); activateThumb(b)
+            e.preventDefault()
+            activateThumb(b)
           }
         })
         b.dataset.bound = '1'
@@ -226,7 +240,11 @@ function shareChannel() {
       }
       el.textContent = message
       container.insertBefore(el, container.firstChild)
-      try { setStatus(el.textContent) } catch (e) { /* ignore */ }
+      try {
+        setStatus(el.textContent)
+      } catch (e) {
+        /* ignore */
+      }
     } catch (e) {
       // ignore UI errors
     }
