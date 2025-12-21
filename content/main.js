@@ -302,7 +302,6 @@ const ScrollSnapping = (() => {
 
 ScrollSnapping.init()
 
-
 // ===== Three.js Earth System Loader =====
 const ThreeEarthLoader = (() => {
   let cleanupFn = null
@@ -444,7 +443,7 @@ document.addEventListener(
           }
 
           log.warn('Forcing loading screen hide after timeout (loading screen removed)')
-          },
+        },
         attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
       )
     })()
