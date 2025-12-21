@@ -460,9 +460,7 @@ document.addEventListener(
         try {
           if (AppLoadManager && typeof AppLoadManager.isBlocked === 'function' && AppLoadManager.isBlocked()) {
             const pending = typeof AppLoadManager.getPending === 'function' ? AppLoadManager.getPending() : []
-            log.warn(
-              `Deferring forced loading screen hide (attempt ${attempt}, delay ${delay}ms): blocking modules=${pending.join(', ')}`
-            )
+            log.warn(`Deferring forced loading screen hide (attempt ${attempt}, delay ${delay}ms): blocking modules=${pending.join(', ')}`)
 
             if (attempt < MAX_ATTEMPTS) {
               scheduleSmartForceHide(attempt + 1)
