@@ -302,11 +302,6 @@ const ScrollSnapping = (() => {
 
 ScrollSnapping.init()
 
-// Loading screen removed — provide stub manager for compatibility
-const LoadingScreenManager = {
-  init: () => {},
-  hide: () => {}
-}
 
 // ===== Three.js Earth System Loader =====
 const ThreeEarthLoader = (() => {
@@ -387,7 +382,6 @@ document.addEventListener(
   'DOMContentLoaded',
   async () => {
     perfMarks.domReady = performance.now()
-    LoadingScreenManager.init()
 
     fire(EVENTS.DOM_READY)
 
@@ -399,7 +393,7 @@ document.addEventListener(
 
     const checkReady = () => {
       if (!modulesReady || !windowLoaded) return
-      LoadingScreenManager.hide()
+      // App ready — no global loading screen to hide
     }
 
     window.addEventListener(
@@ -450,8 +444,7 @@ document.addEventListener(
           }
 
           log.warn('Forcing loading screen hide after timeout (loading screen removed)')
-          LoadingScreenManager.hide()
-        },
+          },
         attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
       )
     })()
