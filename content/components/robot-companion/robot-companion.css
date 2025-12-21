@@ -953,3 +953,56 @@
     filter: drop-shadow(0 0 8px #ffff00);
   }
 }
+
+/* Loading State */
+.robot-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(2.5);
+  z-index: 10001;
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+}
+
+/* Pulsing Antenna Light during Loading */
+.robot-loading .robot-antenna-light {
+  animation: pulse-antenna 1s ease-in-out infinite alternate;
+}
+
+/* Enhanced Hover during Loading */
+.robot-loading .robot-avatar {
+  animation: float-center 3s ease-in-out infinite;
+  box-shadow: 0 0 40px rgba(64, 224, 208, 0.4);
+}
+
+@keyframes pulse-antenna {
+  0% {
+    fill: #ff4444;
+    filter: drop-shadow(0 0 2px rgba(255, 68, 68, 0.5));
+  }
+  100% {
+    fill: #ff9999;
+    filter: drop-shadow(0 0 8px rgba(255, 100, 100, 1));
+  }
+}
+
+@keyframes float-center {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Transition State: Fly to Corner */
+.robot-flying-to-corner {
+  top: auto !important;
+  left: auto !important;
+  /* Standard Position will be set by JS or fallback to CSS defaults,
+     but we need to ensure the transition happens smoothly */
+  /* The class removal will trigger the transition to the default styles */
+}

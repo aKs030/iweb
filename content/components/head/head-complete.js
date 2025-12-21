@@ -238,71 +238,17 @@
         console.warn('[Head-Loader] Script execution reinforcement failed:', e)
       }
     }
-    // 8. Ensure a single global loader exists across pages (for consistent UX)
+    // 8. Ensure global loader exists (Robot Companion takes over, so no explicit #loadingScreen injection anymore)
+    // We kept this block previously for safety, but now the Robot is the visual loader.
+    // If needed, we just ensure LoadingScreen logic is triggered.
     try {
-      // Only inject if not already present in the DOM
-      if (!document.getElementById('loadingScreen')) {
-        const loaderWrapper = document.createElement('div')
-        loaderWrapper.id = 'loadingScreen'
-        loaderWrapper.className = 'loading-screen'
-        loaderWrapper.setAttribute('aria-hidden', 'true')
-        loaderWrapper.setAttribute('aria-label', 'Seite wird geladen')
-        loaderWrapper.setAttribute('role', 'status')
-        loaderWrapper.setAttribute('aria-live', 'polite')
+       if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') {
+          window.LoadingScreen.requestShow('head')
+       }
+    } catch(e) { /* ignore */ }
 
-        const spinner = document.createElement('div')
-        spinner.className = 'loader'
-        spinner.setAttribute('aria-hidden', 'true')
 
-        loaderWrapper.appendChild(spinner)
-        // Prepend so loader sits above page content
-        if (document.body) {
-          document.body.prepend(loaderWrapper)
-          try {
-            if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') {
-              window.LoadingScreen.requestShow('head')
-            } else {
-              document.body.classList.add('global-loading-visible')
-            }
-          } catch {
-            try {
-              document.body.classList.add('global-loading-visible')
-            } catch {
-              /* ignore */
-            }
-          }
-        } else {
-          document.addEventListener(
-            'DOMContentLoaded',
-            () => {
-              document.body.prepend(loaderWrapper)
-              try {
-                if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') {
-                  window.LoadingScreen.requestShow('head')
-                } else {
-                  document.body.classList.add('global-loading-visible')
-                }
-              } catch {
-                try {
-                  document.body.classList.add('global-loading-visible')
-                } catch {
-                  /* ignore */
-                }
-              }
-            },
-            {once: true}
-          )
-        }
-      }
-    } catch (e) {
-      // Non-critical: injection failure shouldn't break the page
-      if (typeof console !== 'undefined' && console.warn) {
-        console.warn('[Head-Loader] Could not ensure global loader element:', e)
-      }
-    }
-
-    // 9. Fallback: Loader automatisch ausblenden, falls keine App-Logik (main.js) übernimmt
-    //    Verhindert Hängenbleiben auf simplen statischen Seiten (Legal/Privacy).
+    // 9. Fallback: Release loader automatically if no app logic (main.js) takes over.
     try {
       const MIN_DISPLAY_TIME = 400
       let start = performance.now()
@@ -315,28 +261,12 @@
             return
           }
         } catch (e) {
-          /* fallthrough to legacy behavior */
+          /* fallthrough */
         }
 
-        const el = document.getElementById('loadingScreen')
-        if (!el) return
-        const elapsed = performance.now() - start
-        const wait = Math.max(0, MIN_DISPLAY_TIME - elapsed)
-        setTimeout(() => {
-          el.classList.add('hide')
-          el.setAttribute('aria-hidden', 'true')
-          Object.assign(el.style, {
-            opacity: '0',
-            pointerEvents: 'none',
-            visibility: 'hidden'
-          })
-          const cleanup = () => {
-            el.style.display = 'none'
-            el.removeEventListener('transitionend', cleanup)
-          }
-          el.addEventListener('transitionend', cleanup)
-          setTimeout(cleanup, 700)
-        }, wait)
+        // Dispatch global event for Robot in case LoadingScreen is not available
+        window.dispatchEvent(new CustomEvent('app-loaded'))
+        try { document.body.classList.remove('global-loading-visible') } catch {}
       }
 
       if (document.readyState === 'loading') {
@@ -347,16 +277,14 @@
         start = performance.now()
       }
 
-      // Normalfall: sobald alles geladen ist, ausblenden
       window.addEventListener('load', hideLoader, {once: true})
-      // Früheres Sicherheitsnetz: kurz nach DOMContentLoaded ausblenden (falls main.js nicht greift)
+      // Safety net
       const scheduleEarlyHide = () => setTimeout(hideLoader, 1200)
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', scheduleEarlyHide, {once: true})
       } else {
         scheduleEarlyHide()
       }
-      // Spätestes Sicherheitsnetz: nach 5s ausblenden
       setTimeout(hideLoader, 5000)
     } catch (e) {
       if (typeof console !== 'undefined' && console.warn) {

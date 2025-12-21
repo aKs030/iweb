@@ -57,17 +57,22 @@ class RobotCompanion {
     this._sectionCheckInterval = null
     this._scrollListener = null
 
-    this.loadTexts().then(() => {
-      this.applyTexts()
-      if (!this.dom.container) this.init()
-    })
-
-    if (window.robotCompanionTexts) {
+    // Immediate init if container exists (SSR/Static Init)
+    if (document.getElementById(this.containerId)) {
       this.init()
     } else {
-      setTimeout(() => {
+      this.loadTexts().then(() => {
+        this.applyTexts()
         if (!this.dom.container) this.init()
-      }, 500)
+      })
+
+      if (window.robotCompanionTexts) {
+        if (!this.dom.container) this.init()
+      } else {
+        setTimeout(() => {
+          if (!this.dom.container) this.init()
+        }, 500)
+      }
     }
   }
 
@@ -262,10 +267,19 @@ class RobotCompanion {
   }
 
   init() {
+    // If we have a container reference already, it means we are initialized.
+    // However, createDOM sets this.dom.container.
+    // If the element exists in DOM but this.dom.container is null, we need to hydrating it.
     if (this.dom.container) return
 
     this.loadCSS()
     this.createDOM()
+
+    // Check for loading state
+    if (this.dom.container.classList.contains('robot-loading')) {
+      this.setupLoadingState()
+    }
+
     this.attachEvents()
     this.setupFooterOverlapCheck()
     this.setupMobileViewportHandler()
@@ -436,82 +450,98 @@ class RobotCompanion {
     }
   }
 
+  setupLoadingState() {
+    const finishLoading = () => {
+      // FLIP (First, Last, Invert, Play) Animation Technique for Smooth Transition
+      const el = this.dom.container
+
+      // 1. FIRST: Capture current position (Center)
+      const firstRect = el.getBoundingClientRect()
+
+      // 2. LAST: Remove loading state to let it snap to default position (Bottom Right)
+      // We must remove the class that enforces fixed centering
+      el.classList.remove('robot-loading')
+      // Temporarily disable transitions to get the immediate 'Last' position
+      el.style.transition = 'none'
+
+      // Force layout update to apply class removal
+      void el.offsetWidth
+
+      const lastRect = el.getBoundingClientRect()
+
+      // 3. INVERT: Calculate the difference and apply transform to visually move it back to 'First'
+      const deltaX = firstRect.left - lastRect.left
+      const deltaY = firstRect.top - lastRect.top
+      const scaleX = firstRect.width / lastRect.width // Should correspond to scale(2.5) vs scale(1)
+      const scaleY = firstRect.height / lastRect.height
+
+      // Apply the invert transform
+      el.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX})`
+      el.style.transformOrigin = 'top left' // Important for matching the bounding rect shift
+
+      // 4. PLAY: Enable transitions and remove the transform to animate to 'Last'
+      requestAnimationFrame(() => {
+        // Add the class that defines the transition properties
+        el.classList.add('robot-flying-to-corner')
+
+        // Remove the hardcoded invert transform (reverting to CSS-defined or empty)
+        // We want it to go to scale(1) and translate(0,0) of the new position.
+        // But we need to ensure the class 'robot-flying-to-corner' handles the transition timing.
+
+        // Force reflow before starting transition
+        void el.offsetWidth
+
+        el.style.transition = 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' // Bouncy fly effect
+        el.style.transform = 'none'
+        el.style.transformOrigin = '' // Reset
+      })
+
+      // 5. Cleanup
+      setTimeout(() => {
+        el.classList.remove('robot-flying-to-corner')
+        el.style.transition = ''
+        el.style.transform = ''
+
+        // Optional: Play sound
+        // this.soundModule.play('chirp')
+      }, 1300)
+    }
+
+    // Check if loading is already done?
+    window.addEventListener('app-loaded', finishLoading, {once: true})
+  }
+
   createDOM() {
-    const container = document.createElement('div')
-    container.id = this.containerId
+    let container = document.getElementById(this.containerId)
 
-    const robotSVG = `
-        <svg viewBox="0 0 100 100" class="robot-svg">
-            <defs>
-              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="2" result="blur"/>
-                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-              </filter>
-              <filter id="lidShadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.35" />
-              </filter>
-              <linearGradient id="lidGradient" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="#0b1220" stop-opacity="0.95" />
-                <stop offset="100%" stop-color="#0f172a" stop-opacity="1" />
-              </linearGradient>
-            </defs>
-            <line x1="50" y1="15" x2="50" y2="25" stroke="#40e0d0" stroke-width="2" />
-            <circle cx="50" cy="15" r="3" class="robot-antenna-light" fill="#ff4444" />
-            <path d="M30,40 a20,20 0 0,1 40,0" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
-            <rect x="30" y="40" width="40" height="15" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
-            <g class="robot-eyes">
-              <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-              <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-              <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-              <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-            </g>
-            <path class="robot-legs" d="M30,60 L70,60 L65,90 L35,90 Z" fill="#0f172a" stroke="#40e0d0" stroke-width="2" />
-            <g class="robot-arms">
-                <path class="robot-arm left" d="M30,62 Q20,70 25,80" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
-                <path class="robot-arm right" d="M70,62 Q80,70 75,80" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
-            </g>
-            <g class="robot-flame" style="opacity: 0;">
-                <path d="M40,90 Q50,120 60,90 Q50,110 40,90" fill="#ff9900" />
-                <path d="M45,90 Q50,110 55,90" fill="#ffff00" />
-            </g>
-            <g class="robot-particles" style="opacity: 0;">
-                <circle class="particle" cx="20" cy="50" r="2" fill="#40e0d0" opacity="0.6"><animate attributeName="cy" values="50;30;50" dur="2s" repeatCount="indefinite" /></circle>
-                <circle class="particle" cx="80" cy="60" r="1.5" fill="#40e0d0" opacity="0.5"><animate attributeName="cy" values="60;40;60" dur="2.5s" repeatCount="indefinite" /></circle>
-                <circle class="particle" cx="15" cy="70" r="1" fill="#40e0d0" opacity="0.7"><animate attributeName="cy" values="70;50;70" dur="1.8s" repeatCount="indefinite" /></circle>
-            </g>
-            <g class="robot-thinking" style="opacity: 0;">
-                <circle cx="70" cy="20" r="8" fill="rgba(64, 224, 208, 0.2)" stroke="#40e0d0" stroke-width="1" />
-                <text x="70" y="25" font-size="12" fill="#40e0d0" text-anchor="middle">?</text>
-            </g>
-            <circle cx="50" cy="70" r="5" fill="#2563eb" opacity="0.8"><animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" /></circle>
-        </svg>
-    `
+    // Simplification: We expect the container to exist in index.html now.
+    // If not, we fallback to creation (e.g. for potential dynamic page loads if not SPA)
+    if (!container) {
+      container = document.createElement('div')
+      container.id = this.containerId
 
-    container.innerHTML = `
-            <div class="robot-chat-window" id="robot-chat-window">
-                <div class="chat-header">
-                    <div class="chat-title"><span class="chat-status-dot"></span>Cyber Assistant</div>
-                    <button class="chat-close-btn">&times;</button>
-                </div>
-                <div class="chat-messages" id="robot-messages"></div>
-                <div class="chat-controls" id="robot-controls"></div>
-                <div class="chat-input-area" id="robot-input-area">
-                    <input type="text" id="robot-chat-input" placeholder="Frag mich etwas oder wähle eine Option..." />
-                    <button id="robot-chat-send">➤</button>
-                </div>
-            </div>
-            <div class="robot-float-wrapper">
-                <div class="robot-bubble" id="robot-bubble">
-                    <span id="robot-bubble-text">Hallo!</span>
-                    <div class="robot-bubble-close">&times;</div>
-                </div>
-                <button class="robot-avatar" aria-label="Chat öffnen">${robotSVG}</button>
-            </div>
-        `
+      // Minimal fallback structure if SVG is missing (should not happen in main app)
+      // Using innerHTML from memory/cache or simple placeholder to avoid massive duplication
+      // In a real build system, this string would be imported.
+      // For now, we assume index.html has it. If we must create it, we use a placeholder
+      // to avoid the huge code block duplication which causes maintenance issues.
+      container.innerHTML = `
+        <div class="robot-float-wrapper">
+            <button class="robot-avatar" aria-label="Chat öffnen">
+                <!-- Fallback Icon if SVG missing -->
+                <span style="font-size:40px">🤖</span>
+            </button>
+        </div>
+      `
 
-    container.style.opacity = '0'
-    container.style.transition = 'opacity 220ms ease'
-    document.body.appendChild(container)
+      container.style.opacity = '0'
+      container.style.transition = 'opacity 220ms ease'
+      document.body.appendChild(container)
+
+      // Force reflow
+      void container.offsetWidth
+      container.style.opacity = '1'
+    }
 
     this.dom.container = container
     this.dom.window = document.getElementById('robot-chat-window')
