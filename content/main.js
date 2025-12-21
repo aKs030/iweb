@@ -131,7 +131,6 @@ const SectionLoader = (() => {
       }
       return section.id || 'Abschnitt'
     })()
-    const attempts = retryAttempts.get(section) || 0
 
     section.setAttribute('aria-busy', 'true')
     section.dataset.state = 'loading'
@@ -229,7 +228,7 @@ const SectionLoader = (() => {
     init()
   }
 
-  const api = {init, reinit, loadSection, retrySection}
+  const api = {init, reinit, loadSection}
   // Export to window for compatibility with inline handlers if any, but prefer ES import
   window.SectionLoader = api
   return api
