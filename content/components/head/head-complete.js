@@ -13,6 +13,16 @@
     const existingTitleEl = document.querySelector('title')
     const pageTitle = existingTitleEl ? existingTitleEl.textContent : document.title || 'Abdulkerim — Digital Creator Portfolio'
 
+    const escapeHTML = value =>
+      String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
+    const safePageTitle = escapeHTML(pageTitle)
+
     // 2. Shared Head laden (mit Caching für Performance)
     const resp = await fetch('/content/components/head/head.html', {cache: 'force-cache'})
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
@@ -20,7 +30,7 @@
     let html = await resp.text()
 
     // 3. Platzhalter {{PAGE_TITLE}} ersetzen
-    html = html.replace(/\{\{PAGE_TITLE}}/g, pageTitle)
+    html = html.replace(/\{\{PAGE_TITLE}}/g, safePageTitle)
 
     // 4. HTML in DOM-Knoten umwandeln
     const range = document.createRange()
