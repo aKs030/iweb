@@ -23,6 +23,13 @@
   /* Layout */
   --footer-horizontal-margin: clamp(8px, 2vw, 32px);
   --footer-card-gap: 16px;
+  /* Social brand colors */
+  --youtube-red: #ff0000;
+  --x-color: #1da1f2;
+  --github-color: #24292e;
+  --linkedin-blue: #0077b5;
+  --instagram-start: #f58529;
+  --instagram-end: #dd2a7b;
 
   /* Transitions */
   --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -458,16 +465,19 @@ body.footer-expanded {
   flex-direction: row;
   gap: var(--footer-spacing-xs);
   margin-top: auto;
+  align-items: center; /* ensure vertical alignment inside card */
 }
 
 .newsletter-input-wrapper {
   display: flex;
   gap: var(--footer-spacing-xs);
   width: 100%;
+  min-width: 0; /* allow children to shrink inside flex */
 }
 
 .newsletter-input-enhanced {
   flex: 1;
+  min-width: 0; /* prevent input's intrinsic min width from overflowing */
   padding: 8px 10px;
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-micro-radius);
@@ -758,6 +768,70 @@ body.footer-expanded {
   transform: translateY(-1px) translateZ(0);
 }
 
+.footer-social-btn.github {
+  /* Use neutral label color by default for better contrast */
+  color: var(--dynamic-footer-label-secondary);
+  border-color: rgba(36, 41, 46, 0.08);
+}
+.footer-social-btn.github:hover {
+  color: #fff;
+  background: linear-gradient(135deg, var(--github-color), #000000);
+  border-color: #000000;
+}
+
+.footer-social-btn.linkedin {
+  /* Use neutral label color by default for good contrast */
+  color: var(--dynamic-footer-label-secondary);
+  border-color: rgba(0, 119, 181, 0.12);
+}
+.footer-social-btn.linkedin:hover {
+  color: #fff;
+  background: linear-gradient(135deg, var(--linkedin-blue), #006097);
+  border-color: #006097;
+}
+
+.footer-social-btn.instagram {
+  color: var(--instagram-start);
+  border-color: rgba(245, 133, 41, 0.12);
+}
+.footer-social-btn.instagram:hover {
+  color: #fff;
+  /* Adjusted to darker endpoints to meet WCAG contrast with white text */
+  background: linear-gradient(135deg, #ab5d1c, #d12774);
+  border-color: #d12774;
+}
+
+.footer-social-btn.youtube {
+  /* default uses neutral label color for contrast */
+  color: var(--dynamic-footer-label-secondary);
+  border-color: rgba(255, 0, 0, 0.12);
+}
+.footer-social-btn.youtube:hover {
+  color: #fff;
+  /* Darkened YouTube endpoints for contrast */
+  background: linear-gradient(135deg, #e50000, #c10000);
+  border-color: #c10000;
+}
+
+.footer-social-btn.x {
+  color: var(--x-color);
+  border-color: rgba(29, 161, 242, 0.12);
+}
+.footer-social-btn.x:hover {
+  color: #fff;
+  /* Darkened X endpoints for contrast */
+  background: linear-gradient(135deg, #1578b5, #0a77b9);
+  border-color: #0a77b9;
+}
+
+.footer-social-btn.wikipedia {
+  /* Use neutral label color by default for better contrast */
+  color: var(--dynamic-footer-label-secondary);
+}
+.footer-social-btn.wikipedia:hover {
+  color: var(--dynamic-footer-label-primary);
+}
+
 /* ===== Footer States ===== */
 .footer-expanded .footer-minimized {
   opacity: 0;
@@ -865,6 +939,11 @@ body.footer-expanded {
     display: none;
   }
 
+  /* Hide social button text labels on mobile/small tablets to prevent layout shifts */
+  .footer-social-links .footer-social-btn span:not(.visually-hidden) {
+    display: none;
+  }
+
   .footer-copyright-enhanced {
     order: 1;
     flex-shrink: 2;
@@ -898,6 +977,16 @@ body.footer-expanded {
   .newsletter-form-enhanced,
   .newsletter-input-wrapper {
     flex-direction: column;
+  }
+
+  /* When stacked (mobile), make the submit button full width and ensure inputs also expand */
+  .newsletter-submit-enhanced {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .newsletter-input-enhanced {
+    width: 100%;
   }
 
   body.footer-expanded {
