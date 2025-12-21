@@ -14,12 +14,7 @@
     const pageTitle = existingTitleEl ? existingTitleEl.textContent : document.title || 'Abdulkerim — Digital Creator Portfolio'
 
     const escapeHTML = value =>
-      String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
+      String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
     const safePageTitle = escapeHTML(pageTitle)
 
@@ -270,7 +265,11 @@
               document.body.classList.add('global-loading-visible')
             }
           } catch {
-            try { document.body.classList.add('global-loading-visible') } catch { /* ignore */ }
+            try {
+              document.body.classList.add('global-loading-visible')
+            } catch {
+              /* ignore */
+            }
           }
         } else {
           document.addEventListener(
@@ -284,7 +283,11 @@
                   document.body.classList.add('global-loading-visible')
                 }
               } catch {
-                try { document.body.classList.add('global-loading-visible') } catch { /* ignore */ }
+                try {
+                  document.body.classList.add('global-loading-visible')
+                } catch {
+                  /* ignore */
+                }
               }
             },
             {once: true}

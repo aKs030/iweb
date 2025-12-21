@@ -126,7 +126,7 @@ LoadingScreen.requestShow('my-module')
 LoadingScreen.release('my-module')
 ```
 
-  Owner-Id: kurze, eindeutige Bezeichner verwenden (z. B. `main`, `three-earth`, `footer`).
+Owner-Id: kurze, eindeutige Bezeichner verwenden (z. B. `main`, `three-earth`, `footer`).
 
 ### Formatting
 

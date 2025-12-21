@@ -35,11 +35,7 @@ function ensureElement() {
     if (document.body) {
       document.body.prepend(wrapper)
     } else {
-      document.addEventListener(
-        'DOMContentLoaded',
-        () => document.body.prepend(wrapper),
-        {once: true}
-      )
+      document.addEventListener('DOMContentLoaded', () => document.body.prepend(wrapper), {once: true})
     }
     createdByScript = true
     element = wrapper
@@ -66,8 +62,6 @@ function showImmediate() {
   }
   startTime = performance.now()
 }
-
-
 
 function scheduleHide(delay = 0) {
   if (hideTimeout) clearTimeout(hideTimeout)

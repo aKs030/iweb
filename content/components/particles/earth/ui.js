@@ -5,7 +5,7 @@ import {calculateQualityLevel, calculateDynamicResolution} from './ui_helpers.js
 const log = createLogger('EarthUI')
 
 import LoadingScreenDefault, {LoadingScreen as LoadingScreenNamed} from '../../../utils/loading-screen.js'
-const LoadingScreen = (typeof LoadingScreenNamed !== 'undefined') ? LoadingScreenNamed : LoadingScreenDefault
+const LoadingScreen = typeof LoadingScreenNamed !== 'undefined' ? LoadingScreenNamed : LoadingScreenDefault
 
 /*
   Earth UI Loader
