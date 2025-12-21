@@ -14,6 +14,9 @@ Entwurf für Artikel: „Abdulkerim Sesli“ (Deutsch)
 
 - Offizielle Website: https://abdulkerimsesli.de
 - GitHub: https://github.com/aKs030
+- Wikipedia (Benutzer): https://de.wikipedia.org/wiki/Benutzer:Abdulkerim_sesli
+- Wikidata (Projekt-Entität): https://www.wikidata.org/wiki/Q137477849
+- Wikidata (Creator-Profil): https://www.wikidata.org/wiki/Q137477188
 - LinkedIn: https://www.linkedin.com/in/abdulkerim-s/
 - X (Twitter): https://x.com/kRm_030
 
