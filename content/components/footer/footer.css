@@ -25,9 +25,9 @@
   --footer-card-gap: 16px;
   /* Social brand colors */
   --youtube-red: #ff0000;
-  --x-color: #1DA1F2;
+  --x-color: #1da1f2;
   --github-color: #24292e;
-  --linkedin-blue: #0077B5;
+  --linkedin-blue: #0077b5;
   --instagram-start: #f58529;
   --instagram-end: #dd2a7b;
 
@@ -486,7 +486,7 @@ body.footer-expanded {
   font-size: var(--footer-text-xs);
   font-family: var(--dynamic-footer-font-family);
   transition: all var(--footer-transition-quick);
-} 
+}
 
 .newsletter-input-enhanced:focus {
   outline: none;
@@ -797,8 +797,8 @@ body.footer-expanded {
 .footer-social-btn.instagram:hover {
   color: #fff;
   /* Adjusted to darker endpoints to meet WCAG contrast with white text */
-  background: linear-gradient(135deg, #AB5D1C, #D12774);
-  border-color: #D12774;
+  background: linear-gradient(135deg, #ab5d1c, #d12774);
+  border-color: #d12774;
 }
 
 .footer-social-btn.youtube {
@@ -809,8 +809,8 @@ body.footer-expanded {
 .footer-social-btn.youtube:hover {
   color: #fff;
   /* Darkened YouTube endpoints for contrast */
-  background: linear-gradient(135deg, #E50000, #C10000);
-  border-color: #C10000;
+  background: linear-gradient(135deg, #e50000, #c10000);
+  border-color: #c10000;
 }
 
 .footer-social-btn.x {
@@ -820,8 +820,8 @@ body.footer-expanded {
 .footer-social-btn.x:hover {
   color: #fff;
   /* Darkened X endpoints for contrast */
-  background: linear-gradient(135deg, #1578B5, #0A77B9);
-  border-color: #0A77B9;
+  background: linear-gradient(135deg, #1578b5, #0a77b9);
+  border-color: #0a77b9;
 }
 
 .footer-social-btn.wikipedia {
