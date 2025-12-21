@@ -464,7 +464,9 @@ document.addEventListener(
       })
     }
 
-    log.info(`Performance: domReady=${Math.round(perfMarks.domReady - perfMarks.start)}ms modulesReady=${Math.round(perfMarks.modulesReady - perfMarks.start)}ms windowLoaded=${Math.round(perfMarks.windowLoaded - perfMarks.start)}ms`)
+    log.info(
+      `Performance: domReady=${Math.round(perfMarks.domReady - perfMarks.start)}ms modulesReady=${Math.round(perfMarks.modulesReady - perfMarks.start)}ms windowLoaded=${Math.round(perfMarks.windowLoaded - perfMarks.start)}ms`
+    )
 
     // ===== Dev-only WebSocket test (optional) =====
     // Usage: add ?ws-test to the page URL or use debug mode to enable a reconnecting websocket to ws://127.0.0.1:3001
