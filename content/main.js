@@ -444,41 +444,54 @@ document.addEventListener(
     checkReady()
     ;(function scheduleSmartForceHide(attempt = 1) {
       const INITIAL_DELAY = 5000
-      const RETRY_DELAY = 5000
       const MAX_ATTEMPTS = 3
+      const JITTER_MIN = 0.85
+      const JITTER_MAX = 1.15
 
-      setTimeout(
-        () => {
-          if (windowLoaded) return
+      // Exponential backoff with jitter to avoid thundering or synchronized retries
+      const baseDelay = INITIAL_DELAY * Math.pow(2, Math.max(0, attempt - 1))
+      const jitter = JITTER_MIN + Math.random() * (JITTER_MAX - JITTER_MIN)
+      const delay = Math.round(baseDelay * jitter)
 
-          // If other modules registered as blocking, defer forced hide and retry
-          try {
-            if (AppLoadManager && typeof AppLoadManager.isBlocked === 'function' && AppLoadManager.isBlocked()) {
-              log.warn(
-                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${AppLoadManager.getPending().join(', ')}`
-              )
+      setTimeout(() => {
+        if (windowLoaded) return
 
-              if (attempt < MAX_ATTEMPTS) {
-                scheduleSmartForceHide(attempt + 1)
-                return
-              }
-              log.warn('Max attempts reached - forcing hide despite blocking modules')
+        // If other modules registered as blocking, defer forced hide and retry
+        try {
+          if (AppLoadManager && typeof AppLoadManager.isBlocked === 'function' && AppLoadManager.isBlocked()) {
+            const pending = typeof AppLoadManager.getPending === 'function' ? AppLoadManager.getPending() : []
+            log.warn(
+              `Deferring forced loading screen hide (attempt ${attempt}, delay ${delay}ms): blocking modules=${pending.join(', ')}`
+            )
+
+            if (attempt < MAX_ATTEMPTS) {
+              scheduleSmartForceHide(attempt + 1)
+              return
             }
-          } catch (e) {
-            log.debug('AppLoadManager check failed:', e)
-          }
 
-          log.warn('Forcing loading screen hide after timeout')
-          // Force-hide now (use centralized forceHide)
-          try {
-            LoadingScreen.forceHide()
-          } catch (e) {
-            // Fallback to previous API if missing
-            LoadingScreenManager.hide()
+            log.warn(`Max attempts reached (${MAX_ATTEMPTS}) - forcing hide despite blocking modules=${pending.join(', ')}`)
           }
-        },
-        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
-      )
+        } catch (e) {
+          log.debug('AppLoadManager check failed:', e)
+        }
+
+        log.warn(`Forcing loading screen hide after timeout (attempt ${attempt})`)
+
+        // Force-hide now (use centralized forceHide)
+        try {
+          LoadingScreen.forceHide()
+        } catch (e) {
+          // Fallback to previous API if missing
+          LoadingScreenManager.hide()
+        }
+
+        // Dispatch an event so other systems or telemetry can react
+        try {
+          document.dispatchEvent(new CustomEvent('loading:force-hide', {detail: {attempt, timestamp: Date.now()}}))
+        } catch (e) {
+          /* ignore */
+        }
+      }, delay)
     })()
 
     schedulePersistentStorageRequest(2200)
