@@ -491,13 +491,13 @@ class RobotCompanion {
             <div class="robot-chat-window" id="robot-chat-window">
                 <div class="chat-header">
                     <div class="chat-title"><span class="chat-status-dot"></span>Cyber Assistant</div>
-                    <button class="chat-close-btn">&times;</button>
+                    <button class="chat-close-btn" aria-label="Chat schließen">&times;</button>
                 </div>
-                <div class="chat-messages" id="robot-messages"></div>
+                <div class="chat-messages" id="robot-messages" aria-live="polite" role="log"></div>
                 <div class="chat-controls" id="robot-controls"></div>
                 <div class="chat-input-area" id="robot-input-area">
-                    <input type="text" id="robot-chat-input" placeholder="Frag mich etwas oder wähle eine Option..." />
-                    <button id="robot-chat-send">➤</button>
+                    <input type="text" id="robot-chat-input" placeholder="Frag mich etwas oder wähle eine Option..." aria-label="Deine Nachricht" />
+                    <button id="robot-chat-send" aria-label="Nachricht senden">➤</button>
                 </div>
             </div>
             <div class="robot-float-wrapper">

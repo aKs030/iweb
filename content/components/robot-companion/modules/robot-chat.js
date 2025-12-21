@@ -26,6 +26,12 @@ export class RobotChat {
 
       // Focus Trap
       if (window.a11y) window.a11y.trapFocus(this.robot.dom.window)
+
+      // Escape key handler
+      this._escHandler = e => {
+        if (e.key === 'Escape') this.toggleChat(false)
+      }
+      document.addEventListener('keydown', this._escHandler)
     } else {
       this.robot.dom.window.classList.remove('open')
       this.isOpen = false
@@ -34,6 +40,12 @@ export class RobotChat {
 
       // Release Focus
       if (window.a11y) window.a11y.releaseFocus()
+
+      // Remove Escape handler
+      if (this._escHandler) {
+        document.removeEventListener('keydown', this._escHandler)
+        this._escHandler = null
+      }
     }
   }
 
@@ -111,6 +123,7 @@ export class RobotChat {
     const typingDiv = document.createElement('div')
     typingDiv.className = 'typing-indicator'
     typingDiv.id = 'robot-typing'
+    typingDiv.setAttribute('aria-label', 'Roboter schreibt...')
     typingDiv.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`
     this.robot.dom.messages.appendChild(typingDiv)
     this.scrollToBottom()
