@@ -314,17 +314,22 @@ const ScrollSnapping = (() => {
 
 ScrollSnapping.init()
 
-// ===== Loading Screen Manager (centralized) =====
-import LoadingScreenDefault, {LoadingScreen as LoadingScreenNamed} from './utils/loading-screen.js'
-const LoadingScreen = typeof LoadingScreenNamed !== 'undefined' ? LoadingScreenNamed : LoadingScreenDefault
-
-// Initialize and claim the loader for the main app context
-LoadingScreen.init()
-LoadingScreen.requestShow('main')
+// ===== Loading Screen Manager (Legacy - Robot Companion handles loading) =====
+// The robot-companion is now the loading screen. We just need to signal when ready.
+// Minimal stub to prevent breakage if modules try to access it via window
+const LoadingScreen = {
+  requestShow: () => {},
+  release: () => {},
+  forceHide: () => {},
+  init: () => {}
+}
 
 const LoadingScreenManager = {
-  init: () => LoadingScreen.init(),
-  hide: () => LoadingScreen.release('main')
+  init: () => {},
+  hide: () => {
+    // Dispatch app-loaded event for the Robot Companion (listens on window)
+    window.dispatchEvent(new CustomEvent('app-loaded'))
+  }
 }
 
 // ===== Three.js Earth System Loader =====

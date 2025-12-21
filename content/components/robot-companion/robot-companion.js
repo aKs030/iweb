@@ -26,6 +26,7 @@ class RobotCompanion {
 
     // State
     this.state = {}
+    this.isLoading = true
 
     // Flag to prevent footer overlap check from overriding keyboard adjustment
     this.isKeyboardAdjustmentActive = false
@@ -69,6 +70,78 @@ class RobotCompanion {
         if (!this.dom.container) this.init()
       }, 500)
     }
+
+    // Listen for app loaded event to transition from loading state
+    window.addEventListener('app-loaded', () => this.transitionToNormalState(), {once: true})
+  }
+
+  transitionToNormalState() {
+    if (!this.dom.container) return
+    const container = this.dom.container
+    const backdrop = document.getElementById('loading-backdrop')
+
+    if (backdrop) {
+      backdrop.classList.add('fade-out')
+      setTimeout(() => {
+        if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop)
+      }, 800)
+    }
+
+    // Use FLIP animation for smooth transition from center to corner
+    requestAnimationFrame(() => {
+      // 1. Measure First (Loading State)
+      const firstRect = container.getBoundingClientRect()
+      const firstCenterX = firstRect.left + firstRect.width / 2
+      const firstCenterY = firstRect.top + firstRect.height / 2
+
+      // 2. Remove Loading Class (Last State)
+      container.classList.remove('robot-loading')
+
+      // 3. Measure Last (Normal State) - force layout
+      // We need to wait for layout update.
+      // Since we removed the class, the styles changed.
+      // Reading offsetHeight forces layout.
+      void container.offsetHeight
+      const lastRect = container.getBoundingClientRect()
+      const lastCenterX = lastRect.left + lastRect.width / 2
+      const lastCenterY = lastRect.top + lastRect.height / 2
+
+      // 4. Invert
+      const deltaX = firstCenterX - lastCenterX
+      const deltaY = firstCenterY - lastCenterY
+
+      // Apply transform to put it back at First position
+      // Note: We must respect the scale diff if any, but since we animate scale via CSS transition,
+      // we primarily care about position here.
+      // The CSS transition on #robot-companion-container handles 'transform' property.
+      // If we manually set transform now, we might conflict with the transition unless we disable it temporarily.
+
+      // Actually, since we have a CSS transition on 'transform' and 'top/left/bottom/right' don't animate well from auto,
+      // the FLIP approach is:
+      // Set the element to the FINAL position (done by removing class).
+      // Apply a transform that moves it back to INITIAL position.
+      // Then remove the transform with transition enabled.
+
+      // Disable transition for the setup
+      container.style.transition = 'none'
+      container.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(2.5)`
+
+      // Force layout again
+      void container.offsetHeight
+
+      // 5. Play
+      // Enable transition and clear transform
+      container.style.transition = 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
+      container.style.transform = ''
+
+      // Clean up transition inline style after animation
+      setTimeout(() => {
+        container.style.transition = ''
+        this.isLoading = false
+        // Start the standard behaviors now that loading is done
+        this.animationModule.startTypeWriterKnockbackAnimation()
+      }, 800)
+    })
   }
 
   applyTexts() {
@@ -295,9 +368,10 @@ class RobotCompanion {
 
     this.setupSectionChangeDetection()
 
-    setTimeout(() => {
-      this.animationModule.startTypeWriterKnockbackAnimation()
-    }, 1500)
+    // Delayed start moved to transitionToNormalState to avoid conflict with loading animation
+    // setTimeout(() => {
+    //   this.animationModule.startTypeWriterKnockbackAnimation()
+    // }, 1500)
 
     this._onHeroTypingEnd = _ev => {
       try {
@@ -437,10 +511,12 @@ class RobotCompanion {
   }
 
   createDOM() {
-    const container = document.createElement('div')
-    container.id = this.containerId
+    let container = document.getElementById(this.containerId)
+    if (!container) {
+      container = document.createElement('div')
+      container.id = this.containerId
 
-    const robotSVG = `
+      const robotSVG = `
         <svg viewBox="0 0 100 100" class="robot-svg">
             <defs>
               <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -487,7 +563,7 @@ class RobotCompanion {
         </svg>
     `
 
-    container.innerHTML = `
+      container.innerHTML = `
             <div class="robot-chat-window" id="robot-chat-window">
                 <div class="chat-header">
                     <div class="chat-title"><span class="chat-status-dot"></span>Cyber Assistant</div>
@@ -509,9 +585,10 @@ class RobotCompanion {
             </div>
         `
 
-    container.style.opacity = '0'
-    container.style.transition = 'opacity 220ms ease'
-    document.body.appendChild(container)
+      container.style.opacity = '0'
+      container.style.transition = 'opacity 220ms ease'
+      document.body.appendChild(container)
+    }
 
     this.dom.container = container
     this.dom.window = document.getElementById('robot-chat-window')

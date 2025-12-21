@@ -953,3 +953,40 @@
     filter: drop-shadow(0 0 8px #ffff00);
   }
 }
+
+/* Loading State: Centered and Scaled */
+#robot-companion-container.robot-loading {
+  top: 50%;
+  left: 50%;
+  bottom: auto !important;
+  right: auto !important;
+  transform: translate(-50%, -50%) scale(2.5);
+  pointer-events: none;
+  z-index: 10000;
+}
+
+#robot-companion-container.robot-loading .robot-avatar {
+  animation: robotLoadingPulse 2s infinite ease-in-out;
+}
+
+/* Loading Backdrop */
+.loading-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: #0b1220;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.8s ease-out;
+  pointer-events: auto;
+}
+
+.loading-backdrop.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes robotLoadingPulse {
+  0% { filter: drop-shadow(0 0 20px rgba(64, 224, 208, 0.5)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 50px rgba(64, 224, 208, 1)); transform: scale(1.05); }
+  100% { filter: drop-shadow(0 0 20px rgba(64, 224, 208, 0.5)); transform: scale(1); }
+}
