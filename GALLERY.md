@@ -21,7 +21,7 @@ Die Photo Gallery ist eine React-basierte, vollständig responsive Fotogalerie m
 - ✅ **Suchfunktion**: Nach Titel, Tags, Ort (mit 300ms Debounce)
 - ✅ **Sortierung**: Nach Datum, Titel, Beliebtheit
 - ✅ **Grid-Ansicht**: 2x2 oder 3x3 Spalten
-- ✅ **Lazy Loading**: Bilder laden asynchron mit Spinner
+- ✅ **Lazy Loading**: Bilder laden asynchron
 - ✅ **Favoriten**: Lokale Favoriten-Verwaltung
 
 ### Lightbox-Features

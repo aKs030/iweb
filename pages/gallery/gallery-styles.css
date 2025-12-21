@@ -761,16 +761,7 @@ img {
 .hover\:brightness-110:hover {
   filter: brightness(1.1);
 }
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* Spinner animations removed — component-local placeholders were deleted */
 
 /* Aspect ratio */
 .aspect-\[4\/3\] {
@@ -985,24 +976,7 @@ img {
   box-shadow: 0 20px 35px rgb(139 92 246 / 40%);
 }
 
-/* Placeholder spinner wrapper */
-.spinner-lg {
-  width: 4rem;
-  height: 4rem;
-  border: 4px solid rgb(168 85 247 / 30%);
-  border-top-color: #a855f7;
-  border-radius: 9999px;
-  animation: spin 1s linear infinite;
-}
 
-.spinner-sm {
-  width: 2rem;
-  height: 2rem;
-  border: 4px solid rgb(236 72 153 / 30%);
-  border-top-color: #ec4899;
-  border-radius: 9999px;
-  animation: spin 1s linear infinite reverse;
-}
 
 /* Image shadow */
 .img-shadow {
