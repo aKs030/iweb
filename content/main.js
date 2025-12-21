@@ -105,7 +105,7 @@ const SectionLoader = (() => {
         })
       )
     } catch (error) {
-      log.debug(`Event dispatch failed: ${type}`, error)
+      log.debug(`Event dispatch failed: ${type}: ${error?.message || error}`)
     }
   }
 
@@ -167,7 +167,7 @@ const SectionLoader = (() => {
         fire(EVENTS.HERO_LOADED)
       }
     } catch (error) {
-      log.warn(`Section load failed: ${sectionName}`, error)
+      log.warn(`Section load failed: ${sectionName}: ${error?.message || error}`)
 
       // No automatic retries: mark section error and dispatch
       section.dataset.state = 'error'
@@ -420,7 +420,7 @@ document.addEventListener(
               log.warn('Max attempts reached - forcing hide despite blocking modules')
             }
           } catch (e) {
-            log.debug('AppLoadManager check failed:', e)
+            log.debug(`AppLoadManager check failed: ${e?.message || e}`)
           }
 
           // Loading screen removed — avoid alarming warnings, keep a debug-level message instead
@@ -464,11 +464,7 @@ document.addEventListener(
       })
     }
 
-    log.info('Performance:', {
-      domReady: Math.round(perfMarks.domReady - perfMarks.start),
-      modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
-      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
-    })
+    log.info(`Performance: domReady=${Math.round(perfMarks.domReady - perfMarks.start)}ms modulesReady=${Math.round(perfMarks.modulesReady - perfMarks.start)}ms windowLoaded=${Math.round(perfMarks.windowLoaded - perfMarks.start)}ms`)
 
     // ===== Dev-only WebSocket test (optional) =====
     // Usage: add ?ws-test to the page URL or use debug mode to enable a reconnecting websocket to ws://127.0.0.1:3001
@@ -489,8 +485,8 @@ document.addEventListener(
                 }
               }
               rws.onmessage = e => log.debug('[dev-ws]', e.data)
-              rws.onclose = ev => log.info('Dev RWS closed', ev)
-              rws.onerror = err => log.warn('Dev RWS error', err)
+              rws.onclose = ev => log.info(`Dev RWS closed: code=${ev?.code || 'N/A'} reason=${ev?.reason || 'N/A'}`)
+              rws.onerror = err => log.warn(`Dev RWS error: ${err?.message || err}`)
 
               // Attach for debugging
               window.__rws = rws
