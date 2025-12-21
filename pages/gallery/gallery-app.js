@@ -674,7 +674,21 @@ const PhotoGallery = () => {
             React.createElement(
               'div',
               {className: 'absolute inset-0 bg-slate-900 flex items-center justify-center'},
-              React.createElement('div', {className: 'relative'}, null)
+              React.createElement(
+                'div',
+                {className: 'relative'},
+                React.createElement('div', {
+                  className: 'w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin'
+                }),
+                React.createElement(
+                  'div',
+                  {className: 'absolute inset-0 flex items-center justify-center'},
+                  React.createElement('div', {
+                    className: 'w-8 h-8 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin',
+                    style: {animationDirection: 'reverse'}
+                  })
+                )
+              )
             )
         )
       )
