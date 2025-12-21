@@ -19,36 +19,19 @@ export function hideLoadingState(container) {
 export function showErrorState(container, error, retryCallback) {
   if (!container) return
 
-
+  // Mark the container as errored and record a short message for debugging or external UI
   container.classList.add('error')
-
-  const errorElement = container.querySelector('.three-earth-error')
-  if (errorElement) {
-    errorElement.classList.remove('hidden')
-    const errorText = errorElement.querySelector('p')
-    if (errorText) {
-      const msg = error?.message || 'Unknown error'
-      errorText.textContent = `WebGL Fehler: ${msg}`
-    }
-
-    // Add retry button if not present
-    let retryBtn = errorElement.querySelector('.three-earth-retry')
-    if (!retryBtn && retryCallback) {
-      retryBtn = document.createElement('button')
-      retryBtn.className = 'retry-btn three-earth-retry'
-      retryBtn.type = 'button'
-      retryBtn.textContent = 'Neu versuchen'
-      retryBtn.addEventListener('click', async () => {
-        try {
-          await retryCallback()
-        } catch (err) {
-          log.error('Retry failed:', err)
-          if (errorText) errorText.textContent = `Fehler: ${err.message}`
-        }
-      })
-      errorElement.appendChild(retryBtn)
-    }
+  const msg = error?.message || 'WebGL Fehler'
+  try {
+    // Keep a non-visual diagnostic on the DOM for other scripts to consume if needed
+    container.dataset.threeEarthError = msg
+    log.warn('ThreeEarth error:', msg)
+  } catch (e) {
+    /* ignore */
   }
+
+  // The component no longer injects fallback DOM UI. If a retry is desired, callers may
+  // register their own UI and call `retryCallback()` as needed.
 }
 
 export class PerformanceMonitor {
