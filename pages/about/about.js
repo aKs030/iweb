@@ -68,7 +68,8 @@
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         if (attempt > 0) {
-          logger.info(`Retry attempt ${attempt}/${retries}`)
+          // Reduce noisy retry logs to debug level
+          logger.debug(`Retry attempt ${attempt}/${retries}`)
           await new Promise(resolve => setTimeout(resolve, 500 * attempt))
         }
 
@@ -169,7 +170,8 @@
         return true
       } catch (err) {
         lastError = err
-        logger.warn(`Load attempt ${attempt + 1} failed:`, err.message)
+        // Avoid noisy warnings for transient fetch failures; record at info level
+        logger.info(`Load attempt ${attempt + 1} failed: ${err.message}`)
       }
     }
 
