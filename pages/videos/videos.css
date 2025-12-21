@@ -165,37 +165,6 @@ h1 {
   color: #fca5a5;
   border-radius: var(--card-radius);
 }
-
-/* FAQ styles */
-.faq-section {
-  margin-top: 2.5rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  padding: 1.25rem;
-  border-radius: calc(var(--card-radius) - 4px);
-  border: 1px solid rgba(255,255,255,0.03);
-}
-.faq-section h2 {
-  font-size: 1.25rem;
-  margin: 0 0 0.75rem 0;
-  color: var(--text-primary);
-}
-.faq-section details {
-  background: transparent;
-  padding: 0.75rem 0.5rem;
-  border-bottom: 1px dashed rgba(255,255,255,0.03);
-}
-.faq-section details summary {
-  list-style: none;
-  cursor: pointer;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.faq-section details[open] summary {
-  color: var(--accent);
-}
-.faq-answer { color: var(--text-secondary); margin-top: 0.5rem }
-.faq-section details summary::-webkit-details-marker { display: none }
-
 .video-thumb{
   position: relative;
   display:block;
