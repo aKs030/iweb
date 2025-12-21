@@ -40,6 +40,7 @@ const initMenu = () => {
   initializeMenu(menuContainer)
   initializeLogo(menuContainer)
   initializeSubmenuLinks()
+  fixSubpageLinks(menuContainer)
   setSiteTitle()
   setActiveMenuLink()
   // Keep menu active state in sync when hash or history changes
@@ -175,6 +176,19 @@ function getMenuHTML() {
       </ul>
     </nav>
   `
+}
+
+function fixSubpageLinks(container) {
+  const path = window.location.pathname
+  const isHomePage = path === '/' || path === '/index.html'
+
+  if (!isHomePage) {
+    const links = container.querySelectorAll('.site-menu a[href^="#"]')
+    links.forEach(link => {
+      const hash = link.getAttribute('href')
+      link.setAttribute('href', `/index.html${hash}`)
+    })
+  }
 }
 
 function initializeMenu(container) {
