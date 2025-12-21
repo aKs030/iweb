@@ -6,80 +6,23 @@ const log = createLogger('EarthUI')
 
 /*
   Earth UI Loader
-  - Uses a single global page loader (id: #loadingScreen) with a spinner.
-  - This module only shows/hides the spinner; progress bars/percent indicators
-    were removed for a simpler, unified loading UX.
+  - Optimized to delegate global loading state to AppLoadManager/LoadingScreenManager.
+  - This module now only handles local container states (like errors).
 */
 
-function getGlobalLoaderElements() {
-  const screen = document.getElementById('loadingScreen')
-  if (!screen) return null
-  return {screen}
+// No-op for global loader manipulation as it's handled centrally now.
+export function showLoadingState(_container) {
+  // Logic handled by AppLoadManager.block() in parent system
 }
 
-export function showLoadingState(container) {
-  if (!container) return
-
-  // Prefer the global page loader when available
-  const globals = getGlobalLoaderElements()
-  if (globals && globals.screen) {
-    globals.screen.classList.remove('hidden')
-    globals.screen.classList.remove('hide')
-    globals.screen.removeAttribute('aria-hidden')
-    Object.assign(globals.screen.style, {
-      display: 'flex',
-      opacity: '1',
-      pointerEvents: 'auto',
-      visibility: 'visible'
-    })
-    // Optionally set an aria message
-    globals.screen.setAttribute('aria-live', 'polite')
-    try {
-      document.body.classList.add('global-loading-visible')
-    } catch {
-      /* ignore */
-    }
-  } else {
-    // Fallback: no local progress UI; do nothing.
-  }
-}
-
-export function hideLoadingState(container) {
-  if (!container) return
-
-  const globals = getGlobalLoaderElements()
-  if (globals && globals.screen) {
-    // Hide the global loader using the same pattern as the rest of the app
-    globals.screen.classList.add('hide')
-    globals.screen.setAttribute('aria-hidden', 'true')
-    globals.screen.removeAttribute('aria-live')
-    Object.assign(globals.screen.style, {
-      opacity: '0',
-      pointerEvents: 'none',
-      visibility: 'hidden'
-    })
-    // Reset visuals (after transition)
-    setTimeout(() => {
-      if (globals.screen) globals.screen.style.display = 'none'
-      try {
-        document.body.classList.remove('global-loading-visible')
-      } catch {
-        /* ignore */
-      }
-    }, 300)
-  } else {
-    // No local progress UI to clear; do nothing.
-  }
+export function hideLoadingState(_container) {
+  // Logic handled by AppLoadManager.unblock() in parent system
 }
 
 export function showErrorState(container, error, retryCallback) {
   if (!container) return
 
-  // Hide global loader to reveal page error/fallback
-  const globals = getGlobalLoaderElements()
-  if (globals && globals.screen) {
-    globals.screen.classList.add('hidden')
-  }
+  // Global loader is hidden by unblocking in the parent system.
 
   container.classList.add('error')
 

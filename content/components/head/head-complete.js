@@ -297,11 +297,23 @@
       let start = performance.now()
 
       const hideLoader = () => {
+        // Stop if main application (LoadingScreenManager) is present and taking over
+        if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') {
+          return
+        }
+        // Also check for global AppLoadManager if exposed
+        if (window.AppLoadManager && typeof window.AppLoadManager.isBlocked === 'function' && window.AppLoadManager.isBlocked()) {
+          return
+        }
+
         const el = document.getElementById('loadingScreen')
         if (!el) return
         const elapsed = performance.now() - start
         const wait = Math.max(0, MIN_DISPLAY_TIME - elapsed)
         setTimeout(() => {
+          // Double check before acting
+          if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') return
+
           el.classList.add('hide')
           el.setAttribute('aria-hidden', 'true')
           Object.assign(el.style, {

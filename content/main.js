@@ -20,6 +20,8 @@ import {
 } from './utils/shared-utilities.js'
 import {initHeroSubtitle} from './components/typewriter/TypeWriter.js'
 import {a11y} from './utils/accessibility-manager.js'
+import appLoadManager from './utils/app-load-manager.js'
+
 // Ensure the a11y manager is available globally and initialized centrally
 if (typeof window !== 'undefined') {
   try {
@@ -301,51 +303,147 @@ ScrollSnapping.init()
 // ===== Loading Screen Manager =====
 const LoadingScreenManager = (() => {
   const MIN_DISPLAY_TIME = 600
+  const FALLBACK_TIME = 1200
+  const FORCE_TIME = 8000
   let startTime = 0
+  let isHiding = false
+  let isHidden = false
+  let forceTimer = null
 
-  function hide() {
-    const loadingScreen = getElementById('loadingScreen')
-    if (!loadingScreen) return
+  function requestShow(id) {
+    appLoadManager.block(id)
+  }
 
+  function release(id) {
+    appLoadManager.unblock(id)
+    checkAndHide()
+  }
+
+  function checkAndHide() {
+    if (appLoadManager.isBlocked()) {
+      log.debug(`Hide deferred: blocked by ${appLoadManager.getPending().join(', ')}`)
+      return
+    }
+
+    // Safety check: is it too early?
     const elapsed = performance.now() - startTime
-    const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed)
+    const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed)
 
-    setTimeout(() => {
+    if (remaining > 0) {
+      setTimeout(checkAndHide, remaining)
+      return
+    }
+
+    performHide()
+  }
+
+  function performHide() {
+    if (isHiding || isHidden) return
+    if (appLoadManager.isBlocked()) return // Last second check
+
+    isHiding = true
+    const loadingScreen = getElementById('loadingScreen')
+
+    if (!loadingScreen) {
+      cleanupState()
+      return
+    }
+
+    log.info(`Hiding loading screen (display time: ${Math.round(performance.now() - startTime)}ms)`)
+
+    // Clear force timer if active
+    if (forceTimer) {
+      clearTimeout(forceTimer)
+      forceTimer = null
+    }
+
+    // Apply hide class for animation
+    requestAnimationFrame(() => {
       loadingScreen.classList.add('hide')
       loadingScreen.setAttribute('aria-hidden', 'true')
 
-      Object.assign(loadingScreen.style, {
-        opacity: '0',
-        pointerEvents: 'none',
-        visibility: 'hidden'
-      })
-
+      // Cleanup after transition
       const cleanup = () => {
+        if (isHidden) return
+        isHidden = true
         loadingScreen.style.display = 'none'
-        loadingScreen.removeEventListener('transitionend', cleanup)
+        cleanupState()
       }
 
-      loadingScreen.addEventListener('transitionend', cleanup)
+      // Use `once: true` for automatic cleanup of listener
+      loadingScreen.addEventListener('transitionend', cleanup, {once: true})
+
+      // Safety timeout for cleanup in case transitionend fails
       setTimeout(cleanup, 700)
+    })
+  }
 
+  function cleanupState() {
+    try {
+      document.body.classList.remove('global-loading-visible')
       announce('Anwendung geladen', {dedupe: true})
-
-      try {
-        document.body.classList.remove('global-loading-visible')
-      } catch {
-        /* ignore */
-      }
-
       perfMarks.loadingHidden = performance.now()
-      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`)
-    }, delay)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function forceHide() {
+    if (isHidden) return
+    log.warn('Forcing loading screen hide (timeout reached)')
+
+    // Clear any blockers to prevent zombie state
+    appLoadManager.getPending().forEach(id => appLoadManager.unblock(id))
+
+    performHide()
   }
 
   function init() {
     startTime = performance.now()
+
+    // Setup fail-safe timers
+    setTimeout(() => {
+      if (!isHidden && !appLoadManager.isBlocked()) {
+        log.debug('Early fallback hide check')
+        checkAndHide()
+      }
+    }, FALLBACK_TIME)
+
+    forceTimer = setTimeout(forceHide, FORCE_TIME)
+
+    // Listen to manager changes
+    appLoadManager.subscribe((isBlocked) => {
+      if (!isBlocked) checkAndHide()
+    })
   }
 
-  return {init, hide}
+  function show() {
+    // Reset hiding state
+    isHiding = false
+    isHidden = false
+
+    if (forceTimer) clearTimeout(forceTimer)
+
+    const loadingScreen = getElementById('loadingScreen')
+    if (!loadingScreen) return
+
+    loadingScreen.classList.remove('hide')
+    loadingScreen.classList.remove('hidden')
+    loadingScreen.removeAttribute('aria-hidden')
+
+    Object.assign(loadingScreen.style, {
+      display: 'flex',
+      opacity: '1',
+      pointerEvents: 'auto',
+      visibility: 'visible'
+    })
+
+    try {
+      document.body.classList.add('global-loading-visible')
+    } catch { /* ignore */ }
+  }
+
+  return {init, requestShow, release, show, hide: checkAndHide}
 })()
 
 // ===== Three.js Earth System Loader =====
@@ -434,12 +532,18 @@ document.addEventListener(
     // Simplified TypeWriter Export
     window.initHeroSubtitle = initHeroSubtitle
 
+    // Expose LoadingScreen for modules (e.g. legacy/inline scripts)
+    window.LoadingScreen = LoadingScreenManager
+
     let modulesReady = false
     let windowLoaded = false
 
+    // Register initial core blockers
+    LoadingScreenManager.requestShow('core-window')
+    LoadingScreenManager.requestShow('core-modules')
+
     const checkReady = () => {
-      if (!modulesReady || !windowLoaded) return
-      LoadingScreenManager.hide()
+      // Logic handled by LoadingScreenManager.release()
     }
 
     window.addEventListener(
@@ -447,7 +551,7 @@ document.addEventListener(
       () => {
         perfMarks.windowLoaded = performance.now()
         windowLoaded = true
-        checkReady()
+        LoadingScreenManager.release('core-window')
       },
       {once: true}
     )
@@ -462,40 +566,7 @@ document.addEventListener(
     modulesReady = true
     perfMarks.modulesReady = performance.now()
     fire(EVENTS.MODULES_READY)
-    checkReady()
-    ;(function scheduleSmartForceHide(attempt = 1) {
-      const INITIAL_DELAY = 5000
-      const RETRY_DELAY = 5000
-      const MAX_ATTEMPTS = 3
-
-      setTimeout(
-        () => {
-          if (windowLoaded) return
-
-          // If other modules registered as blocking, defer forced hide and retry
-          try {
-            if (AppLoadManager && typeof AppLoadManager.isBlocked === 'function' && AppLoadManager.isBlocked()) {
-              log.warn(
-                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${AppLoadManager.getPending().join(', ')}`
-              )
-
-              if (attempt < MAX_ATTEMPTS) {
-                scheduleSmartForceHide(attempt + 1)
-                return
-              }
-              log.warn('Max attempts reached - forcing hide despite blocking modules')
-            }
-          } catch (e) {
-            log.debug('AppLoadManager check failed:', e)
-          }
-
-          log.warn('Forcing loading screen hide after timeout')
-          // Force-hide now
-          LoadingScreenManager.hide()
-        },
-        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
-      )
-    })()
+    LoadingScreenManager.release('core-modules')
 
     schedulePersistentStorageRequest(2200)
 

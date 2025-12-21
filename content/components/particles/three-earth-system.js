@@ -5,6 +5,7 @@
  */
 
 import {createLogger, getElementById, onResize, TimerManager} from '../../utils/shared-utilities.js'
+import appLoadManager from '../../utils/app-load-manager.js'
 import {
   getSharedState,
   loadThreeJS,
@@ -79,11 +80,7 @@ const ThreeEarthManager = (() => {
       registerParticleSystem('three-earth', {type: 'three-earth'})
 
       // Register as a potentially blocking module while initializing
-      try {
-        AppLoadManager.block('three-earth')
-      } catch {
-        /* ignore */
-      }
+      appLoadManager.block('three-earth')
 
       // Watchdog: if Three.js doesn't load within this time, unblock to avoid blocking page loader
       const THREE_LOAD_WATCH = 8000
@@ -92,11 +89,7 @@ const ThreeEarthManager = (() => {
         threeLoadWatchTimer = earthTimers.setTimeout(() => {
           if (!THREE_INSTANCE) {
             log.warn('Three.js load taking too long — unblocking three-earth to avoid blocking global loader')
-            try {
-              AppLoadManager.unblock('three-earth')
-            } catch {
-              /* ignore */
-            }
+            appLoadManager.unblock('three-earth')
             try {
               showErrorState(container, new Error('Three.js load timeout'), () => {
                 cleanup()
@@ -146,21 +139,13 @@ const ThreeEarthManager = (() => {
 
       loadingManager.onLoad = () => {
         if (!isSystemActive) return
-        try {
-          AppLoadManager.unblock('three-earth')
-        } catch {
-          /* ignore */
-        }
+        appLoadManager.unblock('three-earth')
         hideLoadingState(container)
       }
 
       loadingManager.onError = url => {
         log.warn('Error loading texture:', url)
-        try {
-          AppLoadManager.unblock('three-earth')
-        } catch {
-          /* ignore */
-        }
+        appLoadManager.unblock('three-earth')
       }
 
       // Stars
@@ -331,6 +316,9 @@ const ThreeEarthManager = (() => {
     if (cardManager) cardManager.cleanup()
     cardManager = starManager = shootingStarManager = performanceMonitor = null
     cameraManager = null
+
+    // Ensure we don't leave a block if we are cleaning up early
+    appLoadManager.unblock('three-earth')
 
     unregisterParticleSystem('three-earth')
     document.body.classList.remove('three-earth-active')
