@@ -36,8 +36,19 @@ def get_credentials(sa_key_path: str):
 def submit_sitemap(site_url: str, sitemap_path: str, creds):
     service = build('webmasters', 'v3', credentials=creds)
     try:
-        print(f"Submitting sitemap {sitemap_path} for site {site_url}...")
-        resp = service.sitemaps().submit(siteUrl=site_url, feedpath=sitemap_path).execute()
+        # Normalize sitemap path: accept full URL or path relative to site root
+        if sitemap_path.lower().startswith('http'):
+            feedpath = sitemap_path
+        else:
+            # ensure site_url has no trailing slash
+            base = site_url.rstrip('/')
+            if sitemap_path.startswith('/'):
+                feedpath = base + sitemap_path
+            else:
+                feedpath = base + '/' + sitemap_path
+
+        print(f"Submitting sitemap {feedpath} for site {site_url}...")
+        resp = service.sitemaps().submit(siteUrl=site_url, feedpath=feedpath).execute()
         print("Sitemap submitted. Google may take a few minutes to process it.")
         return resp
     except HttpError as e:
