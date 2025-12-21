@@ -1,32 +1,49 @@
 # Cloudflare Pages / Netlify style redirects
 # Purpose: canonicalize folder URLs, remove index.html and .html endings where desired
-# All redirects are permanent (301)
+
+# --- 301 Redirects (Canonicalization) ---
 
 # Remove index.html explicit mappings
 /index.html          /              301
 /blog/index.html     /blog/         301
 /projekte/index.html /projekte/     301
 /gallery/index.html  /gallery/      301
+/videos/index.html   /videos/       301
 
-# Remove specific HTML pages under /pages to clean folder URLs
-/pages/projekte/projekte.html   /projekte/    301
-/pages/gallery/gallery.html     /gallery/     301
-/pages/blog/index.html          /blog/        301
-
-# Generic: normalize any /something/index.html -> /something/
-# :splat captures the folder path (may be empty for root, handled above)
-/:splat/index.html  /:splat/  301
-
-# Optional: normalize domain and protocol to https://abdulkerimsesli.de
+# Normalize domain and protocol to https://abdulkerimsesli.de
 http://abdulkerimsesli.de/*           https://abdulkerimsesli.de/:splat   301
 https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 
-# Optional: remove .html suffix site-wide (use with caution)
-# Uncomment if you want every /foo.html -> /foo/ permanent redirect
-/:splat.html  /:splat/  301
+# Redirect old file locations to new Clean URLs
+/pages/gallery/gallery.html     /gallery/     301
+/pages/projekte/projekte.html   /projekte/    301
+/pages/videos/videos.html       /videos/      301
 
-# Explicit mappings to ensure safe global .html removal
-/pages/about/about.html        /about/      301
-/pages/gallery/gallery.html    /gallery/    301
-/pages/home/hero.html          /            301
-/pages/projekte/projekte.html  /projekte/   301
+# --- 200 Rewrites (Serving Content) ---
+# Note: In Cloudflare Pages, a folder with index.html is automatically served for the folder path.
+# We don't need explicit 200 rewrites for /gallery/ -> /pages/gallery/index.html IF we moved the files there.
+# However, because my file moves were:
+# pages/gallery/gallery.html -> pages/gallery/index.html
+# The URL /gallery/ will assume the content is at root /gallery/index.html, NOT /pages/gallery/index.html
+#
+# Wait, the structure is currently:
+# /pages/gallery/index.html
+#
+# Users visit: abdulkerimsesli.de/gallery/
+# Cloudflare looks for /gallery/index.html at the ROOT. It won't find it.
+# It finds /pages/gallery/index.html.
+#
+# So I DO need rewrites to map the clean URL to the physical location in /pages/.
+
+/gallery/*      /pages/gallery/:splat     200
+/projekte/*     /pages/projekte/:splat    200
+/videos/*       /pages/videos/:splat      200
+/blog/*         /pages/blog/:splat        200
+/about/*        /pages/about/:splat       200
+
+# Fallback for the root of these sections if the splat doesn't catch the trailing slash
+/gallery/       /pages/gallery/index.html  200
+/projekte/      /pages/projekte/index.html 200
+/videos/        /pages/videos/index.html   200
+/blog/          /pages/blog/index.html     200
+
