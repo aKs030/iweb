@@ -4,6 +4,9 @@ import {calculateQualityLevel, calculateDynamicResolution} from './ui_helpers.js
 
 const log = createLogger('EarthUI')
 
+import LoadingScreenDefault, {LoadingScreen as LoadingScreenNamed} from '../../../utils/loading-screen.js'
+const LoadingScreen = (typeof LoadingScreenNamed !== 'undefined') ? LoadingScreenNamed : LoadingScreenDefault
+
 /*
   Earth UI Loader
   - Uses a single global page loader (id: #loadingScreen) with a spinner.
@@ -20,7 +23,17 @@ function getGlobalLoaderElements() {
 export function showLoadingState(container) {
   if (!container) return
 
-  // Prefer the global page loader when available
+  // Prefer the centralized loading API
+  try {
+    if (LoadingScreen && typeof LoadingScreen.requestShow === 'function') {
+      LoadingScreen.requestShow('three-earth')
+      return
+    }
+  } catch (e) {
+    /* fallthrough to legacy behavior */
+  }
+
+  // Fallback: manipulate global loader directly
   const globals = getGlobalLoaderElements()
   if (globals && globals.screen) {
     globals.screen.classList.remove('hidden')
@@ -39,13 +52,21 @@ export function showLoadingState(container) {
     } catch {
       /* ignore */
     }
-  } else {
-    // Fallback: no local progress UI; do nothing.
   }
 }
 
 export function hideLoadingState(container) {
   if (!container) return
+
+  // Prefer the centralized loading API
+  try {
+    if (LoadingScreen && typeof LoadingScreen.release === 'function') {
+      LoadingScreen.release('three-earth')
+      return
+    }
+  } catch (e) {
+    /* fallthrough to legacy behavior */
+  }
 
   const globals = getGlobalLoaderElements()
   if (globals && globals.screen) {
@@ -67,8 +88,6 @@ export function hideLoadingState(container) {
         /* ignore */
       }
     }, 300)
-  } else {
-    // No local progress UI to clear; do nothing.
   }
 }
 

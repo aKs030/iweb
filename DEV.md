@@ -111,6 +111,23 @@ npx eslint .
 - Service Worker Updates erfordern Version-Bump in `sw.js`
 - Teste offline Funktionalität mit DevTools Network Throttling
 
+- Verwende das zentrale `LoadingScreen`-Utility (`content/utils/loading-screen.js`) für globale Ladezustände. API:
+  - `LoadingScreen.requestShow(ownerId)` — zeigt den Loader und registriert einen Besitzer
+  - `LoadingScreen.release(ownerId)` — gibt den Besitzer frei; der Loader verschwindet erst, wenn keine Owner mehr vorhanden sind (Min-Display-Time wird beachtet)
+  - `LoadingScreen.forceHide()` — sofortiges Verstecken (für Watchdogs/Fallbacks)
+
+  Beispiel:
+
+```javascript
+import LoadingScreen from './content/utils/loading-screen.js'
+
+LoadingScreen.requestShow('my-module')
+// ... Modul lädt etwas
+LoadingScreen.release('my-module')
+```
+
+  Owner-Id: kurze, eindeutige Bezeichner verwenden (z. B. `main`, `three-earth`, `footer`).
+
 ### Formatting
 
 - **Standardformatierer:** Diese Workspace-Konfiguration setzt Prettier als Standardformatierer für JavaScript/HTML/CSS/JSON. Nutze `npm run format` oder aktiviere "Format on Save" in VS Code (die Workspace-Einstellungen sind bereits konfiguriert).

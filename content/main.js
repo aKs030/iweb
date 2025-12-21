@@ -137,6 +137,14 @@ const SectionLoader = (() => {
     section.setAttribute('aria-busy', 'true')
     section.dataset.state = 'loading'
 
+    // Show global loader for this section load (owner id: section:<id>)
+    try {
+      const sectionOwner = `section:${section.id || sectionName}`
+      if (LoadingScreen && typeof LoadingScreen.requestShow === 'function') LoadingScreen.requestShow(sectionOwner)
+    } catch (e) {
+      /* ignore - fallback for pages without LoadingScreen */
+    }
+
     announce(`Lade ${sectionName}…`, {dedupe: true})
     dispatchEvent('section:will-load', section, {url})
 
@@ -200,6 +208,14 @@ const SectionLoader = (() => {
         wrapper.className = 'section-error-box'
         wrapper.appendChild(button)
         section.appendChild(wrapper)
+      }
+    } finally {
+      // Ensure we always release the section owner
+      try {
+        const sectionOwner = `section:${section.id || sectionName}`
+        if (LoadingScreen && typeof LoadingScreen.release === 'function') LoadingScreen.release(sectionOwner)
+      } catch (e) {
+        /* ignore */
       }
     }
   }
@@ -298,55 +314,18 @@ const ScrollSnapping = (() => {
 
 ScrollSnapping.init()
 
-// ===== Loading Screen Manager =====
-const LoadingScreenManager = (() => {
-  const MIN_DISPLAY_TIME = 600
-  let startTime = 0
+// ===== Loading Screen Manager (centralized) =====
+import LoadingScreenDefault, {LoadingScreen as LoadingScreenNamed} from './utils/loading-screen.js'
+const LoadingScreen = typeof LoadingScreenNamed !== 'undefined' ? LoadingScreenNamed : LoadingScreenDefault
 
-  function hide() {
-    const loadingScreen = getElementById('loadingScreen')
-    if (!loadingScreen) return
+// Initialize and claim the loader for the main app context
+LoadingScreen.init()
+LoadingScreen.requestShow('main')
 
-    const elapsed = performance.now() - startTime
-    const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed)
-
-    setTimeout(() => {
-      loadingScreen.classList.add('hide')
-      loadingScreen.setAttribute('aria-hidden', 'true')
-
-      Object.assign(loadingScreen.style, {
-        opacity: '0',
-        pointerEvents: 'none',
-        visibility: 'hidden'
-      })
-
-      const cleanup = () => {
-        loadingScreen.style.display = 'none'
-        loadingScreen.removeEventListener('transitionend', cleanup)
-      }
-
-      loadingScreen.addEventListener('transitionend', cleanup)
-      setTimeout(cleanup, 700)
-
-      announce('Anwendung geladen', {dedupe: true})
-
-      try {
-        document.body.classList.remove('global-loading-visible')
-      } catch {
-        /* ignore */
-      }
-
-      perfMarks.loadingHidden = performance.now()
-      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`)
-    }, delay)
-  }
-
-  function init() {
-    startTime = performance.now()
-  }
-
-  return {init, hide}
-})()
+const LoadingScreenManager = {
+  init: () => LoadingScreen.init(),
+  hide: () => LoadingScreen.release('main')
+}
 
 // ===== Three.js Earth System Loader =====
 const ThreeEarthLoader = (() => {
@@ -490,8 +469,13 @@ document.addEventListener(
           }
 
           log.warn('Forcing loading screen hide after timeout')
-          // Force-hide now
-          LoadingScreenManager.hide()
+          // Force-hide now (use centralized forceHide)
+          try {
+            LoadingScreen.forceHide()
+          } catch (e) {
+            // Fallback to previous API if missing
+            LoadingScreenManager.hide()
+          }
         },
         attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
       )

@@ -264,9 +264,13 @@
         if (document.body) {
           document.body.prepend(loaderWrapper)
           try {
-            document.body.classList.add('global-loading-visible')
+            if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') {
+              window.LoadingScreen.requestShow('head')
+            } else {
+              document.body.classList.add('global-loading-visible')
+            }
           } catch {
-            /* ignore */
+            try { document.body.classList.add('global-loading-visible') } catch { /* ignore */ }
           }
         } else {
           document.addEventListener(
@@ -274,9 +278,13 @@
             () => {
               document.body.prepend(loaderWrapper)
               try {
-                document.body.classList.add('global-loading-visible')
+                if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') {
+                  window.LoadingScreen.requestShow('head')
+                } else {
+                  document.body.classList.add('global-loading-visible')
+                }
               } catch {
-                /* ignore */
+                try { document.body.classList.add('global-loading-visible') } catch { /* ignore */ }
               }
             },
             {once: true}
@@ -297,6 +305,16 @@
       let start = performance.now()
 
       const hideLoader = () => {
+        // Prefer centralized LoadingScreen if available
+        try {
+          if (window.LoadingScreen && typeof window.LoadingScreen.release === 'function') {
+            window.LoadingScreen.release('head')
+            return
+          }
+        } catch (e) {
+          /* fallthrough to legacy behavior */
+        }
+
         const el = document.getElementById('loadingScreen')
         if (!el) return
         const elapsed = performance.now() - start

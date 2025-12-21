@@ -450,6 +450,15 @@ class FooterLoader {
     const container = domCache.get('#footer-container')
     if (!container) return false
 
+    // Show global loader for footer fetch
+    try {
+      if (window.LoadingScreen && typeof window.LoadingScreen.requestShow === 'function') {
+        window.LoadingScreen.requestShow('footer')
+      }
+    } catch {
+      /* ignore */
+    }
+
     try {
       const src = container.dataset.footerSrc || '/content/components/footer/footer.html'
       const response = await fetch(src)
@@ -480,6 +489,14 @@ class FooterLoader {
     } catch (error) {
       log.error('Footer load failed', error)
       return false
+    } finally {
+      try {
+        if (window.LoadingScreen && typeof window.LoadingScreen.release === 'function') {
+          window.LoadingScreen.release('footer')
+        }
+      } catch {
+        /* ignore */
+      }
     }
   }
 
