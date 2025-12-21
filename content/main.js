@@ -442,7 +442,8 @@ document.addEventListener(
             log.debug('AppLoadManager check failed:', e)
           }
 
-          log.warn('Forcing loading screen hide after timeout (loading screen removed)')
+          // Loading screen removed — avoid alarming warnings, keep a debug-level message instead
+          log.debug('Forced loading-screen hide requested but global loader has been removed; ignoring')
         },
         attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
       )
