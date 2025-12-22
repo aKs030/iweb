@@ -73,7 +73,9 @@ function BlogApp() {
         if (orig) meta.setAttribute('content', orig)
         meta.removeAttribute('data-temp')
       }
-      document.title = 'Wissen & Einblicke — Abdulkerim Sesli'
+
+      // FIX: Restore the central title defined in head-complete.js/PAGE_CONFIG
+      document.title = 'Tech Blog & Insights | Abdulkerim Sesli'
       return
     }
 
