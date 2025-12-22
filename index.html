@@ -8,9 +8,13 @@
     <link rel="canonical" href="https://abdulkerimsesli.de/" />
 
     <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/content/assets/img/icons/icon-32.png" />
+    <!-- Prefer PNG/SVG icons (>=48px) so Google mobile search can show the favicon reliably -->
     <link rel="icon" type="image/png" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/content/assets/img/icons/icon-96.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/content/assets/img/icons/icon-32.png" />
+    <link rel="icon" sizes="any" href="/content/assets/img/icons/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/content/assets/img/icons/icon-192.png" />
     <meta name="theme-color" content="#000000" />
 
