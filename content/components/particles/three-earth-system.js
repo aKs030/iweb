@@ -77,9 +77,13 @@ const ThreeEarthManager = (() => {
       }
 
       // Quick WebGL support check to avoid repeated noisy failures in sandboxed/headless contexts
+      // Allow forcing Three.js initialization via URL param `?forceThree=1` or global `window.__FORCE_THREE_EARTH = true` (testing only)
+      const urlParams = new URL(location.href).searchParams
+      const forceThree = urlParams.get('forceThree') === '1' || Boolean(window.__FORCE_THREE_EARTH)
+
       if (!__three_webgl_tested) {
         __three_webgl_tested = true
-        if (!supportsWebGL()) {
+        if (!forceThree && !supportsWebGL()) {
           log.warn('WebGL not supported in this environment; skipping Three.js initialization')
           // Add visible fallback to container so users see a friendly image/message
           try {
@@ -105,6 +109,11 @@ const ThreeEarthManager = (() => {
           // mark cleanup and exit gracefully
           sharedCleanupManager.cleanupSystem('three-earth')
           return cleanup
+        }
+
+        if (forceThree) {
+          log.info('Force flag detected: attempting to initialize Three.js despite WebGL checks')
+        }
         }
       }
 
