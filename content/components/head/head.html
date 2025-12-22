@@ -11,6 +11,7 @@
 
 <!-- SEO & Metadata -->
 <meta name="description" content="{{PAGE_DESCRIPTION}}" />
+<meta name="keywords" content="{{PAGE_KEYWORDS}}" />
 <link rel="canonical" href="https://abdulkerimsesli.de/" data-shared-head="1" />
 <meta name="author" content="Abdulkerim Sesli" />
 <meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs" />
@@ -53,7 +54,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="AKS" />
 <meta name="application-name" content="AKS" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="theme-color" content="#2c2c2e" media="(prefers-color-scheme: dark)" />
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 <meta name="color-scheme" content="dark light" />
@@ -81,29 +82,55 @@
 <meta name="twitter:creator" content="@abdulkerimsesli" />
 <meta name="twitter:site" content="@abdulkerimsesli" />
 
-<!-- Icons -->
+<!-- Icons - Optimized for Google and Devices -->
+<!-- SVG Favicon (modern browsers) -->
 <link rel="icon" href="/content/assets/img/icons/favicon.svg" type="image/svg+xml" />
-<link rel="icon" sizes="96x96" href="/content/assets/img/icons/icon-96.png" type="image/png" />
-<link rel="icon" sizes="32x32" href="/content/assets/img/icons/icon-32.png" type="image/png" />
-<link rel="icon" sizes="144x144" href="/content/assets/img/icons/icon-144.png" type="image/png" />
-<link rel="icon" sizes="192x192" href="/content/assets/img/icons/icon-192.png" type="image/png" />
-<link rel="apple-touch-icon" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
+
+<!-- PNG Fallbacks for various sizes -->
+<link rel="icon" type="image/png" sizes="16x16" href="/content/assets/img/icons/icon-32.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/content/assets/img/icons/icon-32.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="/content/assets/img/icons/icon-96.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
+
+<!-- Apple Touch Icons -->
+<link rel="apple-touch-icon" sizes="180x180" href="/content/assets/img/icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="152x152" href="/content/assets/img/icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="144x144" href="/content/assets/img/icons/icon-144.png" />
+<link rel="apple-touch-icon" sizes="120x120" href="/content/assets/img/icons/icon-96.png" />
+<link rel="apple-touch-icon" sizes="114x114" href="/content/assets/img/icons/icon-96.png" />
+<link rel="apple-touch-icon" sizes="76x76" href="/content/assets/img/icons/icon-96.png" />
+<link rel="apple-touch-icon" sizes="72x72" href="/content/assets/img/icons/icon-96.png" />
+<link rel="apple-touch-icon" sizes="60x60" href="/content/assets/img/icons/icon-96.png" />
+<link rel="apple-touch-icon" sizes="57x57" href="/content/assets/img/icons/icon-96.png" />
+
+<!-- Safari Mask Icon -->
 <link rel="mask-icon" href="/content/assets/img/icons/favicon.svg" color="#07a1ff" />
-<!-- Fallback favicon for older browsers (removed missing .ico to avoid 404) -->
+
+<!-- Microsoft Tiles -->
 <meta name="msapplication-TileColor" content="#07a1ff" />
 <meta name="msapplication-TileImage" content="/content/assets/img/icons/icon-144.png" />
+<meta name="msapplication-config" content="/browserconfig.xml" />
 
-<!-- JSON-LD Structured Data (moved from index.html) -->
+<!-- Shortcut Icon (ICO Fallback for older browsers) -->
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+
+<!-- JSON-LD Person Schema (enhanced) -->
 <script type="application/ld+json" data-cfasync="false">
   {
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Abdulkerim Sesli",
-    "alternateName": ["AKS", "Abdul Berlin", "Abdul Sesli", "Abdulkerim Berlin", "Abdulkerim Sesli"],
+    "alternateName": ["AKS", "Abdul Berlin", "Abdul Sesli"],
     "jobTitle": "Digital Creator",
-    "description": "Privates Portfolio und digitale Visitenkarte von Abdulkerim Sesli. Einblicke in Web-Projekte, Fotografie und persönliche Interessen.",
+    "description": "Webentwickler und Fotograf aus Berlin. Spezialisiert auf moderne Webtechnologien, JavaScript, React und Three.js.",
     "url": "https://abdulkerimsesli.de",
-    "image": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+      "width": 512,
+      "height": 512,
+      "caption": "Abdulkerim Sesli - Digital Creator"
+    },
     "sameAs": [
       "https://github.com/aKs030",
       "https://linkedin.com/in/abdulkerimsesli",
@@ -112,48 +139,74 @@
       "https://www.wikidata.org/wiki/Q137477849",
       "https://www.wikidata.org/wiki/Q137477910"
     ],
-    "knowsAbout": ["Web Development", "Photography", "JavaScript", "React"],
+    "knowsAbout": [
+      {
+        "@type": "Thing",
+        "name": "Web Development",
+        "description": "Moderne Webentwicklung mit JavaScript, React und Three.js"
+      },
+      {
+        "@type": "Thing",
+        "name": "Photography",
+        "description": "Urban Photography und Landschaftsfotografie"
+      },
+      {
+        "@type": "Thing",
+        "name": "JavaScript",
+        "description": "Frontend-Entwicklung mit modernen JavaScript-Frameworks"
+      },
+      {
+        "@type": "Thing",
+        "name": "React",
+        "description": "React-Entwicklung und moderne UI-Komponenten"
+      }
+    ],
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Berlin",
+      "addressRegion": "Berlin",
       "addressCountry": "DE"
+    },
+    "alumniOf": {
+      "@type": "EducationalOrganization",
+      "name": "Selbststudium & Online-Kurse"
     }
   }
 </script>
 
-<!-- Additional SEO keywords to assist discovery for name variants -->
-<meta
-  name="keywords"
-  content="Abdul Berlin, abdul berlin, Abdulkerim Berlin, abdulkerim berlin, Abdul Sesli, abdul sesli, Abdulkerim Sesli, abdulkerim sesli" />
 
-<!-- Hinweis: Wenn ein Wikidata‑Item / Wikipedia‑Artikel angelegt wurde, kannst du die URLs zu `sameAs` in der oben stehenden JSON-LD hinzufügen. Beispiele:
-     • https://www.wikidata.org/wiki/User:Abdulkerim_sesli  (Wikidata User-Profil)
-     • https://www.wikidata.org/wiki/Q137477849  (Q137477849 — abdulkerimsesli.de)
-     • https://www.wikidata.org/wiki/Q137477910  (Q137477910 — Abdulkerim Sesli) -->
 
-<!-- Website Schema -->
+<!-- JSON-LD Website Schema with SearchAction -->
 <script type="application/ld+json" data-cfasync="false">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Abdulkerim — Digital Creator Portfolio",
-    "alternateName": ["AKS Portfolio"],
+    "alternateName": ["AKS Portfolio", "Abdulkerim Sesli Portfolio"],
     "url": "https://abdulkerimsesli.de",
-    "description": "Privates Portfolio von Abdulkerim Sesli.",
+    "description": "Persönliches Portfolio von Abdulkerim Sesli - Webentwicklung, Fotografie und digitale Projekte aus Berlin.",
     "author": {
       "@type": "Person",
       "name": "Abdulkerim Sesli"
     },
     "inLanguage": "de-DE",
+    "copyrightYear": 2025,
+    "copyrightHolder": {
+      "@type": "Person",
+      "name": "Abdulkerim Sesli"
+    },
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://abdulkerimsesli.de?s={search_term_string}",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://abdulkerimsesli.de/?s={search_term_string}"
+      },
       "query-input": "required name=search_term_string"
     }
   }
 </script>
 
-<!-- Organization Schema (for Search results logo) -->
+<!-- JSON-LD Organization Schema -->
 <script type="application/ld+json" data-cfasync="false">
   {
     "@context": "https://schema.org",
@@ -164,9 +217,26 @@
       "@type": "ImageObject",
       "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
       "width": 512,
-      "height": 512
+      "height": 512,
+      "caption": "Abdulkerim Sesli Logo"
     },
-    "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"]
+    "image": "https://abdulkerimsesli.de/content/assets/img/og/og-home.png",
+    "description": "Digital Creator Portfolio - Webentwicklung und Fotografie",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Berlin",
+      "addressCountry": "DE"
+    },
+    "sameAs": [
+      "https://github.com/aKs030",
+      "https://linkedin.com/in/abdulkerimsesli",
+      "https://twitter.com/abdulkerimsesli"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "General Inquiry",
+      "availableLanguage": ["de", "en"]
+    }
   }
 </script>
 
