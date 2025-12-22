@@ -48,6 +48,20 @@ async function loadConfig() {
     if (!window.YOUTUBE_CHANNEL_HANDLE) {
       window.YOUTUBE_CHANNEL_HANDLE = 'aks.030'
     }
+
+    // If no API key found, enable mock mode for stable local testing (localhost or file:).
+    // Also allow forcing mock mode via ?mockVideos=1
+    if (!window.YOUTUBE_API_KEY) {
+      const isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+      if (isLocal || new URLSearchParams(location.search).has('mockVideos')) {
+        window.YOUTUBE_USE_MOCK = true
+        console.info('[videos-config-loader] No API key found — using mock data for development/testing.')
+      } else {
+        window.YOUTUBE_USE_MOCK = false
+      }
+    } else {
+      window.YOUTUBE_USE_MOCK = false
+    }
   } catch (e) {
     // Non-fatal — videos.js will handle absence of key gracefully
     console.warn('[videos-config-loader] Could not load split parts:', e)
