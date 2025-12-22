@@ -7,14 +7,28 @@ export class RobotSound {
 
   initAudio() {
     if (!this.enabled) return
+
+    // Lazy create audio context only on user interaction or when allowed
     if (!this.ctx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext
       if (AudioContext) {
-        this.ctx = new AudioContext()
+        try {
+          this.ctx = new AudioContext()
+        } catch (e) {
+          // Some browsers may block creation until a user gesture; set up a one-time resume on gesture
+          this._setupGestureResume()
+          return
+        }
       }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {})
+
+    // If context exists but suspended, try to resume; if not allowed, wire up gesture resume
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {
+          this._setupGestureResume()
+        })
+      }
     }
   }
 
@@ -27,16 +41,30 @@ export class RobotSound {
     const gain = this.ctx.createGain()
 
     osc.type = type
-    osc.frequency.setValueAtTime(freq, this.ctx.currentTime)
+    try {
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime)
+    } catch (e) {
+      // If setting fails because context not ready, abort
+      console.warn('[RobotSound] Cannot set frequency, audio context not ready', e)
+      return
+    }
 
     gain.gain.setValueAtTime(vol, this.ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration)
+    try {
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration)
+    } catch (e) {
+      // ignore ramp errors
+    }
 
     osc.connect(gain)
     gain.connect(this.ctx.destination)
 
-    osc.start()
-    osc.stop(this.ctx.currentTime + duration)
+    try {
+      osc.start()
+      osc.stop(this.ctx.currentTime + duration)
+    } catch (e) {
+      console.warn('[RobotSound] Oscillator start failed (likely due to autoplay restrictions)', e)
+    }
   }
 
   playBeep() {
@@ -73,5 +101,27 @@ export class RobotSound {
 
   playError() {
     this.playTone(150, 'sawtooth', 0.3, 0.04)
+  }
+
+  _setupGestureResume() {
+    if (this._gestureBound) return
+    this._gestureBound = true
+    const resume = async () => {
+      try {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext
+          if (AudioContext) this.ctx = new AudioContext()
+        }
+        if (this.ctx && this.ctx.state === 'suspended') await this.ctx.resume()
+      } catch (e) {
+        /* ignore */
+      } finally {
+        document.body.removeEventListener('pointerdown', resume)
+        document.body.removeEventListener('keydown', resume)
+        this._gestureBound = false
+      }
+    }
+    document.body.addEventListener('pointerdown', resume, {once: true})
+    document.body.addEventListener('keydown', resume, {once: true})
   }
 }

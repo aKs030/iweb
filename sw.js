@@ -49,18 +49,29 @@ const CACHE_LIMITS = {
 // Installation - Cache statische Assets
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches
-      .open(STATIC_CACHE)
-      .then(cache => {
-        return cache.addAll(STATIC_ASSETS)
-      })
-      .then(() => {
-        return self.skipWaiting()
-      })
-      .catch(err => {
+    (async () => {
+      try {
+        const cache = await caches.open(STATIC_CACHE)
+        // Use robust per-asset fetching: addAll will fail entirely if one resource is not fetchable.
+        for (const asset of STATIC_ASSETS) {
+          try {
+            const req = new Request(asset, {mode: 'same-origin'})
+            const res = await fetch(req)
+            if (res && res.ok) {
+              await cache.put(req, res.clone())
+            } else {
+              console.warn('[SW] Asset fetch failed:', asset, res && res.status)
+            }
+          } catch (e) {
+            console.warn('[SW] Asset fetch exception:', asset, e)
+          }
+        }
+        await self.skipWaiting()
+      } catch (err) {
         // Fehler beim Cachen nicht blockieren
         console.error('[SW] Installation failed:', err)
-      })
+      }
+    })()
   )
 })
 
