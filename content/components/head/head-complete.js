@@ -415,14 +415,23 @@
           'url': window.location.origin,
           'name': 'Abdulkerim — Digital Creator Portfolio',
           'alternateName': ['AKS Portfolio', 'Abdulkerim Sesli Portfolio'],
-          'potentialAction': {
-            '@type': 'SearchAction',
-            'target': {
-              '@type': 'EntryPoint',
-              'urlTemplate': window.location.origin + '/?s={search_term_string}'
+          'potentialAction': [
+            {
+              '@type': 'SearchAction',
+              'target': {
+                '@type': 'EntryPoint',
+                'urlTemplate': window.location.origin + '/?s={search_term_string}'
+              },
+              'query-input': 'required name=search_term_string'
             },
-            'query-input': 'required name=search_term_string'
-          }
+            {
+              '@type': 'ContactAction',
+              'target': {
+                '@type': 'EntryPoint',
+                'urlTemplate': 'mailto:kontakt@abdulkerimsesli.de'
+              }
+            }
+          ]
         }
         const script = document.createElement('script')
         script.type = 'application/ld+json'
@@ -530,6 +539,30 @@
           script.setAttribute('data-sitelinks', '1')
           script.textContent = JSON.stringify(sitelinksSchema)
           document.head.appendChild(script)
+        }
+
+        // 5. FAQPage (if visible in footer) — build from footer FAQ items to avoid duplication
+        try {
+          if (document.querySelector('.footer-faq-list') && !document.querySelector('script[data-faq="1"]')) {
+            const faqItems = Array.from(document.querySelectorAll('.footer-faq-list .faq-item'))
+              .map(d => {
+                const q = d.querySelector('summary')
+                const a = d.querySelector('p')
+                if (q && a) return { '@type': 'Question', 'name': q.textContent.trim(), 'acceptedAnswer': { '@type': 'Answer', 'text': a.textContent.trim() } }
+                return null
+              })
+              .filter(Boolean)
+            if (faqItems.length) {
+              const faqSchema = { '@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': faqItems }
+              const s = document.createElement('script')
+              s.type = 'application/ld+json'
+              s.setAttribute('data-faq', '1')
+              s.textContent = JSON.stringify(faqSchema)
+              document.head.appendChild(s)
+            }
+          }
+        } catch (e) {
+          /* noop */
         }
       }
     } catch (e) {

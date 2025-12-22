@@ -97,15 +97,17 @@ function BlogApp() {
       if (!document.querySelector('script[type="application/ld+json"][data-temp-article]')) {
         const ld = {
           '@context': 'https://schema.org',
-          '@type': 'Article',
+          '@type': 'BlogPosting',
           'mainEntityOfPage': {'@type': 'WebPage', '@id': `https://abdulkerimsesli.de/blog/${post.id}`},
           'headline': post.title,
           'description': post.excerpt,
           'datePublished': new Date(post.date).toISOString(),
-          'author': {'@type': 'Person', 'name': 'Abdulkerim Sesli'},
-          'image': post.image || 'https://abdulkerimsesli.de/content/assets/img/og/og-home.png',
+          'dateModified': new Date(post.date).toISOString(),
+          'author': {'@type': 'Person', '@id': 'https://abdulkerimsesli.de/#person'},
+          'image': {'@type': 'ImageObject', 'url': post.image || 'https://abdulkerimsesli.de/content/assets/img/og/og-home.png'},
           'publisher': {
             '@type': 'Organization',
+            '@id': 'https://abdulkerimsesli.de/#organization',
             'name': 'Abdulkerim — Digital Creator Portfolio',
             'logo': {'@type': 'ImageObject', 'url': 'https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png'}
           },
