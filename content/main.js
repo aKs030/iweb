@@ -605,6 +605,16 @@ document.addEventListener(
         return
       }
 
+      let swSnippet = null
+      try {
+        if (swResp && swResp.clone && typeof swResp.clone === 'function') {
+          swSnippet = await swResp.clone().text()
+          if (swSnippet && swSnippet.length > 2000) swSnippet = swSnippet.slice(0, 2000) + '…'
+        }
+      } catch (e) {
+        swSnippet = `SNIPPET_ERROR: ${String(e)}`
+      }
+
       const registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
       log.info('Service Worker registered:', registration.scope)
 
@@ -628,7 +638,18 @@ document.addEventListener(
     } catch (error) {
       log.warn('Service Worker registration failed:', error)
       try {
-        const payload = JSON.stringify({message: error && error.message, name: error && error.name, stack: error && error.stack, href: location.href, ts: Date.now()})
+        const payloadObj = {
+          message: error && error.message,
+          name: error && error.name,
+          stack: error && error.stack,
+          href: location.href,
+          ts: Date.now(),
+          swStatus: swResp && swResp.status,
+          swContentType: contentType,
+          swUrl: swResp && swResp.url,
+          swSnippet: typeof swSnippet === 'string' ? (swSnippet.length > 2000 ? swSnippet.slice(0,2000) + '…' : swSnippet) : null
+        }
+        const payload = JSON.stringify(payloadObj)
         if (navigator.sendBeacon) {
           navigator.sendBeacon('/__sw_reg_err', payload)
         } else {
