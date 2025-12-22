@@ -548,16 +548,102 @@
               .map(d => {
                 const q = d.querySelector('summary')
                 const a = d.querySelector('p')
-                if (q && a) return { '@type': 'Question', 'name': q.textContent.trim(), 'acceptedAnswer': { '@type': 'Answer', 'text': a.textContent.trim() } }
+                if (q && a)
+                  return {
+                    '@type': 'Question',
+                    'name': q.textContent.trim(),
+                    'acceptedAnswer': {'@type': 'Answer', 'text': a.textContent.trim()}
+                  }
                 return null
               })
               .filter(Boolean)
             if (faqItems.length) {
-              const faqSchema = { '@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': faqItems }
+              const faqSchema = {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': faqItems}
               const s = document.createElement('script')
               s.type = 'application/ld+json'
               s.setAttribute('data-faq', '1')
               s.textContent = JSON.stringify(faqSchema)
+              document.head.appendChild(s)
+            }
+          }
+        } catch (e) {
+          /* noop */
+        }
+
+        // 6. @graph Consolidation + Speakable support (dupe-safe)
+        try {
+          if (!document.querySelector('script[data-graph="1"]')) {
+            const graph = []
+
+            // Helper to safely parse JSON-LD script text
+            const parseSafe = el => {
+              try {
+                return el && el.textContent ? JSON.parse(el.textContent) : null
+              } catch (e) {
+                return null
+              }
+            }
+
+            // Person
+            const personEl = document.querySelector('script[type="application/ld+json"][data-person="1"]')
+            const personObj = parseSafe(personEl)
+            if (personObj) {
+              personObj['@id'] = personObj['@id'] || window.location.origin + '/#person'
+              graph.push(personObj)
+            } else {
+              graph.push({'@type': 'Person', '@id': window.location.origin + '/#person', 'name': 'Abdulkerim Sesli'})
+            }
+
+            // Organization
+            const orgEl = document.querySelector('script[type="application/ld+json"][data-organization="1"]')
+            const orgObj = parseSafe(orgEl)
+            if (orgObj) {
+              orgObj['@id'] = orgObj['@id'] || window.location.origin + '/#organization'
+              graph.push(orgObj)
+            } else {
+              graph.push({
+                '@type': 'Organization',
+                '@id': window.location.origin + '/#organization',
+                'name': 'Abdulkerim — Digital Creator Portfolio'
+              })
+            }
+
+            // WebSite (merge with SearchAction/contact actions)
+            const webEl = document.querySelector('script[type="application/ld+json"][data-website-search="1"]')
+            const webObj = parseSafe(webEl)
+            if (webObj) {
+              // Add speakable on homepage
+              if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                webObj.speakable = webObj.speakable || {'@type': 'SpeakableSpecification', 'cssSelector': []}
+                // Prefer obvious selectors if present
+                const selectors = ['.hero .lead', '.typewriter-title', '.blog-subline', 'meta[name="description"]']
+                webObj.speakable.cssSelector = Array.from(new Set((webObj.speakable.cssSelector || []).concat(selectors)))
+              }
+              graph.push(webObj)
+            }
+
+            // BreadcrumbList if present
+            const bcEl = document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')
+            const bcObj = parseSafe(bcEl)
+            if (bcObj) graph.push(bcObj)
+
+            // Sitelinks / ItemList
+            const slEl = document.querySelector('script[data-sitelinks="1"]')
+            const slObj = parseSafe(slEl)
+            if (slObj) graph.push(slObj)
+
+            // FAQPage if present
+            const faqEl = document.querySelector('script[data-faq="1"]')
+            const faqObj = parseSafe(faqEl)
+            if (faqObj) graph.push(faqObj)
+
+            // Only insert if we have at least two useful nodes
+            if (graph.length > 0) {
+              const g = {'@context': 'https://schema.org', '@graph': graph}
+              const s = document.createElement('script')
+              s.type = 'application/ld+json'
+              s.setAttribute('data-graph', '1')
+              s.textContent = JSON.stringify(g)
               document.head.appendChild(s)
             }
           }
