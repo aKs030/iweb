@@ -419,7 +419,7 @@ class RobotCompanion {
   trackSectionVisit(context) {
     if (!this.analytics.sectionsVisited.includes(context)) {
       this.analytics.sectionsVisited.push(context)
-      const allSections = ['hero', 'features', 'about', 'projects', 'gallery', 'footer']
+      const allSections = ['hero', 'features', 'section3', 'projects', 'gallery', 'footer']
       const visitedAll = allSections.every(s => this.analytics.sectionsVisited.includes(s))
       if (visitedAll && !this.easterEggFound.has('explorer')) {
         this.unlockEasterEgg('explorer', '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭')
@@ -602,7 +602,7 @@ class RobotCompanion {
 
       if (sectionCheck('#hero')) context = 'hero'
       else if (sectionCheck('#features')) context = 'features'
-      else if (sectionCheck('#about')) context = 'about'
+      else if (sectionCheck('#section3')) context = 'about'
       else if (sectionCheck('#footer-container') || sectionCheck('footer')) context = 'footer'
       else if (lower.includes('projekte')) context = 'projects'
       else if (lower.includes('gallery') || lower.includes('fotos')) context = 'gallery'
@@ -629,7 +629,7 @@ class RobotCompanion {
     const sectionMap = [
       {selector: '#hero', ctx: 'hero'},
       {selector: '#features', ctx: 'features'},
-      {selector: '#about', ctx: 'about'},
+      {selector: '#section3', ctx: 'about'},
       {selector: '#footer-container', ctx: 'footer'},
       {selector: 'footer', ctx: 'footer'}
     ]
