@@ -1,13 +1,13 @@
 /**
- * Dynamic Head Loader - Optimierte Version
- * Lädt globale Meta-Tags, Styles und Skripte zentral nach.
- * Verwaltet Titel-Ersetzung und verhindert Redundanz.
- *
- * Konfiguration: Automatische Erkennung der Kategorie und Metadaten basierend auf der URL.
+ * Dynamic Head Loader - Google SEO Optimized Version
+ * Erweitert um:
+ * - Optimierte Icons für Google-Suche
+ * - Erweiterte Schema.org Markups
+ * - Sitelinks-Optimierung
+ * - Kategorien und Navigationsstruktur
  */
 
 ;(async function loadSharedHead() {
-  // Verhindere mehrfache Ausführung
   if (window.SHARED_HEAD_LOADED) return
 
   // --- SEO CONFIGURATION ---
@@ -15,7 +15,8 @@
     title: 'Abdulkerim — Digital Creator Portfolio',
     description:
       'Persönliches Portfolio und digitale Visitenkarte von Abdulkerim Sesli aus Berlin. Webentwicklung, Fotografie und kreative Experimente.',
-    schemaType: 'WebSite'
+    schemaType: 'WebSite',
+    keywords: 'Webentwicklung, JavaScript, React, Three.js, Fotografie, Portfolio, Berlin'
   }
 
   const PAGE_CONFIG = {
@@ -23,35 +24,39 @@
       title: 'Webentwicklung & Coding Projekte | Abdulkerim Sesli',
       description:
         'Entdecke meine privaten Web-Projekte, Experimente mit React & Three.js sowie Open-Source-Beiträge. Einblicke in Code & Design.',
-      schemaType: 'CollectionPage'
+      schemaType: 'CollectionPage',
+      keywords: 'Webprojekte, React, Three.js, JavaScript, Coding, Open Source'
     },
     '/blog/': {
       title: 'Tech Blog & Insights | Abdulkerim Sesli',
       description:
         'Artikel über moderne Webentwicklung, JavaScript-Tricks, UI/UX-Design und persönliche Erfahrungen aus der Tech-Welt.',
-      schemaType: 'Blog'
+      schemaType: 'Blog',
+      keywords: 'Tech Blog, Webentwicklung, JavaScript, UI/UX, Tutorial, Insights'
     },
     '/videos/': {
       title: 'Video-Tutorials & Demos | Abdulkerim Sesli',
       description:
         'Visuelle Einblicke in meine Arbeit: Coding-Sessions, Projekt-Demos und Tutorials zu Webtechnologien und Fotografie.',
-      schemaType: 'CollectionPage'
+      schemaType: 'CollectionPage',
+      keywords: 'Video Tutorials, Coding Sessions, Projekt Demos, YouTube'
     },
     '/gallery/': {
       title: 'Fotografie Portfolio | Abdulkerim Sesli',
       description:
         'Eine kuratierte Sammlung meiner besten Aufnahmen: Urban Photography, Landschaften und experimentelle visuelle Kunst aus Berlin.',
-      schemaType: 'ImageGallery'
+      schemaType: 'ImageGallery',
+      keywords: 'Fotografie, Urban Photography, Landschaftsfotografie, Berlin, Portfolio'
     },
     '/about/': {
       title: 'Über mich | Abdulkerim Sesli',
       description:
         'Wer ist Abdulkerim Sesli? Einblicke in meinen Werdegang als Webentwickler, meine Philosophie und meine Leidenschaft für digitale Kreation.',
-      schemaType: 'ProfilePage'
+      schemaType: 'ProfilePage',
+      keywords: 'Über mich, Webentwickler, Berlin, Digital Creator, Persönliches'
     }
   }
 
-  // Ermittle aktuelle Seite (Case-Insensitive Match)
   const currentPath = window.location.pathname.toLowerCase()
   let matchedKey = Object.keys(PAGE_CONFIG).find(key => currentPath.includes(key))
   const metaData = matchedKey ? PAGE_CONFIG[matchedKey] : DEFAULT_META
@@ -62,33 +67,22 @@
 
     const safePageTitle = escapeHTML(metaData.title)
     const safePageDesc = escapeHTML(metaData.description)
+    const safeKeywords = escapeHTML(metaData.keywords || DEFAULT_META.keywords)
 
-    // 2. Shared Head laden (mit Caching für Performance)
     const resp = await fetch('/content/components/head/head.html', {cache: 'force-cache'})
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
 
     let html = await resp.text()
 
-    // 3. Platzhalter {{PAGE_TITLE}} und {{PAGE_DESCRIPTION}} ersetzen
     html = html.replace(/\{\{PAGE_TITLE}}/g, safePageTitle)
     html = html.replace(/\{\{PAGE_DESCRIPTION}}/g, safePageDesc)
+    html = html.replace(/\{\{PAGE_KEYWORDS}}/g, safeKeywords)
 
-    // 4. HTML in DOM-Knoten umwandeln
     const range = document.createRange()
     range.selectNode(document.head)
     const fragment = range.createContextualFragment(html)
 
-    const escAttr = value => {
-      try {
-        if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value)
-      } catch (e) {
-        /* ignore */
-      }
-      return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
-    }
-
-    // 4a. Dedupe Links & Scripts
-    // Da wir die HTML-Seiten bereinigt haben, ist die "Deduplizierung" nun eher ein "Schutz vor doppelter Ausführung"
+    // Dedupe und Script-Handling wie bisher...
     try {
       const existingStyles = new Set(
         Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
@@ -119,12 +113,8 @@
         const href = link.getAttribute('href')
         if (!rel || !href) return
 
-        // Canonical und OG:URL werden unten dynamisch gesetzt, Platzhalter entfernen wir hier nicht
-        // es sei denn, wir finden sie doppelt
         if (rel === 'canonical' && document.querySelector('link[rel="canonical"]')) {
-           // Wir vertrauen hier auf das fragment, da wir die Seiten bereinigt haben.
-           // Falls DOCH noch ein Canonical im HTML war, entfernen wir es zugunsten des Shared Heads (unten korrigiert)
-           document.querySelector('link[rel="canonical"]').remove();
+          document.querySelector('link[rel="canonical"]').remove()
         }
 
         if (rel === 'stylesheet') {
@@ -154,7 +144,6 @@
       console.warn('[Head-Loader] Dedupe failed:', e)
     }
 
-    // 4b. Skript-Handling (Inert/Execute)
     const fragmentScripts = Array.from(fragment.querySelectorAll('script'))
     fragmentScripts.forEach((s, idx) => {
       const t = (s.type || '').toLowerCase()
@@ -174,24 +163,19 @@
         inertScript.setAttribute('data-exec-id', String(idx))
         inertScript.textContent = s.textContent
         s.parentNode.replaceChild(inertScript, s)
-      } catch (e) { /* ignore */ }
+      } catch (e) {}
     })
 
-    // 5. Aufräumen alter Tags (falls noch vorhanden durch statisches HTML)
-    // Wir erzwingen nun die Hoheit des Shared Heads.
     if (fragment.querySelector('title') && document.querySelector('title')) {
       document.querySelector('title').remove()
     }
-    const metaNamesToRemove = ['description', 'keywords', 'author'];
+    const metaNamesToRemove = ['description', 'keywords', 'author']
     metaNamesToRemove.forEach(name => {
-         const existing = document.querySelector(`meta[name="${name}"]`);
-         if(existing) existing.remove();
-    });
-    // Entferne alle OG/Twitter Tags, um Konflikte zu vermeiden
-    document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]').forEach(el => el.remove());
+      const existing = document.querySelector(`meta[name="${name}"]`)
+      if (existing) existing.remove()
+    })
+    document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]').forEach(el => el.remove())
 
-
-    // 6. Einfügepunkt finden (<!-- SHARED_HEAD -->)
     let inserted = false
     const childNodes = Array.from(document.head.childNodes)
     for (const node of childNodes) {
@@ -202,7 +186,6 @@
       }
     }
 
-    // Fallback insertion
     if (!inserted) {
       const loaderScript = document.currentScript || document.querySelector('script[src*="head-complete.js"]')
       if (loaderScript && loaderScript.parentNode === document.head) {
@@ -217,7 +200,7 @@
       }
     }
 
-    // 7. Canonical & OG URL setzen
+    // Canonical & OG URL setzen
     try {
       const url = new URL(window.location.href)
       url.hash = ''
@@ -239,33 +222,49 @@
       console.warn('[Head-Loader] Could not set canonical/og:url:', e)
     }
 
-    // 8. Breadcrumb & Page Specific Schema
+    // ERWEITERTE SCHEMA.ORG MARKUPS
     try {
-      // Breadcrumb logic (existing)
-       if (!document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')) {
+      // 1. Breadcrumb Schema
+      if (!document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')) {
         const path = window.location.pathname.replace(/index\.html$/, '')
         const segments = path.split('/').filter(Boolean)
         if (segments.length > 0) {
           const base = window.location.origin
           const itemList = []
-          itemList.push({ '@type': 'ListItem', 'position': 1, 'name': 'Startseite', 'item': base + '/' })
-          const slugMap = { blog: 'Blog', projekte: 'Projekte', videos: 'Videos', gallery: 'Gallery', about: 'Über' }
+          itemList.push({
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Startseite',
+            item: base + '/'
+          })
+
+          const slugMap = {
+            blog: 'Blog',
+            projekte: 'Projekte',
+            videos: 'Videos',
+            gallery: 'Gallery',
+            about: 'Über'
+          }
 
           segments.forEach((seg, i) => {
             const name = slugMap[seg] || decodeURIComponent(seg.replace(/[-_]/g, ' '))
-            const href = base + '/' + segments.slice(0, i + 1).join('/') + (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
+            const href =
+              base +
+              '/' +
+              segments.slice(0, i + 1).join('/') +
+              (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
             itemList.push({
               '@type': 'ListItem',
-              'position': itemList.length + 1,
-              'name': name.charAt(0).toUpperCase() + name.slice(1),
-              'item': href
+              position: itemList.length + 1,
+              name: name.charAt(0).toUpperCase() + name.slice(1),
+              item: href
             })
           })
 
           const breadcrumb = {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
-            'itemListElement': itemList
+            itemListElement: itemList
           }
           const script = document.createElement('script')
           script.type = 'application/ld+json'
@@ -275,35 +274,140 @@
         }
       }
 
-      // Specific Schema Type Injection
-      if (metaData.schemaType && metaData.schemaType !== 'WebSite') {
-         const schemaScript = document.createElement('script');
-         schemaScript.type = 'application/ld+json';
-         schemaScript.setAttribute('data-page-schema', '1');
-
-         const baseSchema = {
-             "@context": "https://schema.org",
-             "@type": metaData.schemaType,
-             "name": metaData.title,
-             "description": metaData.description,
-             "url": window.location.href,
-             "author": { "@type": "Person", "name": "Abdulkerim Sesli" }
-         };
-
-         // Enhance specific types
-         if (metaData.schemaType === 'Blog') {
-             // Blog specific additions if needed
-         }
-
-         schemaScript.textContent = JSON.stringify(baseSchema);
-         document.head.appendChild(schemaScript);
+      // 2. WebSite Schema mit Sitelinks SearchAction
+      if (!document.querySelector('script[data-website-search="1"]')) {
+        const websiteSearchSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          url: window.location.origin,
+          name: 'Abdulkerim — Digital Creator Portfolio',
+          alternateName: ['AKS Portfolio', 'Abdulkerim Sesli Portfolio'],
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+              '@type': 'EntryPoint',
+              urlTemplate: window.location.origin + '/?s={search_term_string}'
+            },
+            'query-input': 'required name=search_term_string'
+          }
+        }
+        const script = document.createElement('script')
+        script.type = 'application/ld+json'
+        script.setAttribute('data-website-search', '1')
+        script.textContent = JSON.stringify(websiteSearchSchema)
+        document.head.appendChild(script)
       }
 
+      // 3. Page-specific Schema
+      if (metaData.schemaType && metaData.schemaType !== 'WebSite') {
+        if (!document.querySelector('script[data-page-schema="1"]')) {
+          const baseSchema = {
+            '@context': 'https://schema.org',
+            '@type': metaData.schemaType,
+            name: metaData.title,
+            description: metaData.description,
+            url: window.location.href,
+            author: {
+              '@type': 'Person',
+              name: 'Abdulkerim Sesli',
+              url: window.location.origin + '/about/',
+              sameAs: [
+                'https://github.com/aKs030',
+                'https://linkedin.com/in/abdulkerimsesli',
+                'https://twitter.com/abdulkerimsesli'
+              ]
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: 'Abdulkerim — Digital Creator Portfolio',
+              logo: {
+                '@type': 'ImageObject',
+                url: window.location.origin + '/content/assets/img/icons/icon-512.png',
+                width: 512,
+                height: 512
+              }
+            }
+          }
+
+          // Erweiterte Schema-Typen
+          if (metaData.schemaType === 'Blog') {
+            baseSchema.blogPost = []
+            baseSchema.inLanguage = 'de-DE'
+          } else if (metaData.schemaType === 'ImageGallery') {
+            baseSchema.associatedMedia = []
+          } else if (metaData.schemaType === 'CollectionPage') {
+            baseSchema.mainEntity = {
+              '@type': 'ItemList',
+              itemListElement: []
+            }
+          }
+
+          const schemaScript = document.createElement('script')
+          schemaScript.type = 'application/ld+json'
+          schemaScript.setAttribute('data-page-schema', '1')
+          schemaScript.textContent = JSON.stringify(baseSchema)
+          document.head.appendChild(schemaScript)
+        }
+      }
+
+      // 4. Sitelinks Schema für Google
+      if (currentPath === '/' || currentPath === '/index.html') {
+        if (!document.querySelector('script[data-sitelinks="1"]')) {
+          const sitelinksSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: 'Hauptbereiche',
+            description: 'Wichtige Bereiche der Website',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Projekte',
+                url: window.location.origin + '/projekte/',
+                description: 'Webentwicklung & Coding Projekte'
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Blog',
+                url: window.location.origin + '/blog/',
+                description: 'Tech Blog & Insights'
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: 'Videos',
+                url: window.location.origin + '/videos/',
+                description: 'Video-Tutorials & Demos'
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: 'Galerie',
+                url: window.location.origin + '/gallery/',
+                description: 'Fotografie Portfolio'
+              },
+              {
+                '@type': 'ListItem',
+                position: 5,
+                name: 'Über',
+                url: window.location.origin + '/about/',
+                description: 'Über Abdulkerim Sesli'
+              }
+            ]
+          }
+          const script = document.createElement('script')
+          script.type = 'application/ld+json'
+          script.setAttribute('data-sitelinks', '1')
+          script.textContent = JSON.stringify(sitelinksSchema)
+          document.head.appendChild(script)
+        }
+      }
     } catch (e) {
       console.warn('[Head-Loader] Schema generation failed', e)
     }
 
-    // 9. Script Execution Reinforcement
+    // Script Execution
     try {
       const toExec = document.head.querySelectorAll('script[data-exec-on-insert="1"]')
       toExec.forEach(oldScript => {
@@ -326,11 +430,9 @@
         }
         oldScript.remove()
       })
-    } catch (e) {
-       /* ignore */
-    }
+    } catch (e) {}
 
-    // 10. Global Loader Logic
+    // Loading Screen
     try {
       if (!document.getElementById('loadingScreen')) {
         const loaderWrapper = document.createElement('div')
@@ -342,11 +444,14 @@
         spinner.className = 'loader'
         loaderWrapper.appendChild(spinner)
         if (document.body) document.body.prepend(loaderWrapper)
-        else document.addEventListener('DOMContentLoaded', () => document.body.prepend(loaderWrapper), {once: true})
+        else
+          document.addEventListener('DOMContentLoaded', () => document.body.prepend(loaderWrapper), {
+            once: true
+          })
       }
     } catch (e) {}
 
-    // 11. Hide Loader Fallback
+    // Hide Loader
     try {
       const MIN_DISPLAY_TIME = 400
       let start = performance.now()
@@ -357,23 +462,25 @@
         const wait = Math.max(0, MIN_DISPLAY_TIME - elapsed)
         setTimeout(() => {
           el.classList.add('hide')
-          Object.assign(el.style, { opacity: '0', pointerEvents: 'none', visibility: 'hidden' })
-          const cleanup = () => { el.style.display = 'none'; el.removeEventListener('transitionend', cleanup) }
+          Object.assign(el.style, {opacity: '0', pointerEvents: 'none', visibility: 'hidden'})
+          const cleanup = () => {
+            el.style.display = 'none'
+            el.removeEventListener('transitionend', cleanup)
+          }
           el.addEventListener('transitionend', cleanup)
           setTimeout(cleanup, 700)
         }, wait)
       }
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => (start = performance.now()), {once: true})
+      if (document.readyState === 'loading')
+        document.addEventListener('DOMContentLoaded', () => (start = performance.now()), {once: true})
       else start = performance.now()
 
       window.addEventListener('load', hideLoader, {once: true})
       setTimeout(hideLoader, 5000)
     } catch (e) {}
 
-    // Finish
     window.SHARED_HEAD_LOADED = true
     document.dispatchEvent(new CustomEvent('shared-head:loaded'))
-
   } catch (err) {
     console.error('[Head-Loader] Error:', err)
   }
