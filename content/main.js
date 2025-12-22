@@ -546,10 +546,14 @@ document.addEventListener(
           navigator.share(shareData).catch(() => {})
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(shareUrl).then(() => {
-            try { announce('Link kopiert', {dedupe: true}) } catch (e) {}
+            try {
+              announce('Link kopiert', {dedupe: true})
+            } catch (e) {}
           })
         } else {
-          try { window.prompt('Link kopieren', shareUrl) } catch (e) {}
+          try {
+            window.prompt('Link kopieren', shareUrl)
+          } catch (e) {}
         }
         return
       }
