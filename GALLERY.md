@@ -4,7 +4,7 @@
 
 Die Photo Gallery ist eine React-basierte, vollständig responsive Fotogalerie mit modernen Features und Optimierungen.
 
-**URL**: `/pages/gallery/gallery.html`
+**URL**: `/gallery/`
 
 ## ⚙️ Technologie Stack
 
@@ -136,7 +136,7 @@ Erlaubte Kategorien: `all`, `nature`, `urban`, `travel`, `landscape`
 
 - Menu: Via `head-complete.js` geladen
 - Footer: Via `footer-complete.js` geladen
-- Links: `/pages/gallery/gallery.html`
+- Links: `/gallery/`
 - Card-Link: Updated in `content/components/particles/earth/cards.js`
 
 ## 📝 Debugging-Tipps
