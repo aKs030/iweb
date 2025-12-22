@@ -149,8 +149,13 @@ export class PerformanceMonitor {
     const newPixelRatio = calculateDynamicResolution(this.fps, this.currentPixelRatio, CONFIG.PERFORMANCE)
 
     if (newPixelRatio !== this.currentPixelRatio) {
+      log.info(`Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`)
       this.currentPixelRatio = newPixelRatio
-      this.renderer.setPixelRatio(this.currentPixelRatio)
+      try {
+        this.renderer.setPixelRatio(this.currentPixelRatio)
+      } catch (e) {
+        log.warn('Failed to set pixel ratio on renderer:', e)
+      }
     }
   }
 
