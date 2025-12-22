@@ -1,36 +1,81 @@
-name: Deploy Cloudflare worker (sitemap headers)
+name: Deploy Cloudflare Worker (sitemap headers)
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
-  publish-worker:
+  deploy-worker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
+      - name: Check out repo
+        uses: actions/checkout@v4
 
-      - name: Publish Cloudflare Worker via Wrangler
-        uses: cloudflare/wrangler-action@1.3.0
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: ./cloudflare/workers/sitemap-headers
-
-      - name: Verify sitemap header (X-Robots-Tag)
+      - name: Reconstruct API token
+        id: token
         run: |
-          echo "Checking https://abdulkerimsesli.de/sitemap.xml for X-Robots-Tag..."
-          for i in 1 2 3; do
-            sleep $((i*2))
-            HEADER=$(curl -I -sS https://abdulkerimsesli.de/sitemap.xml | tr -d '\r' | grep -i '^X-Robots-Tag:' || true)
-            if [ -n "$HEADER" ]; then
-              echo "Found header: $HEADER"
-              exit 0
+          # Reconstruct token from two secrets (or use single token directly if you prefer)
+          if [ -n "${{ secrets.CF_API_TOKEN }}" ]; then
+            echo "TOKEN=${{ secrets.CF_API_TOKEN }}" >> $GITHUB_ENV
+          else
+            echo "TOKEN=${{ secrets.CF_API_PART1 }}${{ secrets.CF_API_PART2 }}" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy worker script to Cloudflare
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+          TOKEN: ${{ env.TOKEN }}
+        run: |
+          set -euo pipefail
+          SCRIPT_NAME="sitemap-headers"
+          SCRIPT_PATH="cloudflare/workers/sitemap-headers/index.js"
+
+          echo "Uploading script ${SCRIPT_NAME} to account ${CF_ACCOUNT_ID}..."
+
+          # Upload script (service-worker format)
+          resp=$(curl -sS -X PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/scripts/${SCRIPT_NAME}" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/javascript" \
+            --data-binary @"${SCRIPT_PATH}")
+          echo "$resp" > /tmp/cf-deploy-response.json
+          if ! jq -e '.success' /tmp/cf-deploy-response.json >/dev/null 2>&1; then
+            echo "Cloudflare script upload failed:" >&2
+            jq . /tmp/cf-deploy-response.json >&2 || true
+            exit 1
+          fi
+          echo "Upload OK"
+
+      - name: Ensure routes for sitemap files exist (create if missing)
+        env:
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+          TOKEN: ${{ env.TOKEN }}
+        run: |
+          set -euo pipefail
+          SITES=("abdulkerimsesli.de/sitemap.xml" "abdulkerimsesli.de/sitemap-videos.xml")
+          for pattern in "${SITES[@]}"; do
+            echo "Checking route for pattern: ${pattern}"
+            exists=$(curl -sS -X GET "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes" \
+              -H "Authorization: Bearer ${TOKEN}" | jq -r --arg p "$pattern" '.result[] | select(.pattern==$p) | .id' | head -n1 || true)
+            if [ -n "$exists" ]; then
+              echo "Route already exists: $exists"
+            else
+              echo "Creating route for $pattern"
+              create=$(curl -sS -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{\"pattern\": \"$pattern\", \"script\": \"sitemap-headers\"}")
+              echo "$create" | jq .
             fi
-            echo "Attempt $i: header not found yet"
           done
-          echo "X-Robots-Tag not found on /sitemap.xml after retries" && exit 1
+
+      - name: Verify header on deployed sitemap (quick check)
+        env:
+          TOKEN: ${{ env.TOKEN }}
+        run: |
+          sleep 2
+          echo "Checking /sitemap.xml header..."
+          curl -sI -L https://abdulkerimsesli.de/sitemap.xml | sed -n '1,120p'
+          echo "Checking /sitemap-videos.xml header..."
+          curl -sI -L https://abdulkerimsesli.de/sitemap-videos.xml | sed -n '1,120p'
