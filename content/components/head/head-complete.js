@@ -29,15 +29,13 @@
     },
     '/blog/': {
       title: 'Tech Blog & Insights | Abdulkerim Sesli',
-      description:
-        'Artikel über moderne Webentwicklung, JavaScript-Tricks, UI/UX-Design und persönliche Erfahrungen aus der Tech-Welt.',
+      description: 'Artikel über moderne Webentwicklung, JavaScript-Tricks, UI/UX-Design und persönliche Erfahrungen aus der Tech-Welt.',
       schemaType: 'Blog',
       keywords: 'Tech Blog, Webentwicklung, JavaScript, UI/UX, Tutorial, Insights'
     },
     '/videos/': {
       title: 'Video-Tutorials & Demos | Abdulkerim Sesli',
-      description:
-        'Visuelle Einblicke in meine Arbeit: Coding-Sessions, Projekt-Demos und Tutorials zu Webtechnologien und Fotografie.',
+      description: 'Visuelle Einblicke in meine Arbeit: Coding-Sessions, Projekt-Demos und Tutorials zu Webtechnologien und Fotografie.',
       schemaType: 'CollectionPage',
       keywords: 'Video Tutorials, Coding Sessions, Projekt Demos, YouTube'
     },
@@ -58,7 +56,7 @@
   }
 
   const currentPath = window.location.pathname.toLowerCase()
-  let matchedKey = Object.keys(PAGE_CONFIG).find(key => currentPath.includes(key))
+  const matchedKey = Object.keys(PAGE_CONFIG).find(key => currentPath.includes(key))
   const metaData = matchedKey ? PAGE_CONFIG[matchedKey] : DEFAULT_META
 
   // Helper: check whether a JSON-LD script of a given @type already exists in the document
@@ -73,7 +71,9 @@
           return false
         }
       })
-    } catch (e) { return false }
+    } catch (e) {
+      return false
+    }
   }
 
   try {
@@ -172,13 +172,18 @@
                   const ej = JSON.parse(existing.textContent)
                   const existingTypes = Array.isArray(ej) ? ej.map(x => x['@type']) : [ej['@type']]
                   if (existingTypes.includes(t)) existing.remove()
-                } catch (e) { /* ignore parse errors */ }
+                } catch (e) {
+                  /* ignore parse errors */
+                }
               })
             })
-          } catch (e) { /* ignore invalid JSON-LD */ }
+          } catch (e) {
+            /* ignore invalid JSON-LD */
+          }
         })
-      } catch (e) { /* ignore */ }
-
+      } catch (e) {
+        /* ignore */
+      }
     } catch (e) {
       console.warn('[Head-Loader] Dedupe failed:', e)
     }
@@ -272,9 +277,9 @@
           const itemList = []
           itemList.push({
             '@type': 'ListItem',
-            position: 1,
-            name: 'Startseite',
-            item: base + '/'
+            'position': 1,
+            'name': 'Startseite',
+            'item': base + '/'
           })
 
           const slugMap = {
@@ -287,23 +292,19 @@
 
           segments.forEach((seg, i) => {
             const name = slugMap[seg] || decodeURIComponent(seg.replace(/[-_]/g, ' '))
-            const href =
-              base +
-              '/' +
-              segments.slice(0, i + 1).join('/') +
-              (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
+            const href = base + '/' + segments.slice(0, i + 1).join('/') + (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
             itemList.push({
               '@type': 'ListItem',
-              position: itemList.length + 1,
-              name: name.charAt(0).toUpperCase() + name.slice(1),
-              item: href
+              'position': itemList.length + 1,
+              'name': name.charAt(0).toUpperCase() + name.slice(1),
+              'item': href
             })
           })
 
           const breadcrumb = {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
-            itemListElement: itemList
+            'itemListElement': itemList
           }
           const script = document.createElement('script')
           script.type = 'application/ld+json'
@@ -318,14 +319,14 @@
         const websiteSearchSchema = {
           '@context': 'https://schema.org',
           '@type': 'WebSite',
-          url: window.location.origin,
-          name: 'Abdulkerim — Digital Creator Portfolio',
-          alternateName: ['AKS Portfolio', 'Abdulkerim Sesli Portfolio'],
-          potentialAction: {
+          'url': window.location.origin,
+          'name': 'Abdulkerim — Digital Creator Portfolio',
+          'alternateName': ['AKS Portfolio', 'Abdulkerim Sesli Portfolio'],
+          'potentialAction': {
             '@type': 'SearchAction',
-            target: {
+            'target': {
               '@type': 'EntryPoint',
-              urlTemplate: window.location.origin + '/?s={search_term_string}'
+              'urlTemplate': window.location.origin + '/?s={search_term_string}'
             },
             'query-input': 'required name=search_term_string'
           }
@@ -343,27 +344,23 @@
           const baseSchema = {
             '@context': 'https://schema.org',
             '@type': metaData.schemaType,
-            name: metaData.title,
-            description: metaData.description,
-            url: window.location.href,
-            author: {
+            'name': metaData.title,
+            'description': metaData.description,
+            'url': window.location.href,
+            'author': {
               '@type': 'Person',
-              name: 'Abdulkerim Sesli',
-              url: window.location.origin + '/about/',
-              sameAs: [
-                'https://github.com/aKs030',
-                'https://linkedin.com/in/abdulkerimsesli',
-                'https://twitter.com/abdulkerimsesli'
-              ]
+              'name': 'Abdulkerim Sesli',
+              'url': window.location.origin + '/about/',
+              'sameAs': ['https://github.com/aKs030', 'https://linkedin.com/in/abdulkerimsesli', 'https://twitter.com/abdulkerimsesli']
             },
-            publisher: {
+            'publisher': {
               '@type': 'Organization',
-              name: 'Abdulkerim — Digital Creator Portfolio',
-              logo: {
+              'name': 'Abdulkerim — Digital Creator Portfolio',
+              'logo': {
                 '@type': 'ImageObject',
-                url: window.location.origin + '/content/assets/img/icons/icon-512.png',
-                width: 512,
-                height: 512
+                'url': window.location.origin + '/content/assets/img/icons/icon-512.png',
+                'width': 512,
+                'height': 512
               }
             }
           }
@@ -377,7 +374,7 @@
           } else if (metaData.schemaType === 'CollectionPage') {
             baseSchema.mainEntity = {
               '@type': 'ItemList',
-              itemListElement: []
+              'itemListElement': []
             }
           }
 
@@ -395,43 +392,43 @@
           const sitelinksSchema = {
             '@context': 'https://schema.org',
             '@type': 'ItemList',
-            name: 'Hauptbereiche',
-            description: 'Wichtige Bereiche der Website',
-            itemListElement: [
+            'name': 'Hauptbereiche',
+            'description': 'Wichtige Bereiche der Website',
+            'itemListElement': [
               {
                 '@type': 'ListItem',
-                position: 1,
-                name: 'Projekte',
-                url: window.location.origin + '/projekte/',
-                description: 'Webentwicklung & Coding Projekte'
+                'position': 1,
+                'name': 'Projekte',
+                'url': window.location.origin + '/projekte/',
+                'description': 'Webentwicklung & Coding Projekte'
               },
               {
                 '@type': 'ListItem',
-                position: 2,
-                name: 'Blog',
-                url: window.location.origin + '/blog/',
-                description: 'Tech Blog & Insights'
+                'position': 2,
+                'name': 'Blog',
+                'url': window.location.origin + '/blog/',
+                'description': 'Tech Blog & Insights'
               },
               {
                 '@type': 'ListItem',
-                position: 3,
-                name: 'Videos',
-                url: window.location.origin + '/videos/',
-                description: 'Video-Tutorials & Demos'
+                'position': 3,
+                'name': 'Videos',
+                'url': window.location.origin + '/videos/',
+                'description': 'Video-Tutorials & Demos'
               },
               {
                 '@type': 'ListItem',
-                position: 4,
-                name: 'Galerie',
-                url: window.location.origin + '/gallery/',
-                description: 'Fotografie Portfolio'
+                'position': 4,
+                'name': 'Galerie',
+                'url': window.location.origin + '/gallery/',
+                'description': 'Fotografie Portfolio'
               },
               {
                 '@type': 'ListItem',
-                position: 5,
-                name: 'Über',
-                url: window.location.origin + '/about/',
-                description: 'Über Abdulkerim Sesli'
+                'position': 5,
+                'name': 'Über',
+                'url': window.location.origin + '/about/',
+                'description': 'Über Abdulkerim Sesli'
               }
             ]
           }
@@ -510,8 +507,7 @@
           setTimeout(cleanup, 700)
         }, wait)
       }
-      if (document.readyState === 'loading')
-        document.addEventListener('DOMContentLoaded', () => (start = performance.now()), {once: true})
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => (start = performance.now()), {once: true})
       else start = performance.now()
 
       window.addEventListener('load', hideLoader, {once: true})
