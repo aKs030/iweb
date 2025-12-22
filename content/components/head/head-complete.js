@@ -9,9 +9,14 @@
   if (window.SHARED_HEAD_LOADED) return
 
   try {
-    // 1. Titel der aktuellen Seite sichern
+    // 1. Titel und Beschreibung der aktuellen Seite sichern
     const existingTitleEl = document.querySelector('title')
     const pageTitle = existingTitleEl ? existingTitleEl.textContent : document.title || 'Abdulkerim — Digital Creator Portfolio'
+
+    const existingMetaDescEl = document.querySelector('meta[name="description"]')
+    const pageDescription = existingMetaDescEl && existingMetaDescEl.getAttribute('content')
+      ? existingMetaDescEl.getAttribute('content')
+      : 'Persönliches Portfolio und digitale Visitenkarte von Abdulkerim Sesli aus Berlin. Einblicke in private Web-Projekte, Fotografie und kreative Experimente.'
 
     const escapeHTML = value =>
       String(value)
@@ -29,8 +34,9 @@
 
     let html = await resp.text()
 
-    // 3. Platzhalter {{PAGE_TITLE}} ersetzen
+    // 3. Platzhalter {{PAGE_TITLE}} und {{PAGE_DESCRIPTION}} ersetzen
     html = html.replace(/\{\{PAGE_TITLE}}/g, safePageTitle)
+    html = html.replace(/\{\{PAGE_DESCRIPTION}}/g, escapeHTML(pageDescription))
 
     // 4. HTML in DOM-Knoten umwandeln
     const range = document.createRange()
@@ -217,6 +223,58 @@
       if (typeof console !== 'undefined' && console.warn) {
         console.warn('[Head-Loader] Could not set canonical/og:url:', e)
       }
+    }
+
+    // 7c. BreadcrumbList JSON-LD generieren (duplikat-sicher)
+    try {
+      if (!document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')) {
+        const path = window.location.pathname.replace(/index\.html$/,'')
+        const segments = path.split('/').filter(Boolean)
+        if (segments.length > 0) {
+          const base = window.location.origin
+          const itemList = []
+          // Home
+          itemList.push({
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Startseite',
+            item: base + '/'
+          })
+          // Map some common slugs to readable names
+          const slugMap = {
+            blog: 'Blog',
+            projekte: 'Projekte',
+            videos: 'Videos',
+            gallery: 'Gallery',
+            about: 'Über'
+          }
+
+          segments.forEach((seg, i) => {
+            const name = slugMap[seg] || decodeURIComponent(seg.replace(/[-_]/g, ' '))
+            const href = base + '/' + segments.slice(0, i + 1).join('/') + (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
+            itemList.push({
+              '@type': 'ListItem',
+              position: itemList.length + 1,
+              name: name.charAt(0).toUpperCase() + name.slice(1),
+              item: href
+            })
+          })
+
+          const breadcrumb = {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: itemList
+          }
+
+          const script = document.createElement('script')
+          script.type = 'application/ld+json'
+          script.setAttribute('data-breadcrumb', '1')
+          script.textContent = JSON.stringify(breadcrumb)
+          document.head.appendChild(script)
+        }
+      }
+    } catch (e) {
+      if (typeof console !== 'undefined' && console.warn) console.warn('[Head-Loader] Breadcrumb generation failed', e)
     }
 
     // 7a. Skripte aus dem Shared Head sicher ausführen (insb. Module wie /content/main.js)
