@@ -86,11 +86,12 @@
 <!-- SVG Favicon (modern browsers) -->
 <link rel="icon" href="/content/assets/img/icons/favicon.svg" type="image/svg+xml" />
 
-<!-- PNG Fallbacks for various sizes -->
-<link rel="icon" type="image/png" sizes="16x16" href="/content/assets/img/icons/icon-32.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="/content/assets/img/icons/icon-32.png" />
-<link rel="icon" type="image/png" sizes="96x96" href="/content/assets/img/icons/icon-96.png" />
+<!-- PNG Fallbacks for various sizes (prefer larger sizes first for Google Search) -->
 <link rel="icon" type="image/png" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="/content/assets/img/icons/icon-96.png" />
+<link rel="icon" type="image/png" sizes="48x48" href="/content/assets/img/icons/icon-48.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/content/assets/img/icons/icon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/content/assets/img/icons/icon-32.png" />
 
 <!-- Apple Touch Icons -->
 <link rel="apple-touch-icon" sizes="180x180" href="/content/assets/img/icons/icon-192.png" />
@@ -112,7 +113,8 @@
 <meta name="msapplication-config" content="/browserconfig.xml" />
 
 <!-- Shortcut Icon (ICO Fallback for older browsers) -->
-<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<!-- Add a cache-busting query to force CDNs to refresh when favicon changes -->
+<link rel="shortcut icon" href="/favicon.ico?v=2" type="image/x-icon" />
 
 <!-- JSON-LD Person Schema (enhanced) -->
 <script type="application/ld+json" data-cfasync="false" data-person="1">
