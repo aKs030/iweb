@@ -26,4 +26,18 @@ Allow: /
 # Crawl-delay for respectful crawling
 Crawl-delay: 1
 
+# Google-specific policies
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Googlebot-Image
+Allow: /content/assets/img/
+
+# Block non-public or irrelevant folders and patterns
+Disallow: /content/vendor/
+Disallow: /content/config/
+Disallow: /*.json$
+Disallow: /*?*
+
 Sitemap: https://abdulkerimsesli.de/sitemap.xml
