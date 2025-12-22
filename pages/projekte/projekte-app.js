@@ -123,6 +123,8 @@ const projects = [
     description: 'Der Klassiker gegen den Computer!',
     tags: ['JavaScript', 'Game Logic'],
     category: 'Game',
+    datePublished: '2023-07-05',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -153,6 +155,8 @@ const projects = [
     description: 'Finde die geheime Zahl zwischen 1 und 100.',
     tags: ['Logic', 'Input'],
     category: 'Puzzle',
+    datePublished: '2024-08-01',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -179,6 +183,8 @@ const projects = [
     description: 'Dynamische Hintergrundfarben per Klick.',
     tags: ['DOM', 'Events'],
     category: 'UI',
+    datePublished: '2022-03-15',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -205,6 +211,8 @@ const projects = [
     description: 'Produktivitäts-Tool zum Verwalten von Aufgaben.',
     tags: ['CRUD', 'Arrays'],
     category: 'App',
+    datePublished: '2021-11-05',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
@@ -249,7 +257,9 @@ function App() {
           'url': siteBase + '/projekte/#' + key,
           'author': { '@type': 'Person', 'name': 'Abdulkerim Sesli' },
           'keywords': Array.isArray(p.tags) ? p.tags.join(', ') : p.tags || '',
-          'about': p.category
+          'about': p.category,
+          'datePublished': p.datePublished,
+          'image': p.image
         }
         const s = document.createElement('script')
         s.type = 'application/ld+json'
