@@ -20,3 +20,17 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./cloudflare/workers/sitemap-headers
+
+      - name: Verify sitemap header (X-Robots-Tag)
+        run: |
+          echo "Checking https://abdulkerimsesli.de/sitemap.xml for X-Robots-Tag..."
+          for i in 1 2 3; do
+            sleep $((i*2))
+            HEADER=$(curl -I -sS https://abdulkerimsesli.de/sitemap.xml | tr -d '\r' | grep -i '^X-Robots-Tag:' || true)
+            if [ -n "$HEADER" ]; then
+              echo "Found header: $HEADER"
+              exit 0
+            fi
+            echo "Attempt $i: header not found yet"
+          done
+          echo "X-Robots-Tag not found on /sitemap.xml after retries" && exit 1
