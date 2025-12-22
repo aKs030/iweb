@@ -31,7 +31,7 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png</image:loc>
-      <image:caption>Webentwicklung & Coding Projekte</image:caption>
+      <image:caption>Webentwicklung &amp; Coding Projekte</image:caption>
       <image:title>Projekte von Abdulkerim Sesli</image:title>
     </image:image>
   </url>
@@ -73,7 +73,7 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-blog.png</image:loc>
-      <image:caption>Tech Blog & Insights von Abdulkerim Sesli</image:caption>
+      <image:caption>Tech Blog &amp; Insights von Abdulkerim Sesli</image:caption>
       <image:title>Tech Blog</image:title>
     </image:image>
   </url>
@@ -168,7 +168,7 @@
       <video:tag>Making-of</video:tag>
       <video:tag>Photography</video:tag>
       <video:tag>Behind the Scenes</video:tag>
-      <video:category>People & Blogs</video:category>
+      <video:category>People &amp; Blogs</video:category>
     </video:video>
   </url>
   
