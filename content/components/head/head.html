@@ -4,14 +4,7 @@
 
 <!-- Google tag (gtag.js) - Site-wide (added per user request: AW-1036079663) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1036079663"></script>
-<script>
-  window.dataLayer = window.dataLayer || []
-  function gtag() {
-    dataLayer.push(arguments)
-  }
-  gtag('js', new Date())
-  gtag('config', 'AW-1036079663')
-</script>
+<script src="/content/components/head/head-inline.js" defer data-shared-head="1"></script>
 
 <!-- Dynamic Title (replaced by head-complete.js) -->
 <title>{{PAGE_TITLE}}</title>
@@ -212,27 +205,4 @@
 <!-- Main Application Script -->
 <script type="module" src="/content/main.js"></script>
 
-<!-- Helper: Auto-insert footer trigger zone if missing -->
-<script>
-  ;(function ensureTrigger() {
-    try {
-      document.addEventListener(
-        'DOMContentLoaded',
-        function () {
-          if (document.getElementById('footer-trigger-zone')) return
-          const footerContainer = document.getElementById('footer-container')
-          const trigger = document.createElement('div')
-          trigger.id = 'footer-trigger-zone'
-          trigger.className = 'footer-trigger-zone'
-          trigger.setAttribute('aria-hidden', 'true')
-          if (footerContainer && footerContainer.parentNode) {
-            footerContainer.parentNode.insertBefore(trigger, footerContainer)
-          } else {
-            document.body.appendChild(trigger)
-          }
-        },
-        {once: true}
-      )
-    } catch (e) {}
-  })()
-</script>
+<!-- Helper scripts moved to external file to satisfy CSP (head-inline.js) -->

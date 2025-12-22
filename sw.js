@@ -192,15 +192,21 @@ async function networkFirst(request, cacheName) {
 async function staleWhileRevalidate(request, cacheName) {
   const cached = await caches.match(request)
 
-  const fetchPromise = fetch(request)
-    .then(response => {
+  const fetchPromise = (async () => {
+    try {
+      const response = await fetch(request)
       if (response && response.status === 200) {
-        const cache = caches.open(cacheName)
-        cache.then(c => c.put(request, response.clone()))
+        // Clone synchronously before any awaits that could consume the body
+        const responseForCache = response.clone()
+        const cache = await caches.open(cacheName)
+        await cache.put(request, responseForCache)
+        limitCacheSize(cacheName, CACHE_LIMITS[cacheName])
       }
       return response
-    })
-    .catch(() => cached)
+    } catch (e) {
+      return cached
+    }
+  })()
 
   return cached || fetchPromise
 }
