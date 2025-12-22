@@ -31,7 +31,7 @@ class AccessibilityManager {
         this.highContrast = e.matches
         this.updateContrast()
       })
-    } catch {
+    } catch (e) {
       // Fallback for older browsers
       try {
         this.reducedMotionMQL.addListener(e => {
@@ -42,7 +42,7 @@ class AccessibilityManager {
           this.highContrast = e.matches
           this.updateContrast()
         })
-      } catch {
+      } catch (e) {
         /* ignored */
       }
     }
@@ -85,7 +85,7 @@ class AccessibilityManager {
           () => {
             try {
               target.removeAttribute('tabindex')
-            } catch {
+            } catch (e) {
               /* ignored */
             }
           },
@@ -115,10 +115,10 @@ class AccessibilityManager {
     // Focus first focusable element
     try {
       firstFocusable.focus({preventScroll: true})
-    } catch {
+    } catch (e) {
       try {
         firstFocusable.focus()
-      } catch {
+      } catch (e) {
         /* ignore */
       }
     }
@@ -129,10 +129,10 @@ class AccessibilityManager {
     if (trap && this.lastFocusedElement) {
       try {
         this.lastFocusedElement.focus({preventScroll: true})
-      } catch {
+      } catch (e) {
         try {
           this.lastFocusedElement.focus()
-        } catch {
+        } catch (e) {
           /* ignored */
         }
       }
@@ -201,7 +201,7 @@ class AccessibilityManager {
       try {
         window.announce(message, {assertive: priority === 'assertive'})
         return
-      } catch {
+      } catch (e) {
         /* continue fallback */
       }
     }
@@ -217,7 +217,7 @@ class AccessibilityManager {
     setTimeout(() => {
       try {
         region.textContent = message
-      } catch {
+      } catch (e) {
         /* ignored */
       }
     }, 100)

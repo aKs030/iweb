@@ -42,7 +42,7 @@
     const escAttr = value => {
       try {
         if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value)
-      } catch {
+      } catch (e) {
         /* ignore */
       }
       return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
@@ -55,7 +55,7 @@
           .map(l => {
             try {
               return new URL(l.getAttribute('href'), window.location.origin).href
-            } catch {
+            } catch (e) {
               return l.getAttribute('href')
             }
           })
@@ -67,7 +67,7 @@
           .map(s => {
             try {
               return new URL(s.getAttribute('src'), window.location.origin).href
-            } catch {
+            } catch (e) {
               return s.getAttribute('src')
             }
           })
@@ -90,7 +90,7 @@
           let abs
           try {
             abs = new URL(href, window.location.origin).href
-          } catch {
+          } catch (e) {
             abs = href
           }
           if (existingStyles.has(abs)) link.remove()
@@ -110,7 +110,7 @@
         let abs
         try {
           abs = new URL(src, window.location.origin).href
-        } catch {
+        } catch (e) {
           abs = src
         }
         if (existingScripts.has(abs)) script.remove()
@@ -277,19 +277,44 @@
     try {
       const toExec = document.head.querySelectorAll('script[data-exec-on-insert="1"]')
       toExec.forEach(oldScript => {
-        const newScript = document.createElement('script')
-        // Attribute kopieren
-        for (const {name, value} of Array.from(oldScript.attributes)) {
-          if (name === 'data-exec-on-insert') continue
-          newScript.setAttribute(name, value)
-        }
+        // If script has an external src, re-insert it (works with CSP)
         if (oldScript.src) {
+          const newScript = document.createElement('script')
+          // Copy attributes except the marker
+          for (const {name, value} of Array.from(oldScript.attributes)) {
+            if (name === 'data-exec-on-insert') continue
+            newScript.setAttribute(name, value)
+          }
           newScript.src = oldScript.src
-        } else if (oldScript.textContent && oldScript.textContent.trim()) {
-          newScript.textContent = oldScript.textContent
+          oldScript.parentNode.replaceChild(newScript, oldScript)
+          return
         }
-        // Ersetzen, damit der Browser das Skript tatsächlich lädt/ausführt
-        oldScript.parentNode.replaceChild(newScript, oldScript)
+
+        // Allow application/ld+json inline data to be preserved (not executed)
+        if (oldScript.type === 'application/ld+json' && oldScript.textContent && oldScript.textContent.trim()) {
+          const newScript = document.createElement('script')
+          newScript.type = 'application/ld+json'
+          newScript.textContent = oldScript.textContent
+          oldScript.parentNode.replaceChild(newScript, oldScript)
+          return
+        }
+
+        // Inline classic/module scripts are blocked by strict CSP. Preserve inertly and warn.
+        if (oldScript.textContent && oldScript.textContent.trim()) {
+          if (typeof console !== 'undefined' && console.warn) {
+            console.warn('[Head-Loader] Inline script detected in shared head; not executed due to CSP. Move to external file or add CSP hash/nonce.', oldScript)
+          }
+          const inertScript = document.createElement('script')
+          inertScript.type = 'text/plain'
+          inertScript.setAttribute('data-inline-preserved', '1')
+          inertScript.setAttribute('data-original-type', oldScript.type || '')
+          inertScript.textContent = oldScript.textContent
+          oldScript.parentNode.replaceChild(inertScript, oldScript)
+          return
+        }
+
+        // No executable content - remove marker to avoid duplicates
+        oldScript.remove()
       })
     } catch (e) {
       // Script execution reinforcement failed - non-critical
@@ -319,7 +344,7 @@
           document.body.prepend(loaderWrapper)
           try {
             document.body.classList.add('global-loading-visible')
-          } catch {
+          } catch (e) {
             /* ignore */
           }
         } else {
@@ -329,7 +354,7 @@
               document.body.prepend(loaderWrapper)
               try {
                 document.body.classList.add('global-loading-visible')
-              } catch {
+              } catch (e) {
                 /* ignore */
               }
             },

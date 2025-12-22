@@ -25,7 +25,7 @@ if (typeof window !== 'undefined') {
   try {
     window.a11y = a11y
     if (typeof a11y?.init === 'function') a11y.init()
-  } catch {
+  } catch (e) {
     /* ignored */
   }
 }
@@ -255,7 +255,7 @@ function _initApp() {
   try {
     a11y?.updateAnimations?.()
     a11y?.updateContrast?.()
-  } catch {
+  } catch (e) {
     /* ignored */
   }
 }
@@ -332,7 +332,7 @@ const LoadingScreenManager = (() => {
 
       try {
         document.body.classList.remove('global-loading-visible')
-      } catch {
+      } catch (e) {
         /* ignore */
       }
 
@@ -611,7 +611,7 @@ document.addEventListener(
                 log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001')
                 try {
                   rws.send('dev:hello')
-                } catch {
+                } catch (e) {
                   /* ignore */
                 }
               }

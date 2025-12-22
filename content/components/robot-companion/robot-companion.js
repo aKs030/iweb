@@ -308,7 +308,7 @@ class RobotCompanion {
         const initialLeft = window.innerWidth - 30 - robotWidth
         const maxLeft = initialLeft - 20
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
-      } catch {}
+      } catch (e) (e) {}
     }
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd)
   }
@@ -345,7 +345,7 @@ class RobotCompanion {
             const maxLeft = initialLeft - 20
             this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
           }
-        } catch {}
+        } catch (e) {}
       }, 500)
     }
     window.addEventListener('scroll', this._scrollListener, {passive: true})
@@ -593,7 +593,7 @@ class RobotCompanion {
           if (!el) return false
           const r = el.getBoundingClientRect()
           return r.top <= midY && r.bottom >= midY
-        } catch {
+        } catch (e) {
           return false
         }
       }
@@ -619,7 +619,7 @@ class RobotCompanion {
 
       this.trackSectionVisit(context)
       return context
-    } catch {
+    } catch (e) {
       return 'default'
     }
   }
