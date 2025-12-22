@@ -5,8 +5,10 @@ type = "javascript"
 compatibility_date = "2025-12-22"
 # Cloudflare Account ID (provided by user)
 account_id = "652ca9f4abc93203c1ecd059dc00d1da"
-# Optional: Zone ID (for reference when configuring routes in the Cloudflare dashboard)
-# zone_id = "0899c561e7100c5df4965d7b8b216bc9"
+# Optional: Zone ID (used for setting routes automatically during publish)
+zone_id = "0899c561e7100c5df4965d7b8b216bc9"
 
-# Use the same route in Cloudflare dashboard or set routes after `wrangler publish`
+# Use the same route in Cloudflare dashboard or let wrangler set it during publish
+routes = ["abdulkerimsesli.de/sitemap*"]
+
 # Example route: abdulkerimsesli.de/sitemap*
