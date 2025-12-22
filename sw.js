@@ -87,20 +87,24 @@ self.addEventListener('install', event => {
 
 // Aktivierung - Bereinige alte Caches
 self.addEventListener('activate', event => {
+  console.log('[SW] activate event')
   event.waitUntil(
     caches
       .keys()
       .then(cacheNames => {
+        console.log('[SW] activate: cleaning caches', cacheNames)
         return Promise.all(
           cacheNames.map(cacheName => {
             // Lösche alle Caches die nicht zur aktuellen Version gehören
             if (cacheName.startsWith('iweb-') && !cacheName.startsWith(CACHE_VERSION)) {
+              console.log('[SW] delete cache', cacheName)
               return caches.delete(cacheName)
             }
           })
         )
       })
       .then(() => {
+        console.log('[SW] activate: claiming clients')
         return self.clients.claim()
       })
   )
