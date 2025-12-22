@@ -110,10 +110,12 @@ export const CONFIG = {
     MAX_SIMULTANEOUS: 3
   },
   PERFORMANCE: {
-    PIXEL_RATIO: Math.min(window.devicePixelRatio, 2.0),
-    TARGET_FPS: 55,
-    DRS_DOWN_THRESHOLD: 48,
-    DRS_UP_THRESHOLD: 58
+    // Cap pixel ratio conservatively to avoid GPU stalls on some drivers/devices
+    // Dynamically adjusted by PerformanceMonitor during runtime
+    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
+    TARGET_FPS: 50,
+    DRS_DOWN_THRESHOLD: 46,
+    DRS_UP_THRESHOLD: 56
   },
   QUALITY_LEVELS: {
     HIGH: {
