@@ -76,17 +76,17 @@ const ThreeEarthManager = (() => {
         log.debug('Device detection failed, using defaults', e)
       }
 
-        // Quick WebGL support check to avoid repeated noisy failures in sandboxed/headless contexts
-        if (!__three_webgl_tested) {
-          __three_webgl_tested = true
-          if (!supportsWebGL()) {
-            log.warn('WebGL not supported in this environment; skipping Three.js initialization')
-            showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'))
-            // mark cleanup and exit gracefully
-            sharedCleanupManager.cleanupSystem('three-earth')
-            return cleanup
-          }
+      // Quick WebGL support check to avoid repeated noisy failures in sandboxed/headless contexts
+      if (!__three_webgl_tested) {
+        __three_webgl_tested = true
+        if (!supportsWebGL()) {
+          log.warn('WebGL not supported in this environment; skipping Three.js initialization')
+          showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'))
+          // mark cleanup and exit gracefully
+          sharedCleanupManager.cleanupSystem('three-earth')
+          return cleanup
         }
+      }
 
       registerParticleSystem('three-earth', {type: 'three-earth'})
 
@@ -394,7 +394,6 @@ function supportsWebGL() {
 
 // Prevent repeated WebGL init attempts in environments where WebGL is unavailable
 let __three_webgl_tested = false
-
 
 function detectDeviceCapabilities() {
   try {
