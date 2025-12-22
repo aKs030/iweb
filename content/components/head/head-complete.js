@@ -219,6 +219,22 @@
     const childNodes = Array.from(document.head.childNodes)
     for (const node of childNodes) {
       if (node.nodeType === Node.COMMENT_NODE && node.nodeValue.includes('SHARED_HEAD')) {
+        // Before inserting, remove any JSON-LD markers from the fragment if the document already contains them
+        try {
+          const markerSelectors = [
+            'script[type="application/ld+json"][data-person]',
+            'script[type="application/ld+json"][data-website-search]',
+            'script[type="application/ld+json"][data-organization]',
+            'script[type="application/ld+json"][data-sitelinks]'
+          ];
+          markerSelectors.forEach(sel => {
+            if (document.querySelector(sel)) {
+              const nodes = fragment.querySelectorAll(sel);
+              nodes.forEach(n => n.remove());
+            }
+          });
+        } catch (e) { /* ignore */ }
+
         node.parentNode.replaceChild(fragment, node)
         inserted = true
         break
