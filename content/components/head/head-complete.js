@@ -302,7 +302,10 @@
         // Inline classic/module scripts are blocked by strict CSP. Preserve inertly and warn.
         if (oldScript.textContent && oldScript.textContent.trim()) {
           if (typeof console !== 'undefined' && console.warn) {
-            console.warn('[Head-Loader] Inline script detected in shared head; not executed due to CSP. Move to external file or add CSP hash/nonce.', oldScript)
+            console.warn(
+              '[Head-Loader] Inline script detected in shared head; not executed due to CSP. Move to external file or add CSP hash/nonce.',
+              oldScript
+            )
           }
           const inertScript = document.createElement('script')
           inertScript.type = 'text/plain'
