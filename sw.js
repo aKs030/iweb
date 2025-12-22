@@ -47,10 +47,13 @@ const CACHE_LIMITS = {
 }
 
 // Installation - Cache statische Assets
+console.log('[SW] script loaded')
 self.addEventListener('install', event => {
+  console.log('[SW] install event')
   event.waitUntil(
     (async () => {
       try {
+        console.log('[SW] install: opening cache', STATIC_CACHE)
         const cache = await caches.open(STATIC_CACHE)
         // Use robust per-asset fetching: addAll will fail entirely if one resource is not fetchable.
         for (const asset of STATIC_ASSETS) {
@@ -67,9 +70,16 @@ self.addEventListener('install', event => {
           }
         }
         await self.skipWaiting()
+        console.log('[SW] install: finished')
       } catch (err) {
         // Fehler beim Cachen nicht blockieren
         console.error('[SW] Installation failed:', err)
+        try {
+          // Attempt to report install failure to origin (non-blocking)
+          fetch('/__sw_health', {method: 'POST', body: JSON.stringify({event: 'install_failed', message: err.message || String(err)}), keepalive: true})
+        } catch (reportErr) {
+          /* ignore reporting errors */
+        }
       }
     })()
   )

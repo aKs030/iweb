@@ -599,6 +599,18 @@ document.addEventListener(
           })
           .catch(error => {
             log.warn('Service Worker registration failed:', error)
+            try {
+              // Send a beacon to origin so failures can be tracked server-side (non-blocking)
+              const payload = JSON.stringify({message: error && error.message, name: error && error.name, href: location.href, ts: Date.now()})
+              if (navigator.sendBeacon) {
+                navigator.sendBeacon('/__sw_reg_err', payload)
+              } else {
+                // Fallback fetch with keepalive
+                fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
+              }
+            } catch (beaconErr) {
+              log.debug('SW error reporting failed', beaconErr)
+            }
           })
       })
     }
