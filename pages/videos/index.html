@@ -170,15 +170,13 @@
       </div>
     </main>
 
-    <!-- Optional: Auto-load latest 2 videos using YouTube Data API v3
-          To enable, set these globals BEFORE this script runs (example):
-          &lt;script&gt;window.YOUTUBE_API_KEY = 'YOUR_API_KEY'; window.YOUTUBE_CHANNEL_HANDLE = 'aks.030';&lt;/script&gt;
+    <!-- Optional: Client-side split-key config (gitignored)
+          To enable, copy the example part files to `/content/config/videos-part-a.js` and `/content/config/videos-part-b.js`,
+          Base64-encode each key fragment (e.g. via `btoa('fragment')`) and place them as default exports. The loader will assemble them.
+          WARNING: This is obfuscation only — not secure. Prefer a server-side proxy if possible.
         -->
-    <script>
-      // NOTE: API key provided by user. Consider moving to server-side or env for security.
-      window.YOUTUBE_API_KEY = 'AIzaSyA1uN-8I94wyGRSA9WylFetW9PaUehgTcY'
-      window.YOUTUBE_CHANNEL_HANDLE = 'aks.030'
-    </script>
+    <!-- Split-key loader assembles YOUTUBE_API_KEY from two gitignored parts -->
+    <script type="module" src="/content/config/videos-config-loader.js" defer></script>
 
     <script type="module" src="/pages/videos/videos.js"></script>
 
