@@ -61,6 +61,21 @@
   let matchedKey = Object.keys(PAGE_CONFIG).find(key => currentPath.includes(key))
   const metaData = matchedKey ? PAGE_CONFIG[matchedKey] : DEFAULT_META
 
+  // Helper: check whether a JSON-LD script of a given @type already exists in the document
+  const existingSchemaType = type => {
+    try {
+      return Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some(s => {
+        try {
+          const j = JSON.parse(s.textContent)
+          if (Array.isArray(j)) return j.some(x => x && x['@type'] === type)
+          return j && j['@type'] === type
+        } catch (e) {
+          return false
+        }
+      })
+    } catch (e) { return false }
+  }
+
   try {
     const escapeHTML = value =>
       String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -275,7 +290,7 @@
       }
 
       // 2. WebSite Schema mit Sitelinks SearchAction
-      if (!document.querySelector('script[data-website-search="1"]')) {
+      if (!document.querySelector('script[data-website-search="1"]') && !existingSchemaType('WebSite')) {
         const websiteSearchSchema = {
           '@context': 'https://schema.org',
           '@type': 'WebSite',
@@ -300,7 +315,7 @@
 
       // 3. Page-specific Schema
       if (metaData.schemaType && metaData.schemaType !== 'WebSite') {
-        if (!document.querySelector('script[data-page-schema="1"]')) {
+        if (!document.querySelector('script[data-page-schema="1"]') && !existingSchemaType(metaData.schemaType)) {
           const baseSchema = {
             '@context': 'https://schema.org',
             '@type': metaData.schemaType,
