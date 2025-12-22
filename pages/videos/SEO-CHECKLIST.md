@@ -10,7 +10,7 @@
 6. **Schema.org VideoGallery** - Markierung der Video-Sammlung
 7. **Canonical URLs** - Duplicate Content vermeiden
 8. **Video-Thumbnails in Sitemap** - Google Image Search Optimierung
-9. **Redirect-Seite** - /videos/ leitet zu /pages/videos/videos.html
+9. **Redirect-Seite** - /videos/ leitet zu /videos/ (clean canonical URL)
 
 ## 📋 Weitere Empfehlungen
 

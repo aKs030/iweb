@@ -58,7 +58,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/about/about.html</loc>
+    <loc>https://abdulkerimsesli.de/about/</loc>
     <lastmod>2025-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -73,7 +73,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/gallery/gallery.html</loc>
+    <loc>https://abdulkerimsesli.de/gallery/</loc>
     <lastmod>2025-12-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -82,13 +82,13 @@
     </image:image>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/home/hero.html</loc>
+    <loc>https://abdulkerimsesli.de/</loc>
     <lastmod>2025-12-14</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://abdulkerimsesli.de/pages/projekte/projekte.html</loc>
+    <loc>https://abdulkerimsesli.de/projekte/</loc>
     <lastmod>2025-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -96,14 +96,9 @@
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
     </image:image>
   </url>
+
   <url>
-    <loc>https://abdulkerimsesli.de/pages/videos/</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://abdulkerimsesli.de/pages/videos/videos.html</loc>
+    <loc>https://abdulkerimsesli.de/videos/</loc>
     <lastmod>2025-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
