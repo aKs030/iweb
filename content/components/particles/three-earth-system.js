@@ -114,7 +114,6 @@ const ThreeEarthManager = (() => {
         if (forceThree) {
           log.info('Force flag detected: attempting to initialize Three.js despite WebGL checks')
         }
-        }
       }
 
       registerParticleSystem('three-earth', {type: 'three-earth'})
