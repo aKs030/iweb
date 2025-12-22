@@ -451,8 +451,15 @@ class FooterLoader {
     if (!container) return false
 
     try {
-      const src = container.dataset.footerSrc || '/content/components/footer/footer.html'
-      const response = await fetch(src)
+      // Prefer extensionless path to avoid redirect noise (fallback to .html handled by server if needed)
+      const src = container.dataset.footerSrc || '/content/components/footer/footer'
+      let response
+      try {
+        response = await fetch(src)
+      } catch (e) {
+        // fallback to .html if the extensionless path fails
+        response = await fetch(src + '.html')
+      }
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
