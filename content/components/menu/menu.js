@@ -156,7 +156,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="#about">
+          <a href="#section3">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
             </svg>
@@ -347,7 +347,7 @@ function extractSectionInfo(sectionId) {
   const fallbackTitleMap = {
     hero: {title: 'Startseite', subtitle: ''},
     features: {title: 'Projekte', subtitle: 'Meine Arbeiten'},
-    about: {title: 'Über mich', subtitle: 'Lerne mich kennen'},
+    section3: {title: 'Über mich', subtitle: 'Lerne mich kennen'},
     contact: {title: 'Kontakt', subtitle: 'Schreiben Sie mir'}
   }
 
@@ -356,7 +356,7 @@ function extractSectionInfo(sectionId) {
     return fallbackTitleMap[sectionId] || {title: 'Startseite', subtitle: ''}
   }
 
-  if (['hero', 'features', 'about', 'contact'].includes(sectionId)) {
+  if (['hero', 'features', 'section3', 'contact'].includes(sectionId)) {
     const sectionElement = document.querySelector(`#${sectionId}`)
     if (sectionElement) {
       const headers = sectionElement.querySelectorAll('.section-header, .section-subtitle')
