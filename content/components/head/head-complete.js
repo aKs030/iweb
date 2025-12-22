@@ -121,14 +121,49 @@
       }
     }
 
-    // 4b. Markiere Skripte im Fragment zur späteren erneuten Ausführung
+    // 4b. Markiere/transformiere Skripte im Fragment zur sicheren Handhabung vor dem Einfügen
+    // Wichtig: Inline-Skripte werden inert gemacht (type=text/plain), damit sie nicht beim Einfügen
+    // automatisch ausgeführt und von CSP blockiert werden. Externe Skripte behalten wir als-is und
+    // kennzeichnen sie zur optionalen gezielten Neu-Insertierung nach dem Einfügen.
     const fragmentScripts = Array.from(fragment.querySelectorAll('script'))
     fragmentScripts.forEach((s, idx) => {
-      // Nicht ausführen, wenn bereits speziell blockiert (z.B. consent-blocked via type="text/plain")
-      // Kennzeichne ansonsten zur gezielten Re-Initialisierung nach dem Einfügen
-      if (s.type && s.type.toLowerCase() === 'text/plain') return
-      s.setAttribute('data-exec-on-insert', '1')
-      s.setAttribute('data-exec-id', String(idx))
+      // If explicitly marked as plain text already (consent), skip
+      const t = (s.type || '').toLowerCase()
+      if (t === 'text/plain') return
+
+      // Preserve LD+JSON inline data (non-executable structured data)
+      if (t === 'application/ld+json') {
+        // Ensure marker exists so we don't duplicate on later runs
+        s.setAttribute('data-exec-on-insert', '1')
+        s.setAttribute('data-exec-id', String(idx))
+        return
+      }
+
+      // External script with src should remain executable (subject to CSP); mark for handling
+      if (s.src) {
+        s.setAttribute('data-exec-on-insert', '1')
+        s.setAttribute('data-exec-id', String(idx))
+        return
+      }
+
+      // Inline script detected: make inert BEFORE inserting into the document to avoid execution/CSP errors
+      try {
+        const inertScript = document.createElement('script')
+        inertScript.type = 'text/plain'
+        inertScript.setAttribute('data-inline-preserved', '1')
+        inertScript.setAttribute('data-original-type', s.type || '')
+        inertScript.setAttribute('data-exec-id', String(idx))
+        inertScript.textContent = s.textContent
+        s.parentNode.replaceChild(inertScript, s)
+      } catch (e) {
+        // If replacement fails, at least mark it to avoid attempts to execute later
+        try {
+          s.setAttribute('data-inline-preserved', '1')
+          s.setAttribute('data-original-type', s.type || '')
+        } catch (err) {
+          /* ignore */
+        }
+      }
     })
 
     // 5. Duplikate bereinigen:
