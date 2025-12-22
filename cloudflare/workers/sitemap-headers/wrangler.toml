@@ -1,8 +1,10 @@
 name = "sitemap-headers"
 main = "index.js"
 compatibility_date = "2025-12-22"
-# Set your CF account id before publishing
-account_id = "<CF_ACCOUNT_ID>"
+# Cloudflare Account ID (provided by user)
+account_id = "652ca9f4abc93203c1ecd059dc00d1da"
+# Optional: Zone ID (for reference when configuring routes in the Cloudflare dashboard)
+# zone_id = "0899c561e7100c5df4965d7b8b216bc9"
 
 # Use the same route in Cloudflare dashboard or set routes after `wrangler publish`
 # Example route: abdulkerimsesli.de/sitemap*
