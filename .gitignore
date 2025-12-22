@@ -29,9 +29,6 @@ build/
 *.swp
 *.swo
 
-# Local config (do not commit sensitive API keys)
-/content/config/videos-part-*.js
-
 # Playwright artifacts were removed; no active Playwright tests remain
 test-results/
 # Temporary generated files
