@@ -141,7 +141,19 @@ const SectionLoader = (() => {
     dispatchEvent('section:will-load', section, {url})
 
     try {
-      const response = await fetchWithTimeout(url)
+      // Try extensionless URL first to avoid server redirects (some hosts redirect .html -> no-ext)
+      let response
+      const fetchUrl = url && url.endsWith('.html') ? url.replace(/\.html$/, '') : url
+      try {
+        response = await fetchWithTimeout(fetchUrl)
+        if (!response.ok) {
+          // Try original URL as fallback
+          response = await fetchWithTimeout(url)
+        }
+      } catch (fetchErr) {
+        // Last-ditch attempt on original URL
+        response = await fetchWithTimeout(url)
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)

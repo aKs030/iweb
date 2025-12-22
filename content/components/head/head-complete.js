@@ -84,7 +84,23 @@
     const safePageDesc = escapeHTML(metaData.description)
     const safeKeywords = escapeHTML(metaData.keywords || DEFAULT_META.keywords)
 
-    const resp = await fetch('/content/components/head/head.html', {cache: 'force-cache'})
+    // Fetch fragment robustly: prefer extensionless path to avoid 3xx redirects
+    async function fetchFragment(path, opts = {cache: 'force-cache'}) {
+      const candidates = [path.replace(/\.html$/, ''), path]
+      let lastErr = null
+      for (const p of candidates) {
+        try {
+          const r = await fetch(p, opts)
+          if (r.ok) return r
+          lastErr = new Error(`HTTP ${r.status}`)
+        } catch (e) {
+          lastErr = e
+        }
+      }
+      throw lastErr || new Error('Fragment fetch failed')
+    }
+
+    const resp = await fetchFragment('/content/components/head/head.html', {cache: 'force-cache'})
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
 
     let html = await resp.text()
