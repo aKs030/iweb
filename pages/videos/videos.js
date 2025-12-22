@@ -70,6 +70,83 @@ function shareChannel() {
   // Run asap so static page thumbnails are interactive even without API
   attachStaticThumbsStandalone()
 
+  // Stable testing: if mock mode is active and no API key is present, render demo videos
+  if (!apiKey && window.YOUTUBE_USE_MOCK) {
+    setStatus('Lädt Demo‑Videos (Mock‑Modus)')
+    const demo = [
+      {
+        videoId: 'dQw4w9WgXcQ',
+        title: 'Demo Video 1 — Beispiel',
+        desc: 'Beispielbeschreibung für Demo Video 1',
+        thumb: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+        pub: '2020-01-01'
+      },
+      {
+        videoId: 'J---aiyznGQ',
+        title: 'Demo Video 2 — Beispiel',
+        desc: 'Beispielbeschreibung für Demo Video 2',
+        thumb: 'https://i.ytimg.com/vi/J---aiyznGQ/hqdefault.jpg',
+        pub: '2021-02-02'
+      }
+    ]
+
+    const grid = document.querySelector('.video-grid')
+    if (grid) {
+      grid.innerHTML = ''
+      demo.forEach(it => {
+        const article = document.createElement('article')
+        article.className = 'video-card'
+        article.innerHTML = `
+          <h2>${escapeHtml(it.title)} — Abdulkerim Sesli</h2>
+          <p class="video-desc">${escapeHtml(it.desc)}</p>
+        `
+
+        const thumbBtn = document.createElement('button')
+        thumbBtn.className = 'video-thumb'
+        thumbBtn.setAttribute('aria-label', `Play ${it.title} — Abdulkerim`)
+        thumbBtn.dataset.videoId = it.videoId
+        thumbBtn.style.backgroundImage = `url('${it.thumb}')`
+        thumbBtn.innerHTML = '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>'
+
+        const meta = document.createElement('div')
+        meta.className = 'video-meta'
+        meta.innerHTML = `<div class="video-info"><small class="pub-date">${it.pub}</small></div><div class="video-actions"><a href="https://youtu.be/${it.videoId}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`
+
+        const ld = document.createElement('script')
+        ld.type = 'application/ld+json'
+        ld.textContent = JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'VideoObject',
+          name: it.title + ' – Abdulkerim Sesli',
+          description: it.desc,
+          thumbnailUrl: it.thumb,
+          uploadDate: it.pub || new Date().toISOString().split('T')[0],
+          contentUrl: `https://youtu.be/${it.videoId}`,
+          embedUrl: `https://www.youtube.com/embed/${it.videoId}`,
+          publisher: {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
+        })
+
+        grid.appendChild(article)
+        article.appendChild(thumbBtn)
+        article.appendChild(meta)
+        article.appendChild(ld)
+
+        thumbBtn.addEventListener('click', () => activateThumb(thumbBtn))
+        thumbBtn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            activateThumb(thumbBtn)
+          }
+        })
+      })
+    }
+
+    // Ensure static thumbs are bound and return early
+    initStaticThumbs()
+    setStatus('')
+    return
+  }
+
   try {
     if (location.protocol === 'file:') {
       log('Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.')
