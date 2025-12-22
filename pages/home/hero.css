@@ -274,6 +274,43 @@
   justify-content: center;
 }
 
+/* Fallback when WebGL is not available */
+.three-earth-container.three-earth-unavailable .hero-image-container {
+  display: block;
+  width: 72vw;
+  max-width: 720px;
+  aspect-ratio: auto;
+}
+
+.three-earth-container .three-earth-fallback {
+  display: none;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 1rem;
+}
+
+.three-earth-container.three-earth-unavailable .three-earth-fallback {
+  display: block;
+}
+
+.three-earth-fallback__inner img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto 0.75rem;
+  box-shadow: 0 8px 28px rgba(2,6,23,0.32);
+}
+
+.three-earth-fallback__text {
+  font-size: 0.95rem;
+  color: var(--muted-text, #9aa4b2);
+  margin: 0;
+}
+
 .hero-image-container svg {
   position: relative;
   z-index: 1;

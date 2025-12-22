@@ -81,6 +81,26 @@ const ThreeEarthManager = (() => {
         __three_webgl_tested = true
         if (!supportsWebGL()) {
           log.warn('WebGL not supported in this environment; skipping Three.js initialization')
+          // Add visible fallback to container so users see a friendly image/message
+          try {
+            container.classList.add('three-earth-unavailable')
+            // Insert a fallback element if not present
+            if (!container.querySelector('.three-earth-fallback')) {
+              const fallback = document.createElement('div')
+              fallback.className = 'three-earth-fallback'
+              fallback.setAttribute('role', 'img')
+              fallback.setAttribute('aria-label', 'Interaktive Darstellung wird nicht unterstützt. Statische Vorschau angezeigt.')
+              fallback.innerHTML = `
+                <div class="three-earth-fallback__inner">
+                  <img src="/content/assets/img/og/og-home.png" alt="Abdulkerim — Digital Creator Portfolio" />
+                  <p class="three-earth-fallback__text">Interaktive 3D‑Ansicht wird von Ihrem Gerät nicht unterstützt. Hier eine Vorschau.</p>
+                </div>
+              `
+              container.appendChild(fallback)
+            }
+          } catch (e) {
+            /* ignore DOM insert errors */
+          }
           showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'))
           // mark cleanup and exit gracefully
           sharedCleanupManager.cleanupSystem('three-earth')
