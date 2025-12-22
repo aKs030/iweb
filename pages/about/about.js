@@ -176,17 +176,21 @@
     // All attempts failed
     logger.error('Failed to load about content after retries', lastError)
 
-    // Display fallback content
+    // Display fallback content (no inline handlers)
     host.innerHTML = `
       <div class="about__container">
         <div class="about__error">
           <p>Inhalt konnte nicht geladen werden.</p>
-          <button onclick="location.reload()" class="btn btn-primary">
-            Seite neu laden
-          </button>
+          <button class="btn btn-primary about-reload">Seite neu laden</button>
         </div>
       </div>
     `
+
+    // Attach event listener to the injected reload button
+    const aboutReload = host.querySelector('.about-reload')
+    if (aboutReload) {
+      aboutReload.addEventListener('click', () => location.reload(), {once: true})
+    }
 
     // Dispatch error event
     document.dispatchEvent(
