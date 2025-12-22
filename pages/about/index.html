@@ -2,11 +2,128 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0;url=/about/" />
-    <title>Weiterleitung…</title>
-    <meta name="robots" content="noindex, follow" />
+    <title>Über mich | Abdulkerim Sesli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <!-- Meta Tags -->
+    <meta name="description" content="Erfahre mehr über Abdulkerim Sesli, Webentwickler aus Berlin. Vision, Skills und Hintergrund." />
+    <meta name="keywords" content="Über mich, Abdulkerim Sesli, Webentwickler, Berlin, Portfolio" />
+    <link rel="canonical" href="https://abdulkerimsesli.de/about/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Über mich - Abdulkerim Sesli" />
+    <meta property="og:description" content="Erfahre mehr über Abdulkerim Sesli, Webentwickler aus Berlin." />
+    <meta property="og:type" content="profile" />
+    <meta property="og:url" content="https://abdulkerimsesli.de/about/" />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.png" />
+
+    <!-- Shared Head & Styles -->
+    <script src="/content/components/head/head-complete.js" type="module"></script>
+    <link rel="stylesheet" href="/content/styles/main.css" />
+
+    <!-- Specific Styles for About -->
+    <link rel="stylesheet" href="/pages/about/about.css" />
+
+    <style>
+      /* Ensure proper spacing for standalone page */
+      main {
+        padding-top: 100px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        background-color: var(--bg-color, #0a0a0f);
+      }
+      .standalone-about {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+    </style>
   </head>
   <body>
-    <p>Weiterleitung zu <a href="/about/">/about/</a></p>
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
+
+    <main id="main-content">
+      <div class="standalone-about section about">
+        <div class="about__container">
+          <aside class="about__meta" aria-label="Kurzinfo zum Autor">
+            <figure class="about__figure">
+              <img src="/content/assets/img/icons/icon-512.png" alt="Porträt von Abdulkerim Sesli" width="160" height="160" />
+            </figure>
+            <div class="about__card-body">
+              <p class="about__role">Digital Creator • Webentwicklung • Fotografie</p>
+              <p class="about__links">
+                <a href="https://github.com/aKs030" rel="me noopener noreferrer" target="_blank">GitHub</a>
+                <a href="https://linkedin.com/in/abdulkerimsesli" rel="me noopener noreferrer" target="_blank">LinkedIn</a>
+              </p>
+            </div>
+          </aside>
+          <article class="about__content">
+            <div class="about__text" data-parallax-speed="0.1">
+              <h1 id="about-heading">Danke für Ihren Besuch!</h1>
+
+              <p>
+                Es freut mich sehr, dass Sie sich die Zeit genommen haben, meine Website zu erkunden. Mein Name ist
+                <strong>Abdulkerim</strong>
+                und ich bin ein leidenschaftlicher Webentwickler aus Berlin, der es liebt, digitale Träume in die Realität umzusetzen.
+              </p>
+
+              <p>
+                Hinter jedem Projekt steckt eine Geschichte, hinter jedem Code eine Vision. Ich glaube fest daran, dass großartige Websites mehr
+                sind als nur funktionale Tools – sie sind digitale Erlebnisse, die Menschen bewegen und inspirieren.
+              </p>
+
+              <p>
+                Meine Mission ist es, das Web zu einem schöneren und zugänglicheren Ort zu machen. Dabei verbinde ich moderne Technologien mit
+                kreativem Design und stelle den Menschen stets in den Mittelpunkt meiner Arbeit.
+              </p>
+
+              <p>
+                <em>Jede Zeile Code, die ich schreibe, trägt ein Stück meiner Leidenschaft in sich.</em>
+                <br />
+                Von der ersten Idee bis zum finalen Launch begleite ich Sie auf Ihrer digitalen Reise.
+              </p>
+
+              <p>
+                Ich hoffe, meine Arbeit konnte Sie inspirieren und Ihnen einen Einblick in meine Welt der Webentwicklung geben. Es war mir eine
+                wahre Freude, Sie hier zu haben.
+              </p>
+
+              <p class="about__farewell">
+                <strong>Herzlichen Dank für Ihr Interesse und besuchen Sie mich gerne wieder!</strong>
+              </p>
+
+              <nav class="about__cta" aria-label="Navigationsoptionen">
+                <a href="/" class="btn btn-primary" aria-label="Zurück zur Startseite">Zur Startseite</a>
+                <a href="/#site-footer" class="btn btn-secondary" aria-label="Lebenslauf herunterladen">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    role="img">
+                    <title>Download-Symbol</title>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  <span>Lebenslauf</span>
+                </a>
+              </nav>
+            </div>
+          </article>
+        </div>
+      </div>
+    </main>
+
+    <div id="footer-container" data-footer-src="/content/components/footer/footer.html"></div>
+    <script src="/content/components/footer/footer-complete.js" type="module"></script>
   </body>
 </html>
