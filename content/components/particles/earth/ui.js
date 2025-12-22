@@ -36,7 +36,7 @@ export function showLoadingState(container) {
     globals.screen.setAttribute('aria-live', 'polite')
     try {
       document.body.classList.add('global-loading-visible')
-    } catch {
+    } catch (e) {
       /* ignore */
     }
   } else {
@@ -63,7 +63,7 @@ export function hideLoadingState(container) {
       if (globals.screen) globals.screen.style.display = 'none'
       try {
         document.body.classList.remove('global-loading-visible')
-      } catch {
+      } catch (e) {
         /* ignore */
       }
     }, 300)
