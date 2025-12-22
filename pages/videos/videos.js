@@ -206,12 +206,31 @@ function shareChannel() {
     if (!grid) return
     grid.innerHTML = ''
 
+    // Collect all video IDs and fetch details (duration, stats)
+    const vidIds = items.map(it => it.snippet.resourceId.videoId).filter(Boolean)
+    let detailsMap = {}
+    try {
+      if (vidIds.length) {
+        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${vidIds.join(',')}&key=${apiKey}`
+        const videosJson = await fetchJson(videosUrl)
+        (videosJson.items || []).forEach(v => {
+          detailsMap[v.id] = v
+        })
+      }
+    } catch (e) {
+      log('Could not fetch video details: ' + e.message)
+    }
+
     items.forEach(it => {
       const vid = it.snippet.resourceId.videoId
       const title = it.snippet.title
       const desc = it.snippet.description || ''
       const thumb = it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url
       const pub = it.snippet.publishedAt ? it.snippet.publishedAt.split('T')[0] : ''
+
+      const videoDetail = detailsMap[vid]
+      const duration = videoDetail?.contentDetails?.duration // ISO 8601
+      const viewCount = videoDetail?.statistics?.viewCount ? Number(videoDetail.statistics.viewCount) : undefined
 
       const article = document.createElement('article')
       article.className = 'video-card'
@@ -234,9 +253,7 @@ function shareChannel() {
       meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`
 
       // JSON-LD script
-      const ld = document.createElement('script')
-      ld.type = 'application/ld+json'
-      ld.textContent = JSON.stringify({
+      const ldObj = {
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
         name: title + ' – Abdulkerim Sesli',
@@ -245,8 +262,27 @@ function shareChannel() {
         uploadDate: pub || new Date().toISOString().split('T')[0],
         contentUrl: `https://youtu.be/${vid}`,
         embedUrl: `https://www.youtube.com/embed/${vid}`,
-        publisher: {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
-      })
+        isFamilyFriendly: true,
+        publisher: {
+          '@type': 'Organization',
+          '@id': 'https://abdulkerimsesli.de/#organization',
+          'name': 'Abdulkerim — Digital Creator Portfolio',
+          'logo': { '@type': 'ImageObject', 'url': 'https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png' }
+        }
+      }
+
+      if (duration) ldObj.duration = duration
+      if (typeof viewCount !== 'undefined') {
+        ldObj.interactionStatistic = {
+          '@type': 'InteractionCounter',
+          'interactionType': 'http://schema.org/WatchAction',
+          'userInteractionCount': viewCount
+        }
+      }
+
+      const ld = document.createElement('script')
+      ld.type = 'application/ld+json'
+      ld.textContent = JSON.stringify(ldObj)
 
       grid.appendChild(article)
       article.appendChild(thumbBtn)
