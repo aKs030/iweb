@@ -4,22 +4,20 @@ addEventListener('fetch', event => {
 
 async function handle(request) {
   const url = new URL(request.url)
-  const path = url.pathname
 
-  // Forward the request to origin (Cloudflare will fetch the existing sitemap)
-  const res = await fetch(request)
+  // Passthrough fetch
+  const response = await fetch(request)
 
-  // If sitemap path, add X-Robots-Tag header to prevent SERP listing
-  if (path === '/sitemap.xml' || path === '/sitemap-videos.xml') {
-    const headers = new Headers(res.headers)
+  // Only modify sitemap responses
+  if (url.pathname === '/sitemap.xml' || url.pathname === '/sitemap-videos.xml') {
+    const headers = new Headers(response.headers)
     headers.set('X-Robots-Tag', 'noindex, noarchive')
-    // Keep content-type and other headers intact
-    return new Response(res.body, {
-      status: res.status,
-      statusText: res.statusText,
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
       headers
     })
   }
 
-  return res
+  return response
 }
