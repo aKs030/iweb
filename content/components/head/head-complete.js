@@ -14,17 +14,13 @@
     const pageTitle = existingTitleEl ? existingTitleEl.textContent : document.title || 'Abdulkerim — Digital Creator Portfolio'
 
     const existingMetaDescEl = document.querySelector('meta[name="description"]')
-    const pageDescription = existingMetaDescEl && existingMetaDescEl.getAttribute('content')
-      ? existingMetaDescEl.getAttribute('content')
-      : 'Persönliches Portfolio und digitale Visitenkarte von Abdulkerim Sesli aus Berlin. Einblicke in private Web-Projekte, Fotografie und kreative Experimente.'
+    const pageDescription =
+      existingMetaDescEl && existingMetaDescEl.getAttribute('content')
+        ? existingMetaDescEl.getAttribute('content')
+        : 'Persönliches Portfolio und digitale Visitenkarte von Abdulkerim Sesli aus Berlin. Einblicke in private Web-Projekte, Fotografie und kreative Experimente.'
 
     const escapeHTML = value =>
-      String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
+      String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
     const safePageTitle = escapeHTML(pageTitle)
 
@@ -228,7 +224,7 @@
     // 7c. BreadcrumbList JSON-LD generieren (duplikat-sicher)
     try {
       if (!document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')) {
-        const path = window.location.pathname.replace(/index\.html$/,'')
+        const path = window.location.pathname.replace(/index\.html$/, '')
         const segments = path.split('/').filter(Boolean)
         if (segments.length > 0) {
           const base = window.location.origin
@@ -236,9 +232,9 @@
           // Home
           itemList.push({
             '@type': 'ListItem',
-            position: 1,
-            name: 'Startseite',
-            item: base + '/'
+            'position': 1,
+            'name': 'Startseite',
+            'item': base + '/'
           })
           // Map some common slugs to readable names
           const slugMap = {
@@ -254,16 +250,16 @@
             const href = base + '/' + segments.slice(0, i + 1).join('/') + (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
             itemList.push({
               '@type': 'ListItem',
-              position: itemList.length + 1,
-              name: name.charAt(0).toUpperCase() + name.slice(1),
-              item: href
+              'position': itemList.length + 1,
+              'name': name.charAt(0).toUpperCase() + name.slice(1),
+              'item': href
             })
           })
 
           const breadcrumb = {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
-            itemListElement: itemList
+            'itemListElement': itemList
           }
 
           const script = document.createElement('script')

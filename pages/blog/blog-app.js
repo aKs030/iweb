@@ -48,12 +48,7 @@ function BlogApp() {
 
   // Helper to escape HTML when inserting text content
   const escapeHTML = value =>
-    String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
+    String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
   // Sync with hash routing (#/blog/:id)
   React.useEffect(() => {
@@ -87,7 +82,7 @@ function BlogApp() {
 
     // Update meta description (temporary)
     const desc = post.excerpt || String(post.content).slice(0, 160)
-    let meta = document.querySelector('meta[name="description"]')
+    const meta = document.querySelector('meta[name="description"]')
     if (meta) {
       if (!meta.getAttribute('data-orig')) meta.setAttribute('data-orig', meta.getAttribute('content') || '')
       meta.setAttribute('content', desc)
@@ -101,16 +96,16 @@ function BlogApp() {
         const ld = {
           '@context': 'https://schema.org',
           '@type': 'Article',
-          'mainEntityOfPage': { '@type': 'WebPage', '@id': `https://abdulkerimsesli.de/blog/${post.id}` },
+          'mainEntityOfPage': {'@type': 'WebPage', '@id': `https://abdulkerimsesli.de/blog/${post.id}`},
           'headline': post.title,
           'description': post.excerpt,
-          'datePublished': (new Date(post.date)).toISOString(),
-          'author': { '@type': 'Person', 'name': 'Abdulkerim Sesli' },
+          'datePublished': new Date(post.date).toISOString(),
+          'author': {'@type': 'Person', 'name': 'Abdulkerim Sesli'},
           'image': post.image || 'https://abdulkerimsesli.de/content/assets/img/og/og-home.png',
           'publisher': {
             '@type': 'Organization',
             'name': 'Abdulkerim — Digital Creator Portfolio',
-            'logo': { '@type': 'ImageObject', 'url': 'https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png' }
+            'logo': {'@type': 'ImageObject', 'url': 'https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png'}
           },
           'articleBody': post.content
         }
@@ -150,7 +145,13 @@ function BlogApp() {
             <div className="blog-detail">
               ${(() => {
                 const post = blogPosts.find(p => p.id === currentPostId)
-                if (!post) return html`<div class="not-found">Beitrag nicht gefunden. <button onClick=${() => (location.hash = '#/blog/')} className="btn">Zurück</button></div>`
+                if (!post)
+                  return html`
+                    <div class="not-found">
+                      Beitrag nicht gefunden.
+                      <button onClick=${() => (location.hash = '#/blog/')} className="btn">Zurück</button>
+                    </div>
+                  `
                 return html`
                   <article className="blog-article">
                     <header>

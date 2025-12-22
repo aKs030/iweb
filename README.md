@@ -38,7 +38,6 @@ Copy-ready Profile/Bio Texte für GitHub, LinkedIn und andere Profile findest du
 
 - [BIO_SNIPPETS.md](BIO_SNIPPETS.md)
 
-
 ---
 
 ## ✨ Funktionen
