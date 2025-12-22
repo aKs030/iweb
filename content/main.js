@@ -143,20 +143,20 @@ const SectionLoader = (() => {
     try {
       // Try extensionless URL first to avoid server redirects (some hosts redirect .html -> no-ext)
       let response
-      const fetchUrl = url && url.endsWith('.html') ? url.replace(/\.html$/, '') : url
-      try {
-        response = await fetchWithTimeout(fetchUrl)
-        if (!response.ok) {
-          // Try original URL as fallback
-          response = await fetchWithTimeout(url)
+      const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.') || location.hostname.endsWith('.local')
+      const fetchCandidates = isLocal ? [url, url && url.endsWith('.html') ? url : (url + '.html')] : [url && url.endsWith('.html') ? url.replace(/\.html$/, '') : url, url]
+
+      for (const candidate of fetchCandidates) {
+        try {
+          response = await fetchWithTimeout(candidate)
+          if (response && response.ok) break
+        } catch (e) {
+          response = null
         }
-      } catch (fetchErr) {
-        // Last-ditch attempt on original URL
-        response = await fetchWithTimeout(url)
       }
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      if (!response || !response.ok) {
+        throw new Error(`HTTP ${response ? response.status : 'NO_RESPONSE'}: ${response ? response.statusText : 'no response'}`)
       }
 
       const html = await response.text()

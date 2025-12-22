@@ -452,16 +452,20 @@ class FooterLoader {
 
     try {
       // Prefer extensionless path to avoid redirect noise (fallback to .html handled by server if needed)
-      const src = container.dataset.footerSrc || '/content/components/footer/footer'
+      const srcBase = container.dataset.footerSrc || '/content/components/footer/footer'
+      const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.') || location.hostname.endsWith('.local')
+      const candidates = isLocal ? [srcBase + '.html', srcBase] : [srcBase, srcBase + '.html']
       let response
-      try {
-        response = await fetch(src)
-      } catch (e) {
-        // fallback to .html if the extensionless path fails
-        response = await fetch(src + '.html')
+      for (const c of candidates) {
+        try {
+          response = await fetch(c)
+          if (response.ok) break
+        } catch (e) {
+          response = null
+        }
       }
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : 'NO_RESPONSE'}`)
 
       container.innerHTML = await response.text()
       domCache.invalidate() // Clear cache after DOM change

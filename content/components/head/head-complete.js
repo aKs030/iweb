@@ -86,7 +86,13 @@
 
     // Fetch fragment robustly: prefer extensionless path to avoid 3xx redirects
     async function fetchFragment(path, opts = {cache: 'force-cache'}) {
-      const candidates = [path.replace(/\.html$/, ''), path]
+      // Heuristic: prefer .html on localhost/dev to avoid initial 404 noise from servers that
+      // don't serve extensionless paths; prefer extensionless on production/CDN for cleaner URLs
+      const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.') || location.hostname.endsWith('.local')
+      const base = path.replace(/\.html$/, '')
+      const withHtml = base + '.html'
+      const candidates = isLocal ? [withHtml, base] : [base, withHtml]
+
       let lastErr = null
       for (const p of candidates) {
         try {
