@@ -308,7 +308,7 @@ class RobotCompanion {
         const initialLeft = window.innerWidth - 30 - robotWidth
         const maxLeft = initialLeft - 20
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
-      } catch (e) (e) {}
+      } catch (e) {}
     }
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd)
   }
