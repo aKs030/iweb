@@ -22,14 +22,14 @@ window.robotCompanionTexts = {
     skills: {
       text: 'Ich wurde mit HTML, CSS und reinem JavaScript gebaut! Mein Erschaffer beherrscht aber noch viel mehr: React, Node.js, Python und UI/UX Design. Möchtest du Details?',
       options: [
-        {label: 'Tech Stack ansehen', url: '/pages/about/about.html#skills'},
+        {label: 'Tech Stack ansehen', url: '/about/#skills'},
         {label: 'Zurück', action: 'start'}
       ]
     },
     about: {
       text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt.',
       options: [
-        {label: 'Zur Bio', url: '/pages/about/about.html'},
+        {label: 'Zur Bio', url: '/about/'},
         {label: 'Kontakt aufnehmen', action: 'contact'},
         {label: 'Zurück', action: 'start'}
       ]
