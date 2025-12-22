@@ -10,6 +10,8 @@ Sitemap: https://abdulkerimsesli.de/sitemap-videos.xml
 User-agent: *
 Allow: /
 
+# Note: video sitemap above added to improve video indexing
+# If you add more video content, run: YT_API_KEY=<key> python3 scripts/update_video_sitemap.py
 # Block technical and non-relevant areas
 Disallow: /content/vendor/
 Disallow: /content/config/
