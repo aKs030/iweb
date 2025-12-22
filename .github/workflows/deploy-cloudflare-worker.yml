@@ -36,8 +36,8 @@ jobs:
             echo "Ensuring route: $full_pattern"
             # check existing route id
             ROUTE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/workers/routes" \
-              -H "Authorization: Bearer $CF_API_TOKEN" | jq -r ".result[] | select(.pattern==\"$full_pattern\") | .id")
-            if [ -n "$ROUTE_ID" ] && [ "$ROUTE_ID" != "null" ]; then
+              -H "Authorization: Bearer $CF_API_TOKEN" | jq -r --arg p "$full_pattern" '.result // [] | .[] | select(.pattern==$p) | .id')
+            if [ -n "$ROUTE_ID" ]; then
               echo "Updating route $ROUTE_ID"
               curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/workers/routes/$ROUTE_ID" \
                 -H "Authorization: Bearer $CF_API_TOKEN" \
