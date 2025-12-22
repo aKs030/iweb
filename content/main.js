@@ -573,7 +573,7 @@ document.addEventListener(
 
     // ===== Service Worker Registration =====
     if ('serviceWorker' in navigator && !ENV.isTest) {
-      window.addEventListener('load', () => {
+      window.addEventListener('load', async () => {
         try {
       const swUrl = '/sw.js'
       // Sanity-check the SW script before attempting registration to avoid noisy rejections
