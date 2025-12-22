@@ -589,7 +589,9 @@
             const personObj = parseSafe(personEl)
             if (personObj) {
               personObj['@id'] = personObj['@id'] || window.location.origin + '/#person'
-              graph.push(personObj)
+              // Reference existing Person by @id to avoid duplicating full object and merging reviews
+              if (personEl) graph.push({'@id': personObj['@id']})
+              else graph.push(personObj)
             } else {
               graph.push({'@type': 'Person', '@id': window.location.origin + '/#person', 'name': 'Abdulkerim Sesli'})
             }
@@ -599,7 +601,9 @@
             const orgObj = parseSafe(orgEl)
             if (orgObj) {
               orgObj['@id'] = orgObj['@id'] || window.location.origin + '/#organization'
-              graph.push(orgObj)
+              // Reference existing Organization by @id to avoid duplicates (prevents combined review/aggregate issues)
+              if (orgEl) graph.push({'@id': orgObj['@id']})
+              else graph.push(orgObj)
             } else {
               graph.push({
                 '@type': 'Organization',
