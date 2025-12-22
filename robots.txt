@@ -1,41 +1,29 @@
-# robots.txt für abdulkerimsesli.de
-# Optimiert für Google-Crawling und SEO
+# robots.txt for abdulkerimsesli.de
+# Minimal, Google-friendly configuration
 
-# Generelle Regeln für alle Bots
-User-agent: *
-Allow: /
-
-# Erlaube alle wichtigen Bereiche
-Allow: /projekte/
-Allow: /blog/
-Allow: /videos/
-Allow: /gallery/
-Allow: /about/
-Allow: /content/assets/img/
-
-# Blockiere technische und nicht-relevante Bereiche
-Disallow: /content/vendor/
-Disallow: /content/config/
-Disallow: /content/utils/
-Disallow: /*.json$
-Disallow: /*?*
-Disallow: /*.js$
-Disallow: /*.css$
-Disallow: /sw.js
-
-# Sitemap-Lokation
+# Sitemap locations
 Sitemap: https://abdulkerimsesli.de/sitemap.xml
 Sitemap: https://abdulkerimsesli.de/sitemap-images.xml
 Sitemap: https://abdulkerimsesli.de/sitemap-videos.xml
 
-# Crawl-delay für höfliches Crawling (Standard-Bots)
-Crawl-delay: 1
+# Default rules for all crawlers
+User-agent: *
+Allow: /
 
-# Spezifische Regeln für Google-Bots
+# Block technical and non-relevant areas
+Disallow: /content/vendor/
+Disallow: /content/config/
+Disallow: /content/utils/
+Disallow: /*.json$
+Disallow: /*?
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /sw.js
+
+# Google-specific rules
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 0
-# Erlaube JavaScript und CSS für Rich Snippets
+# Ensure JS and CSS are allowed for rendering
 Allow: /*.js$
 Allow: /*.css$
 
@@ -43,32 +31,26 @@ Allow: /*.css$
 User-agent: Googlebot-Image
 Allow: /
 Allow: /content/assets/img/
-Crawl-delay: 0
 
 # Google Video Bot
 User-agent: Googlebot-Video
 Allow: /videos/
-Crawl-delay: 0
 
 # Bing Bot
 User-agent: Bingbot
 Allow: /
-Crawl-delay: 1
 
-# Weitere wichtige Bots
+# Other useful bots
 User-agent: Slurp
 Allow: /
-Crawl-delay: 1
 
 User-agent: DuckDuckBot
 Allow: /
-Crawl-delay: 1
 
 User-agent: Baiduspider
 Allow: /
-Crawl-delay: 2
 
-# Social Media Bots (für Previews)
+# Social Media Bots (for previews)
 User-agent: facebookexternalhit
 Allow: /
 
@@ -81,7 +63,7 @@ Allow: /
 User-agent: Pinterestbot
 Allow: /
 
-# Blockiere aggressive oder schädliche Bots
+# Block aggressive or unwanted bots
 User-agent: MJ12bot
 Disallow: /
 
@@ -89,7 +71,7 @@ User-agent: AhrefsBot
 Disallow: /
 
 User-agent: SemrushBot
-Crawl-delay: 10
+Disallow: /
 
 User-agent: dotbot
 Disallow: /
@@ -97,11 +79,10 @@ Disallow: /
 User-agent: rogerbot
 Disallow: /
 
-# Archive.org erlauben (für Backup)
+# Archive.org allowed
 User-agent: ia_archiver
 Allow: /
-Crawl-delay: 5
 
-# Hinweise für Crawler
-# Kontakt: https://abdulkerimsesli.de/about/
-# Letzte Aktualisierung: 2025-12-22
+# Contact / last updated
+# Contact: https://abdulkerimsesli.de/about/
+# Last updated: 2025-12-22
