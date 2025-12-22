@@ -107,9 +107,19 @@
           trail.push({ name: sections[sectionKey], url: siteBase + sectionKey })
         }
 
-        // last element: page title (avoid duplicates)
-        if (!trail.some(t => t.name === safePageTitle)) {
-          trail.push({ name: safePageTitle, url: siteBase + path })
+        // last element: page title (avoid duplicates, avoid adding page title on homepage and on section index pages)
+        if (path !== '/') {
+          const sectionUrl = sectionKey ? siteBase + sectionKey : null
+          const pageUrl = siteBase + path
+
+          if (sectionKey) {
+            trail.push({ name: sections[sectionKey], url: sectionUrl })
+          }
+
+          const lastUrls = trail.map(t => t.url)
+          if (!lastUrls.includes(pageUrl) && !trail.some(t => t.name === safePageTitle)) {
+            trail.push({ name: safePageTitle, url: pageUrl })
+          }
         }
 
         const breadcrumbLd = {
