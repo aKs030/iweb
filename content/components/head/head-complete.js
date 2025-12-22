@@ -84,6 +84,68 @@
     const safePageDesc = escapeHTML(metaData.description)
     const safeKeywords = escapeHTML(metaData.keywords || DEFAULT_META.keywords)
 
+    // Generate BreadcrumbList JSON-LD dynamically for main sections and deeper pages
+    try {
+      ;(function createBreadcrumbJsonLd() {
+        const siteBase = window.location.origin.replace(/\/$/, '')
+        const sections = {
+          '/projekte/': 'Projekte',
+          '/blog/': 'Blog',
+          '/videos/': 'Videos',
+          '/gallery/': 'Galerie',
+          '/about/': 'Über'
+        }
+        const path = currentPath
+        const trail = [{ name: 'Startseite', url: siteBase + '/' }]
+
+        // prefer exact section match at path start, else try includes
+        const sectionKey =
+          Object.keys(sections).find(k => path === k || path.startsWith(k)) ||
+          Object.keys(sections).find(k => path.includes(k))
+
+        if (path !== '/' && sectionKey) {
+          trail.push({ name: sections[sectionKey], url: siteBase + sectionKey })
+        }
+
+        // last element: page title (avoid duplicates)
+        if (!trail.some(t => t.name === safePageTitle)) {
+          trail.push({ name: safePageTitle, url: siteBase + path })
+        }
+
+        const breadcrumbLd = {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: trail.map((t, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: t.name,
+            item: t.url
+          }))
+        }
+
+        // only insert if no existing BreadcrumbList present (dedupe)
+        const hasBreadcrumb = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+          .map(s => {
+            try {
+              return JSON.parse(s.textContent)
+            } catch (e) {
+              return null
+            }
+          })
+          .some(obj => obj && obj['@type'] === 'BreadcrumbList')
+
+        if (!hasBreadcrumb) {
+          const s = document.createElement('script')
+          s.type = 'application/ld+json'
+          s.textContent = JSON.stringify(breadcrumbLd)
+          s.setAttribute('data-exec-on-insert', '1')
+          document.head.appendChild(s)
+        }
+      })()
+    } catch (e) {
+      /* ignore DOM not available in some environments */
+    }
+
     // Fetch fragment robustly: prefer extensionless path to avoid 3xx redirects
     async function fetchFragment(path, opts = {cache: 'force-cache'}) {
       // Heuristic: prefer .html on localhost/dev to avoid initial 404 noise from servers that
