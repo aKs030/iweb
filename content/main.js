@@ -144,7 +144,9 @@ const SectionLoader = (() => {
       // Try extensionless URL first to avoid server redirects (some hosts redirect .html -> no-ext)
       let response
       const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.') || location.hostname.endsWith('.local')
-      const fetchCandidates = isLocal ? [url, url && url.endsWith('.html') ? url : (url + '.html')] : [url && url.endsWith('.html') ? url.replace(/\.html$/, '') : url, url]
+      const fetchCandidates = isLocal
+        ? [url, url && url.endsWith('.html') ? url : url + '.html']
+        : [url && url.endsWith('.html') ? url.replace(/\.html$/, '') : url, url]
 
       for (const candidate of fetchCandidates) {
         try {
@@ -575,90 +577,96 @@ document.addEventListener(
     if ('serviceWorker' in navigator && !ENV.isTest) {
       window.addEventListener('load', async () => {
         try {
-      const swUrl = '/sw.js'
-      // Sanity-check the SW script before attempting registration to avoid noisy rejections
-      let swResp = null
-      try {
-        swResp = await fetch(swUrl, {cache: 'no-store', credentials: 'same-origin'})
-      } catch (e) {
-        log.warn('Service Worker fetch failed, skipping registration', e)
-        try {
-          const payload = JSON.stringify({event: 'sw_fetch_failed', message: String(e), href: location.href, ts: Date.now()})
-          if (navigator.sendBeacon) navigator.sendBeacon('/__sw_reg_err', payload)
-          else fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
-        } catch (beaconErr) {
-          log.debug('SW error reporting failed', beaconErr)
-        }
-        return
-      }
+          const swUrl = '/sw.js'
+          // Sanity-check the SW script before attempting registration to avoid noisy rejections
+          let swResp = null
+          try {
+            swResp = await fetch(swUrl, {cache: 'no-store', credentials: 'same-origin'})
+          } catch (e) {
+            log.warn('Service Worker fetch failed, skipping registration', e)
+            try {
+              const payload = JSON.stringify({event: 'sw_fetch_failed', message: String(e), href: location.href, ts: Date.now()})
+              if (navigator.sendBeacon) navigator.sendBeacon('/__sw_reg_err', payload)
+              else fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
+            } catch (beaconErr) {
+              log.debug('SW error reporting failed', beaconErr)
+            }
+            return
+          }
 
-      const contentType = (swResp && swResp.headers && swResp.headers.get('content-type')) || ''
-      if (!swResp.ok || !/javascript/i.test(contentType)) {
-        log.warn('Service Worker not suitable for registration (status/content-type)', {status: swResp && swResp.status, contentType})
-        try {
-          const payload = JSON.stringify({event: 'sw_not_ok', status: swResp && swResp.status, contentType, href: location.href, ts: Date.now()})
-          if (navigator.sendBeacon) navigator.sendBeacon('/__sw_reg_err', payload)
-          else fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
-        } catch (beaconErr) {
-          log.debug('SW error reporting failed', beaconErr)
-        }
-        return
-      }
+          const contentType = (swResp && swResp.headers && swResp.headers.get('content-type')) || ''
+          if (!swResp.ok || !/javascript/i.test(contentType)) {
+            log.warn('Service Worker not suitable for registration (status/content-type)', {status: swResp && swResp.status, contentType})
+            try {
+              const payload = JSON.stringify({
+                event: 'sw_not_ok',
+                status: swResp && swResp.status,
+                contentType,
+                href: location.href,
+                ts: Date.now()
+              })
+              if (navigator.sendBeacon) navigator.sendBeacon('/__sw_reg_err', payload)
+              else fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
+            } catch (beaconErr) {
+              log.debug('SW error reporting failed', beaconErr)
+            }
+            return
+          }
 
-      let swSnippet = null
-      try {
-        if (swResp && swResp.clone && typeof swResp.clone === 'function') {
-          swSnippet = await swResp.clone().text()
-          if (swSnippet && swSnippet.length > 2000) swSnippet = swSnippet.slice(0, 2000) + '…'
-        }
-      } catch (e) {
-        swSnippet = `SNIPPET_ERROR: ${String(e)}`
-      }
+          let swSnippet = null
+          try {
+            if (swResp && swResp.clone && typeof swResp.clone === 'function') {
+              swSnippet = await swResp.clone().text()
+              if (swSnippet && swSnippet.length > 2000) swSnippet = swSnippet.slice(0, 2000) + '…'
+            }
+          } catch (e) {
+            swSnippet = `SNIPPET_ERROR: ${String(e)}`
+          }
 
-      const registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
-      log.info('Service Worker registered:', registration.scope)
+          const registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
+          log.info('Service Worker registered:', registration.scope)
 
-      // Check for updates periodically
-      if (registration.waiting) {
-        log.info('Service Worker update available')
-      }
+          // Check for updates periodically
+          if (registration.waiting) {
+            log.info('Service Worker update available')
+          }
 
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              log.info('New Service Worker available - refresh to update')
-              // Optional: Show update notification to user
-              fire(EVENTS.SW_UPDATE_AVAILABLE)
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  log.info('New Service Worker available - refresh to update')
+                  // Optional: Show update notification to user
+                  fire(EVENTS.SW_UPDATE_AVAILABLE)
+                }
+              })
             }
           })
+        } catch (error) {
+          log.warn('Service Worker registration failed:', error)
+          try {
+            const payloadObj = {
+              message: error && error.message,
+              name: error && error.name,
+              stack: error && error.stack,
+              href: location.href,
+              ts: Date.now(),
+              swStatus: swResp && swResp.status,
+              swContentType: contentType,
+              swUrl: swResp && swResp.url,
+              swSnippet: typeof swSnippet === 'string' ? (swSnippet.length > 2000 ? swSnippet.slice(0, 2000) + '…' : swSnippet) : null
+            }
+            const payload = JSON.stringify(payloadObj)
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon('/__sw_reg_err', payload)
+            } else {
+              fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
+            }
+          } catch (beaconErr) {
+            log.debug('SW error reporting failed', beaconErr)
+          }
         }
-      })
-    } catch (error) {
-      log.warn('Service Worker registration failed:', error)
-      try {
-        const payloadObj = {
-          message: error && error.message,
-          name: error && error.name,
-          stack: error && error.stack,
-          href: location.href,
-          ts: Date.now(),
-          swStatus: swResp && swResp.status,
-          swContentType: contentType,
-          swUrl: swResp && swResp.url,
-          swSnippet: typeof swSnippet === 'string' ? (swSnippet.length > 2000 ? swSnippet.slice(0,2000) + '…' : swSnippet) : null
-        }
-        const payload = JSON.stringify(payloadObj)
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon('/__sw_reg_err', payload)
-        } else {
-          fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
-        }
-      } catch (beaconErr) {
-        log.debug('SW error reporting failed', beaconErr)
-      }
-    }
       })
     }
 
