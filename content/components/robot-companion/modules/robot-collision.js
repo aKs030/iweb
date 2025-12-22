@@ -227,7 +227,7 @@ export class RobotCollision {
       }
 
       return true
-    } catch {
+    } catch (e) {
       return false
     }
   }

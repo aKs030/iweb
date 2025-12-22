@@ -121,7 +121,7 @@ const ThreeEarthManager = (() => {
       // Register as a potentially blocking module while initializing
       try {
         AppLoadManager.block('three-earth')
-      } catch {
+      } catch (e) {
         /* ignore */
       }
 
@@ -134,7 +134,7 @@ const ThreeEarthManager = (() => {
             log.warn('Three.js load taking too long — unblocking three-earth to avoid blocking global loader')
             try {
               AppLoadManager.unblock('three-earth')
-            } catch {
+            } catch (e) {
               /* ignore */
             }
             try {
@@ -142,12 +142,12 @@ const ThreeEarthManager = (() => {
                 cleanup()
                 initThreeEarth()
               })
-            } catch {
+            } catch (e) {
               /* ignore */
             }
           }
         }, THREE_LOAD_WATCH)
-      } catch {
+      } catch (e) {
         /* ignore */
       }
 
@@ -157,7 +157,7 @@ const ThreeEarthManager = (() => {
       // Clear watchdog if load completed
       try {
         if (threeLoadWatchTimer) earthTimers.clearTimeout(threeLoadWatchTimer)
-      } catch {
+      } catch (e) {
         /* ignore */
       }
 
@@ -188,7 +188,7 @@ const ThreeEarthManager = (() => {
         if (!isSystemActive) return
         try {
           AppLoadManager.unblock('three-earth')
-        } catch {
+        } catch (e) {
           /* ignore */
         }
         hideLoadingState(container)
@@ -198,7 +198,7 @@ const ThreeEarthManager = (() => {
         log.warn('Error loading texture:', url)
         try {
           AppLoadManager.unblock('three-earth')
-        } catch {
+        } catch (e) {
           /* ignore */
         }
       }
@@ -311,7 +311,7 @@ const ThreeEarthManager = (() => {
       log.error('Initialization failed:', error)
       try {
         if (renderer) renderer.dispose()
-      } catch {
+      } catch (e) {
         /* ignore */
       }
       sharedCleanupManager.cleanupSystem('three-earth')
@@ -409,7 +409,7 @@ function supportsWebGL() {
     if (ctx2) {
       try {
         ctx2.getExtension && ctx2.getExtension('EXT_color_buffer_float')
-      } catch {}
+      } catch (e) {}
       return true
     }
     const ctx = canvas.getContext('webgl', {failIfMajorPerformanceCaveat: true}) || canvas.getContext('experimental-webgl')
@@ -429,7 +429,7 @@ function detectDeviceCapabilities() {
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua)
     const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) || (navigator.hardwareConcurrency || 4) <= 2
     return {isMobile, isLowEnd, recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH'}
-  } catch {
+  } catch (e) {
     return {isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM'}
   }
 }

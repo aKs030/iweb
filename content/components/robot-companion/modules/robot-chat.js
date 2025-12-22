@@ -77,7 +77,7 @@ export class RobotChat {
       this.removeTyping()
       this.robot.animationModule.stopThinking()
       this.addMessage(response, 'bot')
-    } catch {
+    } catch (e) {
       this.removeTyping()
       this.robot.animationModule.stopThinking()
       this.addMessage('Fehler bei der Verbindung.', 'bot')
@@ -354,7 +354,7 @@ export class RobotChat {
         this.showBubble(suggestion)
         setTimeout(() => this.hideBubble(), 8000)
       }
-    } catch {
+    } catch (e) {
       // Silent fail
     }
   }

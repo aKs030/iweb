@@ -235,7 +235,7 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(new CustomEvent('hero:typingEnd', {detail: {text: full, author}}))
-      } catch {}
+      } catch (e) {}
       delay = this.wait
       this._isDeleting = true
     } else if (this._isDeleting && !this._txt) {
@@ -283,7 +283,7 @@ export async function initHeroSubtitle(options = {}) {
     } else if (options.ensureHeroDataModule) {
       try {
         cfg = (await options.ensureHeroDataModule())?.typewriterConfig || {}
-      } catch {}
+      } catch (e) {}
     }
 
     const measurer = makeLineMeasurer(subtitleEl)
@@ -305,7 +305,7 @@ export async function initHeroSubtitle(options = {}) {
               : 'clamp(12px,2vw,24px)'
           setCSSVars(el, {bottom: `calc(${base} + ${overlap}px)`})
         }
-      } catch {}
+      } catch (e) {}
     }
 
     const start = () => {
@@ -346,7 +346,7 @@ export async function initHeroSubtitle(options = {}) {
       document.addEventListener('hero:typingEnd', () => {
         try {
           subtitleEl.classList.remove('is-locked')
-        } catch {}
+        } catch (e) {}
       })
 
       // Robust polling to fix race conditions on initial load
