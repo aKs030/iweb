@@ -32,6 +32,15 @@ Dieses Projekt ist Teil eines vernetzten Wissensgraphen. Zur Verifizierung und f
 
 ---
 
+## 🔖 Ready-to-use Bio Snippets
+
+Copy-ready Profile/Bio Texte für GitHub, LinkedIn und andere Profile findest du hier:
+
+- [BIO_SNIPPETS.md](BIO_SNIPPETS.md)
+
+
+---
+
 ## ✨ Funktionen
 
 - Progressive Web App (PWA) mit Offline-Support und Installation
