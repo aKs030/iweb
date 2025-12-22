@@ -13,38 +13,37 @@ const sections = {
 function makeTrail(currentPath, safePageTitle) {
   const pathNormalized = currentPath.endsWith('/') ? currentPath : currentPath + '/'
   const pathKey = pathNormalized
-  const trail = [{ name: 'Startseite', url: siteBase + '/' }]
+  const trail = [{name: 'Startseite', url: siteBase + '/'}]
 
   const sectionKey =
-    Object.keys(sections).find(k => pathKey === k || pathKey.startsWith(k)) ||
-    Object.keys(sections).find(k => pathKey.includes(k))
+    Object.keys(sections).find(k => pathKey === k || pathKey.startsWith(k)) || Object.keys(sections).find(k => pathKey.includes(k))
 
   if (pathKey !== '/') {
     const sectionUrl = sectionKey ? siteBase + sectionKey : null
     const pageUrl = siteBase + pathKey
 
     if (sectionKey) {
-      trail.push({ name: sections[sectionKey], url: sectionUrl })
+      trail.push({name: sections[sectionKey], url: sectionUrl})
     }
 
     const lastUrls = trail.map(t => t.url)
     if (!lastUrls.includes(pageUrl) && !trail.some(t => t.name === safePageTitle)) {
-      trail.push({ name: safePageTitle, url: pageUrl })
+      trail.push({name: safePageTitle, url: pageUrl})
     }
   }
 
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: trail.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, item: t.url }))
+    'itemListElement': trail.map((t, i) => ({'@type': 'ListItem', 'position': i + 1, 'name': t.name, 'item': t.url}))
   }
 }
 
 // Test cases
 const tests = [
-  { path: '/', title: 'Abdulkerim — Digital Creator Portfolio' },
-  { path: '/videos/', title: 'Video-Tutorials & Demos | Abdulkerim Sesli' },
-  { path: '/projekte/', title: 'Webentwicklung & Coding Projekte | Abdulkerim Sesli' }
+  {path: '/', title: 'Abdulkerim — Digital Creator Portfolio'},
+  {path: '/videos/', title: 'Video-Tutorials & Demos | Abdulkerim Sesli'},
+  {path: '/projekte/', title: 'Webentwicklung & Coding Projekte | Abdulkerim Sesli'}
 ]
 
 for (const t of tests) {
@@ -53,11 +52,7 @@ for (const t of tests) {
 }
 
 // Scan actual HTML files for BreadcrumbList JSON-LD and report duplicates
-const scanFiles = [
-  'pages/videos/index.html',
-  'pages/projekte/index.html',
-  'index.html'
-]
+const scanFiles = ['pages/videos/index.html', 'pages/projekte/index.html', 'index.html']
 
 function extractJsonLd(content) {
   const scripts = []

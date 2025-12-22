@@ -96,15 +96,14 @@
           '/about/': 'Über'
         }
         const path = currentPath
-        const trail = [{ name: 'Startseite', url: siteBase + '/' }]
+        const trail = [{name: 'Startseite', url: siteBase + '/'}]
 
         // prefer exact section match at path start, else try includes
         const sectionKey =
-          Object.keys(sections).find(k => path === k || path.startsWith(k)) ||
-          Object.keys(sections).find(k => path.includes(k))
+          Object.keys(sections).find(k => path === k || path.startsWith(k)) || Object.keys(sections).find(k => path.includes(k))
 
         if (path !== '/' && sectionKey) {
-          trail.push({ name: sections[sectionKey], url: siteBase + sectionKey })
+          trail.push({name: sections[sectionKey], url: siteBase + sectionKey})
         }
 
         // last element: page title (avoid duplicates, avoid adding page title on homepage and on section index pages)
@@ -113,23 +112,23 @@
           const pageUrl = siteBase + path
 
           if (sectionKey) {
-            trail.push({ name: sections[sectionKey], url: sectionUrl })
+            trail.push({name: sections[sectionKey], url: sectionUrl})
           }
 
           const lastUrls = trail.map(t => t.url)
           if (!lastUrls.includes(pageUrl) && !trail.some(t => t.name === safePageTitle)) {
-            trail.push({ name: safePageTitle, url: pageUrl })
+            trail.push({name: safePageTitle, url: pageUrl})
           }
         }
 
         const breadcrumbLd = {
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',
-          itemListElement: trail.map((t, i) => ({
+          'itemListElement': trail.map((t, i) => ({
             '@type': 'ListItem',
-            position: i + 1,
-            name: t.name,
-            item: t.url
+            'position': i + 1,
+            'name': t.name,
+            'item': t.url
           }))
         }
 
