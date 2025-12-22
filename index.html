@@ -8,14 +8,7 @@
     <link rel="canonical" href="https://abdulkerimsesli.de/" />
     <script src="/content/components/head/head-complete.js" type="module"></script>
 
-    <link
-      rel="stylesheet"
-      href="/content/styles/main.css"
-      media="print"
-      onload="
-        this.media = 'all'
-        this.onload = null
-      " />
+    <link rel="stylesheet" href="/content/styles/main.css" media="print" data-defer="1" />
     <noscript><link rel="stylesheet" href="/content/styles/main.css" /></noscript>
 
     <!-- Critical component CSS that should load synchronously (Hero, TypeWriter) -->
@@ -23,39 +16,18 @@
     <link rel="stylesheet" href="/content/components/typewriter/typewriter.css" />
 
     <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
-    <link
-      rel="stylesheet"
-      href="/content/components/particles/three-earth.css"
-      media="print"
-      onload="
-        this.media = 'all'
-        this.onload = null
-      " />
+    <link rel="stylesheet" href="/content/components/particles/three-earth.css" media="print" data-defer="1" />
     <noscript><link rel="stylesheet" href="/content/components/particles/three-earth.css" /></noscript>
 
     <!-- Main application script (early load for hero/3D init) -->
     <script type="module" src="/content/main.js"></script>
 
     <!-- Deferred Styles (Below-the-Fold) -->
-    <link
-      rel="stylesheet"
-      href="/pages/about/about.css"
-      media="print"
-      onload="
-        this.media = 'all'
-        this.onload = null
-      " />
+    <link rel="stylesheet" href="/pages/about/about.css" media="print" data-defer="1" />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
     <!-- Cards (componentized) - lazy load below-the-fold -->
-    <link
-      rel="stylesheet"
-      href="/content/styles/cards.css"
-      media="print"
-      onload="
-        this.media = 'all'
-        this.onload = null
-      " />
+    <link rel="stylesheet" href="/content/styles/cards.css" media="print" data-defer="1" />
     <noscript><link rel="stylesheet" href="/content/styles/cards.css" /></noscript>
 
     <script src="/content/components/robot-companion/robot-companion.js" type="module"></script>

@@ -499,6 +499,62 @@ document.addEventListener(
 
     schedulePersistentStorageRequest(2200)
 
+    // Activate deferred styles that were marked with data-defer="1"
+    try {
+      document.querySelectorAll('link[rel="stylesheet"][data-defer="1"]').forEach(link => {
+        try {
+          link.media = 'all'
+          link.removeAttribute('data-defer')
+        } catch (e) {
+          /* ignore */
+        }
+      })
+    } catch (e) {
+      /* ignore */
+    }
+
+    // Delegated handlers for retry and share buttons to avoid inline handlers (CSP-compliant)
+    document.addEventListener('click', event => {
+      const target = event.target
+      if (!target) return
+
+      // Retry / reload buttons (class-based)
+      const retry = target.closest && target.closest('.retry-btn')
+      if (retry) {
+        event.preventDefault()
+        try {
+          window.location.reload()
+        } catch (e) {
+          // fallback
+          location.href = location.href
+        }
+        return
+      }
+
+      // Share button (degraded to clipboard if navigator.share not available)
+      const share = target.closest && target.closest('.btn-share')
+      if (share) {
+        event.preventDefault()
+        const shareUrl = share.getAttribute('data-share-url') || 'https://www.youtube.com/@aks.030'
+        const shareData = {
+          title: document.title,
+          text: 'Schau dir diesen Kanal an',
+          url: shareUrl
+        }
+
+        if (navigator.share) {
+          navigator.share(shareData).catch(() => {})
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            try { announce('Link kopiert', {dedupe: true}) } catch (e) {}
+          })
+        } else {
+          try { window.prompt('Link kopieren', shareUrl) } catch (e) {}
+        }
+        return
+      }
+    })
+
     // ===== Service Worker Registration =====
     if ('serviceWorker' in navigator && !ENV.isTest) {
       window.addEventListener('load', () => {
