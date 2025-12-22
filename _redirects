@@ -18,6 +18,7 @@ https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 /pages/gallery/gallery.html     /gallery/     301
 /pages/projekte/projekte.html   /projekte/    301
 /pages/videos/videos.html       /videos/      301
+/pages/about/about.html         /about/       301
 
 # --- 200 Rewrites (Serving Content) ---
 # Note: In Cloudflare Pages, a folder with index.html is automatically served for the folder path.
@@ -46,4 +47,5 @@ https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 /projekte/      /pages/projekte/index.html 200
 /videos/        /pages/videos/index.html   200
 /blog/          /pages/blog/index.html     200
+/about/         /pages/about/about.html    200
 

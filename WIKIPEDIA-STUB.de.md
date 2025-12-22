@@ -7,7 +7,7 @@ Die folgenden Vorlagen basieren vorwiegend auf primären Quellen (eigene Website
 '''Abdulkerim Sesli''' (*1991 in Berlin) ist ein deutscher Webentwickler, Fotograf und Betreiber einer privaten Portfolio‑Website. Seine Website dient primär als digitale Visitenkarte.
 
 === Leben und Werdegang ===
-Abdulkerim Sesli wurde 1991 in Berlin geboren und lebt in Berlin. Er beschäftigt sich mit Webentwicklung, kreativen Web‑Projekten und Fotografie.<ref>{{cite web |title=Über mich |url=https://abdulkerimsesli.de/pages/about/about.html |website=abdulkerimsesli.de |accessdate=20. Dezember 2025}}</ref>
+Abdulkerim Sesli wurde 1991 in Berlin geboren und lebt in Berlin. Er beschäftigt sich mit Webentwicklung, kreativen Web‑Projekten und Fotografie.<ref>{{cite web |title=Über mich |url=https://abdulkerimsesli.de/about/ |website=abdulkerimsesli.de |accessdate=20. Dezember 2025}}</ref>
 
 === Werk und Projekte ===
 Sesli veröffentlicht auf seiner Website persönliche Projekte, Beispiele seiner Fotografie und Experimente mit modernen Webtechnologien wie Three.js und React. Er betreibt ein GitHub‑Profil, auf dem Open‑Source‑Projekte oder Quellcode‑Beispiele zu finden sind.<ref>{{cite web |title=aKs030 (GitHub) |url=https://github.com/aKs030 |website=github.com |accessdate=20. Dezember 2025}}</ref>
