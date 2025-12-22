@@ -234,6 +234,34 @@ function App() {
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
 
+  // Inject CreativeWork JSON-LD for each project (deduplicated)
+  React.useEffect(() => {
+    try {
+      const siteBase = window.location.origin.replace(/\/$/, '')
+      projects.forEach(p => {
+        const key = `project-${p.id}`
+        if (document.querySelector(`script[data-ld="${key}"]`)) return
+        const obj = {
+          '@context': 'https://schema.org',
+          '@type': 'CreativeWork',
+          'name': p.title,
+          'description': p.description,
+          'url': siteBase + '/projekte/#' + key,
+          'author': { '@type': 'Person', 'name': 'Abdulkerim Sesli' },
+          'keywords': Array.isArray(p.tags) ? p.tags.join(', ') : p.tags || '',
+          'about': p.category
+        }
+        const s = document.createElement('script')
+        s.type = 'application/ld+json'
+        s.setAttribute('data-ld', key)
+        s.textContent = JSON.stringify(obj)
+        document.head.appendChild(s)
+      })
+    } catch (e) {
+      /* ignore in environments where DOM is not available */
+    }
+  }, [])
+
   return html`
     <${React.Fragment}>
       <!-- Hero Section -->
