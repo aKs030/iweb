@@ -100,7 +100,7 @@ function getMenuHTML() {
       </defs>
     </svg>
 
-    <a href="/index.html" class="site-logo-link">
+    <a href="/" class="site-logo-link">
       <span class="site-logo__container">
         <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
         <span class="site-subtitle" id="site-subtitle"></span>
@@ -120,7 +120,7 @@ function getMenuHTML() {
     <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
       <ul class="site-menu__list">
         <li>
-          <a href="/index.html">
+          <a href="/">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-house"></use>
             </svg>
@@ -264,7 +264,7 @@ function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container')
   if (logoContainer) {
     logoContainer.addEventListener('contextmenu', () => {
-      window.location.href = '/index.html'
+      window.location.href = '/'
     })
   }
 }
