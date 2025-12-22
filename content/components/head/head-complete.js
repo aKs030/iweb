@@ -155,6 +155,30 @@
         }
         if (existingScripts.has(abs)) script.remove()
       })
+
+      // Additionally: dedupe JSON-LD by @type — if the fragment provides a JSON-LD type, remove existing scripts of the same type
+      try {
+        const fragLd = Array.from(fragment.querySelectorAll('script[type="application/ld+json"]'))
+        fragLd.forEach(s => {
+          try {
+            const parsed = JSON.parse(s.textContent)
+            const types = []
+            if (Array.isArray(parsed)) parsed.forEach(it => it && it['@type'] && types.push(it['@type']))
+            else if (parsed && parsed['@type']) types.push(parsed['@type'])
+
+            types.forEach(t => {
+              Array.from(document.querySelectorAll('script[type="application/ld+json"]')).forEach(existing => {
+                try {
+                  const ej = JSON.parse(existing.textContent)
+                  const existingTypes = Array.isArray(ej) ? ej.map(x => x['@type']) : [ej['@type']]
+                  if (existingTypes.includes(t)) existing.remove()
+                } catch (e) { /* ignore parse errors */ }
+              })
+            })
+          } catch (e) { /* ignore invalid JSON-LD */ }
+        })
+      } catch (e) { /* ignore */ }
+
     } catch (e) {
       console.warn('[Head-Loader] Dedupe failed:', e)
     }
