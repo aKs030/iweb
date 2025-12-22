@@ -76,6 +76,18 @@ const ThreeEarthManager = (() => {
         log.debug('Device detection failed, using defaults', e)
       }
 
+        // Quick WebGL support check to avoid repeated noisy failures in sandboxed/headless contexts
+        if (!__three_webgl_tested) {
+          __three_webgl_tested = true
+          if (!supportsWebGL()) {
+            log.warn('WebGL not supported in this environment; skipping Three.js initialization')
+            showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'))
+            // mark cleanup and exit gracefully
+            sharedCleanupManager.cleanupSystem('three-earth')
+            return cleanup
+          }
+        }
+
       registerParticleSystem('three-earth', {type: 'three-earth'})
 
       // Register as a potentially blocking module while initializing
@@ -360,6 +372,29 @@ const ThreeEarthManager = (() => {
 })()
 
 // ===== Helpers =====
+
+function supportsWebGL() {
+  try {
+    const canvas = document.createElement('canvas')
+    // Prefer WebGL2 when available
+    const ctx2 = canvas.getContext('webgl2', {failIfMajorPerformanceCaveat: true})
+    if (ctx2) {
+      try {
+        ctx2.getExtension && ctx2.getExtension('EXT_color_buffer_float')
+      } catch {}
+      return true
+    }
+    const ctx = canvas.getContext('webgl', {failIfMajorPerformanceCaveat: true}) || canvas.getContext('experimental-webgl')
+    if (ctx) return true
+    return false
+  } catch (e) {
+    return false
+  }
+}
+
+// Prevent repeated WebGL init attempts in environments where WebGL is unavailable
+let __three_webgl_tested = false
+
 
 function detectDeviceCapabilities() {
   try {
