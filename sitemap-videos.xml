@@ -12,12 +12,12 @@
 
     <!-- Video 1: Interaktive Erde -->
     <video:video>
-      <video:thumbnail_loc>https://i.ytimg.com/vi/1bL8bZd6cpY/maxresdefault.jpg</video:thumbnail_loc>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg</video:thumbnail_loc>
       <video:title>Projektvorstellung: Interaktive Erde – Abdulkerim Sesli</video:title>
       <video:description>Projektvorstellung: Interaktive 3D-Erde mit WebGL und Partikelsystemen. Ein vollständiger Einblick in die Entwicklung mit Three.js, React und modernen Webtechnologien.</video:description>
       <video:content_loc>https://youtu.be/1bL8bZd6cpY</video:content_loc>
       <video:player_loc>https://www.youtube.com/embed/1bL8bZd6cpY</video:player_loc>
-      <video:duration>300</video:duration>
+      <video:duration>9</video:duration>
       <video:publication_date>2025-12-20T00:00:00+01:00</video:publication_date>
       <video:family_friendly>yes</video:family_friendly>
       <video:requires_subscription>no</video:requires_subscription>
@@ -33,12 +33,12 @@
 
     <!-- Video 2: Fotoshooting Making-of -->
     <video:video>
-      <video:thumbnail_loc>https://i.ytimg.com/vi/rXMLVt9vhxQ/maxresdefault.jpg</video:thumbnail_loc>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg</video:thumbnail_loc>
       <video:title>Making-of: Fotoshooting – Abdulkerim Sesli</video:title>
       <video:description>Making-of eines professionellen Fotoshootings. Einblicke in Bildkomposition, Beleuchtung und Nachbearbeitung.</video:description>
       <video:content_loc>https://youtu.be/rXMLVt9vhxQ</video:content_loc>
       <video:player_loc>https://www.youtube.com/embed/rXMLVt9vhxQ</video:player_loc>
-      <video:duration>180</video:duration>
+      <video:duration>11</video:duration>
       <video:publication_date>2011-01-18T00:00:00+01:00</video:publication_date>
       <video:family_friendly>yes</video:family_friendly>
       <video:requires_subscription>no</video:requires_subscription>
