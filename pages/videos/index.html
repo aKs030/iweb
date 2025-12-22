@@ -14,6 +14,27 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/content/assets/img/icons/icon-192.png" />
     <meta name="theme-color" content="#000000" />
     <script src="/content/components/head/head-complete.js" type="module"></script>
+
+    <!-- Server-side Breadcrumbs JSON-LD and WebPage (mainEntity) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {"@type":"ListItem","position":1,"name":"Startseite","item":"https://abdulkerimsesli.de/"},
+          {"@type":"ListItem","position":2,"name":"Videos","item":"https://abdulkerimsesli.de/videos/"}
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "url": "https://abdulkerimsesli.de/videos/",
+        "name": "Videos — Abdulkerim Sesli",
+        "mainEntity": {"@type": "ItemList", "@id": "https://abdulkerimsesli.de/videos/#videos-list"}
+      }
+    </script>
   </head>
   <body>
     <header class="site-header">
@@ -84,6 +105,7 @@
                 "description": "Projektvorstellung: Interaktive 3D-Erde mit WebGL und Partikelsystemen.",
                 "thumbnailUrl": "https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg",
                 "uploadDate": "2025-12-20",
+                "duration": "PT9S",
                 "contentUrl": "https://youtu.be/1bL8bZd6cpY",
                 "embedUrl": "https://www.youtube.com/embed/1bL8bZd6cpY",
                 "publisher": {
@@ -123,6 +145,7 @@
                 "description": "Making-of: Bildkomposition, Beleuchtung und Nachbearbeitung.",
                 "thumbnailUrl": "https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg",
                 "uploadDate": "2011-01-18",
+                "duration": "PT11S",
                 "contentUrl": "https://youtu.be/rXMLVt9vhxQ",
                 "embedUrl": "https://www.youtube.com/embed/rXMLVt9vhxQ",
                 "publisher": {
@@ -148,6 +171,7 @@
                   "name": "Interaktive Erde – Abdulkerim Sesli",
                   "thumbnailUrl": "https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg",
                   "uploadDate": "2025-12-20",
+                  "duration": "PT9S",
                   "contentUrl": "https://youtu.be/1bL8bZd6cpY",
                   "embedUrl": "https://www.youtube.com/embed/1bL8bZd6cpY",
                   "publisher": {"@type": "Person", "name": "Abdulkerim Sesli"}
@@ -161,6 +185,7 @@
                   "name": "Making-of Fotoshooting – Abdulkerim Sesli",
                   "thumbnailUrl": "https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg",
                   "uploadDate": "2011-01-18",
+                  "duration": "PT11S",
                   "contentUrl": "https://youtu.be/rXMLVt9vhxQ",
                   "embedUrl": "https://www.youtube.com/embed/rXMLVt9vhxQ",
                   "publisher": {"@type": "Person", "name": "Abdulkerim Sesli"}
