@@ -121,34 +121,3 @@ npx eslint .
 code --install-extension esbenp.prettier-vscode
 code --install-extension dbaeumer.vscode-eslint
 ```
-
-### Cloudflare helper (Local testing) 🔐
-
-Use a server-side proxy or the CLI helper to avoid exposing Cloudflare tokens in client HTML.
-
-1) Quick CLI (one-off purge):
-
-```bash
-# purge entire cache
-CF_API_TOKEN=<your_token> CF_ZONE_ID=<your_zone> npm run cf:purge
-# purge specific files
-CF_API_TOKEN=<your_token> CF_ZONE_ID=<your_zone> node scripts/cf_purge.js --files https://example.com/path1 https://example.com/path2
-```
-
-2) Start the proxy (for local testing):
-
-```bash
-# copy .env.example -> .env and populate CF_API_TOKEN, CF_ZONE_ID, CF_PROXY_SECRET
-CF_API_TOKEN=... CF_ZONE_ID=... CF_PROXY_SECRET=... npm run cf:proxy
-# then call (with the same secret header)
-curl -X POST "http://localhost:3001/api/cf/purge" \
-  -H "Content-Type: application/json" \
-  -H "x-proxy-secret: <your-secret>" \
-  -d '{"purge_everything":true}'
-```
-
-Security notes:
-- Keep `.env` out of source control (it's already in `.gitignore`).
-- Use minimal-scope Cloudflare tokens for tests (Zone:Cache Purge only) and rotate them after use.
-- For production, run the proxy behind proper auth (not publicly accessible).
-
