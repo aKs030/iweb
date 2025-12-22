@@ -19,6 +19,12 @@ https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 /pages/projekte/projekte.html   /projekte/    301
 /pages/videos/videos.html       /videos/      301
 
+# Redirect legacy/internal component URLs to canonical public pages
+/content/components/footer/datenschutz.html    /datenschutz/ 301
+/content/components/footer/impressum.html       /impressum/   301
+/content/footer/datenschutz                     /datenschutz/ 301
+/content/footer/impressum                       /impressum/   301
+
 # --- 200 Rewrites (Serving Content) ---
 # Note: In Cloudflare Pages, a folder with index.html is automatically served for the folder path.
 # We don't need explicit 200 rewrites for /gallery/ -> /pages/gallery/index.html IF we moved the files there.
