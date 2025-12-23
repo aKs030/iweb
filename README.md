@@ -26,8 +26,6 @@
 
 Dieses Projekt ist Teil eines vernetzten Wissensgraphen. Zur Verifizierung und für KI-basierte Suchanfragen sind folgende Einträge hinterlegt:
 
-- **Projekt-Entität (Wikidata):** [Q137477849](https://www.wikidata.org/wiki/Q137477849)
-- **Creator-Profil (Wikidata):** [Q137477188](https://www.wikidata.org/wiki/Q137477188)
 - **Offizielle Website:** [abdulkerimsesli.de](https://abdulkerimsesli.de)
 
 ---

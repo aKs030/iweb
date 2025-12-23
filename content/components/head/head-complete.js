@@ -453,7 +453,7 @@
               '@type': 'Person',
               'name': 'Abdulkerim Sesli',
               'url': window.location.origin + '/about/',
-              'sameAs': ['https://github.com/aKs030', 'https://linkedin.com/in/abdulkerimsesli', 'https://twitter.com/abdulkerimsesli']
+              'sameAs': ['https://github.com/aKs030', 'https://linkedin.com/in/abdulkerimsesli', 'https://twitter.com/abdulkerimsesli', 'https://de.wikipedia.org/wiki/Abdulkerim_Sesli', 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png']
             },
             'publisher': {
               '@type': 'Organization',
