@@ -112,7 +112,7 @@ Erlaubte Kategorien: `all`, `nature`, `urban`, `travel`, `landscape`
 
 ## 🔐 Sicherheit & PWA
 
-- ✅ In `sw.js` für Offline-Support gecacht
+- ✅ Hinweis: Offline-Service Worker wurde entfernt (Dezember 2025).
 - ✅ CSP-kompatibel (Tailwind CDN in Head erlaubt)
 - ✅ Responsive und mobile-optimiert
 - ✅ Accessibility: ARIA-Labels auf allen Buttons
@@ -164,7 +164,7 @@ Beim Update von Bildern/Features:
 
 - [ ] Neue Fotos mit vollständigen Metadaten hinzufügen
 - [ ] Kategorien validieren
-- [ ] Service Worker Version bumpen (sw.js)
+- [ ] Tests durchführen (Filter, Search, Zoom, Download)
 - [ ] Tests durchführen (Filter, Search, Zoom, Download)
 - [ ] Responsive auf Mobile testen
 

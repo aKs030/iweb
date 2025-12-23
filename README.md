@@ -87,7 +87,6 @@ iweb/
 ├── pages/                 # Modulare Seiten-Struktur
 │   ├── gallery/           # React-basierte Foto-Galerie (Lazy Loaded)
 │   └── projekte/          # Projekt-Showcase
-├── sw.js                  # Service Worker (Stale-While-Revalidate Strategie)
 └── manifest.json          # PWA Konfiguration
 ```
 
@@ -95,13 +94,7 @@ iweb/
 
 ## 🔧 PWA & Service Worker
 
-Smartes Caching:
-
-- **Cache-First**: Assets, Bilder & Fonts
-- **Network-First**: Kritische HTML-Dokumente
-- **Offline-Fallback**: Automatisches Routing zur `offline.html`
-
-Siehe `sw.js` für Implementierungsdetails.
+Hinweis: Der Service Worker wurde entfernt; Offline-Caching über `sw.js` ist nicht mehr aktiv (Dezember 2025).
 
 ---
 

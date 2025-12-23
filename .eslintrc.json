@@ -26,7 +26,7 @@
       "rules": {"no-console": "off"}
     },
     {
-      "files": ["sw.js", "content/main.js"],
+      "files": ["content/main.js"],
       "rules": {"no-console": "off"}
     }
   ]

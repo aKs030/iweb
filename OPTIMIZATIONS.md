@@ -73,28 +73,15 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 
 ---
 
-## ✅ 5. Service Worker für Offline-Caching hinzugefügt
+## ✅ 5. Service Worker (entfernt)
 
-**Neue Dateien:**
+Hinweis: Der zuvor implementierte Service Worker (`sw.js`) wurde entfernt (Dezember 2025). Relevante Änderungen:
 
-- `sw.js` - Service Worker mit intelligenten Cache-Strategien
-- `offline.html` - Offline-Fallback-Seite
+- `sw.js` gelöscht
+- `content/main.js`: Ein einmaliger Cleanup wurde hinzugefügt, der vorhandene Registrierungen und Caches entfernt
+- `offline.html`: optional — aktuell noch vorhanden (lösche auf Wunsch)
 
-**Geänderte Dateien:**
-
-- `content/main.js` - Service Worker Registrierung hinzugefügt
-- `content/shared-utilities.js` - `SW_UPDATE_AVAILABLE` Event hinzugefügt
-
-**Features:**
-
-- ✅ Cache-First für Bilder & Fonts
-- ✅ Network-First für HTML
-- ✅ Stale-While-Revalidate für CSS/JS
-- ✅ Automatische Cache-Bereinigung (Limits: 50 dynamic, 100 images)
-- ✅ Update-Benachrichtigungen
-- ✅ Offline-Funktionalität
-
-**Vorteil:** PWA-Support, schnellere Ladezeiten, Offline-Funktionalität.
+**Konsequenz:** Offline-Caching via Service Worker ist deaktiviert; Seiten funktionieren normal ohne SW-Fallback.
 
 ---
 
@@ -127,7 +114,7 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 
 - ECMAVersion: 2022 → 2024
 - Neue Rules: `no-eval`, `no-implied-eval`, `prefer-const`, `no-var`
-- Overrides für `sw.js` und `content/main.js` (console.\* erlaubt)
+- Overrides für `content/main.js` (console.\* erlaubt)
 
 ### Dokumentation aktualisiert
 
@@ -163,11 +150,13 @@ Alle angeforderten Optimierungen wurden erfolgreich implementiert:
 
 ### Vor dem Deployment:
 
-1. **Service Worker Version**
+1. **Cache & Offline**
 
-   ```javascript
-   // In sw.js - Version erhöhen bei Änderungen
-   const CACHE_VERSION = 'iweb-v1.0.0'
+   Hinweis: Der Service Worker wurde entfernt. Stelle sicher, dass keine SW-bezogenen Caches oder Fallbacks in deinem Hosting-Setup bleiben.
+
+   ```bash
+   # Lokale Kontrolle (optional): prüfe Service Worker-Registrierungen in der Browser-Console
+   navigator.serviceWorker.getRegistrations().then(r=>console.log(r))
    ```
 
 2. **CSP-Header konfigurieren**
