@@ -100,7 +100,7 @@
     const escapeHTML = str =>
       String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m])
 
-    const html = `
+    let html = `
 <!--
   Modern Head Template
   - Static Meta Tags only
