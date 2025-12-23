@@ -108,7 +108,7 @@ function BlogApp() {
           'publisher': {
             '@type': 'Organization',
             '@id': 'https://abdulkerimsesli.de/#organization',
-            'name': 'Abdulkerim — Digital Creator Portfolio',
+            'name': 'Abdulkerim — Fotograf & Webentwickler',
             'logo': {'@type': 'ImageObject', 'url': 'https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png'}
           },
           'articleBody': post.content
