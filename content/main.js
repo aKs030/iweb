@@ -623,23 +623,30 @@ document.addEventListener(
             swSnippet = `SNIPPET_ERROR: ${String(e)}`
           }
 
+          let registration = null
           try {
-            const registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
-            log.info('Service Worker registered:', registration.scope)
+            registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
+            log.info('Service Worker registered:', registration && registration.scope)
           } catch (error) {
             log.error('Service Worker registration failed:', {
-              message: error.message,
-              stack: error.stack,
+              name: error && error.name,
+              message: error && error.message,
+              stack: error && error.stack,
               swUrl,
-              href: location.href
+              href: location.href,
+              userAgent: navigator.userAgent || null,
+              inIframe: (window.self !== window.top)
             })
             try {
               const payload = JSON.stringify({
                 event: 'sw_registration_failed',
-                message: error.message,
-                stack: error.stack,
+                name: error && error.name,
+                message: error && error.message,
+                stack: error && error.stack,
                 swUrl,
                 href: location.href,
+                userAgent: navigator.userAgent || null,
+                inIframe: (window.self !== window.top),
                 ts: Date.now()
               })
               if (navigator.sendBeacon) {
@@ -657,22 +664,24 @@ document.addEventListener(
           }
 
           // Check for updates periodically
-          if (registration.waiting) {
+          if (registration && registration.waiting) {
             log.info('Service Worker update available')
           }
 
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  log.info('New Service Worker available - refresh to update')
-                  // Optional: Show update notification to user
-                  fire(EVENTS.SW_UPDATE_AVAILABLE)
-                }
-              })
-            }
-          })
+          if (registration) {
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    log.info('New Service Worker available - refresh to update')
+                    // Optional: Show update notification to user
+                    fire(EVENTS.SW_UPDATE_AVAILABLE)
+                  }
+                })
+              }
+            })
+          }
         } catch (error) {
           log.warn('Service Worker registration failed:', error)
           try {
