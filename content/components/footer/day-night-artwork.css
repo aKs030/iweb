@@ -171,39 +171,39 @@
   height: 6px;
   background: linear-gradient(to bottom, #ffd700, transparent);
   transform-origin: bottom center;
+  transform: rotate(var(--ray-rotation)) translateY(-12px);
 }
 
-/* FIX: Simplified ray positioning */
 .ray-1 {
-  transform: rotate(0deg) translateY(-12px);
+  --ray-rotation: 0deg;
 }
 
 .ray-2 {
-  transform: rotate(45deg) translateY(-12px);
+  --ray-rotation: 45deg;
 }
 
 .ray-3 {
-  transform: rotate(90deg) translateY(-12px);
+  --ray-rotation: 90deg;
 }
 
 .ray-4 {
-  transform: rotate(135deg) translateY(-12px);
+  --ray-rotation: 135deg;
 }
 
 .ray-5 {
-  transform: rotate(180deg) translateY(-12px);
+  --ray-rotation: 180deg;
 }
 
 .ray-6 {
-  transform: rotate(225deg) translateY(-12px);
+  --ray-rotation: 225deg;
 }
 
 .ray-7 {
-  transform: rotate(270deg) translateY(-12px);
+  --ray-rotation: 270deg;
 }
 
 .ray-8 {
-  transform: rotate(315deg) translateY(-12px);
+  --ray-rotation: 315deg;
 }
 
 [data-theme='dark'] .sun {
