@@ -17,9 +17,6 @@ Disallow: /content/vendor/
 Disallow: /content/config/
 Disallow: /content/utils/
 Disallow: /*.json$
-Disallow: /*?
-Disallow: /*.js$
-Disallow: /*.css$
 Disallow: /sw.js
 
 # Google-specific rules
