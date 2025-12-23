@@ -17,6 +17,7 @@
       content="Entdecke interaktive Web-Experimente und Business-Anwendungen. Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design." />
     <link rel="canonical" href="https://abdulkerimsesli.de/projekte/" />
     <script src="/content/components/head/head-complete.js" type="module"></script>
+    <script src="/content/components/head/head-inline.js"></script>
 
     <!-- React Dependencies (Production Version für bessere Performance) -->
     <!-- Load React & ReactDOM from jsDelivr (allowed by CSP in content/head/head.html) -->
@@ -566,10 +567,6 @@
     </script>
   </head>
   <body>
-    <header class="site-header">
-      <div id="menu-container"></div>
-    </header>
-
     <!-- 3D ERDE -->
     <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
       <div class="three-earth-error hidden"><p>WebGL Fehler</p></div>
@@ -581,11 +578,6 @@
 
     <!-- REACT ROOT (Main Content) -->
     <div id="root"></div>
-
-    <!-- Optional footer trigger zone -->
-    <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
-    <!-- Footer -->
-    <div id="footer-container" data-footer-src="/content/components/footer/footer"></div>
 
     <!-- Logic Script -->
     <script type="module">
@@ -695,7 +687,5 @@
         window.addEventListener('pointerdown', userTrigger, {passive: true})
       })
     </script>
-
-    <script src="/content/components/footer/footer-complete.js" type="module"></script>
   </body>
 </html>

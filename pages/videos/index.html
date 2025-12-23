@@ -6,7 +6,6 @@
 
     <link rel="stylesheet" href="/pages/videos/videos.css" />
 
-    <!-- Shared Head -->
     <!-- Server-side favicons for crawlers and browsers -->
     <link rel="icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/content/assets/img/icons/icon-32.png" />
@@ -17,6 +16,7 @@
     <meta name="description" content="Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes." />
     <link rel="canonical" href="https://abdulkerimsesli.de/videos/" />
     <script src="/content/components/head/head-complete.js" type="module"></script>
+    <script src="/content/components/head/head-inline.js"></script>
 
     <!-- Server-side Breadcrumbs JSON-LD and WebPage (mainEntity) -->
     <script type="application/ld+json">
@@ -38,13 +38,8 @@
         "mainEntity": {"@type": "ItemList", "@id": "https://abdulkerimsesli.de/videos/#videos-list"}
       }
     </script>
-    <!-- deploy: cache-bust 2025-12-22T20:44:47Z -->
   </head>
   <body>
-    <header class="site-header">
-      <div id="menu-container"></div>
-    </header>
-
     <main class="videos-main">
       <div class="container">
         <div id="videos-status" class="visually-hidden" aria-live="polite"></div>
@@ -215,17 +210,8 @@
       </div>
     </main>
 
-    <!-- Optional: Client-side split-key config (gitignored)
-          To enable, copy the example part files to `/content/config/videos-part-a.js` and `/content/config/videos-part-b.js`,
-          Base64-encode each key fragment (e.g. via `btoa('fragment')`) and place them as default exports. The loader will assemble them.
-          WARNING: This is obfuscation only — not secure. Prefer a server-side proxy if possible.
-        -->
-    <!-- Split-key loader assembles YOUTUBE_API_KEY from two gitignored parts -->
     <script type="module" src="/content/config/videos-config-loader.js" defer></script>
 
     <script type="module" src="/pages/videos/videos.js"></script>
-
-    <div id="footer-container" data-footer-src="/content/components/footer/footer"></div>
-    <script src="/content/components/footer/footer-complete.js" type="module"></script>
   </body>
 </html>
