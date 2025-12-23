@@ -1,6 +1,6 @@
 == Benutzer:Abdulkerim_sesli/Sandbox – Entwurf für Artikel "Abdulkerim Sesli" ==
 
-'''Abdulkerim Sesli''' (geboren 1991 in Berlin) ist ein deutscher Webentwickler, Fotograf und Digital Creator. Er betreibt das Portfolio "Abdulkerim — Fotograf & Webentwickler Portfolio", in dem er Projekte aus den Bereichen Webentwicklung, interaktive Visualisierungen und Fotografie veröffentlicht.<ref>https://abdulkerimsesli.de/about/ (Abruf: 2025-12-23)</ref>
+'''Abdulkerim Sesli''' (geboren 1991 in Berlin) ist ein deutscher Webentwickler, Fotograf und Digital Creator. Er betreibt das Portfolio "Abdulkerim — Digital Creator Portfolio", in dem er Projekte aus den Bereichen Webentwicklung, interaktive Visualisierungen und Fotografie veröffentlicht.<ref>https://abdulkerimsesli.de/about/ (Abruf: 2025-12-23)</ref>
 
 === Leben und Werk ===
 Sesli stammt aus Berlin und arbeitet als selbstständiger Entwickler und Kreativer. Er nutzt moderne Webtechnologien wie JavaScript, React und Three.js, um interaktive Projekte zu realisieren und multimediale Inhalte zu veröffentlichen. Zu den auf seiner Website vorgestellten Projekten zählen u. a. "Schere Stein Papier", "Zahlen Raten" und "Color Changer".<ref>https://abdulkerimsesli.de/projekte/ (Abruf: 2025-12-23)</ref>
