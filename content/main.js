@@ -517,17 +517,55 @@ document.addEventListener(
     schedulePersistentStorageRequest(2200)
 
     // Activate deferred styles that were marked with data-defer="1"
+    const activateDeferredStyles = () => {
+      try {
+        const links = document.querySelectorAll('link[rel="stylesheet"][data-defer="1"]')
+        links.forEach(link => {
+          try {
+            link.media = 'all'
+            link.removeAttribute('data-defer')
+          } catch (e) {
+            /* ignore individual link errors */
+          }
+        })
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
     try {
-      document.querySelectorAll('link[rel="stylesheet"][data-defer="1"]').forEach(link => {
-        try {
-          link.media = 'all'
-          link.removeAttribute('data-defer')
-        } catch (e) {
-          /* ignore */
+      // Try activating now (covers case where links are already in DOM)
+      activateDeferredStyles()
+
+      // Ensure activation after DOM is parsed and on full load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activateDeferredStyles, {once: true})
+      } else {
+        // In case script executed after parsing, ensure microtask activation
+        setTimeout(activateDeferredStyles, 0)
+      }
+      window.addEventListener('load', activateDeferredStyles)
+
+      // Observe head for dynamically inserted deferred link elements
+      const headObserver = new MutationObserver(mutations => {
+        for (const m of mutations) {
+          for (const node of m.addedNodes) {
+            try {
+              if (node.nodeType === 1 && node.matches && node.matches('link[rel="stylesheet"][data-defer="1"]')) {
+                node.media = 'all'
+                node.removeAttribute('data-defer')
+              }
+            } catch (err) {
+              /* ignore per-node errors */
+            }
+          }
         }
       })
+      headObserver.observe(document.head || document.documentElement, {childList: true, subtree: true})
+      // Disconnect after full load to avoid long-running observers
+      window.addEventListener('load', () => headObserver.disconnect(), {once: true})
     } catch (e) {
-      /* ignore */
+      /* ignore overall activation errors */
     }
 
     // Delegated handlers for retry and share buttons to avoid inline handlers (CSP-compliant)
