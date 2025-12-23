@@ -221,7 +221,7 @@ function shareChannel() {
 
     // Collect all video IDs and fetch details (duration, stats)
     const vidIds = items.map(it => it.snippet.resourceId.videoId).filter(Boolean)
-    let detailsMap = {}
+    const detailsMap = {}
     try {
       if (vidIds.length) {
         const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${vidIds.join(',')}&key=${apiKey}`
