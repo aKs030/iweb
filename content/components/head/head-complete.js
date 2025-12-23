@@ -95,117 +95,94 @@
   const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default
   const pageUrl = window.location.href.split('#')[0]
 
-  // --- 2. HTML HEAD INJECTION ---
+  // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
   try {
     const escapeHTML = str =>
       String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m])
 
-    let html = `
-<!--
-  Modern Head Template
-  - Static Meta Tags only
-  - No bloated inline JSON-LD (handled by head-complete.js)
-  - Security & Performance headers optimized
--->
-
-<!-- Base -->
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
-<!-- Google Gtag (Base Loader) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-1036079663"></script>
-<script src="/content/components/head/head-inline.js" defer></script>
-
-<!-- Dynamic Content Placeholders (Filled by head-complete.js) -->
-<title>{{PAGE_TITLE}}</title>
-<meta name="description" content="{{PAGE_DESCRIPTION}}" />
-
-<!-- Core SEO -->
-<meta name="robots" content="index, follow, max-image-preview:large" />
-<meta name="language" content="de-DE" />
-<meta name="author" content="Abdulkerim Sesli" />
-<meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs" />
-<link rel="canonical" href="https://abdulkerimsesli.de/" />
-
-<!-- Geo / Local SEO -->
-<meta name="geo.region" content="DE-BE" />
-<meta name="geo.placename" content="Berlin" />
-<meta name="geo.position" content="52.5200;13.4050" />
-<meta name="ICBM" content="52.5200, 13.4050" />
-
-<!-- Social Media / Open Graph Base -->
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Abdulkerim — Fotograf & Webentwickler" />
-<meta property="og:locale" content="de_DE" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:creator" content="@abdulkerimsesli" />
-
-<!-- Icons -->
-<link rel="icon" href="/content/assets/img/icons/favicon.svg" type="image/svg+xml" />
-<link rel="icon" type="image/png" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
-<link rel="apple-touch-icon" href="/content/assets/img/icons/icon-192.png" />
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#2c2c2e" media="(prefers-color-scheme: dark)" />
-
-<!-- CSS Resources -->
-<link rel="stylesheet" href="/content/styles/root.css" />
-<link rel="stylesheet" href="/content/components/menu/menu.css" />
-<link rel="stylesheet" href="/content/components/footer/footer.css" />
-
-<!-- Font Loading Strategy (No Preload to avoid warnings, Font-Display Swap in CSS) -->
-<style>
-  @font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-    src: url('/content/assets/fonts/InterVariable.woff2') format('woff2-variations');
-  }
-  body {
-    font-family: 'Inter', sans-serif;
-  }
-</style>
-
-<!-- Scripts -->
-<script type="module" src="/content/main.js"></script>
-
-<!-- Note: Structured Data (Schema.org) is generated dynamically by head-complete.js -->
-
-`
-
-    html = html.replace(/\{\{PAGE_TITLE\}\}/g, escapeHTML(pageData.title))
-    html = html.replace(/\{\{PAGE_DESCRIPTION\}\}/g, escapeHTML(pageData.description))
-
-    const range = document.createRange()
-    const fragment = range.createContextualFragment(html)
-
-    const uniqueSelectors = ['title', 'meta[name="description"]', 'meta[property="og:title"]', 'meta[property="og:description"]']
-    uniqueSelectors.forEach(sel => {
-      const el = document.querySelector(sel)
-      if (el) el.remove()
-    })
-
-    document.head.prepend(fragment)
-
-    const canonical = document.querySelector('link[rel="canonical"]') || document.createElement('link')
-    if (!canonical.parentNode) {
-      canonical.rel = 'canonical'
-      document.head.appendChild(canonical)
+    const upsertMeta = (nameOrProperty, content, isProperty = false) => {
+      if (!content) return
+      const selector = isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`
+      let el = document.head.querySelector(selector)
+      if (el) {
+        el.setAttribute(isProperty ? 'property' : 'name', nameOrProperty)
+        el.setAttribute('content', content)
+      } else {
+        el = document.createElement('meta')
+        if (isProperty) el.setAttribute('property', nameOrProperty)
+        else el.setAttribute('name', nameOrProperty)
+        el.setAttribute('content', content)
+        document.head.appendChild(el)
+      }
     }
-    canonical.href = pageUrl
 
-    // [GELB] Sicherstellen, dass Favicon für Browser-Tabs da ist (Google nutzt dies auch als Fallback)
-    const existingIcon = document.querySelector('link[rel="icon"]')
-    if (!existingIcon) {
+    const upsertLink = (rel, href) => {
+      if (!href) return
+      let el = document.head.querySelector(`link[rel="${rel}"]`)
+      if (el) el.setAttribute('href', href)
+      else {
+        el = document.createElement('link')
+        el.setAttribute('rel', rel)
+        el.setAttribute('href', href)
+        document.head.appendChild(el)
+      }
+    }
+
+    // Title: only override if we have a non-empty title
+    if (pageData.title && pageData.title.trim()) document.title = pageData.title
+
+    // Meta descriptions and core tags
+    upsertMeta('description', pageData.description)
+    upsertMeta('robots', 'index, follow, max-image-preview:large')
+    upsertMeta('language', 'de-DE')
+    upsertMeta('author', 'Abdulkerim Sesli')
+    upsertMeta('twitter:card', 'summary_large_image')
+    upsertMeta('twitter:creator', '@abdulkerimsesli')
+
+    // OpenGraph minimal set (property)
+    upsertMeta('og:title', pageData.title, true)
+    upsertMeta('og:description', pageData.description, true)
+    upsertMeta('og:locale', 'de_DE', true)
+    if (pageData.image) upsertMeta('og:image', pageData.image, true)
+
+    // Canonical: prefer fixed production origin for known hosts, else use runtime pageUrl
+    try {
+      const PROD_HOSTS = ['abdulkerimsesli.de', 'www.abdulkerimsesli.de']
+      const hostname = window.location.hostname.toLowerCase()
+      const ensureTrailingSlash = p => (p.endsWith('/') ? p : p + '/')
+
+      // Local force flag: when present on <html>, always use production origin
+      const forceProdFlag = !!(
+        document.documentElement &&
+        document.documentElement.getAttribute &&
+        document.documentElement.getAttribute('data-force-prod-canonical')
+      )
+
+      const canonicalHref = forceProdFlag
+        ? `${BASE_URL}${ensureTrailingSlash(window.location.pathname)}`
+        : PROD_HOSTS.includes(hostname)
+          ? `${BASE_URL}${ensureTrailingSlash(window.location.pathname)}`
+          : pageUrl
+
+      const canonicalEl = document.head.querySelector('link[rel="canonical"]')
+      if (canonicalEl) canonicalEl.setAttribute('href', canonicalHref)
+      else upsertLink('canonical', canonicalHref)
+    } catch (e) {
+      // fallback to pageUrl on any unexpected error
+      const canonicalEl = document.head.querySelector('link[rel="canonical"]')
+      if (canonicalEl) canonicalEl.setAttribute('href', pageUrl)
+      else upsertLink('canonical', pageUrl)
+    }
+
+    // Ensure favicon exists (minimal, do not re-inject if present)
+    if (!document.head.querySelector('link[rel="icon"]')) {
       const iconLink = document.createElement('link')
       iconLink.rel = 'icon'
       iconLink.href = BRAND_DATA.logo
       document.head.appendChild(iconLink)
     }
   } catch (e) {
-    console.warn('[Head-Loader] Template Warning:', e)
+    console.warn('[Head-Loader] lightweight head update failed:', e)
   }
 
   // --- 3. SCHEMA GRAPH GENERATION ---
@@ -298,13 +275,20 @@
       })
       .filter(Boolean)
 
-    // Fallback: Wenn keine echten FAQs da sind, injizieren wir die Business-Visitenkarte
+    // Fallback: Wenn keine echten FAQs da sind, nur auf der Startseite oder
+    // wenn explizit angefragt (z. B. data-inject-business-faq) Business-FAQs injizieren.
     if (faqNodes.length === 0) {
-      faqNodes = BUSINESS_FAQS.map(item => ({
-        '@type': 'Question',
-        'name': item.q,
-        'acceptedAnswer': {'@type': 'Answer', 'text': item.a}
-      }))
+      const isHomepage = window.location.pathname === '/' || window.location.pathname === ''
+      const hasBusinessFaqFlag = !!document.querySelector('[data-inject-business-faq]')
+      if (isHomepage || hasBusinessFaqFlag) {
+        faqNodes = BUSINESS_FAQS.map(item => ({
+          '@type': 'Question',
+          'name': item.q,
+          'acceptedAnswer': {'@type': 'Answer', 'text': item.a}
+        }))
+      } else {
+        faqNodes = []
+      }
     }
 
     if (faqNodes.length > 0) {
@@ -327,16 +311,36 @@
     graph.push({'@type': 'BreadcrumbList', '@id': ID.breadcrumb, 'itemListElement': crumbs})
 
     // INJECTION
-    const script = document.createElement('script')
-    script.type = 'application/ld+json'
-    script.textContent = JSON.stringify({'@context': 'https://schema.org', '@graph': graph})
-    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => s.remove())
-    document.head.appendChild(script)
+    const ldId = 'head-complete-ldjson'
+    let script = document.getElementById(ldId)
+    const payload = JSON.stringify({'@context': 'https://schema.org', '@graph': graph})
+    if (script) {
+      script.textContent = payload
+    } else {
+      script = document.createElement('script')
+      script.type = 'application/ld+json'
+      script.id = ldId
+      script.textContent = payload
+      document.head.appendChild(script)
+    }
   }
 
-  // Trigger
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', generateSchema)
-  else generateSchema()
+  // Trigger schema generation when the browser is idle to avoid heavy blocking
+  const scheduleSchema = () => {
+    if ('requestIdleCallback' in window) {
+      try {
+        requestIdleCallback(generateSchema, {timeout: 1500})
+      } catch (e) {
+        setTimeout(generateSchema, 1200)
+      }
+    } else {
+      // Fallback: slightly delayed execution
+      setTimeout(generateSchema, 1200)
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleSchema)
+  else scheduleSchema()
 
   // UI Helper
   const hideLoader = () => {
