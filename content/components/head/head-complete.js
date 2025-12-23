@@ -29,7 +29,8 @@
     },
     '/blog/': {
       title: 'Tech Blog & Insights | Abdulkerim Sesli',
-      description: 'Artikel über moderne Webentwicklung, JavaScript-Tricks, UI/UX-Design und persönliche Erfahrungen aus der Tech-Welt eines Berliner Developers.',
+      description:
+        'Artikel über moderne Webentwicklung, JavaScript-Tricks, UI/UX-Design und persönliche Erfahrungen aus der Tech-Welt eines Berliner Developers.',
       schemaType: 'Blog',
       keywords: 'Tech Blog, Webentwicklung, JavaScript, UI/UX, Tutorial, Insights, Berlin'
     },
