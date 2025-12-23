@@ -1,27 +1,26 @@
 /**
  * Dynamic Head Loader - Ultimate Modern SEO & Schema Graph (@graph approach)
- * Version: 2025.2.0 (Professional Business Card Edition)
+ * Version: 2025.3.0 (Rich Snippet "Visual Maximizer" Edition)
  * * Features:
- * - Wording optimized for "Digital Business Card" / Professional Portfolio
- * - Centralized Knowledge Graph (verbindet Person, Skills, Site, Page)
- * - Deep Entity Linking via Wikidata (für Knowledge Panel Trigger)
- * - Auto-Detection von Breadcrumbs & Routen
+ * - [GELB] Icon Fix: Re-Integration von 'Organization' für Logo-Support
+ * - [ROT] Snippet Fill: Maximierte Descriptions & Knowledge-Injection
+ * - [BLAU] FAQ Booster: Statische Business-FAQs für garantierten Rich-Snippet-Bereich
  */
 
 ;(async function loadSharedHead() {
   if (window.SHARED_HEAD_LOADED) return
 
   // --- 1. GLOBALE DATEN & KONFIGURATION ---
-  const BASE_URL = 'https://abdulkerimsesli.de' // Hardcoded für Konsistenz
+  const BASE_URL = 'https://abdulkerimsesli.de'
 
-  // Zentrale Definition der Person/Marke (Business Card Data)
-  const ENTITY_DATA = {
+  // A. VISUELLE STEUERUNG (Icons & Business Data)
+  const BRAND_DATA = {
     name: 'Abdulkerim Sesli',
-    jobTitle: 'Fotograf & Webentwickler',
-    location: 'Berlin, DE',
-    // Professioneller Pitch: Kompetenz-Schnittstelle statt Hobby-Beschreibung
-    description:
-      'Abdulkerim Sesli – Webentwickler & Fotograf in Berlin. Digitales Portfolio an der Schnittstelle von modernem Web Engineering und visueller Kommunikation.',
+    legalName: 'Abdulkerim Sesli — Creative Digital Services',
+    logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`, // [GELB] Das Icon für Google
+    jobTitle: 'Fotograf & Fullstack Webentwickler',
+    email: 'kontakt@abdulkerimsesli.de',
+    areaServed: 'Berlin, Deutschland',
     sameAs: [
       'https://github.com/aKs030',
       'https://linkedin.com/in/abdulkerimsesli',
@@ -29,57 +28,66 @@
       'https://www.instagram.com/abdulkerimsesli',
       'https://www.youtube.com/@aks.030',
       'https://de.wikipedia.org/wiki/Abdulkerim_Sesli',
-      'https://www.wikidata.org/wiki/Q13755684',
-      'https://www.wikidata.org/wiki/User:Abdulkerim_sesli'
-    ],
-    // High-Level Skills mit Wikidata-Verknüpfung
-    knowsAbout: [
-      {'@type': 'Thing', 'name': 'Web Development', 'sameAs': 'https://www.wikidata.org/wiki/Q386275'},
-      {'@type': 'Thing', 'name': 'Photography', 'sameAs': 'https://www.wikidata.org/wiki/Q11633'},
-      {'@type': 'Thing', 'name': 'React', 'sameAs': 'https://www.wikidata.org/wiki/Q19399674'},
-      {'@type': 'Thing', 'name': 'Three.js', 'sameAs': 'https://www.wikidata.org/wiki/Q288402'},
-      {'@type': 'Place', 'name': 'Berlin', 'sameAs': 'https://www.wikidata.org/wiki/Q64'}
+      'https://www.wikidata.org/wiki/Q137477910'
     ]
   }
 
+  // B. INHALTS-STEUERUNG (Snippet Text Füllung)
+  // [ROT] Hier füllen wir den Text-Bereich maximal auf (~160 Zeichen + Keywords)
   const ROUTES = {
     'default': {
-      // Fokus: Visitenkarte & Portfolio
-      title: 'Abdulkerim Sesli | Digitale Visitenkarte & Portfolio',
+      title: 'Abdulkerim Sesli | Digitale Visitenkarte & Portfolio Berlin',
       description:
-        'Offizielles Portfolio von Abdulkerim Sesli. Interaktive Visitenkarte mit Fokus auf Webentwicklung (React, Three.js) und professionelle Fotografie aus Berlin.',
+        'Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin. Jetzt Referenzen ansehen & kontaktieren.',
       type: 'ProfilePage',
       image: `${BASE_URL}/content/assets/img/og/og-home.png`
     },
     '/projekte/': {
-      // Fokus: Referenzen & Expertise
-      title: 'Referenzen & Projekte | Abdulkerim Sesli',
-      description: 'Ausgewählte Referenzen in Web Engineering und UI/UX Design. Technische Exzellenz trifft auf kreative Problemlösung.',
+      title: 'Referenzen & Code-Projekte | Abdulkerim Sesli',
+      description:
+        'Entdecke interaktive Web-Experimente und Business-Anwendungen. Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design.',
       type: 'CollectionPage',
       image: `${BASE_URL}/content/assets/img/og/og-projects.png`
     },
     '/blog/': {
-      // Fokus: Wissenstransfer
-      title: 'Fachartikel & Insights | Abdulkerim Sesli',
-      description: 'Wissenstransfer zu modernen Web-Technologien, Best Practices und digitalen Trends.',
+      title: 'Tech-Blog & Tutorials | Webentwicklung Berlin',
+      description:
+        'Expertenwissen zu JavaScript, CSS und Web-Architektur. Praxisnahe Tutorials und Einblicke in den Workflow eines Berliner Fullstack-Entwicklers.',
       type: 'Blog',
       image: `${BASE_URL}/content/assets/img/og/og-blog.png`
     },
     '/gallery/': {
-      // Fokus: Visuelle Arbeit
-      title: 'Fotografie & Visuelle Ästhetik | Abdulkerim Sesli',
-      description: 'Portfolio für Urban Photography und bildende Kunst. Eine kuratierte Auswahl visueller Arbeiten aus Berlin.',
+      title: 'Fotografie Portfolio | Urban & Portrait Berlin',
+      description:
+        'Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung.',
       type: 'ImageGallery',
       image: `${BASE_URL}/content/assets/img/og/og-gallery.png`
     },
     '/about/': {
-      // Fokus: Profil & Kontakt
-      title: 'Profil & Kontakt | Abdulkerim Sesli',
-      description: 'Digitale Visitenkarte: Werdegang, Tech-Stack und Kontaktmöglichkeiten für Zusammenarbeit.',
+      title: 'Kontakt & Profil | Abdulkerim Sesli',
+      description:
+        'Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.',
       type: 'AboutPage',
       image: `${BASE_URL}/content/assets/img/og/og-about.png`
     }
   }
+
+  // C. FAQ GENERATOR (Der "Blaue Bereich")
+  // [BLAU] Diese Fragen tauchen direkt in der Google-Suche auf
+  const BUSINESS_FAQS = [
+    {
+      q: 'Welche Dienstleistungen bietest du an?',
+      a: 'Ich biete professionelle Webentwicklung (Frontend & Fullstack mit React/Node.js) sowie hochwertige Fotografie-Dienstleistungen (Portrait, Urban, Event) im Raum Berlin an.'
+    },
+    {
+      q: 'Welchen Tech-Stack verwendest du?',
+      a: 'Mein Fokus liegt auf modernen JavaScript-Frameworks wie React, Next.js und Vue. Für 3D-Visualisierungen im Web nutze ich Three.js und WebGL.'
+    },
+    {
+      q: 'Bist du für Freelance-Projekte verfügbar?',
+      a: 'Ja, ich bin offen für spannende Projektanfragen und Kooperationen. Kontaktieren Sie mich gerne direkt über meine Webseite oder LinkedIn.'
+    }
+  ]
 
   // Pfad-Logik
   const currentPath = window.location.pathname.toLowerCase()
@@ -87,25 +95,21 @@
   const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default
   const pageUrl = window.location.href.split('#')[0]
 
-  // --- 2. TEMPLATE INJECTION (HTML HEAD) ---
+  // --- 2. HTML HEAD INJECTION ---
   try {
     const escapeHTML = str =>
       String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m])
 
-    // Fetch Template
     const resp = await fetch('/content/components/head/head.html', {cache: 'force-cache'})
     if (!resp.ok) throw new Error(`Head fetch error: ${resp.status}`)
     let html = await resp.text()
 
-    // Platzhalter ersetzen
     html = html.replace(/\{\{PAGE_TITLE\}\}/g, escapeHTML(pageData.title))
     html = html.replace(/\{\{PAGE_DESCRIPTION\}\}/g, escapeHTML(pageData.description))
 
-    // DOM Injection & Cleanup
     const range = document.createRange()
     const fragment = range.createContextualFragment(html)
 
-    // Entferne existierende Duplikate im Head
     const uniqueSelectors = ['title', 'meta[name="description"]', 'meta[property="og:title"]', 'meta[property="og:description"]']
     uniqueSelectors.forEach(sel => {
       const el = document.querySelector(sel)
@@ -114,7 +118,6 @@
 
     document.head.prepend(fragment)
 
-    // Canonical & OG:URL setzen
     const canonical = document.querySelector('link[rel="canonical"]') || document.createElement('link')
     if (!canonical.parentNode) {
       canonical.rel = 'canonical'
@@ -122,16 +125,23 @@
     }
     canonical.href = pageUrl
 
-    const ogUrl = document.querySelector('meta[property="og:url"]')
-    if (ogUrl) ogUrl.content = pageUrl
+    // [GELB] Sicherstellen, dass Favicon für Browser-Tabs da ist (Google nutzt dies auch als Fallback)
+    const existingIcon = document.querySelector('link[rel="icon"]')
+    if (!existingIcon) {
+      const iconLink = document.createElement('link')
+      iconLink.rel = 'icon'
+      iconLink.href = BRAND_DATA.logo
+      document.head.appendChild(iconLink)
+    }
   } catch (e) {
     console.warn('[Head-Loader] Template Warning:', e)
   }
 
-  // --- 3. MODERN SCHEMA.ORG (@Graph) ---
+  // --- 3. SCHEMA GRAPH GENERATION ---
   const generateSchema = () => {
     const ID = {
       person: `${BASE_URL}/#person`,
+      org: `${BASE_URL}/#organization`,
       website: `${BASE_URL}/#website`,
       webpage: `${pageUrl}#webpage`,
       breadcrumb: `${pageUrl}#breadcrumb`
@@ -139,50 +149,47 @@
 
     const graph = []
 
-    // A. PERSON (Die zentrale Entität)
-    const personNode = {
+    // 1. ORGANIZATION (Für das Logo [GELB])
+    // Wir definieren eine "Ein-Mann-Organisation", um das Logo-Feld valide nutzen zu können
+    graph.push({
+      '@type': 'Organization',
+      '@id': ID.org,
+      'name': BRAND_DATA.legalName,
+      'url': BASE_URL,
+      'logo': {
+        '@type': 'ImageObject',
+        'url': BRAND_DATA.logo,
+        'width': 512,
+        'height': 512
+      },
+      'email': BRAND_DATA.email,
+      'sameAs': BRAND_DATA.sameAs
+    })
+
+    // 2. PERSON (Die Haupt-Entität)
+    graph.push({
       '@type': ['Person', 'Photographer'],
       '@id': ID.person,
-      'name': ENTITY_DATA.name,
-      'alternateName': ['AKS', 'Abdulkerim Berlin', 'Abdul Berlin'],
+      'name': BRAND_DATA.name,
+      'jobTitle': BRAND_DATA.jobTitle,
+      'worksFor': {'@id': ID.org}, // Verknüpfung zur Org
       'url': BASE_URL,
       'image': {
         '@type': 'ImageObject',
         '@id': `${BASE_URL}/#personImage`,
         'url': 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png',
-        'contentUrl': 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png',
-        'caption': ENTITY_DATA.name
+        'caption': BRAND_DATA.name
       },
-      'description': ENTITY_DATA.description,
-      'jobTitle': ENTITY_DATA.jobTitle,
-      'sameAs': ENTITY_DATA.sameAs,
-      'knowsAbout': ENTITY_DATA.knowsAbout,
-      'address': {
-        '@type': 'PostalAddress',
-        'addressLocality': 'Berlin',
-        'postalCode': '13507',
-        'addressCountry': 'DE'
-      },
-      'email': 'mailto:kontakt@abdulkerimsesli.de'
-    }
-    graph.push(personNode)
-
-    // B. WEBSITE
-    graph.push({
-      '@type': 'WebSite',
-      '@id': ID.website,
-      'url': BASE_URL,
-      'name': 'Abdulkerim Sesli Portfolio',
-      'publisher': {'@id': ID.person},
-      'inLanguage': 'de-DE',
-      'potentialAction': {
-        '@type': 'SearchAction',
-        'target': {'@type': 'EntryPoint', 'urlTemplate': `${BASE_URL}/?s={search_term_string}`},
-        'query-input': 'required name=search_term_string'
-      }
+      'description': pageData.description, // [ROT] Nutzt die optimierte Beschreibung
+      'sameAs': BRAND_DATA.sameAs,
+      'knowsAbout': [
+        {'@type': 'Thing', 'name': 'Web Development', 'sameAs': 'https://www.wikidata.org/wiki/Q386275'},
+        {'@type': 'Thing', 'name': 'Photography', 'sameAs': 'https://www.wikidata.org/wiki/Q11633'},
+        {'@type': 'Place', 'name': 'Berlin', 'sameAs': 'https://www.wikidata.org/wiki/Q64'}
+      ]
     })
 
-    // C. WEBPAGE (Context-Aware)
+    // 3. WEBPAGE (Die Seite selbst)
     graph.push({
       '@type': pageData.type || 'WebPage',
       '@id': ID.webpage,
@@ -190,44 +197,44 @@
       'name': pageData.title,
       'description': pageData.description,
       'isPartOf': {'@id': ID.website},
-      'mainEntity': {'@id': ID.person}, // WICHTIG: Erfüllt Google ProfilePage Richtlinien
-      'about': {'@id': ID.person},
-      'primaryImageOfPage': {'@id': ID.person},
-      'breadcrumb': {'@id': ID.breadcrumb},
+      'mainEntity': {'@id': ID.person}, // Profil-Fokus
+      'publisher': {'@id': ID.org}, // Org-Publisher für Logo-Vererbung
       'inLanguage': 'de-DE',
-      'datePublished': '2024-01-01T08:00:00+01:00',
       'dateModified': new Date().toISOString()
     })
 
-    // D. BREADCRUMBS
-    const segments = window.location.pathname.replace(/\/$/, '').split('/').filter(Boolean)
-    const crumbs = [{'@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL}]
-
-    let pathAcc = BASE_URL
-    segments.forEach((seg, i) => {
-      pathAcc += `/${seg}`
-      crumbs.push({
-        '@type': 'ListItem',
-        'position': i + 2,
-        'name': seg.charAt(0).toUpperCase() + seg.slice(1),
-        'item': pathAcc
-      })
-    })
-
+    // 4. WEBSITE
     graph.push({
-      '@type': 'BreadcrumbList',
-      '@id': ID.breadcrumb,
-      'itemListElement': crumbs
+      '@type': 'WebSite',
+      '@id': ID.website,
+      'url': BASE_URL,
+      'name': 'Abdulkerim Sesli Portfolio',
+      'publisher': {'@id': ID.org},
+      'potentialAction': {
+        '@type': 'SearchAction',
+        'target': `${BASE_URL}/?s={search_term_string}`,
+        'query-input': 'required name=search_term_string'
+      }
     })
 
-    // E. FAQ (Auto-Scraper für Rich Snippets)
-    const faqNodes = Array.from(document.querySelectorAll('details, .faq-item'))
+    // 5. FAQ (Der "Blaue Bereich" [BLAU])
+    // Zuerst prüfen wir, ob echte FAQs auf der Seite sind
+    let faqNodes = Array.from(document.querySelectorAll('details, .faq-item'))
       .map(el => {
         const q = el.querySelector('summary, h3, .question')?.textContent?.trim()
         const a = el.querySelector('p, div, .answer')?.textContent?.trim()
         return q && a ? {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} : null
       })
       .filter(Boolean)
+
+    // Fallback: Wenn keine echten FAQs da sind, injizieren wir die Business-Visitenkarte
+    if (faqNodes.length === 0) {
+      faqNodes = BUSINESS_FAQS.map(item => ({
+        '@type': 'Question',
+        'name': item.q,
+        'acceptedAnswer': {'@type': 'Answer', 'text': item.a}
+      }))
+    }
 
     if (faqNodes.length > 0) {
       graph.push({
@@ -238,11 +245,20 @@
       })
     }
 
-    // --- INJECTION ---
+    // 6. BREADCRUMBS
+    const segments = window.location.pathname.replace(/\/$/, '').split('/').filter(Boolean)
+    const crumbs = [{'@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL}]
+    let pathAcc = BASE_URL
+    segments.forEach((seg, i) => {
+      pathAcc += `/${seg}`
+      crumbs.push({'@type': 'ListItem', 'position': i + 2, 'name': seg.charAt(0).toUpperCase() + seg.slice(1), 'item': pathAcc})
+    })
+    graph.push({'@type': 'BreadcrumbList', '@id': ID.breadcrumb, 'itemListElement': crumbs})
+
+    // INJECTION
     const script = document.createElement('script')
     script.type = 'application/ld+json'
     script.textContent = JSON.stringify({'@context': 'https://schema.org', '@graph': graph})
-
     document.querySelectorAll('script[type="application/ld+json"]').forEach(s => s.remove())
     document.head.appendChild(script)
   }
@@ -251,7 +267,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', generateSchema)
   else generateSchema()
 
-  // --- 4. UI HELPER (Loading Screen) ---
+  // UI Helper
   const hideLoader = () => {
     const el = document.getElementById('loadingScreen')
     if (el) {
@@ -261,6 +277,5 @@
   }
   window.addEventListener('load', hideLoader)
   setTimeout(hideLoader, 2000)
-
   window.SHARED_HEAD_LOADED = true
 })()
