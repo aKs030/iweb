@@ -181,6 +181,30 @@
       iconLink.href = BRAND_DATA.logo
       document.head.appendChild(iconLink)
     }
+    // Ensure PWA manifest & Apple mobile settings (use existing assets if present)
+    try {
+      // Link manifest
+      upsertLink('manifest', '/manifest.json')
+      // Theme color for browsers
+      upsertMeta('theme-color', '#0d0d0d')
+      // Apple Web App meta tags
+      upsertMeta('apple-mobile-web-app-capable', 'yes')
+      upsertMeta('apple-mobile-web-app-title', BRAND_DATA.name)
+      upsertMeta('apple-mobile-web-app-status-bar-style', 'default')
+
+      // Apple touch icon (sizes=180x180)
+      let appleIconEl = document.head.querySelector('link[rel="apple-touch-icon"]')
+      if (appleIconEl) appleIconEl.setAttribute('href', '/content/assets/img/icons/apple-touch-icon.png')
+      else {
+        appleIconEl = document.createElement('link')
+        appleIconEl.setAttribute('rel', 'apple-touch-icon')
+        appleIconEl.setAttribute('sizes', '180x180')
+        appleIconEl.setAttribute('href', '/content/assets/img/icons/apple-touch-icon.png')
+        document.head.appendChild(appleIconEl)
+      }
+    } catch (e) {
+      console.debug('[Head-Loader] PWA meta injection failed:', e)
+    }
   } catch (e) {
     console.warn('[Head-Loader] lightweight head update failed:', e)
   }
