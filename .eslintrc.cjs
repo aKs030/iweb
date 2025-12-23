@@ -22,6 +22,6 @@ module.exports = {
   },
   overrides: [
     {files: ['scripts/**/*.js'], rules: {'no-console': 'off'}},
-    {files: ['sw.js', 'content/main.js'], rules: {'no-console': 'off'}}
+    {files: ['content/main.js'], rules: {'no-console': 'off'}}
   ]
 }
