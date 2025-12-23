@@ -47,11 +47,11 @@
       keywords: 'Fotografie, Urban Photography, Landschaftsfotografie, Berlin, Portfolio'
     },
     '/about/': {
-      title: 'Über mich | Abdulkerim Sesli',
+      title: 'Abdulkerim Sesli — Webentwickler & Digital Creator | Berlin',
       description:
-        'Wer ist Abdulkerim Sesli? Einblicke in meinen Werdegang als Webentwickler, meine Philosophie und meine Leidenschaft für digitale Kreation.',
+        'Webentwickler, Fotograf & Digital Creator aus Berlin. Projekte, Leistungen und Kontakt — CV herunterladen oder direkt per E‑Mail erreichen.',
       schemaType: 'ProfilePage',
-      keywords: 'Über mich, Webentwickler, Berlin, Digital Creator, Persönliches'
+      keywords: 'Webentwickler, Digital Creator, Berlin, Portfolio, Kontakt'
     }
   }
 
