@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-  
+
   <!-- ========== HOMEPAGE ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/</loc>
@@ -22,7 +22,7 @@
       <image:title>AKS Logo</image:title>
     </image:image>
   </url>
-  
+
   <!-- ========== PROJEKTE ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/projekte/</loc>
@@ -35,7 +35,7 @@
       <image:title>Projekte von Abdulkerim Sesli</image:title>
     </image:image>
   </url>
-  
+
   <!-- Einzelne Projekte -->
   <url>
     <loc>https://abdulkerimsesli.de/projekte/#project-1</loc>
@@ -43,28 +43,28 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <url>
     <loc>https://abdulkerimsesli.de/projekte/#project-2</loc>
     <lastmod>2025-12-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <url>
     <loc>https://abdulkerimsesli.de/projekte/#project-3</loc>
     <lastmod>2025-12-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <url>
     <loc>https://abdulkerimsesli.de/projekte/#project-4</loc>
     <lastmod>2025-12-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <!-- ========== BLOG ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/blog/</loc>
@@ -77,7 +77,7 @@
       <image:title>Tech Blog</image:title>
     </image:image>
   </url>
-  
+
   <!-- Blog Posts -->
   <url>
     <loc>https://abdulkerimsesli.de/blog/#/blog/threejs-performance</loc>
@@ -89,7 +89,7 @@
       <image:caption>Three.js Performance Optimierung Tutorial</image:caption>
     </image:image>
   </url>
-  
+
   <url>
     <loc>https://abdulkerimsesli.de/blog/#/blog/visual-storytelling</loc>
     <lastmod>2025-11-02</lastmod>
@@ -100,7 +100,7 @@
       <image:caption>Visuelles Storytelling in der Fotografie</image:caption>
     </image:image>
   </url>
-  
+
   <url>
     <loc>https://abdulkerimsesli.de/blog/#/blog/modern-ui-design</loc>
     <lastmod>2025-10-10</lastmod>
@@ -111,7 +111,7 @@
       <image:caption>Modernes UI-Design Tutorial</image:caption>
     </image:image>
   </url>
-  
+
   <url>
     <loc>https://abdulkerimsesli.de/blog/#/blog/react-no-build</loc>
     <lastmod>2025-09-05</lastmod>
@@ -122,14 +122,14 @@
       <image:caption>React ohne Build-Tools nutzen</image:caption>
     </image:image>
   </url>
-  
+
   <!-- ========== VIDEOS ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/videos/</loc>
     <lastmod>2025-12-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    
+
     <!-- Video 1: Interaktive Erde -->
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg</video:thumbnail_loc>
@@ -150,7 +150,7 @@
       <video:tag>Webentwicklung</video:tag>
       <video:category>Technology</video:category>
     </video:video>
-    
+
     <!-- Video 2: Fotoshooting Making-of -->
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg</video:thumbnail_loc>
@@ -171,14 +171,14 @@
       <video:category>People &amp; Blogs</video:category>
     </video:video>
   </url>
-  
+
   <!-- ========== GALLERY ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/gallery/</loc>
     <lastmod>2025-12-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    
+
     <!-- Beispiel-Bilder aus der Gallery -->
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200</image:loc>
@@ -186,28 +186,28 @@
       <image:title>Bergpanorama Alpen</image:title>
       <image:geo_location>Alpen, Deutschland</image:geo_location>
     </image:image>
-    
+
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200</image:loc>
       <image:caption>Mystischer Nebelwald - Schwarzwald Fotografie</image:caption>
       <image:title>Nebelwald Schwarzwald</image:title>
       <image:geo_location>Schwarzwald, Deutschland</image:geo_location>
     </image:image>
-    
+
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200</image:loc>
       <image:caption>Urbane Architektur - Moderne Stadtfotografie Berlin</image:caption>
       <image:title>Urbane Architektur Berlin</image:title>
       <image:geo_location>Berlin, Deutschland</image:geo_location>
     </image:image>
-    
+
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200</image:loc>
       <image:caption>Goldener Sonnenuntergang an der Nordsee</image:caption>
       <image:title>Sonnenuntergang Nordsee</image:title>
       <image:geo_location>Nordsee, Deutschland</image:geo_location>
     </image:image>
-    
+
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200</image:loc>
       <image:caption>Stille am Bergsee - Bayerische Alpen</image:caption>
@@ -215,7 +215,7 @@
       <image:geo_location>Bayern, Deutschland</image:geo_location>
     </image:image>
   </url>
-  
+
   <!-- ========== ABOUT ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/about/</loc>
@@ -228,7 +228,7 @@
       <image:title>Abdulkerim Sesli</image:title>
     </image:image>
   </url>
-  
+
   <!-- ========== RECHTLICHES ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/impressum/</loc>
@@ -236,12 +236,12 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
-  
+
   <url>
     <loc>https://abdulkerimsesli.de/datenschutz/</loc>
     <lastmod>2025-12-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
-  
+
 </urlset>
