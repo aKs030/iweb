@@ -23,35 +23,35 @@
     '/projekte/': {
       title: 'Webentwicklung & Coding Projekte | Abdulkerim Sesli',
       description:
-        'Entdecke meine privaten Web-Projekte, Experimente mit React & Three.js sowie Open-Source-Beiträge. Einblicke in Code & Design.',
+        'Entdecke meine privaten Web-Projekte, Experimente mit React & Three.js sowie Open-Source-Beiträge. Einblicke in Code & Design aus Berlin (13507).',
       schemaType: 'CollectionPage',
-      keywords: 'Webprojekte, React, Three.js, JavaScript, Coding, Open Source'
+      keywords: 'Webprojekte, React, Three.js, JavaScript, Coding, Open Source, Berlin Web Developer'
     },
     '/blog/': {
       title: 'Tech Blog & Insights | Abdulkerim Sesli',
-      description: 'Artikel über moderne Webentwicklung, JavaScript-Tricks, UI/UX-Design und persönliche Erfahrungen aus der Tech-Welt.',
+      description: 'Artikel über moderne Webentwicklung, JavaScript-Tricks, UI/UX-Design und persönliche Erfahrungen aus der Tech-Welt eines Berliner Developers.',
       schemaType: 'Blog',
-      keywords: 'Tech Blog, Webentwicklung, JavaScript, UI/UX, Tutorial, Insights'
+      keywords: 'Tech Blog, Webentwicklung, JavaScript, UI/UX, Tutorial, Insights, Berlin'
     },
     '/videos/': {
       title: 'Video-Tutorials & Demos | Abdulkerim Sesli',
       description: 'Visuelle Einblicke in meine Arbeit: Coding-Sessions, Projekt-Demos und Tutorials zu Webtechnologien und Fotografie.',
       schemaType: 'CollectionPage',
-      keywords: 'Video Tutorials, Coding Sessions, Projekt Demos, YouTube'
+      keywords: 'Video Tutorials, Coding Sessions, Projekt Demos, YouTube, Web Development Videos'
     },
     '/gallery/': {
       title: 'Fotografie Portfolio | Abdulkerim Sesli',
       description:
-        'Eine kuratierte Sammlung meiner besten Aufnahmen: Urban Photography, Landschaften und experimentelle visuelle Kunst aus Berlin.',
+        'Eine kuratierte Sammlung meiner besten Aufnahmen: Urban Photography, Landschaften und experimentelle visuelle Kunst aus Berlin (Reinickendorf/Tegel).',
       schemaType: 'ImageGallery',
-      keywords: 'Fotografie, Urban Photography, Landschaftsfotografie, Berlin, Portfolio'
+      keywords: 'Fotografie, Urban Photography, Landschaftsfotografie, Berlin, Portfolio, Berlin 13507'
     },
     '/about/': {
       title: 'Abdulkerim Sesli — Webentwickler & Digital Creator | Berlin',
       description:
-        'Webentwickler, Fotograf & Digital Creator aus Berlin. Projekte, Leistungen und Kontakt — CV herunterladen oder direkt per E‑Mail erreichen.',
+        'Webentwickler, Fotograf & Digital Creator aus Berlin (13507). Projekte, Leistungen und Kontakt — CV herunterladen oder direkt per E‑Mail erreichen.',
       schemaType: 'ProfilePage',
-      keywords: 'Webentwickler, Digital Creator, Berlin, Portfolio, Kontakt'
+      keywords: 'Webentwickler, Digital Creator, Berlin, Portfolio, Kontakt, Abdulkerim Sesli'
     }
   }
 
@@ -462,14 +462,7 @@
               ]
             },
             'publisher': {
-              '@type': 'Organization',
-              'name': 'Abdulkerim — Digital Creator Portfolio',
-              'logo': {
-                '@type': 'ImageObject',
-                'url': window.location.origin + '/content/assets/img/icons/icon-512.png',
-                'width': 512,
-                'height': 512
-              }
+              '@id': window.location.origin + '/#organization'
             }
           }
 
