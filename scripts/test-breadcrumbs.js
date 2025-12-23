@@ -41,7 +41,7 @@ function makeTrail(currentPath, safePageTitle) {
 
 // Test cases
 const tests = [
-  {path: '/', title: 'Abdulkerim — Fotograf & Webentwickler'},
+  {path: '/', title: 'Abdulkerim — Digital Creator Portfolio'},
   {path: '/videos/', title: 'Video-Tutorials & Demos | Abdulkerim Sesli'},
   {path: '/projekte/', title: 'Webentwicklung & Coding Projekte | Abdulkerim Sesli'}
 ]

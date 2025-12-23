@@ -96,7 +96,7 @@ const ThreeEarthManager = (() => {
               fallback.setAttribute('aria-label', 'Interaktive Darstellung wird nicht unterstützt. Statische Vorschau angezeigt.')
               fallback.innerHTML = `
                 <div class="three-earth-fallback__inner">
-                  <img src="/content/assets/img/og/og-home.png" alt="Abdulkerim — Fotograf & Webentwickler" />
+                  <img src="/content/assets/img/og/og-home.png" alt="Abdulkerim — Digital Creator Portfolio" />
                   <p class="three-earth-fallback__text">Interaktive 3D‑Ansicht wird von Ihrem Gerät nicht unterstützt. Hier eine Vorschau.</p>
                 </div>
               `
