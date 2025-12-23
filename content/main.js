@@ -635,7 +635,7 @@ document.addEventListener(
               swUrl,
               href: location.href,
               userAgent: navigator.userAgent || null,
-              inIframe: (window.self !== window.top)
+              inIframe: window.self !== window.top
             })
             try {
               const payload = JSON.stringify({
@@ -646,7 +646,7 @@ document.addEventListener(
                 swUrl,
                 href: location.href,
                 userAgent: navigator.userAgent || null,
-                inIframe: (window.self !== window.top),
+                inIframe: window.self !== window.top,
                 ts: Date.now()
               })
               if (navigator.sendBeacon) {
