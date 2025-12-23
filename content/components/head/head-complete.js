@@ -191,6 +191,30 @@
     range.selectNode(document.head)
     const fragment = range.createContextualFragment(html)
 
+    // Clean up any Product/Offer JSON-LD within the new fragment and the existing document.
+    const removeProductSchemas = root => {
+      try {
+        Array.from(root.querySelectorAll('script[type="application/ld+json"]')).forEach(s => {
+          try {
+            const j = JSON.parse(s.textContent)
+            const containsProduct = o => {
+              if (!o) return false
+              if (Array.isArray(o)) return o.some(containsProduct)
+              if (o && typeof o === 'object') {
+                if (o['@type'] === 'Product' || o['@type'] === 'Offer') return true
+                return Object.values(o).some(containsProduct)
+              }
+              return false
+            }
+            if (containsProduct(j)) s.remove()
+          } catch (e) {/* ignore invalid JSON */}
+        })
+      } catch (e) {}
+    }
+
+    removeProductSchemas(fragment)
+    removeProductSchemas(document)
+
     // Dedupe und Script-Handling wie bisher...
     try {
       const existingStyles = new Set(
