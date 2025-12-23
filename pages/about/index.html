@@ -51,6 +51,10 @@
                 <a href="https://github.com/aKs030" rel="me noopener noreferrer" target="_blank">GitHub</a>
                 <a href="https://linkedin.com/in/abdulkerimsesli" rel="me noopener noreferrer" target="_blank">LinkedIn</a>
               </p>
+              <p class="about__contact">
+                <a href="mailto:kontakt@abdulkerimsesli.de" aria-label="E-Mail">kontakt@abdulkerimsesli.de</a><br />
+                Geboren 1991, Berlin • Sprachen: Deutsch, Englisch
+              </p>
             </div>
           </aside>
           <article class="about__content">
@@ -110,11 +114,31 @@
                   <span>Lebenslauf</span>
                 </a>
               </nav>
+
+              <section class="about__notable" aria-labelledby="notable-heading">
+                <h2 id="notable-heading">Ausgewählte Projekte</h2>
+                <ul>
+                  <li><a href="/projekte/#project-1">Schere Stein Papier</a></li>
+                  <li><a href="/projekte/#project-2">Zahlen Raten</a></li>
+                  <li><a href="/projekte/#project-3">Color Changer</a></li>
+                </ul>
+              </section>
             </div>
           </article>
         </div>
       </div>
     </main>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "mainEntity": {"@type": "Person", "@id": "https://abdulkerimsesli.de/#person"},
+        "mainEntityOfPage": {"@id": "https://abdulkerimsesli.de/about/"},
+        "url": "https://abdulkerimsesli.de/about/",
+        "inLanguage": "de-DE"
+      }
+    </script>
 
     <div id="footer-container" data-footer-src="/content/components/footer/footer"></div>
     <script src="/content/components/footer/footer-complete.js" type="module"></script>
