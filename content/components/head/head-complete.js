@@ -12,11 +12,11 @@
 
   // --- SEO CONFIGURATION ---
   const DEFAULT_META = {
-    title: 'Abdulkerim — Fotograf & Webentwickler | Berlin',
+    title: 'Abdulkerim — Digital Creator Portfolio',
     description:
-      'Privates Portfolio und digitale Visitenkarte von Abdulkerim Sesli aus Berlin. Fotografie, Webentwicklung und kreative Projekte.',
+      'Persönliches Portfolio und digitale Visitenkarte von Abdulkerim Sesli aus Berlin. Webentwicklung, Fotografie und kreative Experimente.',
     schemaType: 'WebSite',
-    keywords: 'abdul berlin, abdul sesli, abdulkerim berlin, Fotograf, Webentwicklung, Fotografie, Portfolio, Berlin'
+    keywords: 'Webentwicklung, JavaScript, React, Three.js, Fotografie, Portfolio, Berlin'
   }
 
   const PAGE_CONFIG = {
@@ -40,11 +40,11 @@
       keywords: 'Video Tutorials, Coding Sessions, Projekt Demos, YouTube, Web Development Videos'
     },
     '/gallery/': {
-      title: 'Fotografie Portfolio | Abdulkerim — Fotograf & Webentwickler | Berlin',
+      title: 'Fotografie Portfolio | Abdulkerim Sesli',
       description:
         'Eine kuratierte Sammlung meiner besten Aufnahmen: Urban Photography, Landschaften und experimentelle visuelle Kunst aus Berlin (Reinickendorf/Tegel).',
       schemaType: 'ImageGallery',
-      keywords: 'Fotografie, Fotograf, Urban Photography, Landschaftsfotografie, Berlin, Portfolio'
+      keywords: 'Fotografie, Urban Photography, Landschaftsfotografie, Berlin, Portfolio, Berlin 13507'
     },
     '/about/': {
       title: 'Abdulkerim Sesli — Webentwickler & Digital Creator | Berlin',
@@ -413,8 +413,8 @@
           '@context': 'https://schema.org',
           '@type': 'WebSite',
           'url': window.location.origin,
-          'name': 'Abdulkerim — Fotograf & Webentwickler Portfolio',
-          'alternateName': ['AKS Portfolio', 'Abdulkerim Sesli Portfolio', 'Abdulkerim Berlin Portfolio', 'abdul berlin', 'abdul sesli', 'abdulkerim berlin'],
+          'name': 'Abdulkerim — Digital Creator Portfolio',
+          'alternateName': ['AKS Portfolio', 'Abdulkerim Sesli Portfolio'],
           'potentialAction': [
             {
               '@type': 'SearchAction',
@@ -607,7 +607,7 @@
               graph.push({
                 '@type': 'Organization',
                 '@id': window.location.origin + '/#organization',
-                'name': 'Abdulkerim — Fotograf & Webentwickler'
+                'name': 'Abdulkerim — Digital Creator Portfolio'
               })
             }
 

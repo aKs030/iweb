@@ -89,7 +89,7 @@
         // Set page-specific metadata (title, description, canonical, OG/Twitter) and add page-level JSON-LD
         ;(function setAboutPageMeta() {
           try {
-            const pageTitle = 'Über mich — Abdulkerim — Fotograf & Webentwickler'
+            const pageTitle = 'Über mich — Abdulkerim — Digital Creator Portfolio'
             const description = 'Über mich — Abdulkerim Sesli, Webentwickler aus Berlin. Portfolio, Projekte und persönliche Hintergründe.'
             const canonical = new URL(window.location.origin + '/about/').href
             document.title = pageTitle
