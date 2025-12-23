@@ -360,355 +360,348 @@
       /* Could not set canonical/og:url */
     }
 
-
-      // 1. Person/Photographer Schema (Hauptentität)
-      if (!document.querySelector('script[data-person="1"]')) {
-        const personSchema = {
-          '@context': 'https://schema.org',
-          '@type': ['Person', 'Photographer'],
-          '@id': window.location.origin + '/#person',
-          'name': 'Abdulkerim Sesli',
-          'alternateName': [
-            'Abdulkerim Fotograf',
-            'Abdulkerim Sesli',
-            'AKS',
-            'Abdulkerim Berlin'
-          ],
-          'description': 'Fotograf & Webentwickler aus Berlin. Portfolio, Projekte, Blog, Videos und Kontakt.',
-          'image': 'https://commons.wikimedia.org/wiki/Special:FilePath/Abdulkerim_Sesli_portrait_2025.png',
-          'email': 'kontakt@abdulkerimsesli.de',
-          'telephone': '+49-30-12345678',
-          'address': {
-            '@type': 'PostalAddress',
-            'addressLocality': 'Berlin',
-            'postalCode': '13507',
-            'addressCountry': 'DE'
+    // 1. Person/Photographer Schema (Hauptentität)
+    if (!document.querySelector('script[data-person="1"]')) {
+      const personSchema = {
+        '@context': 'https://schema.org',
+        '@type': ['Person', 'Photographer'],
+        '@id': window.location.origin + '/#person',
+        'name': 'Abdulkerim Sesli',
+        'alternateName': ['Abdulkerim Fotograf', 'Abdulkerim Sesli', 'AKS', 'Abdulkerim Berlin'],
+        'description': 'Fotograf & Webentwickler aus Berlin. Portfolio, Projekte, Blog, Videos und Kontakt.',
+        'image': 'https://commons.wikimedia.org/wiki/Special:FilePath/Abdulkerim_Sesli_portrait_2025.png',
+        'email': 'kontakt@abdulkerimsesli.de',
+        'telephone': '+49-30-12345678',
+        'address': {
+          '@type': 'PostalAddress',
+          'addressLocality': 'Berlin',
+          'postalCode': '13507',
+          'addressCountry': 'DE'
+        },
+        'sameAs': [
+          'https://github.com/aKs030',
+          'https://linkedin.com/in/abdulkerimsesli',
+          'https://twitter.com/abdulkerimsesli',
+          'https://de.wikipedia.org/wiki/Abdulkerim_Sesli',
+          'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png'
+        ],
+        'url': window.location.origin + '/about/',
+        'knowsAbout': ['Fotografie', 'Webentwicklung', 'Blog', 'Videos'],
+        'hasPart': [
+          {
+            '@type': 'ImageGallery',
+            'name': 'Fotografie Portfolio',
+            'url': window.location.origin + '/gallery/'
           },
-          'sameAs': [
-            'https://github.com/aKs030',
-            'https://linkedin.com/in/abdulkerimsesli',
-            'https://twitter.com/abdulkerimsesli',
-            'https://de.wikipedia.org/wiki/Abdulkerim_Sesli',
-            'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png'
-          ],
-          'url': window.location.origin + '/about/',
-          'knowsAbout': ['Fotografie', 'Webentwicklung', 'Blog', 'Videos'],
-          'hasPart': [
-            {
-              '@type': 'ImageGallery',
-              'name': 'Fotografie Portfolio',
-              'url': window.location.origin + '/gallery/'
-            },
-            {
-              '@type': 'CollectionPage',
-              'name': 'Videos',
-              'url': window.location.origin + '/videos/'
-            },
-            {
-              '@type': 'Blog',
-              'name': 'Tech Blog',
-              'url': window.location.origin + '/blog/'
-            }
-          ]
+          {
+            '@type': 'CollectionPage',
+            'name': 'Videos',
+            'url': window.location.origin + '/videos/'
+          },
+          {
+            '@type': 'Blog',
+            'name': 'Tech Blog',
+            'url': window.location.origin + '/blog/'
+          }
+        ]
+      }
+      const script = document.createElement('script')
+      script.type = 'application/ld+json'
+      script.setAttribute('data-person', '1')
+      script.textContent = JSON.stringify(personSchema)
+      document.head.appendChild(script)
+    }
+
+    // 2. Breadcrumb Schema
+    if (!document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')) {
+      const path = window.location.pathname.replace(/index\.html$/, '')
+      const segments = path.split('/').filter(Boolean)
+      if (segments.length > 0) {
+        const base = window.location.origin
+        const itemList = []
+        itemList.push({
+          '@type': 'ListItem',
+          'position': 1,
+          'name': 'Startseite',
+          'item': base + '/'
+        })
+
+        const slugMap = {
+          blog: 'Blog',
+          projekte: 'Projekte',
+          videos: 'Videos',
+          gallery: 'Gallery',
+          about: 'Über'
+        }
+
+        segments.forEach((seg, i) => {
+          const name = slugMap[seg] || decodeURIComponent(seg.replace(/[-_]/g, ' '))
+          const href = base + '/' + segments.slice(0, i + 1).join('/') + (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
+          itemList.push({
+            '@type': 'ListItem',
+            'position': itemList.length + 1,
+            'name': name.charAt(0).toUpperCase() + name.slice(1),
+            'item': href
+          })
+        })
+
+        const breadcrumb = {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          'itemListElement': itemList
         }
         const script = document.createElement('script')
         script.type = 'application/ld+json'
-        script.setAttribute('data-person', '1')
-        script.textContent = JSON.stringify(personSchema)
+        script.setAttribute('data-breadcrumb', '1')
+        script.textContent = JSON.stringify(breadcrumb)
         document.head.appendChild(script)
       }
+    }
 
-      // 2. Breadcrumb Schema
-      if (!document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')) {
-        const path = window.location.pathname.replace(/index\.html$/, '')
-        const segments = path.split('/').filter(Boolean)
-        if (segments.length > 0) {
-          const base = window.location.origin
-          const itemList = []
-          itemList.push({
-            '@type': 'ListItem',
-            'position': 1,
-            'name': 'Startseite',
-            'item': base + '/'
-          })
-
-          const slugMap = {
-            blog: 'Blog',
-            projekte: 'Projekte',
-            videos: 'Videos',
-            gallery: 'Gallery',
-            about: 'Über'
+    // 3. WebSite Schema mit Sitelinks SearchAction
+    if (!document.querySelector('script[data-website-search="1"]') && !existingSchemaType('WebSite')) {
+      const websiteSearchSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        'url': window.location.origin,
+        'name': 'Abdulkerim — Fotograf & Webentwickler Portfolio',
+        'alternateName': [
+          'AKS Portfolio',
+          'Abdulkerim Sesli Portfolio',
+          'Abdulkerim Berlin Portfolio',
+          'abdul berlin',
+          'abdul sesli',
+          'abdulkerim berlin'
+        ],
+        'potentialAction': [
+          {
+            '@type': 'SearchAction',
+            'target': {
+              '@type': 'EntryPoint',
+              'urlTemplate': window.location.origin + '/?s={search_term_string}'
+            },
+            'query-input': 'required name=search_term_string'
+          },
+          {
+            '@type': 'ContactAction',
+            'target': {
+              '@type': 'EntryPoint',
+              'urlTemplate': 'mailto:kontakt@abdulkerimsesli.de'
+            }
           }
+        ],
+        'about': {
+          '@id': window.location.origin + '/#person'
+        }
+      }
+      const script = document.createElement('script')
+      script.type = 'application/ld+json'
+      script.setAttribute('data-website-search', '1')
+      script.textContent = JSON.stringify(websiteSearchSchema)
+      document.head.appendChild(script)
+    }
 
-          segments.forEach((seg, i) => {
-            const name = slugMap[seg] || decodeURIComponent(seg.replace(/[-_]/g, ' '))
-            const href = base + '/' + segments.slice(0, i + 1).join('/') + (i === segments.length - 1 && !path.endsWith('/') ? '' : '/')
-            itemList.push({
-              '@type': 'ListItem',
-              'position': itemList.length + 1,
-              'name': name.charAt(0).toUpperCase() + name.slice(1),
-              'item': href
-            })
-          })
+    // 4. Page-specific Schema
+    if (metaData.schemaType && metaData.schemaType !== 'WebSite') {
+      if (!document.querySelector('script[data-page-schema="1"]') && !existingSchemaType(metaData.schemaType)) {
+        const baseSchema = {
+          '@context': 'https://schema.org',
+          '@type': metaData.schemaType,
+          'name': metaData.title,
+          'description': metaData.description,
+          'url': window.location.href,
+          'author': {
+            '@id': window.location.origin + '/#person'
+          },
+          'publisher': {
+            '@id': window.location.origin + '/#organization'
+          }
+        }
 
-          const breadcrumb = {
+        // Erweiterte Schema-Typen
+        if (metaData.schemaType === 'Blog') {
+          baseSchema.blogPost = []
+          baseSchema.inLanguage = 'de-DE'
+        } else if (metaData.schemaType === 'ImageGallery') {
+          baseSchema.associatedMedia = []
+        } else if (metaData.schemaType === 'CollectionPage') {
+          baseSchema.mainEntity = {
+            '@type': 'ItemList',
+            'itemListElement': []
+          }
+        }
+
+        const schemaScript = document.createElement('script')
+        schemaScript.type = 'application/ld+json'
+        schemaScript.setAttribute('data-page-schema', '1')
+        schemaScript.textContent = JSON.stringify(baseSchema)
+        document.head.appendChild(schemaScript)
+      }
+    }
+
+    // 4. Sitelinks Schema für Google
+    if (currentPath === '/' || currentPath === '/index.html') {
+      try {
+        if (!document.querySelector('script[data-sitelinks="1"]')) {
+          const sitelinksSchema = {
             '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            'itemListElement': itemList
+            '@type': 'ItemList',
+            'name': 'Hauptbereiche',
+            'description': 'Wichtige Bereiche der Website',
+            'itemListElement': [
+              {
+                '@type': 'ListItem',
+                'position': 1,
+                'name': 'Projekte',
+                'url': window.location.origin + '/projekte/',
+                'description': 'Webentwicklung & Coding Projekte'
+              },
+              {
+                '@type': 'ListItem',
+                'position': 2,
+                'name': 'Blog',
+                'url': window.location.origin + '/blog/',
+                'description': 'Tech Blog & Insights'
+              },
+              {
+                '@type': 'ListItem',
+                'position': 3,
+                'name': 'Videos',
+                'url': window.location.origin + '/videos/',
+                'description': 'Video-Tutorials & Demos'
+              },
+              {
+                '@type': 'ListItem',
+                'position': 4,
+                'name': 'Galerie',
+                'url': window.location.origin + '/gallery/',
+                'description': 'Fotografie Portfolio'
+              },
+              {
+                '@type': 'ListItem',
+                'position': 5,
+                'name': 'Über',
+                'url': window.location.origin + '/about/',
+                'description': 'Über Abdulkerim Sesli'
+              }
+            ]
           }
           const script = document.createElement('script')
           script.type = 'application/ld+json'
-          script.setAttribute('data-breadcrumb', '1')
-          script.textContent = JSON.stringify(breadcrumb)
+          script.setAttribute('data-sitelinks', '1')
+          script.textContent = JSON.stringify(sitelinksSchema)
           document.head.appendChild(script)
         }
-      }
 
-      // 3. WebSite Schema mit Sitelinks SearchAction
-      if (!document.querySelector('script[data-website-search="1"]') && !existingSchemaType('WebSite')) {
-        const websiteSearchSchema = {
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          'url': window.location.origin,
-          'name': 'Abdulkerim — Fotograf & Webentwickler Portfolio',
-          'alternateName': [
-            'AKS Portfolio',
-            'Abdulkerim Sesli Portfolio',
-            'Abdulkerim Berlin Portfolio',
-            'abdul berlin',
-            'abdul sesli',
-            'abdulkerim berlin'
-          ],
-          'potentialAction': [
-            {
-              '@type': 'SearchAction',
-              'target': {
-                '@type': 'EntryPoint',
-                'urlTemplate': window.location.origin + '/?s={search_term_string}'
-              },
-              'query-input': 'required name=search_term_string'
-            },
-            {
-              '@type': 'ContactAction',
-              'target': {
-                '@type': 'EntryPoint',
-                'urlTemplate': 'mailto:kontakt@abdulkerimsesli.de'
-              }
-            }
-          ],
-          'about': {
-            '@id': window.location.origin + '/#person'
-          }
-        }
-        const script = document.createElement('script')
-        script.type = 'application/ld+json'
-        script.setAttribute('data-website-search', '1')
-        script.textContent = JSON.stringify(websiteSearchSchema)
-        document.head.appendChild(script)
-      }
-
-      // 4. Page-specific Schema
-      if (metaData.schemaType && metaData.schemaType !== 'WebSite') {
-        if (!document.querySelector('script[data-page-schema="1"]') && !existingSchemaType(metaData.schemaType)) {
-          const baseSchema = {
-            '@context': 'https://schema.org',
-            '@type': metaData.schemaType,
-            'name': metaData.title,
-            'description': metaData.description,
-            'url': window.location.href,
-            'author': {
-              '@id': window.location.origin + '/#person'
-            },
-            'publisher': {
-              '@id': window.location.origin + '/#organization'
-            }
-          }
-
-          // Erweiterte Schema-Typen
-          if (metaData.schemaType === 'Blog') {
-            baseSchema.blogPost = []
-            baseSchema.inLanguage = 'de-DE'
-          } else if (metaData.schemaType === 'ImageGallery') {
-            baseSchema.associatedMedia = []
-          } else if (metaData.schemaType === 'CollectionPage') {
-            baseSchema.mainEntity = {
-              '@type': 'ItemList',
-              'itemListElement': []
-            }
-          }
-
-          const schemaScript = document.createElement('script')
-          schemaScript.type = 'application/ld+json'
-          schemaScript.setAttribute('data-page-schema', '1')
-          schemaScript.textContent = JSON.stringify(baseSchema)
-          document.head.appendChild(schemaScript)
-        }
-      }
-
-
-      // 4. Sitelinks Schema für Google
-      if (currentPath === '/' || currentPath === '/index.html') {
-        try {
-          if (!document.querySelector('script[data-sitelinks="1"]')) {
-            const sitelinksSchema = {
-              '@context': 'https://schema.org',
-              '@type': 'ItemList',
-              'name': 'Hauptbereiche',
-              'description': 'Wichtige Bereiche der Website',
-              'itemListElement': [
-                {
-                  '@type': 'ListItem',
-                  'position': 1,
-                  'name': 'Projekte',
-                  'url': window.location.origin + '/projekte/',
-                  'description': 'Webentwicklung & Coding Projekte'
-                },
-                {
-                  '@type': 'ListItem',
-                  'position': 2,
-                  'name': 'Blog',
-                  'url': window.location.origin + '/blog/',
-                  'description': 'Tech Blog & Insights'
-                },
-                {
-                  '@type': 'ListItem',
-                  'position': 3,
-                  'name': 'Videos',
-                  'url': window.location.origin + '/videos/',
-                  'description': 'Video-Tutorials & Demos'
-                },
-                {
-                  '@type': 'ListItem',
-                  'position': 4,
-                  'name': 'Galerie',
-                  'url': window.location.origin + '/gallery/',
-                  'description': 'Fotografie Portfolio'
-                },
-                {
-                  '@type': 'ListItem',
-                  'position': 5,
-                  'name': 'Über',
-                  'url': window.location.origin + '/about/',
-                  'description': 'Über Abdulkerim Sesli'
+        // 5. FAQPage (if visible in footer) — build from footer FAQ items to avoid duplication
+        if (document.querySelector('.footer-faq-list') && !document.querySelector('script[data-faq="1"]')) {
+          const faqItems = Array.from(document.querySelectorAll('.footer-faq-list .faq-item'))
+            .map(d => {
+              const q = d.querySelector('summary')
+              const a = d.querySelector('p')
+              if (q && a)
+                return {
+                  '@type': 'Question',
+                  'name': q.textContent.trim(),
+                  'acceptedAnswer': {'@type': 'Answer', 'text': a.textContent.trim()}
                 }
-              ]
-            }
-            const script = document.createElement('script')
-            script.type = 'application/ld+json'
-            script.setAttribute('data-sitelinks', '1')
-            script.textContent = JSON.stringify(sitelinksSchema)
-            document.head.appendChild(script)
+              return null
+            })
+            .filter(Boolean)
+          if (faqItems.length) {
+            const faqSchema = {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': faqItems}
+            const s = document.createElement('script')
+            s.type = 'application/ld+json'
+            s.setAttribute('data-faq', '1')
+            s.textContent = JSON.stringify(faqSchema)
+            document.head.appendChild(s)
           }
-
-          // 5. FAQPage (if visible in footer) — build from footer FAQ items to avoid duplication
-          if (document.querySelector('.footer-faq-list') && !document.querySelector('script[data-faq="1"]')) {
-            const faqItems = Array.from(document.querySelectorAll('.footer-faq-list .faq-item'))
-              .map(d => {
-                const q = d.querySelector('summary')
-                const a = d.querySelector('p')
-                if (q && a)
-                  return {
-                    '@type': 'Question',
-                    'name': q.textContent.trim(),
-                    'acceptedAnswer': {'@type': 'Answer', 'text': a.textContent.trim()}
-                  }
-                return null
-              })
-              .filter(Boolean)
-            if (faqItems.length) {
-              const faqSchema = {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': faqItems}
-              const s = document.createElement('script')
-              s.type = 'application/ld+json'
-              s.setAttribute('data-faq', '1')
-              s.textContent = JSON.stringify(faqSchema)
-              document.head.appendChild(s)
-            }
-          }
-
-          // 6. @graph Consolidation + Speakable support (dupe-safe)
-          if (!document.querySelector('script[data-graph="1"]')) {
-            const graph = []
-
-            // Helper to safely parse JSON-LD script text
-            const parseSafe = el => {
-              try {
-                return el && el.textContent ? JSON.parse(el.textContent) : null
-              } catch (e) {
-                return null
-              }
-            }
-
-            // Person
-            const personEl = document.querySelector('script[type="application/ld+json"][data-person="1"]')
-            const personObj = parseSafe(personEl)
-            if (personObj) {
-              personObj['@id'] = personObj['@id'] || window.location.origin + '/#person'
-              // Reference existing Person by @id to avoid duplicating full object and merging reviews
-              if (personEl) graph.push({'@id': personObj['@id']})
-              else graph.push(personObj)
-            } else {
-              graph.push({'@type': 'Person', '@id': window.location.origin + '/#person', 'name': 'Abdulkerim Sesli'})
-            }
-
-            // Organization
-            const orgEl = document.querySelector('script[type="application/ld+json"][data-organization="1"]')
-            const orgObj = parseSafe(orgEl)
-            if (orgObj) {
-              orgObj['@id'] = orgObj['@id'] || window.location.origin + '/#organization'
-              // Reference existing Organization by @id to avoid duplicates (prevents combined review/aggregate issues)
-              if (orgEl) graph.push({'@id': orgObj['@id']})
-              else graph.push(orgObj)
-            } else {
-              graph.push({
-                '@type': 'Organization',
-                '@id': window.location.origin + '/#organization',
-                'name': 'Abdulkerim — Fotograf & Webentwickler'
-              })
-            }
-
-            // WebSite (merge with SearchAction/contact actions)
-            const webEl = document.querySelector('script[type="application/ld+json"][data-website-search="1"]')
-            const webObj = parseSafe(webEl)
-            if (webObj) {
-              // Add speakable on homepage
-              if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-                webObj.speakable = webObj.speakable || {'@type': 'SpeakableSpecification', 'cssSelector': []}
-                // Prefer obvious selectors if present
-                const selectors = ['.hero .lead', '.typewriter-title', '.blog-subline', 'meta[name="description"]']
-                webObj.speakable.cssSelector = Array.from(new Set((webObj.speakable.cssSelector || []).concat(selectors)))
-              }
-              graph.push(webObj)
-            }
-
-            // BreadcrumbList if present
-            const bcEl = document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')
-            const bcObj = parseSafe(bcEl)
-            if (bcObj) graph.push(bcObj)
-
-            // Sitelinks / ItemList
-            const slEl = document.querySelector('script[data-sitelinks="1"]')
-            const slObj = parseSafe(slEl)
-            if (slObj) graph.push(slObj)
-
-            // FAQPage if present
-            const faqEl = document.querySelector('script[data-faq="1"]')
-            const faqObj = parseSafe(faqEl)
-            if (faqObj) graph.push(faqObj)
-
-            // Only insert if we have at least two useful nodes
-            if (graph.length > 0) {
-              const g = {'@context': 'https://schema.org', '@graph': graph}
-              const s = document.createElement('script')
-              s.type = 'application/ld+json'
-              s.setAttribute('data-graph', '1')
-              s.textContent = JSON.stringify(g)
-              document.head.appendChild(s)
-            }
-          }
-        } catch {
-          /* Schema generation failed */
         }
+
+        // 6. @graph Consolidation + Speakable support (dupe-safe)
+        if (!document.querySelector('script[data-graph="1"]')) {
+          const graph = []
+
+          // Helper to safely parse JSON-LD script text
+          const parseSafe = el => {
+            try {
+              return el && el.textContent ? JSON.parse(el.textContent) : null
+            } catch (e) {
+              return null
+            }
+          }
+
+          // Person
+          const personEl = document.querySelector('script[type="application/ld+json"][data-person="1"]')
+          const personObj = parseSafe(personEl)
+          if (personObj) {
+            personObj['@id'] = personObj['@id'] || window.location.origin + '/#person'
+            // Reference existing Person by @id to avoid duplicating full object and merging reviews
+            if (personEl) graph.push({'@id': personObj['@id']})
+            else graph.push(personObj)
+          } else {
+            graph.push({'@type': 'Person', '@id': window.location.origin + '/#person', 'name': 'Abdulkerim Sesli'})
+          }
+
+          // Organization
+          const orgEl = document.querySelector('script[type="application/ld+json"][data-organization="1"]')
+          const orgObj = parseSafe(orgEl)
+          if (orgObj) {
+            orgObj['@id'] = orgObj['@id'] || window.location.origin + '/#organization'
+            // Reference existing Organization by @id to avoid duplicates (prevents combined review/aggregate issues)
+            if (orgEl) graph.push({'@id': orgObj['@id']})
+            else graph.push(orgObj)
+          } else {
+            graph.push({
+              '@type': 'Organization',
+              '@id': window.location.origin + '/#organization',
+              'name': 'Abdulkerim — Fotograf & Webentwickler'
+            })
+          }
+
+          // WebSite (merge with SearchAction/contact actions)
+          const webEl = document.querySelector('script[type="application/ld+json"][data-website-search="1"]')
+          const webObj = parseSafe(webEl)
+          if (webObj) {
+            // Add speakable on homepage
+            if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+              webObj.speakable = webObj.speakable || {'@type': 'SpeakableSpecification', 'cssSelector': []}
+              // Prefer obvious selectors if present
+              const selectors = ['.hero .lead', '.typewriter-title', '.blog-subline', 'meta[name="description"]']
+              webObj.speakable.cssSelector = Array.from(new Set((webObj.speakable.cssSelector || []).concat(selectors)))
+            }
+            graph.push(webObj)
+          }
+
+          // BreadcrumbList if present
+          const bcEl = document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')
+          const bcObj = parseSafe(bcEl)
+          if (bcObj) graph.push(bcObj)
+
+          // Sitelinks / ItemList
+          const slEl = document.querySelector('script[data-sitelinks="1"]')
+          const slObj = parseSafe(slEl)
+          if (slObj) graph.push(slObj)
+
+          // FAQPage if present
+          const faqEl = document.querySelector('script[data-faq="1"]')
+          const faqObj = parseSafe(faqEl)
+          if (faqObj) graph.push(faqObj)
+
+          // Only insert if we have at least two useful nodes
+          if (graph.length > 0) {
+            const g = {'@context': 'https://schema.org', '@graph': graph}
+            const s = document.createElement('script')
+            s.type = 'application/ld+json'
+            s.setAttribute('data-graph', '1')
+            s.textContent = JSON.stringify(g)
+            document.head.appendChild(s)
+          }
+        }
+      } catch {
+        /* Schema generation failed */
       }
+    }
 
     // Script Execution
     try {
