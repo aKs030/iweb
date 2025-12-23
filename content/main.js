@@ -39,7 +39,10 @@ const ENV = {
     new URLSearchParams(window.location.search).has('test') ||
     navigator.userAgent.includes('HeadlessChrome') ||
     (window.location.hostname === 'localhost' && window.navigator.webdriver),
-  debug: new URLSearchParams(window.location.search).has('debug')
+  debug: new URLSearchParams(window.location.search).has('debug'),
+  // Disable Service Worker by default to avoid registration errors in unsupported contexts.
+  // Enable with `?use-sw=1` in the URL if you want to opt-in.
+  useServiceWorker: new URLSearchParams(window.location.search).has('use-sw')
 }
 
 // ===== Performance Tracking =====
@@ -574,7 +577,9 @@ document.addEventListener(
     })
 
     // ===== Service Worker Registration =====
-    if ('serviceWorker' in navigator && !ENV.isTest) {
+    if (!ENV.useServiceWorker) {
+      log.info('Service Worker registration skipped: ENV.useServiceWorker is false')
+    } else if ('serviceWorker' in navigator && !ENV.isTest) {
       window.addEventListener('load', async () => {
         try {
           const swUrl = '/sw.js'
