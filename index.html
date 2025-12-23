@@ -4,10 +4,13 @@
     <meta charset="utf-8" />
     <title>Abdulkerim — Digital Creator Portfolio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Static description fallback for crawlers -->
+    <meta
+      name="description"
+      content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin. Jetzt Referenzen ansehen &amp; kontaktieren." />
     <!-- Description and keywords are provided centrally in content/components/head/head.html -->
     <link rel="canonical" href="https://abdulkerimsesli.de/" />
-apple-domain-verification=E1-9jLUCVdA-YOPVDRKyidDU00cy8LbWoJkFHPIwIM0
- <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
+    <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
     <!-- Prefer PNG/SVG icons (>=48px) so Google mobile search can show the favicon reliably -->
     <link rel="icon" type="image/png" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
     <link rel="icon" type="image/png" sizes="96x96" href="/content/assets/img/icons/icon-96.png" />
@@ -20,12 +23,14 @@ apple-domain-verification=E1-9jLUCVdA-YOPVDRKyidDU00cy8LbWoJkFHPIwIM0
 
     <script src="/content/components/head/head-complete.js" type="module"></script>
 
+    <link rel="stylesheet" href="/content/styles/root.css" />
     <link rel="stylesheet" href="/content/styles/main.css" media="print" data-defer="1" />
     <noscript><link rel="stylesheet" href="/content/styles/main.css" /></noscript>
 
     <!-- Critical component CSS that should load synchronously (Hero, TypeWriter) -->
     <link rel="stylesheet" href="/pages/home/hero.css" />
     <link rel="stylesheet" href="/content/components/typewriter/typewriter.css" />
+    <link rel="stylesheet" href="/content/components/menu/menu.css" />
 
     <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
     <link rel="stylesheet" href="/content/components/particles/three-earth.css" media="print" data-defer="1" />
@@ -41,6 +46,10 @@ apple-domain-verification=E1-9jLUCVdA-YOPVDRKyidDU00cy8LbWoJkFHPIwIM0
     <!-- Cards (componentized) - lazy load below-the-fold -->
     <link rel="stylesheet" href="/content/styles/cards.css" media="print" data-defer="1" />
     <noscript><link rel="stylesheet" href="/content/styles/cards.css" /></noscript>
+
+    <!-- Footer styles: deferred to keep initial render light -->
+    <link rel="stylesheet" href="/content/components/footer/footer.css" media="print" data-defer="1" />
+    <noscript><link rel="stylesheet" href="/content/components/footer/footer.css" /></noscript>
 
     <script src="/content/components/robot-companion/robot-companion.js" type="module"></script>
   </head>
@@ -123,8 +132,7 @@ apple-domain-verification=E1-9jLUCVdA-YOPVDRKyidDU00cy8LbWoJkFHPIwIM0
       </section>
 
       <!-- About Section -->
-      <section id="section3" class="section about" aria-labelledby="about-heading" data-section-src="/pages/about/section3.html">
-
+      <section id="section3" class="section about" aria-labelledby="about-heading" data-section-src="/pages/about/section3.html"></section>
 
       <div id="footer-trigger-zone" class="footer-trigger-zone" aria-hidden="true"></div>
     </main>

@@ -315,6 +315,7 @@ a:hover {
   body {
     padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
   }
+}
 
 @media (width <= 375px) {
   html {
@@ -416,4 +417,14 @@ html {
     animation: none;
     transition: none;
   }
+}
+
+/* Global Footer Trigger Zone - centralized default style */
+.footer-trigger-zone {
+  display: block;
+  width: 100%;
+  height: 1px; /* small marker for IntersectionObserver */
+  pointer-events: none;
+  visibility: hidden;
+  position: relative;
 }
