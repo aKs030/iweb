@@ -623,8 +623,38 @@ document.addEventListener(
             swSnippet = `SNIPPET_ERROR: ${String(e)}`
           }
 
-          const registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
-          log.info('Service Worker registered:', registration.scope)
+          try {
+            const registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
+            log.info('Service Worker registered:', registration.scope)
+          } catch (error) {
+            log.error('Service Worker registration failed:', {
+              message: error.message,
+              stack: error.stack,
+              swUrl,
+              href: location.href
+            })
+            try {
+              const payload = JSON.stringify({
+                event: 'sw_registration_failed',
+                message: error.message,
+                stack: error.stack,
+                swUrl,
+                href: location.href,
+                ts: Date.now()
+              })
+              if (navigator.sendBeacon) {
+                navigator.sendBeacon('/__sw_reg_err', payload)
+              } else {
+                await fetch('/__sw_reg_err', {
+                  method: 'POST',
+                  body: payload,
+                  keepalive: true
+                })
+              }
+            } catch (reportErr) {
+              log.debug('Failed to report SW registration error:', reportErr)
+            }
+          }
 
           // Check for updates periodically
           if (registration.waiting) {
