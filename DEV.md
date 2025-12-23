@@ -36,31 +36,9 @@ npx wscat -c ws://127.0.0.1:3001
 
 ## Progressive Web App (PWA)
 
-The site includes a Service Worker (`sw.js`) for offline functionality:
+Hinweis: Der Service Worker (`sw.js`) wurde entfernt. Ein einmaliger Cleanup läuft beim Laden der Seite und entfernt vorherige Registrierungen und Caches.
 
-- **Offline-First** für statische Assets
-- **Network-First** für HTML-Seiten
-- **Cache-First** für Bilder und Fonts
-- Automatische Cache-Bereinigung
-
-### Service Worker testen
-
-```bash
-# Lokaler Server mit HTTPS (Service Worker benötigt HTTPS oder localhost)
-npm run serve
-
-# Service Worker Status in DevTools:
-# Application > Service Workers
-```
-
-### Service Worker löschen (während Entwicklung)
-
-```javascript
-// In Browser Console:
-navigator.serviceWorker.getRegistrations().then(registrations => {
-  registrations.forEach(registration => registration.unregister())
-})
-```
+> Tipp: Wenn du lokal Registrierungen manuell prüfen möchtest, kannst du weiterhin `navigator.serviceWorker.getRegistrations()` in der Console ausführen.
 
 ## Recent Optimizations (2025-12-04)
 
@@ -108,8 +86,8 @@ npx eslint .
 
 - Verwende das Logger-System (`createLogger`) statt direkter `console.*` Aufrufe
 - Halte CSS-Variablen in `content/root.css` zentralisiert
-- Service Worker Updates erfordern Version-Bump in `sw.js`
-- Teste offline Funktionalität mit DevTools Network Throttling
+- Service Worker wurde entfernt; kein Version-Bump erforderlich
+- Teste Offline-/Network-Fallbacks manuell mit DevTools Network Throttling
 
 ### Formatting
 

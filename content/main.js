@@ -39,10 +39,9 @@ const ENV = {
     new URLSearchParams(window.location.search).has('test') ||
     navigator.userAgent.includes('HeadlessChrome') ||
     (window.location.hostname === 'localhost' && window.navigator.webdriver),
-  debug: new URLSearchParams(window.location.search).has('debug'),
-  // Disable Service Worker by default to avoid registration errors in unsupported contexts.
-  // Enable with `?use-sw=1` in the URL if you want to opt-in.
-  useServiceWorker: new URLSearchParams(window.location.search).has('use-sw')
+  debug: new URLSearchParams(window.location.search).has('debug')
+  // Service Worker removed — cleanup runs once on page load to unregister previous registrations and clear caches.
+  // (Property `useServiceWorker` removed)
 }
 
 // ===== Performance Tracking =====
@@ -614,142 +613,31 @@ document.addEventListener(
       }
     })
 
-    // ===== Service Worker Registration =====
-    if (!ENV.useServiceWorker) {
-      log.info('Service Worker registration skipped: ENV.useServiceWorker is false')
-    } else if ('serviceWorker' in navigator && !ENV.isTest) {
-      window.addEventListener('load', async () => {
-        try {
-          const swUrl = '/sw.js'
-          // Sanity-check the SW script before attempting registration to avoid noisy rejections
-          let swResp = null
+    // ===== Service Worker Cleanup (one-time) =====
+    // This will unregister any previously installed service workers and clear all caches.
+    // Keep as a one-time cleanup to ensure clients no longer use the old SW code.
+    if ('serviceWorker' in navigator && !ENV.isTest) {
+      window.addEventListener(
+        'load',
+        async () => {
           try {
-            swResp = await fetch(swUrl, {cache: 'no-store', credentials: 'same-origin'})
+            const regs = await navigator.serviceWorker.getRegistrations()
+            await Promise.all(regs.map(r => r.unregister().catch(() => {})))
+
+            if ('caches' in window) {
+              const keys = await caches.keys()
+              await Promise.all(keys.map(k => caches.delete(k)))
+            }
+
+            log.info('Service Workers unregistered and caches cleared (cleanup).')
           } catch (e) {
-            log.warn('Service Worker fetch failed, skipping registration', e)
-            try {
-              const payload = JSON.stringify({event: 'sw_fetch_failed', message: String(e), href: location.href, ts: Date.now()})
-              if (navigator.sendBeacon) navigator.sendBeacon('/__sw_reg_err', payload)
-              else fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
-            } catch (beaconErr) {
-              log.debug('SW error reporting failed', beaconErr)
-            }
-            return
+            log.debug('Service Worker cleanup failed:', e)
           }
-
-          const contentType = (swResp && swResp.headers && swResp.headers.get('content-type')) || ''
-          if (!swResp.ok || !/javascript/i.test(contentType)) {
-            log.warn('Service Worker not suitable for registration (status/content-type)', {status: swResp && swResp.status, contentType})
-            try {
-              const payload = JSON.stringify({
-                event: 'sw_not_ok',
-                status: swResp && swResp.status,
-                contentType,
-                href: location.href,
-                ts: Date.now()
-              })
-              if (navigator.sendBeacon) navigator.sendBeacon('/__sw_reg_err', payload)
-              else fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
-            } catch (beaconErr) {
-              log.debug('SW error reporting failed', beaconErr)
-            }
-            return
-          }
-
-          let swSnippet = null
-          try {
-            if (swResp && swResp.clone && typeof swResp.clone === 'function') {
-              swSnippet = await swResp.clone().text()
-              if (swSnippet && swSnippet.length > 2000) swSnippet = swSnippet.slice(0, 2000) + '…'
-            }
-          } catch (e) {
-            swSnippet = `SNIPPET_ERROR: ${String(e)}`
-          }
-
-          let registration = null
-          try {
-            registration = await navigator.serviceWorker.register(swUrl, {scope: '/'})
-            log.info('Service Worker registered:', registration && registration.scope)
-          } catch (error) {
-            log.error('Service Worker registration failed:', {
-              name: error && error.name,
-              message: error && error.message,
-              stack: error && error.stack,
-              swUrl,
-              href: location.href,
-              userAgent: navigator.userAgent || null,
-              inIframe: window.self !== window.top
-            })
-            try {
-              const payload = JSON.stringify({
-                event: 'sw_registration_failed',
-                name: error && error.name,
-                message: error && error.message,
-                stack: error && error.stack,
-                swUrl,
-                href: location.href,
-                userAgent: navigator.userAgent || null,
-                inIframe: window.self !== window.top,
-                ts: Date.now()
-              })
-              if (navigator.sendBeacon) {
-                navigator.sendBeacon('/__sw_reg_err', payload)
-              } else {
-                await fetch('/__sw_reg_err', {
-                  method: 'POST',
-                  body: payload,
-                  keepalive: true
-                })
-              }
-            } catch (reportErr) {
-              log.debug('Failed to report SW registration error:', reportErr)
-            }
-          }
-
-          // Check for updates periodically
-          if (registration && registration.waiting) {
-            log.info('Service Worker update available')
-          }
-
-          if (registration) {
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    log.info('New Service Worker available - refresh to update')
-                    // Optional: Show update notification to user
-                    fire(EVENTS.SW_UPDATE_AVAILABLE)
-                  }
-                })
-              }
-            })
-          }
-        } catch (error) {
-          log.warn('Service Worker registration failed:', error)
-          try {
-            const payloadObj = {
-              message: error && error.message,
-              name: error && error.name,
-              stack: error && error.stack,
-              href: location.href,
-              ts: Date.now(),
-              swStatus: swResp && swResp.status,
-              swContentType: contentType,
-              swUrl: swResp && swResp.url,
-              swSnippet: typeof swSnippet === 'string' ? (swSnippet.length > 2000 ? swSnippet.slice(0, 2000) + '…' : swSnippet) : null
-            }
-            const payload = JSON.stringify(payloadObj)
-            if (navigator.sendBeacon) {
-              navigator.sendBeacon('/__sw_reg_err', payload)
-            } else {
-              fetch('/__sw_reg_err', {method: 'POST', body: payload, keepalive: true})
-            }
-          } catch (beaconErr) {
-            log.debug('SW error reporting failed', beaconErr)
-          }
-        }
-      })
+        },
+        {once: true}
+      )
+    } else {
+      log.info('Service Worker cleanup skipped: not supported or test env')
     }
 
     log.info('Performance:', {
