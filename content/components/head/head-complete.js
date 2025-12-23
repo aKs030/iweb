@@ -72,7 +72,7 @@
           return false
         }
       })
-    } catch (e) {
+    } catch {
       return false
     }
   }
@@ -152,7 +152,7 @@
           document.head.appendChild(s)
         }
       })()
-    } catch (e) {
+    } catch {
       /* ignore DOM not available in some environments */
     }
 
@@ -171,8 +171,8 @@
           const r = await fetch(p, opts)
           if (r.ok) return r
           lastErr = new Error(`HTTP ${r.status}`)
-        } catch (e) {
-          lastErr = e
+        } catch {
+          lastErr = null
         }
       }
       throw lastErr || new Error('Fragment fetch failed')
@@ -275,11 +275,11 @@
             /* ignore invalid JSON-LD */
           }
         })
-      } catch (e) {
+      } catch {
         /* ignore */
       }
-    } catch (e) {
-      console.warn('[Head-Loader] Dedupe failed:', e)
+    } catch {
+      /* Dedupe failed */
     }
 
     const fragmentScripts = Array.from(fragment.querySelectorAll('script'))
@@ -301,7 +301,7 @@
         inertScript.setAttribute('data-exec-id', String(idx))
         inertScript.textContent = s.textContent
         s.parentNode.replaceChild(inertScript, s)
-      } catch (e) {}
+      } catch {}
     })
 
     if (fragment.querySelector('title') && document.querySelector('title')) {
@@ -356,13 +356,69 @@
 
       const twitterUrlEl = document.querySelector('meta[name="twitter:url"][data-shared-head="1"]')
       if (twitterUrlEl) twitterUrlEl.setAttribute('content', canonicalUrl)
-    } catch (e) {
-      console.warn('[Head-Loader] Could not set canonical/og:url:', e)
+    } catch {
+      /* Could not set canonical/og:url */
     }
 
-    // ERWEITERTE SCHEMA.ORG MARKUPS
-    try {
-      // 1. Breadcrumb Schema
+
+      // 1. Person/Photographer Schema (Hauptentität)
+      if (!document.querySelector('script[data-person="1"]')) {
+        const personSchema = {
+          '@context': 'https://schema.org',
+          '@type': ['Person', 'Photographer'],
+          '@id': window.location.origin + '/#person',
+          'name': 'Abdulkerim Sesli',
+          'alternateName': [
+            'Abdulkerim Fotograf',
+            'Abdulkerim Sesli',
+            'AKS',
+            'Abdulkerim Berlin'
+          ],
+          'description': 'Fotograf & Webentwickler aus Berlin. Portfolio, Projekte, Blog, Videos und Kontakt.',
+          'image': 'https://commons.wikimedia.org/wiki/Special:FilePath/Abdulkerim_Sesli_portrait_2025.png',
+          'email': 'kontakt@abdulkerimsesli.de',
+          'telephone': '+49-30-12345678',
+          'address': {
+            '@type': 'PostalAddress',
+            'addressLocality': 'Berlin',
+            'postalCode': '13507',
+            'addressCountry': 'DE'
+          },
+          'sameAs': [
+            'https://github.com/aKs030',
+            'https://linkedin.com/in/abdulkerimsesli',
+            'https://twitter.com/abdulkerimsesli',
+            'https://de.wikipedia.org/wiki/Abdulkerim_Sesli',
+            'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png'
+          ],
+          'url': window.location.origin + '/about/',
+          'knowsAbout': ['Fotografie', 'Webentwicklung', 'Blog', 'Videos'],
+          'hasPart': [
+            {
+              '@type': 'ImageGallery',
+              'name': 'Fotografie Portfolio',
+              'url': window.location.origin + '/gallery/'
+            },
+            {
+              '@type': 'CollectionPage',
+              'name': 'Videos',
+              'url': window.location.origin + '/videos/'
+            },
+            {
+              '@type': 'Blog',
+              'name': 'Tech Blog',
+              'url': window.location.origin + '/blog/'
+            }
+          ]
+        }
+        const script = document.createElement('script')
+        script.type = 'application/ld+json'
+        script.setAttribute('data-person', '1')
+        script.textContent = JSON.stringify(personSchema)
+        document.head.appendChild(script)
+      }
+
+      // 2. Breadcrumb Schema
       if (!document.querySelector('script[type="application/ld+json"][data-breadcrumb="1"]')) {
         const path = window.location.pathname.replace(/index\.html$/, '')
         const segments = path.split('/').filter(Boolean)
@@ -408,7 +464,7 @@
         }
       }
 
-      // 2. WebSite Schema mit Sitelinks SearchAction
+      // 3. WebSite Schema mit Sitelinks SearchAction
       if (!document.querySelector('script[data-website-search="1"]') && !existingSchemaType('WebSite')) {
         const websiteSearchSchema = {
           '@context': 'https://schema.org',
@@ -439,7 +495,10 @@
                 'urlTemplate': 'mailto:kontakt@abdulkerimsesli.de'
               }
             }
-          ]
+          ],
+          'about': {
+            '@id': window.location.origin + '/#person'
+          }
         }
         const script = document.createElement('script')
         script.type = 'application/ld+json'
@@ -448,7 +507,7 @@
         document.head.appendChild(script)
       }
 
-      // 3. Page-specific Schema
+      // 4. Page-specific Schema
       if (metaData.schemaType && metaData.schemaType !== 'WebSite') {
         if (!document.querySelector('script[data-page-schema="1"]') && !existingSchemaType(metaData.schemaType)) {
           const baseSchema = {
@@ -458,16 +517,7 @@
             'description': metaData.description,
             'url': window.location.href,
             'author': {
-              '@type': 'Person',
-              'name': 'Abdulkerim Sesli',
-              'url': window.location.origin + '/about/',
-              'sameAs': [
-                'https://github.com/aKs030',
-                'https://linkedin.com/in/abdulkerimsesli',
-                'https://twitter.com/abdulkerimsesli',
-                'https://de.wikipedia.org/wiki/Abdulkerim_Sesli',
-                'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png'
-              ]
+              '@id': window.location.origin + '/#person'
             },
             'publisher': {
               '@id': window.location.origin + '/#organization'
@@ -495,61 +545,62 @@
         }
       }
 
+
       // 4. Sitelinks Schema für Google
       if (currentPath === '/' || currentPath === '/index.html') {
-        if (!document.querySelector('script[data-sitelinks="1"]')) {
-          const sitelinksSchema = {
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            'name': 'Hauptbereiche',
-            'description': 'Wichtige Bereiche der Website',
-            'itemListElement': [
-              {
-                '@type': 'ListItem',
-                'position': 1,
-                'name': 'Projekte',
-                'url': window.location.origin + '/projekte/',
-                'description': 'Webentwicklung & Coding Projekte'
-              },
-              {
-                '@type': 'ListItem',
-                'position': 2,
-                'name': 'Blog',
-                'url': window.location.origin + '/blog/',
-                'description': 'Tech Blog & Insights'
-              },
-              {
-                '@type': 'ListItem',
-                'position': 3,
-                'name': 'Videos',
-                'url': window.location.origin + '/videos/',
-                'description': 'Video-Tutorials & Demos'
-              },
-              {
-                '@type': 'ListItem',
-                'position': 4,
-                'name': 'Galerie',
-                'url': window.location.origin + '/gallery/',
-                'description': 'Fotografie Portfolio'
-              },
-              {
-                '@type': 'ListItem',
-                'position': 5,
-                'name': 'Über',
-                'url': window.location.origin + '/about/',
-                'description': 'Über Abdulkerim Sesli'
-              }
-            ]
-          }
-          const script = document.createElement('script')
-          script.type = 'application/ld+json'
-          script.setAttribute('data-sitelinks', '1')
-          script.textContent = JSON.stringify(sitelinksSchema)
-          document.head.appendChild(script)
-        }
-
-        // 5. FAQPage (if visible in footer) — build from footer FAQ items to avoid duplication
         try {
+          if (!document.querySelector('script[data-sitelinks="1"]')) {
+            const sitelinksSchema = {
+              '@context': 'https://schema.org',
+              '@type': 'ItemList',
+              'name': 'Hauptbereiche',
+              'description': 'Wichtige Bereiche der Website',
+              'itemListElement': [
+                {
+                  '@type': 'ListItem',
+                  'position': 1,
+                  'name': 'Projekte',
+                  'url': window.location.origin + '/projekte/',
+                  'description': 'Webentwicklung & Coding Projekte'
+                },
+                {
+                  '@type': 'ListItem',
+                  'position': 2,
+                  'name': 'Blog',
+                  'url': window.location.origin + '/blog/',
+                  'description': 'Tech Blog & Insights'
+                },
+                {
+                  '@type': 'ListItem',
+                  'position': 3,
+                  'name': 'Videos',
+                  'url': window.location.origin + '/videos/',
+                  'description': 'Video-Tutorials & Demos'
+                },
+                {
+                  '@type': 'ListItem',
+                  'position': 4,
+                  'name': 'Galerie',
+                  'url': window.location.origin + '/gallery/',
+                  'description': 'Fotografie Portfolio'
+                },
+                {
+                  '@type': 'ListItem',
+                  'position': 5,
+                  'name': 'Über',
+                  'url': window.location.origin + '/about/',
+                  'description': 'Über Abdulkerim Sesli'
+                }
+              ]
+            }
+            const script = document.createElement('script')
+            script.type = 'application/ld+json'
+            script.setAttribute('data-sitelinks', '1')
+            script.textContent = JSON.stringify(sitelinksSchema)
+            document.head.appendChild(script)
+          }
+
+          // 5. FAQPage (if visible in footer) — build from footer FAQ items to avoid duplication
           if (document.querySelector('.footer-faq-list') && !document.querySelector('script[data-faq="1"]')) {
             const faqItems = Array.from(document.querySelectorAll('.footer-faq-list .faq-item'))
               .map(d => {
@@ -573,12 +624,8 @@
               document.head.appendChild(s)
             }
           }
-        } catch (e) {
-          /* noop */
-        }
 
-        // 6. @graph Consolidation + Speakable support (dupe-safe)
-        try {
+          // 6. @graph Consolidation + Speakable support (dupe-safe)
           if (!document.querySelector('script[data-graph="1"]')) {
             const graph = []
 
@@ -658,13 +705,10 @@
               document.head.appendChild(s)
             }
           }
-        } catch (e) {
-          /* noop */
+        } catch {
+          /* Schema generation failed */
         }
       }
-    } catch (e) {
-      console.warn('[Head-Loader] Schema generation failed', e)
-    }
 
     // Script Execution
     try {
@@ -689,7 +733,7 @@
         }
         oldScript.remove()
       })
-    } catch (e) {}
+    } catch {}
 
     // Loading Screen
     try {
@@ -708,7 +752,7 @@
             once: true
           })
       }
-    } catch (e) {}
+    } catch {}
 
     // Hide Loader
     try {
@@ -735,7 +779,7 @@
 
       window.addEventListener('load', hideLoader, {once: true})
       setTimeout(hideLoader, 5000)
-    } catch (e) {}
+    } catch {}
 
     window.SHARED_HEAD_LOADED = true
     document.dispatchEvent(new CustomEvent('shared-head:loaded'))
