@@ -18,17 +18,17 @@ LAST|P2002|"kRm_030"  # Twitter/X handle (optional)
 # LAST|P18|"Dateiname.jpg"
 
 # Variante B: Update eines bestehenden Items (ersetze QXXXXX mit der Ziel‑QID)
-Q137477188|Len|"Abdulkerim Sesli"
-Q137477188|Lde|"Abdulkerim Sesli"
-Q137477188|Den|"Privat‑Website dient als Visitenkarte"@de
-Q137477188|P106|Q33231
-Q137477188|P106|Q6859454
-Q137477188|P569|+1991-00-00T00:00:00Z/9
-Q137477188|P19|Q64
-Q137477188|P27|Q183
-Q137477188|P856|"https://abdulkerimsesli.de"
-Q137477188|P2037|"aKs030"
-Q137477188|P18|"Abdulkerim_Sesli_portrait_2025.png"  # Ergänze nach Upload auf Commons den genauen Dateinamen
+Q13755684|Len|"Abdulkerim Sesli"
+Q13755684|Lde|"Abdulkerim Sesli"
+Q13755684|Den|"Privat‑Website dient als Visitenkarte"@de
+Q13755684|P106|Q33231
+Q13755684|P106|Q6859454
+Q13755684|P569|+1991-00-00T00:00:00Z/9
+Q13755684|P19|Q64
+Q13755684|P27|Q183
+Q13755684|P856|"https://abdulkerimsesli.de"
+Q13755684|P2037|"aKs030"
+Q13755684|P18|"Abdulkerim_Sesli_portrait_2025.png"  # Ergänze nach Upload auf Commons den genauen Dateinamen
 
 # Hinweise zur Ausführung
 # 1) Logge dich in QuickStatements (Toolforge) ein.
