@@ -1,398 +1,69 @@
-<!-- Base Meta -->
+<!--
+  Modern Head Template
+  - Static Meta Tags only
+  - No bloated inline JSON-LD (handled by head-complete.js)
+  - Security & Performance headers optimized
+-->
+
+<!-- Base -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-<!-- Google tag (gtag.js) - Site-wide (added per user request: AW-1036079663) -->
+<!-- Google Gtag (Base Loader) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1036079663"></script>
-<script src="/content/components/head/head-inline.js" defer data-shared-head="1"></script>
+<script src="/content/components/head/head-inline.js" defer></script>
 
-<!-- Dynamic Title (replaced by head-complete.js) -->
+<!-- Dynamic Content Placeholders (Filled by head-complete.js) -->
 <title>{{PAGE_TITLE}}</title>
-
-<!-- SEO & Metadata -->
 <meta name="description" content="{{PAGE_DESCRIPTION}}" />
-<meta name="keywords" content="{{PAGE_KEYWORDS}}" />
-<link rel="canonical" href="https://abdulkerimsesli.de/" data-shared-head="1" />
+
+<!-- Core SEO -->
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta name="language" content="de-DE" />
 <meta name="author" content="Abdulkerim Sesli" />
 <meta name="google-site-verification" content="oJc1G_If9jFjJK_dse2vt7ayvVYSDBNLPWTpyxiYcBs" />
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-<meta name="language" content="de-DE" />
-<meta name="rating" content="General" />
-<meta name="revisit-after" content="7 days" />
-<meta name="msapplication-config" content="/browserconfig.xml" />
-<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="canonical" href="https://abdulkerimsesli.de/" />
 
-<!-- Geo Positioning -->
+<!-- Geo / Local SEO -->
 <meta name="geo.region" content="DE-BE" />
 <meta name="geo.placename" content="Berlin" />
 <meta name="geo.position" content="52.5200;13.4050" />
 <meta name="ICBM" content="52.5200, 13.4050" />
 
-<!-- Security Configuration -->
-<meta
-  http-equiv="Content-Security-Policy"
-  content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://pagead2.googlesyndication.com 'sha256-LlqcfVdgf2EC8/NVn7GvOQImy2Bt7AbcNRWxvy9VyCc=' 'sha256-2Eer+pwIOr312DBKle91wMO9vwmu3mtsaMzpcn4668Q=' 'sha256-FEyTQeQkupeLqEqMtZuH/WuZZdPJFUFShxIpm83B//Y=' 'unsafe-eval'; script-src-elem 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://pagead2.googlesyndication.com 'sha256-LlqcfVdgf2EC8/NVn7GvOQImy2Bt7AbcNRWxvy9VyCc=' 'sha256-2Eer+pwIOr312DBKle91wMO9vwmu3mtsaMzpcn4668Q=' 'sha256-FEyTQeQkupeLqEqMtZuH/WuZZdPJFUFShxIpm83B//Y='; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net https://www.google-analytics.com https://region1.google-analytics.com https://www.google.com https://api.github.com https://generativelanguage.googleapis.com https://www.googleapis.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googleadservices.com ws://127.0.0.1:3001 ws://localhost:3001 wss://127.0.0.1:3001 wss://localhost:3001; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.googletagmanager.com https://www.google.com https://googleads.g.doubleclick.net; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self';" />
-<meta
-  http-equiv="Permissions-Policy"
-  content="geolocation=(), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()" />
-<meta name="referrer" content="strict-origin-when-cross-origin" />
-<meta http-equiv="X-Content-Type-Options" content="nosniff" />
-
-<!-- Performance & Caching -->
-<!-- Note: Caching should be controlled via HTTP headers, not meta tags. -->
-
-<!-- DNS Prefetch & Preconnect -->
-<link rel="preconnect" href="https://api.github.com" />
-<link rel="preconnect" href="https://github.com" crossorigin />
-<link rel="preconnect" href="https://www.googletagmanager.com" />
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-<!-- Preload removed: three.module.js is lazy-loaded later; keeping preconnect only to avoid unused-preload warnings -->
-
-<!-- PWA & Mobile Experience -->
-<meta name="format-detection" content="telephone=no" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-title" content="AKS" />
-<meta name="application-name" content="AKS" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#2c2c2e" media="(prefers-color-scheme: dark)" />
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-<meta name="color-scheme" content="dark light" />
-<link rel="manifest" href="/manifest.json" />
-
-<!-- Open Graph / Social Media -->
-<meta property="og:title" content="{{PAGE_TITLE}}" />
-<meta property="og:description" content="Privates Portfolio von Abdulkerim Sesli — Fotograf & Webentwickler in Berlin." />
+<!-- Social Media / Open Graph Base -->
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://abdulkerimsesli.de/" data-shared-head="1" />
-<meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.png" />
+<meta property="og:site_name" content="Abdulkerim — Fotograf & Webentwickler" />
+<meta property="og:locale" content="de_DE" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Abdulkerim — Fotograf & Webentwickler - Webentwicklung und Fotografie" />
-<meta property="og:locale" content="de_DE" />
-<meta property="og:site_name" content="Abdulkerim — Fotograf & Webentwickler" />
-
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{PAGE_TITLE}}" />
-<meta name="twitter:description" content="Privates Portfolio von Abdulkerim Sesli — Fotograf & Webentwickler." />
-<meta name="twitter:url" content="https://abdulkerimsesli.de/" data-shared-head="1" />
-<meta name="twitter:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.png" />
-<meta name="twitter:image:alt" content="Abdulkerim — Fotograf & Webentwickler Preview" />
 <meta name="twitter:creator" content="@abdulkerimsesli" />
-<meta name="twitter:site" content="@abdulkerimsesli" />
 
-<!-- Icons - Optimized for Google and Devices -->
-<!-- SVG Favicon (modern browsers) -->
+<!-- Icons -->
 <link rel="icon" href="/content/assets/img/icons/favicon.svg" type="image/svg+xml" />
-
-<!-- PNG Fallbacks for various sizes (prefer larger sizes first for Google Search) -->
 <link rel="icon" type="image/png" sizes="192x192" href="/content/assets/img/icons/icon-192.png" />
-<link rel="icon" type="image/png" sizes="96x96" href="/content/assets/img/icons/icon-96.png" />
-<link rel="icon" type="image/png" sizes="48x48" href="/content/assets/img/icons/icon-48.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="/content/assets/img/icons/icon-32.png" />
-<link rel="icon" type="image/png" sizes="16x16" href="/content/assets/img/icons/icon-32.png" />
+<link rel="apple-touch-icon" href="/content/assets/img/icons/icon-192.png" />
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#2c2c2e" media="(prefers-color-scheme: dark)" />
 
-<!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" sizes="180x180" href="/content/assets/img/icons/icon-192.png" />
-<link rel="apple-touch-icon" sizes="152x152" href="/content/assets/img/icons/icon-192.png" />
-<link rel="apple-touch-icon" sizes="144x144" href="/content/assets/img/icons/icon-144.png" />
-<link rel="apple-touch-icon" sizes="120x120" href="/content/assets/img/icons/icon-96.png" />
-<link rel="apple-touch-icon" sizes="114x114" href="/content/assets/img/icons/icon-96.png" />
-<link rel="apple-touch-icon" sizes="76x76" href="/content/assets/img/icons/icon-96.png" />
-<link rel="apple-touch-icon" sizes="72x72" href="/content/assets/img/icons/icon-96.png" />
-<link rel="apple-touch-icon" sizes="60x60" href="/content/assets/img/icons/icon-96.png" />
-<link rel="apple-touch-icon" sizes="57x57" href="/content/assets/img/icons/icon-96.png" />
+<!-- CSS Resources -->
+<link rel="stylesheet" href="/content/styles/root.css" />
+<link rel="stylesheet" href="/content/components/menu/menu.css" />
+<link rel="stylesheet" href="/content/components/footer/footer.css" />
 
-<!-- Safari Mask Icon -->
-<link rel="mask-icon" href="/content/assets/img/icons/favicon.svg" color="#07a1ff" />
-
-<!-- Microsoft Tiles -->
-<meta name="msapplication-TileColor" content="#07a1ff" />
-<meta name="msapplication-TileImage" content="/content/assets/img/icons/icon-144.png" />
-<meta name="msapplication-config" content="/browserconfig.xml" />
-
-<!-- Shortcut Icon (ICO Fallback for older browsers) -->
-<!-- Add a cache-busting query to force CDNs to refresh when favicon changes -->
-<link rel="shortcut icon" href="/favicon.ico?v=2" type="image/x-icon" />
-
-<!-- JSON-LD Person Schema (enhanced for Photographer SEO) -->
-<script type="application/ld+json" data-cfasync="false" data-person="1">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "@id": "https://abdulkerimsesli.de/#person",
-    "name": "Abdulkerim Sesli",
-    "alternateName": [
-      "Abdulkerim Berlin",
-      "Abdul sesli",
-      "Abdul Berlin",
-      "AKS",
-      "Abdulkerim Sesli Berlin",
-      "abdul berlin",
-      "abdul sesli",
-      "abdulkerim berlin",
-      "abdulkerim beriln"
-    ],
-    "jobTitle": "Fotograf & Webentwickler",
-    "description": "Fotograf und Webentwickler aus Berlin (13507). Spezialisiert auf Urban Photography sowie moderne Webtechnologien (JavaScript, React, Three.js).",
-    "url": "https://abdulkerimsesli.de",
-    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://abdulkerimsesli.de/"},
-    "email": "mailto:kontakt@abdulkerimsesli.de",
-    "image": {
-      "@type": "ImageObject",
-      "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
-      "width": 512,
-      "height": 512,
-      "caption": "Abdulkerim Sesli - Digital Creator"
-    },
-    "sameAs": [
-      "https://github.com/aKs030",
-      "https://linkedin.com/in/abdulkerimsesli",
-      "https://twitter.com/abdulkerimsesli",
-      "https://www.instagram.com/abdulkerimsesli",
-      "https://www.wikidata.org/wiki/User:Abdulkerim_sesli",
-      "https://www.wikidata.org/wiki/Q137477849",
-      "https://www.wikidata.org/wiki/Q137477910",
-      "https://de.wikipedia.org/wiki/Abdulkerim_Sesli",
-      "https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png",
-      "https://www.youtube.com/@aks.030"
-    ],
-    "birthDate": "1991",
-    "birthPlace": {"@type": "Place", "name": "Berlin"},
-    "worksFor": {
-      "@type": "Organization",
-      "name": "Abdulkerim — Fotograf & Webentwickler",
-      "@id": "https://abdulkerimsesli.de/#organization"
-    },
-    "knowsLanguage": ["Deutsch", "English"],
-    "notableWork": [
-      {"@type": "CreativeWork", "name": "Schere Stein Papier", "url": "https://abdulkerimsesli.de/projekte/#project-1"},
-      {"@type": "CreativeWork", "name": "Zahlen Raten", "url": "https://abdulkerimsesli.de/projekte/#project-2"},
-      {"@type": "CreativeWork", "name": "Color Changer", "url": "https://abdulkerimsesli.de/projekte/#project-3"}
-    ],
-    "knowsAbout": [
-      {
-        "@type": "Thing",
-        "name": "Web Development",
-        "description": "Moderne Webentwicklung mit JavaScript, React und Three.js",
-        "sameAs": "https://www.wikidata.org/wiki/Q386275"
-      },
-      {
-        "@type": "Thing",
-        "name": "Photography",
-        "description": "Urban Photography und Landschaftsfotografie",
-        "sameAs": "https://www.wikidata.org/wiki/Q11633"
-      },
-      {
-        "@type": "Thing",
-        "name": "JavaScript",
-        "description": "Frontend-Entwicklung mit modernen JavaScript-Frameworks",
-        "sameAs": "https://www.wikidata.org/wiki/Q2005"
-      },
-      {
-        "@type": "Thing",
-        "name": "React",
-        "description": "React-Entwicklung und moderne UI-Komponenten",
-        "sameAs": "https://www.wikidata.org/wiki/Q19399674"
-      },
-      {
-        "@type": "Thing",
-        "name": "Three.js",
-        "description": "3D-Webgrafik und Animationen",
-        "sameAs": "https://www.wikidata.org/wiki/Q288402"
-      },
-      {
-        "@type": "Place",
-        "name": "Berlin",
-        "description": "Hauptstadt von Deutschland, Wirkungskreis",
-        "sameAs": "https://www.wikidata.org/wiki/Q64"
-      }
-    ],
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Sterkraderstraße 59",
-      "postalCode": "13507",
-      "addressLocality": "Berlin",
-      "addressRegion": "Berlin",
-      "addressCountry": "DE"
-    },
-    "alumniOf": {
-      "@type": "EducationalOrganization",
-      "name": "Selbststudium & Online-Kurse"
-    },
-    "contactPoint": [
-      {
-        "@type": "ContactPoint",
-        "contactType": "General Inquiry",
-        "email": "mailto:kontakt@abdulkerimsesli.de",
-        "availableLanguage": ["de", "en"],
-        "areaServed": ["DE", "US"]
-      }
-    ]
-  }
-</script>
-
-<!-- JSON-LD Website Schema with SearchAction -->
-<script type="application/ld+json" data-cfasync="false" data-website-search="1">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Abdulkerim — Fotograf & Webentwickler Portfolio",
-    "alternateName": [
-      "AKS Portfolio",
-      "Abdulkerim Sesli Portfolio",
-      "Abdulkerim Berlin Portfolio",
-      "abdul berlin",
-      "abdul sesli",
-      "abdulkerim berlin"
-    ],
-    "url": "https://abdulkerimsesli.de",
-    "description": "Privates Portfolio von Abdulkerim Sesli (Berlin) — Fotograf & Webentwickler. Gefunden unter: abdul berlin, abdul sesli, abdulkerim berlin.",
-    "author": {
-      "@type": "Person",
-      "name": "Abdulkerim Sesli"
-    },
-    "inLanguage": "de-DE",
-    "copyrightYear": 2025,
-    "copyrightHolder": {
-      "@type": "Person",
-      "name": "Abdulkerim Sesli"
-    },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://abdulkerimsesli.de/?s={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    }
-  }
-</script>
-
-<!-- JSON-LD Organization Schema -->
-<script type="application/ld+json" data-cfasync="false" data-organization="1">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": "https://abdulkerimsesli.de/#organization",
-    "name": "Abdulkerim — Fotograf & Webentwickler",
-    "legalName": "Abdulkerim Sesli",
-    "url": "https://abdulkerimsesli.de",
-    "email": "mailto:kontakt@abdulkerimsesli.de",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
-      "width": 512,
-      "height": 512,
-      "caption": "Abdulkerim Sesli Logo"
-    },
-    "image": "https://abdulkerimsesli.de/content/assets/img/og/og-home.png",
-    "description": "Portfolio - Webentwicklung und Fotografie aus Berlin (13507).",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Sterkraderstraße 59",
-      "postalCode": "13507",
-      "addressLocality": "Berlin",
-      "addressRegion": "Berlin",
-      "addressCountry": "DE"
-    },
-    "sameAs": [
-      "https://github.com/aKs030",
-      "https://linkedin.com/in/abdulkerimsesli",
-      "https://twitter.com/abdulkerimsesli",
-      "https://www.youtube.com/@aks.030",
-      "https://de.wikipedia.org/wiki/Abdulkerim_Sesli",
-      "https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png",
-      "https://www.wikidata.org/wiki/Q137477910"
-    ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "General Inquiry",
-      "email": "mailto:kontakt@abdulkerimsesli.de",
-      "availableLanguage": ["de", "en"],
-      "areaServed": [
-        {
-          "@type": "Place",
-          "name": "Berlin",
-          "sameAs": "https://www.wikidata.org/wiki/Q64"
-        },
-        {
-          "@type": "Country",
-          "name": "Germany",
-          "sameAs": "https://www.wikidata.org/wiki/Q183"
-        }
-      ]
-    },
-    "potentialAction": {
-      "@type": "ContactAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "mailto:kontakt@abdulkerimsesli.de"
-      }
-    },
-    "founder": {"@type": "Person", "@id": "https://abdulkerimsesli.de/#person"}
-  }
-</script>
-
-<!-- Sitelinks / ItemList for Google -->
-<script type="application/ld+json" data-cfasync="false" data-sitelinks="1">
-  {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "itemListElement": [
-      {"@type": "SiteNavigationElement", "position": 1, "name": "Projekte", "url": "https://abdulkerimsesli.de/projekte/"},
-      {"@type": "SiteNavigationElement", "position": 2, "name": "Blog", "url": "https://abdulkerimsesli.de/blog/"},
-      {"@type": "SiteNavigationElement", "position": 3, "name": "Videos", "url": "https://abdulkerimsesli.de/videos/"},
-      {"@type": "SiteNavigationElement", "position": 4, "name": "Galerie", "url": "https://abdulkerimsesli.de/gallery/"},
-      {"@type": "SiteNavigationElement", "position": 5, "name": "Über", "url": "https://abdulkerimsesli.de/about/"}
-    ]
-  }
-</script>
-
-<!-- FAQ Schema removed: FAQ is rendered visibly in the footer to avoid duplicate structured data entries for FAQPage -->
-
-<!-- Inline @font-face for Inter (centralized for all pages) -->
-<!-- Note: Preload removed - font-display: optional ensures no preload warnings -->
+<!-- Font Loading Strategy (No Preload to avoid warnings, Font-Display Swap in CSS) -->
 <style>
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 100 900;
     font-display: swap;
-    font-synthesis: none;
     src: url('/content/assets/fonts/InterVariable.woff2') format('woff2-variations');
-    unicode-range: U+0000-00FF;
   }
-
-  body {
-    font-family:
-      'Inter',
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
-  }
+  body { font-family: 'Inter', sans-serif; }
 </style>
 
-<!-- Global CSS -->
-<link rel="stylesheet" href="/content/styles/root.css" />
-<link rel="stylesheet" href="/content/components/menu/menu.css" />
-<link rel="stylesheet" href="/content/components/footer/footer.css" />
-<link rel="stylesheet" href="/content/components/footer/day-night-artwork.css" />
-<link rel="stylesheet" href="/content/components/footer/cookie-consent.css" />
-
-<!-- Google Analytics (Consent-Controlled) -->
-<script type="text/plain" data-consent="required" data-src="https://www.googletagmanager.com/gtag/js?id=G-S0587RQ4CN" async></script>
-<script type="text/plain" data-consent="required">
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-S0587RQ4CN');
-</script>
-
-<!-- Main Application Script -->
+<!-- Scripts -->
 <script type="module" src="/content/main.js"></script>
 
-<!-- Helper scripts moved to external file to satisfy CSP (head-inline.js) -->
+<!-- Note: Structured Data (Schema.org) is generated dynamically by head-complete.js -->
