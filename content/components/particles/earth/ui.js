@@ -37,7 +37,7 @@ export function showLoadingState(container) {
     try {
       document.body.classList.add('global-loading-visible')
     } catch (err) {
-      console.warn('EarthUI: add global-loading-visible failed', err)
+      log.warn('EarthUI: add global-loading-visible failed', err)
     }
   } else {
     // Fallback: no local progress UI; do nothing.
@@ -64,7 +64,7 @@ export function hideLoadingState(container) {
       try {
         document.body.classList.remove('global-loading-visible')
       } catch (err) {
-        console.warn('EarthUI: remove global-loading-visible failed', err)
+        log.warn('EarthUI: remove global-loading-visible failed', err)
       }
     }, 300)
   } else {

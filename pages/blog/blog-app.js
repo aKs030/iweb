@@ -1,5 +1,8 @@
 /* global React, ReactDOM */
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js'
+import {createLogger} from '../../content/utils/shared-utilities.js'
+
+const log = createLogger('BlogApp')
 import {blogPosts} from './blog-data.js'
 
 const html = htm.bind(React.createElement)
@@ -120,7 +123,7 @@ function BlogApp() {
         document.head.appendChild(s)
       }
     } catch (e) {
-      if (typeof console !== 'undefined' && console.warn) console.warn('Could not insert Article JSON-LD', e)
+      log.warn('Could not insert Article JSON-LD', e)
     }
   }, [currentPostId])
 
@@ -210,5 +213,5 @@ if (rootEl && window.ReactDOM && window.React) {
   `)
 } else {
   // Silent fail in production
-  if (typeof console !== 'undefined') console.error('React environment not ready')
+  log.error('React environment not ready')
 }

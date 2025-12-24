@@ -461,7 +461,7 @@ class FooterLoader {
           response = await fetch(c)
           if (response.ok) break
         } catch (err) {
-          console.warn('FooterLoader: fetch candidate failed', err)
+          log.warn('FooterLoader: fetch candidate failed', err)
           response = null
         }
       }

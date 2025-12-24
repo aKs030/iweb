@@ -399,11 +399,11 @@ export function schedulePersistentStorageRequest(delay = 2500) {
   try {
     setTimeout(() => {
       ensurePersistentStorage().catch(err => {
-        console.warn('ensurePersistentStorage failed', err)
+        sharedLogger.warn('ensurePersistentStorage failed', err)
         /* swallow after logging */ void 0
       })
     }, delay)
-  } catch (_e) {
+  } catch {
     void 0
   }
 }
@@ -428,7 +428,7 @@ export function addListener(target, event, handler, options = {}) {
     target.addEventListener(event, handler, finalOptions)
     return () => target.removeEventListener(event, handler, finalOptions)
   } catch (err) {
-    console.warn('addListener: failed to add listener', err)
+    sharedLogger.warn('addListener: failed to add listener', err)
     return () => {}
   }
 }

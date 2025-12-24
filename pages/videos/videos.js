@@ -56,7 +56,7 @@ function _shareChannel() {
     btn.replaceWith(wrapper)
     try {
       iframe.focus()
-    } catch (_e) {
+    } catch {
       /* ignore */
     }
     btn.dataset.loaded = '1'
@@ -76,7 +76,7 @@ function _shareChannel() {
         })
         b.dataset.bound = '1'
       })
-    } catch (_e) {
+    } catch {
       /* ignore */
     }
   }
@@ -177,7 +177,7 @@ function _shareChannel() {
         let text = ''
         try {
           text = await res.text()
-        } catch (e) {
+        } catch {
           /* noop */
         }
         const err = new Error(`Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`)
@@ -357,10 +357,10 @@ function _shareChannel() {
       container.insertBefore(el, container.firstChild)
       try {
         setStatus(el.textContent)
-      } catch (e) {
+      } catch {
         /* ignore */
       }
-    } catch (e) {
+    } catch {
       // ignore UI errors
     }
   }

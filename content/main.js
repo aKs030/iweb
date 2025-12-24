@@ -25,7 +25,7 @@ if (typeof window !== 'undefined') {
   try {
     window.a11y = a11y
     if (typeof a11y?.init === 'function') a11y.init()
-  } catch (e) {
+  } catch {
     /* ignored */
   }
 }
@@ -154,7 +154,7 @@ const SectionLoader = (() => {
         try {
           response = await fetchWithTimeout(candidate)
           if (response && response.ok) break
-        } catch (e) {
+        } catch {
           response = null
         }
       }
@@ -271,7 +271,7 @@ function _initApp() {
   try {
     a11y?.updateAnimations?.()
     a11y?.updateContrast?.()
-  } catch (e) {
+  } catch {
     /* ignored */
   }
 }
@@ -348,7 +348,7 @@ const LoadingScreenManager = (() => {
 
       try {
         document.body.classList.remove('global-loading-visible')
-      } catch (e) {
+      } catch {
         /* ignore */
       }
 
@@ -523,11 +523,11 @@ document.addEventListener(
           try {
             link.media = 'all'
             link.removeAttribute('data-defer')
-          } catch (e) {
+          } catch {
             /* ignore individual link errors */
           }
         })
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -554,7 +554,7 @@ document.addEventListener(
                 node.media = 'all'
                 node.removeAttribute('data-defer')
               }
-            } catch (err) {
+            } catch {
               /* ignore per-node errors */
             }
           }
@@ -563,7 +563,7 @@ document.addEventListener(
       headObserver.observe(document.head || document.documentElement, {childList: true, subtree: true})
       // Disconnect after full load to avoid long-running observers
       window.addEventListener('load', () => headObserver.disconnect(), {once: true})
-    } catch (e) {
+    } catch {
       /* ignore overall activation errors */
     }
 
@@ -578,7 +578,7 @@ document.addEventListener(
         event.preventDefault()
         try {
           window.location.reload()
-        } catch (e) {
+        } catch {
           // fallback
           location.href = location.href
         }
@@ -597,20 +597,20 @@ document.addEventListener(
         }
 
         if (navigator.share) {
-          navigator.share(shareData).catch(err => console.warn('share failed', err))
+          navigator.share(shareData).catch(err => log.warn('share failed', err))
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(shareUrl).then(() => {
             try {
               announce('Link kopiert', {dedupe: true})
             } catch (err) {
-              console.warn('announce failed', err)
+              log.warn('announce failed', err)
             }
           })
         } else {
           try {
             window.prompt('Link kopieren', shareUrl)
           } catch (err) {
-            console.warn('prompt failed', err)
+            log.warn('prompt failed', err)
           }
         }
         return
@@ -626,7 +626,7 @@ document.addEventListener(
         async () => {
           try {
             const regs = await navigator.serviceWorker.getRegistrations()
-            await Promise.all(regs.map(r => r.unregister().catch(err => console.warn('ServiceWorker unregister failed', err))))
+            await Promise.all(regs.map(r => r.unregister().catch(err => log.warn('ServiceWorker unregister failed', err))))
 
             if ('caches' in window) {
               const keys = await caches.keys()
@@ -664,7 +664,7 @@ document.addEventListener(
                 log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001')
                 try {
                   rws.send('dev:hello')
-                } catch (e) {
+                } catch {
                   /* ignore */
                 }
               }

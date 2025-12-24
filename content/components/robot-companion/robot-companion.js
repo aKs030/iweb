@@ -10,6 +10,9 @@ import {RobotAnimation} from './modules/robot-animation.js'
 import {RobotChat} from './modules/robot-chat.js'
 import {RobotIntelligence} from './modules/robot-intelligence.js'
 import {RobotSound} from './modules/robot-sound.js'
+import {createLogger} from '../../utils/shared-utilities.js'
+
+const log = createLogger('RobotCompanion')
 
 class RobotCompanion {
   constructor() {
@@ -309,7 +312,7 @@ class RobotCompanion {
         const maxLeft = initialLeft - 20
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
       } catch (err) {
-        console.warn('RobotCompanion: hero typing end handler failed', err)
+        log.warn('RobotCompanion: hero typing end handler failed', err)
       }
     }
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd)
@@ -348,7 +351,7 @@ class RobotCompanion {
             this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
           }
         } catch (err) {
-          console.warn('RobotCompanion: scroll handler collision check failed', err)
+          log.warn('RobotCompanion: scroll handler collision check failed', err)
         }
       }, 500)
     }
@@ -597,7 +600,7 @@ class RobotCompanion {
           if (!el) return false
           const r = el.getBoundingClientRect()
           return r.top <= midY && r.bottom >= midY
-        } catch (e) {
+        } catch {
           return false
         }
       }
@@ -623,7 +626,7 @@ class RobotCompanion {
 
       this.trackSectionVisit(context)
       return context
-    } catch (e) {
+    } catch {
       return 'default'
     }
   }

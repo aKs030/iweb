@@ -236,7 +236,7 @@ export class TypeWriter {
       try {
         document.dispatchEvent(new CustomEvent('hero:typingEnd', {detail: {text: full, author}}))
       } catch (err) {
-        console.warn('TypeWriter: dispatch hero:typingEnd failed', err)
+        log.warn('TypeWriter: dispatch hero:typingEnd failed', err)
       }
       delay = this.wait
       this._isDeleting = true
@@ -286,7 +286,7 @@ export async function initHeroSubtitle(options = {}) {
       try {
         cfg = (await options.ensureHeroDataModule())?.typewriterConfig || {}
       } catch (err) {
-        console.warn('TypeWriter: ensureHeroDataModule failed', err)
+        log.warn('TypeWriter: ensureHeroDataModule failed', err)
       }
     }
 
@@ -310,7 +310,7 @@ export async function initHeroSubtitle(options = {}) {
           setCSSVars(el, {bottom: `calc(${base} + ${overlap}px)`})
         }
       } catch (err) {
-        console.warn('TypeWriter: checkFooterOverlap failed', err)
+        log.warn('TypeWriter: checkFooterOverlap failed', err)
       }
     }
 
@@ -353,7 +353,7 @@ export async function initHeroSubtitle(options = {}) {
         try {
           subtitleEl.classList.remove('is-locked')
         } catch (err) {
-          console.warn('TypeWriter: remove lock failed', err)
+          log.warn('TypeWriter: remove lock failed', err)
         }
       })
 

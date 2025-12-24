@@ -1,4 +1,6 @@
 // Simple ReconnectingWebSocket with exponential backoff and visibility/online awareness
+import {createLogger} from './shared-utilities.js'
+const log = createLogger('ReconnectingWebSocket')
 export class ReconnectingWebSocket {
   constructor(url, protocols = []) {
     this.url = url
@@ -41,7 +43,7 @@ export class ReconnectingWebSocket {
     try {
       this.ws = new WebSocket(this.url, this.protocols)
     } catch (err) {
-      console.warn('ReconnectingWebSocket: synchronous connect failed', err)
+      log.warn('ReconnectingWebSocket: synchronous connect failed', err)
       // Synchronous failure, schedule reconnect
       this._scheduleReconnect()
       return
@@ -53,7 +55,7 @@ export class ReconnectingWebSocket {
         try {
           this.onopen(e)
         } catch (err) {
-          console.warn('ReconnectingWebSocket: onopen handler threw', err)
+          log.warn('ReconnectingWebSocket: onopen handler threw', err)
         }
     }
 
