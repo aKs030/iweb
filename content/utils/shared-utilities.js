@@ -245,6 +245,46 @@ export class TimerManager {
   }
 }
 
+// ===== App Load Manager =====
+// Small singleton that tracks modules which block the global loading screen.
+export const AppLoadManager = (() => {
+  const pending = new Set()
+  const log = createLogger('AppLoadManager')
+
+  return {
+    block(name) {
+      if (!name) return
+      pending.add(name)
+      try {
+        log.debug(`Blocked: ${name}`)
+      } catch {
+        /* ignore logging errors */
+      }
+    },
+
+    unblock(name) {
+      if (!name) return
+      pending.delete(name)
+      try {
+        log.debug(`Unblocked: ${name}`)
+      } catch {
+        /* ignore logging errors */
+      }
+    },
+
+    isBlocked() {
+      return pending.size > 0
+    },
+
+    getPending() {
+      return Array.from(pending)
+    }
+  }
+})()
+
+// Note: Legacy global access to `AppLoadManager` via `window` has been removed
+// Prefer importing explicitly: `import {AppLoadManager} from './utils/shared-utilities.js'`
+
 // ===== Events System =====
 
 export const EVENTS = Object.freeze({
@@ -268,6 +308,57 @@ export function fire(type, detail = null, target = document) {
     target.dispatchEvent(new CustomEvent(type, {detail}))
   } catch (error) {
     sharedLogger.warn(`Failed to dispatch event: ${type}`, error)
+  }
+}
+
+// ===== Legacy Global Shims Helper =====
+// Allows controlled exposure of deprecated globals on `window`.
+export const LEGACY_CLEAN_MODE = (() => {
+  try {
+    if (typeof window === 'undefined') return false
+    const params = new URLSearchParams(window.location.search || '')
+    const flag = params.has('clean')
+    const globalFlag = Boolean(window.__CLEAN_GLOBALS)
+    return flag || globalFlag
+  } catch {
+    return false
+  }
+})()
+
+export function setLegacyGlobal(name, value, {debugOnly = false, note = ''} = {}) {
+  if (typeof window === 'undefined') return
+  try {
+    if (LEGACY_CLEAN_MODE) {
+      sharedLogger.debug(`Skipping legacy global '${name}' due to clean mode`)
+      return
+    }
+
+    if (debugOnly) {
+      const params = new URLSearchParams(window.location.search || '')
+      const isDebug = params.has('debug') || window.localStorage?.getItem('iweb-debug') === 'true'
+      if (!isDebug) return
+    }
+
+    try {
+      Object.defineProperty(window, name, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value
+      })
+    } catch {
+      // Fall back to simple assignment if defineProperty fails in some environments
+      try {
+        window[name] = value
+      } catch (ex) {
+        sharedLogger.warn(`Failed to set legacy global '${name}'`, ex)
+        return
+      }
+    }
+
+    if (note) sharedLogger.warn(`Exposed legacy global '${name}' (DEPRECATED): ${note}`)
+  } catch {
+    sharedLogger.warn(`Failed to set legacy global '${name}'`)
   }
 }
 
