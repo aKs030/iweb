@@ -166,7 +166,8 @@ export function initHeroFeatureBundle() {
     const doScroll = () => {
       try {
         target.scrollIntoView({behavior: 'smooth'})
-      } catch {
+      } catch (err) {
+        console.warn('HeroManager: scrollIntoView failed, using fallback', err)
         const top = target.getBoundingClientRect().top + window.pageYOffset
         window.scrollTo({top, behavior: 'smooth'})
       }
@@ -177,8 +178,8 @@ export function initHeroFeatureBundle() {
         window.SectionLoader.loadSection(target).finally(() => requestAnimationFrame(doScroll))
         return
       }
-    } catch {
-      /* ignore and fallback to immediate scroll */
+    } catch (err) {
+      console.warn('HeroManager: SectionLoader.loadSection failed, falling back to immediate scroll', err)
     }
 
     requestAnimationFrame(doScroll)

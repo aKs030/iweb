@@ -433,8 +433,8 @@ const PhotoGallery = () => {
       setTimeout(() => {
         try {
           if (prevActive && typeof prevActive.focus === 'function') prevActive.focus()
-        } catch {
-          /* ignore */
+        } catch (err) {
+          console.warn('GalleryApp: restoring focus failed', err)
         }
       }, 0)
     }

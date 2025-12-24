@@ -1,3 +1,6 @@
+import {createLogger} from '../../../utils/shared-utilities.js'
+const log = createLogger('RobotChat')
+
 export class RobotChat {
   constructor(robot) {
     this.robot = robot
@@ -78,6 +81,7 @@ export class RobotChat {
       this.robot.animationModule.stopThinking()
       this.addMessage(response, 'bot')
     } catch (e) {
+      log.error('[RobotChat] generateResponse failed', e)
       this.removeTyping()
       this.robot.animationModule.stopThinking()
       this.addMessage('Fehler bei der Verbindung.', 'bot')
@@ -355,7 +359,8 @@ export class RobotChat {
         setTimeout(() => this.hideBubble(), 8000)
       }
     } catch (e) {
-      // Silent fail
+      log.warn('[RobotChat] fetchAndShowSuggestion failed', e)
+      // Silent fail for UX reasons
     }
   }
 }
