@@ -15,8 +15,15 @@ All notable changes to this project will be documented in this file.
 - Ran formatting and final cleanup; the codebase is tidy. ✅
 
 ### 2025-12-20 — Videos page finalization
+
 - Komplette Neugestaltung der Videos-Seite (dunkles Theme, animierter Titel, Karten mit Hover-Glow) ✅
 - Play-Button mit Lazy-Load (Click-to-Play), YouTube Abonnieren- und Teilen-Buttons hinzugefügt ✅
 - JSON-LD: `VideoObject` & `VideoGallery` Markup hinzugefügt/validiert ✅
 - Sitemap aktualisiert und Thumbnails ergänzt; `/videos/` Redirect angelegt ✅
 - Wikidata `sameAs` Links in Person JSON-LD ergänzt ✅
+
+### 2025-12-24 — Logging cleanup
+
+- Konsolidiertes Logging: Ersetzte direkte `console.warn`/`console.error` Aufrufe durch `createLogger()` und `log.warn`/`log.error` in mehreren Modulen. ✅
+  - Dateien aktualisiert: u.a. `content/main.js`, `content/utils/reconnecting-websocket.js`, `content/components/particles/three-earth-system.js`, `content/components/typewriter/TypeWriter.js`, `content/components/robot-companion/*`, `pages/*`.
+  - Ziel: Einheitliches, ESLint-konformes Logging und bessere Kontext-Labels in Logausgaben.
