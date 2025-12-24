@@ -1,4 +1,6 @@
 import {config} from './config.js'
+import {createLogger} from '../../utils/shared-utilities.js'
+const log = createLogger('GeminiService')
 
 export class GeminiService {
   constructor() {
@@ -58,7 +60,7 @@ export class GeminiService {
 
         // Log detailed error for debugging (internal only)
         if (errorData.error && errorData.error.message) {
-          console.warn('Gemini API Warning:', errorData.error.message)
+          log.warn('Gemini API Warning:', errorData.error.message)
         }
 
         // DEBUG MODE: Return exact error to user
@@ -68,7 +70,7 @@ export class GeminiService {
             : `API Error (${response.status}): Unknown error`
 
         if (response.status === 403) {
-          console.warn('Gemini API Key blocked or restricted.')
+          log.warn('Gemini API Key blocked or restricted.')
           return this.fallbackResponse(prompt)
         }
 
@@ -83,7 +85,7 @@ export class GeminiService {
         return this.fallbackResponse(prompt)
       }
     } catch (error) {
-      console.error('Gemini Service Error:', error)
+      log.error('Gemini Service Error:', error)
       return this.fallbackResponse(prompt)
     }
   }

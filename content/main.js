@@ -602,12 +602,12 @@ document.addEventListener(
           navigator.clipboard.writeText(shareUrl).then(() => {
             try {
               announce('Link kopiert', {dedupe: true})
-            } catch (e) {}
+            } catch {}
           })
         } else {
           try {
             window.prompt('Link kopieren', shareUrl)
-          } catch (e) {}
+          } catch {}
         }
         return
       }

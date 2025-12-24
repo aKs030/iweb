@@ -308,7 +308,7 @@ class RobotCompanion {
         const initialLeft = window.innerWidth - 30 - robotWidth
         const maxLeft = initialLeft - 20
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
-      } catch (e) {}
+      } catch {}
     }
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd)
   }
@@ -345,7 +345,7 @@ class RobotCompanion {
             const maxLeft = initialLeft - 20
             this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
           }
-        } catch (e) {}
+        } catch {}
       }, 500)
     }
     window.addEventListener('scroll', this._scrollListener, {passive: true})
