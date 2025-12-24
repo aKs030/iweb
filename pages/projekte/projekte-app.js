@@ -304,17 +304,38 @@ function App() {
 
     try {
       const appPathClean = proj.appPath.replace(/\/$/, '')
-      const rawUrl = `${RAW_BASE}${appPathClean}/index.html`
-      const res = await fetch(rawUrl, {cache: 'no-store'})
-      if (!res.ok) throw new Error(`Fetch failed with ${res.status}`)
-      let htmlText = await res.text()
+
+      // Try candidates: repo-root path and /pages-prefixed path (fallback)
+      const candidates = [`${RAW_BASE}${appPathClean}/index.html`, `${RAW_BASE}/pages${appPathClean}/index.html`]
+
+      let res = null
+      let htmlText = null
+      let chosenBase = null
+
+      for (const url of candidates) {
+        try {
+          res = await fetch(url, {cache: 'no-store'})
+        } catch (e) {
+          res = null
+        }
+        if (res && res.ok) {
+          htmlText = await res.text()
+          // determine base href corresponding to this url
+          const urlObj = new URL(url)
+          const basePath = url.replace(/^https:\/\/raw\.githubusercontent\.com\/[^\/]+\/[^\/]+\/[^\/]+/, '')
+          // baseHref should point to the directory where index.html lives
+          chosenBase = `${RAW_BASE}${basePath.replace(/index\.html$/, '')}`
+          break
+        }
+      }
+
+      if (!htmlText) throw new Error('All fetch attempts failed')
 
       // Inject <base> so relative assets resolve to raw GitHub path
-      const baseHref = `${RAW_BASE}${proj.appPath}`
       if (/<head[^>]*>/i.test(htmlText)) {
-        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><base href="${baseHref}">`)
+        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><base href="${chosenBase}">`)
       } else {
-        htmlText = `<base href="${baseHref}">` + htmlText
+        htmlText = `<base href="${chosenBase}">` + htmlText
       }
 
       setIframeSrcDoc(htmlText)
@@ -336,12 +357,16 @@ function App() {
   }
 
   const openAppInNewTab = proj => {
-    const path = (proj || modalProject)?.appPath.replace(/\/$/, '') || ''
-    const githubBase = (proj || modalProject)?.githubPath
-      ? (proj || modalProject).githubPath.replace(/\.git$/, '')
-      : 'https://github.com/aKs030/Webgame'
-    const tree = `${githubBase}/tree/main${path}`
-    window.open(tree, '_blank', 'noopener')
+    const p = proj || modalProject
+    if (!p) return
+    const appPathClean = (p.appPath || '').replace(/\/$/, '')
+    const baseRepo = (p.githubPath || 'https://github.com/aKs030/Webgame').replace(/\.git$/, '')
+
+    // prefer the path that likely exists in the repo (pages prefix fallback)
+    const treeCandidates = [`${baseRepo}/tree/main${appPathClean}`, `${baseRepo}/tree/main/pages${appPathClean}`]
+
+    // Open first candidate — caller can still open in raw tab if needed
+    window.open(treeCandidates[0], '_blank', 'noopener')
   }
 
   return html`
