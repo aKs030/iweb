@@ -16,6 +16,8 @@ import {
   fire,
   getElementById,
   schedulePersistentStorageRequest,
+  setLegacyGlobal,
+  AppLoadManager,
   SectionTracker
 } from './utils/shared-utilities.js'
 import {initHeroSubtitle} from './components/typewriter/TypeWriter.js'
@@ -32,6 +34,11 @@ if (typeof window !== 'undefined') {
 import './components/menu/menu.js'
 
 const log = createLogger('main')
+
+// Debug / Dev hooks (exported for test & debug tooling)
+export let __threeEarthCleanup = null
+export let __rws = null
+export let __devRws = null
 
 // ===== Configuration & Environment =====
 const ENV = {
@@ -395,7 +402,9 @@ const ThreeEarthLoader = (() => {
       cleanupFn = await ThreeEarthManager.initThreeEarth()
 
       if (typeof cleanupFn === 'function') {
-        // We only expose cleanup to window if absolutely needed for debugging
+        // Export the cleanup function for programmatic control
+        __threeEarthCleanup = cleanupFn
+        // Optionally expose in debug mode for backwards compatibility
         if (ENV.debug) window.__threeEarthCleanup = cleanupFn
 
         log.info('Three.js Earth system initialized')
@@ -448,7 +457,12 @@ document.addEventListener(
     fire(EVENTS.DOM_READY)
 
     // Simplified TypeWriter Export
-    window.initHeroSubtitle = initHeroSubtitle
+    // Global initHeroSubtitle assignment removed — import directly where needed (see TypeWriter export)
+    // Optionally expose for backward compatibility in debug mode (respects clean mode)
+    setLegacyGlobal('initHeroSubtitle', initHeroSubtitle, {
+      debugOnly: true,
+      note: 'Prefer importing initHeroSubtitle from components/typewriter/TypeWriter.js'
+    })
 
     let modulesReady = false
     let windowLoaded = false
@@ -672,9 +686,13 @@ document.addEventListener(
               rws.onclose = ev => log.info('Dev RWS closed', ev)
               rws.onerror = err => log.warn('Dev RWS error', err)
 
-              // Attach for debugging
-              window.__rws = rws
-              if (ENV.debug) window.__devRws = rws
+              // Attach for debugging — export for tooling and attach to window only via helper
+              __rws = rws
+              setLegacyGlobal('__rws', rws, {debugOnly: true, note: 'Prefer importing __rws from main.js'})
+              if (ENV.debug) {
+                __devRws = rws
+                setLegacyGlobal('__devRws', rws, {debugOnly: true, note: 'Prefer importing __devRws from main.js'})
+              }
             } catch (ex) {
               log.warn('Failed to open Dev ReconnectingWebSocket:', ex)
             }
