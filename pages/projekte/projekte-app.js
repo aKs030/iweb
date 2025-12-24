@@ -119,63 +119,6 @@ const Check = props => html`
   <//>
 `
 
-// Preview Frame Component: lazy-loads raw HTML and injects a <base> for relative paths
-const PreviewFrame = ({src, title}) => {
-  const ref = React.useRef(null)
-  React.useEffect(() => {
-    if (!src || !ref.current) return
-    let obs
-    let cancelled = false
-
-    const load = async () => {
-      try {
-        const res = await fetch(src, {cache: 'no-cache'})
-        if (!res.ok) throw new Error('Fetch failed')
-        let htmlText = await res.text()
-        const baseUrl = src.replace(/index\.html$/, '')
-        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><base href="${baseUrl}">`)
-        if (!cancelled && ref.current) ref.current.srcdoc = htmlText
-      } catch (err) {
-        if (ref.current)
-          ref.current.srcdoc = `<div style="font-family: system-ui, sans-serif; color: #fff; padding: 1rem;">Vorschau konnte nicht geladen werden</div>`
-      }
-    }
-
-    if ('IntersectionObserver' in window) {
-      obs = new IntersectionObserver(
-        (entries, o) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              load()
-              o.disconnect()
-              break
-            }
-          }
-        },
-        {root: null, rootMargin: '200px', threshold: 0.05}
-      )
-      obs.observe(ref.current)
-    } else {
-      // Fallback: load immediately
-      load()
-    }
-
-    return () => {
-      cancelled = true
-      if (obs) obs.disconnect()
-    }
-  }, [src])
-
-  return html`
-    <iframe
-      ref=${ref}
-      title=${title}
-      className="project-iframe"
-      style=${{width: '100%', height: '100%', border: 0}}
-      sandbox="allow-scripts allow-same-origin"></iframe>
-  `
-}
-
 // --- DATA ---
 const projects = [
   {
@@ -187,8 +130,8 @@ const projects = [
     datePublished: '2023-07-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
+    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/schere-stein-papier/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/schere-stein-papier/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -222,8 +165,8 @@ const projects = [
     datePublished: '2024-08-01',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/zahlen-raten/',
+    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/zahlen-raten/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/zahlen-raten/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -253,8 +196,8 @@ const projects = [
     datePublished: '2022-03-15',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/color-changer/',
+    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/color-changer/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/color-changer/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -284,8 +227,8 @@ const projects = [
     datePublished: '2021-11-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/todo-liste/',
+    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/todo-liste/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/todo-liste/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
@@ -314,6 +257,24 @@ function App() {
     const firstProject = document.getElementById('project-1')
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
+
+  // Embedded app state: which project is currently rendered inside the mockup iframe
+  const [embeddedProject, setEmbeddedProject] = React.useState(null)
+
+  const openApp = project => {
+    const url = project.appSrc || project.appPath
+    try {
+      // Embed inside the mockup
+      setEmbeddedProject(project.id)
+      // Also open a popup window for the app
+      const popup = window.open(url, `app-${project.id}`, 'width=980,height=700,resizable,scrollbars=yes')
+      if (popup && popup.focus) popup.focus()
+    } catch (err) {
+      if (typeof console !== 'undefined' && log.warn) log.warn('[ProjectsApp] openApp failed', err)
+    }
+  }
+
+  const closeEmbedded = () => setEmbeddedProject(null)
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -393,9 +354,30 @@ function App() {
                 <div className="window-mockup">
                   <div className="mockup-content">
                     <div className="mockup-bg-pattern"></div>
-                    ${project.previewSrc
+                    ${embeddedProject === project.id
                       ? html`
-                          <${PreviewFrame} src=${project.previewSrc} title=${`Preview ${project.title}`} />
+                          <div style=${{width: '100%', height: '100%', position: 'relative', zIndex: 15}}>
+                            <iframe
+                              src=${project.appSrc}
+                              title=${project.title}
+                              style=${{width: '100%', height: '100%', border: 0, backgroundColor: 'transparent'}}></iframe>
+                            <button
+                              onClick=${() => closeEmbedded()}
+                              className="mockup-close"
+                              style=${{
+                                position: 'absolute',
+                                top: '0.5rem',
+                                right: '0.5rem',
+                                background: 'rgba(0,0,0,0.5)',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '0.4rem 0.6rem',
+                                borderRadius: '8px'
+                              }}
+                              aria-label="Schließen">
+                              ✕
+                            </button>
+                          </div>
                         `
                       : project.previewContent}
                     <div className="mockup-icon">${project.icon}</div>
@@ -419,10 +401,13 @@ function App() {
                   )}
                 </div>
                 <div className="project-actions">
-                  <a className="btn btn-primary btn-small" href=${project.appPath} aria-label=${`App öffnen ${project.title}`}>
+                  <button
+                    className="btn btn-primary btn-small"
+                    onClick=${() => openApp(project)}
+                    aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
                     App öffnen
-                  </a>
+                  </button>
                   <a
                     className="btn btn-outline btn-small"
                     href=${project.githubPath}
