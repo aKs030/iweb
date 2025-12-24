@@ -12,7 +12,7 @@ module.exports = [
     },
     rules: {
       'no-console': ['warn', {allow: ['warn', 'error']}],
-      'no-unused-vars': ['warn', {varsIgnorePattern: '^_', argsIgnorePattern: '^_', caughtErrors: 'none'}],
+      'no-unused-vars': ['warn', {varsIgnorePattern: '^_', argsIgnorePattern: '^_'}],
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'prefer-const': 'warn',

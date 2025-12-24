@@ -42,12 +42,12 @@ export function createLogger(category) {
     },
     info: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.info) {
-        ;(console.info || noop)(prefix, message, ...args)
+        ;(console.warn || noop)(prefix, message, ...args)
       }
     },
     debug: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.debug) {
-        ;(console.debug || console.log || noop)(prefix, message, ...args)
+        ;(console.warn || noop)(prefix, message, ...args)
       }
     }
   }
