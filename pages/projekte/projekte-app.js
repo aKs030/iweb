@@ -254,76 +254,64 @@ function App() {
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
 
-  // Popup/Iframe state for opening apps from GitHub (Webgame)
-  const [modalOpen, setModalOpen] = React.useState(false)
-  const [modalSrc, setModalSrc] = React.useState('')
-  const [modalTitle, setModalTitle] = React.useState('')
-  const [modalScale, setModalScale] = React.useState(1)
-  const [modalMessage, setModalMessage] = React.useState('')
+  // Modal state for in-site app preview (iframe)
+  const [modal, setModal] = React.useState({open: false, src: '', title: '', loading: true, error: null})
 
-  const parseGithubOwnerRepo = url => {
-    try {
-      const m = url.match(/github\.com\/(.+?)\/(.+?)(?:\.git|$)/i)
-      if (!m) return null
-      return {owner: m[1], repo: m[2].replace(/\.git$/, '')}
-    } catch (e) {
-      return null
+  const openAppModal = project => {
+    const pagesBase = 'https://aKs030.github.io/Webgame'
+    const external = pagesBase.replace(/\/$/, '') + project.appPath
+    // Start with GitHub Pages URL and fall back to local path after timeout
+    setModal({open: true, src: external, title: project.title, loading: true, error: null})
+    // Fallback timer (8s) -> try local path
+    const t = setTimeout(() => {
+      setModal(prev => {
+        if (!prev.open || !prev.loading) return prev
+        // switch to local path and set an error timer in case that also fails
+        const errorTimer = setTimeout(() => {
+          setModal(prev2 => ({...prev2, loading: false, error: 'App konnte nicht geladen werden. Bitte in neuem Tab öffnen.'}))
+          window.__projectAppErrorTimer = null
+        }, 6000)
+        window.__projectAppErrorTimer = errorTimer
+        return {...prev, src: project.appPath}
+      })
+    }, 8000)
+    // store current timer so we can clear on success/close
+    window.__projectAppFallbackTimer = t
+  }
+
+  const closeModal = () => {
+    if (window.__projectAppFallbackTimer) {
+      clearTimeout(window.__projectAppFallbackTimer)
+      window.__projectAppFallbackTimer = null
     }
-  }
-
-  const urlIsReachable = async (url, timeout = 3000) => {
-    try {
-      const controller = new AbortController()
-      const id = setTimeout(() => controller.abort(), timeout)
-      // Use GET to allow status checks; some servers block HEAD
-      const res = await fetch(url, {method: 'GET', mode: 'cors', cache: 'no-store', signal: controller.signal})
-      clearTimeout(id)
-      return res && res.status >= 200 && res.status < 400
-    } catch (e) {
-      return false
+    if (window.__projectAppErrorTimer) {
+      clearTimeout(window.__projectAppErrorTimer)
+      window.__projectAppErrorTimer = null
     }
+    setModal({open: false, src: '', title: '', loading: true, error: null})
   }
 
-  const openApp = async p => {
-    const parsed = parseGithubOwnerRepo(p.githubPath || '')
-    const candidates = []
-
-    // Prefer GitHub Pages (owner.github.io/repo + appPath)
-    if (parsed) candidates.push(`https://${parsed.owner}.github.io/${parsed.repo}${p.appPath}`)
-
-    // Raw fallback (raw.githubusercontent.com/owner/repo/main + pages path)
-    if (parsed) candidates.push(`https://raw.githubusercontent.com/${parsed.owner}/${parsed.repo}/main${p.appPath}index.html`)
-
-    // Local/relative fallback (if the current site still hosts them)
-    if (p.appPath) candidates.push(p.appPath + 'index.html', p.appPath)
-
-    setModalTitle(p.title)
-    setModalSrc('about:blank')
-    setModalScale(1)
-    setModalMessage('Versuche, die App zu laden...')
-    setModalOpen(true)
-
-    for (const c of candidates) {
-      // Quick check
-      const ok = await urlIsReachable(c)
-      if (ok) {
-        setModalSrc(c)
-        setModalMessage('')
-        return
-      }
+  const onIframeLoad = () => {
+    if (window.__projectAppFallbackTimer) {
+      clearTimeout(window.__projectAppFallbackTimer)
+      window.__projectAppFallbackTimer = null
     }
-
-    // If none worked, fallback to repo page and show message
-    setModalSrc(p.githubPath)
-    setModalMessage('Hosting nicht gefunden. Öffne das Repository stattdessen.')
+    if (window.__projectAppErrorTimer) {
+      clearTimeout(window.__projectAppErrorTimer)
+      window.__projectAppErrorTimer = null
+    }
+    setModal(prev => ({...prev, loading: false, error: null}))
   }
 
-  const closeModal = () => setModalOpen(false)
-  const zoomIn = () => setModalScale(s => Math.min(2, +(s + 0.1).toFixed(2)))
-  const zoomOut = () => setModalScale(s => Math.max(0.5, +(s - 0.1).toFixed(2)))
-  const openInNewTab = () => {
-    if (modalSrc) window.open(modalSrc, '_blank', 'noopener')
-  }
+  // keyboard handler to close modal with Esc
+  React.useEffect(() => {
+    if (!modal.open) return
+    const onKey = e => {
+      if (e.key === 'Escape') closeModal()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [modal.open])
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -425,17 +413,13 @@ function App() {
                   )}
                 </div>
                 <div className="project-actions">
-                  <a
-                    href="#"
-                    onClick=${e => {
-                      e && e.preventDefault && e.preventDefault()
-                      openApp(project)
-                    }}
+                  <button
                     className="btn btn-primary btn-small"
+                    onClick=${() => openAppModal(project)}
                     aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
                     App öffnen
-                  </a>
+                  </button>
                   <a
                     className="btn btn-outline btn-small"
                     href=${project.githubPath}
@@ -451,74 +435,6 @@ function App() {
           </section>
         `
       )}
-      ${modalOpen &&
-      html`
-        <div
-          style=${{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            zIndex: 20000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.25rem'
-          }}>
-          <div
-            style=${{
-              width: '96%',
-              height: '88%',
-              background: 'rgba(0,0,0,0.95)',
-              borderRadius: '0.75rem',
-              overflow: 'hidden',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.6)'
-            }}>
-            <div
-              style=${{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0.5rem 0.75rem',
-                borderBottom: '1px solid rgba(255,255,255,0.04)'
-              }}>
-              <div>
-                <div style={{color: 'white', fontWeight: 700}}>${modalTitle}</div>
-                ${
-                  modalMessage
-                    ? html`
-                        <div style=${{color: 'white', opacity: 0.75, fontSize: '0.9rem', marginTop: '2px'}}>${modalMessage}</div>
-                      `
-                    : null
-                }
-              </div>
-              <div style=${{display: 'flex', gap: '0.5rem'}}>
-                <button onClick=${zoomOut} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>−</button>
-                <button onClick=${zoomIn} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>+</button>
-                <button onClick=${openInNewTab} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>Open</button>
-                <button onClick=${closeModal} className="btn btn-primary" style=${{padding: '0.4rem 0.6rem'}}>Schließen</button>
-              </div>
-            </div>
-            <div style=${{width: '100%', height: 'calc(100% - 48px)', position: 'relative', background: '#111'}}>
-              <div
-                style=${{
-                  width: '100%',
-                  height: '100%',
-                  overflow: 'auto',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'center'
-                }}>
-                <div style=${{transform: `scale(${modalScale})`, transformOrigin: 'top center', width: '100%', maxWidth: '1200px'}}>
-                  <iframe
-                    src=${modalSrc}
-                    style=${{width: '100%', height: '80vh', border: 'none', display: 'block'}}
-                    title=${modalTitle}></iframe>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
@@ -535,6 +451,57 @@ function App() {
           </div>
         </div>
       </section>
+
+      ${modal.open
+        ? html`
+            <div style=${{position: 'fixed', inset: 0, zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <div style=${{position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)'}} onClick=${closeModal}></div>
+              <div
+                style=${{
+                  position: 'relative',
+                  width: 'min(1100px, 95vw)',
+                  height: 'min(800px, 85vh)',
+                  background: 'rgba(6,8,15,0.95)',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.6)'
+                }}
+                onClick=${e => e.stopPropagation()}>
+                <div
+                  style=${{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(255,255,255,0.02)'
+                  }}>
+                  <div style=${{color: 'white', fontWeight: 700}}>${modal.title}</div>
+                  <div style=${{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+                    <a href=${modal.src} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-small">
+                      In neuem Tab öffnen
+                    </a>
+                    <button onClick=${closeModal} className="btn btn-primary btn-small">Schließen</button>
+                  </div>
+                </div>
+                ${modal.loading
+                  ? html`
+                      <div style=${{padding: '1rem', color: '#cbd5e1'}}>Lade App…</div>
+                    `
+                  : null}
+                <iframe
+                  src=${modal.src}
+                  style=${{width: '100%', height: 'calc(100% - 48px)', border: 0}}
+                  onLoad=${onIframeLoad}
+                  title=${modal.title}></iframe>
+                ${modal.error
+                  ? html`
+                      <div style=${{padding: '1rem', color: 'tomato'}}>${modal.error}</div>
+                    `
+                  : null}
+              </div>
+            </div>
+          `
+        : null}
     <//>
   `
 }
