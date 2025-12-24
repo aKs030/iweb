@@ -21,6 +21,11 @@
     jobTitle: 'Fotograf & Fullstack Webentwickler',
     email: 'kontakt@abdulkerimsesli.de',
     areaServed: 'Berlin, Deutschland',
+    address: {
+      '@type': 'PostalAddress',
+      'addressLocality': 'Berlin',
+      'addressCountry': 'DE'
+    },
     sameAs: [
       'https://github.com/aKs030',
       'https://linkedin.com/in/abdulkerimsesli',
@@ -55,6 +60,15 @@
         'Expertenwissen zu JavaScript, CSS und Web-Architektur. Praxisnahe Tutorials und Einblicke in den Workflow eines Berliner Fullstack-Entwicklers.',
       type: 'Blog',
       image: `${BASE_URL}/content/assets/img/og/og-blog.png`
+    },
+    '/videos/': {
+      title: 'Videos — Abdulkerim Sesli',
+      description: 'Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.',
+      type: 'CollectionPage',
+      // NOTE: currently uses og-home.png as a fallback. When you create a dedicated
+      // videos preview (e.g. a collage), replace the image with og-videos.png:
+      //   image: `${BASE_URL}/content/assets/img/og/og-videos.png`
+      image: `${BASE_URL}/content/assets/img/og/og-home.png`
     },
     '/gallery/': {
       title: 'Fotografie Portfolio | Urban & Portrait Berlin',
@@ -254,7 +268,7 @@
     // 1. ORGANIZATION (Für das Logo [GELB])
     // Wir definieren eine "Ein-Mann-Organisation", um das Logo-Feld valide nutzen zu können
     graph.push({
-      '@type': 'Organization',
+      '@type': 'ProfessionalService',
       '@id': ID.org,
       'name': BRAND_DATA.legalName,
       'url': BASE_URL,
@@ -265,7 +279,12 @@
         'height': 512
       },
       'email': BRAND_DATA.email,
-      'sameAs': BRAND_DATA.sameAs
+      'sameAs': BRAND_DATA.sameAs,
+      'address': BRAND_DATA.address || {
+        '@type': 'PostalAddress',
+        'addressLocality': 'Berlin',
+        'addressCountry': 'DE'
+      }
     })
 
     // 2. PERSON (Die Haupt-Entität)
