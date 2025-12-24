@@ -409,7 +409,7 @@ function supportsWebGL() {
     if (ctx2) {
       try {
         ctx2.getExtension && ctx2.getExtension('EXT_color_buffer_float')
-      } catch (e) {}
+      } catch {}
       return true
     }
     const ctx = canvas.getContext('webgl', {failIfMajorPerformanceCaveat: true}) || canvas.getContext('experimental-webgl')

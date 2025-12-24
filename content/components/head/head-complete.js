@@ -97,7 +97,10 @@
 
   // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
   try {
-    const escapeHTML = str =>
+    const {createLogger} = await import('../../utils/shared-utilities.js')
+    const log = createLogger('HeadLoader')
+
+    const _escapeHTML = str =>
       String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m])
 
     const upsertMeta = (nameOrProperty, content, isProperty = false) => {
@@ -229,10 +232,10 @@
         document.head.appendChild(appleIconEl)
       }
     } catch (e) {
-      console.debug('[Head-Loader] PWA meta injection failed:', e)
+      log.debug('[Head-Loader] PWA meta injection failed:', e)
     }
   } catch (e) {
-    console.warn('[Head-Loader] lightweight head update failed:', e)
+    log.warn('[Head-Loader] lightweight head update failed:', e)
   }
 
   // --- 3. SCHEMA GRAPH GENERATION ---

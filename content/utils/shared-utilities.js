@@ -402,7 +402,7 @@ export function schedulePersistentStorageRequest(delay = 2500) {
         /* ignore */ void 0
       })
     }, delay)
-  } catch (e) {
+  } catch (_e) {
     void 0
   }
 }
@@ -426,7 +426,7 @@ export function addListener(target, event, handler, options = {}) {
   try {
     target.addEventListener(event, handler, finalOptions)
     return () => target.removeEventListener(event, handler, finalOptions)
-  } catch (e) {
+  } catch {
     return () => {}
   }
 }

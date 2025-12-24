@@ -1,5 +1,5 @@
 // Share function for YouTube channel
-function shareChannel() {
+function _shareChannel() {
   const url = 'https://www.youtube.com/@aks.030'
   const title = 'Abdulkerim Sesli - YouTube Kanal'
   if (navigator.share) {
@@ -27,12 +27,14 @@ function shareChannel() {
   const handle = (window.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '')
   if (!apiKey) return
 
-  const log = msg => console.info('[videos] ', msg)
+  const log = msg => console.warn('[videos] ', msg)
   const setStatus = msg => {
     try {
       const el = document.getElementById('videos-status')
       if (el) el.textContent = msg || ''
-    } catch (e) {}
+    } catch {
+      // ignore
+    }
   }
 
   // Replace a thumbnail button with an autoplaying iframe (available globally so static thumbs work)
@@ -54,7 +56,7 @@ function shareChannel() {
     btn.replaceWith(wrapper)
     try {
       iframe.focus()
-    } catch (e) {
+    } catch (_e) {
       /* ignore */
     }
     btn.dataset.loaded = '1'
@@ -74,7 +76,7 @@ function shareChannel() {
         })
         b.dataset.bound = '1'
       })
-    } catch (e) {
+    } catch (_e) {
       /* ignore */
     }
   }
