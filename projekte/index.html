@@ -348,6 +348,26 @@
         transform: scale(1.1) rotate(12deg);
       }
 
+      /* Iframe preview inside mockup: positioned inside padding, scaled and compensated to avoid scrollbars */
+      .mockup-content .iframe-container {
+        position: absolute;
+        inset: 2rem;
+        overflow: hidden;
+        z-index: 10;
+        border-radius: 0.75rem;
+      }
+      .mockup-content .iframe-container iframe {
+        display: block;
+        width: 111%;
+        height: 111%;
+        max-width: 111%;
+        max-height: 111%;
+        transform-origin: 0 0;
+        transform: scale(0.9);
+        border: 0;
+        background: transparent;
+      }
+
       .project-info {
         text-align: left;
         display: flex;
