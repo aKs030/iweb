@@ -402,14 +402,12 @@
 
     // 5. FAQ (STRICT MODE & WHITESPACE CLEANING)
     // Filtert "schmutzige" Strings und setzt stabile IDs, um "Unbenanntes Element" zu verhindern.
-    let faqNodes = Array.from(document.querySelectorAll('.faq-item'))
+    const faqNodes = Array.from(document.querySelectorAll('.faq-item'))
       .map((el, i) => {
         const rawQ = el.querySelector('.question, h3, summary')?.textContent
         const rawA = el.querySelector('.answer, p, div')?.textContent
-        // Clean newlines and multi-spaces
         const q = rawQ ? String(rawQ).replace(/\s+/g, ' ').trim() : ''
         const a = rawA ? String(rawA).replace(/\s+/g, ' ').trim() : ''
-
         if (!q || q.length < 2) return null
         return {
           '@type': 'Question',
@@ -420,27 +418,27 @@
       })
       .filter(Boolean)
 
-    // Fallback: Business-FAQs
-    if (faqNodes.length === 0) {
+    let faqEntities = faqNodes
+    if (faqEntities.length === 0) {
       const isHomepage = window.location.pathname === '/' || window.location.pathname === ''
       const hasBusinessFaqFlag = !!document.querySelector('[data-inject-business-faq]')
-
       if (isHomepage || hasBusinessFaqFlag) {
-        faqNodes = BUSINESS_FAQS.map((item, i) => ({
+        const fallbackFaqNodes = BUSINESS_FAQS.map((item, i) => ({
           '@type': 'Question',
           '@id': `${pageUrl}#faq-q${i + 1}`,
           'name': String(item.q).replace(/\s+/g, ' ').trim(),
           'acceptedAnswer': {'@type': 'Answer', 'text': String(item.a).replace(/\s+/g, ' ').trim()}
         }))
+        faqEntities = fallbackFaqNodes
       }
     }
 
-    if (faqNodes.length > 0) {
+    if (faqEntities.length > 0) {
       graph.push({
         '@type': 'FAQPage',
         '@id': `${pageUrl}#faq`,
         'name': pageData && pageData.title ? `${pageData.title} — FAQ` : 'Häufig gestellte Fragen',
-        'mainEntity': faqNodes,
+        'mainEntity': faqEntities,
         'isPartOf': {'@id': ID.webpage}
       })
     }
