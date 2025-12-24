@@ -981,7 +981,7 @@ const PhotoGallery = () => {
             transform: scale(1) translateY(0);
           }
         }
-        
+
         @keyframes progress {
           from {
             width: 0%;
