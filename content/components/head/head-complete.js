@@ -356,13 +356,31 @@
 
     // 6. BREADCRUMBS
     const segments = window.location.pathname.replace(/\/$/, '').split('/').filter(Boolean)
-    const crumbs = [{'@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL}]
+    const crumbs = [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': 'Home',
+        'item': {'@id': BASE_URL, 'name': 'Home'}
+      }
+    ]
     let pathAcc = BASE_URL
     segments.forEach((seg, i) => {
       pathAcc += `/${seg}`
-      crumbs.push({'@type': 'ListItem', 'position': i + 2, 'name': seg.charAt(0).toUpperCase() + seg.slice(1), 'item': pathAcc})
+      const name = seg.charAt(0).toUpperCase() + seg.slice(1)
+      crumbs.push({
+        '@type': 'ListItem',
+        'position': i + 2,
+        'name': name,
+        'item': {'@id': pathAcc, 'name': name}
+      })
     })
-    graph.push({'@type': 'BreadcrumbList', '@id': ID.breadcrumb, 'itemListElement': crumbs})
+    graph.push({
+      '@type': 'BreadcrumbList',
+      '@id': ID.breadcrumb,
+      'name': (pageData && pageData.title) || document.title || 'Navigationspfad',
+      'itemListElement': crumbs
+    })
 
     // INJECTION
     const ldId = 'head-complete-ldjson'

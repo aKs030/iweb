@@ -496,9 +496,20 @@
         "@graph": [
           {
             "@type": "BreadcrumbList",
+            "name": "Projekte",
             "itemListElement": [
-              {"@type": "ListItem", "position": 1, "name": "Startseite", "item": "https://abdulkerimsesli.de/"},
-              {"@type": "ListItem", "position": 2, "name": "Projekte", "item": "https://abdulkerimsesli.de/projekte/"}
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Startseite",
+                "item": {"@id": "https://abdulkerimsesli.de/", "name": "Startseite"}
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Projekte",
+                "item": {"@id": "https://abdulkerimsesli.de/projekte/", "name": "Projekte"}
+              }
             ]
           },
           {
