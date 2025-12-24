@@ -26,28 +26,28 @@ function setGlobalLogLevel(level) {
 
 export function createLogger(category) {
   const prefix = `[${category}]`
-  const _console = globalThis.console || {}
+  const console = globalThis.console || {}
   const noop = () => {}
 
   return {
     error: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.error) {
-        ;(_console.error || noop)(prefix, message, ...args)
+        ;(console.error || noop)(prefix, message, ...args)
       }
     },
     warn: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.warn) {
-        ;(_console.warn || noop)(prefix, message, ...args)
+        ;(console.warn || noop)(prefix, message, ...args)
       }
     },
     info: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.info) {
-        ;(_console.info || noop)(prefix, message, ...args)
+        ;(console.info || noop)(prefix, message, ...args)
       }
     },
     debug: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.debug) {
-        ;(_console.debug || noop)(prefix, message, ...args)
+        ;(console.debug || noop)(prefix, message, ...args)
       }
     }
   }
