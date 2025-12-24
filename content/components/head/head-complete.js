@@ -1,10 +1,10 @@
 /**
  * Dynamic Head Loader - Ultimate Modern SEO & Schema Graph (@graph approach)
- * Version: 2025.3.0 (Rich Snippet "Visual Maximizer" Edition)
+ * Version: 2025.3.1 (FAQ Fix & Video Route Patch)
  * * Features:
  * - [GELB] Icon Fix: Re-Integration von 'Organization' für Logo-Support
  * - [ROT] Snippet Fill: Maximierte Descriptions & Knowledge-Injection
- * - [BLAU] FAQ Booster: Statische Business-FAQs für garantierten Rich-Snippet-Bereich
+ * - [BLAU] FAQ Booster: Strict Mode (verhindert "Unbenanntes Element" Fehler)
  */
 
 ;(async function loadSharedHead() {
@@ -338,29 +338,31 @@
       }
     })
 
-    // 5. FAQ (Der "Blaue Bereich" [BLAU])
-    // Zuerst prüfen wir, ob echte FAQs auf der Seite sind
-    let faqNodes = Array.from(document.querySelectorAll('details, .faq-item'))
+    // 5. FAQ (STRICT MODE: Only .faq-item to avoid "Unnamed Item" errors)
+    // Wir ignorieren generische <details> Tags, da diese oft für Menüs genutzt werden
+    // und leere/falsche Schema-Einträge erzeugen.
+    let faqNodes = Array.from(document.querySelectorAll('.faq-item'))
       .map(el => {
-        const q = el.querySelector('summary, h3, .question')?.textContent?.trim()
-        const a = el.querySelector('p, div, .answer')?.textContent?.trim()
-        return q && a ? {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} : null
+        const q = el.querySelector('.question, h3, summary')?.textContent?.trim()
+        const a = el.querySelector('.answer, p, div')?.textContent?.trim()
+        // Safety check: Name MUST be present and not empty
+        if (!q || q.length < 2) return null
+        return {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a || 'Details ansehen'}}
       })
       .filter(Boolean)
 
-    // Fallback: Wenn keine echten FAQs da sind, nur auf der Startseite oder
-    // wenn explizit angefragt (z. B. data-inject-business-faq) Business-FAQs injizieren.
+    // Fallback: Wenn keine expliziten FAQ-Items gefunden wurden,
+    // nutzen wir die hochwertigen Business-FAQs (z.B. auf der Startseite).
     if (faqNodes.length === 0) {
       const isHomepage = window.location.pathname === '/' || window.location.pathname === ''
       const hasBusinessFaqFlag = !!document.querySelector('[data-inject-business-faq]')
+
       if (isHomepage || hasBusinessFaqFlag) {
         faqNodes = BUSINESS_FAQS.map(item => ({
           '@type': 'Question',
           'name': item.q,
           'acceptedAnswer': {'@type': 'Answer', 'text': item.a}
         }))
-      } else {
-        faqNodes = []
       }
     }
 
@@ -368,7 +370,7 @@
       graph.push({
         '@type': 'FAQPage',
         '@id': `${pageUrl}#faq`,
-        'name': pageData && pageData.title ? `${pageData.title} — FAQ` : 'FAQ',
+        'name': pageData && pageData.title ? `${pageData.title} — FAQ` : 'Häufig gestellte Fragen',
         'mainEntity': faqNodes,
         'isPartOf': {'@id': ID.webpage}
       })
