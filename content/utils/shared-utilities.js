@@ -398,8 +398,9 @@ async function ensurePersistentStorage() {
 export function schedulePersistentStorageRequest(delay = 2500) {
   try {
     setTimeout(() => {
-      ensurePersistentStorage().catch(() => {
-        /* ignore */ void 0
+      ensurePersistentStorage().catch(err => {
+        console.warn('ensurePersistentStorage failed', err)
+        /* swallow after logging */ void 0
       })
     }, delay)
   } catch (_e) {
@@ -426,7 +427,8 @@ export function addListener(target, event, handler, options = {}) {
   try {
     target.addEventListener(event, handler, finalOptions)
     return () => target.removeEventListener(event, handler, finalOptions)
-  } catch {
+  } catch (err) {
+    console.warn('addListener: failed to add listener', err)
     return () => {}
   }
 }

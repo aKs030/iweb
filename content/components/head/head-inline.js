@@ -60,8 +60,8 @@ gtag('config', 'AW-1036079663')
       },
       {once: true}
     )
-  } catch {
-    /* noop */
+  } catch (err) {
+    console.warn('head-inline: ensure footer/trigger setup failed', err)
   }
 })()
 
@@ -125,7 +125,7 @@ gtag('config', 'AW-1036079663')
     } else {
       performInjection()
     }
-  } catch {
-    /* noop */
+  } catch (err) {
+    console.warn('head-inline: injectCoreAssets failed', err)
   }
 })()

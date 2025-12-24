@@ -235,7 +235,9 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(new CustomEvent('hero:typingEnd', {detail: {text: full, author}}))
-      } catch {}
+      } catch (err) {
+        console.warn('TypeWriter: dispatch hero:typingEnd failed', err)
+      }
       delay = this.wait
       this._isDeleting = true
     } else if (this._isDeleting && !this._txt) {
@@ -283,7 +285,9 @@ export async function initHeroSubtitle(options = {}) {
     } else if (options.ensureHeroDataModule) {
       try {
         cfg = (await options.ensureHeroDataModule())?.typewriterConfig || {}
-      } catch {}
+      } catch (err) {
+        console.warn('TypeWriter: ensureHeroDataModule failed', err)
+      }
     }
 
     const measurer = makeLineMeasurer(subtitleEl)
@@ -305,7 +309,9 @@ export async function initHeroSubtitle(options = {}) {
               : 'clamp(12px,2vw,24px)'
           setCSSVars(el, {bottom: `calc(${base} + ${overlap}px)`})
         }
-      } catch {}
+      } catch (err) {
+        console.warn('TypeWriter: checkFooterOverlap failed', err)
+      }
     }
 
     const start = () => {
@@ -346,7 +352,9 @@ export async function initHeroSubtitle(options = {}) {
       document.addEventListener('hero:typingEnd', () => {
         try {
           subtitleEl.classList.remove('is-locked')
-        } catch {}
+        } catch (err) {
+          console.warn('TypeWriter: remove lock failed', err)
+        }
       })
 
       // Robust polling to fix race conditions on initial load

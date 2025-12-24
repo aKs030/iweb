@@ -170,7 +170,8 @@
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', canonicalHref)
       else upsertLink('canonical', canonicalHref)
-    } catch (e) {
+    } catch (err) {
+      console.warn('HeadLoader: canonical detection failed', err)
       // fallback to pageUrl on any unexpected error
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', pageUrl)
