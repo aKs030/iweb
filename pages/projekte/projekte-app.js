@@ -249,34 +249,9 @@ const projects = [
 
 // --- APP ---
 function App() {
-  const [popupUrl, setPopupUrl] = React.useState(null)
-  const [popupTitle, setPopupTitle] = React.useState('')
-
   const scrollToProjects = () => {
     const firstProject = document.getElementById('project-1')
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
-  }
-
-  const toRawGithubUrl = p => {
-    try {
-      // Convert e.g. https://github.com/aKs030/Webgame.git -> https://raw.githubusercontent.com/aKs030/Webgame/main
-      const ghRoot = (p.githubPath || '').replace(/\.git$/, '').replace(/^https:\/\/github.com\//, 'https://raw.githubusercontent.com/')
-      const appRel = (p.appPath || '').replace(/^\/+|\/+$/g, '') // remove leading/trailing slashes
-      return `${ghRoot}/main/${appRel}/index.html`
-    } catch (e) {
-      return p.githubPath
-    }
-  }
-
-  const openProjectPopup = p => {
-    const url = toRawGithubUrl(p)
-    setPopupTitle(p.title)
-    setPopupUrl(url)
-  }
-
-  const closePopup = () => {
-    setPopupUrl(null)
-    setPopupTitle('')
   }
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
@@ -308,6 +283,66 @@ function App() {
       /* ignore in environments where DOM is not available */
     }
   }, [])
+
+  // Modal state for in-page app preview (iframe via srcdoc from raw GitHub)
+  const [modalOpen, setModalOpen] = React.useState(false)
+  const [modalLoading, setModalLoading] = React.useState(false)
+  const [modalError, setModalError] = React.useState('')
+  const [modalTitle, setModalTitle] = React.useState('')
+  const [modalProject, setModalProject] = React.useState(null)
+  const [iframeSrcDoc, setIframeSrcDoc] = React.useState('')
+
+  const RAW_BASE = 'https://raw.githubusercontent.com/aKs030/Webgame/main'
+
+  const openApp = async proj => {
+    setModalTitle(proj.title)
+    setModalProject(proj)
+    setModalError('')
+    setModalLoading(true)
+    setIframeSrcDoc('')
+    setModalOpen(true)
+
+    try {
+      const appPathClean = proj.appPath.replace(/\/$/, '')
+      const rawUrl = `${RAW_BASE}${appPathClean}/index.html`
+      const res = await fetch(rawUrl, {cache: 'no-store'})
+      if (!res.ok) throw new Error(`Fetch failed with ${res.status}`)
+      let htmlText = await res.text()
+
+      // Inject <base> so relative assets resolve to raw GitHub path
+      const baseHref = `${RAW_BASE}${proj.appPath}`
+      if (/<head[^>]*>/i.test(htmlText)) {
+        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><base href="${baseHref}">`)
+      } else {
+        htmlText = `<base href="${baseHref}">` + htmlText
+      }
+
+      setIframeSrcDoc(htmlText)
+    } catch (err) {
+      setModalError('Die App konnte nicht geladen werden. Öffne in neuem Tab.')
+      setIframeSrcDoc('')
+      console.warn('[Projekte] openApp failed', err)
+    } finally {
+      setModalLoading(false)
+    }
+  }
+
+  const closeModal = () => {
+    setModalOpen(false)
+    setIframeSrcDoc('')
+    setModalError('')
+    setModalTitle('')
+    setModalProject(null)
+  }
+
+  const openAppInNewTab = proj => {
+    const path = (proj || modalProject)?.appPath.replace(/\/$/, '') || ''
+    const githubBase = (proj || modalProject)?.githubPath
+      ? (proj || modalProject).githubPath.replace(/\.git$/, '')
+      : 'https://github.com/aKs030/Webgame'
+    const tree = `${githubBase}/tree/main${path}`
+    window.open(tree, '_blank', 'noopener')
+  }
 
   return html`
     <${React.Fragment}>
@@ -381,14 +416,14 @@ function App() {
                 <div className="project-actions">
                   <button
                     className="btn btn-primary btn-small"
-                    onClick=${() => openProjectPopup(project)}
+                    onClick=${() => openApp(project)}
                     aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
                     App öffnen
                   </button>
                   <a
                     className="btn btn-outline btn-small"
-                    href=${project.githubPath}
+                    href=${project.githubPath.replace(/\.git$/, '') + '/tree/main' + project.appPath}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label=${`Code ${project.title} auf GitHub`}>
@@ -401,46 +436,6 @@ function App() {
           </section>
         `
       )}
-      ${popupUrl
-        ? html`
-            <div
-              className="project-popup-overlay"
-              style=${{position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999}}>
-              <div style=${{position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)'}} onClick=${closePopup}></div>
-              <div
-                style=${{
-                  position: 'relative',
-                  width: '90%',
-                  height: '88%',
-                  background: '#000',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.8)'
-                }}
-                role="dialog"
-                aria-modal="true">
-                <div
-                  style=${{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.5rem 1rem',
-                    background: 'rgba(0,0,0,0.6)',
-                    color: '#fff'
-                  }}>
-                  <strong>${popupTitle}</strong>
-                  <div style=${{display: 'flex', gap: '0.5rem'}}>
-                    <a className="btn btn-outline btn-small" href=${popupUrl} target="_blank" rel="noopener noreferrer">
-                      In neuem Tab öffnen
-                    </a>
-                    <button className="btn btn-primary btn-small" onClick=${closePopup}>Schließen</button>
-                  </div>
-                </div>
-                <iframe src=${popupUrl} style=${{width: '100%', height: 'calc(100% - 48px)', border: 0, background: '#fff'}}></iframe>
-              </div>
-            </div>
-          `
-        : null}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
@@ -457,6 +452,77 @@ function App() {
           </div>
         </div>
       </section>
+
+      <!-- In-page App Modal (iframe) -->
+      ${modalOpen
+        ? html`
+            <div
+              style=${{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 100000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(0,0,0,0.6)'
+              }}
+              role="dialog"
+              aria-modal="true">
+              <div
+                style=${{
+                  width: '90vw',
+                  height: '80vh',
+                  maxWidth: '1200px',
+                  maxHeight: '90vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                <div style=${{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <div style=${{color: 'white', fontWeight: 700}}>${modalTitle}</div>
+                  <div style=${{display: 'flex', gap: '8px'}}>
+                    ${modalLoading
+                      ? html`
+                          <div style=${{color: 'white', padding: '0.5rem'}}>Lädt…</div>
+                        `
+                      : null}
+                    ${modalError
+                      ? html`
+                          <div style=${{color: '#ffcccb', padding: '0.5rem'}}>${modalError}</div>
+                        `
+                      : null}
+                    <button className="btn btn-outline" onClick=${() => openAppInNewTab()} style=${{background: 'transparent'}}>
+                      In neuem Tab öffnen
+                    </button>
+                    <button className="btn btn-primary" onClick=${closeModal}>Schließen</button>
+                  </div>
+                </div>
+
+                <div
+                  style=${{
+                    flex: '1 1 auto',
+                    background: '#000',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.08)'
+                  }}>
+                  ${iframeSrcDoc
+                    ? html`
+                        <iframe
+                          srcdoc=${iframeSrcDoc}
+                          style=${{width: '100%', height: '100%', border: 'none'}}
+                          sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups allow-same-origin"></iframe>
+                      `
+                    : html`
+                        <div style=${{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white'}}>
+                          Bitte warten…
+                        </div>
+                      `}
+                </div>
+              </div>
+            </div>
+          `
+        : null}
     <//>
   `
 }
