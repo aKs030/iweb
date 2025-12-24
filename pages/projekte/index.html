@@ -582,6 +582,8 @@
     <!-- Logic Script -->
     <script type="module">
       import {initProjectsApp} from './projekte-app.js'
+      import {createLogger} from '/content/utils/shared-utilities.js'
+      const log = createLogger('ProjektePage')
 
       // Load styles for Three Earth (Progressive Enhancement)
       async function ensureThreeEarthStyles() {
@@ -636,22 +638,22 @@
                 }
               }
             } catch (err) {
-              console.warn('Konnte Projekt-Presets nicht automatisch setzen:', err)
+              log.warn('[Projekte] Konnte Projekt-Presets nicht automatisch setzen', err)
             }
 
             try {
               await ensureThreeEarthStyles()
             } catch (e) {
-              console.warn('three-earth stylesheet preload failed:', e)
+              log.warn('[Projekte] three-earth stylesheet preload failed', e)
             }
 
             try {
               mod.initThreeEarth()
             } catch (e) {
-              console.warn('three-earth init failed:', e)
+              log.warn('[Projekte] three-earth init failed', e)
             }
           } catch (e) {
-            console.warn('Failed to import three-earth module:', e)
+            log.warn('[Projekte] Failed to import three-earth module', e)
           }
         }
 
