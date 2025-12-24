@@ -2,7 +2,7 @@
 // This avoids mixed-config detection issues across different Node/ESLint environments.
 module.exports = [
   {
-    ignores: ['node_modules/**', 'dist/**', 'build/**', 'content/vendor/**', 'public/**', '.venv/**']
+    ignores: ['node_modules/**', 'dist/**', 'build/**', 'content/vendor/**', 'public/**', '.venv/**', '.venv', 'content/vendor', 'dist', 'build', 'node_modules']
   },
   {
     files: ['**/*.js'],
