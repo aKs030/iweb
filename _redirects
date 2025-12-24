@@ -1,20 +1,24 @@
 # Cloudflare Pages / Netlify style redirects
 # Purpose: canonicalize folder URLs, remove index.html and .html endings where desired
 
-# --- 301 Redirects (Canonicalization) ---
+# -------------------------------
+# 1) Domain + protocol canonicalization
+# Place this near the top to avoid unnecessary double-redirects.
+http://abdulkerimsesli.de/*           https://abdulkerimsesli.de/:splat   301
+http://www.abdulkerimsesli.de/*       https://abdulkerimsesli.de/:splat   301
+https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 
-# Remove index.html explicit mappings
+# -------------------------------
+# 2) Specific 301 redirects (keep these before any generic rules)
+
+# Remove explicit index.html mappings (canonical trailing-slash roots)
 /index.html          /              301
 /blog/index.html     /blog/         301
 /projekte/index.html /projekte/     301
 /gallery/index.html  /gallery/      301
 /videos/index.html   /videos/       301
 
-# Normalize domain and protocol to https://abdulkerimsesli.de
-http://abdulkerimsesli.de/*           https://abdulkerimsesli.de/:splat   301
-https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
-
-# Redirect old file locations to new Clean URLs
+# Redirect old file locations to new clean URLs
 /pages/gallery/gallery.html     /gallery/     301
 /pages/projekte/projekte.html   /projekte/    301
 /pages/videos/videos.html       /videos/      301
@@ -27,32 +31,42 @@ https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 /content/footer/datenschutz                     /datenschutz/ 301
 /content/footer/impressum                       /impressum/   301
 
-# --- 200 Rewrites (Serving Content) ---
-# Note: In Cloudflare Pages, a folder with index.html is automatically served for the folder path.
-# We don't need explicit 200 rewrites for /gallery/ -> /pages/gallery/index.html IF we moved the files there.
-# However, because my file moves were:
-# pages/gallery/gallery.html -> pages/gallery/index.html
-# The URL /gallery/ will assume the content is at root /gallery/index.html, NOT /pages/gallery/index.html
-#
-# Wait, the structure is currently:
-# /pages/gallery/index.html
-#
-# Users visit: abdulkerimsesli.de/gallery/
-# Cloudflare looks for /gallery/index.html at the ROOT. It won't find it.
-# It finds /pages/gallery/index.html.
-#
-# So I DO need rewrites to map the clean URL to the physical location in /pages/.
+# -------------------------------
+# 3) Generic cleanups
+# Remove any remaining ".html" endings and canonicalize to trailing-slash roots.
+# Keep this after specific redirects so we don't accidentally override them.
+/*.html   /:splat/   301
 
+# Ensure root section names without trailing slash are redirected to the slash version
+/about    /about/     301
+/blog     /blog/      301
+/gallery  /gallery/   301
+/projekte /projekte/  301
+/videos   /videos/    301
+
+# -------------------------------
+# 4) Rewrites to serve content from the physical /pages/ folders
+# These are 200 rewrites so clean URLs map to their actual files under /pages/.
 /gallery/*      /pages/gallery/:splat     200
 /projekte/*     /pages/projekte/:splat    200
 /videos/*       /pages/videos/:splat      200
 /blog/*         /pages/blog/:splat        200
 /about/*        /pages/about/:splat       200
 
-# Fallback for the root of these sections if the splat doesn't catch the trailing slash
+# Fallbacks for the root of these sections
 /gallery/       /pages/gallery/index.html  200
 /projekte/      /pages/projekte/index.html 200
 /videos/        /pages/videos/index.html   200
 /blog/          /pages/blog/index.html     200
 /about/         /pages/about/index.html    200
+
+# -------------------------------
+# Notes / rationale:
+# - Specific redirects come first to avoid conflicts with the generic ".html" rule.
+# - The generic rule redirects any ".html" URL to the same path with a trailing slash.
+#   This covers both top-level pages like /about.html -> /about/ and deeper paths.
+# - We also add short redirects so requests to e.g. /about (no slash) get a canonical
+#   trailing-slash URL to match how directories are served.
+# - Test after deploy: check a sample of old URLs, ".html" URLs and domain variants to
+#   ensure there are no redirect loops and that final destinations return 200.
 
