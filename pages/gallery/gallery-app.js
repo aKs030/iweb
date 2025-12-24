@@ -941,12 +941,13 @@ const PhotoGallery = () => {
           'div',
           {
             className: 'relative max-w-full max-h-full overflow-hidden',
+            style: {width: '85vw', height: '70vh', maxHeight: '80vh', minHeight: '420px'},
             onClick: e => e.stopPropagation()
           },
           React.createElement('img', {
             src: selectedImage.url,
             alt: selectedImage.title,
-            className: 'max-w-full max-h-[80vh] object-contain transition-all duration-300',
+            className: 'max-w-full max-h-full object-contain transition-all duration-300',
             style: {
               transform: `scale(${zoom})`,
               filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))'
