@@ -130,7 +130,6 @@ const projects = [
     datePublished: '2023-07-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
-    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/schere-stein-papier/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
@@ -165,7 +164,6 @@ const projects = [
     datePublished: '2024-08-01',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/zahlen-raten/',
-    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/zahlen-raten/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
@@ -196,7 +194,6 @@ const projects = [
     datePublished: '2022-03-15',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/color-changer/',
-    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/color-changer/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
@@ -227,7 +224,6 @@ const projects = [
     datePublished: '2021-11-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/todo-liste/',
-    appSrc: 'https://raw.githack.com/aKs030/Webgame/main/pages/projekte/apps/todo-liste/index.html',
     githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
@@ -253,28 +249,35 @@ const projects = [
 
 // --- APP ---
 function App() {
+  const [popupUrl, setPopupUrl] = React.useState(null)
+  const [popupTitle, setPopupTitle] = React.useState('')
+
   const scrollToProjects = () => {
     const firstProject = document.getElementById('project-1')
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
 
-  // Embedded app state: which project is currently rendered inside the mockup iframe
-  const [embeddedProject, setEmbeddedProject] = React.useState(null)
-
-  const openApp = project => {
-    const url = project.appSrc || project.appPath
+  const toRawGithubUrl = p => {
     try {
-      // Embed inside the mockup
-      setEmbeddedProject(project.id)
-      // Also open a popup window for the app
-      const popup = window.open(url, `app-${project.id}`, 'width=980,height=700,resizable,scrollbars=yes')
-      if (popup && popup.focus) popup.focus()
-    } catch (err) {
-      if (typeof console !== 'undefined' && log.warn) log.warn('[ProjectsApp] openApp failed', err)
+      // Convert e.g. https://github.com/aKs030/Webgame.git -> https://raw.githubusercontent.com/aKs030/Webgame/main
+      const ghRoot = (p.githubPath || '').replace(/\.git$/, '').replace(/^https:\/\/github.com\//, 'https://raw.githubusercontent.com/')
+      const appRel = (p.appPath || '').replace(/^\/+|\/+$/g, '') // remove leading/trailing slashes
+      return `${ghRoot}/main/${appRel}/index.html`
+    } catch (e) {
+      return p.githubPath
     }
   }
 
-  const closeEmbedded = () => setEmbeddedProject(null)
+  const openProjectPopup = p => {
+    const url = toRawGithubUrl(p)
+    setPopupTitle(p.title)
+    setPopupUrl(url)
+  }
+
+  const closePopup = () => {
+    setPopupUrl(null)
+    setPopupTitle('')
+  }
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -354,32 +357,7 @@ function App() {
                 <div className="window-mockup">
                   <div className="mockup-content">
                     <div className="mockup-bg-pattern"></div>
-                    ${embeddedProject === project.id
-                      ? html`
-                          <div style=${{width: '100%', height: '100%', position: 'relative', zIndex: 15}}>
-                            <iframe
-                              src=${project.appSrc}
-                              title=${project.title}
-                              style=${{width: '100%', height: '100%', border: 0, backgroundColor: 'transparent'}}></iframe>
-                            <button
-                              onClick=${() => closeEmbedded()}
-                              className="mockup-close"
-                              style=${{
-                                position: 'absolute',
-                                top: '0.5rem',
-                                right: '0.5rem',
-                                background: 'rgba(0,0,0,0.5)',
-                                color: '#fff',
-                                border: 'none',
-                                padding: '0.4rem 0.6rem',
-                                borderRadius: '8px'
-                              }}
-                              aria-label="Schließen">
-                              ✕
-                            </button>
-                          </div>
-                        `
-                      : project.previewContent}
+                    ${project.previewContent}
                     <div className="mockup-icon">${project.icon}</div>
                   </div>
                 </div>
@@ -403,7 +381,7 @@ function App() {
                 <div className="project-actions">
                   <button
                     className="btn btn-primary btn-small"
-                    onClick=${() => openApp(project)}
+                    onClick=${() => openProjectPopup(project)}
                     aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
                     App öffnen
@@ -423,6 +401,46 @@ function App() {
           </section>
         `
       )}
+      ${popupUrl
+        ? html`
+            <div
+              className="project-popup-overlay"
+              style=${{position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999}}>
+              <div style=${{position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)'}} onClick=${closePopup}></div>
+              <div
+                style=${{
+                  position: 'relative',
+                  width: '90%',
+                  height: '88%',
+                  background: '#000',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.8)'
+                }}
+                role="dialog"
+                aria-modal="true">
+                <div
+                  style=${{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(0,0,0,0.6)',
+                    color: '#fff'
+                  }}>
+                  <strong>${popupTitle}</strong>
+                  <div style=${{display: 'flex', gap: '0.5rem'}}>
+                    <a className="btn btn-outline btn-small" href=${popupUrl} target="_blank" rel="noopener noreferrer">
+                      In neuem Tab öffnen
+                    </a>
+                    <button className="btn btn-primary btn-small" onClick=${closePopup}>Schließen</button>
+                  </div>
+                </div>
+                <iframe src=${popupUrl} style=${{width: '100%', height: 'calc(100% - 48px)', border: 0, background: '#fff'}}></iframe>
+              </div>
+            </div>
+          `
+        : null}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
