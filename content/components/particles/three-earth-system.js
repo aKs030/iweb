@@ -102,8 +102,8 @@ const ThreeEarthManager = (() => {
               `
               container.appendChild(fallback)
             }
-          } catch (e) {
-            /* ignore DOM insert errors */
+          } catch (err) {
+            console.warn('ThreeEarthSystem: DOM insert ignored', err)
           }
           showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'))
           // mark cleanup and exit gracefully
@@ -121,8 +121,8 @@ const ThreeEarthManager = (() => {
       // Register as a potentially blocking module while initializing
       try {
         AppLoadManager.block('three-earth')
-      } catch (e) {
-        /* ignore */
+      } catch (err) {
+        console.warn('ThreeEarthSystem: AppLoadManager.block/unblock ignored', err)
       }
 
       // Watchdog: if Three.js doesn't load within this time, unblock to avoid blocking page loader
@@ -134,21 +134,21 @@ const ThreeEarthManager = (() => {
             log.warn('Three.js load taking too long — unblocking three-earth to avoid blocking global loader')
             try {
               AppLoadManager.unblock('three-earth')
-            } catch (e) {
-              /* ignore */
+            } catch (err) {
+              console.warn('ThreeEarthSystem: AppLoadManager.unblock ignored', err)
             }
             try {
               showErrorState(container, new Error('Three.js load timeout'), () => {
                 cleanup()
                 initThreeEarth()
               })
-            } catch (e) {
-              /* ignore */
+            } catch (err) {
+              console.warn('ThreeEarthSystem: showErrorState fallback ignored', err)
             }
           }
         }, THREE_LOAD_WATCH)
-      } catch (e) {
-        /* ignore */
+      } catch (err) {
+        console.warn('ThreeEarthSystem: clear timeout ignored', err)
       }
 
       // Load Three.js
@@ -157,8 +157,8 @@ const ThreeEarthManager = (() => {
       // Clear watchdog if load completed
       try {
         if (threeLoadWatchTimer) earthTimers.clearTimeout(threeLoadWatchTimer)
-      } catch (e) {
-        /* ignore */
+      } catch (err) {
+        console.warn('ThreeEarthSystem: clear watchdog timer failed', err)
       }
 
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
@@ -188,8 +188,8 @@ const ThreeEarthManager = (() => {
         if (!isSystemActive) return
         try {
           AppLoadManager.unblock('three-earth')
-        } catch (e) {
-          /* ignore */
+        } catch (err) {
+          console.warn('ThreeEarthSystem: AppLoadManager.unblock failed', err)
         }
         hideLoadingState(container)
       }
@@ -409,7 +409,9 @@ function supportsWebGL() {
     if (ctx2) {
       try {
         ctx2.getExtension && ctx2.getExtension('EXT_color_buffer_float')
-      } catch {}
+      } catch (err) {
+        console.warn('ThreeEarthSystem: getExtension ignored', err)
+      }
       return true
     }
     const ctx = canvas.getContext('webgl', {failIfMajorPerformanceCaveat: true}) || canvas.getContext('experimental-webgl')

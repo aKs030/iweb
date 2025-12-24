@@ -36,8 +36,8 @@ export function showLoadingState(container) {
     globals.screen.setAttribute('aria-live', 'polite')
     try {
       document.body.classList.add('global-loading-visible')
-    } catch (e) {
-      /* ignore */
+    } catch (err) {
+      console.warn('EarthUI: add global-loading-visible failed', err)
     }
   } else {
     // Fallback: no local progress UI; do nothing.
@@ -63,8 +63,8 @@ export function hideLoadingState(container) {
       if (globals.screen) globals.screen.style.display = 'none'
       try {
         document.body.classList.remove('global-loading-visible')
-      } catch (e) {
-        /* ignore */
+      } catch (err) {
+        console.warn('EarthUI: remove global-loading-visible failed', err)
       }
     }, 300)
   } else {
@@ -154,7 +154,7 @@ export class PerformanceMonitor {
       try {
         this.renderer.setPixelRatio(this.currentPixelRatio)
       } catch (e) {
-        log.warn('Failed to set pixel ratio on renderer:', e)
+        log.warn('[EarthUI] Failed to set pixel ratio on renderer:', e)
       }
     }
   }

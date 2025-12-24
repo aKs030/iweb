@@ -81,11 +81,11 @@ for (const f of scanFiles) {
           if (dup.length) console.warn('Duplicate URLs found:', [...new Set(dup)])
           else console.warn('No duplicate URLs')
         }
-      } catch {
-        // ignore parse
+      } catch (err) {
+        console.warn('test-breadcrumbs: JSON parse failed', err)
       }
     }
-  } catch {
-    // file not found
+  } catch (err) {
+    console.warn('test-breadcrumbs: file read failed', err)
   }
 }

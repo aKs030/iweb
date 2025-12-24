@@ -40,7 +40,8 @@ export class ReconnectingWebSocket {
     if (this.manualClose) return
     try {
       this.ws = new WebSocket(this.url, this.protocols)
-    } catch {
+    } catch (err) {
+      console.warn('ReconnectingWebSocket: synchronous connect failed', err)
       // Synchronous failure, schedule reconnect
       this._scheduleReconnect()
       return
@@ -51,8 +52,8 @@ export class ReconnectingWebSocket {
       if (this.onopen)
         try {
           this.onopen(e)
-        } catch {
-          // Swallow errors in user-provided onopen handler
+        } catch (err) {
+          console.warn('ReconnectingWebSocket: onopen handler threw', err)
         }
     }
 

@@ -308,7 +308,9 @@ class RobotCompanion {
         const initialLeft = window.innerWidth - 30 - robotWidth
         const maxLeft = initialLeft - 20
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
-      } catch {}
+      } catch (err) {
+        console.warn('RobotCompanion: hero typing end handler failed', err)
+      }
     }
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd)
   }
@@ -345,7 +347,9 @@ class RobotCompanion {
             const maxLeft = initialLeft - 20
             this.collisionModule.checkForTypewriterCollision(twRect, maxLeft)
           }
-        } catch {}
+        } catch (err) {
+          console.warn('RobotCompanion: scroll handler collision check failed', err)
+        }
       }, 500)
     }
     window.addEventListener('scroll', this._scrollListener, {passive: true})

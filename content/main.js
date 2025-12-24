@@ -597,17 +597,21 @@ document.addEventListener(
         }
 
         if (navigator.share) {
-          navigator.share(shareData).catch(() => {})
+          navigator.share(shareData).catch(err => console.warn('share failed', err))
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(shareUrl).then(() => {
             try {
               announce('Link kopiert', {dedupe: true})
-            } catch {}
+            } catch (err) {
+              console.warn('announce failed', err)
+            }
           })
         } else {
           try {
             window.prompt('Link kopieren', shareUrl)
-          } catch {}
+          } catch (err) {
+            console.warn('prompt failed', err)
+          }
         }
         return
       }
@@ -622,7 +626,7 @@ document.addEventListener(
         async () => {
           try {
             const regs = await navigator.serviceWorker.getRegistrations()
-            await Promise.all(regs.map(r => r.unregister().catch(() => {})))
+            await Promise.all(regs.map(r => r.unregister().catch(err => console.warn('ServiceWorker unregister failed', err))))
 
             if ('caches' in window) {
               const keys = await caches.keys()

@@ -1,3 +1,6 @@
+import {createLogger} from '../../../utils/shared-utilities.js'
+const log = createLogger('RobotCollision')
+
 export class RobotCollision {
   constructor(robot) {
     this.robot = robot
@@ -227,7 +230,8 @@ export class RobotCollision {
       }
 
       return true
-    } catch (e) {
+    } catch (err) {
+      log.warn('checkForTypewriterCollision failed', err)
       return false
     }
   }

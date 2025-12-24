@@ -601,8 +601,8 @@ export class CardManager {
           if (glow.material.map && glow.material.map.dispose) glow.material.map.dispose()
           if (glow.material.dispose) glow.material.dispose()
         }
-      } catch (e) {
-        // Defensive: ignore disposal errors to avoid blocking cleanup
+      } catch (err) {
+        console.warn('EarthCards: disposal error', err)
       }
     })
 

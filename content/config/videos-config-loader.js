@@ -22,22 +22,25 @@ async function loadConfig() {
     try {
       const m = await import('./videos-part-a.js')
       partA = m && (m.default || '')
-    } catch {
+    } catch (err) {
+      console.warn('VideosConfig: videos-part-a import failed', err)
       // missing or not found - skip
     }
 
     try {
       const m = await import('./videos-part-b.js')
       partB = m && (m.default || '')
-    } catch {
+    } catch (err) {
+      console.warn('VideosConfig: videos-part-b import failed', err)
       // missing or not found - skip
     }
 
     const safeAtob = s => {
       try {
         return s ? atob(String(s)) : ''
-      } catch {
+      } catch (err) {
         // If it's not base64, return raw
+        console.warn('VideosConfig: safeAtob failed', err)
         return String(s || '')
       }
     }
