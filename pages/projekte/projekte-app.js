@@ -259,6 +259,105 @@ function App() {
   const [modalUrl, setModalUrl] = React.useState('')
   const [modalTitle, setModalTitle] = React.useState('')
   const [iframeLoading, setIframeLoading] = React.useState(true)
+  const [toastMsg, setToastMsg] = React.useState('')
+  const toastTimerRef = React.useRef(null)
+  const showToast = (msg, ms = 2600) => {
+    setToastMsg(msg)
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = setTimeout(() => setToastMsg(''), ms)
+  }
+
+  const getDirectUrl = project => {
+    if (project.githubPath && project.githubPath.includes('github.com')) {
+      const m = project.githubPath.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+      if (m) {
+        const [, owner, repo, branch, path] = m
+        return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`
+      }
+    }
+    // fallback
+    if (project.appPath) return project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath
+    return project.githubPath || ''
+  }
+
+  const toRawGithackUrl = ghUrl => {
+    try {
+      const m = ghUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+      if (m) {
+        const [, owner, repo, branch, path] = m
+        return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`
+      }
+    } catch {}
+    return ''
+  }
+
+  const toJsDelivrUrl = ghUrl => {
+    try {
+      const m = ghUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+      if (m) {
+        const [, owner, repo, branch, path] = m
+        return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`
+      }
+    } catch {}
+    return ''
+  }
+
+  const testUrl = async (url, timeout = 2500) => {
+    if (!url) return false
+    try {
+      const controller = new AbortController()
+      const id = setTimeout(() => controller.abort(), timeout)
+      const res = await fetch(url, {method: 'GET', mode: 'cors', signal: controller.signal})
+      clearTimeout(id)
+      return res && res.ok
+    } catch (e) {
+      return false
+    }
+  }
+
+  const openDirect = async project => {
+    // Try raw.githack first (embed-friendly), then jsDelivr, then fallback to raw.githubusercontent (new tab)
+    const gh = project.githubPath || ''
+    const rawGithack = gh ? toRawGithackUrl(gh) : ''
+    const jsDelivr = gh ? toJsDelivrUrl(gh) : ''
+
+    // prefer raw.githack
+    if (rawGithack && (await testUrl(rawGithack, 2500))) {
+      setModalTitle(project.title)
+      setModalUrl(rawGithack)
+      setIframeLoading(true)
+      setModalOpen(true)
+      try {
+        document.body.style.overflow = 'hidden'
+      } catch {}
+      return
+    }
+
+    // next try jsDelivr
+    if (jsDelivr && (await testUrl(jsDelivr, 2500))) {
+      setModalTitle(project.title)
+      setModalUrl(jsDelivr)
+      setIframeLoading(true)
+      setModalOpen(true)
+      try {
+        document.body.style.overflow = 'hidden'
+      } catch {}
+      return
+    }
+
+    // fallback: open raw.githubusercontent or appPath in new tab
+    const direct = getDirectUrl(project) || project.githubPath || project.appPath || ''
+    if (!direct) {
+      showToast('Keine gültige App-URL vorhanden')
+      return
+    }
+    try {
+      window.open(direct, '_blank', 'noopener')
+      showToast('App in neuem Tab geöffnet')
+    } catch (e) {
+      showToast('Öffnen im Tab fehlgeschlagen')
+    }
+  }
 
   const openAppModal = project => {
     setModalUrl(project.appPath || project.githubPath || '')
@@ -286,6 +385,13 @@ function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [modalOpen])
+
+  // Cleanup toast timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    }
+  }, [])
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -389,7 +495,7 @@ function App() {
                 <div className="project-actions">
                   <button
                     className="btn btn-primary btn-small"
-                    onClick=${() => openAppModal(project)}
+                    onClick=${() => openDirect(project)}
                     aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
                     App öffnen
@@ -409,6 +515,24 @@ function App() {
           </section>
         `
       )}
+      ${toastMsg
+        ? html`
+            <div
+              style=${{
+                position: 'fixed',
+                right: '1rem',
+                bottom: '1.25rem',
+                zIndex: 30000,
+                background: 'rgba(0,0,0,0.8)',
+                color: 'white',
+                padding: '0.6rem 0.9rem',
+                borderRadius: '8px',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.4)'
+              }}>
+              ${toastMsg}
+            </div>
+          `
+        : null}
       ${modalOpen
         ? html`
             <div
