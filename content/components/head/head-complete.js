@@ -349,6 +349,7 @@
       graph.push({
         '@type': 'FAQPage',
         '@id': `${pageUrl}#faq`,
+        'name': pageData && pageData.title ? `${pageData.title} — FAQ` : 'FAQ',
         'mainEntity': faqNodes,
         'isPartOf': {'@id': ID.webpage}
       })
