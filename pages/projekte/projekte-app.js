@@ -131,7 +131,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    demoPath: 'https://aKs030.github.io/Webgame/schere-stein-papier/',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -166,7 +165,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/zahlen-raten/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    demoPath: 'https://aKs030.github.io/Webgame/zahlen-raten/',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -197,7 +195,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/color-changer/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    demoPath: 'https://aKs030.github.io/Webgame/color-changer/',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -228,7 +225,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/todo-liste/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    demoPath: 'https://aKs030.github.io/Webgame/todo-liste/',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
@@ -258,10 +254,10 @@ function App() {
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
 
-  // Preview state: which project is currently previewed inside the mockup iframe
-  const [previewId, setPreviewId] = React.useState(null)
-  const openPreview = id => setPreviewId(id)
-  const closePreview = () => setPreviewId(null)
+  // Per-project preview state (show embedded iframe when true)
+  const [playing, setPlaying] = React.useState({})
+  const play = id => setPlaying(prev => ({...prev, [id]: true}))
+  const close = id => setPlaying(prev => ({...prev, [id]: false}))
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -275,7 +271,7 @@ function App() {
           '@type': 'CreativeWork',
           'name': p.title,
           'description': p.description,
-          'url': p.demoPath ? p.demoPath : p.appPath ? siteBase + p.appPath : siteBase + '/projekte/#' + key,
+          'url': siteBase + (p.appPath ? p.appPath : '/projekte/#' + key),
           'author': {'@type': 'Person', 'name': 'Abdulkerim Sesli'},
           'keywords': Array.isArray(p.tags) ? p.tags.join(', ') : p.tags || '',
           'about': p.category,
@@ -339,45 +335,66 @@ function App() {
                 }}>
                 <div className="back-glow" style=${{backgroundColor: project.glowColor}}></div>
                 <div className="window-mockup">
-                  <div className="mockup-content">
-                    ${previewId === project.id
+                  <div className="mockup-content" style=${{position: 'relative'}}>
+                    <div className="mockup-bg-pattern" style=${{position: 'absolute', inset: 0}}></div>
+
+                    ${playing[project.id]
                       ? html`
-                          <div style=${{position: 'relative', width: '100%', height: '100%'}}>
+                          <div style=${{position: 'absolute', inset: 0, zIndex: 15}}>
                             <iframe
-                              src=${project.demoPath || project.appPath}
-                              style=${{width: '100%', height: '100%', border: '0'}}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              onError=${() => {
-                                // Fallback: open in new tab if embedding is blocked
-                                try {
-                                  window.open(project.demoPath || project.appPath, '_blank')
-                                } catch (e) {}
-                                closePreview()
-                                try {
-                                  alert('Preview konnte nicht geladen werden. Öffne die App in einem neuen Tab.')
-                                } catch (e) {}
-                              }} />
-                            <button
-                              onClick=${() => closePreview()}
-                              className="btn btn-outline"
-                              style=${{position: 'absolute', top: '0.75rem', right: '0.75rem'}}
-                              aria-label=${`Schließen Vorschau ${project.title}`}>
-                              ✕
-                            </button>
+                              src=${project.appPath}
+                              title=${project.title}
+                              style=${{width: '100%', height: '100%', border: 0}}
+                              sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
+
+                            <div
+                              style=${{position: 'absolute', top: '0.75rem', right: '0.75rem', zIndex: 20, display: 'flex', gap: '0.5rem'}}>
+                              <a
+                                href=${project.appPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style=${{
+                                  background: 'rgba(255,255,255,0.08)',
+                                  color: '#fff',
+                                  padding: '0.45rem 0.6rem',
+                                  borderRadius: '0.5rem',
+                                  textDecoration: 'none',
+                                  fontSize: '0.9rem'
+                                }}>
+                                Öffnen
+                              </a>
+                              <button
+                                onClick=${() => close(project.id)}
+                                className="btn"
+                                style=${{background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '0.45rem 0.6rem', borderRadius: '0.5rem'}}>
+                                Schließen
+                              </button>
+                            </div>
                           </div>
                         `
                       : html`
-                          <div className="mockup-bg-pattern"></div>
                           ${project.previewContent}
-                          <div className="mockup-icon">${project.icon}</div>
                           <button
-                            onClick=${() => openPreview(project.id)}
-                            className="btn btn-outline btn-small"
-                            style=${{position: 'absolute', top: '0.75rem', right: '0.75rem'}}
-                            aria-label=${`Vorschau ${project.title}`}>
+                            onClick=${() => play(project.id)}
+                            aria-label=${`Vorschau ${project.title} öffnen`}
+                            style=${{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%,-50%)',
+                              zIndex: 15,
+                              background: '#fff',
+                              color: '#000',
+                              padding: '0.65rem 1rem',
+                              borderRadius: '9999px',
+                              fontWeight: 700,
+                              boxShadow: '0 12px 30px rgba(0,0,0,0.35)'
+                            }}>
                             ▶︎ Vorschau
                           </button>
                         `}
+
+                    <div className="mockup-icon" style=${{display: playing[project.id] ? 'none' : 'block'}}>${project.icon}</div>
                   </div>
                 </div>
               </div>
@@ -398,14 +415,9 @@ function App() {
                   )}
                 </div>
                 <div className="project-actions">
-                  <a
-                    className="btn btn-primary btn-small"
-                    href=${project.demoPath || project.appPath}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label=${`Live Demo ${project.title}`}>
+                  <a className="btn btn-primary btn-small" href=${project.appPath} aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
-                    Live Demo
+                    App öffnen
                   </a>
                   <a
                     className="btn btn-outline btn-small"
