@@ -276,6 +276,12 @@
         'width': 512,
         'height': 512
       },
+      'image': {
+        '@type': 'ImageObject',
+        'url': pageData && pageData.image ? pageData.image : BRAND_DATA.logo,
+        'width': 1200,
+        'height': 630
+      },
       'email': BRAND_DATA.email,
       'sameAs': BRAND_DATA.sameAs,
       'address': BRAND_DATA.address || {
@@ -340,7 +346,17 @@
         const clone = contentNode.cloneNode(true)
 
         // Remove noise
-        const noiseSelectors = ['nav', 'footer', 'script', 'style', 'noscript', 'iframe', '.cookie-banner', '.no-ai', '[aria-hidden="true"]']
+        const noiseSelectors = [
+          'nav',
+          'footer',
+          'script',
+          'style',
+          'noscript',
+          'iframe',
+          '.cookie-banner',
+          '.no-ai',
+          '[aria-hidden="true"]'
+        ]
         noiseSelectors.forEach(sel => clone.querySelectorAll(sel).forEach(el => el.remove()))
 
         // Extract and clean text
