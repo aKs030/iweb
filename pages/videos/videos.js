@@ -98,14 +98,14 @@ function _shareChannel() {
         title: 'Demo Video 1 — Beispiel',
         desc: 'Beispielbeschreibung für Demo Video 1',
         thumb: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-        pub: '2020-01-01'
+        pub: '2020-01-01T00:00:00+00:00'
       },
       {
         videoId: 'J---aiyznGQ',
         title: 'Demo Video 2 — Beispiel',
         desc: 'Beispielbeschreibung für Demo Video 2',
         thumb: 'https://i.ytimg.com/vi/J---aiyznGQ/hqdefault.jpg',
-        pub: '2021-02-02'
+        pub: '2021-02-02T00:00:00+00:00'
       }
     ]
 
@@ -140,7 +140,7 @@ function _shareChannel() {
           'name': it.title + ' – Abdulkerim Sesli',
           'description': it.desc,
           'thumbnailUrl': it.thumb,
-          'uploadDate': it.pub || new Date().toISOString().split('T')[0],
+          'uploadDate': it.pub || new Date().toISOString(),
           'contentUrl': `https://youtu.be/${it.videoId}`,
           'embedUrl': `https://www.youtube.com/embed/${it.videoId}`,
           'publisher': {'@type': 'Person', 'name': 'Abdulkerim Sesli'}
@@ -243,9 +243,10 @@ function _shareChannel() {
     items.forEach(it => {
       const vid = it.snippet.resourceId.videoId
       const title = it.snippet.title
-      const desc = it.snippet.description || ''
+      const desc =
+        it.snippet.description && it.snippet.description.trim() ? it.snippet.description : `${title} — Video von Abdulkerim Sesli`
       const thumb = it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url
-      const pub = it.snippet.publishedAt ? it.snippet.publishedAt.split('T')[0] : ''
+      const pub = it.snippet.publishedAt || new Date().toISOString()
 
       const videoDetail = detailsMap[vid]
       const duration = videoDetail?.contentDetails?.duration // ISO 8601
@@ -279,7 +280,7 @@ function _shareChannel() {
         'name': title + ' – Abdulkerim Sesli',
         'description': desc,
         'thumbnailUrl': thumb,
-        'uploadDate': pub || new Date().toISOString().split('T')[0],
+        'uploadDate': pub,
         'contentUrl': `https://youtu.be/${vid}`,
         'embedUrl': `https://www.youtube.com/embed/${vid}`,
         'isFamilyFriendly': true,
