@@ -130,7 +130,7 @@ const projects = [
     datePublished: '2023-07-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/projekte/apps/schere-stein-papier',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -164,7 +164,7 @@ const projects = [
     datePublished: '2024-08-01',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/zahlen-raten/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/projekte/apps/zahlen-raten',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -194,7 +194,7 @@ const projects = [
     datePublished: '2022-03-15',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/color-changer/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/projekte/apps/color-changer',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -224,7 +224,7 @@ const projects = [
     datePublished: '2021-11-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/todo-liste/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/projekte/apps/todo-liste',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
@@ -254,64 +254,38 @@ function App() {
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
 
-  // Modal state for in-site app preview (iframe)
-  const [modal, setModal] = React.useState({open: false, src: '', title: '', loading: true, error: null})
+  // Modal preview state for opening apps in a popup
+  const [modalOpen, setModalOpen] = React.useState(false)
+  const [modalUrl, setModalUrl] = React.useState('')
+  const [modalTitle, setModalTitle] = React.useState('')
+  const [iframeLoading, setIframeLoading] = React.useState(true)
 
   const openAppModal = project => {
-    const pagesBase = 'https://aKs030.github.io/Webgame'
-    const external = pagesBase.replace(/\/$/, '') + project.appPath
-    // Start with GitHub Pages URL and fall back to local path after timeout
-    setModal({open: true, src: external, title: project.title, loading: true, error: null})
-    // Fallback timer (8s) -> try local path
-    const t = setTimeout(() => {
-      setModal(prev => {
-        if (!prev.open || !prev.loading) return prev
-        // switch to local path and set an error timer in case that also fails
-        const errorTimer = setTimeout(() => {
-          setModal(prev2 => ({...prev2, loading: false, error: 'App konnte nicht geladen werden. Bitte in neuem Tab öffnen.'}))
-          window.__projectAppErrorTimer = null
-        }, 6000)
-        window.__projectAppErrorTimer = errorTimer
-        return {...prev, src: project.appPath}
-      })
-    }, 8000)
-    // store current timer so we can clear on success/close
-    window.__projectAppFallbackTimer = t
+    setModalUrl(project.appPath || project.githubPath || '')
+    setModalTitle(project.title)
+    setIframeLoading(true)
+    setModalOpen(true)
+    try {
+      document.body.style.overflow = 'hidden'
+    } catch {}
+  }
+  const closeAppModal = () => {
+    setModalOpen(false)
+    setModalUrl('')
+    setModalTitle('')
+    try {
+      document.body.style.overflow = ''
+    } catch {}
   }
 
-  const closeModal = () => {
-    if (window.__projectAppFallbackTimer) {
-      clearTimeout(window.__projectAppFallbackTimer)
-      window.__projectAppFallbackTimer = null
-    }
-    if (window.__projectAppErrorTimer) {
-      clearTimeout(window.__projectAppErrorTimer)
-      window.__projectAppErrorTimer = null
-    }
-    setModal({open: false, src: '', title: '', loading: true, error: null})
-  }
-
-  const onIframeLoad = () => {
-    if (window.__projectAppFallbackTimer) {
-      clearTimeout(window.__projectAppFallbackTimer)
-      window.__projectAppFallbackTimer = null
-    }
-    if (window.__projectAppErrorTimer) {
-      clearTimeout(window.__projectAppErrorTimer)
-      window.__projectAppErrorTimer = null
-    }
-    setModal(prev => ({...prev, loading: false, error: null}))
-  }
-
-  // keyboard handler to close modal with Esc
   React.useEffect(() => {
-    if (!modal.open) return
+    if (!modalOpen) return
     const onKey = e => {
-      if (e.key === 'Escape') closeModal()
+      if (e.key === 'Escape') closeAppModal()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [modal.open])
+  }, [modalOpen])
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -435,6 +409,83 @@ function App() {
           </section>
         `
       )}
+      ${modalOpen
+        ? html`
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label=${`Vorschau ${modalTitle}`}
+              style=${{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 20000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.6)'
+              }}>
+              <div
+                style=${{
+                  width: '92%',
+                  height: '86%',
+                  maxWidth: '1100px',
+                  maxHeight: '820px',
+                  background: 'rgba(8,8,12,0.98)',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.6)'
+                }}>
+                <div
+                  style=${{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.5rem 0.75rem',
+                    background: 'linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))',
+                    borderBottom: '1px solid rgba(255,255,255,0.03)'
+                  }}>
+                  <div style=${{display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fff'}}>
+                    <strong>${modalTitle}</strong>
+                  </div>
+                  <div style=${{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                    <a
+                      href=${modalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-outline btn-small"
+                      style=${{marginRight: '0.5rem'}}>
+                      In neuem Tab öffnen
+                    </a>
+                    <button className="btn btn-primary btn-small" onClick=${closeAppModal} aria-label="Schließen">Schließen</button>
+                  </div>
+                </div>
+                <div style=${{position: 'relative', height: '100%', background: '#000'}}>
+                  ${iframeLoading
+                    ? html`
+                        <div
+                          style=${{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 3,
+                            color: 'white'
+                          }}>
+                          Lade Vorschau…
+                        </div>
+                      `
+                    : null}
+                  <iframe
+                    src=${modalUrl}
+                    onLoad=${() => setIframeLoading(false)}
+                    style=${{width: '100%', height: 'calc(100% - 48px)', border: 0}}
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                </div>
+              </div>
+            </div>
+          `
+        : null}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
@@ -451,57 +502,6 @@ function App() {
           </div>
         </div>
       </section>
-
-      ${modal.open
-        ? html`
-            <div style=${{position: 'fixed', inset: 0, zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-              <div style=${{position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)'}} onClick=${closeModal}></div>
-              <div
-                style=${{
-                  position: 'relative',
-                  width: 'min(1100px, 95vw)',
-                  height: 'min(800px, 85vh)',
-                  background: 'rgba(6,8,15,0.95)',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.6)'
-                }}
-                onClick=${e => e.stopPropagation()}>
-                <div
-                  style=${{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.5rem 1rem',
-                    background: 'rgba(255,255,255,0.02)'
-                  }}>
-                  <div style=${{color: 'white', fontWeight: 700}}>${modal.title}</div>
-                  <div style=${{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
-                    <a href=${modal.src} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-small">
-                      In neuem Tab öffnen
-                    </a>
-                    <button onClick=${closeModal} className="btn btn-primary btn-small">Schließen</button>
-                  </div>
-                </div>
-                ${modal.loading
-                  ? html`
-                      <div style=${{padding: '1rem', color: '#cbd5e1'}}>Lade App…</div>
-                    `
-                  : null}
-                <iframe
-                  src=${modal.src}
-                  style=${{width: '100%', height: 'calc(100% - 48px)', border: 0}}
-                  onLoad=${onIframeLoad}
-                  title=${modal.title}></iframe>
-                ${modal.error
-                  ? html`
-                      <div style=${{padding: '1rem', color: 'tomato'}}>${modal.error}</div>
-                    `
-                  : null}
-              </div>
-            </div>
-          `
-        : null}
     <//>
   `
 }
