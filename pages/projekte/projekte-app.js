@@ -331,11 +331,42 @@ function App() {
 
       if (!htmlText) throw new Error('All fetch attempts failed')
 
-      // Inject <base> so relative assets resolve to raw GitHub path
+      // Inject <base> and helpers so relative assets resolve and content scales to modal
+      const viewportMeta = '<meta name="viewport" content="width=device-width, initial-scale=1">'
+      const fitScript = `
+        <script>
+          (function(){
+            function fit(){
+              try {
+                var doc = document.documentElement || document.body;
+                var body = document.body || document.documentElement;
+                var contentHeight = Math.max(doc.scrollHeight || 0, doc.offsetHeight || 0, body.scrollHeight || 0, body.offsetHeight || 0)
+                var viewport = window.innerHeight || (document.documentElement && document.documentElement.clientHeight) || 0
+                var scale = Math.min(1, viewport / (contentHeight || viewport))
+                if (scale < 1) {
+                  document.documentElement.style.boxSizing = 'border-box'
+                  document.body.style.transformOrigin = 'top center'
+                  document.body.style.transform = 'scale(' + scale + ')'
+                  document.body.style.width = (100 / scale) + '%'
+                } else {
+                  document.body.style.transform = ''
+                  document.body.style.width = ''
+                }
+              } catch(e) { /* ignore */ }
+            }
+            window.addEventListener('load', fit)
+            window.addEventListener('resize', fit)
+            setTimeout(fit, 200)
+          })()
+        <\/script>
+      `
+
       if (/<head[^>]*>/i.test(htmlText)) {
-        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><base href="${chosenBase}">`)
+        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1>${viewportMeta}<base href="${chosenBase}">`)
+        // inject fit script at the end of head to run as early as possible
+        htmlText = htmlText.replace(/<\/head>/i, fitScript + '</head>')
       } else {
-        htmlText = `<base href="${chosenBase}">` + htmlText
+        htmlText = viewportMeta + `<base href="${chosenBase}">` + htmlText + fitScript
       }
 
       setIframeSrcDoc(htmlText)
