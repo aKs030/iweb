@@ -131,8 +131,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    frameWidth: 900,
-    frameHeight: 640,
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -167,8 +165,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/zahlen-raten/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    frameWidth: 820,
-    frameHeight: 640,
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -199,8 +195,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/color-changer/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    frameWidth: 900,
-    frameHeight: 720,
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -231,8 +225,6 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/todo-liste/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
-    frameWidth: 900,
-    frameHeight: 720,
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
@@ -262,122 +254,76 @@ function App() {
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
 
-  // Open app in a small popup with embedded iframe and auto-fit scaling
-  const openAppPopup = (e, project) => {
-    if (e && e.preventDefault) e.preventDefault()
+  // Modal state for in-page app preview
+  const [modal, setModal] = React.useState({open: false, project: null, src: '', frame: {width: 1024, height: 768}})
+  const viewportRef = React.useRef(null)
+  const innerRef = React.useRef(null)
 
-    // Prefer GitHub Pages URL, fallback to raw.githubusercontent
-    const pagesBase = 'https://aKs030.github.io/Webgame'
-    const rawBase = 'https://raw.githubusercontent.com/aKs030/Webgame/main'
-    const appPath = project.appPath || '/'
-    const pagesUrl = appPath.startsWith('/') ? pagesBase + appPath : pagesBase + '/' + appPath
-    const rawUrl = appPath.startsWith('/') ? rawBase + appPath + 'index.html' : rawBase + '/' + appPath + '/index.html'
+  // utility: build candidate URLs (GitHub Pages first, then raw)
+  const buildCandidates = project => {
+    // Use GitHub Pages (recommended) at https://<user>.github.io/<repo><appPath>
+    const ghUser = 'aKs030'
+    const repo = 'Webgame'
+    const appPath = project.appPath || '/projekte/apps/' + (project.id || '') + '/'
+    const ghPages = `https://${ghUser}.github.io/${repo}${appPath}`
+    const raw = `https://raw.githubusercontent.com/${ghUser}/${repo}/main${appPath}index.html`
+    return [ghPages, raw]
+  }
 
-    const baseW = project.frameWidth || 900
-    const baseH = project.frameHeight || 700
+  // try HEAD fetch to detect which URL is available (graceful fallback)
+  const probeUrl = async (url, timeoutMs = 2000) => {
+    try {
+      const controller = new AbortController()
+      const id = setTimeout(() => controller.abort(), timeoutMs)
+      const res = await fetch(url, {method: 'HEAD', mode: 'no-cors', signal: controller.signal})
+      clearTimeout(id)
+      // When mode:no-cors the status is 0; treat as success in this environment
+      return res && (res.ok || res.type === 'opaque' || res.status === 0)
+    } catch (e) {
+      return false
+    }
+  }
 
-    // Desired popup size (slightly smaller as requested)
-    const width = Math.max(420, Math.round(baseW * 0.8))
-    const height = Math.max(360, Math.round(baseH * 0.75))
-    const left = Math.round((screen.width - width) / 2)
-    const top = Math.round((screen.height - height) / 2)
-
-    const name = `mini-app-${project.id}-${Date.now()}`
-    const win = window.open('', name, `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no`)
-
-    if (!win) {
-      alert('Popup blockiert – bitte Popups für diese Seite erlauben oder die App in einem neuen Tab öffnen.')
-      return
+  const openApp = async project => {
+    // compute candidates and pick first reachable
+    const candidates = buildCandidates(project)
+    let src = candidates[0]
+    // probe the primary URL quickly; if it fails, fallback to raw
+    try {
+      const ok = await probeUrl(candidates[0])
+      if (!ok) src = candidates[1]
+    } catch (e) {
+      src = candidates[1]
     }
 
-    const html = `<!doctype html>
-      <html lang="de">
-        <head>
-          <meta charset="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-          <title>${project.title} — Mini-App</title>
-          <style>
-            html,body{height:100%;margin:0;overflow:hidden;background:#071028;color:#fff;font-family:Inter, system-ui, -apple-system, sans-serif}
-            #toolbar{height:44px;display:flex;align-items:center;gap:8px;padding:8px;background:linear-gradient(90deg,#0b1220,#071028);box-sizing:border-box}
-            #title{flex:1;font-weight:700}
-            button{background:transparent;border:1px solid rgba(255,255,255,0.08);color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer}
-            #frame-wrap{height:calc(100% - 44px);display:flex;align-items:center;justify-content:center;overflow:hidden}
-            #app-frame{border:0;transform-origin:top left;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
-            .hint{font-size:12px;color:#cbd5e1}
-          </style>
-        </head>
-        <body>
-          <div id="toolbar">
-            <div id="title">${project.title}</div>
-            <div class="hint">${pagesUrl}</div>
-            <button id="zoom-out" title="Verkleinern">-</button>
-            <button id="zoom-in" title="Vergrößern">+</button>
-            <button id="open-tab" title="In neuem Tab öffnen">↗</button>
-            <button id="close">✕</button>
-          </div>
-          <div id="frame-wrap">
-            <iframe id="app-frame" src="${pagesUrl}" width="${baseW}" height="${baseH}"></iframe>
-          </div>
-
-          <script>
-            (function(){
-              const frame = document.getElementById('app-frame')
-              const toolbar = document.getElementById('toolbar')
-              const zoomIn = document.getElementById('zoom-in')
-              const zoomOut = document.getElementById('zoom-out')
-              const openTab = document.getElementById('open-tab')
-              const closeBtn = document.getElementById('close')
-
-              const baseW = ${baseW}
-              const baseH = ${baseH}
-              let scale = 1
-
-              function fitToWindow(){
-                const availW = window.innerWidth
-                const availH = window.innerHeight - toolbar.offsetHeight
-                const s = Math.min(availW / baseW, availH / baseH, 1)
-                scale = s
-                frame.style.width = baseW + 'px'
-                frame.style.height = baseH + 'px'
-                frame.style.transform = 'scale(' + s + ')'
-              }
-
-              function tryFallback(){
-                // if pagesUrl fails to render correctly the user can open the raw repo URL
-                frame.src = '${rawUrl}'
-              }
-
-              zoomIn.addEventListener('click', () => { scale = Math.min(scale + 0.1, 1.5); frame.style.transform = 'scale(' + scale + ')' })
-              zoomOut.addEventListener('click', () => { scale = Math.max(scale - 0.1, 0.3); frame.style.transform = 'scale(' + scale + ')' })
-              openTab.addEventListener('click', () => { window.open(frame.src, '_blank') })
-              closeBtn.addEventListener('click', () => { window.close() })
-
-              window.addEventListener('resize', fitToWindow)
-
-              // Initial fit
-              fitToWindow()
-
-              // After a short delay, if the iframe content is clearly not accessible/loads blank, we switch to rawUrl as fallback
-              setTimeout(() => {
-                try {
-                  // If iframe height is larger than baseH + 1000 (nonsense) we fallback
-                  const cw = frame.contentWindow
-                  // Accessing cross-origin will throw; so we guard but cannot reliably detect other errors.
-                } catch (err) {
-                  // fallback attempt
-                  // Note: we deliberately do not try to detect X-Frame header; we provide the raw URL fallback
-                  tryFallback()
-                }
-              }, 1200)
-            })()
-          </script>
-        </body>
-      </html>`
-
-    win.document.open()
-    win.document.write(html)
-    win.document.close()
+    const frame = project.frame || {width: project.frameWidth || 1024, height: project.frameHeight || 768}
+    setModal({open: true, project, src, frame})
   }
+
+  const closeModal = () => setModal({open: false, project: null, src: '', frame: {width: 1024, height: 768}})
+
+  // compute scaling to fit inner frame into viewport
+  React.useEffect(() => {
+    if (!modal.open) return
+    const compute = () => {
+      const vp = viewportRef.current
+      const inner = innerRef.current
+      if (!vp || !inner) return
+      const vpRect = vp.getBoundingClientRect()
+      const padding = 32 // some padding inside the modal
+      const maxW = Math.max(100, vpRect.width - padding * 2)
+      const maxH = Math.max(100, vpRect.height - padding * 2 - 48) // account for toolbar
+      const scale = Math.min(1, maxW / modal.frame.width, maxH / modal.frame.height)
+      inner.style.transform = `scale(${scale})`
+      inner.style.webkitTransform = `scale(${scale})`
+      // set viewport scroll to top so content not cut off vertically
+      vp.scrollTop = 0
+    }
+
+    compute()
+    window.addEventListener('resize', compute)
+    return () => window.removeEventListener('resize', compute)
+  }, [modal])
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -479,14 +425,13 @@ function App() {
                   )}
                 </div>
                 <div className="project-actions">
-                  <a
+                  <button
                     className="btn btn-primary btn-small"
-                    href="#"
-                    onClick=${e => openAppPopup(e, project)}
+                    onClick=${() => openApp(project)}
                     aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
                     App öffnen
-                  </a>
+                  </button>
                   <a
                     className="btn btn-outline btn-small"
                     href=${project.githubPath}
@@ -518,6 +463,63 @@ function App() {
           </div>
         </div>
       </section>
+
+      <!-- App Preview Modal -->
+      ${modal.open &&
+      html`
+        <div
+          className="app-modal-overlay"
+          style=${{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.6)'
+          }}
+          onClick=${e => {
+            if (e.target === e.currentTarget) closeModal()
+          }}>
+          <div
+            ref=${viewportRef}
+            className="app-modal-frame"
+            style=${{
+              width: 'min(92vw, 980px)',
+              height: 'min(86vh, 720px)',
+              background: 'rgba(6,6,10,0.95)',
+              padding: '12px',
+              borderRadius: '12px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+            <div style=${{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px'}}>
+              <div style=${{color: 'white', fontWeight: 700}}>${modal.project.title}</div>
+              <div style=${{display: 'flex', gap: '8px'}}>
+                <a className="btn btn-outline btn-small" href=${modal.src} target="_blank" rel="noopener noreferrer">Open in new tab</a>
+                <button className="btn btn-primary btn-small" onClick=${closeModal}>Schließen</button>
+              </div>
+            </div>
+
+            <div style=${{flex: 1, overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <div
+                ref=${innerRef}
+                style=${{
+                  width: modal.frame.width + 'px',
+                  height: modal.frame.height + 'px',
+                  transformOrigin: 'top center',
+                  transition: 'transform 150ms ease'
+                }}>
+                <iframe
+                  src=${modal.src}
+                  style=${{width: '100%', height: '100%', border: 'none', borderRadius: '8px'}}
+                  sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      `}
     <//>
   `
 }
