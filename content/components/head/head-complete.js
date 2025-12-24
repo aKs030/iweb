@@ -23,7 +23,9 @@
     areaServed: 'Berlin, Deutschland',
     address: {
       '@type': 'PostalAddress',
+      'streetAddress': 'Reinickendorf',
       'addressLocality': 'Berlin',
+      'postalCode': '13507',
       'addressCountry': 'DE'
     },
     sameAs: [
@@ -50,7 +52,7 @@
     '/projekte/': {
       title: 'Referenzen & Code-Projekte | Abdulkerim Sesli',
       description:
-        'Entdecke interaktive Web-Experimente und Business-Anwendungen. Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design.',
+        'Entdecke interaktive Web-Experimente aus Berlin (13507). Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design.',
       type: 'CollectionPage',
       image: `${BASE_URL}/content/assets/img/og/og-projects.png`
     },
@@ -153,6 +155,12 @@
     upsertMeta('author', 'Abdulkerim Sesli')
     upsertMeta('twitter:card', 'summary_large_image')
     upsertMeta('twitter:creator', '@abdulkerimsesli')
+
+    // Geo Tags for Local SEO (Berlin 13507)
+    upsertMeta('geo.region', 'DE-BE')
+    upsertMeta('geo.placename', 'Berlin')
+    upsertMeta('geo.position', '52.5733;13.2911')
+    upsertMeta('ICBM', '52.5733, 13.2911')
 
     // OpenGraph minimal set (property)
     upsertMeta('og:title', pageData.title, true)
@@ -295,10 +303,57 @@
       'sameAs': BRAND_DATA.sameAs,
       'knowsAbout': [
         {'@type': 'Thing', 'name': 'Web Development', 'sameAs': 'https://www.wikidata.org/wiki/Q386275'},
+        {'@type': 'Thing', 'name': 'React', 'sameAs': 'https://www.wikidata.org/wiki/Q19399674'},
+        {'@type': 'Thing', 'name': 'Three.js', 'sameAs': 'https://www.wikidata.org/wiki/Q28135934'},
+        {'@type': 'Thing', 'name': 'JavaScript', 'sameAs': 'https://www.wikidata.org/wiki/Q28865'},
         {'@type': 'Thing', 'name': 'Photography', 'sameAs': 'https://www.wikidata.org/wiki/Q11633'},
         {'@type': 'Place', 'name': 'Berlin', 'sameAs': 'https://www.wikidata.org/wiki/Q64'}
       ]
     })
+
+    // 2.1 SPECIAL: FEATURE SNIPPET OPTIMIZATION (Skills as ItemList)
+    // Helps Google display "Skills: React, Three.js..." in snippets
+    if (pageUrl.includes('/about') || pageUrl === BASE_URL || pageUrl === `${BASE_URL}/`) {
+      graph.push({
+        '@type': 'ItemList',
+        '@id': `${BASE_URL}/#skills`,
+        'name': 'Technische Skills & Kompetenzen',
+        'description': 'Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie',
+        'itemListElement': [
+          {'@type': 'ListItem', 'position': 1, 'name': 'React & Next.js Ecosystem'},
+          {'@type': 'ListItem', 'position': 2, 'name': 'Three.js & WebGL 3D-Visualisierung'},
+          {'@type': 'ListItem', 'position': 3, 'name': 'Node.js & Backend Architecture'},
+          {'@type': 'ListItem', 'position': 4, 'name': 'UI/UX Design & Animation'},
+          {'@type': 'ListItem', 'position': 5, 'name': 'Urban & Portrait Photography'}
+        ]
+      })
+    }
+
+    // 2.2 AI CONTEXT EXTRACTION (Raw Text Transformation)
+    // Transforms raw page content into a clean, machine-readable format for LLMs
+    const extractPageContent = () => {
+      try {
+        const contentNode = document.querySelector('main') || document.querySelector('article') || document.body
+        if (!contentNode) return ''
+
+        // Clone to avoid modifying the live DOM
+        const clone = contentNode.cloneNode(true)
+
+        // Remove noise
+        const noiseSelectors = ['nav', 'footer', 'script', 'style', 'noscript', 'iframe', '.cookie-banner', '.no-ai', '[aria-hidden="true"]']
+        noiseSelectors.forEach(sel => clone.querySelectorAll(sel).forEach(el => el.remove()))
+
+        // Extract and clean text
+        let text = clone.innerText || clone.textContent || ''
+        text = text.replace(/\s+/g, ' ').trim()
+
+        // Limit length to prevent JSON bloat (max 5000 chars is plenty for context)
+        return text.length > 5000 ? text.substring(0, 5000) + '...' : text
+      } catch (e) {
+        return ''
+      }
+    }
+    const aiReadyText = extractPageContent()
 
     // 3. WEBPAGE (Die Seite selbst)
     graph.push({
@@ -307,6 +362,7 @@
       'url': pageUrl,
       'name': pageData.title,
       'description': pageData.description,
+      'text': aiReadyText, // Direct injection for AI Context
       'isPartOf': {'@id': ID.website},
       'mainEntity': {'@id': ID.person},
       'publisher': {'@id': ID.org},
