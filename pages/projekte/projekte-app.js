@@ -331,30 +331,75 @@ function App() {
 
       if (!htmlText) throw new Error('All fetch attempts failed')
 
-      // Inject <base>, viewport, responsive helpers and a fit script so apps scale inside the modal
-      const metaViewport = '<meta name="viewport" content="width=device-width,initial-scale=1">'
-      const responsiveStyle = `<style>
-        html,body{height:100%;width:100%;margin:0;padding:0;box-sizing:border-box;overflow:hidden}
-        #__copilot_modal_wrapper{width:100%;height:100%;display:flex;align-items:flex-start;justify-content:center;position:relative;overflow:auto}
-        #__copilot_modal_wrapper > *{max-width:100%;max-height:100%}
-        img,video,canvas,svg{max-width:100%;height:auto;max-height:100%}
-      </style>`
-
-      const fitScript = `<script>(function(){function fit(){try{var doc=document.documentElement;var wrapper=document.getElementById('__copilot_modal_wrapper')||document.body;var cw=wrapper.clientWidth,ch=wrapper.clientHeight;var bw=Math.max(doc.scrollWidth,doc.clientWidth),bh=Math.max(doc.scrollHeight,doc.clientHeight);var scale=Math.min(1, cw/(bw||cw), ch/(bh||ch));wrapper.style.transform='scale('+scale+')';wrapper.style.transformOrigin='top left';}catch(e){}}window.addEventListener('load',fit);window.addEventListener('resize',fit);setTimeout(fit,150);})();</script>`
-
-      // Insert into <head>
+      // Inject <base> so relative assets resolve to raw GitHub path
       if (/<head[^>]*>/i.test(htmlText)) {
-        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1>${metaViewport}${responsiveStyle}<base href="${chosenBase}">`)
+        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><base href="${chosenBase}">`)
       } else {
-        htmlText = `${metaViewport}${responsiveStyle}<base href="${chosenBase}">` + htmlText
+        htmlText = `<base href="${chosenBase}">` + htmlText
       }
 
-      // Wrap body content to allow scaling
+      // Ensure viewport meta exists for responsive behavior
+      if (!/<meta[^>]+name=["']viewport["']/i.test(htmlText)) {
+        if (/<head[^>]*>/i.test(htmlText)) {
+          htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><meta name="viewport" content="width=device-width, initial-scale=1">`)
+        } else {
+          htmlText = `<meta name="viewport" content="width=device-width, initial-scale=1">` + htmlText
+        }
+      }
+
+      // Inject CSS + small script to scale/fit content inside the modal iframe when necessary
+      const fitInjection = `
+        <style>
+          html,body{height:100%;margin:0;box-sizing:border-box}
+          body{max-height:100vh;overflow:auto;-webkit-overflow-scrolling:touch}
+          #__modal_wrapper{transform-origin:top center;transition:transform .18s ease;}
+        </style>
+        <script>
+          (function(){
+            function fitToIframe(){
+              try{
+                var wrapper = document.getElementById('__modal_wrapper') || document.body;
+                var docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, document.documentElement.offsetHeight);
+                var winH = window.innerHeight || document.documentElement.clientHeight;
+                var padding = 20; // small padding inside modal
+                var scale = Math.min(1, (winH - padding) / (docH || 1));
+                if (scale < 1) {
+                  wrapper.style.transform = 'scale(' + scale + ')';
+                } else {
+                  wrapper.style.transform = '';
+                }
+                // ensure top is visible if scaled
+                window.scrollTo({top:0});
+              } catch(e){console.warn('fitToIframe', e)}
+            }
+            window.addEventListener('load', function(){
+              // wrap body content if not already wrapped
+              if (!document.getElementById('__modal_wrapper')){
+                var w = document.createElement('div');
+                w.id = '__modal_wrapper';
+                while (document.body.firstChild) w.appendChild(document.body.firstChild);
+                document.body.appendChild(w);
+              }
+              fitToIframe();
+              setTimeout(fitToIframe, 250);
+            });
+            window.addEventListener('resize', fitToIframe);
+            // re-check after DOM mutations (some apps render async)
+            var mo = new MutationObserver(function(){fitToIframe()});
+            mo.observe(document.body, {childList:true, subtree:true, attributes:true});
+          })();
+        <\/script>`
+
       if (/<body[^>]*>/i.test(htmlText)) {
-        htmlText = htmlText.replace(/<body([^>]*)>/i, `<body$1><div id="__copilot_modal_wrapper">`)
-        htmlText = htmlText.replace(/<\/body>/i, `${fitScript}</div></body>`)
+        // inject wrapper and the fit injection before </body>
+        htmlText = htmlText.replace(/<body([^>]*)>/i, `<body$1><div id="__modal_wrapper">`)
+        if (/<\/body>/i.test(htmlText)) {
+          htmlText = htmlText.replace(/<\/body>/i, `${fitInjection}</div></body>`)
+        } else {
+          htmlText = htmlText + `<div id="__modal_wrapper_end">${fitInjection}</div>`
+        }
       } else {
-        htmlText = `<div id="__copilot_modal_wrapper">` + htmlText + `${fitScript}</div>`
+        htmlText = `<div id="__modal_wrapper">` + htmlText + fitInjection + `</div>`
       }
 
       setIframeSrcDoc(htmlText)
