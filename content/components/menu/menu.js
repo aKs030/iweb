@@ -186,7 +186,7 @@ function fixSubpageLinks(container) {
     const links = container.querySelectorAll('.site-menu a[href^="#"]')
     links.forEach(link => {
       const hash = link.getAttribute('href')
-      link.setAttribute('href', `/index.html${hash}`)
+      link.setAttribute('href', `/${hash}`)
     })
   }
 }
