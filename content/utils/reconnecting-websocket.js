@@ -40,7 +40,7 @@ export class ReconnectingWebSocket {
     if (this.manualClose) return
     try {
       this.ws = new WebSocket(this.url, this.protocols)
-    } catch (e) {
+    } catch {
       // Synchronous failure, schedule reconnect
       this._scheduleReconnect()
       return
@@ -51,7 +51,7 @@ export class ReconnectingWebSocket {
       if (this.onopen)
         try {
           this.onopen(e)
-        } catch (err) {
+        } catch {
           // Swallow errors in user-provided onopen handler
         }
     }

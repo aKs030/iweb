@@ -14,27 +14,29 @@
 
 async function loadConfig() {
   try {
+    const {createLogger} = await import('../utils/shared-utilities.js')
+    const log = createLogger('VideosConfig')
     let partA = ''
     let partB = ''
 
     try {
       const m = await import('./videos-part-a.js')
       partA = m && (m.default || '')
-    } catch (e) {
+    } catch {
       // missing or not found - skip
     }
 
     try {
       const m = await import('./videos-part-b.js')
       partB = m && (m.default || '')
-    } catch (e) {
+    } catch {
       // missing or not found - skip
     }
 
     const safeAtob = s => {
       try {
         return s ? atob(String(s)) : ''
-      } catch (e) {
+      } catch {
         // If it's not base64, return raw
         return String(s || '')
       }
@@ -55,7 +57,7 @@ async function loadConfig() {
       const isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'
       if (isLocal || new URLSearchParams(location.search).has('mockVideos')) {
         window.YOUTUBE_USE_MOCK = true
-        console.info('[videos-config-loader] No API key found — using mock data for development/testing.')
+        log.warn('[videos-config-loader] No API key found — using mock data for development/testing.')
       } else {
         window.YOUTUBE_USE_MOCK = false
       }
@@ -64,7 +66,8 @@ async function loadConfig() {
     }
   } catch (e) {
     // Non-fatal — videos.js will handle absence of key gracefully
-    console.warn('[videos-config-loader] Could not load split parts:', e)
+    // keep e here because we log it
+    log.warn('[videos-config-loader] Could not load split parts:', e)
   }
 }
 

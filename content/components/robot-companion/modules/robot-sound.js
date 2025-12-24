@@ -1,3 +1,6 @@
+import {createLogger} from '../../../utils/shared-utilities.js'
+const log = createLogger('RobotSound')
+
 export class RobotSound {
   constructor(robot) {
     this.robot = robot
@@ -14,7 +17,7 @@ export class RobotSound {
       if (AudioContext) {
         try {
           this.ctx = new AudioContext()
-        } catch (e) {
+        } catch {
           // Some browsers may block creation until a user gesture; set up a one-time resume on gesture
           this._setupGestureResume()
           return
@@ -45,14 +48,14 @@ export class RobotSound {
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime)
     } catch (e) {
       // If setting fails because context not ready, abort
-      console.warn('[RobotSound] Cannot set frequency, audio context not ready', e)
+      log.warn('[RobotSound] Cannot set frequency, audio context not ready', e)
       return
     }
 
     gain.gain.setValueAtTime(vol, this.ctx.currentTime)
     try {
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration)
-    } catch (e) {
+    } catch {
       // ignore ramp errors
     }
 
@@ -63,7 +66,7 @@ export class RobotSound {
       osc.start()
       osc.stop(this.ctx.currentTime + duration)
     } catch (e) {
-      console.warn('[RobotSound] Oscillator start failed (likely due to autoplay restrictions)', e)
+      log.warn('[RobotSound] Oscillator start failed (likely due to autoplay restrictions)', e)
     }
   }
 
@@ -113,7 +116,7 @@ export class RobotSound {
           if (AudioContext) this.ctx = new AudioContext()
         }
         if (this.ctx && this.ctx.state === 'suspended') await this.ctx.resume()
-      } catch (e) {
+      } catch {
         /* ignore */
       } finally {
         document.body.removeEventListener('pointerdown', resume)

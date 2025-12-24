@@ -47,8 +47,8 @@ const tests = [
 ]
 
 for (const t of tests) {
-  console.log('===', t.path, '===')
-  console.log(JSON.stringify(makeTrail(t.path, t.title), null, 2))
+  console.warn('===', t.path, '===')
+  console.warn(JSON.stringify(makeTrail(t.path, t.title), null, 2))
 }
 
 // Scan actual HTML files for BreadcrumbList JSON-LD and report duplicates
@@ -76,16 +76,16 @@ for (const f of scanFiles) {
           const items = list.itemListElement || []
           const urls = items.map(it => it.item)
           const dup = urls.filter((u, i) => urls.indexOf(u) !== i)
-          console.log('\nFile:', f)
-          console.log('Breadcrumb items:', urls)
-          if (dup.length) console.log('Duplicate URLs found:', [...new Set(dup)])
-          else console.log('No duplicate URLs')
+          console.warn('\nFile:', f)
+          console.warn('Breadcrumb items:', urls)
+          if (dup.length) console.warn('Duplicate URLs found:', [...new Set(dup)])
+          else console.warn('No duplicate URLs')
         }
-      } catch (e) {
+      } catch {
         // ignore parse
       }
     }
-  } catch (e) {
+  } catch {
     // file not found
   }
 }
