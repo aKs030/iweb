@@ -139,16 +139,7 @@ const projects = [
       <${Gamepad2} style=${{color: '#c084fc', width: '32px', height: '32px'}} />
     `,
     previewContent: html`
-      <div
-        style=${{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          width: '100%',
-          height: '100%',
-          position: 'relative',
-          zIndex: 10
-        }}>
+      <div className="preview-container-vs">
         <div style=${{fontSize: '3rem'}}>🪨</div>
         <div style=${{fontSize: '1.5rem', opacity: 0.5}}>VS</div>
         <div style=${{fontSize: '3rem'}}>✂️</div>
@@ -173,14 +164,7 @@ const projects = [
       <${Binary} style=${{color: '#34d399', width: '32px', height: '32px'}} />
     `,
     previewContent: html`
-      <div
-        style=${{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          height: '100%'
-        }}>
+      <div className="preview-container">
         <span style=${{fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold'}}>?</span>
       </div>
     `
@@ -203,14 +187,7 @@ const projects = [
       <${Palette} style=${{color: '#f472b6', width: '32px', height: '32px'}} />
     `,
     previewContent: html`
-      <div
-        style=${{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          height: '100%'
-        }}>
+      <div className="preview-container">
         <${Palette} style=${{width: '4rem', height: '4rem', color: '#f472b6'}} />
       </div>
     `
@@ -233,14 +210,7 @@ const projects = [
       <${ListTodo} style=${{color: '#22d3ee', width: '32px', height: '32px'}} />
     `,
     previewContent: html`
-      <div
-        style=${{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          height: '100%'
-        }}>
+      <div className="preview-container">
         <${Check} style=${{width: '4rem', height: '4rem', color: '#22d3ee'}} />
       </div>
     `
@@ -393,36 +363,6 @@ function App() {
     }
   }, [])
 
-  // Inject CreativeWork JSON-LD for each project (deduplicated)
-  React.useEffect(() => {
-    try {
-      const siteBase = window.location.origin.replace(/\/$/, '')
-      projects.forEach(p => {
-        const key = `project-${p.id}`
-        if (document.querySelector(`script[data-ld="${key}"]`)) return
-        const obj = {
-          '@context': 'https://schema.org',
-          '@type': 'CreativeWork',
-          'name': p.title,
-          'description': p.description,
-          'url': siteBase + (p.appPath ? p.appPath : '/projekte/#' + key),
-          'author': {'@type': 'Person', 'name': 'Abdulkerim Sesli'},
-          'keywords': Array.isArray(p.tags) ? p.tags.join(', ') : p.tags || '',
-          'about': p.category,
-          'datePublished': p.datePublished,
-          'image': p.image
-        }
-        const s = document.createElement('script')
-        s.type = 'application/ld+json'
-        s.setAttribute('data-ld', key)
-        s.textContent = JSON.stringify(obj)
-        document.head.appendChild(s)
-      })
-    } catch {
-      /* ignore in environments where DOM is not available */
-    }
-  }, [])
-
   return html`
     <${React.Fragment}>
       <!-- Hero Section -->
@@ -517,61 +457,18 @@ function App() {
       )}
       ${toastMsg
         ? html`
-            <div
-              style=${{
-                position: 'fixed',
-                right: '1rem',
-                bottom: '1.25rem',
-                zIndex: 30000,
-                background: 'rgba(0,0,0,0.8)',
-                color: 'white',
-                padding: '0.6rem 0.9rem',
-                borderRadius: '8px',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.4)'
-              }}>
-              ${toastMsg}
-            </div>
+            <div className="toast-notification">${toastMsg}</div>
           `
         : null}
       ${modalOpen
         ? html`
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label=${`Vorschau ${modalTitle}`}
-              style=${{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 20000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.6)'
-              }}>
-              <div
-                style=${{
-                  width: '92%',
-                  height: '86%',
-                  maxWidth: '1100px',
-                  maxHeight: '820px',
-                  background: 'rgba(8,8,12,0.98)',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.6)'
-                }}>
-                <div
-                  style=${{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.5rem 0.75rem',
-                    background: 'linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))',
-                    borderBottom: '1px solid rgba(255,255,255,0.03)'
-                  }}>
-                  <div style=${{display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fff'}}>
+            <div role="dialog" aria-modal="true" aria-label=${`Vorschau ${modalTitle}`} className="modal-overlay">
+              <div className="modal-wrapper">
+                <div className="modal-header">
+                  <div className="modal-header-title">
                     <strong>${modalTitle}</strong>
                   </div>
-                  <div style=${{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                  <div className="modal-header-actions">
                     <a
                       href=${modalUrl}
                       target="_blank"
@@ -583,27 +480,16 @@ function App() {
                     <button className="btn btn-primary btn-small" onClick=${closeAppModal} aria-label="Schließen">Schließen</button>
                   </div>
                 </div>
-                <div style=${{position: 'relative', height: '100%', background: '#000'}}>
+                <div className="modal-body">
                   ${iframeLoading
                     ? html`
-                        <div
-                          style=${{
-                            position: 'absolute',
-                            inset: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 3,
-                            color: 'white'
-                          }}>
-                          Lade Vorschau…
-                        </div>
+                        <div className="iframe-loader">Lade Vorschau…</div>
                       `
                     : null}
                   <iframe
                     src=${modalUrl}
                     onLoad=${() => setIframeLoading(false)}
-                    style=${{width: '100%', height: 'calc(100% - 48px)', border: 0}}
+                    className="modal-iframe"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
                 </div>
               </div>
