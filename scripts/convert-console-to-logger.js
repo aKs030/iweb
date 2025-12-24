@@ -80,12 +80,32 @@ function convertHtmlInlineModules(filePath) {
   while ((match = moduleRegex.exec(raw)) !== null) {
     const moduleContent = match[1]
     if (!/console\.warn|console\.error/.test(moduleContent)) continue
+
+    // derive a better scope name for inline module:
+    // 1) look for a nearby HTML comment <!-- scope: NAME --> before the script
+    // 2) else look for an id attribute earlier in the document
+    // 3) fallback to filename
+    const beforeIndex = Math.max(0, match.index - 800)
+    const contextBefore = raw.slice(beforeIndex, match.index)
+    let scope = null
+    const commentMatch = contextBefore.match(/<!--\s*scope:\s*([\w-_.]+)\s*-->/i)
+    if (commentMatch) scope = commentMatch[1]
+    if (!scope) {
+      const idMatch = contextBefore.match(/id=["']([A-Za-z0-9_\-:.]+)["']/)
+      if (idMatch) scope = idMatch[1]
+    }
+    if (!scope) scope = path.basename(filePath).replace(/\.[^.]+$/, '')
+    // sanitize scope to safe identifier-like string
+    scope = scope
+      .replace(/[^A-Za-z0-9_]/g, '_')
+      .replace(/^_+/, '')
+      .slice(0, 40)
+
     // convert module content
-    const scope = path.basename(filePath).replace(/\.[^.]+$/, '')
     const {content: newModuleRaw, changed: _changed} = ensureImportAndLogger(moduleContent, filePath, scope, true)
     let newModule = newModuleRaw
     newModule = newModule.replace(/console\.warn/g, 'log.warn').replace(/console\.error/g, 'log.error')
-    if (newModule !== moduleContent || changed) {
+    if (newModule !== moduleContent || _changed) {
       // replace the specific module block in output
       out = out.replace(moduleContent, newModule)
       modified = true
