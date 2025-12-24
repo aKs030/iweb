@@ -188,7 +188,7 @@
     // Ensure PWA manifest & Apple mobile settings (use existing assets if present)
     try {
       // Link manifest
-      upsertLink('manifest', '/manifest.json')
+      upsertLink('manifest', `${BASE_URL}/manifest.json`)
       // Add common favicons (explicit links with sizes)
       const addIcon = (href, sizes, type) => {
         if (!href) return
@@ -203,16 +203,16 @@
           document.head.appendChild(el)
         }
       }
-      addIcon('/content/assets/img/icons/icon-32.png', '32x32', 'image/png')
-      addIcon('/content/assets/img/icons/icon-16.png', '16x16', 'image/png')
+      addIcon(`${BASE_URL}/content/assets/img/icons/icon-32.png`, '32x32', 'image/png')
+      addIcon(`${BASE_URL}/content/assets/img/icons/icon-16.png`, '16x16', 'image/png')
 
       // Ensure shortcut favicon (favicon.ico)
       let shortcutEl = document.head.querySelector('link[rel="shortcut icon"]')
-      if (shortcutEl) shortcutEl.setAttribute('href', '/content/assets/img/icons/favicon.ico')
+      if (shortcutEl) shortcutEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/favicon.ico`)
       else {
         shortcutEl = document.createElement('link')
         shortcutEl.rel = 'shortcut icon'
-        shortcutEl.href = '/content/assets/img/icons/favicon.ico'
+        shortcutEl.href = `${BASE_URL}/content/assets/img/icons/favicon.ico`
         document.head.appendChild(shortcutEl)
       }
       // Theme color for browsers
@@ -224,12 +224,12 @@
 
       // Apple touch icon (sizes=180x180)
       let appleIconEl = document.head.querySelector('link[rel="apple-touch-icon"]')
-      if (appleIconEl) appleIconEl.setAttribute('href', '/content/assets/img/icons/apple-touch-icon.png')
+      if (appleIconEl) appleIconEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`)
       else {
         appleIconEl = document.createElement('link')
         appleIconEl.setAttribute('rel', 'apple-touch-icon')
         appleIconEl.setAttribute('sizes', '180x180')
-        appleIconEl.setAttribute('href', '/content/assets/img/icons/apple-touch-icon.png')
+        appleIconEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`)
         document.head.appendChild(appleIconEl)
       }
     } catch (e) {
