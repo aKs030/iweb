@@ -16,7 +16,7 @@
     const {createLogger} = await import('../../content/utils/shared-utilities.js')
     logger = createLogger('AboutModule')
   } catch (err) {
-    console.warn('AboutModule: failed to import createLogger', err)
+    logger?.warn?.('AboutModule: failed to import createLogger', err)
     // Fallback to no-op logger if import fails
     logger = {
       info: () => {},
@@ -154,7 +154,7 @@
             }
           } catch (e) {
             // Non-critical; don't break page
-            console.warn('about: could not set page meta', e)
+            logger?.warn?.('about: could not set page meta', e)
           }
         })()
 

@@ -20,7 +20,7 @@ export class RobotSound {
         } catch (err) {
           // Some browsers may block creation until a user gesture; set up a one-time resume on gesture
           this._setupGestureResume()
-          console.warn('RobotSound: AudioContext creation blocked', err)
+          log.warn('RobotSound: AudioContext creation blocked', err)
           return
         }
       }
@@ -57,7 +57,7 @@ export class RobotSound {
     try {
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration)
     } catch (err) {
-      console.warn('RobotSound: gain ramp failed', err)
+      log.warn('RobotSound: gain ramp failed', err)
     }
 
     osc.connect(gain)
@@ -118,7 +118,7 @@ export class RobotSound {
         }
         if (this.ctx && this.ctx.state === 'suspended') await this.ctx.resume()
       } catch (err) {
-        console.warn('RobotSound: resume gesture handler failed', err)
+        log.warn('RobotSound: resume gesture handler failed', err)
       } finally {
         document.body.removeEventListener('pointerdown', resume)
         document.body.removeEventListener('keydown', resume)

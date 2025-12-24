@@ -171,7 +171,7 @@
       if (canonicalEl) canonicalEl.setAttribute('href', canonicalHref)
       else upsertLink('canonical', canonicalHref)
     } catch (err) {
-      console.warn('HeadLoader: canonical detection failed', err)
+      log.warn('HeadLoader: canonical detection failed', err)
       // fallback to pageUrl on any unexpected error
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', pageUrl)
@@ -384,7 +384,7 @@
     if ('requestIdleCallback' in window) {
       try {
         requestIdleCallback(generateSchema, {timeout: 1500})
-      } catch (e) {
+      } catch {
         setTimeout(generateSchema, 1200)
       }
     } else {
