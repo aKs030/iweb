@@ -495,10 +495,10 @@ function App() {
               aria-modal="true">
               <div
                 style=${{
-                  width: '90vw',
-                  height: '80vh',
-                  maxWidth: '1200px',
-                  maxHeight: '90vh',
+                  width: '80vw',
+                  height: '70vh',
+                  maxWidth: '1000px',
+                  maxHeight: '80vh',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '8px'
