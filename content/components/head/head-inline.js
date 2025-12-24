@@ -1,3 +1,7 @@
+import {createLogger} from '../../utils/shared-utilities.js'
+
+const log = createLogger('head-inline')
+
 // Head inline helpers moved to external file to comply with CSP
 // 1) gtag configuration (kept separate from gtag.js external loader)
 window.dataLayer = window.dataLayer || []
@@ -61,7 +65,7 @@ gtag('config', 'AW-1036079663')
       {once: true}
     )
   } catch (err) {
-    console.warn('head-inline: ensure footer/trigger setup failed', err)
+    log.warn('head-inline: ensure footer/trigger setup failed', err)
   }
 })()
 
@@ -126,6 +130,6 @@ gtag('config', 'AW-1036079663')
       performInjection()
     }
   } catch (err) {
-    console.warn('head-inline: injectCoreAssets failed', err)
+    log.warn('head-inline: injectCoreAssets failed', err)
   }
 })()

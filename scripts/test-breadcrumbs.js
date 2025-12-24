@@ -1,3 +1,7 @@
+import {createLogger} from '../content/utils/shared-utilities.js'
+
+const log = createLogger('test-breadcrumbs')
+
 const fs = require('fs')
 const path = require('path')
 
@@ -47,8 +51,8 @@ const tests = [
 ]
 
 for (const t of tests) {
-  console.warn('===', t.path, '===')
-  console.warn(JSON.stringify(makeTrail(t.path, t.title), null, 2))
+  log.warn('===', t.path, '===')
+  log.warn(JSON.stringify(makeTrail(t.path, t.title), null, 2))
 }
 
 // Scan actual HTML files for BreadcrumbList JSON-LD and report duplicates
@@ -76,16 +80,16 @@ for (const f of scanFiles) {
           const items = list.itemListElement || []
           const urls = items.map(it => it.item)
           const dup = urls.filter((u, i) => urls.indexOf(u) !== i)
-          console.warn('\nFile:', f)
-          console.warn('Breadcrumb items:', urls)
-          if (dup.length) console.warn('Duplicate URLs found:', [...new Set(dup)])
-          else console.warn('No duplicate URLs')
+          log.warn('\nFile:', f)
+          log.warn('Breadcrumb items:', urls)
+          if (dup.length) log.warn('Duplicate URLs found:', [...new Set(dup)])
+          else log.warn('No duplicate URLs')
         }
       } catch (err) {
-        console.warn('test-breadcrumbs: JSON parse failed', err)
+        log.warn('test-breadcrumbs: JSON parse failed', err)
       }
     }
   } catch (err) {
-    console.warn('test-breadcrumbs: file read failed', err)
+    log.warn('test-breadcrumbs: file read failed', err)
   }
 }
