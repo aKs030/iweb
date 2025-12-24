@@ -130,7 +130,7 @@ const projects = [
     datePublished: '2023-07-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -164,7 +164,7 @@ const projects = [
     datePublished: '2024-08-01',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/zahlen-raten/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -194,7 +194,7 @@ const projects = [
     datePublished: '2022-03-15',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/color-changer/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -224,7 +224,7 @@ const projects = [
     datePublished: '2021-11-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/todo-liste/',
-    githubPath: 'https://github.com/aKs030/Webgame.git',
+    githubPath: 'https://github.com/aKs030/Webgame',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
