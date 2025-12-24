@@ -234,14 +234,12 @@ const projects = [
     `,
     previewContent: html`
       <div
-        style=${{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          height: '100%'
-        }}>
-        <${Check} style=${{width: '4rem', height: '4rem', color: '#22d3ee'}} />
+        className="iframe-container"
+        style=${{position: 'absolute', inset: '2rem', zIndex: 10, overflow: 'hidden', borderRadius: '0.75rem'}}>
+        <iframe
+          src="/projekte/apps/todo-liste/"
+          title="To-Do Vorschau"
+          style=${{width: '111%', height: '111%', border: 0, transform: 'scale(0.9)', transformOrigin: '0 0', display: 'block'}}></iframe>
       </div>
     `
   }
