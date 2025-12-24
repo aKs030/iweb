@@ -1,10 +1,10 @@
 /**
  * Dynamic Head Loader - Ultimate Modern SEO & Schema Graph (@graph approach)
- * Version: 2025.3.1 (FAQ Fix & Video Route Patch)
+ * Version: 2025.3.2 (FAQ Strict Mode & Scope Fix)
  * * Features:
  * - [GELB] Icon Fix: Re-Integration von 'Organization' für Logo-Support
  * - [ROT] Snippet Fill: Maximierte Descriptions & Knowledge-Injection
- * - [BLAU] FAQ Booster: Strict Mode (verhindert "Unbenanntes Element" Fehler)
+ * - [BLAU] FAQ Booster: Strict Mode + Whitespace Cleaner (gegen "Unbenanntes Element")
  */
 
 ;(async function loadSharedHead() {
@@ -65,9 +65,7 @@
       title: 'Videos — Abdulkerim Sesli',
       description: 'Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.',
       type: 'CollectionPage',
-      // NOTE: currently uses og-home.png as a fallback. When you create a dedicated
-      // videos preview (e.g. a collage), replace the image with og-videos.png:
-      //   image: `${BASE_URL}/content/assets/img/og/og-videos.png`
+      // NOTE: currently uses og-home.png as a fallback.
       image: `${BASE_URL}/content/assets/img/og/og-home.png`
     },
     '/gallery/': {
@@ -167,8 +165,6 @@
       const PROD_HOSTS = ['abdulkerimsesli.de', 'www.abdulkerimsesli.de']
       const hostname = window.location.hostname.toLowerCase()
       const ensureTrailingSlash = p => (p.endsWith('/') ? p : p + '/')
-
-      // Local force flag: when present on <html>, always use production origin
       const forceProdFlag = !!(
         document.documentElement &&
         document.documentElement.getAttribute &&
@@ -185,8 +181,8 @@
       if (canonicalEl) canonicalEl.setAttribute('href', canonicalHref)
       else upsertLink('canonical', canonicalHref)
     } catch (err) {
-      log.warn('HeadLoader: canonical detection failed', err)
-      // fallback to pageUrl on any unexpected error
+      // Safe fallback log
+      console.warn('HeadLoader: canonical detection failed', err)
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', pageUrl)
       else upsertLink('canonical', pageUrl)
@@ -199,11 +195,9 @@
       iconLink.href = BRAND_DATA.logo
       document.head.appendChild(iconLink)
     }
-    // Ensure PWA manifest & Apple mobile settings (use existing assets if present)
+    // Ensure PWA manifest & Apple mobile settings
     try {
-      // Link manifest
       upsertLink('manifest', `${BASE_URL}/manifest.json`)
-      // Add common favicons (explicit links with sizes)
       const addIcon = (href, sizes, type) => {
         if (!href) return
         let el = document.head.querySelector(`link[rel="icon"][sizes="${sizes}"]`)
@@ -220,7 +214,6 @@
       addIcon(`${BASE_URL}/content/assets/img/icons/icon-32.png`, '32x32', 'image/png')
       addIcon(`${BASE_URL}/content/assets/img/icons/icon-16.png`, '16x16', 'image/png')
 
-      // Ensure shortcut favicon (favicon.ico)
       let shortcutEl = document.head.querySelector('link[rel="shortcut icon"]')
       if (shortcutEl) shortcutEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/favicon.ico`)
       else {
@@ -229,14 +222,11 @@
         shortcutEl.href = `${BASE_URL}/content/assets/img/icons/favicon.ico`
         document.head.appendChild(shortcutEl)
       }
-      // Theme color for browsers
       upsertMeta('theme-color', '#0d0d0d')
-      // Apple Web App meta tags
       upsertMeta('apple-mobile-web-app-capable', 'yes')
       upsertMeta('apple-mobile-web-app-title', BRAND_DATA.name)
       upsertMeta('apple-mobile-web-app-status-bar-style', 'default')
 
-      // Apple touch icon (sizes=180x180)
       let appleIconEl = document.head.querySelector('link[rel="apple-touch-icon"]')
       if (appleIconEl) appleIconEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`)
       else {
@@ -247,10 +237,11 @@
         document.head.appendChild(appleIconEl)
       }
     } catch (e) {
-      log.debug('[Head-Loader] PWA meta injection failed:', e)
+      // Safe logging in catch block
+      console.warn('[Head-Loader] PWA meta injection failed:', e)
     }
   } catch (e) {
-    log.warn('[Head-Loader] lightweight head update failed:', e)
+    console.warn('[Head-Loader] lightweight head update failed:', e)
   }
 
   // --- 3. SCHEMA GRAPH GENERATION ---
@@ -265,8 +256,7 @@
 
     const graph = []
 
-    // 1. ORGANIZATION (Für das Logo [GELB])
-    // Wir definieren eine "Ein-Mann-Organisation", um das Logo-Feld valide nutzen zu können
+    // 1. ORGANIZATION (ProfessionalService for Local SEO)
     graph.push({
       '@type': 'ProfessionalService',
       '@id': ID.org,
@@ -293,7 +283,7 @@
       '@id': ID.person,
       'name': BRAND_DATA.name,
       'jobTitle': BRAND_DATA.jobTitle,
-      'worksFor': {'@id': ID.org}, // Verknüpfung zur Org
+      'worksFor': {'@id': ID.org},
       'url': BASE_URL,
       'image': {
         '@type': 'ImageObject',
@@ -301,7 +291,7 @@
         'url': 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png',
         'caption': BRAND_DATA.name
       },
-      'description': pageData.description, // [ROT] Nutzt die optimierte Beschreibung
+      'description': pageData.description,
       'sameAs': BRAND_DATA.sameAs,
       'knowsAbout': [
         {'@type': 'Thing', 'name': 'Web Development', 'sameAs': 'https://www.wikidata.org/wiki/Q386275'},
@@ -318,8 +308,8 @@
       'name': pageData.title,
       'description': pageData.description,
       'isPartOf': {'@id': ID.website},
-      'mainEntity': {'@id': ID.person}, // Profil-Fokus
-      'publisher': {'@id': ID.org}, // Org-Publisher für Logo-Vererbung
+      'mainEntity': {'@id': ID.person},
+      'publisher': {'@id': ID.org},
       'inLanguage': 'de-DE',
       'dateModified': new Date().toISOString()
     })
@@ -338,30 +328,37 @@
       }
     })
 
-    // 5. FAQ (STRICT MODE: Only .faq-item to avoid "Unnamed Item" errors)
-    // Wir ignorieren generische <details> Tags, da diese oft für Menüs genutzt werden
-    // und leere/falsche Schema-Einträge erzeugen.
+    // 5. FAQ (STRICT MODE & WHITESPACE CLEANING)
+    // Filtert "schmutzige" Strings und setzt stabile IDs, um "Unbenanntes Element" zu verhindern.
     let faqNodes = Array.from(document.querySelectorAll('.faq-item'))
-      .map(el => {
-        const q = el.querySelector('.question, h3, summary')?.textContent?.trim()
-        const a = el.querySelector('.answer, p, div')?.textContent?.trim()
-        // Safety check: Name MUST be present and not empty
+      .map((el, i) => {
+        const rawQ = el.querySelector('.question, h3, summary')?.textContent
+        const rawA = el.querySelector('.answer, p, div')?.textContent
+        // Clean newlines and multi-spaces
+        const q = rawQ ? String(rawQ).replace(/\s+/g, ' ').trim() : ''
+        const a = rawA ? String(rawA).replace(/\s+/g, ' ').trim() : ''
+
         if (!q || q.length < 2) return null
-        return {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a || 'Details ansehen'}}
+        return {
+          '@type': 'Question',
+          '@id': `${pageUrl}#faq-q${i + 1}`,
+          'name': q,
+          'acceptedAnswer': {'@type': 'Answer', 'text': a || 'Details ansehen'}
+        }
       })
       .filter(Boolean)
 
-    // Fallback: Wenn keine expliziten FAQ-Items gefunden wurden,
-    // nutzen wir die hochwertigen Business-FAQs (z.B. auf der Startseite).
+    // Fallback: Business-FAQs
     if (faqNodes.length === 0) {
       const isHomepage = window.location.pathname === '/' || window.location.pathname === ''
       const hasBusinessFaqFlag = !!document.querySelector('[data-inject-business-faq]')
 
       if (isHomepage || hasBusinessFaqFlag) {
-        faqNodes = BUSINESS_FAQS.map(item => ({
+        faqNodes = BUSINESS_FAQS.map((item, i) => ({
           '@type': 'Question',
-          'name': item.q,
-          'acceptedAnswer': {'@type': 'Answer', 'text': item.a}
+          '@id': `${pageUrl}#faq-q${i + 1}`,
+          'name': String(item.q).replace(/\s+/g, ' ').trim(),
+          'acceptedAnswer': {'@type': 'Answer', 'text': String(item.a).replace(/\s+/g, ' ').trim()}
         }))
       }
     }
@@ -419,7 +416,7 @@
     }
   }
 
-  // Trigger schema generation when the browser is idle to avoid heavy blocking
+  // Trigger schema generation
   const scheduleSchema = () => {
     if ('requestIdleCallback' in window) {
       try {
@@ -428,7 +425,6 @@
         setTimeout(generateSchema, 1200)
       }
     } else {
-      // Fallback: slightly delayed execution
       setTimeout(generateSchema, 1200)
     }
   }
