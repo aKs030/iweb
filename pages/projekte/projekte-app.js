@@ -129,6 +129,8 @@ const projects = [
     category: 'Game',
     datePublished: '2023-07-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/schere-stein-papier/',
+    githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -161,6 +163,8 @@ const projects = [
     category: 'Puzzle',
     datePublished: '2024-08-01',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/zahlen-raten/',
+    githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -189,6 +193,8 @@ const projects = [
     category: 'UI',
     datePublished: '2022-03-15',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/color-changer/',
+    githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -217,6 +223,8 @@ const projects = [
     category: 'App',
     datePublished: '2021-11-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/todo-liste/',
+    githubPath: 'https://github.com/aKs030/Webgame.git',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
@@ -258,7 +266,7 @@ function App() {
           '@type': 'CreativeWork',
           'name': p.title,
           'description': p.description,
-          'url': siteBase + '/projekte/#' + key,
+          'url': siteBase + (p.appPath ? p.appPath : '/projekte/#' + key),
           'author': {'@type': 'Person', 'name': 'Abdulkerim Sesli'},
           'keywords': Array.isArray(p.tags) ? p.tags.join(', ') : p.tags || '',
           'about': p.category,
@@ -346,14 +354,19 @@ function App() {
                   )}
                 </div>
                 <div className="project-actions">
-                  <button className="btn btn-primary btn-small" rel="noopener noreferrer">
+                  <a className="btn btn-primary btn-small" href=${project.appPath} aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
-                    Ansehen
-                  </button>
-                  <button className="btn btn-outline btn-small" rel="noopener noreferrer">
+                    App öffnen
+                  </a>
+                  <a
+                    className="btn btn-outline btn-small"
+                    href=${project.githubPath}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label=${`Code ${project.title} auf GitHub`}>
                     <${Github} style=${{width: '1rem', height: '1rem'}} />
                     Code
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
