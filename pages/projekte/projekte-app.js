@@ -259,6 +259,7 @@ function App() {
   const [modalSrc, setModalSrc] = React.useState('')
   const [modalTitle, setModalTitle] = React.useState('')
   const [modalScale, setModalScale] = React.useState(1)
+  const [modalMessage, setModalMessage] = React.useState('')
 
   const parseGithubOwnerRepo = url => {
     try {
@@ -270,53 +271,51 @@ function App() {
     }
   }
 
-  const resolveAppUrl = async (parsed, appPath) => {
-    // Build candidate URLs to try (ordered)
-    const normalizedPath = appPath.startsWith('/') ? appPath : '/' + appPath
-    const candidates = [
-      // direct repo pages path (matches where files were committed)
-      `https://${parsed.owner}.github.io/${parsed.repo}${normalizedPath}`,
-      // repo root + pages prefix (common for static sites within subfolder)
-      `https://${parsed.owner}.github.io/${parsed.repo}/pages${normalizedPath}`,
-      // try pages folder replacing /projekte/ -> /pages/projekte/
-      `https://${parsed.owner}.github.io/${parsed.repo}${normalizedPath.replace('/projekte/', '/pages/projekte/')}`,
-      // try without repo (user site root)
-      `https://${parsed.owner}.github.io${normalizedPath}`
-    ]
-
-    for (const url of candidates) {
-      try {
-        // HEAD request to check availability; fall back to GET if HEAD denied
-        let res = await fetch(url, {method: 'HEAD', mode: 'cors'})
-        if (!res || !res.ok) {
-          res = await fetch(url, {method: 'GET', mode: 'cors'})
-        }
-        if (res && res.ok) return url
-      } catch (e) {
-        // ignore and try next
-      }
+  const urlIsReachable = async (url, timeout = 3000) => {
+    try {
+      const controller = new AbortController()
+      const id = setTimeout(() => controller.abort(), timeout)
+      // Use GET to allow status checks; some servers block HEAD
+      const res = await fetch(url, {method: 'GET', mode: 'cors', cache: 'no-store', signal: controller.signal})
+      clearTimeout(id)
+      return res && res.status >= 200 && res.status < 400
+    } catch (e) {
+      return false
     }
-    return null
   }
 
   const openApp = async p => {
     const parsed = parseGithubOwnerRepo(p.githubPath || '')
-    setModalTitle(p.title)
-    setModalScale(1)
+    const candidates = []
 
-    if (parsed) {
-      const found = await resolveAppUrl(parsed, p.appPath || '/')
-      if (found) {
-        setModalSrc(found)
-        setModalOpen(true)
+    // Prefer GitHub Pages (owner.github.io/repo + appPath)
+    if (parsed) candidates.push(`https://${parsed.owner}.github.io/${parsed.repo}${p.appPath}`)
+
+    // Raw fallback (raw.githubusercontent.com/owner/repo/main + pages path)
+    if (parsed) candidates.push(`https://raw.githubusercontent.com/${parsed.owner}/${parsed.repo}/main${p.appPath}index.html`)
+
+    // Local/relative fallback (if the current site still hosts them)
+    if (p.appPath) candidates.push(p.appPath + 'index.html', p.appPath)
+
+    setModalTitle(p.title)
+    setModalSrc('about:blank')
+    setModalScale(1)
+    setModalMessage('Versuche, die App zu laden...')
+    setModalOpen(true)
+
+    for (const c of candidates) {
+      // Quick check
+      const ok = await urlIsReachable(c)
+      if (ok) {
+        setModalSrc(c)
+        setModalMessage('')
         return
       }
     }
 
-    // Final fallback: try local appPath on this site
-    const localPath = p.appPath || '/'
-    setModalSrc(localPath)
-    setModalOpen(true)
+    // If none worked, fallback to repo page and show message
+    setModalSrc(p.githubPath)
+    setModalMessage('Hosting nicht gefunden. Öffne das Repository stattdessen.')
   }
 
   const closeModal = () => setModalOpen(false)
@@ -482,7 +481,16 @@ function App() {
                 padding: '0.5rem 0.75rem',
                 borderBottom: '1px solid rgba(255,255,255,0.04)'
               }}>
-              <div style=${{color: 'white', fontWeight: 700}}>${modalTitle}</div>
+              <div>
+                <div style={{color: 'white', fontWeight: 700}}>${modalTitle}</div>
+                ${
+                  modalMessage
+                    ? html`
+                        <div style=${{color: 'white', opacity: 0.75, fontSize: '0.9rem', marginTop: '2px'}}>${modalMessage}</div>
+                      `
+                    : null
+                }
+              </div>
               <div style=${{display: 'flex', gap: '0.5rem'}}>
                 <button onClick=${zoomOut} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>−</button>
                 <button onClick=${zoomIn} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>+</button>
