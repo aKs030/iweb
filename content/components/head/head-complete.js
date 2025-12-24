@@ -185,6 +185,32 @@
     try {
       // Link manifest
       upsertLink('manifest', '/manifest.json')
+      // Add common favicons (explicit links with sizes)
+      const addIcon = (href, sizes, type) => {
+        if (!href) return
+        let el = document.head.querySelector(`link[rel="icon"][sizes="${sizes}"]`)
+        if (el) el.setAttribute('href', href)
+        else {
+          el = document.createElement('link')
+          el.setAttribute('rel', 'icon')
+          el.setAttribute('sizes', sizes)
+          if (type) el.setAttribute('type', type)
+          el.setAttribute('href', href)
+          document.head.appendChild(el)
+        }
+      }
+      addIcon('/content/assets/img/icons/icon-32.png', '32x32', 'image/png')
+      addIcon('/content/assets/img/icons/icon-16.png', '16x16', 'image/png')
+
+      // Ensure shortcut favicon (favicon.ico)
+      let shortcutEl = document.head.querySelector('link[rel="shortcut icon"]')
+      if (shortcutEl) shortcutEl.setAttribute('href', '/content/assets/img/icons/favicon.ico')
+      else {
+        shortcutEl = document.createElement('link')
+        shortcutEl.rel = 'shortcut icon'
+        shortcutEl.href = '/content/assets/img/icons/favicon.ico'
+        document.head.appendChild(shortcutEl)
+      }
       // Theme color for browsers
       upsertMeta('theme-color', '#0d0d0d')
       // Apple Web App meta tags
