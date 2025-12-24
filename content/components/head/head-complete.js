@@ -110,7 +110,7 @@
   // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
   try {
     const {createLogger} = await import('../../utils/shared-utilities.js')
-    const log = createLogger('HeadLoader')
+    const _log = createLogger('HeadLoader')
 
     const _escapeHTML = str =>
       String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m])
