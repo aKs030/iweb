@@ -331,42 +331,30 @@ function App() {
 
       if (!htmlText) throw new Error('All fetch attempts failed')
 
-      // Inject <base> and helpers so relative assets resolve and content scales to modal
-      const viewportMeta = '<meta name="viewport" content="width=device-width, initial-scale=1">'
-      const fitScript = `
-        <script>
-          (function(){
-            function fit(){
-              try {
-                var doc = document.documentElement || document.body;
-                var body = document.body || document.documentElement;
-                var contentHeight = Math.max(doc.scrollHeight || 0, doc.offsetHeight || 0, body.scrollHeight || 0, body.offsetHeight || 0)
-                var viewport = window.innerHeight || (document.documentElement && document.documentElement.clientHeight) || 0
-                var scale = Math.min(1, viewport / (contentHeight || viewport))
-                if (scale < 1) {
-                  document.documentElement.style.boxSizing = 'border-box'
-                  document.body.style.transformOrigin = 'top center'
-                  document.body.style.transform = 'scale(' + scale + ')'
-                  document.body.style.width = (100 / scale) + '%'
-                } else {
-                  document.body.style.transform = ''
-                  document.body.style.width = ''
-                }
-              } catch(e) { /* ignore */ }
-            }
-            window.addEventListener('load', fit)
-            window.addEventListener('resize', fit)
-            setTimeout(fit, 200)
-          })()
-        <\/script>
-      `
+      // Inject <base>, viewport, responsive helpers and a fit script so apps scale inside the modal
+      const metaViewport = '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      const responsiveStyle = `<style>
+        html,body{height:100%;width:100%;margin:0;padding:0;box-sizing:border-box;overflow:hidden}
+        #__copilot_modal_wrapper{width:100%;height:100%;display:flex;align-items:flex-start;justify-content:center;position:relative;overflow:auto}
+        #__copilot_modal_wrapper > *{max-width:100%;max-height:100%}
+        img,video,canvas,svg{max-width:100%;height:auto;max-height:100%}
+      </style>`
 
+      const fitScript = `<script>(function(){function fit(){try{var doc=document.documentElement;var wrapper=document.getElementById('__copilot_modal_wrapper')||document.body;var cw=wrapper.clientWidth,ch=wrapper.clientHeight;var bw=Math.max(doc.scrollWidth,doc.clientWidth),bh=Math.max(doc.scrollHeight,doc.clientHeight);var scale=Math.min(1, cw/(bw||cw), ch/(bh||ch));wrapper.style.transform='scale('+scale+')';wrapper.style.transformOrigin='top left';}catch(e){}}window.addEventListener('load',fit);window.addEventListener('resize',fit);setTimeout(fit,150);})();</script>`
+
+      // Insert into <head>
       if (/<head[^>]*>/i.test(htmlText)) {
-        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1>${viewportMeta}<base href="${chosenBase}">`)
-        // inject fit script at the end of head to run as early as possible
-        htmlText = htmlText.replace(/<\/head>/i, fitScript + '</head>')
+        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1>${metaViewport}${responsiveStyle}<base href="${chosenBase}">`)
       } else {
-        htmlText = viewportMeta + `<base href="${chosenBase}">` + htmlText + fitScript
+        htmlText = `${metaViewport}${responsiveStyle}<base href="${chosenBase}">` + htmlText
+      }
+
+      // Wrap body content to allow scaling
+      if (/<body[^>]*>/i.test(htmlText)) {
+        htmlText = htmlText.replace(/<body([^>]*)>/i, `<body$1><div id="__copilot_modal_wrapper">`)
+        htmlText = htmlText.replace(/<\/body>/i, `${fitScript}</div></body>`)
+      } else {
+        htmlText = `<div id="__copilot_modal_wrapper">` + htmlText + `${fitScript}</div>`
       }
 
       setIframeSrcDoc(htmlText)
