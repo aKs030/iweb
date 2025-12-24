@@ -1,6 +1,7 @@
 // ===== Shared Utilities Import =====
 import {createTriggerOnceObserver, EVENTS, getElementById, TimerManager} from '../../content/utils/shared-utilities.js'
 import {createLogger} from '../../content/utils/shared-utilities.js'
+import {initHeroSubtitle} from '../../content/components/typewriter/TypeWriter.js'
 
 // Logger für HeroManager
 const logger = createLogger('HeroManager')
@@ -14,16 +15,15 @@ const HeroManager = (() => {
   let isInitialized = false
 
   async function loadTyped(heroDataModule) {
-    // Optimized: Use global function exposed by main.js or imported directly
-    if (typeof window.initHeroSubtitle === 'function') {
-      try {
-        return window.initHeroSubtitle({
-          heroDataModule
-        })
-      } catch (err) {
-        logger.warn('Failed to load TypeWriter modules', err)
-        return false
+    try {
+      if (typeof initHeroSubtitle === 'function') {
+        return await initHeroSubtitle({heroDataModule})
+      } else if (typeof window.initHeroSubtitle === 'function') {
+        return await window.initHeroSubtitle({heroDataModule})
       }
+    } catch (err) {
+      logger.warn('Failed to load TypeWriter modules', err)
+      return false
     }
     return false
   }
