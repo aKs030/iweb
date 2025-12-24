@@ -21,6 +21,47 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://abdulkerimsesli.de/content/assets/img/icons/apple-touch-icon.png" />
     <meta name="theme-color" content="#0d0d0d" />
 
+    <!-- Server-side FAQ JSON-LD (ensures Search Console sees a named FAQPage) -->
+    <script id="head-complete-ldjson" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "FAQPage",
+            "@id": "https://abdulkerimsesli.de/#faq",
+            "name": "Abdulkerim Sesli | Digitale Visitenkarte & Portfolio Berlin — FAQ",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Was für Webentwicklungs-Services bietet Abdulkerim an?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Abdulkerim ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive Webdesign. Er erstellt professionelle Websites und digitale Projekte."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Wo ist Abdulkerim als Webentwickler tätig?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Abdulkerim arbeitet als Freelance-Webentwickler und Fotograf in Berlin, Deutschland und bietet seine Services deutschlandweit an."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Welche Technologien verwendet Abdulkerim für Webentwicklung?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien. Zusätzlich bietet er auch professionelle Fotografie-Services an."
+                }
+              }
+            ],
+            "isPartOf": {"@id": "https://abdulkerimsesli.de/#webpage"}
+          }
+        ]
+      }
+    </script>
+
     <script src="/content/components/head/head-complete.js" type="module"></script>
 
     <link rel="stylesheet" href="/content/styles/root.css" />
