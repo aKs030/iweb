@@ -270,16 +270,52 @@ function App() {
     }
   }
 
-  const openApp = p => {
-    const parsed = parseGithubOwnerRepo(p.githubPath || '')
-    let candidate = p.appPath || '/' // fallback to appPath in this site
-    if (parsed) {
-      // Try GitHub Pages first
-      candidate = `https://${parsed.owner}.github.io/${parsed.repo}${p.appPath}`
+  const resolveAppUrl = async (parsed, appPath) => {
+    // Build candidate URLs to try (ordered)
+    const normalizedPath = appPath.startsWith('/') ? appPath : '/' + appPath
+    const candidates = [
+      // direct repo pages path (matches where files were committed)
+      `https://${parsed.owner}.github.io/${parsed.repo}${normalizedPath}`,
+      // repo root + pages prefix (common for static sites within subfolder)
+      `https://${parsed.owner}.github.io/${parsed.repo}/pages${normalizedPath}`,
+      // try pages folder replacing /projekte/ -> /pages/projekte/
+      `https://${parsed.owner}.github.io/${parsed.repo}${normalizedPath.replace('/projekte/', '/pages/projekte/')}`,
+      // try without repo (user site root)
+      `https://${parsed.owner}.github.io${normalizedPath}`
+    ]
+
+    for (const url of candidates) {
+      try {
+        // HEAD request to check availability; fall back to GET if HEAD denied
+        let res = await fetch(url, {method: 'HEAD', mode: 'cors'})
+        if (!res || !res.ok) {
+          res = await fetch(url, {method: 'GET', mode: 'cors'})
+        }
+        if (res && res.ok) return url
+      } catch (e) {
+        // ignore and try next
+      }
     }
+    return null
+  }
+
+  const openApp = async p => {
+    const parsed = parseGithubOwnerRepo(p.githubPath || '')
     setModalTitle(p.title)
-    setModalSrc(candidate)
     setModalScale(1)
+
+    if (parsed) {
+      const found = await resolveAppUrl(parsed, p.appPath || '/')
+      if (found) {
+        setModalSrc(found)
+        setModalOpen(true)
+        return
+      }
+    }
+
+    // Final fallback: try local appPath on this site
+    const localPath = p.appPath || '/'
+    setModalSrc(localPath)
     setModalOpen(true)
   }
 
