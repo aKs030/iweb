@@ -17,6 +17,7 @@ Disallow: /content/vendor/
 Disallow: /content/config/
 Disallow: /content/utils/
 Disallow: /*.json$
+Allow: /manifest.json
 
 # Google-specific rules
 User-agent: Googlebot
