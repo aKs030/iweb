@@ -139,19 +139,8 @@ const projects = [
       <${Gamepad2} style=${{color: '#c084fc', width: '32px', height: '32px'}} />
     `,
     previewContent: html`
-      <div
-        style=${{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          width: '100%',
-          height: '100%',
-          position: 'relative',
-          zIndex: 10
-        }}>
-        <div style=${{fontSize: '3rem'}}>🪨</div>
-        <div style=${{fontSize: '1.5rem', opacity: 0.5}}>VS</div>
-        <div style=${{fontSize: '3rem'}}>✂️</div>
+      <div className="mockup-iframe-container">
+        <iframe src="/projekte/apps/schere-stein-papier/" title="Schere Stein Papier Preview" loading="lazy"></iframe>
       </div>
     `
   },
@@ -234,12 +223,14 @@ const projects = [
     `,
     previewContent: html`
       <div
-        className="iframe-container"
-        style=${{position: 'absolute', inset: '2rem', zIndex: 10, overflow: 'hidden', borderRadius: '0.75rem'}}>
-        <iframe
-          src="/projekte/apps/todo-liste/"
-          title="To-Do Vorschau"
-          style=${{width: '111%', height: '111%', border: 0, transform: 'scale(0.9)', transformOrigin: '0 0', display: 'block'}}></iframe>
+        style=${{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%'
+        }}>
+        <${Check} style=${{width: '4rem', height: '4rem', color: '#22d3ee'}} />
       </div>
     `
   }

@@ -331,6 +331,31 @@
         opacity: 0.03;
         background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=');
       }
+
+      /* iframe mockup adjustments: positioned inside the mockup padding, scaled and compensated so
+         the embedded app fits without scrollbars or clipped content */
+      .mockup-iframe-container {
+        position: absolute;
+        inset: 2rem; /* 2rem from all sides, inside the mockup padding */
+        z-index: 1;
+        overflow: hidden;
+        border-radius: 0.75rem;
+        background: transparent;
+      }
+
+      .mockup-iframe-container iframe {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border: 0;
+        transform: scale(0.9); /* scale to fit */
+        transform-origin: center center;
+        -webkit-transform: scale(0.9);
+        -webkit-transform-origin: center center;
+        max-width: 111%; /* compensate the scaling */
+        max-height: 111%; /* compensate the scaling */
+        margin: 0;
+      }
       .mockup-icon {
         position: absolute;
         bottom: 1.25rem;
@@ -346,26 +371,6 @@
       }
       .window-mockup:hover .mockup-icon {
         transform: scale(1.1) rotate(12deg);
-      }
-
-      /* Iframe preview inside mockup: positioned inside padding, scaled and compensated to avoid scrollbars */
-      .mockup-content .iframe-container {
-        position: absolute;
-        inset: 2rem;
-        overflow: hidden;
-        z-index: 10;
-        border-radius: 0.75rem;
-      }
-      .mockup-content .iframe-container iframe {
-        display: block;
-        width: 111%;
-        height: 111%;
-        max-width: 111%;
-        max-height: 111%;
-        transform-origin: 0 0;
-        transform: scale(0.9);
-        border: 0;
-        background: transparent;
       }
 
       .project-info {
