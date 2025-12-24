@@ -4,7 +4,7 @@
  * @version 11.0.0 - REFACTOR: Pure WebGL Implementation
  */
 
-import {createLogger, getElementById, onResize, TimerManager} from '../../utils/shared-utilities.js'
+import {createLogger, getElementById, onResize, TimerManager, AppLoadManager} from '../../utils/shared-utilities.js'
 import {
   getSharedState,
   loadThreeJS,
