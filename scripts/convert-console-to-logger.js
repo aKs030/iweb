@@ -12,19 +12,22 @@ function walk(dir) {
     if (name.name === 'node_modules' || name.name === 'vendor' || name.name === '.git') continue
     const p = path.join(dir, name.name)
     if (name.isDirectory()) files.push(...walk(p))
-    else if (/\.(js|mjs|cjs)$/.test(name.name)) files.push(p)
+    else if (/\.(js|mjs|cjs|html)$/.test(name.name)) files.push(p)
   }
   return files
 }
 
-function ensureImportAndLogger(content, filePath, scope) {
+function ensureImportAndLogger(content, filePath, scope, inlineHtml = false) {
   let changed = false
   const importMarker = 'createLogger'
   if (!content.includes(importMarker)) {
-    const rel = path.relative(path.dirname(filePath), path.join(root, sharedPath)).replace(/\\/g, '/')
-    const relPath = rel.startsWith('.') ? rel : './' + rel
+    // For inline HTML modules we prefer the absolute site path to the utility
+    const relPath = inlineHtml
+      ? '/content/utils/shared-utilities.js'
+      : path.relative(path.dirname(filePath), path.join(root, sharedPath)).replace(/\\/g, '/')
+    const importPath = relPath.startsWith('.') || relPath.startsWith('/') ? relPath : './' + relPath
     // place import after existing imports or at top
-    const importLine = `import { createLogger } from '${relPath}';\n`
+    const importLine = `import { createLogger } from '${importPath}';\n`
     const importRegex = /(^import .*;$\n?)/m
     if (importRegex.test(content)) {
       content = content.replace(importRegex, m => m + importLine)
@@ -67,6 +70,34 @@ function convertFile(filePath) {
   return null
 }
 
+function convertHtmlInlineModules(filePath) {
+  const raw = fs.readFileSync(filePath, 'utf8')
+  // match <script ... type=module ...>...</script> without src attribute
+  const moduleRegex = /<script\b(?![^>]*\bsrc=)[^>]*type=["']module["'][^>]*>([\s\S]*?)<\/script>/gim
+  let match
+  let modified = false
+  let out = raw
+  while ((match = moduleRegex.exec(raw)) !== null) {
+    const moduleContent = match[1]
+    if (!/console\.warn|console\.error/.test(moduleContent)) continue
+    // convert module content
+    const scope = path.basename(filePath).replace(/\.[^.]+$/, '')
+    const {content: newModuleRaw, changed: _changed} = ensureImportAndLogger(moduleContent, filePath, scope, true)
+    let newModule = newModuleRaw
+    newModule = newModule.replace(/console\.warn/g, 'log.warn').replace(/console\.error/g, 'log.error')
+    if (newModule !== moduleContent || changed) {
+      // replace the specific module block in output
+      out = out.replace(moduleContent, newModule)
+      modified = true
+    }
+  }
+  if (modified) {
+    fs.writeFileSync(filePath, out, 'utf8')
+    return {filePath, modified: true}
+  }
+  return null
+}
+
 const results = []
 for (const t of targets) {
   const dir = path.join(root, t)
@@ -74,7 +105,12 @@ for (const t of targets) {
   const files = walk(dir)
   for (const f of files) {
     try {
-      const res = convertFile(f)
+      let res = null
+      if (/\.html$/.test(f)) {
+        res = convertHtmlInlineModules(f)
+      } else {
+        res = convertFile(f)
+      }
       if (res) results.push(res.filePath)
     } catch (e) {
       log.error('Error processing', f, e)
@@ -82,8 +118,8 @@ for (const t of targets) {
   }
 }
 
-console.warn('Conversion complete. Modified files:', results.length)
-results.forEach(r => console.warn(' -', r))
+log.warn('Conversion complete. Modified files:', results.length)
+results.forEach(r => log.warn(' -', r))
 
 if (results.length === 0) process.exit(0)
 else process.exit(0)
