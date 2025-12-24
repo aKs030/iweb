@@ -1,4 +1,3 @@
-const log = createLogger('shared-utilities')
 /**
  * Shared Utilities - Optimized Core Functions
  *
@@ -33,22 +32,22 @@ export function createLogger(category) {
   return {
     error: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.error) {
-        ;(log.error || noop)(prefix, message, ...args)
+        ;(_console.error || noop)(prefix, message, ...args)
       }
     },
     warn: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.warn) {
-        ;(log.warn || noop)(prefix, message, ...args)
+        ;(_console.warn || noop)(prefix, message, ...args)
       }
     },
     info: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.info) {
-        ;(log.warn || noop)(prefix, message, ...args)
+        ;(_console.info || noop)(prefix, message, ...args)
       }
     },
     debug: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.debug) {
-        ;(log.warn || noop)(prefix, message, ...args)
+        ;(_console.debug || noop)(prefix, message, ...args)
       }
     }
   }
