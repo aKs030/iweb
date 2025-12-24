@@ -254,54 +254,41 @@ function App() {
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
 
-  // Modal state for app preview
+  // Popup/Iframe state for opening apps from GitHub (Webgame)
   const [modalOpen, setModalOpen] = React.useState(false)
   const [modalSrc, setModalSrc] = React.useState('')
   const [modalTitle, setModalTitle] = React.useState('')
-  const [modalScale, setModalScale] = React.useState(0.88)
-  const iframeRef = React.useRef(null)
-  const tryingRef = React.useRef({idx: 0, urls: []})
+  const [modalScale, setModalScale] = React.useState(1)
 
-  // Helper: construct candidate URLs for a project (raw -> ghpages -> local)
-  const buildCandidateUrls = project => {
-    const slug = project.appPath.replace(/(^\/|\/$)/g, '') // e.g. 'projekte/apps/schere-stein-papier'
-    return [
-      `https://raw.githubusercontent.com/aKs030/Webgame/main/${slug}/index.html`,
-      `https://aKs030.github.io/Webgame/${slug}/index.html`,
-      project.appPath
-    ]
-  }
-
-  const openAppInModal = project => {
-    const urls = buildCandidateUrls(project)
-    tryingRef.current = {idx: 0, urls}
-    setModalTitle(project.title)
-    setModalScale(0.88) // default smaller popup scale
-    setModalOpen(true)
-    setModalSrc(urls[0])
-  }
-
-  const closeModal = () => {
-    setModalOpen(false)
-    setModalSrc('')
-  }
-
-  // Try fallback urls on iframe error
-  const handleIframeError = () => {
-    const t = tryingRef.current
-    t.idx += 1
-    if (t.idx < t.urls.length) {
-      setModalSrc(t.urls[t.idx])
-    } else {
-      // All fallbacks failed
-      setModalSrc('about:blank')
+  const parseGithubOwnerRepo = url => {
+    try {
+      const m = url.match(/github\.com\/(.+?)\/(.+?)(?:\.git|$)/i)
+      if (!m) return null
+      return {owner: m[1], repo: m[2].replace(/\.git$/, '')}
+    } catch (e) {
+      return null
     }
   }
 
-  // Simple scale controls
-  const increaseScale = () => setModalScale(s => Math.min(1.2, +(s + 0.05).toFixed(2)))
-  const decreaseScale = () => setModalScale(s => Math.max(0.5, +(s - 0.05).toFixed(2)))
-  const fitToModal = () => setModalScale(0.88)
+  const openApp = p => {
+    const parsed = parseGithubOwnerRepo(p.githubPath || '')
+    let candidate = p.appPath || '/' // fallback to appPath in this site
+    if (parsed) {
+      // Try GitHub Pages first
+      candidate = `https://${parsed.owner}.github.io/${parsed.repo}${p.appPath}`
+    }
+    setModalTitle(p.title)
+    setModalSrc(candidate)
+    setModalScale(1)
+    setModalOpen(true)
+  }
+
+  const closeModal = () => setModalOpen(false)
+  const zoomIn = () => setModalScale(s => Math.min(2, +(s + 0.1).toFixed(2)))
+  const zoomOut = () => setModalScale(s => Math.max(0.5, +(s - 0.1).toFixed(2)))
+  const openInNewTab = () => {
+    if (modalSrc) window.open(modalSrc, '_blank', 'noopener')
+  }
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -403,13 +390,17 @@ function App() {
                   )}
                 </div>
                 <div className="project-actions">
-                  <button
+                  <a
+                    href="#"
+                    onClick=${e => {
+                      e && e.preventDefault && e.preventDefault()
+                      openApp(project)
+                    }}
                     className="btn btn-primary btn-small"
-                    onClick=${() => openAppInModal(project)}
                     aria-label=${`App öffnen ${project.title}`}>
                     <${ExternalLink} style=${{width: '1rem', height: '1rem'}} />
                     App öffnen
-                  </button>
+                  </a>
                   <a
                     className="btn btn-outline btn-small"
                     href=${project.githubPath}
@@ -425,6 +416,65 @@ function App() {
           </section>
         `
       )}
+      ${modalOpen &&
+      html`
+        <div
+          style=${{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            zIndex: 20000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.25rem'
+          }}>
+          <div
+            style=${{
+              width: '96%',
+              height: '88%',
+              background: 'rgba(0,0,0,0.95)',
+              borderRadius: '0.75rem',
+              overflow: 'hidden',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.6)'
+            }}>
+            <div
+              style=${{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.5rem 0.75rem',
+                borderBottom: '1px solid rgba(255,255,255,0.04)'
+              }}>
+              <div style=${{color: 'white', fontWeight: 700}}>${modalTitle}</div>
+              <div style=${{display: 'flex', gap: '0.5rem'}}>
+                <button onClick=${zoomOut} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>−</button>
+                <button onClick=${zoomIn} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>+</button>
+                <button onClick=${openInNewTab} className="btn btn-outline" style=${{padding: '0.4rem 0.6rem'}}>Open</button>
+                <button onClick=${closeModal} className="btn btn-primary" style=${{padding: '0.4rem 0.6rem'}}>Schließen</button>
+              </div>
+            </div>
+            <div style=${{width: '100%', height: 'calc(100% - 48px)', position: 'relative', background: '#111'}}>
+              <div
+                style=${{
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'auto',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'center'
+                }}>
+                <div style=${{transform: `scale(${modalScale})`, transformOrigin: 'top center', width: '100%', maxWidth: '1200px'}}>
+                  <iframe
+                    src=${modalSrc}
+                    style=${{width: '100%', height: '80vh', border: 'none', display: 'block'}}
+                    title=${modalTitle}></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
@@ -441,66 +491,6 @@ function App() {
           </div>
         </div>
       </section>
-
-      <!-- Modal for app preview -->
-      ${modalOpen &&
-      html`
-        <div
-          className="modal-overlay"
-          style="position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55)">
-          <div
-            className="modal-inner"
-            style="width:min(920px,90vw);max-height:min(720px,80vh);background:rgba(10,10,12,0.98);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.06)">
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.03);">
-              <div style="flex:1;color:white;font-weight:700">${modalTitle}</div>
-              <div style="display:flex;gap:8px;align-items:center">
-                <button
-                  aria-label="Verkleinern"
-                  onClick=${decreaseScale}
-                  style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:white;padding:6px;border-radius:8px">
-                  -
-                </button>
-                <button
-                  aria-label="Zurück zur Größe"
-                  onClick=${fitToModal}
-                  style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:white;padding:6px;border-radius:8px">
-                  fit
-                </button>
-                <button
-                  aria-label="Vergrößern"
-                  onClick=${increaseScale}
-                  style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:white;padding:6px;border-radius:8px">
-                  +
-                </button>
-                <button
-                  aria-label="Schließen"
-                  onClick=${closeModal}
-                  style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:white;padding:6px;border-radius:8px">
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div
-              className="modal-iframe-wrapper"
-              style="flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;background:#000;padding:12px">
-              <iframe
-                ref=${iframeRef}
-                className="modal-iframe"
-                src=${modalSrc}
-                onError=${handleIframeError}
-                style=${{
-                  border: 'none',
-                  width: `${100 / modalScale}%`,
-                  height: '100%',
-                  transform: `scale(${modalScale})`,
-                  transformOrigin: 'top center',
-                  transition: 'transform 200ms ease'
-                }} />
-            </div>
-          </div>
-        </div>
-      `}
     <//>
   `
 }
