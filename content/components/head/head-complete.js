@@ -1,10 +1,13 @@
 /**
  * Dynamic Head Loader - Ultimate Modern SEO & Schema Graph (@graph approach)
- * Version: 2025.3.2 (FAQ Strict Mode & Scope Fix)
+ * Version: 2025.3.4 (Reactive Markdown & Client-Side Hydration Support)
  * * Features:
  * - [GELB] Icon Fix: Re-Integration von 'Organization' für Logo-Support
  * - [ROT] Snippet Fill: Maximierte Descriptions & Knowledge-Injection
- * - [BLAU] FAQ Booster: Strict Mode + Whitespace Cleaner (gegen "Unbenanntes Element")
+ * - [BLAU] FAQ Booster: Strict Mode + Whitespace Cleaner
+ * - [GRÜN] Markdown Extractor: Strukturierter Content für KI-Kontext (H1-H6, Lists, Links)
+ * - [LILA] Knowledge Graph: Auto-Linking von Skills (React, Three.js) zu Wikidata
+ * - [CYAN] Reactive Schema: MutationObserver für SPA-Support (React Hydration)
  */
 
 ;(async function loadSharedHead() {
@@ -13,11 +16,26 @@
   // --- 1. GLOBALE DATEN & KONFIGURATION ---
   const BASE_URL = 'https://abdulkerimsesli.de'
 
-  // A. VISUELLE STEUERUNG (Icons & Business Data)
+  // KNOWLEDGE GRAPH (Wikidata Mapping für Auto-Tagging)
+  const KNOWLEDGE_ENTITIES = {
+    'React': 'https://www.wikidata.org/wiki/Q19399674',
+    'Three.js': 'https://www.wikidata.org/wiki/Q28135934',
+    'JavaScript': 'https://www.wikidata.org/wiki/Q28865',
+    'TypeScript': 'https://www.wikidata.org/wiki/Q196025',
+    'Node.js': 'https://www.wikidata.org/wiki/Q756100',
+    'Berlin': 'https://www.wikidata.org/wiki/Q64',
+    'Fotografie': 'https://www.wikidata.org/wiki/Q11633',
+    'Photography': 'https://www.wikidata.org/wiki/Q11633',
+    'Webentwicklung': 'https://www.wikidata.org/wiki/Q386275',
+    'Frontend': 'https://www.wikidata.org/wiki/Q1055667',
+    'UI/UX': 'https://www.wikidata.org/wiki/Q1068473'
+  }
+
+  // A. VISUELLE STEUERUNG
   const BRAND_DATA = {
     name: 'Abdulkerim Sesli',
     legalName: 'Abdulkerim Sesli — Creative Digital Services',
-    logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`, // [GELB] Das Icon für Google
+    logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`,
     jobTitle: 'Fotograf & Fullstack Webentwickler',
     email: 'kontakt@abdulkerimsesli.de',
     areaServed: 'Berlin, Deutschland',
@@ -39,8 +57,7 @@
     ]
   }
 
-  // B. INHALTS-STEUERUNG (Snippet Text Füllung)
-  // [ROT] Hier füllen wir den Text-Bereich maximal auf (~160 Zeichen + Keywords)
+  // B. INHALTS-STEUERUNG
   const ROUTES = {
     'default': {
       title: 'Abdulkerim Sesli | Digitale Visitenkarte & Portfolio Berlin',
@@ -67,7 +84,6 @@
       title: 'Videos — Abdulkerim Sesli',
       description: 'Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.',
       type: 'CollectionPage',
-      // NOTE: currently uses og-home.png as a fallback.
       image: `${BASE_URL}/content/assets/img/og/og-home.png`
     },
     '/gallery/': {
@@ -86,8 +102,7 @@
     }
   }
 
-  // C. FAQ GENERATOR (Der "Blaue Bereich")
-  // [BLAU] Diese Fragen tauchen direkt in der Google-Suche auf
+  // C. FAQ GENERATOR
   const BUSINESS_FAQS = [
     {
       q: 'Welche Dienstleistungen bietest du an?',
@@ -109,13 +124,10 @@
   const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default
   const pageUrl = window.location.href.split('#')[0]
 
-  // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
+  // --- 2. HTML HEAD UPDATES ---
   try {
     const {createLogger} = await import('../../utils/shared-utilities.js')
     const _log = createLogger('HeadLoader')
-
-    const _escapeHTML = str =>
-      String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m])
 
     const upsertMeta = (nameOrProperty, content, isProperty = false) => {
       if (!content) return
@@ -145,65 +157,46 @@
       }
     }
 
-    // Title: only override if we have a non-empty title
     if (pageData.title && pageData.title.trim()) document.title = pageData.title
-
-    // Meta descriptions and core tags
     upsertMeta('description', pageData.description)
     upsertMeta('robots', 'index, follow, max-image-preview:large')
     upsertMeta('language', 'de-DE')
     upsertMeta('author', 'Abdulkerim Sesli')
     upsertMeta('twitter:card', 'summary_large_image')
     upsertMeta('twitter:creator', '@abdulkerimsesli')
-
-    // Geo Tags for Local SEO (Berlin 13507)
     upsertMeta('geo.region', 'DE-BE')
     upsertMeta('geo.placename', 'Berlin')
     upsertMeta('geo.position', '52.5733;13.2911')
     upsertMeta('ICBM', '52.5733, 13.2911')
-
-    // OpenGraph minimal set (property)
     upsertMeta('og:title', pageData.title, true)
     upsertMeta('og:description', pageData.description, true)
     upsertMeta('og:locale', 'de_DE', true)
     if (pageData.image) upsertMeta('og:image', pageData.image, true)
 
-    // Canonical: prefer fixed production origin for known hosts, else use runtime pageUrl
     try {
       const PROD_HOSTS = ['abdulkerimsesli.de', 'www.abdulkerimsesli.de']
       const hostname = window.location.hostname.toLowerCase()
       const ensureTrailingSlash = p => (p.endsWith('/') ? p : p + '/')
-      const forceProdFlag = !!(
-        document.documentElement &&
-        document.documentElement.getAttribute &&
-        document.documentElement.getAttribute('data-force-prod-canonical')
-      )
-
+      const forceProdFlag = !!(document.documentElement && document.documentElement.getAttribute('data-force-prod-canonical'))
       const canonicalHref = forceProdFlag
         ? `${BASE_URL}${ensureTrailingSlash(window.location.pathname)}`
         : PROD_HOSTS.includes(hostname)
           ? `${BASE_URL}${ensureTrailingSlash(window.location.pathname)}`
           : pageUrl
-
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', canonicalHref)
       else upsertLink('canonical', canonicalHref)
     } catch (err) {
-      // Safe fallback log
       console.warn('HeadLoader: canonical detection failed', err)
-      const canonicalEl = document.head.querySelector('link[rel="canonical"]')
-      if (canonicalEl) canonicalEl.setAttribute('href', pageUrl)
-      else upsertLink('canonical', pageUrl)
+      upsertLink('canonical', pageUrl)
     }
 
-    // Ensure favicon exists (minimal, do not re-inject if present)
     if (!document.head.querySelector('link[rel="icon"]')) {
       const iconLink = document.createElement('link')
       iconLink.rel = 'icon'
       iconLink.href = BRAND_DATA.logo
       document.head.appendChild(iconLink)
     }
-    // Ensure PWA manifest & Apple mobile settings
     try {
       upsertLink('manifest', `${BASE_URL}/manifest.json`)
       const addIcon = (href, sizes, type) => {
@@ -221,7 +214,6 @@
       }
       addIcon(`${BASE_URL}/content/assets/img/icons/icon-32.png`, '32x32', 'image/png')
       addIcon(`${BASE_URL}/content/assets/img/icons/icon-16.png`, '16x16', 'image/png')
-
       let shortcutEl = document.head.querySelector('link[rel="shortcut icon"]')
       if (shortcutEl) shortcutEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/favicon.ico`)
       else {
@@ -234,7 +226,6 @@
       upsertMeta('apple-mobile-web-app-capable', 'yes')
       upsertMeta('apple-mobile-web-app-title', BRAND_DATA.name)
       upsertMeta('apple-mobile-web-app-status-bar-style', 'default')
-
       let appleIconEl = document.head.querySelector('link[rel="apple-touch-icon"]')
       if (appleIconEl) appleIconEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`)
       else {
@@ -245,7 +236,6 @@
         document.head.appendChild(appleIconEl)
       }
     } catch (e) {
-      // Safe logging in catch block
       console.warn('[Head-Loader] PWA meta injection failed:', e)
     }
   } catch (e) {
@@ -254,6 +244,13 @@
 
   // --- 3. SCHEMA GRAPH GENERATION ---
   const generateSchema = () => {
+    // Prevent run on empty root if we are waiting for hydration
+    const rootEl = document.getElementById('root')
+    if (rootEl && rootEl.childNodes.length === 0) {
+      // Defer schema generation if React hasn't mounted yet
+      return
+    }
+
     const ID = {
       person: `${BASE_URL}/#person`,
       org: `${BASE_URL}/#organization`,
@@ -264,7 +261,7 @@
 
     const graph = []
 
-    // 1. ORGANIZATION (ProfessionalService for Local SEO)
+    // 1. ORGANIZATION
     graph.push({
       '@type': 'ProfessionalService',
       '@id': ID.org,
@@ -278,14 +275,10 @@
       },
       'email': BRAND_DATA.email,
       'sameAs': BRAND_DATA.sameAs,
-      'address': BRAND_DATA.address || {
-        '@type': 'PostalAddress',
-        'addressLocality': 'Berlin',
-        'addressCountry': 'DE'
-      }
+      'address': BRAND_DATA.address
     })
 
-    // 2. PERSON (Die Haupt-Entität)
+    // 2. PERSON
     graph.push({
       '@type': ['Person', 'Photographer'],
       '@id': ID.person,
@@ -311,8 +304,6 @@
       ]
     })
 
-    // 2.1 SPECIAL: FEATURE SNIPPET OPTIMIZATION (Skills as ItemList)
-    // Helps Google display "Skills: React, Three.js..." in snippets
     if (pageUrl.includes('/about') || pageUrl === BASE_URL || pageUrl === `${BASE_URL}/`) {
       graph.push({
         '@type': 'ItemList',
@@ -329,45 +320,127 @@
       })
     }
 
-    // 2.2 AI CONTEXT EXTRACTION (Raw Text Transformation)
-    // Transforms raw page content into a clean, machine-readable format for LLMs
-    const extractPageContent = () => {
-      try {
-        const contentNode = document.querySelector('main') || document.querySelector('article') || document.body
-        if (!contentNode) return ''
+    // --- RECURSIVE DOM TO MARKDOWN TRANSFORMER ---
+    const domToMarkdown = root => {
+      if (!root) return ''
 
-        // Clone to avoid modifying the live DOM
-        const clone = contentNode.cloneNode(true)
+      const cleanText = txt => txt.replace(/\s+/g, ' ').trim()
 
-        // Remove noise
-        const noiseSelectors = ['nav', 'footer', 'script', 'style', 'noscript', 'iframe', '.cookie-banner', '.no-ai', '[aria-hidden="true"]']
-        noiseSelectors.forEach(sel => clone.querySelectorAll(sel).forEach(el => el.remove()))
+      const walk = node => {
+        if (node.nodeType === 3) return cleanText(node.nodeValue) // Text node
+        if (node.nodeType !== 1) return '' // Skip comments etc.
 
-        // Extract and clean text
-        let text = clone.innerText || clone.textContent || ''
-        text = text.replace(/\s+/g, ' ').trim()
+        // Ignore noise
+        if (['SCRIPT', 'STYLE', 'NAV', 'FOOTER', 'IFRAME', 'NOSCRIPT'].includes(node.tagName)) return ''
+        if (node.classList.contains('no-ai') || node.classList.contains('cookie-banner') || node.getAttribute('aria-hidden') === 'true') return ''
 
-        // Limit length to prevent JSON bloat (max 5000 chars is plenty for context)
-        return text.length > 5000 ? text.substring(0, 5000) + '...' : text
-      } catch (e) {
-        return ''
+        let content = ''
+        const tagName = node.tagName.toUpperCase()
+
+        // Handle child traversal
+        for (let child of node.childNodes) {
+          content += walk(child) + ' '
+        }
+        content = content.replace(/\s+/g, ' ').trim()
+
+        // --- Structural Formatting ---
+        // Block Elements -> Newlines
+        if (['P', 'DIV', 'SECTION', 'ARTICLE', 'MAIN'].includes(tagName)) {
+           return content.length > 0 ? `\n\n${content}\n\n` : ''
+        }
+
+        // Headings -> Markdown Headers
+        if (tagName.match(/^H[1-6]$/)) {
+          const level = parseInt(tagName[1])
+          const prefix = '#'.repeat(level)
+          return `\n\n${prefix} ${content}\n\n`
+        }
+
+        // Lists
+        if (tagName === 'LI') {
+           return `\n* ${content}`
+        }
+        if (tagName === 'UL' || tagName === 'OL') {
+          return `\n${content}\n`
+        }
+
+        // Inline Formatting
+        if (tagName === 'B' || tagName === 'STRONG') return ` **${content}** `
+        if (tagName === 'I' || tagName === 'EM') return ` _${content}_ `
+
+        // Links & Images
+        if (tagName === 'A' && node.href) {
+           return ` [${content}](${node.href}) `
+        }
+        if (tagName === 'IMG') {
+           const alt = node.getAttribute('alt') || ''
+           const src = node.getAttribute('src') || ''
+           return ` ![${alt}](${src}) `
+        }
+
+        return content
       }
-    }
-    const aiReadyText = extractPageContent()
 
-    // 3. WEBPAGE (Die Seite selbst)
+      // Clone to safely traverse
+      const clone = root.cloneNode(true)
+      return walk(clone).replace(/\n\s+\n/g, '\n\n').trim()
+    }
+
+    // Extract main content
+    // Priority: Main Tag -> React Root (if populated) -> Body
+    let contentNode = document.querySelector('main') || document.querySelector('article')
+    if (!contentNode) {
+        const root = document.getElementById('root')
+        if (root && root.innerText && root.innerText.trim().length > 50) {
+            contentNode = root
+        } else {
+            contentNode = document.body
+        }
+    }
+
+    const aiReadyText = domToMarkdown(contentNode)
+
+    // --- MENTIONS EXTRACTION ---
+    const detectedMentions = []
+    Object.keys(KNOWLEDGE_ENTITIES).forEach(key => {
+      // Simple regex word match to avoid substrings
+      const regex = new RegExp(`\\b${key}\\b`, 'i')
+      if (regex.test(aiReadyText)) {
+        detectedMentions.push({
+          '@type': 'Thing',
+          'name': key,
+          'sameAs': KNOWLEDGE_ENTITIES[key]
+        })
+      }
+    })
+
+    // --- SPEAKABLE FINDER ---
+    let speakableSelector = []
+    if (document.querySelector('h1')) speakableSelector.push('h1')
+    if (document.querySelector('.lead')) speakableSelector.push('.lead')
+    else if (document.querySelector('main p')) speakableSelector.push('main p') // Fallback
+
+    // 3. WEBPAGE
     graph.push({
       '@type': pageData.type || 'WebPage',
       '@id': ID.webpage,
       'url': pageUrl,
       'name': pageData.title,
       'description': pageData.description,
-      'text': aiReadyText, // Direct injection for AI Context
+      'text': aiReadyText, // Now in Markdown!
+      'mentions': detectedMentions, // Now auto-filled!
+      'about': {'@id': ID.person},
       'isPartOf': {'@id': ID.website},
       'mainEntity': {'@id': ID.person},
       'publisher': {'@id': ID.org},
       'inLanguage': 'de-DE',
-      'dateModified': new Date().toISOString()
+      'dateModified': new Date().toISOString(),
+      ...(speakableSelector.length > 0 && {
+        'speakable': {
+          '@type': 'SpeakableSpecification',
+          'cssSelector': speakableSelector
+        }
+      })
     })
 
     // 4. WEBSITE
@@ -384,16 +457,13 @@
       }
     })
 
-    // 5. FAQ (STRICT MODE & WHITESPACE CLEANING)
-    // Filtert "schmutzige" Strings und setzt stabile IDs, um "Unbenanntes Element" zu verhindern.
+    // 5. FAQ
     let faqNodes = Array.from(document.querySelectorAll('.faq-item'))
       .map((el, i) => {
         const rawQ = el.querySelector('.question, h3, summary')?.textContent
         const rawA = el.querySelector('.answer, p, div')?.textContent
-        // Clean newlines and multi-spaces
         const q = rawQ ? String(rawQ).replace(/\s+/g, ' ').trim() : ''
         const a = rawA ? String(rawA).replace(/\s+/g, ' ').trim() : ''
-
         if (!q || q.length < 2) return null
         return {
           '@type': 'Question',
@@ -404,11 +474,9 @@
       })
       .filter(Boolean)
 
-    // Fallback: Business-FAQs
     if (faqNodes.length === 0) {
       const isHomepage = window.location.pathname === '/' || window.location.pathname === ''
       const hasBusinessFaqFlag = !!document.querySelector('[data-inject-business-faq]')
-
       if (isHomepage || hasBusinessFaqFlag) {
         faqNodes = BUSINESS_FAQS.map((item, i) => ({
           '@type': 'Question',
@@ -472,16 +540,32 @@
     }
   }
 
-  // Trigger schema generation
+  // SCHEDULING STRATEGY
   const scheduleSchema = () => {
-    if ('requestIdleCallback' in window) {
-      try {
-        requestIdleCallback(generateSchema, {timeout: 1500})
-      } catch {
-        setTimeout(generateSchema, 1200)
-      }
+    // Strategy: Hydration Aware
+    const root = document.getElementById('root')
+
+    // 1. If we have a root but it's empty, we must wait for React
+    if (root && root.childNodes.length === 0) {
+        // Observer for hydration
+        const observer = new MutationObserver((mutations, obs) => {
+            if (root.childNodes.length > 0) {
+                // React has rendered something
+                obs.disconnect()
+                // Give it a moment to settle (useEffect etc)
+                setTimeout(generateSchema, 500)
+            }
+        })
+        observer.observe(root, { childList: true, subtree: true })
+        // Fallback safety
+        setTimeout(generateSchema, 3000)
     } else {
-      setTimeout(generateSchema, 1200)
+        // Static page or already hydrated
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(generateSchema, {timeout: 1500})
+        } else {
+            setTimeout(generateSchema, 1200)
+        }
     }
   }
 
