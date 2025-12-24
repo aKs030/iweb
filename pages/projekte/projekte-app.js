@@ -130,7 +130,7 @@ const projects = [
     datePublished: '2023-07-05',
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
-    githubPath: 'https://github.com/aKs030/Webgame',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/schere-stein-papier',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -375,6 +375,13 @@ function App() {
   const openAppInNewTab = proj => {
     const p = proj || modalProject
     if (!p) return
+
+    // If project already provides a specific tree URL, open it directly
+    if (p.githubPath && p.githubPath.includes('/tree/')) {
+      window.open(p.githubPath, '_blank', 'noopener')
+      return
+    }
+
     const appPathClean = (p.appPath || '').replace(/\/$/, '')
     const baseRepo = (p.githubPath || 'https://github.com/aKs030/Webgame').replace(/\.git$/, '')
 
@@ -464,7 +471,9 @@ function App() {
                   </button>
                   <a
                     className="btn btn-outline btn-small"
-                    href=${project.githubPath.replace(/\.git$/, '') + '/tree/main' + project.appPath}
+                    href=${project.githubPath && project.githubPath.includes('/tree/')
+                      ? project.githubPath
+                      : project.githubPath.replace(/\.git$/, '') + '/tree/main' + project.appPath}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label=${`Code ${project.title} auf GitHub`}>
