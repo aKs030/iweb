@@ -119,6 +119,63 @@ const Check = props => html`
   <//>
 `
 
+// Preview Frame Component: lazy-loads raw HTML and injects a <base> for relative paths
+const PreviewFrame = ({src, title}) => {
+  const ref = React.useRef(null)
+  React.useEffect(() => {
+    if (!src || !ref.current) return
+    let obs
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await fetch(src, {cache: 'no-cache'})
+        if (!res.ok) throw new Error('Fetch failed')
+        let htmlText = await res.text()
+        const baseUrl = src.replace(/index\.html$/, '')
+        htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1><base href="${baseUrl}">`)
+        if (!cancelled && ref.current) ref.current.srcdoc = htmlText
+      } catch (err) {
+        if (ref.current)
+          ref.current.srcdoc = `<div style="font-family: system-ui, sans-serif; color: #fff; padding: 1rem;">Vorschau konnte nicht geladen werden</div>`
+      }
+    }
+
+    if ('IntersectionObserver' in window) {
+      obs = new IntersectionObserver(
+        (entries, o) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              load()
+              o.disconnect()
+              break
+            }
+          }
+        },
+        {root: null, rootMargin: '200px', threshold: 0.05}
+      )
+      obs.observe(ref.current)
+    } else {
+      // Fallback: load immediately
+      load()
+    }
+
+    return () => {
+      cancelled = true
+      if (obs) obs.disconnect()
+    }
+  }, [src])
+
+  return html`
+    <iframe
+      ref=${ref}
+      title=${title}
+      className="project-iframe"
+      style=${{width: '100%', height: '100%', border: 0}}
+      sandbox="allow-scripts allow-same-origin"></iframe>
+  `
+}
+
 // --- DATA ---
 const projects = [
   {
@@ -131,6 +188,7 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/schere-stein-papier/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
+    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/schere-stein-papier/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))'
     },
@@ -165,6 +223,7 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/zahlen-raten/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
+    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/zahlen-raten/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))'
     },
@@ -195,6 +254,7 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/color-changer/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
+    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/color-changer/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))'
     },
@@ -225,6 +285,7 @@ const projects = [
     image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
     appPath: '/projekte/apps/todo-liste/',
     githubPath: 'https://github.com/aKs030/Webgame.git',
+    previewSrc: 'https://raw.githubusercontent.com/aKs030/Webgame/main/pages/projekte/apps/todo-liste/index.html',
     bgStyle: {
       background: 'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))'
     },
@@ -253,11 +314,6 @@ function App() {
     const firstProject = document.getElementById('project-1')
     if (firstProject) firstProject.scrollIntoView({behavior: 'smooth'})
   }
-
-  // Per-project preview state (show embedded iframe when true)
-  const [playing, setPlaying] = React.useState({})
-  const play = id => setPlaying(prev => ({...prev, [id]: true}))
-  const close = id => setPlaying(prev => ({...prev, [id]: false}))
 
   // Inject CreativeWork JSON-LD for each project (deduplicated)
   React.useEffect(() => {
@@ -335,66 +391,14 @@ function App() {
                 }}>
                 <div className="back-glow" style=${{backgroundColor: project.glowColor}}></div>
                 <div className="window-mockup">
-                  <div className="mockup-content" style=${{position: 'relative'}}>
-                    <div className="mockup-bg-pattern" style=${{position: 'absolute', inset: 0}}></div>
-
-                    ${playing[project.id]
+                  <div className="mockup-content">
+                    <div className="mockup-bg-pattern"></div>
+                    ${project.previewSrc
                       ? html`
-                          <div style=${{position: 'absolute', inset: 0, zIndex: 15}}>
-                            <iframe
-                              src=${project.appPath}
-                              title=${project.title}
-                              style=${{width: '100%', height: '100%', border: 0}}
-                              sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
-
-                            <div
-                              style=${{position: 'absolute', top: '0.75rem', right: '0.75rem', zIndex: 20, display: 'flex', gap: '0.5rem'}}>
-                              <a
-                                href=${project.appPath}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style=${{
-                                  background: 'rgba(255,255,255,0.08)',
-                                  color: '#fff',
-                                  padding: '0.45rem 0.6rem',
-                                  borderRadius: '0.5rem',
-                                  textDecoration: 'none',
-                                  fontSize: '0.9rem'
-                                }}>
-                                Öffnen
-                              </a>
-                              <button
-                                onClick=${() => close(project.id)}
-                                className="btn"
-                                style=${{background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '0.45rem 0.6rem', borderRadius: '0.5rem'}}>
-                                Schließen
-                              </button>
-                            </div>
-                          </div>
+                          <${PreviewFrame} src=${project.previewSrc} title=${`Preview ${project.title}`} />
                         `
-                      : html`
-                          ${project.previewContent}
-                          <button
-                            onClick=${() => play(project.id)}
-                            aria-label=${`Vorschau ${project.title} öffnen`}
-                            style=${{
-                              position: 'absolute',
-                              top: '50%',
-                              left: '50%',
-                              transform: 'translate(-50%,-50%)',
-                              zIndex: 15,
-                              background: '#fff',
-                              color: '#000',
-                              padding: '0.65rem 1rem',
-                              borderRadius: '9999px',
-                              fontWeight: 700,
-                              boxShadow: '0 12px 30px rgba(0,0,0,0.35)'
-                            }}>
-                            ▶︎ Vorschau
-                          </button>
-                        `}
-
-                    <div className="mockup-icon" style=${{display: playing[project.id] ? 'none' : 'block'}}>${project.icon}</div>
+                      : project.previewContent}
+                    <div className="mockup-icon">${project.icon}</div>
                   </div>
                 </div>
               </div>
