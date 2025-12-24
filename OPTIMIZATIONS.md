@@ -215,3 +215,24 @@ Hinweis: Der zuvor implementierte Service Worker (`sw.js`) wurde entfernt (Dezem
 ---
 
 **Status:** Alle Optimierungen abgeschlossen ✅ **Datum:** 4. Dezember 2025 **Nächster Review:** Nach Deployment
+
+---
+
+## ✅ 7. Projekte-Seite Optimierung (Code Splitting & SEO)
+
+**Geänderte Dateien:**
+- `pages/projekte/index.html`
+- `pages/projekte/projekte-app.js`
+- `pages/projekte/projekte.css` (neu)
+
+**Änderungen:**
+- **CSS Extraktion:** Inline-Styles aus `index.html` und `projekte-app.js` wurden in eine separate `projekte.css` extrahiert.
+- **JSON-LD Deduplizierung:** Die doppelte, dynamische Injektion von JSON-LD Schema in `projekte-app.js` wurde entfernt. Das statische Schema in `index.html` bleibt die Single Source of Truth.
+- **React Refactoring:** Komponenten (Toast, Modal) nutzen nun CSS-Klassen statt Inline-Styles.
+
+**Vorteil:**
+- Bessere Performance durch Caching der CSS-Datei.
+- Sauberer HTML-Code ohne riesige Style-Blöcke.
+- Vermeidung von SEO-Problemen durch doppelte strukturierte Daten.
+
+**Status:** Projekte-Optimierung abgeschlossen ✅ **Datum:** 24.12.2025
