@@ -1,9 +1,0 @@
-# QuickStatements: Add P18 (portrait) with reference to Commons - ready to run in QuickStatements
-
-# Single statement with references (recommended):
-
-# Usage:
-# - Go to https://quickstatements.toolforge.org/, log in with your Wikidata account
-# - Paste the single-line statement (or the three-step variant)
-# - Click PREVIEW, verify the changes, then RUN
-# - Send me the result link or screenshot and I'll validate the Item and update site `sameAs`/head.html if needed.
