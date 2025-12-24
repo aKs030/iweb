@@ -1,37 +1,16 @@
 /**
  * Footer Complete System - Ultra Optimized
- * @version 10.0.0
+ * @version 10.1.0
  * ✅ Event Delegation
  * ✅ DOM Caching
- * ✅ Debounced Resize
- * ✅ Memory Leak Prevention
- * ✅ Performance Monitoring
+ * ✅ Programmatic Scroll (Preserved)
+ * ✅ Simplified Toggle Logic
  */
 
 import {createLogger, CookieManager} from '../../utils/shared-utilities.js'
 import {a11y} from '../../utils/accessibility-manager.js'
 
 const log = createLogger('FooterSystem')
-
-// ===== Utilities =====
-const debounce = (func, wait) => {
-  let timeout
-  return (...args) => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
-  }
-}
-
-const memoize = fn => {
-  const cache = new Map()
-  return (...args) => {
-    const key = JSON.stringify(args)
-    if (cache.has(key)) return cache.get(key)
-    const result = fn(...args)
-    cache.set(key, result)
-    return result
-  }
-}
 
 // ===== Constants =====
 const CONSTANTS = {
@@ -42,7 +21,7 @@ const CONSTANTS = {
   ANIMATION_DURATION: 800
 }
 
-// ===== DOM Cache =====
+// ===== DOM Cache (Preserved) =====
 class DOMCache {
   constructor() {
     this.cache = new Map()
@@ -75,7 +54,7 @@ class DOMCache {
 
 const domCache = new DOMCache()
 
-// ===== Programmatic Scroll (Optimized) =====
+// ===== Programmatic Scroll (Preserved as Requested) =====
 const ProgrammaticScroll = (() => {
   let activeToken = null
   let timer = null
@@ -161,7 +140,7 @@ const ProgrammaticScroll = (() => {
   }
 })()
 
-// ===== Global Close Handlers (Optimized) =====
+// ===== Global Close Handlers =====
 const GlobalClose = (() => {
   let closeHandler = null
   let bound = false
@@ -204,8 +183,6 @@ const GlobalClose = (() => {
 // ===== Analytics =====
 const GoogleAnalytics = {
   load() {
-    performance.mark('analytics-load-start')
-
     const blockedScripts = document.querySelectorAll('script[data-consent="required"]')
     if (blockedScripts.length === 0) return
 
@@ -221,14 +198,11 @@ const GoogleAnalytics = {
       if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML
       script.parentNode.replaceChild(newScript, script)
     })
-
-    performance.mark('analytics-load-end')
-    performance.measure('analytics-load', 'analytics-load-start', 'analytics-load-end')
     log.info('Google Analytics loaded')
   }
 }
 
-// ===== Consent Banner (Optimized) =====
+// ===== Consent Banner (Compact) =====
 class ConsentBanner {
   constructor() {
     this.elements = {
@@ -254,8 +228,8 @@ class ConsentBanner {
     }
 
     // Event Listeners
-    acceptBtn.addEventListener('click', () => this.accept(), {once: false})
-    rejectBtn?.addEventListener('click', () => this.reject(), {once: false})
+    acceptBtn.addEventListener('click', () => this.accept())
+    rejectBtn?.addEventListener('click', () => this.reject())
   }
 
   accept() {
@@ -270,107 +244,112 @@ class ConsentBanner {
   }
 }
 
-// ===== Cookie Settings (Optimized with Caching) =====
+// ===== Cookie Settings =====
 const CookieSettings = (() => {
   let elements = null
-  const handlers = new WeakMap()
 
-  const getElements = memoize(() => ({
-    footer: domCache.get('#site-footer'),
-    footerMin: domCache.get('.footer-minimized'),
-    footerMax: domCache.get('.footer-maximized'),
-    cookieView: domCache.get('#footer-cookie-view'),
-    normalContent: domCache.get('#footer-normal-content'),
-    analyticsToggle: domCache.get('#footer-analytics-toggle'),
-    closeBtn: domCache.get('#close-cookie-footer'),
-    rejectAllBtn: domCache.get('#footer-reject-all'),
-    acceptSelectedBtn: domCache.get('#footer-accept-selected'),
-    acceptAllBtn: domCache.get('#footer-accept-all')
-  }))
+  const getElements = () => {
+    if (elements) return elements
+    elements = {
+      footer: domCache.get('#site-footer'),
+      footerMin: domCache.get('.footer-minimized'),
+      footerMax: domCache.get('.footer-maximized'),
+      cookieView: domCache.get('#footer-cookie-view'),
+      normalContent: domCache.get('#footer-normal-content'),
+      analyticsToggle: domCache.get('#footer-analytics-toggle'),
+      closeBtn: domCache.get('#close-cookie-footer'),
+      rejectAllBtn: domCache.get('#footer-reject-all'),
+      acceptSelectedBtn: domCache.get('#footer-accept-selected'),
+      acceptAllBtn: domCache.get('#footer-accept-all')
+    }
+    return elements
+  }
 
-  const setupHandlers = elements => {
-    const handlerMap = {
-      closeBtn: () => close(),
-      rejectAllBtn: () => {
-        CookieManager.set('cookie_consent', 'rejected')
-        CookieManager.deleteAnalytics()
-        close()
-        domCache.get('#cookie-consent-banner')?.classList.add('hidden')
-      },
-      acceptSelectedBtn: () => {
-        if (elements.analyticsToggle?.checked) {
-          CookieManager.set('cookie_consent', 'accepted')
-          GoogleAnalytics.load()
-        } else {
-          CookieManager.set('cookie_consent', 'rejected')
-          CookieManager.deleteAnalytics()
-        }
-        close()
-        domCache.get('#cookie-consent-banner')?.classList.add('hidden')
-      },
-      acceptAllBtn: () => {
-        CookieManager.set('cookie_consent', 'accepted')
-        GoogleAnalytics.load()
-        close()
-        domCache.get('#cookie-consent-banner')?.classList.add('hidden')
-      }
+  const setupHandlers = () => {
+    const el = getElements()
+
+    const close = () => {
+      CookieSettings.close()
     }
 
-    Object.entries(handlerMap).forEach(([key, handler]) => {
-      const element = elements[key]
-      if (element && !handlers.has(element)) {
-        element.addEventListener('click', handler)
-        handlers.set(element, handler)
+    const rejectAll = () => {
+      CookieManager.set('cookie_consent', 'rejected')
+      CookieManager.deleteAnalytics()
+      close()
+      domCache.get('#cookie-consent-banner')?.classList.add('hidden')
+    }
+
+    const acceptSelected = () => {
+      if (el.analyticsToggle?.checked) {
+        CookieManager.set('cookie_consent', 'accepted')
+        GoogleAnalytics.load()
+      } else {
+        CookieManager.set('cookie_consent', 'rejected')
+        CookieManager.deleteAnalytics()
       }
-    })
+      close()
+      domCache.get('#cookie-consent-banner')?.classList.add('hidden')
+    }
+
+    const acceptAll = () => {
+      CookieManager.set('cookie_consent', 'accepted')
+      GoogleAnalytics.load()
+      close()
+      domCache.get('#cookie-consent-banner')?.classList.add('hidden')
+    }
+
+    el.closeBtn?.addEventListener('click', close)
+    el.rejectAllBtn?.addEventListener('click', rejectAll)
+    el.acceptSelectedBtn?.addEventListener('click', acceptSelected)
+    el.acceptAllBtn?.addEventListener('click', acceptAll)
   }
 
   const open = () => {
-    performance.mark('cookie-settings-open-start')
-
-    elements = getElements()
-    if (!elements.footer || !elements.cookieView) return
+    const el = getElements()
+    if (!el.footer || !el.cookieView) return
 
     const consent = CookieManager.get('cookie_consent')
-    if (elements.analyticsToggle) {
-      elements.analyticsToggle.checked = consent === 'accepted'
+    if (el.analyticsToggle) {
+      el.analyticsToggle.checked = consent === 'accepted'
     }
 
     document.documentElement.style.scrollSnapType = 'none'
 
-    elements.footer.classList.add('footer-expanded')
+    el.footer.classList.add('footer-expanded')
     document.body.classList.add('footer-expanded')
-    elements.footerMin?.classList.add('footer-hidden')
-    elements.footerMax?.classList.remove('footer-hidden')
-    elements.cookieView.classList.remove('hidden')
-    if (elements.normalContent) elements.normalContent.style.display = 'none'
+    el.footerMin?.classList.add('footer-hidden')
+    el.footerMax?.classList.remove('footer-hidden')
+    el.cookieView.classList.remove('hidden')
+    if (el.normalContent) el.normalContent.style.display = 'none'
 
     requestAnimationFrame(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'auto'}))
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION)
     GlobalClose.bind()
-    setupHandlers(elements)
 
-    try {
-      a11y?.trapFocus(elements.cookieView)
-    } catch (e) {
-      log.warn('Focus trap failed', e)
+    // Lazy setup handlers on first open
+    if (!open.handlersSetup) {
+      setupHandlers()
+      open.handlersSetup = true
     }
 
-    performance.mark('cookie-settings-open-end')
-    performance.measure('cookie-settings-open', 'cookie-settings-open-start', 'cookie-settings-open-end')
+    try {
+      a11y?.trapFocus(el.cookieView)
+    } catch (e) {
+      // ignore
+    }
   }
 
   const close = () => {
-    if (!elements) elements = getElements()
-    if (!elements.footer) return
+    const el = getElements()
+    if (!el.footer) return
 
-    elements.cookieView?.classList.add('hidden')
-    elements.footer.classList.remove('footer-expanded')
+    el.cookieView?.classList.add('hidden')
+    el.footer.classList.remove('footer-expanded')
     document.body.classList.remove('footer-expanded')
-    elements.footerMax?.classList.add('footer-hidden')
-    elements.footerMin?.classList.remove('footer-hidden')
-    if (elements.normalContent) elements.normalContent.style.display = 'block'
+    el.footerMax?.classList.add('footer-hidden')
+    el.footerMin?.classList.remove('footer-hidden')
+    if (el.normalContent) el.normalContent.style.display = 'block'
 
     document.documentElement.style.removeProperty('scroll-snap-type')
 
@@ -382,7 +361,7 @@ const CookieSettings = (() => {
     try {
       a11y?.releaseFocus()
     } catch (e) {
-      log.warn('Focus release failed', e)
+      // ignore
     }
   }
 
@@ -391,11 +370,10 @@ const CookieSettings = (() => {
 
 GlobalClose.setCloseHandler(() => CookieSettings.close())
 
-// ===== Theme System (Optimized) =====
+// ===== Theme System (Optimized & Compact) =====
 class ThemeSystem {
   constructor() {
     this.currentTheme = this.getStoredTheme()
-    this.ripplePool = []
   }
 
   getStoredTheme() {
@@ -409,23 +387,7 @@ class ThemeSystem {
   }
 
   toggleTheme() {
-    performance.mark('theme-toggle-start')
     this.applyTheme(this.currentTheme === 'light' ? 'dark' : 'light')
-    performance.mark('theme-toggle-end')
-    performance.measure('theme-toggle', 'theme-toggle-start', 'theme-toggle-end')
-  }
-
-  createRipple(button, x, y) {
-    const ripple = this.ripplePool.pop() || document.createElement('div')
-    ripple.className = 'artwork-ripple'
-    ripple.style.left = `${x}px`
-    ripple.style.top = `${y}px`
-    button.appendChild(ripple)
-
-    setTimeout(() => {
-      ripple.remove()
-      this.ripplePool.push(ripple)
-    }, CONSTANTS.ANIMATION_DURATION)
   }
 
   init() {
@@ -433,136 +395,14 @@ class ThemeSystem {
     const toggle = domCache.get('#dayNightToggle')
 
     if (toggle) {
-      toggle.addEventListener('click', e => {
-        const rect = toggle.getBoundingClientRect()
-        this.createRipple(toggle, e.clientX - rect.left, e.clientY - rect.top)
+      toggle.addEventListener('click', () => {
         this.toggleTheme()
       })
     }
   }
 }
 
-// ===== Footer Loader (Optimized) =====
-class FooterLoader {
-  async init() {
-    performance.mark('footer-load-start')
-
-    const container = domCache.get('#footer-container')
-    if (!container) return false
-
-    try {
-      // Prefer extensionless path to avoid redirect noise (fallback to .html handled by server if needed)
-      const srcBase = container.dataset.footerSrc || '/content/components/footer/footer'
-      const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.') || location.hostname.endsWith('.local')
-      const candidates = isLocal ? [srcBase + '.html', srcBase] : [srcBase, srcBase + '.html']
-      let response
-      for (const c of candidates) {
-        try {
-          response = await fetch(c)
-          if (response.ok) break
-        } catch (err) {
-          log.warn('FooterLoader: fetch candidate failed', err)
-          response = null
-        }
-      }
-
-      if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : 'NO_RESPONSE'}`)
-
-      container.innerHTML = await response.text()
-      domCache.invalidate() // Clear cache after DOM change
-
-      this.updateYears()
-      this.setupInteractions()
-
-      new ConsentBanner().init()
-      new ThemeSystem().init()
-      new ScrollHandler().init()
-      new FooterResizer().init()
-
-      document.dispatchEvent(
-        new CustomEvent('footer:loaded', {
-          detail: {footerId: 'site-footer', timestamp: Date.now()}
-        })
-      )
-
-      performance.mark('footer-load-end')
-      performance.measure('footer-load', 'footer-load-start', 'footer-load-end')
-
-      return true
-    } catch (error) {
-      log.error('Footer load failed', error)
-      return false
-    }
-  }
-
-  updateYears() {
-    const year = new Date().getFullYear()
-    domCache.getAll('.current-year').forEach(el => (el.textContent = year))
-  }
-
-  setupInteractions() {
-    // Newsletter Form
-    const form = domCache.get('.newsletter-form-enhanced')
-    if (form) {
-      form.addEventListener('submit', e => {
-        e.preventDefault()
-        const btn = form.querySelector('button[type="submit"]')
-        if (btn) {
-          const originalText = btn.textContent
-          btn.textContent = '✓'
-          btn.disabled = true
-          setTimeout(() => {
-            btn.textContent = originalText
-            btn.disabled = false
-          }, 3000)
-        }
-        form.reset()
-      })
-    }
-
-    // Event Delegation for Cookie & Footer Triggers
-    document.addEventListener(
-      'click',
-      e => {
-        const cookieTrigger = e.target.closest('[data-cookie-trigger]')
-        const footerTrigger = e.target.closest('[data-footer-trigger]')
-
-        if (cookieTrigger) {
-          e.preventDefault()
-          CookieSettings.open()
-          return
-        }
-
-        if (footerTrigger) {
-          e.preventDefault()
-          this.handleFooterTrigger()
-        }
-      },
-      {passive: false}
-    )
-  }
-
-  handleFooterTrigger() {
-    if (window.footerScrollHandler) {
-      window.footerScrollHandler.toggleExpansion(true)
-    } else {
-      const footer = domCache.get('#site-footer')
-      if (footer) {
-        document.documentElement.style.scrollSnapType = 'none'
-        footer.classList.add('footer-expanded')
-        document.body.classList.add('footer-expanded')
-        footer.querySelector('.footer-minimized')?.classList.add('footer-hidden')
-        footer.querySelector('.footer-maximized')?.classList.remove('footer-hidden')
-
-        const token = ProgrammaticScroll.create()
-        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})
-        ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport')
-      }
-    }
-  }
-}
-
-// ===== Scroll Handler (Optimized) =====
+// ===== Scroll Handler (Preserved Logic) =====
 class ScrollHandler {
   constructor() {
     this.expanded = false
@@ -627,43 +467,102 @@ class ScrollHandler {
       GlobalClose.unbind()
     }
   }
-
-  cleanup() {
-    this.observer?.disconnect()
-  }
 }
 
-// ===== Footer Resizer (Optimized with Debouncing) =====
-class FooterResizer {
-  constructor() {
-    this.apply = this.apply.bind(this)
-    this.debouncedApply = debounce(this.apply, CONSTANTS.RESIZE_DEBOUNCE)
-  }
+// ===== Footer Loader =====
+class FooterLoader {
+  async init() {
+    const container = domCache.get('#footer-container')
+    if (!container) return false
 
-  init() {
-    window.addEventListener('resize', this.debouncedApply, {passive: true})
-    this.apply()
-  }
+    try {
+      // Load Footer Content
+      const srcBase = container.dataset.footerSrc || '/content/components/footer/footer'
+      const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.')
+      const candidates = isLocal ? [srcBase + '.html', srcBase] : [srcBase, srcBase + '.html']
 
-  apply() {
-    const content = domCache.get('#site-footer .footer-enhanced-content')
-    if (!content) return
+      let response
+      for (const c of candidates) {
+        try {
+          response = await fetch(c)
+          if (response.ok) break
+        } catch { /* continue */ }
+      }
 
-    const height = Math.min(Math.max(0, content.scrollHeight), window.innerHeight - 24)
+      if (!response || !response.ok) throw new Error('Footer load failed')
 
-    if (height > 0) {
-      document.documentElement.style.setProperty('--footer-actual-height', `${height}px`)
+      container.innerHTML = await response.text()
+      domCache.invalidate()
+
+      this.updateYears()
+      this.setupInteractions()
+
+      new ConsentBanner().init()
+      new ThemeSystem().init()
+      new ScrollHandler().init()
+
+      // Footer Resizer (Simplified inline)
+      const handleResize = () => {
+         const content = domCache.get('.footer-enhanced-content')
+         if (content) {
+            const h = Math.min(Math.max(0, content.scrollHeight), window.innerHeight - 16)
+            if (h > 0) document.documentElement.style.setProperty('--footer-actual-height', `${h}px`)
+         }
+      }
+      window.addEventListener('resize', handleResize, {passive: true})
+      handleResize()
+
+      document.dispatchEvent(new CustomEvent('footer:loaded'))
+      return true
+    } catch (error) {
+      log.error('Footer load failed', error)
+      return false
     }
   }
 
-  cleanup() {
-    window.removeEventListener('resize', this.debouncedApply)
+  updateYears() {
+    const year = new Date().getFullYear()
+    domCache.getAll('.current-year').forEach(el => (el.textContent = year))
+  }
+
+  setupInteractions() {
+    // Newsletter Form
+    const form = domCache.get('.newsletter-form-enhanced')
+    if (form) {
+      form.addEventListener('submit', e => {
+        e.preventDefault()
+        const btn = form.querySelector('button[type="submit"]')
+        if (btn) {
+          const originalText = btn.textContent
+          btn.textContent = '✓'
+          btn.disabled = true
+          setTimeout(() => {
+            btn.textContent = originalText
+            btn.disabled = false
+          }, 3000)
+        }
+        form.reset()
+      })
+    }
+
+    // Event Delegation
+    document.addEventListener(
+      'click',
+      e => {
+        const cookieTrigger = e.target.closest('[data-cookie-trigger]')
+        if (cookieTrigger) {
+          e.preventDefault()
+          CookieSettings.open()
+          return
+        }
+      },
+      {passive: false}
+    )
   }
 }
 
 // ===== Auto-Start =====
 const initFooter = () => new FooterLoader().init()
-
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initFooter, {once: true})
 } else {
@@ -674,6 +573,5 @@ if (document.readyState === 'loading') {
 window.FooterSystem = {
   FooterLoader,
   CookieSettings,
-  ProgrammaticScroll,
-  domCache
+  ProgrammaticScroll
 }
