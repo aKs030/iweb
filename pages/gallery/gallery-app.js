@@ -1,3 +1,7 @@
+import {createLogger} from '../../content/utils/shared-utilities.js'
+
+const log = createLogger('gallery-app')
+
 const {useState, useEffect, useRef, useMemo, useCallback} = React
 
 // Utility für Debouncing
@@ -434,7 +438,7 @@ const PhotoGallery = () => {
         try {
           if (prevActive && typeof prevActive.focus === 'function') prevActive.focus()
         } catch (err) {
-          console.warn('GalleryApp: restoring focus failed', err)
+          log.warn('GalleryApp: restoring focus failed', err)
         }
       }, 0)
     }

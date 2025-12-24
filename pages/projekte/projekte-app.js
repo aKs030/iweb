@@ -1,3 +1,7 @@
+import {createLogger} from '../../content/utils/shared-utilities.js'
+
+const log = createLogger('projekte-app')
+
 /* global React, ReactDOM */
 /**
  * Interactive Projects Module
@@ -386,8 +390,8 @@ export function initProjectsApp() {
     `)
   } else {
     // React dependencies or root element missing - fail silently in production
-    if (typeof console !== 'undefined' && console.error) {
-      console.error('[ProjectsApp] React dependencies or root element missing')
+    if (typeof console !== 'undefined' && log.error) {
+      log.error('[ProjectsApp] React dependencies or root element missing')
     }
   }
 }

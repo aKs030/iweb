@@ -1,3 +1,7 @@
+import {createLogger} from '../../content/utils/shared-utilities.js'
+
+const log = createLogger('videos')
+
 // Share function for YouTube channel
 function _shareChannel() {
   const url = 'https://www.youtube.com/@aks.030'
@@ -27,7 +31,8 @@ function _shareChannel() {
   const handle = (window.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '')
   if (!apiKey) return
 
-  const log = msg => console.warn('[videos] ', msg)
+  // Use the structured logger `log` created above. Helper for warnings if needed:
+  const _warn = msg => log.warn('[videos] ', msg)
   const setStatus = msg => {
     try {
       const el = document.getElementById('videos-status')
@@ -164,14 +169,14 @@ function _shareChannel() {
 
   try {
     if (location.protocol === 'file:') {
-      log('Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.')
+      log.warn('Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.')
       return
     }
 
     // Helper to fetch JSON and surface HTTP errors
     async function fetchJson(url) {
       const safeUrl = url.replace(/([?&]key=)[^&]+/, '$1[REDACTED]')
-      log(`Fetching ${safeUrl}`)
+      log.warn(`Fetching ${safeUrl}`)
       const res = await fetch(url, {credentials: 'omit', mode: 'cors'})
       if (!res.ok) {
         let text = ''
@@ -195,7 +200,7 @@ function _shareChannel() {
     const searchJson = await fetchJson(searchUrl)
     const channelId = searchJson?.items?.[0]?.snippet?.channelId || searchJson?.items?.[0]?.id?.channelId
     if (!channelId) {
-      log('Channel ID not found')
+      log.warn('Channel ID not found')
       return
     }
 
@@ -204,7 +209,7 @@ function _shareChannel() {
     const chJson = await fetchJson(chUrl)
     const uploads = chJson?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads
     if (!uploads) {
-      log('Uploads playlist not found')
+      log.warn('Uploads playlist not found')
       return
     }
 
@@ -213,7 +218,7 @@ function _shareChannel() {
     const plJson = await fetchJson(plUrl)
     const items = plJson.items || []
     if (!items.length) {
-      log('Keine Videos gefunden')
+      log.warn('Keine Videos gefunden')
       return
     }
 
@@ -232,7 +237,7 @@ function _shareChannel() {
         })
       }
     } catch (e) {
-      log('Could not fetch video details: ' + e.message)
+      log.warn('Could not fetch video details: ' + e.message)
     }
 
     items.forEach(it => {
@@ -337,7 +342,7 @@ function _shareChannel() {
       return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c])
     }
   } catch (err) {
-    console.error('[videos] Fehler beim Laden der Videos', err)
+    log.error('[videos] Fehler beim Laden der Videos', err)
 
     // Friendly message in page
     try {

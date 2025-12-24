@@ -1,3 +1,4 @@
+const log = createLogger('shared-utilities')
 /**
  * Shared Utilities - Optimized Core Functions
  *
@@ -26,28 +27,28 @@ function setGlobalLogLevel(level) {
 
 export function createLogger(category) {
   const prefix = `[${category}]`
-  const console = globalThis.console || {}
+  const _console = globalThis.console || {}
   const noop = () => {}
 
   return {
     error: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.error) {
-        ;(console.error || noop)(prefix, message, ...args)
+        ;(log.error || noop)(prefix, message, ...args)
       }
     },
     warn: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.warn) {
-        ;(console.warn || noop)(prefix, message, ...args)
+        ;(log.warn || noop)(prefix, message, ...args)
       }
     },
     info: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.info) {
-        ;(console.warn || noop)(prefix, message, ...args)
+        ;(log.warn || noop)(prefix, message, ...args)
       }
     },
     debug: (message, ...args) => {
       if (globalLogLevel >= LOG_LEVELS.debug) {
-        ;(console.warn || noop)(prefix, message, ...args)
+        ;(log.warn || noop)(prefix, message, ...args)
       }
     }
   }
