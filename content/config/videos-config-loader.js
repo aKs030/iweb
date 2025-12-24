@@ -23,7 +23,7 @@ async function loadConfig() {
       const m = await import('./videos-part-a.js')
       partA = m && (m.default || '')
     } catch (err) {
-      console.warn('VideosConfig: videos-part-a import failed', err)
+      log.warn('VideosConfig: videos-part-a import failed', err)
       // missing or not found - skip
     }
 
@@ -31,7 +31,7 @@ async function loadConfig() {
       const m = await import('./videos-part-b.js')
       partB = m && (m.default || '')
     } catch (err) {
-      console.warn('VideosConfig: videos-part-b import failed', err)
+      log.warn('VideosConfig: videos-part-b import failed', err)
       // missing or not found - skip
     }
 
@@ -40,7 +40,7 @@ async function loadConfig() {
         return s ? atob(String(s)) : ''
       } catch (err) {
         // If it's not base64, return raw
-        console.warn('VideosConfig: safeAtob failed', err)
+        log.warn('VideosConfig: safeAtob failed', err)
         return String(s || '')
       }
     }

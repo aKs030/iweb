@@ -255,7 +255,7 @@ function App() {
           'name': p.title,
           'description': p.description,
           'url': siteBase + '/projekte/#' + key,
-          'author': { '@type': 'Person', 'name': 'Abdulkerim Sesli' },
+          'author': {'@type': 'Person', 'name': 'Abdulkerim Sesli'},
           'keywords': Array.isArray(p.tags) ? p.tags.join(', ') : p.tags || '',
           'about': p.category,
           'datePublished': p.datePublished,
@@ -267,7 +267,7 @@ function App() {
         s.textContent = JSON.stringify(obj)
         document.head.appendChild(s)
       })
-    } catch (e) {
+    } catch {
       /* ignore in environments where DOM is not available */
     }
   }, [])

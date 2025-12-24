@@ -103,7 +103,7 @@ const ThreeEarthManager = (() => {
               container.appendChild(fallback)
             }
           } catch (err) {
-            console.warn('ThreeEarthSystem: DOM insert ignored', err)
+            log.warn('[ThreeEarthSystem] DOM insert ignored', err)
           }
           showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'))
           // mark cleanup and exit gracefully
@@ -122,7 +122,7 @@ const ThreeEarthManager = (() => {
       try {
         AppLoadManager.block('three-earth')
       } catch (err) {
-        console.warn('ThreeEarthSystem: AppLoadManager.block/unblock ignored', err)
+        log.warn('[ThreeEarthSystem] AppLoadManager.block/unblock ignored', err)
       }
 
       // Watchdog: if Three.js doesn't load within this time, unblock to avoid blocking page loader
@@ -135,7 +135,7 @@ const ThreeEarthManager = (() => {
             try {
               AppLoadManager.unblock('three-earth')
             } catch (err) {
-              console.warn('ThreeEarthSystem: AppLoadManager.unblock ignored', err)
+              log.warn('[ThreeEarthSystem] AppLoadManager.unblock ignored', err)
             }
             try {
               showErrorState(container, new Error('Three.js load timeout'), () => {
@@ -143,12 +143,12 @@ const ThreeEarthManager = (() => {
                 initThreeEarth()
               })
             } catch (err) {
-              console.warn('ThreeEarthSystem: showErrorState fallback ignored', err)
+              log.warn('[ThreeEarthSystem] showErrorState fallback ignored', err)
             }
           }
         }, THREE_LOAD_WATCH)
       } catch (err) {
-        console.warn('ThreeEarthSystem: clear timeout ignored', err)
+        log.warn('[ThreeEarthSystem] clear timeout ignored', err)
       }
 
       // Load Three.js
@@ -158,7 +158,7 @@ const ThreeEarthManager = (() => {
       try {
         if (threeLoadWatchTimer) earthTimers.clearTimeout(threeLoadWatchTimer)
       } catch (err) {
-        console.warn('ThreeEarthSystem: clear watchdog timer failed', err)
+        log.warn('[ThreeEarthSystem] clear watchdog timer failed', err)
       }
 
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
@@ -189,7 +189,7 @@ const ThreeEarthManager = (() => {
         try {
           AppLoadManager.unblock('three-earth')
         } catch (err) {
-          console.warn('ThreeEarthSystem: AppLoadManager.unblock failed', err)
+          log.warn('[ThreeEarthSystem] AppLoadManager.unblock failed', err)
         }
         hideLoadingState(container)
       }
@@ -198,7 +198,7 @@ const ThreeEarthManager = (() => {
         log.warn('Error loading texture:', url)
         try {
           AppLoadManager.unblock('three-earth')
-        } catch (e) {
+        } catch {
           /* ignore */
         }
       }
@@ -311,7 +311,7 @@ const ThreeEarthManager = (() => {
       log.error('Initialization failed:', error)
       try {
         if (renderer) renderer.dispose()
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       sharedCleanupManager.cleanupSystem('three-earth')
@@ -410,14 +410,14 @@ function supportsWebGL() {
       try {
         ctx2.getExtension && ctx2.getExtension('EXT_color_buffer_float')
       } catch (err) {
-        console.warn('ThreeEarthSystem: getExtension ignored', err)
+        log.warn('[ThreeEarthSystem] getExtension ignored', err)
       }
       return true
     }
     const ctx = canvas.getContext('webgl', {failIfMajorPerformanceCaveat: true}) || canvas.getContext('experimental-webgl')
     if (ctx) return true
     return false
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -431,7 +431,7 @@ function detectDeviceCapabilities() {
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua)
     const isLowEnd = /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) || (navigator.hardwareConcurrency || 4) <= 2
     return {isMobile, isLowEnd, recommendedQuality: isLowEnd ? 'LOW' : isMobile ? 'MEDIUM' : 'HIGH'}
-  } catch (e) {
+  } catch {
     return {isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM'}
   }
 }

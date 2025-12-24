@@ -602,7 +602,7 @@ export class CardManager {
           if (glow.material.dispose) glow.material.dispose()
         }
       } catch (err) {
-        console.warn('EarthCards: disposal error', err)
+        log.warn('EarthCards: disposal error', err)
       }
     })
 
