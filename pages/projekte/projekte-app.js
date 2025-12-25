@@ -280,7 +280,7 @@ function App() {
       const res = await fetch(url, {method: 'GET', mode: 'cors', signal: controller.signal})
       clearTimeout(id)
       return res && res.ok
-    } catch (e) {
+    } catch (_e) {
       return false
     }
   }
@@ -324,20 +324,11 @@ function App() {
     try {
       window.open(direct, '_blank', 'noopener')
       showToast('App in neuem Tab geöffnet')
-    } catch (e) {
+    } catch (_e) {
       showToast('Öffnen im Tab fehlgeschlagen')
     }
   }
 
-  const openAppModal = project => {
-    setModalUrl(project.appPath || project.githubPath || '')
-    setModalTitle(project.title)
-    setIframeLoading(true)
-    setModalOpen(true)
-    try {
-      document.body.style.overflow = 'hidden'
-    } catch {}
-  }
   const closeAppModal = () => {
     setModalOpen(false)
     setModalUrl('')
@@ -376,7 +367,7 @@ function App() {
               return
             }
           }
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       })()
