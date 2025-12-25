@@ -697,6 +697,9 @@ class ScrollHandler {
     this.expandThreshold = isDesktop ? 0.01 : 0.05
     this.collapseThreshold = isDesktop ? 0.005 : 0.02
 
+    // Optional debug mode via URL param: ?footerDebug=1 or ?footerDebug
+    const debug = !!(new URLSearchParams(window.location.search).get('footerDebug') === '1' || new URLSearchParams(window.location.search).has('footerDebug'))
+
     this.observer = new IntersectionObserver(
       entries => {
         const entry = entries[0]
@@ -706,6 +709,39 @@ class ScrollHandler {
 
         const threshold = this.expanded ? this.collapseThreshold : this.expandThreshold
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold
+
+        // Debug: show live ratio and decision
+        if (debug) {
+          try {
+            const badgeText = `ratio=${entry.intersectionRatio.toFixed(3)} isIntersect=${entry.isIntersecting} thr=${threshold} -> ${shouldExpand ? 'EXPAND' : 'COLLAPSE'}`
+            if (!this._debugBadge) {
+              // inject debug styles
+              if (!document.getElementById('footer-debug-style')) {
+                const s = document.createElement('style')
+                s.id = 'footer-debug-style'
+                s.textContent = `
+                  .footer-trigger-zone { outline: 2px dashed hotpink !important; }
+                  #footer-debug-badge { position: fixed; right: 12px; bottom: 12px; z-index: 20000; background: rgba(0,0,0,0.75); color: #fff; font-size: 12px; padding: 6px 8px; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial; }
+                `
+                document.head.appendChild(s)
+              }
+
+              const badge = document.createElement('div')
+              badge.id = 'footer-debug-badge'
+              badge.setAttribute('aria-hidden', 'true')
+              badge.textContent = badgeText
+              document.body.appendChild(badge)
+              this._debugBadge = badge
+            } else {
+              this._debugBadge.textContent = badgeText
+            }
+
+            console.log('FooterDebug:', badgeText)
+          } catch (e) {
+            /* ignore debug failures */
+          }
+        }
+
         this.toggleExpansion(shouldExpand)
       },
       {rootMargin: '0px 0px -10% 0px', threshold: [this.collapseThreshold, this.expandThreshold]}
@@ -754,6 +790,16 @@ class ScrollHandler {
   cleanup() {
     this.observer?.disconnect()
     if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
+
+    // Remove debug artifacts if present
+    try {
+      if (this._debugBadge && this._debugBadge.parentNode) this._debugBadge.parentNode.removeChild(this._debugBadge)
+      const style = document.getElementById('footer-debug-style')
+      if (style && style.parentNode) style.parentNode.removeChild(style)
+      this._debugBadge = null
+    } catch {
+      /* ignore */
+    }
   }
 }
 
