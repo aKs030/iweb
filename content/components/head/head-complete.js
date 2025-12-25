@@ -7,6 +7,10 @@
  * - [BLAU] FAQ Booster: Strict Mode + Whitespace Cleaner (gegen "Unbenanntes Element")
  */
 
+import {createLogger} from '../../utils/shared-utilities.js'
+
+const log = createLogger('HeadLoader')
+
 ;(async function loadSharedHead() {
   if (window.SHARED_HEAD_LOADED) return
 
@@ -190,7 +194,7 @@
       else upsertLink('canonical', canonicalHref)
     } catch (err) {
       // Safe fallback log
-      console.warn('HeadLoader: canonical detection failed', err)
+      log.warn('canonical detection failed', err)
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', pageUrl)
       else upsertLink('canonical', pageUrl)
@@ -246,10 +250,10 @@
       }
     } catch (e) {
       // Safe logging in catch block
-      console.warn('[Head-Loader] PWA meta injection failed:', e)
+      log.warn('PWA meta injection failed:', e)
     }
   } catch (e) {
-    console.warn('[Head-Loader] lightweight head update failed:', e)
+    log.warn('lightweight head update failed:', e)
   }
 
   // --- 3. SCHEMA GRAPH GENERATION ---
