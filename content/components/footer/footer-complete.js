@@ -677,13 +677,6 @@ class ScrollHandler {
     this._resizeHandler = null
     this.expandThreshold = 0.05
     this.collapseThreshold = 0.02
-
-    // Lock & debounce settings to avoid flapping when trigger is small
-    this._expandLockMs = 400 // how long after expand collapse is temporarily ignored
-    this._collapseDebounceMs = 200 // delay before executing collapse
-    this._lockUntil = 0
-    this._collapseTimer = null
-
     window.footerScrollHandler = this
   }
 
@@ -738,38 +731,6 @@ class ScrollHandler {
 
     this.observer.observe(trigger)
 
-    // Add an additional lightweight scroll watcher to handle cases where
-    // tiny scrolls don't fire an intersection event (trigger very small / browser rounding)
-    this._lastScrollY = window.scrollY || window.pageYOffset || 0
-    this._onScrollForEarlyExpand = () => {
-      const current = window.scrollY || window.pageYOffset || 0
-      const dy = current - (this._lastScrollY || 0)
-      this._lastScrollY = current
-
-      // Only react to downward scroll gestures (positive dy)
-      if (dy <= 0) return
-
-      try {
-        const rect = trigger.getBoundingClientRect()
-        const distanceBelowViewport = rect.top - window.innerHeight
-        // If the trigger is within a short distance below the viewport (e.g., 40px), consider this a small scroll and expand
-        if (!this.expanded && distanceBelowViewport <= 40) {
-          this.toggleExpansion(true)
-          return
-        }
-
-        // Additional fallback: if the user has scrolled very near the bottom of the page, expand as well
-        const nearBottom = window.innerHeight + current >= document.body.scrollHeight - 40
-        if (!this.expanded && nearBottom) {
-          this.toggleExpansion(true)
-        }
-      } catch {
-        /* ignore */
-      }
-    }
-
-    window.addEventListener('scroll', this._onScrollForEarlyExpand, {passive: true})
-
     // Re-init observer on resize/orientation changes to adapt thresholds
     this._resizeHandler = debounce(() => {
       try {
@@ -790,15 +751,7 @@ class ScrollHandler {
     const min = footer.querySelector('.footer-minimized')
     const max = footer.querySelector('.footer-maximized')
 
-    const now = Date.now()
-
     if (shouldExpand && !this.expanded) {
-      // Cancel any pending collapse
-      if (this._collapseTimer) {
-        clearTimeout(this._collapseTimer)
-        this._collapseTimer = null
-      }
-
       ProgrammaticScroll.create(1000)
       GlobalClose.bind()
       document.documentElement.style.scrollSnapType = 'none'
@@ -808,33 +761,17 @@ class ScrollHandler {
       max?.classList.remove('footer-hidden')
       min?.classList.add('footer-hidden')
 
-      // Set lock window to prevent immediate collapse due to tiny layout shifts
-      this._lockUntil = now + this._expandLockMs
-
       this.expanded = true
     } else if (!shouldExpand && this.expanded) {
-      // If within the lock window, ignore collapse requests
-      if (now < (this._lockUntil || 0)) return
-
-      // Debounce collapse so small, transient out-of-view events don't immediately close
-      if (this._collapseTimer) clearTimeout(this._collapseTimer)
-      this._collapseTimer = setTimeout(() => {
-        // Use centralized close handler to ensure consistent cleanup
-        closeFooter()
-        this.expanded = false
-        this._collapseTimer = null
-      }, this._collapseDebounceMs)
+      // Use centralized close handler to ensure consistent cleanup
+      closeFooter()
+      this.expanded = false
     }
   }
 
   cleanup() {
     this.observer?.disconnect()
     if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
-    if (this._collapseTimer) {
-      clearTimeout(this._collapseTimer)
-      this._collapseTimer = null
-    }
-    if (this._onScrollForEarlyExpand) window.removeEventListener('scroll', this._onScrollForEarlyExpand)
   }
 }
 
