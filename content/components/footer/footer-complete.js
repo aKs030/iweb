@@ -399,6 +399,8 @@ const CookieSettings = (() => {
     requestAnimationFrame(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'auto'}))
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION)
+    // Ensure GlobalClose will close the cookie view when invoked
+    try { GlobalClose.setCloseHandler(() => CookieSettings.close()) } catch {}
     GlobalClose.bind()
     setupHandlers(elements)
 
@@ -753,6 +755,12 @@ class ScrollHandler {
 
     if (shouldExpand && !this.expanded) {
       ProgrammaticScroll.create(1000)
+      // Ensure GlobalClose will close the footer on user gestures (esp. mobile scroll)
+      try {
+        GlobalClose.setCloseHandler(() => closeFooter())
+      } catch {
+        /* ignore */
+      }
       GlobalClose.bind()
       document.documentElement.style.scrollSnapType = 'none'
 
