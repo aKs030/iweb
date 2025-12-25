@@ -81,7 +81,7 @@ export class RobotChat {
       this.robot.animationModule.stopThinking()
       this.addMessage(response, 'bot')
     } catch (e) {
-      log.error('[RobotChat] generateResponse failed', e)
+      log.error('generateResponse failed', e)
       this.removeTyping()
       this.robot.animationModule.stopThinking()
       this.addMessage('Fehler bei der Verbindung.', 'bot')
@@ -359,7 +359,7 @@ export class RobotChat {
         setTimeout(() => this.hideBubble(), 8000)
       }
     } catch (e) {
-      log.warn('[RobotChat] fetchAndShowSuggestion failed', e)
+      log.warn('fetchAndShowSuggestion failed', e)
       // Silent fail for UX reasons
     }
   }

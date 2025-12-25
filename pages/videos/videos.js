@@ -32,7 +32,7 @@ function _shareChannel() {
   if (!apiKey) return
 
   // Use the structured logger `log` created above. Helper for warnings if needed:
-  const _warn = msg => log.warn('[videos] ', msg)
+  const _warn = msg => log.warn(msg)
   const setStatus = msg => {
     try {
       const el = document.getElementById('videos-status')
@@ -343,7 +343,7 @@ function _shareChannel() {
       return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c])
     }
   } catch (err) {
-    log.error('[videos] Fehler beim Laden der Videos', err)
+    log.error('Fehler beim Laden der Videos', err)
 
     // Friendly message in page
     try {

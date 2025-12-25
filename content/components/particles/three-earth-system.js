@@ -108,7 +108,7 @@ const ThreeEarthManager = (() => {
               container.appendChild(fallback)
             }
           } catch (err) {
-            log.warn('[ThreeEarthSystem] DOM insert ignored', err)
+            log.warn('DOM insert ignored', err)
           }
           showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'))
           // mark cleanup and exit gracefully
@@ -127,7 +127,7 @@ const ThreeEarthManager = (() => {
       try {
         AppLoadManager.block('three-earth')
       } catch (err) {
-        log.warn('[ThreeEarthSystem] AppLoadManager.block/unblock ignored', err)
+        log.warn('AppLoadManager.block/unblock ignored', err)
       }
 
       // Watchdog: if Three.js doesn't load within this time, unblock to avoid blocking page loader
@@ -140,7 +140,7 @@ const ThreeEarthManager = (() => {
             try {
               AppLoadManager.unblock('three-earth')
             } catch (err) {
-              log.warn('[ThreeEarthSystem] AppLoadManager.unblock ignored', err)
+              log.warn('AppLoadManager.unblock ignored', err)
             }
             try {
               showErrorState(container, new Error('Three.js load timeout'), () => {
@@ -148,12 +148,12 @@ const ThreeEarthManager = (() => {
                 initThreeEarth()
               })
             } catch (err) {
-              log.warn('[ThreeEarthSystem] showErrorState fallback ignored', err)
+              log.warn('showErrorState fallback ignored', err)
             }
           }
         }, THREE_LOAD_WATCH)
       } catch (err) {
-        log.warn('[ThreeEarthSystem] clear timeout ignored', err)
+        log.warn('clear timeout ignored', err)
       }
 
       // Load Three.js
@@ -163,7 +163,7 @@ const ThreeEarthManager = (() => {
       try {
         if (threeLoadWatchTimer) earthTimers.clearTimeout(threeLoadWatchTimer)
       } catch (err) {
-        log.warn('[ThreeEarthSystem] clear watchdog timer failed', err)
+        log.warn('clear watchdog timer failed', err)
       }
 
       // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
@@ -492,7 +492,7 @@ function supportsWebGL() {
       try {
         ctx2.getExtension && ctx2.getExtension('EXT_color_buffer_float')
       } catch (err) {
-        log.warn('[ThreeEarthSystem] getExtension ignored', err)
+        log.warn('getExtension ignored', err)
       }
       return true
     }

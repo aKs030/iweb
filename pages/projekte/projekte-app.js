@@ -594,7 +594,7 @@ export function initProjectsApp() {
   } else {
     // React dependencies or root element missing - fail silently in production
     if (typeof console !== 'undefined' && log.error) {
-      log.error('[ProjectsApp] React dependencies or root element missing')
+      log.error('React dependencies or root element missing')
     }
   }
 }

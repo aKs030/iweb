@@ -60,7 +60,7 @@ async function loadConfig() {
       const isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'
       if (isLocal || new URLSearchParams(location.search).has('mockVideos')) {
         window.YOUTUBE_USE_MOCK = true
-        log.warn('[videos-config-loader] No API key found — using mock data for development/testing.')
+        log.warn('No API key found — using mock data for development/testing.')
       } else {
         window.YOUTUBE_USE_MOCK = false
       }

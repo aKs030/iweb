@@ -187,22 +187,22 @@
                 }
               }
             } catch (err) {
-              log.warn('[Projekte] Konnte Projekt-Presets nicht automatisch setzen', err)
+              log.warn('Konnte Projekt-Presets nicht automatisch setzen', err)
             }
 
             try {
               await ensureThreeEarthStyles()
             } catch (e) {
-              log.warn('[Projekte] three-earth stylesheet preload failed', e)
+              log.warn('three-earth stylesheet preload failed', e)
             }
 
             try {
               mod.initThreeEarth()
             } catch (e) {
-              log.warn('[Projekte] three-earth init failed', e)
+              log.warn('three-earth init failed', e)
             }
           } catch (e) {
-            log.warn('[Projekte] Failed to import three-earth module', e)
+            log.warn('Failed to import three-earth module', e)
           }
         }
 

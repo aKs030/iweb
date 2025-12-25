@@ -154,7 +154,7 @@ export class PerformanceMonitor {
       try {
         this.renderer.setPixelRatio(this.currentPixelRatio)
       } catch (e) {
-        log.warn('[EarthUI] Failed to set pixel ratio on renderer:', e)
+        log.warn('Failed to set pixel ratio on renderer:', e)
       }
     }
   }
