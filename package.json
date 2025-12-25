@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "serve": "http-server ./ -p 8081",
+    "serve:dev": "node ./scripts/dev-serve.js",
     "dev": "npm run serve",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
