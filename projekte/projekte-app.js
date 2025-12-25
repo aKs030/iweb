@@ -289,6 +289,7 @@ function App() {
 
       const baseW = 1024
       const baseH = 768
+      const minScale = 0.6
       const maxScale = 1.5
 
       const apply = () => {
@@ -297,9 +298,12 @@ function App() {
         const dpr = Math.max(1, (window.devicePixelRatio || 1))
         const effW = baseW / dpr
         const effH = baseH / dpr
-        const scale = Math.min(maxScale, w / (effW || 1), h / (effH || 1))
+        // COVER: scale to fill the wrapper (may crop content) and clamp between min/max
+        const rawScale = Math.max(w / (effW || 1), h / (effH || 1))
+        const scale = Math.max(minScale, Math.min(maxScale, rawScale))
 
         iframe.style.transform = `scale(${scale})`
+        iframe.style.transformOrigin = 'center center'
         // keep the iframe at base pixel size for crisp rendering on HiDPI
         iframe.style.width = `${baseW}px`
         iframe.style.height = `${baseH}px`
