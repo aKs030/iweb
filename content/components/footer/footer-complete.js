@@ -663,7 +663,8 @@ class FooterLoader {
         footer.querySelector('.footer-minimized')?.classList.add('footer-hidden')
         footer.querySelector('.footer-maximized')?.classList.remove('footer-hidden')
 
-        const token = ProgrammaticScroll.create()
+        // Short programmatic lock when user triggers the footer manually so mobile scroll can close the footer quickly
+        const token = ProgrammaticScroll.create(150)
         window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})
         ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport')
       }
@@ -754,7 +755,11 @@ class ScrollHandler {
     const max = footer.querySelector('.footer-maximized')
 
     if (shouldExpand && !this.expanded) {
-      ProgrammaticScroll.create(1000)
+      // ProgrammaticScroll duration: keep longer on desktop to avoid accidental closures during large scrolls,
+      // but shorten on mobile so a real user scroll can close the footer promptly.
+      const _isDesktop = window.matchMedia && window.matchMedia('(min-width: 769px)').matches
+      ProgrammaticScroll.create(_isDesktop ? 1000 : 150)
+
       // Ensure GlobalClose will close the footer on user gestures (esp. mobile scroll)
       try {
         GlobalClose.setCloseHandler(() => closeFooter())
