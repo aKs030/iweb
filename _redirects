@@ -4,9 +4,12 @@
 # -------------------------------
 # 1) Domain + protocol canonicalization
 # Place this near the top to avoid unnecessary double-redirects.
-http://abdulkerimsesli.de/*           https://abdulkerimsesli.de/:splat   301
-http://www.abdulkerimsesli.de/*       https://abdulkerimsesli.de/:splat   301
-https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
+# Force www -> non-www explicitly (ensure root and wildcard are handled before other rules)
+https://www.abdulkerimsesli.de/        https://abdulkerimsesli.de/          301
+http://www.abdulkerimsesli.de/         https://abdulkerimsesli.de/          301
+https://www.abdulkerimsesli.de/*       https://abdulkerimsesli.de/:splat    301
+http://www.abdulkerimsesli.de/*        https://abdulkerimsesli.de/:splat    301
+http://abdulkerimsesli.de/*            https://abdulkerimsesli.de/:splat    301
 
 # -------------------------------
 # 2) Specific 301 redirects (keep these before any generic rules)
