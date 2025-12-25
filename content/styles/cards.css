@@ -1,0 +1,564 @@
+/* Cards component styles (extracted from main.css)
+   Purpose: provide fallback DOM styles for the features/cards
+   when the Three.js (WebGL) card renderer is not available.
+*/
+
+/* Full Screen Section Layout */
+.full-screen-section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  margin-top: 0;
+}
+
+/* Base Card Styling */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: auto;
+  min-width: var(--card-min-width);
+  min-height: var(--card-min-height);
+  padding: clamp(1.5rem, 3vw, 2rem);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgb(255 255 255 / 8%) 0%, rgb(255 255 255 / 3%) 100%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    var(--card-shadow-base),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
+  backdrop-filter: blur(var(--card-blur-base)) saturate(1.3);
+  transition:
+    transform 0.4s var(--card-transition-base),
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.4s ease,
+    opacity 0.4s ease-out;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  opacity: 0;
+}
+
+.card:not(:hover) {
+  will-change: auto;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgb(7 161 255 / 15%) 0%, rgb(88 166 255 / 8%) 30%, transparent 70%);
+  border-radius: inherit;
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+  pointer-events: none;
+}
+
+.card:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.card:hover {
+  background: linear-gradient(135deg, rgb(255 255 255 / 12%) 0%, rgb(255 255 255 / 6%) 100%);
+  border-color: var(--card-glow-color);
+  backdrop-filter: blur(var(--card-blur-hover)) saturate(1.5);
+  box-shadow:
+    var(--card-shadow-hover),
+    0 0 80px rgb(7 161 255 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 25%),
+    inset 0 -1px 0 rgb(7 161 255 / 15%);
+  transform: translateY(-8px) scale(1.02);
+}
+
+.card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+.card-link:focus-visible {
+  outline: none;
+}
+.card:focus-within,
+.card:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.card .icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(56px, 10vw, 64px);
+  height: clamp(56px, 10vw, 64px);
+  margin: 0 auto clamp(1rem, 2vw, 1.5rem);
+  position: relative;
+  overflow: hidden;
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  background: linear-gradient(135deg, rgb(7 161 255 / 18%) 0%, rgb(7 161 255 / 8%) 100%);
+  border: 1.5px solid rgb(7 161 255 / 25%);
+  border-radius: 20px;
+  box-shadow:
+    0 6px 24px rgb(0 0 0 / 25%),
+    0 2px 8px rgb(7 161 255 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
+  backdrop-filter: blur(16px);
+  transition:
+    transform 0.5s var(--card-transition-base),
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.4s ease;
+}
+
+.card .icon-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgb(255 255 255 / 15%) 45%,
+    rgb(7 161 255 / 20%) 50%,
+    rgb(255 255 255 / 15%) 55%,
+    transparent 100%
+  );
+  transform: translateX(-100%) rotate(45deg);
+  transition: transform 0.6s var(--card-transition-smooth);
+  opacity: 0;
+}
+
+.card:hover .icon-wrapper::before {
+  opacity: 1;
+  transform: translateX(100%) rotate(45deg);
+}
+
+.card:hover .icon-wrapper {
+  background: linear-gradient(135deg, rgb(7 161 255 / 45%) 0%, rgb(7 161 255 / 25%) 50%, rgb(7 161 255 / 15%) 100%);
+  border-color: rgb(7 161 255 / 60%);
+  transform: scale(1.15) rotate(-5deg);
+  box-shadow:
+    0 0 40px rgb(7 161 255 / 40%),
+    0 0 80px rgb(7 161 255 / 20%),
+    0 8px 32px rgb(0 0 0 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 25%),
+    inset 0 -1px 0 rgb(7 161 255 / 30%);
+}
+
+.card-title {
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  font-weight: 600;
+  margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+  color: var(--text-primary);
+  line-height: 1.3;
+  transition:
+    color 0.3s ease,
+    transform 0.4s var(--card-transition-base),
+    text-shadow 0.3s ease;
+}
+.card:hover .card-title {
+  color: #fff;
+  text-shadow:
+    0 0 20px rgb(7 161 255 / 50%),
+    0 0 40px rgb(7 161 255 / 25%),
+    0 2px 8px rgb(0 0 0 / 40%);
+  transform: translateY(-3px);
+}
+
+.card-title[data-eyebrow]::before {
+  content: attr(data-eyebrow);
+  display: block;
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+  font-weight: 600;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+  transition:
+    color 0.3s ease,
+    text-shadow 0.3s ease,
+    letter-spacing 0.3s ease;
+}
+
+.card:hover .card-title[data-eyebrow]::before {
+  color: #fff;
+  text-shadow:
+    0 0 10px rgb(7 161 255 / 60%),
+    0 0 20px rgb(7 161 255 / 30%);
+  letter-spacing: 0.15em;
+}
+
+.card-text {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: clamp(0.875rem, 2vw, 0.95rem);
+  transition: color 0.3s ease;
+  flex-grow: 1;
+}
+.card:hover .card-text {
+  color: rgb(255 255 255 / 95%);
+}
+
+#features.section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* 3D Cards Mode - Hide HTML Cards when WebGL is active */
+body.three-earth-active #features .features-cards {
+  opacity: 0;
+  pointer-events: none;
+  height: 100vh;
+}
+
+body.three-earth-active .features-content::before {
+  display: none;
+}
+
+/* Features / Cards responsive rules (moved from `main.css`) */
+@media (width >= 769px) and (width <= 1024px) {
+  .features-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.75rem, 2.5vw, 2.25rem);
+    max-width: 900px;
+  }
+
+  .features-content {
+    padding: 0 clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .card {
+    padding: clamp(1.5rem, 2.5vw, 1.875rem);
+  }
+
+  .card:hover {
+    transform: translateY(-6px) scale(1.015);
+  }
+}
+
+@media (max-width: 1200px) {
+  .features-content {
+    min-height: 60vh;
+    padding: 0 clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .features-cards {
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .card {
+    padding: clamp(1rem, 2.5vw, 1.25rem);
+    min-height: 200px;
+  }
+}
+
+@media (width <= 768px) {
+  :root {
+    --card-min-width: 0;
+    --card-min-height: 0;
+  }
+
+  #features.section {
+    padding: clamp(0.75rem, 2.5vw, 1.25rem) 0;
+  }
+
+  .full-screen-section {
+    min-height: 100svh;
+    padding: clamp(1.5rem, 7vw, 2.75rem) 0;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @supports (min-height: 100dvh) {
+    .full-screen-section {
+      min-height: 100dvh;
+    }
+  }
+
+  .features-content {
+    min-height: auto;
+    padding: 0 clamp(0.75rem, 4vw, 1.25rem);
+  }
+
+  .features-cards {
+    grid-template-columns: 1fr;
+    gap: clamp(0.85rem, 3vw, 1.35rem);
+    margin-top: clamp(0.6rem, 2.5vw, 1.05rem);
+    padding: 0 clamp(0.45rem, 2.5vw, 0.75rem);
+  }
+
+  .card {
+    height: auto;
+    padding: clamp(0.85rem, 3.6vw, 1.35rem);
+    transition:
+      transform 0.3s ease,
+      background 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.3s ease,
+      opacity 0.4s ease-out;
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(44px, 10vw, 52px);
+    height: clamp(44px, 10vw, 52px);
+    font-size: clamp(1.45rem, 4vw, 1.9rem);
+    margin-bottom: clamp(0.65rem, 2.75vw, 1rem);
+  }
+
+  .card:hover .icon-wrapper {
+    transform: scale(1.08) rotate(-3deg);
+  }
+
+  .card-title {
+    font-size: clamp(0.9rem, 3.4vw, 1.05rem);
+    line-height: 1.22;
+    margin-bottom: clamp(0.45rem, 2.2vw, 0.65rem);
+  }
+
+  .card-title[data-eyebrow]::before {
+    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+    margin-bottom: clamp(0.35rem, 2vw, 0.6rem);
+    letter-spacing: 0.1em;
+  }
+
+  .card-text {
+    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+    line-height: 1.55;
+  }
+}
+
+@media (width <= 480px) {
+  .features-cards {
+    gap: clamp(0.7rem, 3.8vw, 1rem);
+  }
+
+  .card {
+    padding: clamp(0.75rem, 4.6vw, 1.1rem);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(40px, 12vw, 46px);
+    height: clamp(40px, 12vw, 46px);
+    font-size: clamp(1.3rem, 5vw, 1.7rem);
+  }
+
+  .card-title {
+    font-size: clamp(0.86rem, 4vw, 0.98rem);
+  }
+
+  .card-text {
+    font-size: clamp(0.74rem, 3.8vw, 0.84rem);
+  }
+}
+
+@media (width <= 360px) {
+  .features-cards {
+    gap: 0.65rem;
+  }
+
+  .card {
+    padding: 0.7rem 0.85rem;
+  }
+
+  .card .icon-wrapper {
+    width: 38px;
+    height: 38px;
+    font-size: 1.4rem;
+  }
+
+  .card-title {
+    font-size: 0.84rem;
+  }
+
+  .card-text {
+    font-size: 0.72rem;
+  }
+}
+
+/* Features / Cards responsive rules (moved from `main.css`) */
+@media (width >= 769px) and (width <= 1024px) {
+  .features-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.75rem, 2.5vw, 2.25rem);
+    max-width: 900px;
+  }
+
+  .features-content {
+    padding: 0 clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .card {
+    padding: clamp(1.5rem, 2.5vw, 1.875rem);
+  }
+
+  .card:hover {
+    transform: translateY(-6px) scale(1.015);
+  }
+}
+
+@media (max-width: 1200px) {
+  .features-content {
+    min-height: 60vh;
+    padding: 0 clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .features-cards {
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .card {
+    padding: clamp(1rem, 2.5vw, 1.25rem);
+    min-height: 200px;
+  }
+}
+
+@media (width <= 768px) {
+  :root {
+    --card-min-width: 0;
+    --card-min-height: 0;
+  }
+
+  #features.section {
+    padding: clamp(0.75rem, 2.5vw, 1.25rem) 0;
+  }
+
+  .full-screen-section {
+    min-height: 100svh;
+    padding: clamp(1.5rem, 7vw, 2.75rem) 0;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @supports (min-height: 100dvh) {
+    .full-screen-section {
+      min-height: 100dvh;
+    }
+  }
+
+  .features-content {
+    min-height: auto;
+    padding: 0 clamp(0.75rem, 4vw, 1.25rem);
+  }
+
+  .features-cards {
+    grid-template-columns: 1fr;
+    gap: clamp(0.85rem, 3vw, 1.35rem);
+    margin-top: clamp(0.6rem, 2.5vw, 1.05rem);
+    padding: 0 clamp(0.45rem, 2.5vw, 0.75rem);
+  }
+
+  .card {
+    height: auto;
+    padding: clamp(0.85rem, 3.6vw, 1.35rem);
+    transition:
+      transform 0.3s ease,
+      background 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.3s ease,
+      opacity 0.4s ease-out;
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(44px, 10vw, 52px);
+    height: clamp(44px, 10vw, 52px);
+    font-size: clamp(1.45rem, 4vw, 1.9rem);
+    margin-bottom: clamp(0.65rem, 2.75vw, 1rem);
+  }
+
+  .card:hover .icon-wrapper {
+    transform: scale(1.08) rotate(-3deg);
+  }
+
+  .card-title {
+    font-size: clamp(0.9rem, 3.4vw, 1.05rem);
+    line-height: 1.22;
+    margin-bottom: clamp(0.45rem, 2.2vw, 0.65rem);
+  }
+
+  .card-title[data-eyebrow]::before {
+    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+    margin-bottom: clamp(0.35rem, 2vw, 0.6rem);
+    letter-spacing: 0.1em;
+  }
+
+  .card-text {
+    font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+    line-height: 1.55;
+  }
+}
+
+@media (width <= 480px) {
+  .features-cards {
+    gap: clamp(0.7rem, 3.8vw, 1rem);
+  }
+
+  .card {
+    padding: clamp(0.75rem, 4.6vw, 1.1rem);
+  }
+
+  .card .icon-wrapper {
+    width: clamp(40px, 12vw, 46px);
+    height: clamp(40px, 12vw, 46px);
+    font-size: clamp(1.3rem, 5vw, 1.7rem);
+  }
+
+  .card-title {
+    font-size: clamp(0.86rem, 4vw, 0.98rem);
+  }
+
+  .card-text {
+    font-size: clamp(0.74rem, 3.8vw, 0.84rem);
+  }
+}
+
+@media (width <= 360px) {
+  .features-cards {
+    gap: 0.65rem;
+  }
+
+  .card {
+    padding: 0.7rem 0.85rem;
+  }
+
+  .card .icon-wrapper {
+    width: 38px;
+    height: 38px;
+    font-size: 1.4rem;
+  }
+
+  .card-title {
+    font-size: 0.84rem;
+  }
+
+  .card-text {
+    font-size: 0.72rem;
+  }
+}

@@ -1,0 +1,270 @@
+/**
+ * Legal Pages Shared Styles
+ * Used by datenschutz.html and impressum.html
+ * ✓ UTF-8 encoding fixed
+ * ✓ Better accessibility
+ * ✓ Improved mobile support
+ * @version 1.1.0 OPTIMIZED
+ */
+
+/* Base Layout */
+body {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  color: #e5e5e7;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Typography */
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+h2 {
+  font-size: 1.75rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: #0a84ff;
+  border-bottom: 2px solid rgb(10 132 255 / 30%);
+  padding-bottom: 0.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #64d2ff;
+}
+
+h4 {
+  font-size: 1.125rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #64d2ff;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+ul,
+ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+/* Links */
+a {
+  color: #0a84ff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #64d2ff;
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid #0a84ff;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Components */
+.highlight {
+  background: rgb(10 132 255 / 10%);
+  padding: 1rem;
+  border-left: 3px solid #0a84ff;
+  border-radius: 4px;
+  margin: 1.5rem 0;
+}
+
+.contact-box {
+  background: rgb(255 255 255 / 5%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+  border: 1px solid rgb(255 255 255 / 10%);
+}
+
+.disclaimer {
+  background: rgb(255 255 255 / 3%);
+  border-left: 3px solid rgb(255 255 255 / 20%);
+  padding: 1rem;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+
+.last-updated {
+  color: #999;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+/* Back Link Button */
+.back-link {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  min-height: 44px;
+  background: linear-gradient(135deg, #0a84ff 0%, #06c 100%);
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.back-link:hover {
+  background: linear-gradient(135deg, #06c 0%, #004c99 100%);
+  transform: translateY(-2px);
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgb(10 132 255 / 30%);
+}
+
+.back-link:active {
+  transform: translateY(0);
+}
+
+.back-link:focus-visible {
+  outline: 2px solid rgb(10 132 255 / 80%);
+  outline-offset: 3px;
+}
+
+/* Mobile Responsiveness */
+@media (width <= 768px) {
+  body {
+    padding: 1.5rem 1rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+  }
+
+  .contact-box,
+  .highlight,
+  .disclaimer {
+    padding: 1rem;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.5rem;
+  }
+}
+
+@media (width <= 480px) {
+  body {
+    padding: 1rem 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.5rem;
+  }
+
+  .back-link {
+    display: block;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+  }
+
+  .back-link:hover {
+    transform: none;
+  }
+}
+
+/* removed prefers-contrast: high (replaced by the more-compliant 'more' value) */
+@media (prefers-contrast: more) {
+  .highlight,
+  .contact-box,
+  .disclaimer {
+    border: 2px solid currentcolor;
+  }
+
+  .back-link {
+    border: 2px solid currentcolor;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  h1,
+  h2,
+  h3 {
+    color: black;
+  }
+
+  a {
+    color: black;
+    text-decoration: underline;
+  }
+
+  .back-link {
+    display: none;
+  }
+
+  .highlight,
+  .contact-box,
+  .disclaimer {
+    background: white;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  ul,
+  ol {
+    break-inside: avoid;
+  }
+}

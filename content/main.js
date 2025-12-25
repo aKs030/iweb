@@ -1,0 +1,705 @@
+/**
+ * Main Application Entry Point - Optimized
+ * * OPTIMIZATIONS v4.1 (Performance):
+ * - Fine-tuned ThreeEarthLoader init
+ * - Ensure proper cleanup references
+ * * @version 4.1.0
+ * @last-modified 2025-11-29
+ */
+
+import {initHeroFeatureBundle} from '../pages/home/hero-manager.js'
+import {
+  createLazyLoadObserver,
+  createLogger,
+  EVENTS,
+  fetchWithTimeout,
+  fire,
+  getElementById,
+  schedulePersistentStorageRequest,
+  setLegacyGlobal,
+  AppLoadManager,
+  SectionTracker
+} from './utils/shared-utilities.js'
+import {initHeroSubtitle} from './components/typewriter/TypeWriter.js'
+import {a11y} from './utils/accessibility-manager.js'
+// Ensure the a11y manager is available globally and initialized centrally
+if (typeof window !== 'undefined') {
+  try {
+    window.a11y = a11y
+    if (typeof a11y?.init === 'function') a11y.init()
+  } catch {
+    /* ignored */
+  }
+}
+import './components/menu/menu.js'
+
+const log = createLogger('main')
+
+// Debug / Dev hooks (exported for test & debug tooling)
+export let __threeEarthCleanup = null
+export let __rws = null
+export let __devRws = null
+
+// ===== Configuration & Environment =====
+const ENV = {
+  isTest:
+    new URLSearchParams(window.location.search).has('test') ||
+    navigator.userAgent.includes('HeadlessChrome') ||
+    (window.location.hostname === 'localhost' && window.navigator.webdriver),
+  debug: new URLSearchParams(window.location.search).has('debug')
+  // Service Worker removed — cleanup runs once on page load to unregister previous registrations and clear caches.
+  // (Property `useServiceWorker` removed)
+}
+
+// ===== Performance Tracking =====
+const perfMarks = {
+  start: performance.now(),
+  domReady: 0,
+  modulesReady: 0,
+  windowLoaded: 0
+}
+
+// ===== Accessibility Announcements =====
+const announce = (() => {
+  const cache = new Map()
+
+  return (message, {assertive = false, dedupe = false} = {}) => {
+    if (!message) return
+
+    if (dedupe && cache.has(message)) return
+    if (dedupe) {
+      cache.set(message, true)
+      setTimeout(() => cache.delete(message), 3000)
+    }
+
+    try {
+      const id = assertive ? 'live-region-assertive' : 'live-region-status'
+      const region = getElementById(id)
+      if (!region) return
+
+      region.textContent = ''
+      requestAnimationFrame(() => {
+        region.textContent = message
+      })
+    } catch (error) {
+      log.debug('Announcement failed:', error)
+    }
+  }
+})()
+
+// Export for other modules if needed, but avoid window global if possible.
+// Legacy support for inline scripts or external dependencies:
+window.announce = announce
+
+// ===== Section Tracker =====
+const sectionTracker = new SectionTracker()
+sectionTracker.init()
+// Kept for debugging/external access if strictly needed, but marked for review
+if (ENV.debug) window.sectionTracker = sectionTracker
+
+// ===== Section Loader =====
+const SectionLoader = (() => {
+  // Check if already initialized to prevent double execution
+  if (window.SectionLoader) return window.SectionLoader
+
+  const SELECTOR = 'section[data-section-src]'
+  const loadedSections = new WeakSet()
+  const retryAttempts = new WeakMap()
+  const MAX_RETRIES = 2
+
+  function dispatchEvent(type, section, detail = {}) {
+    try {
+      document.dispatchEvent(
+        new CustomEvent(type, {
+          detail: {id: section?.id, section, ...detail}
+        })
+      )
+    } catch (error) {
+      log.debug(`Event dispatch failed: ${type}`, error)
+    }
+  }
+
+  // getSectionName inlined into loadSection; removed to avoid small helper function proliferation
+
+  async function loadSection(section) {
+    if (loadedSections.has(section)) return
+
+    const url = section.getAttribute('data-section-src')
+    if (!url) {
+      section.removeAttribute('aria-busy')
+      return
+    }
+
+    loadedSections.add(section)
+    // Inline getSectionName: avoid small helper function footprint
+    const sectionName = (() => {
+      const labelId = section.getAttribute('aria-labelledby')
+      if (labelId) {
+        const label = getElementById(labelId)
+        const text = label?.textContent?.trim()
+        if (text) return text
+      }
+      return section.id || 'Abschnitt'
+    })()
+    const attempts = retryAttempts.get(section) || 0
+
+    section.setAttribute('aria-busy', 'true')
+    section.dataset.state = 'loading'
+
+    announce(`Lade ${sectionName}…`, {dedupe: true})
+    dispatchEvent('section:will-load', section, {url})
+
+    try {
+      // Try extensionless URL first to avoid server redirects (some hosts redirect .html -> no-ext)
+      let response
+      const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.') || location.hostname.endsWith('.local')
+      const fetchCandidates = isLocal
+        ? [url, url && url.endsWith('.html') ? url : url + '.html']
+        : [url && url.endsWith('.html') ? url.replace(/\.html$/, '') : url, url]
+
+      for (const candidate of fetchCandidates) {
+        try {
+          response = await fetchWithTimeout(candidate)
+          if (response && response.ok) break
+        } catch {
+          response = null
+        }
+      }
+
+      if (!response || !response.ok) {
+        throw new Error(`HTTP ${response ? response.status : 'NO_RESPONSE'}: ${response ? response.statusText : 'no response'}`)
+      }
+
+      const html = await response.text()
+      section.insertAdjacentHTML('beforeend', html)
+
+      const template = section.querySelector('template')
+      if (template) {
+        section.appendChild(template.content.cloneNode(true))
+      }
+
+      section.querySelectorAll('.section-skeleton').forEach(el => el.remove())
+
+      section.dataset.state = 'loaded'
+      section.removeAttribute('aria-busy')
+
+      announce(`${sectionName} geladen`, {dedupe: true})
+      dispatchEvent('section:loaded', section, {state: 'loaded'})
+
+      if (section.id === 'hero') {
+        fire(EVENTS.HERO_LOADED)
+      }
+    } catch (error) {
+      log.warn(`Section load failed: ${sectionName}`, error)
+
+      const isTransient = /5\d\d/.test(String(error)) || !navigator.onLine
+      const shouldRetry = isTransient && attempts < MAX_RETRIES
+
+      if (shouldRetry) {
+        retryAttempts.set(section, attempts + 1)
+        loadedSections.delete(section)
+
+        const delay = 300 * Math.pow(2, attempts)
+        await new Promise(resolve => setTimeout(resolve, delay))
+
+        return loadSection(section)
+      }
+
+      section.dataset.state = 'error'
+      section.removeAttribute('aria-busy')
+
+      announce(`Fehler beim Laden von ${sectionName}`, {assertive: true})
+      dispatchEvent('section:error', section, {state: 'error'})
+
+      // Inline injectRetryUI: inject a small retry UI directly
+      if (!section.querySelector('.section-retry')) {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'section-retry'
+        button.textContent = 'Erneut laden'
+        button.addEventListener('click', () => retrySection(section), {once: true})
+
+        const wrapper = document.createElement('div')
+        wrapper.className = 'section-error-box'
+        wrapper.appendChild(button)
+        section.appendChild(wrapper)
+      }
+    }
+  }
+
+  // injectRetryUI removed; kept inline in loadSection() to avoid small helper function
+
+  async function retrySection(section) {
+    section.querySelectorAll('.section-error-box').forEach(el => el.remove())
+    section.dataset.state = ''
+    loadedSections.delete(section)
+    retryAttempts.delete(section)
+    await loadSection(section)
+  }
+
+  function init() {
+    if (init._initialized) return
+    init._initialized = true
+
+    const sections = Array.from(document.querySelectorAll(SELECTOR))
+    const eagerSections = []
+    const lazySections = []
+
+    sections.forEach(section => {
+      if (section.hasAttribute('data-eager')) {
+        eagerSections.push(section)
+      } else {
+        lazySections.push(section)
+      }
+    })
+
+    eagerSections.forEach(loadSection)
+
+    if (lazySections.length) {
+      const observer = createLazyLoadObserver(loadSection)
+      lazySections.forEach(section => observer.observe(section))
+    }
+  }
+
+  function reinit() {
+    init._initialized = false
+    init()
+  }
+
+  const api = {init, reinit, loadSection, retrySection}
+  // Export to window for compatibility with inline handlers if any, but prefer ES import
+  window.SectionLoader = api
+  return api
+})()
+
+function _initApp() {
+  SectionLoader.init()
+  // Ensure accessibility preferences applied right away
+  try {
+    a11y?.updateAnimations?.()
+    a11y?.updateContrast?.()
+  } catch {
+    /* ignored */
+  }
+}
+
+if (document.readyState !== 'loading') {
+  _initApp()
+} else {
+  document.addEventListener(EVENTS.DOM_READY, _initApp, {once: true})
+}
+
+// ===== Scroll Snapping =====
+const ScrollSnapping = (() => {
+  let snapTimer = null
+  const snapContainer = document.querySelector('.snap-container') || document.documentElement
+
+  const disableSnap = () => snapContainer.classList.add('no-snap')
+  const enableSnap = () => snapContainer.classList.remove('no-snap')
+
+  function handleScroll() {
+    disableSnap()
+    clearTimeout(snapTimer)
+    snapTimer = setTimeout(enableSnap, 180)
+  }
+
+  function handleKey(event) {
+    const scrollKeys = ['PageDown', 'PageUp', 'Home', 'End', 'ArrowDown', 'ArrowUp', 'Space']
+    if (scrollKeys.includes(event.key)) {
+      handleScroll()
+    }
+  }
+
+  function init() {
+    window.addEventListener('wheel', handleScroll, {passive: true})
+    window.addEventListener('touchmove', handleScroll, {passive: true})
+    window.addEventListener('keydown', handleKey, {passive: true})
+  }
+
+  return {init}
+})()
+
+ScrollSnapping.init()
+
+// ===== Loading Screen Manager =====
+const LoadingScreenManager = (() => {
+  const MIN_DISPLAY_TIME = 600
+  let startTime = 0
+
+  function hide() {
+    const loadingScreen = getElementById('loadingScreen')
+    if (!loadingScreen) return
+
+    const elapsed = performance.now() - startTime
+    const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed)
+
+    setTimeout(() => {
+      loadingScreen.classList.add('hide')
+      loadingScreen.setAttribute('aria-hidden', 'true')
+
+      Object.assign(loadingScreen.style, {
+        opacity: '0',
+        pointerEvents: 'none',
+        visibility: 'hidden'
+      })
+
+      const cleanup = () => {
+        loadingScreen.style.display = 'none'
+        loadingScreen.removeEventListener('transitionend', cleanup)
+      }
+
+      loadingScreen.addEventListener('transitionend', cleanup)
+      setTimeout(cleanup, 700)
+
+      announce('Anwendung geladen', {dedupe: true})
+
+      try {
+        document.body.classList.remove('global-loading-visible')
+      } catch {
+        /* ignore */
+      }
+
+      perfMarks.loadingHidden = performance.now()
+      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`)
+    }, delay)
+  }
+
+  function init() {
+    startTime = performance.now()
+  }
+
+  return {init, hide}
+})()
+
+// ===== Three.js Earth System Loader =====
+const ThreeEarthLoader = (() => {
+  let cleanupFn = null
+  let isLoading = false
+
+  async function load() {
+    if (isLoading || cleanupFn) return
+
+    // Explicitly check env for testing to skip heavy WebGL
+    // ALLOW for specific verification script if requested via global override
+    if (ENV.isTest && !window.__FORCE_THREE_EARTH) {
+      log.info('Test environment detected - skipping Three.js Earth system for performance')
+      return
+    }
+
+    const container = getElementById('threeEarthContainer')
+    if (!container) {
+      log.debug('Earth container not found')
+      return
+    }
+
+    isLoading = true
+
+    try {
+      log.info('Loading Three.js Earth system...')
+      const module = await import('./components/particles/three-earth-system.js')
+      const ThreeEarthManager = module.default
+
+      cleanupFn = await ThreeEarthManager.initThreeEarth()
+
+      if (typeof cleanupFn === 'function') {
+        // Export the cleanup function for programmatic control
+        __threeEarthCleanup = cleanupFn
+        // Optionally expose in debug mode for backwards compatibility
+        if (ENV.debug) window.__threeEarthCleanup = cleanupFn
+
+        log.info('Three.js Earth system initialized')
+        perfMarks.threeJsLoaded = performance.now()
+      }
+    } catch (error) {
+      log.warn('Three.js failed, using CSS fallback:', error)
+    } finally {
+      isLoading = false
+    }
+  }
+
+  function init() {
+    const container = getElementById('threeEarthContainer')
+    if (!container) return
+
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            observer.disconnect()
+            load()
+          }
+        }
+      },
+      {rootMargin: '300px', threshold: 0.01}
+    )
+
+    observer.observe(container)
+  }
+
+  function initDelayed() {
+    if (window.requestIdleCallback) {
+      requestIdleCallback(init, {timeout: 2000})
+    } else {
+      setTimeout(init, 1000)
+    }
+  }
+
+  return {initDelayed}
+})()
+
+// ===== Application Bootstrap =====
+document.addEventListener(
+  'DOMContentLoaded',
+  async () => {
+    perfMarks.domReady = performance.now()
+    LoadingScreenManager.init()
+
+    fire(EVENTS.DOM_READY)
+
+    // Simplified TypeWriter Export
+    // Global initHeroSubtitle assignment removed — import directly where needed (see TypeWriter export)
+    // Optionally expose for backward compatibility in debug mode (respects clean mode)
+    setLegacyGlobal('initHeroSubtitle', initHeroSubtitle, {
+      debugOnly: true,
+      note: 'Prefer importing initHeroSubtitle from components/typewriter/TypeWriter.js'
+    })
+
+    let modulesReady = false
+    let windowLoaded = false
+
+    const checkReady = () => {
+      if (!modulesReady || !windowLoaded) return
+      LoadingScreenManager.hide()
+    }
+
+    window.addEventListener(
+      'load',
+      () => {
+        perfMarks.windowLoaded = performance.now()
+        windowLoaded = true
+        checkReady()
+      },
+      {once: true}
+    )
+
+    fire(EVENTS.CORE_INITIALIZED)
+
+    fire(EVENTS.HERO_INIT_READY)
+    initHeroFeatureBundle()
+
+    ThreeEarthLoader.initDelayed()
+
+    modulesReady = true
+    perfMarks.modulesReady = performance.now()
+    fire(EVENTS.MODULES_READY)
+    checkReady()
+    ;(function scheduleSmartForceHide(attempt = 1) {
+      const INITIAL_DELAY = 5000
+      const RETRY_DELAY = 5000
+      const MAX_ATTEMPTS = 3
+
+      setTimeout(
+        () => {
+          if (windowLoaded) return
+
+          // If other modules registered as blocking, defer forced hide and retry
+          try {
+            if (AppLoadManager && typeof AppLoadManager.isBlocked === 'function' && AppLoadManager.isBlocked()) {
+              log.warn(
+                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${AppLoadManager.getPending().join(', ')}`
+              )
+
+              if (attempt < MAX_ATTEMPTS) {
+                scheduleSmartForceHide(attempt + 1)
+                return
+              }
+              log.warn('Max attempts reached - forcing hide despite blocking modules')
+            }
+          } catch (e) {
+            log.debug('AppLoadManager check failed:', e)
+          }
+
+          log.warn('Forcing loading screen hide after timeout')
+          // Force-hide now
+          LoadingScreenManager.hide()
+        },
+        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
+      )
+    })()
+
+    schedulePersistentStorageRequest(2200)
+
+    // Activate deferred styles that were marked with data-defer="1"
+    const activateDeferredStyles = () => {
+      try {
+        const links = document.querySelectorAll('link[rel="stylesheet"][data-defer="1"]')
+        links.forEach(link => {
+          try {
+            link.media = 'all'
+            link.removeAttribute('data-defer')
+          } catch {
+            /* ignore individual link errors */
+          }
+        })
+      } catch {
+        /* ignore */
+      }
+    }
+
+    try {
+      // Try activating now (covers case where links are already in DOM)
+      activateDeferredStyles()
+
+      // Ensure activation after DOM is parsed and on full load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activateDeferredStyles, {once: true})
+      } else {
+        // In case script executed after parsing, ensure microtask activation
+        setTimeout(activateDeferredStyles, 0)
+      }
+      window.addEventListener('load', activateDeferredStyles)
+
+      // Observe head for dynamically inserted deferred link elements
+      const headObserver = new MutationObserver(mutations => {
+        for (const m of mutations) {
+          for (const node of m.addedNodes) {
+            try {
+              if (node.nodeType === 1 && node.matches && node.matches('link[rel="stylesheet"][data-defer="1"]')) {
+                node.media = 'all'
+                node.removeAttribute('data-defer')
+              }
+            } catch {
+              /* ignore per-node errors */
+            }
+          }
+        }
+      })
+      headObserver.observe(document.head || document.documentElement, {childList: true, subtree: true})
+      // Disconnect after full load to avoid long-running observers
+      window.addEventListener('load', () => headObserver.disconnect(), {once: true})
+    } catch {
+      /* ignore overall activation errors */
+    }
+
+    // Delegated handlers for retry and share buttons to avoid inline handlers (CSP-compliant)
+    document.addEventListener('click', event => {
+      const target = event.target
+      if (!target) return
+
+      // Retry / reload buttons (class-based)
+      const retry = target.closest && target.closest('.retry-btn')
+      if (retry) {
+        event.preventDefault()
+        try {
+          window.location.reload()
+        } catch {
+          // fallback
+          location.href = location.href
+        }
+        return
+      }
+
+      // Share button (degraded to clipboard if navigator.share not available)
+      const share = target.closest && target.closest('.btn-share')
+      if (share) {
+        event.preventDefault()
+        const shareUrl = share.getAttribute('data-share-url') || 'https://www.youtube.com/@aks.030'
+        const shareData = {
+          title: document.title,
+          text: 'Schau dir diesen Kanal an',
+          url: shareUrl
+        }
+
+        if (navigator.share) {
+          navigator.share(shareData).catch(err => log.warn('share failed', err))
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            try {
+              announce('Link kopiert', {dedupe: true})
+            } catch (err) {
+              log.warn('announce failed', err)
+            }
+          })
+        } else {
+          try {
+            window.prompt('Link kopieren', shareUrl)
+          } catch (err) {
+            log.warn('prompt failed', err)
+          }
+        }
+        return
+      }
+    })
+
+    // ===== Service Worker Cleanup (one-time) =====
+    // This will unregister any previously installed service workers and clear all caches.
+    // Keep as a one-time cleanup to ensure clients no longer use the old SW code.
+    if ('serviceWorker' in navigator && !ENV.isTest) {
+      window.addEventListener(
+        'load',
+        async () => {
+          try {
+            const regs = await navigator.serviceWorker.getRegistrations()
+            await Promise.all(regs.map(r => r.unregister().catch(err => log.warn('ServiceWorker unregister failed', err))))
+
+            if ('caches' in window) {
+              const keys = await caches.keys()
+              await Promise.all(keys.map(k => caches.delete(k)))
+            }
+
+            log.info('Service Workers unregistered and caches cleared (cleanup).')
+          } catch (e) {
+            log.debug('Service Worker cleanup failed:', e)
+          }
+        },
+        {once: true}
+      )
+    } else {
+      log.info('Service Worker cleanup skipped: not supported or test env')
+    }
+
+    log.info('Performance:', {
+      domReady: Math.round(perfMarks.domReady - perfMarks.start),
+      modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
+      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
+    })
+
+    // ===== Dev-only WebSocket test (optional) =====
+    // Usage: add ?ws-test to the page URL or use debug mode to enable a reconnecting websocket to ws://127.0.0.1:3001
+    if (!ENV.isTest && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || ENV.debug)) {
+      const params = new URLSearchParams(window.location.search || '')
+      if (params.has('ws-test') || ENV.debug) {
+        import('./utils/reconnecting-websocket.js')
+          .then(mod => {
+            const {ReconnectingWebSocket} = mod
+            try {
+              const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001')
+              rws.onopen = () => {
+                log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001')
+                try {
+                  rws.send('dev:hello')
+                } catch {
+                  /* ignore */
+                }
+              }
+              rws.onmessage = e => log.debug('[dev-ws]', e.data)
+              rws.onclose = ev => log.info('Dev RWS closed', ev)
+              rws.onerror = err => log.warn('Dev RWS error', err)
+
+              // Attach for debugging — export for tooling and attach to window only via helper
+              __rws = rws
+              setLegacyGlobal('__rws', rws, {debugOnly: true, note: 'Prefer importing __rws from main.js'})
+              if (ENV.debug) {
+                __devRws = rws
+                setLegacyGlobal('__devRws', rws, {debugOnly: true, note: 'Prefer importing __devRws from main.js'})
+              }
+            } catch (ex) {
+              log.warn('Failed to open Dev ReconnectingWebSocket:', ex)
+            }
+          })
+          .catch(e => log.warn('Failed to import ReconnectingWebSocket', e))
+      }
+    }
+  },
+  {once: true}
+)
