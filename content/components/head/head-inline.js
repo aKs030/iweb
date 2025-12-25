@@ -57,7 +57,8 @@ gtag('config', 'AW-1036079663')
           trigger.setAttribute('aria-hidden', 'true')
           trigger.setAttribute('role', 'presentation')
           trigger.style.pointerEvents = 'none'
-          trigger.style.minHeight = '2px'
+          // Slightly larger minHeight to make intersection detection more robust on first scroll
+          trigger.style.minHeight = '4px'
           trigger.style.width = '100%'
 
           // Default thresholds (can be overridden per page by setting data attributes)

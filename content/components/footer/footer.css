@@ -664,10 +664,10 @@ body.footer-expanded {
 .footer-trigger-zone {
   display: block;
   width: 100%;
-  min-height: 2px; /* keep small but measurable */
+  min-height: 4px; /* slightly larger to improve early intersection detection */
   pointer-events: none;
   visibility: hidden; /* ensure it doesn't affect layout visually */
-}
+} 
 
 .footer-cookie-settings.hidden {
   display: none;
