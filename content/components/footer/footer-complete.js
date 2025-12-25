@@ -755,6 +755,13 @@ class ScrollHandler {
         // If the trigger is within a short distance below the viewport (e.g., 40px), consider this a small scroll and expand
         if (!this.expanded && distanceBelowViewport <= 40) {
           this.toggleExpansion(true)
+          return
+        }
+
+        // Additional fallback: if the user has scrolled very near the bottom of the page, expand as well
+        const nearBottom = window.innerHeight + current >= document.body.scrollHeight - 40
+        if (!this.expanded && nearBottom) {
+          this.toggleExpansion(true)
         }
       } catch {
         /* ignore */
