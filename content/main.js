@@ -142,10 +142,15 @@ const SectionLoader = (() => {
     try {
       // Try extensionless URL first to avoid server redirects (some hosts redirect .html -> no-ext)
       let response
-      const isLocal = location.hostname === 'localhost' || location.hostname.startsWith('127.') || location.hostname.endsWith('.local')
-      const fetchCandidates = isLocal
-        ? [url, url && url.endsWith('.html') ? url : url + '.html']
-        : [url && url.endsWith('.html') ? url.replace(/\.html$/, '') : url, url]
+      // Robust candidate selection: always try both extensionless and .html variants
+      let fetchCandidates
+      if (url && url.endsWith('.html')) {
+        // If .html explicitly provided, try without extension first to avoid redirects
+        fetchCandidates = [url.replace(/\.html$/, ''), url]
+      } else {
+        // Otherwise try the provided value first, then the .html variant
+        fetchCandidates = [url, (url || '') + '.html']
+      }
 
       for (const candidate of fetchCandidates) {
         try {
