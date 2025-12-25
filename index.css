@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Custom Scroll Snap Page Styling --- */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  scroll-behavior: smooth;
+  background-color: #000;
+  color: white;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+section {
+  scroll-snap-align: start;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+/* Smooth fade-in for sections */
+section {
+  transition: background 0.8s ease;
+}
