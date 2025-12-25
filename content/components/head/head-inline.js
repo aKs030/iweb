@@ -53,8 +53,18 @@ gtag('config', 'AW-1036079663')
           trigger.id = 'footer-trigger-zone'
           trigger.className = 'footer-trigger-zone'
 
+          // Make the trigger non-interactive but detectable by IntersectionObserver
           trigger.setAttribute('aria-hidden', 'true')
           trigger.setAttribute('role', 'presentation')
+          trigger.style.pointerEvents = 'none'
+          trigger.style.minHeight = '2px'
+          trigger.style.width = '100%'
+
+          // Default thresholds (can be overridden per page by setting data attributes)
+          // Small numbers increase sensitivity so even the smallest scroll can trigger the footer on desktop
+          trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.005'
+          trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.002'
+
           if (footerContainer && footerContainer.parentNode) {
             footerContainer.parentNode.insertBefore(trigger, footerContainer)
           } else {

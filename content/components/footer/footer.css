@@ -660,6 +660,15 @@ body.footer-expanded {
   transform: translateZ(0);
 }
 
+/* Trigger zone: invisible, non-interactive element used by IntersectionObserver. Keep a minimal height so it is detectable across browsers. */
+.footer-trigger-zone {
+  display: block;
+  width: 100%;
+  min-height: 2px; /* keep small but measurable */
+  pointer-events: none;
+  visibility: hidden; /* ensure it doesn't affect layout visually */
+}
+
 .footer-cookie-settings.hidden {
   display: none;
 }
