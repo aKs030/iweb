@@ -165,6 +165,7 @@ const ProgrammaticScroll = (() => {
 const GlobalClose = (() => {
   let closeHandler = null
   let bound = false
+  let _forceScrollListener = null
 
   const onDocClick = e => {
     const footer = domCache.get('#site-footer')
@@ -174,10 +175,28 @@ const GlobalClose = (() => {
   }
 
   const onUserScroll = () => {
-    if (ProgrammaticScroll.hasActive()) return
     const footer = domCache.get('#site-footer')
     if (!footer?.classList.contains('footer-expanded')) return
-    closeHandler?.()
+
+    // Detect strong user scroll away from the bottom (in px)
+    const scrollTop = window.scrollY || window.pageYOffset
+    const distanceFromBottom = Math.max(0, document.body.scrollHeight - (window.innerHeight + scrollTop))
+
+    // Thresholds: be slightly more sensitive on mobile
+    const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches
+    const AWAY_THRESHOLD = isMobile ? 24 : 48
+
+    // If user scrolled away more than threshold -> close immediately (user intent clear)
+    if (distanceFromBottom > AWAY_THRESHOLD) {
+      try { closeFooter() } catch { closeHandler?.() }
+      return
+    }
+
+    // Otherwise, fall back to previous behavior but ignore ProgrammaticScroll only for short windows
+    if (ProgrammaticScroll.hasActive()) return
+
+    // If not clearly away and no programmatic scroll, close (this covers desktop gestures)
+    try { closeFooter() } catch { closeHandler?.() }
   }
 
   return {
@@ -194,11 +213,34 @@ const GlobalClose = (() => {
         document.addEventListener('click', onDocClick, {capture: true, passive: true})
         window.addEventListener('wheel', onUserScroll, {passive: true})
         window.addEventListener('touchstart', onUserScroll, {passive: true})
+        // Also listen to scroll events on desktop to detect manual scroll-away
+        window.addEventListener('scroll', onUserScroll, {passive: true})
       } else {
         // Mobile: avoid closing on taps outside; only close on scroll (or touchmove)
         // use scroll and touchmove to detect actual scrolling gestures
         window.addEventListener('scroll', onUserScroll, {passive: true})
         window.addEventListener('touchmove', onUserScroll, {passive: true})
+
+        // Listen for larger gesture (wheel/touchend) as well, for better responsiveness
+        window.addEventListener('touchend', onUserScroll, {passive: true})
+      }
+
+      // Additionally, add a forceful capture-phase listener that will detect being scrolled away and call close directly.
+      if (!_forceScrollListener) {
+        _forceScrollListener = () => {
+          const footer = domCache.get('#site-footer')
+          if (!footer?.classList.contains('footer-expanded')) return
+
+          const scrollTop = window.scrollY || window.pageYOffset
+          const distanceFromBottom = Math.max(0, document.body.scrollHeight - (window.innerHeight + scrollTop))
+          const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches
+          const AWAY_THRESHOLD = isMobile ? 24 : 48
+
+          if (distanceFromBottom > AWAY_THRESHOLD) {
+            try { closeFooter() } catch { closeHandler?.() }
+          }
+        }
+        window.addEventListener('scroll', _forceScrollListener, {passive: true, capture: true})
       }
 
       bound = true
@@ -212,6 +254,10 @@ const GlobalClose = (() => {
       window.removeEventListener('touchstart', onUserScroll)
       window.removeEventListener('scroll', onUserScroll)
       window.removeEventListener('touchmove', onUserScroll)
+      if (_forceScrollListener) {
+        try { window.removeEventListener('scroll', _forceScrollListener, true) } catch {}
+        _forceScrollListener = null
+      }
       bound = false
     }
   }
@@ -675,12 +721,15 @@ class ScrollHandler {
     this.expanded = false
     this.observer = null
     this._resizeHandler = null
-    // Threshold defaults (may be overridden by trigger dataset)
+    // default thresholds will be computed on init
     this.expandThreshold = 0.05
     this.collapseThreshold = 0.02
-    // Suppression window (ms) after expansion to prevent immediate collapse from transient IO events
-    this._collapseSuppressMs = 350
-    this._suppressCollapseUntil = 0
+
+    // Protection against immediate re-collapse after expansion
+    this._collapseLockMs = 450 // ms to ignore transient false intersections after expand
+    this._collapseLockUntil = 0
+    this._consecutiveFalse = 0
+
     window.footerScrollHandler = this
   }
 
@@ -726,29 +775,32 @@ class ScrollHandler {
 
         if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return
 
-        // Determine current state
-        const nowRatio = entry.intersectionRatio || 0
-        const isSignificant = entry.isIntersecting && nowRatio >= this.expandThreshold
-        const isInsignificant = !entry.isIntersecting || nowRatio < this.collapseThreshold
+        const threshold = this.expanded ? this.collapseThreshold : this.expandThreshold
+        const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold
 
-        // If we detect an expand gesture and footer is not expanded, expand and suppress immediate collapse for a short window
-        if (isSignificant && !this.expanded) {
-          this._suppressCollapseUntil = Date.now() + (this._collapseSuppressMs || 350)
-          this.toggleExpansion(true)
-          return
-        }
-
-        // If it's a collapse candidate and footer is expanded, only collapse if the suppress window has passed
-        if (isInsignificant && this.expanded) {
-          if (Date.now() < (this._suppressCollapseUntil || 0)) {
-            // Ignore transient collapse
+        // If we are already expanded and a collapse candidate appears, avoid immediate collapse
+        if (!shouldExpand && this.expanded) {
+          // if we're within the temporary lock window (short time after expanding), ignore
+          if (Date.now() < this._collapseLockUntil) {
+            // treat as transient - reset consecutive counter
+            this._consecutiveFalse = 0
             return
           }
-          this.toggleExpansion(false)
+
+          // count consecutive 'false' entries and only collapse if persistent
+          this._consecutiveFalse += 1
+          if (this._consecutiveFalse >= 2) {
+            this._consecutiveFalse = 0
+            this.toggleExpansion(false)
+          }
+
           return
         }
 
-        // Otherwise do nothing (avoids flapping on intermediate ratios)
+        // On intersecting events, reset false counter
+        if (shouldExpand) this._consecutiveFalse = 0
+
+        this.toggleExpansion(shouldExpand)
       },
       {rootMargin, threshold: [this.collapseThreshold, this.expandThreshold]}
     )
@@ -784,6 +836,10 @@ class ScrollHandler {
       document.body.classList.add('footer-expanded')
       max?.classList.remove('footer-hidden')
       min?.classList.add('footer-hidden')
+
+      // Set lock so transient observer false events won't collapse immediately
+      this._collapseLockUntil = Date.now() + this._collapseLockMs
+      this._consecutiveFalse = 0
 
       this.expanded = true
     } else if (!shouldExpand && this.expanded) {
