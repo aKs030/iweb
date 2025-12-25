@@ -244,6 +244,13 @@
         appleIconEl.setAttribute('href', `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`)
         document.head.appendChild(appleIconEl)
       }
+
+      // Inject generated Tailwind stylesheet (safe to call even if not present yet)
+      try {
+        upsertLink('stylesheet', `${BASE_URL}/content/styles/tailwind.css`)
+      } catch (err) {
+        // ignore — file may not exist in dev environment yet
+      }
     } catch (e) {
       // Safe logging in catch block
       console.warn('[Head-Loader] PWA meta injection failed:', e)
