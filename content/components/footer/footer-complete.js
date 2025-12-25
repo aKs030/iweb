@@ -675,8 +675,12 @@ class ScrollHandler {
     this.expanded = false
     this.observer = null
     this._resizeHandler = null
+    // Threshold defaults (may be overridden by trigger dataset)
     this.expandThreshold = 0.05
     this.collapseThreshold = 0.02
+    // Suppression window (ms) after expansion to prevent immediate collapse from transient IO events
+    this._collapseSuppressMs = 350
+    this._suppressCollapseUntil = 0
     window.footerScrollHandler = this
   }
 
@@ -722,9 +726,29 @@ class ScrollHandler {
 
         if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return
 
-        const threshold = this.expanded ? this.collapseThreshold : this.expandThreshold
-        const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold
-        this.toggleExpansion(shouldExpand)
+        // Determine current state
+        const nowRatio = entry.intersectionRatio || 0
+        const isSignificant = entry.isIntersecting && nowRatio >= this.expandThreshold
+        const isInsignificant = !entry.isIntersecting || nowRatio < this.collapseThreshold
+
+        // If we detect an expand gesture and footer is not expanded, expand and suppress immediate collapse for a short window
+        if (isSignificant && !this.expanded) {
+          this._suppressCollapseUntil = Date.now() + (this._collapseSuppressMs || 350)
+          this.toggleExpansion(true)
+          return
+        }
+
+        // If it's a collapse candidate and footer is expanded, only collapse if the suppress window has passed
+        if (isInsignificant && this.expanded) {
+          if (Date.now() < (this._suppressCollapseUntil || 0)) {
+            // Ignore transient collapse
+            return
+          }
+          this.toggleExpansion(false)
+          return
+        }
+
+        // Otherwise do nothing (avoids flapping on intermediate ratios)
       },
       {rootMargin, threshold: [this.collapseThreshold, this.expandThreshold]}
     )
