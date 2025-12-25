@@ -73,44 +73,49 @@
 
         // Anpassungsfunktion: misst natürliche Größe & berechnet scale
         useLayoutEffect(() => {
-          if (!contentRef.current || !containerRef.current) return
-          let resizeTimer = null
+          if (!contentRef.current || !containerRef.current) return;
+          let raf = null;
 
           const adjust = () => {
-            const cont = containerRef.current
-            const content = contentRef.current
-            if (!cont || !content) return
-            // Entferne vorherige transform für die Messung
-            content.style.transform = 'none'
-            const contentW = Math.max(content.scrollWidth, content.offsetWidth)
-            const contentH = Math.max(content.scrollHeight, content.offsetHeight)
-            const availW = cont.clientWidth
-            const availH = cont.clientHeight
-            const s = Math.min(1, availW / (contentW || 1), availH / (contentH || 1))
-            // leichte Debounce, damit nicht zu oft gerendert wird
-            if (resizeTimer) clearTimeout(resizeTimer)
-            resizeTimer = setTimeout(() => setScale(s), 10)
-          }
+            const cont = containerRef.current;
+            const content = contentRef.current;
+            if (!cont || !content) return;
 
-          const roContent = new ResizeObserver(adjust)
-          const roContainer = new ResizeObserver(adjust)
-          roContent.observe(contentRef.current)
-          roContainer.observe(containerRef.current)
-          window.addEventListener('resize', adjust)
+            // Temporär transform entfernen, damit Messungen korrekt sind
+            const prior = content.style.transform;
+            content.style.transform = 'none';
 
+            const contentW = Math.max(content.scrollWidth, content.offsetWidth);
+            const contentH = Math.max(content.scrollHeight, content.offsetHeight);
+            const availW = cont.clientWidth;
+            const availH = cont.clientHeight;
+            const s = Math.min(1, availW / (contentW || 1), availH / (contentH || 1));
+
+            // restore (will be overwritten by state)
+            content.style.transform = prior;
+            // weniger "flackern" - throttle via requestAnimationFrame
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => setScale(s));
+          };
+
+          const roContent = new ResizeObserver(adjust);
+          const roContainer = new ResizeObserver(adjust);
+          roContent.observe(contentRef.current);
+          roContainer.observe(containerRef.current);
+          window.addEventListener('resize', adjust);
           // initial
-          requestAnimationFrame(adjust)
+          adjust();
 
           return () => {
-            roContent.disconnect()
-            roContainer.disconnect()
-            window.removeEventListener('resize', adjust)
-            if (resizeTimer) clearTimeout(resizeTimer)
-          }
+            roContent.disconnect();
+            roContainer.disconnect();
+            window.removeEventListener('resize', adjust);
+            if (raf) cancelAnimationFrame(raf);
+          };
         }, [])
 
         return html`
-          <div ref=${containerRef} className="flex items-center justify-center h-full w-full p-2 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" style=${{overflow: 'hidden'}}>
+          <div ref=${containerRef} className="flex items-center justify-center h-full w-full p-2" style=${{overflow: 'hidden'}}>
             <div
               ref=${contentRef}
               className="bg-white/10 backdrop-blur-lg rounded-3xl p-4 max-w-full w-full border border-white/20 overflow-hidden"
@@ -118,6 +123,8 @@
                 transform: `scale(${scale})`,
                 transformOrigin: 'top center',
                 transition: 'transform 120ms linear',
+                // ensure measured size corresponds to content natural size:
+                boxSizing: 'border-box'
               }}>
 
               <div className="flex justify-between items-center mb-4">
