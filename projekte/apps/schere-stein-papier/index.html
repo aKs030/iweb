@@ -11,6 +11,22 @@
     <style>
       /* Ensure the app fills the iframe and no default margins cause scrollbars */
       html, body, #root { height: 100%; margin: 0; overflow: hidden; }
+      /* Debug overlay */
+      .scale-debug {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        background: rgba(0,0,0,0.5);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      .scale-debug.show-border {
+        box-shadow: 0 0 0 2px rgba(34,197,94,0.6) inset;
+      }
     </style>
   </head>
   <body>
@@ -27,10 +43,10 @@
         const [score, setScore] = useState({player: 0, computer: 0, draws: 0})
         const [isAnimating, setIsAnimating] = useState(false)
 
-        // Skalierung: refs + state
-        const containerRef = useRef(null)     // sichtbarer iframe-Bereich
-        const contentRef = useRef(null)       // unge-scalter Inhalt zum Messen
+        const containerRef = useRef(null)
+        const contentRef = useRef(null)
         const [scale, setScale] = useState(1)
+        const [debug, setDebug] = useState(true)
 
         const choices = [
           {name: 'rock', emoji: '🪨', label: 'Stein'},
@@ -61,6 +77,10 @@
               setScore(prev => ({...prev, computer: prev.computer + 1}))
             }
             setIsAnimating(false)
+
+            // Force recalculation after dynamic change
+            window.dispatchEvent(new Event('resize'))
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 120)
           }, 800)
         }
 
@@ -69,61 +89,60 @@
           setPlayerChoice(null)
           setComputerChoice(null)
           setResult('')
+          // give it a tick
+          setTimeout(() => window.dispatchEvent(new Event('resize')), 60)
         }
 
-        // Anpassungsfunktion: misst natürliche Größe & berechnet scale
         useLayoutEffect(() => {
-          if (!contentRef.current || !containerRef.current) return;
-          let raf = null;
+          if (!contentRef.current || !containerRef.current) return
+          let raf = null
 
           const adjust = () => {
-            const cont = containerRef.current;
-            const content = contentRef.current;
-            if (!cont || !content) return;
+            const cont = containerRef.current
+            const content = contentRef.current
+            if (!cont || !content) return
 
             // Temporär transform entfernen, damit Messungen korrekt sind
-            const prior = content.style.transform;
-            content.style.transform = 'none';
+            const prior = content.style.transform
+            content.style.transform = 'none'
 
-            const contentW = Math.max(content.scrollWidth, content.offsetWidth);
-            const contentH = Math.max(content.scrollHeight, content.offsetHeight);
-            const availW = cont.clientWidth;
-            const availH = cont.clientHeight;
-            const s = Math.min(1, availW / (contentW || 1), availH / (contentH || 1));
+            const contentW = Math.max(content.scrollWidth, content.offsetWidth)
+            const contentH = Math.max(content.scrollHeight, content.offsetHeight)
+            const availW = cont.clientWidth
+            const availH = cont.clientHeight
+            const s = Math.min(1, availW / (contentW || 1), availH / (contentH || 1))
 
-            // restore (will be overwritten by state)
-            content.style.transform = prior;
-            // weniger "flackern" - throttle via requestAnimationFrame
-            if (raf) cancelAnimationFrame(raf);
-            raf = requestAnimationFrame(() => setScale(s));
-          };
+            content.style.transform = prior
+            if (raf) cancelAnimationFrame(raf)
+            raf = requestAnimationFrame(() => setScale(s))
+          }
 
-          const roContent = new ResizeObserver(adjust);
-          const roContainer = new ResizeObserver(adjust);
-          roContent.observe(contentRef.current);
-          roContainer.observe(containerRef.current);
-          window.addEventListener('resize', adjust);
+          const roContent = new ResizeObserver(adjust)
+          const roContainer = new ResizeObserver(adjust)
+          roContent.observe(contentRef.current)
+          roContainer.observe(containerRef.current)
+          window.addEventListener('resize', adjust)
           // initial
-          adjust();
+          adjust()
 
           return () => {
-            roContent.disconnect();
-            roContainer.disconnect();
-            window.removeEventListener('resize', adjust);
-            if (raf) cancelAnimationFrame(raf);
-          };
+            roContent.disconnect()
+            roContainer.disconnect()
+            window.removeEventListener('resize', adjust)
+            if (raf) cancelAnimationFrame(raf)
+          }
         }, [])
 
         return html`
-          <div ref=${containerRef} className="flex items-center justify-center h-full w-full p-2" style=${{overflow: 'hidden'}}>
+          <div ref=${containerRef} className="flex items-center justify-center h-full w-full p-2 min-h-0" style=${{overflow: 'hidden'}}>
+            <div className="scale-debug ${debug ? 'show-border' : ''}">${() => `scale: ${scale.toFixed(2)}`}</div>
             <div
               ref=${contentRef}
-              className="bg-white/10 backdrop-blur-lg rounded-3xl p-4 max-w-full w-full border border-white/20 overflow-hidden"
+              className="bg-white/10 backdrop-blur-lg rounded-3xl p-4 max-w-full w-full border border-white/20"
               style=${{
                 transform: `scale(${scale})`,
                 transformOrigin: 'top center',
                 transition: 'transform 120ms linear',
-                // ensure measured size corresponds to content natural size:
                 boxSizing: 'border-box'
               }}>
 
