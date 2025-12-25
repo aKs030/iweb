@@ -21,8 +21,8 @@ All notable changes to this project will be documented in this file.
 - Added ARIA announcements for cookie actions and newsletter submissions using the accessibility manager (screen reader friendly). ✅
 - Added client-side validation to the newsletter form and appropriate a11y feedback. ✅
 - Small responsive/touch-target improvements for mobile (larger hit areas, adjusted footer width). ✅
-- Prevent footer flapping: added expand-lock and collapse-debounce to keep footer maximized on first small scroll. ✅
-- Added Playwright E2E tests for cookie interactions (`tests/footer.spec.js`) and a flapping test (`tests/footer-flapping.spec.js`). ✅
+- Prevent footer flapping: added expand-lock and collapse-debounce to keep footer maximized on first small scroll. Defaults updated: Desktop lock 1000ms, Mobile lock 500ms. ✅
+- Added Playwright E2E tests for cookie interactions (`tests/footer.spec.js`) and flapping tests (`tests/footer-flapping.spec.js`, `tests/footer-scroll.spec.js`). ✅
 
 ### 2025-12-20 — Videos page finalization
 
