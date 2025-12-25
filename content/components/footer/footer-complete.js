@@ -278,11 +278,13 @@ class ConsentBanner {
     this.elements.banner.classList.add('hidden')
     CookieManager.set('cookie_consent', 'accepted')
     GoogleAnalytics.load()
+    try { a11y?.announce('Cookie-Präferenz: Alle Cookies akzeptiert', {priority: 'polite'}) } catch {}
   }
 
   reject() {
     this.elements.banner.classList.add('hidden')
     CookieManager.set('cookie_consent', 'rejected')
+    try { a11y?.announce('Cookie-Präferenz: Nur notwendige Cookies akzeptiert', {priority: 'polite'}) } catch {}
   }
 }
 
@@ -311,6 +313,7 @@ const CookieSettings = (() => {
       rejectAllBtn: () => {
         CookieManager.set('cookie_consent', 'rejected')
         CookieManager.deleteAnalytics()
+        try { a11y?.announce('Cookie-Einstellungen: Nur notwendige Cookies aktiv', {priority: 'polite'}) } catch {}
         close()
         domCache.get('#cookie-consent-banner')?.classList.add('hidden')
       },
@@ -318,9 +321,11 @@ const CookieSettings = (() => {
         if (elements.analyticsToggle?.checked) {
           CookieManager.set('cookie_consent', 'accepted')
           GoogleAnalytics.load()
+          try { a11y?.announce('Cookie-Einstellungen gespeichert: Analyse aktiviert', {priority: 'polite'}) } catch {}
         } else {
           CookieManager.set('cookie_consent', 'rejected')
           CookieManager.deleteAnalytics()
+          try { a11y?.announce('Cookie-Einstellungen gespeichert: Analyse deaktiviert', {priority: 'polite'}) } catch {}
         }
         close()
         domCache.get('#cookie-consent-banner')?.classList.add('hidden')
@@ -328,6 +333,7 @@ const CookieSettings = (() => {
       acceptAllBtn: () => {
         CookieManager.set('cookie_consent', 'accepted')
         GoogleAnalytics.load()
+        try { a11y?.announce('Cookie-Einstellungen: Alle Cookies aktiviert', {priority: 'polite'}) } catch {}
         close()
         domCache.get('#cookie-consent-banner')?.classList.add('hidden')
       }
@@ -355,6 +361,18 @@ const CookieSettings = (() => {
 
     // Attach cleanup hook (will be called by closeFooter which unbinds GlobalClose and other cleanup)
     elements._removeHandlers = removeHandlers
+
+    // Also attach the cleanup hook to the actual DOM nodes so closeFooter can call them
+    try {
+      if (elements.cookieView && typeof elements.cookieView === 'object') {
+        elements.cookieView._removeHandlers = removeHandlers
+      }
+      if (elements.normalContent && typeof elements.normalContent === 'object') {
+        elements.normalContent._removeHandlers = removeHandlers
+      }
+    } catch {
+      /* ignore */
+    }
 
   }
 
@@ -398,8 +416,24 @@ const CookieSettings = (() => {
     if (!elements) elements = getElements()
     if (!elements.footer) return
 
-    // Hide cookie-specific view
-    elements.cookieView?.classList.add('hidden')
+    // Hide cookie-specific view immediately
+    try {
+      elements.cookieView?.classList?.add('hidden')
+    } catch {
+      /* ignore */
+    }
+
+    // Remove any attached handlers to avoid memory leaks
+    try {
+      if (elements._removeHandlers) elements._removeHandlers()
+      if (elements.cookieView && elements.cookieView._removeHandlers) elements.cookieView._removeHandlers()
+      if (elements.normalContent && elements.normalContent._removeHandlers) elements.normalContent._removeHandlers()
+    } catch {
+      /* ignore */
+    }
+
+    // Clear the cached elements reference
+    elements = null
 
     // Centralized footer cleanup
     closeFooter()
@@ -452,6 +486,15 @@ function closeFooter() {
   }
 }
 
+
+// Listen for close requests from other modules (a11y, keyboard handlers, etc.)
+document.addEventListener('footer:requestClose', () => {
+  try {
+    closeFooter()
+  } catch (e) {
+    log.warn('footer:requestClose failed', e)
+  }
+})
 
 // ===== Footer Loader (Optimized) =====
 class FooterLoader {
@@ -516,6 +559,22 @@ class FooterLoader {
     if (form) {
       form.addEventListener('submit', e => {
         e.preventDefault()
+        const input = form.querySelector('#newsletter-email')
+        // Client-side validation
+        if (input && !input.checkValidity()) {
+          try {
+            a11y?.announce('Bitte gültige E-Mail-Adresse eingeben', {priority: 'assertive'})
+          } catch {
+            /* ignore */
+          }
+          try {
+            input.focus()
+          } catch {
+            /* ignore */
+          }
+          return
+        }
+
         const btn = form.querySelector('button[type="submit"]')
         if (btn) {
           const originalText = btn.textContent
@@ -527,6 +586,12 @@ class FooterLoader {
           }, 3000)
         }
         form.reset()
+        // Accessibility: announce success for screen readers
+        try {
+          a11y?.announce('Newsletter-Abonnement bestätigt', {priority: 'polite'})
+        } catch {
+          /* ignore */
+        }
       })
     }
 
