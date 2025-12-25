@@ -399,8 +399,6 @@ const CookieSettings = (() => {
     requestAnimationFrame(() => window.scrollTo({top: document.body.scrollHeight, behavior: 'auto'}))
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION)
-    // Ensure GlobalClose will close the cookie view when invoked
-    try { GlobalClose.setCloseHandler(() => CookieSettings.close()) } catch {}
     GlobalClose.bind()
     setupHandlers(elements)
 
@@ -469,17 +467,6 @@ function closeFooter() {
 
   // Unbind global close handlers
   GlobalClose.unbind()
-
-  // Remove gesture fallback listener if present
-  try {
-    if (window._footerGestureCloseHandler) {
-      window.removeEventListener('touchmove', window._footerGestureCloseHandler)
-      window.removeEventListener('wheel', window._footerGestureCloseHandler)
-      delete window._footerGestureCloseHandler
-    }
-  } catch {
-    /* ignore */
-  }
 
   // Remove any component-specific handlers (cookie handlers etc.)
   try {
@@ -674,11 +661,7 @@ class FooterLoader {
         footer.querySelector('.footer-minimized')?.classList.add('footer-hidden')
         footer.querySelector('.footer-maximized')?.classList.remove('footer-hidden')
 
-        // Short programmatic lock when user triggers the footer manually so mobile scroll can close the footer quickly
-        const token = ProgrammaticScroll.create(150)
-        // Ensure global close handlers will close the footer on mobile scroll
-        try { GlobalClose.setCloseHandler(() => closeFooter()) } catch {}
-        GlobalClose.bind()
+        const token = ProgrammaticScroll.create()
         window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})
         ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport')
       }
@@ -694,6 +677,13 @@ class ScrollHandler {
     this._resizeHandler = null
     this.expandThreshold = 0.05
     this.collapseThreshold = 0.02
+
+    // Lock & debounce settings to avoid flapping when trigger is small
+    this._expandLockMs = 400 // how long after expand collapse is temporarily ignored
+    this._collapseDebounceMs = 200 // delay before executing collapse
+    this._lockUntil = 0
+    this._collapseTimer = null
+
     window.footerScrollHandler = this
   }
 
@@ -768,49 +758,17 @@ class ScrollHandler {
     const min = footer.querySelector('.footer-minimized')
     const max = footer.querySelector('.footer-maximized')
 
+    const now = Date.now()
+
     if (shouldExpand && !this.expanded) {
-      // ProgrammaticScroll duration: keep longer on desktop to avoid accidental closures during large scrolls,
-      // but shorten on mobile so a real user scroll can close the footer promptly.
-      const _isDesktop = window.matchMedia && window.matchMedia('(min-width: 769px)').matches
-      ProgrammaticScroll.create(_isDesktop ? 1000 : 150)
-
-      // Ensure GlobalClose will close the footer on user gestures (esp. mobile scroll)
-      try {
-        GlobalClose.setCloseHandler(() => closeFooter())
-      } catch {
-        /* ignore */
+      // Cancel any pending collapse
+      if (this._collapseTimer) {
+        clearTimeout(this._collapseTimer)
+        this._collapseTimer = null
       }
+
+      ProgrammaticScroll.create(1000)
       GlobalClose.bind()
-
-      // Attach a lightweight gesture listener as a reliable fallback for touch/wheel gestures
-      try {
-        if (!window._footerGestureCloseHandler) {
-          window._footerGestureCloseHandler = () => {
-            try {
-              // Defer the actual close check slightly so ProgrammaticScroll locks can expire
-              setTimeout(() => {
-                try {
-                  if (ProgrammaticScroll.hasActive && ProgrammaticScroll.hasActive()) return
-                  closeFooter()
-                  if (window._footerGestureCloseHandler) {
-                    window.removeEventListener('touchmove', window._footerGestureCloseHandler)
-                    window.removeEventListener('wheel', window._footerGestureCloseHandler)
-                    delete window._footerGestureCloseHandler
-                  }
-                } catch {
-                  /* ignore */
-                }
-              }, 200)
-            } catch {
-              /* ignore */
-            }
-          }
-          window.addEventListener('touchmove', window._footerGestureCloseHandler, {passive: true})
-          window.addEventListener('wheel', window._footerGestureCloseHandler, {passive: true})
-        }
-      } catch {
-        /* ignore */
-      }
       document.documentElement.style.scrollSnapType = 'none'
 
       footer.classList.add('footer-expanded')
@@ -818,17 +776,32 @@ class ScrollHandler {
       max?.classList.remove('footer-hidden')
       min?.classList.add('footer-hidden')
 
+      // Set lock window to prevent immediate collapse due to tiny layout shifts
+      this._lockUntil = now + this._expandLockMs
+
       this.expanded = true
     } else if (!shouldExpand && this.expanded) {
-      // Use centralized close handler to ensure consistent cleanup
-      closeFooter()
-      this.expanded = false
+      // If within the lock window, ignore collapse requests
+      if (now < (this._lockUntil || 0)) return
+
+      // Debounce collapse so small, transient out-of-view events don't immediately close
+      if (this._collapseTimer) clearTimeout(this._collapseTimer)
+      this._collapseTimer = setTimeout(() => {
+        // Use centralized close handler to ensure consistent cleanup
+        closeFooter()
+        this.expanded = false
+        this._collapseTimer = null
+      }, this._collapseDebounceMs)
     }
   }
 
   cleanup() {
     this.observer?.disconnect()
     if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
+    if (this._collapseTimer) {
+      clearTimeout(this._collapseTimer)
+      this._collapseTimer = null
+    }
   }
 }
 
