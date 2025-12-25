@@ -26,9 +26,22 @@ test.describe('Footer mobile gestures', () => {
 
     // Small scroll down should trigger collapse on mobile
     // Simulate a scroll event to trigger GlobalClose handlers (mobile)
-    await page.evaluate(() => window.dispatchEvent(new Event('scroll', {bubbles: true})))
+    const dbg = await page.evaluate(() => ({
+      hasGestureHandler: !!window._footerGestureCloseHandler,
+      programmaticActive: typeof ProgrammaticScroll !== 'undefined' ? ProgrammaticScroll.hasActive() : null
+    }))
+    console.log('DBG before scroll:', dbg)
+
+    // Dispatch a wheel event (our gesture fallback listens for 'wheel' and 'touchmove')
+    await page.evaluate(() => window.dispatchEvent(new Event('wheel', {bubbles: true})))
     // wait a short while for debounce/close to run
     await page.waitForTimeout(1000)
+
+    const dbgAfter = await page.evaluate(() => ({
+      hasGestureHandler: !!window._footerGestureCloseHandler,
+      programmaticActive: typeof ProgrammaticScroll !== 'undefined' ? ProgrammaticScroll.hasActive() : null
+    }))
+    console.log('DBG after scroll:', dbgAfter)
 
     await expect(footer).not.toHaveClass(/footer-expanded/)
   })
