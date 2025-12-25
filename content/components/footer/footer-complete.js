@@ -470,6 +470,17 @@ function closeFooter() {
   // Unbind global close handlers
   GlobalClose.unbind()
 
+  // Remove gesture fallback listener if present
+  try {
+    if (window._footerGestureCloseHandler) {
+      window.removeEventListener('touchmove', window._footerGestureCloseHandler)
+      window.removeEventListener('wheel', window._footerGestureCloseHandler)
+      delete window._footerGestureCloseHandler
+    }
+  } catch {
+    /* ignore */
+  }
+
   // Remove any component-specific handlers (cookie handlers etc.)
   try {
     const normal = domCache.get('#footer-normal-content')
@@ -770,6 +781,29 @@ class ScrollHandler {
         /* ignore */
       }
       GlobalClose.bind()
+
+      // Attach a lightweight gesture listener as a reliable fallback for touch/wheel gestures
+      try {
+        if (!window._footerGestureCloseHandler) {
+          window._footerGestureCloseHandler = () => {
+            try {
+              if (ProgrammaticScroll.hasActive()) return
+              closeFooter()
+              if (window._footerGestureCloseHandler) {
+                window.removeEventListener('touchmove', window._footerGestureCloseHandler)
+                window.removeEventListener('wheel', window._footerGestureCloseHandler)
+                delete window._footerGestureCloseHandler
+              }
+            } catch {
+              /* ignore */
+            }
+          }
+          window.addEventListener('touchmove', window._footerGestureCloseHandler, {passive: true})
+          window.addEventListener('wheel', window._footerGestureCloseHandler, {passive: true})
+        }
+      } catch {
+        /* ignore */
+      }
       document.documentElement.style.scrollSnapType = 'none'
 
       footer.classList.add('footer-expanded')
