@@ -57,9 +57,10 @@ const CONSTANTS = {
   RESIZE_DEBOUNCE: 150,
   ANIMATION_DURATION: 800,
   // Keep the footer expanded for at least this many ms after first expand to avoid flapping
-  EXPAND_LOCK_MS: 300,
+  // This is a fallback value; per-device defaults are applied when available.
+  EXPAND_LOCK_MS: 1000,
   // Debounce collapse: wait this many ms before actually collapsing
-  COLLAPSE_DEBOUNCE_MS: 200
+  COLLAPSE_DEBOUNCE_MS: 250
 }
 
 // ===== DOM Cache =====
@@ -600,6 +601,8 @@ class ScrollHandler {
     this._resizeHandler = null
     this._collapseTimer = null
     this._lockUntil = 0
+    this._userScrollListener = null
+    this._nearBottomPx = 24
     this.expandThreshold = 0.05
     this.collapseThreshold = 0.02
     window.footerScrollHandler = this
@@ -632,24 +635,40 @@ class ScrollHandler {
     footer.querySelector('.footer-maximized')?.classList.add('footer-hidden')
 
     const isDesktop = window.matchMedia && window.matchMedia('(min-width: 769px)').matches
-    const defaultExpand = isDesktop ? 0.005 : 0.05
-    const defaultCollapse = isDesktop ? 0.002 : 0.02
+    // Slightly smaller thresholds for better first-scroll sensitivity on desktop
+    const defaultExpand = isDesktop ? 0.003 : 0.05
+    const defaultCollapse = isDesktop ? 0.001 : 0.02
 
-    // Thresholds from dataset
+    // Thresholds + timing values from dataset (per-page overrides)
     try {
-      const { expandThreshold, collapseThreshold } = trigger.dataset
+      const { expandThreshold, collapseThreshold, expandLockMs, collapseDebounceMs } = trigger.dataset
       this.expandThreshold = expandThreshold ? parseFloat(expandThreshold) : defaultExpand
       this.collapseThreshold = collapseThreshold ? parseFloat(collapseThreshold) : defaultCollapse
+
+      const parsedLock = expandLockMs ? parseInt(expandLockMs, 10) : NaN
+      const parsedDebounce = collapseDebounceMs ? parseInt(collapseDebounceMs, 10) : NaN
+
+      // Increase defaults: Desktop 1000ms, Mobile 500ms
+      this.expandLockMs = !Number.isNaN(parsedLock) && parsedLock >= 0 ? parsedLock : (isDesktop ? 1000 : 500)
+      this.collapseDebounceMs = !Number.isNaN(parsedDebounce) && parsedDebounce >= 0 ? parsedDebounce : (isDesktop ? 250 : 200)
     } catch {
       this.expandThreshold = defaultExpand
       this.collapseThreshold = defaultCollapse
+      this.expandLockMs = isDesktop ? 1000 : 500
+      this.collapseDebounceMs = isDesktop ? 250 : 200
     }
 
-    const rootMargin = isDesktop ? '0px 0px -1% 0px' : '0px 0px -10% 0px'
+    // Slightly extend the observer rootMargin on desktop to be more forgiving
+    const rootMargin = isDesktop ? '0px 0px -2% 0px' : '0px 0px -10% 0px'
 
     this.observer = new IntersectionObserver(entries => {
         const entry = entries[0]
+        if (!entry) return
         if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return
+
+        // Save last observed values for decision-making during scheduled collapse
+        this._lastIntersectionRatio = entry.intersectionRatio
+        this._lastIsIntersecting = entry.isIntersecting
 
         // Logic: Expand if we hit the bottom trigger significantly
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= this.expandThreshold
@@ -665,6 +684,25 @@ class ScrollHandler {
 
     this.observer.observe(trigger)
 
+    // Fallback: listen for small user scrolls near the bottom as IO can be flaky in headless
+    this._userScrollListener = e => {
+      if (ProgrammaticScroll.hasActive()) return
+      if (this.expanded) return
+
+      const scrollY = window.scrollY || window.pageYOffset || 0
+      const nearBottom = window.innerHeight + scrollY >= (document.body.scrollHeight - (this._nearBottomPx || 24))
+      if (!nearBottom) return
+
+      // For wheel events ensure the user is scrolling downwards (deltaY > 0)
+      if (e && e.type === 'wheel' && typeof e.deltaY === 'number' && e.deltaY <= 0) return
+
+      // Trigger expansion as a robust fallback when IO didn't report intersecting
+      try { this.toggleExpansion(true) } catch (err) { log.warn('fallback scroll expand failed', err) }
+    }
+
+    window.addEventListener('wheel', this._userScrollListener, {passive: true})
+    window.addEventListener('touchstart', this._userScrollListener, {passive: true})
+
     this._resizeHandler = debounce(() => {
       this.observer?.disconnect()
       this.init()
@@ -676,42 +714,92 @@ class ScrollHandler {
     this.observer?.disconnect()
     if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
     if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null }
+    if (this._userScrollListener) {
+      try {
+        window.removeEventListener('wheel', this._userScrollListener)
+        window.removeEventListener('touchstart', this._userScrollListener)
+      } catch {}
+      this._userScrollListener = null
+    }
   }
 
   toggleExpansion(shouldExpand) {
-    const footer = domCache.get('#site-footer')
+    // Prefer cached lookup but fall back to direct querySelector to avoid stale cache issues
+    let footer = domCache.get('#site-footer')
+    if (!footer) footer = document.querySelector('#site-footer')
     if (!footer) return
+
+    // Debug probe for tests and CI
+    try {
+      window._lastToggleCall = { ts: Date.now(), shouldExpand }
+    } catch {}
 
     const min = footer.querySelector('.footer-minimized')
     const max = footer.querySelector('.footer-maximized')
 
     if (shouldExpand && !this.expanded) {
       // Cancel any pending collapse and expand immediately
-      if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null }
+      if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null; this._scheduledCollapse = false }
 
       ProgrammaticScroll.create(1000)
       GlobalClose.bind()
       document.documentElement.style.scrollSnapType = 'none'
 
       footer.classList.add('footer-expanded')
-      document.body.classList.add('footer-expanded')
+      try {
+        // Ensure classes are applied even in edge cases where classList may not reflect immediately
+        footer.classList.add('footer-expanded')
+        footer.setAttribute('class', (footer.getAttribute('class') || '').split(' ').concat(['footer-expanded']).filter(Boolean).join(' '))
+      } catch {}
+      try { document.body.classList.add('footer-expanded') } catch {}
+      try { document.body.setAttribute('class', (document.body.getAttribute('class') || '').split(' ').concat(['footer-expanded']).filter(Boolean).join(' ')) } catch {}
       max?.classList.remove('footer-hidden')
       min?.classList.add('footer-hidden')
 
       this.expanded = true
       // Set a short lock period to avoid immediate collapse from tiny scroll jitter
-      this._lockUntil = Date.now() + CONSTANTS.EXPAND_LOCK_MS
+      this._lockUntil = Date.now() + (this.expandLockMs || CONSTANTS.EXPAND_LOCK_MS)
     } else if (!shouldExpand && this.expanded) {
-      // If we're still in the post-expand lock period, ignore collapse requests
-      if (Date.now() < (this._lockUntil || 0)) return
+      const now = Date.now()
+      // If we're still in the post-expand lock period, schedule collapse to occur after lock + debounce
+      if (now < (this._lockUntil || 0)) {
+        const delay = (this._lockUntil - now) + (this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS)
+        if (this._collapseTimer) clearTimeout(this._collapseTimer)
+        this._scheduledCollapse = true
+        this._collapseTimer = setTimeout(() => {
+          // Only close if the last observed state still indicates out-of-view
+          const lastRatio = this._lastIntersectionRatio ?? 0
+          const lastIntersecting = !!this._lastIsIntersecting
+          const shouldCancel = lastIntersecting && lastRatio >= this.collapseThreshold
+          this._scheduledCollapse = false
+          if (shouldCancel) {
+            // cancel collapse because recent IO shows trigger is back in view
+            this._collapseTimer = null
+            return
+          }
+          try { closeFooter() } catch (err) { log.warn('scheduled close failed', err) }
+          this.expanded = false
+          this._collapseTimer = null
+        }, delay)
+        return
+      }
 
       // Debounce collapse so short flickers don't close the footer
       if (this._collapseTimer) clearTimeout(this._collapseTimer)
+      this._scheduledCollapse = true
       this._collapseTimer = setTimeout(() => {
-        closeFooter()
+        const lastRatio = this._lastIntersectionRatio ?? 0
+        const lastIntersecting = !!this._lastIsIntersecting
+        const shouldCancel = lastIntersecting && lastRatio >= this.collapseThreshold
+        this._scheduledCollapse = false
+        if (shouldCancel) {
+          this._collapseTimer = null
+          return
+        }
+        try { closeFooter() } catch (err) { log.warn('scheduled close failed', err) }
         this.expanded = false
         this._collapseTimer = null
-      }, CONSTANTS.COLLAPSE_DEBOUNCE_MS)
+      }, this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS)
     }
   }
 }

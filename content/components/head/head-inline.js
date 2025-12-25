@@ -58,13 +58,19 @@ gtag('config', 'AW-1036079663')
           trigger.setAttribute('role', 'presentation')
           trigger.style.pointerEvents = 'none'
           // Slightly larger minHeight to make intersection detection more robust on first scroll
-          trigger.style.minHeight = '4px'
+          trigger.style.minHeight = '52px'
           trigger.style.width = '100%'
 
           // Default thresholds (can be overridden per page by setting data attributes)
           // Small numbers increase sensitivity so even the smallest scroll can trigger the footer on desktop
-          trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.005'
-          trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.002'
+          // Further reduce thresholds to improve first-scroll reliability in headless/CI and real browsers
+          trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.002'
+          trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.0008'
+
+          // Default lock and debounce (ms) — can be overridden per-page using data attributes
+          // Keep desktop more forgiving by default
+          trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000'
+          trigger.dataset.collapseDebounceMs = trigger.dataset.collapseDebounceMs || '250'
 
           if (footerContainer && footerContainer.parentNode) {
             footerContainer.parentNode.insertBefore(trigger, footerContainer)
