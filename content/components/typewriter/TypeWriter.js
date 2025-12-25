@@ -3,6 +3,9 @@ import {createLogger, getElementById, shuffle, TimerManager} from '../../utils/s
 
 const log = createLogger('TypeWriter')
 
+// Exported instance reference for external control or debugging
+export let typeWriterInstance = null
+
 
 // Helper: CSS Variables setzen
 const setCSSVars = (el, vars) => Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v))
@@ -171,6 +174,12 @@ export class TypeWriter {
   destroy() {
     this.timerManager.clearAll()
     document.body.classList.remove('has-typingjs')
+    // Clear exported instance if this is the active one
+    try {
+      if (typeWriterInstance === this) typeWriterInstance = null
+    } catch {
+      /* ignore */
+    }
   }
 
   _createQueue() {
