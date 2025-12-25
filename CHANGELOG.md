@@ -14,6 +14,15 @@ All notable changes to this project will be documented in this file.
 - Consolidated card tokens in `content/styles/root.css` and removed historical references. ✅
 - Ran formatting and final cleanup; the codebase is tidy. ✅
 
+### 2025-12-25 — Footer improvements
+
+- Fixed handler cleanup and memory leaks in `content/components/footer/footer-complete.js` (handlers attached to DOM nodes and removed on close). ✅
+- Improved keyboard interactions: ESC now reliably closes cookie view and expanded footer (via a11y event) and focus is trapped/released properly. ✅
+- Added ARIA announcements for cookie actions and newsletter submissions using the accessibility manager (screen reader friendly). ✅
+- Added client-side validation to the newsletter form and appropriate a11y feedback. ✅
+- Small responsive/touch-target improvements for mobile (larger hit areas, adjusted footer width). ✅
+- Added Playwright E2E tests for cookie interactions (`tests/footer.spec.js`) and verified they pass. ✅
+
 ### 2025-12-20 — Videos page finalization
 
 - Komplette Neugestaltung der Videos-Seite (dunkles Theme, animierter Titel, Karten mit Hover-Glow) ✅

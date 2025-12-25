@@ -399,6 +399,31 @@ body.footer-expanded {
   align-items: center;
 }
 
+/* ===== Mobile touch target improvements ===== */
+@media (max-width: 480px) {
+  .footer-nav-link,
+  .footer-social-btn,
+  .cookie-accept-btn,
+  .cookie-reject-btn,
+  .cookie-settings-close,
+  .footer-cookies-link {
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+
+  .site-footer-fixed {
+    left: 12px;
+    transform: none;
+    width: calc(100% - 24px);
+    border-radius: 12px;
+  }
+
+  .footer-minimal-content {
+    gap: 8px;
+  }
+}
+
 .footer-legal-link-enhanced:hover,
 .footer-brand-link-enhanced:hover {
   color: var(--dynamic-footer-label-primary);

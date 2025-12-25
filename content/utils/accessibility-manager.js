@@ -165,11 +165,13 @@ class AccessibilityManager {
       return
     }
 
-    // Close expanded footer
+    // Close expanded footer (request close via event so footer module handles cleanup)
     const footer = document.getElementById('site-footer')
     if (footer && footer.classList.contains('footer-expanded')) {
-      if (window.CookieSettings && typeof window.CookieSettings.close === 'function') {
-        window.CookieSettings.close()
+      try {
+        document.dispatchEvent(new CustomEvent('footer:requestClose'))
+      } catch {
+        /* ignore */
       }
     }
   }
