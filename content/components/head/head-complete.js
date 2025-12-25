@@ -177,27 +177,34 @@ const log = createLogger('HeadLoader')
       const PROD_HOSTS = ['abdulkerimsesli.de', 'www.abdulkerimsesli.de']
       const hostname = window.location.hostname.toLowerCase()
       const ensureTrailingSlash = p => (p.endsWith('/') ? p : p + '/')
-      const forceProdFlag = !!(
-        document.documentElement &&
-        document.documentElement.getAttribute &&
-        document.documentElement.getAttribute('data-force-prod-canonical')
-      )
+      // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
+      // Recommended: automatically use production for known hosts, otherwise allow opt-in via data attribute
+      const forceProdFlag = PROD_HOSTS.includes(hostname) ||
+        document.documentElement.getAttribute('data-force-prod-canonical') === 'true'
 
-      // Normalize path to clean URL format (e.g. /pages/projekte/index.html -> /projekte/)
-      let cleanPath = window.location.pathname || '/'
-      // Deduplicate slashes early to handle anomalies like leading '//' that would prevent
-      // the /^\/pages\//i check from matching (e.g. "//pages/..")
-      cleanPath = cleanPath.replace(/\/\/+/g, '/')
-      // Remove /pages/ prefix if present (case insensitive)
-      cleanPath = cleanPath.replace(/^\/pages\//i, '/')
-      // Remove /index.html suffix
-      cleanPath = cleanPath.replace(/\/index\.html$/i, '/')
-      // Remove .html suffix
-      cleanPath = cleanPath.replace(/\.html$/i, '/')
-      // Final dedupe (in case replacements introduced new double slashes)
-      cleanPath = cleanPath.replace(/\/\/+/g, '/')
-      // Ensure trailing slash
-      cleanPath = ensureTrailingSlash(cleanPath)
+      // Normalize path for robust matching (handle //, .html, index.html etc.)
+      const rawPath = window.location.pathname || '/'
+      let pathForMatch = rawPath.replace(/\/\/+/g, '/')             // dedupe slashes
+      pathForMatch = pathForMatch.replace(/\/index\.html$/i, '/')   // strip index.html
+      pathForMatch = pathForMatch.replace(/\.html$/i, '/')          // strip .html
+      pathForMatch = pathForMatch.replace(/\/\/+/g, '/')           // final dedupe
+      if (!pathForMatch.startsWith('/')) pathForMatch = '/' + pathForMatch
+      // Ensure trailing slash for reliable startsWith matching
+      pathForMatch = pathForMatch.endsWith('/') ? pathForMatch : pathForMatch + '/'
+
+      // Find matching route key (case-insensitive). ROUTES keys are canonical (e.g. '/projekte/')
+      const lowerMatch = pathForMatch.toLowerCase()
+      let routeKey = Object.keys(ROUTES).find(k => k !== 'default' && lowerMatch.startsWith(k))
+      // Fallback: match if our cleaned path *contains* a route key (handles cases like /pages/projekte/)
+      if (!routeKey) routeKey = Object.keys(ROUTES).find(k => k !== 'default' && lowerMatch.includes(k))
+
+      // If we found a known route, prefer that canonical path; otherwise fall back to cleaned path
+      let cleanPath
+      if (routeKey) {
+        cleanPath = ensureTrailingSlash(routeKey)
+      } else {
+        cleanPath = pathForMatch
+      }
 
       const canonicalHref = forceProdFlag
         ? `${BASE_URL}${cleanPath}`
@@ -208,9 +215,11 @@ const log = createLogger('HeadLoader')
       // Ensure that even in non-production environments (like localhost), accessing a "dirty" physical path
       // (e.g. /pages/projekte/index.html) generates a clean canonical URL.
       const isDirtyPath = window.location.pathname.match(/^\/pages\//i) || window.location.pathname.match(/\/index\.html$/i)
-      const effectiveCanonical = (isDirtyPath && !PROD_HOSTS.includes(hostname))
-         ? `${window.location.origin}${cleanPath}`
-         : canonicalHref
+      const effectiveCanonical = forceProdFlag
+        ? `${BASE_URL}${cleanPath}`
+        : (isDirtyPath && !PROD_HOSTS.includes(hostname))
+          ? `${window.location.origin}${cleanPath}`
+          : canonicalHref
 
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', effectiveCanonical)

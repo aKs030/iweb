@@ -2,7 +2,7 @@ const {defineConfig} = require('@playwright/test')
 module.exports = defineConfig({
   testDir: './tests',
   webServer: {
-    command: 'npm run serve',
+    command: 'npm run serve:dev',
     port: 8081,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000
