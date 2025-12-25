@@ -738,6 +738,31 @@ class ScrollHandler {
 
     this.observer.observe(trigger)
 
+    // Add an additional lightweight scroll watcher to handle cases where
+    // tiny scrolls don't fire an intersection event (trigger very small / browser rounding)
+    this._lastScrollY = window.scrollY || window.pageYOffset || 0
+    this._onScrollForEarlyExpand = () => {
+      const current = window.scrollY || window.pageYOffset || 0
+      const dy = current - (this._lastScrollY || 0)
+      this._lastScrollY = current
+
+      // Only react to downward scroll gestures (positive dy)
+      if (dy <= 0) return
+
+      try {
+        const rect = trigger.getBoundingClientRect()
+        const distanceBelowViewport = rect.top - window.innerHeight
+        // If the trigger is within a short distance below the viewport (e.g., 40px), consider this a small scroll and expand
+        if (!this.expanded && distanceBelowViewport <= 40) {
+          this.toggleExpansion(true)
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    window.addEventListener('scroll', this._onScrollForEarlyExpand, {passive: true})
+
     // Re-init observer on resize/orientation changes to adapt thresholds
     this._resizeHandler = debounce(() => {
       try {
@@ -802,6 +827,7 @@ class ScrollHandler {
       clearTimeout(this._collapseTimer)
       this._collapseTimer = null
     }
+    if (this._onScrollForEarlyExpand) window.removeEventListener('scroll', this._onScrollForEarlyExpand)
   }
 }
 
