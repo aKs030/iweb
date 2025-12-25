@@ -12,10 +12,8 @@ let createLogger, CookieManager, a11y;
 try {
   ({ createLogger, CookieManager } = await import('../../utils/shared-utilities.js').catch(() => { throw new Error('Utils missing') }));
   ({ a11y } = await import('../../utils/accessibility-manager.js').catch(() => { throw new Error('A11y missing') }));
-} catch (err) {
-  // If imports fail in a standalone environment, fall back to safe no-op mocks.
-  // Log as warning to make failures visible during development without throwing.
-  console.warn('Footer imports fallback active', err)
+} catch {
+  // Fallback Mocks, falls Dateien fehlen oder Pfade anders sind
   createLogger = () => ({ info: console.warn, warn: console.warn, error: console.error });
   CookieManager = {
     get: (k) => localStorage.getItem(k),
@@ -27,7 +25,7 @@ try {
     trapFocus: () => {},
     releaseFocus: () => {}
   };
-} 
+}
 
 const log = createLogger('FooterSystem')
 
@@ -58,11 +56,11 @@ const CONSTANTS = {
   SCROLL_THRESHOLD: 6,
   RESIZE_DEBOUNCE: 150,
   ANIMATION_DURATION: 800,
-  // How long to keep footer expanded after a first expand (ms)
+  // Keep the footer expanded for at least this many ms after first expand to avoid flapping
   EXPAND_LOCK_MS: 300,
-  // Debounce delay before actually collapsing (ms)
+  // Debounce collapse: wait this many ms before actually collapsing
   COLLAPSE_DEBOUNCE_MS: 200
-} 
+}
 
 // ===== DOM Cache =====
 class DOMCache {
@@ -600,11 +598,10 @@ class ScrollHandler {
     this.expanded = false
     this.observer = null
     this._resizeHandler = null
-    this.expandThreshold = 0.05
-    this.collapseThreshold = 0.02
-    // Collapse debounce timer and expand lock timestamp
     this._collapseTimer = null
     this._lockUntil = 0
+    this.expandThreshold = 0.05
+    this.collapseThreshold = 0.02
     window.footerScrollHandler = this
   }
 
@@ -656,12 +653,13 @@ class ScrollHandler {
 
         // Logic: Expand if we hit the bottom trigger significantly
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= this.expandThreshold
-        
+
         // Prevent collapse if we are just slightly scrolling but still near bottom
         if (!shouldExpand && this.expanded && entry.intersectionRatio > this.collapseThreshold) return
 
+        // If collapse requested shortly after expand, let toggleExpansion decide via lock/debounce
         this.toggleExpansion(shouldExpand)
-      }, 
+      },
       { rootMargin, threshold: [this.collapseThreshold, this.expandThreshold] }
     )
 
@@ -674,6 +672,12 @@ class ScrollHandler {
     window.addEventListener('resize', this._resizeHandler, {passive: true})
   }
 
+  cleanup() {
+    this.observer?.disconnect()
+    if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
+    if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null }
+  }
+
   toggleExpansion(shouldExpand) {
     const footer = domCache.get('#site-footer')
     if (!footer) return
@@ -681,48 +685,34 @@ class ScrollHandler {
     const min = footer.querySelector('.footer-minimized')
     const max = footer.querySelector('.footer-maximized')
 
-    const now = Date.now()
-
-    if (shouldExpand) {
-      // Cancel pending collapse and expand immediately
+    if (shouldExpand && !this.expanded) {
+      // Cancel any pending collapse and expand immediately
       if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null }
 
-      if (!this.expanded) {
-        ProgrammaticScroll.create(1000)
-        GlobalClose.bind()
-        document.documentElement.style.scrollSnapType = 'none'
+      ProgrammaticScroll.create(1000)
+      GlobalClose.bind()
+      document.documentElement.style.scrollSnapType = 'none'
 
-        footer.classList.add('footer-expanded')
-        document.body.classList.add('footer-expanded')
-        max?.classList.remove('footer-hidden')
-        min?.classList.add('footer-hidden')
+      footer.classList.add('footer-expanded')
+      document.body.classList.add('footer-expanded')
+      max?.classList.remove('footer-hidden')
+      min?.classList.add('footer-hidden')
 
-        this.expanded = true
-      }
+      this.expanded = true
+      // Set a short lock period to avoid immediate collapse from tiny scroll jitter
+      this._lockUntil = Date.now() + CONSTANTS.EXPAND_LOCK_MS
+    } else if (!shouldExpand && this.expanded) {
+      // If we're still in the post-expand lock period, ignore collapse requests
+      if (Date.now() < (this._lockUntil || 0)) return
 
-      // Set lock so minor reflows or momentary oob checks won't collapse immediately
-      this._lockUntil = now + CONSTANTS.EXPAND_LOCK_MS
-      return
-    }
-
-    // Collapse requested: respect lock period
-    if (now < (this._lockUntil || 0)) return
-
-    // Debounce actual collapse to avoid flapping
-    if (this._collapseTimer) clearTimeout(this._collapseTimer)
-    this._collapseTimer = setTimeout(() => {
-      if (this.expanded) {
+      // Debounce collapse so short flickers don't close the footer
+      if (this._collapseTimer) clearTimeout(this._collapseTimer)
+      this._collapseTimer = setTimeout(() => {
         closeFooter()
         this.expanded = false
-      }
-      this._collapseTimer = null
-    }, CONSTANTS.COLLAPSE_DEBOUNCE_MS)
-  }
-
-  cleanup() {
-    this.observer?.disconnect()
-    if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
-    if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null }
+        this._collapseTimer = null
+      }, CONSTANTS.COLLAPSE_DEBOUNCE_MS)
+    }
   }
 }
 
