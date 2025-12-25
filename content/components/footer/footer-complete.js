@@ -665,6 +665,9 @@ class FooterLoader {
 
         // Short programmatic lock when user triggers the footer manually so mobile scroll can close the footer quickly
         const token = ProgrammaticScroll.create(150)
+        // Ensure global close handlers will close the footer on mobile scroll
+        try { GlobalClose.setCloseHandler(() => closeFooter()) } catch {}
+        GlobalClose.bind()
         window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})
         ProgrammaticScroll.watchUntil(token, '.footer-maximized-viewport')
       }
