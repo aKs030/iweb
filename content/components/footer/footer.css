@@ -270,6 +270,59 @@ body.footer-expanded {
   align-items: center;
 }
 
+/* ===== Three Showcase Control ===== */
+.footer-three-control {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.three-showcase-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  color: var(--dynamic-footer-label-primary);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.02);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 300ms cubic-bezier(.2,.8,.2,1), box-shadow 300ms ease, opacity 200ms ease;
+}
+
+.three-showcase-btn svg { display: block; }
+
+.three-showcase-btn:focus {
+  outline: 2px solid var(--accent-primary, #007acc);
+  outline-offset: 3px;
+}
+
+.three-showcase-btn:hover {
+  transform: translateY(-4px) rotate(-6deg);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.three-showcase-btn.active {
+  animation: threeShowcaseActive 0.9s ease-in-out infinite;
+  transform: scale(1.02);
+}
+
+@keyframes threeShowcaseActive {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(8deg) scale(1.06); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .three-showcase-btn, .three-showcase-btn.active { animation: none; transform: none; }
+}
+
 /* ===== Footer Status Bar - Desktop Layout Fix ===== */
 .footer-status-bar {
   width: 100%;
@@ -300,6 +353,40 @@ body.footer-expanded {
   align-items: center;
 }
 
+/* Prevent footer status from breaking into two lines on mid-sized desktops
+   - Hide social label text at <= 1200px and keep status row on a single line
+   - Keep a11y intact via existing aria-labels */
+@media (max-width: 1200px) {
+  .footer-status-content {
+    flex-wrap: nowrap;
+  }
+
+  .footer-social-links .label {
+    display: none;
+  }
+
+  .footer-social-links {
+    gap: 8px;
+    align-items: center;
+  }
+
+  .footer-social-btn {
+    padding: 6px;
+    min-width: 40px;
+  }
+
+  .footer-copyright-enhanced {
+    min-width: 0;
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .footer-legal-nav {
+    gap: 8px;
+  }
+}
 
 
 .footer-legal-link-enhanced,
@@ -318,23 +405,32 @@ body.footer-expanded {
 }
 
 /* ===== Card Grid ===== */
+/* Card Grid - improved sizing & performance */
 .footer-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: var(--footer-card-gap);
   margin-bottom: var(--footer-spacing-md);
   width: 100%;
-  justify-items: center;
+  /* ensure full-width cards and consistent row sizing */
+  grid-auto-rows: 1fr;
+  align-items: start;
+  justify-items: stretch;
+}
+
+:root {
+  --footer-card-min-height: 140px;
 }
 
 .footer-card {
   background: var(--dynamic-footer-fill-secondary);
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-card-radius);
-  padding: calc(var(--footer-spacing-sm) - 2px);
+  padding: var(--footer-spacing-sm);
   display: flex;
   flex-direction: column;
-  min-height: 100px;
+  min-height: var(--footer-card-min-height);
+  height: 100%;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -344,17 +440,17 @@ body.footer-expanded {
     border-color var(--footer-transition-quick);
   will-change: transform;
   transform: translateZ(0);
+  /* Performance: lazy render off-screen cards */
+  content-visibility: auto;
+  contain-intrinsic-size: var(--footer-card-min-height);
 }
 
 .footer-card:hover {
   background: var(--dynamic-footer-fill-primary);
   border-color: var(--dynamic-footer-accent-blue);
   transform: translateY(-2px) translateZ(0);
-  box-shadow: var(--dynamic-footer-shadow-depth-3);
-}
-
-.footer-card-header {
-  margin-bottom: 8px;
+  /* Subtle shadow only on hover to reduce initial paint cost */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   flex-shrink: 0;
 }
 
@@ -380,10 +476,21 @@ body.footer-expanded {
 }
 
 .footer-card-content {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   font-size: var(--footer-text-xs);
+  gap: var(--footer-spacing-xs);
+  min-height: 0; /* allow content to flex properly */
+}
+
+/* Make footer cards visually consistent with a small footer-action footer area */
+.footer-card-footer {
+  margin-top: auto;
+  display: flex;
+  gap: var(--footer-spacing-xs);
+  align-items: center;
+  justify-content: flex-start;
 }
 
 /* ===== Profile Card ===== */
@@ -919,15 +1026,14 @@ body.footer-expanded {
   }
 
   .footer-status-content {
-    flex-flow: row nowrap;
+    /* Mobile: stack content and center social icons horizontally */
+    display: flex;
+    flex-direction: column;
+    gap: var(--footer-spacing-sm);
     align-items: center;
-    justify-content: space-between;
-    gap: 4px;
-    overflow: auto hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
     padding-left: 4px;
     padding-right: 4px;
+    width: 100%;
   }
 
   .footer-status-content::-webkit-scrollbar {
@@ -947,12 +1053,17 @@ body.footer-expanded {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    align-self: center;
   }
 
   .footer-social-links {
     order: 2;
-    flex-shrink: 0;
-    gap: 2px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
     flex-wrap: nowrap;
   }
 
@@ -961,22 +1072,47 @@ body.footer-expanded {
     flex-shrink: 0;
     gap: 2px;
     flex-wrap: nowrap;
+    align-self: center;
   }
 
+  /* Make icon buttons compact and square on mobile */
+  .footer-social-btn {
+    padding: 8px;
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+    gap: 0;
+    font-size: 0; /* visually hide inline text labels */
+    border-radius: 10px;
+  }
 
+  /* Hide the Three Showcase control on small viewports to avoid overlap */
+  .footer-three-control {
+    display: none;
+  }
+
+  /* Mobile: keep newsletter input and submit on a single row */
   .newsletter-form-enhanced,
   .newsletter-input-wrapper {
-    flex-direction: column;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
   }
 
-  /* When stacked (mobile), make the submit button full width and ensure inputs also expand */
-  .newsletter-submit-enhanced {
-    width: 100%;
-    justify-content: center;
-  }
-
+  /* Input grows, button keeps intrinsic size */
   .newsletter-input-enhanced {
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0; /* allow shrinking properly in flex */
+    width: auto;
+  }
+
+  .newsletter-submit-enhanced {
+    flex: 0 0 auto;
+    min-width: 88px;
+    height: 44px;
+    padding: 0 14px;
+    justify-content: center;
   }
 
   body.footer-expanded {

@@ -185,17 +185,33 @@ const GlobalClose = (() => {
 
     bind() {
       if (bound) return
-      document.addEventListener('click', onDocClick, {capture: true, passive: true})
-      window.addEventListener('wheel', onUserScroll, {passive: true})
-      window.addEventListener('touchstart', onUserScroll, {passive: true})
+
+      // On mobile we ONLY want to close the footer when the user scrolls
+      const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches
+
+      if (!isMobile) {
+        // Desktop: click outside closes, and wheel/touchstart will also respect quick gestures
+        document.addEventListener('click', onDocClick, {capture: true, passive: true})
+        window.addEventListener('wheel', onUserScroll, {passive: true})
+        window.addEventListener('touchstart', onUserScroll, {passive: true})
+      } else {
+        // Mobile: avoid closing on taps outside; only close on scroll (or touchmove)
+        // use scroll and touchmove to detect actual scrolling gestures
+        window.addEventListener('scroll', onUserScroll, {passive: true})
+        window.addEventListener('touchmove', onUserScroll, {passive: true})
+      }
+
       bound = true
     },
 
     unbind() {
       if (!bound) return
+      // Remove both sets of listeners to be safe
       document.removeEventListener('click', onDocClick, true)
       window.removeEventListener('wheel', onUserScroll)
       window.removeEventListener('touchstart', onUserScroll)
+      window.removeEventListener('scroll', onUserScroll)
+      window.removeEventListener('touchmove', onUserScroll)
       bound = false
     }
   }
@@ -273,7 +289,8 @@ class ConsentBanner {
 // ===== Cookie Settings (Optimized with Caching) =====
 const CookieSettings = (() => {
   let elements = null
-  const handlers = new WeakMap()
+  // Use a Map so we can remove listeners when closing to avoid potential leaks
+  const handlers = new Map()
 
   const getElements = memoize(() => ({
     footer: domCache.get('#site-footer'),
@@ -323,6 +340,22 @@ const CookieSettings = (() => {
         handlers.set(element, handler)
       }
     })
+
+    // Ensure we remove handlers on close to avoid leaks if DOM is replaced
+    const removeHandlers = () => {
+      handlers.forEach((handler, el) => {
+        try {
+          el.removeEventListener('click', handler)
+        } catch {
+          /* ignore */
+        }
+      })
+      handlers.clear()
+    }
+
+    // Attach cleanup hook (will be called by closeFooter which unbinds GlobalClose and other cleanup)
+    elements._removeHandlers = removeHandlers
+
   }
 
   const open = () => {
@@ -365,31 +398,59 @@ const CookieSettings = (() => {
     if (!elements) elements = getElements()
     if (!elements.footer) return
 
+    // Hide cookie-specific view
     elements.cookieView?.classList.add('hidden')
-    elements.footer.classList.remove('footer-expanded')
-    document.body.classList.remove('footer-expanded')
-    elements.footerMax?.classList.add('footer-hidden')
-    elements.footerMin?.classList.remove('footer-hidden')
-    if (elements.normalContent) elements.normalContent.style.display = 'block'
 
-    document.documentElement.style.removeProperty('scroll-snap-type')
-
-    if (window.footerScrollHandler) {
-      window.footerScrollHandler.expanded = false
-    }
-    GlobalClose.unbind()
-
-    try {
-      a11y?.releaseFocus()
-    } catch (e) {
-      log.warn('Focus release failed', e)
-    }
+    // Centralized footer cleanup
+    closeFooter()
   }
 
   return {open, close}
 })()
 
 GlobalClose.setCloseHandler(() => CookieSettings.close())
+
+// Central footer close helper — unified cleanup logic
+function closeFooter() {
+  const footer = domCache.get('#site-footer')
+  if (!footer) return
+
+  // Visual state
+  footer.classList.remove('footer-expanded')
+  document.body.classList.remove('footer-expanded')
+  footer.querySelector('.footer-maximized')?.classList.add('footer-hidden')
+  footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden')
+
+  // Restore normal content visibility
+  const normal = domCache.get('#footer-normal-content')
+  if (normal) normal.style.display = 'block'
+
+  // Restore document styles
+  document.documentElement.style.removeProperty('scroll-snap-type')
+
+  // Footer scroll state
+  if (window.footerScrollHandler) window.footerScrollHandler.expanded = false
+
+  // Unbind global close handlers
+  GlobalClose.unbind()
+
+  // Remove any component-specific handlers (cookie handlers etc.)
+  try {
+    const normal = domCache.get('#footer-normal-content')
+    const cookieEl = domCache.get('#footer-cookie-view')
+    if (cookieEl && cookieEl._removeHandlers) cookieEl._removeHandlers()
+    if (normal && normal._removeHandlers) normal._removeHandlers()
+  } catch {
+    /* ignore */
+  }
+
+  // Accessibility cleanup
+  try {
+    a11y?.releaseFocus()
+  } catch (e) {
+    log.warn('Focus release failed', e)
+  }
+}
 
 
 // ===== Footer Loader (Optimized) =====
@@ -489,6 +550,38 @@ class FooterLoader {
       },
       {passive: false}
     )
+
+    // Three-Earth Showcase Button (in maximized footer)
+    const showcaseBtn = domCache.get('#threeShowcaseBtn')
+    if (showcaseBtn && !showcaseBtn.dataset.showcaseAttached) {
+      showcaseBtn.dataset.showcaseAttached = '1'
+      const SHOWCASE_DURATION = 8000 // ms
+      const dispatchShowcase = dur => document.dispatchEvent(new CustomEvent('three-earth:showcase', {detail: {duration: dur}}))
+
+      const onShowcase = () => {
+        if (showcaseBtn.disabled) return
+        showcaseBtn.disabled = true
+        showcaseBtn.setAttribute('aria-pressed', 'true')
+        showcaseBtn.classList.add('active')
+        // small visual feedback
+        showcaseBtn.animate([{transform: 'scale(0.95)'}, {transform: 'scale(1)'}], {duration: 250, easing: 'ease-out'})
+        dispatchShowcase(SHOWCASE_DURATION)
+        setTimeout(() => {
+          showcaseBtn.disabled = false
+          showcaseBtn.setAttribute('aria-pressed', 'false')
+          showcaseBtn.classList.remove('active')
+        }, SHOWCASE_DURATION)
+      }
+
+      showcaseBtn.addEventListener('click', onShowcase)
+
+      showcaseBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onShowcase()
+        }
+      })
+    }
   }
 
   handleFooterTrigger() {
@@ -566,14 +659,9 @@ class ScrollHandler {
 
       this.expanded = true
     } else if (!shouldExpand && this.expanded) {
-      footer.classList.remove('footer-expanded')
-      document.body.classList.remove('footer-expanded')
-      max?.classList.add('footer-hidden')
-      min?.classList.remove('footer-hidden')
-      document.documentElement.style.removeProperty('scroll-snap-type')
-
+      // Use centralized close handler to ensure consistent cleanup
+      closeFooter()
       this.expanded = false
-      GlobalClose.unbind()
     }
   }
 
@@ -620,9 +708,12 @@ if (document.readyState === 'loading') {
 }
 
 // ===== Public API =====
-window.FooterSystem = {
-  FooterLoader,
-  CookieSettings,
-  ProgrammaticScroll,
-  domCache
+// Expose minimal API in debug/local mode only to avoid leaking internals in production
+if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname.startsWith('127.') || (typeof ENV !== 'undefined' && ENV.debug))) {
+  window.FooterSystem = {
+    FooterLoader,
+    CookieSettings,
+    ProgrammaticScroll,
+    domCache
+  }
 }

@@ -25,5 +25,5 @@ All notable changes to this project will be documented in this file.
 ### 2025-12-24 — Logging cleanup
 
 - Konsolidiertes Logging: Ersetzte direkte `console.warn`/`console.error` Aufrufe durch `createLogger()` und `log.warn`/`log.error` in mehreren Modulen. ✅
-  - Dateien aktualisiert: u.a. `content/main.js`, `content/utils/reconnecting-websocket.js`, `content/components/particles/three-earth-system.js`, `content/components/typewriter/TypeWriter.js`, `content/components/robot-companion/*`, `pages/*`.
+  - Dateien aktualisiert: u.a. `content/main.js`, `content/components/particles/three-earth-system.js`, `content/components/typewriter/TypeWriter.js`, `content/components/robot-companion/*`, `pages/*`.
   - Ziel: Einheitliches, ESLint-konformes Logging und bessere Kontext-Labels in Logausgaben.

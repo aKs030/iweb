@@ -16,29 +16,19 @@ import {
   fire,
   getElementById,
   schedulePersistentStorageRequest,
-  setLegacyGlobal,
   AppLoadManager,
   SectionTracker
 } from './utils/shared-utilities.js'
-import {initHeroSubtitle} from './components/typewriter/TypeWriter.js'
+// initHeroSubtitle is imported where needed (hero manager); legacy global exposure removed
 import {a11y} from './utils/accessibility-manager.js'
-// Ensure the a11y manager is available globally and initialized centrally
-if (typeof window !== 'undefined') {
-  try {
-    window.a11y = a11y
-    if (typeof a11y?.init === 'function') a11y.init()
-  } catch {
-    /* ignored */
-  }
-}
+// Accessibility manager initializes itself and exposes a11y as needed (avoid duplicate global writes here)
+
 import './components/menu/menu.js'
 
 const log = createLogger('main')
 
 // Debug / Dev hooks (exported for test & debug tooling)
-export let __threeEarthCleanup = null
-export let __rws = null
-export let __devRws = null
+let __threeEarthCleanup = null
 
 // ===== Configuration & Environment =====
 const ENV = {
@@ -456,13 +446,7 @@ document.addEventListener(
 
     fire(EVENTS.DOM_READY)
 
-    // Simplified TypeWriter Export
-    // Global initHeroSubtitle assignment removed — import directly where needed (see TypeWriter export)
-    // Optionally expose for backward compatibility in debug mode (respects clean mode)
-    setLegacyGlobal('initHeroSubtitle', initHeroSubtitle, {
-      debugOnly: true,
-      note: 'Prefer importing initHeroSubtitle from components/typewriter/TypeWriter.js'
-    })
+    // Simplified TypeWriter Export — legacy global exposure removed; prefer importing initHeroSubtitle where needed.
 
     let modulesReady = false
     let windowLoaded = false
@@ -664,42 +648,7 @@ document.addEventListener(
       windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
     })
 
-    // ===== Dev-only WebSocket test (optional) =====
-    // Usage: add ?ws-test to the page URL or use debug mode to enable a reconnecting websocket to ws://127.0.0.1:3001
-    if (!ENV.isTest && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || ENV.debug)) {
-      const params = new URLSearchParams(window.location.search || '')
-      if (params.has('ws-test') || ENV.debug) {
-        import('./utils/reconnecting-websocket.js')
-          .then(mod => {
-            const {ReconnectingWebSocket} = mod
-            try {
-              const rws = new ReconnectingWebSocket('ws://127.0.0.1:3001')
-              rws.onopen = () => {
-                log.info('Dev ReconnectingWebSocket open on 127.0.0.1:3001')
-                try {
-                  rws.send('dev:hello')
-                } catch {
-                  /* ignore */
-                }
-              }
-              rws.onmessage = e => log.debug('[dev-ws]', e.data)
-              rws.onclose = ev => log.info('Dev RWS closed', ev)
-              rws.onerror = err => log.warn('Dev RWS error', err)
-
-              // Attach for debugging — export for tooling and attach to window only via helper
-              __rws = rws
-              setLegacyGlobal('__rws', rws, {debugOnly: true, note: 'Prefer importing __rws from main.js'})
-              if (ENV.debug) {
-                __devRws = rws
-                setLegacyGlobal('__devRws', rws, {debugOnly: true, note: 'Prefer importing __devRws from main.js'})
-              }
-            } catch (ex) {
-              log.warn('Failed to open Dev ReconnectingWebSocket:', ex)
-            }
-          })
-          .catch(e => log.warn('Failed to import ReconnectingWebSocket', e))
-      }
-    }
+    // Dev-only ReconnectingWebSocket helper removed (was used for ?ws-test / local debug).
   },
   {once: true}
-)
+) 
