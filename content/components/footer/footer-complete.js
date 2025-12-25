@@ -12,20 +12,22 @@ let createLogger, CookieManager, a11y;
 try {
   ({ createLogger, CookieManager } = await import('../../utils/shared-utilities.js').catch(() => { throw new Error('Utils missing') }));
   ({ a11y } = await import('../../utils/accessibility-manager.js').catch(() => { throw new Error('A11y missing') }));
-} catch (e) {
-  // Fallback Mocks, falls Dateien fehlen oder Pfade anders sind
-  createLogger = () => ({ info: console.log, warn: console.warn, error: console.error });
+} catch (err) {
+  // If imports fail in a standalone environment, fall back to safe no-op mocks.
+  // Log as warning to make failures visible during development without throwing.
+  console.warn('Footer imports fallback active', err)
+  createLogger = () => ({ info: console.warn, warn: console.warn, error: console.error });
   CookieManager = {
     get: (k) => localStorage.getItem(k),
     set: (k, v) => localStorage.setItem(k, v),
-    deleteAnalytics: () => console.log('Analytics deleted (Mock)')
+    deleteAnalytics: () => console.warn('Analytics deleted (Mock)')
   };
   a11y = {
-    announce: (msg) => console.log(`[A11y]: ${msg}`),
+    announce: (msg) => console.warn(`[A11y]: ${msg}`),
     trapFocus: () => {},
     releaseFocus: () => {}
   };
-}
+} 
 
 const log = createLogger('FooterSystem')
 
@@ -55,8 +57,12 @@ const CONSTANTS = {
   SCROLL_WATCH_TIMEOUT: 5000,
   SCROLL_THRESHOLD: 6,
   RESIZE_DEBOUNCE: 150,
-  ANIMATION_DURATION: 800
-}
+  ANIMATION_DURATION: 800,
+  // How long to keep footer expanded after a first expand (ms)
+  EXPAND_LOCK_MS: 300,
+  // Debounce delay before actually collapsing (ms)
+  COLLAPSE_DEBOUNCE_MS: 200
+} 
 
 // ===== DOM Cache =====
 class DOMCache {
@@ -456,7 +462,7 @@ function closeFooter() {
   try {
     if (cookieView && cookieView._removeHandlers) cookieView._removeHandlers()
     if (normal && normal._removeHandlers) normal._removeHandlers()
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
 
   // 7. A11y Reset
   try { a11y?.releaseFocus() } catch (e) { log.warn('Focus release failed', e) }
@@ -493,7 +499,7 @@ class FooterLoader {
         try {
           response = await fetch(c)
           if (response.ok) break
-        } catch (err) { response = null }
+        } catch { response = null }
       }
 
       if (!response || !response.ok) throw new Error('Footer load failed')
@@ -596,6 +602,9 @@ class ScrollHandler {
     this._resizeHandler = null
     this.expandThreshold = 0.05
     this.collapseThreshold = 0.02
+    // Collapse debounce timer and expand lock timestamp
+    this._collapseTimer = null
+    this._lockUntil = 0
     window.footerScrollHandler = this
   }
 
@@ -672,21 +681,48 @@ class ScrollHandler {
     const min = footer.querySelector('.footer-minimized')
     const max = footer.querySelector('.footer-maximized')
 
-    if (shouldExpand && !this.expanded) {
-      ProgrammaticScroll.create(1000)
-      GlobalClose.bind()
-      document.documentElement.style.scrollSnapType = 'none'
+    const now = Date.now()
 
-      footer.classList.add('footer-expanded')
-      document.body.classList.add('footer-expanded')
-      max?.classList.remove('footer-hidden')
-      min?.classList.add('footer-hidden')
+    if (shouldExpand) {
+      // Cancel pending collapse and expand immediately
+      if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null }
 
-      this.expanded = true
-    } else if (!shouldExpand && this.expanded) {
-      closeFooter()
-      this.expanded = false
+      if (!this.expanded) {
+        ProgrammaticScroll.create(1000)
+        GlobalClose.bind()
+        document.documentElement.style.scrollSnapType = 'none'
+
+        footer.classList.add('footer-expanded')
+        document.body.classList.add('footer-expanded')
+        max?.classList.remove('footer-hidden')
+        min?.classList.add('footer-hidden')
+
+        this.expanded = true
+      }
+
+      // Set lock so minor reflows or momentary oob checks won't collapse immediately
+      this._lockUntil = now + CONSTANTS.EXPAND_LOCK_MS
+      return
     }
+
+    // Collapse requested: respect lock period
+    if (now < (this._lockUntil || 0)) return
+
+    // Debounce actual collapse to avoid flapping
+    if (this._collapseTimer) clearTimeout(this._collapseTimer)
+    this._collapseTimer = setTimeout(() => {
+      if (this.expanded) {
+        closeFooter()
+        this.expanded = false
+      }
+      this._collapseTimer = null
+    }, CONSTANTS.COLLAPSE_DEBOUNCE_MS)
+  }
+
+  cleanup() {
+    this.observer?.disconnect()
+    if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
+    if (this._collapseTimer) { clearTimeout(this._collapseTimer); this._collapseTimer = null }
   }
 }
 
