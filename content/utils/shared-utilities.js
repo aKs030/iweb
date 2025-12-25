@@ -311,56 +311,11 @@ export function fire(type, detail = null, target = document) {
   }
 }
 
-// ===== Legacy Global Shims Helper =====
-// Allows controlled exposure of deprecated globals on `window`.
-export const LEGACY_CLEAN_MODE = (() => {
-  try {
-    if (typeof window === 'undefined') return false
-    const params = new URLSearchParams(window.location.search || '')
-    const flag = params.has('clean')
-    const globalFlag = Boolean(window.__CLEAN_GLOBALS)
-    return flag || globalFlag
-  } catch {
-    return false
-  }
-})()
-
-export function setLegacyGlobal(name, value, {debugOnly = false, note = ''} = {}) {
-  if (typeof window === 'undefined') return
-  try {
-    if (LEGACY_CLEAN_MODE) {
-      sharedLogger.debug(`Skipping legacy global '${name}' due to clean mode`)
-      return
-    }
-
-    if (debugOnly) {
-      const params = new URLSearchParams(window.location.search || '')
-      const isDebug = params.has('debug') || window.localStorage?.getItem('iweb-debug') === 'true'
-      if (!isDebug) return
-    }
-
-    try {
-      Object.defineProperty(window, name, {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        value
-      })
-    } catch {
-      // Fall back to simple assignment if defineProperty fails in some environments
-      try {
-        window[name] = value
-      } catch (ex) {
-        sharedLogger.warn(`Failed to set legacy global '${name}'`, ex)
-        return
-      }
-    }
-
-    if (note) sharedLogger.warn(`Exposed legacy global '${name}' (DEPRECATED): ${note}`)
-  } catch {
-    sharedLogger.warn(`Failed to set legacy global '${name}'`)
-  }
-}
+// Legacy global shim removed — prefer explicit imports and module exports.
+// The previous helper `setLegacyGlobal` and `LEGACY_CLEAN_MODE` were deprecated and
+// removed to avoid polluting the global scope. If you relied on these globals for
+// debugging, prefer importing the module or use an explicit debug hook guarded by
+// `ENV.debug` in local development builds.
 
 // ===== Intersection Observer Utilities =====
 

@@ -42,6 +42,11 @@ let isMobileDevice = false
 let isSystemVisible = true
 let deviceCapabilities = null
 
+// Showcase (ephemeral) state
+let showcaseActive = false
+let showcaseTimeoutId = null
+const showcaseOriginals = {}
+
 // Flag to prevent zombie execution after cleanup
 let isSystemActive = false
 
@@ -300,6 +305,62 @@ const ThreeEarthManager = (() => {
         cardManager.initFromDOM(featuresSection)
       }
 
+      // Expose a short-lived showcase: spin-up, meteor showers, atmosphere pulse
+      function triggerShowcase(duration = 8000) {
+        if (!isSystemActive || showcaseActive) return
+        if (deviceCapabilities?.isLowEnd) return // avoid heavy effects on low-end devices
+        showcaseActive = true
+
+        // Backup originals
+        showcaseOriginals.cloudSpeed = CONFIG.CLOUDS.ROTATION_SPEED
+        showcaseOriginals.emissiveAmp = CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
+
+        // Intensify effects
+        CONFIG.CLOUDS.ROTATION_SPEED = showcaseOriginals.cloudSpeed * 3
+        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE = showcaseOriginals.emissiveAmp * 3
+
+        // Camera nudge / dramatic orbit
+        try {
+          const cur = cameraManager?.cameraOrbitAngle || 0
+          cameraManager?.setTargetOrbitAngle(cur + Math.PI / 2)
+        } catch {
+          /* ignore */
+        }
+
+        // Trigger a few meteor showers spaced over the duration
+        const showers = Math.max(2, Math.floor(duration / 2000))
+        for (let i = 0; i < showers; i++) {
+          setTimeout(() => shootingStarManager?.triggerShower(), i * 1200)
+        }
+
+        // Scale/emphasize the Earth briefly
+        if (earthMesh) {
+          const current = earthMesh.scale.x || 1
+          earthMesh.userData.targetScale = current * 1.06
+          setTimeout(() => {
+            if (earthMesh) earthMesh.userData.targetScale = current
+          }, duration - 300)
+        }
+
+        // Revert after duration
+        showcaseTimeoutId = setTimeout(() => {
+          CONFIG.CLOUDS.ROTATION_SPEED = showcaseOriginals.cloudSpeed || CONFIG.CLOUDS.ROTATION_SPEED
+          CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE = showcaseOriginals.emissiveAmp || CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE
+          showcaseActive = false
+          showcaseTimeoutId = null
+        }, duration)
+      }
+
+      // Listen for external triggers (e.g. footer button)
+      document.addEventListener('three-earth:showcase', e => {
+        try {
+          const dur = (e && e.detail && e.detail.duration) || 8000
+          triggerShowcase(dur)
+        } catch (err) {
+          log.warn('Showcase trigger failed', err)
+        }
+      })
+
       // Start Loops
       startAnimationLoop()
       setupResizeHandler()
@@ -326,6 +387,27 @@ const ThreeEarthManager = (() => {
   const cleanup = () => {
     isSystemActive = false
     log.info('Cleaning up Earth system')
+
+    // Clear any pending showcase timers and revert temporary config if needed
+    if (showcaseTimeoutId) {
+      try {
+        clearTimeout(showcaseTimeoutId)
+      } catch {
+        /* ignore */
+      }
+      showcaseTimeoutId = null
+    }
+
+    if (showcaseActive) {
+      // revert any temporary config we changed for the showcase
+      try {
+        if (typeof showcaseOriginals.cloudSpeed !== 'undefined') CONFIG.CLOUDS.ROTATION_SPEED = showcaseOriginals.cloudSpeed
+        if (typeof showcaseOriginals.emissiveAmp !== 'undefined') CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE = showcaseOriginals.emissiveAmp
+      } catch {
+        /* ignore */
+      }
+      showcaseActive = false
+    }
 
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId)
