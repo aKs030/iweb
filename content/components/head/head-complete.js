@@ -205,7 +205,13 @@
     }
     // Ensure PWA manifest & Apple mobile settings
     try {
-      upsertLink('manifest', `${BASE_URL}/manifest.json`)
+      const localManifest = `${window.location.origin}/manifest.json`
+      const prodManifest = `${BASE_URL}/manifest.json`
+      const manifestHref =
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
+          ? localManifest
+          : prodManifest
+      upsertLink('manifest', manifestHref)
       const addIcon = (href, sizes, type) => {
         if (!href) return
         let el = document.head.querySelector(`link[rel="icon"][sizes="${sizes}"]`)
@@ -245,9 +251,16 @@
         document.head.appendChild(appleIconEl)
       }
 
-      // Inject generated Tailwind stylesheet (safe to call even if not present yet)
+      // Inject generated Tailwind stylesheet (prefer same-origin in dev to avoid MIME/origin issues)
       try {
-        upsertLink('stylesheet', `${BASE_URL}/content/styles/tailwind.css`)
+        const localHref = `${window.location.origin}/content/styles/tailwind.css`
+        const prodHref = `${BASE_URL}/content/styles/tailwind.css`
+        // Prefer current origin (local dev server) to avoid cross-origin MIME type and manifest origin warnings.
+        const hrefToUse =
+          window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
+            ? localHref
+            : prodHref
+        upsertLink('stylesheet', hrefToUse)
       } catch (err) {
         // ignore — file may not exist in dev environment yet
       }
