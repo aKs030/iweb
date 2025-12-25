@@ -298,10 +298,20 @@ function App() {
         const effW = baseW / dpr
         const effH = baseH / dpr
         const scale = Math.min(maxScale, w / (effW || 1), h / (effH || 1))
+
         iframe.style.transform = `scale(${scale})`
         // keep the iframe at base pixel size for crisp rendering on HiDPI
         iframe.style.width = `${baseW}px`
         iframe.style.height = `${baseH}px`
+
+        // Adjust pattern size automatically based on DPR and computed scale
+        const basePattern = 20
+        const patternSize = Math.round(Math.max(8, Math.min(120, basePattern * dpr * scale)))
+        try {
+          wrapper.style.setProperty('--mockup-pattern-size', `${patternSize}px`)
+        } catch (e) {
+          /* ignore if style cannot be set */
+        }
       }
 
       apply()
