@@ -14,73 +14,76 @@ gtag('config', 'AW-1036079663')
 // 2) ensureTrigger helper: inject a footer trigger zone if missing
 ;(function ensureFooterAndTrigger() {
   try {
-    document.addEventListener(
-      'DOMContentLoaded',
-      function () {
-        // Ensure menu container exists in a header - create header if missing
-        let menuContainer = document.getElementById('menu-container')
-        if (!menuContainer) {
-          let headerEl = document.querySelector('header.site-header')
-          if (!headerEl) {
-            headerEl = document.createElement('header')
-            headerEl.className = 'site-header'
-            // Insert at top of body for consistent layout
-            document.body.insertBefore(headerEl, document.body.firstChild)
-          }
-          menuContainer = document.createElement('div')
-          menuContainer.id = 'menu-container'
-          menuContainer.setAttribute('data-injected-by', 'head-inline')
-          headerEl.appendChild(menuContainer)
+    const run = function () {
+      // Ensure menu container exists in a header - create header if missing
+      let menuContainer = document.getElementById('menu-container')
+      if (!menuContainer) {
+        let headerEl = document.querySelector('header.site-header')
+        if (!headerEl) {
+          headerEl = document.createElement('header')
+          headerEl.className = 'site-header'
+          // Insert at top of body for consistent layout
+          document.body.insertBefore(headerEl, document.body.firstChild)
         }
+        menuContainer = document.createElement('div')
+        menuContainer.id = 'menu-container'
+        menuContainer.setAttribute('data-injected-by', 'head-inline')
+        headerEl.appendChild(menuContainer)
+      }
 
-        // If both footer trigger and container already present, nothing else to do
-        if (document.getElementById('footer-trigger-zone') && document.getElementById('footer-container')) return
+      // If both footer trigger and container already present, nothing else to do
+      if (document.getElementById('footer-trigger-zone') && document.getElementById('footer-container')) return
 
-        // Ensure footer container exists so FooterLoader can attach
-        let footerContainer = document.getElementById('footer-container')
-        if (!footerContainer) {
-          footerContainer = document.createElement('div')
-          footerContainer.id = 'footer-container'
-          footerContainer.setAttribute('data-footer-src', '/content/components/footer/footer')
-          // Not hidden: the loaded footer will control visibility
-          footerContainer.setAttribute('aria-hidden', 'false')
-          document.body.appendChild(footerContainer)
+      // Ensure footer container exists so FooterLoader can attach
+      let footerContainer = document.getElementById('footer-container')
+      if (!footerContainer) {
+        footerContainer = document.createElement('div')
+        footerContainer.id = 'footer-container'
+        footerContainer.setAttribute('data-footer-src', '/content/components/footer/footer')
+        // Not hidden: the loaded footer will control visibility
+        footerContainer.setAttribute('aria-hidden', 'false')
+        document.body.appendChild(footerContainer)
+      }
+
+      // Ensure trigger exists and is placed immediately before the footer container
+      if (!document.getElementById('footer-trigger-zone')) {
+        const trigger = document.createElement('div')
+        trigger.id = 'footer-trigger-zone'
+        trigger.className = 'footer-trigger-zone'
+
+        // Make the trigger non-interactive but detectable by IntersectionObserver
+        trigger.setAttribute('aria-hidden', 'true')
+        trigger.setAttribute('role', 'presentation')
+        trigger.style.pointerEvents = 'none'
+        // Slightly larger minHeight to make intersection detection more robust on first scroll
+        trigger.style.minHeight = '96px'
+        trigger.style.width = '100%'
+
+        // Default thresholds (can be overridden per page by setting data attributes)
+        // Small numbers increase sensitivity so even the smallest scroll can trigger the footer on desktop
+        // Further reduce thresholds to improve first-scroll reliability in headless/CI and real browsers
+        trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.002'
+        trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.0008'
+
+        // Default lock and debounce (ms) — can be overridden per-page using data attributes
+        // Keep desktop more forgiving by default
+        trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000'
+        trigger.dataset.collapseDebounceMs = trigger.dataset.collapseDebounceMs || '250'
+
+        if (footerContainer && footerContainer.parentNode) {
+          footerContainer.parentNode.insertBefore(trigger, footerContainer)
+        } else {
+          document.body.appendChild(trigger)
         }
+      }
+    }
 
-        // Ensure trigger exists and is placed immediately before the footer container
-        if (!document.getElementById('footer-trigger-zone')) {
-          const trigger = document.createElement('div')
-          trigger.id = 'footer-trigger-zone'
-          trigger.className = 'footer-trigger-zone'
-
-          // Make the trigger non-interactive but detectable by IntersectionObserver
-          trigger.setAttribute('aria-hidden', 'true')
-          trigger.setAttribute('role', 'presentation')
-          trigger.style.pointerEvents = 'none'
-          // Slightly larger minHeight to make intersection detection more robust on first scroll
-          trigger.style.minHeight = '96px'
-          trigger.style.width = '100%'
-
-          // Default thresholds (can be overridden per page by setting data attributes)
-          // Small numbers increase sensitivity so even the smallest scroll can trigger the footer on desktop
-          // Further reduce thresholds to improve first-scroll reliability in headless/CI and real browsers
-          trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.002'
-          trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.0008'
-
-          // Default lock and debounce (ms) — can be overridden per-page using data attributes
-          // Keep desktop more forgiving by default
-          trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000'
-          trigger.dataset.collapseDebounceMs = trigger.dataset.collapseDebounceMs || '250'
-
-          if (footerContainer && footerContainer.parentNode) {
-            footerContainer.parentNode.insertBefore(trigger, footerContainer)
-          } else {
-            document.body.appendChild(trigger)
-          }
-        }
-      },
-      {once: true}
-    )
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run, {once: true})
+    } else {
+      // If DOMContentLoaded already fired, run immediately
+      setTimeout(run, 0)
+    }
   } catch (err) {
     log.warn('head-inline: ensure footer/trigger setup failed', err)
   }
