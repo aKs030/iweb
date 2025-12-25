@@ -183,15 +183,35 @@ const log = createLogger('HeadLoader')
         document.documentElement.getAttribute('data-force-prod-canonical')
       )
 
+      // Normalize path to clean URL format (e.g. /pages/projekte/index.html -> /projekte/)
+      let cleanPath = window.location.pathname
+      // Remove /pages/ prefix if present (case insensitive)
+      cleanPath = cleanPath.replace(/^\/pages\//i, '/')
+      // Remove /index.html suffix
+      cleanPath = cleanPath.replace(/\/index\.html$/i, '/')
+      // Remove .html suffix
+      cleanPath = cleanPath.replace(/\.html$/i, '/')
+      // Deduplicate slashes
+      cleanPath = cleanPath.replace(/\/\/+/g, '/')
+      // Ensure trailing slash
+      cleanPath = ensureTrailingSlash(cleanPath)
+
       const canonicalHref = forceProdFlag
-        ? `${BASE_URL}${ensureTrailingSlash(window.location.pathname)}`
+        ? `${BASE_URL}${cleanPath}`
         : PROD_HOSTS.includes(hostname)
-          ? `${BASE_URL}${ensureTrailingSlash(window.location.pathname)}`
-          : pageUrl
+          ? `${BASE_URL}${cleanPath}`
+          : pageUrl // Fallback for localhost/dev uses raw pageUrl to avoid confusion
+
+      // Ensure that even in non-production environments (like localhost), accessing a "dirty" physical path
+      // (e.g. /pages/projekte/index.html) generates a clean canonical URL.
+      const isDirtyPath = window.location.pathname.match(/^\/pages\//i) || window.location.pathname.match(/\/index\.html$/i)
+      const effectiveCanonical = (isDirtyPath && !PROD_HOSTS.includes(hostname))
+         ? `${window.location.origin}${cleanPath}`
+         : canonicalHref
 
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
-      if (canonicalEl) canonicalEl.setAttribute('href', canonicalHref)
-      else upsertLink('canonical', canonicalHref)
+      if (canonicalEl) canonicalEl.setAttribute('href', effectiveCanonical)
+      else upsertLink('canonical', effectiveCanonical)
     } catch (err) {
       // Safe fallback log
       log.warn('canonical detection failed', err)

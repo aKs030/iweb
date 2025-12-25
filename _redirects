@@ -31,6 +31,13 @@ https://www.abdulkerimsesli.de/*      https://abdulkerimsesli.de/:splat   301
 /content/footer/datenschutz                     /datenschutz/ 301
 /content/footer/impressum                       /impressum/   301
 
+# Redirect physical paths to clean URLs (prevents duplicate content/alternate page issues)
+/pages/projekte/index.html   /projekte/    301
+/pages/blog/index.html       /blog/        301
+/pages/gallery/index.html    /gallery/     301
+/pages/videos/index.html     /videos/      301
+/pages/about/index.html      /about/       301
+
 # -------------------------------
 # 3) Generic cleanups
 # Remove any remaining ".html" endings and canonicalize to trailing-slash roots.
