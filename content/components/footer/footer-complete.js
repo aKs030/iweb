@@ -712,6 +712,9 @@ class ScrollHandler {
       this.collapseThreshold = defaultCollapse
     }
 
+    // Smaller negative rootMargin on desktop makes the observer more likely to fire on small scrolls
+    const rootMargin = isDesktop ? '0px 0px -1% 0px' : '0px 0px -10% 0px'
+
     this.observer = new IntersectionObserver(
       entries => {
         const entry = entries[0]
@@ -723,7 +726,7 @@ class ScrollHandler {
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold
         this.toggleExpansion(shouldExpand)
       },
-      {rootMargin: '0px 0px -10% 0px', threshold: [this.collapseThreshold, this.expandThreshold]}
+      {rootMargin, threshold: [this.collapseThreshold, this.expandThreshold]}
     )
 
     this.observer.observe(trigger)
